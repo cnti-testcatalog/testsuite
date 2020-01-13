@@ -1,0 +1,6 @@
+version: 1.0
+shards:
+  crake:
+    github: MakeNowJust/crake
+    version: 1.0.1
+

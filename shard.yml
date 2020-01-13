@@ -1,0 +1,19 @@
+name: cnf_conformance
+version: 0.1.0
+
+authors:
+  - W. Watson <Watson@vulk.coop>
+  - Joshua Darius <Joshua.smith@vulk.coop>
+
+targets:
+  cnf_conformance:
+    main: src/cnf_conformance.cr
+
+crystal: 0.31.1
+
+dependencies:
+  sam:
+    github: imdrasil/sam.cr
+    version: 0.3.2
+
+license: MIT
