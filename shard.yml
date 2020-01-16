@@ -15,5 +15,7 @@ dependencies:
   sam:
     github: imdrasil/sam.cr
     version: 0.3.2
+  totem:
+    github: icyleaf/totem
 
 license: MIT

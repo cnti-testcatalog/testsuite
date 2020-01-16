@@ -1,6 +1,14 @@
 version: 1.0
 shards:
-  crake:
-    github: MakeNowJust/crake
-    version: 1.0.1
+  popcorn:
+    github: icyleaf/popcorn
+    version: 0.2.2
+
+  sam:
+    github: imdrasil/sam.cr
+    version: 0.3.2
+
+  totem:
+    github: icyleaf/totem
+    version: 0.6.0
 
