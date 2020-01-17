@@ -65,6 +65,25 @@ task "helm" do |_, args|
   end
 end
 
+desc "Does the install script use helm?"
+task "install_script_helm" do |_, args|
+  found = 0
+  install_script = CONFIG.get("install_script").as_s
+  response = String::Builder.new
+  content = File.open(install_script) do |file|
+    file.gets_to_end
+  end
+  puts content
+  if /helm/ =~ content 
+    found = 1
+  end
+  if found < 1
+    puts "FAILURE: Helm not found in install script".colorize(:red)
+  else
+    puts "PASSED: Helm found in install script".colorize(:green)
+  end
+end
+
 def check_args (args)
   if args.size > 0 && ((args[0].as(String) == "verbose") || (args[0].as(String) == "v"))
     true
