@@ -1,0 +1,3 @@
+---
+helm_directory: cnfs/cnf-testbed/examples/use_case/gw-routers-on-k8s-nsm-on-packet/helm/gwr 
+install_script: cnfs/cnf-testbed/examples/network_functions/rdma_vppcontainer/builder.sh
