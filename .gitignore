@@ -5,3 +5,5 @@
 *.dwarf
 *.swp
 *.swo
+/cnfs
+/tools
