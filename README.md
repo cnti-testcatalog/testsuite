@@ -3,17 +3,17 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 
 ## Installation
   * Install [crystal-lang](https://crystal-lang.org/install/) version 0.30.1
-  * First clone this cnf-conformance repository 
-  * `cd cnf-conformance`
-  * Next clone the CNF-Testbed 
-  * `cd cnfs/ && git clone https://github.com/cncf/cnf-testbed.git`
-  * Then clone the K8s-infra repo 
-  * `cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git`
-  * Follow the K8s-infra README.md for instructions on how to install
-  * ### Get ready to rock and roll! 
+  * #### First clone this cnf-conformance repository 
+  `cd cnf-conformance`
+  * #### Next clone the CNF-Testbed 
+  `cd cnfs/ && git clone https://github.com/cncf/cnf-testbed.git`
+  * #### Then clone the K8s-infra repo 
+  `cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git`
+  * #### Follow the K8s-infra README.md for instructions on how to install
+  ### Get ready to rock and roll! 
 
 ## Example Usage
-  * `crystal src/tasks/declarative/ip_address.cr install_script_helm`
+  `crystal src/tasks/declarative/ip_address.cr install_script_helm`
 
 ## Development
   The cnf-conformance test suite is modeled after make, or if you're famniliar with Ruby, rake. Conformance tests are created via tasks using the Crystal library SAM.cr. 
