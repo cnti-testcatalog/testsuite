@@ -3,7 +3,5 @@
 /bin/
 /.shards/
 *.dwarf
-/cnfs
 *.swp
 *.swo
-/tools/
