@@ -37,7 +37,7 @@
 * (WIP) Can we start the pod/container without mounting a volume (e.g. using [helm configuration](https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/)) that has configuration files?
 * Testing to see if we can start pods/containers and see that the application continues to perform(e.g. using [Litmus](https://github.com/litmuschaos/litmus))
 * (WIP) Testing by reseting any child processes, and when the parent process is started, checking to see if those child processes are reaped (ie. monitoring processes with [Falco](https://github.com/falcosecurity/falco) or [sysdig-inspect](https://github.com/draios/sysdig-inspect))?
-* (WIP) Testing if the CNF perform a rolling update? (i.e. [kubectl rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/))
+* (WIP) Testing if the CNF can perform a rolling update? (i.e. [kubectl rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/))
 
 ## Observability Tests (WIP)
 #### In order to maintain, debug, and have insight into a protected environment, its infrastructure elements must have the property of being observable. This means these elements must externalize their internal states in some way that lends itself to metrics, tracing, and logging.
