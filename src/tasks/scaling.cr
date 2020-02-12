@@ -4,8 +4,8 @@ require "colorize"
 require "totem"
 require "./utils.cr"
 
-desc "Observability: In order to maintain, debug, and have insight into a protected environment, its infrastructure elements must have the property of being observable. This means these elements must externalize their internal states in some way that lends itself to metrics, tracing, and logging"
-task "observable" do |_, args|
+desc "The CNF conformance suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
+task "scaling" do |_, args|
 end
 
 
