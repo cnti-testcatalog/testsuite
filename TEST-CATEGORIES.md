@@ -1,4 +1,4 @@
-# Test Categories
+# Conformance Test Categories
 ## Compatability Tests (WIP)
 #### CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements.  The CNF Conformance Suite validates this by:
 * (WIP) Performing K8s conformance testing by running [Sonobuoy](https://github.com/cncf/k8s-conformance/blob/master/instructions.md) on the cluster
