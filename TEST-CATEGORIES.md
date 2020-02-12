@@ -14,7 +14,7 @@
 * (WIP) Using upstream projects for chaos engineering (e.g [Litmus](//https://github.com/litmuschaos/litmus))
 
 ## Security Tests (WIP)
-#### CNF containers should be isolated from one another and the host.  The CNF Conformance suite uses tools like [Falco](https://github.com/falcosecurity/falco), [Sysdig Inspect](https://github.com/draios/sysdig-inspect) and [gVisor](https://github.com/google/gvisor) to:
+#### CNF containers should be isolated from one another and the host.  The CNF Conformance suite uses tools like [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper),[Falco](https://github.com/falcosecurity/falco), [Sysdig Inspect](https://github.com/draios/sysdig-inspect) and [gVisor](https://github.com/google/gvisor) to:
 * (WIP) Check if any containers are running in privileged mode
 * (WIP) Check if there are any shells
 * (WIP) Check if any protected directories or files are accessed
@@ -41,12 +41,14 @@
 
 ## Observability Tests (WIP)
 #### In order to maintain, debug, and have insight into a protected environment, its infrastructure elements must have the property of being observable. This means these elements must externalize their internal states in some way that lends itself to metrics, tracing, and logging.
-* (WIP) Is fluentd installed in the cluster?
+* (WIP) Is [Fluentd](https://github.com/fluent/fluentd) installed in the cluster?
 * (WIP) Is there traffic to Fluentd?
-* (WIP) Is Jaeger installed in the cluster?
+* (WIP) Is [Jaeger](https://github.com/jaegertracing/jaeger) installed in the cluster?
 * (WIP) Is there traffic to Jaeger?
-* (WIP) Is prometheus installed in the cluster and configured correctly (e.g. using promtool)?
-* (WIP) Is there traffic to prometheus? 
+* (WIP) Is [Prometheus](https://github.com/prometheus/prometheus) installed in the cluster and configured correctly (e.g. using [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/))?
+* (WIP) Is there traffic to Prometheus?
+* (WIP) Are the tracing calls [OpenTelemetry](https://opentracing.io/) compatible?
+* (WIP) Are the monitoring calls [OpenMetric](https://github.com/OpenObservability/OpenMetrics) compatible?
 
 ## Installable and Upgradeable (WIP)
 #### The CNF Conformance suite will check for usage of standard, in-band deployment tools such as Helm (version 3) charts:
