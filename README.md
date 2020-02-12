@@ -1,5 +1,5 @@
 # cnf_conformance
-The CNF Conformance program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices.  See the [Test Categories](https://github.com/cncf/cnf-conformance/test-categories.md) for more information.
+The CNF Conformance program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices.  See the [Test Categories](https://github.com/cncf/cnf-conformance/blob/master/TEST-CATEGORIES.md) for more information.
 
 ## Installation
   * Install [crystal-lang](https://crystal-lang.org/install/) version 0.30.1
