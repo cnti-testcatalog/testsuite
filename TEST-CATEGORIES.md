@@ -52,9 +52,9 @@
 
 ## Installable and Upgradeable (WIP)
 #### The CNF Conformance suite will check for usage of standard, in-band deployment tools such as Helm (version 3) charts:
-* Does the install script use [Helm](https://github.com/helm/)
+* Does the install script use [Helm](https://github.com/helm/)?
 * (WIP) Is the Helm chart valid (e.g. using the [helm linter](https://github.com/helm/chart-testing))?
-* (WIP) Can the CNF perform a rolling update? (i.e. [kubectl rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/))
+* (WIP) Can the CNF perform a rolling update (i.e. [kubectl rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/))?
 
 ## Hardware and Affinity support (WIP)
 #### The CNF container should access all hardware and schedule to specific worker nodes by using a device plugin.  The CNF Conformance suite checks this by:
