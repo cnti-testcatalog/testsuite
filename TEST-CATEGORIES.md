@@ -20,7 +20,7 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 *  Check if there are any shells
 *  Check if any protected directories or files are accessed
 
-## Scaling Tests 
+## Scaling Tests  (see [usage](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#scaling-tests))
 #### The CNF conformance suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s [kubectl](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources) command to:
 *  Test increasing/decreasing capacity
 *  Test small scale autoscaling with kubectl
