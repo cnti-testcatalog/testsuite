@@ -19,7 +19,7 @@ crystal build src/cnf-conformance.cr
 crystal src/cnf-conformance.cr all
 ```
 
-# Compatability Tests (WIP)
+## Compatability Tests (WIP)
 #### :heavy_check_mark: To run all of the compatibility tests
 ```
 crystal src/cnf-conformance.cr compatibility
@@ -40,7 +40,7 @@ crystal src/cnf-conformance.cr api_snoop_beta
 ```
 crystal src/cnf-conformance.cr cni_spec
 ```
-# Stateless Tests (WIP)
+## Stateless Tests (WIP)
 #### :heavy_check_mark: To run all of the stateless tests
 ```
 crystal src/cnf-conformance.cr stateless
