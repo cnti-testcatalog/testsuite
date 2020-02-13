@@ -14,12 +14,12 @@ crystal src/cnf-conformance.cr <testname>
 ```
 crystal build src/cnf-conformance.cr
 ```
-# Running all of the CNF Conformance tests
+## Running all of the CNF Conformance tests
 ``` 
 crystal src/cnf-conformance.cr all
 ```
 
-## Compatability Tests (WIP)
+## Compatibility Tests
 #### :heavy_check_mark: To run all of the compatibility tests
 ```
 crystal src/cnf-conformance.cr compatibility
@@ -40,7 +40,7 @@ crystal src/cnf-conformance.cr api_snoop_beta
 ```
 crystal src/cnf-conformance.cr cni_spec
 ```
-## Stateless Tests (WIP)
+## Stateless Tests
 #### :heavy_check_mark: To run all of the stateless tests
 ```
 crystal src/cnf-conformance.cr stateless
@@ -54,7 +54,7 @@ crystal src/cnf-conformance.cr reset_cnf
 crystal src/cnf-conformance.cr check_reaped
 ```
 
-## Security Tests (WIP)
+## Security Tests
 #### :heavy_check_mark: To run all of the security tests
 ```
 crystal src/cnf-conformance.cr security
@@ -73,7 +73,7 @@ crystal src/cnf-conformance.cr shells
 crystal src/cnf-conformance.cr protected_access
 ```
 
-## Scaling Tests (WIP)
+## Scaling Tests
 
 #### :heavy_check_mark: To run all of the scaling tests
 ```
@@ -102,7 +102,7 @@ crystal src/cnf-conformance.cr network_chaos
 crystal src/cnf-conformance.cr external_retry
 ```
 
-## Configuration and Lifecycle Tests (WIP)
+## Configuration and Lifecycle Tests
 #### :heavy_check_mark: To run all of the configuration and lifecycle tests
 ```
 crystal src/cnf-conformance.cr configuration_lifecycle
@@ -141,7 +141,7 @@ crystal src/cnf-conformance.cr check_reaped
 crystal src/cnf-conformance.cr rolling_update
 ```
 
-## Observability Tests (WIP)
+## Observability Tests
 #### :heavy_check_mark: To run all observability tests
 ```
 crystal src/cnf-conformance.cr observability
@@ -180,7 +180,7 @@ crystal src/cnf-conformance.cr opentelemetry_compatible
 crystal src/cnf-conformance.cr openmetric_compatible
 ```
 
-## Installable and Upgradeable (WIP)
+## Installable and Upgradeable
 #### :heavy_check_mark: To run all installability tests
 ```
 crystal src/cnf-conformance.cr installability
@@ -198,7 +198,7 @@ crystal src/cnf-conformance.cr helm_chard_valid
 crystal src/cnf-conformance.cr rolling_update
 ```
 
-## Hardware and Affinity support (WIP)
+## Hardware and Affinity support
 #### :heavy_check_mark: Run all hardware and affinity tests
 ```
 crystal src/cnf-conformance.cr hardware_affinity
