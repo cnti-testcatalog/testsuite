@@ -5,7 +5,7 @@ require "totem"
 require "./utils.cr"
 
 desc "The CNF container should access all hardware and schedule to specific worker nodes by using a device plugin."
-task "hardware" do |_, args|
+task "hardware_affinity" do |_, args|
 end
 
 

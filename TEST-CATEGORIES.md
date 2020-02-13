@@ -1,4 +1,5 @@
 # Conformance Test Categories
+The CNF Conformance program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices.  For more detailed cli documentation see the [usage document](https://github.com/cncf/cnf-conformance/usage.md) for more information.
 ## Compatability Tests (WIP)
 #### CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements.  The CNF Conformance Suite validates this by:
 * (WIP) Performing K8s conformance testing by running [Sonobuoy](https://github.com/cncf/k8s-conformance/blob/master/instructions.md) on the cluster
@@ -22,7 +23,7 @@
 ## Scaling Tests (WIP)
 #### The CNF conformance suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s [kubectl](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources) command to:
 * (WIP) Test increasing/decreasing capacity
-* (WIP) Test small scall autoscaling with kubectl
+* (WIP) Test small scale autoscaling with kubectl
 * (WIP) Test large scale autoscaling with load test tools like [CNF Testbed](https://github.com/cncf/cnf-testbed)
 * (WIP) Test if the CNF control layer responds to retries for failed communication? (e.g. using [Pumba](https://github.com/alexei-led/pumba) or [Blockade](https://github.com/worstcase/blockade) for network chaos and [Envoy](https://github.com/envoyproxy/envoy) for retries)
 

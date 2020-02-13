@@ -5,11 +5,11 @@ require "totem"
 require "./utils.cr"
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
-task "configuration_lifecycle", ["addresses", "liveness"]  do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "liveness"]  do |_, args|
 end
 
 desc "Does a search for IP addresses or subnets come back as negative?"
-task "addresses" do |_, args|
+task "ip_addresses" do |_, args|
 	cdir = FileUtils.pwd()
   response = String::Builder.new
   Dir.cd(CNF_DIR)
