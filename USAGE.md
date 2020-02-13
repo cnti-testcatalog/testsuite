@@ -73,7 +73,7 @@ crystal src/cnf-conformance.cr shells
 crystal src/cnf-conformance.cr protected_access
 ```
 
-## Scaling Tests
+## Scaling Tests (see [usage](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#scaling-tests))
 
 #### :heavy_check_mark: To run all of the scaling tests
 ```
