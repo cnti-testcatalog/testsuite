@@ -1,6 +1,6 @@
 # CNF Conformance Test CLI Usage Documentation 
 
-The CNF Conformance Test suite can be run in developer mode (using crystal lang directly) or in production mode (using an executable).
+The CNF Conformance Test suite can be run in developer mode (using crystal lang directly) or in production mode (using an executable).  See the [pseudo code documentation](https://github.com/cncf/cnf-conformance/blob/master/PSEUDO-CODE.md) for examples of how the internals of WIP tests might work.
 
 ### Syntax for running any of the tests
 ```
