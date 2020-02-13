@@ -1,4 +1,4 @@
-NF Conformance Test CLI Usage Documentation 
+# CNF Conformance Test CLI Usage Documentation 
 
 The CNF Conformance Test suite can be run in developer mode (using crystal lang directly) or in production mode (using an executable).
 
