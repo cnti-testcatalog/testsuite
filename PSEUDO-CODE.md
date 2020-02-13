@@ -110,7 +110,7 @@ psuedo code
 ```
 ####  To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
 ```
-psuedo code
+kubectl rolling-update
 ```
 
 ## Observability Tests
