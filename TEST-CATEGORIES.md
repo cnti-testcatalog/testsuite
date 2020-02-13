@@ -20,13 +20,14 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 *  Check if there are any shells
 *  Check if any protected directories or files are accessed
 
-## Scaling Tests  (see [usage](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#scaling-tests))
+## Scaling Tests  
 #### The CNF conformance suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s [kubectl](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources) command to:
 *  Test increasing/decreasing capacity
 *  Test small scale autoscaling with kubectl
 *  Test large scale autoscaling with load test tools like [CNF Testbed](https://github.com/cncf/cnf-testbed)
 *  Test if the CNF control layer responds to retries for failed communication? (e.g. using [Pumba](https://github.com/alexei-led/pumba) or [Blockade](https://github.com/worstcase/blockade) for network chaos and [Envoy](https://github.com/envoyproxy/envoy) for retries)
 
+(see [scaling test usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#scaling-tests))
 ## Configuration and Lifecycle Tests 
 
 #### Configuration and lifecycle should be managed in a declarative manner, using [ConfigMaps](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/), [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/), or other [declarative interfaces](https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects/#understanding-kubernetes-objects).  The Conformance suite checks this by:
