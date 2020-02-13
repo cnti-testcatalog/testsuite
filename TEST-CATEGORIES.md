@@ -15,7 +15,7 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 *  Using upstream projects for chaos engineering (e.g [Litmus](//https://github.com/litmuschaos/litmus))
 
 ## Security Tests 
-#### CNF containers should be isolated from one another and the host.  The CNF Conformance suite uses tools like [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper),[Falco](https://github.com/falcosecurity/falco), [Sysdig Inspect](https://github.com/draios/sysdig-inspect) and [gVisor](https://github.com/google/gvisor) to:
+#### CNF containers should be isolated from one another and the host.  The CNF Conformance suite uses tools like [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Falco](https://github.com/falcosecurity/falco), [Sysdig Inspect](https://github.com/draios/sysdig-inspect) and [gVisor](https://github.com/google/gvisor) to:
 *  Check if any containers are running in privileged mode
 *  Check if there are any shells
 *  Check if any protected directories or files are accessed
