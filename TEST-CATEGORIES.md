@@ -1,5 +1,5 @@
 # Conformance Test Categories
-The CNF Conformance program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices.  For more detailed cli documentation see the [usage document](https://github.com/cncf/cnf-conformance/usage.md) for more information.
+The CNF Conformance program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices.  For more detailed cli documentation see the [usage document.](https://github.com/cncf/cnf-conformance/blob/master/usage.md)
 ## Compatability Tests (WIP)
 #### CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements.  The CNF Conformance Suite validates this by:
 * (WIP) Performing K8s conformance testing by running [Sonobuoy](https://github.com/cncf/k8s-conformance/blob/master/instructions.md) on the cluster
