@@ -10,7 +10,7 @@ crystal src/cnf-conformance.cr <testname>
 # Production mode
 ./cnf-conformance <testname>
 ```
-### Building the exe
+### Building the executable
 ```
 crystal build src/cnf-conformance.cr
 ```
