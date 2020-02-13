@@ -22,7 +22,7 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
   * #### Follow the K8s-infra README.md for instructions on how to install
   ### Get ready to rock and roll! 
 
-## Example Usage
+## Example Usage (or see the [complete usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md))
   ```
   crystal src/tasks/declarative/cnf-conformance.cr all 
   crystal src/tasks/declarative/cnf-conformance.cr configuration_lifecycle 
