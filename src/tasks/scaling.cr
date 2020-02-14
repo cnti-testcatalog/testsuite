@@ -24,6 +24,7 @@ task "increase_decrease_capacity" do |_, args|
     wait_count = "10"
   end
   if args.size > 0
+    #TODO get name of pod from config file
     increase = `kubectl scale deployment.v1.apps/#{args[0].as(String)} --replicas=#{replica_count}`
     puts "#{increase}" if check_verbose(args) 
     ready_replicas = "" 
