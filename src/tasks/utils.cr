@@ -10,3 +10,11 @@ def check_args (args)
     false
   end
 end
+
+def check_verbose (args)
+  if ((args.raw.includes? "verbose") || (args.raw.includes? "v"))
+    true
+  else 
+    false
+  end
+end

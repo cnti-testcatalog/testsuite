@@ -24,9 +24,9 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 
 ## Example Usage
   ```
-  crystal src/tasks/declarative/cnf-conformance.cr all 
-  crystal src/tasks/declarative/cnf-conformance.cr configuration_lifecycle 
-  crystal src/tasks/declarative/cnf-conformance.cr installability 
+  crystal src/cnf-conformance.cr all 
+  crystal src/cnf-conformance.cr configuration_lifecycle 
+  crystal src/cnf-conformance.cr installability 
   ```
 
 ## Development
