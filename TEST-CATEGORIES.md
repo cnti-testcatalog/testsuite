@@ -43,12 +43,10 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 
 ## Observability Tests 
 #### In order to maintain, debug, and have insight into a protected environment, its infrastructure elements must have the property of being observable. This means these elements must externalize their internal states in some way that lends itself to metrics, tracing, and logging.
-*  Is [Fluentd](https://github.com/fluent/fluentd) installed in the cluster?
-*  Is there traffic to Fluentd?
-*  Is [Jaeger](https://github.com/jaegertracing/jaeger) installed in the cluster?
-*  Is there traffic to Jaeger?
-*  Is [Prometheus](https://github.com/prometheus/prometheus) installed in the cluster and configured correctly (e.g. using [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/))?
-*  Is there traffic to Prometheus?
+*  Is there traffic to [Fluentd](https://github.com/fluent/fluentd)?
+*  Is there traffic to [Jaeger](https://github.com/jaegertracing/jaeger)?
+*  Is  are the Prometheus rules for the CNF configured correctly (e.g. using [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/))?
+*  Is there traffic to [Prometheus](https://github.com/prometheus/prometheus)?
 *  Are the tracing calls [OpenTelemetry](https://opentracing.io/) compatible?
 *  Are the monitoring calls [OpenMetric](https://github.com/OpenObservability/OpenMetrics) compatible?
 
