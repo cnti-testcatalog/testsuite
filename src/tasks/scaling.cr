@@ -10,6 +10,7 @@ end
 
 desc "Test increasing/decreasing capacity"
 task "increase_decrease_capacity" do |_, args|
+  #TODO check if container exists
   puts "args.raw: #{args.raw}" if check_verbose(args)
   puts "args.named: #{args.named}" if check_verbose(args)
   response = String::Builder.new
@@ -30,11 +31,11 @@ task "increase_decrease_capacity" do |_, args|
     ready_replicas = "" 
     second_count = 0
     until ready_replicas == replica_count || second_count > wait_count.to_i
-      puts "secound_count wait_count #{second_count} #{wait_count}"
+      puts "secound_count wait_count #{second_count} #{wait_count}" if check_verbose(args)
       puts "ready_replicas #{ready_replicas}" if check_verbose(args)
       sleep 1
       second_count = second_count + 1 
-      ready_replicas = `kubectl get deployments priv2-coredns -o=jsonpath='{.status.readyReplicas}'`
+      ready_replicas = `kubectl get deployments #{args[0].as(String)} -o=jsonpath='{.status.readyReplicas}'`
       puts "#{ready_replicas}" if check_verbose(args)
     end
     if ready_replicas == replica_count
