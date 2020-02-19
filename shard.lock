@@ -5,8 +5,8 @@ shards:
     version: 0.2.2
 
   sam:
-    github: imdrasil/sam.cr
-    version: 0.3.2
+    github: vulk/sam.cr
+    commit: 117b5b249ac696733951c0ac587d063de4fdea9f
 
   totem:
     github: icyleaf/totem

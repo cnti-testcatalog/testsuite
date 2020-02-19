@@ -13,8 +13,8 @@ crystal: 0.31.1
 
 dependencies:
   sam:
-    github: imdrasil/sam.cr
-    version: 0.3.2
+    github: vulk/sam.cr
+    commit: 117b5b2
   totem:
     github: icyleaf/totem
 

@@ -42,6 +42,8 @@ psuedo code
 
 ####  To check if any containers are running in [privileged mode](https://github.com/open-policy-agent/gatekeeper)
 ```
+kubectl get pods --all-namespaces -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'
+# Alternatively
 docker run --rm -it ubuntu ip link add dummy0 type dummy 
 RTNETLINK answers: Operation not permitted
 ```

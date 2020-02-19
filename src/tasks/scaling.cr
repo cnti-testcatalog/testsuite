@@ -5,14 +5,19 @@ require "totem"
 require "./utils.cr"
 
 desc "The CNF conformance suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
-task "scaling", ["increase_decrease_capacity"] do |_, args|
+task "scaling", ["increase_decrease_capacity"] do |t, args|
+  puts "scaling args.raw: #{args.raw}" if check_verbose(args)
+  puts "scaling args.named: #{args.named}" if check_verbose(args)
+  # t.invoke("increase_decrease_capacity", args)
 end
 
 desc "Test increasing/decreasing capacity"
 task "increase_decrease_capacity" do |_, args|
+  #TODO Document all arguments
   #TODO check if container exists
-  puts "args.raw: #{args.raw}" if check_verbose(args)
-  puts "args.named: #{args.named}" if check_verbose(args)
+  #TODO Get a list of all containers and loop through
+  puts "increase_decrease_capacity args.raw: #{args.raw}" if check_verbose(args)
+  puts "increase_decrease_capacity args.named: #{args.named}" if check_verbose(args)
   response = String::Builder.new
   if args.named.keys.includes? "replicas"
     replica_count = args.named["replicas"]
