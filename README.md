@@ -15,11 +15,15 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
   ```
   cd cnfs/ && git clone https://github.com/cncf/cnf-testbed.git
   ```
-  * #### Then clone the K8s-infra repo 
+  * #### (Optional: Create a K8s cluster if you don't already have one) Clone the K8s-infra repo 
+
+  Follow the [prerequisites](https://github.com/cncf/cnf-testbed/tree/master/tools#pre-requisites) for [deploying a K8s cluster](https://github.com/cncf/cnf-testbed/tree/master/tools#deploying-a-kubernetes-cluster-using-the-makefile--ci-tools)  for a Packet host 
+  
+  *Or* if, you already have IP addresses for your provider and you want to manually install a cluster using the k8s-infra infrastructure
   ```
   cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git
   ```
-  * #### Follow the K8s-infra README.md for instructions on how to install
+  * #### Follow the [K8s-infra README.md](https://github.com/crosscloudci/k8s-infra/blob/master/README.md#quick-start) for instructions on how to install
   ### Get ready to rock and roll! 
 
 ## Example Usage (or see the [complete usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md))
