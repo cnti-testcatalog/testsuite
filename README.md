@@ -20,7 +20,7 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
   * Follow the [prerequisites](https://github.com/cncf/cnf-testbed/tree/master/tools#pre-requisites) for [deploying a K8s cluster](https://github.com/cncf/cnf-testbed/tree/master/tools#deploying-a-kubernetes-cluster-using-the-makefile--ci-tools)  for a Packet host. 
   
   *Or* 
-  * If you already have IP addresses for your provider and you want to manually install a K8s cluster you can use k8s-infra to do this.
+  * If you already have IP addresses for your provider, and you want to manually install a K8s cluster, you can use k8s-infra to do this.
   ```
   cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git
   ```
