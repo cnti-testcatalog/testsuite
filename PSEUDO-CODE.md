@@ -2,43 +2,37 @@
 
 ## Compatibility Tests
 
-####  To run [K8s conformance](https://github.com/cncf/k8s-conformance/blob/master/instructions.md)
-
+####  To check of the CNF's CNI plugin accepts valid calls from the [CNI specification](https://github.com/containernetworking/cni/blob/master/SPEC.md)
 ```
-go get -u -v github.com/heptio/sonobuoy
-sonobuoy run --mode=certified-conformance
-sonobuoy status
-sonobuoy logs
-
+pseudo code
 ```
-####  To run K8s API testing for ensuring the use of generally available endpoints
+####  To run [K8s API testing, aka APIsnoop](https://github.com/cncf/apisnoop) for checking for the use of alpha endpoints
+```
+pseudo code
+```
+####  To run [K8s API testing, aka APIsnoop](https://github.com/cncf/apisnoop) for checking for the use of beta endpoints
+```
+pseudo code
+```
+####  To run [K8s API testing, aka APIsnoop](https://github.com/cncf/apisnoop) for ensuring the use of generally available endpoints
 ```
 curl https://raw.githubusercontent.com/cncf/apisnoop/master/deployment/k8s/kind-cluster-config.yaml -o kind-cluster-config.yaml
 kind create cluster --name kind-$USER --config kind-cluster-config.yaml
 kubectl apply -f https://raw.githubusercontent.com/cncf/apisnoop/master/deployment/k8s/raiinbow.yaml
+```
 
-```
-####  To run [K8s API testing](https://github.com/cncf/apisnoop) for checking for the use of beta endpoints
-```
-psuedo code
-```
-####  To check of the CNF's CNI plugin accepts valid calls from the [CNI specification](https://github.com/containernetworking/cni/blob/master/SPEC.md)
-```
-psuedo code
-```
-## Stateless Tests
+## Statelessness Tests
 
 ####  To test if the CNF responds properly [when being restarted](//https://github.com/litmuschaos/litmus)
 ```
-psuedo code
+pseudo code
 ```
 ####  To test if, when parent processes are restarted, the [child processes](https://github.com/falcosecurity/falco) are [reaped](https://github.com/draios/sysdig-inspect)
 ```
-psuedo code
+pseudo code
 ```
 
 ## Security Tests
-
 
 ####  To check if any containers are running in [privileged mode](https://github.com/open-policy-agent/gatekeeper)
 ```
@@ -49,14 +43,14 @@ RTNETLINK answers: Operation not permitted
 ```
 ####  To check if there are any [shells running in the container](https://github.com/open-policy-agent/gatekeeper)
 ```
-psuedo code
+pseudo code
 ```
 #### To check if there are any [protected directories](https://github.com/open-policy-agent/gatekeeper) or files that are accessed from within the container
 ```
-psuedo code
+pseudo code
 ```
 
-## Scaling Tests
+## Scalability Tests
 
 ####  To test the [increasing and decreasing of capacity](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
 ```
@@ -68,47 +62,47 @@ kubectl scale --replicas=3 rs/foo
 ```
 ####  To test [large scale autoscaling](https://github.com/cncf/cnf-testbed)
 ```
-psuedo code
+pseudo code
 ```
 ####  To test if the CNF responds to [network](https://github.com/alexei-led/pumba) [chaos](https://github.com/worstcase/blockade)
 ```
-psuedo code
+pseudo code
 ```
 
-####  To test if the CNF control layer using [external retry logic](https://github.com/envoyproxy/envoy)
+####  To test if the CNF control layer uses [external retry logic](https://github.com/envoyproxy/envoy)
 ```
-psuedo code
+pseudo code
 ```
 
 ## Configuration and Lifecycle Tests
 
-####  To test if the CNF is installed with a versioned Helm Chart
+####  To test if the CNF is installed with a versioned Helm v3 Chart
 ```
-psuedo code
+pseudo code
 ```
-####  To test if there are any (non-declarative) hardcoded ip addresses or subnet masks
+####  To test if there are any (non-declarative) hardcoded IP addresses or subnet masks
 ```
 grep --exclude-dir={} --exclude=*.o -rnw '.' -e '.*(?:\d{1,3}\.){3}\d{1,3}*' 
 ```
-####  To test if there is a liveness entry in the helm chart
+####  To test if there is a liveness entry in the Helm chart
 ```
 yq read deployment.yaml spec.template.spec.containers.0.livenessProbe 
 ```
-####  To test if there is a readiness entry in the helm chart
+####  To test if there is a readiness entry in the Helm chart
 ```
 yq read deployment.yaml spec.template.spec.containers.0.readinessProbe 
 ```
 ####  Test starting a container without mounting a volume that has configuration files
 ```
-psuedo code
+pseudo code
 ```
 ####  To test if the CNF responds properly [when being restarted](//https://github.com/litmuschaos/litmus)
 ```
-psuedo code
+pseudo code
 ```
 ####  To test if, when parent processes are restarted, the [child processes](https://github.com/falcosecurity/falco) are [reaped](https://github.com/draios/sysdig-inspect)
 ```
-psuedo code
+pseudo code
 ```
 ####  To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
 ```
@@ -117,70 +111,62 @@ kubectl rolling-update
 
 ## Observability Tests
 
-####  Test if [Fluentd](https://github.com/fluent/fluentd) is installed in the cluster?
+####  Test if there is traffic to Fluentd
 ```
-psuedo code
-```
-####  Test if there traffic to Fluentd
-```
-psuedo code
-```
-####  Test if [Jaeger](https://github.com/jaegertracing/jaeger) is installed in the cluster
-```
-psuedo code
+pseudo code
 ```
 ####  Test if there is traffic to Jaeger
 ```
-psuedo code
+pseudo code
 ```
-####  Test if [Prometheus](https://github.com/prometheus/prometheus) is installed in the cluster and [configured correctly](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/)
+####  Test if [Prometheus](https://github.com/prometheus/prometheus) is [configured correctly](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/)
 ```
-psuedo code
+pseudo code
 ```
 ####  Test if there is traffic to Prometheus
 ```
-psuedo code
+pseudo code
 ```
-####  Test if tracing calls are [OpenTelemetry](https://opentracing.io/) compatible
+####  Test if tracing calls are compatible with [OpenTelemetry](https://opentracing.io/) 
 ```
-psuedo code
+pseudo code
 ```
-####  Test are if the monitoring calls are [OpenMetric](https://github.com/OpenObservability/OpenMetrics) compatible
+####  Test are if the monitoring calls are compatible with [OpenMetric](https://github.com/OpenObservability/OpenMetrics) 
 ```
-psuedo code
+pseudo code
 ```
 
-## Installable and Upgradeable
+## Installable and Upgradeable Tests
 
-####  Test if the install script uses [Helm](https://github.com/helm/)
+####  Test if the install script uses [Helm v3](https://github.com/helm/)
 ```
-psuedo code
+pseudo code
 ```
 ####  Test if the [Helm chart is valid](https://github.com/helm/chart-testing))
 ```
-psuedo code
+pseudo code
 ```
-####  To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
+####  Test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
 ```
-psuedo code
+pseudo code
 ```
 
-## Hardware and Affinity support
+## Hardware Resources and Scheduling Tests
 
 ####  Test if the CNF is accessing hardware in its configuration files
 ```
-psuedo code
+pseudo code
 ```
-####  Test if the CNF accessess hardware directly during run-time (e.g. accessing the host /dev or /proc from a mount)
+####  Test if the CNF is accessing hardware directly during run-time (e.g. accessing the host /dev or /proc from a mount)
 ```
-psuedo code
+pseudo code
 ```
-####  Test if the CNF accessess hugepages directly instead of via [Kubernetes resources](https://github.com/cncf/cnf-testbed/blob/c4458634deca5e8ab73adf118eedde32904c8458/examples/use_case/external-packet-filtering-on-k8s-nsm-on-packet/gateway.yaml#L29)
+####  Test if the CNF is accessing hugepages directly instead of via [Kubernetes resources](https://github.com/cncf/cnf-testbed/blob/c4458634deca5e8ab73adf118eedde32904c8458/examples/use_case/external-packet-filtering-on-k8s-nsm-on-packet/gateway.yaml#L29)
 ```
-psuedo code
+pseudo code
 ```
-####  Test if the cnf testbed performance output shows adequate throughput and sessions using the [CNF Testbed](https://github.com/cncf/cnf-testbed) (vendor neutral) hardware environment
+####  Test if the CNF Testbed performance output shows adequate throughput and sessions using the [CNF Testbed](https://github.com/cncf/cnf-testbed) (vendor neutral) hardware environment
 ```
-psuedo code
+pseudo code
 ```
                                                                                                                                                                                                   
