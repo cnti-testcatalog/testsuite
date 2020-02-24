@@ -1,6 +1,7 @@
 # TODO make constants local or always retrieve from environment variables
+# TODO Move constants out
 CNF_DIR = "cnfs"
-
+TOOLS_DIR = "tools"
 CONFIG = Totem.from_file "./config.yml"
 
 def check_args (args)

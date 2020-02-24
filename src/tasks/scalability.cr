@@ -51,4 +51,3 @@ task "increase_decrease_capacity" do |_, args|
   end
 end
 
-
