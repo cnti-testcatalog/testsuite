@@ -178,9 +178,9 @@ crystal src/cnf-conformance.cr installability
 ```
 crystal src/cnf-conformance.cr install_script_helm
 ```
-#### (WIP) Test if the [Helm chart is valid](https://github.com/helm/chart-testing))
+#### (WIP) Test if the [Helm chart is valid](https://github.com/helm/chart-testing)
 ```
-crystal src/cnf-conformance.cr helm_chard_valid
+crystal src/cnf-conformance.cr helm_chart_valid
 ```
 #### (WIP) To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
 ```
