@@ -1,5 +1,5 @@
 # CNF Conformance
-The CNF Conformance program enables interoperability of Cloud native Network Functions (CNFs) from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite, written in [Crystal](https://crystal-lang.org/), to demonstrate conformance and implementation of best practices for both open and closed source Cloud native Network Functions. 
+The CNF Conformance program enables interoperability of Cloud native Network Functions (CNFs) from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to demonstrate conformance and implementation of best practices for both open and closed source Cloud native Network Functions. 
 
 The CNF Conformance Test Suite will inspect CNFs for the following characteristics: 
 - **Compatibility** - CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements.
@@ -12,6 +12,15 @@ The CNF Conformance Test Suite will inspect CNFs for the following characteristi
 - **Hardware Resources and Scheduling** - The CNF container should access all hardware and schedule to specific worker nodes by using a device plugin.
 
 See the [Conformance Test Categories Documentation](https://github.com/cncf/cnf-conformance/blob/master/TEST-CATEGORIES.md) for a complete overview of the tests.
+
+## Implementation overview
+
+The CNF Conformance Test Suite leverages up stream tools such as [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [helm linter](https://github.com/helm/chart-testing), and [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) for testing CNFs. The upstream tool installation, configuration and versioning has been made repeatable.
+
+The test framework and tests (using the upstream tools) are written in the easy to understand, compiled language, [Crystal](https://crystal-lang.org/). Common capabilities like dependencies between tests and categories are supported.
+
+Setup of vanilla upstream K8s for testing is done with [k8s-infra](https://github.com/crosscloudci/k8s-infra) which uses [Kubespray](https://kubespray.io/) to deploy the cluster to [Packet](https://www.packet.com/).
+  
 
 ## Installation
   * Install [crystal-lang](https://crystal-lang.org/install/) version 0.30.1
