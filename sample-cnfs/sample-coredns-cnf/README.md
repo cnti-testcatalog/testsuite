@@ -25,18 +25,15 @@ helmenv install <version 3.1?>
 
 ### core-dns installation
 ```
-helm install --name coredns stable/coredns
+helm install coredns stable/coredns
 ```
-### Pull down the helm chart code
+### Pull down the helm chart code, untar it, and put it in the cnfs/coredns directory
 ```
 helm pull stable/coredns
-```
-```
-helm fetch stable/coredns
 ```
 ### Example cnf-conformance config file for sample-core-dns-cnf
 In ./cnfs/sample-core-dns-cnf/cnf-conformance.yml
 ```
 ---
-container_names: [priv2-coredns] 
+container_names: [coredns-coredns] 
 ```
