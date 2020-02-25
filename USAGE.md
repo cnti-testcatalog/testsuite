@@ -28,15 +28,15 @@ crystal src/cnf-conformance.cr compatibility
 ```
 crystal src/cnf-conformance.cr cni_spec
 ```
-#### (To Do) To run [K8s API testing](https://github.com/cncf/apisnoop) for checking for the use of alpha endpoints
+#### (To Do) To check for the use of alpha K8s API endpoints
 ```
 pseudo code
 ```
-#### (WIP) To run [K8s API testing](https://github.com/cncf/apisnoop) for checking for the use of beta endpoints
+#### (WIP) To check for the use of beta K8s API endpoints
 ```
 crystal src/cnf-conformance.cr api_snoop_beta
 ```
-#### (WIP) To run [K8s API testing](https://github.com/cncf/apisnoop) for ensuring the use of generally available endpoints
+#### (WIP) To check for the use of generally available (GA) K8s API endpoints
 ```
 crystal src/cnf-conformance.cr api_snoop_general_apis
 ```

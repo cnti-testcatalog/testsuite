@@ -5,10 +5,10 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 #### CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements.  The CNF Conformance Suite validates this by:
 *  Performing CNI Plugin testing which:
     * Tests if CNI Plugin follows the [CNI specification](https://github.com/containernetworking/cni/blob/master/SPEC.md)
-*  Performing K8s API testing by running [API snoop](https://github.com/cncf/apisnoop) on the cluster which:
-    * Tests Alpha Endpoint usage
-    * Tests Beta Endpoint usage
-    * Tests for Generally Available Endpoints
+*  Performing K8s API usage testing by running [API snoop](https://github.com/cncf/apisnoop) on the cluster which:
+    * Checks alpha endpoint usage
+    * Checks beta endpoint usage
+    * Checks generally available (GA) endpoint usage
 
 ## Statelessness Tests 
 #### The CNF conformance suite checks if state is stored in a [custom resource definition](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) or a separate database (e.g. [etcd](https://github.com/etcd-io/etcd)) rather than requiring local storage.  It also checks to see if state is resilient to node failure by:

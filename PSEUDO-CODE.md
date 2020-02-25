@@ -6,15 +6,15 @@
 ```
 pseudo code
 ```
-####  To run [K8s API testing, aka APIsnoop](https://github.com/cncf/apisnoop) for checking for the use of alpha endpoints
+####  To check for the use of alpha K8s API endpoints
 ```
 pseudo code
 ```
-####  To run [K8s API testing, aka APIsnoop](https://github.com/cncf/apisnoop) for checking for the use of beta endpoints
+####  To check for the use of beta K8s API endpoints
 ```
 pseudo code
 ```
-####  To run [K8s API testing, aka APIsnoop](https://github.com/cncf/apisnoop) for ensuring the use of generally available endpoints
+####  To check for the use of generally available (GA) K8s API endpoints
 ```
 curl https://raw.githubusercontent.com/cncf/apisnoop/master/deployment/k8s/kind-cluster-config.yaml -o kind-cluster-config.yaml
 kind create cluster --name kind-$USER --config kind-cluster-config.yaml
