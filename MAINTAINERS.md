@@ -1,4 +1,4 @@
-# CNF Conformance Maintainers
+# CNF Conformance Core Maintainers
 
 | Maintainers | GitHub ID | Affiliation |
 | --------------- | --------- | ----------- |
@@ -8,3 +8,9 @@
 | William Harris | [williscool](https://github.com/williscool) | [Vulk Coop](vulk.coop) |
 | Taylor Carpenter | [taylor](https://github.com/taylor) | [Vulk Coop](vulk.coop) |
 | Lucina Stricko | [lixuna](https://github.com/lixuna) | [Vulk Coop](vulk.coop) |
+
+# Maintainers
+| Maintainers | GitHub ID | Affiliation |
+| --------------- | --------- | ----------- |
+| name | [username](https://github.com/ url) | company |
+
