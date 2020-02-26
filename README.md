@@ -25,6 +25,13 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
   cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git
   ```
   * #### Follow the [K8s-infra quick start](https://github.com/crosscloudci/k8s-infra/blob/master/README.md#quick-start) for instructions on how to install
+
+  Modify the config.yml file setting for your cnfs 
+
+  Run the setup tasks to install any prerequisites
+  ``` 
+  crystal src/cnf-conformance setup
+  ```
   ### Get ready to rock and roll! 
 
 ## Example Usage (or see the [complete usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md))

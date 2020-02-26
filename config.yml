@@ -3,3 +3,4 @@ helm_directory: cnfs/cnf-testbed/examples/use_case/gw-routers-on-k8s-nsm-on-pack
 install_script: cnfs/cnf-testbed/examples/network_functions/rdma_vppcontainer/builder.sh
 deployment_name: coredns-coredns
 application_deployment_names: [coredns-coredns]
+helm_chart: stable/coredns 

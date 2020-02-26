@@ -12,31 +12,39 @@ task "scalability", ["increase_decrease_capacity"] do |t, args|
 end
 
 desc "Test increasing/decreasing capacity"
-task "increase_decrease_capacity", ["increase_capacity", "decrease_capacity"] do |_, args|
+task "increase_decrease_capacity", ["increase_capacity", "decrease_capacity"] do |t, args|
 end
 
 
 desc "Test increasing capacity by setting replicas to 1 and then increasing to 3"
 task "increase_capacity" do |_, args|
-  target_replicas = "3"
-  base_replicas = "1"
-  final_count = change_capacity(base_replicas, target_replicas, args)
-  if target_replicas == final_count 
-    puts "PASSED: Replicas changed to #{target_replicas}".colorize(:green)
-  else
-    puts "FAILURE: Replicas did not reach #{target_replicas}".colorize(:red)
+  begin
+    target_replicas = "3"
+    base_replicas = "1"
+    final_count = change_capacity(base_replicas, target_replicas, args)
+    if target_replicas == final_count 
+      puts "PASSED: Replicas increased to #{target_replicas}".colorize(:green)
+    else
+      puts "FAILURE: Replicas did not reach #{target_replicas}".colorize(:red)
+    end
+  rescue ex
+    puts ex.message
   end
 end
 
 desc "Test decrease capacity by setting replicas to 3 and then decreasing to 1"
 task "decrease_capacity" do |_, args|
-  target_replicas = "1"
-  base_replicas = "3"
-  final_count = change_capacity(base_replicas, target_replicas, args)
-  if target_replicas == final_count 
-    puts "PASSED: Replicas changed to #{target_replicas}".colorize(:green)
-  else
-    puts "FAILURE: Replicas did not reach #{target_replicas}".colorize(:red)
+  begin
+    target_replicas = "1"
+    base_replicas = "3"
+    final_count = change_capacity(base_replicas, target_replicas, args)
+    if target_replicas == final_count 
+      puts "PASSED: Replicas decreased to #{target_replicas}".colorize(:green)
+    else
+      puts "FAILURE: Replicas did not reach #{target_replicas}".colorize(:red)
+    end
+  rescue ex
+    puts ex.message
   end
 end
 
