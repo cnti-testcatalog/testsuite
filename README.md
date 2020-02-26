@@ -15,12 +15,12 @@ See the [Conformance Test Categories Documentation](https://github.com/cncf/cnf-
 
 ## Implementation overview
 
-The CNF Conformance Test Suite leverages up stream tools such as [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [helm linter](https://github.com/helm/chart-testing), and [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) for testing CNFs. The upstream tool installation, configuration and versioning has been made repeatable.
+The CNF Conformance Test Suite leverages upstream tools such as [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Helm linter](https://github.com/helm/chart-testing), and [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) for testing CNFs. The upstream tool installation, configuration and versioning has been made repeatable.
 
-The test framework and tests (using the upstream tools) are written in the easy to understand, compiled language, [Crystal](https://crystal-lang.org/). Common capabilities like dependencies between tests and categories are supported.
+The test framework and tests (using the upstream tools) are written in the human readable, compiled language, [Crystal](https://crystal-lang.org/). Common capabilities like dependencies between tests and categories are supported.
 
-Setup of vanilla upstream K8s for testing is done with [k8s-infra](https://github.com/crosscloudci/k8s-infra) which uses [Kubespray](https://kubespray.io/) to deploy the cluster to [Packet](https://www.packet.com/).
-  
+Setup of vanilla upstream K8s on [Packet](https://www.packet.com/) is done with the [CNF Testbed](https://github.com/cncf/cnf-testbed/) platform tool chain, which includes [k8s-infra](https://github.com/crosscloudci/k8s-infra), [Kubespray](https://kubespray.io/). To add support for other providers, please submit a [Pull Request](https://github.com/cncf/cnf-testbed/pulls) to the [CNF Testbed](https://github.com/cncf/cnf-testbed/) repo.
+
 
 ## Installation
   * Install [crystal-lang](https://crystal-lang.org/install/) version 0.30.1
