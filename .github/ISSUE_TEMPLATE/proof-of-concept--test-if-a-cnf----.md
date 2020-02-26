@@ -21,5 +21,4 @@ Tasks:
   - [ ] the [psuedo code markdown](https://github.com/cncf/cnf-conformance/blob/master/PSEUDO-CODE.md)
   - [ ] slide content updates, LINK_TO_UPDATES
   - [ ] the [README](https://github.com/cncf/cnf-conformance/blob/master/README.md)
-- [ ] Tag 1 or more people to peer review 
-
+- [ ] Tag 1 or more people to peer review
