@@ -9,15 +9,17 @@ assignees: ''
 
 # Proof of Concept: Test if a CNF ...
 
-### Test Category: _CATEGORY NAME_
-
-- [ ] Slide content 
-   - [ ] Does it need to be updated
-- [ ] Add outline for test to categories [markdown](https://github.com/cncf/cnf-conformance/blob/master/TEST-CATEGORIES.md)
-- [x] Investigate potential tools for implementation and document findings > https://hackmd.io/8rGSATfsQg63fXW4VO16PA?view
-- [x] select a tool to use to check privileged mode, minimal/least effort
+**Test Category: _CATEGORY NAME_**
 
 Tasks:
+- [ ] Add a quick overview of the type of test you are researching/creating a POC for
+- [ ] Investigate potential tools for implementation and document findings, https://hackmd.io/new  (add link to ticket)
+- [ ] Select a tool to use, minimal/least effort, and add selection to ticket
+- [ ] Add new POC test code
+- [ ] Add comment suggesting updates as needed for:
+  - [ ] the [test categories markdown](https://github.com/cncf/cnf-conformance/blob/master/TEST-CATEGORIES.md)
+  - [ ] the [psuedo code markdown](https://github.com/cncf/cnf-conformance/blob/master/PSEUDO-CODE.md)
+  - [ ] slide content updates, LINK_TO_UPDATES
+  - [ ] the [README](https://github.com/cncf/cnf-conformance/blob/master/README.md)
+- [ ] Tag 1 or more people to peer review 
 
- - [x] optionally, add pseudocode to [markdown](https://github.com/cncf/cnf-conformance/blob/master/PSEUDO-CODE.md#to-check-if-any-containers-are-running-in-privileged-mode)
-  - [x] Add new POC test code, to _Test if a CNF is running in Privileged mode_
