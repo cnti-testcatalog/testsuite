@@ -1,2 +1,6 @@
 ---
-deployment_name: [coredns-coredns] 
+helm_directory: cnfs/coredns/helm_chart/coredns
+install_script: cnfs/coredns/Makefile
+deployment_name: coredns-coredns 
+application_deployment_names: [coredns-coredns]
+helm_chart: stable/coredns 

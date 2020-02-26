@@ -51,11 +51,15 @@ end
 def change_capacity(base_replicas, target_replica_count, args)
   puts "increase_capacity args.raw: #{args.raw}" if check_verbose(args)
   puts "increase_capacity args.named: #{args.named}" if check_verbose(args)
+
+  # Parse the cnf-conformance.yml
+  config = cnf_conformance_yml
+
   initialization_time = base_replicas.to_i * 10
   if args.named.keys.includes? "deployment_name"
     deployment_name = args.named["deployment_name"]
   else
-    deployment_name = CONFIG.get("deployment_name").as_s 
+    deployment_name = config.get("deployment_name").as_s 
   end
   puts "deployment_name: #{deployment_name}" if check_verbose(args)
 
