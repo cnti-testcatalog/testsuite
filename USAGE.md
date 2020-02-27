@@ -82,7 +82,7 @@ crystal src/cnf-conformance.cr protected_access
 crystal src/cnf-conformance.cr scaling
 ```
 
-#### :heavy_check_mark To test the [increasing and decreasing of capacity](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
+#### :heavy_check_mark: To test the [increasing and decreasing of capacity](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
 Optional: To install the sample coredns cnf:
 
 ```
@@ -130,13 +130,9 @@ crystal src/cnf-conformance.cr versioned_helm_chart
 ```
 crystal src/cnf-conformance.cr ip_addresses
 ```
-#### :heavy_check_mark: To test if there is a liveness entry in the Helm chart
+#### :heavy_check_mark: To test if there is a liveness and readiness entry in the Helm chart
 ```
 crystal src/cnf-conformance.cr liveness
-```
-#### :heavy_check_mark: To test if there is a readiness entry in the Helm chart
-```
-crystal src/cnf-conformance.cr readiness
 ```
 #### (WIP) Test starting a container without mounting a volume that has configuration files
 ```

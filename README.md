@@ -47,15 +47,29 @@ Setup of vanilla upstream K8s on [Packet](https://www.packet.com/) is done with 
   ```
   * #### Follow the [K8s-infra quick start](https://github.com/crosscloudci/k8s-infra/blob/master/README.md#quick-start) for instructions on how to install
 
-  Modify the config.yml file setting for your cnfs 
-
-  Run the setup tasks to install any prerequisites
-  ``` 
-  crystal src/cnf-conformance setup
+  * Make sure you set your KUBECONFIG
   ```
-  Run the cleanup tasks to remove prerequisites (useful for starting fresh)
+  export KUBECONFIG=<yourkubeconfig>
+  ```
+  * Modify the cnf-conformance.yml file settings for your cnfs in your cnf's base directory 
+  ```
+  # In ./cnfs/YOURCNFDIRECTORY/cnf-conformance.yml
+  
+helm_directory: 
+install_script: 
+deployment_name: 
+helm_chart: 
+helm_chart_container_name: 
+white_list_helm_chart_container_names: 
+  ```
+ 
+  * Run the setup tasks to install any prerequisites (useful for setting up sample cnfs)
   ``` 
-  crystal src/cnf-conformance cleanup
+  crystal src/cnf-conformance.cr setup
+  ```
+  * Run the cleanup tasks to remove prerequisites (useful for starting fresh)
+  ``` 
+  crystal src/cnf-conformance.cr cleanup
   ```
   ### Get ready to rock and roll! 
 
