@@ -2,6 +2,16 @@
 
 The CNF Conformance Test suite can be run in developer mode (using crystal lang directly) or in production mode (using an executable).  See the [pseudo code documentation](https://github.com/cncf/cnf-conformance/blob/master/PSEUDO-CODE.md) for examples of how the internals of WIP tests might work.
 
+
+### Configuration
+
+Create a config.yml and configure helm directory, deployment name, etc
+
+See [config.yml.example](config.yml.example) for an example configuration.
+
+quick start: `cp config.yml.example config.yml`
+
+
 ### Syntax for running any of the tests
 ```
 # Developer mode
