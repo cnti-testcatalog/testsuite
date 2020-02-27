@@ -85,14 +85,14 @@ Optional: To install the sample coredns cnf:
 
 ```
 crystal src/cnf-conformance.cr sample_coredns_setup helm_chart=<helm chart name>
-# Or optionally add a helm_chart entry to the config.yml 
+# Or optionally modify the your cnf's cnf-conformance.yml file to include the helm_chart name
 # e.g. 
 helm_chart: stable/coredns
 ```
 To run the capacity test
 ```
 crystal src/cnf-conformance.cr increase_decrease_capacity deployment_name=coredns-coredns
-# Or optionally modify the config.yml file to include the deployment name
+# Or optionally modify the your cnf's cnf-conformance.yml file to include the deployment name
 # e.g. 
 deployment_name: coredns/coredns 
 ```
