@@ -53,7 +53,9 @@ task "sample_coredns_setup", ["helm_local_install"] do |_, args|
     puts core_mv if check_verbose(args)
     tar = `cd #{current_dir}/#{CNF_DIR}/coredns/helm_chart; tar -xvf #{current_dir}/#{CNF_DIR}/coredns/helm_chart/coredns-*.tgz`
     puts tar if check_verbose(args)
-    manifest = `kubectl get deployment corednstest-coredns -o yaml  > #{CNF_DIR}/coredns/helm_chart/coredns/manifest.yml`
+    # coredns-coredns deployment must exist before running the next line (must already be installed)
+    # TODO get deployment name from previous install
+    manifest = `kubectl get deployment coredns-coredns -o yaml  > #{CNF_DIR}/coredns/helm_chart/coredns/manifest.yml`
     puts manifest if check_verbose(args)
     if helm_install.to_s.size > 0 && helm_pull.to_s.size > 0
       puts "Successfully setup coredns".colorize(:green)
