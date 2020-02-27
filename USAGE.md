@@ -24,24 +24,26 @@ crystal src/cnf-conformance.cr all
 ```
 crystal src/cnf-conformance.cr compatibility
 ```
-#### (WIP) To run [K8s conformance](https://github.com/cncf/k8s-conformance/blob/master/instructions.md)
-```
-crystal src/cnf-conformance.cr k8s_conformance
-```
-#### (WIP) To run K8s API testing for ensuring the use of generally available endpoints
-```
-crystal src/cnf-conformance.cr api_snoop_general_apis
-```
-#### (WIP) To run [K8s API testing](https://github.com/cncf/apisnoop) for checking for the use of beta endpoints
-```
-crystal src/cnf-conformance.cr api_snoop_beta
-```
 #### (WIP) To check of the CNF's CNI plugin accepts valid calls from the [CNI specification](https://github.com/containernetworking/cni/blob/master/SPEC.md)
 ```
 crystal src/cnf-conformance.cr cni_spec
 ```
-## Stateless Tests
-#### :heavy_check_mark: To run all of the stateless tests
+#### (To Do) To check for the use of alpha K8s API endpoints
+```
+pseudo code
+```
+#### (WIP) To check for the use of beta K8s API endpoints
+```
+crystal src/cnf-conformance.cr api_snoop_beta
+```
+#### (WIP) To check for the use of generally available (GA) K8s API endpoints
+```
+crystal src/cnf-conformance.cr api_snoop_general_apis
+```
+
+
+## Statelessness Tests
+#### :heavy_check_mark: To run all of the statelessness tests
 ```
 crystal src/cnf-conformance.cr stateless
 ```
@@ -73,9 +75,9 @@ crystal src/cnf-conformance.cr shells
 crystal src/cnf-conformance.cr protected_access
 ```
 
-## Scaling Tests
+## Scalability Tests
 
-#### :heavy_check_mark: To run all of the scaling tests
+#### :heavy_check_mark: To run all of the scalability tests
 ```
 crystal src/cnf-conformance.cr scaling
 ```
@@ -109,7 +111,7 @@ crystal src/cnf-conformance.cr large_autoscaling
 crystal src/cnf-conformance.cr network_chaos
 ```
 
-#### (WIP) To test if the CNF control layer using [external retry logic](https://github.com/envoyproxy/envoy)
+#### (WIP) To test if the CNF control layer uses [external retry logic](https://github.com/envoyproxy/envoy)
 ```
 crystal src/cnf-conformance.cr external_retry
 ```
@@ -120,19 +122,19 @@ crystal src/cnf-conformance.cr external_retry
 crystal src/cnf-conformance.cr configuration_lifecycle
 ```
 
-#### (WIP) To test if the CNF is installed with a versioned Helm Chart
+#### (WIP) To test if the CNF is installed with a versioned Helm v3 Chart
 ```
 crystal src/cnf-conformance.cr versioned_helm_chart
 ```
-#### :heavy_check_mark: To test if there are any (non-declarative) hardcoded ip addresses or subnet masks
+#### :heavy_check_mark: To test if there are any (non-declarative) hardcoded IP addresses or subnet masks
 ```
 crystal src/cnf-conformance.cr ip_addresses
 ```
-#### :heavy_check_mark: To test if there is a liveness entry in the helm chart
+#### :heavy_check_mark: To test if there is a liveness entry in the Helm chart
 ```
 crystal src/cnf-conformance.cr liveness
 ```
-#### :heavy_check_mark: To test if there is a readiness entry in the helm chart
+#### :heavy_check_mark: To test if there is a readiness entry in the Helm chart
 ```
 crystal src/cnf-conformance.cr readiness
 ```
@@ -158,60 +160,48 @@ crystal src/cnf-conformance.cr rolling_update
 ```
 crystal src/cnf-conformance.cr observability
 ```
-
-#### (WIP) Test if [Fluentd](https://github.com/fluent/fluentd) is installed in the cluster?
-```
-crystal src/cnf-conformance.cr fluentd_exists
-```
 #### (WIP) Test if there traffic to Fluentd
 ```
 crystal src/cnf-conformance.cr fluentd_traffic
-```
-#### (WIP) Test if [Jaeger](https://github.com/jaegertracing/jaeger) is installed in the cluster
-```
-crystal src/cnf-conformance.cr jaeger_installed
 ```
 #### (WIP) Test if there is traffic to Jaeger
 ```
 crystal src/cnf-conformance.cr jaeger_traffic
 ```
-#### (WIP) Test if [Prometheus](https://github.com/prometheus/prometheus) is installed in the cluster and [configured correctly](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/)
-```
-crystal src/cnf-conformance.cr prometheus_installed
-```
 #### (WIP) Test if there is traffic to Prometheus
 ```
 crystal src/cnf-conformance.cr prometheus traffic
 ```
-#### (WIP) Test if tracing calls are [OpenTelemetry](https://opentracing.io/) compatible
+#### (WIP) Test if tracing calls are compatible with [OpenTelemetry](https://opentracing.io/) 
 ```
 crystal src/cnf-conformance.cr opentelemetry_compatible
 ```
-#### (WIP) Test are if the monitoring calls are [OpenMetric](https://github.com/OpenObservability/OpenMetrics) compatible
+#### (WIP) Test are if the monitoring calls are compatible with [OpenMetric](https://github.com/OpenObservability/OpenMetrics) 
 ```
 crystal src/cnf-conformance.cr openmetric_compatible
 ```
 
-## Installable and Upgradeable
+## Installable and Upgradeable Tests
 #### :heavy_check_mark: To run all installability tests
 ```
 crystal src/cnf-conformance.cr installability
 ```
-#### :heavy_check_mark: Test if the install script uses [Helm](https://github.com/helm/)
+#### :heavy_check_mark: Test if the install script uses [Helm v3](https://github.com/helm/)
 ```
 crystal src/cnf-conformance.cr install_script_helm
 ```
+
 #### :heavy_check_mark: Test if the [Helm chart is valid](https://github.com/helm/chart-testing))
 ```
-crystal src/cnf-conformance.cr helm_chard_valid
+crystal src/cnf-conformance.cr helm_chart_valid
 ```
 #### (WIP) To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
 ```
 crystal src/cnf-conformance.cr rolling_update
 ```
 
-## Hardware and Affinity support
-#### :heavy_check_mark: Run all hardware and affinity tests
+## Hardware Resources and Scheduling Tests
+#### :heavy_check_mark: Run all hardware resources and scheduling tests
 ```
 crystal src/cnf-conformance.cr hardware_affinity
 ```
@@ -220,15 +210,15 @@ crystal src/cnf-conformance.cr hardware_affinity
 ```
 crystal src/cnf-conformance.cr static_accessing_hardware
 ```
-#### (WIP) Test if the CNF accessess hardware directly during run-time (e.g. accessing the host /dev or /proc from a mount)
+#### (WIP) Test if the CNF is accessing hardware directly during run-time (e.g. accessing the host /dev or /proc from a mount)
 ```
 crystal src/cnf-conformance.cr dynamic_accessing_hardware
 ```
-#### (WIP) Test if the CNF accessess hugepages directly instead of via [Kubernetes resources](https://github.com/cncf/cnf-testbed/blob/c4458634deca5e8ab73adf118eedde32904c8458/examples/use_case/external-packet-filtering-on-k8s-nsm-on-packet/gateway.yaml#L29)
+#### (WIP) Test if the CNF is accessing hugepages directly instead of via [Kubernetes resources](https://github.com/cncf/cnf-testbed/blob/c4458634deca5e8ab73adf118eedde32904c8458/examples/use_case/external-packet-filtering-on-k8s-nsm-on-packet/gateway.yaml#L29)
 ```
 crystal src/cnf-conformance.cr direct_hugepages
 ```
-#### (WIP) Test if the cnf testbed performance output shows adequate throughput and sessions using the [CNF Testbed](https://github.com/cncf/cnf-testbed) (vendor neutral) hardware environment
+#### (WIP) Test if the CNF Testbed performance output shows adequate throughput and sessions using the [CNF Testbed](https://github.com/cncf/cnf-testbed) (vendor neutral) hardware environment
 ```
 crystal src/cnf-conformance.cr performance
 ```
