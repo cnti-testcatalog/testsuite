@@ -4,15 +4,11 @@ CNF_DIR = "cnfs"
 TOOLS_DIR = "tools"
 # CONFIG = Totem.from_file "./config.yml"
 
-def check_args (args)
-  if args.size > 0 && ((args[0].as(String) == "verbose") || (args[0].as(String) == "v"))
-    true
-  else 
-    false
-  end
+def check_args(args)
+  check_verbose(args)
 end
 
-def check_verbose (args)
+def check_verbose(args)
   if ((args.raw.includes? "verbose") || (args.raw.includes? "v"))
     true
   else 
