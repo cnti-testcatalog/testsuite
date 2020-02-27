@@ -32,6 +32,10 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
   ``` 
   crystal src/cnf-conformance setup
   ```
+  Run the cleanup tasks to remove prerequisites (useful for starting fresh)
+  ``` 
+  crystal src/cnf-conformance cleanup
+  ```
   ### Get ready to rock and roll! 
 
 ## Example Usage (or see the [complete usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md))
