@@ -60,7 +60,7 @@ crystal src/cnf-conformance.cr check_reaped
 crystal src/cnf-conformance.cr security
 ```
 
-#### (WIP) To check if any containers are running in [privileged mode](https://github.com/open-policy-agent/gatekeeper)
+#### :heavy_check_mark: To check if any containers are running in [privileged mode](https://github.com/open-policy-agent/gatekeeper)
 ```
 crystal src/cnf-conformance.cr privileged
 ```
