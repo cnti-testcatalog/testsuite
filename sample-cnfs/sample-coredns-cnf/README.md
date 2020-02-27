@@ -23,17 +23,25 @@ helmenv versions
 helmenv install <version 3.1?>
 ```
 
-### core-dns installation
+### core-dns installation into the K8s cluster
 ```
 helm install coredns stable/coredns
 ```
 ### Pull down the helm chart code, untar it, and put it in the cnfs/coredns directory
 ```
-helm pull stable/coredns
+cd sample-cnfs/sample-coredns-cnf
+helm pull --untar stable/coredns
+cd ../..
+cp -a sample-cnfs/sample-coredns-cnf cnfs
 ```
-### Example cnf-conformance config file for sample-core-dns-cnf
-In ./cnfs/sample-core-dns-cnf/cnf-conformance.yml
+### Create confromance config.yml based on cnf-conformance.html
+
+Update or create a config.yml based on the example [cnf-conformance](sample-cnfs/sample-coredns-cnf/cnf-conformance.yml) config file for sample-coredns-cnf
 ```
 ---
-container_names: [coredns-coredns] 
+helm_directory: cnfs/sample-coredns-cnf/coredns
+install_script: cnfs/sample-coredns-cnf/install.sh
+deployment_name: coredns-coredns
+application_deployment_names: [coredns-coredns]
+helm_chart: stable/coredns 
 ```

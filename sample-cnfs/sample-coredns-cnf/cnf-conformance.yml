@@ -1,2 +1,6 @@
 ---
-deployment_name: [coredns-coredns] 
+helm_directory: cnfs/sample-coredns-cnf/coredns
+install_script: cnfs/sample-coredns-cnf/install.sh
+deployment_name: coredns-coredns
+application_deployment_names: [coredns-coredns]
+helm_chart: stable/coredns 
