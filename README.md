@@ -36,11 +36,27 @@ Setup of vanilla upstream K8s on [Packet](https://www.packet.com/) is done with 
   ```
   cd cnfs/ && git clone https://github.com/cncf/cnf-testbed.git
   ```
-  * #### Then clone the K8s-infra repo 
+  * #### (Optional: Create a K8s cluster if you don't already have one) Clone the K8s-infra repo 
+
+  * Follow the [prerequisites](https://github.com/cncf/cnf-testbed/tree/master/tools#pre-requisites) for [deploying a K8s cluster](https://github.com/cncf/cnf-testbed/tree/master/tools#deploying-a-kubernetes-cluster-using-the-makefile--ci-tools)  for a Packet host. 
+  
+  *Or* 
+  * If you already have IP addresses for your provider, and you want to manually install a K8s cluster, you can use k8s-infra to do this.
   ```
   cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git
   ```
-  * #### Follow the K8s-infra README.md for instructions on how to install
+  * #### Follow the [K8s-infra quick start](https://github.com/crosscloudci/k8s-infra/blob/master/README.md#quick-start) for instructions on how to install
+
+  Modify the config.yml file setting for your cnfs 
+
+  Run the setup tasks to install any prerequisites
+  ``` 
+  crystal src/cnf-conformance setup
+  ```
+  Run the cleanup tasks to remove prerequisites (useful for starting fresh)
+  ``` 
+  crystal src/cnf-conformance cleanup
+  ```
   ### Get ready to rock and roll! 
 
 ## Example Usage (or see the [complete usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md))

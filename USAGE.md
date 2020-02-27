@@ -62,7 +62,7 @@ crystal src/cnf-conformance.cr check_reaped
 crystal src/cnf-conformance.cr security
 ```
 
-#### (WIP) To check if any containers are running in [privileged mode](https://github.com/open-policy-agent/gatekeeper)
+#### :heavy_check_mark: To check if any containers are running in [privileged mode](https://github.com/open-policy-agent/gatekeeper)
 ```
 crystal src/cnf-conformance.cr privileged
 ```
@@ -82,9 +82,21 @@ crystal src/cnf-conformance.cr protected_access
 crystal src/cnf-conformance.cr scaling
 ```
 
-#### (WIP) To test the [increasing and decreasing of capacity](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
+#### :heavy_check_mark To test the [increasing and decreasing of capacity](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
+Optional: To install the sample coredns cnf:
+
 ```
-crystal src/cnf-conformance.cr increase_decrease_capacity
+crystal src/cnf-conformance.cr sample_coredns_setup helm_chart=<helm chart name>
+# Or optionally modify the your cnf's cnf-conformance.yml file to include the helm_chart name
+# e.g. 
+helm_chart: stable/coredns
+```
+To run the capacity test
+```
+crystal src/cnf-conformance.cr increase_decrease_capacity deployment_name=coredns-coredns
+# Or optionally modify the your cnf's cnf-conformance.yml file to include the deployment name
+# e.g. 
+deployment_name: coredns/coredns 
 ```
 #### (WIP) To test small scale autoscaling
 ```
@@ -178,7 +190,8 @@ crystal src/cnf-conformance.cr installability
 ```
 crystal src/cnf-conformance.cr install_script_helm
 ```
-#### (WIP) Test if the [Helm chart is valid](https://github.com/helm/chart-testing)
+
+#### :heavy_check_mark: Test if the [Helm chart is valid](https://github.com/helm/chart-testing))
 ```
 crystal src/cnf-conformance.cr helm_chart_valid
 ```
