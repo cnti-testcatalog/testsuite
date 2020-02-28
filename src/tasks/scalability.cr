@@ -56,8 +56,10 @@ task "decrease_capacity" do |_, args|
 end
 
 def change_capacity(base_replicas, target_replica_count, args)
+  puts "change_capacity" if check_verbose(args)
   puts "increase_capacity args.raw: #{args.raw}" if check_verbose(args)
   puts "increase_capacity args.named: #{args.named}" if check_verbose(args)
+  puts "base replicas: #{base_replicas}" if check_verbose(args)
 
   # Parse the cnf-conformance.yml
   config = cnf_conformance_yml
@@ -99,7 +101,10 @@ def wait_for_scaling(deployment_name, target_replica_count, args)
     puts "secound_count: #{second_count} wait_count: #{wait_count}" if check_verbose(args)
     puts "current_replicas before get deployments: #{current_replicas}" if check_verbose(args)
     sleep 1
+    puts `echo $KUBECONFIG` if check_verbose(args)
+    puts "Get deployments command: kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'" if check_verbose(args)
     current_replicas = `kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
+    puts "current_replicas after get deployments: #{current_replicas.inspect}" if check_verbose(args)
     if current_replicas.to_i != previous_replicas.to_i
       second_count = 0
       previous_replicas = current_replicas

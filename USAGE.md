@@ -79,7 +79,7 @@ crystal src/cnf-conformance.cr protected_access
 
 #### :heavy_check_mark: To run all of the scalability tests
 ```
-crystal src/cnf-conformance.cr scaling
+crystal src/cnf-conformance.cr scalability
 ```
 
 #### :heavy_check_mark: To test the [increasing and decreasing of capacity](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
