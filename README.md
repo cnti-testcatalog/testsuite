@@ -82,6 +82,11 @@ white_list_helm_chart_container_names:
 
 ## Development
   The CNF Conformance Test Suite is modeled after make, or if you're familiar with Ruby, [rake](https://github.com/ruby/rake). Conformance tests are created via tasks using the Crystal library, [SAM.cr](https://github.com/imdrasil/sam.cr). 
+  
+  To run the automated test suite:
+  ``` 
+  crystal spec
+  ```
 
 ## Contributing
 
