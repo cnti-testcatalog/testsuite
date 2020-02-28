@@ -31,6 +31,9 @@ task "install_script_helm" do |_, args|
     end
   rescue ex
     puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
   end
 end
 
@@ -63,7 +66,10 @@ task "helm_chard_valid" do |_, args|
    else
      puts "FAILURE: Helm Chart #{helm_chart_repo} Lint Failed".colorize(:red)
    end
-  # rescue ex
-    # puts ex.message
+  rescue ex
+    puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
   end
 end
