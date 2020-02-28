@@ -37,7 +37,7 @@ end
 
 #TODO separate out liveness from readiness checks
 desc "Is there a liveness entry in the helm chart?"
-task "liveness" do |_, args|
+task "liveness", ["retrieve_manifest"] do |_, args|
   begin
     # Parse the cnf-conformance.yml
     config = cnf_conformance_yml
@@ -75,7 +75,7 @@ task "liveness" do |_, args|
 end
 
 desc "Is there a readiness entry in the helm chart?"
-task "readiness" do |_, args|
+task "readiness", ["retrieve_manifest"] do |_, args|
   begin
     # Parse the cnf-conformance.yml
     config = cnf_conformance_yml
@@ -112,3 +112,18 @@ task "readiness" do |_, args|
   end
 end
 
+desc "Retrieve the manifest for the CNF's helm chart"
+task "retrieve_manifest" do |_, args| 
+  begin
+    config = cnf_conformance_yml
+    deployment_name = config.get("deployment_name").as_s
+    helm_directory = config.get("helm_directory").as_s
+    manifest = `kubectl get deployment #{deployment_name} -o yaml  > #{helm_directory}/manifest.yml`
+    puts manifest if check_verbose(args)
+  rescue ex
+    puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
+  end
+end
