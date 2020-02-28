@@ -19,6 +19,7 @@ end
 desc "Test increasing capacity by setting replicas to 1 and then increasing to 3"
 task "increase_capacity" do |_, args|
   begin
+
     target_replicas = "3"
     base_replicas = "1"
     final_count = change_capacity(base_replicas, target_replicas, args)
@@ -29,6 +30,9 @@ task "increase_capacity" do |_, args|
     end
   rescue ex
     puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
   end
 end
 
@@ -45,6 +49,9 @@ task "decrease_capacity" do |_, args|
     end
   rescue ex
     puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
   end
 end
 

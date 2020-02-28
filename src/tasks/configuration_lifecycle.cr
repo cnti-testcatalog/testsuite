@@ -5,7 +5,7 @@ require "totem"
 require "./utils.cr"
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
-task "configuration_lifecycle", ["ip_addresses", "liveness"]  do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness"]  do |_, args|
 end
 
 desc "Does a search for IP addresses or subnets come back as negative?"
@@ -29,6 +29,9 @@ task "ip_addresses" do |_, args|
     Dir.cd(cdir)
   rescue ex
     puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
   end
 end
 
@@ -59,7 +62,37 @@ task "liveness" do |_, args|
         errors = errors + 1
         puts "FAILURE: No livenessProbe found".colorize(:red)
       end
-      begin
+    end
+    if errors == 0
+      puts "PASSED: Helm liveness probe found".colorize(:green)
+    end
+  rescue ex
+    puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
+  end
+end
+
+desc "Is there a readiness entry in the helm chart?"
+task "readiness" do |_, args|
+  begin
+    # Parse the cnf-conformance.yml
+    config = cnf_conformance_yml
+    errors = 0
+    begin
+      helm_directory = config.get("helm_directory").as_s
+    rescue ex
+      errors = errors + 1
+      puts "FAILURE: helm directory not found".colorize(:red)
+      puts ex.message if check_args(args)
+    end
+    puts "helm_directory: #{helm_directory}/manifest.yml" if check_verbose(args)
+    deployment = Totem.from_file "#{helm_directory}/manifest.yml"
+    puts deployment.inspect if check_verbose(args)
+    containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
+    containers.each do |container|
+     begin
         puts container.as_h["name"].as_s if check_args(args)
         container.as_h["readinessProbe"].as_h 
       rescue ex
@@ -69,9 +102,13 @@ task "liveness" do |_, args|
       end
     end
     if errors == 0
-      puts "PASSED: Helm liveness and readiness probes found".colorize(:green)
+      puts "PASSED: Helm readiness probe found".colorize(:green)
     end
   rescue ex
     puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
   end
 end
+
