@@ -39,4 +39,21 @@ describe CnfConformance do
     (/PASSED: Replicas increased to 3/ =~ response_s).should_not be_nil
     (/PASSED: Replicas decreased to 1/ =~ response_s).should_not be_nil
   end
+
+  it "'helm_chart_valid' should fail on a bad helm chart" do
+    # puts `pwd` 
+    # puts `echo $KUBECONFIG`
+    `crystal src/cnf-conformance.cr sample_coredns_cleanup`
+    $?.success?.should be_true
+    `crystal src/cnf-conformance.cr bad_helm_cnf_setup`
+    $?.success?.should be_true
+    response_s = `crystal src/cnf-conformance.cr helm_chart_valid`
+    puts response_s
+    $?.success?.should be_true
+    (/Lint Failed/ =~ response_s).should_not be_nil
+    `crystal src/cnf-conformance.cr bad_helm_cnf_cleanup`
+    $?.success?.should be_true
+    `crystal src/cnf-conformance.cr sample_coredns_setup`
+    $?.success?.should be_true
+  end
 end
