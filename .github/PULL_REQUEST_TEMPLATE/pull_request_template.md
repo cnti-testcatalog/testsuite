@@ -4,15 +4,19 @@
 (name of issue/change)
 
 ## Issues:
-https://github.com/cncf/cnf-conformance/issues/NNNN
+- https://github.com/cncf/cnf-conformance/issues/6
 
 ## How has this been tested:
-
  - [ ] Covered by existing integration testing
  - [ ] Added integration testing to cover
- - [ ] Manually verified all A/C passes
- - [ ] Tested on remote K8s cluster (eg. Packet)
- - [ ] Tested in kind cluster
+ - [ ] Verified all A/C passes
+     * [ ] develop
+     * [ ] master
+     * [ ] tag/other branch
+ - [ ] Test environment
+    * [ ] Shared Packet K8s cluster
+    * [ ] New Packet K8s cluster
+    * [ ] Kind cluster
  - [ ] Have not tested
 
 ## Types of changes:
