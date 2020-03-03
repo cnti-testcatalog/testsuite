@@ -3,12 +3,15 @@ language: go
 go:
   - '1.11.x'
 
+crystal:
+  - 'latest'
+
 services:
   - docker
 
 jobs:
   include:
-    - stage: Integration Tests
+    - stage: K8s
       before_script:
         # Download and install kubectl
         - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
@@ -25,4 +28,4 @@ jobs:
 
         # Set KUBECONFIG environment variable
         - export KUBECONFIG="$(kind get kubeconfig-path)"
-      script: make test-integration
+      script: kubectl get nodes && go version && crystal version
