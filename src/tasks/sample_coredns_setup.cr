@@ -13,7 +13,7 @@ task "sample_coredns_setup", ["helm_local_install"] do |_, args|
 
   # Retrieve the cnf source
   # TODO enable recloning/fetching etc
-  git_clone = `git clone git@github.com:coredns/coredns.git #{current_dir}/#{CNF_DIR}/coredns`    
+  git_clone = `git clone https://github.com/coredns/coredns.git #{current_dir}/#{CNF_DIR}/coredns`    
   puts git_clone if check_verbose(args)
 
   # Copy the cnf-conformance.yml
@@ -72,7 +72,7 @@ task "bad_helm_cnf_setup", ["helm_local_install"] do |_, args|
 
   # Retrieve the cnf source
   # TODO enable recloning/fetching etc
-  git_clone = `git clone git@github.com:coredns/coredns.git #{current_dir}/#{CNF_DIR}/bad_helm_coredns`    
+  git_clone = `git clone https://github.com/coredns/coredns.git #{current_dir}/#{CNF_DIR}/bad_helm_coredns`    
   puts git_clone if check_verbose(args)
 
   # Copy the cnf-conformance.yml
