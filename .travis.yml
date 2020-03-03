@@ -1,7 +1,4 @@
-language: go
-
-go:
-  - '1.11.x'
+language: crystal
 
 crystal:
   - 'latest'
@@ -13,9 +10,17 @@ jobs:
   include:
     - stage: K8s
       before_script:
+        # Download and install go
+        - wget https://dl.google.com/go/go1.12.linux-amd64.tar.gz
+        - tar -xvf go1.12.linux-amd64.tar.gz
+        - mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=$HOME/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        - go version
+        - crystal version
         # Download and install kubectl
         - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
-        
         # Download and install KinD
         - GO111MODULE=on go get sigs.k8s.io/kind
         # It's possible to download and install KinD using curl, similar as for kubectl
@@ -28,4 +33,4 @@ jobs:
 
         # Set KUBECONFIG environment variable
         - export KUBECONFIG="$(kind get kubeconfig-path)"
-      script: kubectl get nodes && go version && crystal version
+      script: kubectl get nodes
