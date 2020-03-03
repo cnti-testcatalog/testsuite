@@ -7,3 +7,5 @@
 *.swo
 /cnfs
 /tools
+admin.conf
+cnf-conformance

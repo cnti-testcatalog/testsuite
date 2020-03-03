@@ -1,12 +1,24 @@
 version: 1.0
 shards:
+  commander:
+    github: mrrooijen/commander
+    version: 0.3.5
+
+  icr:
+    github: crystal-community/icr
+    commit: 7da354f5c0a356aee77e68fc63c87e2ad35da7fb
+
   popcorn:
     github: icyleaf/popcorn
     version: 0.2.2
 
+  readline:
+    github: crystal-lang/crystal-readline
+    commit: 0fb7d186da8e1b157998d98d1c96e99699b791eb
+
   sam:
-    github: imdrasil/sam.cr
-    version: 0.3.2
+    github: vulk/sam.cr
+    commit: 117b5b249ac696733951c0ac587d063de4fdea9f
 
   totem:
     github: icyleaf/totem

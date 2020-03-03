@@ -4,6 +4,7 @@ version: 0.1.0
 authors:
   - W. Watson <Watson@vulk.coop>
   - Joshua Darius <Joshua.smith@vulk.coop>
+  - Denver Williams <denver@debian.nz>
 
 targets:
   cnf_conformance:
@@ -13,9 +14,15 @@ crystal: 0.31.1
 
 dependencies:
   sam:
-    github: imdrasil/sam.cr
-    version: 0.3.2
+    github: vulk/sam.cr
+    commit: 117b5b2
   totem:
     github: icyleaf/totem
+  icr:
+    github: crystal-community/icr
+    branch: master
+  commander:
+    github: mrrooijen/commander
+    version: ~> 0.3.5
 
 license: MIT

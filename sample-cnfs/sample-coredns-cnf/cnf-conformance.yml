@@ -1,0 +1,8 @@
+---
+helm_directory: cnfs/coredns/helm_chart/coredns
+install_script: cnfs/coredns/Makefile
+deployment_name: coredns-coredns 
+application_deployment_names: [coredns-coredns]
+helm_chart: stable/coredns
+helm_chart_container_name: coredns
+white_list_helm_chart_container_names: [falco, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
