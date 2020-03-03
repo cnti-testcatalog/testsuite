@@ -1,9 +1,14 @@
 language: go
-matrix:
+
+go:
+  - '1.11.x'
+
+services:
+  - docker
+
+jobs:
   include:
-      go: '1.12.x'
-    - services:
-        - docker
+    - stage: Integration Tests
       before_script:
         # Download and install kubectl
         - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
@@ -21,12 +26,3 @@ matrix:
         # Set KUBECONFIG environment variable
         - export KUBECONFIG="$(kind get kubeconfig-path)"
       script: make test-integration
-  # include:
-  #   - language: crystal
-  #     script:
-  #       - crystal spec
-  #       - crystal tool format --check
-# Uncomment the following if you'd like Travis to run specs and check code formatting
-# script:
-#   - crystal spec
-#   - crystal tool format --check
