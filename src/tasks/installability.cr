@@ -5,7 +5,7 @@ require "totem"
 require "./utils.cr"
 
 desc "The CNF conformance suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
-task "installability", ["install_script_helm", "helm_chard_valid"] do |_, args|
+task "installability", ["install_script_helm", "helm_chart_valid"] do |_, args|
 end
 
 desc "Does the install script use helm?"
@@ -37,7 +37,7 @@ task "install_script_helm" do |_, args|
   end
 end
 
-task "helm_chard_valid" do |_, args|
+task "helm_chart_valid" do |_, args|
   begin
     puts "increase_capacity args.raw: #{args.raw}" if check_verbose(args)
     puts "increase_capacity args.named: #{args.named}" if check_verbose(args)
@@ -73,3 +73,4 @@ task "helm_chard_valid" do |_, args|
     end
   end
 end
+
