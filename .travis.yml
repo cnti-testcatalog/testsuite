@@ -17,8 +17,6 @@ jobs:
         - export GOROOT=/usr/local/go
         - export GOPATH=$HOME/go
         - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-        - go version
-        - crystal version
         # Download and install kubectl
         - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
         # Download and install KinD
@@ -33,4 +31,4 @@ jobs:
 
         # Set KUBECONFIG environment variable
         - export KUBECONFIG="$(kind get kubeconfig-path)"
-      script: kubectl get nodes
+      script: crystal spec
