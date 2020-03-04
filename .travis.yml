@@ -1,6 +1,34 @@
 language: crystal
 
-# Uncomment the following if you'd like Travis to run specs and check code formatting
-# script:
-#   - crystal spec
-#   - crystal tool format --check
+crystal:
+  - 'latest'
+
+services:
+  - docker
+
+jobs:
+  include:
+    - stage: K8s
+      before_script:
+        # Download and install go
+        - wget https://dl.google.com/go/go1.12.linux-amd64.tar.gz
+        - tar -xvf go1.12.linux-amd64.tar.gz
+        - sudo mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=$HOME/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        # Download and install kubectl
+        - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+        # Download and install KinD
+        - GO111MODULE=on go get sigs.k8s.io/kind
+        # It's possible to download and install KinD using curl, similar as for kubectl
+        # This is useful in cases when Go toolchain isn't available or you prefer running stable version
+        # Binaries for KinD are available on GitHub Releases: https://github.com/kubernetes-sigs/kind/releases
+        # - curl -Lo kind https://github.com/kubernetes-sigs/kind/releases/download/0.0.1/kind-linux-amd64 && chmod +x kind && sudo mv kind /usr/local/bin/
+        
+        # Create a new Kubernetes cluster using KinD
+        - kind create cluster
+
+        # Set KUBECONFIG environment variable
+        - export KUBECONFIG="$(kind get kubeconfig-path)"
+      script: crystal spec

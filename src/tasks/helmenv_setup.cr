@@ -22,6 +22,9 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
       helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
       puts helm if check_verbose(args)
       puts `#{helm} version` if check_verbose(args)
+      stable_repo = `#{helm} repo add stable https://kubernetes-charts.storage.googleapis.com`
+      puts stable_repo if check_verbose(args)
+
       #TODO grep for version.BuildInfo{Version:"v3.1.1", GitCommit:"afe70585407b420d0097d07b21c47dc511525ac8", GitTreeState:"clean", GoVersion:"go1.13.8"} 
     ensure
       cd = `cd #{current_dir}`
