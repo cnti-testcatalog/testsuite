@@ -57,6 +57,7 @@ task "sample_coredns_setup", ["helm_local_install"] do |_, args|
     # # TODO get deployment name from previous install
     # manifest = `kubectl get deployment coredns-coredns -o yaml  > #{CNF_DIR}/coredns/helm_chart/coredns/manifest.yml`
     # puts manifest if check_verbose(args)
+    wait_for_install(deployment_name)
     if helm_install.to_s.size > 0 && helm_pull.to_s.size > 0
       puts "Successfully setup coredns".colorize(:green)
     end
@@ -119,6 +120,8 @@ task "bad_helm_cnf_setup", ["helm_local_install"] do |_, args|
     helm_sed = `sed -i s/"toYaml"/"sdfsdfsdf"/g #{current_dir}/#{CNF_DIR}/bad_helm_coredns/helm_chart/coredns/templates/deployment.yaml`
     puts helm_sed if check_verbose(args)
     
+    wait_for_install(deployment_name)
+
     if helm_install.to_s.size > 0 && helm_pull.to_s.size > 0
       puts "Successfully setup coredns".colorize(:green)
     end
