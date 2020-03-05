@@ -24,7 +24,7 @@ def cnf_conformance_yml
   Totem.from_file "./#{cnf_conformance}"
 end
 
-def wait_for_install(deployment_name, wait_count=60)
+def wait_for_install(deployment_name, wait_count=180)
   second_count = 0
   current_replicas = `kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
   all_deployments = `kubectl get deployments`
