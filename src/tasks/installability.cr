@@ -60,14 +60,14 @@ task "helm_chart_valid" do |_, args|
     Process.run("helm lint #{helm_directory}", shell: true) do |proc|
       while line = proc.output.gets
         response << line
-        puts "#{line}" if check_args(args)
+        puts "#{line}" if check_verbose(args)
       end
     end
 
    if $?.success? 
-     puts "PASSED: Helm Chart #{helm_chart_repo} Lint Passed".colorize(:green)
+     puts "PASSED: Helm Chart #{helm_directory} Lint Passed".colorize(:green)
    else
-     puts "FAILURE: Helm Chart #{helm_chart_repo} Lint Failed".colorize(:red)
+     puts "FAILURE: Helm Chart #{helm_directory} Lint Failed".colorize(:red)
    end
   rescue ex
     puts ex.message
