@@ -2,7 +2,6 @@ require "./spec_helper"
 require "colorize"
 
 describe CnfConformance do
- # TODO: Write tests
   before_all do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
@@ -11,7 +10,8 @@ describe CnfConformance do
     `crystal src/cnf-conformance.cr setup`
     $?.success?.should be_true
     # Helm chart deploys take a while to spin up
-    sleep 15 
+    # TODO put sleep in setup installs
+    # sleep 15 
 
   end
   it "'all' should run the whole test suite" do
