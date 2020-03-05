@@ -37,7 +37,7 @@ task "install_script_helm" do |_, args|
   end
 end
 
-task "helm_chart_valid", ["install_script_helm"] do |_, args|
+task "helm_chart_valid", ["helm_local_install"] do |_, args|
   begin
     puts "increase_capacity args.raw: #{args.raw}" if check_verbose(args)
     puts "increase_capacity args.named: #{args.named}" if check_verbose(args)
