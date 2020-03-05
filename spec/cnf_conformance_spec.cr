@@ -17,7 +17,7 @@ describe CnfConformance do
   it "'all' should run the whole test suite" do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
-    response_s = `crystal src/cnf-conformance.cr all`
+    response_s = `crystal src/cnf-conformance.cr all verbose`
     puts response_s
     $?.success?.should be_true
     (/PASSED: Helm readiness probe found/ =~ response_s).should_not be_nil
