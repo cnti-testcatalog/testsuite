@@ -1,7 +1,7 @@
 ---
 helm_directory: cnfs/coredns/helm_chart/coredns
 install_script: cnfs/coredns/Makefile
-deployment_name: bad-helm-coredns 
+deployment_name: bad-helm-coredns-coredns
 application_deployment_names: [bad-helm-coredns]
 helm_chart: stable/coredns
 helm_chart_container_name: coredns
