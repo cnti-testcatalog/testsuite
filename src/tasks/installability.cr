@@ -53,6 +53,9 @@ task "helm_chart_valid" do |_, args|
     end
 
     puts "helm_directory: #{helm_directory}" if check_verbose(args)
+    ls_helm_directory = `ls -al #{helm_directory}`
+    puts "ls -al of helm_directory: #{ls_helm_directory}" if check_verbose(args)
+    puts "helm_chart_repo: #{helm_chart_repo}" if check_verbose(args)
 
     Process.run("helm lint #{helm_directory}", shell: true) do |proc|
       while line = proc.output.gets
