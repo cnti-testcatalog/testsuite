@@ -57,7 +57,8 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     puts "ls -al of helm_directory: #{ls_helm_directory}" if check_verbose(args)
     puts "helm_chart_repo: #{helm_chart_repo}" if check_verbose(args)
 
-    helm_lint = `helm lint #{helm_directory}`
+    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    helm_lint = `#{helm} lint #{helm_directory}`
     puts "helm_lint: #{helm_lint}" if check_verbose(args)
 
     # Process.run("helm lint #{helm_directory}", shell: true) do |proc|
