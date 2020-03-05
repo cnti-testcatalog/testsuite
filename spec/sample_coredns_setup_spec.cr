@@ -7,6 +7,8 @@ describe "Utils" do
   before_all do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
+    `crystal src/cnf-conformance.cr helm_local_install`
+    $?.success?.should be_true
     `crystal src/cnf-conformance.cr sample_coredns_cleanup`
     $?.success?.should be_true
   end
