@@ -57,12 +57,15 @@ task "helm_chart_valid" do |_, args|
     puts "ls -al of helm_directory: #{ls_helm_directory}" if check_verbose(args)
     puts "helm_chart_repo: #{helm_chart_repo}" if check_verbose(args)
 
-    Process.run("helm lint #{helm_directory}", shell: true) do |proc|
-      while line = proc.output.gets
-        response << line
-        puts "#{line}" if check_verbose(args)
-      end
-    end
+    helm_lint = `helm lint #{helm_directory}`
+    puts "helm_lint: #{helm_lint}" if check_verbose(args)
+
+    # Process.run("helm lint #{helm_directory}", shell: true) do |proc|
+    #   while line = proc.output.gets
+    #     response << line
+    #     puts "#{line}" if check_verbose(args)
+    #   end
+    # end
 
    if $?.success? 
      puts "PASSED: Helm Chart #{helm_directory} Lint Passed".colorize(:green)
