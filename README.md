@@ -1,4 +1,5 @@
 # CNF Conformance
+[![Build Status](https://www.travis-ci.org/vulk/cnf-conformance.svg?branch=master)](https://www.travis-ci.org/vulk/cnf-conformance)
 The CNF Conformance program enables interoperability of Cloud native Network Functions (CNFs) from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to demonstrate conformance and implementation of best practices for both open and closed source Cloud native Network Functions. 
 
 The CNF Conformance Test Suite will inspect CNFs for the following characteristics: 
