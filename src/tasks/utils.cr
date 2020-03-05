@@ -26,9 +26,12 @@ end
 
 def wait_for_install(deployment_name, wait_count=45)
   second_count = 0
-  current_replicas = `kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
+  all_deployments = `kubectl get deployments`
+  put all_deployments
   until (current_replicas.empty? != true && current_replicas.to_i > 0) || second_count > wait_count
     puts "second_count = #{second_count}"
+    all_deployments = `kubectl get deployments`
+    put all_deployments
     sleep 1
     current_replicas = `kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
     second_count = second_count + 1 
