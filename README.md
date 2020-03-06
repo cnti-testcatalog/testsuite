@@ -99,12 +99,3 @@ white_list_helm_chart_container_names:
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
-
-## Maintainers
-
-  - [W. Watson](https://github.com/wavell) - creator and maintainer
-  - [Joshua Darius](https://github.com/nupejosh) - creator and maintainer
-  - [Denver Williams](https://github.com/denverwilliams) - creator and maintainer
-  - [William Harris](https://github.com/williscool) - creator and maintainer
-  - [Taylor Carpenter](https://github.com/taylor) - creator and maintainer
-  - [Lucina Stricko](https://github.com/lixuna) - maintainer
