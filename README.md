@@ -37,3 +37,13 @@ See the [installation guide](https://github.com/cncf/cnf-conformance/blob/master
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+
+## Get involved
+- Join the conversation on [CNCF's Slack](https://slack.cncf.io/) channel, #cnf-conformance
+- Join the twice monthly [Telecom User Group meetings](https://github.com/cncf/telecom-user-group#meeting-time) 
+
+
+## License terms
+CNF Conformance is available under the [Apache 2 license](https://github.com/cncf/cnf-conformance/blob/master/LICENSE).
+
