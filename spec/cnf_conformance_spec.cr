@@ -25,7 +25,6 @@ describe CnfConformance do
     (/FAILURE: Helm not found in install script/ =~ response_s).should_not be_nil
     (/FAILURE: IP addresses found/ =~ response_s).should_not be_nil
     (/Lint Passed/ =~ response_s).should_not be_nil
-    # ((/PASSED: No privileged containers/ =~ response_s) || (/Found privileged containers/ =~ response_s)).should_not be_nil
     (/PASSED: Replicas increased to 3/ =~ response_s).should_not be_nil
     (/PASSED: Replicas decreased to 1/ =~ response_s).should_not be_nil
   end
