@@ -14,7 +14,7 @@ describe CnfConformance do
     # sleep 15 
 
   end
-  it "'privileged' should pass with a non-privileged cnf" do
+  it "'privileged' should pass with a non-privileged cnf", tags: "privileged" do
     begin
       `crystal src/cnf-conformance.cr sample_coredns_setup`
       $?.success?.should be_true
@@ -26,7 +26,7 @@ describe CnfConformance do
       `crystal src/cnf-conformance.cr sample_coredns_cleanup`
     end
   end
-  it "'privileged' should fail on a non-whitelisted, privileged cnf" do
+  it "'privileged' should fail on a non-whitelisted, privileged cnf", tags: "privileged" do
     begin
       `crystal src/cnf-conformance.cr sample_privileged_cnf_non_whitelisted_setup`
       $?.success?.should be_true
@@ -38,7 +38,7 @@ describe CnfConformance do
       `crystal src/cnf-conformance.cr sample_privileged_cnf_non_whitelisted_cleanup`
     end
   end
-  it "'privileged' should pass on a whitelisted, privileged cnf" do
+  it "'privileged' should pass on a whitelisted, privileged cnf", tags: "privileged" do
     begin
       `crystal src/cnf-conformance.cr sample_privileged_cnf_whitelisted_setup`
       $?.success?.should be_true
