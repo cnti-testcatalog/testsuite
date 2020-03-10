@@ -14,6 +14,18 @@ describe CnfConformance do
     # sleep 15 
 
   end
+  it "'privileged' should pass with a non-privileged cnf" do
+    begin
+      `crystal src/cnf-conformance.cr sample_coredns_setup`
+      $?.success?.should be_true
+      response_s = `crystal src/cnf-conformance.cr privileged verbose`
+      puts response_s
+      $?.success?.should be_true
+      (/Found privileged containers.*coredns/ =~ response_s).should be_nil
+    ensure
+      `crystal src/cnf-conformance.cr sample_coredns_cleanup`
+    end
+  end
   it "'privileged' should fail on a non-whitelisted, privileged cnf" do
     begin
       `crystal src/cnf-conformance.cr sample_privileged_cnf_non_whitelisted_setup`
