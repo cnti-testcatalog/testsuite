@@ -5,18 +5,24 @@ describe CnfConformance do
   before_all do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
-    `crystal src/cnf-conformance.cr cleanup`
+    `crystal src/cnf-conformance.cr samples_cleanup`
     $?.success?.should be_true
     `crystal src/cnf-conformance.cr setup`
     $?.success?.should be_true
-    # Helm chart deploys take a while to spin up
-    # TODO put sleep in setup installs
-    # sleep 15 
-
   end
+
+  after_all do
+    # puts `pwd` 
+    # puts `echo $KUBECONFIG`
+    `crystal src/cnf-conformance.cr samples_cleanup`
+    $?.success?.should be_true
+  end
+
   it "'all' should run the whole test suite" do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
+    `crystal src/cnf-conformance.cr sample_coredns_setup`
+    $?.success?.should be_true
     response_s = `crystal src/cnf-conformance.cr all verbose`
     puts response_s
     $?.success?.should be_true

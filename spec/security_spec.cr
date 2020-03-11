@@ -5,14 +5,10 @@ describe CnfConformance do
   before_all do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
-    # `crystal src/cnf-conformance.cr cleanup`
-    # $?.success?.should be_true
+    `crystal src/cnf-conformance.cr samples_cleanup`
+    $?.success?.should be_true
     # `crystal src/cnf-conformance.cr setup`
     # $?.success?.should be_true
-    # Helm chart deploys take a while to spin up
-    # TODO put sleep in setup installs
-    # sleep 15 
-
   end
   it "'privileged' should pass with a non-privileged cnf", tags: "privileged" do
     begin

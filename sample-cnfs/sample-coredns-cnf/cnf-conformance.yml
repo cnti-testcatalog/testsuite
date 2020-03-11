@@ -1,6 +1,8 @@
 ---
 helm_directory: cnfs/coredns/helm_chart/coredns
+git_clone_url: https://github.com/coredns/coredns.git
 install_script: cnfs/coredns/Makefile
+release_name: coredns
 deployment_name: coredns-coredns 
 application_deployment_names: [coredns-coredns]
 helm_chart: stable/coredns
