@@ -1,0 +1,8 @@
+---
+helm_directory: cnfs/sample_coredns_bad_liveness/chart
+install_script: cnfs/sample_coredns_bad_liveness/chart
+deployment_name: bad-liveness-coredns 
+application_deployment_names: [bad-liveness-coredns]
+helm_chart: stable/coredns
+helm_chart_container_name: bad-liveness-coredns
+white_list_helm_chart_container_names: []
