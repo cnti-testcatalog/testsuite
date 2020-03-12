@@ -53,6 +53,10 @@ white_list_helm_chart_container_names:
   ``` 
   crystal src/cnf-conformance.cr cleanup
   ```
+  * To set up a *sample cnf* for use with cnf-conformance
+  ``` 
+  crystal src/cnf-conformance.cr sample_coredns_setup
+  ```
   ### Get ready to rock and roll! 
 
 ## Example Usage (or see the [complete usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md))
