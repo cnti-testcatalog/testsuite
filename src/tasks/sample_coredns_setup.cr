@@ -181,18 +181,13 @@ task "bad_helm_cnf_setup", ["helm_local_install"] do |_, args|
   end
 end
 
-task "sample_privileged_cnf_non_whitelisted_setup", ["helm_local_install"] do |_, args|
+task "sample_privileged_cnf_whitelisted_setup", ["helm_local_install"] do |_, args|
   current_dir = FileUtils.pwd 
   puts current_dir if check_verbose(args)
 
-  # Retrieve the cnf source
-  # TODO enable recloning/fetching etc
-  # git_clone = `git clone https://github.com/coredns/coredns.git #{current_dir}/#{CNF_DIR}/coredns`    
-  # puts git_clone if check_verbose(args)
-
   # Copy the chart into the cnfs directory and use the correct cnf-conformance.yml
   chart_cp = `cp -r #{current_dir}/sample-cnfs/sample_privileged_cnf_setup_coredns #{current_dir}/#{CNF_DIR}/`
-  yml_mv = `mv #{current_dir}/#{CNF_DIR}/sample_privileged_cnf_setup_coredns/non-whitelisted-conformance.yml #{current_dir}/#{CNF_DIR}/sample_privileged_cnf_setup_coredns/cnf-conformance.yml`
+  yml_mv = `mv #{current_dir}/#{CNF_DIR}/sample_privileged_cnf_setup_coredns/whitelisted-conformance.yml #{current_dir}/#{CNF_DIR}/sample_privileged_cnf_setup_coredns/cnf-conformance.yml`
   puts chart_cp if check_verbose(args)
   puts yml_mv if check_verbose(args)
 
@@ -229,7 +224,7 @@ task "sample_privileged_cnf_non_whitelisted_setup", ["helm_local_install"] do |_
 
     wait_for_install(deployment_name)
     if helm_install.to_s.size > 0
-      puts "Successfully setup sample_privileged_cnf_non_whitelisted".colorize(:green)
+      puts "Successfully setup sample_privileged_cnf_whitelisted_setup".colorize(:green)
     end
   ensure
     cd = `cd #{current_dir}`
@@ -237,6 +232,7 @@ task "sample_privileged_cnf_non_whitelisted_setup", ["helm_local_install"] do |_
   end
 end
 
+
 task "sample_privileged_cnf_non_whitelisted_setup", ["helm_local_install"] do |_, args|
   current_dir = FileUtils.pwd 
   puts current_dir if check_verbose(args)
@@ -280,7 +276,7 @@ task "sample_privileged_cnf_non_whitelisted_setup", ["helm_local_install"] do |_
 
     wait_for_install(deployment_name)
     if helm_install.to_s.size > 0
-      puts "Successfully setup sample_privileged_cnf_non_whitelisted".colorize(:green)
+      puts "Successfully setup sample_privileged_cnf_non_whitelisted_setup".colorize(:green)
     end
   ensure
     cd = `cd #{current_dir}`
@@ -370,6 +366,15 @@ task "bad_helm_cnf_cleanup" do |_, args|
   puts rm if check_verbose(args)
 end
 
+task "sample_privileged_cnf_whitelisted_cleanup" do |_, args|
+  current_dir = FileUtils.pwd 
+  helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+  puts helm if check_verbose(args)
+  helm_uninstall = `#{helm} uninstall privileged-coredns`
+  puts helm_uninstall if check_verbose(args)
+  rm = `rm -rf #{current_dir}/#{CNF_DIR}/sample_privileged_cnf_setup_coredns`
+  puts rm if check_verbose(args)
+end
 
 task "sample_privileged_cnf_non_whitelisted_cleanup" do |_, args|
   current_dir = FileUtils.pwd 
