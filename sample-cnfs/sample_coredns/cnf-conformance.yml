@@ -1,6 +1,8 @@
 ---
-helm_directory: cnfs/sample_coredns/chart
-install_script: cnfs/sample_coredns/chart
+helm_directory: chart
+git_clone_url: 
+install_script: chart
+release_name: coredns
 deployment_name: coredns-coredns 
 application_deployment_names: [coredns-coredns]
 helm_chart: stable/coredns
