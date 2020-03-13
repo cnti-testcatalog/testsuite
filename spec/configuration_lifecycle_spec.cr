@@ -12,6 +12,18 @@ describe CnfConformance do
     # `crystal src/cnf-conformance.cr setup`
     # $?.success?.should be_true
   end
+  it "'ip_addresses' should fail when ip addresses are found in source is set", tags: "liveness" do
+    begin
+      `crystal src/cnf-conformance.cr sample_coredns_source_setup`
+      $?.success?.should be_true
+      response_s = `crystal src/cnf-conformance.cr ip_addresses verbose`
+      puts response_s
+      $?.success?.should be_true
+      (/FAILURE: IP addresses found/ =~ response_s).should_not be_nil
+    ensure
+      `crystal src/cnf-conformance.cr sample_coredns_source_cleanup verbose`
+    end
+  end
   it "'liveness' should pass when livenessProbe is set", tags: "liveness" do
     begin
       `crystal src/cnf-conformance.cr sample_coredns`
@@ -21,7 +33,7 @@ describe CnfConformance do
       $?.success?.should be_true
       (/PASSED: Helm liveness probe/ =~ response_s).should_not be_nil
     ensure
-      `crystal src/cnf-conformance.cr cleanup_sample_coredns`
+      `crystal src/cnf-conformance.cr cleanup_sample_coredns verbose`
     end
   end
   it "'liveness' should fail when livenessProbe is not set", tags: "liveness" do

@@ -14,6 +14,7 @@ task "ip_addresses" do |_, args|
     cdir = FileUtils.pwd()
     response = String::Builder.new
     Dir.cd(CNF_DIR)
+    # TODO ignore *example*, *.md, *.txt
     Process.run("grep -rnw -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}'", shell: true) do |proc|
       # Process.run("grep -rnw -E -o 'hithere'", shell: true) do |proc|
       while line = proc.output.gets
@@ -49,8 +50,12 @@ task "liveness", ["retrieve_manifest"] do |_, args|
       puts "FAILURE: helm directory not found".colorize(:red)
       puts ex.message if check_args(args)
     end
-    puts "helm_directory: #{helm_directory}/manifest.yml" if check_verbose(args)
-    deployment = Totem.from_file "#{helm_directory}/manifest.yml"
+    current_cnf_dir_short_name = cnf_conformance_dir
+    puts current_cnf_dir_short_name if check_verbose(args)
+    destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
+    puts destination_cnf_dir if check_verbose(args)
+    puts "helm_directory: #{destination_cnf_dir}/#{helm_directory}/manifest.yml" if check_verbose(args)
+    deployment = Totem.from_file "#{destination_cnf_dir}/#{helm_directory}/manifest.yml"
     puts deployment.inspect if check_verbose(args)
     containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
     containers.each do |container|
@@ -87,8 +92,12 @@ task "readiness", ["retrieve_manifest"] do |_, args|
       puts "FAILURE: helm directory not found".colorize(:red)
       puts ex.message if check_args(args)
     end
-    puts "helm_directory: #{helm_directory}/manifest.yml" if check_verbose(args)
-    deployment = Totem.from_file "#{helm_directory}/manifest.yml"
+    current_cnf_dir_short_name = cnf_conformance_dir
+    puts current_cnf_dir_short_name if check_verbose(args)
+    destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
+    puts destination_cnf_dir if check_verbose(args)
+    puts "helm_directory: #{destination_cnf_dir}/#{helm_directory}/manifest.yml" if check_verbose(args)
+    deployment = Totem.from_file "#{destination_cnf_dir}/#{helm_directory}/manifest.yml"
     puts deployment.inspect if check_verbose(args)
     containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
     containers.each do |container|
@@ -115,10 +124,17 @@ end
 desc "Retrieve the manifest for the CNF's helm chart"
 task "retrieve_manifest" do |_, args| 
   begin
+    puts "retrieve_manifest" if check_verbose(args)
     config = cnf_conformance_yml
     deployment_name = config.get("deployment_name").as_s
+    puts deployment_name if check_verbose(args)
     helm_directory = config.get("helm_directory").as_s
-    manifest = `kubectl get deployment #{deployment_name} -o yaml  > #{helm_directory}/manifest.yml`
+    puts helm_directory if check_verbose(args)
+    current_cnf_dir_short_name = cnf_conformance_dir
+    puts current_cnf_dir_short_name if check_verbose(args)
+    destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
+    puts destination_cnf_dir if check_verbose(args)
+    manifest = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/#{helm_directory}/manifest.yml`
     puts manifest if check_verbose(args)
   rescue ex
     puts ex.message

@@ -25,6 +25,14 @@ def cnf_conformance_yml
   Totem.from_file "./#{cnf_conformance}"
 end
 
+def cnf_conformance_dir
+  cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
+  if cnf_conformance.empty?
+    raise "No cnf_conformance.yml found! Did you run the setup task?"
+  end
+  cnf_conformance.split("/")[-2] 
+end
+
 def sample_conformance_yml(sample_dir)
   cnf_conformance = `find #{sample_dir}/* -name "cnf-conformance.yml"`.split("\n")[0]
   if cnf_conformance.empty?
@@ -48,7 +56,8 @@ def wait_for_install(deployment_name, wait_count=180)
   end
 end 
 def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false)
-  # # Parse the cnf-conformance.yml
+  puts "sample_setup_args" if verbose
+
   config = sample_conformance_yml(sample_dir)
 
   if args.named.keys.includes? "release_name"
@@ -82,7 +91,6 @@ def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false)
   if args.named.keys.includes? "git_clone_url"
     git_clone_url = "#{args.named["git_clone_url"]}"
   else
-    # TODO check type (any) before doing .as_s 
     git_clone_url = "#{config.get("git_clone_url").as_s?}"
   end
   puts "git_clone_url: #{git_clone_url}" if verbose
@@ -91,12 +99,20 @@ def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false)
 
 end
 
+def sample_destination_dir(sample_source_dir)
+  current_dir = FileUtils.pwd 
+  "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_source_dir)}"
+end
+
 def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_directory, git_clone_url="", deploy_with_chart=true, verbose=false)
+  puts "sample_setup" if verbose
 
   current_dir = FileUtils.pwd 
   puts current_dir if verbose 
 
-  destination_cnf_dir = "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_dir)}"
+  # destination_cnf_dir = "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_dir)}"
+  destination_cnf_dir = sample_destination_dir(sample_dir)
+
   puts "destination_cnf_dir: #{destination_cnf_dir}" if verbose 
   FileUtils.mkdir_p(destination_cnf_dir) 
   # TODO enable recloning/fetching etc
