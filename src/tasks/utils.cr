@@ -55,7 +55,7 @@ def wait_for_install(deployment_name, wait_count=180)
     second_count = second_count + 1 
   end
 end 
-def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false)
+def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false, wait_count=180)
   puts "sample_setup_args" if verbose
 
   config = sample_conformance_yml(sample_dir)
@@ -95,7 +95,7 @@ def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false)
   end
   puts "git_clone_url: #{git_clone_url}" if verbose
 
-  sample_setup(sample_dir: sample_dir, release_name: release_name, deployment_name: deployment_name, helm_chart: helm_chart, helm_directory: helm_directory, git_clone_url: git_clone_url, deploy_with_chart: deploy_with_chart, verbose: verbose )
+  sample_setup(sample_dir: sample_dir, release_name: release_name, deployment_name: deployment_name, helm_chart: helm_chart, helm_directory: helm_directory, git_clone_url: git_clone_url, deploy_with_chart: deploy_with_chart, verbose: verbose, wait_count: wait_count )
 
 end
 
@@ -104,7 +104,7 @@ def sample_destination_dir(sample_source_dir)
   "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_source_dir)}"
 end
 
-def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_directory, git_clone_url="", deploy_with_chart=true, verbose=false)
+def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_directory, git_clone_url="", deploy_with_chart=true, verbose=false, wait_count=180)
   puts "sample_setup" if verbose
 
   current_dir = FileUtils.pwd 
@@ -160,7 +160,7 @@ def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_dir
       puts helm_install if verbose 
     end
 
-    wait_for_install(deployment_name)
+    wait_for_install(deployment_name, wait_count)
     if helm_install.to_s.size > 0 # && helm_pull.to_s.size > 0
       puts "Successfully setup #{release_name}".colorize(:green)
     end
