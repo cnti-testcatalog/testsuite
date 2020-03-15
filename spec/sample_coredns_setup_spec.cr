@@ -77,13 +77,13 @@ describe "Utils" do
 
   it "'sample_setup_args' should be able to deploy using a helm_directory" do
     args = Sam::Args.new
-    sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf_setup_coredns", deploy_with_chart: false, args: args, verbose: true )
+    sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", deploy_with_chart: false, args: args, verbose: true )
     # check if directory exists
-    (Dir.exists? "cnfs/sample_privileged_cnf_setup_coredns").should be_true
+    (Dir.exists? "cnfs/sample_privileged_cnf").should be_true
     # should not clone
-    (Dir.exists? "cnfs/sample_privileged_cnf_setup_coredns/privileged-coredns").should be_false
-    (File.exists? "cnfs/sample_privileged_cnf_setup_coredns/cnf-conformance.yml").should be_true
-    (File.exists? "cnfs/sample_privileged_cnf_setup_coredns/chart/Chart.yaml").should be_true
+    (Dir.exists? "cnfs/sample_privileged_cnf/privileged-coredns").should be_false
+    (File.exists? "cnfs/sample_privileged_cnf/cnf-conformance.yml").should be_true
+    (File.exists? "cnfs/sample_privileged_cnf/chart/Chart.yaml").should be_true
   end
 
   it "'cnf_conformance_yml' should return the short name of the destination cnf directory", tags: "WIP" do
