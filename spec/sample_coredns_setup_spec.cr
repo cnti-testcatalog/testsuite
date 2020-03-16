@@ -1,6 +1,6 @@
 require "./spec_helper"
 require "colorize"
-require "../src/tasks/utils.cr"
+require "../src/tasks/utils/utils.cr"
 require "file_utils"
 require "sam"
 
@@ -27,7 +27,6 @@ describe "SampleCoreDNS" do
   after_each do
     `crystal src/cnf-conformance.cr cleanup`
     $?.success?.should be_true
-    sample_cleanup(sample_dir: "sample-cnfs/sample-generic-cnf", verbose: true)
   end
 
   it "'wait_for_install' should wait for a cnf to be installed" do
@@ -85,7 +84,7 @@ describe "SampleCoreDNS" do
     (File.exists? "cnfs/sample_privileged_cnf/chart/Chart.yaml").should be_true
   end
 
-  it "'cnf_conformance_yml' should return the short name of the destination cnf directory", tags: "WIP" do
+  it "'cnf_conformance_dir' should return the short name of the destination cnf directory", tags: "WIP" do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 0 )
     (cnf_conformance_dir).should eq("sample-generic-cnf")
@@ -94,5 +93,13 @@ describe "SampleCoreDNS" do
   it "'sample_destination_dir' should return the full path of the potential destination cnf directory based on the source sample cnf directory", tags: "WIP" do
     args = Sam::Args.new
     sample_destination_dir("sample-generic-cnf").should contain("cnf-conformance/cnfs/sample-generic-cnf")
+  end
+
+  it "'cnf_conformance_yml(sample_cnf_destination_dir)' should return the yaml for the passed cnf directory", tags: "WIP" do
+    args = Sam::Args.new
+    sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
+    sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: args, verbose: true )
+    yml = cnf_conformance_yml("cnfs/sample_privileged_cnf")
+    ("#{yml.get("release_name").as_s?}").should eq("privileged-coredns")
   end
 end

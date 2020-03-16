@@ -2,7 +2,7 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
-require "./utils.cr"
+require "./utils/utils.cr"
 
 desc "Sets up api snoop"
 task "install_api_snoop" do |_, args|

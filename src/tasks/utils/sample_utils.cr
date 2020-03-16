@@ -19,8 +19,22 @@ def check_verbose(args)
   end
 end
 
+# TODO return array of cnf directories from the cnfs directory
+def cnf_list
+end
+
 def cnf_conformance_yml
   cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
+  if cnf_conformance.empty?
+    raise "No cnf_conformance.yml found! Did you run the setup task?"
+  end
+  Totem.from_file "./#{cnf_conformance}"
+end
+
+def cnf_conformance_yml(sample_cnf_destination_dir)
+  puts "#{sample_cnf_destination_dir}/cnf-conformance.yml"
+  cnf_conformance = `find #{sample_cnf_destination_dir}/* -name "cnf-conformance.yml"`.split("\n")[0]
+  puts "cnf_conformance: #{cnf_conformance}"
   if cnf_conformance.empty?
     raise "No cnf_conformance.yml found! Did you run the setup task?"
   end
@@ -57,6 +71,7 @@ def wait_for_install(deployment_name, wait_count=180)
     second_count = second_count + 1 
   end
 end 
+
 def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false, wait_count=180)
   puts "sample_setup_args" if verbose
 
