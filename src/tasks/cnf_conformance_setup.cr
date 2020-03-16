@@ -2,7 +2,7 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
-require "./utils.cr"
+require "./utils/utils.cr"
 
 desc "Sets up initial directories for the cnf-conformance suite"
 task "cnf_conformance_setup", ["cnf_directory_setup"] do |_, args|

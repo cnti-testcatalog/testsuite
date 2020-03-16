@@ -3,7 +3,7 @@ require "file_utils"
 require "colorize"
 require "totem"
 require "json"
-require "./utils.cr"
+require "./utils/utils.cr"
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
 task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness"]  do |_, args|

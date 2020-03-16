@@ -2,7 +2,7 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
-require "./utils.cr"
+require "./utils/utils.cr"
 
 desc "Sets up sample CoreDNS CNF"
 task "sample_coredns_setup", ["helm_local_install"] do |_, args|
@@ -45,6 +45,11 @@ task "sample_coredns_bad_liveness", ["helm_local_install"] do |_, args|
     sample_setup_args(sample_dir: "sample-cnfs/sample_coredns_bad_liveness", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
 end
 
+task "sample_generic_cnf_setup", ["helm_local_install"] do |_, args|
+  puts "sample_generic_cnf" if check_verbose(args)
+    sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", deploy_with_chart: false, args: args, verbose: true )
+end
+
 task "sample_coredns_cleanup" do |_, args|
   sample_cleanup(sample_dir: "sample-cnfs/sample-coredns-cnf", verbose: true)
 end
@@ -72,3 +77,6 @@ task "sample_coredns_source_cleanup" do |_, args|
   sample_cleanup(sample_dir: "sample-cnfs/sample-coredns-cnf-source", verbose: true)
 end
 
+task "sample_generic_cnf_cleanup" do |_, args|
+  sample_cleanup(sample_dir: "sample-cnfs/sample-generic-cnf", verbose: true)
+end

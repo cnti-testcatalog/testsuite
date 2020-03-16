@@ -2,7 +2,7 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
-require "./utils.cr"
+require "./utils/utils.cr"
 
 desc "Sets up helm 3.1.1"
 task "helm_local_install", ["cnf_directory_setup"] do |_, args|
