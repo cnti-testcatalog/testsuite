@@ -7,7 +7,7 @@ require "http/client"
 
 desc "Sets up Sonobuoy in the K8s Cluster"
 task "install_sonobuoy" do |_, args|
-  TODO: Fetch version dynamically
+  #TODO: Fetch version dynamically
   # k8s_version = HTTP::Client.get("https://storage.googleapis.com/kubernetes-release/release/stable.txt").body.chomp.split(".")[0..1].join(".").gsub("v", "") 
   k8s_version = "0.17.2"
   puts k8s_version if check_verbose(args)
