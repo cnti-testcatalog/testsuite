@@ -48,4 +48,28 @@ describe CnfConformance do
       `crystal src/cnf-conformance.cr sample_coredns_bad_liveness_cleanup`
     end
   end
+  it "'readiness' should pass when readinessProbe is set", tags: "readiness" do
+    begin
+      `crystal src/cnf-conformance.cr sample_coredns`
+      $?.success?.should be_true
+      response_s = `crystal src/cnf-conformance.cr readiness verbose`
+      puts response_s
+      $?.success?.should be_true
+      (/PASSED: Helm readiness probe/ =~ response_s).should_not be_nil
+    ensure
+      `crystal src/cnf-conformance.cr cleanup_sample_coredns verbose`
+    end
+  end
+  it "'readiness' should fail when readinessProbe is not set", tags: "readiness" do
+    begin
+      `crystal src/cnf-conformance.cr sample_coredns_bad_liveness`
+      $?.success?.should be_true
+      response_s = `crystal src/cnf-conformance.cr readiness verbose`
+      puts response_s
+      $?.success?.should be_true
+      (/FAILURE: No readinessProbe found/ =~ response_s).should_not be_nil
+    ensure
+      `crystal src/cnf-conformance.cr sample_coredns_bad_liveness_cleanup`
+    end
+  end
 end
