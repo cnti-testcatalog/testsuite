@@ -21,7 +21,7 @@ describe CnfConformance do
     `crystal src/cnf-conformance.cr sample_coredns_source_setup`
     $?.success?.should be_true
     response_s = `crystal src/cnf-conformance.cr install_script_helm`
-    puts response_s
+    #puts response_s
     $?.success?.should be_true
     (/FAILURE: Helm not found in supplied install script/ =~ response_s).should_not be_nil
     `crystal src/cnf-conformance.cr sample_coredns_source_cleanup`

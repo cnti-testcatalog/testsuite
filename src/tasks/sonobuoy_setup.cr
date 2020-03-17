@@ -21,7 +21,7 @@ task "install_sonobuoy" do |_, args|
       FileUtils.mkdir_p("#{current_dir}/#{TOOLS_DIR}/sonobuoy") 
       curl = `VERSION="#{k8s_version}" OS=linux ; curl -L "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_amd64.tar.gz" --output #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz`
       puts curl if check_verbose(args)
-       `tar -xzf #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz -C #{current_dir}/#{TOOLS_DIR}/sonobuoy/ && \
+      `tar -xzf #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz -C #{current_dir}/#{TOOLS_DIR}/sonobuoy/ && \
        chmod +x #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy && \
        rm #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz`
       sonobuoy = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy"
@@ -29,5 +29,15 @@ task "install_sonobuoy" do |_, args|
       puts `#{sonobuoy} version` if check_verbose(args)
     end
   end
+end
+
+desc "Cleans up Sonobuoy"
+task "sonobuoy_cleanup"do |_, args|
+  current_dir = FileUtils.pwd 
+  sonobuoy = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy"
+  delete = `#{sonobuoy} delete --wait`
+  puts delete if check_verbose(args)
+  rm = `rm -rf #{current_dir}/#{TOOLS_DIR}/sonobuoy`
+  puts rm if check_verbose(args)
 end
 
