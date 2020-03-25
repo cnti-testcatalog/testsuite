@@ -151,11 +151,20 @@ task "rolling_update" do |_, args|
     puts "rolling_update" if check_verbose(args)
     config = cnf_conformance_yml
 
-    unless args.named.has_key? "version_tag"
-      raise "FAILURE: please specify a version of the CNF's release's image with the option version_tag"
+    version_tag = nil
+
+    if args.named.has_key? "version_tag"
+      version_tag = args.named["version_tag"]
     end
 
-    version_tag = args.named["version_tag"]
+    if config.has_key? "helm_chart_image_repository_version"
+      version_tag = config.get("helm_chart_image_repository_version").as_s
+    end
+
+    unless version_tag
+      raise "FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'helm_chart_image_repository_version'"
+    end
+
     release_name = config.get("release_name").as_s
     deployment_name = config.get("deployment_name").as_s
 
