@@ -151,9 +151,11 @@ task "rolling_update" do |_, args|
     puts "rolling_update" if check_verbose(args)
     config = cnf_conformance_yml
 
-    raise "FAILURE: please specify a version of the CNF's release's image with the option version_tag" unless args.raw.includes? "version_tag"
+    unless args.named.has_key? "version_tag"
+      raise "FAILURE: please specify a version of the CNF's release's image with the option version_tag"
+    end
 
-    version_tag = args["version_tag"]
+    version_tag = args.named["version_tag"]
     release_name = config.get("release_name").as_s
     deployment_name = config.get("deployment_name").as_s
 
