@@ -153,14 +153,14 @@ task "rolling_update" do |_, args|
 
     version_tag = nil
 
-    if args.named.has_key? "version_tag"
-      version_tag = args.named["version_tag"]
-    end
-
     if config.has_key? "helm_chart_image_repository_version"
       version_tag = config.get("helm_chart_image_repository_version").as_s
     end
 
+    if args.named.has_key? "version_tag"
+      version_tag = args.named["version_tag"]
+    end
+    
     unless version_tag
       raise "FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'helm_chart_image_repository_version'"
     end
