@@ -7,4 +7,5 @@ deployment_name: coredns-coredns
 application_deployment_names: [coredns-coredns]
 helm_chart: stable/coredns
 helm_chart_container_name: coredns-coredns
+helm_chart_image_repository_version: latest
 white_list_helm_chart_container_names: []

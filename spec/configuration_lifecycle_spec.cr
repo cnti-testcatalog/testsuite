@@ -72,4 +72,28 @@ describe CnfConformance do
       `crystal src/cnf-conformance.cr sample_coredns_bad_liveness_cleanup`
     end
   end
+  it "'rolling_update' should pass when valid version is given", tags: "rolling_update" do
+    begin
+      `crystal src/cnf-conformance.cr sample_coredns`
+      $?.success?.should be_true
+      response_s = `crystal src/cnf-conformance.cr rolling_update verbose`
+      puts response_s
+      $?.success?.should be_true
+      (/Rolling Update Passed/ =~ response_s).should_not be_nil
+    ensure
+      `crystal src/cnf-conformance.cr cleanup_sample_coredns`
+    end
+  end
+  it "'rolling_update' should fail when invalid version is given", tags: "rolling_update" do
+    begin
+      `crystal src/cnf-conformance.cr sample_coredns`
+      $?.success?.should be_true
+      response_s = `crystal src/cnf-conformance.cr rolling_update verbose version_tag=this_is_not_real_version`
+      puts response_s
+      $?.success?.should be_true
+      (/Rolling Update Failed/ =~ response_s).should_not be_nil
+    ensure
+      `crystal src/cnf-conformance.cr cleanup_sample_coredns`
+    end
+  end
 end
