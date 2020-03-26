@@ -170,6 +170,11 @@ def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_dir
   end
 end
 
+def tools_helm
+  current_dir = FileUtils.pwd 
+  helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+end
+
 def sample_cleanup(sample_dir, verbose=true)
   config = sample_conformance_yml(sample_dir)
   release_name = config.get("release_name").as_s 
