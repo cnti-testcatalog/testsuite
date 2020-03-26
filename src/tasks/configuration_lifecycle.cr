@@ -168,7 +168,7 @@ task "rolling_update" do |_, args|
     release_name = config.get("release_name").as_s
     deployment_name = config.get("deployment_name").as_s
 
-    helm_chart_values = JSON.parse(`helm get values #{release_name} -a -o json`)
+    helm_chart_values = JSON.parse(`#{tools_helm} get values #{release_name} -a --output json`)
     puts "helm_chart_values" if check_verbose(args)
     puts helm_chart_values if check_verbose(args)
     image_name = helm_chart_values["image"]["repository"]
