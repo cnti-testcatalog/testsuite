@@ -16,7 +16,14 @@ task "k8s_conformance" do |_, args|
     puts delete if check_verbose(args)
 
     # Run the tests
-    testrun = `#{sonobuoy} run --wait --mode quick`
+    #TODO when in test mode --mode quick, prod mode no quick
+    testrun = ""
+    puts ENV["CRYSTAL_ENV"]? if check_verbose(args)
+    if ENV["CRYSTAL_ENV"]? == "TEST"
+      testrun = `#{sonobuoy} run --wait --mode quick`
+    else
+      testrun = `#{sonobuoy} run --wait`
+    end
     puts testrun if check_verbose(args)
 
     results = `results=$(#{sonobuoy} retrieve); #{sonobuoy} results $results` 
