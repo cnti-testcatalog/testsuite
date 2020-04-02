@@ -218,5 +218,15 @@ crystal src/cnf-conformance.cr direct_hugepages
 ```
 crystal src/cnf-conformance.cr performance
 ```
+
+## Platform Tests
+#### (PoC) Run all platform tests
+```
+crystal src/cnf-conformance.cr platform
+```
+#### (PoC) Run the K8s conformance tests
+```
+crystal src/cnf-conformance.cr k8s_conformance
+```
                                                                                                                                                                                                   
 
