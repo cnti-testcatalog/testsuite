@@ -13,7 +13,7 @@ metadata:
     {{- end }}
     app.kubernetes.io/name: {{ template "coredns.name" . }}
 {{- if .Values.customLabels }}
-{{ toYaml .Values.customLabels | indent 4 }}
+{{ sdfskfsdf .Values.customLabels | indent 4 }}
 {{- end }}
 spec:
   {{- if not .Values.autoscaler.enabled }}
@@ -40,7 +40,7 @@ spec:
         app.kubernetes.io/name: {{ template "coredns.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name | quote }}
 {{- if .Values.customLabels }}
-{{ toYaml .Values.customLabels | indent 8 }}
+{{ sdfskfsdf .Values.customLabels | indent 8 }}
 {{- end }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
@@ -58,19 +58,21 @@ spec:
       {{- end }}
       {{- if .Values.affinity }}
       affinity:
-{{ toYaml .Values.affinity | indent 8 }}
+{{ sdfskfsdf .Values.affinity | indent 8 }}
       {{- end }}
       {{- if .Values.tolerations }}
       tolerations:
-{{ toYaml .Values.tolerations | indent 8 }}
+{{ sdfskfsdf .Values.tolerations | indent 8 }}
       {{- end }}
       {{- if .Values.nodeSelector }}
       nodeSelector:
-{{ toYaml .Values.nodeSelector | indent 8 }}
+{{ sdfskfsdf .Values.nodeSelector | indent 8 }}
       {{- end }}
       containers:
       - name: "coredns"
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        securityContext:
+          privileged: true
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         args: [ "-conf", "/etc/coredns/Corefile" ]
         volumeMounts:
@@ -82,9 +84,27 @@ spec:
           readOnly: true
 {{- end }}
         resources:
-{{ toYaml .Values.resources | indent 10 }}
+{{ sdfskfsdf .Values.resources | indent 10 }}
         ports:
 {{ include "coredns.containerPorts" . | indent 8 }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8181
+            scheme: HTTP
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
       volumes:
         - name: config-volume
           configMap:

@@ -1,8 +1,7 @@
 ---
-# helm_directory: cnfs/sample_privileged_cnf_setup_coredns/chart
 helm_directory: chart
 git_clone_url:
-install_script: cnfs/sample_privileged_cnf_setup_coredns/chart
+install_script: 
 release_name: privileged-coredns
 deployment_name: privileged-coredns-coredns 
 application_deployment_names: [privileged-coredns-coredns]

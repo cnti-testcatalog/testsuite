@@ -25,6 +25,14 @@ def cnf_conformance_yml
   Totem.from_file "./#{cnf_conformance}"
 end
 
+def cnf_conformance_dir
+  cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
+  if cnf_conformance.empty?
+    raise "No cnf_conformance.yml found! Did you run the setup task?"
+  end
+  cnf_conformance.split("/")[-2] 
+end
+
 def sample_conformance_yml(sample_dir)
   cnf_conformance = `find #{sample_dir}/* -name "cnf-conformance.yml"`.split("\n")[0]
   if cnf_conformance.empty?
@@ -47,8 +55,9 @@ def wait_for_install(deployment_name, wait_count=180)
     second_count = second_count + 1 
   end
 end 
-def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false)
-  # # Parse the cnf-conformance.yml
+def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false, wait_count=180)
+  puts "sample_setup_args" if verbose
+
   config = sample_conformance_yml(sample_dir)
 
   if args.named.keys.includes? "release_name"
@@ -82,21 +91,28 @@ def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false)
   if args.named.keys.includes? "git_clone_url"
     git_clone_url = "#{args.named["git_clone_url"]}"
   else
-    # TODO check type (any) before doing .as_s 
     git_clone_url = "#{config.get("git_clone_url").as_s?}"
   end
   puts "git_clone_url: #{git_clone_url}" if verbose
 
-  sample_setup(sample_dir: sample_dir, release_name: release_name, deployment_name: deployment_name, helm_chart: helm_chart, helm_directory: helm_directory, git_clone_url: git_clone_url, deploy_with_chart: deploy_with_chart, verbose: verbose )
+  sample_setup(sample_dir: sample_dir, release_name: release_name, deployment_name: deployment_name, helm_chart: helm_chart, helm_directory: helm_directory, git_clone_url: git_clone_url, deploy_with_chart: deploy_with_chart, verbose: verbose, wait_count: wait_count )
 
 end
 
-def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_directory, git_clone_url="", deploy_with_chart=true, verbose=false)
+def sample_destination_dir(sample_source_dir)
+  current_dir = FileUtils.pwd 
+  "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_source_dir)}"
+end
+
+def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_directory, git_clone_url="", deploy_with_chart=true, verbose=false, wait_count=180)
+  puts "sample_setup" if verbose
 
   current_dir = FileUtils.pwd 
   puts current_dir if verbose 
 
-  destination_cnf_dir = "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_dir)}"
+  # destination_cnf_dir = "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_dir)}"
+  destination_cnf_dir = sample_destination_dir(sample_dir)
+
   puts "destination_cnf_dir: #{destination_cnf_dir}" if verbose 
   FileUtils.mkdir_p(destination_cnf_dir) 
   # TODO enable recloning/fetching etc
@@ -144,7 +160,7 @@ def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_dir
       puts helm_install if verbose 
     end
 
-    wait_for_install(deployment_name)
+    wait_for_install(deployment_name, wait_count)
     if helm_install.to_s.size > 0 # && helm_pull.to_s.size > 0
       puts "Successfully setup #{release_name}".colorize(:green)
     end
@@ -154,6 +170,11 @@ def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_dir
   end
 end
 
+def tools_helm
+  current_dir = FileUtils.pwd 
+  helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+end
+
 def sample_cleanup(sample_dir, verbose=true)
   config = sample_conformance_yml(sample_dir)
   release_name = config.get("release_name").as_s 
@@ -161,11 +182,13 @@ def sample_cleanup(sample_dir, verbose=true)
   current_dir = FileUtils.pwd 
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
   puts helm if verbose 
-  helm_uninstall = `#{helm} uninstall #{release_name}`
-  puts helm_uninstall if verbose
   destination_cnf_dir = "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_dir)}"
   rm = `rm -rf #{destination_cnf_dir}`
   puts rm if verbose
+  helm_uninstall = `#{helm} uninstall #{release_name}`
+  ret = $?
+  puts helm_uninstall if verbose
+  ret
 end
 
 def chart_name(helm_chart_repo)

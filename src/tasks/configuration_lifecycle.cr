@@ -2,6 +2,7 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
+require "json"
 require "./utils.cr"
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
@@ -14,6 +15,7 @@ task "ip_addresses" do |_, args|
     cdir = FileUtils.pwd()
     response = String::Builder.new
     Dir.cd(CNF_DIR)
+    # TODO ignore *example*, *.md, *.txt
     Process.run("grep -rnw -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}'", shell: true) do |proc|
       # Process.run("grep -rnw -E -o 'hithere'", shell: true) do |proc|
       while line = proc.output.gets
@@ -49,8 +51,12 @@ task "liveness", ["retrieve_manifest"] do |_, args|
       puts "FAILURE: helm directory not found".colorize(:red)
       puts ex.message if check_args(args)
     end
-    puts "helm_directory: #{helm_directory}/manifest.yml" if check_verbose(args)
-    deployment = Totem.from_file "#{helm_directory}/manifest.yml"
+    current_cnf_dir_short_name = cnf_conformance_dir
+    puts current_cnf_dir_short_name if check_verbose(args)
+    destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
+    puts destination_cnf_dir if check_verbose(args)
+    puts "helm_directory: #{destination_cnf_dir}/#{helm_directory}/manifest.yml" if check_verbose(args)
+    deployment = Totem.from_file "#{destination_cnf_dir}/#{helm_directory}/manifest.yml"
     puts deployment.inspect if check_verbose(args)
     containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
     containers.each do |container|
@@ -87,8 +93,12 @@ task "readiness", ["retrieve_manifest"] do |_, args|
       puts "FAILURE: helm directory not found".colorize(:red)
       puts ex.message if check_args(args)
     end
-    puts "helm_directory: #{helm_directory}/manifest.yml" if check_verbose(args)
-    deployment = Totem.from_file "#{helm_directory}/manifest.yml"
+    current_cnf_dir_short_name = cnf_conformance_dir
+    puts current_cnf_dir_short_name if check_verbose(args)
+    destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
+    puts destination_cnf_dir if check_verbose(args)
+    puts "helm_directory: #{destination_cnf_dir}/#{helm_directory}/manifest.yml" if check_verbose(args)
+    deployment = Totem.from_file "#{destination_cnf_dir}/#{helm_directory}/manifest.yml"
     puts deployment.inspect if check_verbose(args)
     containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
     containers.each do |container|
@@ -115,11 +125,71 @@ end
 desc "Retrieve the manifest for the CNF's helm chart"
 task "retrieve_manifest" do |_, args| 
   begin
+    puts "retrieve_manifest" if check_verbose(args)
     config = cnf_conformance_yml
     deployment_name = config.get("deployment_name").as_s
+    puts deployment_name if check_verbose(args)
     helm_directory = config.get("helm_directory").as_s
-    manifest = `kubectl get deployment #{deployment_name} -o yaml  > #{helm_directory}/manifest.yml`
+    puts helm_directory if check_verbose(args)
+    current_cnf_dir_short_name = cnf_conformance_dir
+    puts current_cnf_dir_short_name if check_verbose(args)
+    destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
+    puts destination_cnf_dir if check_verbose(args)
+    manifest = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/#{helm_directory}/manifest.yml`
     puts manifest if check_verbose(args)
+  rescue ex
+    puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
+  end
+end
+
+desc "Test if the CNF can perform a rolling update"
+task "rolling_update" do |_, args|
+  begin
+    puts "rolling_update" if check_verbose(args)
+    config = cnf_conformance_yml
+
+    version_tag = nil
+
+    if config.has_key? "cnf_image_version"
+      version_tag = config.get("cnf_image_version").as_s
+    end
+
+    if args.named.has_key? "version_tag"
+      version_tag = args.named["version_tag"]
+    end
+    
+    unless version_tag
+      raise "FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'cnf_image_version'"
+    end
+
+    release_name = config.get("release_name").as_s
+    deployment_name = config.get("deployment_name").as_s
+
+    helm_chart_values = JSON.parse(`#{tools_helm} get values #{release_name} -a --output json`)
+    puts "helm_chart_values" if check_verbose(args)
+    puts helm_chart_values if check_verbose(args)
+    image_name = helm_chart_values["image"]["repository"]
+
+    puts "image_name: #{image_name}" if check_verbose(args)
+
+    puts "rolling_update: setting new version" if check_verbose(args)
+    #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
+    puts "kubectl set image deployment/#{deployment_name} #{release_name}=#{image_name}:#{version_tag} --record" if check_verbose(args)
+    do_update = `kubectl set image deployment/#{deployment_name} #{release_name}=#{image_name}:#{version_tag} --record`
+
+    # https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#rolling-update
+    puts "rolling_update: checking status new version" if check_verbose(args)
+    puts `kubectl rollout status deployment/#{deployment_name} --timeout=30s`
+
+    if $?.success?
+      puts "PASSED: CNF #{deployment_name} Rolling Update Passed".colorize(:green)
+    else
+      puts "FAILURE: CNF #{deployment_name} Rolling Update Failed".colorize(:red)
+    end
+
   rescue ex
     puts ex.message
     ex.backtrace.each do |x|

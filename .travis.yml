@@ -31,4 +31,4 @@ jobs:
 
         # Set KUBECONFIG environment variable
         - export KUBECONFIG="$(kind get kubeconfig-path)"
-      script: crystal spec
+      script: crystal spec -v
