@@ -1,0 +1,7 @@
+---
+- name: liveness
+  pass: 5
+  fail: -1 
+- name: readiness
+  pass: 5
+  fail: -1 
