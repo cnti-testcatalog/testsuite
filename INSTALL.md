@@ -18,10 +18,13 @@ This guide shows how to install the CNF Conformance Test Suite
   ```
   cd cnfs/ && git clone https://github.com/cncf/cnf-testbed.git
   ```
-  * #### (Optional: Create a K8s cluster if you don't already have one) Clone the K8s-infra repo 
+  * #### (Optional: Create a K8s cluster if you don't already have one)
 
-  * Follow the [prerequisites](https://github.com/cncf/cnf-testbed/tree/master/tools#pre-requisites) for [deploying a K8s cluster](https://github.com/cncf/cnf-testbed/tree/master/tools#deploying-a-kubernetes-cluster-using-the-makefile--ci-tools)  for a Packet host. 
-  
+  * follow the [kind install](KIND-INSTALL.md) instructions to setup a cluster in kind
+
+
+  * Clone the K8s-infra repo then Follow the [prerequisites](https://github.com/cncf/cnf-testbed/tree/master/tools#pre-requisites) for [deploying a K8s cluster](https://github.com/cncf/cnf-testbed/tree/master/tools#deploying-a-kubernetes-cluster-using-the-makefile--ci-tools)  for a Packet host. 
+
   *Or* 
   * If you already have IP addresses for your provider, and you want to manually install a K8s cluster, you can use k8s-infra to do this.
   ```
@@ -44,7 +47,7 @@ helm_chart:
 helm_chart_container_name: 
 white_list_helm_chart_container_names: 
   ```
- 
+
   * Run the setup tasks to install any prerequisites (useful for setting up sample cnfs)
   ``` 
   crystal src/cnf-conformance.cr setup
@@ -68,7 +71,7 @@ white_list_helm_chart_container_names:
 
 ## Development
   The CNF Conformance Test Suite is modeled after make, or if you're familiar with Ruby, [rake](https://github.com/ruby/rake). Conformance tests are created via tasks using the Crystal library, [SAM.cr](https://github.com/imdrasil/sam.cr). 
-  
+
   To run the automated test suite:
   ``` 
   crystal spec
