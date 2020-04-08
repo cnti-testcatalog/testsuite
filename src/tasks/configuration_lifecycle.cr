@@ -23,12 +23,14 @@ task "ip_addresses" do |_, args|
         puts "#{line}" if check_args(args)
       end
     end
+    Dir.cd(cdir)
     if response.to_s.size > 0
+      upsert_failed_task("ip_address")
       puts "FAILURE: IP addresses found".colorize(:red)
     else
+      upsert_passed_task("ip_address")
       puts "PASSED: No IP addresses found".colorize(:green)
     end
-    Dir.cd(cdir)
   rescue ex
     puts ex.message
     ex.backtrace.each do |x|
@@ -66,10 +68,12 @@ task "liveness", ["retrieve_manifest"] do |_, args|
       rescue ex
         puts ex.message if check_args(args)
         errors = errors + 1
+        upsert_failed_task("liveness")
         puts "FAILURE: No livenessProbe found".colorize(:red)
       end
     end
     if errors == 0
+      upsert_passed_task("liveness")
       puts "PASSED: Helm liveness probe found".colorize(:green)
     end
   rescue ex
@@ -108,10 +112,12 @@ task "readiness", ["retrieve_manifest"] do |_, args|
       rescue ex
         puts ex.message if check_args(args)
         errors = errors + 1
+        upsert_failed_task("readiness")
         puts "FAILURE: No readinessProbe found".colorize(:red)
       end
     end
     if errors == 0
+      upsert_passed_task("readiness")
       puts "PASSED: Helm readiness probe found".colorize(:green)
     end
   rescue ex
@@ -162,6 +168,7 @@ task "rolling_update" do |_, args|
     end
     
     unless version_tag
+      upsert_failed_task("rolling_update")
       raise "FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'cnf_image_version'"
     end
 
@@ -185,8 +192,10 @@ task "rolling_update" do |_, args|
     puts `kubectl rollout status deployment/#{deployment_name} --timeout=30s`
 
     if $?.success?
+      upsert_passed_task("rolling_update")
       puts "PASSED: CNF #{deployment_name} Rolling Update Passed".colorize(:green)
     else
+      upsert_failed_task("rolling_update")
       puts "FAILURE: CNF #{deployment_name} Rolling Update Failed".colorize(:red)
     end
 

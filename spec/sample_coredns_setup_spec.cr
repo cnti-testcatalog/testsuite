@@ -4,7 +4,7 @@ require "../src/tasks/utils.cr"
 require "file_utils"
 require "sam"
 
-describe "Utils" do
+describe "SampleCoreDNS" do
   before_all do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`

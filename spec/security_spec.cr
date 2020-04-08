@@ -7,6 +7,7 @@ describe CnfConformance do
     # puts `echo $KUBECONFIG`
     `crystal src/cnf-conformance.cr samples_cleanup`
     $?.success?.should be_true
+    `crystal src/cnf-conformance.cr results_yml_setup`
     # `crystal src/cnf-conformance.cr setup`
     # $?.success?.should be_true
   end

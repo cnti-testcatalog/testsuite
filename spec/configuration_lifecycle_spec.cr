@@ -5,16 +5,17 @@ describe CnfConformance do
   before_all do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
-    
+
     `crystal src/cnf-conformance.cr samples_cleanup`
     $?.success?.should be_true
-    
+    `crystal src/cnf-conformance.cr results_yml_setup`
+
     # `crystal src/cnf-conformance.cr setup`
     # $?.success?.should be_true
   end
   it "'ip_addresses' should fail when ip addresses are found in source is set", tags: "liveness" do
     begin
-      `crystal src/cnf-conformance.cr sample_coredns_source_setup`
+      `crystal src/cnf-conformance.cr sample_coredns_source_setup verbose`
       $?.success?.should be_true
       response_s = `crystal src/cnf-conformance.cr ip_addresses verbose`
       puts response_s

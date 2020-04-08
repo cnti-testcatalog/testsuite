@@ -30,7 +30,7 @@ crystal src/cnf-conformance.cr cni_spec
 ```
 #### (To Do) To check for the use of alpha K8s API endpoints
 ```
-pseudo code
+crystal src/cnf-conformance.cr api_snoop_alpha
 ```
 #### (To Do) To check for the use of beta K8s API endpoints
 ```
@@ -130,9 +130,13 @@ crystal src/cnf-conformance.cr versioned_helm_chart
 ```
 crystal src/cnf-conformance.cr ip_addresses
 ```
-#### (PoC) To test if there is a liveness and readiness entry in the Helm chart
+#### (PoC) To test if there is a liveness entry in the Helm chart
 ```
 crystal src/cnf-conformance.cr liveness
+```
+#### (PoC) To test if there is a readiness entry in the Helm chart
+```
+crystal src/cnf-conformance.cr readiness
 ```
 #### (To Do) Test starting a container without mounting a volume that has configuration files
 ```

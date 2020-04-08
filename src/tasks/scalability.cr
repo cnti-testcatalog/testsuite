@@ -24,8 +24,10 @@ task "increase_capacity" do |_, args|
     base_replicas = "1"
     final_count = change_capacity(base_replicas, target_replicas, args)
     if target_replicas == final_count 
+      upsert_passed_task("increase_capacity")
       puts "PASSED: Replicas increased to #{target_replicas}".colorize(:green)
     else
+      upsert_failed_task("increase_capacity")
       puts "FAILURE: Replicas did not reach #{target_replicas}".colorize(:red)
     end
   rescue ex
@@ -43,8 +45,10 @@ task "decrease_capacity" do |_, args|
     base_replicas = "3"
     final_count = change_capacity(base_replicas, target_replicas, args)
     if target_replicas == final_count 
+      upsert_passed_task("decrease_capacity")
       puts "PASSED: Replicas decreased to #{target_replicas}".colorize(:green)
     else
+      upsert_failed_task("decrease_capacity")
       puts "FAILURE: Replicas did not reach #{target_replicas}".colorize(:red)
     end
   rescue ex
