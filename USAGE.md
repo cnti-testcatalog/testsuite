@@ -30,7 +30,7 @@ crystal src/cnf-conformance.cr cni_spec
 ```
 #### (To Do) To check for the use of alpha K8s API endpoints
 ```
-pseudo code
+crystal src/cnf-conformance.cr api_snoop_alpha
 ```
 #### (To Do) To check for the use of beta K8s API endpoints
 ```
