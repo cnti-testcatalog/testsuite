@@ -29,8 +29,10 @@ task "install_script_helm" do |_, args|
       found = 1
     end
     if found < 1
+      upsert_failed_task("install_script_helm")
       puts "FAILURE: Helm not found in supplied install script".colorize(:red)
     else
+      upsert_passed_task("install_script_helm")
       puts "PASSED: Helm found in supplied install script".colorize(:green)
     end
   rescue ex
@@ -81,8 +83,10 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     # end
 
    if $?.success? 
+     upsert_passed_task("helm_chart_valid")
      puts "PASSED: Helm Chart #{helm_directory} Lint Passed".colorize(:green)
    else
+     upsert_failed_task("helm_chart_valid")
      puts "FAILURE: Helm Chart #{helm_directory} Lint Failed".colorize(:red)
    end
   rescue ex

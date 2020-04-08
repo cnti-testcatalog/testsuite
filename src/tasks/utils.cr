@@ -202,22 +202,7 @@ def short_sample_dir(full_sample_dir)
 end
 
 def template_results_yml
-  YAML.parse <<-END
-name: cnf conformance 
-status: 
-points: 
-items:
-- name: configuration_lifecycle  
-  status: 
-  points:
-  items:
-  - name: liveness 
-    status: 
-    points: 
-END
-end
-
-def template_results_yml
+  #TODO add tags for category summaries
   YAML.parse <<-END
 name: cnf conformance 
 status: 
@@ -237,9 +222,13 @@ def create_results_yml
   if File.exists?("results.yml")
     puts "Do you wish to overwrite the results.ymlfile? If so, your results will be lost."
     print "(Y/N) (Default N): > "
-    user_input = gets
-    if user_input == "Y" || user_input == "y"
+    if ENV["CRYSTAL_ENV"]? == "TEST"
       continue = true
+    else
+      user_input = gets
+      if user_input == "Y" || user_input == "y"
+        continue = true
+      end
     end
   else
     continue = true
@@ -277,6 +266,14 @@ def upsert_task(task, status, points)
   end 
 end
 
+def upsert_failed_task(task)
+  upsert_task(task, FAILED, failing_task(task))
+end
+
+def upsert_passed_task(task)
+  upsert_task(task, PASSED, passing_task(task))
+end
+
 def passing_task(task)
   points = points_yml.find {|x| x["name"] == task}
   points["pass"].as_i if points
@@ -285,6 +282,50 @@ end
 def failing_task(task)
   points = points_yml.find {|x| x["name"] == task}
   points["fail"].as_i if points
+end
+
+def total_points
+  yaml = File.open("results.yml") do |file|
+    YAML.parse(file)
+  end
+  yaml["items"].as_a.reduce(0) do |acc, i|
+    if i["points"].as_i?
+      (acc + i["points"].as_i)
+    else
+      acc
+    end
+  end
+end
+
+def tasks_by_tag(tag)
+  #TODO cross reference points.yml tags with results
+  found = false
+  result_items = points_yml.reduce([] of String) do |acc, x|
+    # x["tags"].as_s.includes?(tag) if x["tags"].as_s?
+    if x["tags"].as_s? && x["tags"].as_s.includes?(tag)
+      acc << x["name"].as_s
+    else
+      acc
+    end
+  end
+end
+
+def results_by_tag(tag)
+  task_list = tasks_by_tag(tag)
+
+  results = File.open("results.yml") do |f| 
+    YAML.parse(f)
+  end 
+
+  found = false
+  result_items = results["items"].as_a.reduce([] of YAML::Any) do |acc, x|
+    if x["name"].as_s? && task_list.find{|tl| tl == x["name"].as_s}
+      acc << x
+    else
+      acc
+    end
+  end
+
 end
 
 

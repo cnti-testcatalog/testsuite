@@ -31,6 +31,7 @@ describe CnfConformance do
     (/Lint Passed/ =~ response_s).should_not be_nil
     (/PASSED: Replicas increased to 3/ =~ response_s).should_not be_nil
     (/PASSED: Replicas decreased to 1/ =~ response_s).should_not be_nil
+    (/Final score:/ =~ response_s).should_not be_nil
   end
 
   it "'scalability' should run all of the scalability tests" do
