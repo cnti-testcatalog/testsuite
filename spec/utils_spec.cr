@@ -60,4 +60,7 @@ describe "Utils" do
     (results_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
+  it "'toggle' should return a boolean for a toggle in the config.yml"do
+    (toggle("wip")).should eq(false) 
+  end
 end
