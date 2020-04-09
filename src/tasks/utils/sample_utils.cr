@@ -1,23 +1,9 @@
 require "totem"
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
-CNF_DIR = "cnfs"
-TOOLS_DIR = "tools"
 PASSED = "passed"
 FAILED = "failed"
 # CONFIG = Totem.from_file "./config.yml"
-
-def check_args(args)
-  check_verbose(args)
-end
-
-def check_verbose(args)
-  if ((args.raw.includes? "verbose") || (args.raw.includes? "v"))
-    true
-  else 
-    false
-  end
-end
 
 # TODO return array of cnf directories from the cnfs directory
 def cnf_list
@@ -32,8 +18,8 @@ def cnf_conformance_yml
 end
 
 def cnf_conformance_yml(sample_cnf_destination_dir)
-  puts "#{sample_cnf_destination_dir}/cnf-conformance.yml"
-  cnf_conformance = `find #{sample_cnf_destination_dir}/* -name "cnf-conformance.yml"`.split("\n")[0]
+  short_sample_cnf_destination_dir = sample_cnf_destination_dir.split("/")[-1] 
+  cnf_conformance = `find #{CNF_DIR}/#{short_sample_cnf_destination_dir}/* -name "cnf-conformance.yml"`.split("\n")[0]
   puts "cnf_conformance: #{cnf_conformance}"
   if cnf_conformance.empty?
     raise "No cnf_conformance.yml found! Did you run the setup task?"
@@ -47,6 +33,16 @@ def cnf_conformance_dir
     raise "No cnf_conformance.yml found! Did you run the setup task?"
   end
   cnf_conformance.split("/")[-2] 
+end
+
+def cnf_conformance_dir(source_dir)
+  #TODO change into short path
+  source_short_dir = source_dir.split("/")[-1]
+  cnf_conformance = `find cnfs/* -name "#{source_short_dir}"`.split("\n")[0]
+  if cnf_conformance.empty?
+    raise "No directoryed named #{source_dir} found! Did you run the setup task?"
+  end
+  cnf_conformance.split("/")[-1] 
 end
 
 def sample_conformance_yml(sample_dir)

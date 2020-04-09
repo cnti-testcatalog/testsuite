@@ -99,7 +99,17 @@ describe "SampleCoreDNS" do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
     sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: args, verbose: true )
+    yml = cnf_conformance_yml("sample_privileged_cnf")
+    ("#{yml.get("release_name").as_s?}").should eq("privileged-coredns")
     yml = cnf_conformance_yml("cnfs/sample_privileged_cnf")
     ("#{yml.get("release_name").as_s?}").should eq("privileged-coredns")
+  end
+
+  it "'cnf_conformance_dir(source_short_dir)' should full cnfs path for passed source cnf", tags: "WIP" do
+    args = Sam::Args.new
+    sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
+    sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: args, verbose: true )
+    cnf_conformance_dir("sample_privileged_cnf").should contain("sample_privileged_cnf")
+    cnf_conformance_dir("sample-cnfs/sample_privileged_cnf").should contain("sample_privileged_cnf")
   end
 end
