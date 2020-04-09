@@ -1,5 +1,6 @@
 require "./spec_helper"
 require "colorize"
+require "../src/tasks/utils/utils.cr"
 
 describe CnfConformance do
   before_all do
@@ -15,7 +16,11 @@ describe CnfConformance do
     begin
       `crystal src/cnf-conformance.cr sample_coredns_setup`
       $?.success?.should be_true
-      response_s = `crystal src/cnf-conformance.cr privileged verbose`
+      if toggle("multi-cnf") 
+        response_s = `crystal src/cnf-conformance.cr privileged cnf=sample-coredns-cnf verbose`
+      else
+        response_s = `crystal src/cnf-conformance.cr privileged verbose`
+      end
       puts response_s
       $?.success?.should be_true
       (/Found privileged containers.*coredns/ =~ response_s).should be_nil
@@ -27,7 +32,11 @@ describe CnfConformance do
     begin
       `crystal src/cnf-conformance.cr sample_privileged_cnf_non_whitelisted_setup`
       $?.success?.should be_true
-      response_s = `crystal src/cnf-conformance.cr privileged verbose`
+      if toggle("multi-cnf") 
+        response_s = `crystal src/cnf-conformance.cr privileged cnf=sample_privileged_cnf verbose`
+      else
+        response_s = `crystal src/cnf-conformance.cr privileged verbose`
+      end
       puts response_s
       $?.success?.should be_true
       (/Found privileged containers.*coredns/ =~ response_s).should_not be_nil
@@ -39,7 +48,11 @@ describe CnfConformance do
     begin
       `crystal src/cnf-conformance.cr sample_privileged_cnf_whitelisted_setup`
       $?.success?.should be_true
-      response_s = `crystal src/cnf-conformance.cr privileged verbose`
+      if toggle("multi-cnf") 
+        response_s = `crystal src/cnf-conformance.cr privileged cnf=sample_whitelisted_privileged_cnf verbose`
+      else
+        response_s = `crystal src/cnf-conformance.cr privileged verbose`
+      end
       puts response_s
       $?.success?.should be_true
       (/Found privileged containers.*coredns/ =~ response_s).should be_nil

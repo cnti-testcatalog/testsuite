@@ -1,6 +1,11 @@
 ---
-helm_directory: cnfs/cnf-testbed/examples/use_case/gw-routers-on-k8s-nsm-on-packet/helm/gwr 
-install_script: cnfs/cnf-testbed/examples/network_functions/rdma_vppcontainer/builder.sh
-deployment_name: coredns-coredns
-application_deployment_names: [coredns-coredns]
-helm_chart: stable/coredns 
+toggles:
+  - name: multi-cnf
+    toggle_on: true
+  - name: wip
+    toggle_on: false 
+  - name: alpha
+    toggle_on: false 
+  - name: beta
+    toggle_on: false
+

@@ -14,7 +14,12 @@ task "privileged" do |_, args|
   #TODO check if container exists
   #TODO Check if args exist
   begin
-    config = cnf_conformance_yml
+    if toggle("multi-cnf")
+      # TODO if no args passed, run all all cnfs in the cnfs directory
+      config = cnf_conformance_yml(args.named["cnf"].as(String))
+    else
+      config = cnf_conformance_yml
+    end
     helm_chart_container_name = config.get("helm_chart_container_name").as_s
     white_list_container_name = config.get("white_list_helm_chart_container_names").as_a
     puts "helm_chart_container_name #{helm_chart_container_name}" if check_verbose(args)
