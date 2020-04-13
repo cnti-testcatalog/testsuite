@@ -4,7 +4,7 @@
 (name of issue/change)
 
 ## Issues:
-FIXES #NNN
+Fixes: #NNN
 
 ## How has this been tested:
  - [ ] Covered by existing integration testing
