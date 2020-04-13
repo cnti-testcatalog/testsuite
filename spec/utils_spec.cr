@@ -77,17 +77,16 @@ describe "Utils" do
   end
 
   it "'check_<x>' should return the feature level for an argument variable" do
-    (check_ga).should be_false
+    # (check_ga).should be_false
     (check_alpha).should be_false
     (check_beta).should be_false
     (check_wip).should be_false
   end
 
   it "'check_<x>(args)' should return the feature level for an argument variable" do
-    args = Sam::Args.new(["name", "arg1=1", "hi"])
-    (check_ga(args)).should be_true
-    (check_alpha(args)).should be_false
-    (check_beta(args)).should be_false
+    args = Sam::Args.new(["name", "arg1=1", "alpha"])
+    (check_alpha(args)).should be_true
+    (check_beta(args)).should be_true
     (check_wip(args)).should be_false
   end
 end

@@ -48,28 +48,29 @@ def check_feature_level(args)
   end
 end
 
-def check_ga
-  toggle("ga")
-end
+# cncf/cnf-conformance/issues/106
+# Requesting beta tests to run will both beta and ga flagged tests
+# Requesting alpha tests will run alpha, beta, and ga flagged tests
+# Requesting wip tests will run wip, poc, beta, and ga flagged tests
 
-def check_ga(args)
-  toggle("ga") || check_feature_level(args) == "ga"
-end
-
+# if the beta flag is not true but the alpha is true, then beta tests should be run
 def check_beta
-  toggle("beta")
+  toggle("beta") || check_alpha
 end
 
+# if the beta flag is not true but the alpha is true, then beta tests should be run
 def check_beta(args)
-  toggle("beta") || check_feature_level(args) == "beta"
+  toggle("beta") || check_feature_level(args) == "beta" || check_alpha(args)
 end
 
+# if the alpha flag is not true but the wip is true, then alpha tests should be run
 def check_alpha
-  toggle("alpha")
+  toggle("alpha") || check_wip
 end
 
+# if the alpha flag is not true but the wip is true, then alpha tests should be run
 def check_alpha(args)
-  toggle("alpha") || check_feature_level(args) == "alpha"
+  toggle("alpha") || check_feature_level(args) == "alpha" || check_wip(args)
 end
 
 def check_wip
