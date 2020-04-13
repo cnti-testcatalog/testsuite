@@ -33,3 +33,49 @@ def toggle(toggle_name)
   toggle_on
 end
 
+## check feature level e.g. --beta
+## if no feature level then feature level = ga
+def check_feature_level(args)
+  case args.raw
+  when .includes? "alpha"
+    "alpha"
+  when .includes? "beta"
+    "beta"
+  when .includes? "wip"
+    "wip"
+  else
+    "ga"
+  end
+end
+
+def check_ga
+  toggle("ga")
+end
+
+def check_ga(args)
+  toggle("ga") || check_feature_level(args) == "ga"
+end
+
+def check_beta
+  toggle("beta")
+end
+
+def check_beta(args)
+  toggle("beta") || check_feature_level(args) == "beta"
+end
+
+def check_alpha
+  toggle("alpha")
+end
+
+def check_alpha(args)
+  toggle("alpha") || check_feature_level(args) == "alpha"
+end
+
+def check_wip
+  toggle("wip")
+end
+
+def check_wip(args)
+  toggle("wip") || check_feature_level(args) == "wip"
+end
