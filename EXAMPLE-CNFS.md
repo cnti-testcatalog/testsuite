@@ -4,39 +4,34 @@ This is a preliminary list of CNF samples for each layer in the [OSI model](http
 
 **Goals:**
 
-- Find a CNF which can be used as a sample in the CNF Conformance suite for testing on each OSI layer. 
+- Find a CNF which can be used as a sample in the CNF Conformance suite for testing on each layer in the [osi-model](https://www.osi-model.com/presentation-layer/). 
      - Ideally it will be a different CNF for each layer, but this is not a hard requirement.
 - Provide a summary of the CNFs for each layer
 - Provide a description of what each CNF is and what it does for each layer.
 
 
 ## [Layer 7 - Application](https://en.wikipedia.org/wiki/Application_layer)
-
-- [CoreDNS sample](https://github.com/cncf/cnf-conformance/tree/master/sample-cnfs/sample-coredns-cnf)
+- [CoreDNS Sample CNF](https://github.com/cncf/cnf-conformance/tree/master/sample-cnfs/sample-coredns-cnf)
 - [NFF Go Deep Packet Inspection example](https://github.com/intel-go/nff-go/tree/master/examples/dpi) example
 
 
-## [Layer 6 - Presentation](https://en.wikipedia.org/wiki/Presentation_layer) ([osi-model](https://www.osi-model.com/presentation-layer/))
-- [linkerd](https://github.com/linkerd/linkerd) - https://github.com/cncf/cnf-conformance/issues/112 (TLS)
+## [Layer 6 - Presentation](https://en.wikipedia.org/wiki/Presentation_layer) 
 - [NFF Go Deep Packet Inspection example](https://github.com/intel-go/nff-go/tree/master/examples/dpi) example
 
 
 ## [Layer 5 - Session](https://en.wikipedia.org/wiki/Session_layer)
-
-- [linkerd](https://github.com/linkerd/linkerd) - https://github.com/cncf/cnf-conformance/issues/112
-    - Built on [Finagle](https://twitter.github.io/finagle/) 
-        - _Finagle operates at Layer 5 in the OSI model (the “session” layer)_ ([ref](https://linkerd.io/2016/03/16/beyond-round-robin-load-balancing-for-latency/))
-- [Rsocket](https://github.com/rsocket/rsocket-go) A [layer 5/6](https://medium.com/netifi/differences-between-grpc-and-rsocket-e736c954e60) binary protocol
-
+- [Rsocket](https://github.com/rsocket/rsocket-go) 
+     - A [layer 5/6](https://medium.com/netifi/differences-between-grpc-and-rsocket-e736c954e60) binary protocol
+- [Netify](https://www.netifi.com/getstarted-kubernetes)
 
 ## [Layer 4 - Transport](https://en.wikipedia.org/wiki/Transport_layer)
-
 - [NFF Go Anti DDOS example](https://github.com/intel-go/nff-go/tree/master/examples/antiddos)
 - [NFF Go NAT example](https://github.com/intel-go/nff-go-nat)
 - [Envoy](https://www.envoyproxy.io/) (L3+L4)
-- [linkerd](https://github.com/linkerd/linkerd) - https://github.com/cncf/cnf-conformance/issues/112
-    - [Linkerd proxy-Automatic layer-4 load balancing for non-HTTP traffic](https://linkerd.io/2/reference/architecture/#proxy)
-- [Tungsten Fabric](https://tungsten.io/)
+- [Istio](https://github.com/istio/istio)
+- [linkerd2](https://github.com/linkerd/linkerd2) 
+    - Also Application Layer
+    - [Linkerd proxy-Automatic layer-4 load balancing for non-HTTP traffic](https://linkerd.io/2/reference/architecture/#proxy)- [Tungsten Fabric](https://tungsten.io/)
 
 
 ## [Layer 3 - Network](https://en.wikipedia.org/wiki/Network_layer)
@@ -54,8 +49,7 @@ This is a preliminary list of CNF samples for each layer in the [OSI model](http
 
 
 ## [Layer 2 - Data](https://en.wikipedia.org/wiki/Data_link_layer)
-[VPP Layer 2 Vlans](https://wiki.fd.io/view/VPP/Per-feature_Notes#VLAN_And_Tags)
-
+- CNF Testbed IP Forwarder (See [3c2n-csp](https://github.com/cncf/cnf-testbed/tree/master/examples/use_case/3c2n-csp))
 - VPP Bridge
 - Linux vNics
 - [NFF Go NAT example](https://github.com/intel-go/nff-go-nat)
