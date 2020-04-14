@@ -20,9 +20,8 @@ This is a preliminary list of CNF samples for each layer in the [OSI model](http
 
 
 ## [Layer 5 - Session](https://en.wikipedia.org/wiki/Session_layer)
-- [Rsocket](https://github.com/rsocket/rsocket-go) 
-     - A [layer 5/6](https://medium.com/netifi/differences-between-grpc-and-rsocket-e736c954e60) binary protocol
 - [Netify](https://www.netifi.com/getstarted-kubernetes)
+     - uses [Rsocket](https://github.com/rsocket/rsocket-go), a [layer 5/6](https://medium.com/netifi/differences-between-grpc-and-rsocket-e736c954e60) binary protocol
 
 ## [Layer 4 - Transport](https://en.wikipedia.org/wiki/Transport_layer)
 - [NFF Go Anti DDOS example](https://github.com/intel-go/nff-go/tree/master/examples/antiddos)
@@ -49,8 +48,8 @@ This is a preliminary list of CNF samples for each layer in the [OSI model](http
 
 
 ## [Layer 2 - Data](https://en.wikipedia.org/wiki/Data_link_layer)
-- CNF Testbed IP Forwarder (See [3c2n-csp](https://github.com/cncf/cnf-testbed/tree/master/examples/use_case/3c2n-csp))
-- VPP Bridge
+- VPP-based IP Forwarder - See [CNF Testbed 3c2n-csp example use case](https://github.com/cncf/cnf-testbed/tree/master/examples/use_case/3c2n-csp)
+- VPP-based Bridge or vSwitch
 - Linux vNics
 - [NFF Go NAT example](https://github.com/intel-go/nff-go-nat)
     * MAC address for "internal" machine
