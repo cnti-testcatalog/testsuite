@@ -93,7 +93,7 @@ white_list_helm_chart_container_names:
   crystal spec
   ```
 
-# CNF Creator/Vendor Install and Usage guide
+# CNF Developer Install and Usage guide
 
 ## Prerequisites
 
