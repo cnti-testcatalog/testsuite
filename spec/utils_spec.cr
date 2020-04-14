@@ -63,4 +63,30 @@ describe "Utils" do
   it "'toggle' should return a boolean for a toggle in the config.yml"do
     (toggle("wip")).should eq(false) 
   end
+
+  it "'check_feature_level' should return the feature level for an argument variable" do
+    args = Sam::Args.new(["name", "arg1=1", "beta"])
+    (check_feature_level(args)).should eq("beta")
+    args = Sam::Args.new(["name", "arg1=1", "alpha"])
+    (check_feature_level(args)).should eq("alpha")
+    args = Sam::Args.new(["name", "arg1=1", "wip"])
+    (check_feature_level(args)).should eq("wip")
+    args = Sam::Args.new(["name", "arg1=1", "hi"])
+    (check_feature_level(args)).should eq("ga")
+
+  end
+
+  it "'check_<x>' should return the feature level for an argument variable" do
+    # (check_ga).should be_false
+    (check_alpha).should be_false
+    (check_beta).should be_false
+    (check_wip).should be_false
+  end
+
+  it "'check_<x>(args)' should return the feature level for an argument variable" do
+    args = Sam::Args.new(["name", "arg1=1", "alpha"])
+    (check_alpha(args)).should be_true
+    (check_beta(args)).should be_true
+    (check_wip(args)).should be_false
+  end
 end

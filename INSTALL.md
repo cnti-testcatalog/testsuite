@@ -66,8 +66,22 @@ white_list_helm_chart_container_names:
 
 ## Example Usage (or see the [complete usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md))
   ```
+  # Run all ga tests (generally available tests)
   crystal src/cnf-conformance.cr all 
+  
+  # Run all beta and ga tests
+  crystal src/cnf-conformance.cr all beta
+  
+  # Run all alpha, beta, and ga tests
+  crystal src/cnf-conformance.cr all alpha
+  
+  # Run all wip, alpha, beta, and ga tests
+  crystal src/cnf-conformance.cr all wip
+  
+  # Run all tests in the configureation lifecycle category
   crystal src/cnf-conformance.cr configuration_lifecycle 
+  
+  # Run all tests in the installability
   crystal src/cnf-conformance.cr installability 
   ```
 
