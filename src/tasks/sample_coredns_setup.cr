@@ -50,6 +50,17 @@ task "sample_generic_cnf_setup", ["helm_local_install"] do |_, args|
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", deploy_with_chart: false, args: args, verbose: true )
 end
 
+task "example_cnf_setup", ["helm_local_install"] do |_, args|
+  puts "sample_generic_cnf" if check_verbose(args)
+  example_cnf = args.named["example-cnf-path"].as(String)
+  sample_setup_args(sample_dir: example_cnf, deploy_with_chart: true, args: args, verbose: true )
+end
+
+task "example_cnf_cleanup" do |_, args|
+  example_cnf = args.named["example-cnf-path"].as(String)
+  sample_cleanup(sample_dir: example_cnf, verbose: true)
+end
+
 task "sample_coredns_cleanup" do |_, args|
   sample_cleanup(sample_dir: "sample-cnfs/sample-coredns-cnf", verbose: true)
 end
