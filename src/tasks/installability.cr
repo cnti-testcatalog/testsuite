@@ -19,7 +19,8 @@ task "install_script_helm" do |_, args|
     puts current_cnf_dir_short_name if check_verbose(args)
     destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
     puts destination_cnf_dir if check_verbose(args)
-    install_script = config.get("install_script").as_s
+    install_script = config.get("install_script").as_s?
+    if install_script
     response = String::Builder.new
     content = File.open("#{destination_cnf_dir}/#{install_script}") do |file|
       file.gets_to_end
@@ -34,6 +35,10 @@ task "install_script_helm" do |_, args|
     else
       upsert_passed_task("install_script_helm")
       puts "PASSED: Helm found in supplied install script".colorize(:green)
+    end
+    else
+      upsert_passed_task("install_script_helm")
+      puts "PASSED (by default): No install script provided".colorize(:green)
     end
   rescue ex
     puts ex.message

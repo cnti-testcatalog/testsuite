@@ -16,6 +16,7 @@ task "ip_addresses" do |_, args|
     response = String::Builder.new
     Dir.cd(CNF_DIR)
     # TODO ignore *example*, *.md, *.txt
+    # TODO ignore 0.0.0.0
     Process.run("grep -rnw -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}'", shell: true) do |proc|
       # Process.run("grep -rnw -E -o 'hithere'", shell: true) do |proc|
       while line = proc.output.gets

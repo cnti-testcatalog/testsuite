@@ -1,6 +1,9 @@
 require "totem"
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
+
+# TODO put this in a module
+
 PASSED = "passed"
 FAILED = "failed"
 # CONFIG = Totem.from_file "./config.yml"
@@ -183,6 +186,34 @@ def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_dir
   end
 end
 
+# TODO helm chart utility for pulling helm chart source into the cnfs directory
+# def pull_helm_chart(release_name, helm_chart, helm_directory, destination_cnf_dir,  verbose: true)
+#   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+#   puts helm if verbose
+#
+#   puts "deploying with chart" if verbose 
+#   helm_install = `#{helm} install #{release_name} #{helm_chart}`
+#   puts helm_install if verbose 
+#
+#   # Retrieve the helm chart source
+#   FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}") 
+#   helm_pull = `#{helm} pull #{helm_chart}`
+#   puts helm_pull if verbose 
+#   # core_mv = `mv #{release_name}-*.tgz #{destination_cnf_dir}/#{helm_directory}`
+#   # TODO helm_chart should be helm_chart_repo
+#   puts "mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/#{helm_directory}" if verbose
+#   core_mv = `mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/#{helm_directory}`
+#   puts core_mv if verbose 
+#
+#   puts "cd #{destination_cnf_dir}/#{helm_directory}; tar -xvf #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}-*.tgz" if verbose
+#   tar = `cd #{destination_cnf_dir}/#{helm_directory}; tar -xvf #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}-*.tgz`
+#   puts tar if verbose
+#
+#   puts "mv #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/#{helm_directory}" if verbose
+#   move_chart = `mv #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/#{helm_directory}`
+#   puts move_chart if verbose
+# end
+
 def tools_helm
   current_dir = FileUtils.pwd 
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
@@ -252,6 +283,7 @@ def create_results_yml
 end
 
 def points_yml
+  # TODO get points.yml from remote http
   points = File.open("points.yml") do |f| 
     YAML.parse(f)
   end 

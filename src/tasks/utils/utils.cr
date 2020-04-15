@@ -2,6 +2,8 @@ require "totem"
 require "./sample_utils.cr"
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
+# TODO put these functions into a module
+
 CNF_DIR = "cnfs"
 TOOLS_DIR = "tools"
 
