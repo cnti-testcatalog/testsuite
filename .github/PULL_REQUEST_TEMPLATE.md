@@ -4,7 +4,7 @@
 (name of issue/change)
 
 ## Issues:
-- https://github.com/cncf/cnf-conformance/issues/NNN
+Fixes: #NNN
 
 ## How has this been tested:
  - [ ] Covered by existing integration testing
