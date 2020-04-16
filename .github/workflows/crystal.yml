@@ -19,7 +19,7 @@ jobs:
     - name: Install dependencies
       run: shards install
     - name: Kind install
-      run:
+      run: |
         apt install curl
         apt install wget
         wget https://dl.google.com/go/go1.12.linux-amd64.tar.gz
