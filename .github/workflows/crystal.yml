@@ -21,8 +21,7 @@ jobs:
     - name: Kind install
       run: |
         export DEBIAN_FRONTEND=noninteractive
-        apt-get update -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef \
-        -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
+        apt-get update -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
         apt-get install -f curl
         apt-get install -f wget
         wget https://dl.google.com/go/go1.12.linux-amd64.tar.gz
