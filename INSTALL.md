@@ -109,7 +109,7 @@ white_list_helm_chart_container_names:
 ## Setup and configuration
 
 
-**Download/Install the conformance suite**
+### Download/Install the conformance suite
 
 - Download the latest [binary release](https://github.com/cncf/cnf-conformance/releases)
 - Make the binary executable (eg. `chmod +x cnf-conformance`)
@@ -121,7 +121,7 @@ _Alternative: [source install](https://github.com/cncf/cnf-conformance/blob/mast
 
 
 
-**Configure the conformance suite for testing a CNF**
+### Configure the conformance suite for testing a CNF
 - Initialize the test suite by running `cnf-conformance setup` (creates cnfs folder and other items)
 - Create a folder under the `cnfs/` directory for your CNF. Eg. `cnfs/my_layer4_proxy_cnf` or `cnfs/my_ipsec_cnf`
 - Create a Conformance configuration file called `cnf-confromance.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`)
