@@ -20,6 +20,7 @@ jobs:
       run: shards install
     - name: Kind install
       run: |
+        apt-get update
         apt-get install curl
     - name: Run tests
       run: crystal spec
