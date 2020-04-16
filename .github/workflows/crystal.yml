@@ -19,7 +19,7 @@ jobs:
     - name: Install dependencies
       run: shards install
     - name: Kind install
-      run: yes Y |
+      run: |
         apt-get update
         apt-get install curl
         apt-get install wget
