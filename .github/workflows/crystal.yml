@@ -20,8 +20,8 @@ jobs:
       run: shards install
     - name: Kind install
       run: |
-        apt install curl
-        apt install wget
+        sudo apt-get install curl
+        sudo apt-get install wget
         wget https://dl.google.com/go/go1.12.linux-amd64.tar.gz
         tar -xvf go1.12.linux-amd64.tar.gz
         sudo mv go /usr/local
