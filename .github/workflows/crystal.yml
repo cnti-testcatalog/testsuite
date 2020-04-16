@@ -20,9 +20,9 @@ jobs:
       run: shards install
     - name: Kind install
       run: |
-        DEBIAN_FRONTEND=noninteractive apt-get update -q -y -u  -o Dpkg::Options::="--force-confdef" --allow-downgrades --allow-remove-essential --allow-change-held-packages --allow-change-held-packages --allow-unauthenticated
-        apt-get install -f curl
-        apt-get install -f wget
+				apt-get update
+        apt-get install -y curl
+        apt-get install -y wget
         wget https://dl.google.com/go/go1.12.linux-amd64.tar.gz
         tar -xvf go1.12.linux-amd64.tar.gz
         mv go /usr/local
