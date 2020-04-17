@@ -149,7 +149,7 @@ def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_dir
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts helm if verbose
     if deploy_with_chart
-      puts "deploying with chart" if verbose 
+      puts "deploying with chart repository" if verbose 
       helm_install = `#{helm} install #{release_name} #{helm_chart}`
       puts helm_install if verbose 
 

@@ -57,14 +57,14 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
 
     config = cnf_conformance_yml
     helm_directory = config.get("helm_directory").as_s
-    helm_chart_repo = config.get("helm_chart").as_s
+    # helm_chart_repo = config.get("helm_chart").as_s
 
     if args.named.keys.includes? "cnf_chart_path"
       helm_directory = args.named["cnf_chart_path"]
     end
 
     puts "helm_directory: #{helm_directory}" if check_verbose(args)
-    puts "helm_chart_repo: #{helm_chart_repo}" if check_verbose(args)
+    # puts "helm_chart_repo: #{helm_chart_repo}" if check_verbose(args)
 
     current_dir = FileUtils.pwd 
     puts current_dir if check_verbose(args)
