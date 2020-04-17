@@ -62,7 +62,21 @@ white_list_helm_chart_container_names:
   ``` 
   crystal src/cnf-conformance.cr sample_coredns_setup
   ```
-  ### Get ready to rock and roll! 
+### (optional) Build binary
+
+```
+crystal build src/cnf-conformance.cr --release
+```
+
+then you can invoke the conformance suite from the binary i.e.
+
+```
+./cnf-conformance setup
+```
+
+
+
+### Get ready to rock and roll! 
 
 ## Example Usage (or see the [complete usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md))
   ```
@@ -93,6 +107,13 @@ white_list_helm_chart_container_names:
   crystal spec
   ```
 
+**Binary build**
+
+```
+crystal build src/cnf-conformance.cr --release
+./cnf-conformance | sha256sum
+```
+
 # CNF Developer Install and Usage guide
 
 ## Prerequisites
@@ -115,10 +136,9 @@ white_list_helm_chart_container_names:
 - Make the binary executable (eg. `chmod +x cnf-conformance`)
 - Move the downloaded binary to somewhere in your executable PATH (eg. `sudo cp cnf-conformance /usr/local/bin/cnf-conformance`)
 
+ **Alternatives**
 
-
-_Alternative: [source install](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#source-install)_
-
+- [source install](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#source-install) above
 
 
 ### Configure the conformance suite for testing a CNF
@@ -143,7 +163,7 @@ cnf_image_version: latest
 white_list_helm_chart_container_names: [falco, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
 ```
   - Optionally, copy the example configuration file, `cnf-conformance-example.yml`, and modify appropriately
-  
+
 
 ## Running and checking results for the Conformance testing
 
