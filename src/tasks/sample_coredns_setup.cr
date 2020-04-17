@@ -53,7 +53,12 @@ end
 task "example_cnf_setup", ["helm_local_install"] do |_, args|
   puts "sample_generic_cnf" if check_verbose(args)
   example_cnf = args.named["example-cnf-path"].as(String)
-  sample_setup_args(sample_dir: example_cnf, deploy_with_chart: true, args: args, verbose: true )
+  if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
+    deploy_with_chart = false
+  else
+    deploy_with_chart = true
+  end
+  sample_setup_args(sample_dir: example_cnf, deploy_with_chart: deploy_with_chart, args: args, verbose: true )
 end
 
 task "example_cnf_cleanup" do |_, args|
