@@ -25,10 +25,10 @@ jobs:
         echo "::set-env name=GOROOT::/usr/local/go" && \
         echo "::set-env name=GOPATH::${{ github.workspace }}/go" && \
         echo "::set-env name=PATH::$GOPATH/bin:$GOROOT/bin:$PATH" && \
-        curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/ && \
+        curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && mv kubectl /usr/local/bin/ && \
         GO111MODULE=on go get sigs.k8s.io/kind && \
-        curl -Lo kind https://github.com/kubernetes-sigs/kind/releases/download/0.0.1/kind-linux-amd64 && chmod +x kind && sudo mv kind /usr/local/bin/ && \
+        curl -Lo kind https://github.com/kubernetes-sigs/kind/releases/download/0.0.1/kind-linux-amd64 && chmod +x kind && mv kind /usr/local/bin/ && \
         kind create cluster && \
-        KUBECONFIG="$(kind get kubeconfig-path)"
+        echo "::set-env name=KUBECONFIG::${{kind get kubeconfig-path}}"
     - name: Run tests
       run: crystal spec
