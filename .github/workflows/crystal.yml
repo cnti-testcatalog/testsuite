@@ -20,7 +20,7 @@ jobs:
       run: shards install
     - name: Kind install
       shell: bash
-      run:
+      run: |
         apt-get update && apt-get install -y curl && apt-get install -y wget && wget https://dl.google.com/go/go1.12.linux-amd64.tar.gz && tar -xvf go1.12.linux-amd64.tar.gz && mv go /usr/local && \
         echo "::set-env name=GOROOT::/usr/local/go" && \
         echo "::set-env name=GOPATH::${{ github.workspace }}/go" && \
