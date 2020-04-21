@@ -29,6 +29,6 @@ jobs:
         GO111MODULE=on go get sigs.k8s.io/kind && \
         curl -Lo kind https://github.com/kubernetes-sigs/kind/releases/download/0.0.1/kind-linux-amd64 && chmod +x kind && mv kind /usr/local/bin/ && \
         kind create cluster && \
-        echo "::set-env name=KUBECONFIG::${{kind get kubeconfig-path}}"
+        echo "::set-env name=KUBECONFIG::$(kind get kubeconfig-path)"
     - name: Run tests
       run: crystal spec
