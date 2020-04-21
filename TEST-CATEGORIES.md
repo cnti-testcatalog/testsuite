@@ -70,3 +70,10 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 *  Testing if the CNF accessess hardware directly during run-time (e.g. accessing the host /dev or /proc from a mount)
 *  Testing if the CNF accessess hugepages directly instead of via [Kubernetes resources](https://github.com/cncf/cnf-testbed/blob/c4458634deca5e8ab73adf118eedde32904c8458/examples/use_case/external-packet-filtering-on-k8s-nsm-on-packet/gateway.yaml#L29)
 *  Testing if the CNF Testbed performance output shows adequate throughput and sessions using the [CNF Testbed](https://github.com/cncf/cnf-testbed) (vendor neutral) hardware environment.
+
+## Resilience Tests 
+[CN Definition](https://github.com/cncf/toc/blob/master/DEFINITION.md) requires systems to be Resilient to failures inevitable in cloud environments. CNF Resilience should be tested to ensure CNFs are designed to deal with non-carrier-grade shared cloud HW/SW platform:
+- For full failures in SW and HW platform: stopped cloud infrastructure/platform services, workload microservices or HW ingredients
+- For bursty, regular or partial impairments on key dependencies: CPU cycles by pausing, limiting or overloading; DPDK-based Dataplane networking by dropping and/or delaying packets.
+
+Tools to study/use for such testing methodology: Above mentioned Pumba and Blocade, [Mitmproxy](https://github.com/mitmproxy/mitmproxy/), Istio for "[Network Resilience](https://istio.io/docs/concepts/traffic-management/#network-resilience-and-testing)", kill -STOP -CONT, [LimitCPU](http://limitcpu.sourceforge.net/), [Packet pROcessing eXecution (PROX) engine](https://wiki.opnfv.org/pages/viewpage.action?pageId=12387840) as [Impair Gateway](https://github.com/opnfv/samplevnf/blob/master/VNFs/DPPD-PROX/helper-scripts/rapid/impair.cfg).
