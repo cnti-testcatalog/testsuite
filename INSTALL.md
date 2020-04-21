@@ -58,7 +58,15 @@ white_list_helm_chart_container_names:
   ``` 
   crystal src/cnf-conformance.cr cleanup
   ```
-  * To set up a *sample cnf* for use with cnf-conformance
+  * Install your CNF into the cnfs directory, download the helm charts, and download the source code:
+  ```
+  crystal src/cnf-conformance.cr cnf_setup cnf-path=<your cnf directory>
+  ```
+  * To remove your CNF from the cnfs directory and cluster
+  ```
+  crystal src/cnf-conformance.cr cnf_cleanup cnf-path=<your cnf directory>
+  ```
+  * (Optional) To set up a *sample cnf* for use with cnf-conformance
   ``` 
   crystal src/cnf-conformance.cr sample_coredns_setup
   ```
