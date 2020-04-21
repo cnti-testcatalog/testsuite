@@ -1,0 +1,12 @@
+---
+helm_directory: coredns ; or
+helm_chart_repo: stable/coredns
+
+git_clone_url: https://github.com/coredns/coredns.git
+install_script: cnfs/coredns/Makefile
+
+release_name: privileged-coredns
+deployment_name: privileged-coredns-coredns 
+application_deployment_names: [privileged-coredns-coredns]
+helm_chart_container_name: privileged-coredns-coredns
+white_list_helm_chart_container_names: [coredns]
