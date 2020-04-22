@@ -19,6 +19,11 @@ crystal build src/cnf-conformance.cr
 crystal src/cnf-conformance.cr all
 ```
 
+## To see a list of all tasks in the test suite
+``` 
+crystal src/cnf-conformance.cr help 
+```
+
 ## Compatibility Tests
 #### :heavy_check_mark: To run all of the compatibility tests
 ```
