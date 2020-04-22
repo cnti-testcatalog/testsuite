@@ -5,7 +5,7 @@ lie several filters that provide a rich set of features for observing, securing,
 and routing network traffic to microservices
 
 ## Pre-req:
-Follow Pre-req steps, including
+Follow [Pre-req steps](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#prerequisites), including
 Set the KUBECONFIG environment to point to the remote K8s cluster
 
 ### Automated Envoy installation
@@ -13,15 +13,19 @@ Run cnf-conformance setup
 ```
 crystal src/cnf-conformance.cr setup
 ```
+
 Install Envoy 
 ```
 crystal src/cnf-conformance.cr cnf_setup cnf-path=example-cnfs/envoy
 ```
+
+Run the conformance suite: 
+```
+crystal src/cnf-conformance.cr all
+```
+
 Envoy cleanup
 ```
 crystal src/cnf-conformance.cr cnf_cleanup cnf-path=example-cnfs/envoy
 ```
-Run the conformance suite: `crystal src/cnf-conformance.cr all`
-
-
   
