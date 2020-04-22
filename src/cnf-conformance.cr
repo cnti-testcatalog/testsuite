@@ -9,6 +9,7 @@ task "all", ["compatibility","stateless", "security", "scalability", "configurat
     else
       puts "Final score: #{total}".colorize(:red)
     end
+    results = `mv results.yml cnf-conformance-results-#{Time.local.to_s("%Y%m%d-%H%M%S-%L")}.yml}`
 end
 
 Sam.help
