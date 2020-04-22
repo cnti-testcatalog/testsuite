@@ -259,10 +259,11 @@ items:
 END
 end
 
+LOGFILE = "cnf-conformance-results-#{Time.utc.to_s("%Y%m%d")}.log"
 def create_results_yml
   continue = false
-  if File.exists?("results.yml")
-    puts "Do you wish to overwrite the results.ymlfile? If so, your results will be lost."
+  if File.exists?("#{LOGFILE}")
+    puts "Do you wish to overwrite the #{LOGFILE} file? If so, your results will be lost."
     print "(Y/N) (Default N): > "
     if ENV["CRYSTAL_ENV"]? == "TEST"
       continue = true
@@ -276,7 +277,7 @@ def create_results_yml
     continue = true
   end
   if continue
-    File.open("results.yml", "w") do |f| 
+    File.open("#{LOGFILE}", "w") do |f| 
       YAML.dump(template_results_yml, f)
     end 
   end
@@ -292,7 +293,7 @@ def points_yml
 end
 
 def upsert_task(task, status, points)
-  results = File.open("results.yml") do |f| 
+  results = File.open("#{LOGFILE}") do |f| 
     YAML.parse(f)
   end 
   found = false
@@ -301,7 +302,7 @@ def upsert_task(task, status, points)
   end
 
   result_items << YAML.parse "{name: #{task}, status: #{status}, points: #{points}}"
-  File.open("results.yml", "w") do |f| 
+  File.open("#{LOGFILE}", "w") do |f| 
     YAML.dump({name: results["name"],
                status: results["status"],
                points: results["points"],
@@ -328,7 +329,7 @@ def failing_task(task)
 end
 
 def total_points
-  yaml = File.open("results.yml") do |file|
+  yaml = File.open("#{LOGFILE}") do |file|
     YAML.parse(file)
   end
   yaml["items"].as_a.reduce(0) do |acc, i|
@@ -356,7 +357,7 @@ end
 def results_by_tag(tag)
   task_list = tasks_by_tag(tag)
 
-  results = File.open("results.yml") do |f| 
+  results = File.open("#{LOGFILE}") do |f| 
     YAML.parse(f)
   end 
 

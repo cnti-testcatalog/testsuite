@@ -14,7 +14,7 @@ describe "Utils" do
 
   it "'create_results_yml' should create a results yaml file" do
     create_results_yml
-    yaml = File.open("results.yml") do |file|
+    yaml = File.open("#{LOGFILE}") do |file|
       YAML.parse(file)
     end
     (yaml["name"]).should eq("cnf conformance")
@@ -35,7 +35,7 @@ describe "Utils" do
   it "'upsert_task' should find and update an existing task in the file" do
     create_results_yml
     upsert_task("liveness", PASSED, passing_task("liveness"))
-    yaml = File.open("results.yml") do |file|
+    yaml = File.open("#{LOGFILE}") do |file|
       YAML.parse(file)
     end
     # puts yaml["items"].as_a.inspect
