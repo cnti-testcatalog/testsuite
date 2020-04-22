@@ -1,18 +1,12 @@
 require "../../spec_helper"
 require "colorize"
 require "../../../src/tasks/utils/utils.cr"
-require "../../../src/tasks/utils/system_information/prereqs.cr"
+require "../../../src/tasks/prereqs.cr"
 require "../../../src/tasks/utils/system_information/helm.cr"
 require "file_utils"
 require "sam"
 
-describe "Command" do
-  it "'prereq' should check the system for prerequisites" do
-    response_s = `crystal src/cnf-conformance.cr prereqs verbose`
-    puts response_s
-    $?.success?.should be_true
-    (/helm found/ =~ response_s).should_not be_nil
-  end
+describe "Helm" do
 
   it "'helm_global_response()' should return the information about the helm installation" do
     (helm_global_response(true)).should contain("\"v2.")
@@ -27,6 +21,6 @@ describe "Command" do
   end
 
   it "'helm_installations()' should return the information about the helm installation" do
-    (helm_installations(true)).should contain("helm found")
+    (helm_installation(true)).should contain("helm found")
   end
 end
