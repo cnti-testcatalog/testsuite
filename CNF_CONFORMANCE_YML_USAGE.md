@@ -1,4 +1,4 @@
-# 2020-04-15 - Usage document for the cnf-conformance.yml
+# Usage document for the cnf-conformance.yml
 
 
 ### What is the cnf-conformance.yml and why is it required?:
