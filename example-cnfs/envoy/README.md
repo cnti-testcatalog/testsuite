@@ -13,15 +13,19 @@ Run cnf-conformance setup
 ```
 crystal src/cnf-conformance.cr setup
 ```
+
 Install Envoy 
 ```
 crystal src/cnf-conformance.cr cnf_setup cnf-path=example-cnfs/envoy
 ```
+
+Run the conformance suite: 
+```
+crystal src/cnf-conformance.cr all
+```
+
 Envoy cleanup
 ```
 crystal src/cnf-conformance.cr cnf_cleanup cnf-path=example-cnfs/envoy
 ```
-Run the conformance suite: `crystal src/cnf-conformance.cr all`
-
-
   
