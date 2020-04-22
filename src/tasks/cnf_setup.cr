@@ -50,9 +50,9 @@ task "sample_generic_cnf_setup", ["helm_local_install"] do |_, args|
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", deploy_with_chart: false, args: args, verbose: true )
 end
 
-task "example_cnf_setup", ["helm_local_install"] do |_, args|
-  puts "sample_generic_cnf" if check_verbose(args)
-  example_cnf = args.named["example-cnf-path"].as(String)
+task "cnf_setup", ["helm_local_install"] do |_, args|
+  puts "cnf_setup" if check_verbose(args)
+  example_cnf = args.named["cnf-path"].as(String)
   if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
     deploy_with_chart = false
   else
@@ -61,9 +61,9 @@ task "example_cnf_setup", ["helm_local_install"] do |_, args|
   sample_setup_args(sample_dir: example_cnf, deploy_with_chart: deploy_with_chart, args: args, verbose: true )
 end
 
-task "example_cnf_cleanup" do |_, args|
-  example_cnf = args.named["example-cnf-path"].as(String)
-  sample_cleanup(sample_dir: example_cnf, verbose: true)
+task "cnf_cleanup" do |_, args|
+  cnf = args.named["cnf-path"].as(String)
+  sample_cleanup(sample_dir: cnf, verbose: true)
 end
 
 task "sample_coredns_cleanup" do |_, args|

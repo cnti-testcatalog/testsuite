@@ -31,4 +31,9 @@ jobs:
 
         # Set KUBECONFIG environment variable
         - export KUBECONFIG="$(kind get kubeconfig-path)"
-      script: crystal spec -v
+      script: 
+        #- crystal spec -v
+        - crystal build src/cnf-conformance.cr
+        - ./cnf-conformance sample_coredns
+        - ./cnf-conformance results_yml_setup
+        - ./cnf-conformance liveness verbose
