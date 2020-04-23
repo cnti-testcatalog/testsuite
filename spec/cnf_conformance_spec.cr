@@ -37,6 +37,8 @@ describe CnfConformance do
   it "'scalability' should run all of the scalability tests" do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
+    response_s = `crystal src/cnf-conformance.cr setup`
+    puts response_s
     response_s = `crystal src/cnf-conformance.cr scalability`
     puts response_s
       $?.success?.should be_true
