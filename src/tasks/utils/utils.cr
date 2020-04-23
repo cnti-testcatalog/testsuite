@@ -6,6 +6,8 @@ require "./sample_utils.cr"
 
 CNF_DIR = "cnfs"
 TOOLS_DIR = "tools"
+# LOGFILE = "cnf-conformance-results-#{Time.utc.to_s("%Y%m%d")}.log"
+LOGFILE = "results.yml"
 
 def check_args(args)
   check_verbose(args)
@@ -82,3 +84,129 @@ end
 def check_wip(args)
   toggle("wip") || check_feature_level(args) == "wip"
 end
+
+def template_results_yml
+  #TODO add tags for category summaries
+  YAML.parse <<-END
+name: cnf conformance 
+status: 
+points: 
+items: []
+END
+end
+
+def create_results_yml
+  continue = false
+  if File.exists?("#{LOGFILE}")
+    puts "Do you wish to overwrite the #{LOGFILE} file? If so, your previous results.yml will be lost."
+    print "(Y/N) (Default N): > "
+    if ENV["CRYSTAL_ENV"]? == "TEST"
+      continue = true
+    else
+      user_input = gets
+      if user_input == "Y" || user_input == "y"
+        continue = true
+      end
+    end
+  else
+    continue = true
+  end
+  if continue
+    File.open("#{LOGFILE}", "w") do |f| 
+      YAML.dump(template_results_yml, f)
+    end 
+  end
+end
+
+def points_yml
+  # TODO get points.yml from remote http
+  points = File.open("points.yml") do |f| 
+    YAML.parse(f)
+  end 
+  # puts "points: #{points.inspect}"
+  points.as_a
+end
+
+def upsert_task(task, status, points)
+  results = File.open("#{LOGFILE}") do |f| 
+    YAML.parse(f)
+  end 
+  found = false
+  result_items = results["items"].as_a.reject! do |x|
+    x["name"].as_s? == "liveness"
+  end
+
+  result_items << YAML.parse "{name: #{task}, status: #{status}, points: #{points}}"
+  File.open("#{LOGFILE}", "w") do |f| 
+    YAML.dump({name: results["name"],
+               status: results["status"],
+               points: results["points"],
+               items: result_items}, f)
+  end 
+end
+
+def upsert_failed_task(task)
+  upsert_task(task, FAILED, failing_task(task))
+end
+
+def upsert_passed_task(task)
+  upsert_task(task, PASSED, passing_task(task))
+end
+
+def passing_task(task)
+  points = points_yml.find {|x| x["name"] == task}
+  puts "task #{task} not found in points.yml" unless points
+  points["pass"].as_i if points
+end
+
+def failing_task(task)
+  points = points_yml.find {|x| x["name"] == task}
+  puts "task #{task} not found in points.yml" unless points
+  points["fail"].as_i if points
+end
+
+def total_points
+  yaml = File.open("#{LOGFILE}") do |file|
+    YAML.parse(file)
+  end
+  yaml["items"].as_a.reduce(0) do |acc, i|
+    if i["points"].as_i?
+      (acc + i["points"].as_i)
+    else
+      acc
+    end
+  end
+end
+
+def tasks_by_tag(tag)
+  #TODO cross reference points.yml tags with results
+  found = false
+  result_items = points_yml.reduce([] of String) do |acc, x|
+    # x["tags"].as_s.includes?(tag) if x["tags"].as_s?
+    if x["tags"].as_s? && x["tags"].as_s.includes?(tag)
+      acc << x["name"].as_s
+    else
+      acc
+    end
+  end
+end
+
+def results_by_tag(tag)
+  task_list = tasks_by_tag(tag)
+
+  results = File.open("#{LOGFILE}") do |f| 
+    YAML.parse(f)
+  end 
+
+  found = false
+  result_items = results["items"].as_a.reduce([] of YAML::Any) do |acc, x|
+    if x["name"].as_s? && task_list.find{|tl| tl == x["name"].as_s}
+      acc << x
+    else
+      acc
+    end
+  end
+
+end
+
+
