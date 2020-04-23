@@ -20,6 +20,14 @@ def cnf_conformance_yml
   Totem.from_file "./#{cnf_conformance}"
 end
 
+def final_cnf_results_yml
+  results_file = `find ./* -name "cnf-conformance-results-*.yml"`.split("\n")[-2].gsub("./", "")
+  if results_file.empty?
+    raise "No cnf_conformance-results-*.yml found! Did you run the all task?"
+  end
+  results_file
+end
+
 def cnf_conformance_yml(sample_cnf_destination_dir)
   short_sample_cnf_destination_dir = sample_cnf_destination_dir.split("/")[-1] 
   cnf_conformance = `find #{CNF_DIR}/#{short_sample_cnf_destination_dir}/* -name "cnf-conformance.yml"`.split("\n")[0]

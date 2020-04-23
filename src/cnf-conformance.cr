@@ -9,7 +9,7 @@ task "all", ["results_yml_setup", "compatibility","stateless", "security", "scal
     else
       puts "Final score: #{total}".colorize(:red)
     end
-    new_results = "cnf-conformance-results-" + Time.local.to_s("%Y%m%d-%H%M%S-%L") + ".yml"
+    new_results = create_final_results_yml_name
     results = `mv #{LOGFILE} #{new_results}`
     puts "Results have been saved to #{new_results}"
 end

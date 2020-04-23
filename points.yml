@@ -139,7 +139,7 @@
   pass: 5
   fail: -1 
 
-- name: k8s_conformanc3
+- name: k8s_conformance
   tags: platform, dynamic
   pass: 5
   fail: -1 

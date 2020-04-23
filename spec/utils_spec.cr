@@ -20,6 +20,16 @@ describe "Utils" do
     (yaml["name"]).should eq("cnf conformance")
   end
 
+  it "'final_cnf_results_yml' should return the named yaml file" do
+    yml_name = create_final_results_yml_name
+    unless File.exists?(yml_name)
+      File.open(yml_name, "w") do |f| 
+        YAML.dump(template_results_yml, f)
+      end 
+    end
+    (final_cnf_results_yml).should eq(yml_name)
+  end
+
   it "'points_yml' should parse and return the points yaml file" do
     (points_yml.find {|x| x["name"] =="liveness"}).should be_truthy 
   end
@@ -54,9 +64,20 @@ describe "Utils" do
     (tasks_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
+  it "'all_task_test_names' should return the tasks assigned to a tag"do
+    create_results_yml
+    (all_task_test_names()).should eq(["cni_spec", "api_snoop_alpha", "api_snoop_beta", "api_snoop_general_apis", "reset_cnf", "check_reaped", "privileged", "shells", "protected_access", "increase_capacity", "decrease_capacity", "small_autoscaling", "large_autoscaling", "network_chaos", "external_retry", "versioned_helm_chart", "ip_addresses", "liveness", "readiness", "no_volume_with_configuration", "rolling_update", "fluentd_traffic", "jaeger_traffic", "prometheus_traffic", "opentelemetry_compatible", "openmetric_compatible", "install_script_helm", "helm_chart_valid", "hardware_affinity", "static_accessing_hardware", "dynamic_accessing_hardware", "direct_hugepages", "performance", "k8s_conformance"])
+  end
+
+  it "'all_result_test_names' should return the tasks assigned to a tag"do
+    create_results_yml
+    upsert_task("liveness", PASSED, passing_task("liveness"))
+    (all_result_test_names(LOGFILE)).should eq(["liveness"])
+  end
   it "'results_by_tag' should return a list of results by tag"do
     create_results_yml
-    (results_by_tag("configuration_lifecycle")).should eq([] of YAML::Any)
+    upsert_task("liveness", PASSED, passing_task("liveness"))
+    (results_by_tag("configuration_lifecycle")).should eq([{"name" => "liveness", "status" => "passed", "points" => 5}])
     (results_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 

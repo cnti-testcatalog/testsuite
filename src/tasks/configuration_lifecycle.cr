@@ -50,6 +50,7 @@ task "liveness", ["retrieve_manifest"] do |_, args|
       helm_directory = config.get("helm_directory").as_s
     rescue ex
       errors = errors + 1
+      upsert_failed_task("liveness")
       puts "FAILURE: helm directory not found".colorize(:red)
       puts ex.message if check_args(args)
     end

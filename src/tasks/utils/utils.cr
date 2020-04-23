@@ -95,6 +95,10 @@ items: []
 END
 end
 
+def create_final_results_yml_name
+  "cnf-conformance-results-" + Time.local.to_s("%Y%m%d-%H%M%S-%L") + ".yml"
+end
+
 def create_results_yml
   continue = false
   if File.exists?("#{LOGFILE}")
@@ -132,9 +136,7 @@ def upsert_task(task, status, points)
     YAML.parse(f)
   end 
   found = false
-  result_items = results["items"].as_a.reject! do |x|
-    x["name"].as_s? == "liveness"
-  end
+  result_items = results["items"].as_a
 
   result_items << YAML.parse "{name: #{task}, status: #{status}, points: #{points}}"
   File.open("#{LOGFILE}", "w") do |f| 
@@ -178,6 +180,12 @@ def total_points
   end
 end
 
+def all_task_test_names
+  result_items = points_yml.reduce([] of String) do |acc, x|
+    acc << x["name"].as_s
+  end
+end
+
 def tasks_by_tag(tag)
   #TODO cross reference points.yml tags with results
   found = false
@@ -188,6 +196,15 @@ def tasks_by_tag(tag)
     else
       acc
     end
+  end
+end
+
+def all_result_test_names(results_file)
+  results = File.open(results_file) do |f| 
+    YAML.parse(f)
+  end 
+  result_items = results["items"].as_a.reduce([] of String) do |acc, x|
+      acc << x["name"].as_s
   end
 end
 

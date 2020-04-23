@@ -6,16 +6,16 @@ require "./utils/utils.cr"
 
 desc "Sets up sample CoreDNS CNF"
 task "sample_coredns_setup", ["helm_local_install"] do |_, args|
-    sample_setup_args(sample_dir: "sample-cnfs/sample-coredns-cnf", args: args, verbose: true, wait_count: 0 )
+  sample_setup_args(sample_dir: "sample-cnfs/sample-coredns-cnf", args: args, verbose: true, wait_count: 0 )
 end
 
 task "sample_coredns_with_wait_setup", ["helm_local_install"] do |_, args|
-    sample_setup_args(sample_dir: "sample-cnfs/sample-coredns-cnf", args: args, verbose: true)
+  sample_setup_args(sample_dir: "sample-cnfs/sample-coredns-cnf", args: args, verbose: true)
 end
 
 desc "Sets up sample CoreDNS CNF with source"
 task "sample_coredns_source_setup", ["helm_local_install"] do |_, args|
-    sample_setup_args(sample_dir: "sample-cnfs/sample-coredns-cnf-source", args: args, verbose: true, wait_count: 0 )
+  sample_setup_args(sample_dir: "sample-cnfs/sample-coredns-cnf-source", args: args, verbose: true, wait_count: 0 )
 end
 
 desc "Sets up an alternate sample CoreDNS CNF"
@@ -42,12 +42,12 @@ end
 
 task "sample_coredns_bad_liveness", ["helm_local_install"] do |_, args|
   puts "sample_coredns_bad_liveness" if check_verbose(args)
-    sample_setup_args(sample_dir: "sample-cnfs/sample_coredns_bad_liveness", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
+  sample_setup_args(sample_dir: "sample-cnfs/sample_coredns_bad_liveness", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
 end
 
 task "sample_generic_cnf_setup", ["helm_local_install"] do |_, args|
   puts "sample_generic_cnf" if check_verbose(args)
-    sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", deploy_with_chart: false, args: args, verbose: true )
+  sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", deploy_with_chart: false, args: args, verbose: true )
 end
 
 task "cnf_setup", ["helm_local_install"] do |_, args|

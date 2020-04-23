@@ -18,6 +18,8 @@ task "cleanup_all", ["cleanup_samples", "tools_cleanup"] do  |_, args|
 end
 
 task "results_yml_cleanup" do |_, args|
-  rm = `rm #{LOGFILE}`
-  puts rm if check_verbose(args)
+  if File.exists?("#{LOGFILE}")
+    rm = `rm #{LOGFILE}`
+    puts rm if check_verbose(args)
+  end
 end
