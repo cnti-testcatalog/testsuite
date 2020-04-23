@@ -13,7 +13,7 @@ describe CnfConformance do
     # `crystal src/cnf-conformance.cr setup`
     # $?.success?.should be_true
   end
-  it "'ip_addresses' should fail when ip addresses are found in source is set", tags: "liveness" do
+  it "'ip_addresses' should fail when ip addresses are found in source is set" do
     begin
       `crystal src/cnf-conformance.cr sample_coredns_source_setup verbose`
       $?.success?.should be_true
