@@ -56,7 +56,7 @@ describe "Utils" do
 
   it "'results_by_tag' should return a list of results by tag"do
     create_results_yml
-    (results_by_tag("configuration_lifecycle")).should_not eq([] of YAML::Any)
+    (results_by_tag("configuration_lifecycle")).should eq([] of YAML::Any)
     (results_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 

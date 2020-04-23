@@ -26,10 +26,10 @@ task "ip_addresses" do |_, args|
     end
     Dir.cd(cdir)
     if response.to_s.size > 0
-      upsert_failed_task("ip_address")
+      upsert_failed_task("ip_addresses")
       puts "FAILURE: IP addresses found".colorize(:red)
     else
-      upsert_passed_task("ip_address")
+      upsert_passed_task("ip_addresses")
       puts "PASSED: No IP addresses found".colorize(:green)
     end
   rescue ex
@@ -40,7 +40,6 @@ task "ip_addresses" do |_, args|
   end
 end
 
-#TODO separate out liveness from readiness checks
 desc "Is there a liveness entry in the helm chart?"
 task "liveness", ["retrieve_manifest"] do |_, args|
   begin
@@ -95,6 +94,7 @@ task "readiness", ["retrieve_manifest"] do |_, args|
       helm_directory = config.get("helm_directory").as_s
     rescue ex
       errors = errors + 1
+      upsert_failed_task("readiness")
       puts "FAILURE: helm directory not found".colorize(:red)
       puts ex.message if check_args(args)
     end
