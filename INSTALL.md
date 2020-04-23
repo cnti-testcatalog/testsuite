@@ -153,7 +153,7 @@ crystal build src/cnf-conformance.cr --release
 - Create a Conformance configuration file called `cnf-confromance.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`)
   - See example config (See [latest example in repo](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml)): 
     - Optionally, copy the example configuration file, [`cnf-conformance-example.yml`](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml), and modify appropriately
-- Setup your CNF for testing and deploy it to the cluster by running `crystal src/cnf-conformance.cr cnf_setup cnf-path=path_to_your/cnf_folder`
+- Setup your CNF for testing and deploy it to the cluster by running `cnf-conformance cnf_setup cnf-path=path_to_your/cnf_folder`
     - _NOTE: if you do not want to automatically deploy the using the helm chart defined in the configuration then you MUST pass `deploy_with_chart=false` to the `cnf_setup` command._
 
 
@@ -175,7 +175,7 @@ A test log file, eg. `cnf-conformance-results-20200401.txt`, will be created whi
 
 **Cleaning up**
 
-Run `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=path_to_your/cnf_folder` 
+Run `cnf-conformance cnf_cleanup cnf-path=path_to_your/cnf_folder` 
 
 _NOTE: Does not handle manually deployed CNFs_
 
