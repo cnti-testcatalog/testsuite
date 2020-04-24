@@ -1,6 +1,6 @@
-require "./spec_helper"
+require "../spec_helper"
 require "colorize"
-require "../src/tasks/utils/utils.cr"
+require "../../src/tasks/utils/utils.cr"
 require "file_utils"
 require "sam"
 
@@ -35,26 +35,32 @@ describe "Utils" do
   end
 
   it  "'passing_task' should return the amount of points for a passing test" do
-    (passing_task("liveness")).should eq(5)
+    # default
+    (task_points("liveness")).should eq(5)
+    # assigned
+    (task_points("increase_capacity")).should eq(10)
   end
 
   it  "'failing_task' should return the amount of points for a failing test" do
-    (failing_task("liveness")).should eq(-1)
+    # default
+    (task_points("liveness", false)).should eq(-1)
+    # assigned
+    (task_points("increase_capacity", false)).should eq(-5)
   end
 
   it "'upsert_task' should find and update an existing task in the file" do
     create_results_yml
-    upsert_task("liveness", PASSED, passing_task("liveness"))
+    upsert_task("liveness", PASSED, task_points("liveness"))
     yaml = File.open("#{LOGFILE}") do |file|
       YAML.parse(file)
     end
     # puts yaml["items"].as_a.inspect
-    (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == passing_task("liveness")}).should be_truthy
+    (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == task_points("liveness")}).should be_truthy
   end
 
   it "'total_points' should sum the total amount of points in the results"do
     create_results_yml
-    upsert_task("liveness", PASSED, passing_task("liveness"))
+    upsert_task("liveness", PASSED, task_points("liveness"))
     (total_points).should eq(5)
   end
 
@@ -71,12 +77,12 @@ describe "Utils" do
 
   it "'all_result_test_names' should return the tasks assigned to a tag"do
     create_results_yml
-    upsert_task("liveness", PASSED, passing_task("liveness"))
+    upsert_task("liveness", PASSED, task_points("liveness"))
     (all_result_test_names(LOGFILE)).should eq(["liveness"])
   end
   it "'results_by_tag' should return a list of results by tag"do
     create_results_yml
-    upsert_task("liveness", PASSED, passing_task("liveness"))
+    upsert_task("liveness", PASSED, task_points("liveness"))
     (results_by_tag("configuration_lifecycle")).should eq([{"name" => "liveness", "status" => "passed", "points" => 5}])
     (results_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end

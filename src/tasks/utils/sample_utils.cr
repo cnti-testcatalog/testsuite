@@ -4,8 +4,6 @@ require "totem"
 
 # TODO put this in a module
 
-PASSED = "passed"
-FAILED = "failed"
 # CONFIG = Totem.from_file "./config.yml"
 
 # TODO return array of cnf directories from the cnfs directory
