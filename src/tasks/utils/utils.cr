@@ -1,4 +1,5 @@
 require "totem"
+require "colorize"
 require "./sample_utils.cr"
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
@@ -149,6 +150,16 @@ def upsert_task(task, status, points)
   end 
 end
 
+def failed_task(task, msg)
+  upsert_task(task, FAILED, task_points(task, false))
+  puts "#{msg}".colorize(:red)
+end
+
+def passed_task(task, msg)
+  upsert_task(task, PASSED, task_points(task))
+  puts "#{msg}".colorize(:green)
+end
+
 def upsert_failed_task(task)
   upsert_task(task, FAILED, task_points(task, false))
 end
@@ -170,6 +181,31 @@ def task_points(task, passed=true)
   else
     points = points_yml.find {|x| x["name"] == "default_scoring"}
     points[field_name].as_i if points
+  end
+end
+
+def task_required(task)
+  points = points_yml.find {|x| x["name"] == task}
+  puts "task #{task} not found in points.yml" unless points
+  if points && points["required"]? && points["required"].as_bool == true
+    true
+  else
+    false
+  end
+end
+
+def failed_required_tasks
+  yaml = File.open("#{LOGFILE}") do |file|
+    YAML.parse(file)
+  end
+  yaml["items"].as_a.reduce([] of String) do |acc, i|
+    if i["status"].as_s == "failed" && 
+        i["name"].as_s? && 
+        task_required(i["name"].as_s)
+      (acc << i["name"].as_s)
+    else
+      acc
+    end
   end
 end
 

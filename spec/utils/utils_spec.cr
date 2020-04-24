@@ -34,18 +34,51 @@ describe "Utils" do
     (points_yml.find {|x| x["name"] =="liveness"}).should be_truthy 
   end
 
-  it  "'passing_task' should return the amount of points for a passing test" do
+  it  "'task_points' should return the amount of points for a passing test" do
     # default
     (task_points("liveness")).should eq(5)
     # assigned
     (task_points("increase_capacity")).should eq(10)
   end
 
-  it  "'failing_task' should return the amount of points for a failing test" do
+  it  "'task_points(, false)' should return the amount of points for a failing test" do
     # default
     (task_points("liveness", false)).should eq(-1)
     # assigned
     (task_points("increase_capacity", false)).should eq(-5)
+  end
+
+  it "'failed_task' should find and update an existing task in the file" do
+    create_results_yml
+    failed_task("liveness", "FAILURE: No livenessProbe found")
+
+    yaml = File.open("#{LOGFILE}") do |file|
+      YAML.parse(file)
+    end
+    puts yaml.inspect
+    (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == task_points("liveness", false)}).should be_truthy
+  end
+
+  it "'passed_task' should find and update an existing task in the file" do
+    create_results_yml
+    passed_task("liveness", "PASSED: livenessProbe found")
+
+    yaml = File.open("#{LOGFILE}") do |file|
+      YAML.parse(file)
+    end
+    puts yaml.inspect
+    (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == task_points("liveness")}).should be_truthy
+  end
+
+  it "'task_required' should return if the passed task is required" do
+    create_results_yml
+    (task_required("privileged")).should be_true
+  end
+
+  it "'failed_required_tasks' should return a list of failed required tasks" do
+    create_results_yml
+    failed_task("privileged", "FAILURE: Privileged container found")
+    (failed_required_tasks).should eq(["privileged"])
   end
 
   it "'upsert_task' should find and update an existing task in the file" do

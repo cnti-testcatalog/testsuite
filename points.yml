@@ -19,6 +19,7 @@
 
 - name: privileged 
   tags: security, dynamic
+  required: true
 - name: shells 
   tags: security, dynamic
 - name: protected_access 
