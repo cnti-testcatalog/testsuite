@@ -8,6 +8,12 @@ Description:
 - Based on the fd.io VPP project
 - Interface attached to host bridge
 
+### Requirements
+
+To run this example CNF, note the following requirements:
+- [Multus](https://github.com/intel/multus-cni) must be installed and available in the cluster. This is available by default if using the [CNF Testbed](https://github.com/cncf/cnf-testbed)
+- The example CNF should be installed on a bare-metal K8s cluster. The VPP core assignments have not yet been tested with a Kind cluster, and might cause the example deployment to fail.
+
 # Prerequistes
 ### Install helm version 3
 
