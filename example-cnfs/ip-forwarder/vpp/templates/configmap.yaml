@@ -35,8 +35,7 @@ data:
     }
 
     plugins {
-      plugin default { enable }
-      plugin memif_plugin.so { enable }
+      plugin default { disable }
       plugin ping_plugin.so { enable }
     }
 {{ end }}
