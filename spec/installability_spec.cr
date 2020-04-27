@@ -8,7 +8,7 @@ describe CnfConformance do
 
     `crystal src/cnf-conformance.cr samples_cleanup`
     $?.success?.should be_true
-    `crystal src/cnf-conformance.cr results_yml_setup`
+    `crystal src/cnf-conformance.cr configuration_file_setup`
 
     # `crystal src/cnf-conformance.cr setup`
     # $?.success?.should be_true

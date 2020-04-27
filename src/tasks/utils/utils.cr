@@ -9,6 +9,7 @@ CNF_DIR = "cnfs"
 TOOLS_DIR = "tools"
 # LOGFILE = "cnf-conformance-results-#{Time.utc.to_s("%Y%m%d")}.log"
 LOGFILE = "results.yml"
+POINTSFILE = "points.yml"
 PASSED = "passed"
 FAILED = "failed"
 
@@ -100,6 +101,12 @@ end
 
 def create_final_results_yml_name
   "cnf-conformance-results-" + Time.local.to_s("%Y%m%d-%H%M%S-%L") + ".yml"
+end
+
+def create_points_yml
+  unless File.exists?("#{POINTSFILE}")
+    `wget https://raw.githubusercontent.com/cncf/cnf-conformance/master/points.yml`
+  end
 end
 
 def create_results_yml
