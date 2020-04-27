@@ -1,5 +1,5 @@
 
-privileged: false
+privileged: true
 
 image:
   repository: soelvkaer/vppcontainer
