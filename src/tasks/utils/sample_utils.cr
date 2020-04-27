@@ -4,8 +4,6 @@ require "totem"
 
 # TODO put this in a module
 
-PASSED = "passed"
-FAILED = "failed"
 # CONFIG = Totem.from_file "./config.yml"
 
 # TODO return array of cnf directories from the cnfs directory
@@ -18,6 +16,14 @@ def cnf_conformance_yml
     raise "No cnf_conformance.yml found! Did you run the setup task?"
   end
   Totem.from_file "./#{cnf_conformance}"
+end
+
+def final_cnf_results_yml
+  results_file = `find ./* -name "cnf-conformance-results-*.yml"`.split("\n")[-2].gsub("./", "")
+  if results_file.empty?
+    raise "No cnf_conformance-results-*.yml found! Did you run the all task?"
+  end
+  results_file
 end
 
 def cnf_conformance_yml(sample_cnf_destination_dir)

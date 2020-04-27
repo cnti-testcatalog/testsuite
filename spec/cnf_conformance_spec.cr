@@ -1,4 +1,5 @@
 require "./spec_helper"
+require "../src/tasks/utils/utils.cr"
 require "colorize"
 
 describe CnfConformance do
@@ -32,19 +33,21 @@ describe CnfConformance do
     (/PASSED: Replicas increased to 3/ =~ response_s).should_not be_nil
     (/PASSED: Replicas decreased to 1/ =~ response_s).should_not be_nil
     (/Final score:/ =~ response_s).should_not be_nil
+    
+    (all_result_test_names(final_cnf_results_yml)).should eq(["privileged", "increase_capacity", "decrease_capacity", "ip_addresses", "liveness", "readiness", "install_script_helm", "helm_chart_valid"])
   end
 
-  it "'scalability' should run all of the scalability tests" do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
-    response_s = `crystal src/cnf-conformance.cr setup`
-    puts response_s
-    response_s = `crystal src/cnf-conformance.cr scalability`
-    puts response_s
-      $?.success?.should be_true
-    (/PASSED: Replicas increased to 3/ =~ response_s).should_not be_nil
-    (/PASSED: Replicas decreased to 1/ =~ response_s).should_not be_nil
-  end
+  # it "'scalability' should run all of the scalability tests" do
+  #   # puts `pwd` 
+  #   # puts `echo $KUBECONFIG`
+  #   response_s = `crystal src/cnf-conformance.cr setup`
+  #   puts response_s
+  #   response_s = `crystal src/cnf-conformance.cr scalability`
+  #   puts response_s
+  #     $?.success?.should be_true
+  #   (/PASSED: Replicas increased to 3/ =~ response_s).should_not be_nil
+  #   (/PASSED: Replicas decreased to 1/ =~ response_s).should_not be_nil
+  # end
 
 
 end

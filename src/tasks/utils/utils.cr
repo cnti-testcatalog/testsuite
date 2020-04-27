@@ -1,4 +1,5 @@
 require "totem"
+require "colorize"
 require "./sample_utils.cr"
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
@@ -8,6 +9,8 @@ CNF_DIR = "cnfs"
 TOOLS_DIR = "tools"
 # LOGFILE = "cnf-conformance-results-#{Time.utc.to_s("%Y%m%d")}.log"
 LOGFILE = "results.yml"
+PASSED = "passed"
+FAILED = "failed"
 
 def check_args(args)
   check_verbose(args)
@@ -95,6 +98,10 @@ items: []
 END
 end
 
+def create_final_results_yml_name
+  "cnf-conformance-results-" + Time.local.to_s("%Y%m%d-%H%M%S-%L") + ".yml"
+end
+
 def create_results_yml
   continue = false
   if File.exists?("#{LOGFILE}")
@@ -132,9 +139,7 @@ def upsert_task(task, status, points)
     YAML.parse(f)
   end 
   found = false
-  result_items = results["items"].as_a.reject! do |x|
-    x["name"].as_s? == "liveness"
-  end
+  result_items = results["items"].as_a
 
   result_items << YAML.parse "{name: #{task}, status: #{status}, points: #{points}}"
   File.open("#{LOGFILE}", "w") do |f| 
@@ -145,24 +150,63 @@ def upsert_task(task, status, points)
   end 
 end
 
+def failed_task(task, msg)
+  upsert_task(task, FAILED, task_points(task, false))
+  puts "#{msg}".colorize(:red)
+end
+
+def passed_task(task, msg)
+  upsert_task(task, PASSED, task_points(task))
+  puts "#{msg}".colorize(:green)
+end
+
 def upsert_failed_task(task)
-  upsert_task(task, FAILED, failing_task(task))
+  upsert_task(task, FAILED, task_points(task, false))
 end
 
 def upsert_passed_task(task)
-  upsert_task(task, PASSED, passing_task(task))
+  upsert_task(task, PASSED, task_points(task))
 end
 
-def passing_task(task)
+def task_points(task, passed=true)
+  if passed
+    field_name = "pass"
+  else
+    field_name = "fail"
+  end
   points = points_yml.find {|x| x["name"] == task}
   puts "task #{task} not found in points.yml" unless points
-  points["pass"].as_i if points
+  if points && points[field_name]? 
+    points[field_name].as_i if points
+  else
+    points = points_yml.find {|x| x["name"] == "default_scoring"}
+    points[field_name].as_i if points
+  end
 end
 
-def failing_task(task)
+def task_required(task)
   points = points_yml.find {|x| x["name"] == task}
   puts "task #{task} not found in points.yml" unless points
-  points["fail"].as_i if points
+  if points && points["required"]? && points["required"].as_bool == true
+    true
+  else
+    false
+  end
+end
+
+def failed_required_tasks
+  yaml = File.open("#{LOGFILE}") do |file|
+    YAML.parse(file)
+  end
+  yaml["items"].as_a.reduce([] of String) do |acc, i|
+    if i["status"].as_s == "failed" && 
+        i["name"].as_s? && 
+        task_required(i["name"].as_s)
+      (acc << i["name"].as_s)
+    else
+      acc
+    end
+  end
 end
 
 def total_points
@@ -178,16 +222,34 @@ def total_points
   end
 end
 
+def all_task_test_names
+  result_items = points_yml.reduce([] of String) do |acc, x|
+    if x["name"].as_s == "default_scoring"
+      acc
+    else
+      acc << x["name"].as_s
+    end
+  end
+end
+
 def tasks_by_tag(tag)
   #TODO cross reference points.yml tags with results
   found = false
   result_items = points_yml.reduce([] of String) do |acc, x|
-    # x["tags"].as_s.includes?(tag) if x["tags"].as_s?
     if x["tags"].as_s? && x["tags"].as_s.includes?(tag)
       acc << x["name"].as_s
     else
       acc
     end
+  end
+end
+
+def all_result_test_names(results_file)
+  results = File.open(results_file) do |f| 
+    YAML.parse(f)
+  end 
+  result_items = results["items"].as_a.reduce([] of String) do |acc, x|
+      acc << x["name"].as_s
   end
 end
 

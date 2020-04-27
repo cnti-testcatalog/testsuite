@@ -50,6 +50,7 @@ task "liveness", ["retrieve_manifest"] do |_, args|
       helm_directory = config.get("helm_directory").as_s
     rescue ex
       errors = errors + 1
+      upsert_failed_task("liveness")
       puts "FAILURE: helm directory not found".colorize(:red)
       puts ex.message if check_args(args)
     end
@@ -160,8 +161,8 @@ task "rolling_update" do |_, args|
 
     version_tag = nil
 
-    if config.has_key? "cnf_image_version"
-      version_tag = config.get("cnf_image_version").as_s
+    if config.has_key? "rolling_update_tag"
+      version_tag = config.get("rolling_update_tag").as_s
     end
 
     if args.named.has_key? "version_tag"
@@ -170,7 +171,7 @@ task "rolling_update" do |_, args|
     
     unless version_tag
       upsert_failed_task("rolling_update")
-      raise "FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'cnf_image_version'"
+      raise "FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'rolling_update_tag'"
     end
 
     release_name = config.get("release_name").as_s

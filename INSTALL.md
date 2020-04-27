@@ -119,7 +119,7 @@ then you can invoke the conformance suite from the binary i.e.
 
 ```
 crystal build src/cnf-conformance.cr --release
-./cnf-conformance | sha256sum
+sha256sum cnf-conformance
 ```
 
 # CNF Developer Install and Usage guide
