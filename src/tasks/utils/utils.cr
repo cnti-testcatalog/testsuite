@@ -105,7 +105,9 @@ end
 
 def create_points_yml
   unless File.exists?("#{POINTSFILE}")
-    `wget https://raw.githubusercontent.com/cncf/cnf-conformance/master/points.yml`
+    branch = ENV.has_key?("SCORING_ENV") ? ENV["SCORING_ENV"] : "master"
+    default_scoring_yml = "https://raw.githubusercontent.com/cncf/cnf-conformance/#{branch}/scoring_config/points_v1.yml"
+    `wget #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}`
   end
 end
 
