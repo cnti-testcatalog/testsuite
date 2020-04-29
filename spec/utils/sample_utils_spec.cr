@@ -1,10 +1,10 @@
-require "./spec_helper"
+require "../spec_helper"
 require "colorize"
-require "../src/tasks/utils/utils.cr"
+require "../../src/tasks/utils/utils.cr"
 require "file_utils"
 require "sam"
 
-describe "SampleCoreDNS" do
+describe "SampleUtils" do
   before_all do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
@@ -95,7 +95,7 @@ describe "SampleCoreDNS" do
     sample_destination_dir("sample-generic-cnf").should contain("cnf-conformance/cnfs/sample-generic-cnf")
   end
 
-  it "'cnf_conformance_yml(sample_cnf_destination_dir)' should return the yaml for the passed cnf directory", tags: "WIP" do
+  it "'cnf_conformance_yml(sample_cnf_destination_dir)' should return the yaml for the passed cnf directory" do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
     sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: args, verbose: true )
@@ -105,11 +105,21 @@ describe "SampleCoreDNS" do
     ("#{yml.get("release_name").as_s?}").should eq("privileged-coredns")
   end
 
-  it "'cnf_conformance_dir(source_short_dir)' should full cnfs path for passed source cnf", tags: "WIP" do
+  it "'cnf_conformance_dir(source_short_dir)' should full cnfs path for passed source cnf" do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
     sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: args, verbose: true )
     cnf_conformance_dir("sample_privileged_cnf").should contain("sample_privileged_cnf")
     cnf_conformance_dir("sample-cnfs/sample_privileged_cnf").should contain("sample_privileged_cnf")
+  end
+
+  it "'helm_repo_add' should add a helm repo if the helm repo is valid" do
+    args = Sam::Args.new
+    sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
+    helm_repo_add.should eq(true)
+  end
+
+  it "'helm_repo_add' should return false if the helm repo is invalid" do
+    helm_repo_add("invalid", "invalid").should eq(false)
   end
 end

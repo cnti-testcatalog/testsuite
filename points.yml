@@ -70,6 +70,8 @@
   tags: installability, static
 - name: helm_chart_valid
   tags: installability, dynamic
+- name: helm_chart_published
+  tags: installability, dynamic
 
 - name: hardware_affinity
   tags: hardware, dynamic

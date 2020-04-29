@@ -182,7 +182,7 @@ def task_points(task, passed=true)
     field_name = "fail"
   end
   points = points_yml.find {|x| x["name"] == task}
-  puts "task #{task} not found in points.yml" unless points
+  puts "****Warning**** task #{task} not found in points.yml".colorize(:red) unless points
   if points && points[field_name]? 
     points[field_name].as_i if points
   else
