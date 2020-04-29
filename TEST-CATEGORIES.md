@@ -54,6 +54,7 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 ## Installable and Upgradeable Tests
 #### The CNF Conformance suite will check for usage of standard, in-band deployment tools such as Helm (version 3) charts. The Conformance suite checks this by:
 *  Testing if the install script uses [Helm v3](https://github.com/helm/)
+*  Testing if the CNF is published to a public helm chart repository.
 *  Testing if the Helm chart is valid (e.g. using the [helm linter](https://github.com/helm/chart-testing))
 *  Testing if the CNF can perform a rolling update (i.e. [kubectl rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/))
 
