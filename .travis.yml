@@ -33,9 +33,3 @@ jobs:
         - export KUBECONFIG="$(kind get kubeconfig-path)"
       script: 
         - crystal spec -v
-        - rm results.yml
-        - crystal build src/cnf-conformance.cr
-        - ./cnf-conformance setup
-        - ./cnf-conformance sample_coredns
-        - ./cnf-conformance configuration_file_setup
-        - ./cnf-conformance liveness verbose
