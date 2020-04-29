@@ -8,3 +8,4 @@ application_deployment_names: [envoy]
 helm_chart: stable/envoy
 helm_chart_container_name: envoy
 white_list_helm_chart_container_names: [falco, nginx, envoy, calico-node, kube-proxy, nginx-proxy, node-cache]
+rolling_update_tag: v1.12.2
