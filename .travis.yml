@@ -32,7 +32,7 @@ jobs:
         # Set KUBECONFIG environment variable
         - export KUBECONFIG="$(kind get kubeconfig-path)"
       script: 
-        #- crystal spec -v
+        - crystal spec -v
         - crystal build src/cnf-conformance.cr
         - ./cnf-conformance sample_coredns
         - ./cnf-conformance configuration_file_setup
