@@ -142,6 +142,10 @@ pseudo code
 ```
 pseudo code
 ```
+####  Test if the Helm chart is published to a public helm chart repository
+```
+helm repo add
+```
 ####  Test if the [Helm chart is valid](https://github.com/helm/chart-testing))
 ```
 pseudo code
