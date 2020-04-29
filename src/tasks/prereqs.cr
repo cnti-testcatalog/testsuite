@@ -5,6 +5,7 @@ require "totem"
 require "./utils/system_information/helm.cr"
 require "./utils/system_information/wget.cr"
 require "./utils/system_information/curl.cr"
+require "./utils/system_information/kubectl.cr"
 
 task "prereqs" do  |_, args|
   if helm_installation.includes?("helm found") &&
