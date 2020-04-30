@@ -119,7 +119,7 @@ then you can invoke the conformance suite from the binary i.e.
 
 ```
 crystal build src/cnf-conformance.cr --release --static
-# ignore warnings and errors as long as the binary at ./cnf-conformance is generated properly
+# you can safely ignore warnings and errors as long as the binary at ./cnf-conformance is generated properly
 sha256sum cnf-conformance
 # checksum here used for release validation
 ```
