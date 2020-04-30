@@ -8,3 +8,4 @@ application_deployment_names: [ip-forwarder-csp]
 helm_chart: 
 helm_chart_container_name: ip-forwarder-csp
 white_list_helm_chart_container_names: [falco, nginx, calico-node, kube-proxy, nginx-proxy, node-cache]
+rolling_update_tag: latest
