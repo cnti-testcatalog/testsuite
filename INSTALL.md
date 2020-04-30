@@ -118,8 +118,10 @@ then you can invoke the conformance suite from the binary i.e.
 **Binary build**
 
 ```
-crystal build src/cnf-conformance.cr --release
+crystal build src/cnf-conformance.cr --release --static
+# ignore warnings and errors as long as the binary at ./cnf-conformance is generated properly
 sha256sum cnf-conformance
+# checksum here used for release validation
 ```
 
 # CNF Developer Install and Usage guide
