@@ -18,6 +18,10 @@ dependencies:
     commit: 117b5b2
   totem:
     github: icyleaf/totem
+    version: 0.6.0
+  halite:
+    github: icyleaf/halite
+    version: 0.10.4
   icr:
     github: crystal-community/icr
     branch: master
