@@ -32,4 +32,5 @@ jobs:
         # Set KUBECONFIG environment variable
         - export KUBECONFIG="$(kind get kubeconfig-path)"
       script: 
+        - shards install
         - crystal spec -v
