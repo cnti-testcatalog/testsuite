@@ -66,6 +66,8 @@
 - name: openmetric_compatible
   tags: observability, dynamic
 
+- name: helm_deploy
+  tags: installability, dynamic
 - name: install_script_helm
   tags: installability, static
 - name: helm_chart_valid
