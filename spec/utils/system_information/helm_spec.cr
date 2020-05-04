@@ -9,6 +9,7 @@ require "sam"
 describe "Helm" do
 
   it "'helm_global_response()' should return the information about the helm installation" do
+    # TODO make global response be a regex of v. or nil?
     # (helm_global_response(true)).should contain("\"v2.")
   end
 

@@ -11,8 +11,8 @@ jobs:
     - stage: K8s
       before_script:
         # Download and install go
-        - wget https://dl.google.com/go/go1.12.linux-amd64.tar.gz
-        - tar -xvf go1.12.linux-amd64.tar.gz
+        - wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
+        - tar -xvf go1.13.linux-amd64.tar.gz
         - sudo mv go /usr/local
         - export GOROOT=/usr/local/go
         - export GOPATH=$HOME/go
