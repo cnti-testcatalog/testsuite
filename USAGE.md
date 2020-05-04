@@ -195,7 +195,10 @@ crystal src/cnf-conformance.cr installability
 ```
 crystal src/cnf-conformance.cr install_script_helm
 ```
-
+#### :heavy_check_mark: Test if the Helm chart is published
+```
+crystal src/cnf-conformance.cr helm_chart_published
+```
 #### :heavy_check_mark: Test if the [Helm chart is valid](https://github.com/helm/chart-testing))
 ```
 crystal src/cnf-conformance.cr helm_chart_valid

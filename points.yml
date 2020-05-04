@@ -3,6 +3,10 @@
   tags: 
   pass: 5
   fail: -1 
+
+- name: image_size_large
+  tags: microservice, dynamic
+
 - name: cni_spec 
   tags: compatibility, dynamic
 - name: api_snoop_alpha 
@@ -71,6 +75,8 @@
 - name: install_script_helm
   tags: installability, static
 - name: helm_chart_valid
+  tags: installability, dynamic
+- name: helm_chart_published
   tags: installability, dynamic
 
 - name: hardware_affinity

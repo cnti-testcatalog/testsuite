@@ -5,7 +5,7 @@ require "totem"
 require "./utils/utils.cr"
 
 desc "The CNF conformance suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
-task "installability", ["install_script_helm", "helm_chart_valid"] do |_, args|
+task "installability", ["install_script_helm", "helm_chart_valid", "helm_chart_published"] do |_, args|
 end
 
 desc "Will the CNF install using helm with helm_deploy?"
@@ -88,10 +88,30 @@ task "install_script_helm" do |_, args|
   end
 end
 
+task "helm_chart_published", ["helm_local_install"] do |_, args|
+  begin
+    puts "helm_chart_published args.raw: #{args.raw}" if check_verbose(args)
+    puts "helm_chart_published args.named: #{args.named}" if check_verbose(args)
+
+   if helm_repo_add 
+     upsert_passed_task("helm_chart_published")
+     puts "PASSED: Published Helm Chart Repo added".colorize(:green)
+   else
+     upsert_failed_task("helm_chart_published")
+     puts "FAILURE: Published Helm Chart Repo failed to add".colorize(:red)
+   end
+  rescue ex
+    puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
+  end
+end
+
 task "helm_chart_valid", ["helm_local_install"] do |_, args|
   begin
-    puts "increase_capacity args.raw: #{args.raw}" if check_verbose(args)
-    puts "increase_capacity args.named: #{args.named}" if check_verbose(args)
+    puts "helm_chart_valid args.raw: #{args.raw}" if check_verbose(args)
+    puts "helm_chart_valid args.named: #{args.named}" if check_verbose(args)
 
     response = String::Builder.new
 

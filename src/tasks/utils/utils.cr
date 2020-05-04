@@ -12,6 +12,7 @@ LOGFILE = "results.yml"
 POINTSFILE = "points.yml"
 PASSED = "passed"
 FAILED = "failed"
+DEFAULT_POINTSFILENAME = "points_v1.yml"
 
 def check_args(args)
   check_verbose(args)
@@ -105,7 +106,10 @@ end
 
 def create_points_yml
   unless File.exists?("#{POINTSFILE}")
-    `wget https://raw.githubusercontent.com/cncf/cnf-conformance/master/points.yml`
+    branch = ENV.has_key?("SCORING_ENV") ? ENV["SCORING_ENV"] : "master"
+    default_scoring_yml = "https://raw.githubusercontent.com/cncf/cnf-conformance/#{branch}/scoring_config/#{DEFAULT_POINTSFILENAME}"
+    `wget #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}`
+    `mv #{DEFAULT_POINTSFILENAME} #{POINTSFILE}`
   end
 end
 
@@ -182,7 +186,7 @@ def task_points(task, passed=true)
     field_name = "fail"
   end
   points = points_yml.find {|x| x["name"] == task}
-  puts "task #{task} not found in points.yml" unless points
+  puts "****Warning**** task #{task} not found in points.yml".colorize(:red) unless points
   if points && points[field_name]? 
     points[field_name].as_i if points
   else

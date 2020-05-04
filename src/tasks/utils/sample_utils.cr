@@ -1,4 +1,5 @@
 require "totem"
+require "colorize"
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
 
@@ -49,7 +50,7 @@ def cnf_conformance_dir(source_dir)
   source_short_dir = source_dir.split("/")[-1]
   cnf_conformance = `find cnfs/* -name "#{source_short_dir}"`.split("\n")[0]
   if cnf_conformance.empty?
-    raise "No directoryed named #{source_dir} found! Did you run the setup task?"
+    raise "No directory named #{source_dir} found! Did you run the setup task?"
   end
   cnf_conformance.split("/")[-1] 
 end
@@ -126,6 +127,28 @@ def sample_destination_dir(sample_source_dir)
   "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_source_dir)}"
 end
 
+def helm_repo_add(helm_repo_name=nil, helm_repo_url=nil)
+  ret = false
+  if helm_repo_name == nil || helm_repo_url == nil
+    config = cnf_conformance_yml
+    current_dir = FileUtils.pwd 
+    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    helm_repo_name = config.get("helm_repository.name").as_s?
+    helm_repo_url = config.get("helm_repository.repo_url").as_s?
+  end
+  if helm_repo_name && helm_repo_url
+    `#{helm} repo add #{helm_repo_name} #{helm_repo_url}`
+    if $?.success?
+      ret = true
+    else
+      ret = false
+    end
+  else 
+    ret = false
+  end
+  ret
+end
+
 def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_directory, git_clone_url="", deploy_with_chart=true, verbose=false, wait_count=180)
   puts "sample_setup" if verbose
 
@@ -153,7 +176,6 @@ def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_dir
   begin
 
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-    puts helm if verbose
     if deploy_with_chart
       puts "deploying with chart repository" if verbose 
       helm_install = `#{helm} install #{release_name} #{helm_chart}`

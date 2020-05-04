@@ -4,6 +4,10 @@ shards:
     github: mrrooijen/commander
     version: 0.3.5
 
+  halite:
+    github: icyleaf/halite
+    version: 0.10.4
+
   icr:
     github: crystal-community/icr
     commit: 7da354f5c0a356aee77e68fc63c87e2ad35da7fb

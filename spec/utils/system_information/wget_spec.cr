@@ -17,7 +17,7 @@ describe "Helm" do
   end
 
   it "'wget_version()' should return the information about the wget version" do
-    (wget_version(wget_global_response)).should contain("1.15")
+    (wget_version(wget_global_response)).should match(/(([0-9]{1,3}[\.]){1,2}[0-9]{1,3})/)
     (wget_version(wget_local_response)).should contain("")
   end
 

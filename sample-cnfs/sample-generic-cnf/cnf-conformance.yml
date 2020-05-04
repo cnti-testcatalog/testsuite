@@ -5,6 +5,10 @@ install_script: cnfs/coredns/Makefile
 release_name: coredns
 deployment_name: coredns-coredns 
 application_deployment_names: [coredns-coredns]
+docker_repository: coredns/coredns
+helm_repository:
+  name: stable 
+  repo_url: https://kubernetes-charts.storage.googleapis.com
 helm_chart: stable/coredns
 helm_chart_container_name: coredns
 white_list_helm_chart_container_names: [falco, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
