@@ -36,7 +36,7 @@ jobs:
         - kind create cluster
 
         # Set KUBECONFIG environment variable
-        - export KUBECONFIG="$(kind get kubeconfig-path)"
+        - export KUBECONFIG="$(kind get kubeconfig)"
       script: 
         - shards install
         - crystal spec -v
