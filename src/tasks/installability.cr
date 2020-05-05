@@ -101,7 +101,7 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
     puts "helm_chart_published args.raw: #{args.raw}" if check_verbose(args)
     puts "helm_chart_published args.named: #{args.named}" if check_verbose(args)
 
-    emoji_helm_chart_published="📊🖛 🌐"
+    emoji_helm_chart_published="📊➡️ 🌐"
 
 
    if helm_repo_add 
