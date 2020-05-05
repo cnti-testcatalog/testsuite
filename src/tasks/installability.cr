@@ -43,7 +43,7 @@ task "helm_deploy" do |_, args|
 
     if is_helm_installed
       upsert_passed_task("helm_deploy")
-      puts "PASSED: Helm deploy deploy successful".colorize(:green)
+      puts "PASSED: Helm deploy successful".colorize(:green)
     else
       upsert_failed_task("helm_deploy")
       puts "FAILURE: Helm deploy failed".colorize(:red)

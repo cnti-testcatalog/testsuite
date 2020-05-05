@@ -33,7 +33,7 @@ describe CnfConformance do
     $?.success?.should be_true
     response_s = `crystal src/cnf-conformance.cr helm_deploy yml-file=sample-cnfs/sample-bad-helm-deploy-repo/cnf-conformance.yml verbose`
     $?.success?.should be_true
-    (/FAILURE: Helm did not deploy properly/ =~ response_s).should_not be_nil
+    (/FAILURE: Helm deploy failed/ =~ response_s).should_not be_nil
     `crystal src/cnf-conformance.cr cleanup`
   end
 
@@ -52,7 +52,7 @@ describe CnfConformance do
     response_s = `crystal src/cnf-conformance.cr helm_deploy yml-file=sample-cnfs/sample-generic-cnf/cnf-conformance.yml verbose`
     puts response_s
     $?.success?.should be_true
-    (/PASSED: Helm was deployed successfully/ =~ response_s).should_not be_nil
+    (/PASSED: Helm deploy successful/ =~ response_s).should_not be_nil
     `crystal src/cnf-conformance.cr cleanup`
   end
 
