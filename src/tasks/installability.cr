@@ -8,6 +8,54 @@ desc "The CNF conformance suite checks to see if CNFs support horizontal scaling
 task "installability", ["install_script_helm", "helm_chart_valid", "helm_chart_published"] do |_, args|
 end
 
+desc "Will the CNF install using helm with helm_deploy?"
+task "helm_deploy" do |_, args|
+  begin
+    puts "helm_deploy" if check_verbose(args)
+
+    if args.named.keys.includes? "yml-file"
+      yml_file = args.named["yml-file"].as(String)
+      parsed_cnf_conformance_yml = Totem.from_file "#{yml_file}"
+      cnf_conformance_yml_path = yml_file.split("/")[0..-2].reduce(""){|x, acc| x.empty? ? acc : "#{x}/#{acc}"}
+      helm_chart = "#{parsed_cnf_conformance_yml.get("helm_chart").as_s?}"
+      helm_directory = "#{parsed_cnf_conformance_yml.get("helm_directory").as_s?}"
+      release_name = "#{parsed_cnf_conformance_yml.get("release_name").as_s?}"
+    else
+      config = cnf_conformance_yml
+      helm_chart = "#{config.get("helm_chart").as_s?}"
+      helm_directory = "#{config.get("helm_directory").as_s?}"
+      release_name = "#{config.get("release_name").as_s?}"
+    end
+    puts "helm_chart: #{helm_chart}" if check_verbose(args)
+
+    current_dir = FileUtils.pwd 
+    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    puts helm if check_verbose(args)
+
+    unless helm_chart.empty?
+      helm_install = `#{helm} install #{release_name} #{helm_chart}`
+    else
+      helm_install = `#{helm} install #{release_name} #{cnf_conformance_yml_path}/#{helm_directory}`
+    end
+
+    is_helm_installed = $?.success? 
+    puts helm_install if check_verbose(args)
+
+    if is_helm_installed
+      upsert_passed_task("helm_deploy")
+      puts "PASSED: Helm was deployed successfully".colorize(:green)
+    else
+      upsert_failed_task("helm_deploy")
+      puts "FAILURE: Helm did not deploy properly".colorize(:red)
+    end
+  rescue ex
+    puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
+  end
+end
+
 desc "Does the install script use helm?"
 task "install_script_helm" do |_, args|
   begin

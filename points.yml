@@ -3,6 +3,12 @@
   tags: 
   pass: 5
   fail: -1 
+
+- name: image_size_large
+  tags: microservice, dynamic
+- name: reasonable_startup_time 
+  tags: microservice, dynamic
+
 - name: cni_spec 
   tags: compatibility, dynamic
 - name: api_snoop_alpha 
@@ -66,6 +72,8 @@
 - name: openmetric_compatible
   tags: observability, dynamic
 
+- name: helm_deploy
+  tags: installability, dynamic
 - name: install_script_helm
   tags: installability, static
 - name: helm_chart_valid

@@ -1,4 +1,5 @@
 require "totem"
+require "colorize"
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
 
