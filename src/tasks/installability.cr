@@ -16,11 +16,14 @@ task "helm_deploy" do |_, args|
     if args.named.keys.includes? "yml-file"
       yml_file = args.named["yml-file"].as(String)
       parsed_cnf_conformance_yml = Totem.from_file "#{yml_file}"
+      cnf_conformance_yml_path = yml_file.split("/")[0..-2].reduce(""){|x, acc| x.empty? ? acc : "#{x}/#{acc}"}
       helm_chart = "#{parsed_cnf_conformance_yml.get("helm_chart").as_s?}"
+      helm_directory = "#{parsed_cnf_conformance_yml.get("helm_directory").as_s?}"
       release_name = "#{parsed_cnf_conformance_yml.get("release_name").as_s?}"
     else
       config = cnf_conformance_yml
       helm_chart = "#{config.get("helm_chart").as_s?}"
+      helm_directory = "#{config.get("helm_directory").as_s?}"
       release_name = "#{config.get("release_name").as_s?}"
     end
     puts "helm_chart: #{helm_chart}" if check_verbose(args)
@@ -29,7 +32,12 @@ task "helm_deploy" do |_, args|
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts helm if check_verbose(args)
 
-    helm_install = `#{helm} install #{release_name} #{helm_chart}`
+    unless helm_chart.empty?
+      helm_install = `#{helm} install #{release_name} #{helm_chart}`
+    else
+      helm_install = `#{helm} install #{release_name} #{cnf_conformance_yml_path}/#{helm_directory}`
+    end
+
     is_helm_installed = $?.success? 
     puts helm_install if check_verbose(args)
 
@@ -93,12 +101,15 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
     puts "helm_chart_published args.raw: #{args.raw}" if check_verbose(args)
     puts "helm_chart_published args.named: #{args.named}" if check_verbose(args)
 
+    emoji_helm_chart_published="📊🖛 🌐"
+
+
    if helm_repo_add 
      upsert_passed_task("helm_chart_published")
-     puts "PASSED: Published Helm Chart Repo added".colorize(:green)
+     puts "✔️ PASSED: Published Helm Chart Repo #{emoji_helm_chart_published}".colorize(:green)
    else
      upsert_failed_task("helm_chart_published")
-     puts "FAILURE: Published Helm Chart Repo failed to add".colorize(:red)
+     puts "✖️ FAILURE: Published Helm Chart Repo #{emoji_helm_chart_published}".colorize(:red)
    end
   rescue ex
     puts ex.message
