@@ -6,6 +6,8 @@
 
 - name: image_size_large
   tags: microservice, dynamic
+- name: reasonable_startup_time 
+  tags: microservice, dynamic
 
 - name: cni_spec 
   tags: compatibility, dynamic

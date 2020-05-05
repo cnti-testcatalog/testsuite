@@ -15,7 +15,26 @@ describe "Microservice" do
     # `crystal src/cnf-conformance.cr setup`
     # $?.success?.should be_true
   end
-  it "'image_size_large' should pass if image is smaller than 5gb" do
+
+  it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: "reasonable_startup_time" do
+    `crystal src/cnf-conformance.cr sample_coredns_cleanup`
+    $?.success?.should be_true
+    response_s = `crystal src/cnf-conformance.cr reasonable_startup_time yml-file=sample-cnfs/sample_coredns/cnf-conformance.yml`
+    $?.success?.should be_true
+    (/PASSED: CNF had a reasonable startup time/ =~ response_s).should_not be_nil
+    `crystal src/cnf-conformance.cr sample_coredns_cleanup`
+  end
+
+  it "'reasonable_startup_time' should fail if the cnf doesn't has a reasonable startup time(helm_directory)", tags: "reasonable_startup_time" do
+    `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup`
+    $?.success?.should be_true
+    response_s = `crystal src/cnf-conformance.cr reasonable_startup_time yml-file=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml`
+    $?.success?.should be_true
+    (/FAILURE: CNF had a startup time of/ =~ response_s).should_not be_nil
+    `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup`
+  end
+
+  it "'image_size_large' should pass if image is smaller than 5gb", tags: "image_size_large" do
     begin
       `crystal src/cnf-conformance.cr sample_coredns_setup`
       response_s = `crystal src/cnf-conformance.cr image_size_large verbose`
@@ -27,7 +46,7 @@ describe "Microservice" do
     end
   end
 
-  it "'image_size_large' should fail if image is larger than 5gb" do
+  it "'image_size_large' should fail if image is larger than 5gb", tags: "image_size_large" do
     begin
       `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf`
       `crystal src/cnf-conformance.cr cnf_setup cnf-path=sample-cnfs/sample-large-cnf deploy_with_chart=false`
