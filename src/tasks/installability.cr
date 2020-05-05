@@ -101,15 +101,14 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
     puts "helm_chart_published args.raw: #{args.raw}" if check_verbose(args)
     puts "helm_chart_published args.named: #{args.named}" if check_verbose(args)
 
-    emoji_helm_chart_published="📊🖛 🌐"
-
+    emoji_helm_chart_published="📊⎯➤🌐"
 
    if helm_repo_add 
      upsert_passed_task("helm_chart_published")
-     puts "✔️ PASSED: Published Helm Chart Repo #{emoji_helm_chart_published}".colorize(:green)
+     puts "✔️  PASSED: Published Helm Chart Repo #{emoji_helm_chart_published}".colorize(:green)
    else
      upsert_failed_task("helm_chart_published")
-     puts "✖️ FAILURE: Published Helm Chart Repo #{emoji_helm_chart_published}".colorize(:red)
+     puts "✖️  FAILURE: Published Helm Chart Repo #{emoji_helm_chart_published}".colorize(:red)
    end
   rescue ex
     puts ex.message
