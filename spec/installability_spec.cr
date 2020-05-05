@@ -28,19 +28,19 @@ describe CnfConformance do
     `crystal src/cnf-conformance.cr sample_coredns_source_cleanup`
   end
 
-  it "'helm_deploy' should fail if install script does not have helm" do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
-    # `crystal src/cnf-conformance.cr cleanup`
-    # $?.success?.should be_true
-    `crystal src/cnf-conformance.cr sample_coredns_source_setup`
-    $?.success?.should be_true
-    response_s = `crystal src/cnf-conformance.cr install_script_helm`
-    #puts response_s
-    $?.success?.should be_true
-    (/FAILURE: Helm not found in supplied install script/ =~ response_s).should_not be_nil
-    `crystal src/cnf-conformance.cr sample_coredns_source_cleanup`
-  end
+  # it "'helm_deploy' should fail if install script does not have helm" do
+  #   # puts `pwd` 
+  #   # puts `echo $KUBECONFIG`
+  #   # `crystal src/cnf-conformance.cr cleanup`
+  #   # $?.success?.should be_true
+  #   `crystal src/cnf-conformance.cr sample_coredns_source_setup`
+  #   $?.success?.should be_true
+  #   response_s = `crystal src/cnf-conformance.cr helm_deploy`
+  #   #puts response_s
+  #   $?.success?.should be_true
+  #   (/FAILURE: Helm not found in supplied install script/ =~ response_s).should_not be_nil
+  #   `crystal src/cnf-conformance.cr sample_coredns_source_cleanup`
+  # end
 
   it "'helm_chart_valid' should pass on a good helm chart" do
     # puts `pwd` 
