@@ -4,7 +4,7 @@
   pass: 5
   fail: -1 
 
-- name: image_size_large
+- name: reasonable_image_size
   tags: microservice, dynamic
 - name: reasonable_startup_time 
   tags: microservice, dynamic

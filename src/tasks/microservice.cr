@@ -1,3 +1,4 @@
+# coding: utf-8
 require "sam"
 require "file_utils"
 require "colorize"
@@ -7,7 +8,7 @@ require "halite"
 require "totem"
 
 desc "The CNF conformance suite checks to see if CNFs follows microservice principles"
-task "microservice", ["image_size_large", "reasonable_startup_time"] do |_, args|
+task "microservice", ["reasonable_image_size", "reasonable_startup_time"] do |_, args|
 end
 
 desc "Does the CNF have a reasonable startup time?"
@@ -62,8 +63,8 @@ task "reasonable_startup_time" do |_, args|
   end
 end
 
-desc "Is the image size large?"
-task "image_size_large", ["retrieve_manifest"] do |_, args|
+desc "Does the CNF have a reasonable container image size?"
+task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
   begin
     config = cnf_conformance_yml
     helm_directory = config.get("helm_directory").as_s
@@ -102,10 +103,10 @@ task "image_size_large", ["retrieve_manifest"] do |_, args|
         docker_resp &&
         docker_resp.status_code == 200 && 
         micro_size.to_s.to_i64 < 50000000
-      upsert_passed_task("image_size_large")
+      upsert_passed_task("reasonable_image_size")
       puts "PASSED: Image size is good".colorize(:green)
     else
-      upsert_failed_task("image_size_large")
+      upsert_failed_task("reasonable_image_size")
       puts "FAILURE: Image size too large".colorize(:red)
     end
   rescue ex
