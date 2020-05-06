@@ -26,8 +26,8 @@ jobs:
         # Download and install kubectl
         - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
         # Write Kubeconfig
-        - echo "$TEST" | tee ./kubeconfig >/dev/null
-        - cat ./kubeconfig
+        - echo "$KUBECONFIG" | base64 -d | tee ./kubeconfig >/dev/null
+        - export KUBECONFIG=$(pwd)/kubeconfig
         # Download and install KinD
         # - GO111MODULE=on go get sigs.k8s.io/kind
         # It's possible to download and install KinD using curl, similar as for kubectl
