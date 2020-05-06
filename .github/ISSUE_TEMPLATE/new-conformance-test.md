@@ -22,8 +22,6 @@ Type of test (static or runtime) = ?
 
 - [x]  example code: POC ISSUE_NUMBER 
 
-Emoji(s): ☺️?
-
 ---
 
 **Environment set up tasks:**
@@ -35,8 +33,9 @@ Emoji(s): ☺️?
 
 **Sample CNF tasks:**
 
+
+
 **Code implementation tasks:**
-- [ ] Choose a set of emojis for the new test
 - [ ] 
 
 **Documentation tasks:**
