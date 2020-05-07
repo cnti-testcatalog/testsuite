@@ -34,10 +34,10 @@ describe "Microservice" do
     `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup`
   end
 
-  it "'image_size_large' should pass if image is smaller than 5gb", tags: "image_size_large" do
+  it "'reasonable_image_size' should pass if image is smaller than 5gb", tags: "reasonable_image_size" do
     begin
       `crystal src/cnf-conformance.cr sample_coredns_setup`
-      response_s = `crystal src/cnf-conformance.cr image_size_large verbose`
+      response_s = `crystal src/cnf-conformance.cr reasonable_image_size verbose`
       puts response_s
       $?.success?.should be_true
       (/Image size is good/ =~ response_s).should_not be_nil
@@ -46,11 +46,11 @@ describe "Microservice" do
     end
   end
 
-  it "'image_size_large' should fail if image is larger than 5gb", tags: "image_size_large" do
+  it "'reasonable_image_size' should fail if image is larger than 5gb", tags: "reasonable_image_size" do
     begin
       `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf`
       `crystal src/cnf-conformance.cr cnf_setup cnf-path=sample-cnfs/sample-large-cnf deploy_with_chart=false`
-      response_s = `crystal src/cnf-conformance.cr image_size_large verbose`
+      response_s = `crystal src/cnf-conformance.cr reasonable_image_size verbose`
       puts response_s
       $?.success?.should be_true
       (/Image size too large/ =~ response_s).should_not be_nil
