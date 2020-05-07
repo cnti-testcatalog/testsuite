@@ -21,6 +21,11 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 *  Check if there are any shells
 *  Check if any protected directories or files are accessed
 
+## Microservice Tests 
+#### The CNF should be developed and delivered as a microservice. The CNF Conformance suite tests to determine the organizational structure and rate of change of the CNF being tested. Once these are known we can detemine whether or not the CNF is a microservice. See: [Microservice-Principles](https://networking.cloud-native-principles.org/cloud-native-microservice-principles):
+*  Check if the CNF have a reasonable startup time.
+*  Check the image size of the CNF.
+
 ## Scalability Tests  
 #### The CNF conformance suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s [kubectl](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources) command to:
 *  Test increasing/decreasing capacity

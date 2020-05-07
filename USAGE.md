@@ -80,6 +80,22 @@ crystal src/cnf-conformance.cr shells
 crystal src/cnf-conformance.cr protected_access
 ```
 
+## Microservice Tests
+#### :heavy_check_mark: To run all of the microservice tests
+```
+crystal src/cnf-conformance.cr microservice
+```
+
+#### :heavy_check_mark: To check if the CNF has a reasonable image size
+```
+crystal src/cnf-conformance.cr reasonable_image_size
+```
+#### :heavy_check_mark: To check if the CNF have a reasonable startup time
+```
+crystal src/cnf-conformance.cr reasonable_startup_time
+```
+
+
 ## Scalability Tests
 
 #### :heavy_check_mark: To run all of the scalability tests
