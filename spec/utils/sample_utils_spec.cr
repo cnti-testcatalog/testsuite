@@ -92,7 +92,7 @@ describe "SampleUtils" do
 
   it "'sample_destination_dir' should return the full path of the potential destination cnf directory based on the source sample cnf directory", tags: "WIP" do
     args = Sam::Args.new
-    sample_destination_dir("sample-generic-cnf").should contain("cnf-conformance/cnfs/sample-generic-cnf")
+    sample_destination_dir("sample-generic-cnf").should contain("/cnfs/sample-generic-cnf")
   end
 
   it "'cnf_conformance_yml(sample_cnf_destination_dir)' should return the yaml for the passed cnf directory" do
