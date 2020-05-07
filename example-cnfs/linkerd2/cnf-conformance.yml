@@ -1,0 +1,11 @@
+---
+helm_directory: helm_chart
+git_clone_url: 
+install_script: 
+release_name: linkerd 
+deployment_name: linkerd
+application_deployment_names: [linkerd2]
+helm_chart: linkerd/linkerd2
+helm_chart_container_name: linkerd2
+white_list_helm_chart_container_names: [falco, nginx, linkerd, calico-node, kube-proxy, nginx-proxy, node-cache]
+rolling_update_tag: v18.9.1
