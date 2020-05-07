@@ -68,7 +68,7 @@ describe "SampleUtils" do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 0 )
     cleanup = sample_cleanup(sample_dir: "sample-cnfs/sample-generic-cnf", verbose: true)
-    (cleanup.success?).should be_true 
+    (cleanup).should be_true 
     (Dir.exists? "cnfs/sample-generic-cnf").should be_false
     (File.exists?("cnfs/sample-generic-cnf/cnf-conformance.yml")).should be_false
     (File.exists?("cnfs/sample-generic-cnf/helm_chart/Chart.yaml")).should be_false

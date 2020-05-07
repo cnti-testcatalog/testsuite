@@ -282,11 +282,15 @@ def sample_cleanup(sample_dir, verbose=true)
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
   puts helm if verbose 
   destination_cnf_dir = "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_dir)}"
-  rm = `rm -rf #{destination_cnf_dir}`
-  puts rm if verbose
-  helm_uninstall = `#{helm} uninstall #{release_name}`
-  ret = $?
-  puts helm_uninstall if verbose
+  dir_exists = File.directory?(destination_cnf_dir)
+  ret = true
+  if dir_exists
+    rm = `rm -rf #{destination_cnf_dir}`
+    puts rm if verbose
+    helm_uninstall = `#{helm} uninstall #{release_name}`
+    ret = $?.success?
+    puts helm_uninstall if verbose
+  end
   ret
 end
 
