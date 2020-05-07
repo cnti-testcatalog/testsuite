@@ -101,17 +101,37 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
     puts "helm_chart_published args.raw: #{args.raw}" if check_verbose(args)
     puts "helm_chart_published args.named: #{args.named}" if check_verbose(args)
 
+    config = cnf_conformance_yml
+    helm_chart = "#{config.get("helm_chart").as_s?}"
+    helm_directory = "#{config.get("helm_directory").as_s?}"
+
+    current_dir = FileUtils.pwd 
+    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    puts helm if check_verbose(args)
+
    if helm_repo_add 
-     upsert_passed_task("helm_chart_published")
-     puts "PASSED: Published Helm Chart Repo added".colorize(:green)
+     unless helm_chart.empty?
+       helm_search = `#{helm} search repo #{helm_chart}`
+       puts "#{helm_search}" if check_verbose(args)
+       unless helm_search =~ /No results found/
+         upsert_passed_task("helm_chart_published")
+         puts "PASSED: Published Helm Chart Found".colorize(:green)
+       else
+         upsert_failed_task("helm_chart_published")
+         puts "FAILURE: Published Helm Chart Not Found".colorize(:red)
+       end
+     else
+       upsert_failed_task("helm_chart_published")
+       puts "FAILURE: Published Helm Chart Not Found".colorize(:red)
+     end
    else
      upsert_failed_task("helm_chart_published")
-     puts "FAILURE: Published Helm Chart Repo failed to add".colorize(:red)
+     puts "FAILURE: Published Helm Chart Not Found".colorize(:red)
    end
   rescue ex
     puts ex.message
     ex.backtrace.each do |x|
-      puts x
+ puts x
     end
   end
 end
