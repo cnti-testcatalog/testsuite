@@ -8,9 +8,9 @@ describe CnfConformance do
 
     `crystal src/cnf-conformance.cr samples_cleanup`
     $?.success?.should be_true
-    `crystal src/cnf-conformance.cr configuration_file_setup`
-
-    # `crystal src/cnf-conformance.cr setup`
+    # `crystal src/cnf-conformance.cr configuration_file_setup`
+    puts "before all"
+    puts `crystal src/cnf-conformance.cr setup`
     # $?.success?.should be_true
   end
 
@@ -26,6 +26,35 @@ describe CnfConformance do
     $?.success?.should be_true
     (/FAILURE: Helm not found in supplied install script/ =~ response_s).should_not be_nil
     `crystal src/cnf-conformance.cr sample_coredns_source_cleanup`
+  end
+
+	it "'helm_deploy' should fail on a bad helm chart", tags: "helm" do
+    `crystal src/cnf-conformance.cr cleanup`
+    $?.success?.should be_true
+    response_s = `crystal src/cnf-conformance.cr helm_deploy yml-file=sample-cnfs/sample-bad-helm-deploy-repo/cnf-conformance.yml verbose`
+    $?.success?.should be_true
+    puts response_s
+    (/FAILURE: Helm deploy failed/ =~ response_s).should_not be_nil
+    `crystal src/cnf-conformance.cr cleanup`
+  end
+
+  it "'helm_deploy' should fail if command is not supplied yml-file argument", tags: "helm" do
+    `crystal src/cnf-conformance.cr cleanup`
+    $?.success?.should be_true
+    response_s = `crystal src/cnf-conformance.cr helm_deploy`
+    $?.success?.should be_true
+    (/No cnf_conformance.yml found! Did you run the setup task/ =~ response_s).should_not be_nil
+    `crystal src/cnf-conformance.cr cleanup`
+  end
+
+  it "'helm_deploy' should pass if command is supplied yml-file argument", tags: "helm" do
+    `crystal src/cnf-conformance.cr cleanup`
+    $?.success?.should be_true
+    response_s = `crystal src/cnf-conformance.cr helm_deploy yml-file=sample-cnfs/sample-generic-cnf/cnf-conformance.yml verbose`
+    $?.success?.should be_true
+    puts response_s
+    (/PASSED: Helm deploy successful/ =~ response_s).should_not be_nil
+    `crystal src/cnf-conformance.cr cleanup`
   end
 
   it "'helm_deploy' should fail if install script does not have helm" do
