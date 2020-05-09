@@ -19,6 +19,19 @@ def cnf_conformance_yml
   Totem.from_file "./#{cnf_conformance}"
 end
 
+def get_parsed_cnf_conformance_yml(args)
+  if args.named.keys.includes? "yml-file"
+    yml_file = args.named["yml-file"].as(String)
+    return Totem.from_file "#{yml_file}"
+  else
+    cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
+    if cnf_conformance.empty?
+      raise "No cnf_conformance.yml found! Did you run the setup task?"
+    end
+    Totem.from_file "./#{cnf_conformance}"
+  end
+end
+
 def final_cnf_results_yml
   results_file = `find ./* -name "cnf-conformance-results-*.yml"`.split("\n")[-2].gsub("./", "")
   if results_file.empty?
@@ -53,6 +66,20 @@ def cnf_conformance_dir(source_dir)
     raise "No directory named #{source_dir} found! Did you run the setup task?"
   end
   cnf_conformance.split("/")[-1] 
+end
+
+def get_cnf_conformance_dir(args)
+  if args.named.keys.includes? "yml-file"
+    yml_file = args.named["yml-file"].as(String)
+    config = Totem.from_file "#{yml_file}"
+    config.get("helm_directory").as_s
+  else
+    cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
+    if cnf_conformance.empty?
+      raise "No cnf_conformance.yml found! Did you run the setup task?"
+    end
+    cnf_conformance.split("/")[-2]
+  end
 end
 
 def sample_conformance_yml(sample_dir)
@@ -127,11 +154,11 @@ def sample_destination_dir(sample_source_dir)
   "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_source_dir)}"
 end
 
-def helm_repo_add(helm_repo_name=nil, helm_repo_url=nil)
+def helm_repo_add(helm_repo_name=nil, helm_repo_url=nil, args : Sam::Args=Sam::Args.new)
   ret = false
   if helm_repo_name == nil || helm_repo_url == nil
-    config = cnf_conformance_yml
-    current_dir = FileUtils.pwd 
+    config = get_parsed_cnf_conformance_yml(args)
+    current_dir = FileUtils.pwd
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     helm_repo_name = config.get("helm_repository.name").as_s?
     helm_repo_url = config.get("helm_repository.repo_url").as_s?
@@ -143,7 +170,7 @@ def helm_repo_add(helm_repo_name=nil, helm_repo_url=nil)
     else
       ret = false
     end
-  else 
+  else
     ret = false
   end
   ret
