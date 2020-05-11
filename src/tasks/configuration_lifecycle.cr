@@ -6,7 +6,7 @@ require "json"
 require "./utils/utils.cr"
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
-task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness"]  do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used"]  do |_, args|
 end
 
 desc "Does a search for IP addresses or subnets come back as negative?"
@@ -136,15 +136,21 @@ task "retrieve_manifest" do |_, args|
     puts "retrieve_manifest" if check_verbose(args)
     config = cnf_conformance_yml
     deployment_name = config.get("deployment_name").as_s
+    service_name = config.get("service_name").as_s
     puts deployment_name if check_verbose(args)
+    puts service_name if check_verbose(args)
     helm_directory = config.get("helm_directory").as_s
     puts helm_directory if check_verbose(args)
     current_cnf_dir_short_name = cnf_conformance_dir
     puts current_cnf_dir_short_name if check_verbose(args)
     destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
     puts destination_cnf_dir if check_verbose(args)
-    manifest = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/#{helm_directory}/manifest.yml`
-    puts manifest if check_verbose(args)
+    deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/#{helm_directory}/manifest.yml`
+    puts deployment if check_verbose(args)
+    service = `kubectl get service #{service_name} -o yaml  > #{destination_cnf_dir}/service.yml`
+    puts service if check_verbose(args)
+
+
   rescue ex
     puts ex.message
     ex.backtrace.each do |x|
@@ -199,6 +205,37 @@ task "rolling_update" do |_, args|
     else
       upsert_failed_task("rolling_update")
       puts "FAILURE: CNF #{deployment_name} Rolling Update Failed".colorize(:red)
+    end
+
+  rescue ex
+    puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
+  end
+end
+
+desc "Does the CNF use NodePort"
+task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
+  begin
+    puts "nodeport_not_used" if check_verbose(args)
+    config = cnf_conformance_yml
+    release_name = config.get("release_name").as_s
+    service_name = config.get("service_name").as_s
+    current_cnf_dir_short_name = cnf_conformance_dir
+    puts current_cnf_dir_short_name if check_verbose(args)
+    destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
+
+    service = Totem.from_file "#{destination_cnf_dir}/service.yml"
+    puts service.inspect if check_verbose(args)
+    service_type = service.get("spec").as_h["type"].as_s
+    puts service_type if check_verbose(args)
+    if service_type == "NodePort" 
+      puts "FAILURE: NodePort is being used".colorize(:red)
+      upsert_failed_task("nodeport_not_used")
+    else
+      puts "PASSED: NodePort is not used"
+      upsert_passed_task("nodeport_not_used").colorize(:green)
     end
 
   rescue ex

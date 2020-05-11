@@ -60,6 +60,8 @@
   tags: configuration_lifecycle, dynamic
 - name: rolling_update
   tags: configuration_lifecycle, dynamic, installability
+- name: nodeport_not_used
+  tags: configuration_lifecycle, dynamic
 
 - name: fluentd_traffic
   tags: observability, dynamic

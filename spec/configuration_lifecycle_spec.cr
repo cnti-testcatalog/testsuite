@@ -97,4 +97,28 @@ describe CnfConformance do
       `./cnf-conformance cleanup_sample_coredns`
     end
   end
+  it "'nodeport_not_used' should fail when a node port is being used", tags: "nodeport_not_used" do
+    begin
+      `crystal src/cnf-conformance.cr cnf_setup cnf-path=sample-cnfs/sample_nodeport deploy_with_chart=false`
+      $?.success?.should be_true
+      response_s = `crystal src/cnf-conformance.cr nodeport_not_used verbose`
+      puts response_s
+      $?.success?.should be_true
+      (/FAILURE: NodePort is being used/ =~ response_s).should_not be_nil
+    ensure
+      `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=sample-cnfs/sample_nodeport deploy_with_chart=false`
+    end
+  end
+  it "'nodeport_not_used' should pass when a node port is not being used", tags: "nodeport_not_used" do
+    begin
+      `crystal src/cnf-conformance.cr sample_coredns`
+      $?.success?.should be_true
+      response_s = `crystal src/cnf-conformance.cr nodeport_not_used verbose`
+      puts response_s
+      $?.success?.should be_true
+      (/PASSED: NodePort is not used/ =~ response_s).should_not be_nil
+    ensure
+      `crystal src/cnf-conformance.cr cleanup_sample_coredns`
+    end
+  end
 end
