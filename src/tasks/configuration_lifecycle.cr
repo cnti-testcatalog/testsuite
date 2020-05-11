@@ -6,7 +6,7 @@ require "json"
 require "./utils/utils.cr"
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
-task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used"]  do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "rolling_update" "nodeport_not_used"]  do |_, args|
 end
 
 desc "Does a search for IP addresses or subnets come back as negative?"

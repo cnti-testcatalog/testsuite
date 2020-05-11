@@ -99,7 +99,7 @@ describe "Utils" do
 
   it "'tasks_by_tag' should return the tasks assigned to a tag", tags: "happy-path" do
     create_results_yml
-    (tasks_by_tag("configuration_lifecycle")).should eq(["reset_cnf", "check_reaped", "versioned_helm_chart", "ip_addresses", "liveness", "readiness", "no_volume_with_configuration", "rolling_update"])
+    (tasks_by_tag("configuration_lifecycle")).should eq(["reset_cnf", "check_reaped", "versioned_helm_chart", "ip_addresses", "liveness", "readiness", "no_volume_with_configuration", "rolling_update", "nodeport_not_used"])
     (tasks_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
