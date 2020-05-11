@@ -6,8 +6,8 @@ require "file_utils"
 require "sam"
 
 describe "Setup" do
-  it "'setup' should completely setup the cnf conformance environment before installing cnfs" do
-    response_s = `crystal src/cnf-conformance.cr setup`
+  it "'setup' should completely setup the cnf conformance environment before installing cnfs", tags: "happy-path"  do
+    response_s = `./cnf-conformance setup`
     puts response_s
     $?.success?.should be_true
     (/Setup complete/ =~ response_s).should_not be_nil

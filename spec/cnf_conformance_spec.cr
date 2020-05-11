@@ -6,28 +6,29 @@ describe CnfConformance do
   before_all do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
-    `crystal src/cnf-conformance.cr samples_cleanup`
+    `./cnf-conformance samples_cleanup`
     $?.success?.should be_true
-    `crystal src/cnf-conformance.cr setup`
+    `./cnf-conformance setup`
     $?.success?.should be_true
-    `crystal src/cnf-conformance.cr sample_coredns_with_wait_setup`
+    `./cnf-conformance sample_coredns_with_wait_setup`
     $?.success?.should be_true
   end
 
   after_all do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
-    `crystal src/cnf-conformance.cr samples_cleanup`
+    `./cnf-conformance samples_cleanup`
     $?.success?.should be_true
   end
 
-  it "'all' should run the whole test suite" do
+  it "'all' should run the whole test suite", tags: "happy-path" do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
     # Test the binary
-    build_s = `crystal build src/cnf-conformance.cr`
-    $?.success?.should be_true
-    puts build_s 
+    # Build should already be present
+    # build_s = `crystal build src/cnf-conformance.cr`
+    # $?.success?.should be_true
+    # puts build_s 
     response_s = `./cnf-conformance all`
     puts response_s
     $?.success?.should be_true
@@ -41,12 +42,12 @@ describe CnfConformance do
     (all_result_test_names(final_cnf_results_yml)).should eq(["privileged", "increase_capacity", "decrease_capacity", "ip_addresses", "liveness", "readiness", "install_script_helm", "helm_chart_valid", "helm_chart_published","helm_deploy", "reasonable_image_size", "reasonable_startup_time"])
   end
 
-   it "'scalability' should run all of the scalability tests" do
+   it "'scalability' should run all of the scalability tests", tags: "happy-path"  do
      # puts `pwd` 
      # puts `echo $KUBECONFIG`
-     response_s = `crystal src/cnf-conformance.cr setup`
+     response_s = `./cnf-conformance setup`
      puts response_s
-     response_s = `crystal src/cnf-conformance.cr scalability`
+     response_s = `./cnf-conformance scalability`
      puts response_s
        $?.success?.should be_true
      (/PASSED: Replicas increased to 3/ =~ response_s).should_not be_nil

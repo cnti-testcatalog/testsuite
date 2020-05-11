@@ -23,6 +23,7 @@ task "helm_deploy" do |_, args|
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts helm if check_verbose(args)
 
+    #TODO make this work off of a helm directory if helm_directory was passed
     helm_install = `#{helm} install #{release_name} #{helm_chart}`
 
     is_helm_installed = $?.success?

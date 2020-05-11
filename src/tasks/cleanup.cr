@@ -10,11 +10,11 @@ end
 
 desc "Cleans up the CNF Conformance sample projects"
 task "samples_cleanup", ["sample_coredns_cleanup", "cleanup_sample_coredns", "bad_helm_cnf_cleanup", "sample_privileged_cnf_non_whitelisted_cleanup", "sample_privileged_cnf_whitelisted_cleanup", "sample_coredns_bad_liveness_cleanup", "sample_coredns_source_cleanup", "sample_generic_cnf_cleanup"] do  |_, args|
-  `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf`
-  `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-deploy-repo`
-  `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-repo`
-  `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=sample-cnfs/sample-bad_helm_coredns-cnf`
-  `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=sample-cnfs/sample-coredns-cnf-bad-chart`
+  `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf`
+  `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-deploy-repo`
+  `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-repo`
+  `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-bad_helm_coredns-cnf`
+  `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-coredns-cnf-bad-chart`
 end
 
 task "tools_cleanup", ["helm_local_cleanup", "sonobuoy_cleanup"] do  |_, args|
