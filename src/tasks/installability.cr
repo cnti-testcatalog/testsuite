@@ -23,8 +23,14 @@ task "helm_deploy" do |_, args|
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts helm if check_verbose(args)
 
+
+    if helm_chart.empty? 
     #TODO make this work off of a helm directory if helm_directory was passed
+    yml_file_path = cnf_conformance_yml_file_path(args)
+    helm_install = `#{helm} install #{release_name} #{yml_file_path}/#{helm_directory}`
+    else 
     helm_install = `#{helm} install #{release_name} #{helm_chart}`
+    end 
 
     is_helm_installed = $?.success?
     puts helm_install if check_verbose(args)

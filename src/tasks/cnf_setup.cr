@@ -63,7 +63,12 @@ end
 
 task "cnf_cleanup" do |_, args|
   cnf = args.named["cnf-path"].as(String)
-  sample_cleanup(sample_dir: cnf, verbose: true)
+  if args.named["force"]? && args.named["force"] == "true"
+    force = true 
+  else
+    force = false
+  end
+  sample_cleanup(sample_dir: cnf, force: force, verbose: true)
 end
 
 task "sample_coredns_cleanup" do |_, args|

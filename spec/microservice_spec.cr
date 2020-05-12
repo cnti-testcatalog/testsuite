@@ -9,7 +9,7 @@ describe "Microservice" do
   before_all do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
-    `./cnf-conformance samples_cleanup`
+    `./cnf-conformance samples_cleanup force=true`
     $?.success?.should be_true
     `./cnf-conformance configuration_file_setup`
     # `./cnf-conformance setup`
@@ -26,12 +26,12 @@ describe "Microservice" do
   end
 
   it "'reasonable_startup_time' should fail if the cnf doesn't has a reasonable startup time(helm_directory)", tags: "reasonable_startup_time" do
-    `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup`
+    `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup force=true`
     $?.success?.should be_true
     response_s = `./cnf-conformance reasonable_startup_time yml-file=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml`
     $?.success?.should be_true
     (/FAILURE: CNF had a startup time of/ =~ response_s).should_not be_nil
-    `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup`
+    `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup force=true`
   end
 
   it "'reasonable_image_size' should pass if image is smaller than 5gb", tags: ["reasonable_image_size","happy-path"]  do
@@ -48,14 +48,14 @@ describe "Microservice" do
 
   it "'reasonable_image_size' should fail if image is larger than 5gb", tags: "reasonable_image_size" do
     begin
-      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf`
+      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf force=true`
       `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-large-cnf deploy_with_chart=false`
       response_s = `./cnf-conformance reasonable_image_size verbose`
       puts response_s
       $?.success?.should be_true
       (/Image size too large/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf`
+      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf force=true`
     end
   end
 
