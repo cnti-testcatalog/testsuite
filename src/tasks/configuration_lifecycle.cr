@@ -253,42 +253,55 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration", ["retrieve_manifest"
     config = cnf_conformance_yml
     release_name = config.get("release_name").as_s
     deployment_name = config.get("service_name").as_s
+    helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_directory = config.get("helm_directory").as_s
     current_cnf_dir_short_name = cnf_conformance_dir
     puts current_cnf_dir_short_name if check_verbose(args)
     destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
 
-    deployment = Totem.from_file "#{destination_cnf_dir}/#{helm_directory}/manifest.yml"
-    puts deployment.inspect if check_verbose(args)
+    current_dir = FileUtils.pwd
+    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    puts helm if check_verbose(args)
 
-    # Fetch an array of configmaps attatched to the CNF
-    volumes = deployment.get("spec").as_h["template"].as_h["spec"].as_h["volumes"].as_a
-    puts volumes.inspect if check_verbose(args)
-    config_maps = [] of Array(Hash(Int32, String))
-    config_maps = volumes.map do |configmap|
-      configmap.as_h["configMap"]["name"]
+    unless helm_chart.empty?
+      helm_install = `#{helm} install generated #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
+      puts "helm_chart: #{helm_chart}" if check_verbose(args)
+    else
+      helm_install = `#{helm} install generated #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
+      puts "helm_directory: #{helm_directory}" if check_verbose(args)
     end
-    puts "configmap_names: #{config_maps.inspect}" if check_verbose(args)
-
-    # Pull down the manifest for each configmap and return and array of file names"
-    fetch_configmaps = config_maps.map do |configmap_name| 
-      `kubectl get configmaps #{configmap_name} -o yaml  > #{destination_cnf_dir}/configmap_#{configmap_name}.yml`
-      "configmap_#{configmap_name}.yml"
-    end
-    puts "configmap_yml_files: #{fetch_configmaps}" if check_verbose(args)
-
-    # Parse all configmap manifest files and check for hardcoded IPs
-    configmap_hardcoded_ip_search = fetch_configmaps.reduce([] of String) do |acc, configmap_file | 
-      grep = `grep -rnw -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}' #{destination_cnf_dir}/#{configmap_file}`
-      unless grep.empty? 
-        acc = acc << "#{configmap_file}: #{grep}"
-      else
-        acc
-      end
-    end
-    puts "configmap ip search: #{configmap_hardcoded_ip_search}" if check_verbose(args)
+ 
+    ip_search = File.read_lines("test.yml").take_while{|x| x.match(/NOTES:/) == nil}.reduce([] of String){|acc, x| x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/) && x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/).try &.[0] != "0.0.0.0" ? acc << x : acc}
+    puts "IPs: #{ip_search}" if check_verbose(args)
 
 
+  # (?:(?:25[0-5]|2[0-4][0-9]|[01]?[1-9][0-9]?)\.)(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){2}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)
+    # # Fetch an array of configmaps attatched to the CNF
+    # volumes = deployment.get("spec").as_h["template"].as_h["spec"].as_h["volumes"].as_a
+    # puts volumes.inspect if check_verbose(args)
+    # config_maps = [] of Array(Hash(Int32, String))
+    # config_maps = volumes.map do |configmap|
+    #   configmap.as_h["configMap"]["name"]
+    # end
+    # puts "configmap_names: #{config_maps.inspect}" if check_verbose(args)
+
+    # # Pull down the manifest for each configmap and return and array of file names"
+    # fetch_configmaps = config_maps.map do |configmap_name| 
+    #   `kubectl get configmaps #{configmap_name} -o yaml  > #{destination_cnf_dir}/configmap_#{configmap_name}.yml`
+    #   "configmap_#{configmap_name}.yml"
+    # end
+    # puts "configmap_yml_files: #{fetch_configmaps}" if check_verbose(args)
+
+    # # Parse all configmap manifest files and check for hardcoded IPs
+    # configmap_hardcoded_ip_search = fetch_configmaps.reduce([] of String) do |acc, configmap_file | 
+    #   grep = `grep -rnw -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}' #{destination_cnf_dir}/#{configmap_file}`
+    #   unless grep.empty? 
+    #     acc = acc << "#{configmap_file}: #{grep}"
+    #   else
+    #     acc
+    #   end
+    # end
+    # puts "configmap ip search: #{configmap_hardcoded_ip_search}" if check_verbose(args)
 
   rescue ex
     puts ex.message
