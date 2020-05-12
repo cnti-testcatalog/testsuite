@@ -113,8 +113,10 @@ def create_points_yml
   end
 end
 
-def create_results_yml
+def create_results_yml(verbose=false)
+  puts "create_results_yml"
   continue = false
+  puts "file exists?:#{File.exists?(LOGFILE)}"
   if File.exists?("#{LOGFILE}")
     puts "Do you wish to overwrite the #{LOGFILE} file? If so, your previous results.yml will be lost."
     print "(Y/N) (Default N): > "

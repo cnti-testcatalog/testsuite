@@ -9,53 +9,53 @@ describe "Microservice" do
   before_all do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
-    `crystal src/cnf-conformance.cr samples_cleanup`
+    `./cnf-conformance samples_cleanup force=true`
     $?.success?.should be_true
-    `crystal src/cnf-conformance.cr configuration_file_setup`
-    # `crystal src/cnf-conformance.cr setup`
+    `./cnf-conformance configuration_file_setup`
+    # `./cnf-conformance setup`
     # $?.success?.should be_true
   end
 
-  it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: "reasonable_startup_time" do
-    `crystal src/cnf-conformance.cr sample_coredns_cleanup`
+  it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time", "happy-path"]  do
+    `./cnf-conformance sample_coredns_cleanup`
     $?.success?.should be_true
-    response_s = `crystal src/cnf-conformance.cr reasonable_startup_time yml-file=sample-cnfs/sample_coredns/cnf-conformance.yml`
+    response_s = `./cnf-conformance reasonable_startup_time yml-file=sample-cnfs/sample_coredns/cnf-conformance.yml`
     $?.success?.should be_true
     (/PASSED: CNF had a reasonable startup time/ =~ response_s).should_not be_nil
-    `crystal src/cnf-conformance.cr sample_coredns_cleanup`
+    `./cnf-conformance sample_coredns_cleanup`
   end
 
   it "'reasonable_startup_time' should fail if the cnf doesn't has a reasonable startup time(helm_directory)", tags: "reasonable_startup_time" do
-    `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup`
+    `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup force=true`
     $?.success?.should be_true
-    response_s = `crystal src/cnf-conformance.cr reasonable_startup_time yml-file=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml`
+    response_s = `./cnf-conformance reasonable_startup_time yml-file=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml`
     $?.success?.should be_true
     (/FAILURE: CNF had a startup time of/ =~ response_s).should_not be_nil
-    `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup`
+    `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup force=true`
   end
 
-  it "'reasonable_image_size' should pass if image is smaller than 5gb", tags: "reasonable_image_size" do
+  it "'reasonable_image_size' should pass if image is smaller than 5gb", tags: ["reasonable_image_size","happy-path"]  do
     begin
-      `crystal src/cnf-conformance.cr sample_coredns_setup`
-      response_s = `crystal src/cnf-conformance.cr reasonable_image_size verbose`
+      `./cnf-conformance sample_coredns_setup`
+      response_s = `./cnf-conformance reasonable_image_size verbose`
       puts response_s
       $?.success?.should be_true
       (/Image size is good/ =~ response_s).should_not be_nil
     ensure
-      `crystal src/cnf-conformance.cr sample_coredns_cleanup`
+      `./cnf-conformance sample_coredns_cleanup`
     end
   end
 
   it "'reasonable_image_size' should fail if image is larger than 5gb", tags: "reasonable_image_size" do
     begin
-      `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf`
-      `crystal src/cnf-conformance.cr cnf_setup cnf-path=sample-cnfs/sample-large-cnf deploy_with_chart=false`
-      response_s = `crystal src/cnf-conformance.cr reasonable_image_size verbose`
+      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf force=true`
+      `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-large-cnf deploy_with_chart=false`
+      response_s = `./cnf-conformance reasonable_image_size verbose`
       puts response_s
       $?.success?.should be_true
       (/Image size too large/ =~ response_s).should_not be_nil
     ensure
-      `crystal src/cnf-conformance.cr cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf`
+      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf force=true`
     end
   end
 

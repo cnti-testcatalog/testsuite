@@ -6,8 +6,8 @@ require "file_utils"
 require "sam"
 
 describe "Prereq" do
-  it "'prereq' should check the system for prerequisites" do
-    response_s = `crystal src/cnf-conformance.cr prereqs verbose`
+  it "'prereq' should check the system for prerequisites", tags: "happy-path"  do
+    response_s = `./cnf-conformance prereqs verbose`
     puts response_s
     $?.success?.should be_true
     (/helm found/ =~ response_s).should_not be_nil

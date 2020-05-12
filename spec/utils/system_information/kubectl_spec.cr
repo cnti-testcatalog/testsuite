@@ -8,20 +8,20 @@ require "sam"
 
 describe "Helm" do
 
-  it "'kubectl_global_response()' should return the information about the kubectl installation" do
+  it "'kubectl_global_response()' should return the information about the kubectl installation", tags: "happy-path"  do
     (kubectl_global_response(true)).should contain("Client Version")
   end
 
-  it "'kubectl_local_response()' should return the information about the kubectl installation" do
+  it "'kubectl_local_response()' should return the information about the kubectl installation", tags: "happy-path"  do
     (kubectl_local_response(true)).should eq("") 
   end
 
-  it "'kubectl_version()' should return the information about the kubectl version" do
+  it "'kubectl_version()' should return the information about the kubectl version", tags: "happy-path"  do
     (kubectl_version(kubectl_global_response)).should match(/(([0-9]{1,3}[\.]){1,2}[0-9]{1,3})/)
     (kubectl_version(kubectl_local_response)).should contain("")
   end
 
-  it "'kubectl_installations()' should return the information about the kubectl installation" do
+  it "'kubectl_installations()' should return the information about the kubectl installation", tags: "happy-path"  do
     (kubectl_installation(true)).should contain("kubectl found")
   end
 end
