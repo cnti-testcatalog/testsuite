@@ -151,6 +151,10 @@ crystal src/cnf-conformance.cr versioned_helm_chart
 ```
 crystal src/cnf-conformance.cr ip_addresses
 ```
+#### :heavy_check_mark: To test if there are node ports used in the service configuration
+```
+crystal src/cnf-conformance.cr nodepost_not_used
+```
 #### (PoC) To test if there is a liveness entry in the Helm chart
 ```
 crystal src/cnf-conformance.cr liveness
