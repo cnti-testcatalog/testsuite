@@ -219,6 +219,11 @@ crystal src/cnf-conformance.cr helm_chart_published
 ```
 crystal src/cnf-conformance.cr helm_chart_valid
 ```
+#### :heavy_check_mark: Test if the Helm deploys
+```
+cp -rf example-cnfs/coredns cnfs/coredns
+crystal src/cnf-conformance.cr helm_deploy cnfs/coredns/cnf-conformance.yml
+```
 #### (To Do) To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
 ```
 crystal src/cnf-conformance.cr rolling_update
