@@ -1,0 +1,12 @@
+---
+helm_directory: chart
+git_clone_url: 
+install_script: chart
+release_name: unifi
+deployment_name: unifi
+service_name: unifi-controller 
+application_deployment_names: [unifi]
+helm_chart: stable/unifi
+helm_chart_container_name: unifi
+rolling_update_tag: latest
+white_list_helm_chart_container_names: []
