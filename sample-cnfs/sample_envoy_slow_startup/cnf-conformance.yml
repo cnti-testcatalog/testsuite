@@ -5,6 +5,7 @@ git_clone_url:
 install_script: 
 release_name: envoy 
 deployment_name: envoy
+service_name: envoy
 application_deployment_names: [envoy]
 helm_chart_container_name: envoy
 white_list_helm_chart_container_names: [falco, nginx, envoy, calico-node, kube-proxy, nginx-proxy, node-cache]

@@ -59,7 +59,7 @@
 - name: no_volume_with_configuration
   tags: configuration_lifecycle, dynamic
 - name: rolling_update
-  tags: configuration_lifecycle, dynamic, installability
+  tags: configuration_lifecycle, dynamic
 - name: nodeport_not_used
   tags: configuration_lifecycle, dynamic
 
