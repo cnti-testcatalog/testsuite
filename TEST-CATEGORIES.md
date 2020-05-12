@@ -39,7 +39,7 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 #### Configuration and lifecycle should be managed in a declarative manner, using [ConfigMaps](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/), [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/), or other [declarative interfaces](https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects/#understanding-kubernetes-objects).  The Conformance suite checks this by:
 
 *  Testing if the CNF is installed using a [versioned](https://helm.sh/docs/topics/chart_best_practices/dependencies/#versions) Helm v3 chart
-*  Searching for hardcoded IP addresses or subnets in the configuration
+*  Searching for hardcoded IP addresses, subnets, or node ports in the configuration
 *  Checking for a liveness entry in the helm chart and if the container is responsive to it after a reset (e.g. by checking the [helm chart entry](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/))
 *  Checking for a readiness entry in the helm chart and if the container is responsive to it after a reset
 *  Checking if the pod/container can be started without mounting a volume (e.g. using [helm configuration](https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/)) that has configuration files
