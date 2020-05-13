@@ -1,3 +1,4 @@
+# coding: utf-8
 require "sam"
 require "file_utils"
 require "colorize"
@@ -231,10 +232,10 @@ task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
     service_type = service.get("spec").as_h["type"].as_s
     puts service_type if check_verbose(args)
     if service_type == "NodePort" 
-      puts "FAILURE: NodePort is being used".colorize(:red)
+      puts "✖️  FAILURE: NodePort is being used".colorize(:red)
       upsert_failed_task("nodeport_not_used")
     else
-      puts "PASSED: NodePort is not used".colorize(:green)
+      puts "✔️  PASSED: NodePort is not used".colorize(:green)
       upsert_passed_task("nodeport_not_used")
     end
 
@@ -273,10 +274,10 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     puts "IPs: #{ip_search}" if check_verbose(args)
 
     if ip_search.empty? 
-      puts "PASSED: No hard-coded IP addresses found in the runtime K8s configuration".colorize(:green)
+      puts "✔️  PASSED: No hard-coded IP addresses found in the runtime K8s configuration".colorize(:green)
       upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration")
     else
-      puts "FAILURE: Hard-coded IP addresses found in the runtime K8s configuration".colorize(:red)
+      puts "✖️  FAILURE: Hard-coded IP addresses found in the runtime K8s configuration".colorize(:red)
       upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration")
     end
 
