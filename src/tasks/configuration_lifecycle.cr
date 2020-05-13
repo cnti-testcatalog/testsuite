@@ -234,8 +234,8 @@ task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
       puts "FAILURE: NodePort is being used".colorize(:red)
       upsert_failed_task("nodeport_not_used")
     else
-      puts "PASSED: NodePort is not used"
-      upsert_passed_task("nodeport_not_used").colorize(:green)
+      puts "PASSED: NodePort is not used".colorize(:green)
+      upsert_passed_task("nodeport_not_used")
     end
 
   rescue ex
@@ -247,21 +247,19 @@ task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
 end
 
 desc "Does the CNF have hardcoded IPs in the K8s resource configuration"
-task "hardcoded_ip_addresses_in_k8s_runtime_configuration", ["retrieve_manifest"] do |_, args|
+task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
   begin
-    puts "hardcoded_ip_addresses_in_k8s_runtime_configuration" if check_verbose(args)
+    puts "Task Name: hardcoded_ip_addresses_in_k8s_runtime_configuration" if check_verbose(args)
     config = cnf_conformance_yml
-    release_name = config.get("release_name").as_s
-    deployment_name = config.get("service_name").as_s
     helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_directory = config.get("helm_directory").as_s
     current_cnf_dir_short_name = cnf_conformance_dir
-    puts current_cnf_dir_short_name if check_verbose(args)
+    puts "Current_CNF_Dir: #{current_cnf_dir_short_name}" if check_verbose(args)
     destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
 
     current_dir = FileUtils.pwd
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-    puts helm if check_verbose(args)
+    puts "Helm Path: #{helm}" if check_verbose(args)
 
     unless helm_chart.empty?
       helm_install = `#{helm} install generated #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
@@ -271,8 +269,16 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration", ["retrieve_manifest"
       puts "helm_directory: #{helm_directory}" if check_verbose(args)
     end
  
-    ip_search = File.read_lines("test.yml").take_while{|x| x.match(/NOTES:/) == nil}.reduce([] of String){|acc, x| x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/) && x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/).try &.[0] != "0.0.0.0" ? acc << x : acc}
+    ip_search = File.read_lines("#{destination_cnf_dir}/helm_chart.yml").take_while{|x| x.match(/NOTES:/) == nil}.reduce([] of String){|acc, x| x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/) && x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/).try &.[0] != "0.0.0.0" ? acc << x : acc}
     puts "IPs: #{ip_search}" if check_verbose(args)
+
+    if ip_search.empty? 
+      puts "PASSED: No hard-coded IP addresses found in the runtime K8s configuration".colorize(:green)
+      upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration")
+    else
+      puts "FAILURE: Hard-coded IP addresses found in the runtime K8s configuration".colorize(:red)
+      upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration")
+    end
 
 
   # (?:(?:25[0-5]|2[0-4][0-9]|[01]?[1-9][0-9]?)\.)(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){2}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)
