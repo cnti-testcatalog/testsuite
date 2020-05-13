@@ -6,7 +6,7 @@ require "json"
 require "./utils/utils.cr"
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
-task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "rolling_update", "nodeport_not_used"]  do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "rolling_update", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration"]  do |_, args|
 end
 
 desc "Does a search for IP addresses or subnets come back as negative?"
@@ -280,34 +280,6 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
       upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration")
     end
 
-
-  # (?:(?:25[0-5]|2[0-4][0-9]|[01]?[1-9][0-9]?)\.)(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){2}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)
-    # # Fetch an array of configmaps attatched to the CNF
-    # volumes = deployment.get("spec").as_h["template"].as_h["spec"].as_h["volumes"].as_a
-    # puts volumes.inspect if check_verbose(args)
-    # config_maps = [] of Array(Hash(Int32, String))
-    # config_maps = volumes.map do |configmap|
-    #   configmap.as_h["configMap"]["name"]
-    # end
-    # puts "configmap_names: #{config_maps.inspect}" if check_verbose(args)
-
-    # # Pull down the manifest for each configmap and return and array of file names"
-    # fetch_configmaps = config_maps.map do |configmap_name| 
-    #   `kubectl get configmaps #{configmap_name} -o yaml  > #{destination_cnf_dir}/configmap_#{configmap_name}.yml`
-    #   "configmap_#{configmap_name}.yml"
-    # end
-    # puts "configmap_yml_files: #{fetch_configmaps}" if check_verbose(args)
-
-    # # Parse all configmap manifest files and check for hardcoded IPs
-    # configmap_hardcoded_ip_search = fetch_configmaps.reduce([] of String) do |acc, configmap_file | 
-    #   grep = `grep -rnw -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}' #{destination_cnf_dir}/#{configmap_file}`
-    #   unless grep.empty? 
-    #     acc = acc << "#{configmap_file}: #{grep}"
-    #   else
-    #     acc
-    #   end
-    # end
-    # puts "configmap ip search: #{configmap_hardcoded_ip_search}" if check_verbose(args)
 
   rescue ex
     puts ex.message
