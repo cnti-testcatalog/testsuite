@@ -155,6 +155,10 @@ crystal src/cnf-conformance.cr ip_addresses
 ```
 crystal src/cnf-conformance.cr nodeport_not_used
 ```
+#### :heavy_check_mark: To test if there are any (non-declarative) hardcoded IP addresses or subnet masks in the K8s runtime configuration
+```
+crystal src/cnf-conformance.cr hardcoded_ip_addresses_in_k8s_runtime_configuration
+```
 #### (PoC) To test if there is a liveness entry in the Helm chart
 ```
 crystal src/cnf-conformance.cr liveness
