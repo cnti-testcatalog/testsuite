@@ -38,3 +38,25 @@ KUBECONFIG=myclusterconfig kubectl get pods --all-namespaces
 cp -a ~/.kube/config mykubeconfig
 export KUBECONFIG=`pwd`/myclusterconfig
 ```
+
+## Add Multus and CNI plugins to Kind cluster
+Start by installing Multus in the cluster:
+```
+curl https://raw.githubusercontent.com/intel/multus-cni/master/images/multus-daemonset.yml | kubectl apply -f -
+```
+
+Check the name of your node(s) (default: kind-control-plane)
+```
+docker ps
+```
+
+Open a shell on the node(s), and install the CNI binaries (repeat for every node where CNIs should be installed)
+```
+docker exec -it <name of node> /bin/bash
+$ apt update && apt install -y wget
+$ wget https://github.com/containernetworking/plugins/releases/download/v0.8.5/cni-plugins-linux-amd64-v0.8.5.tgz
+$ tar -C /opt/cni/bin/ -zxvf cni-plugins-linux-amd64-v0.8.5.tgz
+$ (optional) rm cni-plugins-linux-amd64-v0.8.5.tgz
+```
+
+Now you can use CNFs that require Multus and CNIs, e.g. [examples/ip-forwarder](https://github.com/cncf/cnf-conformance/tree/master/example-cnfs/ip-forwarder)
