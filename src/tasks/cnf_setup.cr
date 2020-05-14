@@ -71,6 +71,17 @@ task "cnf_cleanup" do |_, args|
   sample_cleanup(sample_dir: cnf, force: force, verbose: true)
 end
 
+task "helm_repo_add" do |_, args|
+  puts "helm_repo_add" if check_verbose(args)
+  puts "args = #{args.inspect}" if check_verbose(args)
+  if args.named["cnf-config"]? || args.named["yml-file"]?
+    helm_repo_add(args: args)
+  else
+    helm_repo_add
+  end
+
+end
+
 task "sample_coredns_cleanup" do |_, args|
   sample_cleanup(sample_dir: "sample-cnfs/sample-coredns-cnf", verbose: true)
 end
