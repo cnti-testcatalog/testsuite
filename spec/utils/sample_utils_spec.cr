@@ -1,36 +1,36 @@
-require "./spec_helper"
+require "../spec_helper"
 require "colorize"
-require "../src/tasks/utils/utils.cr"
+require "../../src/tasks/utils/utils.cr"
 require "file_utils"
 require "sam"
 
-describe "SampleCoreDNS" do
+describe "SampleUtils" do
   before_all do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
-    `crystal src/cnf-conformance.cr helm_local_install`
+    `./cnf-conformance helm_local_install`
     $?.success?.should be_true
   end
 
   after_all do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
-    `crystal src/cnf-conformance.cr sample_coredns_setup`
+    `./cnf-conformance sample_coredns_setup`
     $?.success?.should be_true
   end
 
   before_each do
-    `crystal src/cnf-conformance.cr cleanup`
+    `./cnf-conformance cleanup`
     $?.success?.should be_true
   end
 
   after_each do
-    `crystal src/cnf-conformance.cr cleanup`
+    `./cnf-conformance cleanup`
     $?.success?.should be_true
   end
 
-  it "'wait_for_install' should wait for a cnf to be installed" do
-    `crystal src/cnf-conformance.cr sample_coredns_setup`
+  it "'wait_for_install' should wait for a cnf to be installed", tags: "happy-path"  do
+    `./cnf-conformance sample_coredns_setup`
     $?.success?.should be_true
 
     current_dir = FileUtils.pwd 
@@ -44,7 +44,7 @@ describe "SampleCoreDNS" do
     (current_replicas.to_i > 0).should be_true
   end
 
-  it "'sample_setup' should set up a sample cnf" do
+  it "'sample_setup' should set up a sample cnf", tags: "happy-path"  do
     args = Sam::Args.new
     sample_setup(sample_dir: "sample-cnfs/sample-generic-cnf", release_name: "coredns", deployment_name: "coredns-coredns", helm_chart: "stable/coredns", helm_directory: "helm_chart", git_clone_url: "https://github.com/coredns/coredns.git", wait_count: 0 )
     # check if directory exists
@@ -54,7 +54,7 @@ describe "SampleCoreDNS" do
     sample_cleanup(sample_dir: "sample-cnfs/sample-generic-cnf", verbose: true)
   end
   #
-  it "'sample_setup_args' should set up a sample cnf from a argument" do
+  it "'sample_setup_args' should set up a sample cnf from a argument", tags: "happy-path"  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 0 )
     # check if directory exists
@@ -64,17 +64,17 @@ describe "SampleCoreDNS" do
     sample_cleanup(sample_dir: "sample-cnfs/sample-generic-cnf", verbose: true)
   end
 
-  it "'sample_cleanup' should clean up a sample cnf from a argument" do
+  it "'sample_cleanup' should clean up a sample cnf from a argument", tags: "happy-path"  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 0 )
     cleanup = sample_cleanup(sample_dir: "sample-cnfs/sample-generic-cnf", verbose: true)
-    (cleanup.success?).should be_true 
+    (cleanup).should be_true 
     (Dir.exists? "cnfs/sample-generic-cnf").should be_false
     (File.exists?("cnfs/sample-generic-cnf/cnf-conformance.yml")).should be_false
     (File.exists?("cnfs/sample-generic-cnf/helm_chart/Chart.yaml")).should be_false
   end
 
-  it "'sample_setup_args' should be able to deploy using a helm_directory" do
+  it "'sample_setup_args' should be able to deploy using a helm_directory", tags: "happy-path"  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
     (Dir.exists? "cnfs/sample_privileged_cnf").should be_true
@@ -84,7 +84,7 @@ describe "SampleCoreDNS" do
     (File.exists? "cnfs/sample_privileged_cnf/chart/Chart.yaml").should be_true
   end
 
-  it "'cnf_conformance_dir' should return the short name of the destination cnf directory", tags: "WIP" do
+  it "'cnf_conformance_dir' should return the short name of the destination cnf directory", tags: ["WIP", "happy-path"]  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 0 )
     (cnf_conformance_dir).should eq("sample-generic-cnf")
@@ -92,10 +92,10 @@ describe "SampleCoreDNS" do
 
   it "'sample_destination_dir' should return the full path of the potential destination cnf directory based on the source sample cnf directory", tags: "WIP" do
     args = Sam::Args.new
-    sample_destination_dir("sample-generic-cnf").should contain("cnf-conformance/cnfs/sample-generic-cnf")
+    sample_destination_dir("sample-generic-cnf").should contain("/cnfs/sample-generic-cnf")
   end
 
-  it "'cnf_conformance_yml(sample_cnf_destination_dir)' should return the yaml for the passed cnf directory", tags: "WIP" do
+  it "'cnf_conformance_yml(sample_cnf_destination_dir)' should return the yaml for the passed cnf directory", tags: "happy-path"  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
     sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: args, verbose: true )
@@ -105,11 +105,29 @@ describe "SampleCoreDNS" do
     ("#{yml.get("release_name").as_s?}").should eq("privileged-coredns")
   end
 
-  it "'cnf_conformance_dir(source_short_dir)' should full cnfs path for passed source cnf", tags: "WIP" do
+  it "'cnf_conformance_dir(source_short_dir)' should full cnfs path for passed source cnf", tags: "happy-path"  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
     sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: args, verbose: true )
     cnf_conformance_dir("sample_privileged_cnf").should contain("sample_privileged_cnf")
     cnf_conformance_dir("sample-cnfs/sample_privileged_cnf").should contain("sample_privileged_cnf")
+  end
+
+  it "'helm_repo_add' should add a helm repo if the helm repo is valid", tags: "happy-path"  do
+    args = Sam::Args.new
+    sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
+    helm_repo_add.should eq(true)
+    args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
+    helm_repo_add(args: args).should eq(true)
+  end
+
+  it "'get_parsed_cnf_conformance_yml' should return the cnf config file based on a yml", tags: "happy-path"  do
+    args = Sam::Args.new(["yml-file=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
+    yml = get_parsed_cnf_conformance_yml(args)
+    ("#{yml.get("release_name").as_s?}").should eq("coredns")
+  end
+
+  it "'helm_repo_add' should return false if the helm repo is invalid", tags: "happy-path"  do
+    helm_repo_add("invalid", "invalid").should eq(false)
   end
 end

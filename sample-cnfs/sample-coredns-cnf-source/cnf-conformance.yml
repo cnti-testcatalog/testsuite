@@ -5,6 +5,7 @@ git_clone_url: https://github.com/coredns/coredns.git
 install_script: coredns/Makefile
 release_name: coredns
 deployment_name: coredns-coredns 
+service_name: coredns-coredns 
 application_deployment_names: [coredns-coredns]
 helm_chart: stable/coredns
 helm_chart_container_name: coredns

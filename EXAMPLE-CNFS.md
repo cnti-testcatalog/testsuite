@@ -61,3 +61,4 @@ This is a preliminary list of CNF samples for each layer in the [OSI model](http
 - [FRRouting](https://frrouting.org/) ([github repo](https://github.com/FRRouting/frr))
 - [Tungsten Fabric](https://tungsten.io/)
 - [OpenSwitch NAS Layer 2](https://github.com/open-switch/opx-nas-l2)
+- [Packet pROcessing eXecution (PROX) engine](https://wiki.opnfv.org/pages/viewpage.action?pageId=12387840) automated with [Rapid scripts](https://git.opnfv.org/samplevnf/tree/VNFs/DPPD-PROX/helper-scripts/rapid) for use cases like NFVI performance characterization ([Readme](https://git.opnfv.org/samplevnf/tree/VNFs/DPPD-PROX/helper-scripts/rapid/README.k8s), [Test case](https://git.opnfv.org/samplevnf/tree/VNFs/DPPD-PROX/helper-scripts/rapid/basicrapid.test)) or CNF Resilience testing ([Engine config](https://git.opnfv.org/samplevnf/tree/VNFs/DPPD-PROX/helper-scripts/rapid/impair.cfg))
