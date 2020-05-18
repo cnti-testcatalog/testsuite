@@ -4,8 +4,9 @@ git_clone_url:
 install_script: 
 release_name: vpp
 deployment_name: vpp
+service_name: 
 application_deployment_names: [vpp]
 helm_chart: 
 helm_chart_container_name: vpp
-white_list_helm_chart_container_names: [falco, nginx, calico-node, kube-proxy, nginx-proxy, node-cache, kube-multus]
 rolling_update_tag: latest
+white_list_helm_chart_container_names: [falco, nginx, calico-node, kube-proxy, nginx-proxy, node-cache, kube-multus]
