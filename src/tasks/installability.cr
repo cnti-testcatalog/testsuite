@@ -25,11 +25,11 @@ task "helm_deploy" do |_, args|
 
 
     if helm_chart.empty? 
-    #TODO make this work off of a helm directory if helm_directory was passed
-    yml_file_path = cnf_conformance_yml_file_path(args)
-    helm_install = `#{helm} install #{release_name} #{yml_file_path}/#{helm_directory}`
+      #TODO make this work off of a helm directory if helm_directory was passed
+      yml_file_path = cnf_conformance_yml_file_path(args)
+      helm_install = `#{helm} install #{release_name} #{yml_file_path}/#{helm_directory}`
     else 
-    helm_install = `#{helm} install #{release_name} #{helm_chart}`
+      helm_install = `#{helm} install #{release_name} #{helm_chart}`
     end 
 
     is_helm_installed = $?.success?
