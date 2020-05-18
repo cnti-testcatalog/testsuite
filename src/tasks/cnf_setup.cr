@@ -52,7 +52,18 @@ end
 
 task "cnf_setup", ["helm_local_install"] do |_, args|
   puts "cnf_setup" if check_verbose(args)
-  example_cnf = args.named["cnf-path"].as(String)
+  puts "args = #{args.inspect}" if check_verbose(args)
+  if args.named.keys.includes? "cnf-config"
+    yml_file = args.named["cnf-config"].as(String)
+    # example_cnf = File.dirname(File.expand_path(yml_file))
+    example_cnf = File.dirname(yml_file)
+  elsif args.named.keys.includes? "cnf-path"
+    example_cnf = args.named["cnf-path"].as(String)
+  else
+    puts "Error: You must supply either cnf-config or cnf-path".colorize(:red)
+    exit 1
+	end
+  puts "cnf_setup example_cnf: #{example_cnf}" if check_verbose(args)
   if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
     deploy_with_chart = false
   else

@@ -41,7 +41,8 @@ end
 def cnf_conformance_yml_file_path(args)
   if args.named.keys.includes? "yml-file"
     yml_file = args.named["yml-file"].as(String)
-    cnf_conformance = File.expand_path(yml_file).split("/")[0..-2].reduce(""){|x,acc| x == "" ? "/" : x + acc + "/"}
+    # cnf_conformance = File.expand_path(yml_file).split("/")[0..-2].reduce(""){|x,acc| x == "" ? "/" : x + acc + "/"}
+    cnf_conformance = File.dirname(yml_file)
   else
     cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
     if cnf_conformance.empty?
@@ -124,10 +125,26 @@ def wait_for_install(deployment_name, wait_count=180)
   end
 end 
 
+def path_has_yml?(config_path)
+  if config_path =~ /\.yml/  
+    true
+  else
+    false
+  end
+end
+
 def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false, wait_count=180)
   puts "sample_setup_args" if verbose
 
-  config = sample_conformance_yml(sample_dir)
+  if path_has_yml?(sample_dir)
+    config_path = File.dirname(sample_dir)
+    config = sample_conformance_yml(config_path)
+  else
+    config_path = sample_dir
+    config = sample_conformance_yml(config_path)
+  end
+
+  puts "config #{config}" if verbose
 
   if args.named.keys.includes? "release_name"
     release_name = "#{args.named["release_name"]}"
@@ -164,7 +181,7 @@ def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false, w
   end
   puts "git_clone_url: #{git_clone_url}" if verbose
 
-  sample_setup(sample_dir: sample_dir, release_name: release_name, deployment_name: deployment_name, helm_chart: helm_chart, helm_directory: helm_directory, git_clone_url: git_clone_url, deploy_with_chart: deploy_with_chart, verbose: verbose, wait_count: wait_count )
+  sample_setup(sample_dir: config_path, release_name: release_name, deployment_name: deployment_name, helm_chart: helm_chart, helm_directory: helm_directory, git_clone_url: git_clone_url, deploy_with_chart: deploy_with_chart, verbose: verbose, wait_count: wait_count )
 
 end
 
@@ -214,6 +231,7 @@ def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_dir
   # Copy the cnf-conformance.yml
   # yml_cp = `cp #{sample_dir}/cnf-conformance.yml #{destination_cnf_dir}`
   # Copy the sample 
+  puts "cp -a #{sample_dir} #{CNF_DIR}" if verbose
   yml_cp = `cp -a #{sample_dir} #{CNF_DIR}`
   # verbose ? puts "helm_repo_add: #{helm_repo_add}" : helm_repo_add
   puts yml_cp if verbose
@@ -300,7 +318,7 @@ def sample_cleanup(sample_dir, force=false, verbose=true)
 
   current_dir = FileUtils.pwd 
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-  puts helm if verbose 
+  # puts helm if verbose 
   destination_cnf_dir = "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_dir)}"
   dir_exists = File.directory?(destination_cnf_dir)
   ret = true

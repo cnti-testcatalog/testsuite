@@ -64,6 +64,16 @@ describe "SampleUtils" do
     sample_cleanup(sample_dir: "sample-cnfs/sample-generic-cnf", verbose: true)
   end
 
+  it "'sample_setup_args' should set up a sample cnf from a config file", tags: "happy-path"  do
+    args = Sam::Args.new
+    sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf/cnf-conformance.yml", args: args, verbose: true, wait_count: 0 )
+    # check if directory exists
+    (Dir.exists? "sample-cnfs/sample-generic-cnf").should be_true
+    (File.exists?("cnfs/sample-generic-cnf/cnf-conformance.yml")).should be_true
+    (File.exists?("cnfs/sample-generic-cnf/helm_chart/Chart.yaml")).should be_true
+    sample_cleanup(sample_dir: "sample-cnfs/sample-generic-cnf", verbose: true)
+  end
+
   it "'sample_cleanup' should clean up a sample cnf from a argument", tags: "happy-path"  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 0 )
