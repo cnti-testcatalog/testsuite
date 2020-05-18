@@ -121,4 +121,33 @@ describe CnfConformance do
       `./cnf-conformance cleanup_sample_coredns`
     end
   end
+
+
+
+
+  it "'hardcoded_ip_addresses_in_k8s_runtime_configuration' should fail when a hardcoded ip is found in the K8s configuration", tags: "hardcoded_ip_addresses_in_k8s_runtime_configuration" do
+    begin
+      `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample_coredns_hardcoded_ips deploy_with_chart=false`
+      $?.success?.should be_true
+      response_s = `./cnf-conformance hardcoded_ip_addresses_in_k8s_runtime_configuration verbose`
+      puts response_s
+      $?.success?.should be_true
+      (/FAILURE: Hard-coded IP addresses found in the runtime K8s configuration/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_coredns_hardcoded_ips deploy_with_chart=false`
+    end
+  end
+  it "'hardcoded_ip_addresses_in_k8s_runtime_configuration' should pass when no ip addresses are found in the K8s configuration", tags: "hardcoded_ip_addresses_in_k8s_runtime_configuration" do
+    begin
+      `./cnf-conformance sample_coredns`
+      $?.success?.should be_true
+      response_s = `./cnf-conformance hardcoded_ip_addresses_in_k8s_runtime_configuration verbose`
+      puts response_s
+      $?.success?.should be_true
+      (/PASSED: No hard-coded IP addresses found in the runtime K8s configuration/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-conformance cleanup_sample_coredns`
+    end
+  end
+
 end
