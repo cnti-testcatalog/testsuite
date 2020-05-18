@@ -1,11 +1,10 @@
 require "totem"
+require "colorize"
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
 
 # TODO put this in a module
 
-PASSED = "passed"
-FAILED = "failed"
 # CONFIG = Totem.from_file "./config.yml"
 
 # TODO return array of cnf directories from the cnfs directory
@@ -18,6 +17,46 @@ def cnf_conformance_yml
     raise "No cnf_conformance.yml found! Did you run the setup task?"
   end
   Totem.from_file "./#{cnf_conformance}"
+end
+
+def get_parsed_cnf_conformance_yml(args)
+  puts "get_parsed_cnf_conformance_yml args: #{args.inspect}" if check_verbose(args)
+  puts "get_parsed_cnf_conformance_yml args.named.keys: #{args.named.keys.inspect}" if check_verbose(args)
+  if args.named.keys.includes? "yml-file" 
+    yml_file = args.named["yml-file"].as(String)
+  elsif args.named.keys.includes? "cnf-config"
+    yml_file = args.named["cnf-config"].as(String)
+  else
+    yml_file_relative = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
+    if yml_file_relative.empty?
+      raise "No cnf_conformance.yml found! Did you run the setup task?"
+    end
+    yml_file = "./#{yml_file_relative}"
+  end
+  puts "yml_file: #{yml_file}" if check_verbose(args)
+  puts "current directory: #{FileUtils.pwd}" if check_verbose(args)
+  Totem.from_file yml_file 
+end
+
+def cnf_conformance_yml_file_path(args)
+  if args.named.keys.includes? "yml-file"
+    yml_file = args.named["yml-file"].as(String)
+    cnf_conformance = File.expand_path(yml_file).split("/")[0..-2].reduce(""){|x,acc| x == "" ? "/" : x + acc + "/"}
+  else
+    cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
+    if cnf_conformance.empty?
+      raise "No cnf_conformance.yml found! Did you run the setup task?"
+    end
+  end
+  cnf_conformance
+end 
+
+def final_cnf_results_yml
+  results_file = `find ./* -name "cnf-conformance-results-*.yml"`.split("\n")[-2].gsub("./", "")
+  if results_file.empty?
+    raise "No cnf_conformance-results-*.yml found! Did you run the all task?"
+  end
+  results_file
 end
 
 def cnf_conformance_yml(sample_cnf_destination_dir)
@@ -43,9 +82,23 @@ def cnf_conformance_dir(source_dir)
   source_short_dir = source_dir.split("/")[-1]
   cnf_conformance = `find cnfs/* -name "#{source_short_dir}"`.split("\n")[0]
   if cnf_conformance.empty?
-    raise "No directoryed named #{source_dir} found! Did you run the setup task?"
+    raise "No directory named #{source_dir} found! Did you run the setup task?"
   end
   cnf_conformance.split("/")[-1] 
+end
+
+def get_cnf_conformance_dir(args)
+  if args.named.keys.includes? "yml-file"
+    yml_file = args.named["yml-file"].as(String)
+    config = Totem.from_file "#{yml_file}"
+    config.get("helm_directory").as_s
+  else
+    cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
+    if cnf_conformance.empty?
+      raise "No cnf_conformance.yml found! Did you run the setup task?"
+    end
+    cnf_conformance.split("/")[-2]
+  end
 end
 
 def sample_conformance_yml(sample_dir)
@@ -120,6 +173,28 @@ def sample_destination_dir(sample_source_dir)
   "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_source_dir)}"
 end
 
+def helm_repo_add(helm_repo_name=nil, helm_repo_url=nil, args : Sam::Args=Sam::Args.new)
+  ret = false
+  if helm_repo_name == nil || helm_repo_url == nil
+    config = get_parsed_cnf_conformance_yml(args)
+    current_dir = FileUtils.pwd
+    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    helm_repo_name = config.get("helm_repository.name").as_s?
+    helm_repo_url = config.get("helm_repository.repo_url").as_s?
+  end
+  if helm_repo_name && helm_repo_url
+    `#{helm} repo add #{helm_repo_name} #{helm_repo_url}`
+    if $?.success?
+      ret = true
+    else
+      ret = false
+    end
+  else
+    ret = false
+  end
+  ret
+end
+
 def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_directory, git_clone_url="", deploy_with_chart=true, verbose=false, wait_count=180)
   puts "sample_setup" if verbose
 
@@ -140,6 +215,7 @@ def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_dir
   # yml_cp = `cp #{sample_dir}/cnf-conformance.yml #{destination_cnf_dir}`
   # Copy the sample 
   yml_cp = `cp -a #{sample_dir} #{CNF_DIR}`
+  # verbose ? puts "helm_repo_add: #{helm_repo_add}" : helm_repo_add
   puts yml_cp if verbose
 
   raise "Copy of #{sample_dir}/cnf-conformance.yml to #{destination_cnf_dir} failed!" unless $?.success?
@@ -147,7 +223,6 @@ def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_dir
   begin
 
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-    puts helm if verbose
     if deploy_with_chart
       puts "deploying with chart repository" if verbose 
       helm_install = `#{helm} install #{release_name} #{helm_chart}`
@@ -219,7 +294,7 @@ def tools_helm
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
 end
 
-def sample_cleanup(sample_dir, verbose=true)
+def sample_cleanup(sample_dir, force=false, verbose=true)
   config = sample_conformance_yml(sample_dir)
   release_name = config.get("release_name").as_s 
 
@@ -227,11 +302,15 @@ def sample_cleanup(sample_dir, verbose=true)
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
   puts helm if verbose 
   destination_cnf_dir = "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_dir)}"
-  rm = `rm -rf #{destination_cnf_dir}`
-  puts rm if verbose
-  helm_uninstall = `#{helm} uninstall #{release_name}`
-  ret = $?
-  puts helm_uninstall if verbose
+  dir_exists = File.directory?(destination_cnf_dir)
+  ret = true
+  if dir_exists || force == true
+    rm = `rm -rf #{destination_cnf_dir}`
+    puts rm if verbose
+    helm_uninstall = `#{helm} uninstall #{release_name}`
+    ret = $?.success?
+    puts helm_uninstall if verbose
+  end
   ret
 end
 
@@ -242,133 +321,4 @@ end
 def short_sample_dir(full_sample_dir)
   full_sample_dir.split("/").last 
 end
-
-def template_results_yml
-  #TODO add tags for category summaries
-  YAML.parse <<-END
-name: cnf conformance 
-status: 
-points: 
-items:
-- name: liveness 
-  status: 
-  points: 
-- name: readiness
-  status: 
-  points: 
-END
-end
-
-def create_results_yml
-  continue = false
-  if File.exists?("results.yml")
-    puts "Do you wish to overwrite the results.ymlfile? If so, your results will be lost."
-    print "(Y/N) (Default N): > "
-    if ENV["CRYSTAL_ENV"]? == "TEST"
-      continue = true
-    else
-      user_input = gets
-      if user_input == "Y" || user_input == "y"
-        continue = true
-      end
-    end
-  else
-    continue = true
-  end
-  if continue
-    File.open("results.yml", "w") do |f| 
-      YAML.dump(template_results_yml, f)
-    end 
-  end
-end
-
-def points_yml
-  # TODO get points.yml from remote http
-  points = File.open("points.yml") do |f| 
-    YAML.parse(f)
-  end 
-  # puts "points: #{points.inspect}"
-  points.as_a
-end
-
-def upsert_task(task, status, points)
-  results = File.open("results.yml") do |f| 
-    YAML.parse(f)
-  end 
-  found = false
-  result_items = results["items"].as_a.reject! do |x|
-    x["name"].as_s? == "liveness"
-  end
-
-  result_items << YAML.parse "{name: #{task}, status: #{status}, points: #{points}}"
-  File.open("results.yml", "w") do |f| 
-    YAML.dump({name: results["name"],
-               status: results["status"],
-               points: results["points"],
-               items: result_items}, f)
-  end 
-end
-
-def upsert_failed_task(task)
-  upsert_task(task, FAILED, failing_task(task))
-end
-
-def upsert_passed_task(task)
-  upsert_task(task, PASSED, passing_task(task))
-end
-
-def passing_task(task)
-  points = points_yml.find {|x| x["name"] == task}
-  points["pass"].as_i if points
-end
-
-def failing_task(task)
-  points = points_yml.find {|x| x["name"] == task}
-  points["fail"].as_i if points
-end
-
-def total_points
-  yaml = File.open("results.yml") do |file|
-    YAML.parse(file)
-  end
-  yaml["items"].as_a.reduce(0) do |acc, i|
-    if i["points"].as_i?
-      (acc + i["points"].as_i)
-    else
-      acc
-    end
-  end
-end
-
-def tasks_by_tag(tag)
-  #TODO cross reference points.yml tags with results
-  found = false
-  result_items = points_yml.reduce([] of String) do |acc, x|
-    # x["tags"].as_s.includes?(tag) if x["tags"].as_s?
-    if x["tags"].as_s? && x["tags"].as_s.includes?(tag)
-      acc << x["name"].as_s
-    else
-      acc
-    end
-  end
-end
-
-def results_by_tag(tag)
-  task_list = tasks_by_tag(tag)
-
-  results = File.open("results.yml") do |f| 
-    YAML.parse(f)
-  end 
-
-  found = false
-  result_items = results["items"].as_a.reduce([] of YAML::Any) do |acc, x|
-    if x["name"].as_s? && task_list.find{|tl| tl == x["name"].as_s}
-      acc << x
-    else
-      acc
-    end
-  end
-
-end
-
 

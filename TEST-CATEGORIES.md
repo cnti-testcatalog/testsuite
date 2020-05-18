@@ -21,6 +21,11 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 *  Check if there are any shells
 *  Check if any protected directories or files are accessed
 
+## Microservice Tests 
+#### The CNF should be developed and delivered as a microservice. The CNF Conformance suite tests to determine the organizational structure and rate of change of the CNF being tested. Once these are known we can detemine whether or not the CNF is a microservice. See: [Microservice-Principles](https://networking.cloud-native-principles.org/cloud-native-microservice-principles):
+*  Check if the CNF have a reasonable startup time.
+*  Check the image size of the CNF.
+
 ## Scalability Tests  
 #### The CNF conformance suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s [kubectl](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources) command to:
 *  Test increasing/decreasing capacity
@@ -34,7 +39,7 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 #### Configuration and lifecycle should be managed in a declarative manner, using [ConfigMaps](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/), [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/), or other [declarative interfaces](https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects/#understanding-kubernetes-objects).  The Conformance suite checks this by:
 
 *  Testing if the CNF is installed using a [versioned](https://helm.sh/docs/topics/chart_best_practices/dependencies/#versions) Helm v3 chart
-*  Searching for hardcoded IP addresses or subnets in the configuration
+*  Searching for hardcoded IP addresses, subnets, or node ports in the configuration
 *  Checking for a liveness entry in the helm chart and if the container is responsive to it after a reset (e.g. by checking the [helm chart entry](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/))
 *  Checking for a readiness entry in the helm chart and if the container is responsive to it after a reset
 *  Checking if the pod/container can be started without mounting a volume (e.g. using [helm configuration](https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/)) that has configuration files
@@ -54,6 +59,7 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 ## Installable and Upgradeable Tests
 #### The CNF Conformance suite will check for usage of standard, in-band deployment tools such as Helm (version 3) charts. The Conformance suite checks this by:
 *  Testing if the install script uses [Helm v3](https://github.com/helm/)
+*  Testing if the CNF is published to a public helm chart repository.
 *  Testing if the Helm chart is valid (e.g. using the [helm linter](https://github.com/helm/chart-testing))
 *  Testing if the CNF can perform a rolling update (i.e. [kubectl rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/))
 

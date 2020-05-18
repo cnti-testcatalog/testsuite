@@ -5,7 +5,49 @@ require "totem"
 require "./utils/utils.cr"
 
 desc "The CNF conformance suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
-task "installability", ["install_script_helm", "helm_chart_valid"] do |_, args|
+task "installability", ["install_script_helm", "helm_chart_valid", "helm_chart_published", "helm_deploy"] do |_, args|
+end
+
+desc "Will the CNF install using helm with helm_deploy?"
+task "helm_deploy" do |_, args|
+  begin
+    puts "helm_deploy" if check_verbose(args)
+    config = get_parsed_cnf_conformance_yml(args)
+
+    helm_chart = "#{config.get("helm_chart").as_s?}"
+    helm_directory = "#{config.get("helm_directory").as_s?}"
+    release_name = "#{config.get("release_name").as_s?}"
+    puts "helm_chart: #{helm_chart}" if check_verbose(args)
+
+    current_dir = FileUtils.pwd
+    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    puts helm if check_verbose(args)
+
+
+    if helm_chart.empty? 
+    #TODO make this work off of a helm directory if helm_directory was passed
+    yml_file_path = cnf_conformance_yml_file_path(args)
+    helm_install = `#{helm} install #{release_name} #{yml_file_path}/#{helm_directory}`
+    else 
+    helm_install = `#{helm} install #{release_name} #{helm_chart}`
+    end 
+
+    is_helm_installed = $?.success?
+    puts helm_install if check_verbose(args)
+
+    if is_helm_installed
+      upsert_passed_task("helm_deploy")
+      puts "PASSED: Helm deploy successful".colorize(:green)
+    else
+      upsert_failed_task("helm_deploy")
+      puts "FAILURE: Helm deploy failed".colorize(:red)
+    end
+  rescue ex
+    puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
+  end
 end
 
 desc "Does the install script use helm?"
@@ -48,10 +90,50 @@ task "install_script_helm" do |_, args|
   end
 end
 
+task "helm_chart_published", ["helm_local_install"] do |_, args|
+  begin
+    puts "helm_chart_published args.raw: #{args.raw}" if check_verbose(args)
+    puts "helm_chart_published args.named: #{args.named}" if check_verbose(args)
+
+    config = cnf_conformance_yml
+    helm_chart = "#{config.get("helm_chart").as_s?}"
+    helm_directory = "#{config.get("helm_directory").as_s?}"
+
+    current_dir = FileUtils.pwd 
+    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    puts helm if check_verbose(args)
+
+   if helm_repo_add 
+     unless helm_chart.empty?
+       helm_search = `#{helm} search repo #{helm_chart}`
+       puts "#{helm_search}" if check_verbose(args)
+       unless helm_search =~ /No results found/
+         upsert_passed_task("helm_chart_published")
+         puts "PASSED: Published Helm Chart Found".colorize(:green)
+       else
+         upsert_failed_task("helm_chart_published")
+         puts "FAILURE: Published Helm Chart Not Found".colorize(:red)
+       end
+     else
+       upsert_failed_task("helm_chart_published")
+       puts "FAILURE: Published Helm Chart Not Found".colorize(:red)
+     end
+   else
+     upsert_failed_task("helm_chart_published")
+     puts "FAILURE: Published Helm Chart Not Found".colorize(:red)
+   end
+  rescue ex
+    puts ex.message
+    ex.backtrace.each do |x|
+ puts x
+    end
+  end
+end
+
 task "helm_chart_valid", ["helm_local_install"] do |_, args|
   begin
-    puts "increase_capacity args.raw: #{args.raw}" if check_verbose(args)
-    puts "increase_capacity args.named: #{args.named}" if check_verbose(args)
+    puts "helm_chart_valid args.raw: #{args.raw}" if check_verbose(args)
+    puts "helm_chart_valid args.named: #{args.named}" if check_verbose(args)
 
     response = String::Builder.new
 

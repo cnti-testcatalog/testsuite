@@ -9,6 +9,7 @@ The CNF Conformance Test Suite will inspect CNFs for the following characteristi
 - **Compatibility** - CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements.
 - **Statelessness** - The CNF's state should be stored in a custom resource definition or a separate database (e.g. etcd) rather than requiring local storage. The CNF should also be resilient to node failure.
 - **Security** - CNF containers should be isolated from one another and the host.
+- **Microservice** - The CNF should be developed and delivered as a microservice.
 - **Scalability** - CNFs should support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines).
 - **Configuration and Lifecycle** - The CNF's configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces.  
 - **Observability** - CNFs should externalize their internal states in a way that supports metrics, tracing, and logging.

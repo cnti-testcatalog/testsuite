@@ -6,7 +6,7 @@ require "json"
 require "./utils/utils.cr"
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
-task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness"]  do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "rolling_update", "nodeport_not_used"]  do |_, args|
 end
 
 desc "Does a search for IP addresses or subnets come back as negative?"
@@ -26,10 +26,10 @@ task "ip_addresses" do |_, args|
     end
     Dir.cd(cdir)
     if response.to_s.size > 0
-      upsert_failed_task("ip_address")
+      upsert_failed_task("ip_addresses")
       puts "FAILURE: IP addresses found".colorize(:red)
     else
-      upsert_passed_task("ip_address")
+      upsert_passed_task("ip_addresses")
       puts "PASSED: No IP addresses found".colorize(:green)
     end
   rescue ex
@@ -40,7 +40,6 @@ task "ip_addresses" do |_, args|
   end
 end
 
-#TODO separate out liveness from readiness checks
 desc "Is there a liveness entry in the helm chart?"
 task "liveness", ["retrieve_manifest"] do |_, args|
   begin
@@ -51,6 +50,7 @@ task "liveness", ["retrieve_manifest"] do |_, args|
       helm_directory = config.get("helm_directory").as_s
     rescue ex
       errors = errors + 1
+      upsert_failed_task("liveness")
       puts "FAILURE: helm directory not found".colorize(:red)
       puts ex.message if check_args(args)
     end
@@ -95,6 +95,7 @@ task "readiness", ["retrieve_manifest"] do |_, args|
       helm_directory = config.get("helm_directory").as_s
     rescue ex
       errors = errors + 1
+      upsert_failed_task("readiness")
       puts "FAILURE: helm directory not found".colorize(:red)
       puts ex.message if check_args(args)
     end
@@ -135,15 +136,21 @@ task "retrieve_manifest" do |_, args|
     puts "retrieve_manifest" if check_verbose(args)
     config = cnf_conformance_yml
     deployment_name = config.get("deployment_name").as_s
+    service_name = config.get("service_name").as_s
     puts deployment_name if check_verbose(args)
+    puts service_name if check_verbose(args)
     helm_directory = config.get("helm_directory").as_s
     puts helm_directory if check_verbose(args)
     current_cnf_dir_short_name = cnf_conformance_dir
     puts current_cnf_dir_short_name if check_verbose(args)
     destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
     puts destination_cnf_dir if check_verbose(args)
-    manifest = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/#{helm_directory}/manifest.yml`
-    puts manifest if check_verbose(args)
+    deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/#{helm_directory}/manifest.yml`
+    puts deployment if check_verbose(args)
+    service = `kubectl get service #{service_name} -o yaml  > #{destination_cnf_dir}/service.yml`
+    puts service if check_verbose(args)
+
+
   rescue ex
     puts ex.message
     ex.backtrace.each do |x|
@@ -160,8 +167,8 @@ task "rolling_update" do |_, args|
 
     version_tag = nil
 
-    if config.has_key? "cnf_image_version"
-      version_tag = config.get("cnf_image_version").as_s
+    if config.has_key? "rolling_update_tag"
+      version_tag = config.get("rolling_update_tag").as_s
     end
 
     if args.named.has_key? "version_tag"
@@ -170,7 +177,7 @@ task "rolling_update" do |_, args|
     
     unless version_tag
       upsert_failed_task("rolling_update")
-      raise "FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'cnf_image_version'"
+      raise "FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'rolling_update_tag'"
     end
 
     release_name = config.get("release_name").as_s
@@ -198,6 +205,37 @@ task "rolling_update" do |_, args|
     else
       upsert_failed_task("rolling_update")
       puts "FAILURE: CNF #{deployment_name} Rolling Update Failed".colorize(:red)
+    end
+
+  rescue ex
+    puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
+  end
+end
+
+desc "Does the CNF use NodePort"
+task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
+  begin
+    puts "nodeport_not_used" if check_verbose(args)
+    config = cnf_conformance_yml
+    release_name = config.get("release_name").as_s
+    service_name = config.get("service_name").as_s
+    current_cnf_dir_short_name = cnf_conformance_dir
+    puts current_cnf_dir_short_name if check_verbose(args)
+    destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
+
+    service = Totem.from_file "#{destination_cnf_dir}/service.yml"
+    puts service.inspect if check_verbose(args)
+    service_type = service.get("spec").as_h["type"].as_s
+    puts service_type if check_verbose(args)
+    if service_type == "NodePort" 
+      puts "FAILURE: NodePort is being used".colorize(:red)
+      upsert_failed_task("nodeport_not_used")
+    else
+      puts "PASSED: NodePort is not used"
+      upsert_passed_task("nodeport_not_used").colorize(:green)
     end
 
   rescue ex

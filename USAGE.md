@@ -19,6 +19,11 @@ crystal build src/cnf-conformance.cr
 crystal src/cnf-conformance.cr all
 ```
 
+## To see a list of all tasks in the test suite
+``` 
+crystal src/cnf-conformance.cr help 
+```
+
 ## Compatibility Tests
 #### :heavy_check_mark: To run all of the compatibility tests
 ```
@@ -75,6 +80,22 @@ crystal src/cnf-conformance.cr shells
 crystal src/cnf-conformance.cr protected_access
 ```
 
+## Microservice Tests
+#### :heavy_check_mark: To run all of the microservice tests
+```
+crystal src/cnf-conformance.cr microservice
+```
+
+#### :heavy_check_mark: To check if the CNF has a reasonable image size
+```
+crystal src/cnf-conformance.cr reasonable_image_size
+```
+#### :heavy_check_mark: To check if the CNF have a reasonable startup time
+```
+crystal src/cnf-conformance.cr reasonable_startup_time
+```
+
+
 ## Scalability Tests
 
 #### :heavy_check_mark: To run all of the scalability tests
@@ -129,6 +150,10 @@ crystal src/cnf-conformance.cr versioned_helm_chart
 #### (PoC) To test if there are any (non-declarative) hardcoded IP addresses or subnet masks
 ```
 crystal src/cnf-conformance.cr ip_addresses
+```
+#### :heavy_check_mark: To test if there are node ports used in the service configuration
+```
+crystal src/cnf-conformance.cr nodeport_not_used
 ```
 #### (PoC) To test if there is a liveness entry in the Helm chart
 ```
@@ -190,10 +215,19 @@ crystal src/cnf-conformance.cr installability
 ```
 crystal src/cnf-conformance.cr install_script_helm
 ```
-
+#### :heavy_check_mark: Test if the Helm chart is published
+```
+crystal src/cnf-conformance.cr helm_chart_published
+```
 #### :heavy_check_mark: Test if the [Helm chart is valid](https://github.com/helm/chart-testing))
 ```
 crystal src/cnf-conformance.cr helm_chart_valid
+```
+#### :heavy_check_mark: Test if the Helm deploys
+```
+# Use a cnf-conformance.yml to manually call helm_deploy
+# e.g. cp -rf <your-cnf-directory> cnfs/<your-cnf-directory>
+crystal src/cnf-conformance.cr helm_deploy cnfs/<your-cnf-directory>/cnf-conformance.yml
 ```
 #### (To Do) To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
 ```

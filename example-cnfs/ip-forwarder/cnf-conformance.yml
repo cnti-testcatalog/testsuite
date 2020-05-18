@@ -1,10 +1,11 @@
 ---
-helm_directory: csp
+helm_directory: vpp
 git_clone_url: 
 install_script: 
-release_name: ip-forwarder-csp
-deployment_name: ip-forwarder-csp 
-application_deployment_names: [ip-forwarder-csp]
+release_name: vpp
+deployment_name: vpp
+application_deployment_names: [vpp]
 helm_chart: 
-helm_chart_container_name: ip-forwarder-csp
-white_list_helm_chart_container_names: [falco, nginx, calico-node, kube-proxy, nginx-proxy, node-cache]
+helm_chart_container_name: vpp
+white_list_helm_chart_container_names: [falco, nginx, calico-node, kube-proxy, nginx-proxy, node-cache, kube-multus]
+rolling_update_tag: latest
