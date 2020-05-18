@@ -14,6 +14,11 @@ Run cnf-conformance setup
 crystal src/cnf-conformance.cr setup
 ```
 
+Add the published helm chart: 
+```
+crystal src/cnf-conformance.cr helm_repo_add  cnf-config=example-cnfs/envoy/cnf-conformance.yml
+```
+
 Install Envoy 
 ```
 crystal src/cnf-conformance.cr cnf_setup cnf-path=example-cnfs/envoy

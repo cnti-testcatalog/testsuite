@@ -20,16 +20,22 @@ def cnf_conformance_yml
 end
 
 def get_parsed_cnf_conformance_yml(args)
-  if args.named.keys.includes? "yml-file"
+  puts "get_parsed_cnf_conformance_yml args: #{args.inspect}" if check_verbose(args)
+  puts "get_parsed_cnf_conformance_yml args.named.keys: #{args.named.keys.inspect}" if check_verbose(args)
+  if args.named.keys.includes? "yml-file" 
     yml_file = args.named["yml-file"].as(String)
-    return Totem.from_file "#{yml_file}"
+  elsif args.named.keys.includes? "cnf-config"
+    yml_file = args.named["cnf-config"].as(String)
   else
-    cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
-    if cnf_conformance.empty?
+    yml_file_relative = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
+    if yml_file_relative.empty?
       raise "No cnf_conformance.yml found! Did you run the setup task?"
     end
-    Totem.from_file "./#{cnf_conformance}"
+    yml_file = "./#{yml_file_relative}"
   end
+  puts "yml_file: #{yml_file}" if check_verbose(args)
+  puts "current directory: #{FileUtils.pwd}" if check_verbose(args)
+  Totem.from_file yml_file 
 end
 
 def cnf_conformance_yml_file_path(args)
@@ -209,6 +215,7 @@ def sample_setup(sample_dir, release_name, deployment_name, helm_chart, helm_dir
   # yml_cp = `cp #{sample_dir}/cnf-conformance.yml #{destination_cnf_dir}`
   # Copy the sample 
   yml_cp = `cp -a #{sample_dir} #{CNF_DIR}`
+  # verbose ? puts "helm_repo_add: #{helm_repo_add}" : helm_repo_add
   puts yml_cp if verbose
 
   raise "Copy of #{sample_dir}/cnf-conformance.yml to #{destination_cnf_dir} failed!" unless $?.success?
