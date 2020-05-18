@@ -117,6 +117,14 @@ describe "SampleUtils" do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
     helm_repo_add.should eq(true)
+    args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
+    helm_repo_add(args: args).should eq(true)
+  end
+
+  it "'get_parsed_cnf_conformance_yml' should return the cnf config file based on a yml", tags: "happy-path"  do
+    args = Sam::Args.new(["yml-file=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
+    yml = get_parsed_cnf_conformance_yml(args)
+    ("#{yml.get("release_name").as_s?}").should eq("coredns")
   end
 
   it "'helm_repo_add' should return false if the helm repo is invalid", tags: "happy-path"  do
