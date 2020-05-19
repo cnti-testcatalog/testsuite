@@ -45,7 +45,7 @@ task "helm_deploy" do |_, args|
       puts "FAILURE: Helm deploy failed".colorize(:red)
     end
     
-    delete_namespace = `kubectl delete namespace helm-deploy-test --force --grace-period 0`
+    delete_namespace = `kubectl delete namespace helm-deploy-test --force --grace-period 0 2>&1 >/dev/null`
 
   rescue ex
     puts ex.message

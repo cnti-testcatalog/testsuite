@@ -258,6 +258,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     config = cnf_conformance_yml
     helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_directory = config.get("helm_directory").as_s
+    release_name = "#{config.get("release_name").as_s?}"
     current_cnf_dir_short_name = cnf_conformance_dir
     puts "Current_CNF_Dir: #{current_cnf_dir_short_name}" if check_verbose(args)
     destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
@@ -266,14 +267,15 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts "Helm Path: #{helm}" if check_verbose(args)
 
+    create_namespace = `kubectl create namespace hardcoded-ip-test`
     unless helm_chart.empty?
-      helm_install = `#{helm} install generated #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
+      helm_install = `#{helm} install --namespace hardcoded-ip-test #{release_name} #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
       puts "helm_chart: #{helm_chart}" if check_verbose(args)
     else
-      helm_install = `#{helm} install generated #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
+      helm_install = `#{helm} install --namespace hardcoded-ip-test #{release_name} #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
       puts "helm_directory: #{helm_directory}" if check_verbose(args)
     end
- 
+
     ip_search = File.read_lines("#{destination_cnf_dir}/helm_chart.yml").take_while{|x| x.match(/NOTES:/) == nil}.reduce([] of String){|acc, x| x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/) && x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/).try &.[0] != "0.0.0.0" ? acc << x : acc}
     puts "IPs: #{ip_search}" if check_verbose(args)
 
@@ -285,6 +287,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
       upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration")
     end
 
+    delete_namespace = `kubectl delete namespace hardcoded-ip-test --force --grace-period 0 2>&1 >/dev/null`
 
   rescue ex
     puts ex.message
