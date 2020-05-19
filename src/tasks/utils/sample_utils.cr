@@ -1,5 +1,7 @@
 require "totem"
 require "colorize"
+require "validator"
+require "validator/check"
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
 
@@ -16,7 +18,8 @@ def cnf_conformance_yml
   if cnf_conformance.empty?
     raise "No cnf_conformance.yml found! Did you run the setup task?"
   end
-  Totem.from_file "./#{cnf_conformance}"
+  totem_config = Totem.from_file "./#{cnf_conformance}"
+  validate_cnf_conformance_yml(totem_config)
 end
 
 def cnf_conformance_yml(sample_cnf_destination_dir)
@@ -45,7 +48,8 @@ def get_parsed_cnf_conformance_yml(args)
   end
   puts "yml_file: #{yml_file}" if check_verbose(args)
   puts "current directory: #{FileUtils.pwd}" if check_verbose(args)
-  Totem.from_file yml_file 
+  totem_config = Totem.from_file yml_file 
+  validate_cnf_conformance_yml(totem_config)
 end
 
 def cnf_conformance_yml_file_path(args)
@@ -372,3 +376,32 @@ def short_sample_dir(full_sample_dir)
   full_sample_dir.split("/").last 
 end
 
+# https://github.com/Nicolab/crystal-validator#check
+def validate_cnf_conformance_yml(config) : Check::Validation
+  v = Check.new_validation
+
+  v.check :docker_repository, "docker_repository field is required", is :in?, :docker_repository, config.settings
+
+  if !v.valid?
+    errors = v.errors
+
+    # Inverse of v.valid?
+    if errors.empty?
+      puts "no error" # TODO: add verbose check
+    end
+
+    # Print all the errors (if any)
+    pp errors
+
+    # It's a Hash of Array
+    puts errors.size
+    puts errors.first_value
+    errors.each do |key, messages|
+      puts key   # => :username
+      puts messages # => ["The username is required.", "etc..."]
+    end
+
+    #TODO: decide if we should throw an error or just log here
+  end
+
+end

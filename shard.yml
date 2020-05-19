@@ -28,5 +28,8 @@ dependencies:
   commander:
     github: mrrooijen/commander
     version: ~> 0.3.5
+  validator:
+    github: nicolab/crystal-validator
+    branch: master
 
 license: MIT

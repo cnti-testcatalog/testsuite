@@ -28,3 +28,7 @@ shards:
     github: icyleaf/totem
     version: 0.6.0
 
+  validator:
+    github: nicolab/crystal-validator
+    commit: 75067a13b4aeaad9c4ebcfbdaf9fea887de04867
+

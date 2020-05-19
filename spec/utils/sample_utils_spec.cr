@@ -10,6 +10,8 @@ describe "SampleUtils" do
     # puts `echo $KUBECONFIG`
     `./cnf-conformance helm_local_install`
     $?.success?.should be_true
+    `./cnf-conformance cleanup`
+    $?.success?.should be_true
   end
 
    after_all do
@@ -18,11 +20,6 @@ describe "SampleUtils" do
      `./cnf-conformance sample_coredns_setup`
      $?.success?.should be_true
    end
-
-  before_each do
-    `./cnf-conformance cleanup`
-    $?.success?.should be_true
-  end
 
   after_each do
     `./cnf-conformance cleanup`
