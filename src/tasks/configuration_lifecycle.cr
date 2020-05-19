@@ -138,7 +138,7 @@ task "retrieve_manifest" do |_, args|
     config = cnf_conformance_yml
     deployment_name = config.get("deployment_name").as_s
     service_name = config.get("service_name").as_s
-    puts deployment_name if check_verbose(args)
+    puts "Deployment_name: #{deployment_name}" if check_verbose(args)
     puts service_name if check_verbose(args)
     helm_directory = config.get("helm_directory").as_s
     puts helm_directory if check_verbose(args)
@@ -148,7 +148,9 @@ task "retrieve_manifest" do |_, args|
     puts destination_cnf_dir if check_verbose(args)
     deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/#{helm_directory}/manifest.yml`
     puts deployment if check_verbose(args)
-    service = `kubectl get service #{service_name} -o yaml  > #{destination_cnf_dir}/service.yml`
+    unless service_name.empty?
+      service = `kubectl get service #{service_name} -o yaml  > #{destination_cnf_dir}/service.yml`
+    end
     puts service if check_verbose(args)
 
 
@@ -227,16 +229,18 @@ task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
     puts current_cnf_dir_short_name if check_verbose(args)
     destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
 
-    service = Totem.from_file "#{destination_cnf_dir}/service.yml"
-    puts service.inspect if check_verbose(args)
-    service_type = service.get("spec").as_h["type"].as_s
-    puts service_type if check_verbose(args)
-    if service_type == "NodePort" 
-      puts "✖️  FAILURE: NodePort is being used".colorize(:red)
-      upsert_failed_task("nodeport_not_used")
-    else
-      puts "✔️  PASSED: NodePort is not used".colorize(:green)
-      upsert_passed_task("nodeport_not_used")
+    if File.exists?("#{destination_cnf_dir}/service.yml")
+      service = Totem.from_file "#{destination_cnf_dir}/service.yml"
+      puts service.inspect if check_verbose(args)
+      service_type = service.get("spec").as_h["type"].as_s
+      puts service_type if check_verbose(args)
+      if service_type == "NodePort" 
+        puts "✖️  FAILURE: NodePort is being used".colorize(:red)
+        upsert_failed_task("nodeport_not_used")
+      else
+        puts "✔️  PASSED: NodePort is not used".colorize(:green)
+        upsert_passed_task("nodeport_not_used").colorize(:green)
+      end
     end
 
   rescue ex
