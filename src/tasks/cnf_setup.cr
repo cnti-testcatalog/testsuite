@@ -56,30 +56,41 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
   if args.named.keys.includes? "cnf-config"
     yml_file = args.named["cnf-config"].as(String)
     # example_cnf = File.dirname(File.expand_path(yml_file))
-    example_cnf = File.dirname(yml_file)
+    cnf = File.dirname(yml_file)
   elsif args.named.keys.includes? "cnf-path"
-    example_cnf = args.named["cnf-path"].as(String)
+    cnf = args.named["cnf-path"].as(String)
   else
     puts "Error: You must supply either cnf-config or cnf-path".colorize(:red)
     exit 1
 	end
-  puts "cnf_setup example_cnf: #{example_cnf}" if check_verbose(args)
+  puts "cnf_setup cnf: #{cnf}" if check_verbose(args)
   if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
     deploy_with_chart = false
   else
     deploy_with_chart = true
   end
-  sample_setup_args(sample_dir: example_cnf, deploy_with_chart: deploy_with_chart, args: args, verbose: true )
+  sample_setup_args(sample_dir: cnf, deploy_with_chart: deploy_with_chart, args: args, verbose: check_verbose(args) )
 end
 
 task "cnf_cleanup" do |_, args|
-  cnf = args.named["cnf-path"].as(String)
+  # cnf = args.named["cnf-path"].as(String)
+  puts "args = #{args.inspect}" if check_verbose(args)
+  if args.named.keys.includes? "cnf-config"
+    yml_file = args.named["cnf-config"].as(String)
+    cnf = File.dirname(yml_file)
+  elsif args.named.keys.includes? "cnf-path"
+    cnf = args.named["cnf-path"].as(String)
+  else
+    puts "Error: You must supply either cnf-config or cnf-path".colorize(:red)
+    exit 1
+	end
+  puts "cnf_cleanup cnf: #{cnf}" if check_verbose(args)
   if args.named["force"]? && args.named["force"] == "true"
     force = true 
   else
     force = false
   end
-  sample_cleanup(sample_dir: cnf, force: force, verbose: true)
+  sample_cleanup(sample_dir: cnf, force: force, verbose: check_verbose(args))
 end
 
 task "helm_repo_add" do |_, args|

@@ -313,13 +313,20 @@ def tools_helm
 end
 
 def sample_cleanup(sample_dir, force=false, verbose=true)
-  config = sample_conformance_yml(sample_dir)
+  if path_has_yml?(sample_dir)
+    config_path = File.dirname(sample_dir)
+    config = sample_conformance_yml(config_path)
+  else
+    config_path = sample_dir
+    config = sample_conformance_yml(config_path)
+  end
+  puts "cleanup config: #{config.inspect}" if verbose
   release_name = config.get("release_name").as_s 
 
   current_dir = FileUtils.pwd 
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
   # puts helm if verbose 
-  destination_cnf_dir = "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_dir)}"
+  destination_cnf_dir = "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(config_path)}"
   dir_exists = File.directory?(destination_cnf_dir)
   ret = true
   if dir_exists || force == true
@@ -328,6 +335,9 @@ def sample_cleanup(sample_dir, force=false, verbose=true)
     helm_uninstall = `#{helm} uninstall #{release_name}`
     ret = $?.success?
     puts helm_uninstall if verbose
+    if ret
+      puts "Successfully cleaned up #{release_name}".colorize(:green)
+    end
   end
   ret
 end
