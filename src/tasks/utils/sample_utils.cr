@@ -43,7 +43,7 @@ def cnf_conformance_yml_file_path(args)
     yml_file = args.named["yml-file"].as(String)
     cnf_conformance = File.expand_path(yml_file).split("/")[0..-2].reduce(""){|x,acc| x == "" ? "/" : x + acc + "/"}
   else
-    cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
+    cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("/")[0..-2].reduce(""){|x, acc| x.empty? ? acc : "#{x}/#{acc}"}
     if cnf_conformance.empty?
       raise "No cnf_conformance.yml found! Did you run the setup task?"
     end

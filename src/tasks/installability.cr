@@ -17,7 +17,6 @@ task "helm_deploy" do |_, args|
     helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_directory = "#{config.get("helm_directory").as_s?}"
     release_name = "#{config.get("release_name").as_s?}"
-    puts "helm_chart: #{helm_chart}" if check_verbose(args)
 
     current_dir = FileUtils.pwd
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
@@ -27,8 +26,11 @@ task "helm_deploy" do |_, args|
     if helm_chart.empty? 
     #TODO make this work off of a helm directory if helm_directory was passed
     yml_file_path = cnf_conformance_yml_file_path(args)
+    puts "helm_directory: #{helm_directory}" if check_verbose(args)
+    puts "yaml_path: #{yml_file_path}" if check_verbose(args)
     helm_install = `#{helm} install #{release_name} #{yml_file_path}/#{helm_directory}`
     else 
+    puts "helm_chart: #{helm_chart}" if check_verbose(args)
     helm_install = `#{helm} install #{release_name} #{helm_chart}`
     end 
 
