@@ -22,16 +22,16 @@ task "helm_deploy" do |_, args|
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts helm if check_verbose(args)
 
-
+    create_namespace = `kubectl create namespace helm-deploy-test`
     if helm_chart.empty? 
     #TODO make this work off of a helm directory if helm_directory was passed
     yml_file_path = cnf_conformance_yml_file_path(args)
     puts "helm_directory: #{helm_directory}" if check_verbose(args)
     puts "yaml_path: #{yml_file_path}" if check_verbose(args)
-    helm_install = `#{helm} install #{release_name} #{yml_file_path}/#{helm_directory}`
+    helm_install = `#{helm} install --namespace helm-deploy-test #{release_name} #{yml_file_path}/#{helm_directory}`
     else 
     puts "helm_chart: #{helm_chart}" if check_verbose(args)
-    helm_install = `#{helm} install #{release_name} #{helm_chart}`
+    helm_install = `#{helm} install --namespace helm-deploy-test #{release_name} #{helm_chart}`
     end 
 
     is_helm_installed = $?.success?
@@ -44,6 +44,9 @@ task "helm_deploy" do |_, args|
       upsert_failed_task("helm_deploy")
       puts "FAILURE: Helm deploy failed".colorize(:red)
     end
+    
+    delete_namespace = `kubectl delete namespace helm-deploy-test --force --grace-period 0`
+
   rescue ex
     puts ex.message
     ex.backtrace.each do |x|
