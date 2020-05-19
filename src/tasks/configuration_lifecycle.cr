@@ -28,10 +28,10 @@ task "ip_addresses" do |_, args|
     Dir.cd(cdir)
     if response.to_s.size > 0
       upsert_failed_task("ip_addresses")
-      puts "FAILURE: IP addresses found".colorize(:red)
+      puts "✖️  FAILURE: IP addresses found".colorize(:red)
     else
       upsert_passed_task("ip_addresses")
-      puts "PASSED: No IP addresses found".colorize(:green)
+      puts "✔️  PASSED: No IP addresses found".colorize(:green)
     end
   rescue ex
     puts ex.message
@@ -52,7 +52,7 @@ task "liveness", ["retrieve_manifest"] do |_, args|
     rescue ex
       errors = errors + 1
       upsert_failed_task("liveness")
-      puts "FAILURE: helm directory not found".colorize(:red)
+      puts "✖️  FAILURE: helm directory not found".colorize(:red)
       puts ex.message if check_args(args)
     end
     current_cnf_dir_short_name = cnf_conformance_dir
@@ -71,12 +71,12 @@ task "liveness", ["retrieve_manifest"] do |_, args|
         puts ex.message if check_args(args)
         errors = errors + 1
         upsert_failed_task("liveness")
-        puts "FAILURE: No livenessProbe found".colorize(:red)
+        puts "✖️  FAILURE: No livenessProbe found".colorize(:red)
       end
     end
     if errors == 0
       upsert_passed_task("liveness")
-      puts "PASSED: Helm liveness probe found".colorize(:green)
+      puts "✔️  PASSED: Helm liveness probe found".colorize(:green)
     end
   rescue ex
     puts ex.message
@@ -97,7 +97,7 @@ task "readiness", ["retrieve_manifest"] do |_, args|
     rescue ex
       errors = errors + 1
       upsert_failed_task("readiness")
-      puts "FAILURE: helm directory not found".colorize(:red)
+      puts "✖️  FAILURE: helm directory not found".colorize(:red)
       puts ex.message if check_args(args)
     end
     current_cnf_dir_short_name = cnf_conformance_dir
@@ -116,12 +116,12 @@ task "readiness", ["retrieve_manifest"] do |_, args|
         puts ex.message if check_args(args)
         errors = errors + 1
         upsert_failed_task("readiness")
-        puts "FAILURE: No readinessProbe found".colorize(:red)
+        puts "✖️  FAILURE: No readinessProbe found".colorize(:red)
       end
     end
     if errors == 0
       upsert_passed_task("readiness")
-      puts "PASSED: Helm readiness probe found".colorize(:green)
+      puts "✔️  PASSED: Helm readiness probe found".colorize(:green)
     end
   rescue ex
     puts ex.message
@@ -178,7 +178,7 @@ task "rolling_update" do |_, args|
     
     unless version_tag
       upsert_failed_task("rolling_update")
-      raise "FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'rolling_update_tag'"
+      raise "✖️  FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'rolling_update_tag'"
     end
 
     release_name = config.get("release_name").as_s
@@ -202,10 +202,10 @@ task "rolling_update" do |_, args|
 
     if $?.success?
       upsert_passed_task("rolling_update")
-      puts "PASSED: CNF #{deployment_name} Rolling Update Passed".colorize(:green)
+      puts "✔️  PASSED: CNF #{deployment_name} Rolling Update Passed".colorize(:green)
     else
       upsert_failed_task("rolling_update")
-      puts "FAILURE: CNF #{deployment_name} Rolling Update Failed".colorize(:red)
+      puts "✖️  FAILURE: CNF #{deployment_name} Rolling Update Failed".colorize(:red)
     end
 
   rescue ex

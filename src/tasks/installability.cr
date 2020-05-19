@@ -37,10 +37,10 @@ task "helm_deploy" do |_, args|
 
     if is_helm_installed
       upsert_passed_task("helm_deploy")
-      puts "PASSED: Helm deploy successful".colorize(:green)
+      puts "✔️  PASSED: Helm deploy successful".colorize(:green)
     else
       upsert_failed_task("helm_deploy")
-      puts "FAILURE: Helm deploy failed".colorize(:red)
+      puts "✖️  FAILURE: Helm deploy failed".colorize(:red)
     end
   rescue ex
     puts ex.message
@@ -73,10 +73,10 @@ task "install_script_helm" do |_, args|
     end
     if found < 1
       upsert_failed_task("install_script_helm")
-      puts "FAILURE: Helm not found in supplied install script".colorize(:red)
+      puts "✖️  FAILURE: Helm not found in supplied install script".colorize(:red)
     else
       upsert_passed_task("install_script_helm")
-      puts "PASSED: Helm found in supplied install script".colorize(:green)
+      puts "✔️  PASSED: Helm found in supplied install script".colorize(:green)
     end
     else
       upsert_passed_task("install_script_helm")
@@ -109,18 +109,18 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
        puts "#{helm_search}" if check_verbose(args)
        unless helm_search =~ /No results found/
          upsert_passed_task("helm_chart_published")
-         puts "PASSED: Published Helm Chart Found".colorize(:green)
+         puts "✔️  PASSED: Published Helm Chart Found".colorize(:green)
        else
          upsert_failed_task("helm_chart_published")
-         puts "FAILURE: Published Helm Chart Not Found".colorize(:red)
+         puts "✖️  FAILURE: Published Helm Chart Not Found".colorize(:red)
        end
      else
        upsert_failed_task("helm_chart_published")
-       puts "FAILURE: Published Helm Chart Not Found".colorize(:red)
+       puts "✖️  FAILURE: Published Helm Chart Not Found".colorize(:red)
      end
    else
      upsert_failed_task("helm_chart_published")
-     puts "FAILURE: Published Helm Chart Not Found".colorize(:red)
+     puts "✖️  FAILURE: Published Helm Chart Not Found".colorize(:red)
    end
   rescue ex
     puts ex.message
@@ -171,10 +171,10 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
 
    if $?.success? 
      upsert_passed_task("helm_chart_valid")
-     puts "PASSED: Helm Chart #{helm_directory} Lint Passed".colorize(:green)
+     puts "✔️  PASSED: Helm Chart #{helm_directory} Lint Passed".colorize(:green)
    else
      upsert_failed_task("helm_chart_valid")
-     puts "FAILURE: Helm Chart #{helm_directory} Lint Failed".colorize(:red)
+     puts "✖️  FAILURE: Helm Chart #{helm_directory} Lint Failed".colorize(:red)
    end
   rescue ex
     puts ex.message
