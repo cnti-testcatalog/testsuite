@@ -185,6 +185,7 @@ task "rolling_update" do |_, args|
 
     release_name = config.get("release_name").as_s
     deployment_name = config.get("deployment_name").as_s
+    helm_chart_container_name = config.get("helm_chart_container_name").as_s
 
     helm_chart_values = JSON.parse(`#{tools_helm} get values #{release_name} -a --output json`)
     puts "helm_chart_values" if check_verbose(args)
@@ -195,8 +196,8 @@ task "rolling_update" do |_, args|
 
     puts "rolling_update: setting new version" if check_verbose(args)
     #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
-    puts "kubectl set image deployment/#{deployment_name} #{release_name}=#{image_name}:#{version_tag} --record" if check_verbose(args)
-    do_update = `kubectl set image deployment/#{deployment_name} #{release_name}=#{image_name}:#{version_tag} --record`
+    puts "kubectl set image deployment/#{deployment_name} #{helm_chart_container_name}=#{image_name}:#{version_tag} --record" if check_verbose(args)
+    do_update = `kubectl set image deployment/#{deployment_name} #{helm_chart_container_name}=#{image_name}:#{version_tag} --record`
 
     # https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#rolling-update
     puts "rolling_update: checking status new version" if check_verbose(args)
