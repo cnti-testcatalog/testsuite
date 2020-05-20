@@ -28,10 +28,10 @@ task "helm_deploy" do |_, args|
     yml_file_path = cnf_conformance_yml_file_path(args)
     puts "helm_directory: #{helm_directory}" if check_verbose(args)
     puts "yaml_path: #{yml_file_path}" if check_verbose(args)
-    helm_install = `#{helm} install --namespace helm-deploy-test #{release_name} #{yml_file_path}/#{helm_directory}`
+    helm_install = `#{helm} install --namespace helm-deploy-test helm-deploy-test #{yml_file_path}/#{helm_directory}`
     else 
     puts "helm_chart: #{helm_chart}" if check_verbose(args)
-    helm_install = `#{helm} install --namespace helm-deploy-test #{release_name} #{helm_chart}`
+    helm_install = `#{helm} install --namespace helm-deploy-test helm-deploy-test #{helm_chart}`
     end 
 
     is_helm_installed = $?.success?
@@ -45,6 +45,7 @@ task "helm_deploy" do |_, args|
       puts "FAILURE: Helm deploy failed".colorize(:red)
     end
     
+    helm_delete = `#{helm} delete --namespace helm-deploy-test helm-deploy-test`
     delete_namespace = `kubectl delete namespace helm-deploy-test --force --grace-period 0 2>&1 >/dev/null`
 
   rescue ex
