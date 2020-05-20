@@ -10,8 +10,8 @@ describe CnfConformance do
     $?.success?.should be_true
     `./cnf-conformance setup`
     $?.success?.should be_true
-    `./cnf-conformance sample_coredns_with_wait_setup`
-    $?.success?.should be_true
+    # `./cnf-conformance sample_coredns_with_wait_setup`
+    # $?.success?.should be_true
   end
 
   after_all do
@@ -29,7 +29,8 @@ describe CnfConformance do
     # build_s = `crystal build src/cnf-conformance.cr`
     # $?.success?.should be_true
     # puts build_s 
-    response_s = `./cnf-conformance all`
+    `./cnf-conformance samples_cleanup`
+    response_s = `./cnf-conformance all cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
     puts response_s
     $?.success?.should be_true
     (/PASSED: Helm readiness probe found/ =~ response_s).should_not be_nil
@@ -47,6 +48,8 @@ describe CnfConformance do
      # puts `echo $KUBECONFIG`
      response_s = `./cnf-conformance setup`
      puts response_s
+     `./cnf-conformance sample_coredns_with_wait_setup`
+     $?.success?.should be_true
      response_s = `./cnf-conformance scalability`
      puts response_s
        $?.success?.should be_true
