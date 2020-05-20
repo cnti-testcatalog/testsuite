@@ -16,7 +16,7 @@ crystal build src/cnf-conformance.cr
 ```
 ## Running all of the CNF Conformance tests
 ``` 
-crystal src/cnf-conformance.cr all
+crystal src/cnf-conformance.cr all cnf-config=<path_to_your_config_file>/cnf-conformance.yml
 ```
 
 ## To see a list of all tasks in the test suite
