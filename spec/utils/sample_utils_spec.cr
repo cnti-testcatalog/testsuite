@@ -12,12 +12,12 @@ describe "SampleUtils" do
     $?.success?.should be_true
   end
 
-  after_all do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
-    `./cnf-conformance sample_coredns_setup`
-    $?.success?.should be_true
-  end
+   after_all do
+     # puts `pwd` 
+     # puts `echo $KUBECONFIG`
+     `./cnf-conformance sample_coredns_setup`
+     $?.success?.should be_true
+   end
 
   before_each do
     `./cnf-conformance cleanup`
@@ -46,22 +46,24 @@ describe "SampleUtils" do
 
   it "'sample_setup' should set up a sample cnf", tags: "happy-path"  do
     args = Sam::Args.new
-    sample_setup(sample_dir: "sample-cnfs/sample-generic-cnf", release_name: "coredns", deployment_name: "coredns-coredns", helm_chart: "stable/coredns", helm_directory: "helm_chart", git_clone_url: "https://github.com/coredns/coredns.git", wait_count: 0 )
+    sample_setup(config_file: "sample-cnfs/sample-generic-cnf", release_name: "coredns", deployment_name: "coredns-coredns", helm_chart: "stable/coredns", helm_directory: "helm_chart", git_clone_url: "https://github.com/coredns/coredns.git", wait_count: 0 )
     # check if directory exists
-    (Dir.exists? "sample-cnfs/sample-generic-cnf").should be_true
-    (File.exists?("cnfs/sample-generic-cnf/cnf-conformance.yml")).should be_true
-    (File.exists?("cnfs/sample-generic-cnf/helm_chart/Chart.yaml")).should be_true
-    sample_cleanup(sample_dir: "sample-cnfs/sample-generic-cnf", verbose: true)
+    (Dir.exists? "cnfs/coredns-coredns").should be_true
+    (File.exists?("cnfs/coredns-coredns/cnf-conformance.yml")).should be_true
+    (File.exists?("cnfs/coredns-coredns/helm_chart/Chart.yaml")).should be_true
+    sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
+    (Dir.exists? "cnfs/coredns-coredns").should be_false
   end
-  #
+
   it "'sample_setup_args' should set up a sample cnf from a argument", tags: "happy-path"  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 0 )
     # check if directory exists
-    (Dir.exists? "sample-cnfs/sample-generic-cnf").should be_true
-    (File.exists?("cnfs/sample-generic-cnf/cnf-conformance.yml")).should be_true
-    (File.exists?("cnfs/sample-generic-cnf/helm_chart/Chart.yaml")).should be_true
-    sample_cleanup(sample_dir: "sample-cnfs/sample-generic-cnf", verbose: true)
+    (Dir.exists? "cnfs/coredns-coredns").should be_true
+    (File.exists?("cnfs/coredns-coredns/cnf-conformance.yml")).should be_true
+    (File.exists?("cnfs/coredns-coredns/helm_chart/Chart.yaml")).should be_true
+    sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
+    (Dir.exists? "cnfs/coredns-coredns").should be_false
   end
 
   it "'sample_setup_args' should set up a sample cnf from a config file", tags: "happy-path"  do
@@ -69,35 +71,38 @@ describe "SampleUtils" do
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf/cnf-conformance.yml", args: args, verbose: true, wait_count: 0 )
     # check if directory exists
     (Dir.exists? "sample-cnfs/sample-generic-cnf").should be_true
-    (File.exists?("cnfs/sample-generic-cnf/cnf-conformance.yml")).should be_true
-    (File.exists?("cnfs/sample-generic-cnf/helm_chart/Chart.yaml")).should be_true
-    sample_cleanup(sample_dir: "sample-cnfs/sample-generic-cnf", verbose: true)
+    (File.exists?("cnfs/coredns-coredns/cnf-conformance.yml")).should be_true
+    (File.exists?("cnfs/coredns-coredns/helm_chart/Chart.yaml")).should be_true
+    sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
+    (Dir.exists? "cnfs/coredns-coredns").should be_false
   end
 
   it "'sample_cleanup' should clean up a sample cnf from a argument", tags: "happy-path"  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 0 )
-    cleanup = sample_cleanup(sample_dir: "sample-cnfs/sample-generic-cnf", verbose: true)
+    cleanup = sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
     (cleanup).should be_true 
-    (Dir.exists? "cnfs/sample-generic-cnf").should be_false
-    (File.exists?("cnfs/sample-generic-cnf/cnf-conformance.yml")).should be_false
-    (File.exists?("cnfs/sample-generic-cnf/helm_chart/Chart.yaml")).should be_false
+    (Dir.exists? "cnfs/coredns-coredns").should be_false
+    (File.exists?("cnfs/coredns-coredns/cnf-conformance.yml")).should be_false
+    (File.exists?("cnfs/coredns-coredns/helm_chart/Chart.yaml")).should be_false
   end
 
   it "'sample_setup_args' should be able to deploy using a helm_directory", tags: "happy-path"  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
-    (Dir.exists? "cnfs/sample_privileged_cnf").should be_true
+    (Dir.exists? "cnfs/privileged-coredns-coredns").should be_true
     # should not clone
-    (Dir.exists? "cnfs/sample_privileged_cnf/privileged-coredns").should be_false
-    (File.exists? "cnfs/sample_privileged_cnf/cnf-conformance.yml").should be_true
-    (File.exists? "cnfs/sample_privileged_cnf/chart/Chart.yaml").should be_true
+    (Dir.exists? "cnfs/privileged-coredns-coredns/privileged-coredns").should be_false
+    (File.exists? "cnfs/privileged-coredns-coredns/cnf-conformance.yml").should be_true
+    (File.exists? "cnfs/privileged-coredns-coredns/chart/Chart.yaml").should be_true
+    sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
+    (Dir.exists? "cnfs/privileged-coredns-coredns").should be_false
   end
 
   it "'cnf_conformance_dir' should return the short name of the destination cnf directory", tags: ["WIP", "happy-path"]  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 0 )
-    (cnf_conformance_dir).should eq("sample-generic-cnf")
+    (cnf_conformance_dir).should eq("coredns-coredns")
   end
 
   it "'sample_destination_dir' should return the full path of the potential destination cnf directory based on the source sample cnf directory", tags: "WIP" do
@@ -105,22 +110,28 @@ describe "SampleUtils" do
     sample_destination_dir("sample-generic-cnf").should contain("/cnfs/sample-generic-cnf")
   end
 
+  it "'cnf_destination_dir' should return the full path of the potential destination cnf directory based on the deployment name", tags: "WIP" do
+    args = Sam::Args.new
+    cnf_destination_dir("spec/fixtures/cnf-conformance.yml").should contain("/cnfs/coredns-coredns")
+  end
+
   it "'cnf_conformance_yml(sample_cnf_destination_dir)' should return the yaml for the passed cnf directory", tags: "happy-path"  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
     sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: args, verbose: true )
-    yml = cnf_conformance_yml("sample_privileged_cnf")
+    yml = cnf_conformance_yml("privileged-coredns-coredns")
     ("#{yml.get("release_name").as_s?}").should eq("privileged-coredns")
-    yml = cnf_conformance_yml("cnfs/sample_privileged_cnf")
+    yml = cnf_conformance_yml("cnfs/privileged-coredns-coredns")
     ("#{yml.get("release_name").as_s?}").should eq("privileged-coredns")
   end
 
-  it "'cnf_conformance_dir(source_short_dir)' should full cnfs path for passed source cnf", tags: "happy-path"  do
+  it "'cnf_conformance_dir(source_short_dir)' should use full cnfs path for passed source cnf", tags: "happy-path"  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
     sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: args, verbose: true )
-    cnf_conformance_dir("sample_privileged_cnf").should contain("sample_privileged_cnf")
-    cnf_conformance_dir("sample-cnfs/sample_privileged_cnf").should contain("sample_privileged_cnf")
+    #TODO this will no longer work since we are specifiying yml path
+    # cnf_conformance_dir("sample_privileged_cnf").should contain("privileged-coredns")
+    cnf_conformance_dir("sample-cnfs/sample_privileged_cnf").should contain("privileged-coredns")
   end
 
   it "'helm_repo_add' should add a helm repo if the helm repo is valid", tags: "happy-path"  do

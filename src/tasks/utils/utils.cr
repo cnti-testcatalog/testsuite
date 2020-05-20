@@ -1,18 +1,34 @@
 require "totem"
 require "colorize"
 require "./sample_utils.cr"
+require "logger"
+
+
+
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
 # TODO put these functions into a module
 
 CNF_DIR = "cnfs"
 TOOLS_DIR = "tools"
+BASE_CONFIG = "./config.yml"
 # LOGFILE = "cnf-conformance-results-#{Time.utc.to_s("%Y%m%d")}.log"
 LOGFILE = "results.yml"
 POINTSFILE = "points.yml"
 PASSED = "passed"
 FAILED = "failed"
 DEFAULT_POINTSFILENAME = "points_v1.yml"
+
+#TODO switch to ERROR for production builds
+# LOGGING = Logger.new(STDOUT, Logger::ERROR)
+LOGGING = Logger.new(STDOUT, Logger::INFO)
+LOGGING.progname = "cnf-conformance"
+
+LOGGING.formatter = Logger::Formatter.new do |severity, datetime, progname, message, io|
+	label = severity.unknown? ? "ANY" : severity.to_s
+	io << label[0] << ", [" << datetime << " #" << Process.pid << "] "
+	io << label.rjust(5) << " -- " << progname << ": " << message
+end
 
 def check_args(args)
   check_verbose(args)
@@ -26,10 +42,11 @@ def check_verbose(args)
   end
 end
 
+
 def toggle(toggle_name)
   toggle_on = false
-  if File.exists?("./config.yml")
-    config = Totem.from_file "./config.yml"
+  if File.exists?(BASE_CONFIG)
+    config = Totem.from_file BASE_CONFIG 
     if config["toggles"].as_a?
       feature_flag = config["toggles"].as_a.find do |x| 
         x["name"] == toggle_name
