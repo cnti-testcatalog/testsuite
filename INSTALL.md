@@ -177,7 +177,7 @@ A test log file, eg. `cnf-conformance-results-20200401.txt`, will be created whi
 
 **Cleaning up**
 
-Run `cnf-conformance cnf_cleanup cnf-path=<path to your config yml>/cnf-conformance.yml` 
+Run `cnf-conformance cnf_cleanup cnf-config=<path to your config yml>/cnf-conformance.yml` 
 
 _NOTE: Does not handle manually deployed CNFs_
 
