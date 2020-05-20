@@ -16,49 +16,51 @@ task "reasonable_startup_time" do |_, args|
   begin
     puts "reasonable_startup_time" if check_verbose(args)
 
-    if args.named.keys.includes? "yml-file"
-      yml_file = args.named["yml-file"].as(String)
-      parsed_cnf_conformance_yml = Totem.from_file "#{yml_file}"
-      cnf_conformance_yml_path = yml_file.split("/")[0..-2].reduce(""){|x, acc| x.empty? ? acc : "#{x}/#{acc}"}
-      helm_chart = "#{parsed_cnf_conformance_yml.get("helm_chart").as_s?}"
-      helm_directory = "#{parsed_cnf_conformance_yml.get("helm_directory").as_s?}"
-      release_name = "#{parsed_cnf_conformance_yml.get("release_name").as_s?}"
-      deployment_name = "#{parsed_cnf_conformance_yml.get("deployment_name").as_s?}"
-    else
-      config = cnf_conformance_yml
-      helm_chart = "#{config.get("helm_chart").as_s?}"
-      helm_directory = "#{config.get("helm_directory").as_s?}"
-      release_name = "#{config.get("release_name").as_s?}"
-      deployment_name = "#{config.get("deployment_name").as_s?}"
-    end
+    config = get_parsed_cnf_conformance_yml(args)
 
+    helm_chart = "#{config.get("helm_chart").as_s?}"
+    helm_directory = "#{config.get("helm_directory").as_s?}"
+    release_name = "#{config.get("release_name").as_s?}"
+    deployment_name = "#{config.get("deployment_name").as_s?}"
     current_dir = FileUtils.pwd 
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts helm if check_verbose(args)
 
+
+    create_namespace = `kubectl create namespace startup-test`
     helm_install = ""
+    is_helm_installed = ""
+    is_helm_deployed = ""
     elapsed_time = Time.measure do
       unless helm_chart.empty?
-        helm_install = `#{helm} install #{release_name} #{helm_chart}`
+        helm_install = `#{helm} install --namespace startup-test #{release_name} #{helm_chart}`
         puts "helm_chart: #{helm_chart}" if check_verbose(args)
-
       else
-        helm_install = `#{helm} install #{release_name} #{cnf_conformance_yml_path}/#{helm_directory}`
+        yml_file_path = cnf_conformance_yml_file_path(args)
+        puts "yaml_path: #{yml_file_path}" if check_verbose(args)
+        helm_install = `#{helm} install --namespace startup-test #{release_name} #{yml_file_path}/#{helm_directory}`
+        is_helm_installed = $?.success?
         puts "helm_directory: #{helm_directory}" if check_verbose(args)
       end
-      wait_for_install(deployment_name)
+      wait_for_install(deployment_name, "startup-test")
+      is_helm_deployed = $?.success?
     end
 
     puts helm_install if check_verbose(args)
+    puts "installed? #{is_helm_installed}"
+    puts "deployed? #{is_helm_deployed}"
 
     # if is_helm_installed
     if elapsed_time.seconds < 30
+    # if helm_install_status && wait_for_install_status && elapsed_time.seconds < 30
       upsert_passed_task("reasonable_startup_time")
       puts "PASSED: CNF had a reasonable startup time 🚀".colorize(:green)
     else
       upsert_failed_task("reasonable_startup_time")
       puts "FAILURE: CNF had a startup time of #{elapsed_time.seconds} seconds 🐢".colorize(:red)
     end
+
+    delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
 
   end
 end
