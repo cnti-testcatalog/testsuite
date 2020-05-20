@@ -38,9 +38,9 @@ This guide shows how to install the CNF Conformance Test Suite
   ```
   export KUBECONFIG=<yourkubeconfig>
   ```
-  * Modify the cnf-conformance.yml file settings for your cnfs in your cnf's base directory 
+  * Modify the cnf-conformance.yml file settings for your cnfs  
   ```
-  # In ./cnfs/YOURCNFDIRECTORY/cnf-conformance.yml
+  # In ./<YOURCNFDIRECTORY>/cnf-conformance.yml
   
 helm_directory: 
 install_script: 
@@ -60,11 +60,11 @@ white_list_helm_chart_container_names:
   ```
   * Install your CNF into the cnfs directory, download the helm charts, and download the source code:
   ```
-  crystal src/cnf-conformance.cr cnf_setup cnf-path=<your cnf directory>
+  crystal src/cnf-conformance.cr cnf_setup cnf-path=<path to your cnf config file>
   ```
   * To remove your CNF from the cnfs directory and cluster
   ```
-  crystal src/cnf-conformance.cr cnf_cleanup cnf-path=<your cnf directory>
+  crystal src/cnf-conformance.cr cnf_cleanup cnf-path=<path to your cnf config file>
   ```
   * (Optional) To set up a *sample cnf* for use with cnf-conformance
   ``` 
@@ -89,10 +89,10 @@ then you can invoke the conformance suite from the binary i.e.
 ## Example Usage (or see the [complete usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md))
   ```
   # Run all ga tests (generally available tests)
-  crystal src/cnf-conformance.cr all 
+  crystal src/cnf-conformance.cr all cnf-config=<path to your config yml>/cnf-conformance.yml
   
   # Run all beta and ga tests
-  crystal src/cnf-conformance.cr all beta
+  crystal src/cnf-conformance.cr all beta 
   
   # Run all alpha, beta, and ga tests
   crystal src/cnf-conformance.cr all alpha
@@ -165,7 +165,7 @@ sha256sum cnf-conformance
 **Running all tests**
 
 ```
-cnf-conformance all
+cnf-conformance all cnf-config=<path to your config yml>/cnf-conformance.yml
 ```
 
 **Checking the results**
@@ -177,7 +177,7 @@ A test log file, eg. `cnf-conformance-results-20200401.txt`, will be created whi
 
 **Cleaning up**
 
-Run `cnf-conformance cnf_cleanup cnf-path=path_to_your/cnf_folder` 
+Run `cnf-conformance cnf_cleanup cnf-path=<path to your config yml>/cnf-conformance.yml` 
 
 _NOTE: Does not handle manually deployed CNFs_
 
