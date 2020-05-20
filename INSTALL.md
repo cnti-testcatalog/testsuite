@@ -60,11 +60,11 @@ white_list_helm_chart_container_names:
   ```
   * Install your CNF into the cnfs directory, download the helm charts, and download the source code:
   ```
-  crystal src/cnf-conformance.cr cnf_setup cnf-path=<path to your cnf config file>
+  crystal src/cnf-conformance.cr cnf_setup cnf-config=<path to your cnf config file>
   ```
   * To remove your CNF from the cnfs directory and cluster
   ```
-  crystal src/cnf-conformance.cr cnf_cleanup cnf-path=<path to your cnf config file>
+  crystal src/cnf-conformance.cr cnf_cleanup cnf-config=<path to your cnf config file>
   ```
   * (Optional) To set up a *sample cnf* for use with cnf-conformance
   ``` 
@@ -155,7 +155,7 @@ sha256sum cnf-conformance
 - Create a Conformance configuration file called `cnf-confromance.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`)
   - See example config (See [latest example in repo](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml)): 
     - Optionally, copy the example configuration file, [`cnf-conformance-example.yml`](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml), and modify appropriately
-- Setup your CNF for testing and deploy it to the cluster by running `cnf-conformance cnf_setup cnf-path=path_to_your/cnf_folder`
+- Setup your CNF for testing and deploy it to the cluster by running `cnf-conformance cnf_setup cnf-config=path_to_your/cnf_folder`
     - _NOTE: if you do not want to automatically deploy the using the helm chart defined in the configuration then you MUST pass `deploy_with_chart=false` to the `cnf_setup` command._
 
 
