@@ -23,35 +23,39 @@ task "reasonable_startup_time" do |_, args|
     release_name = "#{config.get("release_name").as_s?}"
     deployment_name = "#{config.get("deployment_name").as_s?}"
     current_dir = FileUtils.pwd 
+    current_cnf_dir_short_name = cnf_conformance_dir
+    destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts helm if check_verbose(args)
 
-
     create_namespace = `kubectl create namespace startup-test`
-    helm_install = ""
-    is_helm_installed = ""
-    is_helm_deployed = ""
+    helm_template = ""
+    kubectl_apply = ""
+    is_kubectl_applied = ""
+    is_kubectl_deployed = ""
     elapsed_time = Time.measure do
       unless helm_chart.empty?
-        helm_install = `#{helm} install --namespace startup-test #{release_name} #{helm_chart}`
+        helm_template = `#{helm} template #{release_name} #{helm_chart} > #{destination_cnf_dir}/reasonable_startup.yml`
         puts "helm_chart: #{helm_chart}" if check_verbose(args)
       else
         yml_file_path = cnf_conformance_yml_file_path(args)
         puts "yaml_path: #{yml_file_path}" if check_verbose(args)
-        helm_install = `#{helm} install --namespace startup-test #{release_name} #{yml_file_path}/#{helm_directory}`
-        is_helm_installed = $?.success?
+        helm_template = `#{helm} template #{release_name} #{yml_file_path}/#{helm_directory} > #{destination_cnf_dir}/reasonable_startup.yml`
         puts "helm_directory: #{helm_directory}" if check_verbose(args)
       end
-      wait_for_install(deployment_name, "startup-test")
-      is_helm_deployed = $?.success?
+      kubectl_apply = `kubectl apply -f #{destination_cnf_dir}/reasonable_startup.yml --namespace=startup-test`
+      is_kubectl_applied = $?.success?
+      wait_for_install(deployment_name, wait_count=180,"startup-test")
+      is_kubectl_deployed = $?.success?
     end
 
-    puts helm_install if check_verbose(args)
-    puts "installed? #{is_helm_installed}"
-    puts "deployed? #{is_helm_deployed}"
+    puts helm_template if check_verbose(args)
+    puts kubectl_apply if check_verbose(args)
+    puts "installed? #{is_kubectl_applied}" if check_verbose(args)
+    puts "deployed? #{is_kubectl_deployed}" if check_verbose(args)
 
     # if is_helm_installed
-    if elapsed_time.seconds < 30
+    if is_kubectl_applied && is_kubectl_deployed && elapsed_time.seconds < 30
     # if helm_install_status && wait_for_install_status && elapsed_time.seconds < 30
       upsert_passed_task("reasonable_startup_time")
       puts "PASSED: CNF had a reasonable startup time 🚀".colorize(:green)

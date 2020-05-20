@@ -109,12 +109,12 @@ def sample_conformance_yml(sample_dir)
   Totem.from_file "./#{cnf_conformance}"
 end
 
-def wait_for_install(deployment_name, namespace="default", wait_count=180)
+def wait_for_install(deployment_name, wait_count=180, namespace="default")
   second_count = 0
   all_deployments = `kubectl get deployments --namespace=#{namespace}`
   current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
   puts all_deployments
-  until (current_replicas.empty? != true && current_replicas.to_i > 0) || second_count > wait_count
+  until (current_replicas.empty? != true && current_replicas.to_i > 0) || second_count > wait_count.to_i
     puts "second_count = #{second_count}"
     sleep 1
     all_deployments = `kubectl get deployments --namespace=#{namespace}`
