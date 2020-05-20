@@ -1,0 +1,15 @@
+---
+helm_directory: cnfs/coredns/helm_chart/coredns
+# helm_directory: helm_chart
+git_clone_url: 
+install_script: 
+release_name: coredns
+deployment_name: coredns-coredns 
+application_deployment_names: [coredns-coredns]
+helm_repository:
+  name: stable 
+  repo_url: https://kubernetes-charts.storage.googleapis.com
+helm_chart: stable/coredns
+helm_chart_container_name: coredns
+rolling_update_tag: 1.6.7
+white_list_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]

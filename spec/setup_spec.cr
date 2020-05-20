@@ -6,6 +6,16 @@ require "file_utils"
 require "sam"
 
 describe "Setup" do
+  before_each do
+    `./cnf-conformance cleanup`
+    $?.success?.should be_true
+  end
+
+  after_each do
+    `./cnf-conformance cleanup`
+    $?.success?.should be_true
+  end
+
   it "'setup' should completely setup the cnf conformance environment before installing cnfs", tags: "happy-path"  do
     response_s = `./cnf-conformance setup`
     puts response_s
@@ -29,7 +39,20 @@ describe "Setup" do
       (/Successfully cleaned up/ =~ response_s).should_not be_nil
     end
   end
+  it "'cnf_setup/cnf_cleanup' should work with cnf-conformance.yml that has no directory associated with it", tags: "happy-path" do
+    begin
+      #TODO force cnfs/<name> to be deployment name and not the directory name
+      response_s = `./cnf-conformance cnf_setup cnf-config=spec/fixtures/cnf-conformance.yml verbose`
+      LOGGING.info("response_s: #{response_s}")
+      $?.success?.should be_true
+      (/Successfully setup coredns/ =~ response_s).should_not be_nil
+    ensure
 
+      response_s = `./cnf-conformance cnf_cleanup cnf-path=spec/fixtures/cnf-conformance.yml verbose`
+      LOGGING.info("response_s: #{response_s}")
+      $?.success?.should be_true
+      (/Successfully cleaned up/ =~ response_s).should_not be_nil
+    end
 
-
+  end
 end
