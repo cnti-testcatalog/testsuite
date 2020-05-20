@@ -1,6 +1,7 @@
 require "totem"
 require "colorize"
 require "validator"
+require "validator/is"
 require "validator/check"
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
@@ -20,6 +21,7 @@ def cnf_conformance_yml
   end
   totem_config = Totem.from_file "./#{cnf_conformance}"
   validate_cnf_conformance_yml(totem_config)
+  totem_config
 end
 
 def cnf_conformance_yml(sample_cnf_destination_dir)
@@ -50,6 +52,7 @@ def get_parsed_cnf_conformance_yml(args)
   puts "current directory: #{FileUtils.pwd}" if check_verbose(args)
   totem_config = Totem.from_file yml_file 
   validate_cnf_conformance_yml(totem_config)
+  totem_config
 end
 
 def cnf_conformance_yml_file_path(args)
@@ -377,31 +380,43 @@ def short_sample_dir(full_sample_dir)
 end
 
 # https://github.com/Nicolab/crystal-validator#check
-def validate_cnf_conformance_yml(config) : Check::Validation
+def validate_cnf_conformance_yml(config)
   v = Check.new_validation
 
-  v.check :docker_repository, "docker_repository field is required", is :in?, :docker_repository, config.settings
+  # test = ["some", "new", "keys"]
+  # puts test.map{ |n| "v.check :#{n}, \"#{n} field is required\", is :in?, \"#{n}\", config.settings" }.join("\n")
+  v.check :helm_directory, "helm_directory field is required", is :in?, "helm_directory", config.settings
+  v.check :git_clone_url, "git_clone_url field is required", is :in?, "git_clone_url", config.settings
+  v.check :install_script, "install_script field is required", is :in?, "install_script", config.settings
+  v.check :release_name, "release_name field is required", is :in?, "release_name", config.settings
+  v.check :deployment_name, "deployment_name field is required", is :in?, "deployment_name", config.settings
+  v.check :service_name, "service_name field is required", is :in?, "service_name", config.settings
+  v.check :application_deployment_names, "application_deployment_names field is required", is :in?, "application_deployment_names", config.settings
+  v.check :docker_repository, "docker_repository field is required", is :in?, "docker_repository", config.settings
+  v.check :helm_chart, "helm_chart field is required", is :in?, "helm_chart", config.settings
+  v.check :helm_chart_container_name, "helm_chart_container_name field is required", is :in?, "helm_chart_container_name", config.settings
+  v.check :rolling_update_tag, "rolling_update_tag field is required", is :in?, "rolling_update_tag", config.settings
+  v.check :white_list_helm_chart_container_names, "white_list_helm_chart_container_names field is required", is :in?, "white_list_helm_chart_container_names", config.settings
+  v.check :helm_repository, "helm_repository field is required", is :in?, "helm_repository", config.settings
 
-  if !v.valid?
-    errors = v.errors
+  
+  v.check :helm_repository__name, "helm_repository['name'] field is required", is :in?, "name", config.settings["helm_repository"]
+  v.check :helm_repository__repo_url, "helm_repository['repo_url'] field is required", is :in?, "repo_url", config.settings["helm_repository"]
 
-    # Inverse of v.valid?
-    if errors.empty?
-      puts "no error" # TODO: add verbose check
-    end
+  errors = v.errors
 
+  # Inverse of v.valid?
+  if !errors.empty?
+    #TODO: decide if we should throw an error or just log here
     # Print all the errors (if any)
     pp errors
-
-    # It's a Hash of Array
-    puts errors.size
-    puts errors.first_value
-    errors.each do |key, messages|
-      puts key   # => :username
-      puts messages # => ["The username is required.", "etc..."]
-    end
-
-    #TODO: decide if we should throw an error or just log here
   end
 
+  # It's a Hash of Array
+  puts errors.size
+  puts errors.first_value
+  errors.each do |key, messages|
+    puts key   # => :username
+    puts messages # => ["The username is required.", "etc..."]
+  end  
 end
