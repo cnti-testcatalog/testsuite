@@ -12,5 +12,5 @@
 # Maintainers
 | Maintainers | GitHub ID | Affiliation |
 | --------------- | --------- | ----------- |
-| name | [username](https://github.com/ url) | company |
+| Michael S. Pedersen | [michaelspedersen](https://github.com/michaelspedersen) | [TietoEVRY](https://www.tietoevry.com/) / [Intel](https://intel.com/)
 
