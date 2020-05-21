@@ -197,13 +197,19 @@ task "rolling_update" do |_, args|
     puts "rolling_update: setting new version" if check_verbose(args)
     #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
     puts "kubectl set image deployment/#{deployment_name} #{helm_chart_container_name}=#{image_name}:#{version_tag} --record" if check_verbose(args)
-    do_update = `kubectl set image deployment/#{deployment_name} #{helm_chart_container_name}=#{image_name}:#{version_tag} --record`
+    update = `kubectl set image deployment/#{deployment_name} #{helm_chart_container_name}=#{image_name}:#{version_tag} --record`
+    update_applied = $?.success?
+    puts "#{update}" if check_verbose(args)
+    puts "update? #{update_applied}" if check_verbose(args)
 
     # https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#rolling-update
     puts "rolling_update: checking status new version" if check_verbose(args)
-    puts `kubectl rollout status deployment/#{deployment_name} --timeout=30s`
+    rollout = `kubectl rollout status deployment/#{deployment_name} --timeout=30s`
+    rollout_status = $?.success?
+    puts "#{rollout}" if check_verbose(args)
+    puts "rollout? #{rollout_status}" if check_verbose(args)
 
-    if $?.success?
+    if update_applied && rollout_status
       upsert_passed_task("rolling_update")
       puts "PASSED: CNF #{deployment_name} Rolling Update Passed".colorize(:green)
     else
