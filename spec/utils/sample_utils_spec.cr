@@ -159,6 +159,6 @@ it "'validate_cnf_conformance_yml' should warn when cnf config file yml has fiel
 
   valid, warning_output  = validate_cnf_conformance_yml(yml)
 
-  (valid).should eq(true)
+  (valid).should eq(false)
   (warning_output.size).should be > 1
 end

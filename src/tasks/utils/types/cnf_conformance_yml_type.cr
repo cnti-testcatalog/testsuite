@@ -26,6 +26,8 @@ class CnfConformanceYmlType
 
   property install_script : String?
 
+  property service_name : String?
+
   property release_name : String
 
   property docker_repository : String
