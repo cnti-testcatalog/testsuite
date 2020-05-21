@@ -426,7 +426,9 @@ def validate_cnf_conformance_yml(config)
     warning_output.push(root.to_s)
   end
 
-  puts warning_output.join("\n")
+  if warning_output.size > 1
+    puts warning_output.join("\n")
+  end
 
   { valid, warning_output }
 end
