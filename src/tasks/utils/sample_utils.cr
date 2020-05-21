@@ -18,7 +18,7 @@ def cnf_conformance_yml
     raise "No cnf_conformance.yml found! Did you run the setup task?"
   end
   totem_config = Totem.from_file "./#{cnf_conformance}"
-  #validate_cnf_conformance_yml(totem_config)
+  validate_cnf_conformance_yml(totem_config)
   totem_config
 end
 
@@ -29,7 +29,9 @@ def cnf_conformance_yml(sample_cnf_destination_dir)
   if cnf_conformance.empty?
     raise "No cnf_conformance.yml found in #{sample_cnf_destination_dir}! Did you run the setup task?"
   end
-  Totem.from_file "./#{cnf_conformance}"
+  totem_config = Totem.from_file "./#{cnf_conformance}"
+  validate_cnf_conformance_yml(totem_config)
+  totem_config
 end
 
 def get_parsed_cnf_conformance_yml(args)
@@ -49,7 +51,7 @@ def get_parsed_cnf_conformance_yml(args)
   puts "yml_file: #{yml_file}" if check_verbose(args)
   puts "current directory: #{FileUtils.pwd}" if check_verbose(args)
   totem_config = Totem.from_file yml_file 
-  #validate_cnf_conformance_yml(totem_config)
+  validate_cnf_conformance_yml(totem_config)
   totem_config
 end
 
@@ -402,7 +404,7 @@ def validate_cnf_conformance_yml(config)
   rescue ex
     valid = false
     puts "✖ ERROR: cnf_conformance.yml field validation error.".colorize(:red)
-    puts " please check the field name following the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
+    puts " please check info in the the field name following the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
     puts ex.message
     ex.backtrace.each do |x|
       puts x
@@ -411,18 +413,20 @@ def validate_cnf_conformance_yml(config)
 
   unmapped_keys_error_msg = "WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator".colorize(:yellow)
 
+  warning_output = [unmapped_keys_error_msg] of String | Colorize::Object(String)
+
   if ccyt_validator && !ccyt_validator.try &.json_unmapped.empty?
-    puts unmapped_keys_error_msg
-    pp ccyt_validator.try &.json_unmapped
+    warning_output.push(ccyt_validator.try &.json_unmapped.to_s)
   end
 
   if ccyt_validator && !ccyt_validator.try &.helm_repository.try &.json_unmapped.empty? 
-    puts unmapped_keys_error_msg
-    root = {} of  String => (Hash(String, JSON::Any) | Nil)
+    root = {} of String => (Hash(String, JSON::Any) | Nil)
     root["helm_directory"] = ccyt_validator.try &.helm_repository.try &.json_unmapped
 
-    pp root
+    warning_output.push(root.to_s)
   end
 
-  valid
+  puts warning_output.join("\s")
+
+  { valid, warning_output }
 end

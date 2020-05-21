@@ -22,9 +22,9 @@ class CnfConformanceYmlType
 
   property helm_directory : String
 
-  #property git_clone_url : String?
+  property git_clone_url : String?
 
-  #property install_script : String?
+  property install_script : String?
 
   property release_name : String
 
@@ -38,7 +38,7 @@ class CnfConformanceYmlType
 
   property helm_chart : String?
 
-  property helm_chart_container_name : String
+  property helm_chart_container_name : String?
 
   property rolling_update_tag : String?
 
