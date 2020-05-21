@@ -151,14 +151,15 @@ describe "SampleUtils" do
 end
 
 
-it "'validate_cnf_conformance_yml' should warn when cnf config file yml has fields that are not a part of the validation type", tags: "happy-path"  do
+it "'validate_cnf_conformance_yml' should warn when cnf config file yml has fields that are not a part of the validation type", tags: ["unhappy-path", "validate_config"]  do
   args = Sam::Args.new(["yml-file=./spec/fixtures/cnf-conformance-unmapped-keys.yml"])
 
   yml = get_parsed_cnf_conformance_yml(args)
+  puts yml.inspect
   ("#{yml.get("release_name").as_s?}").should eq("coredns")
 
-  valid, warning_output  = validate_cnf_conformance_yml(yml)
+  valid, warning_output = validate_cnf_conformance_yml(yml)
 
-  (valid).should eq(false)
+  (valid).should eq(true)
   (warning_output.size).should be > 1
 end

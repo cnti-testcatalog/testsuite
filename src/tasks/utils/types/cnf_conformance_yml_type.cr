@@ -30,7 +30,7 @@ class CnfConformanceYmlType
 
   property release_name : String
 
-  property docker_repository : String
+  property docker_repository : String?
 
   property deployment_name : String
 
