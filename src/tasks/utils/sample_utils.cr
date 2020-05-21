@@ -404,7 +404,7 @@ def validate_cnf_conformance_yml(config)
   rescue ex
     valid = false
     puts "✖ ERROR: cnf_conformance.yml field validation error.".colorize(:red)
-    puts " please check info in the the field name following the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
+    puts " please check info in the the field name near the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
     puts ex.message
     ex.backtrace.each do |x|
       puts x
@@ -426,7 +426,7 @@ def validate_cnf_conformance_yml(config)
     warning_output.push(root.to_s)
   end
 
-  puts warning_output.join("\s")
+  puts warning_output.join("\n")
 
   { valid, warning_output }
 end
