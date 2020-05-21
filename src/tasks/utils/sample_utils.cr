@@ -1,8 +1,6 @@
 require "totem"
 require "colorize"
-require "validator"
-require "validator/is"
-require "validator/check"
+require "./types/cnf_conformance_yml_type.cr"
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
 
@@ -20,7 +18,7 @@ def cnf_conformance_yml
     raise "No cnf_conformance.yml found! Did you run the setup task?"
   end
   totem_config = Totem.from_file "./#{cnf_conformance}"
-  validate_cnf_conformance_yml(totem_config)
+  #validate_cnf_conformance_yml(totem_config)
   totem_config
 end
 
@@ -51,7 +49,7 @@ def get_parsed_cnf_conformance_yml(args)
   puts "yml_file: #{yml_file}" if check_verbose(args)
   puts "current directory: #{FileUtils.pwd}" if check_verbose(args)
   totem_config = Totem.from_file yml_file 
-  validate_cnf_conformance_yml(totem_config)
+  #validate_cnf_conformance_yml(totem_config)
   totem_config
 end
 
@@ -379,44 +377,52 @@ def short_sample_dir(full_sample_dir)
   full_sample_dir.split("/").last 
 end
 
+# TODO: figure out how to check this recursively 
+#
+# def recursive_json_unmapped(hashy_thing): JSON::Any
+#   unmapped_stuff = hashy_thing.json_unmapped
+
+#   Hash(String, String).from_json(hashy_thing.to_json).each_key do |key|
+#     if hashy_thing.call(key).responds_to?(:json_unmapped)
+#       return unmapped_stuff[key] = recursive_json_unmapped(hashy_thing[key])
+#     end
+#   end
+  
+#   unmapped_stuff
+# end
+
+# TODO: figure out recursively check for unmapped json and warn on that
 # https://github.com/Nicolab/crystal-validator#check
 def validate_cnf_conformance_yml(config)
-  v = Check.new_validation
+  ccyt_validator = nil
+  valid = true 
 
-  # test = ["some", "new", "keys"]
-  # puts test.map{ |n| "v.check :#{n}, \"#{n} field is required\", is :in?, \"#{n}\", config.settings" }.join("\n")
-  v.check :helm_directory, "helm_directory field is required", is :in?, "helm_directory", config.settings
-  v.check :git_clone_url, "git_clone_url field is required", is :in?, "git_clone_url", config.settings
-  v.check :install_script, "install_script field is required", is :in?, "install_script", config.settings
-  v.check :release_name, "release_name field is required", is :in?, "release_name", config.settings
-  v.check :deployment_name, "deployment_name field is required", is :in?, "deployment_name", config.settings
-  v.check :service_name, "service_name field is required", is :in?, "service_name", config.settings
-  v.check :application_deployment_names, "application_deployment_names field is required", is :in?, "application_deployment_names", config.settings
-  v.check :docker_repository, "docker_repository field is required", is :in?, "docker_repository", config.settings
-  v.check :helm_chart, "helm_chart field is required", is :in?, "helm_chart", config.settings
-  v.check :helm_chart_container_name, "helm_chart_container_name field is required", is :in?, "helm_chart_container_name", config.settings
-  v.check :rolling_update_tag, "rolling_update_tag field is required", is :in?, "rolling_update_tag", config.settings
-  v.check :white_list_helm_chart_container_names, "white_list_helm_chart_container_names field is required", is :in?, "white_list_helm_chart_container_names", config.settings
-  v.check :helm_repository, "helm_repository field is required", is :in?, "helm_repository", config.settings
-
-  
-  v.check :helm_repository__name, "helm_repository['name'] field is required", is :in?, "name", config.settings["helm_repository"]
-  v.check :helm_repository__repo_url, "helm_repository['repo_url'] field is required", is :in?, "repo_url", config.settings["helm_repository"]
-
-  errors = v.errors
-
-  # Inverse of v.valid?
-  if !errors.empty?
-    #TODO: decide if we should throw an error or just log here
-    # Print all the errors (if any)
-    pp errors
+  begin
+    ccyt_validator = CnfConformanceYmlType.from_json(config.settings.to_json)
+  rescue ex
+    valid = false
+    puts "✖ ERROR: cnf_conformance.yml field validation error.".colorize(:red)
+    puts " please check the field name following the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
+    puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
   end
 
-  # It's a Hash of Array
-  puts errors.size
-  puts errors.first_value
-  errors.each do |key, messages|
-    puts key   # => :username
-    puts messages # => ["The username is required.", "etc..."]
-  end  
+  unmapped_keys_error_msg = "WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator".colorize(:yellow)
+
+  if ccyt_validator && !ccyt_validator.try &.json_unmapped.empty?
+    puts unmapped_keys_error_msg
+    pp ccyt_validator.try &.json_unmapped
+  end
+
+  if ccyt_validator && !ccyt_validator.try &.helm_repository.try &.json_unmapped.empty? 
+    puts unmapped_keys_error_msg
+    root = {} of  String => (Hash(String, JSON::Any) | Nil)
+    root["helm_directory"] = ccyt_validator.try &.helm_repository.try &.json_unmapped
+
+    pp root
+  end
+
+  valid
 end
