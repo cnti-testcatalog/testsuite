@@ -276,10 +276,10 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
 
     create_namespace = `kubectl create namespace hardcoded-ip-test`
     unless helm_chart.empty?
-      helm_install = `#{helm} install --namespace hardcoded-ip-test #{release_name} #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
+      helm_install = `#{helm} install --namespace hardcoded-ip-test hardcoded-ip-test #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
       puts "helm_chart: #{helm_chart}" if check_verbose(args)
     else
-      helm_install = `#{helm} install --namespace hardcoded-ip-test #{release_name} #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
+      helm_install = `#{helm} install --namespace hardcoded-ip-test hardcoded-ip-test #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
       puts "helm_directory: #{helm_directory}" if check_verbose(args)
     end
 
