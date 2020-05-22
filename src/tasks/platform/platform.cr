@@ -33,10 +33,10 @@ task "k8s_conformance" do |_, args|
     failed_count = ((results.match(/Failed: (.*)/)).try &.[1]) 
     if failed_count.to_s.to_i > 0 
       upsert_failed_task("k8s_conformance")
-      puts "FAILURE: K8s conformance test has #{failed_count} failure(s)!".colorize(:red)
+      puts "✖️  FAILURE: K8s conformance test has #{failed_count} failure(s)!".colorize(:red)
     else
       upsert_passed_task("k8s_conformance")
-      puts "PASSED: K8s conformance test has no failures".colorize(:green)
+      puts "✔️  PASSED: K8s conformance test has no failures".colorize(:green)
     end
   rescue ex
     puts ex.message

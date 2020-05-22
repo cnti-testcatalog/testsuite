@@ -6,6 +6,16 @@ require "file_utils"
 require "sam"
 
 describe "Setup" do
+  before_each do
+    `./cnf-conformance cleanup`
+    $?.success?.should be_true
+  end
+
+  after_each do
+    `./cnf-conformance cleanup`
+    $?.success?.should be_true
+  end
+
   it "'setup' should completely setup the cnf conformance environment before installing cnfs", tags: "happy-path"  do
     response_s = `./cnf-conformance setup`
     puts response_s
@@ -13,4 +23,36 @@ describe "Setup" do
     (/Setup complete/ =~ response_s).should_not be_nil
   end
 
+  it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf with a cnf-conformance.yml", tags: "happy-path"  do
+    begin
+      #TODO make cnf_setup work with a cnf name based in the cnf-conformance.yml
+      #TODO make cnf_setup install a helm directory without having a premade directory located with the cnf-conformance.yml
+      response_s = `./cnf-conformance cnf_setup cnf-config=example-cnfs/envoy/cnf-conformance.yml`
+      puts response_s
+      $?.success?.should be_true
+      (/Successfully setup envoy/ =~ response_s).should_not be_nil
+    ensure
+
+      response_s = `./cnf-conformance cnf_cleanup cnf-path=example-cnfs/envoy/cnf-conformance.yml`
+      puts response_s
+      $?.success?.should be_true
+      (/Successfully cleaned up/ =~ response_s).should_not be_nil
+    end
+  end
+  it "'cnf_setup/cnf_cleanup' should work with cnf-conformance.yml that has no directory associated with it", tags: "happy-path" do
+    begin
+      #TODO force cnfs/<name> to be deployment name and not the directory name
+      response_s = `./cnf-conformance cnf_setup cnf-config=spec/fixtures/cnf-conformance.yml verbose`
+      LOGGING.info("response_s: #{response_s}")
+      $?.success?.should be_true
+      (/Successfully setup coredns/ =~ response_s).should_not be_nil
+    ensure
+
+      response_s = `./cnf-conformance cnf_cleanup cnf-path=spec/fixtures/cnf-conformance.yml verbose`
+      LOGGING.info("response_s: #{response_s}")
+      $?.success?.should be_true
+      (/Successfully cleaned up/ =~ response_s).should_not be_nil
+    end
+
+  end
 end

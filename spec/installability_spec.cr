@@ -108,14 +108,4 @@ describe CnfConformance do
     $?.success?.should be_true
   end
 
-  # it "'helm_chart_published' should fail on a bad helm chart", tags: "helm_chart_published" do
-  #   `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-coredns-cnf-bad-chart`
-  #   $?.success?.should be_true
-  #   response_s = `./cnf-conformance helm_chart_published`
-  #   puts response_s
-  #   $?.success?.should be_true
-  #   (/FAILURE: Published Helm Chart Not Found/ =~ response_s).should_not be_nil
-  #   `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-coredns-cnf-bad-chart`
-  #   $?.success?.should be_true
-  # end
 end

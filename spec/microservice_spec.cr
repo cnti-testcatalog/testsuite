@@ -17,30 +17,37 @@ describe "Microservice" do
   end
 
   it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time", "happy-path", "test"]  do
-    response_s = `./cnf-conformance reasonable_startup_time yml-file=sample-cnfs/sample_coredns/cnf-conformance.yml`
-    $?.success?.should be_true
-    (/PASSED: CNF had a reasonable startup time/ =~ response_s).should_not be_nil
-    `kubectl delete -f sample-cnfs/sample_coredns/reasonable_startup_orig.yml`
-    $?.success?.should be_true
+    begin
+      response_s = `./cnf-conformance reasonable_startup_time yml-file=sample-cnfs/sample_coredns/cnf-conformance.yml`
+      $?.success?.should be_true
+      (/PASSED: CNF had a reasonable startup time/ =~ response_s).should_not be_nil
+    ensure
+      `kubectl delete -f sample-cnfs/sample_coredns/reasonable_startup_orig.yml`
+      $?.success?.should be_true
+    end
   end
 
   it "'reasonable_startup_time' should fail if the cnf doesn't has a reasonable startup time(helm_directory)", tags: "reasonable_startup_time" do
-    response_s = `./cnf-conformance reasonable_startup_time yml-file=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml`
-    $?.success?.should be_true
-    (/FAILURE: CNF had a startup time of/ =~ response_s).should_not be_nil
-    `kubectl delete -f sample-cnfs/sample_envoy_slow_startup/reasonable_startup_orig.yml`
-    $?.success?.should be_true
+    begin
+      response_s = `./cnf-conformance reasonable_startup_time yml-file=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml`
+      $?.success?.should be_true
+      (/FAILURE: CNF had a startup time of/ =~ response_s).should_not be_nil
+    ensure
+      `kubectl delete -f sample-cnfs/sample_envoy_slow_startup/reasonable_startup_orig.yml`
+      $?.success?.should be_true
+    end
   end
 
   it "'reasonable_image_size' should pass if image is smaller than 5gb", tags: ["reasonable_image_size","happy-path"]  do
     begin
+      `./cnf-conformance cleanup force=true`
       `./cnf-conformance sample_coredns_setup`
       response_s = `./cnf-conformance reasonable_image_size verbose`
       puts response_s
       $?.success?.should be_true
       (/Image size is good/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-conformance sample_coredns_cleanup`
+      `./cnf-conformance sample_coredns_cleanup force=true`
     end
   end
 

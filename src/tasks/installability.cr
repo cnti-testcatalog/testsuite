@@ -1,3 +1,4 @@
+# coding: utf-8
 require "sam"
 require "file_utils"
 require "colorize"
@@ -11,6 +12,7 @@ end
 desc "Will the CNF install using helm with helm_deploy?"
 task "helm_deploy" do |_, args|
   begin
+    release_name_prefix = "helm-deploy-"
     puts "helm_deploy" if check_verbose(args)
     config = get_parsed_cnf_conformance_yml(args)
 
@@ -22,37 +24,34 @@ task "helm_deploy" do |_, args|
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts helm if check_verbose(args)
 
-    create_namespace = `kubectl create namespace helm-deploy-test`
     if helm_chart.empty? 
-    #TODO make this work off of a helm directory if helm_directory was passed
-    yml_file_path = cnf_conformance_yml_file_path(args)
-    puts "helm_directory: #{helm_directory}" if check_verbose(args)
-    puts "yaml_path: #{yml_file_path}" if check_verbose(args)
-    helm_install = `#{helm} install --namespace helm-deploy-test helm-deploy-test #{yml_file_path}/#{helm_directory}`
+      #TODO make this work off of a helm directory if helm_directory was passed
+      yml_file_path = cnf_conformance_yml_file_path(args)
+      puts "#{helm} install #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}" if check_verbose(args)
+      helm_install = `#{helm} install #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}`
     else 
-    puts "helm_chart: #{helm_chart}" if check_verbose(args)
-    helm_install = `#{helm} install --namespace helm-deploy-test helm-deploy-test #{helm_chart}`
-    end 
+      puts "#{helm} install #{release_name_prefix}#{release_name} #{helm_chart}" if check_verbose(args)
+      helm_install = `#{helm} install #{release_name_prefix}#{release_name} #{helm_chart}`
+    end
 
     is_helm_installed = $?.success?
     puts helm_install if check_verbose(args)
 
     if is_helm_installed
       upsert_passed_task("helm_deploy")
-      puts "PASSED: Helm deploy successful".colorize(:green)
+      puts "✔️  PASSED: Helm deploy successful".colorize(:green)
     else
       upsert_failed_task("helm_deploy")
-      puts "FAILURE: Helm deploy failed".colorize(:red)
+      puts "✖️  FAILURE: Helm deploy failed".colorize(:red)
     end
-    
-    helm_delete = `#{helm} delete --namespace helm-deploy-test helm-deploy-test`
-    delete_namespace = `kubectl delete namespace helm-deploy-test --force --grace-period 0 2>&1 >/dev/null`
-
   rescue ex
     puts ex.message
     ex.backtrace.each do |x|
       puts x
     end
+  ensure
+    puts "#{helm} uninstall #{release_name_prefix}#{release_name}" if check_verbose(args)
+    helm_uninstall = `#{helm} uninstall #{release_name_prefix}#{release_name}`
   end
 end
 
@@ -79,10 +78,10 @@ task "install_script_helm" do |_, args|
     end
     if found < 1
       upsert_failed_task("install_script_helm")
-      puts "FAILURE: Helm not found in supplied install script".colorize(:red)
+      puts "✖️  FAILURE: Helm not found in supplied install script".colorize(:red)
     else
       upsert_passed_task("install_script_helm")
-      puts "PASSED: Helm found in supplied install script".colorize(:green)
+      puts "✔️  PASSED: Helm found in supplied install script".colorize(:green)
     end
     else
       upsert_passed_task("install_script_helm")
@@ -116,18 +115,18 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
        puts "#{helm_search}" if check_verbose(args)
        unless helm_search =~ /No results found/
          upsert_passed_task("helm_chart_published")
-         puts "PASSED: Published Helm Chart Found".colorize(:green)
+         puts "✔️  PASSED: Published Helm Chart Found".colorize(:green)
        else
          upsert_failed_task("helm_chart_published")
-         puts "FAILURE: Published Helm Chart Not Found".colorize(:red)
+         puts "✖️  FAILURE: Published Helm Chart Not Found".colorize(:red)
        end
      else
        upsert_failed_task("helm_chart_published")
-       puts "FAILURE: Published Helm Chart Not Found".colorize(:red)
+       puts "✖️  FAILURE: Published Helm Chart Not Found".colorize(:red)
      end
    else
      upsert_failed_task("helm_chart_published")
-     puts "FAILURE: Published Helm Chart Not Found".colorize(:red)
+     puts "✖️  FAILURE: Published Helm Chart Not Found".colorize(:red)
    end
   rescue ex
     puts ex.message
@@ -178,10 +177,10 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
 
    if $?.success? 
      upsert_passed_task("helm_chart_valid")
-     puts "PASSED: Helm Chart #{helm_directory} Lint Passed".colorize(:green)
+     puts "✔️  PASSED: Helm Chart #{helm_directory} Lint Passed".colorize(:green)
    else
      upsert_failed_task("helm_chart_valid")
-     puts "FAILURE: Helm Chart #{helm_directory} Lint Failed".colorize(:red)
+     puts "✖️  FAILURE: Helm Chart #{helm_directory} Lint Failed".colorize(:red)
    end
   rescue ex
     puts ex.message

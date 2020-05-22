@@ -57,10 +57,10 @@ task "reasonable_startup_time" do |_, args|
 
     if is_kubectl_applied && is_kubectl_deployed && elapsed_time.seconds < 30
       upsert_passed_task("reasonable_startup_time")
-      puts "PASSED: CNF had a reasonable startup time 🚀".colorize(:green)
+      puts "✔️  PASSED: CNF had a reasonable startup time 🚀".colorize(:green)
     else
       upsert_failed_task("reasonable_startup_time")
-      puts "FAILURE: CNF had a startup time of #{elapsed_time.seconds} seconds 🐢".colorize(:red)
+      puts "✖️  FAILURE: CNF had a startup time of #{elapsed_time.seconds} seconds 🐢".colorize(:red)
     end
 
     delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
@@ -110,10 +110,10 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
         docker_resp.status_code == 200 && 
         micro_size.to_s.to_i64 < 50000000
       upsert_passed_task("reasonable_image_size")
-      puts "PASSED: Image size is good".colorize(:green)
+      puts "✔️  PASSED: Image size is good".colorize(:green)
     else
       upsert_failed_task("reasonable_image_size")
-      puts "FAILURE: Image size too large".colorize(:red)
+      puts "✖️  FAILURE: Image size too large".colorize(:red)
     end
   rescue ex
     puts ex.message
