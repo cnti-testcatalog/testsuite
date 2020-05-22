@@ -55,9 +55,7 @@ task "reasonable_startup_time" do |_, args|
     puts "installed? #{is_kubectl_applied}" if check_verbose(args)
     puts "deployed? #{is_kubectl_deployed}" if check_verbose(args)
 
-    # if is_helm_installed
     if is_kubectl_applied && is_kubectl_deployed && elapsed_time.seconds < 30
-    # if helm_install_status && wait_for_install_status && elapsed_time.seconds < 30
       upsert_passed_task("reasonable_startup_time")
       puts "PASSED: CNF had a reasonable startup time 🚀".colorize(:green)
     else
