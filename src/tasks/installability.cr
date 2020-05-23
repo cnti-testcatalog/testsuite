@@ -11,6 +11,7 @@ end
 desc "Will the CNF install using helm with helm_deploy?"
 task "helm_deploy" do |_, args|
   begin
+    release_name_prefix = "helm-deploy-"
     puts "helm_deploy" if check_verbose(args)
     config = get_parsed_cnf_conformance_yml(args)
 
@@ -27,9 +28,11 @@ task "helm_deploy" do |_, args|
     if helm_chart.empty? 
       #TODO make this work off of a helm directory if helm_directory was passed
       yml_file_path = cnf_conformance_yml_file_path(args)
-      helm_install = `#{helm} install #{release_name} #{yml_file_path}/#{helm_directory}`
+      puts "#{helm} install #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}" if check_verbose(args)
+      helm_install = `#{helm} install #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}`
     else 
-      helm_install = `#{helm} install #{release_name} #{helm_chart}`
+      puts "#{helm} install #{release_name_prefix}#{release_name} #{helm_chart}" if check_verbose(args)
+      helm_install = `#{helm} install #{release_name_prefix}#{release_name} #{helm_chart}`
     end 
 
     is_helm_installed = $?.success?
@@ -47,6 +50,9 @@ task "helm_deploy" do |_, args|
     ex.backtrace.each do |x|
       puts x
     end
+  ensure
+    puts "#{helm} uninstall #{release_name_prefix}#{release_name}" if check_verbose(args)
+    helm_uninstall = `#{helm} uninstall #{release_name_prefix}#{release_name}`
   end
 end
 
