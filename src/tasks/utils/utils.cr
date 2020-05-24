@@ -10,6 +10,7 @@ require "logger"
 # TODO put these functions into a module
 
 CNF_DIR = "cnfs"
+CONFIG_FILE = "cnf-conformance.yml"
 TOOLS_DIR = "tools"
 BASE_CONFIG = "./config.yml"
 # LOGFILE = "cnf-conformance-results-#{Time.utc.to_s("%Y%m%d")}.log"
@@ -42,6 +43,52 @@ def check_verbose(args)
   end
 end
 
+def check_cnf_config(args)
+  puts "args = #{args.inspect}" if check_verbose(args)
+  if args.named.keys.includes? "cnf-config"
+    yml_file = args.named["cnf-config"].as(String)
+    cnf = File.dirname(yml_file)
+    puts "all cnf: #{cnf}" if check_verbose(args)
+    if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
+      deploy_with_chart = false
+    else
+      deploy_with_chart = true
+    end
+  else
+    cnf = nil
+	end
+  return cnf, deploy_with_chart
+end
+
+def check_cnf_config_then_deploy(args)
+  config_file, deploy_with_chart = check_cnf_config(args)
+  sample_setup_args(sample_dir: config_file, deploy_with_chart: deploy_with_chart, args: args, verbose: check_verbose(args) ) if config_file
+end
+
+# TODO give example for calling
+def all_cnfs_task_runner(args, &block : Sam::Args -> String | Colorize::Object(String))
+  LOGGING.info("cnf_config_list: #{cnf_config_list.inspect}")
+  cnf_config_list.map do |x|
+    LOGGING.info("all_cnfs_task_runner config_list x: #{x}")
+    new_args = Sam::Args.new(args.named, args.raw)
+    new_args.named["cnf-config"] = x
+    LOGGING.info("all_cnfs_task_runner new_args: #{new_args.inspect}")
+    task_runner(new_args, &block)
+  end
+end
+
+# TODO give example for calling
+def task_runner(args, &block)
+  LOGGING.info("task_runner args: #{args.inspect}")
+  begin
+  yield args
+  rescue ex
+    puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
+  end
+end
 
 def toggle(toggle_name)
   toggle_on = false

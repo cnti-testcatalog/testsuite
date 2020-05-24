@@ -23,7 +23,7 @@ describe CnfConformance do
       end
       puts response_s
       $?.success?.should be_true
-      (/Found privileged containers.*coredns/ =~ response_s).should be_nil
+      (/Found.*privileged containers.*coredns/ =~ response_s).should be_nil
     ensure
       `./cnf-conformance sample_coredns_cleanup`
     end
@@ -39,7 +39,7 @@ describe CnfConformance do
       end
       puts response_s
       $?.success?.should be_true
-      (/Found privileged containers.*coredns/ =~ response_s).should_not be_nil
+      (/Found.*privileged containers.*coredns/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance sample_privileged_cnf_non_whitelisted_cleanup`
     end
@@ -55,7 +55,7 @@ describe CnfConformance do
       end
       puts response_s
       $?.success?.should be_true
-      (/Found privileged containers.*coredns/ =~ response_s).should be_nil
+      (/Found.*privileged containers.*coredns/ =~ response_s).should be_nil
     ensure
       `./cnf-conformance sample_privileged_cnf_whitelisted_cleanup`
     end

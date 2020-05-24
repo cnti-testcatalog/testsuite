@@ -134,6 +134,13 @@ describe "SampleUtils" do
     cnf_conformance_dir("sample-cnfs/sample_privileged_cnf").should contain("privileged-coredns")
   end
 
+  it "'cnf_config_list' should return a list of all of the config files from the cnf directory", tags: "happy-path"  do
+    args = Sam::Args.new
+    sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
+    sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: args, verbose: true )
+    cnf_config_list()[0].should contain("coredns-coredns/#{CONFIG_FILE}")
+  end
+
   it "'helm_repo_add' should add a helm repo if the helm repo is valid", tags: "happy-path"  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )

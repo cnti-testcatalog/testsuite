@@ -22,18 +22,7 @@ end
 
 task "all_prereqs" do |_, args|
   puts "all_prereqs" if check_verbose(args)
-  puts "args = #{args.inspect}" if check_verbose(args)
-  if args.named.keys.includes? "cnf-config"
-    yml_file = args.named["cnf-config"].as(String)
-    cnf = File.dirname(yml_file)
-    puts "all cnf: #{cnf}" if check_verbose(args)
-    if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
-      deploy_with_chart = false
-    else
-      deploy_with_chart = true
-    end
-    sample_setup_args(sample_dir: cnf, deploy_with_chart: deploy_with_chart, args: args, verbose: check_verbose(args) )
-	end
+  check_cnf_config_then_deploy(args)
 end
 
 Sam.help

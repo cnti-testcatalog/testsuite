@@ -7,10 +7,6 @@ require "colorize"
 
 # CONFIG = Totem.from_file "./config.yml"
 
-# TODO return array of cnf directories from the cnfs directory
-def cnf_list
-end
-
 def cnf_conformance_yml
   cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
   if cnf_conformance.empty?
@@ -72,23 +68,23 @@ end
 
 
 def cnf_conformance_dir
-  cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
+  cnf_conformance = `find #{CNF_DIR}/* -name "cnf-conformance.yml"`.split("\n")[0]
   if cnf_conformance.empty?
     raise "No cnf_conformance.yml found! Did you run the setup task?"
   end
   cnf_conformance.split("/")[-2] 
 end
 
+def cnf_config_list
+  cnf_conformance = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
+  if cnf_conformance.size == 0
+    raise "No cnf_conformance.yml found! Did you run the setup task?"
+  end
+  cnf_conformance
+end
+
 def cnf_conformance_dir(source_dir)
   yml_dir = cnf_destination_dir(source_dir) 
-  #TODO change into short path
-  # source_short_dir = source_dir.split("/")[-1]
-  # cnf_conformance = `find cnfs/* -name "#{source_short_dir}"`.split("\n")[0]
-  # cnf_conformance = `find cnfs/* -name "#{yml_dir}"`.split("\n")[0]
-  # if cnf_conformance.empty?
-  #   raise "No directory named #{yml_dir} found! Did you run the setup task?"
-  # end
-  # cnf_conformance.split("/")[-1] 
   yml_dir.split("/")[-1] 
 end
 
@@ -144,16 +140,22 @@ def path_has_yml?(config_path)
   end
 end
 
+def config_from_path_or_dir(cnf_path_or_dir)
+  if path_has_yml?(cnf_path_or_dir)
+    config_file = File.dirname(cnf_path_or_dir)
+    config = sample_conformance_yml(config_file)
+  else
+    config_file = cnf_path_or_dir
+    config = sample_conformance_yml(config_file)
+  end
+  return config
+end
+
 def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false, wait_count=180)
   puts "sample_setup_args" if verbose
 
-  if path_has_yml?(sample_dir)
-    config_file = File.dirname(sample_dir)
-    config = sample_conformance_yml(config_file)
-  else
-    config_file = sample_dir
-    config = sample_conformance_yml(config_file)
-  end
+  config = config_from_path_or_dir(sample_dir)
+  config_dir = ensure_cnf_conformance_dir(sample_dir)
 
   puts "config #{config}" if verbose
 
@@ -192,7 +194,7 @@ def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false, w
   end
   puts "git_clone_url: #{git_clone_url}" if verbose
 
-  sample_setup(config_file: config_file, release_name: release_name, deployment_name: deployment_name, helm_chart: helm_chart, helm_directory: helm_directory, git_clone_url: git_clone_url, deploy_with_chart: deploy_with_chart, verbose: verbose, wait_count: wait_count )
+  sample_setup(config_file: config_dir, release_name: release_name, deployment_name: deployment_name, helm_chart: helm_chart, helm_directory: helm_directory, git_clone_url: git_clone_url, deploy_with_chart: deploy_with_chart, verbose: verbose, wait_count: wait_count )
 
 end
 
@@ -201,13 +203,23 @@ def sample_destination_dir(sample_source_dir)
   "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_source_dir)}"
 end
 
-def ensure_cnf_conformance_yml_path(config_file)
+def ensure_cnf_conformance_yml_path(path)
 	LOGGING.info("ensure_cnf_conformance_yml_path")
-  if path_has_yml?(config_file)
-    yml = config_file
+  if path_has_yml?(path)
+    yml = path 
   else
-    yml = config_file + "/cnf-conformance.yml" 
+    yml = path + "/cnf-conformance.yml" 
   end
+end
+
+def ensure_cnf_conformance_dir(path)
+	LOGGING.info("ensure_cnf_conformance_yml_dir")
+  if path_has_yml?(path)
+    dir = File.dirname(path)
+  else
+    dir = path
+  end
+  dir + "/"
 end
 
 def cnf_destination_dir(config_file)
@@ -338,7 +350,6 @@ end
 
 def sample_cleanup(config_file, force=false, verbose=true)
   destination_cnf_dir = cnf_destination_dir(config_file)
-  # yml_cp = `cp -a #{ensure_cnf_conformance_yml_path(config_file)} #{destination_cnf_dir}`
   config = parsed_config_file(ensure_cnf_conformance_yml_path(config_file))
 
   puts "cleanup config: #{config.inspect}" if verbose
