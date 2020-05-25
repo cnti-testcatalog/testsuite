@@ -61,7 +61,7 @@ def cnf_conformance_yml_file_path(args)
     # cnf_conformance = File.expand_path(yml_file).split("/")[0..-2].reduce(""){|x,acc| x == "" ? "/" : x + acc + "/"}
     cnf_conformance = File.dirname(yml_file)
   else
-    cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
+    cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("/")[0..-2].reduce(""){|x, acc| x.empty? ? acc : "#{x}/#{acc}"}
     if cnf_conformance.empty?
       raise "No cnf_conformance.yml found! Did you run the setup task?"
     end
@@ -128,17 +128,17 @@ def sample_conformance_yml(sample_dir)
   Totem.from_file "./#{cnf_conformance}"
 end
 
-def wait_for_install(deployment_name, wait_count=180)
+def wait_for_install(deployment_name, wait_count=180, namespace="default")
   second_count = 0
-  current_replicas = `kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
-  all_deployments = `kubectl get deployments`
+  all_deployments = `kubectl get deployments --namespace=#{namespace}`
+  current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
   puts all_deployments
-  until (current_replicas.empty? != true && current_replicas.to_i > 0) || second_count > wait_count
+  until (current_replicas.empty? != true && current_replicas.to_i > 0) || second_count > wait_count.to_i
     puts "second_count = #{second_count}"
-    all_deployments = `kubectl get deployments`
-    puts all_deployments
     sleep 1
-    current_replicas = `kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
+    all_deployments = `kubectl get deployments --namespace=#{namespace}`
+    current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
+    puts all_deployments
     second_count = second_count + 1 
   end
 end 
