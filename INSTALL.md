@@ -7,7 +7,7 @@ This guide shows how to install the CNF Conformance Test Suite
 # Source Install
 
 ## Installation
-  * Install [crystal-lang](https://crystal-lang.org/install/) version 0.30.1
+  * Install [crystal-lang](https://crystal-lang.org/install/) version 0.34.0
   * Install the project's crystal dependencies
   ```
   shards install
@@ -155,9 +155,9 @@ sha256sum cnf-conformance
 - Create a Conformance configuration file called `cnf-conformance.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`)
   - See example config (See [latest example in repo](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml)): 
     - Optionally, copy the example configuration file, [`cnf-conformance-example.yml`](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml), and modify appropriately
-- Setup your CNF for testing and deploy it to the cluster by running `cnf-conformance cnf_setup cnf-config=path_to_your/cnf_folder`
+- (Optional) Setup your CNF for testing and deploy it to the cluster by running `cnf-conformance cnf_setup cnf-config=path_to_your/cnf_folder`
     - _NOTE: if you do not want to automatically deploy the using the helm chart defined in the configuration then you MUST pass `deploy_with_chart=false` to the `cnf_setup` command._
-
+    - _NOTE: you can pass the path to your cnf-conformance.yml to the 'all' command which will install the CNF for you (see below)_
 
 ## Running and checking results for the Conformance testing
 

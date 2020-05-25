@@ -1,3 +1,4 @@
+# coding: utf-8
 require "sam"
 require "file_utils"
 require "colorize"
@@ -11,26 +12,27 @@ end
 desc "Will the CNF install using helm with helm_deploy?"
 task "helm_deploy" do |_, args|
   begin
+    release_name_prefix = "helm-deploy-"
     puts "helm_deploy" if check_verbose(args)
     config = get_parsed_cnf_conformance_yml(args)
 
     helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_directory = "#{config.get("helm_directory").as_s?}"
     release_name = "#{config.get("release_name").as_s?}"
-    puts "helm_chart: #{helm_chart}" if check_verbose(args)
 
     current_dir = FileUtils.pwd
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts helm if check_verbose(args)
 
-
     if helm_chart.empty? 
       #TODO make this work off of a helm directory if helm_directory was passed
       yml_file_path = cnf_conformance_yml_file_path(args)
-      helm_install = `#{helm} install #{release_name} #{yml_file_path}/#{helm_directory}`
+      puts "#{helm} install #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}" if check_verbose(args)
+      helm_install = `#{helm} install #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}`
     else 
-      helm_install = `#{helm} install #{release_name} #{helm_chart}`
-    end 
+      puts "#{helm} install #{release_name_prefix}#{release_name} #{helm_chart}" if check_verbose(args)
+      helm_install = `#{helm} install #{release_name_prefix}#{release_name} #{helm_chart}`
+    end
 
     is_helm_installed = $?.success?
     puts helm_install if check_verbose(args)
@@ -47,6 +49,9 @@ task "helm_deploy" do |_, args|
     ex.backtrace.each do |x|
       puts x
     end
+  ensure
+    puts "#{helm} uninstall #{release_name_prefix}#{release_name}" if check_verbose(args)
+    helm_uninstall = `#{helm} uninstall #{release_name_prefix}#{release_name}`
   end
 end
 
@@ -92,6 +97,7 @@ end
 
 task "helm_chart_published", ["helm_local_install"] do |_, args|
   begin
+    puts "helm_chart_published" if check_verbose(args)
     puts "helm_chart_published args.raw: #{args.raw}" if check_verbose(args)
     puts "helm_chart_published args.named: #{args.named}" if check_verbose(args)
 
@@ -103,7 +109,7 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts helm if check_verbose(args)
 
-   if helm_repo_add 
+   if helm_repo_add
      unless helm_chart.empty?
        helm_search = `#{helm} search repo #{helm_chart}`
        puts "#{helm_search}" if check_verbose(args)

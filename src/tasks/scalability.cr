@@ -1,3 +1,4 @@
+# coding: utf-8
 require "sam"
 require "file_utils"
 require "colorize"
@@ -113,6 +114,12 @@ def wait_for_scaling(deployment_name, target_replica_count, args)
     puts "Get deployments command: kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'" if check_verbose(args)
     current_replicas = `kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
     puts "current_replicas after get deployments: #{current_replicas.inspect}" if check_verbose(args)
+
+    if current_replicas.empty?
+      current_replicas = "0"
+      previous_replicas = "0"
+    end
+
     if current_replicas.to_i != previous_replicas.to_i
       second_count = 0
       previous_replicas = current_replicas
