@@ -1,5 +1,6 @@
 require "totem"
 require "colorize"
+require "./types/cnf_conformance_yml_type.cr"
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
 
@@ -16,7 +17,9 @@ def cnf_conformance_yml
   if cnf_conformance.empty?
     raise "No cnf_conformance.yml found! Did you run the setup task?"
   end
-  Totem.from_file "./#{cnf_conformance}"
+  totem_config = Totem.from_file "./#{cnf_conformance}"
+  validate_cnf_conformance_yml(totem_config)
+  totem_config
 end
 
 def cnf_conformance_yml(sample_cnf_destination_dir)
@@ -26,7 +29,9 @@ def cnf_conformance_yml(sample_cnf_destination_dir)
   if cnf_conformance.empty?
     raise "No cnf_conformance.yml found in #{sample_cnf_destination_dir}! Did you run the setup task?"
   end
-  Totem.from_file "./#{cnf_conformance}"
+  totem_config = Totem.from_file "./#{cnf_conformance}"
+  validate_cnf_conformance_yml(totem_config)
+  totem_config
 end
 
 def get_parsed_cnf_conformance_yml(args)
@@ -45,7 +50,9 @@ def get_parsed_cnf_conformance_yml(args)
   end
   puts "yml_file: #{yml_file}" if check_verbose(args)
   puts "current directory: #{FileUtils.pwd}" if check_verbose(args)
-  Totem.from_file yml_file 
+  totem_config = Totem.from_file yml_file 
+  validate_cnf_conformance_yml(totem_config)
+  totem_config
 end
 
 def cnf_conformance_yml_file_path(args)
@@ -372,3 +379,56 @@ def short_sample_dir(full_sample_dir)
   full_sample_dir.split("/").last 
 end
 
+# TODO: figure out how to check this recursively 
+#
+# def recursive_json_unmapped(hashy_thing): JSON::Any
+#   unmapped_stuff = hashy_thing.json_unmapped
+
+#   Hash(String, String).from_json(hashy_thing.to_json).each_key do |key|
+#     if hashy_thing.call(key).responds_to?(:json_unmapped)
+#       return unmapped_stuff[key] = recursive_json_unmapped(hashy_thing[key])
+#     end
+#   end
+  
+#   unmapped_stuff
+# end
+
+# TODO: figure out recursively check for unmapped json and warn on that
+# https://github.com/Nicolab/crystal-validator#check
+def validate_cnf_conformance_yml(config)
+  ccyt_validator = nil
+  valid = true 
+
+  begin
+    ccyt_validator = CnfConformanceYmlType.from_json(config.settings.to_json)
+  rescue ex
+    valid = false
+    puts "✖ ERROR: cnf_conformance.yml field validation error.".colorize(:red)
+    puts " please check info in the the field name near the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
+    puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
+  end
+
+  unmapped_keys_error_msg = "WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator".colorize(:yellow)
+
+  warning_output = [unmapped_keys_error_msg] of String | Colorize::Object(String)
+
+  if ccyt_validator && !ccyt_validator.try &.json_unmapped.empty?
+    warning_output.push(ccyt_validator.try &.json_unmapped.to_s)
+  end
+
+  if ccyt_validator && !ccyt_validator.try &.helm_repository.try &.json_unmapped.empty? 
+    root = {} of String => (Hash(String, JSON::Any) | Nil)
+    root["helm_directory"] = ccyt_validator.try &.helm_repository.try &.json_unmapped
+
+    warning_output.push(root.to_s)
+  end
+
+  if warning_output.size > 1
+    puts warning_output.join("\n")
+  end
+
+  { valid, warning_output }
+end
