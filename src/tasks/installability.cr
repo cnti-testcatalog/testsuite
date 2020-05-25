@@ -1,3 +1,4 @@
+# coding: utf-8
 require "sam"
 require "file_utils"
 require "colorize"
@@ -18,12 +19,10 @@ task "helm_deploy" do |_, args|
     helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_directory = "#{config.get("helm_directory").as_s?}"
     release_name = "#{config.get("release_name").as_s?}"
-    puts "helm_chart: #{helm_chart}" if check_verbose(args)
 
     current_dir = FileUtils.pwd
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts helm if check_verbose(args)
-
 
     if helm_chart.empty? 
       #TODO make this work off of a helm directory if helm_directory was passed
@@ -33,7 +32,7 @@ task "helm_deploy" do |_, args|
     else 
       puts "#{helm} install #{release_name_prefix}#{release_name} #{helm_chart}" if check_verbose(args)
       helm_install = `#{helm} install #{release_name_prefix}#{release_name} #{helm_chart}`
-    end 
+    end
 
     is_helm_installed = $?.success?
     puts helm_install if check_verbose(args)
@@ -98,6 +97,7 @@ end
 
 task "helm_chart_published", ["helm_local_install"] do |_, args|
   begin
+    puts "helm_chart_published" if check_verbose(args)
     puts "helm_chart_published args.raw: #{args.raw}" if check_verbose(args)
     puts "helm_chart_published args.named: #{args.named}" if check_verbose(args)
 
@@ -109,7 +109,7 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts helm if check_verbose(args)
 
-   if helm_repo_add 
+   if helm_repo_add
      unless helm_chart.empty?
        helm_search = `#{helm} search repo #{helm_chart}`
        puts "#{helm_search}" if check_verbose(args)

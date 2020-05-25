@@ -5,8 +5,8 @@ install_script: chart
 release_name: coredns
 deployment_name: coredns-coredns 
 service_name: coredns-coredns
-application_deployment_names: [coredns-coredns]
+application_deployment_names: [coredns]
 helm_chart: stable/coredns
-helm_chart_container_name: coredns-coredns
+helm_chart_container_name: coredns
 rolling_update_tag: 1.6.7
 white_list_helm_chart_container_names: []

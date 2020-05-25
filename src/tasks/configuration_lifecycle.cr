@@ -138,7 +138,7 @@ task "retrieve_manifest" do |_, args|
     config = cnf_conformance_yml
     deployment_name = config.get("deployment_name").as_s
     service_name = config.get("service_name").as_s
-    puts deployment_name if check_verbose(args)
+    puts "Deployment_name: #{deployment_name}" if check_verbose(args)
     puts service_name if check_verbose(args)
     helm_directory = config.get("helm_directory").as_s
     puts helm_directory if check_verbose(args)
@@ -148,7 +148,9 @@ task "retrieve_manifest" do |_, args|
     puts destination_cnf_dir if check_verbose(args)
     deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/#{helm_directory}/manifest.yml`
     puts deployment if check_verbose(args)
-    service = `kubectl get service #{service_name} -o yaml  > #{destination_cnf_dir}/service.yml`
+    unless service_name.empty?
+      service = `kubectl get service #{service_name} -o yaml  > #{destination_cnf_dir}/service.yml`
+    end
     puts service if check_verbose(args)
 
 
@@ -183,6 +185,7 @@ task "rolling_update" do |_, args|
 
     release_name = config.get("release_name").as_s
     deployment_name = config.get("deployment_name").as_s
+    helm_chart_container_name = config.get("helm_chart_container_name").as_s
 
     helm_chart_values = JSON.parse(`#{tools_helm} get values #{release_name} -a --output json`)
     puts "helm_chart_values" if check_verbose(args)
@@ -193,14 +196,20 @@ task "rolling_update" do |_, args|
 
     puts "rolling_update: setting new version" if check_verbose(args)
     #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
-    puts "kubectl set image deployment/#{deployment_name} #{release_name}=#{image_name}:#{version_tag} --record" if check_verbose(args)
-    do_update = `kubectl set image deployment/#{deployment_name} #{release_name}=#{image_name}:#{version_tag} --record`
+    puts "kubectl set image deployment/#{deployment_name} #{helm_chart_container_name}=#{image_name}:#{version_tag} --record" if check_verbose(args)
+    update = `kubectl set image deployment/#{deployment_name} #{helm_chart_container_name}=#{image_name}:#{version_tag} --record`
+    update_applied = $?.success?
+    puts "#{update}" if check_verbose(args)
+    puts "update? #{update_applied}" if check_verbose(args)
 
     # https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#rolling-update
     puts "rolling_update: checking status new version" if check_verbose(args)
-    puts `kubectl rollout status deployment/#{deployment_name} --timeout=30s`
+    rollout = `kubectl rollout status deployment/#{deployment_name} --timeout=30s`
+    rollout_status = $?.success?
+    puts "#{rollout}" if check_verbose(args)
+    puts "rollout? #{rollout_status}" if check_verbose(args)
 
-    if $?.success?
+    if update_applied && rollout_status
       upsert_passed_task("rolling_update")
       puts "✔️  PASSED: CNF #{deployment_name} Rolling Update Passed".colorize(:green)
     else
@@ -227,16 +236,18 @@ task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
     puts current_cnf_dir_short_name if check_verbose(args)
     destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
 
-    service = Totem.from_file "#{destination_cnf_dir}/service.yml"
-    puts service.inspect if check_verbose(args)
-    service_type = service.get("spec").as_h["type"].as_s
-    puts service_type if check_verbose(args)
-    if service_type == "NodePort" 
-      puts "✖️  FAILURE: NodePort is being used".colorize(:red)
-      upsert_failed_task("nodeport_not_used")
-    else
-      puts "✔️  PASSED: NodePort is not used".colorize(:green)
-      upsert_passed_task("nodeport_not_used")
+    if File.exists?("#{destination_cnf_dir}/service.yml")
+      service = Totem.from_file "#{destination_cnf_dir}/service.yml"
+      puts service.inspect if check_verbose(args)
+      service_type = service.get("spec").as_h["type"].as_s
+      puts service_type if check_verbose(args)
+      if service_type == "NodePort" 
+        puts "✖️  FAILURE: NodePort is being used".colorize(:red)
+        upsert_failed_task("nodeport_not_used")
+      else
+        puts "✔️  PASSED: NodePort is not used".colorize(:green)
+        upsert_passed_task("nodeport_not_used").colorize(:green)
+      end
     end
 
   rescue ex
@@ -254,6 +265,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     config = cnf_conformance_yml
     helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_directory = config.get("helm_directory").as_s
+    release_name = "#{config.get("release_name").as_s?}"
     current_cnf_dir_short_name = cnf_conformance_dir
     puts "Current_CNF_Dir: #{current_cnf_dir_short_name}" if check_verbose(args)
     destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
@@ -262,14 +274,15 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts "Helm Path: #{helm}" if check_verbose(args)
 
+    create_namespace = `kubectl create namespace hardcoded-ip-test`
     unless helm_chart.empty?
-      helm_install = `#{helm} install generated #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
+      helm_install = `#{helm} install --namespace hardcoded-ip-test hardcoded-ip-test #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
       puts "helm_chart: #{helm_chart}" if check_verbose(args)
     else
-      helm_install = `#{helm} install generated #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
+      helm_install = `#{helm} install --namespace hardcoded-ip-test hardcoded-ip-test #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
       puts "helm_directory: #{helm_directory}" if check_verbose(args)
     end
- 
+
     ip_search = File.read_lines("#{destination_cnf_dir}/helm_chart.yml").take_while{|x| x.match(/NOTES:/) == nil}.reduce([] of String){|acc, x| x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/) && x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/).try &.[0] != "0.0.0.0" ? acc << x : acc}
     puts "IPs: #{ip_search}" if check_verbose(args)
 
@@ -281,6 +294,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
       upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration")
     end
 
+    delete_namespace = `kubectl delete namespace hardcoded-ip-test --force --grace-period 0 2>&1 >/dev/null`
 
   rescue ex
     puts ex.message
