@@ -155,7 +155,13 @@ describe "Utils" do
   it "'check_cnf_config' should return the value for a cnf-config argument"  do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
     #TODO make sample_setup_args accept the full path to the config yml instead of the directory
-    (check_cnf_config(args)).should eq({"./sample-cnfs/sample-generic-cnf", true})
+    (check_cnf_config(args)).should eq("./sample-cnfs/sample-generic-cnf")
+  end
+
+  it "'check_all_cnf_args' should return the value for a cnf-config argument"  do
+    args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
+    #TODO make sample_setup_args accept the full path to the config yml instead of the directory
+    (check_all_cnf_args(args)).should eq({"./sample-cnfs/sample-generic-cnf", true})
   end
   it "'check_cnf_config_then_deploy' should accept a cnf-config argument"  do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
@@ -205,6 +211,31 @@ describe "Utils" do
       resp
     end
     (task_response).should eq(["✔️  PASSED: No privileged containers".colorize(:green), "✔️  PASSED: No privileged containers".colorize(:green)])
+    sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
+    sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
+  end
+
+  it "'single_or_all_cnfs_task_runner' should run a test against a single cnf if passed a cnf-config argument even if there are multiple cnfs installed"  do
+    my_args = Sam::Args.new
+    sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: my_args)
+    sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: my_args )
+    installed_args = Sam::Args.new(["cnf-config=./cnfs/coredns-coredns/cnf-conformance.yml"])
+    task_response = single_or_all_cnfs_task_runner(installed_args) do |args|
+      LOGGING.info("single_or_all_cnfs_task_runner spec args #{args.inspect}")
+      config = cnf_conformance_yml(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+      helm_chart_container_name = config.get("helm_chart_container_name").as_s
+      privileged_response = `kubectl get pods --all-namespaces -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
+      privileged_list = privileged_response.to_s.split(" ").uniq
+      puts "privileged_list #{privileged_list}"
+      if privileged_list.select {|x| x == helm_chart_container_name}.size > 0
+        resp = "✖️  FAILURE: Found privileged containers: #{privileged_list.inspect}".colorize(:red)
+      else
+        resp = "✔️  PASSED: No privileged containers".colorize(:green)
+      end
+      puts resp
+      resp
+    end
+    (task_response).should eq("✔️  PASSED: No privileged containers".colorize(:green))
     sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
     sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
   end

@@ -49,24 +49,40 @@ def check_cnf_config(args)
     yml_file = args.named["cnf-config"].as(String)
     cnf = File.dirname(yml_file)
     puts "all cnf: #{cnf}" if check_verbose(args)
-    if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
-      deploy_with_chart = false
-    else
-      deploy_with_chart = true
-    end
   else
     cnf = nil
+	end
+  cnf
+end
+
+def check_all_cnf_args(args)
+  puts "args = #{args.inspect}" if check_verbose(args)
+  cnf = check_cnf_config(args)
+  deploy_with_chart = true
+  if cnf 
+    puts "all cnf: #{cnf}" if check_verbose(args)
+    if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
+      deploy_with_chart = false
+    end
 	end
   return cnf, deploy_with_chart
 end
 
 def check_cnf_config_then_deploy(args)
-  config_file, deploy_with_chart = check_cnf_config(args)
+  config_file, deploy_with_chart = check_all_cnf_args(args)
   sample_setup_args(sample_dir: config_file, deploy_with_chart: deploy_with_chart, args: args, verbose: check_verbose(args) ) if config_file
 end
 
+def single_or_all_cnfs_task_runner(args, &block : Sam::Args -> String | Colorize::Object(String) | Nil)
+  if check_cnf_config(args)
+    task_runner(args, &block)
+  else
+    all_cnfs_task_runner(args, &block)
+  end
+end
+
 # TODO give example for calling
-def all_cnfs_task_runner(args, &block : Sam::Args -> String | Colorize::Object(String))
+def all_cnfs_task_runner(args, &block : Sam::Args -> String | Colorize::Object(String) | Nil)
   LOGGING.info("cnf_config_list: #{cnf_config_list.inspect}")
   cnf_config_list.map do |x|
     LOGGING.info("all_cnfs_task_runner config_list x: #{x}")
@@ -241,8 +257,20 @@ def upsert_failed_task(task)
   upsert_task(task, FAILED, task_points(task, false))
 end
 
+def upsert_failed_task(task, message)
+  upsert_task(task, FAILED, task_points(task, false))
+  puts message.colorize(:red)
+  message
+end
+
 def upsert_passed_task(task)
   upsert_task(task, PASSED, task_points(task))
+end
+
+def upsert_passed_task(task, message)
+  upsert_task(task, PASSED, task_points(task))
+  puts message.colorize(:green)
+  message
 end
 
 def task_points(task, passed=true)
