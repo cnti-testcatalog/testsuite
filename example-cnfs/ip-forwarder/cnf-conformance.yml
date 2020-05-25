@@ -4,8 +4,13 @@ git_clone_url:
 install_script: 
 release_name: vpp
 deployment_name: vpp
+service_name: ""
 application_deployment_names: [vpp]
+docker_repository: soelvkaer/vppcontainer
+helm_repository:
+  name:
+  repo_url:
 helm_chart: 
-helm_chart_container_name: vpp
-white_list_helm_chart_container_names: [falco, nginx, calico-node, kube-proxy, nginx-proxy, node-cache, kube-multus]
+helm_chart_container_name: vpp-1
 rolling_update_tag: latest
+white_list_helm_chart_container_names: [falco, nginx, calico-node, kube-proxy, nginx-proxy, node-cache, kube-multus]
