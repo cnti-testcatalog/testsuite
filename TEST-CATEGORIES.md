@@ -13,7 +13,7 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 ## Statelessness Tests 
 #### The CNF conformance suite checks if state is stored in a [custom resource definition](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) or a separate database (e.g. [etcd](https://github.com/etcd-io/etcd)) rather than requiring local storage.  It also checks to see if state is resilient to node failure by:
 *  Resetting the container and checking to see if the CNF comes back up
-*  Using upstream projects for chaos engineering (e.g [Litmus](//https://github.com/litmuschaos/litmus))
+*  Using upstream projects for chaos engineering (e.g [Litmus](https://github.com/litmuschaos/litmus))
 
 ## Security Tests 
 #### CNF containers should be isolated from one another and the host.  The CNF Conformance suite uses tools like [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Falco](https://github.com/falcosecurity/falco), [Sysdig Inspect](https://github.com/draios/sysdig-inspect) and [gVisor](https://github.com/google/gvisor) to:
