@@ -43,19 +43,17 @@ describe CnfConformance do
     (all_result_test_names(final_cnf_results_yml)).should eq(["privileged", "increase_capacity", "decrease_capacity", "ip_addresses", "liveness", "readiness", "rolling_update", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "install_script_helm", "helm_chart_valid", "helm_chart_published","helm_deploy", "reasonable_image_size", "reasonable_startup_time"])
   end
 
-   it "'scalability' should run all of the scalability tests", tags: "happy-path"  do
-     # puts `pwd` 
-     # puts `echo $KUBECONFIG`
-     response_s = `./cnf-conformance setup`
-     puts response_s
-     `./cnf-conformance sample_coredns_with_wait_setup`
-     $?.success?.should be_true
-     response_s = `./cnf-conformance scalability`
-     puts response_s
-       $?.success?.should be_true
-     (/PASSED: Replicas increased to 3/ =~ response_s).should_not be_nil
-     (/PASSED: Replicas decreased to 1/ =~ response_s).should_not be_nil
-   end
-
-
+  it "'scalability' should run all of the scalability tests", tags: "happy-path"  do
+    # puts `pwd` 
+    # puts `echo $KUBECONFIG`
+    response_s = `./cnf-conformance setup`
+    puts response_s
+    `./cnf-conformance sample_coredns_with_wait_setup`
+    $?.success?.should be_true
+    response_s = `./cnf-conformance scalability`
+    puts response_s
+    $?.success?.should be_true
+    (/PASSED: Replicas increased to 3/ =~ response_s).should_not be_nil
+    (/PASSED: Replicas decreased to 1/ =~ response_s).should_not be_nil
+  end
 end

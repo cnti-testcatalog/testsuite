@@ -6,69 +6,6 @@ require "./types/cnf_conformance_yml_type.cr"
 
 # TODO put this in a module
 
-# CONFIG = Totem.from_file "./config.yml"
-
-# TODO return array of cnf directories from the cnfs directory
-def cnf_list
-end
-
-def cnf_conformance_yml
-  cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
-  if cnf_conformance.empty?
-    raise "No cnf_conformance.yml found! Did you run the setup task?"
-  end
-  totem_config = Totem.from_file "./#{cnf_conformance}"
-  validate_cnf_conformance_yml(totem_config)
-  totem_config
-end
-
-def cnf_conformance_yml(sample_cnf_destination_dir)
-  short_sample_cnf_destination_dir = sample_cnf_destination_dir.split("/")[-1] 
-  cnf_conformance = `find #{CNF_DIR}/#{short_sample_cnf_destination_dir}/* -name "cnf-conformance.yml"`.split("\n")[0]
-  puts "cnf_conformance: #{cnf_conformance}"
-  if cnf_conformance.empty?
-    raise "No cnf_conformance.yml found in #{sample_cnf_destination_dir}! Did you run the setup task?"
-  end
-  totem_config = Totem.from_file "./#{cnf_conformance}"
-  validate_cnf_conformance_yml(totem_config)
-  totem_config
-end
-
-def get_parsed_cnf_conformance_yml(args)
-  puts "get_parsed_cnf_conformance_yml args: #{args.inspect}" if check_verbose(args)
-  puts "get_parsed_cnf_conformance_yml args.named.keys: #{args.named.keys.inspect}" if check_verbose(args)
-  if args.named.keys.includes? "yml-file" 
-    yml_file = args.named["yml-file"].as(String)
-  elsif args.named.keys.includes? "cnf-config"
-    yml_file = args.named["cnf-config"].as(String)
-  else
-    yml_file_relative = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
-    if yml_file_relative.empty?
-      raise "No cnf_conformance.yml found! Did you run the setup task?"
-    end
-    yml_file = "./#{yml_file_relative}"
-  end
-  puts "yml_file: #{yml_file}" if check_verbose(args)
-  puts "current directory: #{FileUtils.pwd}" if check_verbose(args)
-  totem_config = Totem.from_file yml_file 
-  validate_cnf_conformance_yml(totem_config)
-  totem_config
-end
-
-def cnf_conformance_yml_file_path(args)
-  if args.named.keys.includes? "yml-file"
-    yml_file = args.named["yml-file"].as(String)
-    # cnf_conformance = File.expand_path(yml_file).split("/")[0..-2].reduce(""){|x,acc| x == "" ? "/" : x + acc + "/"}
-    cnf_conformance = File.dirname(yml_file)
-  else
-    cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("/")[0..-2].reduce(""){|x, acc| x.empty? ? acc : "#{x}/#{acc}"}
-    if cnf_conformance.empty?
-      raise "No cnf_conformance.yml found! Did you run the setup task?"
-    end
-  end
-  cnf_conformance
-end 
-
 def final_cnf_results_yml
   results_file = `find ./* -name "cnf-conformance-results-*.yml"`.split("\n")[-2].gsub("./", "")
   if results_file.empty?
@@ -77,40 +14,19 @@ def final_cnf_results_yml
   results_file
 end
 
-
-def cnf_conformance_dir
-  cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
-  if cnf_conformance.empty?
+def cnf_config_list(silent=false)
+  LOGGING.info("cnf_config_list")
+  LOGGING.info("find: find #{CNF_DIR}/* -name #{CONFIG_FILE}")
+  cnf_conformance = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
+  LOGGING.info("find response: #{cnf_conformance}")
+  if cnf_conformance.size == 0 && !silent
     raise "No cnf_conformance.yml found! Did you run the setup task?"
   end
-  cnf_conformance.split("/")[-2] 
+  cnf_conformance
 end
 
-def cnf_conformance_dir(source_dir)
-  yml_dir = cnf_destination_dir(source_dir) 
-  #TODO change into short path
-  # source_short_dir = source_dir.split("/")[-1]
-  # cnf_conformance = `find cnfs/* -name "#{source_short_dir}"`.split("\n")[0]
-  # cnf_conformance = `find cnfs/* -name "#{yml_dir}"`.split("\n")[0]
-  # if cnf_conformance.empty?
-  #   raise "No directory named #{yml_dir} found! Did you run the setup task?"
-  # end
-  # cnf_conformance.split("/")[-1] 
-  yml_dir.split("/")[-1] 
-end
-
-def get_cnf_conformance_dir(args)
-  if args.named.keys.includes? "yml-file"
-    yml_file = args.named["yml-file"].as(String)
-    config = Totem.from_file "#{yml_file}"
-    config.get("helm_directory").as_s
-  else
-    cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
-    if cnf_conformance.empty?
-      raise "No cnf_conformance.yml found! Did you run the setup task?"
-    end
-    cnf_conformance.split("/")[-2]
-  end
+def destination_cnfs_exist?
+  cnf_config_list(silent=true).size > 0
 end
 
 def parsed_config_file(path)
@@ -151,16 +67,22 @@ def path_has_yml?(config_path)
   end
 end
 
+def config_from_path_or_dir(cnf_path_or_dir)
+  if path_has_yml?(cnf_path_or_dir)
+    config_file = File.dirname(cnf_path_or_dir)
+    config = sample_conformance_yml(config_file)
+  else
+    config_file = cnf_path_or_dir
+    config = sample_conformance_yml(config_file)
+  end
+  return config
+end
+
 def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false, wait_count=180)
   puts "sample_setup_args" if verbose
 
-  if path_has_yml?(sample_dir)
-    config_file = File.dirname(sample_dir)
-    config = sample_conformance_yml(config_file)
-  else
-    config_file = sample_dir
-    config = sample_conformance_yml(config_file)
-  end
+  config = config_from_path_or_dir(sample_dir)
+  config_dir = ensure_cnf_conformance_dir(sample_dir)
 
   puts "config #{config}" if verbose
 
@@ -199,22 +121,27 @@ def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false, w
   end
   puts "git_clone_url: #{git_clone_url}" if verbose
 
-  sample_setup(config_file: config_file, release_name: release_name, deployment_name: deployment_name, helm_chart: helm_chart, helm_directory: helm_directory, git_clone_url: git_clone_url, deploy_with_chart: deploy_with_chart, verbose: verbose, wait_count: wait_count )
+  sample_setup(config_file: config_dir, release_name: release_name, deployment_name: deployment_name, helm_chart: helm_chart, helm_directory: helm_directory, git_clone_url: git_clone_url, deploy_with_chart: deploy_with_chart, verbose: verbose, wait_count: wait_count )
 
 end
 
-def sample_destination_dir(sample_source_dir)
-  current_dir = FileUtils.pwd 
-  "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(sample_source_dir)}"
-end
-
-def ensure_cnf_conformance_yml_path(config_file)
+def ensure_cnf_conformance_yml_path(path)
 	LOGGING.info("ensure_cnf_conformance_yml_path")
-  if path_has_yml?(config_file)
-    yml = config_file
+  if path_has_yml?(path)
+    yml = path 
   else
-    yml = config_file + "/cnf-conformance.yml" 
+    yml = path + "/cnf-conformance.yml" 
   end
+end
+
+def ensure_cnf_conformance_dir(path)
+	LOGGING.info("ensure_cnf_conformance_yml_dir")
+  if path_has_yml?(path)
+    dir = File.dirname(path)
+  else
+    dir = path
+  end
+  dir + "/"
 end
 
 def cnf_destination_dir(config_file)
@@ -242,7 +169,8 @@ end
 def helm_repo_add(helm_repo_name=nil, helm_repo_url=nil, args : Sam::Args=Sam::Args.new)
   ret = false
   if helm_repo_name == nil || helm_repo_url == nil
-    config = get_parsed_cnf_conformance_yml(args)
+    # config = get_parsed_cnf_conformance_yml(args)
+    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     current_dir = FileUtils.pwd
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     helm_repo_name = config.get("helm_repository.name").as_s?
@@ -281,7 +209,7 @@ def sample_setup(config_file, release_name, deployment_name, helm_chart, helm_di
   # Copy the sample 
   # TODO create helm chart directory if it doesn't exist
   # Document this behaviour of the helm chart directory (using it if it exists, 
-  # creating it if it doesn't
+  # creating it if it doesn't)
   LOGGING.info("File.directory?(#{config_source_dir(config_file)}/#{helm_directory}) #{File.directory?(config_source_dir(config_file) + "/" + helm_directory)}")
   if File.directory?(config_source_dir(config_file) + "/" + helm_directory)
     LOGGING.info("cp -a #{config_source_dir(config_file) + "/" + helm_directory} #{destination_cnf_dir}")
@@ -345,7 +273,6 @@ end
 
 def sample_cleanup(config_file, force=false, verbose=true)
   destination_cnf_dir = cnf_destination_dir(config_file)
-  # yml_cp = `cp -a #{ensure_cnf_conformance_yml_path(config_file)} #{destination_cnf_dir}`
   config = parsed_config_file(ensure_cnf_conformance_yml_path(config_file))
 
   puts "cleanup config: #{config.inspect}" if verbose
@@ -373,10 +300,6 @@ end
 
 def chart_name(helm_chart_repo)
   helm_chart_repo.split("/").last 
-end
-
-def short_sample_dir(full_sample_dir)
-  full_sample_dir.split("/").last 
 end
 
 # TODO: figure out how to check this recursively 

@@ -19,7 +19,7 @@ end
 
 desc "Test increasing capacity by setting replicas to 1 and then increasing to 3"
 task "increase_capacity" do |_, args|
-  begin
+  task_runner(args) do |args|
 
     emoji_increase_capacity="📦📈"
 
@@ -33,17 +33,12 @@ task "increase_capacity" do |_, args|
       upsert_failed_task("increase_capacity")
       puts "✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji_increase_capacity}".colorize(:red)
     end
-  rescue ex
-    puts ex.message
-    ex.backtrace.each do |x|
-      puts x
-    end
   end
 end
 
 desc "Test decrease capacity by setting replicas to 3 and then decreasing to 1"
 task "decrease_capacity" do |_, args|
-  begin
+  task_runner(args) do |args|
     target_replicas = "1"
     base_replicas = "3"
     final_count = change_capacity(base_replicas, target_replicas, args)
@@ -56,11 +51,6 @@ task "decrease_capacity" do |_, args|
       upsert_failed_task("decrease_capacity")
       puts "✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji_decrease_capacity}".colorize(:red)
     end
-  rescue ex
-    puts ex.message
-    ex.backtrace.each do |x|
-      puts x
-    end
   end
 end
 
@@ -71,7 +61,8 @@ def change_capacity(base_replicas, target_replica_count, args)
   puts "base replicas: #{base_replicas}" if check_verbose(args)
 
   # Parse the cnf-conformance.yml
-  config = cnf_conformance_yml
+  # config = cnf_conformance_yml
+  config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
 
   initialization_time = base_replicas.to_i * 10
   if args.named.keys.includes? "deployment_name"

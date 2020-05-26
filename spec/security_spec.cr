@@ -16,14 +16,10 @@ describe CnfConformance do
     begin
       `./cnf-conformance sample_coredns_setup`
       $?.success?.should be_true
-      if toggle("multi-cnf") 
-        response_s = `./cnf-conformance privileged cnf=sample-coredns-cnf verbose`
-      else
-        response_s = `./cnf-conformance privileged verbose`
-      end
+      response_s = `./cnf-conformance privileged cnf-config=sample-cnfs/sample-coredns-cnf verbose`
       puts response_s
       $?.success?.should be_true
-      (/Found privileged containers.*coredns/ =~ response_s).should be_nil
+      (/Found.*privileged containers.*coredns/ =~ response_s).should be_nil
     ensure
       `./cnf-conformance sample_coredns_cleanup`
     end
@@ -32,14 +28,10 @@ describe CnfConformance do
     begin
       `./cnf-conformance sample_privileged_cnf_non_whitelisted_setup`
       $?.success?.should be_true
-      if toggle("multi-cnf") 
-        response_s = `./cnf-conformance privileged cnf=sample_privileged_cnf verbose`
-      else
-        response_s = `./cnf-conformance privileged verbose`
-      end
+      response_s = `./cnf-conformance privileged cnf-config=sample-cnfs/sample_privileged_cnf verbose`
       puts response_s
       $?.success?.should be_true
-      (/Found privileged containers.*coredns/ =~ response_s).should_not be_nil
+      (/Found.*privileged containers.*coredns/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance sample_privileged_cnf_non_whitelisted_cleanup`
     end
@@ -48,14 +40,10 @@ describe CnfConformance do
     begin
       `./cnf-conformance sample_privileged_cnf_whitelisted_setup`
       $?.success?.should be_true
-      if toggle("multi-cnf") 
-        response_s = `./cnf-conformance privileged cnf=sample_whitelisted_privileged_cnf verbose`
-      else
-        response_s = `./cnf-conformance privileged verbose`
-      end
+      response_s = `./cnf-conformance privileged cnf-config=sample-cnfs/sample_whitelisted_privileged_cnf verbose`
       puts response_s
       $?.success?.should be_true
-      (/Found privileged containers.*coredns/ =~ response_s).should be_nil
+      (/Found.*privileged containers.*coredns/ =~ response_s).should be_nil
     ensure
       `./cnf-conformance sample_privileged_cnf_whitelisted_cleanup`
     end

@@ -96,53 +96,24 @@ describe "SampleUtils" do
     (Dir.exists? "cnfs/privileged-coredns-coredns").should be_false
   end
 
-  it "'cnf_conformance_dir' should return the short name of the destination cnf directory", tags: ["WIP", "happy-path"]  do
-    args = Sam::Args.new
-    sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 0 )
-    (cnf_conformance_dir).should eq("coredns-coredns")
-  end
-
-  it "'sample_destination_dir' should return the full path of the potential destination cnf directory based on the source sample cnf directory", tags: "WIP" do
-    args = Sam::Args.new
-    sample_destination_dir("sample-generic-cnf").should contain("/cnfs/sample-generic-cnf")
-  end
-
   it "'cnf_destination_dir' should return the full path of the potential destination cnf directory based on the deployment name", tags: "WIP" do
     args = Sam::Args.new
     cnf_destination_dir("spec/fixtures/cnf-conformance.yml").should contain("/cnfs/coredns-coredns")
   end
 
-  it "'cnf_conformance_yml(sample_cnf_destination_dir)' should return the yaml for the passed cnf directory", tags: "happy-path"  do
+  it "'cnf_config_list' should return a list of all of the config files from the cnf directory", tags: "happy-path"  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
     sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: args, verbose: true )
-    yml = cnf_conformance_yml("privileged-coredns-coredns")
-    ("#{yml.get("release_name").as_s?}").should eq("privileged-coredns")
-    yml = cnf_conformance_yml("cnfs/privileged-coredns-coredns")
-    ("#{yml.get("release_name").as_s?}").should eq("privileged-coredns")
-  end
-
-  it "'cnf_conformance_dir(source_short_dir)' should use full cnfs path for passed source cnf", tags: "happy-path"  do
-    args = Sam::Args.new
-    sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
-    sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: args, verbose: true )
-    #TODO this will no longer work since we are specifiying yml path
-    # cnf_conformance_dir("sample_privileged_cnf").should contain("privileged-coredns")
-    cnf_conformance_dir("sample-cnfs/sample_privileged_cnf").should contain("privileged-coredns")
+    cnf_config_list()[0].should contain("coredns-coredns/#{CONFIG_FILE}")
   end
 
   it "'helm_repo_add' should add a helm repo if the helm repo is valid", tags: "happy-path"  do
     args = Sam::Args.new
     sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
-    helm_repo_add.should eq(true)
+    # helm_repo_add.should eq(true)
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
     helm_repo_add(args: args).should eq(true)
-  end
-
-  it "'get_parsed_cnf_conformance_yml' should return the cnf config file based on a yml", tags: "happy-path"  do
-    args = Sam::Args.new(["yml-file=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
-    yml = get_parsed_cnf_conformance_yml(args)
-    ("#{yml.get("release_name").as_s?}").should eq("coredns")
   end
 
   it "'helm_repo_add' should return false if the helm repo is invalid", tags: "happy-path"  do
@@ -152,9 +123,9 @@ end
 
 
 it "'validate_cnf_conformance_yml' should warn when cnf config file yml has fields that are not a part of the validation type", tags: ["unhappy-path", "validate_config"]  do
-  args = Sam::Args.new(["yml-file=./spec/fixtures/cnf-conformance-unmapped-keys.yml"])
+  args = Sam::Args.new(["cnf-config=./spec/fixtures/cnf-conformance-unmapped-keys.yml"])
 
-  yml = get_parsed_cnf_conformance_yml(args)
+  yml = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
   puts yml.inspect
   ("#{yml.get("release_name").as_s?}").should eq("coredns")
 
