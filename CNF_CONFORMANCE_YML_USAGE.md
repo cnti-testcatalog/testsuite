@@ -1,4 +1,4 @@
-# Usage document for the cnf-conformance.yml
+﻿# Usage document for the cnf-conformance.yml
 
 
 ### What is the cnf-conformance.yml and why is it required?:
@@ -67,4 +67,4 @@ This value is used to look up the CNF and determine if it's running in privilege
 This value is used to allow 'particular' pods to run in privileged mode on the K8s cluster where is CNF being tested is installed.
 The reason this is needed is because the Test Suite will check, 'all' pods in the cluster, to see if they're running in privileged mode.
 
-This is done because it's a common cloud-native practice to delegate 'privileged' networking tasks to only a single app e.g Multus, NSM vs making the CNF privileged itself. As a consequence the whitelist can only be used to exempt 'privileged' infrastructre services running as pods e.g NSM, Multus and cannot be used to exempt the CNF being tested.
+This is done because it's a common cloud-native practice to delegate 'privileged' networking tasks to only a single app e.g Multus, NSM vs making the CNF privileged itself. As a consequence the whitelist can only be used to exempt 'privileged' infrastructure services running as pods e.g NSM, Multus and cannot be used to exempt the CNF being tested.
