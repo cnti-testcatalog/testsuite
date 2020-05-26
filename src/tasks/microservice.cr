@@ -13,7 +13,7 @@ end
 
 desc "Does the CNF have a reasonable startup time?"
 task "reasonable_startup_time" do |_, args|
-  task_response = single_or_all_cnfs_task_runner(args) do |args|
+  task_response = task_runner(args) do |args|
     puts "reasonable_startup_time" if check_verbose(args)
 
     # config = get_parsed_cnf_conformance_yml(args)
@@ -80,7 +80,7 @@ end
 
 desc "Does the CNF have a reasonable container image size?"
 task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
-  task_response = single_or_all_cnfs_task_runner(args) do |args|
+  task_response = task_runner(args) do |args|
     # config = cnf_conformance_yml
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     helm_directory = config.get("helm_directory").as_s

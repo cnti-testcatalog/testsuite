@@ -25,8 +25,6 @@ describe "Setup" do
 
   it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf with a cnf-conformance.yml", tags: "happy-path"  do
     begin
-      #TODO make cnf_setup work with a cnf name based in the cnf-conformance.yml
-      #TODO make cnf_setup install a helm directory without having a premade directory located with the cnf-conformance.yml
       response_s = `./cnf-conformance cnf_setup cnf-config=example-cnfs/coredns/cnf-conformance.yml`
       puts response_s
       $?.success?.should be_true

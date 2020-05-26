@@ -13,7 +13,7 @@ task "privileged" do |_, args|
   #TODO Document all arguments
   #TODO check if container exists
   #TODO Check if args exist
-  single_or_all_cnfs_task_runner(args) do |args|
+  task_runner(args) do |args|
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
 
     helm_chart_container_name = config.get("helm_chart_container_name").as_s

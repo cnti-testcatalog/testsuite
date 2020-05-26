@@ -95,10 +95,10 @@ def check_cnf_config_then_deploy(args)
   sample_setup_args(sample_dir: config_file, deploy_with_chart: deploy_with_chart, args: args, verbose: check_verbose(args) ) if config_file
 end
 
-def single_or_all_cnfs_task_runner(args, &block : Sam::Args -> String | Colorize::Object(String) | Nil)
+def task_runner(args, &block : Sam::Args -> String | Colorize::Object(String) | Nil)
   # LOGGING.info("single_or_all_cnfs_task_runner: #{args.inspect}")
   if check_cnf_config(args)
-    task_runner(args, &block)
+    single_task_runner(args, &block)
   else
     all_cnfs_task_runner(args, &block)
   end
@@ -112,12 +112,12 @@ def all_cnfs_task_runner(args, &block : Sam::Args -> String | Colorize::Object(S
     new_args = Sam::Args.new(args.named, args.raw)
     new_args.named["cnf-config"] = x
     # LOGGING.info("all_cnfs_task_runner new_args: #{new_args.inspect}")
-    task_runner(new_args, &block)
+    single_task_runner(new_args, &block)
   end
 end
 
 # TODO give example for calling
-def task_runner(args, &block)
+def single_task_runner(args, &block)
   # LOGGING.info("task_runner args: #{args.inspect}")
   begin
   yield args

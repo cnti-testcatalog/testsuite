@@ -19,7 +19,7 @@ end
 
 desc "Test increasing capacity by setting replicas to 1 and then increasing to 3"
 task "increase_capacity" do |_, args|
-  single_or_all_cnfs_task_runner(args) do |args|
+  task_runner(args) do |args|
 
     emoji_increase_capacity="📦📈"
 
@@ -38,7 +38,7 @@ end
 
 desc "Test decrease capacity by setting replicas to 3 and then decreasing to 1"
 task "decrease_capacity" do |_, args|
-  single_or_all_cnfs_task_runner(args) do |args|
+  task_runner(args) do |args|
     target_replicas = "1"
     base_replicas = "3"
     final_count = change_capacity(base_replicas, target_replicas, args)

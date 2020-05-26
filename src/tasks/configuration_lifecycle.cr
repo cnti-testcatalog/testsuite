@@ -12,7 +12,7 @@ end
 
 desc "Does a search for IP addresses or subnets come back as negative?"
 task "ip_addresses" do |_, args|
-  single_or_all_cnfs_task_runner(args) do |args|
+  task_runner(args) do |args|
     LOGGING.info("ip_addresses args #{args.inspect}")
     cdir = FileUtils.pwd()
     response = String::Builder.new
@@ -38,7 +38,7 @@ end
 
 desc "Is there a liveness entry in the helm chart?"
 task "liveness", ["retrieve_manifest"] do |_, args|
-  single_or_all_cnfs_task_runner(args) do |args|
+  task_runner(args) do |args|
     # Parse the cnf-conformance.yml
     resp = ""
     # config = cnf_conformance_yml
@@ -85,7 +85,7 @@ end
 
 desc "Is there a readiness entry in the helm chart?"
 task "readiness", ["retrieve_manifest"] do |_, args|
-  single_or_all_cnfs_task_runner(args) do |args|
+  task_runner(args) do |args|
     # Parse the cnf-conformance.yml
     resp = ""
     # config = cnf_conformance_yml
@@ -131,7 +131,7 @@ end
 
 desc "Retrieve the manifest for the CNF's helm chart"
 task "retrieve_manifest" do |_, args| 
-  single_or_all_cnfs_task_runner(args) do |args|
+  task_runner(args) do |args|
     puts "retrieve_manifest" if check_verbose(args)
     # config = cnf_conformance_yml
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
@@ -157,7 +157,7 @@ end
 
 desc "Test if the CNF can perform a rolling update"
 task "rolling_update" do |_, args|
-  single_or_all_cnfs_task_runner(args) do |args|
+  task_runner(args) do |args|
     puts "rolling_update" if check_verbose(args)
     # config = cnf_conformance_yml
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
@@ -214,7 +214,7 @@ end
 
 desc "Does the CNF use NodePort"
 task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
-  task_response = single_or_all_cnfs_task_runner(args) do |args|
+  task_response = task_runner(args) do |args|
     puts "nodeport_not_used" if check_verbose(args)
     # config = cnf_conformance_yml
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
@@ -242,7 +242,7 @@ end
 
 desc "Does the CNF have hardcoded IPs in the K8s resource configuration"
 task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
-  task_response = single_or_all_cnfs_task_runner(args) do |args|
+  task_response = task_runner(args) do |args|
     puts "Task Name: hardcoded_ip_addresses_in_k8s_runtime_configuration" if check_verbose(args)
     # config = cnf_conformance_yml
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))

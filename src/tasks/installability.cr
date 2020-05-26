@@ -13,7 +13,7 @@ desc "Will the CNF install using helm with helm_deploy?"
 task "helm_deploy" do |_, args|
   LOGGING.info("helm_deploy args: #{args.inspect}")
   if check_cnf_config(args) || destination_cnfs_exist?
-    single_or_all_cnfs_task_runner(args) do |args|
+    task_runner(args) do |args|
       begin
         release_name_prefix = "helm-deploy-"
         puts "helm_deploy" if check_verbose(args)
@@ -61,7 +61,7 @@ end
 
 desc "Does the install script use helm?"
 task "install_script_helm" do |_, args|
-  single_or_all_cnfs_task_runner(args) do |args|
+  task_runner(args) do |args|
     # Parse the cnf-conformance.yml
     # config = cnf_conformance_yml
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
@@ -98,7 +98,7 @@ task "install_script_helm" do |_, args|
 end
 
 task "helm_chart_published", ["helm_local_install"] do |_, args|
-  single_or_all_cnfs_task_runner(args) do |args|
+  task_runner(args) do |args|
     puts "helm_chart_published" if check_verbose(args)
     puts "helm_chart_published args.raw: #{args.raw}" if check_verbose(args)
     puts "helm_chart_published args.named: #{args.named}" if check_verbose(args)
@@ -112,7 +112,7 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts helm if check_verbose(args)
 
-    if helm_repo_add
+    if helm_repo_add(args: args)
       unless helm_chart.empty?
         helm_search = `#{helm} search repo #{helm_chart}`
         puts "#{helm_search}" if check_verbose(args)
@@ -135,7 +135,7 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
 end
 
 task "helm_chart_valid", ["helm_local_install"] do |_, args|
-  single_or_all_cnfs_task_runner(args) do |args|
+  task_runner(args) do |args|
     puts "helm_chart_valid args.raw: #{args.raw}" if check_verbose(args)
     puts "helm_chart_valid args.named: #{args.named}" if check_verbose(args)
 
