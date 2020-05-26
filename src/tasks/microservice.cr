@@ -21,6 +21,7 @@ task "reasonable_startup_time" do |_, args|
     # yml_file_path = cnf_conformance_yml_file_path(args)
     # needs to be the source directory
     yml_file_path = ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
+    # yml_file_path = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
     puts "yaml_path: #{yml_file_path}" if check_verbose(args)
 
