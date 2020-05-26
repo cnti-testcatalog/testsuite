@@ -7,7 +7,7 @@ This guide shows how to install the CNF Conformance Test Suite
 # Source Install
 
 ## Installation
-  * Install [crystal-lang](https://crystal-lang.org/install/) version 0.30.1
+  * Install [crystal-lang](https://crystal-lang.org/install/) version 0.34.0
   * Install the project's crystal dependencies
   ```
   shards install

@@ -10,6 +10,8 @@ describe "SampleUtils" do
     # puts `echo $KUBECONFIG`
     `./cnf-conformance helm_local_install`
     $?.success?.should be_true
+    `./cnf-conformance cleanup`
+    $?.success?.should be_true
   end
 
    after_all do
@@ -18,11 +20,6 @@ describe "SampleUtils" do
      `./cnf-conformance sample_coredns_setup`
      $?.success?.should be_true
    end
-
-  before_each do
-    `./cnf-conformance cleanup`
-    $?.success?.should be_true
-  end
 
   after_each do
     `./cnf-conformance cleanup`
@@ -122,4 +119,18 @@ describe "SampleUtils" do
   it "'helm_repo_add' should return false if the helm repo is invalid", tags: "happy-path"  do
     helm_repo_add("invalid", "invalid").should eq(false)
   end
+end
+
+
+it "'validate_cnf_conformance_yml' should warn when cnf config file yml has fields that are not a part of the validation type", tags: ["unhappy-path", "validate_config"]  do
+  args = Sam::Args.new(["cnf-config=./spec/fixtures/cnf-conformance-unmapped-keys.yml"])
+
+  yml = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+  puts yml.inspect
+  ("#{yml.get("release_name").as_s?}").should eq("coredns")
+
+  valid, warning_output = validate_cnf_conformance_yml(yml)
+
+  (valid).should eq(true)
+  (warning_output.size).should be > 1
 end
