@@ -43,10 +43,10 @@ def loglevel
     elsif config["loglevel"].as_s? && config["loglevel"].as_s == "error"
       Logger::ERROR
     else
-      Logger::INFO
+      Logger::ERROR
     end
   else
-    Logger::INFO
+    Logger::ERROR
   end
 end
 
