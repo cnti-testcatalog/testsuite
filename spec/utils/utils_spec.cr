@@ -210,7 +210,7 @@ describe "Utils" do
       puts resp
       resp
     end
-    (task_response).should eq(["✔️  PASSED: No privileged containers", "✔️  PASSED: No privileged containers", "✔️  PASSED: No privileged containers"])
+    (task_response).should eq(["✔️  PASSED: No privileged containers".colorize(:green), "✔️  PASSED: No privileged containers".colorize(:green)])
     sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
     sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
   end
