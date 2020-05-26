@@ -10,6 +10,7 @@ require "logger"
 # TODO put these functions into a module
 
 CNF_DIR = "cnfs"
+CONFIG_FILE = "cnf-conformance.yml"
 TOOLS_DIR = "tools"
 BASE_CONFIG = "./config.yml"
 # LOGFILE = "cnf-conformance-results-#{Time.utc.to_s("%Y%m%d")}.log"
@@ -23,12 +24,32 @@ DEFAULT_POINTSFILENAME = "points_v1.yml"
 # LOGGING = Logger.new(STDOUT, Logger::ERROR)
 LOGGING = Logger.new(STDOUT, Logger::INFO)
 LOGGING.progname = "cnf-conformance"
+LOGGING.level=loglevel
 
 LOGGING.formatter = Logger::Formatter.new do |severity, datetime, progname, message, io|
 	label = severity.unknown? ? "ANY" : severity.to_s
 	io << label[0] << ", [" << datetime << " #" << Process.pid << "] "
 	io << label.rjust(5) << " -- " << progname << ": " << message
 end
+
+def loglevel
+  toggle_on = false
+  if File.exists?(BASE_CONFIG)
+    config = Totem.from_file BASE_CONFIG 
+    if config["loglevel"].as_s? && config["loglevel"].as_s == "info"
+      Logger::INFO
+    elsif config["loglevel"].as_s? && config["loglevel"].as_s == "debug"
+      Logger::DEBUG
+    elsif config["loglevel"].as_s? && config["loglevel"].as_s == "error"
+      Logger::ERROR
+    else
+      Logger::ERROR
+    end
+  else
+    Logger::ERROR
+  end
+end
+
 
 def check_args(args)
   check_verbose(args)
@@ -42,6 +63,71 @@ def check_verbose(args)
   end
 end
 
+def check_cnf_config(args)
+  puts "args = #{args.inspect}" if check_verbose(args)
+  LOGGING.info("check_cnf_config args: #{args.inspect}")
+  if args.named.keys.includes? "cnf-config"
+    yml_file = args.named["cnf-config"].as(String)
+    cnf = File.dirname(yml_file)
+    puts "all cnf: #{cnf}" if check_verbose(args)
+  else
+    cnf = nil
+	end
+  LOGGING.info("check_cnf_config cnf: #{cnf}")
+  cnf
+end
+
+def check_all_cnf_args(args)
+  puts "args = #{args.inspect}" if check_verbose(args)
+  cnf = check_cnf_config(args)
+  deploy_with_chart = true
+  if cnf 
+    puts "all cnf: #{cnf}" if check_verbose(args)
+    if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
+      deploy_with_chart = false
+    end
+	end
+  return cnf, deploy_with_chart
+end
+
+def check_cnf_config_then_deploy(args)
+  config_file, deploy_with_chart = check_all_cnf_args(args)
+  sample_setup_args(sample_dir: config_file, deploy_with_chart: deploy_with_chart, args: args, verbose: check_verbose(args) ) if config_file
+end
+
+def task_runner(args, &block : Sam::Args -> String | Colorize::Object(String) | Nil)
+  # LOGGING.info("single_or_all_cnfs_task_runner: #{args.inspect}")
+  if check_cnf_config(args)
+    single_task_runner(args, &block)
+  else
+    all_cnfs_task_runner(args, &block)
+  end
+end
+
+# TODO give example for calling
+def all_cnfs_task_runner(args, &block : Sam::Args -> String | Colorize::Object(String) | Nil)
+  # LOGGING.info("all_cnfs_task_runner cnf_config_list: #{cnf_config_list.inspect}")
+  cnf_config_list.map do |x|
+    # LOGGING.info("all_cnfs_task_runner config_list x: #{x}")
+    new_args = Sam::Args.new(args.named, args.raw)
+    new_args.named["cnf-config"] = x
+    # LOGGING.info("all_cnfs_task_runner new_args: #{new_args.inspect}")
+    single_task_runner(new_args, &block)
+  end
+end
+
+# TODO give example for calling
+def single_task_runner(args, &block)
+  # LOGGING.info("task_runner args: #{args.inspect}")
+  begin
+  yield args
+  rescue ex
+    puts ex.message
+    ex.backtrace.each do |x|
+      puts x
+    end
+  end
+end
 
 def toggle(toggle_name)
   toggle_on = false
@@ -194,8 +280,20 @@ def upsert_failed_task(task)
   upsert_task(task, FAILED, task_points(task, false))
 end
 
+def upsert_failed_task(task, message)
+  upsert_task(task, FAILED, task_points(task, false))
+  puts message.colorize(:red)
+  message
+end
+
 def upsert_passed_task(task)
   upsert_task(task, PASSED, task_points(task))
+end
+
+def upsert_passed_task(task, message)
+  upsert_task(task, PASSED, task_points(task))
+  puts message.colorize(:green)
+  message
 end
 
 def task_points(task, passed=true)

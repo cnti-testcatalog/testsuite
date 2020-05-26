@@ -13,11 +13,16 @@ end
 
 desc "Does the CNF have a reasonable startup time?"
 task "reasonable_startup_time" do |_, args|
-  begin
+  task_response = task_runner(args) do |args|
     puts "reasonable_startup_time" if check_verbose(args)
 
-    config = get_parsed_cnf_conformance_yml(args)
-    yml_file_path = cnf_conformance_yml_file_path(args)
+    # config = get_parsed_cnf_conformance_yml(args)
+    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    # yml_file_path = cnf_conformance_yml_file_path(args)
+    # needs to be the source directory
+    yml_file_path = ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
+    # yml_file_path = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
     puts "yaml_path: #{yml_file_path}" if check_verbose(args)
 
     helm_chart = "#{config.get("helm_chart").as_s?}"
@@ -35,12 +40,17 @@ task "reasonable_startup_time" do |_, args|
     is_kubectl_applied = ""
     is_kubectl_deployed = ""
     elapsed_time = Time.measure do
+      LOGGING.info("reasonable_startup_time helm_chart.empty?: #{helm_chart.empty?}")
       unless helm_chart.empty?
+        LOGGING.info("reasonable_startup_time #{helm} template #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_orig.yml")
         helm_template_orig = `#{helm} template #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_orig.yml`
+        LOGGING.info("reasonable_startup_time #{helm} template --namespace=startup-test #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_test.yml")
         helm_template_test = `#{helm} template --namespace=startup-test #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_test.yml`
         puts "helm_chart: #{helm_chart}" if check_verbose(args)
       else
+        LOGGING.info("reasonable_startup_time #{helm} template #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_orig.yml")
         helm_template_orig = `#{helm} template #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_orig.yml`
+        LOGGING.info("reasonable_startup_time #{helm} template --namespace=startup-test #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_test.yml")
         helm_template_test = `#{helm} template --namespace=startup-test #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_test.yml`
         puts "helm_directory: #{helm_directory}" if check_verbose(args)
       end
@@ -71,12 +81,14 @@ end
 
 desc "Does the CNF have a reasonable container image size?"
 task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
-  begin
-    config = cnf_conformance_yml
+  task_response = task_runner(args) do |args|
+    # config = cnf_conformance_yml
+    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     helm_directory = config.get("helm_directory").as_s
-    current_cnf_dir_short_name = cnf_conformance_dir
-    puts current_cnf_dir_short_name if check_verbose(args)
-    destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
+    # current_cnf_dir_short_name = cnf_conformance_dir
+    # puts current_cnf_dir_short_name if check_verbose(args)
+    # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
+    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     #TODO get the docker repository segment from the helm chart
     #TODO check all images
     # helm_chart_values = JSON.parse(`#{tools_helm} get values #{release_name} -a --output json`)
@@ -114,11 +126,6 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
     else
       upsert_failed_task("reasonable_image_size")
       puts "✖️  FAILURE: Image size too large".colorize(:red)
-    end
-  rescue ex
-    puts ex.message
-    ex.backtrace.each do |x|
-      puts x
     end
   end
 end

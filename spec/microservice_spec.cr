@@ -18,7 +18,7 @@ describe "Microservice" do
 
   it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time", "happy-path", "test"]  do
     begin
-      response_s = `./cnf-conformance reasonable_startup_time yml-file=sample-cnfs/sample_coredns/cnf-conformance.yml`
+      response_s = `./cnf-conformance reasonable_startup_time cnf-config=sample-cnfs/sample_coredns/cnf-conformance.yml`
       $?.success?.should be_true
       (/PASSED: CNF had a reasonable startup time/ =~ response_s).should_not be_nil
     ensure
@@ -29,7 +29,7 @@ describe "Microservice" do
 
   it "'reasonable_startup_time' should fail if the cnf doesn't has a reasonable startup time(helm_directory)", tags: "reasonable_startup_time" do
     begin
-      response_s = `./cnf-conformance reasonable_startup_time yml-file=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml`
+      response_s = `./cnf-conformance reasonable_startup_time cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml`
       $?.success?.should be_true
       (/FAILURE: CNF had a startup time of/ =~ response_s).should_not be_nil
     ensure

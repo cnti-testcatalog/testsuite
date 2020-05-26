@@ -12,14 +12,12 @@ end
 
 desc "Does a search for IP addresses or subnets come back as negative?"
 task "ip_addresses" do |_, args|
-  begin
+  task_runner(args) do |args|
+    LOGGING.info("ip_addresses args #{args.inspect}")
     cdir = FileUtils.pwd()
     response = String::Builder.new
     Dir.cd(CNF_DIR)
-    # TODO ignore *example*, *.md, *.txt
-    # TODO ignore 0.0.0.0
     Process.run("grep -rnw -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}'", shell: true) do |proc|
-      # Process.run("grep -rnw -E -o 'hithere'", shell: true) do |proc|
       while line = proc.output.gets
         response << line
         puts "#{line}" if check_args(args)
@@ -27,38 +25,39 @@ task "ip_addresses" do |_, args|
     end
     Dir.cd(cdir)
     if response.to_s.size > 0
-      upsert_failed_task("ip_addresses")
-      puts "✖️  FAILURE: IP addresses found".colorize(:red)
+      resp = upsert_failed_task("ip_addresses","✖️  FAILURE: IP addresses found")
+      # upsert_failed_task("ip_addresses")
+      # puts "✖️  FAILURE: IP addresses found".colorize(:red)
     else
-      upsert_passed_task("ip_addresses")
-      puts "✔️  PASSED: No IP addresses found".colorize(:green)
+      resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
+      # puts "✔️  PASSED: No IP addresses found".colorize(:green)
     end
-  rescue ex
-    puts ex.message
-    ex.backtrace.each do |x|
-      puts x
-    end
+    resp
   end
 end
 
 desc "Is there a liveness entry in the helm chart?"
 task "liveness", ["retrieve_manifest"] do |_, args|
-  begin
+  task_runner(args) do |args|
     # Parse the cnf-conformance.yml
-    config = cnf_conformance_yml
+    resp = ""
+    # config = cnf_conformance_yml
+    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     errors = 0
     begin
       helm_directory = config.get("helm_directory").as_s
     rescue ex
       errors = errors + 1
-      upsert_failed_task("liveness")
-      puts "✖️  FAILURE: helm directory not found".colorize(:red)
+      # upsert_failed_task("liveness")
+      # puts "✖️  FAILURE: helm directory not found".colorize(:red)
+      resp = upsert_failed_task("liveness","✖️  FAILURE: helm directory not found")
       puts ex.message if check_args(args)
     end
-    current_cnf_dir_short_name = cnf_conformance_dir
-    puts current_cnf_dir_short_name if check_verbose(args)
-    destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
-    puts destination_cnf_dir if check_verbose(args)
+    # current_cnf_dir_short_name = cnf_conformance_dir
+    # puts current_cnf_dir_short_name if check_verbose(args)
+    # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
+    # puts destination_cnf_dir if check_verbose(args)
+    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     puts "helm_directory: #{destination_cnf_dir}/#{helm_directory}/manifest.yml" if check_verbose(args)
     deployment = Totem.from_file "#{destination_cnf_dir}/#{helm_directory}/manifest.yml"
     puts deployment.inspect if check_verbose(args)
@@ -70,40 +69,42 @@ task "liveness", ["retrieve_manifest"] do |_, args|
       rescue ex
         puts ex.message if check_args(args)
         errors = errors + 1
-        upsert_failed_task("liveness")
-        puts "✖️  FAILURE: No livenessProbe found".colorize(:red)
+        # upsert_failed_task("liveness")
+        resp = upsert_failed_task("liveness","✖️  FAILURE: No livenessProbe found")
+        # puts "✖️  FAILURE: No livenessProbe found".colorize(:red)
       end
     end
     if errors == 0
-      upsert_passed_task("liveness")
-      puts "✔️  PASSED: Helm liveness probe found".colorize(:green)
+      # upsert_passed_task("liveness")
+      resp = upsert_passed_task("liveness","✔️  PASSED: Helm liveness probe found")
+      # puts "✔️  PASSED: Helm liveness probe found".colorize(:green)
     end
-  rescue ex
-    puts ex.message
-    ex.backtrace.each do |x|
-      puts x
-    end
+    resp
   end
 end
 
 desc "Is there a readiness entry in the helm chart?"
 task "readiness", ["retrieve_manifest"] do |_, args|
-  begin
+  task_runner(args) do |args|
     # Parse the cnf-conformance.yml
-    config = cnf_conformance_yml
+    resp = ""
+    # config = cnf_conformance_yml
+    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     errors = 0
     begin
       helm_directory = config.get("helm_directory").as_s
     rescue ex
       errors = errors + 1
-      upsert_failed_task("readiness")
-      puts "✖️  FAILURE: helm directory not found".colorize(:red)
+      # upsert_failed_task("readiness")
+      # puts "✖️  FAILURE: helm directory not found".colorize(:red)
+      resp = upsert_failed_task("readiness","✖️  FAILURE: helm directory not found")
       puts ex.message if check_args(args)
     end
-    current_cnf_dir_short_name = cnf_conformance_dir
-    puts current_cnf_dir_short_name if check_verbose(args)
-    destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
-    puts destination_cnf_dir if check_verbose(args)
+    # current_cnf_dir_short_name = cnf_conformance_dir
+    # puts current_cnf_dir_short_name if check_verbose(args)
+    # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
+    # puts destination_cnf_dir if check_verbose(args)
+    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     puts "helm_directory: #{destination_cnf_dir}/#{helm_directory}/manifest.yml" if check_verbose(args)
     deployment = Totem.from_file "#{destination_cnf_dir}/#{helm_directory}/manifest.yml"
     puts deployment.inspect if check_verbose(args)
@@ -115,58 +116,51 @@ task "readiness", ["retrieve_manifest"] do |_, args|
       rescue ex
         puts ex.message if check_args(args)
         errors = errors + 1
-        upsert_failed_task("readiness")
-        puts "✖️  FAILURE: No readinessProbe found".colorize(:red)
+        # upsert_failed_task("readiness")
+        # puts "✖️  FAILURE: No readinessProbe found".colorize(:red)
+        resp = upsert_failed_task("readiness","✖️  FAILURE: No readinessProbe found")
       end
     end
     if errors == 0
-      upsert_passed_task("readiness")
-      puts "✔️  PASSED: Helm readiness probe found".colorize(:green)
-    end
-  rescue ex
-    puts ex.message
-    ex.backtrace.each do |x|
-      puts x
+      # upsert_passed_task("readiness")
+      # puts "✔️  PASSED: Helm readiness probe found".colorize(:green)
+      resp = upsert_passed_task("readiness","✔️  PASSED: Helm readiness probe found")
     end
   end
 end
 
 desc "Retrieve the manifest for the CNF's helm chart"
 task "retrieve_manifest" do |_, args| 
-  begin
+  task_runner(args) do |args|
     puts "retrieve_manifest" if check_verbose(args)
-    config = cnf_conformance_yml
+    # config = cnf_conformance_yml
+    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     deployment_name = config.get("deployment_name").as_s
     service_name = config.get("service_name").as_s
     puts "Deployment_name: #{deployment_name}" if check_verbose(args)
     puts service_name if check_verbose(args)
     helm_directory = config.get("helm_directory").as_s
     puts helm_directory if check_verbose(args)
-    current_cnf_dir_short_name = cnf_conformance_dir
-    puts current_cnf_dir_short_name if check_verbose(args)
-    destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
-    puts destination_cnf_dir if check_verbose(args)
+    # current_cnf_dir_short_name = cnf_conformance_dir
+    # puts current_cnf_dir_short_name if check_verbose(args)
+    # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
+    # puts destination_cnf_dir if check_verbose(args)
+    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/#{helm_directory}/manifest.yml`
     puts deployment if check_verbose(args)
     unless service_name.empty?
       service = `kubectl get service #{service_name} -o yaml  > #{destination_cnf_dir}/service.yml`
     end
     puts service if check_verbose(args)
-
-
-  rescue ex
-    puts ex.message
-    ex.backtrace.each do |x|
-      puts x
-    end
   end
 end
 
 desc "Test if the CNF can perform a rolling update"
 task "rolling_update" do |_, args|
-  begin
+  task_runner(args) do |args|
     puts "rolling_update" if check_verbose(args)
-    config = cnf_conformance_yml
+    # config = cnf_conformance_yml
+    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
 
     version_tag = nil
 
@@ -208,7 +202,6 @@ task "rolling_update" do |_, args|
     rollout_status = $?.success?
     puts "#{rollout}" if check_verbose(args)
     puts "rollout? #{rollout_status}" if check_verbose(args)
-
     if update_applied && rollout_status
       upsert_passed_task("rolling_update")
       puts "✔️  PASSED: CNF #{deployment_name} Rolling Update Passed".colorize(:green)
@@ -216,60 +209,51 @@ task "rolling_update" do |_, args|
       upsert_failed_task("rolling_update")
       puts "✖️  FAILURE: CNF #{deployment_name} Rolling Update Failed".colorize(:red)
     end
-
-  rescue ex
-    puts ex.message
-    ex.backtrace.each do |x|
-      puts x
-    end
   end
 end
 
 desc "Does the CNF use NodePort"
 task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
-  begin
+  task_response = task_runner(args) do |args|
     puts "nodeport_not_used" if check_verbose(args)
-    config = cnf_conformance_yml
+    # config = cnf_conformance_yml
+    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     release_name = config.get("release_name").as_s
     service_name = config.get("service_name").as_s
-    current_cnf_dir_short_name = cnf_conformance_dir
-    puts current_cnf_dir_short_name if check_verbose(args)
-    destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
-
+    # current_cnf_dir_short_name = cnf_conformance_dir
+    # puts current_cnf_dir_short_name if check_verbose(args)
+    # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
+    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     if File.exists?("#{destination_cnf_dir}/service.yml")
       service = Totem.from_file "#{destination_cnf_dir}/service.yml"
       puts service.inspect if check_verbose(args)
       service_type = service.get("spec").as_h["type"].as_s
       puts service_type if check_verbose(args)
       if service_type == "NodePort" 
-        puts "✖️  FAILURE: NodePort is being used".colorize(:red)
         upsert_failed_task("nodeport_not_used")
+        puts "✖️  FAILURE: NodePort is being used".colorize(:red)
       else
-        puts "✔️  PASSED: NodePort is not used".colorize(:green)
         upsert_passed_task("nodeport_not_used").colorize(:green)
+        puts "✔️  PASSED: NodePort is not used".colorize(:green)
       end
-    end
-
-  rescue ex
-    puts ex.message
-    ex.backtrace.each do |x|
-      puts x
     end
   end
 end
 
 desc "Does the CNF have hardcoded IPs in the K8s resource configuration"
 task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
-  begin
+  task_response = task_runner(args) do |args|
     puts "Task Name: hardcoded_ip_addresses_in_k8s_runtime_configuration" if check_verbose(args)
-    config = cnf_conformance_yml
+    # config = cnf_conformance_yml
+    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_directory = config.get("helm_directory").as_s
     release_name = "#{config.get("release_name").as_s?}"
-    current_cnf_dir_short_name = cnf_conformance_dir
-    puts "Current_CNF_Dir: #{current_cnf_dir_short_name}" if check_verbose(args)
-    destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
+    # current_cnf_dir_short_name = cnf_conformance_dir
+    # puts "Current_CNF_Dir: #{current_cnf_dir_short_name}" if check_verbose(args)
+    # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
 
+    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     current_dir = FileUtils.pwd
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     puts "Helm Path: #{helm}" if check_verbose(args)
@@ -293,13 +277,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
       puts "✖️  FAILURE: Hard-coded IP addresses found in the runtime K8s configuration".colorize(:red)
       upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration")
     end
-
     delete_namespace = `kubectl delete namespace hardcoded-ip-test --force --grace-period 0 2>&1 >/dev/null`
 
-  rescue ex
-    puts ex.message
-    ex.backtrace.each do |x|
-      puts x
-    end
   end
 end

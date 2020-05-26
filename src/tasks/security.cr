@@ -13,13 +13,9 @@ task "privileged" do |_, args|
   #TODO Document all arguments
   #TODO check if container exists
   #TODO Check if args exist
-  begin
-    if toggle("multi-cnf")
-      # TODO if no args passed, run all all cnfs in the cnfs directory
-      config = cnf_conformance_yml(args.named["cnf"].as(String))
-    else
-      config = cnf_conformance_yml
-    end
+  task_runner(args) do |args|
+    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+
     helm_chart_container_name = config.get("helm_chart_container_name").as_s
     white_list_container_name = config.get("white_list_helm_chart_container_names").as_a
     puts "helm_chart_container_name #{helm_chart_container_name}" if check_verbose(args)
@@ -33,15 +29,10 @@ task "privileged" do |_, args|
     if privileged_list.find {|x| x == helm_chart_container_name} ||
         violation_list.size > 0
       upsert_failed_task("privileged")
-      puts "✖️  FAILURE: #{violation_list.size} Found privileged containers: #{violation_list.inspect}".colorize(:red)
+      puts "✖️  FAILURE: Found #{violation_list.size} privileged containers: #{violation_list.inspect}".colorize(:red)
     else
       upsert_passed_task("privileged")
       puts "✔️  PASSED: No privileged containers".colorize(:green)
-    end
-  rescue ex
-    puts ex.message
-    ex.backtrace.each do |x|
-      puts x
     end
   end
 end
