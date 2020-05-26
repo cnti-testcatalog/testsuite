@@ -16,11 +16,13 @@ def cnf_conformance_yml
 end
 
 def cnf_conformance_yml(sample_cnf_destination_dir)
-  short_sample_cnf_destination_dir = sample_cnf_destination_dir.split("/")[-1] 
+  LOGGING.info("sample_cnf_destination_dir #{sample_cnf_destination_dir}")
+  short_sample_cnf_destination_dir = sample_cnf_destination_dir.split("/").reject(&.empty?)[-1] 
+  LOGGING.info("short_sample_cnf_destination_dir #{short_sample_cnf_destination_dir}")
   cnf_conformance = `find #{CNF_DIR}/#{short_sample_cnf_destination_dir}/* -name "cnf-conformance.yml"`.split("\n")[0]
   puts "cnf_conformance: #{cnf_conformance}"
   if cnf_conformance.empty?
-    raise "No cnf_conformance.yml found in #{sample_cnf_destination_dir}! Did you run the setup task?"
+    raise "No cnf_conformance.yml found in #{CNF_DIR}/#{short_sample_cnf_destination_dir}/* ! Did you run the setup task?"
   end
   Totem.from_file "./#{cnf_conformance}"
 end
@@ -50,7 +52,7 @@ def cnf_conformance_yml_file_path(args)
     # cnf_conformance = File.expand_path(yml_file).split("/")[0..-2].reduce(""){|x,acc| x == "" ? "/" : x + acc + "/"}
     cnf_conformance = File.dirname(yml_file)
   else
-    cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("\n")[0]
+    cnf_conformance = `find cnfs/* -name "cnf-conformance.yml"`.split("/")[0..-2].reduce(""){|x, acc| x.empty? ? acc : "#{x}/#{acc}"}
     if cnf_conformance.empty?
       raise "No cnf_conformance.yml found! Did you run the setup task?"
     end
@@ -75,17 +77,24 @@ def cnf_conformance_dir
   cnf_conformance.split("/")[-2] 
 end
 
-def cnf_config_list
+def cnf_config_list(silent=false)
+  LOGGING.info("cnf_config_list")
+  LOGGING.info("find: find #{CNF_DIR}/* -name #{CONFIG_FILE}")
   cnf_conformance = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
-  if cnf_conformance.size == 0
+  LOGGING.info("find response: #{cnf_conformance}")
+  if cnf_conformance.size == 0 && !silent
     raise "No cnf_conformance.yml found! Did you run the setup task?"
   end
   cnf_conformance
 end
 
+def destination_cnfs_exist?
+  cnf_config_list(silent=true).size > 0
+end
+
 def cnf_conformance_dir(source_dir)
   yml_dir = cnf_destination_dir(source_dir) 
-  yml_dir.split("/")[-1] 
+  yml_dir.split("/").reject(&.empty?)[-1] 
 end
 
 def get_cnf_conformance_dir(args)
@@ -117,17 +126,17 @@ def sample_conformance_yml(sample_dir)
   Totem.from_file "./#{cnf_conformance}"
 end
 
-def wait_for_install(deployment_name, wait_count=180)
+def wait_for_install(deployment_name, wait_count=180, namespace="default")
   second_count = 0
-  current_replicas = `kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
-  all_deployments = `kubectl get deployments`
+  all_deployments = `kubectl get deployments --namespace=#{namespace}`
+  current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
   puts all_deployments
-  until (current_replicas.empty? != true && current_replicas.to_i > 0) || second_count > wait_count
+  until (current_replicas.empty? != true && current_replicas.to_i > 0) || second_count > wait_count.to_i
     puts "second_count = #{second_count}"
-    all_deployments = `kubectl get deployments`
-    puts all_deployments
     sleep 1
-    current_replicas = `kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
+    all_deployments = `kubectl get deployments --namespace=#{namespace}`
+    current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
+    puts all_deployments
     second_count = second_count + 1 
   end
 end 

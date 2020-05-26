@@ -24,12 +24,32 @@ DEFAULT_POINTSFILENAME = "points_v1.yml"
 # LOGGING = Logger.new(STDOUT, Logger::ERROR)
 LOGGING = Logger.new(STDOUT, Logger::INFO)
 LOGGING.progname = "cnf-conformance"
+LOGGING.level=loglevel
 
 LOGGING.formatter = Logger::Formatter.new do |severity, datetime, progname, message, io|
 	label = severity.unknown? ? "ANY" : severity.to_s
 	io << label[0] << ", [" << datetime << " #" << Process.pid << "] "
 	io << label.rjust(5) << " -- " << progname << ": " << message
 end
+
+def loglevel
+  toggle_on = false
+  if File.exists?(BASE_CONFIG)
+    config = Totem.from_file BASE_CONFIG 
+    if config["loglevel"].as_s? && config["loglevel"].as_s == "info"
+      Logger::INFO
+    elsif config["loglevel"].as_s? && config["loglevel"].as_s == "debug"
+      Logger::DEBUG
+    elsif config["loglevel"].as_s? && config["loglevel"].as_s == "error"
+      Logger::ERROR
+    else
+      Logger::INFO
+    end
+  else
+    Logger::INFO
+  end
+end
+
 
 def check_args(args)
   check_verbose(args)
@@ -45,6 +65,7 @@ end
 
 def check_cnf_config(args)
   puts "args = #{args.inspect}" if check_verbose(args)
+  LOGGING.info("check_cnf_config args: #{args.inspect}")
   if args.named.keys.includes? "cnf-config"
     yml_file = args.named["cnf-config"].as(String)
     cnf = File.dirname(yml_file)
@@ -52,6 +73,7 @@ def check_cnf_config(args)
   else
     cnf = nil
 	end
+  LOGGING.info("check_cnf_config cnf: #{cnf}")
   cnf
 end
 
@@ -74,6 +96,7 @@ def check_cnf_config_then_deploy(args)
 end
 
 def single_or_all_cnfs_task_runner(args, &block : Sam::Args -> String | Colorize::Object(String) | Nil)
+  # LOGGING.info("single_or_all_cnfs_task_runner: #{args.inspect}")
   if check_cnf_config(args)
     task_runner(args, &block)
   else
@@ -83,19 +106,19 @@ end
 
 # TODO give example for calling
 def all_cnfs_task_runner(args, &block : Sam::Args -> String | Colorize::Object(String) | Nil)
-  LOGGING.info("cnf_config_list: #{cnf_config_list.inspect}")
+  # LOGGING.info("all_cnfs_task_runner cnf_config_list: #{cnf_config_list.inspect}")
   cnf_config_list.map do |x|
-    LOGGING.info("all_cnfs_task_runner config_list x: #{x}")
+    # LOGGING.info("all_cnfs_task_runner config_list x: #{x}")
     new_args = Sam::Args.new(args.named, args.raw)
     new_args.named["cnf-config"] = x
-    LOGGING.info("all_cnfs_task_runner new_args: #{new_args.inspect}")
+    # LOGGING.info("all_cnfs_task_runner new_args: #{new_args.inspect}")
     task_runner(new_args, &block)
   end
 end
 
 # TODO give example for calling
 def task_runner(args, &block)
-  LOGGING.info("task_runner args: #{args.inspect}")
+  # LOGGING.info("task_runner args: #{args.inspect}")
   begin
   yield args
   rescue ex

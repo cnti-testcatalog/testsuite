@@ -9,7 +9,6 @@ describe CnfConformance do
     `./cnf-conformance samples_cleanup`
     $?.success?.should be_true
     # `./cnf-conformance configuration_file_setup`
-    puts "before all"
     puts `./cnf-conformance setup`
     # $?.success?.should be_true
   end
@@ -29,57 +28,33 @@ describe CnfConformance do
   end
 
 	it "'helm_deploy' should fail on a bad helm chart", tags: "helm" do
-    `./cnf-conformance cleanup force=true`
-    $?.success?.should be_true
-    response_s = `./cnf-conformance helm_deploy yml-file=sample-cnfs/sample-bad-helm-deploy-repo/cnf-conformance.yml verbose`
+    response_s = `./cnf-conformance helm_deploy cnf-config=sample-cnfs/sample-bad-helm-deploy-repo/cnf-conformance.yml verbose`
     $?.success?.should be_true
     puts response_s
     (/FAILURE: Helm deploy failed/ =~ response_s).should_not be_nil
-    `./cnf-conformance cleanup force=true`
   end
 
-  it "'helm_deploy' should fail if command is not supplied yml-file argument", tags: "helm" do
-    `./cnf-conformance cleanup force=true`
-    $?.success?.should be_true
+  it "'helm_deploy' should fail if command is not supplied cnf-config argument", tags: "helm" do
     response_s = `./cnf-conformance helm_deploy`
+    puts response_s
     $?.success?.should be_true
     (/No cnf_conformance.yml found! Did you run the setup task/ =~ response_s).should_not be_nil
-    `./cnf-conformance cleanup force=true`
   end
 
-  it "'helm_deploy' should pass if command is supplied yml-file argument with helm_chart declared", tags: ["helm", "happy-path"]  do
-    `./cnf-conformance cleanup`
-    $?.success?.should be_true
-    response_s = `./cnf-conformance helm_deploy yml-file=sample-cnfs/sample_coredns/cnf-conformance.yml verbose`
+  it "'helm_deploy' should pass if command is supplied cnf-config argument with helm_chart declared", tags: ["helm", "happy-path"]  do
+    response_s = `./cnf-conformance helm_deploy cnf-config=sample-cnfs/sample_coredns/cnf-conformance.yml verbose`
     $?.success?.should be_true
     puts response_s
     (/PASSED: Helm deploy successful/ =~ response_s).should_not be_nil
-    `./cnf-conformance cleanup`
   end
 
-  it "'helm_deploy' should pass if command is supplied yml-file argument without helm_chart declared", tags: ["helm", "happy-path"]  do
-    `./cnf-conformance cleanup force=true`
-    $?.success?.should be_true
-    response_s = `./cnf-conformance helm_deploy yml-file=sample-cnfs/sample_coredns_chart_directory/cnf-conformance.yml verbose`
+  it "'helm_deploy' should pass if command is supplied cnf-config argument without helm_chart declared", tags: ["helm", "happy-path"]  do
+    response_s = `./cnf-conformance helm_deploy cnf-config=sample-cnfs/sample_coredns_chart_directory/cnf-conformance.yml verbose`
     $?.success?.should be_true
     puts response_s
     (/PASSED: Helm deploy successful/ =~ response_s).should_not be_nil
-    `./cnf-conformance cleanup force=true`
   end
 
-  it "'helm_deploy' should fail if install script does not have helm" do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
-    # `./cnf-conformance cleanup`
-    # $?.success?.should be_true
-    `./cnf-conformance sample_coredns_source_setup`
-    $?.success?.should be_true
-    response_s = `./cnf-conformance install_script_helm`
-    #puts response_s
-    $?.success?.should be_true
-    (/FAILURE: Helm not found in supplied install script/ =~ response_s).should_not be_nil
-    `./cnf-conformance sample_coredns_source_cleanup force=true`
-  end
 
   it "'helm_chart_valid' should pass on a good helm chart", tags: "happy-path"  do
     # puts `pwd` 
