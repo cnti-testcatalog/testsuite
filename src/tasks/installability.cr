@@ -178,3 +178,13 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
   end
 end
 
+task "validate_config" do |_, args|
+  yml = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+  valid, warning_output = validate_cnf_conformance_yml(yml)
+
+  if valid
+    puts "✔️ PASSED: CNF configuration validated 📋"
+  else
+    puts "❌ FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file 📋"
+  end
+end
