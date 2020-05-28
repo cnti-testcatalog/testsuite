@@ -152,7 +152,7 @@ task "retrieve_manifest" do |_, args|
     # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
     # puts destination_cnf_dir if check_verbose(args)
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/#{helm_directory}/manifest.yml`
+    deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/manifest.yml`
     puts deployment if check_verbose(args)
     unless service_name.empty?
       service = `kubectl get service #{service_name} -o yaml  > #{destination_cnf_dir}/service.yml`
