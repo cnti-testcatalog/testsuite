@@ -98,3 +98,6 @@
 
 - name: k8s_conformance
   tags: platform, dynamic
+
+- name: container_kill
+  tags: resilience, dynamic
