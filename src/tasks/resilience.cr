@@ -88,7 +88,7 @@ spec:
               value: '{{ helm_chart_container_name }}' 
 
             - name: LIB_IMAGE
-              value: 'gprasath/crictl:ci'
+              value: 'gaiaadm/pumba:0.6.5'
 
             #Network interface inside target container
             - name: NETWORK_INTERFACE
