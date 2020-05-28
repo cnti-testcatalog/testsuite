@@ -6,7 +6,7 @@ require "../../../src/tasks/utils/system_information/wget.cr"
 require "file_utils"
 require "sam"
 
-describe "Helm" do
+describe "Wget" do
 
   it "'wget_global_response()' should return the information about the wget installation", tags: "happy-path"  do
     (wget_global_response(true)).should contain("GNU Wget")

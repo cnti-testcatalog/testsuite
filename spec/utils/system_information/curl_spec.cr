@@ -6,7 +6,7 @@ require "../../../src/tasks/utils/system_information/curl.cr"
 require "file_utils"
 require "sam"
 
-describe "Helm" do
+describe "Curl" do
 
   it "'curl_global_response()' should return the information about the curl installation", tags: "happy-path"  do
     (curl_global_response(true)).should contain("curl")

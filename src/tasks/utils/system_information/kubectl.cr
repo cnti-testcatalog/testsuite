@@ -81,7 +81,7 @@ end
 def kubectl_version(kubectl_response, verbose=false)
   # example
   # Client Version: version.Info{Major:"1", Minor:"15", GitVersion:"v1.15.3", GitCommit:"2d3c76f9091b6bec110a5e63777c332469e0cba2", GitTreeState:"clean", BuildDate:"2019-08-19T11:13:54Z", GoVersion:"go1.12.9", Compiler:"gc", Platform:"linux/amd64"} 
-  resp = kubectl_response.match /Client Version: version.Info{(Major:"(([0-9]{1,3})"\, )Minor:"([0-9]{1,3})")/
+  resp = kubectl_response.match /Client Version: version.Info{(Major:"(([0-9]{1,3})"\, )Minor:"([0-9]{1,3}[+]?)")/
   puts resp if verbose
   if resp
     "#{resp && resp.not_nil![3]}.#{resp && resp.not_nil![4]}"
