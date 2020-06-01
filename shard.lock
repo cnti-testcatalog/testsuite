@@ -6,7 +6,7 @@ shards:
 
   halite:
     github: icyleaf/halite
-    version: 0.10.5
+    version: 0.10.4
 
   icr:
     github: crystal-community/icr

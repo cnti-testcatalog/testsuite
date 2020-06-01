@@ -35,6 +35,8 @@ describe "Microservice" do
     ensure
       `kubectl delete -f sample-cnfs/sample_envoy_slow_startup/reasonable_startup_orig.yml`
       $?.success?.should be_true
+      `./cnf-conformance cnf_cleanup cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml force=true`
+      $?.success?.should be_true
     end
   end
 
