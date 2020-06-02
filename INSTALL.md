@@ -73,7 +73,7 @@ white_list_helm_chart_container_names:
 ### (optional) Build binary
 
 ```
-crystal build src/cnf-conformance.cr --release
+crystal build src/cnf-conformance.cr --release --static
 ```
 
 then you can invoke the conformance suite from the binary i.e.
