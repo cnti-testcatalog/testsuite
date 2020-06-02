@@ -6,7 +6,7 @@ require "../../../src/tasks/utils/system_information/kubectl.cr"
 require "file_utils"
 require "sam"
 
-describe "Helm" do
+describe "Kubectl" do
 
   it "'kubectl_global_response()' should return the information about the kubectl installation", tags: "happy-path"  do
     (kubectl_global_response(true)).should contain("Client Version")
@@ -17,7 +17,7 @@ describe "Helm" do
   end
 
   it "'kubectl_version()' should return the information about the kubectl version", tags: "happy-path"  do
-    (kubectl_version(kubectl_global_response)).should match(/(([0-9]{1,3}[\.]){1,2}[0-9]{1,3})/)
+    (kubectl_version(kubectl_global_response)).should match(/(([0-9]{1,3}[\.]){1,2}[0-9]{1,3}[+]?)/)
     (kubectl_version(kubectl_local_response)).should contain("")
   end
 
