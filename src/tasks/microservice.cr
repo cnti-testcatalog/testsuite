@@ -9,6 +9,12 @@ require "totem"
 
 desc "The CNF conformance suite checks to see if CNFs follows microservice principles"
 task "microservice", ["reasonable_image_size", "reasonable_startup_time"] do |_, args|
+  total = total_points("microservice")
+  if total > 0
+    puts "Microservice final score: #{total} of #{total_max_points("microservice")}".colorize(:green)
+  else
+    puts "Microservice final score: #{total} of #{total_max_points("microservice")}".colorize(:red)
+  end
 end
 
 desc "Does the CNF have a reasonable startup time?"

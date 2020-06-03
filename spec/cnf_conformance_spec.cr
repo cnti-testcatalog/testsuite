@@ -46,6 +46,7 @@ describe CnfConformance do
   it "'scalability' should run all of the scalability tests", tags: "happy-path"  do
     # puts `pwd` 
     # puts `echo $KUBECONFIG`
+    `./cnf-conformance samples_cleanup`
     response_s = `./cnf-conformance setup`
     puts response_s
     `./cnf-conformance sample_coredns_with_wait_setup`
