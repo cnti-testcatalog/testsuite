@@ -90,10 +90,6 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
   task_response = task_runner(args) do |args|
     # config = cnf_conformance_yml
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    helm_directory = config.get("helm_directory").as_s
-    # current_cnf_dir_short_name = cnf_conformance_dir
-    # puts current_cnf_dir_short_name if check_verbose(args)
-    # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     #TODO get the docker repository segment from the helm chart
     #TODO check all images
@@ -101,7 +97,7 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
     # image_name = helm_chart_values["image"]["repository"]
     docker_repository = config.get("docker_repository").as_s?
     puts "docker_repository: #{docker_repository}"if check_verbose(args)
-    deployment = Totem.from_file "#{destination_cnf_dir}/#{helm_directory}/manifest.yml"
+    deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
     puts deployment.inspect if check_verbose(args)
     containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
     image_tag = [] of Array(Hash(Int32, String))
