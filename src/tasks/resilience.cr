@@ -2,7 +2,7 @@
 require "sam"
 require "colorize"
 require "crinja"
-# require "./utils/utils.cr"
+require "./utils/utils.cr"
 
 desc "The CNF conformance suite checks to see if the CNFs are resilient to failures."
 task "resilience", ["chaos_network_loss"] do |t, args|
@@ -14,15 +14,16 @@ desc "Install Chaos Mesh"
 task "install_chaosmesh" do |_, args|
   current_dir = FileUtils.pwd 
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-  rbac_install = `kubectl create -f https://raw.githubusercontent.com/pingcap/chaos-mesh/master/manifests/crd.yaml`
-  puts "#{rbac_install}" if check_verbose(args)
+  crd_install = `kubectl create -f https://raw.githubusercontent.com/pingcap/chaos-mesh/master/manifests/crd.yaml`
+  puts "#{crd_install}" if check_verbose(args)
   unless Dir.exists?("#{current_dir}/#{TOOLS_DIR}/chaos_mesh")
     fetch_chaos_mesh = `git clone https://github.com/pingcap/chaos-mesh.git #{current_dir}/#{TOOLS_DIR}/chaos_mesh`
   end
   install_chaos_mesh = `#{helm} install chaos-mesh #{current_dir}/#{TOOLS_DIR}/chaos_mesh/helm/chaos-mesh --set chaosDaemon.runtime=containerd --set chaosDaemon.socketPath=/run/containerd/containerd.sock`
+  wait_for_resource("#{current_dir}/spec/fixtures/chaos_network_loss.yml")
 end
 
-desc "Does the CNF come back up when network loss occurs"
+desc "Does the CNF crash when network loss occurs"
 task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
   task_response = task_runner(args) do |args|
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
@@ -50,7 +51,6 @@ task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, arg
       # TODO fail if exceeds
       if wait_for_test("network-loss")
         LOGGING.info( "Wait Done")
-        # deployment_status = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
         if desired_is_available?(deployment_name)
           resp = upsert_passed_task("chaos_network_loss","✔️  PASSED: Replicas returned to desired count after network chaos test")
         else
@@ -61,9 +61,11 @@ task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, arg
         # e.g. upsert_exception_task
         resp = upsert_failed_task("chaos_network_loss","✖️  FAILURE: Chaosmesh failed to finish.")
       end
+      delete_chaos = `kubectl delete -f "#{destination_cnf_dir}/chaos_network_loss.yml"`
     else
       resp = upsert_failed_task("chaos_network_loss","✖️  FAILURE: No deployment label found for network chaos test")
     end
+    delete_chaos_mesh
   end
 end
 
@@ -99,6 +101,23 @@ def desired_is_available?(deployment_name)
   desired_replicas == ready_replicas
 end
 
+def wait_for_resource(resource_file)
+  second_count = 0
+  wait_count = 60
+  is_resource_created = nil
+  until (is_resource_created.nil? != true && is_resource_created == true) || second_count > wait_count.to_i
+    puts "second_count = #{second_count}"
+    sleep 3
+    `kubectl create -f #{resource_file} 2>&1 >/dev/null`
+    is_resource_created = $?.success?
+    puts "Waiting for CRD"
+    puts "Status: #{is_resource_created}"
+    puts "#{resource_file}"
+    second_count = second_count + 1
+  end
+  `kubectl delete -f #{resource_file}`
+end
+
 def chaos_template
   <<-TEMPLATE
   apiVersion: pingcap.com/v1alpha1
@@ -119,4 +138,12 @@ def chaos_template
     scheduler:
       cron: '@every 600s'
   TEMPLATE
+end
+
+def delete_chaos_mesh
+  current_dir = FileUtils.pwd 
+  helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+  crd_delete = `kubectl delete -f https://raw.githubusercontent.com/pingcap/chaos-mesh/master/manifests/crd.yaml`
+  FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/chaos_mesh")
+  delete_chaos_mesh = `#{helm} delete chaos-mesh`
 end
