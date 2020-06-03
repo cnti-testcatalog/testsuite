@@ -7,9 +7,9 @@ task "all", ["all_prereqs", "configuration_file_setup", "compatibility","statele
 
   total = total_points
   if total > 0
-    puts "Final score: #{total}".colorize(:green)
+    puts "Final score: #{total} of #{total_max_points}".colorize(:green)
   else
-    puts "Final score: #{total}".colorize(:red)
+    puts "Final score: #{total} of #{total_max_points}".colorize(:red)
   end
 
   if failed_required_tasks.size > 0

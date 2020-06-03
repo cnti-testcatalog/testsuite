@@ -10,6 +10,12 @@ task "scalability", ["increase_decrease_capacity"] do |t, args|
   puts "scaling args.raw: #{args.raw}" if check_verbose(args)
   puts "scaling args.named: #{args.named}" if check_verbose(args)
   # t.invoke("increase_decrease_capacity", args)
+  total = total_points("scalability")
+  if total > 0
+    puts "Scalability final score: #{total} of #{total_max_points("scalability")}".colorize(:green)
+  else
+    puts "Scalability final score: #{total} of #{total_max_points("scalability")}".colorize(:red)
+  end
 end
 
 desc "Test increasing/decreasing capacity"
