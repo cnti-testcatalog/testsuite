@@ -7,6 +7,12 @@ require "./utils/utils.cr"
 
 desc "The CNF conformance suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
 task "installability", ["install_script_helm", "helm_chart_valid", "helm_chart_published", "helm_deploy"] do |_, args|
+  total = total_points("installability")
+  if total > 0
+    puts "Installability: #{total} of #{total_max_points("installability")}".colorize(:green)
+  else
+    puts "Installability final score: #{total} of #{total_max_points("installability")}".colorize(:red)
+  end
 end
 
 desc "Will the CNF install using helm with helm_deploy?"
