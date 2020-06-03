@@ -10,7 +10,7 @@ targets:
   cnf_conformance:
     main: src/cnf_conformance.cr
 
-crystal: 0.31.1
+crystal: 0.33.0
 
 dependencies:
   sam:
