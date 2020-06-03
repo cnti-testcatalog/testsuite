@@ -337,12 +337,31 @@ def failed_required_tasks
   end
 end
 
-def total_points
+# def total_points
+#   yaml = File.open("#{LOGFILE}") do |file|
+#     YAML.parse(file)
+#   end
+#   yaml["items"].as_a.reduce(0) do |acc, i|
+#     if i["points"].as_i?
+#       (acc + i["points"].as_i)
+#     else
+#       acc
+#     end
+#   end
+# end
+
+def total_points(tag=nil)
+  if tag
+    tasks = tasks_by_tag(tag)
+  else
+    tasks = all_task_test_names
+  end
   yaml = File.open("#{LOGFILE}") do |file|
     YAML.parse(file)
   end
   yaml["items"].as_a.reduce(0) do |acc, i|
-    if i["points"].as_i?
+    if i["points"].as_i? && i["name"].as_s? &&
+        tasks.find{|x| x == i["name"]}
       (acc + i["points"].as_i)
     else
       acc
@@ -350,21 +369,20 @@ def total_points
   end
 end
 
-def total_max_points
-  yaml = File.open("#{POINTSFILE}") do |file|
-    YAML.parse(file)
+def total_max_points(tag=nil)
+  if tag
+    tasks = tasks_by_tag(tag)
+  else
+    tasks = all_task_test_names
   end
-   yaml.as_a.reduce(0) do |acc , i |  
-     if i["name"].as_s == "default_scoring" 
-       acc 
-     else
-       if i["pass"]? 
-           acc + i["pass"].as_i 
-       else
-         acc + 5 
-       end
-     end
-   end
+  tasks.reduce(0) do |acc, x|
+    points = task_points(x)
+    if points
+      acc + points
+    else
+      acc
+    end
+  end
 end
 
 def all_task_test_names
