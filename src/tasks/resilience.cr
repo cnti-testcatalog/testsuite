@@ -5,7 +5,7 @@ require "crinja"
 # require "./utils/utils.cr"
 
 desc "The CNF conformance suite checks to see if the CNFs are resilient to failures."
-task "resilience", ["container_kill"] do |t, args|
+task "resilience", ["restarts_on_kill"] do |t, args|
   puts "resilience args.raw: #{args.raw}" if check_verbose(args)
   puts "resilience args.named: #{args.named}" if check_verbose(args)
 end
@@ -19,8 +19,8 @@ task "install_litmus" do |_, args|
 end
 
 desc "Does the CNF come back up when the container is killed"
-# task "chaos_container_kill", ["install_litmus", "retrieve_manifest"] do |_, args|
-task "chaos_container_kill", ["retrieve_manifest"] do |_, args|
+# task "restarts_on_kill", ["install_litmus", "retrieve_manifest"] do |_, args|
+task "restarts_on_kill", ["retrieve_manifest"] do |_, args|
   task_response = task_runner(args) do |args|
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
@@ -46,7 +46,7 @@ task "chaos_container_kill", ["retrieve_manifest"] do |_, args|
       puts ex.message 
     end
     if errors < 1
-      template = Crinja.render(chaos_template__container_kill, { 
+      template = Crinja.render(chaos_template__restarts_on_kill, { 
         "test_name" => "conformance-container-kill" , "helm_chart_container_name" => "#{helm_chart_container_name}", "deployment_label" => "#{deployment_label}" , "deployment_label_value" => "#{deployment_label_value}" 
       })
       chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/container-kill-chaosengine.yml"`
@@ -54,7 +54,7 @@ task "chaos_container_kill", ["retrieve_manifest"] do |_, args|
       run_chaos = `kubectl create -f "#{destination_cnf_dir}/container-kill-chaosengine.yml"`
       puts "#{run_chaos}" if check_verbose(args)
     else
-      resp = upsert_failed_task("container_kill","✖️  FAILURE: No deployment label found for container kill test")
+      resp = upsert_failed_task("restarts_on_kill","✖️  FAILURE: No deployment label found for container kill test")
     end
     
     describe_chaos_result = "kubectl describe chaosresults.litmuschaos.io"
@@ -71,16 +71,16 @@ task "chaos_container_kill", ["retrieve_manifest"] do |_, args|
     puts `#{describe_chaos_result}` if check_verbose(args)  
 
     if verdict == "Pass"
-      resp = upsert_passed_task("container_kill","✔️  PASSED: container-kill chaos test passed 🗡️💀♻️")
+      resp = upsert_passed_task("restarts_on_kill","✔️  PASSED: container-kill chaos test passed 🗡️💀♻️")
     else
-      resp = upsert_failed_task("container_kill","✖️  FAILURE: container-kill chaos test failed 🗡️💀♻️")
+      resp = upsert_failed_task("restarts_on_kill","✖️  FAILURE: container-kill chaos test failed 🗡️💀♻️")
     end
 
     resp
   end
 end
 
-def chaos_template__container_kill
+def chaos_template__restarts_on_kill
 <<-TEMPLATE
 apiVersion: litmuschaos.io/v1alpha1
 kind: ChaosEngine

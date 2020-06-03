@@ -99,5 +99,5 @@
 - name: k8s_conformance
   tags: platform, dynamic
 
-- name: container_kill
+- name: restarts_on_kill
   tags: resilience, dynamic
