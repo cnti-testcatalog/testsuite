@@ -350,6 +350,23 @@ def total_points
   end
 end
 
+def total_max_points
+  yaml = File.open("#{POINTSFILE}") do |file|
+    YAML.parse(file)
+  end
+   yaml.as_a.reduce(0) do |acc , i |  
+     if i["name"].as_s == "default_scoring" 
+       acc 
+     else
+       if i["pass"]? 
+           acc + i["pass"].as_i 
+       else
+         acc + 5 
+       end
+     end
+   end
+end
+
 def all_task_test_names
   result_items = points_yml.reduce([] of String) do |acc, x|
     if x["name"].as_s == "default_scoring"
@@ -396,7 +413,7 @@ def results_by_tag(tag)
       acc
     end
   end
-
 end
+
 
 
