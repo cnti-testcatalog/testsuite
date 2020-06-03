@@ -43,8 +43,6 @@
   tags: scalability, dynamic
 - name: large_autoscaling 
   tags: scalability, dynamic
-- name: network_chaos 
-  tags: scalability, dynamic
 - name: external_retry 
   tags: scalability, dynamic
 
