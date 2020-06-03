@@ -85,6 +85,9 @@
 - name: helm_chart_published
   tags: installability, dynamic
 
+- name: chaos_network_loss 
+  tags: resilience, dynamic
+
 - name: hardware_affinity
   tags: hardware, dynamic
 - name: static_accessing_hardware 

@@ -8,6 +8,12 @@ desc "The CNF conformance suite checks to see if the CNFs are resilient to failu
 task "resilience", ["chaos_network_loss"] do |t, args|
   puts "resilience args.raw: #{args.raw}" if check_verbose(args)
   puts "resilience args.named: #{args.named}" if check_verbose(args)
+  total = total_points("resilience")
+  if total > 0
+    puts "Resilience final score: #{total} of #{total_max_points("resilience")}".colorize(:green)
+  else
+    puts "Resilience final score: #{total} of #{total_max_points("resilience")}".colorize(:red)
+  end
 end
 
 desc "Install Chaos Mesh"
