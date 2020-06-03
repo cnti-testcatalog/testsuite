@@ -9,7 +9,7 @@ desc "The CNF conformance suite checks to see if CNFs support horizontal scaling
 task "installability", ["install_script_helm", "helm_chart_valid", "helm_chart_published", "helm_deploy"] do |_, args|
   total = total_points("installability")
   if total > 0
-    puts "Installability: #{total} of #{total_max_points("installability")}".colorize(:green)
+    puts "Installability final score: #{total} of #{total_max_points("installability")}".colorize(:green)
   else
     puts "Installability final score: #{total} of #{total_max_points("installability")}".colorize(:red)
   end

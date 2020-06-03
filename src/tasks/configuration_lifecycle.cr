@@ -10,7 +10,7 @@ desc "Configuration and lifecycle should be managed in a declarative manner, usi
 task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "rolling_update", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration"]  do |_, args|
   total = total_points("configuration_lifecycle")
   if total > 0
-    puts "Configuration lifecycle: #{total} of #{total_max_points("configuration_lifecycle")}".colorize(:green)
+    puts "Configuration lifecycle final score: #{total} of #{total_max_points("configuration_lifecycle")}".colorize(:green)
   else
     puts "Configuration lifecycle final score: #{total} of #{total_max_points("configuration_lifecycle")}".colorize(:red)
   end
