@@ -9,27 +9,27 @@
 - name: reasonable_startup_time 
   tags: microservice, dynamic
 
-- name: cni_spec 
-  tags: compatibility, dynamic
-- name: api_snoop_alpha 
-  tags: compatibility, dynamic
-- name: api_snoop_beta 
-  tags: compatibility, dynamic
-- name: api_snoop_general_apis 
-  tags: compatibility, dynamic
+#- name: cni_spec 
+#  tags: compatibility, dynamic
+#- name: api_snoop_alpha 
+#  tags: compatibility, dynamic
+#- name: api_snoop_beta 
+#  tags: compatibility, dynamic
+#- name: api_snoop_general_apis 
+#  tags: compatibility, dynamic
 
-- name: reset_cnf 
-  tags: statelessness, dynamic, configuration_lifecycle
-- name: check_reaped 
-  tags: statelessness, dynamic, configuration_lifecycle
+#- name: reset_cnf 
+#  tags: statelessness, dynamic, configuration_lifecycle
+#- name: check_reaped 
+#  tags: statelessness, dynamic, configuration_lifecycle
 
 - name: privileged 
   tags: security, dynamic
   required: true
-- name: shells 
-  tags: security, dynamic
-- name: protected_access 
-  tags: security, dynamic
+#- name: shells 
+#  tags: security, dynamic
+#- name: protected_access 
+#  tags: security, dynamic
 
 - name: increase_capacity 
   tags: scalability, dynamic
@@ -39,25 +39,27 @@
   tags: scalability, dynamic
   pass: 10
   fail: -5 
-- name: small_autoscaling 
-  tags: scalability, dynamic
-- name: large_autoscaling 
-  tags: scalability, dynamic
-- name: network_chaos 
-  tags: scalability, dynamic
-- name: external_retry 
-  tags: scalability, dynamic
+#- name: small_autoscaling 
+#  tags: scalability, dynamic
+#- name: large_autoscaling 
+#  tags: scalability, dynamic
+#- name: network_chaos 
+#  tags: scalability, dynamic
+#- name: external_retry 
+#  tags: scalability, dynamic
 
-- name: versioned_helm_chart
-  tags: configuration_lifecycle, dynamic
+#- name: versioned_helm_chart
+#  tags: configuration_lifecycle, dynamic
 - name: ip_addresses
+  pass: 0
+  fail: -1 
   tags: configuration_lifecycle, static
 - name: liveness
   tags: configuration_lifecycle, dynamic
 - name: readiness
   tags: configuration_lifecycle, dynamic
-- name: no_volume_with_configuration
-  tags: configuration_lifecycle, dynamic
+#- name: no_volume_with_configuration
+#  tags: configuration_lifecycle, dynamic
 - name: rolling_update
   tags: configuration_lifecycle, dynamic
 - name: nodeport_not_used
@@ -65,16 +67,16 @@
 - name: hardcoded_ip_addresses_in_k8s_runtime_configuration
   tags: configuration_lifecycle, dynamic
 
-- name: fluentd_traffic
-  tags: observability, dynamic
-- name: jaeger_traffic
-  tags: observability, dynamic
-- name: prometheus_traffic
-  tags: observability, dynamic
-- name: opentelemetry_compatible
-  tags: observability, dynamic
-- name: openmetric_compatible
-  tags: observability, dynamic
+#- name: fluentd_traffic
+#  tags: observability, dynamic
+#- name: jaeger_traffic
+#  tags: observability, dynamic
+#- name: prometheus_traffic
+#  tags: observability, dynamic
+#- name: opentelemetry_compatible
+#  tags: observability, dynamic
+#- name: openmetric_compatible
+#  tags: observability, dynamic
 
 - name: helm_deploy
   tags: installability, dynamic
@@ -85,16 +87,16 @@
 - name: helm_chart_published
   tags: installability, dynamic
 
-- name: hardware_affinity
-  tags: hardware, dynamic
-- name: static_accessing_hardware 
-  tags: hardware, static
-- name: dynamic_accessing_hardware 
-  tags: hardware, dynamic
-- name: direct_hugepages
-  tags: hardware, dynamic
-- name: performance
-  tags: hardware, dynamic
+#- name: hardware_affinity
+#  tags: hardware, dynamic
+#- name: static_accessing_hardware 
+#  tags: hardware, static
+#- name: dynamic_accessing_hardware 
+#  tags: hardware, dynamic
+#- name: direct_hugepages
+#  tags: hardware, dynamic
+#- name: performance
+#  tags: hardware, dynamic
 
-- name: k8s_conformance
-  tags: platform, dynamic
+#- name: k8s_conformance
+#  tags: platform, dynamic
