@@ -6,6 +6,12 @@ require "file_utils"
 require "sam"
 
 describe "Resilience" do
+  before_all do
+    # `./cnf-conformance samples_cleanup force=true`
+    # $?.success?.should be_true
+    `./cnf-conformance configuration_file_setup`
+    $?.success?.should be_true
+  end
 
   it "'chaos_network_loss' A 'Good' CNF should not crash when network loss occurs", tags: ["chaos_network_loss"]  do
     begin
@@ -15,7 +21,7 @@ describe "Resilience" do
       $?.success?.should be_true
       (/PASSED: Replicas available match desired count after network chaos test/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_ping deploy_with_chart=false`
+      `./cnf-conformance cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
       $?.success?.should be_true
     end
   end
