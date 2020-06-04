@@ -1,5 +1,5 @@
 ---
-name: New platform test
+name: New Platform Test
 about: Creating a new platform conformance test
 title: "[Platform]"
 labels: platform

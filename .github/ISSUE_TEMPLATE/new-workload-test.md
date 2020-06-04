@@ -1,5 +1,5 @@
 ---
-name: New workload test
+name: New Workload Test
 about: Creating a new workload conformance test
 title: "[Workload]"
 labels: workload
