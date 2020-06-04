@@ -81,7 +81,7 @@ task "reasonable_startup_time" do |_, args|
 
     delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
     rollback_non_namespaced = `kubectl apply -f #{yml_file_path}/reasonable_startup_orig.yml`
-
+    wait_for_install(deployment_name, wait_count=180)
   end
 end
 
