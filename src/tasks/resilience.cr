@@ -58,9 +58,9 @@ task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, arg
       if wait_for_test("network-loss")
         LOGGING.info( "Wait Done")
         if desired_is_available?(deployment_name)
-          resp = upsert_passed_task("chaos_network_loss","✔️  PASSED: Replicas returned to desired count after network chaos test")
+          resp = upsert_passed_task("chaos_network_loss","✔️  PASSED: Replicas available match desired count after network chaos test")
         else
-          resp = upsert_failed_task("chaos_network_loss","✖️  FAILURE: Replicas did not return to desired count after network chaos test")
+          resp = upsert_failed_task("chaos_network_loss","✖️  FAILURE: Replicas did not return desired count after network chaos test")
         end
       else
         # TODO Change this to an exception (points = 0)
@@ -97,13 +97,19 @@ def wait_for_test(test_name)
 end
 
 def desired_is_available?(deployment_name)
-  resp = `kubectl get deployments #{deployment_name} -o=yaml` 
+  resp = `kubectl get deployments #{deployment_name} -o=yaml`
   describe = Totem.from_yaml(resp)
   LOGGING.info("desired_is_available describe: #{describe.inspect}")
   desired_replicas = describe.get("status").as_h["replicas"].as_i
   LOGGING.info("desired_is_available desired_replicas: #{desired_replicas}")
-  ready_replicas = describe.get("status").as_h["readyReplicas"].as_i
+  ready_replicas = describe.get("status").as_h["readyReplicas"]?
+  unless ready_replicas.nil?
+    ready_replicas = ready_replicas.as_i
+  else
+    ready_replicas = 0
+  end
   LOGGING.info("desired_is_available ready_replicas: #{ready_replicas}")
+
   desired_replicas == ready_replicas
 end
 

@@ -72,8 +72,7 @@ spec:
       - name: "coredns"
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command: ["/bin/ping"]
-        args: ["8.8.8.8"]
+        args: [ "-conf", "/etc/coredns/Corefile" ]
         volumeMounts:
         - name: config-volume
           mountPath: /etc/coredns
@@ -86,6 +85,25 @@ spec:
 {{ toYaml .Values.resources | indent 10 }}
         ports:
 {{ include "coredns.containerPorts" . | indent 8 }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 1
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8181
+            scheme: HTTP
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
       volumes:
         - name: config-volume
           configMap:
