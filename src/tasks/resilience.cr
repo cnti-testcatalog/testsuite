@@ -38,6 +38,12 @@ task "restarts_on_kill", ["retrieve_manifest"] do |_, args|
     puts "#{annotate}" if check_verbose(args)
     #TODO capture the deployment label because it might be nil
 
+
+    if !ENV.has_key?("DOCKER_HOST")
+      # NOTE: DOCKER_HOST is needed for the pumba engine to run it is set by default but the choas test wont work with docker without it
+      upsert_failed_task("restarts_on_kill","✖️  FAILURE: docker host not set")
+    end
+
     errors = 0
     begin
       deployment_label_value = deployment.get("metadata").as_h["labels"].as_h[deployment_label].as_s
@@ -45,35 +51,49 @@ task "restarts_on_kill", ["retrieve_manifest"] do |_, args|
       errors = errors + 1
       puts ex.message 
     end
+
+    chaos_experiment_name = "container-kill"
+    test_name = "#{deployment_name}-conformance-#{Time.local.to_unix}" 
+    verdict_name = "#{test_name}-#{chaos_experiment_name}"
+
     if errors < 1
       template = Crinja.render(chaos_template__restarts_on_kill, { 
-        "test_name" => "conformance-container-kill" , "helm_chart_container_name" => "#{helm_chart_container_name}", "deployment_label" => "#{deployment_label}" , "deployment_label_value" => "#{deployment_label_value}" 
+        "chaos_experiment_name"=> "#{chaos_experiment_name}", "test_name" => test_name , "helm_chart_container_name" => "#{helm_chart_container_name}", "deployment_label" => "#{deployment_label}" , "deployment_label_value" => "#{deployment_label_value}" 
       })
-      chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/container-kill-chaosengine.yml"`
+      chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
       puts "#{chaos_config}" if check_verbose(args)
-      run_chaos = `kubectl create -f "#{destination_cnf_dir}/container-kill-chaosengine.yml"`
+      run_chaos = `kubectl create -f "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
       puts "#{run_chaos}" if check_verbose(args)
     else
       resp = upsert_failed_task("restarts_on_kill","✖️  FAILURE: No deployment label found for container kill test")
     end
-    
-    describe_chaos_result = "kubectl describe chaosresults.litmuschaos.io"
+
+    describe_chaos_result = "kubectl describe chaosresults.litmuschaos.io #{verdict_name}"
     puts "initial checkin of #{describe_chaos_result}" if check_verbose(args)  
+    puts "DOCKER_HOST: #{ENV["DOCKER_HOST"]}"
     puts `#{describe_chaos_result}` if check_verbose(args)  
 
-    verdict = `kubectl get chaosresults.litmuschaos.io conformance-container-kill -o jsonpath='{.status.experimentstatus.verdict}'` 
+    wait_count = 0 # going up to 20 mins so 20
+    status_code = -1 # just a random number to start with
+    verdict = ""
+    verdict_cmd = "kubectl get chaosresults.litmuschaos.io #{verdict_name} -o jsonpath='{.status.experimentstatus.verdict}'" 
+    puts "awating verdict of #{verdict_cmd}" if check_verbose(args)
 
-    until verdict
-      verdict = `kubectl get chaosresults.litmuschaos.io conformance-container-kill -o jsonpath='{.status.experimentstatus.verdict}'` 
-      puts verdict if check_verbose(args)  
+    until (status_code == 0 && verdict != "Awaited") || wait_count >= 20
+      sleep 60
+      status_code = Process.run("#{verdict_cmd}", shell: true, output: verdict_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status 
+      puts "status_code: #{status_code}" if check_verbose(args)  
+      puts "verdict: #{verdict_response.to_s}"  if check_verbose(args)  
+      verdict = verdict_response.to_s 
+      wait_count = wait_count + 1
     end
 
     puts `#{describe_chaos_result}` if check_verbose(args)  
 
     if verdict == "Pass"
-      resp = upsert_passed_task("restarts_on_kill","✔️  PASSED: container-kill chaos test passed 🗡️💀♻️")
+      resp = upsert_passed_task("restarts_on_kill","✔️  PASSED: #{chaos_experiment_name} chaos test passed 🗡️💀♻️")
     else
-      resp = upsert_failed_task("restarts_on_kill","✖️  FAILURE: container-kill chaos test failed 🗡️💀♻️")
+      resp = upsert_failed_task("restarts_on_kill","✖️  FAILURE: #{chaos_experiment_name} chaos test failed 🗡️💀♻️")
     end
 
     resp
@@ -89,7 +109,7 @@ metadata:
   namespace: default
 spec:
   # It can be delete/retain
-  jobCleanUpPolicy: 'delete'
+  jobCleanUpPolicy: 'retain'
   # It can be true/false
   annotationCheck: 'true'
   # It can be active/stop
@@ -101,15 +121,17 @@ spec:
     # FYI, To see app label, apply kubectl get pods --show-labels
     applabel: '{{ deployment_label }}={{ deployment_label_value }}'
     appkind: 'deployment'
-  chaosServiceAccount: container-kill-sa 
+  chaosServiceAccount: {{ chaos_experiment_name }}-sa 
   experiments:
-    - name: container-kill
+    - name: {{ chaos_experiment_name }}
       spec:
         components:
           env:
             #Container name where chaos has to be injected              
             - name: TARGET_CONTAINER
               value: '{{ helm_chart_container_name }}' 
+            - name: DOCKER_HOST
+              value: #{ENV["DOCKER_HOST"]}
 TEMPLATE
 end
 
