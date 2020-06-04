@@ -1,39 +1,41 @@
 ---
-name: New conformance test
-about: Creating a new conformance test
-title: ''
-labels: ''
+name: New platform test
+about: Creating a new platform conformance test
+title: "[Platform]"
+labels: platform
 assignees: ''
 
 ---
 
-Acceptance Criteria:
+[Acceptance Criteria] (TBD)
 ---
 
 ### CATEGORY_NAME test: DESCRIPTIVE_TEST_NAME
 
-EPIC: CNF Conformance Test Suite
+**Short description of platform test:** 
+- goal of this platform test
 
-Release: vN.N.N
+**Test Category**
+- ADD CATEGORY_NAME (e.g. Statelessness, Security, etc from [README](https://github.com/cncf/cnf-conformance/blob/master/README.md#cnf-conformance))
 
-Test Category: CATEGORY_NAME
-
-Type of test (static or runtime) = ?
-
-- [x]  example code: POC ISSUE_NUMBER 
+**Proof of Concept** (if available)
+- [ ]  link to proof of concept of new workload test
 
 ---
 
+### Implementation Tasks: TBD
+
 **Environment set up tasks:**
+- [ ] 
 
 **Upstream tool set up tasks: (conformance suite + upstream tools)**
-- N/A
+- [ ] 
 
 **CNF setup Tasks** 
+- [ ] 
 
 **Sample CNF tasks:**
-
-
+- [ ] 
 
 **Code implementation tasks:**
 - [ ] 
@@ -44,7 +46,8 @@ Type of test (static or runtime) = ?
 - [ ] Update [USAGE md](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md) if needed 
 - [ ] Update [installation instructions](https://github.com/cncf/cnf-conformance#installation)  if needed 
 
-**QA tasks**
+
+### QA tasks
 
 Dev Review: 
 - [ ] walk through A/C
