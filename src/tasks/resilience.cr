@@ -87,6 +87,7 @@ task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
     puts "#{destination_cnf_dir}"
     LOGGING.info "destination_cnf_dir #{destination_cnf_dir}"
     deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
+    emoji_chaos_cpu_hog="📦💻🐷📈"
 
     errors = 0
     begin
@@ -104,9 +105,9 @@ task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
       # TODO fail if exceeds
       if wait_for_test("StressChaos", "burn-cpu")
         if desired_is_available?(deployment_name)
-          resp = upsert_passed_task("chaos_network_loss","✔️  PASSED: Replicas available match desired count after cpu chaos test")
+          resp = upsert_passed_task("chaos_network_loss","✔️  PASSED: Replicas available match desired count after cpu chaos test #{emoji_chaos_cpu_hog}")
         else
-          resp = upsert_failed_task("chaos_network_loss","✖️  FAILURE: Replicas did not return desired count after cpu chaos test")
+          resp = upsert_failed_task("chaos_network_loss","✖️  FAILURE: Replicas did not return desired count after cpu chaos test #{emoji_chaos_cpu_hog}")
         end
       else
         # TODO Change this to an exception (points = 0)
