@@ -40,6 +40,7 @@ task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, arg
     puts "#{destination_cnf_dir}"
     LOGGING.info "destination_cnf_dir #{destination_cnf_dir}"
     deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
+    emoji_chaos_network_loss="📶☠️"
 
     errors = 0
     begin
@@ -58,9 +59,9 @@ task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, arg
       if wait_for_test("network-loss")
         LOGGING.info( "Wait Done")
         if desired_is_available?(deployment_name)
-          resp = upsert_passed_task("chaos_network_loss","✔️  PASSED: Replicas available match desired count after network chaos test")
+          resp = upsert_passed_task("chaos_network_loss","✔️  PASSED: Replicas available match desired count after network chaos test #{emoji_chaos_network_loss}")
         else
-          resp = upsert_failed_task("chaos_network_loss","✖️  FAILURE: Replicas did not return desired count after network chaos test")
+          resp = upsert_failed_task("chaos_network_loss","✖️  FAILURE: Replicas did not return desired count after network chaos test #{emoji_chaos_network_loss}")
         end
       else
         # TODO Change this to an exception (points = 0)
