@@ -47,25 +47,10 @@ task "liveness", ["retrieve_manifest"] do |_, args|
   task_runner(args) do |args|
     # Parse the cnf-conformance.yml
     resp = ""
-    # config = cnf_conformance_yml
-    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     errors = 0
-    begin
-      helm_directory = config.get("helm_directory").as_s
-    rescue ex
-      errors = errors + 1
-      # upsert_failed_task("liveness")
-      # puts "✖️  FAILURE: helm directory not found".colorize(:red)
-      resp = upsert_failed_task("liveness","✖️  FAILURE: helm directory not found")
-      puts ex.message if check_args(args)
-    end
-    # current_cnf_dir_short_name = cnf_conformance_dir
-    # puts current_cnf_dir_short_name if check_verbose(args)
-    # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
-    # puts destination_cnf_dir if check_verbose(args)
+    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    puts "helm_directory: #{destination_cnf_dir}/#{helm_directory}/manifest.yml" if check_verbose(args)
-    deployment = Totem.from_file "#{destination_cnf_dir}/#{helm_directory}/manifest.yml"
+    deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
     puts deployment.inspect if check_verbose(args)
     containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
     containers.each do |container|
@@ -94,25 +79,10 @@ task "readiness", ["retrieve_manifest"] do |_, args|
   task_runner(args) do |args|
     # Parse the cnf-conformance.yml
     resp = ""
-    # config = cnf_conformance_yml
-    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     errors = 0
-    begin
-      helm_directory = config.get("helm_directory").as_s
-    rescue ex
-      errors = errors + 1
-      # upsert_failed_task("readiness")
-      # puts "✖️  FAILURE: helm directory not found".colorize(:red)
-      resp = upsert_failed_task("readiness","✖️  FAILURE: helm directory not found")
-      puts ex.message if check_args(args)
-    end
-    # current_cnf_dir_short_name = cnf_conformance_dir
-    # puts current_cnf_dir_short_name if check_verbose(args)
-    # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
-    # puts destination_cnf_dir if check_verbose(args)
+    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    puts "helm_directory: #{destination_cnf_dir}/#{helm_directory}/manifest.yml" if check_verbose(args)
-    deployment = Totem.from_file "#{destination_cnf_dir}/#{helm_directory}/manifest.yml"
+    deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
     puts deployment.inspect if check_verbose(args)
     containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
     containers.each do |container|
@@ -147,12 +117,8 @@ task "retrieve_manifest" do |_, args|
     puts service_name if check_verbose(args)
     helm_directory = config.get("helm_directory").as_s
     puts helm_directory if check_verbose(args)
-    # current_cnf_dir_short_name = cnf_conformance_dir
-    # puts current_cnf_dir_short_name if check_verbose(args)
-    # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
-    # puts destination_cnf_dir if check_verbose(args)
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/#{helm_directory}/manifest.yml`
+    deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/manifest.yml`
     puts deployment if check_verbose(args)
     unless service_name.empty?
       service = `kubectl get service #{service_name} -o yaml  > #{destination_cnf_dir}/service.yml`

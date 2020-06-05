@@ -40,7 +40,7 @@ describe CnfConformance do
     (/PASSED: Replicas decreased to 1/ =~ response_s).should_not be_nil
     (/PASSED: Published Helm Chart Found/ =~ response_s).should_not be_nil
     (/Final score:/ =~ response_s).should_not be_nil
-    (all_result_test_names(final_cnf_results_yml)).should eq(["privileged", "increase_capacity", "decrease_capacity", "ip_addresses", "liveness", "readiness", "rolling_update", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "install_script_helm", "helm_chart_valid", "helm_chart_published","helm_deploy", "reasonable_image_size", "reasonable_startup_time"])
+    (all_result_test_names(final_cnf_results_yml)).should eq(["privileged", "increase_capacity", "decrease_capacity", "ip_addresses", "liveness", "readiness", "rolling_update", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "install_script_helm", "helm_chart_valid", "helm_chart_published","helm_deploy", "reasonable_image_size", "reasonable_startup_time", "chaos_network_loss"])
   end
 
   it "'scalability' should run all of the scalability tests", tags: "happy-path"  do

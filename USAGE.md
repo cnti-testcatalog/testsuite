@@ -261,6 +261,17 @@ crystal src/cnf-conformance.cr direct_hugepages
 crystal src/cnf-conformance.cr performance
 ```
 
+## Resilience Tests
+#### :heavy_check_mark: To run all resilience tests
+```
+crystal src/cnf-conformance.cr resilience
+```
+#### :heavy_check_mark: Test if the CNF crashes when network loss occurs
+```
+crystal src/cnf-conformance.cr chaos_network_loss
+```
+
+
 ## Platform Tests
 #### (PoC) Run all platform tests
 ```
