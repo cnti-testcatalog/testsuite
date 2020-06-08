@@ -106,18 +106,18 @@ task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
       # TODO fail if exceeds
       if wait_for_test("StressChaos", "burn-cpu")
         if desired_is_available?(deployment_name)
-          resp = upsert_passed_task("chaos_network_loss","✔️  PASSED: Replicas available match desired count after cpu chaos test #{emoji_chaos_cpu_hog}")
+          resp = upsert_passed_task("chaos_cpu_hog","✔️  PASSED: Replicas available match desired count after cpu chaos test #{emoji_chaos_cpu_hog}")
         else
-          resp = upsert_failed_task("chaos_network_loss","✖️  FAILURE: Replicas did not return desired count after cpu chaos test #{emoji_chaos_cpu_hog}")
+          resp = upsert_failed_task("chaos_cpu_hog","✖️  FAILURE: Replicas did not return desired count after cpu chaos test #{emoji_chaos_cpu_hog}")
         end
       else
         # TODO Change this to an exception (points = 0)
         # e.g. upsert_exception_task
-        resp = upsert_failed_task("chaos_network_loss","✖️  FAILURE: Chaosmesh failed to finish.")
+        resp = upsert_failed_task("chaos_cpu_hog","✖️  FAILURE: Chaosmesh failed to finish.")
       end
       delete_chaos = `kubectl delete -f "#{destination_cnf_dir}/chaos_cpu_hog.yml"`
     else
-      resp = upsert_failed_task("chaos_network_loss","✖️  FAILURE: No deployment label found for network chaos test")
+      resp = upsert_failed_task("chaos_cpu_hog","✖️  FAILURE: No deployment label found for cpu chaos test")
     end
     delete_chaos_mesh
   end
