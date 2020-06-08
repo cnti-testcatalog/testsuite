@@ -53,7 +53,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/bash","-c"]
           args:
-            - sleep 31 && /usr/local/bin/envoy -c /config/envoy.yaml
+            - sleep 61 && /usr/local/bin/envoy -c /config/envoy.yaml
           ports:
             {{- with .Values.ports }}
             {{- range $key, $port := . }}
