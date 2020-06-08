@@ -5,7 +5,7 @@ require "crinja"
 require "./utils/utils.cr"
 
 desc "The CNF conformance suite checks to see if the CNFs are resilient to failures."
-task "resilience", ["chaos_network_loss"] do |t, args|
+task "resilience", ["chaos_network_loss", "chaos_cpu_hog" ] do |t, args|
   puts "resilience args.raw: #{args.raw}" if check_verbose(args)
   puts "resilience args.named: #{args.named}" if check_verbose(args)
   total = total_points("resilience")
@@ -29,6 +29,16 @@ task "install_chaosmesh" do |_, args|
   wait_for_resource("#{current_dir}/spec/fixtures/chaos_network_loss.yml")
   wait_for_resource("#{current_dir}/spec/fixtures/chaos_cpu_hog.yml")
 end
+
+desc "Uninstall Chaos Mesh"
+task "uninstall_chaosmesh" do |_, args|
+  current_dir = FileUtils.pwd
+  helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+  crd_delete = `kubectl delete -f https://raw.githubusercontent.com/pingcap/chaos-mesh/master/manifests/crd.yaml`
+  FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/chaos_mesh")
+  delete_chaos_mesh = `#{helm} delete chaos-mesh`
+end
+
 
 desc "Does the CNF crash when network loss occurs"
 task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
@@ -73,7 +83,6 @@ task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, arg
     else
       resp = upsert_failed_task("chaos_network_loss","✖️  FAILURE: No deployment label found for network chaos test")
     end
-    delete_chaos_mesh
   end
 end
 
@@ -119,7 +128,6 @@ task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
     else
       resp = upsert_failed_task("chaos_cpu_hog","✖️  FAILURE: No deployment label found for cpu chaos test")
     end
-    delete_chaos_mesh
   end
 end
 
@@ -222,13 +230,4 @@ def cpu_chaos_template
     scheduler:
       cron: '@every 600s'
   TEMPLATE
-end
-
-
-def delete_chaos_mesh
-  current_dir = FileUtils.pwd
-  helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-  crd_delete = `kubectl delete -f https://raw.githubusercontent.com/pingcap/chaos-mesh/master/manifests/crd.yaml`
-  FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/chaos_mesh")
-  delete_chaos_mesh = `#{helm} delete chaos-mesh`
 end
