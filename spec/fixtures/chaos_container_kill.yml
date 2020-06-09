@@ -1,0 +1,14 @@
+apiVersion: pingcap.com/v1alpha1
+kind: PodChaos
+metadata:
+  name: container-kill
+  namespace: default
+spec:
+  action: container-kill
+  mode: one
+  containerName: "test-selector"
+  selector:
+    labelSelectors:
+      'test-selector': 'test-selector'
+  scheduler:
+    cron: "@every 30s"
