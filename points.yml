@@ -85,6 +85,8 @@
 
 - name: chaos_network_loss 
   tags: resilience, dynamic
+- name: chaos_cpu_hog
+  tags: resilience, dynamic
 
 - name: hardware_affinity
   tags: hardware, dynamic
