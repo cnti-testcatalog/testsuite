@@ -31,7 +31,7 @@ task "reasonable_startup_time" do |_, args|
     LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
     puts "yaml_path: #{yml_file_path}" if check_verbose(args)
 
-    startup_timeout = 60
+    startup_timeout = 60 
 
     helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_directory = "#{config.get("helm_directory").as_s?}"
@@ -73,12 +73,13 @@ task "reasonable_startup_time" do |_, args|
     puts "installed? #{is_kubectl_applied}" if check_verbose(args)
     puts "deployed? #{is_kubectl_deployed}" if check_verbose(args)
 
-    if is_kubectl_applied && is_kubectl_deployed && elapsed_time.seconds < startup_timeout
-      upsert_passed_task("reasonable_startup_time")
-      puts "✔️  PASSED: CNF had a reasonable startup time 🚀".colorize(:green)
+    LOGGING.info("startup_timeout: #{startup_timeout}")
+    LOGGING.info("elapsed_time.total_seconds: #{elapsed_time.total_seconds}")
+    if is_kubectl_applied && is_kubectl_deployed && elapsed_time.total_seconds < startup_timeout
+    # if is_kubectl_applied && is_kubectl_deployed && elapsed_time.seconds < 30
+      upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time 🚀")
     else
-      upsert_failed_task("reasonable_startup_time")
-      puts "✖️  FAILURE: CNF had a startup time of #{elapsed_time.seconds} seconds 🐢".colorize(:red)
+      upsert_failed_task("reasonable_startup_time", "✖️  FAILURE: CNF had a startup time higher than #{startup_timeout} seconds: (#{elapsed_time.total_seconds}) 🐢")
     end
 
     delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
