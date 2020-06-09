@@ -19,8 +19,8 @@ task "install_litmus" do |_, args|
 end
 
 desc "Does the CNF come back up when the container is killed"
-# task "restarts_on_kill", ["install_litmus", "retrieve_manifest"] do |_, args|
-task "restarts_on_kill", ["retrieve_manifest"] do |_, args|
+task "restarts_on_kill", ["install_litmus", "retrieve_manifest"] do |_, args|
+# task "restarts_on_kill", ["retrieve_manifest"] do |_, args|
   task_response = task_runner(args) do |args|
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
@@ -132,6 +132,10 @@ spec:
               value: '{{ helm_chart_container_name }}' 
             - name: DOCKER_HOST
               value: #{ENV["DOCKER_HOST"]}
+            - name: LIB_IMAGE
+              value: 'litmuschaos/container-killer:latest'
+            - name: LIB
+              value: 'containerd'
 TEMPLATE
 end
 
