@@ -20,6 +20,7 @@ describe "Microservice" do
     begin
       response_s = `./cnf-conformance reasonable_startup_time cnf-config=sample-cnfs/sample_coredns/cnf-conformance.yml`
       $?.success?.should be_true
+      LOGGING.info response_s
       (/PASSED: CNF had a reasonable startup time/ =~ response_s).should_not be_nil
     ensure
       `kubectl delete -f sample-cnfs/sample_coredns/reasonable_startup_orig.yml`
@@ -31,7 +32,8 @@ describe "Microservice" do
     begin
       response_s = `./cnf-conformance reasonable_startup_time cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml`
       $?.success?.should be_true
-      (/FAILURE: CNF had a startup time of/ =~ response_s).should_not be_nil
+      LOGGING.info response_s
+      (/FAILURE: CNF had a startup time higher/ =~ response_s).should_not be_nil
     ensure
       `kubectl delete -f sample-cnfs/sample_envoy_slow_startup/reasonable_startup_orig.yml`
       $?.success?.should be_true

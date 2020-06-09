@@ -8,5 +8,5 @@ toggles:
     toggle_on: false 
   - name: beta
     toggle_on: false
-loglevel: info
+loglevel: error
 
