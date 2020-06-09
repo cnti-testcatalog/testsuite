@@ -115,9 +115,9 @@ task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
       # TODO fail if exceeds
       if wait_for_test("StressChaos", "burn-cpu")
         if desired_is_available?(deployment_name)
-          resp = upsert_passed_task("chaos_cpu_hog","✔️  PASSED: Replicas available match desired count after cpu chaos test #{emoji_chaos_cpu_hog}")
+          resp = upsert_passed_task("chaos_cpu_hog","✔️  PASSED: Application pod is healthy after high CPU consumption #{emoji_chaos_cpu_hog}")
         else
-          resp = upsert_failed_task("chaos_cpu_hog","✖️  FAILURE: Replicas did not return desired count after cpu chaos test #{emoji_chaos_cpu_hog}")
+          resp = upsert_failed_task("chaos_cpu_hog","✖️  FAILURE: Application pod is not healthy after high CPU consumption #{emoji_chaos_cpu_hog}")
         end
       else
         # TODO Change this to an exception (points = 0)

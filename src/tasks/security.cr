@@ -30,7 +30,7 @@ task "privileged" do |_, args|
     puts "privileged_response #{privileged_response}" if check_verbose(args)
     privileged_list = privileged_response.to_s.split(" ").uniq
     puts "privileged_list #{privileged_list}" if check_verbose(args)
-    white_list_containers = (white_list_container_name - [helm_chart_container_name])
+    white_list_containers = ((HARDCODED_WHITELIST_CONTAINERS + white_list_container_name) - [helm_chart_container_name])
     violation_list = (privileged_list - white_list_containers)
     if privileged_list.find {|x| x == helm_chart_container_name} ||
         violation_list.size > 0
