@@ -133,8 +133,7 @@ task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
 end
 
 desc "Does the CNF recover when its container is killed"
-# task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
-task "chaos_container_kill", ["retrieve_manifest"] do |_, args|
+task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
   task_response = task_runner(args) do |args|
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
