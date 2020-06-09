@@ -100,5 +100,5 @@ spec:
       volumes:
         - name: state-volume
           hostPath:
-            path: /tmp/
-            type: Directory
+            path: /tmp/{{ randAlphaNum 10 }}
+            type: DirectoryOrCreate	
