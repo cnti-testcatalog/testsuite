@@ -9,27 +9,44 @@
 - name: reasonable_startup_time 
   tags: microservice, dynamic
 
-#- name: cni_spec 
-#  tags: compatibility, dynamic
-#- name: api_snoop_alpha 
-#  tags: compatibility, dynamic
-#- name: api_snoop_beta 
-#  tags: compatibility, dynamic
-#- name: api_snoop_general_apis 
-#  tags: compatibility, dynamic
+# Setting both pass and fail to 0 disables all scoring for the test
+- name: cni_spec 
+  tags: compatibility, dynamic
+  pass: 0
+  fail: 0
+- name: api_snoop_alpha 
+  tags: compatibility, dynamic
+  pass: 0
+  fail: 0
+- name: api_snoop_beta 
+  tags: compatibility, dynamic
+  pass: 0
+  fail: 0
+- name: api_snoop_general_apis 
+  tags: compatibility, dynamic
+  pass: 0
+  fail: 0
 
-#- name: reset_cnf 
-#  tags: statelessness, dynamic, configuration_lifecycle
-#- name: check_reaped 
-#  tags: statelessness, dynamic, configuration_lifecycle
+- name: reset_cnf 
+  tags: statelessness, dynamic, configuration_lifecycle
+  pass: 0
+  fail: 0
+- name: check_reaped 
+  tags: statelessness, dynamic, configuration_lifecycle
+  pass: 0
+  fail: 0
 
 - name: privileged 
   tags: security, dynamic
   required: true
-#- name: shells 
-#  tags: security, dynamic
-#- name: protected_access 
-#  tags: security, dynamic
+- name: shells 
+  tags: security, dynamic
+  pass: 0
+  fail: 0
+- name: protected_access 
+  tags: security, dynamic
+  pass: 0
+  fail: 0
 
 - name: increase_capacity 
   tags: scalability, dynamic
@@ -38,28 +55,40 @@
 - name: decrease_capacity 
   tags: scalability, dynamic
   pass: 10
-  fail: -5 
-#- name: small_autoscaling 
-#  tags: scalability, dynamic
-#- name: large_autoscaling 
-#  tags: scalability, dynamic
-#- name: network_chaos 
-#  tags: scalability, dynamic
-#- name: external_retry 
-#  tags: scalability, dynamic
+  fail: -5
+- name: small_autoscaling 
+  tags: scalability, dynamic
+  pass: 0
+  fail: 0
+- name: large_autoscaling 
+  tags: scalability, dynamic
+  pass: 0
+  fail: 0
+- name: network_chaos 
+  tags: scalability, dynamic
+  pass: 0
+  fail: 0
+- name: external_retry 
+  tags: scalability, dynamic
+  pass: 0
+  fail: 0
 
-#- name: versioned_helm_chart
-#  tags: configuration_lifecycle, dynamic
+- name: versioned_helm_chart
+  tags: configuration_lifecycle, dynamic
+  pass: 0
+  fail: 0
 - name: ip_addresses
+  tags: configuration_lifecycle, static
   pass: 0
   fail: -1 
-  tags: configuration_lifecycle, static
 - name: liveness
   tags: configuration_lifecycle, dynamic
 - name: readiness
   tags: configuration_lifecycle, dynamic
-#- name: no_volume_with_configuration
-#  tags: configuration_lifecycle, dynamic
+- name: no_volume_with_configuration
+  tags: configuration_lifecycle, dynamic
+  pass: 0
+  fail: 0
 - name: rolling_update
   tags: configuration_lifecycle, dynamic
 - name: nodeport_not_used
@@ -67,16 +96,26 @@
 - name: hardcoded_ip_addresses_in_k8s_runtime_configuration
   tags: configuration_lifecycle, dynamic
 
-#- name: fluentd_traffic
-#  tags: observability, dynamic
-#- name: jaeger_traffic
-#  tags: observability, dynamic
-#- name: prometheus_traffic
-#  tags: observability, dynamic
-#- name: opentelemetry_compatible
-#  tags: observability, dynamic
-#- name: openmetric_compatible
-#  tags: observability, dynamic
+- name: fluentd_traffic
+  tags: observability, dynamic
+  pass: 0
+  fail: 0
+- name: jaeger_traffic
+  tags: observability, dynamic
+  pass: 0
+  fail: 0
+- name: prometheus_traffic
+  tags: observability, dynamic
+  pass: 0
+  fail: 0
+- name: opentelemetry_compatible
+  tags: observability, dynamic
+  pass: 0
+  fail: 0
+- name: openmetric_compatible
+  tags: observability, dynamic
+  pass: 0
+  fail: 0
 
 - name: helm_deploy
   tags: installability, dynamic
@@ -87,16 +126,28 @@
 - name: helm_chart_published
   tags: installability, dynamic
 
-#- name: hardware_affinity
-#  tags: hardware, dynamic
-#- name: static_accessing_hardware 
-#  tags: hardware, static
-#- name: dynamic_accessing_hardware 
-#  tags: hardware, dynamic
-#- name: direct_hugepages
-#  tags: hardware, dynamic
-#- name: performance
-#  tags: hardware, dynamic
+- name: hardware_affinity
+  tags: hardware, dynamic
+  pass: 0
+  fail: 0
+- name: static_accessing_hardware 
+  tags: hardware, static
+  pass: 0
+  fail: 0
+- name: dynamic_accessing_hardware 
+  tags: hardware, dynamic
+  pass: 0
+  fail: 0
+- name: direct_hugepages
+  tags: hardware, dynamic
+  pass: 0
+  fail: 0
+- name: performance
+  tags: hardware, dynamic
+  pass: 0
+  fail: 0
 
-#- name: k8s_conformance
-#  tags: platform, dynamic
+- name: k8s_conformance
+  tags: platform, dynamic
+  pass: 0
+  fail: 0
