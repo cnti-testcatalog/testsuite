@@ -270,7 +270,10 @@ crystal src/cnf-conformance.cr resilience
 ```
 crystal src/cnf-conformance.cr chaos_network_loss
 ```
-
+#### :heavy_check_mark: Test if the CNF crashes under high CPU load 
+```
+crystal src/cnf-conformance.cr chaos_cpu_hog 
+```
 
 ## Platform Tests
 #### (PoC) Run all platform tests
