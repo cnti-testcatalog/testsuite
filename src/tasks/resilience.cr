@@ -160,6 +160,7 @@ task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, a
       puts "#{run_chaos}" if check_verbose(args)
       # TODO fail if exceeds
       if wait_for_test("PodChaos", "container-kill")
+        wait_for_install(deployment_name, wait_count=60)
         if desired_is_available?(deployment_name)
           resp = upsert_passed_task("chaos_container_kill","✔️  PASSED: Replicas available match desired count after container kill test #{emoji_chaos_container_kill}")
         else
