@@ -153,7 +153,7 @@ task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, a
       puts ex.message 
     end
     if errors < 1
-      template = Crinja.render(chaos_template__container_kill, { "deployment_label" => "#{deployment_label}", "deployment_label_value" => "#{deployment_label_value}" })
+      template = Crinja.render(chaos_template_container_kill, { "deployment_label" => "#{deployment_label}", "deployment_label_value" => "#{deployment_label_value}", "helm_chart_container_name" => "#{helm_chart_container_name}" })
       chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/chaos_container_kill.yml"`
       puts "#{chaos_config}" if check_verbose(args)
       run_chaos = `kubectl create -f "#{destination_cnf_dir}/chaos_container_kill.yml"`
@@ -277,7 +277,7 @@ def cpu_chaos_template
   TEMPLATE
 end
 
-def chaos_template__container_kill
+def chaos_template_container_kill
   <<-TEMPLATE
   apiVersion: pingcap.com/v1alpha1
   kind: PodChaos
@@ -287,11 +287,11 @@ def chaos_template__container_kill
   spec:
     action: container-kill
     mode: one
-    containerName: {{ deployment_label_value }}
+    containerName: '{{ helm_chart_container_name }}'
     selector:
       labelSelectors:
-      '{{ deployment_label}}': '{{ deployment_label_value }}'
+        '{{ deployment_label}}': '{{ deployment_label_value }}'
     scheduler:
-      cron: '@every 30s'
+      cron: '@every 600s'
   TEMPLATE
 end
