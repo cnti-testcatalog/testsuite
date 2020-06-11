@@ -1,3 +1,4 @@
+# coding: utf-8
 require "totem"
 require "colorize"
 require "./types/cnf_conformance_yml_type.cr"
@@ -334,23 +335,27 @@ def validate_cnf_conformance_yml(config)
     end
   end
 
-  unmapped_keys_error_msg = "WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator".colorize(:yellow)
+  unmapped_keys_warning_msg = "WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator".colorize(:yellow)
+  missing_keys_warning_msg = "WARNING: Missing cnf_conformance.yml keys. Please add them to your cnf-conformance.yml".colorize(:yellow)
 
-  warning_output = [unmapped_keys_error_msg] of String | Colorize::Object(String)
 
   if ccyt_validator && !ccyt_validator.try &.json_unmapped.empty?
+    warning_output = [unmapped_keys_warning_msg] of String | Colorize::Object(String)
     warning_output.push(ccyt_validator.try &.json_unmapped.to_s)
+    if warning_output.size > 1
+      puts warning_output.join("\n")
+    end
   end
 
   if ccyt_validator && !ccyt_validator.try &.helm_repository.try &.json_unmapped.empty? 
     root = {} of String => (Hash(String, JSON::Any) | Nil)
-    root["helm_directory"] = ccyt_validator.try &.helm_repository.try &.json_unmapped
+    root["helm_repository"] = ccyt_validator.try &.helm_repository.try &.json_unmapped
 
+    warning_output = [missing_keys_warning_msg] of String | Colorize::Object(String)
     warning_output.push(root.to_s)
-  end
-
-  if warning_output.size > 1
-    puts warning_output.join("\n")
+    if warning_output.size > 1
+      puts warning_output.join("\n")
+    end
   end
 
   { valid, warning_output }
