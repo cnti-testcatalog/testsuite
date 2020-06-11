@@ -5,7 +5,7 @@ require "crinja"
 require "./utils/utils.cr"
 
 desc "The CNF conformance suite checks to see if the CNFs are resilient to failures."
-task "resilience", ["chaos_network_loss", "chaos_cpu_hog" ] do |t, args|
+task "resilience", ["chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill" ] do |t, args|
   puts "resilience args.raw: #{args.raw}" if check_verbose(args)
   puts "resilience args.named: #{args.named}" if check_verbose(args)
   total = total_points("resilience")
@@ -28,6 +28,7 @@ task "install_chaosmesh" do |_, args|
   install_chaos_mesh = `#{helm} install chaos-mesh #{current_dir}/#{TOOLS_DIR}/chaos_mesh/helm/chaos-mesh --set chaosDaemon.runtime=containerd --set chaosDaemon.socketPath=/run/containerd/containerd.sock`
   wait_for_resource("#{current_dir}/spec/fixtures/chaos_network_loss.yml")
   wait_for_resource("#{current_dir}/spec/fixtures/chaos_cpu_hog.yml")
+  wait_for_resource("#{current_dir}/spec/fixtures/chaos_container_kill.yml")
 end
 
 desc "Uninstall Chaos Mesh"
@@ -131,6 +132,51 @@ task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
   end
 end
 
+desc "Does the CNF recover when its container is killed"
+task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
+  task_response = task_runner(args) do |args|
+    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    deployment_name = config.get("deployment_name").as_s
+    deployment_label = config.get("deployment_label").as_s
+    helm_chart_container_name = config.get("helm_chart_container_name").as_s
+    puts "#{destination_cnf_dir}"
+    LOGGING.info "destination_cnf_dir #{destination_cnf_dir}"
+    deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
+    emoji_chaos_container_kill="🗡️💀♻️"
+
+    errors = 0
+    begin
+      deployment_label_value = deployment.get("metadata").as_h["labels"].as_h[deployment_label].as_s
+    rescue ex
+      errors = errors + 1
+      puts ex.message 
+    end
+    if errors < 1
+      template = Crinja.render(chaos_template_container_kill, { "deployment_label" => "#{deployment_label}", "deployment_label_value" => "#{deployment_label_value}", "helm_chart_container_name" => "#{helm_chart_container_name}" })
+      chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/chaos_container_kill.yml"`
+      puts "#{chaos_config}" if check_verbose(args)
+      run_chaos = `kubectl create -f "#{destination_cnf_dir}/chaos_container_kill.yml"`
+      puts "#{run_chaos}" if check_verbose(args)
+      # TODO fail if exceeds
+      if wait_for_test("PodChaos", "container-kill")
+        wait_for_install(deployment_name, wait_count=60)
+        if desired_is_available?(deployment_name)
+          resp = upsert_passed_task("chaos_container_kill","✔️  PASSED: Replicas available match desired count after container kill test #{emoji_chaos_container_kill}")
+        else
+          resp = upsert_failed_task("chaos_container_kill","✖️  FAILURE: Replicas did not return desired count after container kill test #{emoji_chaos_container_kill}")
+        end
+      else
+        # TODO Change this to an exception (points = 0)
+        # e.g. upsert_exception_task
+        resp = upsert_failed_task("chaos_container_kill","✖️  FAILURE: Chaosmesh failed to finish.")
+      end
+      delete_chaos = `kubectl delete -f "#{destination_cnf_dir}/chaos_container_kill.yml"`
+    else
+      resp = upsert_failed_task("chaos_container_kill","✖️  FAILURE: No deployment label found for container kill test")
+    end
+  end
+end
 
 def wait_for_test(test_type, test_name)
   second_count = 0
@@ -227,6 +273,25 @@ def cpu_chaos_template
         load: 100
         options: ['-c 0']
     duration: '40s'
+    scheduler:
+      cron: '@every 600s'
+  TEMPLATE
+end
+
+def chaos_template_container_kill
+  <<-TEMPLATE
+  apiVersion: pingcap.com/v1alpha1
+  kind: PodChaos
+  metadata:
+    name: container-kill
+    namespace: default
+  spec:
+    action: container-kill
+    mode: one
+    containerName: '{{ helm_chart_container_name }}'
+    selector:
+      labelSelectors:
+        '{{ deployment_label}}': '{{ deployment_label_value }}'
     scheduler:
       cron: '@every 600s'
   TEMPLATE
