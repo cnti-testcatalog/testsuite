@@ -4,6 +4,10 @@ shards:
     github: mrrooijen/commander
     version: 0.3.5
 
+  crinja:
+    github: straight-shoota/crinja
+    version: 0.5.1
+
   halite:
     github: icyleaf/halite
     version: 0.10.4

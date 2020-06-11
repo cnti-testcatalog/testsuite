@@ -1,39 +1,38 @@
 ---
-name: New conformance test
-about: Creating a new conformance test
-title: ''
-labels: ''
+name: New Example CNF
+about: Suggest/Add a new example CNF to be validated
+title: "[CNF]"
+labels: example CNF
 assignees: ''
 
 ---
 
-Acceptance Criteria:
+[Acceptance Criteria] (TBD)
 ---
 
-### CATEGORY_NAME test: DESCRIPTIVE_TEST_NAME
+### DESCRIPTIVE_CNF_NAME
 
-EPIC: CNF Conformance Test Suite
+**Short description of Example CNF:** 
+- goal of this platform test
 
-Release: vN.N.N
-
-Test Category: CATEGORY_NAME
-
-Type of test (static or runtime) = ?
-
-- [x]  example code: POC ISSUE_NUMBER 
+**Proof of Concept** (if available)
+- [ ]  link to example CNF reference materials
 
 ---
+
+### Implementation Tasks: TBD
 
 **Environment set up tasks:**
+- [ ] 
 
 **Upstream tool set up tasks: (conformance suite + upstream tools)**
-- N/A
+- [ ] 
 
 **CNF setup Tasks** 
+- [ ] 
 
-**Sample CNF tasks:**
-
-
+**Example CNF tasks:**
+- [ ] 
 
 **Code implementation tasks:**
 - [ ] 
@@ -44,7 +43,8 @@ Type of test (static or runtime) = ?
 - [ ] Update [USAGE md](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md) if needed 
 - [ ] Update [installation instructions](https://github.com/cncf/cnf-conformance#installation)  if needed 
 
-**QA tasks**
+
+### QA tasks
 
 Dev Review: 
 - [ ] walk through A/C

@@ -43,8 +43,8 @@
 #  tags: scalability, dynamic
 #- name: large_autoscaling 
 #  tags: scalability, dynamic
-#- name: network_chaos 
-#  tags: scalability, dynamic
+- name: network_chaos 
+  tags: scalability, dynamic
 #- name: external_retry 
 #  tags: scalability, dynamic
 
@@ -86,7 +86,13 @@
   tags: installability, dynamic
 - name: helm_chart_published
   tags: installability, dynamic
-
+  
+- name: chaos_network_loss 
+  tags: resilience, dynamic
+- name: chaos_cpu_hog
+  tags: resilience, dynamic
+- name: chaos_container_kill
+  tags: resilience, dynamic
 #- name: hardware_affinity
 #  tags: hardware, dynamic
 #- name: static_accessing_hardware 

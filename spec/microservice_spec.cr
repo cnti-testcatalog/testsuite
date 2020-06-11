@@ -16,7 +16,7 @@ describe "Microservice" do
     # $?.success?.should be_true
   end
 
-  it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time", "happy-path", "test"]  do
+  it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time", "happy-path"]  do
     begin
       response_s = `./cnf-conformance reasonable_startup_time cnf-config=sample-cnfs/sample_coredns/cnf-conformance.yml`
       $?.success?.should be_true

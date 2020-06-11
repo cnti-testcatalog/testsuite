@@ -1,0 +1,17 @@
+apiVersion: pingcap.com/v1alpha1
+kind: StressChaos
+metadata:
+  name: cpu-hog-test
+  namespace: default
+spec:
+  mode: one
+  selector:
+    labelSelectors:
+      'test-selector': 'test-selector'
+  stressors: 
+    cpu: 
+      workers: 1
+      load: 100
+  duration: "30s"
+  scheduler:
+    cron: "@every 2m"

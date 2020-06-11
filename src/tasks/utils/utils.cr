@@ -19,6 +19,7 @@ POINTSFILE = "points.yml"
 PASSED = "passed"
 FAILED = "failed"
 DEFAULT_POINTSFILENAME = "points_v1.yml"
+PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
 
 #TODO switch to ERROR for production builds
 # LOGGING = Logger.new(STDOUT, Logger::ERROR)
