@@ -43,7 +43,7 @@ See the [installation guide](https://github.com/cncf/cnf-conformance/blob/master
 
 ## Get involved
 - Join the conversation on [CNCF's Slack](https://slack.cncf.io/) channel, #cnf-conformance
-- Join the twice monthly [Telecom User Group meetings](https://github.com/cncf/telecom-user-group#meeting-time) 
+- Join the monthly [Telecom User Group meetings](https://github.com/cncf/telecom-user-group#meeting-time) 
 
 
 ## License terms
