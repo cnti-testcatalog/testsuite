@@ -4,12 +4,6 @@ Welcome! We gladly accept contributions on new conformance tests, example CNFs, 
 
 CNF Conformance is [Apache 2.0 licensed](https://github.com/cncf/cnf-conformance/blob/master/LICENSE) and accepts contributions via GitHub pull requests.  Please read the following guidelines carefully to make it easier to get your contribution accepted.
 
-
----
-About CNF Conformance
----
-The CNF Conformance is a testing initiative based on the [Certified Kubernetes Conformance Program](https://www.cncf.io/certification/software-conformance/) which provides visibility into how well Cloud native Network Functions (CNFs) and the underlying Telecom platform follow cloud native principles. The goal is to provide an open source test suite that supports self-testing of CNFs and platforms.
-
 Support Channels:
 ---
 Support channels include:
