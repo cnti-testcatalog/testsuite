@@ -336,7 +336,7 @@ def validate_cnf_conformance_yml(config)
   end
 
   unmapped_keys_warning_msg = "WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator".colorize(:yellow)
-  missing_keys_warning_msg = "WARNING: Missing cnf_conformance.yml keys. Please add them to your cnf-conformance.yml".colorize(:yellow)
+  unmapped_subkeys_warning_msg = "WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_conformance.yml".colorize(:yellow)
 
 
   if ccyt_validator && !ccyt_validator.try &.json_unmapped.empty?
@@ -347,11 +347,12 @@ def validate_cnf_conformance_yml(config)
     end
   end
 
+  #TODO Differentiate between unmapped subkeys or unset top level key.
   if ccyt_validator && !ccyt_validator.try &.helm_repository.try &.json_unmapped.empty? 
     root = {} of String => (Hash(String, JSON::Any) | Nil)
     root["helm_repository"] = ccyt_validator.try &.helm_repository.try &.json_unmapped
 
-    warning_output = [missing_keys_warning_msg] of String | Colorize::Object(String)
+    warning_output = [unmapped_subkeys_warning_msg] of String | Colorize::Object(String)
     warning_output.push(root.to_s)
     if warning_output.size > 1
       puts warning_output.join("\n")
