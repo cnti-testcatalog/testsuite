@@ -274,6 +274,10 @@ crystal src/cnf-conformance.cr chaos_network_loss
 ```
 crystal src/cnf-conformance.cr chaos_cpu_hog 
 ```
+#### :heavy_check_mark: Test if the CNF restarts after container is killed 
+```
+crystal src/cnf-conformance.cr chaos_container_kill
+```
 
 ## Platform Tests
 #### (PoC) Run all platform tests
