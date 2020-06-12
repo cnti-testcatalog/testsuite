@@ -188,7 +188,7 @@ it "'validate_cnf_conformance_yml' (command) should fail when an invalid cnf con
   (/FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s).should_not be_nil
 end
 
-it "'validate_cnf_conformance_yml' (command) should pass, for all sample-cnfs", tags: ["unhappy-path", "validate_config_test"]  do
+it "'validate_cnf_conformance_yml' (command) should pass, for all sample-cnfs", tags: ["unhappy-path", "validate_config"]  do
 
   get_dirs = Dir.entries("sample-cnfs")
   dir_list = get_dirs - [".", ".."]
@@ -201,3 +201,18 @@ it "'validate_cnf_conformance_yml' (command) should pass, for all sample-cnfs", 
     (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
   end
 end
+
+it "'validate_cnf_conformance_yml' (command) should pass, for all example-cnfs", tags: ["unhappy-path", "validate_config"]  do
+
+  get_dirs = Dir.entries("example-cnfs")
+  dir_list = get_dirs - [".", ".."]
+  dir_list.each do |dir|
+    conformance_yml = "example-cnfs/#{dir}/cnf-conformance.yml"
+    response_s = `./cnf-conformance validate_config cnf-config=#{conformance_yml}`
+    if (/FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
+      puts "\n #{conformance_yml}: #{response_s}"
+    end
+    (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
+  end
+end
+

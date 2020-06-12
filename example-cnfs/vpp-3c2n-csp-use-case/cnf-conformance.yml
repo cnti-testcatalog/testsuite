@@ -4,6 +4,7 @@ git_clone_url:
 install_script: 
 release_name: ip-forwarder-csp
 deployment_name: ip-forwarder-csp 
+deployment_label: app
 application_deployment_names: [ip-forwarder-csp]
 helm_chart: 
 helm_chart_container_name: ip-forwarder-csp
