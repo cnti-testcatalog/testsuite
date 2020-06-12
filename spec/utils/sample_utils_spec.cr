@@ -143,7 +143,7 @@ end
 
 
 it "'validate_cnf_conformance_yml' (function) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["unhappy-path", "validate_config"]  do
-  args = Sam::Args.new(["cnf-config=./spec/fixtures/cnf-conformance-unmapped-keys.yml"])
+  args = Sam::Args.new(["cnf-config=./spec/fixtures/cnf-conformance-unmapped-keys-and-subkeys.yml"])
 
   yml = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
   puts yml.inspect
@@ -151,21 +151,24 @@ it "'validate_cnf_conformance_yml' (function) should warn, but be valid when a c
 
   status, warning_output = validate_cnf_conformance_yml(yml)
 
+  puts "WARNING: #{warning_output}"
+
   (status).should eq(true)
   (warning_output).should_not be_nil
 end
 
 
 it "'validate_cnf_conformance_yml' (command) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["unhappy-path", "validate_config"]  do
-  response_s = `./cnf-conformance validate_config cnf-config=spec/fixtures/cnf-conformance-unmapped-keys.yml`
+  response_s = `./cnf-conformance validate_config cnf-config=spec/fixtures/cnf-conformance-unmapped-keys-and-subkeys.yml`
   $?.success?.should be_true
   (/WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator/ =~ response_s).should_not be_nil
+  (/WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_conformance.yml/ =~ response_s).should_not be_nil
   (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
 end
 
 
 it "'validate_cnf_conformance_yml' (function) should fail when an invalid cnf config file yml is used", tags: ["unhappy-path", "validate_config"]  do
-  args = Sam::Args.new(["cnf-config=./spec/fixtures/cnf-conformance-unmapped-keys.yml"])
+  args = Sam::Args.new(["cnf-config=spec/fixtures/cnf-conformance-invalid-and-unmapped-keys.yml"])
 
   yml = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
   puts yml.inspect
@@ -176,6 +179,15 @@ it "'validate_cnf_conformance_yml' (function) should fail when an invalid cnf co
   (status).should eq(false)
   (warning_output).should eq(nil)
 end
+
+it "'validate_cnf_conformance_yml' (command) should fail when an invalid cnf config file yml is used", tags: ["unhappy-path", "validate_config"]  do
+  response_s = `./cnf-conformance validate_config cnf-config=spec/fixtures/cnf-conformance-invalid-and-unmapped-keys.yml`
+  $?.success?.should be_true
+
+  (/ERROR: cnf_conformance.yml field validation error/ =~ response_s).should_not be_nil
+  (/FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s).should_not be_nil
+end
+
 
 
 
