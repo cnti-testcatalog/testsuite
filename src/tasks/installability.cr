@@ -189,8 +189,8 @@ task "validate_config" do |_, args|
   valid, warning_output = validate_cnf_conformance_yml(yml)
 
   if valid
-    puts "✔️ PASSED: CNF configuration validated 📋"
+    puts "✔️ PASSED: CNF configuration validated 📋".colorize(:green)
   else
-    puts "❌ FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file 📋"
+    puts "❌ FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file 📋".colorize(:red)
   end
 end

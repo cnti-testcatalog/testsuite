@@ -10,6 +10,16 @@ crystal src/cnf-conformance.cr <testname>
 # Production mode
 ./cnf-conformance <testname>
 ```
+
+### Validating a cnf-conformance.yml file
+```
+# Developer mode
+crystal src/cnf-conformance.cr validate_config cnf-config=[PATH_TO]/cnf-conformance.yml
+
+# Production mode
+./cnf-conformance validate_config cnf-config=[PATH_TO]/cnf-conformance.yml
+```
+
 ### Building the executable
 ```
 crystal build src/cnf-conformance.cr
