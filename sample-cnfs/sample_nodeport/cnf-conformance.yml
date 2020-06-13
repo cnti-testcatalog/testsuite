@@ -4,6 +4,7 @@ git_clone_url:
 install_script: chart
 release_name: unifi
 deployment_name: unifi
+deployment_label: app.kubernetes.io/name
 service_name: unifi-controller 
 application_deployment_names: [unifi]
 helm_chart: stable/unifi
