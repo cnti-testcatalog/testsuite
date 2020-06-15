@@ -3,6 +3,64 @@ Installing the CNF Conformance Test Suite
 
 This guide shows how to install the CNF Conformance Test Suite
 
+# CNF Developer Install and Usage guide
+
+## Prerequisites
+
+- [Kubectl binary is installed](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+- [Access](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/) to a working [Certified K8s](https://cncf.io/ck) cluster via [KUBECONFIG environment variable](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/#set-the-kubeconfig-environment-variable). (See [K8s Getting started guide](https://kubernetes.io/docs/setup/) for options)
+    - `export KUBECONFIG=$HOME/mycluster.config`
+    - Running `kubectl cluster-info` should show a running Kubernetes master in the output
+- CNF must have a helm chart
+  - To pass all current tests
+  - To support auto deployment of CNF from configuration ([docs](https://github.com/cncf/cnf-conformance/blob/master/CNF_CONFORMANCE_YML_USAGE.md))
+
+
+## Setup and configuration
+
+### Download/Install the conformance suite
+
+- Download the latest [binary release](https://github.com/cncf/cnf-conformance/releases)
+- Make the binary executable (eg. `chmod +x cnf-conformance`)
+- Move the downloaded binary to somewhere in your executable PATH (eg. `sudo cp cnf-conformance /usr/local/bin/cnf-conformance`)
+
+ **Alternatives**
+
+- [source install](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#source-install) above
+
+
+### Configure the conformance suite for testing a CNF
+- Initialize the test suite by running `cnf-conformance setup` (creates cnfs folder and other items)
+- Create a Conformance configuration file called `cnf-conformance.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`)
+  - See example config (See [latest example in repo](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml)): 
+    - Optionally, copy the example configuration file, [`cnf-conformance-example.yml`](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml), and modify appropriately
+- (Optional) Setup your CNF for testing and deploy it to the cluster by running `cnf-conformance cnf_setup cnf-config=path_to_your/cnf_folder`
+    - _NOTE: if you do not want to automatically deploy the using the helm chart defined in the configuration then you MUST pass `deploy_with_chart=false` to the `cnf_setup` command._
+    - _NOTE: you can pass the path to your cnf-conformance.yml to the 'all' command which will install the CNF for you (see below)_
+
+## Running and checking results for the Conformance testing
+
+
+**Running all tests**
+
+```
+cnf-conformance all cnf-config=<path to your config yml>/cnf-conformance.yml
+```
+
+**Checking the results**
+
+In the console where the test suite runs:
+- PASSED or FAILED will be displayed for the tests
+
+A test log file, eg. `cnf-conformance-results-20200401.txt`, will be created which lists PASS or FAIL for every test
+
+**Cleaning up**
+
+Run `cnf-conformance cnf_cleanup cnf-config=<path to your config yml>/cnf-conformance.yml` 
+
+_NOTE: Does not handle manually deployed CNFs_
+
+---
 
 # Source Install
 
@@ -123,62 +181,4 @@ crystal build src/cnf-conformance.cr --release --static
 sha256sum cnf-conformance
 # checksum here used for release validation
 ```
-
-# CNF Developer Install and Usage guide
-
-## Prerequisites
-
-- [Kubectl binary is installed](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-- [Access](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/) to a working [Certified K8s](https://cncf.io/ck) cluster via [KUBECONFIG environment variable](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/#set-the-kubeconfig-environment-variable). (See [K8s Getting started guide](https://kubernetes.io/docs/setup/) for options)
-    - `export KUBECONFIG=$HOME/mycluster.config`
-    - Running `kubectl cluster-info` should show a running Kubernetes master in the output
-- CNF must have a helm chart
-  - To pass all current tests
-  - To support auto deployment of CNF from configuration ([docs](https://github.com/cncf/cnf-conformance/blob/master/CNF_CONFORMANCE_YML_USAGE.md))
-
-
-## Setup and configuration
-
-### Download/Install the conformance suite
-
-- Download the latest [binary release](https://github.com/cncf/cnf-conformance/releases)
-- Make the binary executable (eg. `chmod +x cnf-conformance`)
-- Move the downloaded binary to somewhere in your executable PATH (eg. `sudo cp cnf-conformance /usr/local/bin/cnf-conformance`)
-
- **Alternatives**
-
-- [source install](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#source-install) above
-
-
-### Configure the conformance suite for testing a CNF
-- Initialize the test suite by running `cnf-conformance setup` (creates cnfs folder and other items)
-- Create a Conformance configuration file called `cnf-conformance.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`)
-  - See example config (See [latest example in repo](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml)): 
-    - Optionally, copy the example configuration file, [`cnf-conformance-example.yml`](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml), and modify appropriately
-- (Optional) Setup your CNF for testing and deploy it to the cluster by running `cnf-conformance cnf_setup cnf-config=path_to_your/cnf_folder`
-    - _NOTE: if you do not want to automatically deploy the using the helm chart defined in the configuration then you MUST pass `deploy_with_chart=false` to the `cnf_setup` command._
-    - _NOTE: you can pass the path to your cnf-conformance.yml to the 'all' command which will install the CNF for you (see below)_
-
-## Running and checking results for the Conformance testing
-
-
-**Running all tests**
-
-```
-cnf-conformance all cnf-config=<path to your config yml>/cnf-conformance.yml
-```
-
-**Checking the results**
-
-In the console where the test suite runs:
-- PASSED or FAILED will be displayed for the tests
-
-A test log file, eg. `cnf-conformance-results-20200401.txt`, will be created which lists PASS or FAIL for every test
-
-**Cleaning up**
-
-Run `cnf-conformance cnf_cleanup cnf-config=<path to your config yml>/cnf-conformance.yml` 
-
-_NOTE: Does not handle manually deployed CNFs_
-
 
