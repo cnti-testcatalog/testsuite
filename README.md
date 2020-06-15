@@ -33,12 +33,7 @@ See the [installation guide](https://github.com/cncf/cnf-conformance/blob/master
 
 
 ## Contributing
-
-1. Fork it (<https://github.com/cncf/cnf-conformance/fork>)
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+See [contributing guidelines](https://github.com/cncf/cnf-conformance/blob/master/CONTRIBUTING.md)
 
 
 ## Get involved
