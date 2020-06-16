@@ -79,24 +79,6 @@ spec:
 {{ toYaml .Values.resources | indent 10 }}
         ports:
 {{ include "coredns.containerPorts" . | indent 8 }}
-        # livenessProbe:
-        #   httpGet:
-        #     path: /health
-        #     port: 8080
-        #     scheme: HTTP
-        #   initialDelaySeconds: 60
-        #   timeoutSeconds: 5
-        #   successThreshold: 1
-        #   failureThreshold: 5
-        # readinessProbe:
-        #   httpGet:
-        #     path: /ready
-        #     port: 8181
-        #     scheme: HTTP
-        #   initialDelaySeconds: 10
-        #   timeoutSeconds: 5
-        #   successThreshold: 1
-        #   failureThreshold: 5
       volumes:
         - name: state-volume
           hostPath:
