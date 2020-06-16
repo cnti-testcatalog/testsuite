@@ -10,6 +10,16 @@ crystal src/cnf-conformance.cr <testname>
 # Production mode
 ./cnf-conformance <testname>
 ```
+
+### Validating a cnf-conformance.yml file
+```
+# Developer mode
+crystal src/cnf-conformance.cr validate_config cnf-config=[PATH_TO]/cnf-conformance.yml
+
+# Production mode
+./cnf-conformance validate_config cnf-config=[PATH_TO]/cnf-conformance.yml
+```
+
 ### Building the executable
 ```
 crystal build src/cnf-conformance.cr
@@ -273,6 +283,10 @@ crystal src/cnf-conformance.cr chaos_network_loss
 #### :heavy_check_mark: Test if the CNF crashes under high CPU load 
 ```
 crystal src/cnf-conformance.cr chaos_cpu_hog 
+```
+#### :heavy_check_mark: Test if the CNF restarts after container is killed 
+```
+crystal src/cnf-conformance.cr chaos_container_kill
 ```
 
 ## Platform Tests
