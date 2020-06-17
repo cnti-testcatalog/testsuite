@@ -17,6 +17,8 @@ end
 
 desc "Does the CNF use a non-cloud native data store: hostPath volume"
 task "volume_hostpath_not_found", ["retrieve_manifest"] do |_, args|
+  failed_emoji = "(ভ_ভ) ރ 💾"
+  passed_emoji = "🖥️  💾"
   task_response = task_runner(args) do |args|
     puts "volume_hostpath_not_found" if check_verbose(args)
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
@@ -34,13 +36,13 @@ task "volume_hostpath_not_found", ["retrieve_manifest"] do |_, args|
       end
     rescue ex
       puts ex.message if check_args(args)
-      upsert_failed_task("volume_hostpath_not_found","✖️  FAILURE: hostPath volumes found")
+      upsert_failed_task("volume_hostpath_not_found","✖️  FAILURE: hostPath volumes found #{failed_emoji}")
     end
 
     if hostPath_found 
-      upsert_failed_task("volume_hostpath_not_found","✖️  FAILURE: hostPath volumes found")
+      upsert_failed_task("volume_hostpath_not_found","✖️  FAILURE: hostPath volumes found #{failed_emoji}")
     else
-      upsert_passed_task("volume_hostpath_not_found","✔️  PASSED: hostPath volumes not found")
+      upsert_passed_task("volume_hostpath_not_found","✔️  PASSED: hostPath volumes not found #{passed_emoji}")
     end
   end
 end
