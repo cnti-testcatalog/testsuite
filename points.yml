@@ -93,6 +93,9 @@
   tags: resilience, dynamic
 - name: chaos_container_kill
   tags: resilience, dynamic
+
+- name: volume_hostpath_not_found
+  tags: statelessness, dynamic
 #- name: hardware_affinity
 #  tags: hardware, dynamic
 #- name: static_accessing_hardware 

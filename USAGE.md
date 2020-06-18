@@ -70,6 +70,10 @@ crystal src/cnf-conformance.cr reset_cnf
 ```
 crystal src/cnf-conformance.cr check_reaped
 ```
+#### :heavy_check_mark:  To test if the CNF uses a volume host path
+```
+crystal src/cnf-conformance.cr volume_hostpath_not_found 
+```
 
 ## Security Tests
 #### :heavy_check_mark: To run all of the security tests
