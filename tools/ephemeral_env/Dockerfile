@@ -1,1 +1,7 @@
-FROM debian:latest
+FROM crystallang/crystal:0.33.0
+
+RUN apt update && apt install -y wget curl 
+
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && mv kubectl /usr/local/bin/
+
+WORKDIR /cnf-conformance
