@@ -13,9 +13,9 @@ task "create_env" do |_, args|
   `export $PATH`
 end
 
-# task "list_envs"
-
-# task "select_env"
+task "list_envs" do
+  puts `docker ps -f ancestor=cnf-test --format '{{.Names}}'`
+end
 
 task "delete_env" do |_, args|
   puts "Deleteing ENV For: #{args[0]}"
@@ -24,7 +24,12 @@ end
 
 task "command" do |_, args|
   command_args = ARGV[1..-1].join(" ")
-  puts "Args: #{command_args}"
-  system "docker exec -ti test2 crystal #{args[0]}"
+  if ENV["CRYSTAL_DEV_ENV"]
+    puts "Using Crystal ENV: #{ENV["CRYSTAL_DEV_ENV"]}"
+    puts "Args: #{command_args}"
+    system "docker exec -ti #{ENV["CRYSTAL_DEV_ENV"]} crystal #{command_args}"
+  else
+    puts "CRYSTAL_DEV_ENV Not Set. Run list_envs"
+  end
 end
 Sam.help
