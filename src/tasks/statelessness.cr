@@ -26,7 +26,7 @@ task "volume_hostpath_not_found", ["retrieve_manifest"] do |_, args|
     deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
     puts deployment.inspect if check_verbose(args)
 
-    hostPath_found = ""
+    hostPath_found = nil 
     begin
       volumes = deployment.get("spec").as_h["template"].as_h["spec"].as_h["volumes"].as_a
       hostPath_found = volumes.find do |volume| 
