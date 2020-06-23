@@ -10,7 +10,7 @@ task "install_chart_testing" do |_, args|
   Process.run("echo installing helm linter", shell: true) do |proc|
     while line = proc.output.gets
       response << line
-      puts "#{line}" if check_verbose(args)
+      LOGGING.info "#{line}" if check_verbose(args)
     end
   end
 end

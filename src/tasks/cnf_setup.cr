@@ -20,39 +20,39 @@ end
 
 desc "Sets up an alternate sample CoreDNS CNF"
 task "sample_coredns", ["helm_local_install"] do |_, args|
-  puts "sample_coredns new setup" if check_verbose(args)
+  LOGGING.info "sample_coredns new setup" if check_verbose(args)
   sample_setup_args(sample_dir: "sample-cnfs/sample_coredns", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
 end
 
 desc "Sets up a Bad helm CNF Setup"
 task "bad_helm_cnf_setup", ["helm_local_install"] do |_, args|
-  puts "bad_helm_cnf_setup" if check_verbose(args)
+  LOGGING.info "bad_helm_cnf_setup" if check_verbose(args)
   sample_setup_args(sample_dir: "sample-cnfs/sample-bad_helm_coredns-cnf", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
 end
 
 task "sample_privileged_cnf_whitelisted_setup", ["helm_local_install"] do |_, args|
-  puts "sample_privileged_cnf_whitelisted_setup" if check_verbose(args)
+  LOGGING.info "sample_privileged_cnf_whitelisted_setup" if check_verbose(args)
   sample_setup_args(sample_dir: "sample-cnfs/sample_whitelisted_privileged_cnf", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
 end
 
 task "sample_privileged_cnf_non_whitelisted_setup", ["helm_local_install"] do |_, args|
-  puts "sample_privileged_cnf_non_whitelisted_setup" if check_verbose(args)
+  LOGGING.info "sample_privileged_cnf_non_whitelisted_setup" if check_verbose(args)
   sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
 end
 
 task "sample_coredns_bad_liveness", ["helm_local_install"] do |_, args|
-  puts "sample_coredns_bad_liveness" if check_verbose(args)
+  LOGGING.info "sample_coredns_bad_liveness" if check_verbose(args)
   sample_setup_args(sample_dir: "sample-cnfs/sample_coredns_bad_liveness", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
 end
 
 task "sample_generic_cnf_setup", ["helm_local_install"] do |_, args|
-  puts "sample_generic_cnf" if check_verbose(args)
+  LOGGING.info "sample_generic_cnf" if check_verbose(args)
   sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", deploy_with_chart: false, args: args, verbose: true )
 end
 
 task "cnf_setup", ["helm_local_install"] do |_, args|
-  puts "cnf_setup" if check_verbose(args)
-  puts "args = #{args.inspect}" if check_verbose(args)
+  LOGGING.info "cnf_setup" if check_verbose(args)
+  LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
   if args.named.keys.includes? "cnf-config"
     yml_file = args.named["cnf-config"].as(String)
     # example_cnf = File.dirname(File.expand_path(yml_file))
@@ -63,7 +63,7 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
     puts "Error: You must supply either cnf-config or cnf-path".colorize(:red)
     exit 1
 	end
-  puts "cnf_setup cnf: #{cnf}" if check_verbose(args)
+  LOGGING.info "cnf_setup cnf: #{cnf}" if check_verbose(args)
   if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
     deploy_with_chart = false
   else
@@ -73,8 +73,8 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
 end
 
 task "cnf_cleanup" do |_, args|
-  # cnf = args.named["cnf-path"].as(String)
-  puts "args = #{args.inspect}" if check_verbose(args)
+  LOGGING.info "cnf_cleanup" if check_verbose(args)
+  LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
   if args.named.keys.includes? "cnf-config"
     yml_file = args.named["cnf-config"].as(String)
     cnf = File.dirname(yml_file)
@@ -84,7 +84,7 @@ task "cnf_cleanup" do |_, args|
     puts "Error: You must supply either cnf-config or cnf-path".colorize(:red)
     exit 1
 	end
-  puts "cnf_cleanup cnf: #{cnf}" if check_verbose(args)
+  LOGGING.debug "cnf_cleanup cnf: #{cnf}" if check_verbose(args)
   if args.named["force"]? && args.named["force"] == "true"
     force = true 
   else
@@ -94,8 +94,8 @@ task "cnf_cleanup" do |_, args|
 end
 
 task "helm_repo_add" do |_, args|
-  puts "helm_repo_add" if check_verbose(args)
-  puts "args = #{args.inspect}" if check_verbose(args)
+  LOGGING.info "helm_repo_add" if check_verbose(args)
+  LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
   if args.named["cnf-config"]? || args.named["yml-file"]?
     helm_repo_add(args: args)
   else

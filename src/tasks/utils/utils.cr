@@ -51,9 +51,8 @@ def loglevel
   end
 end
 
-
 def check_verbose(args)
-  if ((args.raw.includes? "verbose") || (args.raw.includes? "v"))
+  if ((args.raw.includes? "verbose") || (args.raw.includes? "v") || (LOGGING.info?) ) 
     true
   else 
     false
