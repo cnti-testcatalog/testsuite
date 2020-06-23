@@ -35,7 +35,7 @@ task "volume_hostpath_not_found", ["retrieve_manifest"] do |_, args|
         end
       end
     rescue ex
-      puts ex.message if check_args(args)
+      puts ex.message if check_verbose(args)
       upsert_failed_task("volume_hostpath_not_found","✖️  FAILURE: hostPath volumes found #{failed_emoji}")
     end
 

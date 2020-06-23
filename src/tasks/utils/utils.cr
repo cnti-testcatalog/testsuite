@@ -52,10 +52,6 @@ def loglevel
 end
 
 
-def check_args(args)
-  check_verbose(args)
-end
-
 def check_verbose(args)
   if ((args.raw.includes? "verbose") || (args.raw.includes? "v"))
     true

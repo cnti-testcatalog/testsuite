@@ -26,7 +26,7 @@ task "ip_addresses" do |_, args|
     Process.run("grep -rnw -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}'", shell: true) do |proc|
       while line = proc.output.gets
         response << line
-        puts "#{line}" if check_args(args)
+        puts "#{line}" if check_verbose(args)
       end
     end
     Dir.cd(cdir)
@@ -55,10 +55,10 @@ task "liveness", ["retrieve_manifest"] do |_, args|
     containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
     containers.each do |container|
       begin
-        puts container.as_h["name"].as_s if check_args(args)
+        puts container.as_h["name"].as_s if check_verbose(args)
         container.as_h["livenessProbe"].as_h 
       rescue ex
-        puts ex.message if check_args(args)
+        puts ex.message if check_verbose(args)
         errors = errors + 1
         # upsert_failed_task("liveness")
         resp = upsert_failed_task("liveness","✖️  FAILURE: No livenessProbe found")
@@ -87,10 +87,10 @@ task "readiness", ["retrieve_manifest"] do |_, args|
     containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
     containers.each do |container|
      begin
-        puts container.as_h["name"].as_s if check_args(args)
+        puts container.as_h["name"].as_s if check_verbose(args)
         container.as_h["readinessProbe"].as_h 
       rescue ex
-        puts ex.message if check_args(args)
+        puts ex.message if check_verbose(args)
         errors = errors + 1
         # upsert_failed_task("readiness")
         # puts "✖️  FAILURE: No readinessProbe found".colorize(:red)
