@@ -60,12 +60,12 @@ def check_verbose(args)
 end
 
 def check_cnf_config(args)
-  puts "args = #{args.inspect}" if check_verbose(args)
+  LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
   LOGGING.info("check_cnf_config args: #{args.inspect}")
   if args.named.keys.includes? "cnf-config"
     yml_file = args.named["cnf-config"].as(String)
     cnf = File.dirname(yml_file)
-    puts "all cnf: #{cnf}" if check_verbose(args)
+    LOGGING.info "all cnf: #{cnf}" if check_verbose(args)
   else
     cnf = nil
 	end
@@ -74,11 +74,11 @@ def check_cnf_config(args)
 end
 
 def check_all_cnf_args(args)
-  puts "args = #{args.inspect}" if check_verbose(args)
+  LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
   cnf = check_cnf_config(args)
   deploy_with_chart = true
   if cnf 
-    puts "all cnf: #{cnf}" if check_verbose(args)
+    LOGGING.info "all cnf: #{cnf}" if check_verbose(args)
     if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
       deploy_with_chart = false
     end
