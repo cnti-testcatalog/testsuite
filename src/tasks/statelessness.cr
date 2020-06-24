@@ -20,11 +20,11 @@ task "volume_hostpath_not_found", ["retrieve_manifest"] do |_, args|
   failed_emoji = "(ভ_ভ) ރ 💾"
   passed_emoji = "🖥️  💾"
   task_response = task_runner(args) do |args|
-    puts "volume_hostpath_not_found" if check_verbose(args)
+    LOGGING.info "volume_hostpath_not_found" if check_verbose(args)
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
-    puts deployment.inspect if check_verbose(args)
+    LOGGING.info deployment.inspect if check_verbose(args)
 
     hostPath_found = ""
     begin
@@ -35,7 +35,7 @@ task "volume_hostpath_not_found", ["retrieve_manifest"] do |_, args|
         end
       end
     rescue ex
-      puts ex.message if check_args(args)
+      LOGGING.error ex.message if check_verbose(args)
       upsert_failed_task("volume_hostpath_not_found","✖️  FAILURE: hostPath volumes found #{failed_emoji}")
     end
 

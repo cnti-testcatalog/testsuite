@@ -1,19 +1,21 @@
 desc "Platform Tests"
 task "platform", ["k8s_conformance"]  do |_, args|
+  LOGGING.info "platform" if check_verbose(args)
 end
 
 desc "Does the platform pass the K8s conformance tests?"
 task "k8s_conformance" do |_, args|
+  LOGGING.info "k8s_conformance" if check_verbose(args)
   begin
     #TODO enable full test with production mode
     #sonobuoy = `sonobuoy run --wait` if PRODUCTION_MODE and not in test_mode
     current_dir = FileUtils.pwd 
-    puts current_dir if check_verbose(args)
+    LOGGING.debug current_dir if check_verbose(args)
     sonobuoy = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy"
 
     # Clean up old results
     delete = `#{sonobuoy} delete --wait`
-    puts delete if check_verbose(args)
+    LOGGING.info delete if check_verbose(args)
 
     # Run the tests
     #TODO when in test mode --mode quick, prod mode no quick
@@ -24,10 +26,10 @@ task "k8s_conformance" do |_, args|
     else
       testrun = `#{sonobuoy} run --wait`
     end
-    puts testrun if check_verbose(args)
+    LOGGING.info testrun if check_verbose(args)
 
     results = `results=$(#{sonobuoy} retrieve); #{sonobuoy} results $results` 
-    puts results if check_verbose(args)
+    LOGGING.info results if check_verbose(args)
 
     # Grab the failed line from the results
     failed_count = ((results.match(/Failed: (.*)/)).try &.[1]) 
@@ -45,6 +47,6 @@ task "k8s_conformance" do |_, args|
     end
   ensure
     remove_tar = `rm *sonobuoy*.tar.gz`
-    puts remove_tar if check_verbose(args)
+    LOGGING.debug remove_tar if check_verbose(args)
   end
 end
