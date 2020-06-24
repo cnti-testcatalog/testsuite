@@ -15,7 +15,7 @@ describe "Utils" do
 
   it "'create_results_yml' should create a results yaml file"  do
     create_results_yml
-    yaml = File.open("#{LOGFILE}") do |file|
+    yaml = File.open("#{Results.file}") do |file|
       YAML.parse(file)
     end
     (yaml["name"]).should eq("cnf conformance")
@@ -53,7 +53,7 @@ describe "Utils" do
     create_results_yml
     failed_task("liveness", "FAILURE: No livenessProbe found")
 
-    yaml = File.open("#{LOGFILE}") do |file|
+    yaml = File.open("#{Results.file}") do |file|
       YAML.parse(file)
     end
     puts yaml.inspect
@@ -64,7 +64,7 @@ describe "Utils" do
     create_results_yml
     passed_task("liveness", "PASSED: livenessProbe found")
 
-    yaml = File.open("#{LOGFILE}") do |file|
+    yaml = File.open("#{Results.file}") do |file|
       YAML.parse(file)
     end
     puts yaml.inspect
@@ -85,7 +85,7 @@ describe "Utils" do
   it "'upsert_task' insert task in the results file"  do
     create_results_yml
     upsert_task("liveness", PASSED, task_points("liveness"))
-    yaml = File.open("#{LOGFILE}") do |file|
+    yaml = File.open("#{Results.file}") do |file|
       YAML.parse(file)
     end
     # puts yaml["items"].as_a.inspect
@@ -96,7 +96,7 @@ describe "Utils" do
     create_results_yml
     upsert_task("liveness", PASSED, task_points("liveness"))
     upsert_task("liveness", PASSED, task_points("liveness"))
-    yaml = File.open("#{LOGFILE}") do |file|
+    yaml = File.open("#{Results.file}") do |file|
       YAML.parse(file)
     end
     # puts yaml["items"].as_a.inspect
@@ -124,7 +124,7 @@ describe "Utils" do
   it "'all_result_test_names' should return the tasks assigned to a tag" do
     create_results_yml
     upsert_task("liveness", PASSED, task_points("liveness"))
-    (all_result_test_names(LOGFILE)).should eq(["liveness"])
+    (all_result_test_names(Results.file)).should eq(["liveness"])
   end
   it "'results_by_tag' should return a list of results by tag" do
     create_results_yml
