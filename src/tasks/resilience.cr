@@ -20,11 +20,12 @@ desc "Install Chaos Mesh"
 task "install_chaosmesh" do |_, args|
   current_dir = FileUtils.pwd 
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-  crd_install = `kubectl create -f https://raw.githubusercontent.com/pingcap/chaos-mesh/master/manifests/crd.yaml`
+  crd_install = `kubectl create -f https://raw.githubusercontent.com/pingcap/chaos-mesh/v0.8.0/manifests/crd.yaml`
   puts "#{crd_install}" if check_verbose(args)
   unless Dir.exists?("#{current_dir}/#{TOOLS_DIR}/chaos_mesh")
     # TODO use a tagged version
     fetch_chaos_mesh = `git clone https://github.com/pingcap/chaos-mesh.git #{current_dir}/#{TOOLS_DIR}/chaos_mesh`
+    checkout_tag = `cd #{current_dir}/#{TOOLS_DIR}/chaos_mesh && git checkout tags/v0.8.0 && cd -`
   end
   install_chaos_mesh = `#{helm} install chaos-mesh #{current_dir}/#{TOOLS_DIR}/chaos_mesh/helm/chaos-mesh --set chaosDaemon.runtime=containerd --set chaosDaemon.socketPath=/run/containerd/containerd.sock`
   wait_for_resource("#{current_dir}/spec/fixtures/chaos_network_loss.yml")
