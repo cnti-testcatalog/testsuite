@@ -13,22 +13,16 @@ describe "Utils" do
     `./cnf-conformance results_yml_cleanup`
   end
 
-  it "'create_results_yml' should create a results yaml file"  do
-    create_results_yml
+  it "'#Results.file' should return the name of the current yaml file"  do
+    clean_results_yml
     yaml = File.open("#{Results.file}") do |file|
       YAML.parse(file)
     end
     (yaml["name"]).should eq("cnf conformance")
   end
 
-  it "'final_cnf_results_yml' should return the named yaml file"  do
-    yml_name = create_final_results_yml_name
-    unless File.exists?(yml_name)
-      File.open(yml_name, "w") do |f| 
-        YAML.dump(template_results_yml, f)
-      end 
-    end
-    (final_cnf_results_yml).should eq(yml_name)
+  it "'final_cnf_results_yml' should return the latest time stamped results file"  do
+    (final_cnf_results_yml).should contain("cnf-conformance-results")
   end
 
   it "'points_yml' should parse and return the points yaml file"  do
@@ -50,7 +44,7 @@ describe "Utils" do
   end
 
   it "'failed_task' should find and update an existing task in the file"  do
-    create_results_yml
+    clean_results_yml
     failed_task("liveness", "FAILURE: No livenessProbe found")
 
     yaml = File.open("#{Results.file}") do |file|
@@ -61,7 +55,7 @@ describe "Utils" do
   end
 
   it "'passed_task' should find and update an existing task in the file"  do
-    create_results_yml
+    clean_results_yml
     passed_task("liveness", "PASSED: livenessProbe found")
 
     yaml = File.open("#{Results.file}") do |file|
@@ -72,18 +66,18 @@ describe "Utils" do
   end
 
   it "'task_required' should return if the passed task is required"  do
-    create_results_yml
+    clean_results_yml
     (task_required("privileged")).should be_true
   end
 
   it "'failed_required_tasks' should return a list of failed required tasks"  do
-    create_results_yml
+    clean_results_yml
     failed_task("privileged", "FAILURE: Privileged container found")
     (failed_required_tasks).should eq(["privileged"])
   end
 
   it "'upsert_task' insert task in the results file"  do
-    create_results_yml
+    clean_results_yml
     upsert_task("liveness", PASSED, task_points("liveness"))
     yaml = File.open("#{Results.file}") do |file|
       YAML.parse(file)
@@ -93,7 +87,7 @@ describe "Utils" do
   end
 
   it "'upsert_task' should find and update an existing task in the file"  do
-    create_results_yml
+    clean_results_yml
     upsert_task("liveness", PASSED, task_points("liveness"))
     upsert_task("liveness", PASSED, task_points("liveness"))
     yaml = File.open("#{Results.file}") do |file|
@@ -105,29 +99,29 @@ describe "Utils" do
   end
 
   it "'total_points' should sum the total amount of points in the results" do
-    create_results_yml
+    clean_results_yml
     upsert_task("liveness", PASSED, task_points("liveness"))
     (total_points).should eq(5)
   end
 
   it "'tasks_by_tag' should return the tasks assigned to a tag" do
-    create_results_yml
+    clean_results_yml
     (tasks_by_tag("configuration_lifecycle")).should eq(["ip_addresses", "liveness", "readiness", "rolling_update", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration"])
     (tasks_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
   it "'all_task_test_names' should return all tasks names" do
-    create_results_yml
+    clean_results_yml
     (all_task_test_names()).should eq(["reasonable_image_size", "reasonable_startup_time", "privileged", "increase_capacity", "decrease_capacity", "network_chaos", "ip_addresses", "liveness", "readiness", "rolling_update", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "helm_deploy", "install_script_helm", "helm_chart_valid", "helm_chart_published", "chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill", "volume_hostpath_not_found"])
   end
 
   it "'all_result_test_names' should return the tasks assigned to a tag" do
-    create_results_yml
+    clean_results_yml
     upsert_task("liveness", PASSED, task_points("liveness"))
     (all_result_test_names(Results.file)).should eq(["liveness"])
   end
   it "'results_by_tag' should return a list of results by tag" do
-    create_results_yml
+    clean_results_yml
     upsert_task("liveness", PASSED, task_points("liveness"))
     (results_by_tag("configuration_lifecycle")).should eq([{"name" => "liveness", "status" => "passed", "points" => 5}])
     (results_by_tag("does-not-exist")).should eq([] of YAML::Any) 

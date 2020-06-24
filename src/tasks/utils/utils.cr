@@ -6,6 +6,28 @@ require "logger"
 class Results
   @@file : String
   @@file = create_final_results_yml_name
+  LOGGING.info "Results file"
+  continue = false
+  LOGGING.info "file exists?:#{File.exists?(@@file)}"
+  if File.exists?("#{@@file}")
+    puts "Do you wish to overwrite the #{@@file} file? If so, your previous results.yml will be lost."
+    print "(Y/N) (Default N): > "
+    if ENV["CRYSTAL_ENV"]? == "TEST"
+      continue = true
+    else
+      user_input = gets
+      if user_input == "Y" || user_input == "y"
+        continue = true
+      end
+    end
+  else
+    continue = true
+  end
+  if continue
+    File.open("#{@@file}", "w") do |f| 
+      YAML.dump(template_results_yml, f)
+    end 
+  end
   def self.file
     @@file
   end
@@ -213,7 +235,8 @@ END
 end
 
 def create_final_results_yml_name
-  "cnf-conformance-results-" + Time.local.to_s("%Y%m%d-%H%M%S-%L") + ".yml"
+  FileUtils.mkdir_p("results") unless Dir.exists?("results")
+  "results/cnf-conformance-results-" + Time.local.to_s("%Y%m%d-%H%M%S-%L") + ".yml"
 end
 
 def create_points_yml
@@ -225,27 +248,22 @@ def create_points_yml
   end
 end
 
-def create_results_yml(verbose=false)
-  puts "create_results_yml"
-  continue = false
-  puts "file exists?:#{File.exists?(Results.file)}"
+def delete_results_yml(verbose=false)
   if File.exists?("#{Results.file}")
-    puts "Do you wish to overwrite the #{Results.file} file? If so, your previous results.yml will be lost."
-    print "(Y/N) (Default N): > "
-    if ENV["CRYSTAL_ENV"]? == "TEST"
-      continue = true
-    else
-      user_input = gets
-      if user_input == "Y" || user_input == "y"
-        continue = true
-      end
-    end
-  else
-    continue = true
+    File.delete("#{Results.file}")
   end
-  if continue
+end
+
+def clean_results_yml(verbose=false)
+  if File.exists?("#{Results.file}")
+    results = File.open("#{Results.file}") do |f| 
+      YAML.parse(f)
+    end 
     File.open("#{Results.file}", "w") do |f| 
-      YAML.dump(template_results_yml, f)
+      YAML.dump({name: results["name"],
+                 status: results["status"],
+                 points: results["points"],
+                 items: [] of YAML::Any}, f)
     end 
   end
 end

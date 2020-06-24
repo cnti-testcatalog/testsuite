@@ -11,6 +11,5 @@ end
 task "configuration_file_setup" do |_, args|
   puts "configuration_file_setup" if check_verbose(args)
   create_points_yml
-  create_results_yml
 end
 
