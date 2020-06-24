@@ -23,6 +23,7 @@ task "install_chaosmesh" do |_, args|
   crd_install = `kubectl create -f https://raw.githubusercontent.com/pingcap/chaos-mesh/v0.8.0/manifests/crd.yaml`
   puts "#{crd_install}" if check_verbose(args)
   unless Dir.exists?("#{current_dir}/#{TOOLS_DIR}/chaos_mesh")
+    # TODO use a tagged version
     fetch_chaos_mesh = `git clone https://github.com/pingcap/chaos-mesh.git #{current_dir}/#{TOOLS_DIR}/chaos_mesh`
     checkout_tag = `cd #{current_dir}/#{TOOLS_DIR}/chaos_mesh && git checkout tags/v0.8.0 && cd -`
   end
@@ -190,7 +191,8 @@ def wait_for_test(test_type, test_name)
     LOGGING.info("#{get_status}")
     status_data = Totem.from_yaml("#{get_status}")
     puts "Status: #{get_status}"
-    puts "#{status_data}"
+    # puts "#{status_data}"
+    LOGGING.debug("#{status_data}")
     status = status_data.get("status").as_h["experiment"].as_h["phase"].as_s
     second_count = second_count + 1
     puts "#{get_status}"
@@ -228,7 +230,7 @@ def wait_for_resource(resource_file)
     is_resource_created = $?.success?
     puts "Waiting for CRD"
     puts "Status: #{is_resource_created}"
-    puts "#{resource_file}"
+    LOGGING.debug "resource file: #{resource_file}"
     second_count = second_count + 1
   end
   `kubectl delete -f #{resource_file}`

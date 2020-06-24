@@ -82,7 +82,7 @@ describe "Utils" do
     (failed_required_tasks).should eq(["privileged"])
   end
 
-  it "'upsert_task' should find and update an existing task in the file"  do
+  it "'upsert_task' insert task in the results file"  do
     create_results_yml
     upsert_task("liveness", PASSED, task_points("liveness"))
     yaml = File.open("#{LOGFILE}") do |file|
@@ -90,6 +90,18 @@ describe "Utils" do
     end
     # puts yaml["items"].as_a.inspect
     (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == task_points("liveness")}).should be_truthy
+  end
+
+  it "'upsert_task' should find and update an existing task in the file"  do
+    create_results_yml
+    upsert_task("liveness", PASSED, task_points("liveness"))
+    upsert_task("liveness", PASSED, task_points("liveness"))
+    yaml = File.open("#{LOGFILE}") do |file|
+      YAML.parse(file)
+    end
+    # puts yaml["items"].as_a.inspect
+    (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == task_points("liveness")}).should be_truthy
+    (total_points).should eq(5)
   end
 
   it "'total_points' should sum the total amount of points in the results" do

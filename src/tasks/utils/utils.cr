@@ -255,8 +255,12 @@ def upsert_task(task, status, points)
   results = File.open("#{LOGFILE}") do |f| 
     YAML.parse(f)
   end 
-  found = false
+
   result_items = results["items"].as_a
+  # remove the existing entry
+  result_items = result_items.reject do |x| 
+    x["name"] == task  
+  end
 
   result_items << YAML.parse "{name: #{task}, status: #{status}, points: #{points}}"
   File.open("#{LOGFILE}", "w") do |f| 
