@@ -190,7 +190,8 @@ def wait_for_test(test_type, test_name)
     LOGGING.info("#{get_status}")
     status_data = Totem.from_yaml("#{get_status}")
     puts "Status: #{get_status}"
-    puts "#{status_data}"
+    # puts "#{status_data}"
+    LOGGING.debug("#{status_data}")
     status = status_data.get("status").as_h["experiment"].as_h["phase"].as_s
     second_count = second_count + 1
     puts "#{get_status}"
@@ -228,7 +229,7 @@ def wait_for_resource(resource_file)
     is_resource_created = $?.success?
     puts "Waiting for CRD"
     puts "Status: #{is_resource_created}"
-    puts "#{resource_file}"
+    LOGGING.debug "resource file: #{resource_file}"
     second_count = second_count + 1
   end
   `kubectl delete -f #{resource_file}`
