@@ -8,6 +8,7 @@
 | William Harris | [williscool](https://github.com/williscool) | [Vulk Coop](vulk.coop) |
 | Taylor Carpenter | [taylor](https://github.com/taylor) | [Vulk Coop](vulk.coop) |
 | Lucina Stricko | [lixuna](https://github.com/lixuna) | [Vulk Coop](vulk.coop) |
+| Drew Bentley | [agentpoyo](https://github.com/agentpoyo) | [Vulk Coop](vulk.coop) |
 
 # Maintainers
 | Maintainers | GitHub ID | Affiliation |
