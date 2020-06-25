@@ -19,7 +19,7 @@ if ARGV.find { |x| x == "setup"}
   # puts "Creating crystal alias under: ~/.bash_profile"
   # puts `echo "alias crystal='crystal $(pwd)/tools/ephemeral_env/ephemeral_env.cr command -- $@'" >> ~/.bash_profile`
   # puts "Crystal alias successfully created. You will need to restart your terminal session for it to apply or manually run: \n 'alias crystal='crystal $(pwd)/tools/ephemeral_env/ephemeral_env.cr command -- $@'"
-  puts "Create a bash alias by running: \n 'alias crystal='$(pwd)/ephemeral_env command $@'"
+  puts "Create a bash alias by running: \n alias crystal='$(pwd)/ephemeral_env command $@'"
 
 
 elsif ARGV.find { |x| x == "create_env"}
