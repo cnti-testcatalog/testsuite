@@ -7,8 +7,9 @@ require "./utils/utils.cr"
 
 desc "The CNF conformance suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
 task "scalability", ["increase_decrease_capacity"] do |t, args|
-  puts "scaling args.raw: #{args.raw}" if check_verbose(args)
-  puts "scaling args.named: #{args.named}" if check_verbose(args)
+  LOGGING.info "scalability" if check_verbose(args)
+  LOGGING.debug "scaling args.raw: #{args.raw}" if check_verbose(args)
+  LOGGING.debug "scaling args.named: #{args.named}" if check_verbose(args)
   # t.invoke("increase_decrease_capacity", args)
   total = total_points("scalability")
   if total > 0
@@ -20,13 +21,14 @@ end
 
 desc "Test increasing/decreasing capacity"
 task "increase_decrease_capacity", ["increase_capacity", "decrease_capacity"] do |t, args|
+  LOGGING.info "increase_decrease_capacity" if check_verbose(args)
 end
 
 
 desc "Test increasing capacity by setting replicas to 1 and then increasing to 3"
 task "increase_capacity" do |_, args|
   task_runner(args) do |args|
-
+    LOGGING.info "increase_capacity" if check_verbose(args)
     emoji_increase_capacity="📦📈"
 
     target_replicas = "3"
@@ -45,6 +47,7 @@ end
 desc "Test decrease capacity by setting replicas to 3 and then decreasing to 1"
 task "decrease_capacity" do |_, args|
   task_runner(args) do |args|
+    LOGGING.info "decrease_capacity" if check_verbose(args)
     target_replicas = "1"
     base_replicas = "3"
     final_count = change_capacity(base_replicas, target_replicas, args)
@@ -61,10 +64,10 @@ task "decrease_capacity" do |_, args|
 end
 
 def change_capacity(base_replicas, target_replica_count, args)
-  puts "change_capacity" if check_verbose(args)
-  puts "increase_capacity args.raw: #{args.raw}" if check_verbose(args)
-  puts "increase_capacity args.named: #{args.named}" if check_verbose(args)
-  puts "base replicas: #{base_replicas}" if check_verbose(args)
+  LOGGING.info "change_capacity" if check_verbose(args)
+  LOGGING.debug "increase_capacity args.raw: #{args.raw}" if check_verbose(args)
+  LOGGING.debug "increase_capacity args.named: #{args.named}" if check_verbose(args)
+  LOGGING.info "base replicas: #{base_replicas}" if check_verbose(args)
 
   # Parse the cnf-conformance.yml
   # config = cnf_conformance_yml
@@ -76,15 +79,15 @@ def change_capacity(base_replicas, target_replica_count, args)
   else
     deployment_name = config.get("deployment_name").as_s 
   end
-  puts "deployment_name: #{deployment_name}" if check_verbose(args)
+  LOGGING.info "deployment_name: #{deployment_name}" if check_verbose(args)
 
   base = `kubectl scale deployment.v1.apps/#{deployment_name} --replicas=#{base_replicas}`
-  puts "base: #{base}" if check_verbose(args) 
+  LOGGING.info "base: #{base}" if check_verbose(args) 
   initialized_count = wait_for_scaling(deployment_name, base_replicas, args)
   if initialized_count != base_replicas
-    puts "deployment initialized to #{initialized_count} and could not be set to #{base_replicas}" if check_verbose(args)
+    LOGGING.info "deployment initialized to #{initialized_count} and could not be set to #{base_replicas}" if check_verbose(args)
   else
-    puts "deployment initialized to #{initialized_count}" if check_verbose(args)
+    LOGGING.info "deployment initialized to #{initialized_count}" if check_verbose(args)
   end
 
   increase = `kubectl scale deployment.v1.apps/#{deployment_name} --replicas=#{target_replica_count}`
@@ -104,13 +107,13 @@ def wait_for_scaling(deployment_name, target_replica_count, args)
   current_replicas = "0"
   previous_replicas = `kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
   until current_replicas == target_replica_count || second_count > wait_count
-    puts "secound_count: #{second_count} wait_count: #{wait_count}" if check_verbose(args)
-    puts "current_replicas before get deployments: #{current_replicas}" if check_verbose(args)
+    LOGGING.debug "secound_count: #{second_count} wait_count: #{wait_count}" if check_verbose(args)
+    LOGGING.info "current_replicas before get deployments: #{current_replicas}" if check_verbose(args)
     sleep 1
-    puts `echo $KUBECONFIG` if check_verbose(args)
-    puts "Get deployments command: kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'" if check_verbose(args)
+    LOGGING.debug `echo $KUBECONFIG` if check_verbose(args)
+    LOGGING.info "Get deployments command: kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'" if check_verbose(args)
     current_replicas = `kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
-    puts "current_replicas after get deployments: #{current_replicas.inspect}" if check_verbose(args)
+    LOGGING.info "current_replicas after get deployments: #{current_replicas.inspect}" if check_verbose(args)
 
     if current_replicas.empty?
       current_replicas = "0"
@@ -122,8 +125,8 @@ def wait_for_scaling(deployment_name, target_replica_count, args)
       previous_replicas = current_replicas
     end
     second_count = second_count + 1 
-    puts "previous_replicas: #{previous_replicas}" if check_verbose(args)
-    puts "current_replicas: #{current_replicas}" if check_verbose(args)
+    LOGGING.info "previous_replicas: #{previous_replicas}" if check_verbose(args)
+    LOGGING.info "current_replicas: #{current_replicas}" if check_verbose(args)
   end
   current_replicas
 end 
