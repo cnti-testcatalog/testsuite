@@ -72,7 +72,7 @@ task "install_script_helm" do |_, args|
     found = 0
     # current_cnf_dir_short_name = cnf_conformance_dir
     # current_cnf_dir_short_name = ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
-    # puts current_cnf_dir_short_name if check_verbose(args)
+    # LOGGING.debug current_cnf_dir_short_name if check_verbose(args)
     # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     LOGGING.debug destination_cnf_dir if check_verbose(args)
@@ -82,7 +82,7 @@ task "install_script_helm" do |_, args|
       content = File.open("#{destination_cnf_dir}/#{install_script}") do |file|
         file.gets_to_end
       end
-      # puts content
+      # LOGGING.debug content
       if /helm/ =~ content 
         found = 1
       end
@@ -148,16 +148,16 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     end
 
     LOGGING.debug "helm_directory: #{helm_directory}" if check_verbose(args)
-    # puts "helm_chart_repo: #{helm_chart_repo}" if check_verbose(args)
+    # LOGGING.debug "helm_chart_repo: #{helm_chart_repo}" if check_verbose(args)
 
     current_dir = FileUtils.pwd 
     LOGGING.debug current_dir if check_verbose(args)
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
 
     # current_cnf_dir_short_name = cnf_conformance_dir
-    # puts current_cnf_dir_short_name if check_verbose(args)
+    # LOGGING.debug current_cnf_dir_short_name if check_verbose(args)
     # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
-    # puts destination_cnf_dir if check_verbose(args)
+    # LOGGING.debug destination_cnf_dir if check_verbose(args)
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     ls_helm_directory = `ls -al #{destination_cnf_dir}/#{helm_directory}`
     LOGGING.debug "ls -al of helm_directory: #{ls_helm_directory}" if check_verbose(args)

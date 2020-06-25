@@ -3,8 +3,8 @@ require "colorize"
 
 describe CnfConformance do
   before_all do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
+    # LOGGING.debug `pwd` 
+    # LOGGING.debug `echo $KUBECONFIG`
 
     `./cnf-conformance samples_cleanup`
     $?.success?.should be_true
@@ -14,8 +14,8 @@ describe CnfConformance do
   end
 
   it "'install_script_helm' should fail if install script does not have helm", tags: "happy-path"  do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
+    # LOGGING.debug `pwd` 
+    # LOGGING.debug `echo $KUBECONFIG`
     # `./cnf-conformance cleanup`
     # $?.success?.should be_true
     `./cnf-conformance sample_coredns_source_setup`
@@ -57,8 +57,8 @@ describe CnfConformance do
 
 
   it "'helm_chart_valid' should pass on a good helm chart", tags: "happy-path"  do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
+    # LOGGING.debug `pwd` 
+    # LOGGING.debug `echo $KUBECONFIG`
     # `./cnf-conformance cleanup`
     # $?.success?.should be_true
     `./cnf-conformance sample_coredns_setup`
@@ -70,8 +70,8 @@ describe CnfConformance do
   end
 
   it "'helm_chart_valid' should fail on a bad helm chart" do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
+    # LOGGING.debug `pwd` 
+    # LOGGING.debug `echo $KUBECONFIG`
     `./cnf-conformance sample_coredns_cleanup force=true`
     $?.success?.should be_true
     `./cnf-conformance bad_helm_cnf_setup`

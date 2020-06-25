@@ -7,8 +7,8 @@ require "sam"
 
 describe "Microservice" do
   before_all do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
+    # LOGGING.debug `pwd` 
+    # LOGGING.debug `echo $KUBECONFIG`
     `./cnf-conformance samples_cleanup force=true`
     $?.success?.should be_true
     `./cnf-conformance configuration_file_setup`

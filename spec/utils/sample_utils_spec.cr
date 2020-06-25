@@ -6,8 +6,8 @@ require "sam"
 
 describe "SampleUtils" do
   before_all do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
+    # LOGGING.debug `pwd` 
+    # LOGGING.debug `echo $KUBECONFIG`
     `./cnf-conformance helm_local_install`
     $?.success?.should be_true
     `./cnf-conformance cleanup`
@@ -15,8 +15,8 @@ describe "SampleUtils" do
   end
 
    after_all do
-     # puts `pwd` 
-     # puts `echo $KUBECONFIG`
+     # LOGGING.debug `pwd` 
+     # LOGGING.debug `echo $KUBECONFIG`
      `./cnf-conformance sample_coredns_setup`
      $?.success?.should be_true
    end

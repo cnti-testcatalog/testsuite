@@ -281,7 +281,7 @@ def sample_cleanup(config_file, force=false, verbose=true)
 
   current_dir = FileUtils.pwd 
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-  # puts helm if verbose 
+  # LOGGING.debug helm if verbose 
   # destination_cnf_dir = "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(config_path)}"
   dir_exists = File.directory?(destination_cnf_dir)
   ret = true

@@ -268,7 +268,7 @@ def points_yml
   points = File.open("points.yml") do |f| 
     YAML.parse(f)
   end 
-  # puts "points: #{points.inspect}"
+  # LOGGING.debug "points: #{points.inspect}"
   points.as_a
 end
 

@@ -82,7 +82,7 @@ describe "Utils" do
     yaml = File.open("#{Results.file}") do |file|
       YAML.parse(file)
     end
-    # puts yaml["items"].as_a.inspect
+    # LOGGING.debug yaml["items"].as_a.inspect
     (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == task_points("liveness")}).should be_truthy
   end
 
@@ -93,7 +93,7 @@ describe "Utils" do
     yaml = File.open("#{Results.file}") do |file|
       YAML.parse(file)
     end
-    # puts yaml["items"].as_a.inspect
+    # LOGGING.debug yaml["items"].as_a.inspect
     (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == task_points("liveness")}).should be_truthy
     (total_points).should eq(5)
   end

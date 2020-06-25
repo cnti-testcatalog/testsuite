@@ -4,8 +4,8 @@ require "colorize"
 
 describe CnfConformance do
   before_all do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
+    # LOGGING.debug `pwd` 
+    # LOGGING.debug `echo $KUBECONFIG`
     `./cnf-conformance samples_cleanup`
     $?.success?.should be_true
     `./cnf-conformance setup`
@@ -15,20 +15,20 @@ describe CnfConformance do
   end
 
   after_all do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
+    # LOGGING.debug `pwd` 
+    # LOGGING.debug `echo $KUBECONFIG`
     `./cnf-conformance samples_cleanup`
     $?.success?.should be_true
   end
 
   it "'all' should run the whole test suite", tags: "happy-path" do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
+    # LOGGING.debug `pwd` 
+    # LOGGING.debug `echo $KUBECONFIG`
     # Test the binary
     # Build should already be present
     # build_s = `crystal build src/cnf-conformance.cr`
     # $?.success?.should be_true
-    # puts build_s 
+    # LOGGING.debug build_s 
     `./cnf-conformance samples_cleanup`
     response_s = `./cnf-conformance all cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
     puts response_s
@@ -44,8 +44,8 @@ describe CnfConformance do
   end
 
   it "'scalability' should run all of the scalability tests", tags: "happy-path"  do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
+    # LOGGING.debug `pwd` 
+    # LOGGING.debug `echo $KUBECONFIG`
     `./cnf-conformance samples_cleanup`
     response_s = `./cnf-conformance setup`
     puts response_s

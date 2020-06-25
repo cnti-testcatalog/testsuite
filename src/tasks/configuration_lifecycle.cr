@@ -185,7 +185,7 @@ task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
     release_name = config.get("release_name").as_s
     service_name = config.get("service_name").as_s
     # current_cnf_dir_short_name = cnf_conformance_dir
-    # puts current_cnf_dir_short_name if check_verbose(args)
+    # LOGGING.debug current_cnf_dir_short_name if check_verbose(args)
     # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     if File.exists?("#{destination_cnf_dir}/service.yml")
@@ -212,7 +212,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     helm_directory = config.get("helm_directory").as_s
     release_name = "#{config.get("release_name").as_s?}"
     # current_cnf_dir_short_name = cnf_conformance_dir
-    # puts "Current_CNF_Dir: #{current_cnf_dir_short_name}" if check_verbose(args)
+    # LOGGING.debug "Current_CNF_Dir: #{current_cnf_dir_short_name}" if check_verbose(args)
     # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
 
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
