@@ -3,7 +3,35 @@ require "colorize"
 require "./sample_utils.cr"
 require "logger"
 
-
+class Results
+  @@file : String
+  @@file = create_final_results_yml_name
+  LOGGING.info "Results file"
+  continue = false
+  LOGGING.info "file exists?:#{File.exists?(@@file)}"
+  if File.exists?("#{@@file}")
+    puts "Do you wish to overwrite the #{@@file} file? If so, your previous results.yml will be lost."
+    print "(Y/N) (Default N): > "
+    if ENV["CRYSTAL_ENV"]? == "TEST"
+      continue = true
+    else
+      user_input = gets
+      if user_input == "Y" || user_input == "y"
+        continue = true
+      end
+    end
+  else
+    continue = true
+  end
+  if continue
+    File.open("#{@@file}", "w") do |f| 
+      YAML.dump(template_results_yml, f)
+    end 
+  end
+  def self.file
+    @@file
+  end
+end
 
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
@@ -13,8 +41,8 @@ CNF_DIR = "cnfs"
 CONFIG_FILE = "cnf-conformance.yml"
 TOOLS_DIR = "tools"
 BASE_CONFIG = "./config.yml"
-# LOGFILE = "cnf-conformance-results-#{Time.utc.to_s("%Y%m%d")}.log"
-LOGFILE = "results.yml"
+# Results.file = "cnf-conformance-results-#{Time.utc.to_s("%Y%m%d")}.log"
+# Results.file = "results.yml"
 POINTSFILE = "points.yml"
 PASSED = "passed"
 FAILED = "failed"
@@ -32,6 +60,8 @@ LOGGING.formatter = Logger::Formatter.new do |severity, datetime, progname, mess
 	io << label[0] << ", [" << datetime << " #" << Process.pid << "] "
 	io << label.rjust(5) << " -- " << progname << ": " << message
 end
+
+
 
 def loglevel
   toggle_on = false
@@ -200,7 +230,8 @@ END
 end
 
 def create_final_results_yml_name
-  "cnf-conformance-results-" + Time.local.to_s("%Y%m%d-%H%M%S-%L") + ".yml"
+  FileUtils.mkdir_p("results") unless Dir.exists?("results")
+  "results/cnf-conformance-results-" + Time.local.to_s("%Y%m%d-%H%M%S-%L") + ".yml"
 end
 
 def create_points_yml
@@ -212,27 +243,22 @@ def create_points_yml
   end
 end
 
-def create_results_yml(verbose=false)
-  puts "create_results_yml"
-  continue = false
-  puts "file exists?:#{File.exists?(LOGFILE)}"
-  if File.exists?("#{LOGFILE}")
-    puts "Do you wish to overwrite the #{LOGFILE} file? If so, your previous results.yml will be lost."
-    print "(Y/N) (Default N): > "
-    if ENV["CRYSTAL_ENV"]? == "TEST"
-      continue = true
-    else
-      user_input = gets
-      if user_input == "Y" || user_input == "y"
-        continue = true
-      end
-    end
-  else
-    continue = true
+def delete_results_yml(verbose=false)
+  if File.exists?("#{Results.file}")
+    File.delete("#{Results.file}")
   end
-  if continue
-    File.open("#{LOGFILE}", "w") do |f| 
-      YAML.dump(template_results_yml, f)
+end
+
+def clean_results_yml(verbose=false)
+  if File.exists?("#{Results.file}")
+    results = File.open("#{Results.file}") do |f| 
+      YAML.parse(f)
+    end 
+    File.open("#{Results.file}", "w") do |f| 
+      YAML.dump({name: results["name"],
+                 status: results["status"],
+                 points: results["points"],
+                 items: [] of YAML::Any}, f)
     end 
   end
 end
@@ -247,14 +273,18 @@ def points_yml
 end
 
 def upsert_task(task, status, points)
-  results = File.open("#{LOGFILE}") do |f| 
+  results = File.open("#{Results.file}") do |f| 
     YAML.parse(f)
   end 
-  found = false
+
   result_items = results["items"].as_a
+  # remove the existing entry
+  result_items = result_items.reject do |x| 
+    x["name"] == task  
+  end
 
   result_items << YAML.parse "{name: #{task}, status: #{status}, points: #{points}}"
-  File.open("#{LOGFILE}", "w") do |f| 
+  File.open("#{Results.file}", "w") do |f| 
     YAML.dump({name: results["name"],
                status: results["status"],
                points: results["points"],
@@ -319,7 +349,7 @@ def task_required(task)
 end
 
 def failed_required_tasks
-  yaml = File.open("#{LOGFILE}") do |file|
+  yaml = File.open("#{Results.file}") do |file|
     YAML.parse(file)
   end
   yaml["items"].as_a.reduce([] of String) do |acc, i|
@@ -334,7 +364,7 @@ def failed_required_tasks
 end
 
 # def total_points
-#   yaml = File.open("#{LOGFILE}") do |file|
+#   yaml = File.open("#{Results.file}") do |file|
 #     YAML.parse(file)
 #   end
 #   yaml["items"].as_a.reduce(0) do |acc, i|
@@ -352,7 +382,7 @@ def total_points(tag=nil)
   else
     tasks = all_task_test_names
   end
-  yaml = File.open("#{LOGFILE}") do |file|
+  yaml = File.open("#{Results.file}") do |file|
     YAML.parse(file)
   end
   yaml["items"].as_a.reduce(0) do |acc, i|
@@ -415,7 +445,7 @@ end
 def results_by_tag(tag)
   task_list = tasks_by_tag(tag)
 
-  results = File.open("#{LOGFILE}") do |f| 
+  results = File.open("#{Results.file}") do |f| 
     YAML.parse(f)
   end 
 
