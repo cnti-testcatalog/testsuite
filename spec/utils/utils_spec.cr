@@ -50,7 +50,7 @@ describe "Utils" do
     yaml = File.open("#{Results.file}") do |file|
       YAML.parse(file)
     end
-    puts yaml.inspect
+    LOGGING.info yaml.inspect
     (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == task_points("liveness", false)}).should be_truthy
   end
 
@@ -61,7 +61,7 @@ describe "Utils" do
     yaml = File.open("#{Results.file}") do |file|
       YAML.parse(file)
     end
-    puts yaml.inspect
+    LOGGING.info yaml.inspect
     (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == task_points("liveness")}).should be_truthy
   end
 
@@ -185,13 +185,13 @@ describe "Utils" do
       helm_chart_container_name = config.get("helm_chart_container_name").as_s
       privileged_response = `kubectl get pods --all-namespaces -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
       privileged_list = privileged_response.to_s.split(" ").uniq
-      puts "privileged_list #{privileged_list}"
+      LOGGING.info "privileged_list #{privileged_list}"
       if privileged_list.select {|x| x == helm_chart_container_name}.size > 0
         resp = "✖️  FAILURE: Found privileged containers: #{privileged_list.inspect}".colorize(:red)
       else
         resp = "✔️  PASSED: No privileged containers".colorize(:green)
       end
-      puts resp
+      LOGGING.info resp
       resp
     end
     (task_response).should eq("✔️  PASSED: No privileged containers".colorize(:green))
@@ -209,13 +209,13 @@ describe "Utils" do
       helm_chart_container_name = config.get("helm_chart_container_name").as_s
       privileged_response = `kubectl get pods --all-namespaces -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
       privileged_list = privileged_response.to_s.split(" ").uniq
-      puts "privileged_list #{privileged_list}"
+      LOGGING.info "privileged_list #{privileged_list}"
       if privileged_list.select {|x| x == helm_chart_container_name}.size > 0
         resp = "✖️  FAILURE: Found privileged containers: #{privileged_list.inspect}".colorize(:red)
       else
         resp = "✔️  PASSED: No privileged containers".colorize(:green)
       end
-      puts resp
+      LOGGING.info resp
       resp
     end
     (task_response).should eq(["✔️  PASSED: No privileged containers".colorize(:green), "✔️  PASSED: No privileged containers".colorize(:green)])
@@ -235,13 +235,13 @@ describe "Utils" do
       helm_chart_container_name = config.get("helm_chart_container_name").as_s
       privileged_response = `kubectl get pods --all-namespaces -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
       privileged_list = privileged_response.to_s.split(" ").uniq
-      puts "privileged_list #{privileged_list}"
+      LOGGING.info "privileged_list #{privileged_list}"
       if privileged_list.select {|x| x == helm_chart_container_name}.size > 0
         resp = "✖️  FAILURE: Found privileged containers: #{privileged_list.inspect}".colorize(:red)
       else
         resp = "✔️  PASSED: No privileged containers".colorize(:green)
       end
-      puts resp
+      LOGGING.info resp
       resp
     end
     (task_response).should eq("✔️  PASSED: No privileged containers".colorize(:green))

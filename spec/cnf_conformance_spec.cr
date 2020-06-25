@@ -31,7 +31,7 @@ describe CnfConformance do
     # LOGGING.debug build_s 
     `./cnf-conformance samples_cleanup`
     response_s = `./cnf-conformance all cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
-    puts response_s
+    LOGGING.info response_s
     $?.success?.should be_true
     (/PASSED: Helm readiness probe found/ =~ response_s).should_not be_nil
     (/PASSED: Helm liveness probe/ =~ response_s).should_not be_nil
@@ -48,11 +48,11 @@ describe CnfConformance do
     # LOGGING.debug `echo $KUBECONFIG`
     `./cnf-conformance samples_cleanup`
     response_s = `./cnf-conformance setup`
-    puts response_s
+    LOGGING.info response_s
     `./cnf-conformance sample_coredns_with_wait_setup`
     $?.success?.should be_true
     response_s = `./cnf-conformance scalability`
-    puts response_s
+    LOGGING.info response_s
     $?.success?.should be_true
     (/PASSED: Replicas increased to 3/ =~ response_s).should_not be_nil
     (/PASSED: Replicas decreased to 1/ =~ response_s).should_not be_nil

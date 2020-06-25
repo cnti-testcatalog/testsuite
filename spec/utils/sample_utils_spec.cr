@@ -31,11 +31,11 @@ describe "SampleUtils" do
     $?.success?.should be_true
 
     current_dir = FileUtils.pwd 
-    puts current_dir
+    LOGGING.info current_dir
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-    puts helm
+    LOGGING.info helm
     helm_install = `#{helm} install coredns stable/coredns`
-    puts helm_install
+    LOGGING.info helm_install
     wait_for_install("coredns-coredns")
     current_replicas = `kubectl get deployments coredns-coredns -o=jsonpath='{.status.readyReplicas}'`
     (current_replicas.to_i > 0).should be_true
@@ -126,7 +126,7 @@ it "'validate_cnf_conformance_yml' (function) should pass, when a cnf has a vali
   args = Sam::Args.new(["cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml"])
 
   yml = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-  puts yml.inspect
+  LOGGING.info yml.inspect
   ("#{yml.get("release_name").as_s?}").should eq("coredns")
 
   valid, command_output = validate_cnf_conformance_yml(yml)
@@ -146,12 +146,12 @@ it "'validate_cnf_conformance_yml' (function) should warn, but be valid when a c
   args = Sam::Args.new(["cnf-config=./spec/fixtures/cnf-conformance-unmapped-keys-and-subkeys.yml"])
 
   yml = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-  puts yml.inspect
+  LOGGING.info yml.inspect
   ("#{yml.get("release_name").as_s?}").should eq("coredns")
 
   status, warning_output = validate_cnf_conformance_yml(yml)
 
-  puts "WARNING: #{warning_output}"
+  LOGGING.info "WARNING: #{warning_output}"
 
   (status).should eq(true)
   (warning_output).should_not be_nil
@@ -171,7 +171,7 @@ it "'validate_cnf_conformance_yml' (function) should fail when an invalid cnf co
   args = Sam::Args.new(["cnf-config=spec/fixtures/cnf-conformance-invalid-and-unmapped-keys.yml"])
 
   yml = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-  puts yml.inspect
+  LOGGING.info yml.inspect
   ("#{yml.get("release_name").as_s?}").should eq("coredns")
 
   status, warning_output = validate_cnf_conformance_yml(yml)
@@ -196,7 +196,7 @@ it "'validate_cnf_conformance_yml' (command) should pass, for all sample-cnfs", 
     conformance_yml = "sample-cnfs/#{dir}/cnf-conformance.yml"
     response_s = `./cnf-conformance validate_config cnf-config=#{conformance_yml}`
     if (/FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
-      puts "\n #{conformance_yml}: #{response_s}"
+      LOGGING.info "\n #{conformance_yml}: #{response_s}"
     end
     (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
   end
@@ -210,7 +210,7 @@ it "'validate_cnf_conformance_yml' (command) should pass, for all example-cnfs",
     conformance_yml = "example-cnfs/#{dir}/cnf-conformance.yml"
     response_s = `./cnf-conformance validate_config cnf-config=#{conformance_yml}`
     if (/FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
-      puts "\n #{conformance_yml}: #{response_s}"
+      LOGGING.info "\n #{conformance_yml}: #{response_s}"
     end
     (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
   end
