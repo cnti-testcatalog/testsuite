@@ -327,11 +327,11 @@ def validate_cnf_conformance_yml(config)
     ccyt_validator = CnfConformanceYmlType.from_json(config.settings.to_json)
   rescue ex
     valid = false
-    puts "✖ ERROR: cnf_conformance.yml field validation error.".colorize(:red)
-    puts " please check info in the the field name near the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
-    puts ex.message
+    LOGGING.error "✖ ERROR: cnf_conformance.yml field validation error.".colorize(:red)
+    LOGGING.error " please check info in the the field name near the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
+    LOGGING.error ex.message
     ex.backtrace.each do |x|
-      puts x
+      LOGGING.error x
     end
   end
 

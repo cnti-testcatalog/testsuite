@@ -148,9 +148,9 @@ def single_task_runner(args, &block)
   begin
   yield args
   rescue ex
-    puts ex.message
+    LOGGING.error ex.message
     ex.backtrace.each do |x|
-      puts x
+      LOGGING.error x
     end
   end
 end
