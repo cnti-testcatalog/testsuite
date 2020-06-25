@@ -138,8 +138,9 @@ task "rolling_update" do |_, args|
     end
     
     unless version_tag
-      upsert_failed_task("rolling_update")
-      raise "✖️  FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'rolling_update_tag'"
+      fail_msg = "✖️  FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'rolling_update_tag'"
+      upsert_failed_task("rolling_update", fail_msg)
+      raise fail_msg
     end
 
     release_name = config.get("release_name").as_s
