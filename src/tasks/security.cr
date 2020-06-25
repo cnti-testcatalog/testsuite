@@ -35,11 +35,9 @@ task "privileged" do |_, args|
     violation_list = (privileged_list - white_list_containers)
     if privileged_list.find {|x| x == helm_chart_container_name} ||
         violation_list.size > 0
-      upsert_failed_task("privileged")
-      puts "✖️  FAILURE: Found #{violation_list.size} privileged containers: #{violation_list.inspect}".colorize(:red)
+      upsert_failed_task("privileged", "✖️  FAILURE: Found #{violation_list.size} privileged containers: #{violation_list.inspect}")
     else
-      upsert_passed_task("privileged")
-      puts "✔️  PASSED: No privileged containers".colorize(:green)
+      upsert_passed_task("privileged", "✔️  PASSED: No privileged containers")
     end
   end
 end

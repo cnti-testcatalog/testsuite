@@ -48,11 +48,9 @@ task "helm_deploy" do |_, args|
         LOGGING.info helm_install if check_verbose(args)
 
         if is_helm_installed
-          upsert_passed_task("helm_deploy")
-          puts "✔️  PASSED: Helm deploy successful".colorize(:green)
+          upsert_passed_task("helm_deploy", "✔️  PASSED: Helm deploy successful")
         else
-          upsert_failed_task("helm_deploy")
-          puts "✖️  FAILURE: Helm deploy failed".colorize(:red)
+          upsert_failed_task("helm_deploy", "✖️  FAILURE: Helm deploy failed")
         end
       ensure
         LOGGING.debug "#{helm} uninstall #{release_name_prefix}#{release_name}" if check_verbose(args)
@@ -89,15 +87,12 @@ task "install_script_helm" do |_, args|
         found = 1
       end
       if found < 1
-        upsert_failed_task("install_script_helm")
-        puts "✖️  FAILURE: Helm not found in supplied install script".colorize(:red)
+        upsert_failed_task("install_script_helm", "✖️  FAILURE: Helm not found in supplied install script")
       else
-        upsert_passed_task("install_script_helm")
-        puts "✔️  PASSED: Helm found in supplied install script".colorize(:green)
+        upsert_passed_task("install_script_helm", "✔️  PASSED: Helm found in supplied install script")
       end
     else
-      upsert_passed_task("install_script_helm")
-      puts "PASSED (by default): No install script provided".colorize(:green)
+      upsert_passed_task("install_script_helm", "✔️  PASSED (by default): No install script provided")
     end
   end
 end
@@ -122,19 +117,15 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
         helm_search = `#{helm} search repo #{helm_chart}`
         LOGGING.debug "#{helm_search}" if check_verbose(args)
         unless helm_search =~ /No results found/
-          upsert_passed_task("helm_chart_published")
-          puts "✔️  PASSED: Published Helm Chart Found".colorize(:green)
+          upsert_passed_task("helm_chart_published", "✔️  PASSED: Published Helm Chart Found")
         else
-          upsert_failed_task("helm_chart_published")
-          puts "✖️  FAILURE: Published Helm Chart Not Found".colorize(:red)
+          upsert_failed_task("helm_chart_published", "✖️  FAILURE: Published Helm Chart Not Found")
         end
       else
-        upsert_failed_task("helm_chart_published")
-        puts "✖️  FAILURE: Published Helm Chart Not Found".colorize(:red)
+        upsert_failed_task("helm_chart_published", "✖️  FAILURE: Published Helm Chart Not Found")
       end
     else
-      upsert_failed_task("helm_chart_published")
-      puts "✖️  FAILURE: Published Helm Chart Not Found".colorize(:red)
+      upsert_failed_task("helm_chart_published", "✖️  FAILURE: Published Helm Chart Not Found")
     end
   end
 end
@@ -175,11 +166,9 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     LOGGING.debug "helm_lint: #{helm_lint}" if check_verbose(args)
 
     if $?.success? 
-      upsert_passed_task("helm_chart_valid")
-      puts "✔️  PASSED: Helm Chart #{helm_directory} Lint Passed".colorize(:green)
+      upsert_passed_task("helm_chart_valid", "✔️  PASSED: Helm Chart #{helm_directory} Lint Passed")
     else
-      upsert_failed_task("helm_chart_valid")
-      puts "✖️  FAILURE: Helm Chart #{helm_directory} Lint Failed".colorize(:red)
+      upsert_failed_task("helm_chart_valid", "✖️  FAILURE: Helm Chart #{helm_directory} Lint Failed")
     end
   end
 end

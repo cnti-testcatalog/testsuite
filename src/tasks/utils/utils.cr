@@ -302,18 +302,10 @@ def passed_task(task, msg)
   puts "#{msg}".colorize(:green)
 end
 
-def upsert_failed_task(task)
-  upsert_task(task, FAILED, task_points(task, false))
-end
-
 def upsert_failed_task(task, message)
   upsert_task(task, FAILED, task_points(task, false))
   puts message.colorize(:red)
   message
-end
-
-def upsert_passed_task(task)
-  upsert_task(task, PASSED, task_points(task))
 end
 
 def upsert_passed_task(task, message)

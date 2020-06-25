@@ -168,11 +168,9 @@ task "rolling_update" do |_, args|
     LOGGING.debug "#{rollout}" if check_verbose(args)
     LOGGING.debug "rollout? #{rollout_status}" if check_verbose(args)
     if update_applied && rollout_status
-      upsert_passed_task("rolling_update")
-      puts "✔️  PASSED: CNF #{deployment_name} Rolling Update Passed".colorize(:green)
+      upsert_passed_task("rolling_update","✔️  PASSED: CNF #{deployment_name} Rolling Update Passed" )
     else
-      upsert_failed_task("rolling_update")
-      puts "✖️  FAILURE: CNF #{deployment_name} Rolling Update Failed".colorize(:red)
+      upsert_failed_task("rolling_update", "✖️  FAILURE: CNF #{deployment_name} Rolling Update Failed")
     end
   end
 end
@@ -195,11 +193,9 @@ task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
       service_type = service.get("spec").as_h["type"].as_s
       LOGGING.debug service_type if check_verbose(args)
       if service_type == "NodePort" 
-        upsert_failed_task("nodeport_not_used")
-        puts "✖️  FAILURE: NodePort is being used".colorize(:red)
+        upsert_failed_task("nodeport_not_used", "✖️  FAILURE: NodePort is being used")
       else
-        upsert_passed_task("nodeport_not_used").colorize(:green)
-        puts "✔️  PASSED: NodePort is not used".colorize(:green)
+        upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
       end
     end
   end
@@ -236,11 +232,9 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     LOGGING.debug "IPs: #{ip_search}" if check_verbose(args)
 
     if ip_search.empty? 
-      puts "✔️  PASSED: No hard-coded IP addresses found in the runtime K8s configuration".colorize(:green)
-      upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration")
+      upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✔️  PASSED: No hard-coded IP addresses found in the runtime K8s configuration")
     else
-      puts "✖️  FAILURE: Hard-coded IP addresses found in the runtime K8s configuration".colorize(:red)
-      upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration")
+      upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  FAILURE: Hard-coded IP addresses found in the runtime K8s configuration")
     end
     delete_namespace = `kubectl delete namespace hardcoded-ip-test --force --grace-period 0 2>&1 >/dev/null`
 
