@@ -6,7 +6,7 @@ def helm_installation(verbose=false)
   gmsg = "No Global helm version found"
   lmsg = "No Local helm version found"
   ghelm = helm_global_response
-  LOGGING.info if verbose
+  LOGGING.info ghelm if verbose
   
   global_helm_version = helm_version(ghelm, verbose)
    
