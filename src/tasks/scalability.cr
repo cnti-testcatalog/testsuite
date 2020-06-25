@@ -92,7 +92,7 @@ def change_capacity(base_replicas, target_replica_count, args)
 end
 
 def wait_for_scaling(deployment_name, target_replica_count, args)
-  puts "target_replica_count: #{target_replica_count}" if check_verbose(args)
+  LOGGING.info "target_replica_count: #{target_replica_count}" if check_verbose(args)
   if args.named.keys.includes? "wait_count"
     wait_count_value = args.named["wait_count"]
   else

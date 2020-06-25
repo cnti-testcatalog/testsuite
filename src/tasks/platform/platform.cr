@@ -20,7 +20,7 @@ task "k8s_conformance" do |_, args|
     # Run the tests
     #TODO when in test mode --mode quick, prod mode no quick
     testrun = ""
-    puts ENV["CRYSTAL_ENV"]? if check_verbose(args)
+    LOGGING.info ENV["CRYSTAL_ENV"]? if check_verbose(args)
     if ENV["CRYSTAL_ENV"]? == "TEST"
       testrun = `#{sonobuoy} run --wait --mode quick`
     else
