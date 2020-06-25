@@ -1,5 +1,6 @@
 require "option_parser"
 
+#TODO Add command to cleanup / remove alias
 if ARGV.find { |x| x == "setup"}
 
   OptionParser.parse do |parser|
@@ -80,10 +81,14 @@ elsif ARGV.find { |x| x == "list_envs"}
     envs = `docker ps -f ancestor=cnf-test --format '{{.Names}}'`
     envs_list = envs.split("\n")
     envs_list.pop
-    envs_list.each do |env|
-      puts "export CRYSTAL_DEV_ENV=#{env}"
+    if envs_list.empty?
+      puts "You currently don't have any active envs, to create one run 'create_env'"
+    else
+      envs_list.each do |env|
+        puts "export CRYSTAL_DEV_ENV=#{env}"
+      end
+      puts "To Set an ENV run one of the export commands in your session e.g. 'export CRYSTAL_DEV_ENV=test44'"
     end
-    puts "To Set an ENV run one of the export commands in your session e.g. 'export CRYSTAL_DEV_ENV=test44'"
 
 elsif ARGV.find { |x| x == "command"}
 
