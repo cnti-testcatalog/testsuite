@@ -10,6 +10,11 @@ if ARGV.find { |x| x == "setup"}
       STDERR.puts parser
     end
   end
+  system "docker build -t cnf-test:latest $(pwd)/tools/ephemeral_env/"
+  puts "Creating crystal alias under: ~/.bash_profile"
+  puts `echo "alias crystal='crystal $(pwd)/tools/ephemeral_env/ephemeral_env.cr command -- $@'" >> ~/.bash_profile`
+  puts "Crystal alias successfully created. You will need to restart your terminal session for it to apply or manually run: \n 'alias crystal='crystal $(pwd)/tools/ephemeral_env/ephemeral_env.cr command -- $@'"
+
 
 elsif ARGV.find { |x| x == "create_env"}
 
