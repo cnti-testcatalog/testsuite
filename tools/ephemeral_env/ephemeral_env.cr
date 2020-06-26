@@ -4,7 +4,6 @@ require "file_utils"
 
 #TODO Ensure that ephemeral_dev is using the binary
 #TODO Add warning when alias is in use
-#TODO Add warning when CRYSTAL_DEV_ENV is not set
 if ARGV.find { |x| x == "setup"}
 
   OptionParser.parse do |parser|
@@ -148,7 +147,7 @@ elsif ARGV.find { |x| x == "command"}
      exit 0
   end
   execute_command = ARGV[1..-1].join(" ")
-  if ENV["CRYSTAL_DEV_ENV"]
+  if ENV["CRYSTAL_DEV_ENV"]?
     puts "Using Environment: #{ENV["CRYSTAL_DEV_ENV"]}"
     system "docker exec -ti #{ENV["CRYSTAL_DEV_ENV"]} crystal #{execute_command}"
   else
@@ -156,7 +155,7 @@ elsif ARGV.find { |x| x == "command"}
   end
 
 else
-  puts "Usage: [setup | create_env | delete_env | list_envs | command]"
+  puts "Usage: [setup | cleanup | create_env | delete_env | list_envs | command]"
   OptionParser.parse do |parser|
     parser.on("-h", "--help", "Show this help") { puts parser }
     parser.invalid_option do |flag|
