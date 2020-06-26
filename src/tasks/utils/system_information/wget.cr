@@ -50,7 +50,7 @@ def wget_local_response(verbose=false)
   wget = "#{current_dir}/#{TOOLS_DIR}/wget/linux-amd64/wget"
   # wget_response = `#{wget} --version`
   status = Process.run("#{wget} --version", shell: true, output: wget_response = IO::Memory.new, error: stderr = IO::Memory.new)
-  puts wget_response.to_s if verbose
+  LOGGING.info wget_response.to_s if verbose
   wget_response.to_s
 end
 
