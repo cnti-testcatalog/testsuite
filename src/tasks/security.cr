@@ -6,12 +6,7 @@ require "./utils/utils.cr"
 
 desc "CNF containers should be isolated from one another and the host.  The CNF Conformance suite uses tools like Falco, Sysdig Inspect and gVisor"
 task "security", ["privileged"] do |_, args|
-  total = total_points("security")
-  if total > 0
-    puts "Security final score: #{total} of #{total_max_points("security")}".colorize(:green)
-  else
-    puts "Security final score: #{total} of #{total_max_points("security")}".colorize(:red)
-  end
+  stdout_score("security")
 end
 
 desc "Check if any containers are running in privileged mode"

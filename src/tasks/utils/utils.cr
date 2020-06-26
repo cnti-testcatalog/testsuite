@@ -2,6 +2,7 @@ require "totem"
 require "colorize"
 require "./sample_utils.cr"
 require "logger"
+require "file_utils"
 
 class Results
   @@file : String
@@ -465,4 +466,16 @@ end
 
 def stdout_failure(msg)
   puts msg.colorize(:red)
+end
+
+def stdout_score(test_name)
+  total = total_points(test_name)
+  pretty_test_name = test_name.split("_").map(&.capitalize).join(" ")
+  test_log_msg = "#{pretty_test_name} final score: #{total} of #{total_max_points(test_name)}"
+
+  if total > 0
+    stdout_success test_log_msg
+  else
+    stdout_failure test_log_msg
+  end
 end

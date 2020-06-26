@@ -7,12 +7,7 @@ require "./utils/utils.cr"
 
 desc "The CNF conformance suite checks if state is stored in a custom resource definition or a separate database (e.g. etcd) rather than requiring local storage.  It also checks to see if state is resilient to node failure"
 task "statelessness", ["volume_hostpath_not_found"] do |_, args|
-  total = total_points("statelessness")
-  if total > 0
-    puts "Statelessness final score: #{total} of #{total_max_points("statelessness")}".colorize(:green)
-  else
-    puts "Statelessness final score: #{total} of #{total_max_points("statelessness")}".colorize(:red)
-  end
+  stdout_score("statelessness")
 end
 
 desc "Does the CNF use a non-cloud native data store: hostPath volume"
