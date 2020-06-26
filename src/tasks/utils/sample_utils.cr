@@ -343,7 +343,7 @@ def validate_cnf_conformance_yml(config)
     warning_output = [unmapped_keys_warning_msg] of String | Colorize::Object(String)
     warning_output.push(ccyt_validator.try &.json_unmapped.to_s)
     if warning_output.size > 1
-      LOGGGING.warn warning_output.join("\n")
+      LOGGING.warn warning_output.join("\n")
     end
   end
 
@@ -355,7 +355,7 @@ def validate_cnf_conformance_yml(config)
     warning_output = [unmapped_subkeys_warning_msg] of String | Colorize::Object(String)
     warning_output.push(root.to_s)
     if warning_output.size > 1
-      LOGGGING.warn warning_output.join("\n")
+      LOGGING.warn warning_output.join("\n")
     end
   end
 
