@@ -1,10 +1,11 @@
 require "option_parser"
+require "path"
+require "file_utils"
 
 #TODO Add command to cleanup / remove alias
-#TODO Check if alias already exists
-#TODO Fix .bash_profile alias creation
 #TODO Ensure that ephemeral_dev is using the binary
 #TODO Add warning when alias is in use
+#TODO Add warning when CRYSTAL_DEV_ENV is not set
 if ARGV.find { |x| x == "setup"}
 
   OptionParser.parse do |parser|
@@ -17,9 +18,14 @@ if ARGV.find { |x| x == "setup"}
   end
   system "docker build -t cnf-test:latest $(pwd)/tools/ephemeral_env/"
   # puts "Creating crystal alias under: ~/.bash_profile"
-  # puts `echo "alias crystal='crystal $(pwd)/tools/ephemeral_env/ephemeral_env.cr command -- $@'" >> ~/.bash_profile`
-  # puts "Crystal alias successfully created. You will need to restart your terminal session for it to apply or manually run: \n 'alias crystal='crystal $(pwd)/tools/ephemeral_env/ephemeral_env.cr command -- $@'"
-  puts "Create a bash alias by running: \n alias crystal='$(pwd)/ephemeral_env command $@'"
+  pwd = FileUtils.pwd
+  home = Path.home
+  unless Dir.exists?("#{home}/.bash.d")
+    FileUtils.mkdir("#{home}/.bash.d")
+  end
+  alias_file = "#{home}/.bash.d/cnf-conformance.alias"
+  File.write("#{alias_file}", "alias crystal='crystal #{pwd}/tools/ephemeral_env/ephemeral_env.cr command -- $@'")
+  puts "A Crystal alias has been created under #{home}/.bash.d/cnf-conformance.alias \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n 'alias crystal='crystal $(pwd)/tools/ephemeral_env/ephemeral_env.cr command -- $@'"
 
 
 elsif ARGV.find { |x| x == "create_env"}
