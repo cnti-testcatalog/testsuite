@@ -2,7 +2,6 @@ require "option_parser"
 require "path"
 require "file_utils"
 
-#TODO Add command to cleanup / remove alias
 #TODO Ensure that ephemeral_dev is using the binary
 #TODO Add warning when alias is in use
 #TODO Add warning when CRYSTAL_DEV_ENV is not set
@@ -27,6 +26,46 @@ if ARGV.find { |x| x == "setup"}
   File.write("#{alias_file}", "alias crystal='crystal #{pwd}/tools/ephemeral_env/ephemeral_env.cr command -- $@'")
   puts "A Crystal alias has been created under #{home}/.bash.d/cnf-conformance.alias \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n 'alias crystal='crystal $(pwd)/tools/ephemeral_env/ephemeral_env.cr command -- $@'"
 
+elsif ARGV.find { |x| x == "cleanup"}
+
+    bash_alias = ""
+    force = ""
+    prune = ""
+    all = ""
+    OptionParser.parse do |parser|
+      parser.banner = "Usage: cleanup [arguments]"
+      parser.on("-a", "--alias", "Cleanup the bash alias") { bash_alias = true }
+      parser.on("-p", "--prune", "Cleanup inactive environments") { prune = true }
+      parser.on("-A", "--all", "Cleanup images, alias and environments") { all = true } 
+      parser.on("-f", "--force", "Force removal of all active environments in additon to inactive") { force = "-f" }
+      parser.on("-h", "--help", "Show this help") { puts parser }
+      parser.invalid_option do |flag|
+        STDERR.puts "ERROR #{flag} is not valid"
+        STDERR.puts parser
+      end
+      if ARGV.size == 1 
+        puts parser
+      end
+    end
+
+    if bash_alias==true || all==true
+      if File.exists?("#{Path.home}/.bash.d/cnf-conformance.alias")
+        FileUtils.rm("#{Path.home}/.bash.d/cnf-conformance.alias")
+      end
+    end
+
+    if prune==true || all==true
+      if force.empty?
+        envs = `docker ps -f ancestor=cnf-test -f status=exited -f status=created --format '{{.Names}}'`
+      else
+        envs = `docker ps -f ancestor=cnf-test --format '{{.Names}}'`
+      end
+        envs_list = envs.split("\n")
+        envs_list.pop
+        envs_list.each do |env|
+          `docker rm #{force} #{env}`
+        end
+    end
 
 elsif ARGV.find { |x| x == "create_env"}
 
