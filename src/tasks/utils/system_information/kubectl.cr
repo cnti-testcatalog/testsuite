@@ -12,9 +12,9 @@ def kubectl_installation(verbose=false)
    
   if !global_kubectl_version.empty?
     gmsg = "Global kubectl found. Version: #{global_kubectl_version}"
-    puts gmsg.colorize(:green)
+    stdout_success gmsg
   else
-    puts gmsg.colorize(:yellow)
+    stdout_warning gmsg
   end
 
   lkubectl = kubectl_local_response
@@ -24,9 +24,9 @@ def kubectl_installation(verbose=false)
    
   if !local_kubectl_version.empty?
     lmsg = "Local kubectl found. Version: #{local_kubectl_version}"
-    puts lmsg.colorize(:green)
+    stdout_success lmsg
   else
-    puts lmsg.colorize(:yellow)
+    stdout_warning lmsg
   end
 
   # uncomment to fail the installation check
@@ -35,8 +35,8 @@ def kubectl_installation(verbose=false)
   # gmsg = "No Global kubectl version found"
   # lmsg = "No Local kubectl version found"
   if !(global_kubectl_version && local_kubectl_version)
-    puts "Kubectl not found".colorize(:red)
-    puts %Q(
+    stdout_failure "Kubectl not found"
+    stdout_failure %Q(
     Linux installation instructions for Kubectl can be found here: https://kubernetes.io/docs/tasks/tools/install-kubectl/ 
 
     Install kubectl binary with curl on Linux
@@ -57,7 +57,7 @@ def kubectl_installation(verbose=false)
     Test to ensure the version you installed is up-to-date:
 
       kubectl version --client
-    ).colorize(:red)
+    )
   end
   "#{lmsg} #{gmsg}"
 end 

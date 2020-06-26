@@ -294,23 +294,23 @@ end
 
 def failed_task(task, msg)
   upsert_task(task, FAILED, task_points(task, false))
-  puts "#{msg}".colorize(:red)
+  stdout_failure "#{msg}"
 end
 
 def passed_task(task, msg)
   upsert_task(task, PASSED, task_points(task))
-  puts "#{msg}".colorize(:green)
+  stdout_success "#{msg}"
 end
 
 def upsert_failed_task(task, message)
   upsert_task(task, FAILED, task_points(task, false))
-  puts message.colorize(:red)
+  stdout_failure message
   message
 end
 
 def upsert_passed_task(task, message)
   upsert_task(task, PASSED, task_points(task))
-  puts message.colorize(:green)
+  stdout_success message
   message
 end
 
@@ -451,5 +451,14 @@ def results_by_tag(tag)
   end
 end
 
+def stdout_success(msg)
+  puts msg.colorize(:green)
+end
 
+def stdout_warning(msg)
+  stdout_warning gmsg
+end
 
+def stdout_failure(msg)
+  puts msg.colorize(:red)
+end

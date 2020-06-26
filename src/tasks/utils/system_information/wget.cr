@@ -12,9 +12,9 @@ def wget_installation(verbose=false)
    
   if !global_wget_version.empty?
     gmsg = "Global wget found. Version: #{global_wget_version}"
-    puts gmsg.colorize(:green)
+    stdout_success gmsg
   else
-    puts gmsg.colorize(:yellow)
+    stdout_warning gmsg
   end
 
   lwget = wget_local_response
@@ -24,16 +24,16 @@ def wget_installation(verbose=false)
    
   if !local_wget_version.empty?
     lmsg = "Local wget found. Version: #{local_wget_version}"
-    puts lmsg.colorize(:green)
+    stdout_success lmsg
   else
-    puts lmsg.colorize(:yellow)
+    stdout_warning lmsg
   end
 
   if !(global_wget_version && local_wget_version)
-    puts "Wget not found".colorize(:red)
-    puts %Q(
+    stdout_failure "Wget not found"
+    stdout_failure %Q(
     Linux installation instructions for Wget can be found here: https://www.tecmint.com/install-wget-in-linux/ 
-    ).colorize(:red)
+    )
   end
   "#{lmsg} #{gmsg}"
 end 

@@ -12,9 +12,9 @@ def curl_installation(verbose=false)
    
   if !global_curl_version.empty?
     gmsg = "Global curl found. Version: #{global_curl_version}"
-    puts gmsg.colorize(:green)
+    stdout_success gmsg
   else
-    puts gmsg.colorize(:yellow)
+    stdout_warning gmsg
   end
 
   lcurl = curl_local_response
@@ -24,16 +24,16 @@ def curl_installation(verbose=false)
    
   if !local_curl_version.empty?
     lmsg = "Local curl found. Version: #{local_curl_version}"
-    puts lmsg.colorize(:green)
+    stdout_success lmsg
   else
-    puts lmsg.colorize(:yellow)
+    stdout_warning lmsg
   end
 
   if !(global_curl_version && local_curl_version)
-    puts "Curl not found".colorize(:red)
-    puts %Q(
+    stdout_failure "Curl not found"
+    stdout_failure %Q(
     Linux installation instructions for Curl can be found here: https://www.tecmint.com/install-curl-in-linux/ 
-    ).colorize(:red)
+    )
   end
   "#{lmsg} #{gmsg}"
 end 

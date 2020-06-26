@@ -12,9 +12,9 @@ def helm_installation(verbose=false)
    
   if global_helm_version
     gmsg = "Global helm found. Version: #{global_helm_version}"
-    puts gmsg.colorize(:green)
+    stdout_success gmsg
   else
-    puts gmsg.colorize(:yellow)
+    stdout_warning gmsg
   end
 
   lhelm = helm_local_response
@@ -24,20 +24,20 @@ def helm_installation(verbose=false)
    
   if local_helm_version
     lmsg = "Local helm found. Version: #{local_helm_version}"
-    puts lmsg.colorize(:green)
+    stdout_success lmsg
 
   else
-    puts lmsg.colorize(:yellow)
+    stdout_warning lmsg
   end
 
   if !(global_helm_version && local_helm_version)
-    puts "Helm not found".colorize(:red)
-    puts %Q(
+    stdout_failure "Helm not found"
+    stdout_failure %Q(
     Installation instructions for Helm can be found here: https://helm.sh/docs/intro/install
 
     To install helm on Linux use:
     sudo snap install helm --classic
-    ).colorize(:red)
+    )
   end
   "#{lmsg} #{gmsg}"
 end 
