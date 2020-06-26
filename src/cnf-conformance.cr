@@ -14,13 +14,13 @@ task "all", ["all_prereqs", "configuration_file_setup", "compatibility","statele
   end
 
   if failed_required_tasks.size > 0
-    puts "Conformance Suite failed!".colorize(:red)
-    puts "Failed required tasks: #{failed_required_tasks.inspect}".colorize(:red)
+    stdout_failure "Conformance Suite failed!"
+    stdout_failure "Failed required tasks: #{failed_required_tasks.inspect}"
   end
 
   # new_results = create_final_results_yml_name
   # results = `mv #{LOGFILE} #{new_results}`
-  puts "Results have been saved to #{Results.file}"
+  stdout_info "Results have been saved to #{Results.file}"
 end
 
 task "all_prereqs" do |_, args|

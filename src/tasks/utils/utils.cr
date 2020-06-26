@@ -10,7 +10,7 @@ class Results
   continue = false
   LOGGING.info "file exists?:#{File.exists?(@@file)}"
   if File.exists?("#{@@file}")
-    puts "Do you wish to overwrite the #{@@file} file? If so, your previous results.yml will be lost."
+    stdout_info "Do you wish to overwrite the #{@@file} file? If so, your previous results.yml will be lost."
     print "(Y/N) (Default N): > "
     if ENV["CRYSTAL_ENV"]? == "TEST"
       continue = true
@@ -451,12 +451,16 @@ def results_by_tag(tag)
   end
 end
 
+def stdout_info(msg) 
+  puts msg
+end
+
 def stdout_success(msg)
   puts msg.colorize(:green)
 end
 
 def stdout_warning(msg)
-  stdout_warning gmsg
+  puts msg.colorize(:yellow)
 end
 
 def stdout_failure(msg)

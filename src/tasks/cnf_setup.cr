@@ -60,7 +60,7 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
   elsif args.named.keys.includes? "cnf-path"
     cnf = args.named["cnf-path"].as(String)
   else
-    puts "Error: You must supply either cnf-config or cnf-path".colorize(:red)
+    stdout_failure "Error: You must supply either cnf-config or cnf-path".colorize(:red)
     exit 1
 	end
   LOGGING.info "cnf_setup cnf: #{cnf}" if check_verbose(args)
@@ -81,7 +81,7 @@ task "cnf_cleanup" do |_, args|
   elsif args.named.keys.includes? "cnf-path"
     cnf = args.named["cnf-path"].as(String)
   else
-    puts "Error: You must supply either cnf-config or cnf-path".colorize(:red)
+    stdout_failure "Error: You must supply either cnf-config or cnf-path".colorize(:red)
     exit 1
 	end
   LOGGING.debug "cnf_cleanup cnf: #{cnf}" if check_verbose(args)
