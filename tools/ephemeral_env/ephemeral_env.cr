@@ -3,16 +3,22 @@ require "path"
 require "file_utils"
 
 #TODO Ensure that ephemeral_dev is using the binary
-#TODO Add warning when alias is in use
+#TODO Add setup flag for binary and use path specified to generate alias
 if ARGV.find { |x| x == "setup"}
 
+  help = ""
   OptionParser.parse do |parser|
     parser.banner = "Usage: setup"
-    parser.on("-h", "--help", "Show this help") { puts parser }
+    parser.on("-h", "--help", "Show this help") { help = true }
     parser.invalid_option do |flag|
       STDERR.puts "ERROR #{flag} is not valid"
       STDERR.puts parser
+      exit 1
     end
+  end
+  if help == true
+    puts "Usage: setup"
+    exit 0
   end
   system "docker build -t cnf-test:latest $(pwd)/tools/ephemeral_env/"
   # puts "Creating crystal alias under: ~/.bash_profile"
@@ -22,8 +28,8 @@ if ARGV.find { |x| x == "setup"}
     FileUtils.mkdir("#{home}/.bash.d")
   end
   alias_file = "#{home}/.bash.d/cnf-conformance.alias"
-  File.write("#{alias_file}", "alias crystal='crystal #{pwd}/tools/ephemeral_env/ephemeral_env.cr command -- $@'")
-  puts "A Crystal alias has been created under #{home}/.bash.d/cnf-conformance.alias \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n 'alias crystal='crystal $(pwd)/tools/ephemeral_env/ephemeral_env.cr command -- $@'"
+  File.write("#{alias_file}", "alias crystal='crystal #{pwd}/tools/ephemeral_env/ephemeral_env.cr command alias -- $@'")
+  puts "A Crystal alias has been created under #{home}/.bash.d/cnf-conformance.alias \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n alias crystal='crystal #{pwd}/tools/ephemeral_env/ephemeral_env.cr command alias -- $@'"
 
 elsif ARGV.find { |x| x == "cleanup"}
 
@@ -142,9 +148,14 @@ elsif ARGV.find { |x| x == "list_envs"}
 elsif ARGV.find { |x| x == "command"}
 
   usage = "Usage: command [execute_command]"
-  if ARGV[1]? == "--help" || ARGV[1]? == "-h"
+  if ARGV[1]? == "--help" || ARGV[1] == "-h"
      puts "#{usage}"
      exit 0
+  end
+
+  if ARGV.find { |x| x == "alias"}
+    puts "WARNING: Crystal Alias in use. All crystal commands are being piped to the env container"
+    ARGV.delete("alias")
   end
   execute_command = ARGV[1..-1].join(" ")
   if ENV["CRYSTAL_DEV_ENV"]?
