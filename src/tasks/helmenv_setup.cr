@@ -7,7 +7,7 @@ require "./utils/utils.cr"
 desc "Sets up helm 3.1.1"
 task "helm_local_install", ["cnf_directory_setup"] do |_, args|
   #TODO pass in version of helm
-  LOGGING.info "helm_local_install".colorize(:light_yellow) if check_verbose(args)
+  LOGGING.info "helm_local_install" if check_verbose(args)
   current_dir = FileUtils.pwd 
   LOGGING.debug current_dir if check_verbose(args)
   unless Dir.exists?("#{current_dir}/#{TOOLS_DIR}/helm")
