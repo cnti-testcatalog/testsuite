@@ -3,6 +3,8 @@ require "colorize"
 require "./sample_utils.cr"
 require "logger"
 require "file_utils"
+require "option_parser"
+
 
 class Results
   @@file : String
@@ -50,6 +52,7 @@ FAILED = "failed"
 DEFAULT_POINTSFILENAME = "points_v1.yml"
 PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
 
+
 #TODO switch to ERROR for production builds
 # LOGGING = Logger.new(STDOUT, Logger::ERROR)
 LOGGING = Logger.new(STDOUT, Logger::INFO)
@@ -62,22 +65,55 @@ LOGGING.formatter = Logger::Formatter.new do |severity, datetime, progname, mess
 	io << label.rjust(5) << " -- " << progname << ": " << message
 end
 
+ class LogLevel
+  class_getter command_line_loglevel : String = ""
+  class_setter command_line_loglevel 
+ end 
+
+ #TODO: this doesnt work why?
+OptionParser.parse! do |parser|
+  parser.banner = "Usage: cnf-conformance [arguments]"
+  parser.on("-l LEVEL", "--loglevel=LEVEL", "Specifies the logging level for cnf-conformance suite") { |level| LogLevel.command_line_loglevel = level }
+  parser.on("-h", "--help", "Show this help") { puts parser }
+end
 
 
 def loglevel
-  toggle_on = false
+  levelstr = "" # default to unset
+
+  # of course last setting wins so make sure to keep the precendence order desired
+  # currently
+  # 
+  # 1. Cli flag is highest precedence
+  # 2. Environment var is next level of precedence
+  # 3. Config file is last level of precedence
+
+  # lowest priority is first
   if File.exists?(BASE_CONFIG)
     config = Totem.from_file BASE_CONFIG 
-    if config["loglevel"].as_s? && config["loglevel"].as_s == "info"
-      Logger::INFO
-    elsif config["loglevel"].as_s? && config["loglevel"].as_s == "debug"
-      Logger::DEBUG
-    elsif config["loglevel"].as_s? && config["loglevel"].as_s == "error"
-      Logger::ERROR
-    else
-      Logger::ERROR
+    if config["loglevel"].as_s?
+      levelstr = config["loglevel"].as_s
     end
+  end
+
+  if ENV.has_key?("LOGLEVEL") 
+    levelstr = ENV["LOGLEVEL"]
+  end
+
+  # highest priority is last
+  if !LogLevel.command_line_loglevel.empty?
+    levelstr = LogLevel.command_line_loglevel
+  end
+  
+  #TODO: this doesnt work why?
+  puts  LogLevel.command_line_loglevel
+  puts  levelstr
+  puts  Logger::Severity.parse?(levelstr)
+
+  if Logger::Severity.parse?(levelstr)
+    Logger::Severity.parse(levelstr)
   else
+    LOGGING.error "invalid logging level. defaulting to ERROR"
     Logger::ERROR
   end
 end
