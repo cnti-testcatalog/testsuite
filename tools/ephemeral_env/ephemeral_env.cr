@@ -2,8 +2,6 @@ require "option_parser"
 require "path"
 require "file_utils"
 
-#TODO Ensure that ephemeral_dev is using the binary
-#TODO Add setup flag for binary and use path specified to generate alias
 # There are two environments, inside of docker and outside of docker
 # Outside of docker
 #  -- You don't need crystal installed
@@ -21,33 +19,42 @@ require "file_utils"
 # Is there a cnf-conformance binary? We dont call cnf-conformance binary directly
 if ARGV[0]? && ARGV[0] == "setup"
 
-  help = ""
+  bin_path = ""
+  crystal_path = ""
+  source_path = ""
   OptionParser.parse do |parser|
-    parser.banner = "Usage: setup"
-    parser.on("-h", "--help", "Show this help") { help = true }
+    parser.banner = "Usage: setup [--binary] | [--crystal -source]"
+    parser.on("-b PATH", "--binary=PATH", "Full path to ephemeral dev tool binary. Set this if you want the alias                                                        command to execute using a compiled version of the dev tool, this is required
+                                     if you don't have 'crystal' installed.") { |path| bin_path = path }
+    parser.on("-c PATH", "--crystal=PATH", "Full path to the Crystal Lang execute. Set this if you want the alias                                                         command to execute using the source version of the dev tool.") { |path| crystal_path = path }
+    parser.on("-s PATH", "--source=PATH", "Full path to the source ephemeral_env.cr file. Set this if you want the alias \n                                     command to execute using the source version of the dev tool.") { |path| source_path = path }
+    parser.on("-h", "--help", "Show this help") { puts parser }
     parser.invalid_option do |flag|
       STDERR.puts "ERROR #{flag} is not valid"
       STDERR.puts parser
       exit 1
     end
   end
-  if help == true
-    puts "Usage: setup"
-    exit 0
+  if (! bin_path.empty?) || (! crystal_path.empty? && ! source_path.empty?)
+    system "docker build -t cnf-test:latest $(pwd)/tools/ephemeral_env/"
+    home = Path.home
+    unless Dir.exists?("#{home}/.bash.d")
+      FileUtils.mkdir("#{home}/.bash.d")
+    end
+    crystal_alias = "#{home}/.bash.d/crystal.alias"
+    cnf_conformance_alias = "#{home}/.bash.d/cnf_conformance.alias"
   end
-  system "docker build -t cnf-test:latest $(pwd)/tools/ephemeral_env/"
-  # puts "Creating crystal alias under: ~/.bash_profile"
-  pwd = FileUtils.pwd
-  home = Path.home
-  unless Dir.exists?("#{home}/.bash.d")
-    FileUtils.mkdir("#{home}/.bash.d")
+  if ! bin_path.empty?
+    File.write("#{crystal_alias}", "alias crystal='#{bin_path} command alias $@'")
+    File.write("#{cnf_conformance_alias}", "alias cnf-conformance='#{bin_path} command alias binary $@'")
+    puts "A Crystal alias has been created under #{crystal_alias} & #{cnf_conformance_alias} \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n alias crystal='crystal #{bin_path} command alias $@' \n alias cnf-conformance='crystal #{bin_path} command alias binary $@'"
+  elsif ! crystal_path.empty? && ! source_path.empty?
+    File.write("#{crystal_alias}", "alias crystal='#{crystal_path} #{source_path} command alias -- $@'")
+    File.write("#{cnf_conformance_alias}", "alias cnf-conformance='#{crystal_path} #{source_path} command alias binary -- $@'")
+    puts "Crystal aliases has been created under #{crystal_alias} & #{cnf_conformance_alias} \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n alias crystal='#{crystal_path} #{source_path} command alias -- $@' \n alias cnf-conformance='#{crystal_path} #{source_path} command alias binary -- $@'"
+  else 
+    puts "Missing Arguments: [--binary] or [--crystal --source]"
   end
-  alias_file = "#{home}/.bash.d/cnf-conformance.alias"
-  # check to see if we are in a binary
-  puts "ARGV.inspect: #{ARGV.inspect}"
-  File.write("#{alias_file}", "alias crystal='crystal #{pwd}/tools/ephemeral_env/ephemeral_env.cr command alias -- $@'")
-  File.write("#{alias_file}", "alias cnf-conformance='crystal #{pwd}/tools/ephemeral_env/ephemeral_env.cr command alias binary -- $@'")
-  puts "A Crystal alias has been created under #{home}/.bash.d/cnf-conformance.alias \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n alias crystal='crystal #{pwd}/tools/ephemeral_env/ephemeral_env.cr command alias -- $@' \n alias cnf-conformance='crystal #{pwd}/tools/ephemeral_env/ephemeral_env.cr command alias binary -- $@'"
 
 elsif ARGV[0]? && ARGV[0] == "cleanup"
 
@@ -72,8 +79,11 @@ elsif ARGV[0]? && ARGV[0] == "cleanup"
     end
 
     if bash_alias==true || all==true
-      if File.exists?("#{Path.home}/.bash.d/cnf-conformance.alias")
-        FileUtils.rm("#{Path.home}/.bash.d/cnf-conformance.alias")
+      if File.exists?("#{Path.home}/.bash.d/crystal.alias")
+        FileUtils.rm("#{Path.home}/.bash.d/crystal.alias")
+      end
+      if File.exists?("#{Path.home}/.bash.d/cnf_conformance.alias")
+        FileUtils.rm("#{Path.home}/.bash.d/cnf_conformance.alias")
       end
     end
 
