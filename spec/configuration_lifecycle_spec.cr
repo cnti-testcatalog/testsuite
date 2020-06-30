@@ -3,8 +3,8 @@ require "colorize"
 
 describe CnfConformance do
   before_all do
-    # LOGGING.debug `pwd` 
-    # LOGGING.debug `echo $KUBECONFIG`
+    LOGGING.debug `pwd` 
+    LOGGING.debug `echo $KUBECONFIG`
 
     `./cnf-conformance samples_cleanup`
     $?.success?.should be_true

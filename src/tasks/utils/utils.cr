@@ -322,7 +322,7 @@ def task_points(task, passed=true)
     field_name = "fail"
   end
   points = points_yml.find {|x| x["name"] == task}
-  LOGGING.error "****Warning**** task #{task} not found in points.yml".colorize(:red) unless points
+  LOGGING.warn "****Warning**** task #{task} not found in points.yml".colorize(:yellow) unless points
   if points && points[field_name]? 
     points[field_name].as_i if points
   else
@@ -333,7 +333,7 @@ end
 
 def task_required(task)
   points = points_yml.find {|x| x["name"] == task}
-  LOGGING.error "task #{task} not found in points.yml".colorize(:red) unless points
+  LOGGING.warn "task #{task} not found in points.yml".colorize(:yellow) unless points
   if points && points["required"]? && points["required"].as_bool == true
     true
   else

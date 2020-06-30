@@ -151,7 +151,7 @@ it "'validate_cnf_conformance_yml' (function) should warn, but be valid when a c
 
   status, warning_output = validate_cnf_conformance_yml(yml)
 
-  LOGGING.info "WARNING: #{warning_output}"
+  LOGGING.warn "WARNING: #{warning_output}"
 
   (status).should eq(true)
   (warning_output).should_not be_nil

@@ -293,7 +293,7 @@ def sample_cleanup(config_file, force=false, verbose=true)
     ret = $?.success?
     LOGGING.info helm_uninstall if verbose
     if ret
-      stdout_success "Successfully cleaned up #{release_name}".colorize(:green)
+      stdout_success "Successfully cleaned up #{release_name}"
     end
   end
   ret
