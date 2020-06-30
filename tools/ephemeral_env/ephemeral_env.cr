@@ -4,7 +4,22 @@ require "file_utils"
 
 #TODO Ensure that ephemeral_dev is using the binary
 #TODO Add setup flag for binary and use path specified to generate alias
-if ARGV.find { |x| x == "setup"}
+# There are two environments, inside of docker and outside of docker
+# Outside of docker
+#  -- You don't need crystal installed
+#  -- You do need the cnf-conformance source (git clone)?
+#    -- The container mounts the cnf-conformance directory
+#  -- You do need the ephemeral_env binary
+#    -- pull down from a release
+#    -- binary could be checked in??
+# Inside of docker
+#   -- crystal needs to be installed
+#   -- There are two binaries, ephemeral_env and cnf-conformance
+# Are we in a ephemeral_env binary?  Can we tell this from the arguments?
+#  -- if we are in a ephemeral_env binary, use the binary version of the alias command
+#  -- otherwise use the crystal version
+# Is there a cnf-conformance binary? We dont call cnf-conformance binary directly
+if ARGV[0]? && ARGV[0] == "setup"
 
   help = ""
   OptionParser.parse do |parser|
@@ -28,10 +43,13 @@ if ARGV.find { |x| x == "setup"}
     FileUtils.mkdir("#{home}/.bash.d")
   end
   alias_file = "#{home}/.bash.d/cnf-conformance.alias"
+  # check to see if we are in a binary
+  puts "ARGV.inspect: #{ARGV.inspect}"
   File.write("#{alias_file}", "alias crystal='crystal #{pwd}/tools/ephemeral_env/ephemeral_env.cr command alias -- $@'")
-  puts "A Crystal alias has been created under #{home}/.bash.d/cnf-conformance.alias \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n alias crystal='crystal #{pwd}/tools/ephemeral_env/ephemeral_env.cr command alias -- $@'"
+  File.write("#{alias_file}", "alias cnf-conformance='crystal #{pwd}/tools/ephemeral_env/ephemeral_env.cr command alias binary -- $@'")
+  puts "A Crystal alias has been created under #{home}/.bash.d/cnf-conformance.alias \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n alias crystal='crystal #{pwd}/tools/ephemeral_env/ephemeral_env.cr command alias -- $@' \n alias cnf-conformance='crystal #{pwd}/tools/ephemeral_env/ephemeral_env.cr command alias binary -- $@'"
 
-elsif ARGV.find { |x| x == "cleanup"}
+elsif ARGV[0]? && ARGV[0] == "cleanup"
 
     bash_alias = ""
     force = ""
@@ -72,7 +90,7 @@ elsif ARGV.find { |x| x == "cleanup"}
         end
     end
 
-elsif ARGV.find { |x| x == "create_env"}
+elsif ARGV[0]? && ARGV[0] == "create_env"
 
   env_name = ""
   kubeconfig = ""
@@ -100,7 +118,7 @@ elsif ARGV.find { |x| x == "create_env"}
   end
 
 
-elsif ARGV.find { |x| x == "delete_env"}
+elsif ARGV[0]? && ARGV[0] == "delete_env"
 
   env_name = ""
   OptionParser.parse do |parser|
@@ -122,7 +140,7 @@ elsif ARGV.find { |x| x == "delete_env"}
   end
 
 
-elsif ARGV.find { |x| x == "list_envs"}
+elsif ARGV[0] && ARGV[0] == "list_envs"
     OptionParser.parse do |parser|
       parser.banner = "Usage: list_envs"
       parser.on("-h", "--help", "Show this help") { puts parser }
@@ -145,7 +163,7 @@ elsif ARGV.find { |x| x == "list_envs"}
       puts "To Set an ENV run one of the export commands in your session e.g. 'export CRYSTAL_DEV_ENV=test44'"
     end
 
-elsif ARGV.find { |x| x == "command"}
+elsif ARGV[0]? && ARGV[0] == "command"
 
   usage = "Usage: command [execute_command]"
   if ARGV[1]? == "--help" || ARGV[1] == "-h"
@@ -157,10 +175,29 @@ elsif ARGV.find { |x| x == "command"}
     puts "WARNING: Crystal Alias in use. All crystal commands are being piped to the env container"
     ARGV.delete("alias")
   end
+
+  if ARGV.find { |x| x == "binary"}
+     binary = true
+     ARGV.delete("binary")
+  end
+
   execute_command = ARGV[1..-1].join(" ")
   if ENV["CRYSTAL_DEV_ENV"]?
     puts "Using Environment: #{ENV["CRYSTAL_DEV_ENV"]}"
-    system "docker exec -ti #{ENV["CRYSTAL_DEV_ENV"]} crystal #{execute_command}"
+    # ./ephemeral_env crystal spec
+    # ./ephemeral_env ./cnf-conformance all 
+    # ./ephemeral_env crystal src/cnf-conformance.cr all 
+    # crystal ephemeral.cr crystal spec
+    # crystal ephemeral.cr ./cnf-conformance all
+    # crystal ephemeral.cr crystal src/cnf-conformance.cr all
+    # cyrstal spec
+    # cyrstal src/cnf-conformance.cr all
+    # cyrstal ./cnf-conformance all
+     if binary == true
+       system "docker exec -ti #{ENV["CRYSTAL_DEV_ENV"]} ./cnf-conformance #{execute_command}"
+     else
+      system "docker exec -ti #{ENV["CRYSTAL_DEV_ENV"]} crystal #{execute_command}"
+     end
   else
     puts "CRYSTAL_DEV_ENV Not Set. Run list_envs and select one"
   end
