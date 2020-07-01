@@ -23,7 +23,7 @@ if ARGV[0]? && ARGV[0] == "setup"
   crystal_path = ""
   source_path = ""
   OptionParser.parse do |parser|
-    parser.banner = "Usage: setup [--binary] | [--crystal -source]"
+    parser.banner = "Usage: setup [--binary] | [--crystal --source]"
     parser.on("-b PATH", "--binary=PATH", "Full path to ephemeral dev tool binary. Set this if you want the alias                                                        command to execute using a compiled version of the dev tool, this is required
                                      if you don't have 'crystal' installed.") { |path| bin_path = path }
     parser.on("-c PATH", "--crystal=PATH", "Full path to the Crystal Lang execute. Set this if you want the alias                                                         command to execute using the source version of the dev tool.") { |path| crystal_path = path }
