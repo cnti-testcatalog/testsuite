@@ -5,6 +5,15 @@ require "logger"
 require "file_utils"
 require "option_parser"
 
+class LogLevel
+  class_property command_line_loglevel : String = ""
+end 
+
+OptionParser.parse do |parser|
+  parser.banner = "Usage: cnf-conformance [arguments]"
+  parser.on("-l LEVEL", "--loglevel=LEVEL", "Specifies the logging level for cnf-conformance suite") { |level| LogLevel.command_line_loglevel = level }
+  parser.on("-h", "--help", "Show this help") { puts parser }
+end
 
 class Results
   @@file : String
@@ -65,19 +74,6 @@ LOGGING.formatter = Logger::Formatter.new do |severity, datetime, progname, mess
 	io << label.rjust(5) << " -- " << progname << ": " << message
 end
 
- class LogLevel
-  class_getter command_line_loglevel : String = ""
-  class_setter command_line_loglevel 
- end 
-
- #TODO: this doesnt work why?
-OptionParser.parse! do |parser|
-  parser.banner = "Usage: cnf-conformance [arguments]"
-  parser.on("-l LEVEL", "--loglevel=LEVEL", "Specifies the logging level for cnf-conformance suite") { |level| LogLevel.command_line_loglevel = level }
-  parser.on("-h", "--help", "Show this help") { puts parser }
-end
-
-
 def loglevel
   levelstr = "" # default to unset
 
@@ -104,11 +100,6 @@ def loglevel
   if !LogLevel.command_line_loglevel.empty?
     levelstr = LogLevel.command_line_loglevel
   end
-  
-  #TODO: this doesnt work why?
-  puts  LogLevel.command_line_loglevel
-  puts  levelstr
-  puts  Logger::Severity.parse?(levelstr)
 
   if Logger::Severity.parse?(levelstr)
     Logger::Severity.parse(levelstr)
