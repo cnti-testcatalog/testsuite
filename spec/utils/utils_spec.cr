@@ -249,3 +249,15 @@ describe "Utils" do
     sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
   end
 end
+
+it "'logger' command line logger level setting works", tags: ["logger", "happy-path"]  do
+  response_s = `./cnf-conformance -l debug test`
+  $?.success?.should be_true
+  (/DEBUG -- cnf-conformance: debug test/ =~ response_s).should_not be_nil
+end
+
+it "'logger' environment variable level setting works", tags: ["logger", "happy-path"]  do
+  response_s = `LOGLEVEL=DEBUG ./cnf-conformance test`
+  $?.success?.should be_true
+  (/DEBUG -- cnf-conformance: debug test/ =~ response_s).should_not be_nil
+end
