@@ -26,7 +26,7 @@ if ARGV[0]? && ARGV[0] == "setup"
     parser.banner = "Usage: setup [--binary] | [--crystal --source]"
     parser.on("-b PATH", "--binary=PATH", "Full path to ephemeral dev tool binary. Set this if you want the alias                                                        command to execute using a compiled version of the dev tool, this is required
                                      if you don't have 'crystal' installed.") { |path| bin_path = path }
-    parser.on("-c PATH", "--crystal=PATH", "Full path to the Crystal Lang execute. Set this if you want the alias                                                         command to execute using the source version of the dev tool.") { |path| crystal_path = path }
+    parser.on("-c PATH", "--crystal=PATH", "Full path to the Crystal Lang executable. Set this if you want the alias                                                      command to execute using the source version of the dev tool.") { |path| crystal_path = path }
     parser.on("-s PATH", "--source=PATH", "Full path to the source ephemeral_env.cr file. Set this if you want the alias \n                                     command to execute using the source version of the dev tool.") { |path| source_path = path }
     parser.on("-h", "--help", "Show this help") { puts parser }
     parser.invalid_option do |flag|
