@@ -8,12 +8,7 @@ require "./utils/utils.cr"
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
 task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "rolling_update", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration"]  do |_, args|
-  total = total_points("configuration_lifecycle")
-  if total > 0
-    puts "Configuration lifecycle final score: #{total} of #{total_max_points("configuration_lifecycle")}".colorize(:green)
-  else
-    puts "Configuration lifecycle final score: #{total} of #{total_max_points("configuration_lifecycle")}".colorize(:red)
-  end
+  stdout_score("configuration_lifecycle")
 end
 
 desc "Does a search for IP addresses or subnets come back as negative?"
@@ -138,8 +133,9 @@ task "rolling_update" do |_, args|
     end
     
     unless version_tag
-      upsert_failed_task("rolling_update")
-      raise "✖️  FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'rolling_update_tag'"
+      fail_msg = "✖️  FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'rolling_update_tag'"
+      upsert_failed_task("rolling_update", fail_msg)
+      raise fail_msg
     end
 
     release_name = config.get("release_name").as_s
@@ -168,11 +164,9 @@ task "rolling_update" do |_, args|
     LOGGING.debug "#{rollout}" if check_verbose(args)
     LOGGING.debug "rollout? #{rollout_status}" if check_verbose(args)
     if update_applied && rollout_status
-      upsert_passed_task("rolling_update")
-      puts "✔️  PASSED: CNF #{deployment_name} Rolling Update Passed".colorize(:green)
+      upsert_passed_task("rolling_update","✔️  PASSED: CNF #{deployment_name} Rolling Update Passed" )
     else
-      upsert_failed_task("rolling_update")
-      puts "✖️  FAILURE: CNF #{deployment_name} Rolling Update Failed".colorize(:red)
+      upsert_failed_task("rolling_update", "✖️  FAILURE: CNF #{deployment_name} Rolling Update Failed")
     end
   end
 end
@@ -186,7 +180,7 @@ task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
     release_name = config.get("release_name").as_s
     service_name = config.get("service_name").as_s
     # current_cnf_dir_short_name = cnf_conformance_dir
-    # puts current_cnf_dir_short_name if check_verbose(args)
+    # LOGGING.debug current_cnf_dir_short_name if check_verbose(args)
     # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     if File.exists?("#{destination_cnf_dir}/service.yml")
@@ -195,11 +189,9 @@ task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
       service_type = service.get("spec").as_h["type"].as_s
       LOGGING.debug service_type if check_verbose(args)
       if service_type == "NodePort" 
-        upsert_failed_task("nodeport_not_used")
-        puts "✖️  FAILURE: NodePort is being used".colorize(:red)
+        upsert_failed_task("nodeport_not_used", "✖️  FAILURE: NodePort is being used")
       else
-        upsert_passed_task("nodeport_not_used").colorize(:green)
-        puts "✔️  PASSED: NodePort is not used".colorize(:green)
+        upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
       end
     end
   end
@@ -215,7 +207,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     helm_directory = config.get("helm_directory").as_s
     release_name = "#{config.get("release_name").as_s?}"
     # current_cnf_dir_short_name = cnf_conformance_dir
-    # puts "Current_CNF_Dir: #{current_cnf_dir_short_name}" if check_verbose(args)
+    # LOGGING.debug "Current_CNF_Dir: #{current_cnf_dir_short_name}" if check_verbose(args)
     # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
 
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
@@ -236,11 +228,9 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     LOGGING.debug "IPs: #{ip_search}" if check_verbose(args)
 
     if ip_search.empty? 
-      puts "✔️  PASSED: No hard-coded IP addresses found in the runtime K8s configuration".colorize(:green)
-      upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration")
+      upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✔️  PASSED: No hard-coded IP addresses found in the runtime K8s configuration")
     else
-      puts "✖️  FAILURE: Hard-coded IP addresses found in the runtime K8s configuration".colorize(:red)
-      upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration")
+      upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  FAILURE: Hard-coded IP addresses found in the runtime K8s configuration")
     end
     delete_namespace = `kubectl delete namespace hardcoded-ip-test --force --grace-period 0 2>&1 >/dev/null`
 

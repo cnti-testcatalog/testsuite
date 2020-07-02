@@ -9,12 +9,7 @@ require "totem"
 
 desc "The CNF conformance suite checks to see if CNFs follows microservice principles"
 task "microservice", ["reasonable_image_size", "reasonable_startup_time"] do |_, args|
-  total = total_points("microservice")
-  if total > 0
-    puts "Microservice final score: #{total} of #{total_max_points("microservice")}".colorize(:green)
-  else
-    puts "Microservice final score: #{total} of #{total_max_points("microservice")}".colorize(:red)
-  end
+  stdout_score("microservice")
 end
 
 desc "Does the CNF have a reasonable startup time?"
@@ -72,11 +67,9 @@ task "reasonable_startup_time" do |_, args|
     LOGGING.debug "deployed? #{is_kubectl_deployed}" if check_verbose(args)
 
     if is_kubectl_applied && is_kubectl_deployed && elapsed_time.seconds < 30
-      upsert_passed_task("reasonable_startup_time")
-      puts "✔️  PASSED: CNF had a reasonable startup time 🚀".colorize(:green)
+      upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time 🚀")
     else
-      upsert_failed_task("reasonable_startup_time")
-      puts "✖️  FAILURE: CNF had a startup time of #{elapsed_time.seconds} seconds 🐢".colorize(:red)
+      upsert_failed_task("reasonable_startup_time", "✖️  FAILURE: CNF had a startup time of #{elapsed_time.seconds} seconds 🐢")
     end
 
     delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
@@ -123,11 +116,9 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
         docker_resp &&
         docker_resp.status_code == 200 && 
         micro_size.to_s.to_i64 < 50000000
-      upsert_passed_task("reasonable_image_size")
-      puts "✔️  PASSED: Image size is good".colorize(:green)
+      upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good")
     else
-      upsert_failed_task("reasonable_image_size")
-      puts "✖️  FAILURE: Image size too large".colorize(:red)
+      upsert_failed_task("reasonable_image_size", "✖️  FAILURE: Image size too large")
     end
   end
 end

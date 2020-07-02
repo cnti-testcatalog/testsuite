@@ -7,8 +7,8 @@ require "sam"
 
 describe "Microservice" do
   before_all do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
+    # LOGGING.debug `pwd` 
+    # LOGGING.debug `echo $KUBECONFIG`
     `./cnf-conformance samples_cleanup force=true`
     $?.success?.should be_true
     `./cnf-conformance configuration_file_setup`
@@ -45,7 +45,7 @@ describe "Microservice" do
       `./cnf-conformance cleanup force=true`
       `./cnf-conformance sample_coredns_setup`
       response_s = `./cnf-conformance reasonable_image_size verbose`
-      puts response_s
+      LOGGING.info response_s
       $?.success?.should be_true
       (/Image size is good/ =~ response_s).should_not be_nil
     ensure
@@ -58,7 +58,7 @@ describe "Microservice" do
       `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf force=true`
       `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-large-cnf deploy_with_chart=false`
       response_s = `./cnf-conformance reasonable_image_size verbose`
-      puts response_s
+      LOGGING.info response_s
       $?.success?.should be_true
       (/Image size too large/ =~ response_s).should_not be_nil
     ensure

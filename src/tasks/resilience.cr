@@ -9,12 +9,7 @@ task "resilience", ["chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill
   LOGGING.info "resilience" if check_verbose(args)
   LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
   LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
-  total = total_points("resilience")
-  if total > 0
-    puts "Resilience final score: #{total} of #{total_max_points("resilience")}".colorize(:green)
-  else
-    puts "Resilience final score: #{total} of #{total_max_points("resilience")}".colorize(:red)
-  end
+  stdout_score("resilience")
 end
 
 desc "Install Chaos Mesh"
