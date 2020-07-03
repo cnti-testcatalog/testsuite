@@ -5,46 +5,6 @@ require "logger"
 require "file_utils"
 require "option_parser"
 
-class LogLevel
-  class_property command_line_loglevel : String = ""
-end 
-
-OptionParser.parse do |parser|
-  parser.banner = "Usage: cnf-conformance [arguments]"
-  parser.on("-l LEVEL", "--loglevel=LEVEL", "Specifies the logging level for cnf-conformance suite") { |level| LogLevel.command_line_loglevel = level }
-  parser.on("-h", "--help", "Show this help") { puts parser }
-end
-
-class Results
-  @@file : String
-  @@file = create_final_results_yml_name
-  LOGGING.info "Results file"
-  continue = false
-  LOGGING.info "file exists?:#{File.exists?(@@file)}"
-  if File.exists?("#{@@file}")
-    stdout_info "Do you wish to overwrite the #{@@file} file? If so, your previous results.yml will be lost."
-    print "(Y/N) (Default N): > "
-    if ENV["CRYSTAL_ENV"]? == "TEST"
-      continue = true
-    else
-      user_input = gets
-      if user_input == "Y" || user_input == "y"
-        continue = true
-      end
-    end
-  else
-    continue = true
-  end
-  if continue
-    File.open("#{@@file}", "w") do |f| 
-      YAML.dump(template_results_yml, f)
-    end 
-  end
-  def self.file
-    @@file
-  end
-end
-
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
 # TODO put these functions into a module
@@ -61,6 +21,15 @@ FAILED = "failed"
 DEFAULT_POINTSFILENAME = "points_v1.yml"
 PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
 
+class LogLevel
+  class_property command_line_loglevel : String = ""
+end
+
+OptionParser.parse do |parser|
+  parser.banner = "Usage: cnf-conformance [arguments]"
+  parser.on("-l LEVEL", "--loglevel=LEVEL", "Specifies the logging level for cnf-conformance suite") { |level| LogLevel.command_line_loglevel = level }
+  parser.on("-h", "--help", "Show this help") { puts parser }
+end
 
 #TODO switch to ERROR for production builds
 # LOGGING = Logger.new(STDOUT, Logger::ERROR)
@@ -106,6 +75,36 @@ def loglevel
   else
     LOGGING.error "invalid logging level. defaulting to ERROR"
     Logger::ERROR
+  end
+end
+
+class Results
+  @@file : String
+  @@file = create_final_results_yml_name
+  LOGGING.info "Results file"
+  continue = false
+  LOGGING.info "file exists?:#{File.exists?(@@file)}"
+  if File.exists?("#{@@file}")
+    stdout_info "Do you wish to overwrite the #{@@file} file? If so, your previous results.yml will be lost."
+    print "(Y/N) (Default N): > "
+    if ENV["CRYSTAL_ENV"]? == "TEST"
+      continue = true
+    else
+      user_input = gets
+      if user_input == "Y" || user_input == "y"
+        continue = true
+      end
+    end
+  else
+    continue = true
+  end
+  if continue
+    File.open("#{@@file}", "w") do |f|
+      YAML.dump(template_results_yml, f)
+    end
+  end
+  def self.file
+    @@file
   end
 end
 
