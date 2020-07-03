@@ -26,7 +26,7 @@ end
 
 task "version" do |_, args|
   LOGGING.info "VERSION: #{CnfConformance::VERSION}"
-  puts CnfConformance::VERSION
+  puts "CNF Conformance version: #{CnfConformance::VERSION}"
 end 
 
 
