@@ -248,4 +248,8 @@ describe "Utils" do
     sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
     sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
   end
+
+  it "'generate_version' should return the current version of the cnf_conformance library" do
+    (generate_version).should_not eq("")
+  end
 end

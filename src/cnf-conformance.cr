@@ -1,5 +1,8 @@
 require "sam"
 require "./tasks/**"
+require "./tasks/utils/utils.cr"
+require "./tasks/utils/git.cr"
+require "./cnf_conformance.cr"
 
 
 desc "The CNF Conformance program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
@@ -17,11 +20,15 @@ task "all", ["all_prereqs", "configuration_file_setup", "compatibility","statele
     puts "Conformance Suite failed!".colorize(:red)
     puts "Failed required tasks: #{failed_required_tasks.inspect}".colorize(:red)
   end
-
-  # new_results = create_final_results_yml_name
-  # results = `mv #{LOGFILE} #{new_results}`
   puts "Results have been saved to #{Results.file}"
 end
+# Git::CompileTimeVersionGenerater.tagged_version
+
+task "version" do |_, args|
+  LOGGING.info "VERSION: #{CnfConformance::VERSION}"
+  puts CnfConformance::VERSION
+end 
+
 
 task "all_prereqs" do |_, args|
   LOGGING.info "all_prereqs" if check_verbose(args)

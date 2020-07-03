@@ -1,6 +1,7 @@
 require "totem"
 require "colorize"
 require "./sample_utils.cr"
+require "./git.cr"
 require "logger"
 
 class Results
@@ -61,6 +62,15 @@ LOGGING.formatter = Logger::Formatter.new do |severity, datetime, progname, mess
 	io << label.rjust(5) << " -- " << progname << ": " << message
 end
 
+def generate_version
+  version = ""
+  if Git.on_a_tag?
+    version = Git.tag
+  else
+    version = "#{Git.current_branch} #{Git.current_hash}"
+  end
+  return version
+end
 
 
 def loglevel
