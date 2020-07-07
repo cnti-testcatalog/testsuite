@@ -251,8 +251,8 @@ describe "Utils" do
 end
 
 it "'logger' command line logger level setting via config.yml", tags: ["logger", "happy-path"]  do
-  # NOTE: config.yml is in the root of the repo directory. 
-  # as written it depends on loglevel being set to info in that config.yml
+  # NOTE: the config.yml file is in the root of the repo directory. 
+  # as written this test depends on they key loglevel being set to 'info' in that config.yml
   response_s = `./cnf-conformance test`
   $?.success?.should be_true
   (/DEBUG -- cnf-conformance: debug test/ =~ response_s).should be_nil
