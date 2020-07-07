@@ -283,3 +283,10 @@ it "'logger' command line level setting overrides environment variable", tags: [
   (/WARN -- cnf-conformance: warn test/ =~ response_s).should be_nil
   (/ERROR -- cnf-conformance: error test/ =~ response_s).should_not be_nil
 end
+
+it "'logger' defaults to error when level set is missplled", tags: ["logger"]  do
+  # Note: implicitly tests the override of config.yml if it exist in repo root
+  response_s = `LOGLEVEL=DEGUB ./cnf-conformance test`
+  $?.success?.should be_true
+  (/ERROR -- cnf-conformance: Invalid logging level set. defaulting to ERROR/ =~ response_s).should_not be_nil
+end
