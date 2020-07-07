@@ -73,7 +73,7 @@ def loglevel
   if Logger::Severity.parse?(levelstr)
     Logger::Severity.parse(levelstr)
   else
-    LOGGING.error "No valid logging level set. defaulting to ERROR"
+    LOGGING.debug "No valid logging level set. defaulting to ERROR"
     Logger::ERROR
   end
 end
