@@ -42,6 +42,6 @@ jobs:
         # - curl -Lo kind https://github.com/kubernetes-sigs/kind/releases/download/0.0.1/kind-linux-amd64 && chmod +x kind && sudo mv kind /usr/local/bin/
       script: 
         - shards install
-        - crystal spec -v
+        - crystal spec -v || travis_terminate 1;
         # TODO only run upsert version if on master or a tagged branch, then if release creation fails, fail the build
         - ./cnf-conformance upsert_release
