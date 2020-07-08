@@ -8,7 +8,6 @@ require "sam"
 describe "ReleaseManager" do
   after_all do
     ReleaseManager::GithubReleaseManager.delete_release("test_version")
-    $?.success?.should be_true
   end
   it "'#ReleaseManager.tag' should return the list of tags on the current branch"  do
     (ReleaseManager.tag[0]).should match(/(?i)(master|v[0-1]|test_version)/)
