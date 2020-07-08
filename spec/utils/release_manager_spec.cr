@@ -10,7 +10,7 @@ describe "ReleaseManager" do
     ReleaseManager::GithubReleaseManager.delete_release("test_version")
   end
   it "'#ReleaseManager.tag' should return the list of tags on the current branch"  do
-    (ReleaseManager.tag[0]).should match(/(?i)(master|v[0-1]|test_version)/)
+    (ReleaseManager.tag.size).should be > 0
   end
   it "'#ReleaseManager.tag' should accept a list of options"  do
       (ReleaseManager.tag("--list")).should_not eq([""])
