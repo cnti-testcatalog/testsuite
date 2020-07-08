@@ -2,6 +2,7 @@ require "totem"
 require "colorize"
 require "./sample_utils.cr"
 require "logger"
+require "file_utils"
 
 class Results
   @@file : String
@@ -10,7 +11,7 @@ class Results
   continue = false
   LOGGING.info "file exists?:#{File.exists?(@@file)}"
   if File.exists?("#{@@file}")
-    puts "Do you wish to overwrite the #{@@file} file? If so, your previous results.yml will be lost."
+    stdout_info "Do you wish to overwrite the #{@@file} file? If so, your previous results.yml will be lost."
     print "(Y/N) (Default N): > "
     if ENV["CRYSTAL_ENV"]? == "TEST"
       continue = true
@@ -148,9 +149,9 @@ def single_task_runner(args, &block)
   begin
   yield args
   rescue ex
-    puts ex.message
+    LOGGING.error ex.message
     ex.backtrace.each do |x|
-      puts x
+      LOGGING.error x
     end
   end
 end
@@ -268,7 +269,7 @@ def points_yml
   points = File.open("points.yml") do |f| 
     YAML.parse(f)
   end 
-  # puts "points: #{points.inspect}"
+  # LOGGING.debug "points: #{points.inspect}"
   points.as_a
 end
 
@@ -294,31 +295,23 @@ end
 
 def failed_task(task, msg)
   upsert_task(task, FAILED, task_points(task, false))
-  puts "#{msg}".colorize(:red)
+  stdout_failure "#{msg}"
 end
 
 def passed_task(task, msg)
   upsert_task(task, PASSED, task_points(task))
-  puts "#{msg}".colorize(:green)
-end
-
-def upsert_failed_task(task)
-  upsert_task(task, FAILED, task_points(task, false))
+  stdout_success "#{msg}"
 end
 
 def upsert_failed_task(task, message)
   upsert_task(task, FAILED, task_points(task, false))
-  puts message.colorize(:red)
+  stdout_failure message
   message
-end
-
-def upsert_passed_task(task)
-  upsert_task(task, PASSED, task_points(task))
 end
 
 def upsert_passed_task(task, message)
   upsert_task(task, PASSED, task_points(task))
-  puts message.colorize(:green)
+  stdout_success message
   message
 end
 
@@ -329,7 +322,7 @@ def task_points(task, passed=true)
     field_name = "fail"
   end
   points = points_yml.find {|x| x["name"] == task}
-  puts "****Warning**** task #{task} not found in points.yml".colorize(:red) unless points
+  LOGGING.warn "****Warning**** task #{task} not found in points.yml".colorize(:yellow) unless points
   if points && points[field_name]? 
     points[field_name].as_i if points
   else
@@ -340,7 +333,7 @@ end
 
 def task_required(task)
   points = points_yml.find {|x| x["name"] == task}
-  puts "task #{task} not found in points.yml" unless points
+  LOGGING.warn "task #{task} not found in points.yml".colorize(:yellow) unless points
   if points && points["required"]? && points["required"].as_bool == true
     true
   else
@@ -459,5 +452,30 @@ def results_by_tag(tag)
   end
 end
 
+def stdout_info(msg) 
+  puts msg
+end
 
+def stdout_success(msg)
+  puts msg.colorize(:green)
+end
 
+def stdout_warning(msg)
+  puts msg.colorize(:yellow)
+end
+
+def stdout_failure(msg)
+  puts msg.colorize(:red)
+end
+
+def stdout_score(test_name)
+  total = total_points(test_name)
+  pretty_test_name = test_name.split("_").map(&.capitalize).join(" ")
+  test_log_msg = "#{pretty_test_name} final score: #{total} of #{total_max_points(test_name)}"
+
+  if total > 0
+    stdout_success test_log_msg
+  else
+    stdout_failure test_log_msg
+  end
+end

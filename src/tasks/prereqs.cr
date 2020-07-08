@@ -12,9 +12,9 @@ task "prereqs" do  |_, args|
       wget_installation.includes?("wget found") &&
       curl_installation.includes?("curl found") &&
       kubectl_installation.includes?("kubectl found")
-    puts "All prerequisites found.".colorize(:green)
+      stdout_success "All prerequisites found."
   else
-    puts "Setup failed. Some prerequisites are missing. Please install all of the prerequisites before continuing.".colorize(:red)
+    stdout_failure "Setup failed. Some prerequisites are missing. Please install all of the prerequisites before continuing."
     exit 1
   end
 end

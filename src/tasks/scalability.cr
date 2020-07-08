@@ -11,12 +11,7 @@ task "scalability", ["increase_decrease_capacity"] do |t, args|
   LOGGING.debug "scaling args.raw: #{args.raw}" if check_verbose(args)
   LOGGING.debug "scaling args.named: #{args.named}" if check_verbose(args)
   # t.invoke("increase_decrease_capacity", args)
-  total = total_points("scalability")
-  if total > 0
-    puts "Scalability final score: #{total} of #{total_max_points("scalability")}".colorize(:green)
-  else
-    puts "Scalability final score: #{total} of #{total_max_points("scalability")}".colorize(:red)
-  end
+  stdout_score("scalability")
 end
 
 desc "Test increasing/decreasing capacity"
@@ -35,11 +30,9 @@ task "increase_capacity" do |_, args|
     base_replicas = "1"
     final_count = change_capacity(base_replicas, target_replicas, args)
     if target_replicas == final_count 
-      upsert_passed_task("increase_capacity")
-      puts "✔️  PASSED: Replicas increased to #{target_replicas} #{emoji_increase_capacity}".colorize(:green)
+      upsert_passed_task("increase_capacity", "✔️  PASSED: Replicas increased to #{target_replicas} #{emoji_increase_capacity}")
     else
-      upsert_failed_task("increase_capacity")
-      puts "✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji_increase_capacity}".colorize(:red)
+      upsert_failed_task("increase_capacity", "✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji_increase_capacity}")
     end
   end
 end
@@ -54,11 +47,9 @@ task "decrease_capacity" do |_, args|
     emoji_decrease_capacity="📦📉"
 
     if target_replicas == final_count 
-      upsert_passed_task("decrease_capacity")
-      puts "✔️  PASSED: Replicas decreased to #{target_replicas} #{emoji_decrease_capacity}".colorize(:green)
+      upsert_passed_task("decrease_capacity", "✔️  PASSED: Replicas decreased to #{target_replicas} #{emoji_decrease_capacity}")
     else
-      upsert_failed_task("decrease_capacity")
-      puts "✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji_decrease_capacity}".colorize(:red)
+      upsert_failed_task("decrease_capacity", "✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji_decrease_capacity}")
     end
   end
 end
@@ -96,7 +87,7 @@ def change_capacity(base_replicas, target_replica_count, args)
 end
 
 def wait_for_scaling(deployment_name, target_replica_count, args)
-  puts "target_replica_count: #{target_replica_count}" if check_verbose(args)
+  LOGGING.info "target_replica_count: #{target_replica_count}" if check_verbose(args)
   if args.named.keys.includes? "wait_count"
     wait_count_value = args.named["wait_count"]
   else
