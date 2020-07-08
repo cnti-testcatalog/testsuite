@@ -11,7 +11,7 @@ describe "ReleaseManager" do
     $?.success?.should be_true
   end
   it "'#ReleaseManager.tag' should return the list of tags on the current branch"  do
-    (ReleaseManager.tag).should contain("v0.3.0")
+    (ReleaseManager.tag[0]).should match(/(?i)(master|v[0-1]|test_version)/)
   end
   it "'#ReleaseManager.tag' should accept a list of options"  do
       (ReleaseManager.tag("--list")).should_not eq([""])
@@ -52,9 +52,9 @@ describe "ReleaseManager" do
   # end
 
   it "'#ReleaseManager::GithubReleaseManager.delete_release' should delete the release from the found_id", tags: "release"  do
+    found_release, asset = ReleaseManager::GithubReleaseManager.upsert_release("test_version")
     resp_code = ReleaseManager::GithubReleaseManager.delete_release("test_version")
     (resp_code == 204).should be_truthy
-
   end
 
 end
