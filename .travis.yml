@@ -43,3 +43,5 @@ jobs:
       script: 
         - shards install
         - crystal spec -v
+        # TODO only run upsert version if on master or a tagged branch, then if release creation fails, fail the build
+        - ./cnf-conformance upsert_release

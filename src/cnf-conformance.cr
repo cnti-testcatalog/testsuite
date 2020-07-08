@@ -1,7 +1,7 @@
 require "sam"
 require "./tasks/**"
 require "./tasks/utils/utils.cr"
-require "./tasks/utils/git.cr"
+require "./tasks/utils/release_manager.cr"
 require "./cnf_conformance.cr"
 
 
@@ -20,15 +20,23 @@ task "all", ["all_prereqs", "configuration_file_setup", "compatibility","statele
     puts "Conformance Suite failed!".colorize(:red)
     puts "Failed required tasks: #{failed_required_tasks.inspect}".colorize(:red)
   end
-  puts "Results have been saved to #{Results.file}"
+  puts "Results have been saved to #{Results.file}".colorize(:green)
 end
-# Git::CompileTimeVersionGenerater.tagged_version
 
 task "version" do |_, args|
   LOGGING.info "VERSION: #{CnfConformance::VERSION}"
-  puts "CNF Conformance version: #{CnfConformance::VERSION}"
+  puts "CNF Conformance version: #{CnfConformance::VERSION}".colorize(:green)
 end 
 
+task "upsert_release" do |_, args|
+  LOGGING.info "upserting release on: #{CnfConformance::VERSION}"
+  release, asset = ReleaseManager::GithubReleaseManager.upsert_release
+  if release
+    puts "Created a release for: #{CnfConformance::VERSION}".colorize(:green) 
+  else
+    puts "Not creating a release for: #{CnfConformance::VERSION}".colorize(:red) 
+  end
+end
 
 task "all_prereqs" do |_, args|
   LOGGING.info "all_prereqs" if check_verbose(args)

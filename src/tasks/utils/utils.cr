@@ -1,7 +1,7 @@
 require "totem"
 require "colorize"
 require "./sample_utils.cr"
-require "./git.cr"
+require "./release_manager.cr"
 require "logger"
 
 class Results
@@ -64,10 +64,10 @@ end
 
 def generate_version
   version = ""
-  if Git.on_a_tag?
-    version = Git.tag
+  if ReleaseManager.on_a_tag?
+    version = ReleaseManager.tag
   else
-    version = "#{Git.current_branch} #{Git.current_hash}"
+    version = "#{ReleaseManager.current_branch} #{ReleaseManager.current_hash}"
   end
   return version
 end
