@@ -86,7 +86,7 @@ task "cnf_cleanup" do |_, args|
 	end
   LOGGING.debug "cnf_cleanup cnf: #{cnf}" if check_verbose(args)
   if args.named["force"]? && args.named["force"] == "true"
-    force = true 
+    force = true
   else
     force = false
   end

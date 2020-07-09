@@ -21,10 +21,10 @@ task "volume_hostpath_not_found", ["retrieve_manifest"] do |_, args|
     deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
     LOGGING.info deployment.inspect if check_verbose(args)
 
-    hostPath_found = nil 
+    hostPath_found = nil
     begin
       volumes = deployment.get("spec").as_h["template"].as_h["spec"].as_h["volumes"].as_a
-      hostPath_found = volumes.find do |volume| 
+      hostPath_found = volumes.find do |volume|
         if volume.as_h["hostPath"]?
              true
         end
@@ -34,7 +34,7 @@ task "volume_hostpath_not_found", ["retrieve_manifest"] do |_, args|
       upsert_failed_task("volume_hostpath_not_found","✖️  FAILURE: hostPath volumes found #{failed_emoji}")
     end
 
-    if hostPath_found 
+    if hostPath_found
       upsert_failed_task("volume_hostpath_not_found","✖️  FAILURE: hostPath volumes found #{failed_emoji}")
     else
       upsert_passed_task("volume_hostpath_not_found","✔️  PASSED: hostPath volumes not found #{passed_emoji}")

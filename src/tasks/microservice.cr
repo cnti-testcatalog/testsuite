@@ -30,7 +30,7 @@ task "reasonable_startup_time" do |_, args|
     helm_directory = "#{config.get("helm_directory").as_s?}"
     release_name = "#{config.get("release_name").as_s?}"
     deployment_name = "#{config.get("deployment_name").as_s?}"
-    current_dir = FileUtils.pwd 
+    current_dir = FileUtils.pwd
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     LOGGING.debug helm if check_verbose(args)
 
@@ -100,21 +100,21 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
     end
     LOGGING.debug "image_tag: #{image_tag.inspect}" if check_verbose(args)
     if docker_repository
-      # e.g. `curl -s -H "Authorization: JWT " "https://hub.docker.com/v2/repositories/#{docker_repository}/tags/?page_size=100" | jq -r '.results[] | select(.name == "latest") | .full_size'`.split('\n')[0] 
+      # e.g. `curl -s -H "Authorization: JWT " "https://hub.docker.com/v2/repositories/#{docker_repository}/tags/?page_size=100" | jq -r '.results[] | select(.name == "latest") | .full_size'`.split('\n')[0]
       docker_resp = Halite.get("https://hub.docker.com/v2/repositories/#{image_tag[0][:image]}/tags/?page_size=100", headers: {"Authorization" => "JWT"})
-      latest_image = docker_resp.parse("json")["results"].as_a.find{|x|x["name"]=="#{image_tag[0][:tag]}"} 
-      micro_size = latest_image && latest_image["full_size"] 
+      latest_image = docker_resp.parse("json")["results"].as_a.find{|x|x["name"]=="#{image_tag[0][:tag]}"}
+      micro_size = latest_image && latest_image["full_size"]
     else
       LOGGING.info "no docker repository specified" if check_verbose(args)
-      micro_size = nil 
+      micro_size = nil
     end
 
     LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
 
     # if a sucessfull call and size of container is less than 5gb
-    if docker_repository && 
+    if docker_repository &&
         docker_resp &&
-        docker_resp.status_code == 200 && 
+        docker_resp.status_code == 200 &&
         micro_size.to_s.to_i64 < 50000000
       upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good")
     else

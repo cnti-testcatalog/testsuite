@@ -15,7 +15,7 @@ end
 desc "Install Chaos Mesh"
 task "install_chaosmesh" do |_, args|
   LOGGING.info "install_chaosmesh" if check_verbose(args)
-  current_dir = FileUtils.pwd 
+  current_dir = FileUtils.pwd
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
   crd_install = `kubectl create -f https://raw.githubusercontent.com/pingcap/chaos-mesh/v0.8.0/manifests/crd.yaml`
   LOGGING.info "#{crd_install}" if check_verbose(args)
@@ -60,7 +60,7 @@ task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, arg
       deployment_label_value = deployment.get("metadata").as_h["labels"].as_h[deployment_label].as_s
     rescue ex
       errors = errors + 1
-      LOGGING.error ex.message 
+      LOGGING.error ex.message
     end
     if errors < 1
       template = Crinja.render(network_chaos_template, { "deployment_label" => "#{deployment_label}", "deployment_label_value" => "#{deployment_label_value}" })
@@ -107,7 +107,7 @@ task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
       deployment_label_value = deployment.get("metadata").as_h["labels"].as_h[deployment_label].as_s
     rescue ex
       errors = errors + 1
-      LOGGING.error ex.message 
+      LOGGING.error ex.message
     end
     if errors < 1
       template = Crinja.render(cpu_chaos_template, { "deployment_label" => "#{deployment_label}", "deployment_label_value" => "#{deployment_label_value}" })
@@ -153,7 +153,7 @@ task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, a
       deployment_label_value = deployment.get("metadata").as_h["labels"].as_h[deployment_label].as_s
     rescue ex
       errors = errors + 1
-      LOGGING.error ex.message 
+      LOGGING.error ex.message
     end
     if errors < 1
       template = Crinja.render(chaos_template_container_kill, { "deployment_label" => "#{deployment_label}", "deployment_label_value" => "#{deployment_label_value}", "helm_chart_container_name" => "#{helm_chart_container_name}" })

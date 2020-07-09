@@ -9,7 +9,7 @@ task "k8s_conformance" do |_, args|
   begin
     #TODO enable full test with production mode
     #sonobuoy = `sonobuoy run --wait` if PRODUCTION_MODE and not in test_mode
-    current_dir = FileUtils.pwd 
+    current_dir = FileUtils.pwd
     LOGGING.debug current_dir if check_verbose(args)
     sonobuoy = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy"
 
@@ -28,12 +28,12 @@ task "k8s_conformance" do |_, args|
     end
     LOGGING.info testrun if check_verbose(args)
 
-    results = `results=$(#{sonobuoy} retrieve); #{sonobuoy} results $results` 
+    results = `results=$(#{sonobuoy} retrieve); #{sonobuoy} results $results`
     LOGGING.info results if check_verbose(args)
 
     # Grab the failed line from the results
-    failed_count = ((results.match(/Failed: (.*)/)).try &.[1]) 
-    if failed_count.to_s.to_i > 0 
+    failed_count = ((results.match(/Failed: (.*)/)).try &.[1])
+    if failed_count.to_s.to_i > 0
       upsert_failed_task("k8s_conformance", "✖️  FAILURE: K8s conformance test has #{failed_count} failure(s)!")
     else
       upsert_passed_task("k8s_conformance", "✔️  PASSED: K8s conformance test has no failures")

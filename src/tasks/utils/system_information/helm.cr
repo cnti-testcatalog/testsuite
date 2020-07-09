@@ -7,9 +7,9 @@ def helm_installation(verbose=false)
   lmsg = "No Local helm version found"
   ghelm = helm_global_response
   LOGGING.info ghelm if verbose
-  
+
   global_helm_version = helm_version(ghelm, verbose)
-   
+
   if global_helm_version
     gmsg = "Global helm found. Version: #{global_helm_version}"
     stdout_success gmsg
@@ -19,9 +19,9 @@ def helm_installation(verbose=false)
 
   lhelm = helm_local_response
   LOGGING.info lhelm if verbose
-  
+
   local_helm_version = helm_version(lhelm, verbose)
-   
+
   if local_helm_version
     lmsg = "Local helm found. Version: #{local_helm_version}"
     stdout_success lmsg
@@ -40,20 +40,20 @@ def helm_installation(verbose=false)
     )
   end
   "#{lmsg} #{gmsg}"
-end 
+end
 
 def helm_global_response(verbose=false)
   helm_response = `helm version`
   LOGGING.info helm_response if verbose
-  helm_response 
+  helm_response
 end
 
 def helm_local_response(verbose=false)
-  current_dir = FileUtils.pwd 
-  LOGGING.info current_dir if verbose 
+  current_dir = FileUtils.pwd
+  LOGGING.info current_dir if verbose
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
   # helm_response = `#{helm} version`
-  status = Process.run("#{helm} version", shell: true, output: helm_response = IO::Memory.new, error: stderr = IO::Memory.new)
+  Process.run("#{helm} version", shell: true, output: helm_response = IO::Memory.new)
   LOGGING.info helm_response.to_s if verbose
   helm_response.to_s
 end

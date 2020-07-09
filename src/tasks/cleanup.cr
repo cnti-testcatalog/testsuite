@@ -11,7 +11,7 @@ end
 desc "Cleans up the CNF Conformance sample projects"
 task "samples_cleanup", ["sample_coredns_cleanup", "cleanup_sample_coredns", "bad_helm_cnf_cleanup", "sample_privileged_cnf_non_whitelisted_cleanup", "sample_privileged_cnf_whitelisted_cleanup", "sample_coredns_bad_liveness_cleanup", "sample_coredns_source_cleanup", "sample_generic_cnf_cleanup"] do  |_, args|
   if args.named["force"]? && args.named["force"] == "true"
-    force = true 
+    force = true
   else
     force = false
   end

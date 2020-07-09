@@ -1,5 +1,9 @@
 version: 1.0
 shards:
+  ameba:
+    github: crystal-ameba/ameba
+    version: 0.12.1
+
   commander:
     github: mrrooijen/commander
     version: 0.3.5

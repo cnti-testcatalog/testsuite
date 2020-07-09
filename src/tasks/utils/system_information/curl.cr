@@ -7,9 +7,9 @@ def curl_installation(verbose=false)
   lmsg = "No Local curl version found"
   gcurl = curl_global_response
   LOGGING.info gcurl if verbose
-  
+
   global_curl_version = curl_version(gcurl, verbose)
-   
+
   if !global_curl_version.empty?
     gmsg = "Global curl found. Version: #{global_curl_version}"
     stdout_success gmsg
@@ -19,9 +19,9 @@ def curl_installation(verbose=false)
 
   lcurl = curl_local_response
   LOGGING.info lcurl if verbose
-  
+
   local_curl_version = curl_version(lcurl, verbose)
-   
+
   if !local_curl_version.empty?
     lmsg = "Local curl found. Version: #{local_curl_version}"
     stdout_success lmsg
@@ -32,24 +32,24 @@ def curl_installation(verbose=false)
   if !(global_curl_version && local_curl_version)
     stdout_failure "Curl not found"
     stdout_failure %Q(
-    Linux installation instructions for Curl can be found here: https://www.tecmint.com/install-curl-in-linux/ 
+    Linux installation instructions for Curl can be found here: https://www.tecmint.com/install-curl-in-linux/
     )
   end
   "#{lmsg} #{gmsg}"
-end 
+end
 
 def curl_global_response(verbose=false)
   curl_response = `curl --version`
   LOGGING.info curl_response if verbose
-  curl_response 
+  curl_response
 end
 
 def curl_local_response(verbose=false)
-  current_dir = FileUtils.pwd 
-  LOGGING.info current_dir if verbose 
+  current_dir = FileUtils.pwd
+  LOGGING.info current_dir if verbose
   curl = "#{current_dir}/#{TOOLS_DIR}/curl/linux-amd64/curl"
   # curl_response = `#{curl} --version`
-  status = Process.run("#{curl} --version", shell: true, output: curl_response = IO::Memory.new, error: stderr = IO::Memory.new)
+  Process.run("#{curl} --version", shell: true, output: curl_response = IO::Memory.new)
   LOGGING.info curl_response.to_s if verbose
   curl_response.to_s
 end
@@ -61,5 +61,3 @@ def curl_version(curl_response, verbose=false)
   LOGGING.info resp if verbose
   "#{resp && resp.not_nil![1]}"
 end
-
-

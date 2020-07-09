@@ -50,7 +50,7 @@ task "liveness", ["retrieve_manifest"] do |_, args|
     containers.each do |container|
       begin
         LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
-        container.as_h["livenessProbe"].as_h 
+        container.as_h["livenessProbe"].as_h
       rescue ex
         LOGGING.error ex.message if check_verbose(args)
         errors = errors + 1
@@ -79,7 +79,7 @@ task "readiness", ["retrieve_manifest"] do |_, args|
     containers.each do |container|
      begin
         LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
-        container.as_h["readinessProbe"].as_h 
+        container.as_h["readinessProbe"].as_h
       rescue ex
         LOGGING.error ex.message if check_verbose(args)
         errors = errors + 1
@@ -93,7 +93,7 @@ task "readiness", ["retrieve_manifest"] do |_, args|
 end
 
 desc "Retrieve the manifest for the CNF's helm chart"
-task "retrieve_manifest" do |_, args| 
+task "retrieve_manifest" do |_, args|
   task_runner(args) do |args|
     LOGGING.info "retrieve_manifest" if check_verbose(args)
     # config = cnf_conformance_yml
@@ -131,7 +131,7 @@ task "rolling_update" do |_, args|
     if args.named.has_key? "version_tag"
       version_tag = args.named["version_tag"]
     end
-    
+
     unless version_tag
       fail_msg = "✖️  FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'rolling_update_tag'"
       upsert_failed_task("rolling_update", fail_msg)
@@ -188,7 +188,7 @@ task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
       LOGGING.debug service.inspect if check_verbose(args)
       service_type = service.get("spec").as_h["type"].as_s
       LOGGING.debug service_type if check_verbose(args)
-      if service_type == "NodePort" 
+      if service_type == "NodePort"
         upsert_failed_task("nodeport_not_used", "✖️  FAILURE: NodePort is being used")
       else
         upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
@@ -227,7 +227,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     ip_search = File.read_lines("#{destination_cnf_dir}/helm_chart.yml").take_while{|x| x.match(/NOTES:/) == nil}.reduce([] of String){|acc, x| x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/) && x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/).try &.[0] != "0.0.0.0" ? acc << x : acc}
     LOGGING.debug "IPs: #{ip_search}" if check_verbose(args)
 
-    if ip_search.empty? 
+    if ip_search.empty?
       upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✔️  PASSED: No hard-coded IP addresses found in the runtime K8s configuration")
     else
       upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  FAILURE: Hard-coded IP addresses found in the runtime K8s configuration")

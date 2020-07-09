@@ -7,9 +7,9 @@ def kubectl_installation(verbose=false)
   lmsg = "No Local kubectl version found"
   gkubectl = kubectl_global_response
   LOGGING.info gkubectl if verbose
-  
+
   global_kubectl_version = kubectl_version(gkubectl, verbose)
-   
+
   if !global_kubectl_version.empty?
     gmsg = "Global kubectl found. Version: #{global_kubectl_version}"
     stdout_success gmsg
@@ -19,9 +19,9 @@ def kubectl_installation(verbose=false)
 
   lkubectl = kubectl_local_response
   LOGGING.info lkubectl if verbose
-  
+
   local_kubectl_version = kubectl_version(lkubectl, verbose)
-   
+
   if !local_kubectl_version.empty?
     lmsg = "Local kubectl found. Version: #{local_kubectl_version}"
     stdout_success lmsg
@@ -37,7 +37,7 @@ def kubectl_installation(verbose=false)
   if !(global_kubectl_version && local_kubectl_version)
     stdout_failure "Kubectl not found"
     stdout_failure %Q(
-    Linux installation instructions for Kubectl can be found here: https://kubernetes.io/docs/tasks/tools/install-kubectl/ 
+    Linux installation instructions for Kubectl can be found here: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 
     Install kubectl binary with curl on Linux
     Download the latest release with the command:
@@ -60,27 +60,27 @@ def kubectl_installation(verbose=false)
     )
   end
   "#{lmsg} #{gmsg}"
-end 
+end
 
 def kubectl_global_response(verbose=false)
   kubectl_response = `kubectl version`
   LOGGING.info kubectl_response if verbose
-  kubectl_response 
+  kubectl_response
 end
 
 def kubectl_local_response(verbose=false)
-  current_dir = FileUtils.pwd 
-  LOGGING.info current_dir if verbose 
+  current_dir = FileUtils.pwd
+  LOGGING.info current_dir if verbose
   kubectl = "#{current_dir}/#{TOOLS_DIR}/kubectl/linux-amd64/kubectl"
   # kubectl_response = `#{kubectl} version`
-  status = Process.run("#{kubectl} version", shell: true, output: kubectl_response = IO::Memory.new, error: stderr = IO::Memory.new)
+  Process.run("#{kubectl} version", shell: true, output: kubectl_response = IO::Memory.new)
   LOGGING.info kubectl_response.to_s if verbose
   kubectl_response.to_s
 end
 
 def kubectl_version(kubectl_response, verbose=false)
   # example
-  # Client Version: version.Info{Major:"1", Minor:"15", GitVersion:"v1.15.3", GitCommit:"2d3c76f9091b6bec110a5e63777c332469e0cba2", GitTreeState:"clean", BuildDate:"2019-08-19T11:13:54Z", GoVersion:"go1.12.9", Compiler:"gc", Platform:"linux/amd64"} 
+  # Client Version: version.Info{Major:"1", Minor:"15", GitVersion:"v1.15.3", GitCommit:"2d3c76f9091b6bec110a5e63777c332469e0cba2", GitTreeState:"clean", BuildDate:"2019-08-19T11:13:54Z", GoVersion:"go1.12.9", Compiler:"gc", Platform:"linux/amd64"}
   resp = kubectl_response.match /Client Version: version.Info{(Major:"(([0-9]{1,3})"\, )Minor:"([0-9]{1,3}[+]?)")/
   LOGGING.info resp if verbose
   if resp
@@ -89,5 +89,3 @@ def kubectl_version(kubectl_response, verbose=false)
     ""
   end
 end
-
-

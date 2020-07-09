@@ -29,7 +29,7 @@ task "increase_capacity" do |_, args|
     target_replicas = "3"
     base_replicas = "1"
     final_count = change_capacity(base_replicas, target_replicas, args)
-    if target_replicas == final_count 
+    if target_replicas == final_count
       upsert_passed_task("increase_capacity", "✔️  PASSED: Replicas increased to #{target_replicas} #{emoji_increase_capacity}")
     else
       upsert_failed_task("increase_capacity", "✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji_increase_capacity}")
@@ -46,7 +46,7 @@ task "decrease_capacity" do |_, args|
     final_count = change_capacity(base_replicas, target_replicas, args)
     emoji_decrease_capacity="📦📉"
 
-    if target_replicas == final_count 
+    if target_replicas == final_count
       upsert_passed_task("decrease_capacity", "✔️  PASSED: Replicas decreased to #{target_replicas} #{emoji_decrease_capacity}")
     else
       upsert_failed_task("decrease_capacity", "✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji_decrease_capacity}")
@@ -68,12 +68,12 @@ def change_capacity(base_replicas, target_replica_count, args)
   if args.named.keys.includes? "deployment_name"
     deployment_name = args.named["deployment_name"]
   else
-    deployment_name = config.get("deployment_name").as_s 
+    deployment_name = config.get("deployment_name").as_s
   end
   LOGGING.info "deployment_name: #{deployment_name}" if check_verbose(args)
 
   base = `kubectl scale deployment.v1.apps/#{deployment_name} --replicas=#{base_replicas}`
-  LOGGING.info "base: #{base}" if check_verbose(args) 
+  LOGGING.info "base: #{base}" if check_verbose(args)
   initialized_count = wait_for_scaling(deployment_name, base_replicas, args)
   if initialized_count != base_replicas
     LOGGING.info "deployment initialized to #{initialized_count} and could not be set to #{base_replicas}" if check_verbose(args)
@@ -115,10 +115,10 @@ def wait_for_scaling(deployment_name, target_replica_count, args)
       second_count = 0
       previous_replicas = current_replicas
     end
-    second_count = second_count + 1 
+    second_count = second_count + 1
     LOGGING.info "previous_replicas: #{previous_replicas}" if check_verbose(args)
     LOGGING.info "current_replicas: #{current_replicas}" if check_verbose(args)
   end
   current_replicas
-end 
+end
 

@@ -28,13 +28,13 @@ task "helm_deploy" do |_, args|
         helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
         LOGGING.debug helm if check_verbose(args)
 
-        if helm_chart.empty? 
+        if helm_chart.empty?
           #TODO make this work off of a helm directory if helm_directory was passed
           # yml_file_path = cnf_conformance_yml_file_path(args)
           yml_file_path = ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
           LOGGING.debug "#{helm} install #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}" if check_verbose(args)
           helm_install = `#{helm} install #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}`
-        else 
+        else
           LOGGING.debug "#{helm} install #{release_name_prefix}#{release_name} #{helm_chart}" if check_verbose(args)
           helm_install = `#{helm} install #{release_name_prefix}#{release_name} #{helm_chart}`
         end
@@ -78,7 +78,7 @@ task "install_script_helm" do |_, args|
         file.gets_to_end
       end
       # LOGGING.debug content
-      if /helm/ =~ content 
+      if /helm/ =~ content
         found = 1
       end
       if found < 1
@@ -103,7 +103,7 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
     helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_directory = "#{config.get("helm_directory").as_s?}"
 
-    current_dir = FileUtils.pwd 
+    current_dir = FileUtils.pwd
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     LOGGING.debug helm if check_verbose(args)
 
@@ -145,7 +145,7 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     LOGGING.debug "helm_directory: #{helm_directory}" if check_verbose(args)
     # LOGGING.debug "helm_chart_repo: #{helm_chart_repo}" if check_verbose(args)
 
-    current_dir = FileUtils.pwd 
+    current_dir = FileUtils.pwd
     LOGGING.debug current_dir if check_verbose(args)
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
 
@@ -160,7 +160,7 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     helm_lint = `#{helm} lint #{destination_cnf_dir}/#{helm_directory}`
     LOGGING.debug "helm_lint: #{helm_lint}" if check_verbose(args)
 
-    if $?.success? 
+    if $?.success?
       upsert_passed_task("helm_chart_valid", "✔️  PASSED: Helm Chart #{helm_directory} Lint Passed")
     else
       upsert_failed_task("helm_chart_valid", "✖️  FAILURE: Helm Chart #{helm_directory} Lint Failed")

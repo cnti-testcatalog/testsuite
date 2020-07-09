@@ -48,20 +48,20 @@ def loglevel
 
   # of course last setting wins so make sure to keep the precendence order desired
   # currently
-  # 
+  #
   # 1. Cli flag is highest precedence
   # 2. Environment var is next level of precedence
   # 3. Config file is last level of precedence
 
   # lowest priority is first
   if File.exists?(BASE_CONFIG)
-    config = Totem.from_file BASE_CONFIG 
+    config = Totem.from_file BASE_CONFIG
     if config["loglevel"].as_s?
       levelstr = config["loglevel"].as_s
     end
   end
 
-  if ENV.has_key?("LOGLEVEL") 
+  if ENV.has_key?("LOGLEVEL")
     levelstr = ENV["LOGLEVEL"]
   end
 
@@ -112,9 +112,9 @@ class Results
 end
 
 def check_verbose(args)
-  if ((args.raw.includes? "verbose") || (args.raw.includes? "v") || (LOGGING.info?) ) 
+  if ((args.raw.includes? "verbose") || (args.raw.includes? "v") || (LOGGING.info?) )
     true
-  else 
+  else
     false
   end
 end
@@ -137,7 +137,7 @@ def check_all_cnf_args(args)
   LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
   cnf = check_cnf_config(args)
   deploy_with_chart = true
-  if cnf 
+  if cnf
     LOGGING.info "all cnf: #{cnf}" if check_verbose(args)
     if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
       deploy_with_chart = false
@@ -175,22 +175,20 @@ end
 # TODO give example for calling
 def single_task_runner(args, &block)
   # LOGGING.info("task_runner args: #{args.inspect}")
-  begin
   yield args
   rescue ex
     LOGGING.error ex.message
     ex.backtrace.each do |x|
       LOGGING.error x
     end
-  end
 end
 
 def toggle(toggle_name)
   toggle_on = false
   if File.exists?(BASE_CONFIG)
-    config = Totem.from_file BASE_CONFIG 
+    config = Totem.from_file BASE_CONFIG
     if config["toggles"].as_a?
-      feature_flag = config["toggles"].as_a.find do |x| 
+      feature_flag = config["toggles"].as_a.find do |x|
         x["name"] == toggle_name
       end
       toggle_on = feature_flag["toggle_on"].as_bool if feature_flag
@@ -252,9 +250,9 @@ end
 def template_results_yml
   #TODO add tags for category summaries
   YAML.parse <<-END
-name: cnf conformance 
-status: 
-points: 
+name: cnf conformance
+status:
+points:
 items: []
 END
 end
@@ -281,45 +279,45 @@ end
 
 def clean_results_yml(verbose=false)
   if File.exists?("#{Results.file}")
-    results = File.open("#{Results.file}") do |f| 
+    results = File.open("#{Results.file}") do |f|
       YAML.parse(f)
-    end 
-    File.open("#{Results.file}", "w") do |f| 
+    end
+    File.open("#{Results.file}", "w") do |f|
       YAML.dump({name: results["name"],
                  status: results["status"],
                  points: results["points"],
                  items: [] of YAML::Any}, f)
-    end 
+    end
   end
 end
 
 def points_yml
   # TODO get points.yml from remote http
-  points = File.open("points.yml") do |f| 
+  points = File.open("points.yml") do |f|
     YAML.parse(f)
-  end 
+  end
   # LOGGING.debug "points: #{points.inspect}"
   points.as_a
 end
 
 def upsert_task(task, status, points)
-  results = File.open("#{Results.file}") do |f| 
+  results = File.open("#{Results.file}") do |f|
     YAML.parse(f)
-  end 
+  end
 
   result_items = results["items"].as_a
   # remove the existing entry
-  result_items = result_items.reject do |x| 
-    x["name"] == task  
+  result_items = result_items.reject do |x|
+    x["name"] == task
   end
 
   result_items << YAML.parse "{name: #{task}, status: #{status}, points: #{points}}"
-  File.open("#{Results.file}", "w") do |f| 
+  File.open("#{Results.file}", "w") do |f|
     YAML.dump({name: results["name"],
                status: results["status"],
                points: results["points"],
                items: result_items}, f)
-  end 
+  end
 end
 
 def failed_task(task, msg)
@@ -352,7 +350,7 @@ def task_points(task, passed=true)
   end
   points = points_yml.find {|x| x["name"] == task}
   LOGGING.warn "****Warning**** task #{task} not found in points.yml".colorize(:yellow) unless points
-  if points && points[field_name]? 
+  if points && points[field_name]?
     points[field_name].as_i if points
   else
     points = points_yml.find {|x| x["name"] == "default_scoring"}
@@ -375,8 +373,8 @@ def failed_required_tasks
     YAML.parse(file)
   end
   yaml["items"].as_a.reduce([] of String) do |acc, i|
-    if i["status"].as_s == "failed" && 
-        i["name"].as_s? && 
+    if i["status"].as_s == "failed" &&
+        i["name"].as_s? &&
         task_required(i["name"].as_s)
       (acc << i["name"].as_s)
     else
@@ -434,7 +432,7 @@ def total_max_points(tag=nil)
 end
 
 def all_task_test_names
-  result_items = points_yml.reduce([] of String) do |acc, x|
+  points_yml.reduce([] of String) do |acc, x|
     if x["name"].as_s == "default_scoring"
       acc
     else
@@ -445,8 +443,7 @@ end
 
 def tasks_by_tag(tag)
   #TODO cross reference points.yml tags with results
-  found = false
-  result_items = points_yml.reduce([] of String) do |acc, x|
+  points_yml.reduce([] of String) do |acc, x|
     if x["tags"].as_s? && x["tags"].as_s.includes?(tag)
       acc << x["name"].as_s
     else
@@ -456,10 +453,10 @@ def tasks_by_tag(tag)
 end
 
 def all_result_test_names(results_file)
-  results = File.open(results_file) do |f| 
+  results = File.open(results_file) do |f|
     YAML.parse(f)
-  end 
-  result_items = results["items"].as_a.reduce([] of String) do |acc, x|
+  end
+  results["items"].as_a.reduce([] of String) do |acc, x|
       acc << x["name"].as_s
   end
 end
@@ -467,12 +464,11 @@ end
 def results_by_tag(tag)
   task_list = tasks_by_tag(tag)
 
-  results = File.open("#{Results.file}") do |f| 
+  results = File.open("#{Results.file}") do |f|
     YAML.parse(f)
-  end 
+  end
 
-  found = false
-  result_items = results["items"].as_a.reduce([] of YAML::Any) do |acc, x|
+  results["items"].as_a.reduce([] of YAML::Any) do |acc, x|
     if x["name"].as_s? && task_list.find{|tl| tl == x["name"].as_s}
       acc << x
     else
@@ -481,7 +477,7 @@ def results_by_tag(tag)
   end
 end
 
-def stdout_info(msg) 
+def stdout_info(msg)
   puts msg
 end
 

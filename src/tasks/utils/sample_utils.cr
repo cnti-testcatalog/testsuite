@@ -56,12 +56,12 @@ def wait_for_install(deployment_name, wait_count=180, namespace="default")
     all_deployments = `kubectl get deployments --namespace=#{namespace}`
     current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
     LOGGING.info(all_deployments)
-    second_count = second_count + 1 
+    second_count = second_count + 1
   end
-end 
+end
 
 def path_has_yml?(config_path)
-  if config_path =~ /\.yml/  
+  if config_path =~ /\.yml/
     true
   else
     false
@@ -71,12 +71,10 @@ end
 def config_from_path_or_dir(cnf_path_or_dir)
   if path_has_yml?(cnf_path_or_dir)
     config_file = File.dirname(cnf_path_or_dir)
-    config = sample_conformance_yml(config_file)
   else
     config_file = cnf_path_or_dir
-    config = sample_conformance_yml(config_file)
   end
-  return config
+  sample_conformance_yml(config_file)
 end
 
 def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false, wait_count=180)
@@ -97,21 +95,21 @@ def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false, w
   if args.named.keys.includes? "deployment_name"
     deployment_name = "#{args.named["deployment_name"]}"
   else
-    deployment_name = "#{config.get("deployment_name").as_s?}" 
+    deployment_name = "#{config.get("deployment_name").as_s?}"
   end
   LOGGING.info "deployment_name: #{deployment_name}" if verbose
 
   if args.named.keys.includes? "helm_chart"
     helm_chart = "#{args.named["helm_chart"]}"
   else
-    helm_chart = "#{config.get("helm_chart").as_s?}" 
+    helm_chart = "#{config.get("helm_chart").as_s?}"
   end
   LOGGING.info "helm_chart: #{helm_chart}" if verbose
 
   if args.named.keys.includes? "helm_directory"
     helm_directory = "#{args.named["helm_directory"]}"
   else
-    helm_directory = "#{config.get("helm_directory").as_s?}" 
+    helm_directory = "#{config.get("helm_directory").as_s?}"
   end
   LOGGING.info "helm_directory: #{helm_directory}" if verbose
 
@@ -129,9 +127,9 @@ end
 def ensure_cnf_conformance_yml_path(path)
 	LOGGING.info("ensure_cnf_conformance_yml_path")
   if path_has_yml?(path)
-    yml = path 
+    path
   else
-    yml = path + "/cnf-conformance.yml" 
+    path + "/cnf-conformance.yml"
   end
 end
 
@@ -150,11 +148,11 @@ def cnf_destination_dir(config_file)
   if path_has_yml?(config_file)
     yml = config_file
   else
-    yml = config_file + "/cnf-conformance.yml" 
+    yml = config_file + "/cnf-conformance.yml"
   end
   config = parsed_config_file(yml)
-  current_dir = FileUtils.pwd 
-  deployment_name = "#{config.get("deployment_name").as_s?}" 
+  current_dir = FileUtils.pwd
+  deployment_name = "#{config.get("deployment_name").as_s?}"
 	LOGGING.info("deployment_name: #{deployment_name}")
   "#{current_dir}/#{CNF_DIR}/#{deployment_name}"
 end
@@ -194,22 +192,22 @@ def sample_setup(config_file, release_name, deployment_name, helm_chart, helm_di
   LOGGING.info "sample_setup" if verbose
   LOGGING.info("config_file #{config_file}")
 
-  current_dir = FileUtils.pwd 
-  LOGGING.info current_dir if verbose 
+  current_dir = FileUtils.pwd
+  LOGGING.info current_dir if verbose
 
   destination_cnf_dir = cnf_destination_dir(config_file)
 
-  LOGGING.info "destination_cnf_dir: #{destination_cnf_dir}" if verbose 
-  FileUtils.mkdir_p(destination_cnf_dir) 
+  LOGGING.info "destination_cnf_dir: #{destination_cnf_dir}" if verbose
+  FileUtils.mkdir_p(destination_cnf_dir)
   # TODO enable recloning/fetching etc
   # TODO pass in block
   git_clone = `git clone #{git_clone_url} #{destination_cnf_dir}/#{release_name}` if git_clone_url.empty? == false
   LOGGING.info git_clone if verbose
 
   # Copy the cnf-conformance.yml
-  # Copy the sample 
+  # Copy the sample
   # TODO create helm chart directory if it doesn't exist
-  # Document this behaviour of the helm chart directory (using it if it exists, 
+  # Document this behaviour of the helm chart directory (using it if it exists,
   # creating it if it doesn't)
   LOGGING.info("File.directory?(#{config_source_dir(config_file)}/#{helm_directory}) #{File.directory?(config_source_dir(config_file) + "/" + helm_directory)}")
   if File.directory?(config_source_dir(config_file) + "/" + helm_directory)
@@ -218,30 +216,30 @@ def sample_setup(config_file, release_name, deployment_name, helm_chart, helm_di
     LOGGING.info yml_cp if verbose
     raise "Copy of #{config_source_dir(config_file) + "/" + helm_directory} to #{destination_cnf_dir} failed!" unless $?.success?
   else
-    FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}") 
+    FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}")
   end
   #TODO get yml for the config_file if it doesn't exist
   LOGGING.info("cp -a #{ensure_cnf_conformance_yml_path(config_file)} #{destination_cnf_dir}")
-  yml_cp = `cp -a #{ensure_cnf_conformance_yml_path(config_file)} #{destination_cnf_dir}`
+  `cp -a #{ensure_cnf_conformance_yml_path(config_file)} #{destination_cnf_dir}`
 
 
   begin
 
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     if deploy_with_chart
-      LOGGING.info "deploying with chart repository" if verbose 
+      LOGGING.info "deploying with chart repository" if verbose
       helm_install = `#{helm} install #{release_name} #{helm_chart}`
-      LOGGING.info helm_install if verbose 
+      LOGGING.info helm_install if verbose
 
       # Retrieve the helm chart source
-      FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}") 
+      FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}")
       helm_pull = `#{helm} pull #{helm_chart}`
-      LOGGING.info helm_pull if verbose 
+      LOGGING.info helm_pull if verbose
       # core_mv = `mv #{release_name}-*.tgz #{destination_cnf_dir}/#{helm_directory}`
       # TODO helm_chart should be helm_chart_repo
       LOGGING.info "mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/#{helm_directory}" if verbose
       core_mv = `mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/#{helm_directory}`
-      LOGGING.info core_mv if verbose 
+      LOGGING.info core_mv if verbose
 
       LOGGING.info "cd #{destination_cnf_dir}/#{helm_directory}; tar -xvf #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}-*.tgz" if verbose
       tar = `cd #{destination_cnf_dir}/#{helm_directory}; tar -xvf #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}-*.tgz`
@@ -251,10 +249,10 @@ def sample_setup(config_file, release_name, deployment_name, helm_chart, helm_di
       move_chart = `mv #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/#{helm_directory}`
       LOGGING.info move_chart if verbose
     else
-      LOGGING.info "deploying with helm directory" if verbose 
+      LOGGING.info "deploying with helm directory" if verbose
       LOGGING.info("#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}")
       helm_install = `#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}`
-      LOGGING.info helm_install if verbose 
+      LOGGING.info helm_install if verbose
     end
 
     wait_for_install(deployment_name, wait_count)
@@ -263,13 +261,13 @@ def sample_setup(config_file, release_name, deployment_name, helm_chart, helm_di
     end
   ensure
     cd = `cd #{current_dir}`
-    LOGGING.info cd if verbose 
+    LOGGING.info cd if verbose
   end
 end
 
 def tools_helm
-  current_dir = FileUtils.pwd 
-  helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+  current_dir = FileUtils.pwd
+  "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
 end
 
 def sample_cleanup(config_file, force=false, verbose=true)
@@ -277,11 +275,11 @@ def sample_cleanup(config_file, force=false, verbose=true)
   config = parsed_config_file(ensure_cnf_conformance_yml_path(config_file))
 
   LOGGING.info "cleanup config: #{config.inspect}" if verbose
-  release_name = config.get("release_name").as_s 
+  release_name = config.get("release_name").as_s
 
-  current_dir = FileUtils.pwd 
+  current_dir = FileUtils.pwd
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-  # LOGGING.debug helm if verbose 
+  # LOGGING.debug helm if verbose
   # destination_cnf_dir = "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(config_path)}"
   dir_exists = File.directory?(destination_cnf_dir)
   ret = true
@@ -300,10 +298,10 @@ def sample_cleanup(config_file, force=false, verbose=true)
 end
 
 def chart_name(helm_chart_repo)
-  helm_chart_repo.split("/").last 
+  helm_chart_repo.split("/").last
 end
 
-# TODO: figure out how to check this recursively 
+# TODO: figure out how to check this recursively
 #
 # def recursive_json_unmapped(hashy_thing): JSON::Any
 #   unmapped_stuff = hashy_thing.json_unmapped
@@ -313,7 +311,7 @@ end
 #       return unmapped_stuff[key] = recursive_json_unmapped(hashy_thing[key])
 #     end
 #   end
-  
+
 #   unmapped_stuff
 # end
 
@@ -321,7 +319,7 @@ end
 # https://github.com/Nicolab/crystal-validator#check
 def validate_cnf_conformance_yml(config)
   ccyt_validator = nil
-  valid = true 
+  valid = true
 
   begin
     ccyt_validator = CnfConformanceYmlType.from_json(config.settings.to_json)
@@ -348,7 +346,7 @@ def validate_cnf_conformance_yml(config)
   end
 
   #TODO Differentiate between unmapped subkeys or unset top level key.
-  if ccyt_validator && !ccyt_validator.try &.helm_repository.try &.json_unmapped.empty? 
+  if ccyt_validator && !ccyt_validator.try &.helm_repository.try &.json_unmapped.empty?
     root = {} of String => (Hash(String, JSON::Any) | Nil)
     root["helm_repository"] = ccyt_validator.try &.helm_repository.try &.json_unmapped
 

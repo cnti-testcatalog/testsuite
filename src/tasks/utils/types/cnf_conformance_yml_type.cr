@@ -1,13 +1,13 @@
 require "json"
 
 # NOTE: want add/change a bunch of new fields and don't want to figure out how to do it manually?
-# 
+#
 # in a script or using icr
-# 
+#
 # require "./src/tasks/utils/sample_utils.cr"
 # config = cnf_conformance_yml
 # config.settings.to_json
-# 
+#
 # now take that json here https://app.quicktype.io/?share=Tfokny8vUaAeJ7XDOTSo
 # and generate new types
 
