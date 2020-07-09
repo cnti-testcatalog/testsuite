@@ -3,6 +3,83 @@ require "colorize"
 require "./sample_utils.cr"
 require "logger"
 require "file_utils"
+require "option_parser"
+
+# TODO make constants local or always retrieve from environment variables
+# TODO Move constants out
+# TODO put these functions into a module
+
+CNF_DIR = "cnfs"
+CONFIG_FILE = "cnf-conformance.yml"
+TOOLS_DIR = "tools"
+BASE_CONFIG = "./config.yml"
+# Results.file = "cnf-conformance-results-#{Time.utc.to_s("%Y%m%d")}.log"
+# Results.file = "results.yml"
+POINTSFILE = "points.yml"
+PASSED = "passed"
+FAILED = "failed"
+DEFAULT_POINTSFILENAME = "points_v1.yml"
+PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
+
+class LogLevel
+  class_property command_line_loglevel : String = ""
+end
+
+OptionParser.parse do |parser|
+  parser.banner = "Usage: cnf-conformance [arguments]"
+  parser.on("-l LEVEL", "--loglevel=LEVEL", "Specifies the logging level for cnf-conformance suite") { |level| LogLevel.command_line_loglevel = level }
+  parser.on("-h", "--help", "Show this help") { puts parser }
+end
+
+#TODO switch to ERROR for production builds
+# LOGGING = Logger.new(STDOUT, Logger::ERROR)
+LOGGING = Logger.new(STDOUT, Logger::INFO)
+LOGGING.progname = "cnf-conformance"
+LOGGING.level=loglevel
+
+LOGGING.formatter = Logger::Formatter.new do |severity, datetime, progname, message, io|
+	label = severity.unknown? ? "ANY" : severity.to_s
+	io << label[0] << ", [" << datetime << " #" << Process.pid << "] "
+	io << label.rjust(5) << " -- " << progname << ": " << message
+end
+
+def loglevel
+  levelstr = "" # default to unset
+
+  # of course last setting wins so make sure to keep the precendence order desired
+  # currently
+  # 
+  # 1. Cli flag is highest precedence
+  # 2. Environment var is next level of precedence
+  # 3. Config file is last level of precedence
+
+  # lowest priority is first
+  if File.exists?(BASE_CONFIG)
+    config = Totem.from_file BASE_CONFIG 
+    if config["loglevel"].as_s?
+      levelstr = config["loglevel"].as_s
+    end
+  end
+
+  if ENV.has_key?("LOGLEVEL") 
+    levelstr = ENV["LOGLEVEL"]
+  end
+
+  # highest priority is last
+  if !LogLevel.command_line_loglevel.empty?
+    levelstr = LogLevel.command_line_loglevel
+  end
+
+  if Logger::Severity.parse?(levelstr)
+    Logger::Severity.parse(levelstr)
+  else
+    if !levelstr.empty?
+      LOGGING.error "Invalid logging level set. defaulting to ERROR"
+    end
+    # if nothing set but also nothing missplled then silently default to error
+    Logger::ERROR
+  end
+end
 
 class Results
   @@file : String
@@ -25,60 +102,12 @@ class Results
     continue = true
   end
   if continue
-    File.open("#{@@file}", "w") do |f| 
+    File.open("#{@@file}", "w") do |f|
       YAML.dump(template_results_yml, f)
-    end 
+    end
   end
   def self.file
     @@file
-  end
-end
-
-# TODO make constants local or always retrieve from environment variables
-# TODO Move constants out
-# TODO put these functions into a module
-
-CNF_DIR = "cnfs"
-CONFIG_FILE = "cnf-conformance.yml"
-TOOLS_DIR = "tools"
-BASE_CONFIG = "./config.yml"
-# Results.file = "cnf-conformance-results-#{Time.utc.to_s("%Y%m%d")}.log"
-# Results.file = "results.yml"
-POINTSFILE = "points.yml"
-PASSED = "passed"
-FAILED = "failed"
-DEFAULT_POINTSFILENAME = "points_v1.yml"
-PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
-
-#TODO switch to ERROR for production builds
-# LOGGING = Logger.new(STDOUT, Logger::ERROR)
-LOGGING = Logger.new(STDOUT, Logger::INFO)
-LOGGING.progname = "cnf-conformance"
-LOGGING.level=loglevel
-
-LOGGING.formatter = Logger::Formatter.new do |severity, datetime, progname, message, io|
-	label = severity.unknown? ? "ANY" : severity.to_s
-	io << label[0] << ", [" << datetime << " #" << Process.pid << "] "
-	io << label.rjust(5) << " -- " << progname << ": " << message
-end
-
-
-
-def loglevel
-  toggle_on = false
-  if File.exists?(BASE_CONFIG)
-    config = Totem.from_file BASE_CONFIG 
-    if config["loglevel"].as_s? && config["loglevel"].as_s == "info"
-      Logger::INFO
-    elsif config["loglevel"].as_s? && config["loglevel"].as_s == "debug"
-      Logger::DEBUG
-    elsif config["loglevel"].as_s? && config["loglevel"].as_s == "error"
-      Logger::ERROR
-    else
-      Logger::ERROR
-    end
-  else
-    Logger::ERROR
   end
 end
 

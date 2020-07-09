@@ -29,7 +29,36 @@ crystal build src/cnf-conformance.cr
 crystal src/cnf-conformance.cr all cnf-config=<path_to_your_config_file>/cnf-conformance.yml
 ```
 
+## Logging 
+
+```
+# cmd line
+./cnf-conformance -l debug test
+
+# make sure to use -- if running from source
+crystal src/cnf-conformance.cr -- -l debug test 
+
+# env var
+LOGLEVEL=DEBUG ./cnf-conformance test
+```
+
+NOTE: When setting log level precedence highest of following wins 
+
+1. Cli flag is highest precedence
+2. Environment var is next level of precedence
+3. [Config file](https://github.com/cncf/cnf-conformance/blob/master/config.yml) is last level of precedence
+
+
+
+Also setting the verbose option for many tasks will add extra output to help with debugging
+
+```
+crystal src/cnf-conformance.cr test_name verbose
+```
+
+
 ## To see a list of all tasks in the test suite
+
 ``` 
 crystal src/cnf-conformance.cr help 
 ```
@@ -302,5 +331,5 @@ crystal src/cnf-conformance.cr platform
 ```
 crystal src/cnf-conformance.cr k8s_conformance
 ```
-                                                                                                                                                                                                  
+
 
