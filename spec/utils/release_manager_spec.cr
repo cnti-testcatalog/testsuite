@@ -44,11 +44,10 @@ describe "ReleaseManager" do
 
   end
 
-  # TODO uncomment after travis is tested and working
-  # it "'#ReleaseManager::GithubReleaseManager.upsert_release' should return nil if not on a valid version", tags: "release"  do
-  #   found_release, asset = ReleaseManager::GithubReleaseManager.upsert_release("invalid_version")
-  #   (asset).should be_nil
-  # end
+  it "'#ReleaseManager::GithubReleaseManager.upsert_release' should return nil if not on a valid version", tags: "release"  do
+    found_release, asset = ReleaseManager::GithubReleaseManager.upsert_release("invalid_version")
+    (asset).should be_nil
+  end
 
   it "'#ReleaseManager::GithubReleaseManager.delete_release' should delete the release from the found_id", tags: "release"  do
     found_release, asset = ReleaseManager::GithubReleaseManager.upsert_release("test_version")

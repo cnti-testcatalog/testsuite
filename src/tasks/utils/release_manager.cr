@@ -23,11 +23,10 @@ module ReleaseManager
       else
         prerelease = true
       end
-      # TODO uncomment after travis is tested and working
-      # unless upsert_version =~ /(?i)(master|v[0-1]|test_version)/
-      #   LOGGING.info "Not creating a release for : #{upsert_version}"
-      #   return {found_release, asset} 
-      # end
+      unless upsert_version =~ /(?i)(master|v[0-1]|test_version)/
+        LOGGING.info "Not creating a release for : #{upsert_version}"
+        return {found_release, asset} 
+      end
       LOGGING.info "upsert_version: #{upsert_version}"
       release_resp = ReleaseManager::GithubReleaseManager.github_releases
       LOGGING.info "release_resp size: #{release_resp.size}"
