@@ -6,61 +6,61 @@ def helm_installation(verbose=false)
   gmsg = "No Global helm version found"
   lmsg = "No Local helm version found"
   ghelm = helm_global_response
-  puts ghelm if verbose
+  LOGGING.info ghelm if verbose
   
   global_helm_version = helm_version(ghelm, verbose)
    
   if global_helm_version
     gmsg = "Global helm found. Version: #{global_helm_version}"
-    puts gmsg.colorize(:green)
+    stdout_success gmsg
   else
-    puts gmsg.colorize(:yellow)
+    stdout_warning gmsg
   end
 
   lhelm = helm_local_response
-  puts lhelm if verbose
+  LOGGING.info lhelm if verbose
   
   local_helm_version = helm_version(lhelm, verbose)
    
   if local_helm_version
     lmsg = "Local helm found. Version: #{local_helm_version}"
-    puts lmsg.colorize(:green)
+    stdout_success lmsg
 
   else
-    puts lmsg.colorize(:yellow)
+    stdout_warning lmsg
   end
 
   if !(global_helm_version && local_helm_version)
-    puts "Helm not found".colorize(:red)
-    puts %Q(
+    stdout_failure "Helm not found"
+    stdout_failure %Q(
     Installation instructions for Helm can be found here: https://helm.sh/docs/intro/install
 
     To install helm on Linux use:
     sudo snap install helm --classic
-    ).colorize(:red)
+    )
   end
   "#{lmsg} #{gmsg}"
 end 
 
 def helm_global_response(verbose=false)
   helm_response = `helm version`
-  puts helm_response if verbose
+  LOGGING.info helm_response if verbose
   helm_response 
 end
 
 def helm_local_response(verbose=false)
   current_dir = FileUtils.pwd 
-  puts current_dir if verbose 
+  LOGGING.info current_dir if verbose 
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
   # helm_response = `#{helm} version`
   status = Process.run("#{helm} version", shell: true, output: helm_response = IO::Memory.new, error: stderr = IO::Memory.new)
-  puts helm_response.to_s if verbose
+  LOGGING.info helm_response.to_s if verbose
   helm_response.to_s
 end
 
 def helm_version(helm_response, verbose=false)
   resp = "#{helm_v2_version(helm_response) || helm_v3_version(helm_response)}"
-  puts resp if verbose
+  LOGGING.info resp if verbose
   resp
 end
 

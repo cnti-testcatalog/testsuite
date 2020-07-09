@@ -18,7 +18,7 @@ describe "Setup" do
 
   it "'setup' should completely setup the cnf conformance environment before installing cnfs", tags: "happy-path"  do
     response_s = `./cnf-conformance setup`
-    puts response_s
+    LOGGING.info response_s
     $?.success?.should be_true
     (/Setup complete/ =~ response_s).should_not be_nil
   end
@@ -26,13 +26,13 @@ describe "Setup" do
   it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf with a cnf-conformance.yml", tags: "happy-path"  do
     begin
       response_s = `./cnf-conformance cnf_setup cnf-config=example-cnfs/coredns/cnf-conformance.yml`
-      puts response_s
+      LOGGING.info response_s
       $?.success?.should be_true
       (/Successfully setup coredns/ =~ response_s).should_not be_nil
     ensure
 
       response_s = `./cnf-conformance cnf_cleanup cnf-config=example-cnfs/coredns/cnf-conformance.yml`
-      puts response_s
+      LOGGING.info response_s
       $?.success?.should be_true
       (/Successfully cleaned up/ =~ response_s).should_not be_nil
     end

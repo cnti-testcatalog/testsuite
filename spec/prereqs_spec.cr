@@ -8,7 +8,7 @@ require "sam"
 describe "Prereq" do
   it "'prereq' should check the system for prerequisites", tags: "happy-path"  do
     response_s = `./cnf-conformance prereqs verbose`
-    puts response_s
+    LOGGING.info response_s
     $?.success?.should be_true
     (/helm found/ =~ response_s).should_not be_nil
     (/wget found/ =~ response_s).should_not be_nil

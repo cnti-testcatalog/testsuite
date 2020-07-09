@@ -7,12 +7,7 @@ require "./utils/utils.cr"
 
 desc "The CNF conformance suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
 task "installability", ["install_script_helm", "helm_chart_valid", "helm_chart_published", "helm_deploy"] do |_, args|
-  total = total_points("installability")
-  if total > 0
-    puts "Installability final score: #{total} of #{total_max_points("installability")}".colorize(:green)
-  else
-    puts "Installability final score: #{total} of #{total_max_points("installability")}".colorize(:red)
-  end
+  stdout_score("installability")
 end
 
 desc "Will the CNF install using helm with helm_deploy?"
@@ -48,11 +43,9 @@ task "helm_deploy" do |_, args|
         LOGGING.info helm_install if check_verbose(args)
 
         if is_helm_installed
-          upsert_passed_task("helm_deploy")
-          puts "✔️  PASSED: Helm deploy successful".colorize(:green)
+          upsert_passed_task("helm_deploy", "✔️  PASSED: Helm deploy successful")
         else
-          upsert_failed_task("helm_deploy")
-          puts "✖️  FAILURE: Helm deploy failed".colorize(:red)
+          upsert_failed_task("helm_deploy", "✖️  FAILURE: Helm deploy failed")
         end
       ensure
         LOGGING.debug "#{helm} uninstall #{release_name_prefix}#{release_name}" if check_verbose(args)
@@ -74,7 +67,7 @@ task "install_script_helm" do |_, args|
     found = 0
     # current_cnf_dir_short_name = cnf_conformance_dir
     # current_cnf_dir_short_name = ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
-    # puts current_cnf_dir_short_name if check_verbose(args)
+    # LOGGING.debug current_cnf_dir_short_name if check_verbose(args)
     # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     LOGGING.debug destination_cnf_dir if check_verbose(args)
@@ -84,20 +77,17 @@ task "install_script_helm" do |_, args|
       content = File.open("#{destination_cnf_dir}/#{install_script}") do |file|
         file.gets_to_end
       end
-      # puts content
+      # LOGGING.debug content
       if /helm/ =~ content 
         found = 1
       end
       if found < 1
-        upsert_failed_task("install_script_helm")
-        puts "✖️  FAILURE: Helm not found in supplied install script".colorize(:red)
+        upsert_failed_task("install_script_helm", "✖️  FAILURE: Helm not found in supplied install script")
       else
-        upsert_passed_task("install_script_helm")
-        puts "✔️  PASSED: Helm found in supplied install script".colorize(:green)
+        upsert_passed_task("install_script_helm", "✔️  PASSED: Helm found in supplied install script")
       end
     else
-      upsert_passed_task("install_script_helm")
-      puts "PASSED (by default): No install script provided".colorize(:green)
+      upsert_passed_task("install_script_helm", "✔️  PASSED (by default): No install script provided")
     end
   end
 end
@@ -122,19 +112,15 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
         helm_search = `#{helm} search repo #{helm_chart}`
         LOGGING.debug "#{helm_search}" if check_verbose(args)
         unless helm_search =~ /No results found/
-          upsert_passed_task("helm_chart_published")
-          puts "✔️  PASSED: Published Helm Chart Found".colorize(:green)
+          upsert_passed_task("helm_chart_published", "✔️  PASSED: Published Helm Chart Found")
         else
-          upsert_failed_task("helm_chart_published")
-          puts "✖️  FAILURE: Published Helm Chart Not Found".colorize(:red)
+          upsert_failed_task("helm_chart_published", "✖️  FAILURE: Published Helm Chart Not Found")
         end
       else
-        upsert_failed_task("helm_chart_published")
-        puts "✖️  FAILURE: Published Helm Chart Not Found".colorize(:red)
+        upsert_failed_task("helm_chart_published", "✖️  FAILURE: Published Helm Chart Not Found")
       end
     else
-      upsert_failed_task("helm_chart_published")
-      puts "✖️  FAILURE: Published Helm Chart Not Found".colorize(:red)
+      upsert_failed_task("helm_chart_published", "✖️  FAILURE: Published Helm Chart Not Found")
     end
   end
 end
@@ -157,16 +143,16 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     end
 
     LOGGING.debug "helm_directory: #{helm_directory}" if check_verbose(args)
-    # puts "helm_chart_repo: #{helm_chart_repo}" if check_verbose(args)
+    # LOGGING.debug "helm_chart_repo: #{helm_chart_repo}" if check_verbose(args)
 
     current_dir = FileUtils.pwd 
     LOGGING.debug current_dir if check_verbose(args)
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
 
     # current_cnf_dir_short_name = cnf_conformance_dir
-    # puts current_cnf_dir_short_name if check_verbose(args)
+    # LOGGING.debug current_cnf_dir_short_name if check_verbose(args)
     # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
-    # puts destination_cnf_dir if check_verbose(args)
+    # LOGGING.debug destination_cnf_dir if check_verbose(args)
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     ls_helm_directory = `ls -al #{destination_cnf_dir}/#{helm_directory}`
     LOGGING.debug "ls -al of helm_directory: #{ls_helm_directory}" if check_verbose(args)
@@ -175,11 +161,9 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     LOGGING.debug "helm_lint: #{helm_lint}" if check_verbose(args)
 
     if $?.success? 
-      upsert_passed_task("helm_chart_valid")
-      puts "✔️  PASSED: Helm Chart #{helm_directory} Lint Passed".colorize(:green)
+      upsert_passed_task("helm_chart_valid", "✔️  PASSED: Helm Chart #{helm_directory} Lint Passed")
     else
-      upsert_failed_task("helm_chart_valid")
-      puts "✖️  FAILURE: Helm Chart #{helm_directory} Lint Failed".colorize(:red)
+      upsert_failed_task("helm_chart_valid", "✖️  FAILURE: Helm Chart #{helm_directory} Lint Failed")
     end
   end
 end
@@ -189,8 +173,8 @@ task "validate_config" do |_, args|
   valid, warning_output = validate_cnf_conformance_yml(yml)
 
   if valid
-    puts "✔️ PASSED: CNF configuration validated 📋".colorize(:green)
+    stdout_success "✔️ PASSED: CNF configuration validated 📋"
   else
-    puts "❌ FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file 📋".colorize(:red)
+    stdout_failure "❌ FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file 📋"
   end
 end

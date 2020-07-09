@@ -3,8 +3,8 @@ require "colorize"
 
 describe CnfConformance do
   before_all do
-    # puts `pwd` 
-    # puts `echo $KUBECONFIG`
+    LOGGING.debug `pwd` 
+    LOGGING.debug `echo $KUBECONFIG`
 
     `./cnf-conformance samples_cleanup`
     $?.success?.should be_true
@@ -18,7 +18,7 @@ describe CnfConformance do
       `./cnf-conformance sample_coredns_source_setup verbose`
       $?.success?.should be_true
       response_s = `./cnf-conformance ip_addresses verbose`
-      puts response_s
+      LOGGING.info response_s
       $?.success?.should be_true
       (/FAILURE: IP addresses found/ =~ response_s).should_not be_nil
     ensure
@@ -30,7 +30,7 @@ describe CnfConformance do
       `./cnf-conformance sample_coredns`
       $?.success?.should be_true
       response_s = `./cnf-conformance liveness verbose`
-      puts response_s
+      LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: Helm liveness probe/ =~ response_s).should_not be_nil
     ensure
@@ -42,7 +42,7 @@ describe CnfConformance do
       `./cnf-conformance sample_coredns_bad_liveness`
       $?.success?.should be_true
       response_s = `./cnf-conformance liveness verbose`
-      puts response_s
+      LOGGING.info response_s
       $?.success?.should be_true
       (/FAILURE: No livenessProbe found/ =~ response_s).should_not be_nil
     ensure
@@ -54,7 +54,7 @@ describe CnfConformance do
       `./cnf-conformance sample_coredns`
       $?.success?.should be_true
       response_s = `./cnf-conformance readiness verbose`
-      puts response_s
+      LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: Helm readiness probe/ =~ response_s).should_not be_nil
     ensure
@@ -66,7 +66,7 @@ describe CnfConformance do
       `./cnf-conformance sample_coredns_bad_liveness`
       $?.success?.should be_true
       response_s = `./cnf-conformance readiness verbose`
-      puts response_s
+      LOGGING.info response_s
       $?.success?.should be_true
       (/FAILURE: No readinessProbe found/ =~ response_s).should_not be_nil
     ensure
@@ -78,7 +78,7 @@ describe CnfConformance do
       `./cnf-conformance sample_coredns`
       $?.success?.should be_true
       response_s = `./cnf-conformance rolling_update verbose`
-      puts response_s
+      LOGGING.info response_s
       $?.success?.should be_true
       (/Rolling Update Passed/ =~ response_s).should_not be_nil
     ensure
@@ -90,7 +90,7 @@ describe CnfConformance do
       `./cnf-conformance sample_coredns`
       $?.success?.should be_true
       response_s = `./cnf-conformance rolling_update verbose version_tag=this_is_not_real_version`
-      puts response_s
+      LOGGING.info response_s
       $?.success?.should be_true
       (/Rolling Update Failed/ =~ response_s).should_not be_nil
     ensure
@@ -102,7 +102,7 @@ describe CnfConformance do
       `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample_nodeport deploy_with_chart=false`
       $?.success?.should be_true
       response_s = `./cnf-conformance nodeport_not_used verbose`
-      puts response_s
+      LOGGING.info response_s
       $?.success?.should be_true
       (/FAILURE: NodePort is being used/ =~ response_s).should_not be_nil
     ensure
@@ -114,7 +114,7 @@ describe CnfConformance do
       `./cnf-conformance sample_coredns`
       $?.success?.should be_true
       response_s = `./cnf-conformance nodeport_not_used verbose`
-      puts response_s
+      LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: NodePort is not used/ =~ response_s).should_not be_nil
     ensure
@@ -130,7 +130,7 @@ describe CnfConformance do
       `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample_coredns_hardcoded_ips deploy_with_chart=false`
       $?.success?.should be_true
       response_s = `./cnf-conformance hardcoded_ip_addresses_in_k8s_runtime_configuration verbose`
-      puts response_s
+      LOGGING.info response_s
       $?.success?.should be_true
       (/FAILURE: Hard-coded IP addresses found in the runtime K8s configuration/ =~ response_s).should_not be_nil
     ensure
@@ -142,7 +142,7 @@ describe CnfConformance do
       `./cnf-conformance sample_coredns`
       $?.success?.should be_true
       response_s = `./cnf-conformance hardcoded_ip_addresses_in_k8s_runtime_configuration verbose`
-      puts response_s
+      LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: No hard-coded IP addresses found in the runtime K8s configuration/ =~ response_s).should_not be_nil
     ensure

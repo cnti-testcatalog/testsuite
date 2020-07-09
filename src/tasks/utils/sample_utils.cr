@@ -80,47 +80,47 @@ def config_from_path_or_dir(cnf_path_or_dir)
 end
 
 def sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false, wait_count=180)
-  puts "sample_setup_args" if verbose
+  LOGGING.info "sample_setup_args" if verbose
 
   config = config_from_path_or_dir(sample_dir)
   config_dir = ensure_cnf_conformance_dir(sample_dir)
 
-  puts "config #{config}" if verbose
+  LOGGING.info "config #{config}" if verbose
 
   if args.named.keys.includes? "release_name"
     release_name = "#{args.named["release_name"]}"
   else
     release_name = "#{config.get("release_name").as_s?}"
   end
-  puts "release_name: #{release_name}" if verbose
+  LOGGING.info "release_name: #{release_name}" if verbose
 
   if args.named.keys.includes? "deployment_name"
     deployment_name = "#{args.named["deployment_name"]}"
   else
     deployment_name = "#{config.get("deployment_name").as_s?}" 
   end
-  puts "deployment_name: #{deployment_name}" if verbose
+  LOGGING.info "deployment_name: #{deployment_name}" if verbose
 
   if args.named.keys.includes? "helm_chart"
     helm_chart = "#{args.named["helm_chart"]}"
   else
     helm_chart = "#{config.get("helm_chart").as_s?}" 
   end
-  puts "helm_chart: #{helm_chart}" if verbose
+  LOGGING.info "helm_chart: #{helm_chart}" if verbose
 
   if args.named.keys.includes? "helm_directory"
     helm_directory = "#{args.named["helm_directory"]}"
   else
     helm_directory = "#{config.get("helm_directory").as_s?}" 
   end
-  puts "helm_directory: #{helm_directory}" if verbose
+  LOGGING.info "helm_directory: #{helm_directory}" if verbose
 
   if args.named.keys.includes? "git_clone_url"
     git_clone_url = "#{args.named["git_clone_url"]}"
   else
     git_clone_url = "#{config.get("git_clone_url").as_s?}"
   end
-  puts "git_clone_url: #{git_clone_url}" if verbose
+  LOGGING.info "git_clone_url: #{git_clone_url}" if verbose
 
   sample_setup(config_file: config_dir, release_name: release_name, deployment_name: deployment_name, helm_chart: helm_chart, helm_directory: helm_directory, git_clone_url: git_clone_url, deploy_with_chart: deploy_with_chart, verbose: verbose, wait_count: wait_count )
 
@@ -191,20 +191,20 @@ def helm_repo_add(helm_repo_name=nil, helm_repo_url=nil, args : Sam::Args=Sam::A
 end
 
 def sample_setup(config_file, release_name, deployment_name, helm_chart, helm_directory, git_clone_url="", deploy_with_chart=true, verbose=false, wait_count=180)
-  puts "sample_setup" if verbose
+  LOGGING.info "sample_setup" if verbose
   LOGGING.info("config_file #{config_file}")
 
   current_dir = FileUtils.pwd 
-  puts current_dir if verbose 
+  LOGGING.info current_dir if verbose 
 
   destination_cnf_dir = cnf_destination_dir(config_file)
 
-  puts "destination_cnf_dir: #{destination_cnf_dir}" if verbose 
+  LOGGING.info "destination_cnf_dir: #{destination_cnf_dir}" if verbose 
   FileUtils.mkdir_p(destination_cnf_dir) 
   # TODO enable recloning/fetching etc
   # TODO pass in block
   git_clone = `git clone #{git_clone_url} #{destination_cnf_dir}/#{release_name}` if git_clone_url.empty? == false
-  puts git_clone if verbose
+  LOGGING.info git_clone if verbose
 
   # Copy the cnf-conformance.yml
   # Copy the sample 
@@ -215,7 +215,7 @@ def sample_setup(config_file, release_name, deployment_name, helm_chart, helm_di
   if File.directory?(config_source_dir(config_file) + "/" + helm_directory)
     LOGGING.info("cp -a #{config_source_dir(config_file) + "/" + helm_directory} #{destination_cnf_dir}")
     yml_cp = `cp -a #{config_source_dir(config_file) + "/" + helm_directory} #{destination_cnf_dir}`
-    puts yml_cp if verbose
+    LOGGING.info yml_cp if verbose
     raise "Copy of #{config_source_dir(config_file) + "/" + helm_directory} to #{destination_cnf_dir} failed!" unless $?.success?
   else
     FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}") 
@@ -229,41 +229,41 @@ def sample_setup(config_file, release_name, deployment_name, helm_chart, helm_di
 
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     if deploy_with_chart
-      puts "deploying with chart repository" if verbose 
+      LOGGING.info "deploying with chart repository" if verbose 
       helm_install = `#{helm} install #{release_name} #{helm_chart}`
-      puts helm_install if verbose 
+      LOGGING.info helm_install if verbose 
 
       # Retrieve the helm chart source
       FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}") 
       helm_pull = `#{helm} pull #{helm_chart}`
-      puts helm_pull if verbose 
+      LOGGING.info helm_pull if verbose 
       # core_mv = `mv #{release_name}-*.tgz #{destination_cnf_dir}/#{helm_directory}`
       # TODO helm_chart should be helm_chart_repo
-      puts "mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/#{helm_directory}" if verbose
+      LOGGING.info "mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/#{helm_directory}" if verbose
       core_mv = `mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/#{helm_directory}`
-      puts core_mv if verbose 
+      LOGGING.info core_mv if verbose 
 
-      puts "cd #{destination_cnf_dir}/#{helm_directory}; tar -xvf #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}-*.tgz" if verbose
+      LOGGING.info "cd #{destination_cnf_dir}/#{helm_directory}; tar -xvf #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}-*.tgz" if verbose
       tar = `cd #{destination_cnf_dir}/#{helm_directory}; tar -xvf #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}-*.tgz`
-      puts tar if verbose
+      LOGGING.info tar if verbose
 
-      puts "mv #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/#{helm_directory}" if verbose
+      LOGGING.info "mv #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/#{helm_directory}" if verbose
       move_chart = `mv #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/#{helm_directory}`
-      puts move_chart if verbose
+      LOGGING.info move_chart if verbose
     else
-      puts "deploying with helm directory" if verbose 
+      LOGGING.info "deploying with helm directory" if verbose 
       LOGGING.info("#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}")
       helm_install = `#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}`
-      puts helm_install if verbose 
+      LOGGING.info helm_install if verbose 
     end
 
     wait_for_install(deployment_name, wait_count)
     if helm_install.to_s.size > 0 # && helm_pull.to_s.size > 0
-      puts "Successfully setup #{release_name}".colorize(:green)
+      LOGGING.info "Successfully setup #{release_name}".colorize(:green)
     end
   ensure
     cd = `cd #{current_dir}`
-    puts cd if verbose 
+    LOGGING.info cd if verbose 
   end
 end
 
@@ -276,24 +276,24 @@ def sample_cleanup(config_file, force=false, verbose=true)
   destination_cnf_dir = cnf_destination_dir(config_file)
   config = parsed_config_file(ensure_cnf_conformance_yml_path(config_file))
 
-  puts "cleanup config: #{config.inspect}" if verbose
+  LOGGING.info "cleanup config: #{config.inspect}" if verbose
   release_name = config.get("release_name").as_s 
 
   current_dir = FileUtils.pwd 
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-  # puts helm if verbose 
+  # LOGGING.debug helm if verbose 
   # destination_cnf_dir = "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(config_path)}"
   dir_exists = File.directory?(destination_cnf_dir)
   ret = true
 	LOGGING.info("destination_cnf_dir: #{destination_cnf_dir}")
   if dir_exists || force == true
     rm = `rm -rf #{destination_cnf_dir}`
-    puts rm if verbose
+    LOGGING.info rm if verbose
     helm_uninstall = `#{helm} uninstall #{release_name}`
     ret = $?.success?
-    puts helm_uninstall if verbose
+    LOGGING.info helm_uninstall if verbose
     if ret
-      puts "Successfully cleaned up #{release_name}".colorize(:green)
+      stdout_success "Successfully cleaned up #{release_name}"
     end
   end
   ret
@@ -327,11 +327,11 @@ def validate_cnf_conformance_yml(config)
     ccyt_validator = CnfConformanceYmlType.from_json(config.settings.to_json)
   rescue ex
     valid = false
-    puts "✖ ERROR: cnf_conformance.yml field validation error.".colorize(:red)
-    puts " please check info in the the field name near the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
-    puts ex.message
+    LOGGING.error "✖ ERROR: cnf_conformance.yml field validation error.".colorize(:red)
+    LOGGING.error " please check info in the the field name near the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
+    LOGGING.error ex.message
     ex.backtrace.each do |x|
-      puts x
+      LOGGING.error x
     end
   end
 
@@ -343,7 +343,7 @@ def validate_cnf_conformance_yml(config)
     warning_output = [unmapped_keys_warning_msg] of String | Colorize::Object(String)
     warning_output.push(ccyt_validator.try &.json_unmapped.to_s)
     if warning_output.size > 1
-      puts warning_output.join("\n")
+      LOGGING.warn warning_output.join("\n")
     end
   end
 
@@ -355,7 +355,7 @@ def validate_cnf_conformance_yml(config)
     warning_output = [unmapped_subkeys_warning_msg] of String | Colorize::Object(String)
     warning_output.push(root.to_s)
     if warning_output.size > 1
-      puts warning_output.join("\n")
+      LOGGING.warn warning_output.join("\n")
     end
   end
 
