@@ -6,8 +6,10 @@
 *.swp
 *.swo
 /cnfs
-/tools
 /results
+/tools/chaos_mesh
+/tools/helm
+/tools/sonobuoy
 admin.conf
 cnf-conformance
 results.yml
