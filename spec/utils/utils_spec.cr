@@ -253,3 +253,44 @@ describe "Utils" do
     (generate_version).should_not eq("")
   end
 end
+
+it "'logger' command line logger level setting via config.yml", tags: ["logger", "happy-path"]  do
+  # NOTE: the config.yml file is in the root of the repo directory. 
+  # as written this test depends on they key loglevel being set to 'info' in that config.yml
+  response_s = `./cnf-conformance test`
+  $?.success?.should be_true
+  (/DEBUG -- cnf-conformance: debug test/ =~ response_s).should be_nil
+  (/INFO -- cnf-conformance: info test/ =~ response_s).should_not be_nil
+  (/WARN -- cnf-conformance: warn test/ =~ response_s).should_not be_nil
+  (/ERROR -- cnf-conformance: error test/ =~ response_s).should_not be_nil
+end
+
+it "'logger' command line logger level setting works", tags: ["logger", "happy-path"]  do
+  # Note: implicitly tests the override of config.yml if it exist in repo root
+  response_s = `./cnf-conformance -l debug test`
+  $?.success?.should be_true
+  (/DEBUG -- cnf-conformance: debug test/ =~ response_s).should_not be_nil
+end
+
+it "'logger' environment variable level setting works", tags: ["logger", "happy-path"]  do
+  # Note: implicitly tests the override of config.yml if it exist in repo root
+  response_s = `LOGLEVEL=DEBUG ./cnf-conformance test`
+  $?.success?.should be_true
+  (/DEBUG -- cnf-conformance: debug test/ =~ response_s).should_not be_nil
+end
+
+it "'logger' command line level setting overrides environment variable", tags: ["logger", "happy-path"]  do
+  response_s = `LOGLEVEL=DEBUG ./cnf-conformance -l error test`
+  $?.success?.should be_true
+  (/DEBUG -- cnf-conformance: debug test/ =~ response_s).should be_nil
+  (/INFO -- cnf-conformance: info test/ =~ response_s).should be_nil
+  (/WARN -- cnf-conformance: warn test/ =~ response_s).should be_nil
+  (/ERROR -- cnf-conformance: error test/ =~ response_s).should_not be_nil
+end
+
+it "'logger' defaults to error when level set is missplled", tags: ["logger"]  do
+  # Note: implicitly tests the override of config.yml if it exist in repo root
+  response_s = `LOGLEVEL=DEGUB ./cnf-conformance test`
+  $?.success?.should be_true
+  (/ERROR -- cnf-conformance: Invalid logging level set. defaulting to ERROR/ =~ response_s).should_not be_nil
+end

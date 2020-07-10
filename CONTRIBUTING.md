@@ -28,6 +28,27 @@ To request an enhancement, please create a new issue using the [**Feature Reques
 **2. Report Bugs:**
 To report a bug, please create a new issue using the [**Bug Report**](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=bug&template=bug-report.md&title=%5BBUG%5D) Template. Check out [How to Report Bugs Effectively](https://www.chiark.greenend.org.uk/~sgtatham/bugs.html.).
 
+NOTE: you can enable higher logging level output via the command line or env var. to help with debugging
+
+```
+# cmd line
+./cnf-conformance -l debug test
+
+# make sure to use -- if running from source
+crystal src/cnf-conformance.cr -- -l debug test 
+
+# env var
+LOGLEVEL=DEBUG ./cnf-conformance test
+```
+
+Also setting the verbose option for many tasks will add extra output to help with debugging
+
+```
+crystal src/cnf-conformance.cr test_name verbose
+```
+
+Check [usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md) for more info about invoking commands and loggin
+
 **3. New Conformance Tests:**
 - To request a new workload test, please create a new issue using the [**New Workload Test**](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=workload&template=new-workload-test.md&title=%5BWorkload%5D) Template
 - To request a new platform test, please create a new issue using the [**New Platform Test**](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=platform&template=new-platform-test.md&title=%5BPlatform%5D) Template

@@ -1,5 +1,5 @@
 # CNF Conformance
-| Master | 
+| Master |
 |---|
 |[![Build Status](https://www.travis-ci.org/cncf/cnf-conformance.svg?branch=master)](https://www.travis-ci.org/cncf/cnf-conformance)|
 
@@ -31,8 +31,12 @@ Setup of vanilla upstream K8s on [Packet](https://www.packet.com/) is done with 
 ## Installation
 See the [installation guide](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md) for more details on installing and running the CNF Conformance Test Suite. 
 
+## Usage
+
+Check [usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md) for more info about invoking commands and logging
 
 ## Contributing
+
 See [contributing guidelines](https://github.com/cncf/cnf-conformance/blob/master/CONTRIBUTING.md)
 
 

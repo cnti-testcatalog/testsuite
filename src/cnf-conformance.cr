@@ -43,4 +43,12 @@ task "all_prereqs" do |_, args|
   check_cnf_config_then_deploy(args)
 end
 
+task "test" do
+  LOGGING.debug "debug test"
+  LOGGING.info "info test"
+  LOGGING.warn "warn test"
+  LOGGING.error "error test"
+  puts "ping"
+end
+
 Sam.help

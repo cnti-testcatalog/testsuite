@@ -4,36 +4,7 @@ require "./sample_utils.cr"
 require "./release_manager.cr"
 require "logger"
 require "file_utils"
-
-class Results
-  @@file : String
-  @@file = create_final_results_yml_name
-  LOGGING.info "Results file"
-  continue = false
-  LOGGING.info "file exists?:#{File.exists?(@@file)}"
-  if File.exists?("#{@@file}")
-    stdout_info "Do you wish to overwrite the #{@@file} file? If so, your previous results.yml will be lost."
-    print "(Y/N) (Default N): > "
-    if ENV["CRYSTAL_ENV"]? == "TEST"
-      continue = true
-    else
-      user_input = gets
-      if user_input == "Y" || user_input == "y"
-        continue = true
-      end
-    end
-  else
-    continue = true
-  end
-  if continue
-    File.open("#{@@file}", "w") do |f| 
-      YAML.dump(template_results_yml, f)
-    end 
-  end
-  def self.file
-    @@file
-  end
-end
+require "option_parser"
 
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
@@ -50,6 +21,16 @@ PASSED = "passed"
 FAILED = "failed"
 DEFAULT_POINTSFILENAME = "points_v1.yml"
 PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
+
+class LogLevel
+  class_property command_line_loglevel : String = ""
+end
+
+OptionParser.parse do |parser|
+  parser.banner = "Usage: cnf-conformance [arguments]"
+  parser.on("-l LEVEL", "--loglevel=LEVEL", "Specifies the logging level for cnf-conformance suite") { |level| LogLevel.command_line_loglevel = level }
+  parser.on("-h", "--help", "Show this help") { puts parser }
+end
 
 #TODO switch to ERROR for production builds
 # LOGGING = Logger.new(STDOUT, Logger::ERROR)
@@ -73,22 +54,71 @@ def generate_version
   return version
 end
 
-
 def loglevel
-  toggle_on = false
+  levelstr = "" # default to unset
+
+  # of course last setting wins so make sure to keep the precendence order desired
+  # currently
+  # 
+  # 1. Cli flag is highest precedence
+  # 2. Environment var is next level of precedence
+  # 3. Config file is last level of precedence
+
+  # lowest priority is first
   if File.exists?(BASE_CONFIG)
     config = Totem.from_file BASE_CONFIG 
-    if config["loglevel"].as_s? && config["loglevel"].as_s == "info"
-      Logger::INFO
-    elsif config["loglevel"].as_s? && config["loglevel"].as_s == "debug"
-      Logger::DEBUG
-    elsif config["loglevel"].as_s? && config["loglevel"].as_s == "error"
-      Logger::ERROR
+    if config["loglevel"].as_s?
+      levelstr = config["loglevel"].as_s
+    end
+  end
+
+  if ENV.has_key?("LOGLEVEL") 
+    levelstr = ENV["LOGLEVEL"]
+  end
+
+  # highest priority is last
+  if !LogLevel.command_line_loglevel.empty?
+    levelstr = LogLevel.command_line_loglevel
+  end
+
+  if Logger::Severity.parse?(levelstr)
+    Logger::Severity.parse(levelstr)
+  else
+    if !levelstr.empty?
+      LOGGING.error "Invalid logging level set. defaulting to ERROR"
+    end
+    # if nothing set but also nothing missplled then silently default to error
+    Logger::ERROR
+  end
+end
+
+class Results
+  @@file : String
+  @@file = create_final_results_yml_name
+  LOGGING.info "Results file"
+  continue = false
+  LOGGING.info "file exists?:#{File.exists?(@@file)}"
+  if File.exists?("#{@@file}")
+    stdout_info "Do you wish to overwrite the #{@@file} file? If so, your previous results.yml will be lost."
+    print "(Y/N) (Default N): > "
+    if ENV["CRYSTAL_ENV"]? == "TEST"
+      continue = true
     else
-      Logger::ERROR
+      user_input = gets
+      if user_input == "Y" || user_input == "y"
+        continue = true
+      end
     end
   else
-    Logger::ERROR
+    continue = true
+  end
+  if continue
+    File.open("#{@@file}", "w") do |f|
+      YAML.dump(template_results_yml, f)
+    end
+  end
+  def self.file
+    @@file
   end
 end
 
