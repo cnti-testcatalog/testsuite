@@ -13,6 +13,7 @@ module ReleaseManager
       JSON.parse(existing_releases.body).as_a
     end 
 
+
     def self.upsert_release(version=nil) : Tuple((JSON::Any | Nil), (JSON::Any | Nil))
       LOGGING.info "upsert_release"
       found_release : (JSON::Any | Nil) = nil
@@ -22,6 +23,9 @@ module ReleaseManager
         prerelease = false
       else
         prerelease = true
+      end
+      if ReleaseManager.remote_master_branch_hash == ReleaseManager.current_hash
+        upsert_version.sub("HEAD", "master")
       end
       unless upsert_version =~ /(?i)(master|v[0-1]|test_version)/
         LOGGING.info "Not creating a release for : #{upsert_version}"
@@ -132,6 +136,12 @@ module ReleaseManager
   def self.current_hash
     results = `git rev-parse --short HEAD`
     LOGGING.info "current_hash rev-parse: #{results}"
+    results.strip("\n")
+  end
+
+  def self.remote_master_branch_hash(owner_repo="cncf/cnf-conformance")
+    results =  `git ls-remote https://github.com/#{owner_repo}.git master | awk '{ print $1}' | cut -c1-7`.strip
+    LOGGING.info "remote_master_branch_hash: #{results}"
     results.strip("\n")
   end
 
