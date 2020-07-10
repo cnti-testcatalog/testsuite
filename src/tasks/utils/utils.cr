@@ -1,6 +1,7 @@
 require "totem"
 require "colorize"
 require "./sample_utils.cr"
+require "./release_manager.cr"
 require "logger"
 require "file_utils"
 require "option_parser"
@@ -41,6 +42,16 @@ LOGGING.formatter = Logger::Formatter.new do |severity, datetime, progname, mess
 	label = severity.unknown? ? "ANY" : severity.to_s
 	io << label[0] << ", [" << datetime << " #" << Process.pid << "] "
 	io << label.rjust(5) << " -- " << progname << ": " << message
+end
+
+def generate_version
+  version = ""
+  if ReleaseManager.on_a_tag?
+    version = ReleaseManager.tag
+  else
+    version = "#{ReleaseManager.current_branch} #{ReleaseManager.current_hash}"
+  end
+  return version
 end
 
 def loglevel

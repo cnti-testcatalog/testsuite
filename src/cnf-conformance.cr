@@ -1,5 +1,8 @@
 require "sam"
 require "./tasks/**"
+require "./tasks/utils/utils.cr"
+require "./tasks/utils/release_manager.cr"
+require "./cnf_conformance.cr"
 
 
 desc "The CNF Conformance program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
@@ -17,10 +20,22 @@ task "all", ["all_prereqs", "configuration_file_setup", "compatibility","statele
     stdout_failure "Conformance Suite failed!"
     stdout_failure "Failed required tasks: #{failed_required_tasks.inspect}"
   end
+  stdout_info "Results have been saved to #{Results.file}".colorize(:green)
+end
 
-  # new_results = create_final_results_yml_name
-  # results = `mv #{LOGFILE} #{new_results}`
-  stdout_info "Results have been saved to #{Results.file}"
+task "version" do |_, args|
+  LOGGING.info "VERSION: #{CnfConformance::VERSION}"
+  puts "CNF Conformance version: #{CnfConformance::VERSION}".colorize(:green)
+end 
+
+task "upsert_release" do |_, args|
+  LOGGING.info "upserting release on: #{CnfConformance::VERSION}"
+  release, asset = ReleaseManager::GithubReleaseManager.upsert_release
+  if release
+    puts "Created a release for: #{CnfConformance::VERSION}".colorize(:green) 
+  else
+    puts "Not creating a release for: #{CnfConformance::VERSION}".colorize(:red) 
+  end
 end
 
 task "all_prereqs" do |_, args|

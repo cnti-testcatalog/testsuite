@@ -57,4 +57,5 @@ describe CnfConformance do
     (/PASSED: Replicas increased to 3/ =~ response_s).should_not be_nil
     (/PASSED: Replicas decreased to 1/ =~ response_s).should_not be_nil
   end
+
 end
