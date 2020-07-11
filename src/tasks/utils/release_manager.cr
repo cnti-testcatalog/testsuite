@@ -25,7 +25,7 @@ module ReleaseManager
         prerelease = true
       end
       if ReleaseManager.remote_master_branch_hash == ReleaseManager.current_hash
-        upsert_version.sub("HEAD", "master")
+        upsert_version = upsert_version.sub("HEAD", "master")
       end
       unless upsert_version =~ /(?i)(master|v[0-1]|test_version)/
         LOGGING.info "Not creating a release for : #{upsert_version}"
