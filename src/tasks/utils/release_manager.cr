@@ -66,15 +66,17 @@ module ReleaseManager
 
       LOGGING.info "found_release (after create): #{found_release}"
       LOGGING.info "found_release id: #{found_release["id"]}"
+      # TODO Add test that checks for uploaded corrupted binary.  
       # POST :server/repos/:owner/:repo/releases/:release_id/assets{?name,label}
-      asset_resp = Halite.basic_auth(user: ENV["GITHUB_USER"], pass: ENV["GITHUB_TOKEN"]).
-        post("https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}/assets?name=#{cnf_tarball_name}",
-             headers: {
-                "Content-Type" => "application/gzip",
-                "Content-Length" => File.size("#{cnf_tarball_name}").to_s 
-        }, raw: "#{File.open("#{cnf_tarball_name}")}")
-        # asset = `curl -u nupejosh:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{cnf_filename})" --data-binary @#{cnf_filename} "https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}/assets?name=$(basename #{cnf_filename})"`
-       asset = JSON.parse(asset_resp.body)
+      # asset_resp = Halite.basic_auth(user: ENV["GITHUB_USER"], pass: ENV["GITHUB_TOKEN"]).
+      #   post("https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}/assets?name=#{cnf_tarball_name}",
+      #        headers: {
+      #           "Content-Type" => "application/gzip",
+      #           "Content-Length" => File.size("#{cnf_tarball_name}").to_s 
+      #   }, raw: "#{File.open("#{cnf_tarball_name}")}")
+        asset_resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{cnf_tarball_name})" --data-binary @#{cnf_tarball_name} "https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}/assets?name=$(basename #{cnf_tarball_name})"`
+        asset = JSON.parse(asset_resp.strip)
+       # asset = JSON.parse(asset_resp.body)
       LOGGING.info "asset: #{asset}"
       {found_release, asset}
     end
