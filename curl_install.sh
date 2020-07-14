@@ -1,10 +1,23 @@
 #!/bin/bash
 
-if [ "$1" = "cleanup" ]; then 
-   rm ~/.bash.d/cnf-conformance
-   rm -rf ~/.cnf-conformance
-   exit 0
+if [[ "$SHELL" == *"bash"* ]]; then
+    echo "Shell Type: Bash"
+    SHELL_BASH=true
+    SHELL_PROFILE=~/.bashrc
+    SHELL_DOT_DIR="~/.bash.d/"
+elif [[ "$SHELL" == *"zsh"* ]]; then
+    echo "Shell Type: Zsh"
+    SHELL_ZSH=true
+    SHELL_PROFILE=~/.zshrc
+    SHELL_DOT_DIR="~/.zsh.d/"
 fi
+
+if [ "$1" = "cleanup" ]; then 
+    rm "$SHELL_DOT_DIR"cnf-conformance
+    rm -rf ~/.cnf-conformance
+    exit 0
+fi
+
 
 get_latest_release() {
     curl --silent "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
@@ -14,16 +27,31 @@ get_latest_release() {
 
 # Install CNF-Conformance
 LATEST_RELEASE=$(get_latest_release cncf/cnf-conformance)
-mkdir ~/.cnf-conformance
+mkdir -p ~/.cnf-conformance
 curl -L https://github.com/cncf/cnf-conformance/releases/download/$LATEST_RELEASE/cnf-conformance.tar.gz -o ~/.cnf-conformance/cnf-conformance.tar.gz
 tar -C ~/.cnf-conformance -xvf ~/.cnf-conformance/cnf-conformance.tar.gz
 rm ~/.cnf-conformance/cnf-conformance.tar.gz
 
+#Truthy
+# if ! grep -Fxq \'_vecho -n \"Loading $SHELL_DOT_DIR*...\"\' $SHELL_PROFILE; then
+grep -Fxq '_vecho -n "Loading $SHELL_DOT_DIR*..."' $SHELL_PROFILE
+echo "Status $?"
+# if !  grep -Fxq '_vecho -n "Loading $SHELL_DOT_DIR*..."' $SHELL_PROFILE; then
+#     echo "_vecho -n \"Loading $SHELL_DOT_DIR*...\"" >> $SHELL_PROFILE
+#     echo 'shopt -s nullglob' >> $SHELL_PROFILE
+#     echo "for s in $SHELL_DOT_DIR*" >> $SHELL_PROFILE
+#     echo 'do' >> $SHELL_PROFILE
+#     echo '   [[ -f "$s" ]] && source $s' >> $SHELL_PROFILE
+#     echo 'done' >> $SHELL_PROFILE
+#     echo 'shopt -u nullglob' >> $SHELL_PROFILE
+#     echo '_vecho "done"' >> $SHELL_PROFILE
+# fi
 
-mkdir -p ~/.bash.d
-echo 'export PATH=$HOME/.cnf-conformance:$PATH' > ~/.bash.d/cnf-conformance
 
-if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
+mkdir -p $SHELL_DOT_DIR
+echo 'export PATH=$HOME/.cnf-conformance:$PATH' > "$SHELL_DOT_DIR"cnf-conformance
+
+if (return 0 2>/dev/null); then
     export PATH=$HOME/.cnf-conformance:$PATH
 else
     echo 'The cnf-conformance Path has been written to ~/.bash.d/cnf-conformance'
