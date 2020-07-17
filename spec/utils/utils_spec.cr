@@ -294,3 +294,11 @@ it "'logger' defaults to error when level set is missplled", tags: ["logger"]  d
   $?.success?.should be_true
   (/ERROR -- cnf-conformance: Invalid logging level set. defaulting to ERROR/ =~ response_s).should_not be_nil
 end
+
+it "'logger' or verbose output should be shown when verbose flag is set", tags: ["logger"] do
+  response_s = `./cnf-conformance helm_deploy verbose`
+  LOGGING.info response_s
+  puts response_s
+  $?.success?.should be_true
+  (/INFO -- cnf-conformance-verbose: helm_deploy/ =~ response_s).should_not be_nil
+end

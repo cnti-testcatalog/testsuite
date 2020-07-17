@@ -61,7 +61,7 @@ module ReleaseManager
                       "draft" => true, 
                       "prerelease" => prerelease, 
                       "name" => "#{upsert_version} #{Time.local.to_s("%B, %d %Y")}", 
-                      "body" => "TEMPLATE: Fill out release notes" })
+                      "body" => "TEMPLATE: Fill out release notes" }) #TODO: add checksum of bin and such here re: 
       found_release = JSON.parse(found_resp.body)
 
       LOGGING.info "found_release (after create): #{found_release}"

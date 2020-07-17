@@ -15,17 +15,17 @@ task "privileged" do |_, args|
   #TODO check if container exists
   #TODO Check if args exist
   task_runner(args) do |args|
-    LOGGING.info "privileged" if check_verbose(args)
+    VERBOSE_LOGGING.info "privileged" if check_verbose(args)
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
 
     helm_chart_container_name = config.get("helm_chart_container_name").as_s
     white_list_container_name = config.get("white_list_helm_chart_container_names").as_a
-    LOGGING.info "helm_chart_container_name #{helm_chart_container_name}" if check_verbose(args)
-    LOGGING.info "white_list_container_name #{white_list_container_name.inspect}" if check_verbose(args)
+    VERBOSE_LOGGING.info "helm_chart_container_name #{helm_chart_container_name}" if check_verbose(args)
+    VERBOSE_LOGGING.info "white_list_container_name #{white_list_container_name.inspect}" if check_verbose(args)
     privileged_response = `kubectl get pods --all-namespaces -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
-    LOGGING.info "privileged_response #{privileged_response}" if check_verbose(args)
+    VERBOSE_LOGGING.info "privileged_response #{privileged_response}" if check_verbose(args)
     privileged_list = privileged_response.to_s.split(" ").uniq
-    LOGGING.info "privileged_list #{privileged_list}" if check_verbose(args)
+    VERBOSE_LOGGING.info "privileged_list #{privileged_list}" if check_verbose(args)
     white_list_containers = ((PRIVILEGED_WHITELIST_CONTAINERS + white_list_container_name) - [helm_chart_container_name])
     violation_list = (privileged_list - white_list_containers)
     if privileged_list.find {|x| x == helm_chart_container_name} ||
