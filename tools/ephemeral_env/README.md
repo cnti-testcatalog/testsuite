@@ -48,12 +48,7 @@ crystal src/cnf-conformance.cr sample_coredns_setup
 crystal src/cnf-conformance.cr installability verbose 
 ```
 
-Usage
+Extended Usage
 ---
 ### Environment variables
 
-You must export these environment variables into your host enviroment in order to use the ephemeral dev environment
-
-```
-export CRYSTAL_DEV_ENV
-```
