@@ -73,9 +73,16 @@ module ReleaseManager
       #        headers: {
       #           "Content-Type" => "application/gzip",
       #           "Content-Length" => File.size("#{cnf_tarball_name}").to_s 
-      #   }, raw: "#{File.open("#{cnf_tarball_name}")}")
-        asset_resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{cnf_tarball_name})" --data-binary @#{cnf_tarball_name} "https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}/assets?name=$(basename #{cnf_tarball_name})"`
-        asset = JSON.parse(asset_resp.strip)
+      #   }, raw: "#{File.open("#{cnf_tarball_name}")}")A
+
+      # Build a static binary so it will be portable on other machines
+      unless ENV["CRYSTAL_ENV"]? == "TEST"
+        build_resp = `crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"`
+      end
+      LOGGING.info "build_resp: #{build_resp}"
+
+      asset_resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{cnf_tarball_name})" --data-binary @#{cnf_tarball_name} "https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}/assets?name=$(basename #{cnf_tarball_name})"`
+      asset = JSON.parse(asset_resp.strip)
        # asset = JSON.parse(asset_resp.body)
       LOGGING.info "asset: #{asset}"
       {found_release, asset}

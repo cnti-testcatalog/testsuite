@@ -10,7 +10,13 @@ Prereqs: https://github.com/cncf/cnf-conformance/blob/master/KIND-INSTALL.md
 1. Obtain the ephemeral binary 
 -  Download the binary from  https://github.com/cncf/cnf-conformance/releases
 - OPTIONAL:  build the binary yourself using crystal 
-``crystal build tools/ephemeral_env/ephemeral_env.cr tools/ephemeral_env/ephemeral_env ``
+```
+crystal build tools/ephemeral_env/ephemeral_env.cr tools/ephemeral_env/ephemeral_env 
+```
+- OPTIONAL: build the cnf-conformance binary with static build (to avoid shared object file errors)
+```
+crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"
+```
 2. Setup the environment based on your binary
 ```
 ./ephemeral_env setup -b ./ephemeral_env 
