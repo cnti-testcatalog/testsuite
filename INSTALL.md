@@ -128,9 +128,10 @@ white_list_helm_chart_container_names:
   ``` 
   crystal src/cnf-conformance.cr sample_coredns_setup
   ```
-### (optional) Build binary
+### (optional) Build binary 
 
 ```
+# this is how we build for production. its static and DOES NOT have any runtime dependencies. 
 crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"
 ```
 
@@ -171,10 +172,11 @@ then you can invoke the conformance suite from the binary i.e.
   crystal spec
   ```
 
-**Binary build**
+**Binary build (dev)**
 
 ```
-crystal build src/cnf-conformance.cr --release --static
+# this is how we build while developing. HAS runtime dependencies
+crystal build src/cnf-conformance.cr
 # you can safely ignore warnings and errors as long as the binary at ./cnf-conformance is generated properly
 sha256sum cnf-conformance
 # checksum here used for release validation
