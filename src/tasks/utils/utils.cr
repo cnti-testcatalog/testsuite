@@ -32,26 +32,12 @@ OptionParser.parse do |parser|
   parser.on("-h", "--help", "Show this help") { puts parser }
 end
 
-#TODO switch to ERROR for production builds
-# LOGGING = Logger.new(STDOUT, Logger::ERROR)
-LOGGING = Logger.new(STDOUT, Logger::INFO)
-LOGGING.progname = "cnf-conformance"
-LOGGING.level=loglevel
-
-LOGGING.formatter = Logger::Formatter.new do |severity, datetime, progname, message, io|
-	label = severity.unknown? ? "ANY" : severity.to_s
-	io << label[0] << ", [" << datetime << " #" << Process.pid << "] "
-	io << label.rjust(5) << " -- " << progname << ": " << message
-end
-
-def generate_version
-  version = ""
-  if ReleaseManager.on_a_tag?
-    version = ReleaseManager.tag
-  else
-    version = "#{ReleaseManager.current_branch} #{ReleaseManager.current_hash}"
+def log_formatter
+  Logger::Formatter.new do |severity, datetime, progname, message, io|
+    label = severity.unknown? ? "ANY" : severity.to_s
+    io << label[0] << ", [" << datetime << " #" << Process.pid << "] "
+    io << label.rjust(5) << " -- " << progname << ": " << message
   end
-  return version
 end
 
 def loglevel
@@ -92,6 +78,25 @@ def loglevel
   end
 end
 
+LOGGING = Logger.new(STDOUT, Logger::INFO)
+LOGGING.progname = "cnf-conformance"
+LOGGING.level=loglevel
+LOGGING.formatter = log_formatter
+
+VERBOSE_LOGGING = Logger.new(STDOUT, Logger::DEBUG) # will always be info. always use info with it
+VERBOSE_LOGGING.progname = "cnf-conformance-verbose"
+VERBOSE_LOGGING.formatter = log_formatter
+
+def generate_version
+  version = ""
+  if ReleaseManager.on_a_tag?
+    version = ReleaseManager.tag
+  else
+    version = "#{ReleaseManager.current_branch} #{ReleaseManager.current_hash}"
+  end
+  return version
+end
+
 class Results
   @@file : String
   @@file = create_final_results_yml_name
@@ -123,20 +128,16 @@ class Results
 end
 
 def check_verbose(args)
-  if ((args.raw.includes? "verbose") || (args.raw.includes? "v") || (LOGGING.info?) ) 
-    true
-  else 
-    false
-  end
+  ((args.raw.includes? "verbose") || (args.raw.includes? "v"))
 end
 
 def check_cnf_config(args)
-  LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
+  VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
   LOGGING.info("check_cnf_config args: #{args.inspect}")
   if args.named.keys.includes? "cnf-config"
     yml_file = args.named["cnf-config"].as(String)
     cnf = File.dirname(yml_file)
-    LOGGING.info "all cnf: #{cnf}" if check_verbose(args)
+    VERBOSE_LOGGING.info "all cnf: #{cnf}" if check_verbose(args)
   else
     cnf = nil
 	end
@@ -145,11 +146,11 @@ def check_cnf_config(args)
 end
 
 def check_all_cnf_args(args)
-  LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
+  VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
   cnf = check_cnf_config(args)
   deploy_with_chart = true
   if cnf 
-    LOGGING.info "all cnf: #{cnf}" if check_verbose(args)
+    VERBOSE_LOGGING.info "all cnf: #{cnf}" if check_verbose(args)
     if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
       deploy_with_chart = false
     end

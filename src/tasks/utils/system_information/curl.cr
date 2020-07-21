@@ -6,7 +6,7 @@ def curl_installation(verbose=false)
   gmsg = "No Global curl version found"
   lmsg = "No Local curl version found"
   gcurl = curl_global_response
-  LOGGING.info gcurl if verbose
+  VERBOSE_LOGGING.info gcurl if verbose
   
   global_curl_version = curl_version(gcurl, verbose)
    
@@ -18,7 +18,7 @@ def curl_installation(verbose=false)
   end
 
   lcurl = curl_local_response
-  LOGGING.info lcurl if verbose
+  VERBOSE_LOGGING.info lcurl if verbose
   
   local_curl_version = curl_version(lcurl, verbose)
    
@@ -40,17 +40,17 @@ end
 
 def curl_global_response(verbose=false)
   curl_response = `curl --version`
-  LOGGING.info curl_response if verbose
+  VERBOSE_LOGGING.info curl_response if verbose
   curl_response 
 end
 
 def curl_local_response(verbose=false)
   current_dir = FileUtils.pwd 
-  LOGGING.info current_dir if verbose 
+  VERBOSE_LOGGING.info current_dir if verbose 
   curl = "#{current_dir}/#{TOOLS_DIR}/curl/linux-amd64/curl"
   # curl_response = `#{curl} --version`
   status = Process.run("#{curl} --version", shell: true, output: curl_response = IO::Memory.new, error: stderr = IO::Memory.new)
-  LOGGING.info curl_response.to_s if verbose
+  VERBOSE_LOGGING.info curl_response.to_s if verbose
   curl_response.to_s
 end
 
@@ -58,7 +58,7 @@ def curl_version(curl_response, verbose=false)
   # example
   # GNU Curl 1.15 built on linux-gnu.
   resp = curl_response.match /curl (([0-9]{1,3}[\.]){1,2}[0-9]{1,3})/
-  LOGGING.info resp if verbose
+  VERBOSE_LOGGING.info resp if verbose
   "#{resp && resp.not_nil![1]}"
 end
 

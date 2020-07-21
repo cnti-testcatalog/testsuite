@@ -37,6 +37,6 @@ end
 task "results_yml_cleanup" do |_, args|
   if File.exists?("#{Results.file}")
     rm = `rm #{Results.file}`
-    LOGGING.info rm if check_verbose(args)
+    VERBOSE_LOGGING.info rm if check_verbose(args)
   end
 end
