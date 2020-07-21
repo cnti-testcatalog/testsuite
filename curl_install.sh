@@ -4,12 +4,12 @@ if [[ "$SHELL" == *"bash"* ]]; then
     echo "Shell Type: Bash"
     SHELL_BASH=true
     SHELL_PROFILE=~/.bashrc
-    SHELL_DOT_DIR="~/.bash.d/"
+    SHELL_DOT_DIR=~/.bash.d/
 elif [[ "$SHELL" == *"zsh"* ]]; then
     echo "Shell Type: Zsh"
     SHELL_ZSH=true
     SHELL_PROFILE=~/.zshrc
-    SHELL_DOT_DIR="~/.zsh.d/"
+    SHELL_DOT_DIR=~/.zsh.d/
 fi
 
 if [ "$1" = "cleanup" ]; then 
@@ -32,15 +32,11 @@ curl -L https://github.com/cncf/cnf-conformance/releases/download/$LATEST_RELEAS
 tar -C ~/.cnf-conformance -xvf ~/.cnf-conformance/cnf-conformance.tar.gz
 rm ~/.cnf-conformance/cnf-conformance.tar.gz
 
-if ! grep -Fxq "_vecho -n \"Loading $SHELL_DOT_DIR*...\"" $SHELL_PROFILE; then
-    echo "_vecho -n \"Loading $SHELL_DOT_DIR*...\"" >> $SHELL_PROFILE
-    echo 'shopt -s nullglob' >> $SHELL_PROFILE
+if ! grep -Fxq "for s in $SHELL_DOT_DIR*" $SHELL_PROFILE; then
     echo "for s in $SHELL_DOT_DIR*" >> $SHELL_PROFILE
     echo 'do' >> $SHELL_PROFILE
     echo '   [[ -f "$s" ]] && source $s' >> $SHELL_PROFILE
     echo 'done' >> $SHELL_PROFILE
-    echo 'shopt -u nullglob' >> $SHELL_PROFILE
-    echo '_vecho "done"' >> $SHELL_PROFILE
 fi
 
 mkdir -p $SHELL_DOT_DIR
