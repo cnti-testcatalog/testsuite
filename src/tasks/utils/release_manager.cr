@@ -77,9 +77,11 @@ module ReleaseManager
 
       # Build a static binary so it will be portable on other machines
       unless ENV["CRYSTAL_ENV"]? == "TEST"
+        rm_resp = `rm ./cnf-conformance`
+        LOGGING.info "rm_resp: #{rm_resp}"
         build_resp = `crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"`
+        LOGGING.info "build_resp: #{build_resp}"
       end
-      LOGGING.info "build_resp: #{build_resp}"
 
       asset_resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{cnf_tarball_name})" --data-binary @#{cnf_tarball_name} "https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}/assets?name=$(basename #{cnf_tarball_name})"`
       asset = JSON.parse(asset_resp.strip)
