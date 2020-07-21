@@ -6,19 +6,19 @@ require "./utils/utils.cr"
 
 desc "The CNF conformance suite checks to see if the CNFs are resilient to failures."
 task "resilience", ["chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill" ] do |t, args|
-  LOGGING.info "resilience" if check_verbose(args)
-  LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
-  LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
+  VERBOSE_LOGGING.info "resilience" if check_verbose(args)
+  VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
+  VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
   stdout_score("resilience")
 end
 
 desc "Install Chaos Mesh"
 task "install_chaosmesh" do |_, args|
-  LOGGING.info "install_chaosmesh" if check_verbose(args)
+  VERBOSE_LOGGING.info "install_chaosmesh" if check_verbose(args)
   current_dir = FileUtils.pwd 
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
   crd_install = `kubectl create -f https://raw.githubusercontent.com/pingcap/chaos-mesh/v0.8.0/manifests/crd.yaml`
-  LOGGING.info "#{crd_install}" if check_verbose(args)
+  VERBOSE_LOGGING.info "#{crd_install}" if check_verbose(args)
   unless Dir.exists?("#{current_dir}/#{TOOLS_DIR}/chaos_mesh")
     # TODO use a tagged version
     fetch_chaos_mesh = `git clone https://github.com/pingcap/chaos-mesh.git #{current_dir}/#{TOOLS_DIR}/chaos_mesh`
@@ -32,7 +32,7 @@ end
 
 desc "Uninstall Chaos Mesh"
 task "uninstall_chaosmesh" do |_, args|
-  LOGGING.info "uninstall_chaosmesh" if check_verbose(args)
+  VERBOSE_LOGGING.info "uninstall_chaosmesh" if check_verbose(args)
   current_dir = FileUtils.pwd
   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
   crd_delete = `kubectl delete -f https://raw.githubusercontent.com/pingcap/chaos-mesh/master/manifests/crd.yaml`
@@ -44,7 +44,7 @@ end
 desc "Does the CNF crash when network loss occurs"
 task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
   task_response = task_runner(args) do |args|
-    LOGGING.info "chaos_network_loss" if check_verbose(args)
+    VERBOSE_LOGGING.info "chaos_network_loss" if check_verbose(args)
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     deployment_name = config.get("deployment_name").as_s
@@ -65,9 +65,9 @@ task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, arg
     if errors < 1
       template = Crinja.render(network_chaos_template, { "deployment_label" => "#{deployment_label}", "deployment_label_value" => "#{deployment_label_value}" })
       chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/chaos_network_loss.yml"`
-      LOGGING.debug "#{chaos_config}" if check_verbose(args)
+      VERBOSE_LOGGING.debug "#{chaos_config}" if check_verbose(args)
       run_chaos = `kubectl create -f "#{destination_cnf_dir}/chaos_network_loss.yml"`
-      LOGGING.debug "#{run_chaos}" if check_verbose(args)
+      VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
       # TODO fail if exceeds
       if wait_for_test("NetworkChaos", "network-loss")
         LOGGING.info( "Wait Done")
@@ -91,7 +91,7 @@ end
 desc "Does the CNF crash when CPU usage is high"
 task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
   task_response = task_runner(args) do |args|
-    LOGGING.info "chaos_cpu_hog" if check_verbose(args)
+    VERBOSE_LOGGING.info "chaos_cpu_hog" if check_verbose(args)
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     deployment_name = config.get("deployment_name").as_s
@@ -112,9 +112,9 @@ task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
     if errors < 1
       template = Crinja.render(cpu_chaos_template, { "deployment_label" => "#{deployment_label}", "deployment_label_value" => "#{deployment_label_value}" })
       chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/chaos_cpu_hog.yml"`
-      LOGGING.debug "#{chaos_config}" if check_verbose(args)
+      VERBOSE_LOGGING.debug "#{chaos_config}" if check_verbose(args)
       run_chaos = `kubectl create -f "#{destination_cnf_dir}/chaos_cpu_hog.yml"`
-      LOGGING.debug "#{run_chaos}" if check_verbose(args)
+      VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
       # TODO fail if exceeds
       if wait_for_test("StressChaos", "burn-cpu")
         if desired_is_available?(deployment_name)
@@ -137,7 +137,7 @@ end
 desc "Does the CNF recover when its container is killed"
 task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
   task_response = task_runner(args) do |args|
-    LOGGING.info "chaos_container_kill" if check_verbose(args)
+    VERBOSE_LOGGING.info "chaos_container_kill" if check_verbose(args)
     config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     deployment_name = config.get("deployment_name").as_s
@@ -158,9 +158,9 @@ task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, a
     if errors < 1
       template = Crinja.render(chaos_template_container_kill, { "deployment_label" => "#{deployment_label}", "deployment_label_value" => "#{deployment_label_value}", "helm_chart_container_name" => "#{helm_chart_container_name}" })
       chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/chaos_container_kill.yml"`
-      LOGGING.debug "#{chaos_config}" if check_verbose(args)
+      VERBOSE_LOGGING.debug "#{chaos_config}" if check_verbose(args)
       run_chaos = `kubectl create -f "#{destination_cnf_dir}/chaos_container_kill.yml"`
-      LOGGING.debug "#{run_chaos}" if check_verbose(args)
+      VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
       # TODO fail if exceeds
       if wait_for_test("PodChaos", "container-kill")
         wait_for_install(deployment_name, wait_count=60)

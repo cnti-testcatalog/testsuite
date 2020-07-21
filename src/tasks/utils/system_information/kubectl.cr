@@ -6,7 +6,7 @@ def kubectl_installation(verbose=false)
   gmsg = "No Global kubectl version found"
   lmsg = "No Local kubectl version found"
   gkubectl = kubectl_global_response
-  LOGGING.info gkubectl if verbose
+  VERBOSE_LOGGING.info gkubectl if verbose
   
   global_kubectl_version = kubectl_version(gkubectl, verbose)
    
@@ -18,7 +18,7 @@ def kubectl_installation(verbose=false)
   end
 
   lkubectl = kubectl_local_response
-  LOGGING.info lkubectl if verbose
+  VERBOSE_LOGGING.info lkubectl if verbose
   
   local_kubectl_version = kubectl_version(lkubectl, verbose)
    
@@ -64,17 +64,17 @@ end
 
 def kubectl_global_response(verbose=false)
   kubectl_response = `kubectl version`
-  LOGGING.info kubectl_response if verbose
+  VERBOSE_LOGGING.info kubectl_response if verbose
   kubectl_response 
 end
 
 def kubectl_local_response(verbose=false)
   current_dir = FileUtils.pwd 
-  LOGGING.info current_dir if verbose 
+  VERBOSE_LOGGING.info current_dir if verbose 
   kubectl = "#{current_dir}/#{TOOLS_DIR}/kubectl/linux-amd64/kubectl"
   # kubectl_response = `#{kubectl} version`
   status = Process.run("#{kubectl} version", shell: true, output: kubectl_response = IO::Memory.new, error: stderr = IO::Memory.new)
-  LOGGING.info kubectl_response.to_s if verbose
+  VERBOSE_LOGGING.info kubectl_response.to_s if verbose
   kubectl_response.to_s
 end
 
@@ -82,7 +82,7 @@ def kubectl_version(kubectl_response, verbose=false)
   # example
   # Client Version: version.Info{Major:"1", Minor:"15", GitVersion:"v1.15.3", GitCommit:"2d3c76f9091b6bec110a5e63777c332469e0cba2", GitTreeState:"clean", BuildDate:"2019-08-19T11:13:54Z", GoVersion:"go1.12.9", Compiler:"gc", Platform:"linux/amd64"} 
   resp = kubectl_response.match /Client Version: version.Info{(Major:"(([0-9]{1,3})"\, )Minor:"([0-9]{1,3}[+]?)")/
-  LOGGING.info resp if verbose
+  VERBOSE_LOGGING.info resp if verbose
   if resp
     "#{resp && resp.not_nil![3]}.#{resp && resp.not_nil![4]}"
   else

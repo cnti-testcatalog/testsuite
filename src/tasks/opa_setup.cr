@@ -10,7 +10,7 @@ task "install_opa" do |_, args|
   Process.run("echo installing opa", shell: true) do |proc|
     while line = proc.output.gets
       response << line
-      LOGGING.info "#{line}" if check_verbose(args)
+      VERBOSE_LOGGING.info "#{line}" if check_verbose(args)
     end
   end
 end
