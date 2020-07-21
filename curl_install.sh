@@ -32,29 +32,24 @@ curl -L https://github.com/cncf/cnf-conformance/releases/download/$LATEST_RELEAS
 tar -C ~/.cnf-conformance -xvf ~/.cnf-conformance/cnf-conformance.tar.gz
 rm ~/.cnf-conformance/cnf-conformance.tar.gz
 
-#Truthy
-# if ! grep -Fxq \'_vecho -n \"Loading $SHELL_DOT_DIR*...\"\' $SHELL_PROFILE; then
-grep -Fxq '_vecho -n "Loading $SHELL_DOT_DIR*..."' $SHELL_PROFILE
-echo "Status $?"
-# if !  grep -Fxq '_vecho -n "Loading $SHELL_DOT_DIR*..."' $SHELL_PROFILE; then
-#     echo "_vecho -n \"Loading $SHELL_DOT_DIR*...\"" >> $SHELL_PROFILE
-#     echo 'shopt -s nullglob' >> $SHELL_PROFILE
-#     echo "for s in $SHELL_DOT_DIR*" >> $SHELL_PROFILE
-#     echo 'do' >> $SHELL_PROFILE
-#     echo '   [[ -f "$s" ]] && source $s' >> $SHELL_PROFILE
-#     echo 'done' >> $SHELL_PROFILE
-#     echo 'shopt -u nullglob' >> $SHELL_PROFILE
-#     echo '_vecho "done"' >> $SHELL_PROFILE
-# fi
-
+if ! grep -Fxq "_vecho -n \"Loading $SHELL_DOT_DIR*...\"" $SHELL_PROFILE; then
+    echo "_vecho -n \"Loading $SHELL_DOT_DIR*...\"" >> $SHELL_PROFILE
+    echo 'shopt -s nullglob' >> $SHELL_PROFILE
+    echo "for s in $SHELL_DOT_DIR*" >> $SHELL_PROFILE
+    echo 'do' >> $SHELL_PROFILE
+    echo '   [[ -f "$s" ]] && source $s' >> $SHELL_PROFILE
+    echo 'done' >> $SHELL_PROFILE
+    echo 'shopt -u nullglob' >> $SHELL_PROFILE
+    echo '_vecho "done"' >> $SHELL_PROFILE
+fi
 
 mkdir -p $SHELL_DOT_DIR
-echo 'export PATH=$HOME/.cnf-conformance:$PATH' > "$SHELL_DOT_DIR"cnf-conformance
+echo 'export PATH=$HOME/.cnf-conformance:$PATH' > ${SHELL_DOT_DIR}cnf-conformance
 
 if (return 0 2>/dev/null); then
     export PATH=$HOME/.cnf-conformance:$PATH
 else
-    echo 'The cnf-conformance Path has been written to ~/.bash.d/cnf-conformance'
+    echo "The cnf-conformance Path has been written to ${SHELL_DOT_DIR}cnf-conformance"
     echo 'To use cnf-conformance please restart you terminal session to load the new Path'
     echo "Or you can manually run 'export PATH=\$HOME/.cnf-conformance:\$PATH' in your current session"
 fi
