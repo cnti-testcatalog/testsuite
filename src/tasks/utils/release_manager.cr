@@ -19,6 +19,28 @@ module ReleaseManager
       found_release : (JSON::Any | Nil) = nil
       asset : (JSON::Any | Nil) = nil
       upsert_version = (version || CnfConformance::VERSION)
+      # cnf_bin_path = "cnf-conformance"
+      # cnf_bin_asset_name = "#{cnf_bin_path}"
+      cnf_bin_asset_name = "cnf-conformance"
+
+      # NOTE: build MUST be done first so we can sha256sum for release notes
+      # Build a static binary so it will be portable on other machines in non test
+      unless ENV["CRYSTAL_ENV"]? == "TEST"
+        rm_resp = `rm ./cnf-conformance`
+        LOGGING.info "rm_resp: #{rm_resp}"
+        LOGGING.info "building static binary"
+        build_resp = `crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"`
+        LOGGING.info "build_resp: #{build_resp}"
+        # the name of the binary asset must be unique across all releases in github for project
+        cnf_tarball_name = "cnf-conformance-#{upsert_version}.tar.gz"
+        cnf_tarball = `tar -czvf #{cnf_tarball_name} ./#{cnf_bin_asset_name}`
+        LOGGING.info "cnf_tarball: #{cnf_tarball}"
+        # cnf_bin_asset_name = "#{cnf_bin_path}-static" # change upload name for static builds
+        cnf_bin_asset_name = "#{cnf_tarball_name}" # change upload name for static builds
+      end
+      # sha_checksum = `sha256sum #{cnf_bin_path}`.split(" ")[0]
+      sha_checksum = `sha256sum #{cnf_bin_asset_name}`.split(" ")[0]
+
       if upsert_version =~ /(?i)(master)/
         prerelease = false
       else
@@ -34,59 +56,76 @@ module ReleaseManager
       LOGGING.info "upsert_version: #{upsert_version}"
       release_resp = ReleaseManager::GithubReleaseManager.github_releases
       LOGGING.info "release_resp size: #{release_resp.size}"
+
       found_release = release_resp.find {|x| x["tag_name"] == upsert_version} 
       LOGGING.info "find found_release?: #{found_release}"
+
+notes_template = <<-TEMPLATE
+UPDATES
+---
+
+TODO!: Fill out release notes!
+
+Artifact info:
+- Commit: #{upsert_version}
+- SHA256SUM: #{sha_checksum} #{cnf_bin_asset_name}
+
+TEMPLATE
+
       unless found_release
         # /repos/:owner/:repo/releases
         found_resp = Halite.basic_auth(user: ENV["GITHUB_USER"], pass: ENV["GITHUB_TOKEN"]).
-          post("https://api.github.com/repos/cncf/cnf-conformance/releases", 
+          post("https://api.github.com/repos/cncf/cnf-conformance/releases",
                headers: {Accept: "application/vnd.github.v3+json"},
-               json: { "tag_name" => upsert_version, 
-                       "draft" => true, 
-                       "prerelease" => prerelease, 
-                       "name" => "#{upsert_version} #{Time.local.to_s("%B, %d %Y")}", 
-                       "body" => "TEMPLATE: Fill out release notes" })
+               json: { "tag_name" => upsert_version,
+                       "draft" => true,
+                       "prerelease" => prerelease,
+                       "name" => "#{upsert_version} #{Time.local.to_s("%B, %d %Y")}",
+                       "body" => notes_template })
         found_release = JSON.parse(found_resp.body)
         # TODO error if cant create a release
         LOGGING.info "(unless) found_release: #{found_release}"
       end
-      cnf_tarball_name = "cnf-conformance-#{upsert_version}.tar.gz"
-      cnf_tarball = `tar -czvf #{cnf_tarball_name} ./cnf-conformance`
-      LOGGING.info "cnf_tarball: #{cnf_tarball}"
 
       # PATCH /repos/:owner/:repo/releases/:release_id
       found_resp = Halite.basic_auth(user: ENV["GITHUB_USER"], pass: ENV["GITHUB_TOKEN"]).
-        patch("https://api.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}", 
+        patch("https://api.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}",
               json: { "tag_name" => upsert_version,
-                      "draft" => true, 
-                      "prerelease" => prerelease, 
-                      "name" => "#{upsert_version} #{Time.local.to_s("%B, %d %Y")}", 
-                      "body" => "TEMPLATE: Fill out release notes" }) #TODO: add checksum of bin and such here re: 
+                      "draft" => true,
+                      "prerelease" => prerelease,
+                      "name" => "#{upsert_version} #{Time.local.to_s("%B, %d %Y")}",
+                      "body" => notes_template })
       found_release = JSON.parse(found_resp.body)
 
       LOGGING.info "found_release (after create): #{found_release}"
       LOGGING.info "found_release id: #{found_release["id"]}"
-      # TODO Add test that checks for uploaded corrupted binary.  
-      # POST :server/repos/:owner/:repo/releases/:release_id/assets{?name,label}
-      # asset_resp = Halite.basic_auth(user: ENV["GITHUB_USER"], pass: ENV["GITHUB_TOKEN"]).
-      #   post("https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}/assets?name=#{cnf_tarball_name}",
-      #        headers: {
-      #           "Content-Type" => "application/gzip",
-      #           "Content-Length" => File.size("#{cnf_tarball_name}").to_s 
-      #   }, raw: "#{File.open("#{cnf_tarball_name}")}")A
 
-      # Build a static binary so it will be portable on other machines
-      unless ENV["CRYSTAL_ENV"]? == "TEST"
-        rm_resp = `rm ./cnf-conformance`
-        LOGGING.info "rm_resp: #{rm_resp}"
-        build_resp = `crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"`
-        LOGGING.info "build_resp: #{build_resp}"
-      end
+      # NOTE: so I wrote all this code... and then recognized tarballs and zips of the source
+      # are automatically generated by github whenever you PUBLISH a release...
+      # note that is AFTER you hit publish. before their won't be and you can double check this
+      # by editing and already existing release
+      #
+      # left this code just in case or in case we want to upload other stuff
+      #
+      ## source_tarball_name = "cnf-conformance-#{upsert_version}"
+      ## `git archive -o #{source_tarball_name} --format=tar.gz $(git rev-parse --abbrev-ref HEAD)`
+      ## `git archive -o #{source_tarball_name} --format=zip $(git rev-parse --abbrev-ref HEAD)`
 
-      asset_resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{cnf_tarball_name})" --data-binary @#{cnf_tarball_name} "https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}/assets?name=$(basename #{cnf_tarball_name})"`
-      asset = JSON.parse(asset_resp.strip)
-       # asset = JSON.parse(asset_resp.body)
-      LOGGING.info "asset: #{asset}"
+      ## LOGGING.info "source_tarball: #{source_tarball_name}"
+      ## source_tarball_path = `#{source_tarball_name}.tar.gz`
+      ## source_zip_path = `#{source_tarball_name}.zip`
+
+      ## LOGGING.info "uploading binary"
+      ## bin_asset_resp = ReleaseManager.upload_release_asset(found_release["id"], cnf_bin_path, cnf_bin_asset_name)
+      ## LOGGING.info "uploading source tarball"
+      ## source_tarball_asset_resp = ReleaseManager.upload_release_asset(found_release["id"], source_tarball_path, source_tarball_path)
+      ## LOGGING.info "uploading source zip"
+      ## source_zip_asset_resp = ReleaseManager.upload_release_asset(found_release["id"], source_zip_path, source_zip_path)
+
+      ## const assets = [bin_asset_resp, source_tarball_asset_resp, source_zip_asset_resp]
+
+      LOGGING.info "uploading binary"
+      asset = ReleaseManager.upload_release_asset(found_release["id"], cnf_bin_asset_name)
       {found_release, asset}
     end
 
@@ -156,4 +195,20 @@ module ReleaseManager
     results.strip("\n")
   end
 
+  # def self.upload_release_asset(release_id, asset_path, asset_name)
+  def self.upload_release_asset(release_id, asset_name)
+      # TODO Add test that checks for uploaded corrupted binary.
+      # POST :server/repos/:owner/:repo/releases/:release_id/assets{?name,label}
+      # asset_resp = Halite.basic_auth(user: ENV["GITHUB_USER"], pass: ENV["GITHUB_TOKEN"]).
+      #   post("https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}/assets?name=#{cnf_tarball_name}",
+      #        headers: {
+      #           "Content-Type" => "application/gzip",
+      #           "Content-Length" => File.size("#{cnf_tarball_name}").to_s
+      #   }, raw: "#{File.open("#{cnf_tarball_name}")}")A
+    asset_resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{asset_name})" --data-binary @#{asset_name} "https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{release_id}/assets?name=$(basename #{asset_name})"`
+    asset = JSON.parse(asset_resp.strip)
+    # asset = JSON.parse(asset_resp.body)
+    LOGGING.info "asset: #{asset}"
+    asset
+  end
 end 
