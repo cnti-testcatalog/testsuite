@@ -19,8 +19,9 @@ module ReleaseManager
       found_release : (JSON::Any | Nil) = nil
       asset : (JSON::Any | Nil) = nil
       upsert_version = (version || CnfConformance::VERSION)
-      cnf_bin_path = "cnf-conformance"
-      cnf_bin_asset_name = "#{cnf_bin_path}"
+      # cnf_bin_path = "cnf-conformance"
+      # cnf_bin_asset_name = "#{cnf_bin_path}"
+      cnf_bin_asset_name = "cnf-conformance"
 
       # NOTE: build MUST be done first so we can sha256sum for release notes
       # Build a static binary so it will be portable on other machines in non test
@@ -29,10 +30,16 @@ module ReleaseManager
         LOGGING.info "rm_resp: #{rm_resp}"
         LOGGING.info "building static binary"
         build_resp = `crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"`
-        cnf_bin_asset_name = "#{cnf_bin_path}-static" # change upload name for static builds
         LOGGING.info "build_resp: #{build_resp}"
+        # the name of the binary asset must be unique across all releases in github for project
+        cnf_tarball_name = "cnf-conformance-#{upsert_version}.tar.gz"
+        cnf_tarball = `tar -czvf #{cnf_tarball_name} ./#{cnf_bin_asset_name}`
+        LOGGING.info "cnf_tarball: #{cnf_tarball}"
+        # cnf_bin_asset_name = "#{cnf_bin_path}-static" # change upload name for static builds
+        cnf_bin_asset_name = "#{cnf_tarball_name}" # change upload name for static builds
       end
-      sha_checksum = `sha256sum #{cnf_bin_path}`.split(" ")[0]
+      # sha_checksum = `sha256sum #{cnf_bin_path}`.split(" ")[0]
+      sha_checksum = `sha256sum #{cnf_bin_asset_name}`.split(" ")[0]
 
       if upsert_version =~ /(?i)(master)/
         prerelease = false
@@ -118,7 +125,7 @@ TEMPLATE
       ## const assets = [bin_asset_resp, source_tarball_asset_resp, source_zip_asset_resp]
 
       LOGGING.info "uploading binary"
-      asset = ReleaseManager.upload_release_asset(found_release["id"], cnf_bin_path, cnf_bin_asset_name)
+      asset = ReleaseManager.upload_release_asset(found_release["id"], cnf_bin_asset_name)
       {found_release, asset}
     end
 
@@ -188,7 +195,8 @@ TEMPLATE
     results.strip("\n")
   end
 
-  def self.upload_release_asset(release_id, asset_path, asset_name)
+  # def self.upload_release_asset(release_id, asset_path, asset_name)
+  def self.upload_release_asset(release_id, asset_name)
       # TODO Add test that checks for uploaded corrupted binary.
       # POST :server/repos/:owner/:repo/releases/:release_id/assets{?name,label}
       # asset_resp = Halite.basic_auth(user: ENV["GITHUB_USER"], pass: ENV["GITHUB_TOKEN"]).
@@ -197,7 +205,7 @@ TEMPLATE
       #           "Content-Type" => "application/gzip",
       #           "Content-Length" => File.size("#{cnf_tarball_name}").to_s
       #   }, raw: "#{File.open("#{cnf_tarball_name}")}")A
-    asset_resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{asset_path})" --data-binary @#{asset_path} "https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{release_id}/assets?name=$(basename #{asset_name})"`
+    asset_resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{asset_name})" --data-binary @#{asset_name} "https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{release_id}/assets?name=$(basename #{asset_name})"`
     asset = JSON.parse(asset_resp.strip)
     # asset = JSON.parse(asset_resp.body)
     LOGGING.info "asset: #{asset}"
