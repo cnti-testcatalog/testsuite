@@ -50,6 +50,15 @@ module ReleaseManager
         # TODO error if cant create a release
         LOGGING.info "(unless) found_release: #{found_release}"
       end
+
+      # Build a static binary so it will be portable on other machines
+      unless ENV["CRYSTAL_ENV"]? == "TEST"
+        rm_resp = `rm ./cnf-conformance`
+        LOGGING.info "rm_resp: #{rm_resp}"
+        build_resp = `crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"`
+        LOGGING.info "build_resp: #{build_resp}"
+      end
+
       cnf_tarball_name = "cnf-conformance-#{upsert_version}.tar.gz"
       cnf_tarball = `tar -czvf #{cnf_tarball_name} ./cnf-conformance`
       LOGGING.info "cnf_tarball: #{cnf_tarball}"
@@ -75,13 +84,6 @@ module ReleaseManager
       #           "Content-Length" => File.size("#{cnf_tarball_name}").to_s 
       #   }, raw: "#{File.open("#{cnf_tarball_name}")}")A
 
-      # Build a static binary so it will be portable on other machines
-      unless ENV["CRYSTAL_ENV"]? == "TEST"
-        rm_resp = `rm ./cnf-conformance`
-        LOGGING.info "rm_resp: #{rm_resp}"
-        build_resp = `crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"`
-        LOGGING.info "build_resp: #{build_resp}"
-      end
 
       asset_resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{cnf_tarball_name})" --data-binary @#{cnf_tarball_name} "https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}/assets?name=$(basename #{cnf_tarball_name})"`
       asset = JSON.parse(asset_resp.strip)

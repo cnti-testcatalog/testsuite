@@ -18,7 +18,7 @@ describe "ReleaseManager" do
   end
   it "'#ReleaseManager.current_branch' should return the current branch as a string"  do
     if ReleaseManager.on_a_tag?
-      (ReleaseManager.current_branch).should eq("HEAD")
+      (ReleaseManager.tag("--list")).should_not eq([""])
     else
       (ReleaseManager.current_branch).should_not eq("")
     end
