@@ -20,17 +20,19 @@ module ReleaseManager
       asset : (JSON::Any | Nil) = nil
       upsert_version = (version || CnfConformance::VERSION)
       cnf_bin_path = "cnf-conformance"
-      cnf_bin_asset_name = `#{cnf_bin_path}`
+      cnf_bin_asset_name = "#{cnf_bin_path}"
 
       # NOTE: build MUST be done first so we can sha256sum for release notes
       # Build a static binary so it will be portable on other machines in non test
       unless ENV["CRYSTAL_ENV"]? == "TEST"
         rm_resp = `rm ./cnf-conformance`
         LOGGING.info "rm_resp: #{rm_resp}"
+        LOGGING.info "building static binary"
         build_resp = `crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"`
-        cnf_bin_asset_name = `#{cnf_bin_path}-static` # change upload name for static builds
+        cnf_bin_asset_name = "#{cnf_bin_path}-static" # change upload name for static builds
         LOGGING.info "build_resp: #{build_resp}"
       end
+      sha_checksum = `sha256sum #{cnf_bin_path}`.split(" ")[0]
 
       if upsert_version =~ /(?i)(master)/
         prerelease = false
@@ -59,7 +61,7 @@ TODO!: Fill out release notes!
 
 Artifact info:
 - Commit: #{upsert_version}
-- SHA256SUM: #{`sha256sum #{cnf_bin_path}`} #{cnf_bin_asset_name}
+- SHA256SUM: #{sha_checksum} #{cnf_bin_asset_name}
 
 TEMPLATE
 
@@ -70,7 +72,7 @@ TEMPLATE
                headers: {Accept: "application/vnd.github.v3+json"},
                json: { "tag_name" => upsert_version,
                        "draft" => true,
-                       "prerelease" => prerelease, 
+                       "prerelease" => prerelease,
                        "name" => "#{upsert_version} #{Time.local.to_s("%B, %d %Y")}",
                        "body" => notes_template })
         found_release = JSON.parse(found_resp.body)
