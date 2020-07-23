@@ -24,6 +24,19 @@ This guide shows how to install the CNF Conformance Test Suite
 - Make the binary executable (eg. `chmod +x cnf-conformance`)
 - Move the downloaded binary to somewhere in your executable PATH (eg. `sudo cp cnf-conformance /usr/local/bin/cnf-conformance`)
 
+*or*
+
+- Use the curl command to download, install, and export the path simultaneously:
+```
+source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.sh)
+```
+*or*
+
+- Use the curl command to download and install, but you will have to export the PATH:
+```
+curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.sh | bash
+
+```
  **Alternatives**
 
 - [source install](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#source-install) above
