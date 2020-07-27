@@ -26,11 +26,12 @@ module ReleaseManager
       # NOTE: build MUST be done first so we can sha256sum for release notes
       # Build a static binary so it will be portable on other machines in non test
       unless ENV["CRYSTAL_ENV"]? == "TEST"
-        rm_resp = `rm ./cnf-conformance`
-        LOGGING.info "rm_resp: #{rm_resp}"
-        LOGGING.info "building static binary"
-        build_resp = `crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"`
-        LOGGING.info "build_resp: #{build_resp}"
+        # Rely on the ci to create the static binary
+        # rm_resp = `rm ./cnf-conformance`
+        # LOGGING.info "rm_resp: #{rm_resp}"
+        # LOGGING.info "building static binary"
+        # build_resp = `crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"`
+        # LOGGING.info "build_resp: #{build_resp}"
         # the name of the binary asset must be unique across all releases in github for project
         cnf_tarball_name = "cnf-conformance-#{upsert_version}.tar.gz"
         cnf_tarball = `tar -czvf #{cnf_tarball_name} ./#{cnf_bin_asset_name}`
