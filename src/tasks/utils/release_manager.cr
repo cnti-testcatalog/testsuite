@@ -23,6 +23,19 @@ module ReleaseManager
       # cnf_bin_asset_name = "#{cnf_bin_path}"
       cnf_bin_asset_name = "cnf-conformance"
 
+      if ReleaseManager.remote_master_branch_hash == ReleaseManager.current_hash
+        upsert_version = upsert_version.sub("HEAD", "master")
+      end
+      if upsert_version =~ /(?i)(master)/
+        prerelease = false
+      else
+        prerelease = true
+      end
+      unless upsert_version =~ /(?i)(master|v[0-1]|test_version)/
+        LOGGING.info "Not creating a release for : #{upsert_version}"
+        return {found_release, asset} 
+      end
+
       # NOTE: build MUST be done first so we can sha256sum for release notes
       # Build a static binary so it will be portable on other machines in non test
       unless ENV["CRYSTAL_ENV"]? == "TEST"
@@ -42,18 +55,6 @@ module ReleaseManager
       # sha_checksum = `sha256sum #{cnf_bin_path}`.split(" ")[0]
       sha_checksum = `sha256sum #{cnf_bin_asset_name}`.split(" ")[0]
 
-      if upsert_version =~ /(?i)(master)/
-        prerelease = false
-      else
-        prerelease = true
-      end
-      if ReleaseManager.remote_master_branch_hash == ReleaseManager.current_hash
-        upsert_version = upsert_version.sub("HEAD", "master")
-      end
-      unless upsert_version =~ /(?i)(master|v[0-1]|test_version)/
-        LOGGING.info "Not creating a release for : #{upsert_version}"
-        return {found_release, asset} 
-      end
       LOGGING.info "upsert_version: #{upsert_version}"
       release_resp = ReleaseManager::GithubReleaseManager.github_releases
       LOGGING.info "release_resp size: #{release_resp.size}"
@@ -61,11 +62,16 @@ module ReleaseManager
       found_release = release_resp.find {|x| x["tag_name"] == upsert_version} 
       LOGGING.info "find found_release?: #{found_release}"
 
+      issues = ReleaseManager.commit_message_issues(ReleaseManager.latest_release, "HEAD")
+      titles = issues.reduce("") do |acc, x| 
+        acc + "issue: #{x} Title: #{ReleaseManager.issue_title(x)}\n"
+      end
+      # LOGGING.info "titles: #{titles}"
 notes_template = <<-TEMPLATE
 UPDATES
 ---
-
-TODO!: Fill out release notes!
+Issues Addressed in this release:
+#{titles}
 
 Artifact info:
 - Commit: #{upsert_version}
@@ -211,5 +217,28 @@ TEMPLATE
     # asset = JSON.parse(asset_resp.body)
     LOGGING.info "asset: #{asset}"
     asset
+  end
+
+  def self.commit_message_issues(start_ref, end_ref)
+    commit_messages = `git log #{start_ref}..#{end_ref} -g --grep="#"`
+    # LOGGING.info "commit_messages: #{commit_messages}"
+    uniq_issues = commit_messages.scan(/(#[0-9]{1,9})/).not_nil!.map{|x| x[1]}.uniq
+    LOGGING.info "uniq_issues: #{uniq_issues}"
+    uniq_issues.map {|x| x.strip("\n")}
+  end
+
+  def self.latest_release
+    resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} --silent "https://api.github.com/repos/cncf/cnf-conformance/releases/latest"`
+    LOGGING.info "latest_release: #{resp}"
+    parsed_resp = JSON.parse(resp)
+    parsed_resp["tag_name"]?.not_nil!.to_s
+  end
+
+  def self.issue_title(issue_number)
+    pure_issue = issue_number.gsub("#", "")
+    resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} "https://api.github.com/repos/cncf/cnf-conformance/issues/#{pure_issue}"`
+    # LOGGING.info "issue_text: #{resp}"
+    parsed_resp = JSON.parse(resp)
+    parsed_resp["title"]?.not_nil!.to_s
   end
 end 
