@@ -43,5 +43,6 @@ jobs:
       script: 
         - shards install
         - crystal spec -v || travis_terminate 1;
-        # TODO only run upsert version if on master or a tagged branch, then if release creation fails, fail the build
+        - docker pull crystallang/crystal:0.32.1-alpine  
+        - docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.32.1-alpine crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma" 
         - ./cnf-conformance upsert_release
