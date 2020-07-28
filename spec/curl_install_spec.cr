@@ -16,7 +16,7 @@ describe "CurlInstall" do
       raise "crystal build failed in spec_helper"
     end
   end
-  it "'source curl_install.sh)' should download a cnf-conformance binary"  do
+  it "'source curl_install.sh' should download a cnf-conformance binary"  do
     response_s = `/bin/bash -c "source ./curl_install.sh"`
     LOGGING.info response_s
     (/cnf-conformance/ =~ response_s).should_not be_nil
