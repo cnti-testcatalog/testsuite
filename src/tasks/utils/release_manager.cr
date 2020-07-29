@@ -237,7 +237,7 @@ TEMPLATE
   def self.issue_title(issue_number)
     pure_issue = issue_number.gsub("#", "")
     resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} "https://api.github.com/repos/cncf/cnf-conformance/issues/#{pure_issue}"`
-    # LOGGING.info "issue_text: #{resp}"
+    LOGGING.info "issue_text: #{resp}"
     parsed_resp = JSON.parse(resp)
     parsed_resp["title"]?.not_nil!.to_s
   end
