@@ -231,7 +231,12 @@ TEMPLATE
     LOGGING.info "git branch: #{fetch}"
     # fetch = `git log`
     # LOGGING.info "git log: #{fetch}"
-    commit_messages = `git log #{start_ref}..#{end_ref} -g --grep="#"`
+    if detached_head?
+      #TODO find way to use ranges on a detached head
+      commit_messages = `git log`
+    else
+      commit_messages = `git log #{start_ref}..#{end_ref} -g --grep="#"`
+    end
     LOGGING.info "commit_messages: #{commit_messages}"
     #TODO scrape issue urls
     uniq_issues = commit_messages.scan(/(#[0-9]{1,9})/).not_nil!.map{|x| x[1]}.uniq
@@ -252,5 +257,11 @@ TEMPLATE
     LOGGING.info "issue_text: #{resp}"
     parsed_resp = JSON.parse(resp)
     parsed_resp["title"]?.not_nil!.to_s
+  end
+
+  def self.detached_head?
+    resp = `git rev-parse --abbrev-ref --symbolic-full-name HEAD`
+    LOGGING.info "detached_head: #{resp}"
+    resp.strip("\n") == "HEAD"
   end
 end 

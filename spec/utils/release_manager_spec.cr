@@ -55,6 +55,9 @@ describe "ReleaseManager" do
   #   resp_code = ReleaseManager::GithubReleaseManager.delete_release("test_version")
   #   (resp_code == 204).should be_truthy
   # end
+  it "'#ReleaseManager.detached_head?' should return if the head is detached", tags: "release"  do
+    (ReleaseManager.detached_head?).should_not be_nil
+  end
 
   it "'#ReleaseManager.commit_message_issues' should list previsions releases", tags: "release"  do
     issues = ReleaseManager.commit_message_issues("spec_master~100", "spec_master")
