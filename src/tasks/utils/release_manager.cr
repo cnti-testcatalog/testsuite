@@ -221,10 +221,11 @@ TEMPLATE
 
   def self.commit_message_issues(start_ref, end_ref)
     fetch_tags = `git fetch --tags`
-    LOGGING.info "sync with remote tags: #{fetch_tags}"
+    LOGGING.info "git fetch --tags: #{fetch_tags}"
     fetch = `git fetch --all`
-    fetch = `git fetch origin master:spec_master`
-    LOGGING.info "sync with remotes: #{fetch}"
+    LOGGING.info "git fetch --all: #{fetch}"
+    # fetch = `git fetch origin master:spec_master`
+    # LOGGING.info "git fetch origin master:spec_master: #{fetch}"
     fetch = `git status`
     LOGGING.info "git status: #{fetch}"
     fetch = `git branch`
