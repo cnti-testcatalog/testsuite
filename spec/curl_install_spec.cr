@@ -24,6 +24,6 @@ describe "CurlInstall" do
   it "'curl_install.sh' should download a cnf-conformance binary"  do
     response_s = `./curl_install.sh`
     LOGGING.info response_s
-    (/To use cnf-conformance please restart you terminal session to load the new Path/ =~ response_s).should_not be_nil
+    (/To use cnf-conformance please restart you terminal session to load the new 'path'/ =~ response_s).should_not be_nil
   end
 end
