@@ -220,8 +220,8 @@ TEMPLATE
   end
 
   def self.commit_message_issues(start_ref, end_ref)
-    # fetch_tags = `git fetch --tags`
-    # LOGGING.info "git fetch --tags: #{fetch_tags}"
+    fetch_tags = `git fetch --tags`
+    LOGGING.info "git fetch --tags: #{fetch_tags}"
     # fetch = `git fetch --all`
     # LOGGING.info "git fetch --all: #{fetch}"
     # fetch = `git fetch origin master:spec_master`
@@ -232,12 +232,14 @@ TEMPLATE
     LOGGING.info "git branch: #{fetch}"
     # fetch = `git log`
     # LOGGING.info "git log: #{fetch}"
-    if detached_head?
-      #TODO find way to use ranges on a detached head
-      commit_messages = `git log`
-    else
-      commit_messages = `git log #{start_ref}..#{end_ref} -g --grep="#"`
-    end
+    # if detached_head?
+    #   #TODO find way to use ranges on a detached head
+    #   commit_messages = `git log`
+    # else
+    # grep arg is blocked on travis
+    # commit_messages = `git log #{start_ref}..#{end_ref} -g --grep="#"`
+    commit_messages = `git log #{start_ref}..#{end_ref}`
+    # end
     LOGGING.info "commit_messages: #{commit_messages}"
     #TODO scrape issue urls
     uniq_issues = commit_messages.scan(/(#[0-9]{1,9})/).not_nil!.map{|x| x[1]}.uniq
