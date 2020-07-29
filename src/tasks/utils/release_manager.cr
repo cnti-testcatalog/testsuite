@@ -229,10 +229,11 @@ TEMPLATE
     LOGGING.info "git status: #{fetch}"
     fetch = `git branch`
     LOGGING.info "git branch: #{fetch}"
-    fetch = `git log`
-    LOGGING.info "git log: #{fetch}"
+    # fetch = `git log`
+    # LOGGING.info "git log: #{fetch}"
     commit_messages = `git log #{start_ref}..#{end_ref} -g --grep="#"`
     LOGGING.info "commit_messages: #{commit_messages}"
+    #TODO scrape issue urls
     uniq_issues = commit_messages.scan(/(#[0-9]{1,9})/).not_nil!.map{|x| x[1]}.uniq
     LOGGING.info "uniq_issues: #{uniq_issues}"
     uniq_issues.map {|x| x.strip("\n")}
