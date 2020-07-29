@@ -39,7 +39,7 @@ module ReleaseManager
       # NOTE: build MUST be done first so we can sha256sum for release notes
       # Build a static binary so it will be portable on other machines in non test
       unless ENV["CRYSTAL_ENV"]? == "TEST"
-        # Rely on the ci to create the static binary
+        # Rely on the docker ci to create the static binary
         # rm_resp = `rm ./cnf-conformance`
         # LOGGING.info "rm_resp: #{rm_resp}"
         # LOGGING.info "building static binary"
@@ -214,7 +214,6 @@ TEMPLATE
       #   }, raw: "#{File.open("#{cnf_tarball_name}")}")A
     asset_resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{asset_name})" --data-binary @#{asset_name} "https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{release_id}/assets?name=$(basename #{asset_name})"`
     asset = JSON.parse(asset_resp.strip)
-    # asset = JSON.parse(asset_resp.body)
     LOGGING.info "asset: #{asset}"
     asset
   end
@@ -222,24 +221,11 @@ TEMPLATE
   def self.commit_message_issues(start_ref, end_ref)
     fetch_tags = `git fetch --tags`
     LOGGING.info "git fetch --tags: #{fetch_tags}"
-    # fetch = `git fetch --all`
-    # LOGGING.info "git fetch --all: #{fetch}"
-    # fetch = `git fetch origin master:spec_master`
-    # LOGGING.info "git fetch origin master:spec_master: #{fetch}"
     fetch = `git status`
     LOGGING.info "git status: #{fetch}"
     fetch = `git branch`
     LOGGING.info "git branch: #{fetch}"
-    # fetch = `git log`
-    # LOGGING.info "git log: #{fetch}"
-    # if detached_head?
-    #   #TODO find way to use ranges on a detached head
-    #   commit_messages = `git log`
-    # else
-    # grep arg is blocked on travis
-    # commit_messages = `git log #{start_ref}..#{end_ref} -g --grep="#"`
     commit_messages = `git log #{start_ref}..#{end_ref}`
-    # end
     LOGGING.info "commit_messages: #{commit_messages}"
     #TODO scrape issue urls
     uniq_issues = commit_messages.scan(/(#[0-9]{1,9})/).not_nil!.map{|x| x[1]}.uniq
