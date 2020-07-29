@@ -44,9 +44,12 @@ echo 'export PATH=$HOME/.cnf-conformance:$PATH' > ${SHELL_DOT_DIR}cnf-conformanc
 
 if (return 0 2>/dev/null); then
     export PATH=$HOME/.cnf-conformance:$PATH
+    echo "The cnf-conformance 'path' has been written to ${SHELL_DOT_DIR}cnf-conformance"
+    echo "cnf-conformance has been successfully installed to: ~/.cnf-conformance"
 else
-    echo "The cnf-conformance Path has been written to ${SHELL_DOT_DIR}cnf-conformance"
-    echo 'To use cnf-conformance please restart you terminal session to load the new Path'
+    echo "The cnf-conformance 'path' has been written to ${SHELL_DOT_DIR}cnf-conformance"
+    echo "cnf-conformance has been successfully installed to: ~/.cnf-conformance"
+    echo "To use cnf-conformance please restart you terminal session to load the new 'path'"
     echo "Or you can manually run 'export PATH=\$HOME/.cnf-conformance:\$PATH' in your current session"
 fi
 
