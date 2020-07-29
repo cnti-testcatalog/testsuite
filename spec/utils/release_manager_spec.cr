@@ -57,15 +57,15 @@ describe "ReleaseManager" do
   # end
 
   it "'#ReleaseManager.commit_message_issues' should list previsions releases", tags: "release"  do
-    issues = ReleaseManager.commit_message_issues("0.0.5", "spec_master")
+    issues = ReleaseManager.commit_message_issues("origin/master~30", "spec_master")
     (issues[0].match(/#/)).should_not be_nil
   end
 
-  it "'#ReleaseManager.latest_release' should return latest release", tags: "release"  do
-    issues = ReleaseManager.latest_release
-    # https://github.com/semver/semver/blob/master/semver.md#is-v123-a-semantic-version
-    (issues.match(/^(.|)(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/)).should_not be_nil
-  end
+  # it "'#ReleaseManager.latest_release' should return latest release", tags: "release"  do
+  #   issues = ReleaseManager.latest_release
+  #   # https://github.com/semver/semver/blob/master/semver.md#is-v123-a-semantic-version
+  #   (issues.match(/^(.|)(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/)).should_not be_nil
+  # end
 
   # it "'#ReleaseManager.issue_title' should return issue title", tags: "release"  do
   #   issues = ReleaseManager.issue_title("#318")
