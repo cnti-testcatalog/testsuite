@@ -226,7 +226,7 @@ TEMPLATE
     fetch = `git branch`
     LOGGING.info "git branch: #{fetch}"
     commit_messages = `git log #{start_ref}..#{end_ref}`
-    LOGGING.info "commit_messages: #{commit_messages}"
+    # LOGGING.info "commit_messages: #{commit_messages}"
     #TODO scrape issue urls
     uniq_issues = commit_messages.scan(/(#[0-9]{1,9})/).not_nil!.map{|x| x[1]}.uniq
     LOGGING.info "uniq_issues: #{uniq_issues}"
@@ -243,7 +243,7 @@ TEMPLATE
   def self.issue_title(issue_number)
     pure_issue = issue_number.gsub("#", "")
     resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} "https://api.github.com/repos/cncf/cnf-conformance/issues/#{pure_issue}"`
-    LOGGING.info "issue_text: #{resp}"
+    # LOGGING.info "issue_text: #{resp}"
     parsed_resp = JSON.parse(resp)
     parsed_resp["title"]?.not_nil!.to_s
   end
