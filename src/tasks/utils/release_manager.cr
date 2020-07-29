@@ -220,8 +220,10 @@ TEMPLATE
   end
 
   def self.commit_message_issues(start_ref, end_ref)
+    fetch_tags = `git fetch --tags`
+    LOGGING.info "sync with remote tags: #{fetch_tags}"
     fetch = `git fetch --all`
-    LOGGING.info "sync with remores: #{fetch}"
+    LOGGING.info "sync with remotes: #{fetch}"
     commit_messages = `git log #{start_ref}..#{end_ref} -g --grep="#"`
     # LOGGING.info "commit_messages: #{commit_messages}"
     uniq_issues = commit_messages.scan(/(#[0-9]{1,9})/).not_nil!.map{|x| x[1]}.uniq
