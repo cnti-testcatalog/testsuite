@@ -57,7 +57,7 @@ describe "ReleaseManager" do
   end
 
   it "'#ReleaseManager.commit_message_issues' should list previsions releases", tags: "release"  do
-    issues = ReleaseManager.commit_message_issues("HEAD~5", "HEAD")
+    issues = ReleaseManager.commit_message_issues("origin/master", "HEAD")
     (issues[0].match(/#/)).should_not be_nil
   end
 
