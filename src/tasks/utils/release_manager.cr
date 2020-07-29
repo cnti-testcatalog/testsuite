@@ -223,6 +223,7 @@ TEMPLATE
     fetch_tags = `git fetch --tags`
     LOGGING.info "sync with remote tags: #{fetch_tags}"
     fetch = `git fetch --all`
+    fetch = `git fetch origin master:spec_master`
     LOGGING.info "sync with remotes: #{fetch}"
     commit_messages = `git log #{start_ref}..#{end_ref} -g --grep="#"`
     # LOGGING.info "commit_messages: #{commit_messages}"
