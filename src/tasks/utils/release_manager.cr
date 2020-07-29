@@ -228,7 +228,7 @@ TEMPLATE
     fetch = `git status`
     LOGGING.info "git status: #{fetch}"
     fetch = `git branch`
-    LOGGING.info "git status: #{branch}"
+    LOGGING.info "git status: #{fetch}"
     commit_messages = `git log #{start_ref}..#{end_ref} -g --grep="#"`
     LOGGING.info "commit_messages: #{commit_messages}"
     uniq_issues = commit_messages.scan(/(#[0-9]{1,9})/).not_nil!.map{|x| x[1]}.uniq
