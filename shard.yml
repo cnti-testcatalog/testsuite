@@ -10,7 +10,7 @@ targets:
   cnf_conformance:
     main: src/cnf_conformance.cr
 
-crystal: 0.33.0
+crystal: 0.35.1
 
 dependencies:
   sam:
@@ -21,7 +21,7 @@ dependencies:
     version: 0.6.0
   halite:
     github: icyleaf/halite
-    version: 0.10.4
+    commit: ba22d2aa96bbb99702145839df8be516b4ceca90 # master as of 7-29-2020
   icr:
     github: crystal-community/icr
     branch: master
@@ -30,7 +30,7 @@ dependencies:
     version: ~> 0.3.5
   crinja:
     github: straight-shoota/crinja
-    version: 0.5.1
+    commit: 849bd8a3c9600256ef797db66315dd757a1686a0 # master as of 7-29-2020
 
 development_dependencies:
   ameba:
