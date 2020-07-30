@@ -27,9 +27,11 @@ module ReleaseManager
         upsert_version = upsert_version.sub("HEAD", "master")
       end
       if upsert_version =~ /(?i)(master)/
-        prerelease = false
+        prerelease = true 
+        draft = false
       else
         prerelease = true
+        draft = true 
       end
       unless upsert_version =~ /(?i)(master|v[0-1]|test_version)/
         LOGGING.info "Not creating a release for : #{upsert_version}"
@@ -70,7 +72,7 @@ module ReleaseManager
 notes_template = <<-TEMPLATE
 UPDATES
 ---
-Issues Addressed in this release:
+Issues addressed in this release:
 #{titles}
 
 Artifact info:
@@ -85,7 +87,7 @@ TEMPLATE
           post("https://api.github.com/repos/cncf/cnf-conformance/releases",
                headers: {Accept: "application/vnd.github.v3+json"},
                json: { "tag_name" => upsert_version,
-                       "draft" => true,
+                       "draft" => draft,
                        "prerelease" => prerelease,
                        "name" => "#{upsert_version} #{Time.local.to_s("%B, %d %Y")}",
                        "body" => notes_template })
@@ -98,7 +100,7 @@ TEMPLATE
       found_resp = Halite.basic_auth(user: ENV["GITHUB_USER"], pass: ENV["GITHUB_TOKEN"]).
         patch("https://api.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}",
               json: { "tag_name" => upsert_version,
-                      "draft" => true,
+                      "draft" => draft,
                       "prerelease" => prerelease,
                       "name" => "#{upsert_version} #{Time.local.to_s("%B, %d %Y")}",
                       "body" => notes_template })
