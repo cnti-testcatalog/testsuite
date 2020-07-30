@@ -2,7 +2,7 @@ require "totem"
 require "colorize"
 require "./sample_utils.cr"
 require "./release_manager.cr"
-require "logger"
+require "log"
 require "file_utils"
 require "option_parser"
 
@@ -22,6 +22,19 @@ FAILED = "failed"
 DEFAULT_POINTSFILENAME = "points_v1.yml"
 PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
 
+
+def log_formatter
+  Log::Formatter.new do |entry, io|
+    progname = "cnf-conformance"
+    label = entry.severity.none? ? "ANY" : entry.severity.to_s
+    msg = entry.source.empty? ? "#{progname}: #{entry.message}" : "#{progname}-#{entry.source}: #{entry.message}"
+    io << label[0] << ", [" << entry.timestamp << " #" << Process.pid << "] "
+    io << label.rjust(5) << " -- " << msg
+  end
+end
+
+Log.setup(loglevel, Log::IOBackend.new(formatter: log_formatter))
+
 class LogLevel
   class_property command_line_loglevel : String = ""
 end
@@ -32,27 +45,19 @@ OptionParser.parse do |parser|
   parser.on("-h", "--help", "Show this help") { puts parser }
 end
 
-def log_formatter
-  Logger::Formatter.new do |severity, datetime, progname, message, io|
-    label = severity.unknown? ? "ANY" : severity.to_s
-    io << label[0] << ", [" << datetime << " #" << Process.pid << "] "
-    io << label.rjust(5) << " -- " << progname << ": " << message
-  end
-end
-
 def loglevel
   levelstr = "" # default to unset
 
   # of course last setting wins so make sure to keep the precendence order desired
   # currently
-  # 
+  #
   # 1. Cli flag is highest precedence
   # 2. Environment var is next level of precedence
   # 3. Config file is last level of precedence
 
   # lowest priority is first
   if File.exists?(BASE_CONFIG)
-    config = Totem.from_file BASE_CONFIG 
+    config = Totem.from_file BASE_CONFIG
     if config["loglevel"].as_s?
       levelstr = config["loglevel"].as_s
     end
@@ -67,25 +72,61 @@ def loglevel
     levelstr = LogLevel.command_line_loglevel
   end
 
-  if Logger::Severity.parse?(levelstr)
-    Logger::Severity.parse(levelstr)
+  if Log::Severity.parse?(levelstr)
+    Log::Severity.parse(levelstr)
   else
     if !levelstr.empty?
-      LOGGING.error "Invalid logging level set. defaulting to ERROR"
+      Log.error { "Invalid logging level set. defaulting to ERROR" }
     end
     # if nothing set but also nothing missplled then silently default to error
-    Logger::ERROR
+    Log::Severity::Error
   end
 end
 
-LOGGING = Logger.new(STDOUT, Logger::INFO)
-LOGGING.progname = "cnf-conformance"
-LOGGING.level=loglevel
-LOGGING.formatter = log_formatter
+# TODO: get rid of LogginGenerator and VerboseLogginGenerator evil sourcery and refactor the rest of the code to use Log + procs directly
+class LogginGenerator
+  macro method_missing(call)
+    if {{ call.name.stringify }} == "debug"
+      Log.debug {{{call.args[0]}}}
+    end
+    if {{ call.name.stringify }} == "info"
+      Log.info {{{call.args[0]}}}
+    end
+    if {{ call.name.stringify }} == "warn"
+      Log.warn {{{call.args[0]}}}
+    end
+    if {{ call.name.stringify }} == "error"
+      Log.error {{{call.args[0]}}}
+    end
+    if {{ call.name.stringify }} == "fatal"
+      Log.fatal {{{call.args[0]}}}
+    end
+  end
+end
 
-VERBOSE_LOGGING = Logger.new(STDOUT, Logger::DEBUG) # will always be info. always use info with it
-VERBOSE_LOGGING.progname = "cnf-conformance-verbose"
-VERBOSE_LOGGING.formatter = log_formatter
+class VerboseLogginGenerator
+  macro method_missing(call)
+    source = "verbose"
+    if {{ call.name.stringify }} == "debug"
+      Log.for(source).debug {{{call.args[0]}}}
+    end
+    if {{ call.name.stringify }} == "info"
+      Log.for(source).info {{{call.args[0]}}}
+    end
+    if {{ call.name.stringify }} == "warn"
+      Log.for(source).warn {{{call.args[0]}}}
+    end
+    if {{ call.name.stringify }} == "error"
+      Log.for(source).error {{{call.args[0]}}}
+    end
+    if {{ call.name.stringify }} == "fatal"
+      Log.for(source).fatal {{{call.args[0]}}}
+    end
+  end
+end
+
+LOGGING = LogginGenerator.new
+VERBOSE_LOGGING = VerboseLogginGenerator.new
 
 def generate_version
   version = ""
