@@ -254,11 +254,12 @@ def check_alpha(args)
 end
 
 def check_wip
-  toggle("wip")
+  toggle("wip") || toggle("poc")
 end
 
 def check_wip(args)
-  toggle("wip") || check_feature_level(args) == "wip"
+  toggle("wip") || check_feature_level(args) == "wip" ||
+  toggle("poc") || check_feature_level(args) == "poc"
 end
 
 def check_poc
