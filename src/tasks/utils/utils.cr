@@ -216,7 +216,10 @@ end
 ## check feature level e.g. --beta
 ## if no feature level then feature level = ga
 def check_feature_level(args)
+  LOGGING.info "args.raw #{args.raw}"
   case args.raw
+  when .includes? "poc"
+    "poc"
   when .includes? "wip"
     "wip"
   when .includes? "alpha"
