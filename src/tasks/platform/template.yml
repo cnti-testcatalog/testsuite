@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+    name: reboot
+spec:
+  containers:
+  - name: reboot
+    image: debian:latest
+    command: ['/bin/bash', '-c', 'echo b > /sysrq']
+    volumeMounts:
+    - mountPath: /sysrq
+      name: test-volume
+  volumes:
+  -  name: test-volume
+     hostPath:
+       path: /proc/sysrq-trigger
