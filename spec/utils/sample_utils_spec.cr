@@ -119,100 +119,102 @@ describe "SampleUtils" do
   it "'helm_repo_add' should return false if the helm repo is invalid", tags: "happy-path"  do
     helm_repo_add("invalid", "invalid").should eq(false)
   end
-end
 
+  it "'validate_cnf_conformance_yml' (function) should pass, when a cnf has a valid config file yml", tags: ["unhappy-path", "validate_config"]  do
+    args = Sam::Args.new(["cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml"])
 
-it "'validate_cnf_conformance_yml' (function) should pass, when a cnf has a valid config file yml", tags: ["unhappy-path", "validate_config"]  do
-  args = Sam::Args.new(["cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml"])
+    yml = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    LOGGING.info yml.inspect
+    ("#{yml.get("release_name").as_s?}").should eq("coredns")
 
-  yml = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-  LOGGING.info yml.inspect
-  ("#{yml.get("release_name").as_s?}").should eq("coredns")
+    valid, command_output = validate_cnf_conformance_yml(yml)
 
-  valid, command_output = validate_cnf_conformance_yml(yml)
+    (valid).should eq(true)
+    (command_output).should eq (nil)
+  end
 
-  (valid).should eq(true)
-  (command_output).should eq (nil)
-end
-
-it "'validate_cnf_conformance_yml' (command) should pass, when a cnf has a valid config file yml", tags: ["unhappy-path", "validate_config"]  do
-  response_s = `./cnf-conformance validate_config cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
-  $?.success?.should be_true
-  (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
-end
-
-
-it "'validate_cnf_conformance_yml' (function) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["unhappy-path", "validate_config"]  do
-  args = Sam::Args.new(["cnf-config=./spec/fixtures/cnf-conformance-unmapped-keys-and-subkeys.yml"])
-
-  yml = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-  LOGGING.info yml.inspect
-  ("#{yml.get("release_name").as_s?}").should eq("coredns")
-
-  status, warning_output = validate_cnf_conformance_yml(yml)
-
-  LOGGING.warn "WARNING: #{warning_output}"
-
-  (status).should eq(true)
-  (warning_output).should_not be_nil
-end
-
-
-it "'validate_cnf_conformance_yml' (command) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["unhappy-path", "validate_config"]  do
-  response_s = `./cnf-conformance validate_config cnf-config=spec/fixtures/cnf-conformance-unmapped-keys-and-subkeys.yml`
-  $?.success?.should be_true
-  (/WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator/ =~ response_s).should_not be_nil
-  (/WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_conformance.yml/ =~ response_s).should_not be_nil
-  (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
-end
-
-
-it "'validate_cnf_conformance_yml' (function) should fail when an invalid cnf config file yml is used", tags: ["unhappy-path", "validate_config"]  do
-  args = Sam::Args.new(["cnf-config=spec/fixtures/cnf-conformance-invalid-and-unmapped-keys.yml"])
-
-  yml = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-  LOGGING.info yml.inspect
-  ("#{yml.get("release_name").as_s?}").should eq("coredns")
-
-  status, warning_output = validate_cnf_conformance_yml(yml)
-
-  (status).should eq(false)
-  (warning_output).should eq(nil)
-end
-
-it "'validate_cnf_conformance_yml' (command) should fail when an invalid cnf config file yml is used", tags: ["unhappy-path", "validate_config"]  do
-  response_s = `./cnf-conformance validate_config cnf-config=spec/fixtures/cnf-conformance-invalid-and-unmapped-keys.yml`
-  $?.success?.should be_true
-
-  (/ERROR: cnf_conformance.yml field validation error/ =~ response_s).should_not be_nil
-  (/FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s).should_not be_nil
-end
-
-it "'validate_cnf_conformance_yml' (command) should pass, for all sample-cnfs", tags: ["unhappy-path", "validate_config"]  do
-
-  get_dirs = Dir.entries("sample-cnfs")
-  dir_list = get_dirs - [".", ".."]
-  dir_list.each do |dir|
-    conformance_yml = "sample-cnfs/#{dir}/cnf-conformance.yml"
-    response_s = `./cnf-conformance validate_config cnf-config=#{conformance_yml}`
-    if (/FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
-      LOGGING.info "\n #{conformance_yml}: #{response_s}"
-    end
+  it "'validate_cnf_conformance_yml' (command) should pass, when a cnf has a valid config file yml", tags: ["unhappy-path", "validate_config"]  do
+    response_s = `./cnf-conformance validate_config cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
+    $?.success?.should be_true
     (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
   end
-end
 
-it "'validate_cnf_conformance_yml' (command) should pass, for all example-cnfs", tags: ["unhappy-path", "validate_config"]  do
 
-  get_dirs = Dir.entries("example-cnfs")
-  dir_list = get_dirs - [".", ".."]
-  dir_list.each do |dir|
-    conformance_yml = "example-cnfs/#{dir}/cnf-conformance.yml"
-    response_s = `./cnf-conformance validate_config cnf-config=#{conformance_yml}`
-    if (/FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
-      LOGGING.info "\n #{conformance_yml}: #{response_s}"
-    end
+  it "'validate_cnf_conformance_yml' (function) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["unhappy-path", "validate_config"]  do
+    args = Sam::Args.new(["cnf-config=./spec/fixtures/cnf-conformance-unmapped-keys-and-subkeys.yml"])
+
+    yml = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    LOGGING.info yml.inspect
+    ("#{yml.get("release_name").as_s?}").should eq("coredns")
+
+    status, warning_output = validate_cnf_conformance_yml(yml)
+
+    LOGGING.warn "WARNING: #{warning_output}"
+
+    (status).should eq(true)
+    (warning_output).should_not be_nil
+  end
+
+
+  it "'validate_cnf_conformance_yml' (command) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["unhappy-path", "validate_config"]  do
+    response_s = `./cnf-conformance validate_config cnf-config=spec/fixtures/cnf-conformance-unmapped-keys-and-subkeys.yml`
+    $?.success?.should be_true
+    (/WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator/ =~ response_s).should_not be_nil
+    (/WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_conformance.yml/ =~ response_s).should_not be_nil
     (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
   end
+
+
+  it "'validate_cnf_conformance_yml' (function) should fail when an invalid cnf config file yml is used", tags: ["unhappy-path", "validate_config"]  do
+    args = Sam::Args.new(["cnf-config=spec/fixtures/cnf-conformance-invalid-and-unmapped-keys.yml"])
+
+    yml = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    LOGGING.info yml.inspect
+    ("#{yml.get("release_name").as_s?}").should eq("coredns")
+
+    status, warning_output = validate_cnf_conformance_yml(yml)
+
+    (status).should eq(false)
+    (warning_output).should eq(nil)
+  end
+
+  it "'validate_cnf_conformance_yml' (command) should fail when an invalid cnf config file yml is used", tags: ["unhappy-path", "validate_config"]  do
+    response_s = `./cnf-conformance validate_config cnf-config=spec/fixtures/cnf-conformance-invalid-and-unmapped-keys.yml`
+    $?.success?.should be_true
+
+    (/ERROR: cnf_conformance.yml field validation error/ =~ response_s).should_not be_nil
+    (/FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s).should_not be_nil
+  end
+
+  it "'validate_cnf_conformance_yml' (command) should pass, for all sample-cnfs", tags: ["unhappy-path", "validate_config"]  do
+
+    get_dirs = Dir.entries("sample-cnfs")
+    dir_list = get_dirs - [".", ".."]
+    dir_list.each do |dir|
+      conformance_yml = "sample-cnfs/#{dir}/cnf-conformance.yml"
+      response_s = `./cnf-conformance validate_config cnf-config=#{conformance_yml}`
+      if (/FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
+        LOGGING.info "\n #{conformance_yml}: #{response_s}"
+      end
+      (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
+    end
+  end
+
+  it "'validate_cnf_conformance_yml' (command) should pass, for all example-cnfs", tags: ["unhappy-path", "validate_config"]  do
+
+    get_dirs = Dir.entries("example-cnfs")
+    dir_list = get_dirs - [".", ".."]
+    dir_list.each do |dir|
+      conformance_yml = "example-cnfs/#{dir}/cnf-conformance.yml"
+      response_s = `./cnf-conformance validate_config cnf-config=#{conformance_yml}`
+      if (/FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
+        LOGGING.info "\n #{conformance_yml}: #{response_s}"
+      end
+      (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
+    end
+  end
+
 end
+
+
 
