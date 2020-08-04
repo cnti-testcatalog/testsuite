@@ -60,6 +60,16 @@ def wait_for_install(deployment_name, wait_count=180, namespace="default")
   end
 end 
 
+def pod_status(pod_name_prefix, namespace="default")
+  all_pods = `kubectl get pods -o jsonpath='{.items[*].metadata.name}'`.split(" ")
+  LOGGING.info(all_pods)
+  pod = all_pods.find{ | x | x =~ /#{pod_name_prefix}/ }
+  status = `kubectl get pods #{pod} -o=jsonpath='{.status.phase}'`
+  ready = `kubectl get pods #{pod} -o jsonpath='{.status.containerStatuses[*].ready}'`
+  puts status
+  puts ready
+end
+
 def path_has_yml?(config_path)
   if config_path =~ /\.yml/  
     true
