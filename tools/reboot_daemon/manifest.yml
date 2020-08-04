@@ -5,12 +5,12 @@ metadata:
 spec:
   containers:
   - name: reboot
-    image: debian:latest
-    command: ['/bin/bash', '-c', 'echo b > /sysrq']
+    image: conformance/reboot_daemon:latest
+    command: ["/entrypoint.sh"]
     volumeMounts:
     - mountPath: /sysrq
-      name: test-volume
+      name: sysrq-volume
   volumes:
-  -  name: test-volume
+  -  name: sysrq-volume
      hostPath:
        path: /proc/sysrq-trigger
