@@ -59,6 +59,7 @@ crystal src/cnf-conformance.cr test_name verbose
 https://github.com/crystal-ameba/ameba
 
 ```
+shards install # only for first install
 crystal bin/ameba.cr
 ```
 ## To see a list of all tasks in the test suite
