@@ -32,7 +32,7 @@ get_latest_release() {
 # Install CNF-Conformance
 LATEST_RELEASE=$(get_latest_release cncf/cnf-conformance)
 mkdir -p ~/.cnf-conformance
-curl -L https://github.com/cncf/cnf-conformance/releases/download/$LATEST_RELEASE/cnf-conformance.tar.gz -o ~/.cnf-conformance/cnf-conformance.tar.gz
+curl -L https://github.com/cncf/cnf-conformance/releases/download/$LATEST_RELEASE/cnf-conformance-$LATEST_RELEASE.tar.gz -o ~/.cnf-conformance/cnf-conformance.tar.gz
 tar -C ~/.cnf-conformance -xvf ~/.cnf-conformance/cnf-conformance.tar.gz
 rm ~/.cnf-conformance/cnf-conformance.tar.gz
 
