@@ -19,6 +19,26 @@ The CNF Conformance Test Suite will inspect CNFs for the following characteristi
 
 See the [Conformance Test Categories Documentation](https://github.com/cncf/cnf-conformance/blob/master/TEST-CATEGORIES.md) for a complete overview of the tests.
 
+## Contributing
+
+Welcome! We gladly accept contributions on new conformance tests, example CNFs, updates to documentation, enhancements, bug reports and more.
+- [Contributing guide](https://github.com/cncf/cnf-conformance/blob/master/CONTRIBUTING.md)
+- [Good first issues](https://github.com/cncf/cnf-conformance/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+
+## Communication and community meetings
+
+- Join the conversation on [CNCF's Slack](https://slack.cncf.io/) channels
+    - [#cnf-conformance](https://cloud-native.slack.com/archives/CV69TQW7Q)  
+    - [#cnf-conformance-dev](https://cloud-native.slack.com/archives/C014TNCEX8R)
+    
+- Join the monthly [Telecom User Group meetings](https://github.com/cncf/telecom-user-group#meeting-time) 
+    - Meetings on the 1st Mondays of the month 
+    - Meeting minutes are [here](https://docs.google.com/document/d/1yhtI7aiwpdAiRBKyUX6mOJDHAbjOog2mI4Ur2k27D7s/edit) 
+    
+- Join the weekly developer meetings 
+    - Meetings every Thursday at 14:15 - 15:00 UTC
+    - Meeting minutes are [here](https://docs.google.com/document/d/1IbrgjqIkOCvrrSG0DRE6X62UUZpBq-818Mn8q0nkkd0/edit)
+
 ## Implementation overview
 
 The CNF Conformance Test Suite leverages upstream tools such as [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Helm linter](https://github.com/helm/chart-testing), and [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) for testing CNFs. The upstream tool installation, configuration and versioning has been made repeatable.
@@ -29,6 +49,7 @@ Setup of vanilla upstream K8s on [Packet](https://www.packet.com/) is done with 
 
 
 ## Installation
+
 Binary downloads of the CNF Conformance client can be found on the [Releases](https://github.com/cncf/cnf-conformance/releases) page.
 
 Unpack the CNF Conformance binary and add it to your PATH and you are good to go!
@@ -56,16 +77,8 @@ See the [installation guide](https://github.com/cncf/cnf-conformance/blob/master
 
 Check [usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md) for more info about invoking commands and logging
 
-## Contributing
-
-See [contributing guidelines](https://github.com/cncf/cnf-conformance/blob/master/CONTRIBUTING.md)
-
-
-## Get involved
-- Join the conversation on [CNCF's Slack](https://slack.cncf.io/) channel, #cnf-conformance
-- Join the monthly [Telecom User Group meetings](https://github.com/cncf/telecom-user-group#meeting-time) 
-
 
 ## License terms
+
 CNF Conformance is available under the [Apache 2 license](https://github.com/cncf/cnf-conformance/blob/master/LICENSE).
 
