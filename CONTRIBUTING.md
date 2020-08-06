@@ -18,7 +18,11 @@ Before starting work on a major feature, please reach out to us via [GitHub Issu
 
 Issues
 ---
-Issues are used as the primary method for tracking items in the CNF Conformance initiative.
+Issues are used as the primary method for tracking items in the CNF Conformance initiative. Please self-assign an issue to yourself when you start to work on it so we don't duplicate work :) 
+
+- [Issues](https://github.com/cncf/cnf-conformance/issues)
+    - [Good first issues](https://github.com/cncf/cnf-conformance/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+
 
 ### Issue Templates
 
