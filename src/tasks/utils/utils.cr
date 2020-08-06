@@ -2,6 +2,7 @@ require "totem"
 require "colorize"
 require "./sample_utils.cr"
 require "./release_manager.cr"
+require "./embedded_file_manager.cr"
 require "logger"
 require "file_utils"
 require "option_parser"
@@ -21,6 +22,9 @@ PASSED = "passed"
 FAILED = "failed"
 DEFAULT_POINTSFILENAME = "points_v1.yml"
 PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
+
+#Embedded global text variables
+EmbeddedFileManager.reboot_daemon
 
 class LogLevel
   class_property command_line_loglevel : String = ""
