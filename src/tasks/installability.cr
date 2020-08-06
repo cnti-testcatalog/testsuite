@@ -171,10 +171,10 @@ end
 task "validate_config" do |_, args|
   yml = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
   valid, warning_output = validate_cnf_conformance_yml(yml)
-
+  emoji_config="📋"
   if valid
-    stdout_success "✔️ PASSED: CNF configuration validated 📋"
+    stdout_success "✔️ PASSED: CNF configuration validated #{emoji_config}"
   else
-    stdout_failure "❌ FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file 📋"
+    stdout_failure "❌ FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file #{emoji_config}"
   end
 end

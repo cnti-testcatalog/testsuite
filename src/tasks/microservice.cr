@@ -66,10 +66,12 @@ task "reasonable_startup_time" do |_, args|
     VERBOSE_LOGGING.debug "installed? #{is_kubectl_applied}" if check_verbose(args)
     VERBOSE_LOGGING.debug "deployed? #{is_kubectl_deployed}" if check_verbose(args)
 
+    emoji_fast="🚀"
+    emoji_slow="🐢"
     if is_kubectl_applied && is_kubectl_deployed && elapsed_time.seconds < 30
-      upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time 🚀")
+      upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time #{emoji_fast}")
     else
-      upsert_failed_task("reasonable_startup_time", "✖️  FAILURE: CNF had a startup time of #{elapsed_time.seconds} seconds 🐢")
+      upsert_failed_task("reasonable_startup_time", "✖️  FAILURE: CNF had a startup time of #{elapsed_time.seconds} seconds #{emoji_slow}")
     end
 
     delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
