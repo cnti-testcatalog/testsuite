@@ -28,11 +28,12 @@ task "privileged" do |_, args|
     VERBOSE_LOGGING.info "privileged_list #{privileged_list}" if check_verbose(args)
     white_list_containers = ((PRIVILEGED_WHITELIST_CONTAINERS + white_list_container_name) - [helm_chart_container_name])
     violation_list = (privileged_list - white_list_containers)
+    emoji_security="🔓🔑"
     if privileged_list.find {|x| x == helm_chart_container_name} ||
         violation_list.size > 0
-      upsert_failed_task("privileged", "✖️  FAILURE: Found #{violation_list.size} privileged containers: #{violation_list.inspect}")
+      upsert_failed_task("privileged", "✖️  FAILURE: Found #{violation_list.size} privileged containers: #{violation_list.inspect} #{emoji_security}")
     else
-      upsert_passed_task("privileged", "✔️  PASSED: No privileged containers")
+      upsert_passed_task("privileged", "✔️  PASSED: No privileged containers #{emoji_security}")
     end
   end
 end

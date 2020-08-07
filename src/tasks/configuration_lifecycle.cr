@@ -46,6 +46,7 @@ task "liveness", ["retrieve_manifest"] do |_, args|
     destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
     VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
+    emoji_probe="🧫"
     containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
     containers.each do |container|
       begin
@@ -54,11 +55,11 @@ task "liveness", ["retrieve_manifest"] do |_, args|
       rescue ex
         VERBOSE_LOGGING.error ex.message if check_verbose(args)
         errors = errors + 1
-        resp = upsert_failed_task("liveness","✖️  FAILURE: No livenessProbe found")
+        resp = upsert_failed_task("liveness","✖️  FAILURE: No livenessProbe found #{emoji_probe}")
       end
     end
     if errors == 0
-      resp = upsert_passed_task("liveness","✔️  PASSED: Helm liveness probe found")
+      resp = upsert_passed_task("liveness","✔️  PASSED: Helm liveness probe found #{emoji_probe}")
     end
     resp
   end
