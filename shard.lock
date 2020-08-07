@@ -1,38 +1,38 @@
-version: 1.0
+version: 2.0
 shards:
   ameba:
     github: crystal-ameba/ameba
     version: 0.12.1
 
   commander:
-    github: mrrooijen/commander
+    git: https://github.com/mrrooijen/commander.git
     version: 0.3.5
 
   crinja:
-    github: straight-shoota/crinja
-    version: 0.5.1
+    git: https://github.com/straight-shoota/crinja.git
+    version: 0.6.1+git.commit.849bd8a3c9600256ef797db66315dd757a1686a0
 
   halite:
-    github: icyleaf/halite
-    version: 0.10.4
+    git: https://github.com/icyleaf/halite.git
+    version: 0.10.5+git.commit.ba22d2aa96bbb99702145839df8be516b4ceca90
 
   icr:
-    github: crystal-community/icr
-    commit: 7da354f5c0a356aee77e68fc63c87e2ad35da7fb
+    git: https://github.com/crystal-community/icr.git
+    version: 0.7.0+git.commit.7da354f5c0a356aee77e68fc63c87e2ad35da7fb
 
   popcorn:
-    github: icyleaf/popcorn
+    git: https://github.com/icyleaf/popcorn.git
     version: 0.2.2
 
   readline:
-    github: crystal-lang/crystal-readline
-    commit: 0fb7d186da8e1b157998d98d1c96e99699b791eb
+    git: https://github.com/crystal-lang/crystal-readline.git
+    version: 0.1.0+git.commit.0fb7d186da8e1b157998d98d1c96e99699b791eb
 
   sam:
-    github: vulk/sam.cr
-    commit: 117b5b249ac696733951c0ac587d063de4fdea9f
+    git: https://github.com/vulk/sam.cr.git
+    version: 0.3.2+git.commit.117b5b249ac696733951c0ac587d063de4fdea9f
 
   totem:
-    github: icyleaf/totem
+    git: https://github.com/icyleaf/totem.git
     version: 0.6.0
 

@@ -1,4 +1,4 @@
-FROM crystallang/crystal:0.33.0
+FROM crystallang/crystal:0.35.1
 
 ARG VERSION=v3.2.4
 ARG FILENAME=helm-${VERSION}-linux-amd64.tar.gz
