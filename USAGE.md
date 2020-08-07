@@ -48,15 +48,20 @@ NOTE: When setting log level precedence highest of following wins
 2. Environment var is next level of precedence
 3. [Config file](https://github.com/cncf/cnf-conformance/blob/master/config.yml) is last level of precedence
 
-
-
 Also setting the verbose option for many tasks will add extra output to help with debugging
 
 ```
 crystal src/cnf-conformance.cr test_name verbose
 ```
 
+### Running The Linter
 
+https://github.com/crystal-ameba/ameba
+
+```
+shards install # only for first install
+crystal bin/ameba.cr
+```
 ## To see a list of all tasks in the test suite
 
 ``` 
