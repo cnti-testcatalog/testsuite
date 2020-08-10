@@ -28,7 +28,7 @@ namespace "platform" do
       worker_nodes = `kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
       worker_node = worker_nodes.split("\n")[0]
 
-      install_coredns = `#{helm} install node-failure --set nodeSelector."kubernetes\\.io/hostname"=#{worker_node} stable/coredns`
+      install_coredns = `#{helm} install node-failure --set nodeSelector."kubernetes\\.io/hostname"=#{worker_node} /home/pair/src/denver/cnf-conformance/coredns/coredns`
       wait_for_install("node-failure-coredns")
 
 
@@ -40,11 +40,29 @@ namespace "platform" do
       start_reboot = `kubectl exec -ti #{reboot_daemon_pod} touch /tmp/reboot`
       status = node_status("#{worker_node}")
 
-      until (status != "True")
-        status = node_status("#{worker_node}")
-        puts "Node Status: #{status}"
-        sleep 2
+      #Watch for Node Failure.
+      pod_ready = ""
+      node_ready = ""
+      until (pod_ready == "false" || node_ready == "False" || node_ready == "Unknown")
+        pod_ready = pod_status("node-failure").split(",")[2]
+        node_ready = node_status("#{worker_node}")
+        puts "Pod Ready Status: #{pod_ready}"
+        puts "Node Ready Status: #{node_ready}"
+        sleep 0.1
       end
+
+      #Watch for Node to come back online
+      pod_ready = ""
+      node_ready = ""
+      until (pod_ready == "true" && node_ready == "True")
+        pod_ready = pod_status("node-failure", "").split(",")[2]
+        node_ready = node_status("#{worker_node}")
+        puts "Pod Ready Status: #{pod_ready}"
+        puts "Node Ready Status: #{node_ready}"
+        sleep 0.1
+      end
+      puts "Debug"
+
 
 
       # emoji_chaos_network_loss="📶☠️"
