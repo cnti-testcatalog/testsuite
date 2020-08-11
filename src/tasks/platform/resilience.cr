@@ -28,47 +28,74 @@ namespace "platform" do
       worker_nodes = `kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
       worker_node = worker_nodes.split("\n")[0]
 
-      install_coredns = `#{helm} install node-failure --set nodeSelector."kubernetes\\.io/hostname"=#{worker_node} /home/pair/src/denver/cnf-conformance/coredns/coredns`
+
+      File.write("node_failure_values.yml", NODE_FAILURE_VALUES)
+      install_coredns = `#{helm} install node-failure -f ./node_failure_values.yml --set nodeSelector."kubernetes\\.io/hostname"=#{worker_node} stable/coredns`
       wait_for_install("node-failure-coredns")
 
 
       File.write("reboot_daemon_pod.yml", REBOOT_DAEMON)
       install_reboot_daemon = `kubectl create -f reboot_daemon_pod.yml`
+      wait_for_install("node-failure-coredns")
+
+      pod_ready = ""
+      pod_ready_timeout = 45
+      until (pod_ready == "true" || pod_ready_timeout == 0)
+        pod_ready = pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[2]
+        pod_ready_timeout = pod_ready_timeout - 1
+        if pod_ready_timeout == 0
+          upsert_failed_task("recover_from_node_failure", "✖️  FAILURE: Failed to install reboot daemon")
+        end
+        sleep 1
+        puts "Waiting for reboot daemon to be ready"
+        puts "Reboot Daemon Ready Status: #{pod_ready}"
+      end
 
       # Find Reboot Daemon name
       reboot_daemon_pod = pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[0]
       start_reboot = `kubectl exec -ti #{reboot_daemon_pod} touch /tmp/reboot`
-      status = node_status("#{worker_node}")
 
       #Watch for Node Failure.
       pod_ready = ""
       node_ready = ""
-      until (pod_ready == "false" || node_ready == "False" || node_ready == "Unknown")
+      node_failure_timeout = 30
+      until (pod_ready == "false" || node_ready == "False" || node_ready == "Unknown" || node_failure_timeout == 0)
         pod_ready = pod_status("node-failure").split(",")[2]
         node_ready = node_status("#{worker_node}")
+        puts "Waiting for Node to go offline"
         puts "Pod Ready Status: #{pod_ready}"
         puts "Node Ready Status: #{node_ready}"
-        sleep 0.1
+        node_failure_timeout = node_failure_timeout - 1
+        if node_failure_timeout == 0
+          upsert_failed_task("recover_from_node_failure", "✖️  FAILURE: Node failed to go offline")
+        end
+        sleep 1
       end
 
       #Watch for Node to come back online
       pod_ready = ""
       node_ready = ""
-      until (pod_ready == "true" && node_ready == "True")
+      node_online_timeout = 300
+      until (pod_ready == "true" && node_ready == "True" || node_online_timeout == 0)
         pod_ready = pod_status("node-failure", "").split(",")[2]
         node_ready = node_status("#{worker_node}")
+        puts "Waiting for Node to come back online"
         puts "Pod Ready Status: #{pod_ready}"
         puts "Node Ready Status: #{node_ready}"
-        sleep 0.1
+        node_online_timeout = node_online_timeout - 1
+        if node_online_timeout == 0
+          upsert_failed_task("recover_from_node_failure", "✖️  FAILURE: Node failed to come back online")
+        end
+        sleep 1
       end
-      puts "Debug"
 
+      emoji_chaos_network_loss="📶☠️"
+      resp = upsert_passed_task("recover_from_node_failure","✔️  PASSED: Node came back online #{emoji_chaos_network_loss}")
 
-
-      # emoji_chaos_network_loss="📶☠️"
-      # resp = upsert_passed_task("node_failure","✔️  PASSED: Nodes are resilient #{emoji_chaos_network_loss}")
-
+      delete_reboot_daemon = `kubectl delete -f reboot_daemon_pod.yml`
+      delete_coredns = `#{helm} delete node-failure`
       File.delete("reboot_daemon_pod.yml")
+      File.delete("node_failure_values.yml")
     end
   end
 end

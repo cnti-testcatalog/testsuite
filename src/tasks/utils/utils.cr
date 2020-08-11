@@ -25,6 +25,7 @@ PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
 
 #Embedded global text variables
 EmbeddedFileManager.reboot_daemon
+EmbeddedFileManager.node_failure_values
 
 class LogLevel
   class_property command_line_loglevel : String = ""
