@@ -112,15 +112,18 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
     end
 
     VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
+    emoji_image_size="⚖️👀"
+    emoji_small="🐜"
+    emoji_big="🦖"
 
     # if a sucessfull call and size of container is less than 5gb (5 billion bytes)
     if docker_repository && 
         docker_resp &&
         docker_resp.status_code == 200 && 
         micro_size.to_s.to_i64 < 5_000_000_000
-      upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good")
+      upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good #{emoji_small} #{emoji_image_size}")
     else
-      upsert_failed_task("reasonable_image_size", "✖️  FAILURE: Image size too large")
+      upsert_failed_task("reasonable_image_size", "✖️  FAILURE: Image size too large #{emoji_big} #{emoji_image_size}")
     end
   end
 end
