@@ -14,9 +14,16 @@ describe "Platform" do
     $?.success?.should be_true
   end
   it "'node_failure' should pass if chaos_mesh node_failure tests prove the platform is resilient" do
-    response_s = `./cnf-conformance platform:node_failure poc`
-    LOGGING.info response_s
-    (/(PASSED: Nodes are resilient|Skipped)/ =~ response_s).should_not be_nil
+    if check_destructive
+      puts "Tests running in destructive mode".colorize(:red) 
+      response_s = `./cnf-conformance platform:node_failure poc destructive`
+      LOGGING.info response_s
+      (/(PASSED: Node came back online)/ =~ response_s).should_not be_nil
+    else
+      response_s = `./cnf-conformance platform:node_failure poc`
+      LOGGING.info response_s
+      (/(PASSED: Nodes are resilient|Skipped)/ =~ response_s).should_not be_nil
+    end
   end
 end
 

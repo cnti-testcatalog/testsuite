@@ -278,6 +278,15 @@ def check_poc(args)
   check_wip(args)
 end
 
+def check_destructive
+  toggle("destructive")
+end
+
+def check_destructive(args)
+  LOGGING.info "args.raw #{args.raw}"
+  toggle("destructive") || args.raw.includes?("destructive")
+end
+
 def template_results_yml
   #TODO add tags for category summaries
   YAML.parse <<-END

@@ -29,6 +29,11 @@ crystal build src/cnf-conformance.cr
 crystal src/cnf-conformance.cr all cnf-config=<path_to_your_config_file>/cnf-conformance.yml
 ```
 
+## Running all of the CNF Conformance tests (including proofs of concepts)
+``` 
+crystal src/cnf-conformance.cr all poc cnf-config=<path_to_your_config_file>/cnf-conformance.yml
+```
+
 ## Logging 
 
 ```
@@ -323,13 +328,23 @@ crystal src/cnf-conformance.cr chaos_container_kill
 ```
 
 ## Platform Tests
-#### (PoC) Run all platform tests
+#### Run all platform tests
 ```
 crystal src/cnf-conformance.cr platform
 ```
-#### (PoC) Run the K8s conformance tests
+#### Run the K8s conformance tests
 ```
 crystal src/cnf-conformance.cr k8s_conformance
+```
+#### (PoC) Run All platform resilience tests 
+```
+crystal src/cnf-conformance.cr resilience poc
+
+```
+#### (PoC) Run node failure test **warning** this is a destructive test and will reboot your *host* node!
+#### Don't run this unless you have completely separate cluster (e.g. you are not running KIND on a dev box)
+```
+crystal src/cnf-conformance.cr node_failure poc destructive
 ```
 
 

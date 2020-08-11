@@ -14,12 +14,12 @@ namespace "platform" do
 
   desc "Does the Platform recover the node and reschedule pods when a worker node fails"
   task "node_failure" do |_, args|
-    unless check_poc(args)
-      LOGGING.info "skipping node_failure"
+    unless check_poc(args) && check_destructive(args)
+      LOGGING.info "skipping node_failure: not in POC and destructive mode"
       puts "Skipped".colorize(:yellow)
       next
     end
-    LOGGING.info "Running POC"
+    LOGGING.info "Running POC in destructive mode!"
     task_response = task_runner(args) do |args|
       current_dir = FileUtils.pwd 
       helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
@@ -40,62 +40,70 @@ namespace "platform" do
 
       pod_ready = ""
       pod_ready_timeout = 45
-      until (pod_ready == "true" || pod_ready_timeout == 0)
-        pod_ready = pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[2]
-        pod_ready_timeout = pod_ready_timeout - 1
-        if pod_ready_timeout == 0
-          upsert_failed_task("recover_from_node_failure", "✖️  FAILURE: Failed to install reboot daemon")
+      begin
+        until (pod_ready == "true" || pod_ready_timeout == 0)
+          pod_ready = pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[2]
+          pod_ready_timeout = pod_ready_timeout - 1
+          if pod_ready_timeout == 0
+            upsert_failed_task("recover_from_node_failure", "✖️  FAILURE: Failed to install reboot daemon")
+            exit 1
+          end
+          sleep 1
+          puts "Waiting for reboot daemon to be ready"
+          puts "Reboot Daemon Ready Status: #{pod_ready}"
         end
-        sleep 1
-        puts "Waiting for reboot daemon to be ready"
-        puts "Reboot Daemon Ready Status: #{pod_ready}"
-      end
 
-      # Find Reboot Daemon name
-      reboot_daemon_pod = pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[0]
-      start_reboot = `kubectl exec -ti #{reboot_daemon_pod} touch /tmp/reboot`
+        # Find Reboot Daemon name
+        reboot_daemon_pod = pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[0]
+        start_reboot = `kubectl exec -ti #{reboot_daemon_pod} touch /tmp/reboot`
 
-      #Watch for Node Failure.
-      pod_ready = ""
-      node_ready = ""
-      node_failure_timeout = 30
-      until (pod_ready == "false" || node_ready == "False" || node_ready == "Unknown" || node_failure_timeout == 0)
-        pod_ready = pod_status("node-failure").split(",")[2]
-        node_ready = node_status("#{worker_node}")
-        puts "Waiting for Node to go offline"
-        puts "Pod Ready Status: #{pod_ready}"
-        puts "Node Ready Status: #{node_ready}"
-        node_failure_timeout = node_failure_timeout - 1
-        if node_failure_timeout == 0
-          upsert_failed_task("recover_from_node_failure", "✖️  FAILURE: Node failed to go offline")
+        #Watch for Node Failure.
+        pod_ready = ""
+        node_ready = ""
+        node_failure_timeout = 30
+        until (pod_ready == "false" || node_ready == "False" || node_ready == "Unknown" || node_failure_timeout == 0)
+          pod_ready = pod_status("node-failure").split(",")[2]
+          node_ready = node_status("#{worker_node}")
+          puts "Waiting for Node to go offline"
+          puts "Pod Ready Status: #{pod_ready}"
+          puts "Node Ready Status: #{node_ready}"
+          node_failure_timeout = node_failure_timeout - 1
+          if node_failure_timeout == 0
+            upsert_failed_task("recover_from_node_failure", "✖️  FAILURE: Node failed to go offline")
+            exit 1
+          end
+          sleep 1
         end
-        sleep 1
-      end
 
-      #Watch for Node to come back online
-      pod_ready = ""
-      node_ready = ""
-      node_online_timeout = 300
-      until (pod_ready == "true" && node_ready == "True" || node_online_timeout == 0)
-        pod_ready = pod_status("node-failure", "").split(",")[2]
-        node_ready = node_status("#{worker_node}")
-        puts "Waiting for Node to come back online"
-        puts "Pod Ready Status: #{pod_ready}"
-        puts "Node Ready Status: #{node_ready}"
-        node_online_timeout = node_online_timeout - 1
-        if node_online_timeout == 0
-          upsert_failed_task("recover_from_node_failure", "✖️  FAILURE: Node failed to come back online")
+        #Watch for Node to come back online
+        pod_ready = ""
+        node_ready = ""
+        node_online_timeout = 300
+        until (pod_ready == "true" && node_ready == "True" || node_online_timeout == 0)
+          pod_ready = pod_status("node-failure", "").split(",")[2]
+          node_ready = node_status("#{worker_node}")
+          puts "Waiting for Node to come back online"
+          puts "Pod Ready Status: #{pod_ready}"
+          puts "Node Ready Status: #{node_ready}"
+          node_online_timeout = node_online_timeout - 1
+          if node_online_timeout == 0
+            upsert_failed_task("recover_from_node_failure", "✖️  FAILURE: Node failed to come back online")
+            exit 1
+          end
+          sleep 1
         end
-        sleep 1
+
+        emoji_chaos_network_loss="📶☠️"
+        resp = upsert_passed_task("recover_from_node_failure","✔️  PASSED: Node came back online #{emoji_chaos_network_loss}")
+
+
+      ensure
+        LOGGING.info "node_failure cleanup"
+        delete_reboot_daemon = `kubectl delete -f reboot_daemon_pod.yml`
+        delete_coredns = `#{helm} delete node-failure`
+        File.delete("reboot_daemon_pod.yml")
+        File.delete("node_failure_values.yml")
       end
-
-      emoji_chaos_network_loss="📶☠️"
-      resp = upsert_passed_task("recover_from_node_failure","✔️  PASSED: Node came back online #{emoji_chaos_network_loss}")
-
-      delete_reboot_daemon = `kubectl delete -f reboot_daemon_pod.yml`
-      delete_coredns = `#{helm} delete node-failure`
-      File.delete("reboot_daemon_pod.yml")
-      File.delete("node_failure_values.yml")
     end
   end
 end
