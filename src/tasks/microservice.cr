@@ -66,10 +66,12 @@ task "reasonable_startup_time" do |_, args|
     VERBOSE_LOGGING.debug "installed? #{is_kubectl_applied}" if check_verbose(args)
     VERBOSE_LOGGING.debug "deployed? #{is_kubectl_deployed}" if check_verbose(args)
 
+    emoji_fast="🚀"
+    emoji_slow="🐢"
     if is_kubectl_applied && is_kubectl_deployed && elapsed_time.seconds < 30
-      upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time 🚀")
+      upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time #{emoji_fast}")
     else
-      upsert_failed_task("reasonable_startup_time", "✖️  FAILURE: CNF had a startup time of #{elapsed_time.seconds} seconds 🐢")
+      upsert_failed_task("reasonable_startup_time", "✖️  FAILURE: CNF had a startup time of #{elapsed_time.seconds} seconds #{emoji_slow}")
     end
 
     delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
@@ -110,15 +112,18 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
     end
 
     VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
+    emoji_image_size="⚖️👀"
+    emoji_small="🐜"
+    emoji_big="🦖"
 
     # if a sucessfull call and size of container is less than 5gb (5 billion bytes)
     if docker_repository && 
         docker_resp &&
         docker_resp.status_code == 200 && 
         micro_size.to_s.to_i64 < 5_000_000_000
-      upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good")
+      upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good #{emoji_small} #{emoji_image_size}")
     else
-      upsert_failed_task("reasonable_image_size", "✖️  FAILURE: Image size too large")
+      upsert_failed_task("reasonable_image_size", "✖️  FAILURE: Image size too large #{emoji_big} #{emoji_image_size}")
     end
   end
 end

@@ -4,6 +4,8 @@ require "colorize"
 require "crinja"
 require "./utils/utils.cr"
 
+CHAOS_MESH_VERSION = "v0.8.0"
+
 desc "The CNF conformance suite checks to see if the CNFs are resilient to failures."
 task "resilience", ["chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill" ] do |t, args|
   VERBOSE_LOGGING.info "resilience" if check_verbose(args)
@@ -11,7 +13,6 @@ task "resilience", ["chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill
   VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
   stdout_score("resilience")
 end
-
 
 desc "Does the CNF crash when network loss occurs"
 task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
