@@ -33,15 +33,23 @@ describe "ReleaseManager" do
   end
 
   it "'#ReleaseManager::GithubReleaseManager.github_releases' should return the existing releases", tags: "release"  do
-    (ReleaseManager::GithubReleaseManager.github_releases.size).should be > 0
+    if ENV["GITHUB_USER"]?.nil?
+      puts "Warning: Set GITHUB_USER and GITHUB_TOKEN to activate release manager tests!".colorize(:red) 
+    else 
+      ((ReleaseManager::GithubReleaseManager.github_releases.size) > 0).should be_true
+    end
   end
 
   it "'#ReleaseManager::GithubReleaseManager.upsert_release' should return the upserted release and asset response", tags: "release"  do
-    found_release, asset = ReleaseManager::GithubReleaseManager.upsert_release("test_version")
-    if asset
-      (asset["errors"]?==nil || (asset["errors"]? && asset["errors"][0]["code"]  == "already_exists")).should be_truthy
-    else
-      (asset).should_not be_nil
+    if ENV["GITHUB_USER"]?.nil?
+      puts "Warning: Set GITHUB_USER and GITHUB_TOKEN to activate release manager tests!".colorize(:red) 
+    else 
+      found_release, asset = ReleaseManager::GithubReleaseManager.upsert_release("test_version")
+      if asset
+        (asset["errors"]?==nil || (asset["errors"]? && asset["errors"][0]["code"]  == "already_exists")).should be_truthy
+      else
+        (asset).should_not be_nil
+      end
     end
   end
 
@@ -51,9 +59,13 @@ describe "ReleaseManager" do
   end
 
   it "'#ReleaseManager::GithubReleaseManager.delete_release' should delete the release from the found_id", tags: "release"  do
-    found_release, asset = ReleaseManager::GithubReleaseManager.upsert_release("test_version")
-    resp_code = ReleaseManager::GithubReleaseManager.delete_release("test_version")
-    (resp_code == 204).should be_truthy
+    if ENV["GITHUB_USER"]?.nil?
+      puts "Warning: Set GITHUB_USER and GITHUB_TOKEN to activate release manager tests!".colorize(:red) 
+    else 
+      found_release, asset = ReleaseManager::GithubReleaseManager.upsert_release("test_version")
+      resp_code = ReleaseManager::GithubReleaseManager.delete_release("test_version")
+      (resp_code == 204).should be_truthy
+    end
   end
   it "'#ReleaseManager.detached_head?' should return if the head is detached", tags: "release"  do
     (ReleaseManager.detached_head?).should_not be_nil
@@ -66,14 +78,22 @@ describe "ReleaseManager" do
   end
 
   it "'#ReleaseManager.latest_release' should return latest release", tags: "release"  do
-    issues = ReleaseManager.latest_release
-    # https://github.com/semver/semver/blob/master/semver.md#is-v123-a-semantic-version
-    (issues.match(/^(.|)(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/)).should_not be_nil
+    if ENV["GITHUB_USER"]?.nil?
+      puts "Warning: Set GITHUB_USER and GITHUB_TOKEN to activate release manager tests!".colorize(:red) 
+    else 
+      issues = ReleaseManager.latest_release
+      # https://github.com/semver/semver/blob/master/semver.md#is-v123-a-semantic-version
+      (issues.match(/^(.|)(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/)).should_not be_nil
+    end
   end
 
   it "'#ReleaseManager.issue_title' should return issue title", tags: "release"  do
-    issues = ReleaseManager.issue_title("#318")
-    (issues.match(/#206 documentation update/)).should_not be_nil
+    if ENV["GITHUB_USER"]?.nil?
+      puts "Warning: Set GITHUB_USER and GITHUB_TOKEN to activate release manager tests!".colorize(:red) 
+    else 
+      issues = ReleaseManager.issue_title("#318")
+      (issues.match(/#206 documentation update/)).should_not be_nil
+    end
   end
 
 end
