@@ -48,9 +48,10 @@ end
 def wait_for_install(deployment_name, wait_count=180, namespace="default")
   second_count = 0
   all_deployments = `kubectl get deployments --namespace=#{namespace}`
+  desired_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.replicas}'`
   current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
   LOGGING.info(all_deployments)
-  until (current_replicas.empty? != true && current_replicas.to_i > 0) || second_count > wait_count.to_i
+  until (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i) || second_count > wait_count.to_i
     LOGGING.info("second_count = #{second_count}")
     sleep 1
     all_deployments = `kubectl get deployments --namespace=#{namespace}`
