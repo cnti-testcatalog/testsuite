@@ -26,14 +26,12 @@ PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
 def log_formatter
   Log::Formatter.new do |entry, io|
     progname = "cnf-conformance"
-    label = entry.severity.none? ? "ANY" : entry.severity.to_s
+    label = entry.severity.none? ? "ANY" : entry.severity.to_s.upcase
     msg = entry.source.empty? ? "#{progname}: #{entry.message}" : "#{progname}-#{entry.source}: #{entry.message}"
     io << label[0] << ", [" << entry.timestamp << " #" << Process.pid << "] "
     io << label.rjust(5) << " -- " << msg
   end
 end
-
-Log.setup(loglevel, Log::IOBackend.new(formatter: log_formatter))
 
 class LogLevel
   class_property command_line_loglevel : String = ""
@@ -41,9 +39,16 @@ end
 
 OptionParser.parse do |parser|
   parser.banner = "Usage: cnf-conformance [arguments]"
-  parser.on("-l LEVEL", "--loglevel=LEVEL", "Specifies the logging level for cnf-conformance suite") { |level| LogLevel.command_line_loglevel = level }
+  parser.on("-l LEVEL", "--loglevel=LEVEL", "Specifies the logging level for cnf-conformance suite") do |level|
+    LogLevel.command_line_loglevel = level
+  end
   parser.on("-h", "--help", "Show this help") { puts parser }
 end
+
+# this first line necessary to make sure our custom formatter
+# is used in the default error log line also
+Log.setup(Log::Severity::Error, Log::IOBackend.new(formatter: log_formatter))
+Log.setup(loglevel, Log::IOBackend.new(formatter: log_formatter))
 
 def loglevel
   levelstr = "" # default to unset
