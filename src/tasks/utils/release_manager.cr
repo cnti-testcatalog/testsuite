@@ -1,7 +1,6 @@
 require "totem"
 require "colorize"
 require "./sample_utils.cr"
-require "logger"
 require "halite"
 
 module ReleaseManager 
