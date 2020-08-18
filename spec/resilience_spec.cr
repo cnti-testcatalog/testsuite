@@ -7,10 +7,6 @@ require "sam"
 
 describe "Resilience" do
   before_all do
-    # `./cnf-conformance samples_cleanup force=true`
-    # $?.success?.should be_true
-    `./cnf-conformance uninstall_chaosmesh`
-    $?.success?.should be_true
     `./cnf-conformance configuration_file_setup`
     $?.success?.should be_true
   end
