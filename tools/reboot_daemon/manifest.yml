@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: reboot
+spec:
+  selector:
+    matchLabels:
+      name: reboot
+  template:
+    metadata:
+      labels:
+        name: reboot
+    spec:
+      containers:
+        - name: reboot
+          image: conformance/reboot_daemon:latest
+          command: ["/entrypoint.sh"]
+          volumeMounts:
+          - mountPath: /sysrq
+            name: sysrq-volume
+      volumes:
+      -  name: sysrq-volume
+         hostPath:
+           path: /proc/sysrq-trigger

@@ -73,7 +73,7 @@ The CNF Conformance program enables interoperability of CNFs from multiple vendo
 
 ## Resilience Tests 
 [Cloud Native Definition](https://github.com/cncf/toc/blob/master/DEFINITION.md) requires systems to be Resilient to failures inevitable in cloud environments. CNF Resilience should be tested to ensure CNFs are designed to deal with non-carrier-grade shared cloud HW/SW platform:
-* For full failures in SW and HW platform: stopped cloud infrastructure/platform services, workload microservices or HW ingredients
+* For full failures in SW and HW platform: stopped cloud infrastructure/platform services, workload microservices or HW ingredients and nodes
 * For bursty, regular or partial impairments on key dependencies: CPU cycles by pausing, limiting or overloading; DPDK-based Dataplane networking by dropping and/or delaying packets.
 * Test if the CNF crashes when network loss occurs (Network Chaos)
 
