@@ -9,6 +9,8 @@ describe "Resilience" do
   before_all do
     # `./cnf-conformance samples_cleanup force=true`
     # $?.success?.should be_true
+    `./cnf-conformance uninstall_chaosmesh`
+    $?.success?.should be_true
     `./cnf-conformance configuration_file_setup`
     $?.success?.should be_true
   end
@@ -18,6 +20,7 @@ describe "Resilience" do
       `./cnf-conformance cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
       $?.success?.should be_true
       response_s = `./cnf-conformance chaos_container_kill verbose`
+      LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: Replicas available match desired count after container kill test/ =~ response_s).should_not be_nil
     ensure
@@ -31,6 +34,7 @@ describe "Resilience" do
       `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-fragile-state deploy_with_chart=false`
       $?.success?.should be_true
       response_s = `./cnf-conformance chaos_container_kill verbose`
+      LOGGING.info response_s
       $?.success?.should be_true
       (/FAILURE: Replicas did not return desired count after container kill test/ =~ response_s).should_not be_nil
     ensure
@@ -44,6 +48,7 @@ describe "Resilience" do
       `./cnf-conformance cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
       $?.success?.should be_true
       response_s = `./cnf-conformance chaos_network_loss verbose`
+      LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: Replicas available match desired count after network chaos test/ =~ response_s).should_not be_nil
     ensure
@@ -57,6 +62,7 @@ describe "Resilience" do
       `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample_network_loss deploy_with_chart=false`
       $?.success?.should be_true
       response_s = `./cnf-conformance chaos_network_loss verbose`
+      LOGGING.info response_s
       $?.success?.should be_true
       (/FAILURE: Replicas did not return desired count after network chaos test/ =~ response_s).should_not be_nil
     ensure
@@ -70,6 +76,7 @@ describe "Resilience" do
       `./cnf-conformance cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
       $?.success?.should be_true
       response_s = `./cnf-conformance chaos_cpu_hog verbose`
+      LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: Application pod is healthy after high CPU consumption/ =~ response_s).should_not be_nil
     ensure
