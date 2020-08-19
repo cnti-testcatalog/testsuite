@@ -10,8 +10,6 @@ describe "Platform" do
     $?.success?.should be_true
     `./cnf-conformance setup`
     $?.success?.should be_true
-    `./cnf-conformance sample_coredns_with_wait_setup`
-    $?.success?.should be_true
   end
   it "'oci_compliant' should pass if all runtimes are oci_compliant" do
       response_s = `./cnf-conformance platform:oci_compliant`
