@@ -333,11 +333,11 @@ crystal src/cnf-conformance.cr chaos_container_kill
 ```
 
 ## Platform Tests
-#### Run all platform tests
+####  :heavy_check_mark: Run all platform tests
 ```
 crystal src/cnf-conformance.cr platform
 ```
-#### Run the K8s conformance tests
+####  :heavy_check_mark: Run the K8s conformance tests
 ```
 crystal src/cnf-conformance.cr k8s_conformance
 ```
@@ -351,7 +351,7 @@ crystal src/cnf-conformance.cr platform:resilience poc
 ```
 crystal src/cnf-conformance.cr node_failure poc destructive
 ```
-#### Run runtime compliance test
+#### :heavy_check_mark: Run runtime compliance test
 ```
 crystal src/cnf-conformance.cr platform:oci_compliant
 
