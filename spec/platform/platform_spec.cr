@@ -12,6 +12,13 @@ describe "Platform" do
     `./cnf-conformance sample_coredns_with_wait_setup`
     $?.success?.should be_true
   end
+  it "'platform:*' should not error out when no cnf is installed" do
+    response_s = `./cnf-conformance cleanup`
+    response_s = `./cnf-conformance platform:oci_compliant`
+    LOGGING.info response_s
+    puts response_s
+    (/No cnf_conformance.yml found/ =~ response_s).should be_nil
+  end
   it "'k8s_conformance' should pass if the sonobuoy tests pass" do
     response_s = `./cnf-conformance k8s_conformance`
     LOGGING.info response_s

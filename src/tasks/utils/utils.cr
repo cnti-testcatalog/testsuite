@@ -224,13 +224,16 @@ end
 
 # TODO give example for calling
 def all_cnfs_task_runner(args, &block : Sam::Args -> String | Colorize::Object(String) | Nil)
-  # LOGGING.info("all_cnfs_task_runner cnf_config_list: #{cnf_config_list.inspect}")
-  cnf_config_list.map do |x|
-    # LOGGING.info("all_cnfs_task_runner config_list x: #{x}")
-    new_args = Sam::Args.new(args.named, args.raw)
-    new_args.named["cnf-config"] = x
-    # LOGGING.info("all_cnfs_task_runner new_args: #{new_args.inspect}")
-    single_task_runner(new_args, &block)
+
+  # Platforms tests dont have any cnfs
+  if cnf_config_list(silent: true).size == 0
+    single_task_runner(args, &block)
+  else
+    cnf_config_list(silent: true).map do |x|
+      new_args = Sam::Args.new(args.named, args.raw)
+      new_args.named["cnf-config"] = x
+      single_task_runner(new_args, &block)
+    end
   end
 end
 
