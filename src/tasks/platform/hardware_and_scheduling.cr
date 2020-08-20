@@ -9,7 +9,7 @@ namespace "platform" do
     VERBOSE_LOGGING.info "hardware_and_scheduling" if check_verbose(args)
     VERBOSE_LOGGING.debug "hardware_and_scheduling args.raw: #{args.raw}" if check_verbose(args)
     VERBOSE_LOGGING.debug "hardware_and_scheduling args.named: #{args.named}" if check_verbose(args)
-    stdout_score("resilience")
+    stdout_score("platform:hardware_and_scheduling")
   end
 
   desc "Does the Platform use a runtime that is oci compliant"

@@ -1,6 +1,7 @@
 desc "Platform Tests"
-task "platform", ["k8s_conformance"]  do |_, args|
+task "platform", ["k8s_conformance", "platform:resilience", "platform:hardware_and_scheduling"]  do |_, args|
   VERBOSE_LOGGING.info "platform" if check_verbose(args)
+  stdout_score("platform")
 end
 
 desc "Does the platform pass the K8s conformance tests?"
@@ -21,11 +22,11 @@ task "k8s_conformance" do |_, args|
     #TODO when in test mode --mode quick, prod mode no quick
     testrun = ""
     VERBOSE_LOGGING.info ENV["CRYSTAL_ENV"]? if check_verbose(args)
-    if ENV["CRYSTAL_ENV"]? == "TEST"
+    # if ENV["CRYSTAL_ENV"]? == "TEST"
       testrun = `#{sonobuoy} run --wait --mode quick`
-    else
-      testrun = `#{sonobuoy} run --wait`
-    end
+    # else
+    #   testrun = `#{sonobuoy} run --wait`
+    # end
     VERBOSE_LOGGING.info testrun if check_verbose(args)
 
     results = `results=$(#{sonobuoy} retrieve); #{sonobuoy} results $results` 
