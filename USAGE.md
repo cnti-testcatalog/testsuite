@@ -333,17 +333,17 @@ crystal src/cnf-conformance.cr chaos_container_kill
 ```
 
 ## Platform Tests
-#### Run all platform tests
+####  :heavy_check_mark: Run all platform tests
 ```
 crystal src/cnf-conformance.cr platform
 ```
-#### Run the K8s conformance tests
+####  :heavy_check_mark: Run the K8s conformance tests
 ```
 crystal src/cnf-conformance.cr k8s_conformance
 ```
 #### (PoC) Run All platform resilience tests 
 ```
-crystal src/cnf-conformance.cr resilience poc
+crystal src/cnf-conformance.cr platform:resilience poc
 
 ```
 #### (PoC) Run node failure test **warning** this is a destructive test and will reboot your *host* node!
@@ -351,5 +351,9 @@ crystal src/cnf-conformance.cr resilience poc
 ```
 crystal src/cnf-conformance.cr node_failure poc destructive
 ```
+#### :heavy_check_mark: Run runtime compliance test
+```
+crystal src/cnf-conformance.cr platform:oci_compliant
 
+```
 
