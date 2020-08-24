@@ -43,7 +43,7 @@ def helm_installation(verbose=false)
 end 
 
 def helm_global_response(verbose=false)
-  helm_response = `helm version`
+  helm_response = `helm version 2>/dev/null`
   VERBOSE_LOGGING.info helm_response if verbose
   helm_response 
 end
