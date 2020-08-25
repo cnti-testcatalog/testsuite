@@ -78,7 +78,7 @@ _NOTE: Does not handle manually deployed CNFs_
 # Source Install
 
 ## Installation
-  * Install [crystal-lang](https://crystal-lang.org/install/) version 0.34.0
+  * Install [crystal-lang](https://crystal-lang.org/install/) version 0.35.1
   * Install the project's crystal dependencies
   ```
   shards install

@@ -48,9 +48,10 @@ end
 def wait_for_install(deployment_name, wait_count=180, namespace="default")
   second_count = 0
   all_deployments = `kubectl get deployments --namespace=#{namespace}`
+  desired_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.replicas}'`
   current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
   LOGGING.info(all_deployments)
-  until (current_replicas.empty? != true && current_replicas.to_i > 0) || second_count > wait_count.to_i
+  until (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i) || second_count > wait_count.to_i
     LOGGING.info("second_count = #{second_count}")
     sleep 1
     all_deployments = `kubectl get deployments --namespace=#{namespace}`
@@ -59,6 +60,61 @@ def wait_for_install(deployment_name, wait_count=180, namespace="default")
     second_count = second_count + 1 
   end
 end 
+
+def pod_status(pod_name_prefix, field_selector="", namespace="default")
+  all_pods = `kubectl get pods #{field_selector} -o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}'`.split(",")
+
+  LOGGING.info(all_pods)
+  all_pod_names = all_pods[0].split(" ")
+  time_stamps = all_pods[1].split(" ")
+  pods_times = all_pod_names.map_with_index do |name, i|
+    {:name => name, :time => time_stamps[i]}
+  end
+  LOGGING.info("pods_times: #{pods_times}")
+
+  # puts "Name: #{all_pods[0]}"
+  # puts "Time Stamp: #{all_pods[1]}"
+  latest_pod_time = pods_times.reduce() do | acc, i |
+    # if current i > acc
+    LOGGING.info("ACC: #{acc}")
+    LOGGING.info("I:#{i}")
+    LOGGING.info("pod_name_prefix: #{pod_name_prefix}")
+    if (acc[:name] =~ /#{pod_name_prefix}/).nil?
+      acc = {:name => "not found", :time => "not_found"} 
+    end
+    if i[:name] =~ /#{pod_name_prefix}/
+      acc = i
+      if acc == ""
+        existing_time = Time.parse!( "#{i[:time]} +00:00", "%Y-%m-%dT%H:%M:%SZ %z")
+      else
+        existing_time = Time.parse!( "#{acc[:time]} +00:00", "%Y-%m-%dT%H:%M:%SZ %z")
+      end
+      new_time = Time.parse!( "#{i[:time]} +00:00", "%Y-%m-%dT%H:%M:%SZ %z")
+      if new_time <= existing_time
+        acc = i
+      else
+        acc
+      end
+    else
+      acc
+    end
+  end
+  LOGGING.info("latest_pod_time: #{latest_pod_time}")
+
+  pod = latest_pod_time[:name].not_nil!
+ # pod = all_pod_names[time_stamps.index(latest_time).not_nil!]
+  # pod = all_pods.select{ | x | x =~ /#{pod_name_prefix}/ }
+  puts "Pods Found: #{pod}"
+  status = `kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}'`
+  status
+end
+
+def node_status(node_name)
+  all_nodes = `kubectl get nodes -o jsonpath='{.items[*].metadata.name}'`
+  LOGGING.info(all_nodes)
+  status = `kubectl get nodes #{node_name} -o jsonpath='{.status.conditions[?(@.type == "Ready")].status}'`
+  status
+end
 
 def path_has_yml?(config_path)
   if config_path =~ /\.yml/  
