@@ -362,7 +362,7 @@ crystal src/cnf-conformance.cr platform:resilience poc
 #### (PoC) Run node failure test **warning** this is a destructive test and will reboot your *host* node!
 #### Don't run this unless you have completely separate cluster (e.g. you are not running KIND on a dev box)
 ```
-crystal src/cnf-conformance.cr node_failure poc destructive
+crystal src/cnf-conformance.cr platform:node_failure poc destructive
 ```
 #### :heavy_check_mark: Run runtime compliance test
 ```
