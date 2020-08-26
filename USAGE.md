@@ -73,7 +73,20 @@ crystal bin/ameba.cr
 crystal src/cnf-conformance.cr help 
 ```
 
+
+## Install Tab Completion
+
+NOTE: also compatible with the styles from kubectl completion install if you prefer
+https://kubernetes.io/docs/tasks/tools/install-kubectl/#enable-kubectl-autocompletion
+
+``` 
+./cnf-conformance completion -l error > test.sh
+source test.sh
+```
+
+
 ## Compatibility Tests
+
 #### :heavy_check_mark: To run all of the compatibility tests
 ```
 crystal src/cnf-conformance.cr compatibility
