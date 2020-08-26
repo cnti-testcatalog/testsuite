@@ -5,7 +5,7 @@ require "../utils/utils.cr"
 
 namespace "platform" do
   desc "The CNF conformance suite checks to see if the CNFs are resilient to failures."
-  task "resilience", ["node_failure"] do |t, args|
+  task "resilience", ["worker_reboot_recovery"] do |t, args|
     VERBOSE_LOGGING.info "resilience" if check_verbose(args)
     VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
     VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
@@ -13,9 +13,9 @@ namespace "platform" do
   end
 
   desc "Does the Platform recover the node and reschedule pods when a worker node fails"
-  task "node_failure" do |_, args|
-    unless check_poc(args) && check_destructive(args)
-      LOGGING.info "skipping node_failure: not in POC and destructive mode"
+  task "worker_reboot_recovery" do |_, args|
+    unless check_destructive(args)
+      LOGGING.info "skipping node_failure: not in destructive mode"
       puts "Skipped".colorize(:yellow)
       next
     end
@@ -45,7 +45,7 @@ namespace "platform" do
           pod_ready = pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[2]
           pod_ready_timeout = pod_ready_timeout - 1
           if pod_ready_timeout == 0
-            upsert_failed_task("recover_from_node_failure", "✖️  FAILURE: Failed to install reboot daemon")
+            upsert_failed_task("worker_reboot_recovery", "✖️  FAILURE: Failed to install reboot daemon")
             exit 1
           end
           sleep 1
@@ -69,7 +69,7 @@ namespace "platform" do
           puts "Node Ready Status: #{node_ready}"
           node_failure_timeout = node_failure_timeout - 1
           if node_failure_timeout == 0
-            upsert_failed_task("recover_from_node_failure", "✖️  FAILURE: Node failed to go offline")
+            upsert_failed_task("worker_reboot_recovery", "✖️  FAILURE: Node failed to go offline")
             exit 1
           end
           sleep 1
@@ -87,14 +87,14 @@ namespace "platform" do
           puts "Node Ready Status: #{node_ready}"
           node_online_timeout = node_online_timeout - 1
           if node_online_timeout == 0
-            upsert_failed_task("recover_from_node_failure", "✖️  FAILURE: Node failed to come back online")
+            upsert_failed_task("worker_reboot_recovery", "✖️  FAILURE: Node failed to come back online")
             exit 1
           end
           sleep 1
         end
 
-        emoji_chaos_network_loss="📶☠️"
-        resp = upsert_passed_task("recover_from_node_failure","✔️  PASSED: Node came back online #{emoji_chaos_network_loss}")
+        emoji_worker_reboot_recovery=""
+        resp = upsert_passed_task("worker_reboot_recovery","✔️  PASSED: Node came back online #{emoji_worker_reboot_recovery}")
 
 
       ensure

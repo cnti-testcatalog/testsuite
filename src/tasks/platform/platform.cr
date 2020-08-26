@@ -1,5 +1,6 @@
+# coding: utf-8
 desc "Platform Tests"
-task "platform", ["k8s_conformance"]  do |_, args|
+task "platform", ["k8s_conformance", "platform:resilience", "platform:hardware_and_scheduling"]  do |_, args|
   VERBOSE_LOGGING.info "platform" if check_verbose(args)
 end
 
@@ -22,8 +23,10 @@ task "k8s_conformance" do |_, args|
     testrun = ""
     VERBOSE_LOGGING.info ENV["CRYSTAL_ENV"]? if check_verbose(args)
     if ENV["CRYSTAL_ENV"]? == "TEST"
+      LOGGING.info("Running Sonobuoy using Quick Mode")
       testrun = `#{sonobuoy} run --wait --mode quick`
     else
+      LOGGING.info("Running Sonobuoy Conformance")
       testrun = `#{sonobuoy} run --wait`
     end
     VERBOSE_LOGGING.info testrun if check_verbose(args)

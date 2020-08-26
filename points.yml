@@ -111,7 +111,7 @@
 #   tags: platform, dynamic
 # - name: node_failure 
 #   tags: platform, dynamic
-# - name: recover_from_node_failure 
-#   tags: platform, dynamic
+- name: worker_reboot_recovery 
+  tags: platform, dynamic
 - name: oci_compliant
   tags: platform, dynamic
