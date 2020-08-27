@@ -17,18 +17,14 @@ aka CNF Developer Installation Guide
 
 
 
-# Install
+# Installation
 
 We fully support 2 methods of installing the conformance suite
 
 - Via the latest [binary release](#Binary release install instructions)
 - and also [from the source](#source Install) on github
 
-**Finally:** please make sure to run the `setup` command after finishing your preferred installation method pls *or you are going to have a bad time*.
-
-also we even have (experimental) support for [tab completion!](USAGE.md# Install Tab Completion)
-
-
+**Finally:** please make sure to run the `setup` command after finishing your preferred installation method please *or you are going to have a bad time*.
 
 ## Binary release install instructions
 
@@ -52,17 +48,9 @@ curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.
 
 
 
-#### Post Install
+### Manual Steps (optional):
 
-once installed please follow the [setup](#Setup) instructions below while taking care to replace references
-
- to `crystal src/cnf-conformance.cr`
-
-with `cnf-conformance`
-
-
-
-### Manual Steps:
+(**only** if you do not want to do the curl install)
 
 - Download the latest [binary release](https://github.com/cncf/cnf-conformance/releases) i.e via `wget`
 - Make the binary executable (eg. `chmod +x cnf-conformance`)
@@ -70,13 +58,27 @@ with `cnf-conformance`
 
 
 
-#### Post Install
+### Post Install
 
 once installed please follow the [setup](#Setup) instructions below while taking care to replace references
 
  to `crystal src/cnf-conformance.cr`
 
 with `cnf-conformance`
+
+
+
+#### Install tab completion (optional)
+
+Check out our (experimental) support for tab completion!
+
+NOTE: also compatible with the installation styles from kubectl completion install if you prefer
+https://kubernetes.io/docs/tasks/tools/install-kubectl/#enable-kubectl-autocompletion
+
+``` 
+./cnf-conformance completion -l error > test.sh
+source test.sh
+```
 
 
 
