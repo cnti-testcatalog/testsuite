@@ -101,6 +101,6 @@
 - name: node_failure 
   tags: platform, dynamic
 - name: recover_from_node_failure 
-  tags: platform, dynamic
+  tags: platform, platform:resilience, dynamic
 - name: oci_compliant
-  tags: platform, dynamic
+  tags: platform, platform:hardware_and_scheduling, dynamic
