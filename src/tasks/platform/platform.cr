@@ -2,6 +2,7 @@
 desc "Platform Tests"
 task "platform", ["k8s_conformance", "platform:resilience", "platform:hardware_and_scheduling"]  do |_, args|
   VERBOSE_LOGGING.info "platform" if check_verbose(args)
+  stdout_score("platform")
 end
 
 desc "Does the platform pass the K8s conformance tests?"

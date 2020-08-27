@@ -107,11 +107,9 @@
 #- name: performance
 #  tags: hardware, dynamic
 
-# - name: k8s_conformance
-#   tags: platform, dynamic
-# - name: node_failure 
-#   tags: platform, dynamic
+- name: k8s_conformance
+  tags: platform, dynamic
 - name: worker_reboot_recovery 
-  tags: platform, dynamic
+  tags: platform, platform:resilience, dynamic
 - name: oci_compliant
-  tags: platform, dynamic
+  tags: platform, platform:hardware_and_scheduling, dynamic

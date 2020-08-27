@@ -9,7 +9,7 @@ namespace "platform" do
     VERBOSE_LOGGING.info "resilience" if check_verbose(args)
     VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
     VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
-    stdout_score("resilience")
+    stdout_score("platform:resilience")
   end
 
   desc "Does the Platform recover the node and reschedule pods when a worker node fails"

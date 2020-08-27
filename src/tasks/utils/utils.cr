@@ -521,7 +521,8 @@ end
 
 def all_task_test_names
   result_items = points_yml.reduce([] of String) do |acc, x|
-    if x["name"].as_s == "default_scoring"
+    if x["name"].as_s == "default_scoring" ||
+        x["tags"].as_s.split(",").find{|x|x=="platform"}
       acc
     else
       acc << x["name"].as_s
@@ -585,7 +586,7 @@ end
 
 def stdout_score(test_name)
   total = total_points(test_name)
-  pretty_test_name = test_name.split("_").map(&.capitalize).join(" ")
+  pretty_test_name = test_name.split(/:|_/).map(&.capitalize).join(" ")
   test_log_msg = "#{pretty_test_name} final score: #{total} of #{total_max_points(test_name)}"
 
   if total > 0
