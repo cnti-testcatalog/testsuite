@@ -17,11 +17,10 @@ jobs:
         # - echo 'sleep'
         # - sleep 1000
         - |
-          # sed 's/./x/' << '    EOF'
-          sed 's/./x/' << EOF
-        first line
-        second line
-        EOF
+          sed 's/./x/' << '  EOF'
+          first line
+          second line
+          EOF
         - |
           if [ -z "${SSH_KEY+x}" ]; then
             exit 0
