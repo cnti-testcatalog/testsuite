@@ -109,7 +109,7 @@
 
 - name: k8s_conformance
   tags: platform, dynamic
-- name: recover_from_node_failure 
+- name: worker_reboot_recovery 
   tags: platform, platform:resilience, dynamic
 - name: oci_compliant
   tags: platform, platform:hardware_and_scheduling, dynamic
