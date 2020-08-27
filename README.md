@@ -50,32 +50,11 @@ Setup of vanilla upstream K8s on [Packet](https://www.packet.com/) is done with 
 
 ## Installation
 
-Binary downloads of the CNF Conformance client can be found on the [Releases](https://github.com/cncf/cnf-conformance/releases) page.
-
-Unpack the CNF Conformance binary and add it to your PATH and you are good to go!
-
-*or*
-
-
-Use the curl command to download, install, and export the path simultaneously:
-```
-source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.sh)
-```
-*or*
-
-Use the curl command to download and install, but you will have to export the PATH:
-```
-curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.sh | bash
-
-```
-
-To rapidly get CNF Conformance up and running, start with the Installation Guide.
-
-See the [installation guide](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md) for more details on installing and running the CNF Conformance Test Suite. 
+To quickly get CNF Conformance up and running, see the [Installation Guide](INSTALL.md). 
 
 ## Usage
 
-Check [usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md) for more info about invoking commands and logging
+Check out the [usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md) for more info about invoking commands and logging
 
 ## Code of Conduct
 
