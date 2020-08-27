@@ -11,9 +11,13 @@ jobs:
     - stage: K8s
       before_script:
         - |
-          cat <<EOF > ~/.ssh/id_rsa
-          $SSH_KEY
-          EOF
+          if [ -z "${SSH_KEY+x}" ]; then
+            exit 0
+          else
+            cat <<EOF > ~/.ssh/id_rsa
+            $SSH_KEY
+            EOF
+          fi
         - |
           if [ -z "$KUBECONFIG" ]; then
           # Download and install go
