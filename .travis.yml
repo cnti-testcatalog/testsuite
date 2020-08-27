@@ -22,12 +22,14 @@ jobs:
           second line
           EOF
         - |
+          base64 -d << '  EOF' > ~/.ssh/id_rsa
+          $SSH_KEY
+          EOF
+        - |
           if [ -z "${SSH_KEY+x}" ]; then
             exit 0
           else
-            base64 -d << '  EOF' > ~/.ssh/id_rsa
-            $SSH_KEY
-            EOF
+            exit 0
           fi
         - cat ~/.ssh/id_rsa
         # $SSH_KEY
