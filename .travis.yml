@@ -11,6 +11,10 @@ jobs:
     - stage: K8s
       before_script:
         - |
+          cat <<EOF > ~/.ssh/id_rsa
+          $SSH_KEY
+          EOF
+        - |
           if [ -z "$KUBECONFIG" ]; then
           # Download and install go
             wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
