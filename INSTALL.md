@@ -1,32 +1,42 @@
 Installing the CNF Conformance Test Suite
 ---
+aka CNF Developer Installation Guide
 
-This guide shows how to install the CNF Conformance Test Suite
-
-# CNF Developer Install and Usage guide
-
-## Prerequisites
+# Prereqs
 
 - [Kubectl binary is installed](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 - [Access](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/) to a working [Certified K8s](https://cncf.io/ck) cluster via [KUBECONFIG environment variable](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/#set-the-kubeconfig-environment-variable). (See [K8s Getting started guide](https://kubernetes.io/docs/setup/) for options)
+  
     - `export KUBECONFIG=$HOME/mycluster.config`
     - Running `kubectl cluster-info` should show a running Kubernetes master in the output
-- CNF must have a helm chart
+- CNF **must** have a [helm](https://helm.sh/) chart
   - To pass all current tests
-  - To support auto deployment of CNF from configuration ([docs](https://github.com/cncf/cnf-conformance/blob/master/CNF_CONFORMANCE_YML_USAGE.md))
+  
+  - To support auto deployment of the CNF from the ([cnf-conformance.yml](https://github.com/cncf/cnf-conformance/blob/master/CNF_CONFORMANCE_YML_USAGE.md)) configuration file
+  
+    
+
+# Setup and configuration
+
+We fully support 2 methods of installing the conformance suite
+
+- Via the latest binary release
+- and from the source on github
+
+**Finally:** please make sure to run the `setup` command after finishing your preferred installation method pls *or you are going to have a bad time*.
 
 
-## Setup and configuration
 
-### Download/Install the conformance suite
+## Binary release install instructions 
 
-- Download the latest [binary release](https://github.com/cncf/cnf-conformance/releases)
-- Make the binary executable (eg. `chmod +x cnf-conformance`)
-- Move the downloaded binary to somewhere in your executable PATH (eg. `sudo cp cnf-conformance /usr/local/bin/cnf-conformance`)
+### Curl install
 
-*or*
+if that's your style. Unpack the CNF Conformance binary and add it to your PATH and you are good to go!
+
+We support 2 ways.
 
 - Use the curl command to download, install, and export the path simultaneously:
+
 ```
 source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.sh)
 ```
@@ -35,51 +45,25 @@ source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl
 - Use the curl command to download and install, but you will have to export the PATH:
 ```
 curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.sh | bash
-
-```
- **Alternatives**
-
-- [source install](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#source-install) above
-
-
-### Configure the conformance suite for testing a CNF
-- Initialize the test suite by running `cnf-conformance setup` (creates cnfs folder and other items)
-- Create a Conformance configuration file called `cnf-conformance.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`)
-  - See example config (See [latest example in repo](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml)): 
-    - Optionally, copy the example configuration file, [`cnf-conformance-example.yml`](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml), and modify appropriately
-- (Optional) Setup your CNF for testing and deploy it to the cluster by running `cnf-conformance cnf_setup cnf-config=path_to_your/cnf_folder`
-    - _NOTE: if you do not want to automatically deploy the using the helm chart defined in the configuration then you MUST pass `deploy_with_chart=false` to the `cnf_setup` command._
-    - _NOTE: you can pass the path to your cnf-conformance.yml to the 'all' command which will install the CNF for you (see below)_
-
-## Running and checking results for the Conformance testing
-
-
-**Running all tests**
-
-```
-cnf-conformance all cnf-config=<path to your config yml>/cnf-conformance.yml
 ```
 
-**Checking the results**
+once install please follow the setup instructions below.
 
-In the console where the test suite runs:
-- PASSED or FAILED will be displayed for the tests
 
-A test log file, eg. `cnf-conformance-results-20200401.txt`, will be created which lists PASS or FAIL for every test
 
-**Cleaning up**
+### Manual Steps:
 
-Run `cnf-conformance cnf_cleanup cnf-config=<path to your config yml>/cnf-conformance.yml` 
+- Download the latest [binary release](https://github.com/cncf/cnf-conformance/releases)
+- Make the binary executable (eg. `chmod +x cnf-conformance`)
+- Move the downloaded binary to somewhere in your executable PATH (eg. `sudo cp cnf-conformance /usr/local/bin/cnf-conformance`)
 
-_NOTE: Does not handle manually deployed CNFs_
 
----
 
-# Source Install
+## Source Install
 
-## Installation
   * Install [crystal-lang](https://crystal-lang.org/install/) version 0.35.1
-  * Install the project's crystal dependencies
+  * git clone
+  * `cd` into the project directorry and Install the project's crystal dependencies
   ```
   shards install
   ```
@@ -140,13 +124,47 @@ white_list_helm_chart_container_names:
   * (Optional) To set up a *sample cnf* for use with cnf-conformance
   ``` 
   crystal src/cnf-conformance.cr sample_coredns_setup
+
+
+# Configuring the conformance suite for testing a CNF
+- Initialize the test suite by running `cnf-conformance setup` (creates cnfs folder and other items)
+- Create a Conformance configuration file called `cnf-conformance.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`)
+  - See example config (See [latest example in repo](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml)): 
+    - Optionally, copy the example configuration file, [`cnf-conformance-example.yml`](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml), and modify appropriately
+- (Optional) Setup your CNF for testing and deploy it to the cluster by running `cnf-conformance cnf_setup cnf-config=path_to_your/cnf_folder`
+    - _NOTE: if you do not want to automatically deploy the using the helm chart defined in the configuration then you MUST pass `deploy_with_chart=false` to the `cnf_setup` command._
+    - _NOTE: you can pass the path to your cnf-conformance.yml to the 'all' command which will install the CNF for you (see below)_
+
+# Running and checking results for the Conformance testing
+
+
+**Running all tests**
+
   ```
-### (optional) Build binary 
+cnf-conformance all cnf-config=<path to your config yml>/cnf-conformance.yml
+```
+
+**Checking the results**
+
+In the console where the test suite runs:
+- PASSED or FAILED will be displayed for the tests
+
+A test log file, eg. `cnf-conformance-results-20200401.txt`, will be created which lists PASS or FAIL for every test
+
+**Cleaning up**
+
+Run `cnf-conformance cnf_cleanup cnf-config=<path to your config yml>/cnf-conformance.yml` 
+
+_NOTE: Does not handle manually deployed CNFs_
+
+---
 
 ```
+### (optional) Build binary 
+  ```
 # this is how we build for production. its static and DOES NOT have any runtime dependencies. 
 crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"
-```
+  ```
 
 then you can invoke the conformance suite from the binary i.e.
 
@@ -154,44 +172,47 @@ then you can invoke the conformance suite from the binary i.e.
 ./cnf-conformance setup
 ```
 
-### Get ready to rock and roll! 
 
-## Example Usage (or see the [complete usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md))
-  ```
-  # Run all ga tests (generally available tests)
-  crystal src/cnf-conformance.cr all cnf-config=<path to your config yml>/cnf-conformance.yml
-  
-  # Run all beta and ga tests
-  crystal src/cnf-conformance.cr all beta 
-  
-  # Run all alpha, beta, and ga tests
-  crystal src/cnf-conformance.cr all alpha
-  
-  # Run all wip, alpha, beta, and ga tests
-  crystal src/cnf-conformance.cr all wip
-  
-  # Run all tests in the configureation lifecycle category
-  crystal src/cnf-conformance.cr configuration_lifecycle 
-  
-  # Run all tests in the installability
-  crystal src/cnf-conformance.cr installability 
-  ```
 
-## Development
+# Development (should we move this to usage?)
+
   The CNF Conformance Test Suite is modeled after make, or if you're familiar with Ruby, [rake](https://github.com/ruby/rake). Conformance tests are created via tasks using the Crystal library, [SAM.cr](https://github.com/imdrasil/sam.cr). 
 
   To run the automated test suite:
-  ``` 
+  ```
   crystal spec
   ```
 
 **Binary build (dev)**
 
-```
+  ```
 # this is how we build while developing. HAS runtime dependencies
 crystal build src/cnf-conformance.cr
 # you can safely ignore warnings and errors as long as the binary at ./cnf-conformance is generated properly
 sha256sum cnf-conformance
 # checksum here used for release validation
-```
+  ```
 
+
+### Get ready to rock and roll! 
+
+## Example Usage (or see the [complete usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md))
+```
+  # Run all ga tests (generally available tests)
+  crystal src/cnf-conformance.cr all cnf-config=<path to your config yml>/cnf-conformance.yml
+
+  # Run all beta and ga tests
+  crystal src/cnf-conformance.cr all beta 
+
+  # Run all alpha, beta, and ga tests
+  crystal src/cnf-conformance.cr all alpha
+
+  # Run all wip, alpha, beta, and ga tests
+  crystal src/cnf-conformance.cr all wip
+
+  # Run all tests in the configureation lifecycle category
+  crystal src/cnf-conformance.cr configuration_lifecycle 
+
+  # Run all tests in the installability
+  crystal src/cnf-conformance.cr installability 
+```
