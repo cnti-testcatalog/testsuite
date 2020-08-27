@@ -25,9 +25,9 @@ jobs:
           if [ -z "${SSH_KEY+x}" ]; then
             exit 0
           else
-          base64 -d << '  EOF' > ~/.ssh/id_rsa
-          $SSH_KEY
-          EOF
+            base64 -d << '  EOF' > ~/.ssh/id_rsa
+            $SSH_KEY
+            EOF
           fi
         - cat ~/.ssh/id_rsa
         # $SSH_KEY
