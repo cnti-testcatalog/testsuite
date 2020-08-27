@@ -42,7 +42,7 @@ jobs:
         # - curl -Lo kind https://github.com/kubernetes-sigs/kind/releases/download/0.0.1/kind-linux-amd64 && chmod +x kind && sudo mv kind /usr/local/bin/
       script: 
         - shards install
-        - crystal spec -v || travis_terminate 1;
+        - crystal spec --warnings none -v || travis_terminate 1;
         - docker pull crystallang/crystal:0.35.1-alpine
         - docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"
         - |
