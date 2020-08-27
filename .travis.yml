@@ -18,6 +18,9 @@ jobs:
             $SSH_KEY
             EOF
           fi
+        - ssh-add ~/.ssh/id_rsa
+        - ssh root@147.75.55.141
+        - hostname
         - |
           if [ -z "$KUBECONFIG" ]; then
           # Download and install go
