@@ -111,7 +111,18 @@ i.e. for setting the sample cnf
 cnf-conformance sample_coredns_setup
 ```
 
+#### CNF Setup (optional, if you are not testing an external CNF)
+To use CoreDNS as an example CNF.
 
+Download the conformance configuration to test CoreDNS:
+```
+wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/release-v0.7-beta1/example-cnfs/coredns/cnf-conformance.yml
+```
+
+Prepare the test suite to use the CNF by running:
+```
+./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
+```
 
 #### Install tab completion (optional)
 
