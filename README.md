@@ -77,6 +77,9 @@ See the [installation guide](https://github.com/cncf/cnf-conformance/blob/master
 
 Check [usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md) for more info about invoking commands and logging
 
+## Code of Conduct
+
+The CNF Conformance community follows the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/master/code-of-conduct.md).
 
 ## License terms
 

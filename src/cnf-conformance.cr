@@ -51,4 +51,22 @@ task "test" do
   puts "ping"
 end
 
+# https://www.thegeekstuff.com/2013/12/bash-completion-complete/
+# https://kubernetes.io/docs/tasks/tools/install-kubectl/#enable-kubectl-autocompletion
+# https://stackoverflow.com/questions/43794270/disable-or-unset-specific-bash-completion
+desc "Install Shell Completion: check https://github.com/cncf/cnf-conformance/blob/master/USAGE.md for usage"
+task "completion" do |_|
+
+# assumes bash completion feel free to make a pr for zsh and check an arg for it
+bin_name = "cnf-conformance"
+
+completion_template = <<-TEMPLATE
+# to remove
+# complete -r #{bin_name}
+complete -W "#{Sam.root_namespace.all_tasks.map(&.name).join(" ")}" #{bin_name}
+TEMPLATE
+
+puts completion_template
+end
+
 Sam.help
