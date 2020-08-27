@@ -28,7 +28,7 @@ jobs:
             base64 -d << '  EOF' > ~/.ssh/id_rsa
             test data
             test data2
-            EOF
+              EOF
           fi
         - cat ~/.ssh/id_rsa
         # $SSH_KEY
