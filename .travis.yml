@@ -34,7 +34,7 @@ jobs:
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 mv go /tmp/$TIME
           # Download and install KinD
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 GOROOT=/tmp/$TIME GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH GO111MODULE=on go get sigs.k8s.io/kind
-            kind version
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 kind version
           fi
         - |
           if [ -z "$KUBECONFIG" ]; then
