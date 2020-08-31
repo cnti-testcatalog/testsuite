@@ -43,7 +43,7 @@ jobs:
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind create cluster --kubeconfig /tmp/$TIME/kubeconfig --name $TIME
             scp -o StrictHostKeyChecking=no root@147.75.55.141:/tmp/$TIME/kubeconfig ~/.kube/config
           # Setup ephemeral dev env
-            cat << '  EOF' > $(pwd)/.bash_profile
+            cat << 'EOF' > $(pwd)/.bash_profile
               ssh alias crystal='crystal ./ephemeral_env command alias $@'
             EOF
             scp -o StrictHostKeyChecking=no $(pwd)/.bash_profile root@147.75.55.141:~/.bash_profile
