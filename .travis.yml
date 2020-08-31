@@ -28,8 +28,8 @@ jobs:
             eval $(ssh-agent)
             ssh-add ~/.ssh/id_rsa
             export TIME=$(date +%s)
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 mkdir -p /tmp/$TIME
             scp -o StrictHostKeyChecking=no $(pwd)/ -rp root@147.75.55.141:/tmp/$TIME
-            # ssh -o StrictHostKeyChecking=no -t root@147.75.55.141
           fi
         - |
           if [ -z "$KUBECONFIG" ]; then
