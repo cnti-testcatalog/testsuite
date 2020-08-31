@@ -35,7 +35,7 @@ jobs:
           # Download and install KinD
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 GOROOT=/tmp/$TIME GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH GO111MODULE=on go get sigs.k8s.io/kind
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 GOROOT=/tmp/$TIME GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind create cluster --kubeconfig /tmp/$TIME/kubeconfig --name $TIME
-            scp -o StrictHostKeyChecking=no -t root@147.75.55.141:/tmp/$TIME/kubeconfig ~/.kube/config
+            scp -o StrictHostKeyChecking=no root@147.75.55.141:/tmp/$TIME/kubeconfig ~/.kube/config
           fi
         - |
           if [ -z "$KUBECONFIG" ]; then
