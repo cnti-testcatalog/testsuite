@@ -60,8 +60,8 @@ cd cnfs/ && git clone https://github.com/cncf/cnf-testbed.git
 
 We fully support 2 methods of installing the conformance suite:
 
-- Via the latest [**binary** release](#Binary release install instructions)
-- and also [from the **source**](#source Install) on github
+- Via the latest [**binary** release](#binary-release-install-instructions)
+- and also [from the **source**](#source-install) on github
 
 **Finally:** please make sure to run the `setup` command after finishing your preferred installation method please *or you are going to have a bad time*.
 
