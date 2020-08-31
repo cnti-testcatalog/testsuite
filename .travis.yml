@@ -31,14 +31,22 @@ jobs:
             eval $(ssh-agent)
             ssh-add ~/.ssh/id_rsa
             export TIME=$(date +%s)
-            # Download and install go
+          # Install CNF-Conformance
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 mkdir -p /tmp/$TIME
+            scp -o StrictHostKeyChecking=no $(pwd)/* -rp root@147.75.55.141:/tmp/$TIME/
+          # Download and install go
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 tar -xvf go1.13.linux-amd64.tar.gz
-            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 mv go /tmp/$TIME
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 mv go /tmp/$TIME/go
           # Download and install KinD
-            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 GOROOT=/tmp/$TIME GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH GO111MODULE=on go get sigs.k8s.io/kind
-            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 GOROOT=/tmp/$TIME GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind create cluster --kubeconfig /tmp/$TIME/kubeconfig --name $TIME
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH GO111MODULE=on go get sigs.k8s.io/kind
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind create cluster --kubeconfig /tmp/$TIME/kubeconfig --name $TIME
             scp -o StrictHostKeyChecking=no root@147.75.55.141:/tmp/$TIME/kubeconfig ~/.kube/config
+          # Setup ephemeral dev env
+            cat <<< ssh alias crystal='crystal ./ephemeral_env command alias $@' > $(pwd)/.bash_profile
+            scp -o StrictHostKeyChecking=no $(pwd)/.bash_profile root@147.75.55.141:~/.bash_profile
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 /tmp/$TIME/ephemeral_env setup -b /tmp/$TIME/ephemeral_env
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 crystal version
           fi
         # - |
           # if [ -z "$KUBECONFIG" ]; then
