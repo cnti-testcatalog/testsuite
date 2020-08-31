@@ -40,8 +40,8 @@ jobs:
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 GOROOT=/tmp/$TIME GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind create cluster --kubeconfig /tmp/$TIME/kubeconfig --name $TIME
             scp -o StrictHostKeyChecking=no root@147.75.55.141:/tmp/$TIME/kubeconfig ~/.kube/config
           fi
-        - |
-          if [ -z "$KUBECONFIG" ]; then
+        # - |
+          # if [ -z "$KUBECONFIG" ]; then
           # Download and install go
             # wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
             # tar -xvf go1.13.linux-amd64.tar.gz
@@ -53,11 +53,11 @@ jobs:
             # GO111MODULE=on go get sigs.k8s.io/kind
           # Create a new Kubernetes cluster using KinD
             # kind create cluster
-          else
+          # else
           # Write Kubeconfig
-            echo "$KUBECONFIG" | base64 -d | tee ./kubeconfig >/dev/null
-            export KUBECONFIG=$(pwd)/kubeconfig
-          fi
+            # echo "$KUBECONFIG" | base64 -d | tee ./kubeconfig >/dev/null
+            # export KUBECONFIG=$(pwd)/kubeconfig
+          # fi
         - kubectl get nodes
         # It's possible to download and install KinD using curl, similar as for kubectl
         # This is useful in cases when Go toolchain isn't available or you prefer running stable version
