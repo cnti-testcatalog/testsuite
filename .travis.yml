@@ -24,7 +24,7 @@ jobs:
             chmod 400 ~/.ssh/id_rsa
             eval $(ssh-agent)
             ssh-add ~/.ssh/id_rsa
-            ssh root@147.75.55.141
+            ssh -o StrictHostKeyChecking=no root@147.75.55.141
             hostname
           fi
         - |
