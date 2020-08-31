@@ -28,8 +28,13 @@ jobs:
             eval $(ssh-agent)
             ssh-add ~/.ssh/id_rsa
             export TIME=$(date +%s)
-            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 mkdir -p /tmp/$TIME
-            scp -o StrictHostKeyChecking=no -rp $(pwd)/ root@147.75.55.141:/tmp/$TIME
+            # Download and install go
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 tar -xvf go1.13.linux-amd64.tar.gz
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 mv go /tmp/$TIME
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 export GOROOT=/tmp/$TIME
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 export GOPATH=\$HOME/go
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 export PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH
           fi
         - |
           if [ -z "$KUBECONFIG" ]; then
