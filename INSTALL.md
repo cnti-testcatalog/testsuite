@@ -4,27 +4,68 @@ aka CNF Developer Installation Guide
 
 # Prereqs
 
+
+
+## Access to a kubernetes Cluster
+
+-  [Access](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/) to a working [Certified K8s](https://cncf.io/ck) cluster via [KUBECONFIG environment variable](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/#set-the-kubeconfig-environment-variable). (See [K8s Getting started guide](https://kubernetes.io/docs/setup/) for options)
+-  follow the optional instructions below if you don't already have a k8s cluster setup
+
+### (optional) create a k8s cluster if you don't already have one
+
+#### via kind
+
+follow the [kind install](KIND-INSTALL.md) instructions to setup a cluster in [kind](https://kind.sigs.k8s.io/)
+
+#### or via k8s-infra
+
+- clone the CNF-Testbed
+
+```
+cd cnfs/ && git clone https://github.com/cncf/cnf-testbed.git
+```
+
+- Clone the K8s-infra repo then Follow the [prerequisites](https://github.com/cncf/cnf-testbed/tree/master/tools#pre-requisites) for [deploying a K8s cluster](https://github.com/cncf/cnf-testbed/tree/master/tools#deploying-a-kubernetes-cluster-using-the-makefile--ci-tools)  for a Packet host.
+
+  * If you already have IP addresses for your provider, and you want to manually install a K8s cluster, you can use k8s-infra to do this.
+
+  ```
+  cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git
+  ```
+
+  * #### Follow the [K8s-infra quick start](https://github.com/crosscloudci/k8s-infra/blob/master/README.md#quick-start) for instructions on how to install
+
+
+
+## Kubectl installed and configured
+
 - [Kubectl binary is installed](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-- [Access](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/) to a working [Certified K8s](https://cncf.io/ck) cluster via [KUBECONFIG environment variable](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/#set-the-kubeconfig-environment-variable). (See [K8s Getting started guide](https://kubernetes.io/docs/setup/) for options)
 
-    - `export KUBECONFIG=$HOME/mycluster.config`
+- `export KUBECONFIG=$HOME/mycluster.config`
+
     - Running `kubectl cluster-info` should show a running Kubernetes master in the output
-- CNF **must** have a [helm chart](https://helm.sh/)
-  - To pass all current tests
 
-  - To support auto deployment of the CNF from the ([cnf-conformance.yml](https://github.com/cncf/cnf-conformance/blob/master/CNF_CONFORMANCE_YML_USAGE.md)) configuration file
+
+
+## CNF **must** have a [helm chart](https://helm.sh/)
+
+- To pass all current tests
+- To support auto deployment of the CNF from the ([cnf-conformance.yml](https://github.com/cncf/cnf-conformance/blob/master/CNF_CONFORMANCE_YML_USAGE.md)) configuration file
+
 
 
 
 
 # Installation
 
-We fully support 2 methods of installing the conformance suite
+We fully support 2 methods of installing the conformance suite:
 
-- Via the latest [binary release](#Binary release install instructions)
-- and also [from the source](#source Install) on github
+- Via the latest [**binary** release](#Binary release install instructions)
+- and also [from the **source**](#source Install) on github
 
 **Finally:** please make sure to run the `setup` command after finishing your preferred installation method please *or you are going to have a bad time*.
+
+
 
 ## Binary release install instructions
 
@@ -58,13 +99,17 @@ curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.
 
 
 
-### Post Install
+### Post Install of binary
 
-once installed please follow the [setup](#Setup) instructions below while taking care to replace references
+once installed please follow the [setup instructions](#Setup) below while taking care to replace
 
- to `crystal src/cnf-conformance.cr`
+references to `crystal src/cnf-conformance.cr` with `cnf-conformance`
 
-with `cnf-conformance`
+i.e. for setting the sample cnf
+
+```
+cnf-conformance sample_coredns_setup
+```
 
 
 
@@ -75,7 +120,7 @@ Check out our (experimental) support for tab completion!
 NOTE: also compatible with the installation styles from kubectl completion install if you prefer
 https://kubernetes.io/docs/tasks/tools/install-kubectl/#enable-kubectl-autocompletion
 
-``` 
+```
 ./cnf-conformance completion -l error > test.sh
 source test.sh
 ```
@@ -92,16 +137,13 @@ cd cnf-conformance
 shards install
   ```
 
-- Next clone the CNF-Testbed
-```
-cd cnfs/ && git clone https://github.com/cncf/cnf-testbed.git
-```
-
 ### Post Install
 
-once installed please follow the [setup](#Setup) instructions below
+once installed please follow the [setup instructions](#Setup) below
 
-### (optional) Build binary from source
+
+
+### (optional): Build binary from source
 
 we use the official crystal alpine docker image for builds as you can see in our [.travis.yml](.travis.yml)
 
@@ -120,22 +162,6 @@ then you can invoke the conformance suite from the binary i.e.
 
 
 
-### (Optional): Create a K8s cluster if you don't already have one
-
-  * follow the [kind install](KIND-INSTALL.md) instructions to setup a cluster in [kind](https://kind.sigs.k8s.io/)
-
-  *Or*
-
-- Clone the K8s-infra repo then Follow the [prerequisites](https://github.com/cncf/cnf-testbed/tree/master/tools#pre-requisites) for [deploying a K8s cluster](https://github.com/cncf/cnf-testbed/tree/master/tools#deploying-a-kubernetes-cluster-using-the-makefile--ci-tools)  for a Packet host.
-
-  * If you already have IP addresses for your provider, and you want to manually install a K8s cluster, you can use k8s-infra to do this.
-  ```
-  cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git
-  ```
-  * #### Follow the [K8s-infra quick start](https://github.com/crosscloudci/k8s-infra/blob/master/README.md#quick-start) for instructions on how to install
-
-
-
 # Setup
 
 aka configuring the conformance suite for testing a CNF
@@ -144,7 +170,7 @@ aka configuring the conformance suite for testing a CNF
 
 ## (Optional) To set up a *sample cnf* for use with cnf-conformance
 
-Pick this option if you want to kick the tires and see how an already setup cnf works with the conformance suite
+Pick this option if you want to quickly kick the tires and see how an already setup cnf works with the conformance suite
 
 ```
 crystal src/cnf-conformance.cr sample_coredns_setup
@@ -154,7 +180,7 @@ crystal src/cnf-conformance.cr sample_coredns_setup
 
 ## Overview (for setting up your own cnf):
 
-- Initialize the test suite by running `cnf-conformance setup` (creates cnfs folder and other items)
+- Initialize the test suite by running `crystal src/cnf-conformance.cr setup` (creates cnfs folder and other items)
 - Create a Conformance configuration file called `cnf-conformance.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`)
   - See example config (See [latest example in repo](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml)):
     - Optionally, copy the example configuration file, [`cnf-conformance-example.yml`](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml), and modify appropriately
@@ -198,6 +224,7 @@ white_list_helm_chart_container_names:
   ```
   crystal src/cnf-conformance.cr cnf_cleanup cnf-config=<path to your cnf config file>
   ```
+
 
 
 ## Get ready to rock and roll!
@@ -257,9 +284,9 @@ crystal src/cnf-conformance.cr installability
 
 # Development
 
-  The CNF Conformance Test Suite is modeled after make, or if you're familiar with Ruby, [rake](https://github.com/ruby/rake). Conformance tests are created via tasks using the Crystal library, [SAM.cr](https://github.com/imdrasil/sam.cr).
+The CNF Conformance Test Suite is modeled after make, or if you're familiar with Ruby, [rake](https://github.com/ruby/rake). Conformance tests are created via tasks using the Crystal library, [SAM.cr](https://github.com/imdrasil/sam.cr).
 
-  To run the automated test suite:
+To run the automated test suite:
 
 ```
 crystal spec
