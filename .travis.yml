@@ -35,16 +35,19 @@ jobs:
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 export GOROOT=/tmp/$TIME
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 export GOPATH=\$HOME/go
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 export PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH
+          # Download and install KinD
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 GO111MODULE=on go get sigs.k8s.io/kind
+            kind version
           fi
         - |
           if [ -z "$KUBECONFIG" ]; then
           # Download and install go
-            wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
-            tar -xvf go1.13.linux-amd64.tar.gz
-            sudo mv go /usr/local
-            export GOROOT=/usr/local/go
-            export GOPATH=$HOME/go
-            export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+            # wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
+            # tar -xvf go1.13.linux-amd64.tar.gz
+            # sudo mv go /usr/local
+            # export GOROOT=/usr/local/go
+            # export GOPATH=$HOME/go
+            # export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
           # Download and install KinD
             GO111MODULE=on go get sigs.k8s.io/kind
           # Create a new Kubernetes cluster using KinD
