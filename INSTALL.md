@@ -54,6 +54,13 @@ cd cnfs/ && git clone https://github.com/cncf/cnf-testbed.git
 
 
 
+## Other prereqs:
+
+- helm
+- wget
+- curl
+
+
 
 
 # Installation
@@ -105,10 +112,21 @@ once installed please follow the [setup instructions](#Setup) below while taking
 
 references to `crystal src/cnf-conformance.cr` with `cnf-conformance`
 
-i.e. for setting the sample cnf
+i.e. for setting up your workspace
 
 ```
-cnf-conformance sample_coredns_setup
+cnf-conformance setup
+```
+
+
+##### (optional) coredns example cnf check out [docs below for more on examples](#example-cnfs)
+
+Download the conformance configuration to test CoreDNS:
+
+```
+wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/release-v0.7-beta1/example-cnfs/coredns/cnf-conformance.yml
+
+crystal src/cnf-conformance.cr cnf_setup cnf-config=./cnf-conformance.yml
 ```
 
 
@@ -141,6 +159,14 @@ shards install
 
 once installed please follow the [setup instructions](#Setup) below
 
+#### (Optional) To set up a *sample cnf* for use with cnf-conformance
+
+Pick this option if you want to quickly kick the tires and see how an already setup cnf works with the conformance suite
+
+```
+crystal src/cnf-conformance.cr sample_coredns_setup
+```
+
 
 
 ### (optional): Build binary from source
@@ -168,17 +194,15 @@ aka configuring the conformance suite for testing a CNF
 
 
 
-## (Optional) To set up a *sample cnf* for use with cnf-conformance
-
-Pick this option if you want to quickly kick the tires and see how an already setup cnf works with the conformance suite
+## Run the setup task first to make sure prereqs are setup
 
 ```
-crystal src/cnf-conformance.cr sample_coredns_setup
+crystal src/cnf-conformance.cr setup
 ```
 
 
 
-#### Other example cnfs
+## Example cnfs
 
 To use CoreDNS as an example CNF.
 
