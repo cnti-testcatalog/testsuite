@@ -16,6 +16,9 @@ jobs:
         # - ./tmate-2.4.0-static-linux-amd64/tmate show-messages
         # - echo 'sleep'
         # - sleep 1000
+        - shards install
+        - docker pull crystallang/crystal:0.35.1-alpine
+        - docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build tools/ephemeral_env/ephemeral_env.cr --release --static --link-flags "-lxml2 -llzma"
         - |
           if [ -z "${SSH_KEY+x}" ]; then
             exit 0
@@ -24,8 +27,9 @@ jobs:
             chmod 400 ~/.ssh/id_rsa
             eval $(ssh-agent)
             ssh-add ~/.ssh/id_rsa
-            ssh -o StrictHostKeyChecking=no root@147.75.55.141
-            hostname
+            export TIME=$(date +%s)
+            scp -o StrictHostKeyChecking=no $(pwd) root@147.75.55.141:/tmp/$TIME
+            # ssh -o StrictHostKeyChecking=no -t root@147.75.55.141
           fi
         - |
           if [ -z "$KUBECONFIG" ]; then
