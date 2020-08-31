@@ -17,27 +17,16 @@ jobs:
         # - echo 'sleep'
         # - sleep 1000
         - |
-          sed 's/./x/' << '  EOF'
-          first line
-          second line
-          EOF
-        - |
-          base64 -d <<-EOF > ~/.ssh/id_rsa
-          $SSH_KEY
-            EOF
-        - |
           if [ -z "${SSH_KEY+x}" ]; then
             exit 0
           else
-            exit 0
+            base64 -d <<< $SSH_KEY > ~/.ssh/id_rsa
+            chmod 400 ~/.ssh/id_rsa
+            eval $(ssh-agent)
+            ssh-add ~/.ssh/id_rsa
+            ssh root@147.75.55.141
+            hostname
           fi
-        - cat ~/.ssh/id_rsa
-        # $SSH_KEY
-        - chmod 400 ~/.ssh/id_rsa
-        - eval $(ssh-agent)
-        - ssh-add ~/.ssh/id_rsa
-        - ssh root@147.75.55.141
-        - hostname
         - |
           if [ -z "$KUBECONFIG" ]; then
           # Download and install go
