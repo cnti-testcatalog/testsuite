@@ -111,18 +111,7 @@ i.e. for setting the sample cnf
 cnf-conformance sample_coredns_setup
 ```
 
-#### CNF Setup (optional, if you are not testing an external CNF)
-To use CoreDNS as an example CNF.
 
-Download the conformance configuration to test CoreDNS:
-```
-wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/release-v0.7-beta1/example-cnfs/coredns/cnf-conformance.yml
-```
-
-Prepare the test suite to use the CNF by running:
-```
-./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
-```
 
 #### Install tab completion (optional)
 
@@ -132,7 +121,7 @@ NOTE: also compatible with the installation styles from kubectl completion insta
 https://kubernetes.io/docs/tasks/tools/install-kubectl/#enable-kubectl-autocompletion
 
 ```
-./cnf-conformance completion -l error > test.sh
+cnf-conformance completion -l error > test.sh
 source test.sh
 ```
 
@@ -186,6 +175,28 @@ Pick this option if you want to quickly kick the tires and see how an already se
 ```
 crystal src/cnf-conformance.cr sample_coredns_setup
 ```
+
+
+
+#### Other example cnfs
+
+To use CoreDNS as an example CNF.
+
+Download the conformance configuration to test CoreDNS:
+
+```
+wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/release-v0.7-beta1/example-cnfs/coredns/cnf-conformance.yml
+```
+
+Prepare the test suite to use the CNF by running:
+
+```
+crystal src/cnf-conformance.cr cnf_setup cnf-config=./cnf-conformance.yml
+```
+
+
+
+Also checkout other examples in the [examples cnfs](https://github.com/cncf/cnf-conformance/tree/master/example-cnfs) folder in our github repo
 
 
 
