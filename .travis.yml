@@ -19,6 +19,9 @@ jobs:
         # - shards install
         - docker pull crystallang/crystal:0.35.1-alpine
         - docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build tools/ephemeral_env/ephemeral_env.cr --release --static --link-flags "-lxml2 -llzma"
+        # Download and install kubectl
+        - mkdir ~/.kube
+        - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
         - |
           if [ -z "${SSH_KEY+x}" ]; then
             exit 0
@@ -55,8 +58,6 @@ jobs:
             echo "$KUBECONFIG" | base64 -d | tee ./kubeconfig >/dev/null
             export KUBECONFIG=$(pwd)/kubeconfig
           fi
-        # Download and install kubectl
-        - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
         - kubectl get nodes
         # It's possible to download and install KinD using curl, similar as for kubectl
         # This is useful in cases when Go toolchain isn't available or you prefer running stable version
