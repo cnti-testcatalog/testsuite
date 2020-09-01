@@ -50,9 +50,6 @@ jobs:
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 /tmp/$TIME/ephemeral_env create_env -n $TIME -k /tmp/$TIME/kubeconfig
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME crystal version
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 CRYSTAL_DEV_ENV=$TIME crystal 
-
-        # - shards install
-        # - crystal spec -v || travis_terminate 1;
           fi
         # - |
           # if [ -z "$KUBECONFIG" ]; then
