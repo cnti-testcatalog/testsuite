@@ -20,7 +20,6 @@ jobs:
         - docker pull crystallang/crystal:0.35.1-alpine
         - docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build tools/ephemeral_env/ephemeral_env.cr --release --static --link-flags "-lxml2 -llzma"
         # Download and install kubectl
-        - mkdir ~/.kube
         - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
         - |
           if [ -z "${SSH_KEY+x}" ]; then
@@ -32,8 +31,8 @@ jobs:
             ssh-add ~/.ssh/id_rsa
             export TIME=$(date +%s)
           # Install CNF-Conformance
-            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 mkdir -p /tmp/$TIME
-            scp -o StrictHostKeyChecking=no $(pwd)/* -rp root@147.75.55.141:/tmp/$TIME/
+            # ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 mkdir -p /tmp/$TIME
+            scp -o StrictHostKeyChecking=no -rp $(pwd) root@147.75.55.141:/tmp/$TIME
           # Download and install go
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 tar -xvf go1.13.linux-amd64.tar.gz
@@ -47,9 +46,13 @@ jobs:
             chmod +x ./crystal
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 mkdir -p /tmp/$TIME/crystal_dir
             scp -o StrictHostKeyChecking=no $(pwd)/crystal root@147.75.55.141:/tmp/$TIME/crystal_dir/crystal
-            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 cd /tmp/$TIME/ ; ephemeral_env setup -b /tmp/$TIME/ephemeral_env
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 "cd /tmp/$TIME/ ; \$(pwd)/ephemeral_env setup -b \$(pwd)/ephemeral_env
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 /tmp/$TIME/ephemeral_env create_env -n $TIME -k /tmp/$TIME/kubeconfig
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME crystal version
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 CRYSTAL_DEV_ENV=$TIME crystal 
+
+        # - shards install
+        # - crystal spec -v || travis_terminate 1;
           fi
         # - |
           # if [ -z "$KUBECONFIG" ]; then
@@ -75,8 +78,8 @@ jobs:
         # Binaries for KinD are available on GitHub Releases: https://github.com/kubernetes-sigs/kind/releases
         # - curl -Lo kind https://github.com/kubernetes-sigs/kind/releases/download/0.0.1/kind-linux-amd64 && chmod +x kind && sudo mv kind /usr/local/bin/
       script: 
-        - shards install
-        - crystal spec -v || travis_terminate 1;
+        # - shards install
+        # - crystal spec -v || travis_terminate 1;
         - docker pull crystallang/crystal:0.35.1-alpine
         - docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"
         - |
