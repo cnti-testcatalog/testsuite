@@ -41,15 +41,15 @@ jobs:
           # Download and install KinD
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH GO111MODULE=on go get sigs.k8s.io/kind
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind create cluster --kubeconfig /tmp/$TIME/kubeconfig --name $TIME
-            scp -o StrictHostKeyChecking=no root@147.75.55.141:/tmp/$TIME/kubeconfig ~/.kube/config
           # Setup ephemeral dev env
             # cat <<< "alias crystal='/tmp/$TIME/ephemeral_env command alias \$@'" > ./testfile.text
             cat <<< "/tmp/$TIME/ephemeral_env command alias \$@" > ./crystal
             chmod +x ./crystal
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 mkdir -p /tmp/$TIME/crystal_dir
             scp -o StrictHostKeyChecking=no $(pwd)/crystal root@147.75.55.141:/tmp/$TIME/crystal_dir/crystal
-            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 /tmp/$TIME/ephemeral_env setup -b /tmp/$TIME/ephemeral_env
-            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 PATH=/tmp/$TIME/crystal_dir:\$PATH crystal version
+            # ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 /tmp/$TIME/ephemeral_env setup -b /tmp/$TIME/ephemeral_env
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 /tmp/$TIME/ephemeral_env create_env -n $TIME -k /tmp/$TIME/kubeconfig
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME crystal version
           fi
         # - |
           # if [ -z "$KUBECONFIG" ]; then
