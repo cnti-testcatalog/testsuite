@@ -18,6 +18,7 @@ jobs:
         # - sleep 1000
         # - shards install
         - docker pull crystallang/crystal:0.35.1-alpine
+        - docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine shards install
         - docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build tools/ephemeral_env/ephemeral_env.cr --release --static --link-flags "-lxml2 -llzma"
         # Download and install kubectl
         - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
@@ -49,7 +50,7 @@ jobs:
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 "cd /tmp/$TIME/ ; \$(pwd)/ephemeral_env setup -b \$(pwd)/ephemeral_env"
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 /tmp/$TIME/ephemeral_env create_env -n $TIME -k /tmp/$TIME/kubeconfig
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME crystal version
-            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 CRYSTAL_DEV_ENV=$TIME crystal 
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 CRYSTAL_DEV_ENV=$TIME crystal spec -v
           fi
         # - |
           # if [ -z "$KUBECONFIG" ]; then
