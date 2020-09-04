@@ -48,6 +48,8 @@ module ReleaseManager
         # LOGGING.info "build_resp: #{build_resp}"
         # the name of the binary asset must be unique across all releases in github for project
         cnf_tarball_name = "cnf-conformance-#{upsert_version}.tar.gz"
+        ls_resp = `ls -al`
+        LOGGING.info "ls_resp (before tar): #{ls_resp}"
         cnf_tarball = `tar -czvf #{cnf_tarball_name} ./#{cnf_bin_asset_name}`
         LOGGING.info "cnf_tarball: #{cnf_tarball}"
         # cnf_bin_asset_name = "#{cnf_bin_path}-static" # change upload name for static builds
