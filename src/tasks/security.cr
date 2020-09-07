@@ -16,7 +16,7 @@ task "privileged" do |_, args|
   #TODO Check if args exist
   task_runner(args) do |args|
     VERBOSE_LOGGING.info "privileged" if check_verbose(args)
-    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
 
     helm_chart_container_name = config.get("helm_chart_container_name").as_s
     white_list_container_name = config.get("white_list_helm_chart_container_names").as_a

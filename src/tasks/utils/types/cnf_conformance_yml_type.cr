@@ -4,7 +4,7 @@ require "json"
 # 
 # in a script or using icr
 # 
-# require "./src/tasks/utils/sample_utils.cr"
+# require "./src/tasks/utils/cnf_manager.cr"
 # config = cnf_conformance_yml
 # config.settings.to_json
 # 

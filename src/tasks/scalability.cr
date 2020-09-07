@@ -62,7 +62,7 @@ def change_capacity(base_replicas, target_replica_count, args)
 
   # Parse the cnf-conformance.yml
   # config = cnf_conformance_yml
-  config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+  config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
 
   initialization_time = base_replicas.to_i * 10
   if args.named.keys.includes? "deployment_name"

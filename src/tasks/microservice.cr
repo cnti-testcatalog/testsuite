@@ -18,11 +18,11 @@ task "reasonable_startup_time" do |_, args|
     VERBOSE_LOGGING.info "reasonable_startup_time" if check_verbose(args)
 
     # config = get_parsed_cnf_conformance_yml(args)
-    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     # yml_file_path = cnf_conformance_yml_file_path(args)
     # needs to be the source directory
-    yml_file_path = ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
-    # yml_file_path = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
+    # yml_file_path = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     LOGGING.debug("reasonable_startup_time yml_file_path: #{yml_file_path}")
     VERBOSE_LOGGING.debug "yaml_path: #{yml_file_path}" if check_verbose(args)
 
@@ -57,7 +57,7 @@ task "reasonable_startup_time" do |_, args|
       end
       kubectl_apply = `kubectl apply -f #{yml_file_path}/reasonable_startup_test.yml --namespace=startup-test`
       is_kubectl_applied = $?.success?
-      wait_for_install(deployment_name, wait_count=180,"startup-test")
+      CNFManager.wait_for_install(deployment_name, wait_count=180,"startup-test")
       is_kubectl_deployed = $?.success?
     end
 
@@ -76,7 +76,7 @@ task "reasonable_startup_time" do |_, args|
 
     delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
     rollback_non_namespaced = `kubectl apply -f #{yml_file_path}/reasonable_startup_orig.yml`
-    wait_for_install(deployment_name, wait_count=180)
+    CNFManager.wait_for_install(deployment_name, wait_count=180)
   end
 end
 
@@ -84,11 +84,11 @@ desc "Does the CNF have a reasonable container image size?"
 task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
   task_response = task_runner(args) do |args|
     VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
-    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     #TODO get the docker repository segment from the helm chart
     #TODO check all images
-    # helm_chart_values = JSON.parse(`#{tools_helm} get values #{release_name} -a --output json`)
+    # helm_chart_values = JSON.parse(`#{CNFManager.tools_helm} get values #{release_name} -a --output json`)
     # image_name = helm_chart_values["image"]["repository"]
     docker_repository = config.get("docker_repository").as_s?
     VERBOSE_LOGGING.info "docker_repository: #{docker_repository}"if check_verbose(args)

@@ -1,6 +1,6 @@
 require "totem"
 require "colorize"
-require "./sample_utils.cr"
+require "./cnf_manager.cr"
 require "./release_manager.cr"
 require "./embedded_file_manager.cr"
 require "log"
@@ -210,7 +210,7 @@ end
 
 def check_cnf_config_then_deploy(args)
   config_file, deploy_with_chart = check_all_cnf_args(args)
-  sample_setup_args(sample_dir: config_file, deploy_with_chart: deploy_with_chart, args: args, verbose: check_verbose(args) ) if config_file
+  CNFManager.sample_setup_args(sample_dir: config_file, deploy_with_chart: deploy_with_chart, args: args, verbose: check_verbose(args) ) if config_file
 end
 
 def task_runner(args, &block : Sam::Args -> String | Colorize::Object(String) | Nil)
@@ -226,10 +226,10 @@ end
 def all_cnfs_task_runner(args, &block : Sam::Args -> String | Colorize::Object(String) | Nil)
 
   # Platforms tests dont have any cnfs
-  if cnf_config_list(silent: true).size == 0
+  if CNFManager.cnf_config_list(silent: true).size == 0
     single_task_runner(args, &block)
   else
-    cnf_config_list(silent: true).map do |x|
+    CNFManager.cnf_config_list(silent: true).map do |x|
       new_args = Sam::Args.new(args.named, args.raw)
       new_args.named["cnf-config"] = x
       single_task_runner(new_args, &block)

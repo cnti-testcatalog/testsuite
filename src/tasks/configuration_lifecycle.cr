@@ -42,8 +42,8 @@ task "liveness", ["retrieve_manifest"] do |_, args|
     # Parse the cnf-conformance.yml
     resp = ""
     errors = 0
-    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
     VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
     emoji_probe="🧫"
@@ -72,8 +72,8 @@ task "readiness", ["retrieve_manifest"] do |_, args|
     # Parse the cnf-conformance.yml
     resp = ""
     errors = 0
-    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
     VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
     containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
@@ -98,14 +98,14 @@ task "retrieve_manifest" do |_, args|
   task_runner(args) do |args|
     VERBOSE_LOGGING.info "retrieve_manifest" if check_verbose(args)
     # config = cnf_conformance_yml
-    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     deployment_name = config.get("deployment_name").as_s
     service_name = config.get("service_name").as_s
     VERBOSE_LOGGING.debug "Deployment_name: #{deployment_name}" if check_verbose(args)
     VERBOSE_LOGGING.debug service_name if check_verbose(args)
     helm_directory = config.get("helm_directory").as_s
     VERBOSE_LOGGING.debug helm_directory if check_verbose(args)
-    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/manifest.yml`
     VERBOSE_LOGGING.debug deployment if check_verbose(args)
     unless service_name.empty?
@@ -121,7 +121,7 @@ task "rolling_update" do |_, args|
   task_runner(args) do |args|
     VERBOSE_LOGGING.info "rolling_update" if check_verbose(args)
     # config = cnf_conformance_yml
-    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
 
     version_tag = nil
 
@@ -143,7 +143,7 @@ task "rolling_update" do |_, args|
     deployment_name = config.get("deployment_name").as_s
     helm_chart_container_name = config.get("helm_chart_container_name").as_s
 
-    helm_chart_values = JSON.parse(`#{tools_helm} get values #{release_name} -a --output json`)
+    helm_chart_values = JSON.parse(`#{CNFManager.tools_helm} get values #{release_name} -a --output json`)
     VERBOSE_LOGGING.debug "helm_chart_values" if check_verbose(args)
     VERBOSE_LOGGING.debug helm_chart_values if check_verbose(args)
     image_name = helm_chart_values["image"]["repository"]
@@ -177,13 +177,13 @@ task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
   task_response = task_runner(args) do |args|
     VERBOSE_LOGGING.info "nodeport_not_used" if check_verbose(args)
     # config = cnf_conformance_yml
-    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     release_name = config.get("release_name").as_s
     service_name = config.get("service_name").as_s
-    # current_cnf_dir_short_name = cnf_conformance_dir
+    # current_cnf_dir_short_name = CNFManager.ensure_cnf_conformance_dir
     # VERBOSE_LOGGING.debug current_cnf_dir_short_name if check_verbose(args)
     # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
-    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     if File.exists?("#{destination_cnf_dir}/service.yml")
       service = Totem.from_file "#{destination_cnf_dir}/service.yml"
       VERBOSE_LOGGING.debug service.inspect if check_verbose(args)
@@ -203,15 +203,15 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
   task_response = task_runner(args) do |args|
     VERBOSE_LOGGING.info "Task Name: hardcoded_ip_addresses_in_k8s_runtime_configuration" if check_verbose(args)
     # config = cnf_conformance_yml
-    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_directory = config.get("helm_directory").as_s
     release_name = "#{config.get("release_name").as_s?}"
-    # current_cnf_dir_short_name = cnf_conformance_dir
+    # current_cnf_dir_short_name = CNFManager.ensure_cnf_conformance_dir
     # VERBOSE_LOGGING.debug "Current_CNF_Dir: #{current_cnf_dir_short_name}" if check_verbose(args)
     # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
 
-    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     current_dir = FileUtils.pwd
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     VERBOSE_LOGGING.debug "Helm Path: #{helm}" if check_verbose(args)
