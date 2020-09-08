@@ -34,6 +34,8 @@ jobs:
           # Install CNF-Conformance
             # ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 mkdir -p /tmp/$TIME
             scp -o StrictHostKeyChecking=no -rp $(pwd) root@147.75.55.141:/tmp/$TIME
+            echo $TIME
+            sleep 1000000
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 "cd /tmp/$TIME ; git fetch -a"
           # Download and install go
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
