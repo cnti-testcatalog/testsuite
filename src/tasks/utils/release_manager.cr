@@ -1,6 +1,6 @@
 require "totem"
 require "colorize"
-require "./sample_utils.cr"
+require "./cnf_manager.cr"
 require "halite"
 
 module ReleaseManager 

@@ -16,8 +16,8 @@ desc "Does the CNF crash when network loss occurs"
 task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
   task_response = task_runner(args) do |args|
     VERBOSE_LOGGING.info "chaos_network_loss" if check_verbose(args)
-    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     deployment_name = config.get("deployment_name").as_s
     deployment_label = config.get("deployment_label").as_s
     helm_chart_container_name = config.get("helm_chart_container_name").as_s
@@ -63,8 +63,8 @@ desc "Does the CNF crash when CPU usage is high"
 task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
   task_response = task_runner(args) do |args|
     VERBOSE_LOGGING.info "chaos_cpu_hog" if check_verbose(args)
-    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     deployment_name = config.get("deployment_name").as_s
     deployment_label = config.get("deployment_label").as_s
     helm_chart_container_name = config.get("helm_chart_container_name").as_s
@@ -109,8 +109,8 @@ desc "Does the CNF recover when its container is killed"
 task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
   task_response = task_runner(args) do |args|
     VERBOSE_LOGGING.info "chaos_container_kill" if check_verbose(args)
-    config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    destination_cnf_dir = cnf_destination_dir(ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     deployment_name = config.get("deployment_name").as_s
     deployment_label = config.get("deployment_label").as_s
     helm_chart_container_name = config.get("helm_chart_container_name").as_s
@@ -134,7 +134,7 @@ task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, a
       VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
       # TODO fail if exceeds
       if wait_for_test("PodChaos", "container-kill")
-        wait_for_install(deployment_name, wait_count=60)
+        CNFManager.wait_for_install(deployment_name, wait_count=60)
         if desired_is_available?(deployment_name)
           resp = upsert_passed_task("chaos_container_kill","✔️  PASSED: Replicas available match desired count after container kill test #{emoji_chaos_container_kill}")
         else
