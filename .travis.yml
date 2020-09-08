@@ -27,6 +27,9 @@ jobs:
             chmod 400 ~/.ssh/id_rsa
             eval $(ssh-agent)
             ssh-add ~/.ssh/id_rsa
+            touch $(pwd)/.github-env
+            cat <<< "export GITHUB_USER=$GITHUB_USER" > $(pwd)/.github-env
+            cat <<< "export GITHUB_TOKEN=$GITHUB_TOKEN" >> $(pwd)/.github-env
             export TIME=$(date +%s)
           # Install CNF-Conformance
             # ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 mkdir -p /tmp/$TIME
@@ -46,7 +49,7 @@ jobs:
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 mkdir -p /tmp/$TIME/crystal_dir
             scp -o StrictHostKeyChecking=no $(pwd)/crystal root@147.75.55.141:/tmp/$TIME/crystal_dir/crystal
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 "cd /tmp/$TIME/ ; \$(pwd)/ephemeral_env setup -b \$(pwd)/ephemeral_env"
-            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 "cd /tmp/$TIME/ ; \$(pwd)/ephemeral_env create_env -n $TIME -k /tmp/$TIME/kubeconfig"
+            ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 "cd /tmp/$TIME/ ; source .github-env ; \$(pwd)/ephemeral_env create_env -n $TIME -k /tmp/$TIME/kubeconfig"
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME crystal version
             ssh -o StrictHostKeyChecking=no -t root@147.75.55.141 "export PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME ; cd /tmp/$TIME ; crystal spec -v"
           fi
@@ -68,7 +71,6 @@ jobs:
             # echo "$KUBECONFIG" | base64 -d | tee ./kubeconfig >/dev/null
             # export KUBECONFIG=$(pwd)/kubeconfig
           # fi
-        - kubectl get nodes
         # It's possible to download and install KinD using curl, similar as for kubectl
         # This is useful in cases when Go toolchain isn't available or you prefer running stable version
         # Binaries for KinD are available on GitHub Releases: https://github.com/kubernetes-sigs/kind/releases
