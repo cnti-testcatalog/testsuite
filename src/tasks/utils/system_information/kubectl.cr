@@ -34,7 +34,7 @@ def kubectl_installation(verbose=false)
   # local_kubectl_version = nil
   # gmsg = "No Global kubectl version found"
   # lmsg = "No Local kubectl version found"
-  if !(global_kubectl_version && local_kubectl_version)
+  if global_kubectl_version.empty? && local_kubectl_version.empty?
     stdout_failure "Kubectl not found"
     stdout_failure %Q(
     Linux installation instructions for Kubectl can be found here: https://kubernetes.io/docs/tasks/tools/install-kubectl/ 
