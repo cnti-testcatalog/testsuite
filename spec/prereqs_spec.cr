@@ -6,7 +6,7 @@ require "file_utils"
 require "sam"
 
 describe "Prereq" do
-  it "'prereq' should check the system for prerequisites", tags: "happy-path"  do
+  it "'prereq' should check the system for prerequisites", tags: "prereqs"  do
     response_s = `./cnf-conformance prereqs verbose`
     LOGGING.info response_s
     $?.success?.should be_true
@@ -14,6 +14,7 @@ describe "Prereq" do
     (/wget found/ =~ response_s).should_not be_nil
     (/curl found/ =~ response_s).should_not be_nil
     (/kubectl found/ =~ response_s).should_not be_nil
+    (/git found/ =~ response_s).should_not be_nil
   end
 
 end
