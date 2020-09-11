@@ -72,10 +72,10 @@ end
 def git_version(git_response, verbose=false)
   # example
   # git version 1.9.1 
-  resp = git_response.match /git version ([0-9]{1,3})\.([0-9]{1,3})/
+  resp = git_response.match /git version (([0-9]{1,3}[\.]){1,2}[0-9]{1,3})/
   VERBOSE_LOGGING.info resp if verbose
   if resp
-    "#{resp && resp.not_nil![1]}.#{resp && resp.not_nil![1]}"
+    "#{resp && resp.not_nil![1]}"
   else
     ""
   end

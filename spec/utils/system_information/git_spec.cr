@@ -17,7 +17,7 @@ describe "Git" do
   end
 
   it "'git_version()' should return the information about the git version", tags: "git-prereq"  do
-    (git_version(git_global_response)).should match(/([0-9]{1,3})\.([0-9]{1,3})/)
+    (git_version(git_global_response)).should match(/(([0-9]{1,3}[\.]){1,2}[0-9]{1,3})/)
     (git_version(git_local_response)).should contain("")
   end
 
