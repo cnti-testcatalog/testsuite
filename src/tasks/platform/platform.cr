@@ -63,6 +63,7 @@ task "clusterapi_enabled" do |_, args|
     # I found those by running
     # clusterctl init
     # kubectl -n capi-system describe deployments.apps capi-controller-manager
+    # https://cluster-api.sigs.k8s.io/clusterctl/commands/init.html#additional-information
     clusterapi_namespaces_output = `kubectl get namespaces --selector clusterctl.cluster.x-k8s.io -o json`
     clusterapi_namespaces_json = JSON.parse(clusterapi_namespaces_output)
 

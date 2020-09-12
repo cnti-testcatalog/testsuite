@@ -13,7 +13,7 @@ task "prereqs" do  |_, args|
   if helm_installation(verbose).includes?("helm found") &&
       wget_installation(verbose).includes?("wget found") &&
       curl_installation(verbose).includes?("curl found") &&
-      clusterctl_installation(verbose).includes?("clusterctl found") &&
+      # clusterctl_installation(verbose).includes?("clusterctl found") && # not necessary for end users at this time
       kubectl_installation(verbose).includes?("kubectl found")
       stdout_success "All prerequisites found."
   else
