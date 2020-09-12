@@ -2,7 +2,7 @@ Installing the CNF Conformance Test Suite
 ---
 aka CNF Developer Installation Guide
 
-# Prereqs
+# Pre-Requisites
 
 
 
@@ -11,7 +11,9 @@ aka CNF Developer Installation Guide
 -  [Access](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/) to a working [Certified K8s](https://cncf.io/ck) cluster via [KUBECONFIG environment variable](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/#set-the-kubeconfig-environment-variable). (See [K8s Getting started guide](https://kubernetes.io/docs/setup/) for options)
 -  follow the optional instructions below if you don't already have a k8s cluster setup
 
-### (optional) create a k8s cluster if you don't already have one
+
+<details> <summary>(optional) how to create a k8s cluster if you don't already have one </summary>
+<p>
 
 #### via kind
 
@@ -35,7 +37,8 @@ cd cnfs/ && git clone https://github.com/cncf/cnf-testbed.git
 
   * #### Follow the [K8s-infra quick start](https://github.com/crosscloudci/k8s-infra/blob/master/README.md#quick-start) for instructions on how to install
 
-
+</p>
+</details>
 
 ## Kubectl installed and configured
 
@@ -76,6 +79,14 @@ We fully support 2 methods of installing the conformance suite:
 
 ## Binary release install instructions
 
+<details> <summary>(optional) Manual Steps (if you **do not** wish to curl install):</summary>
+
+- Download the latest [binary release](https://github.com/cncf/cnf-conformance/releases) i.e via `wget`
+- Make the binary executable (eg. `chmod +x cnf-conformance`)
+- Move the downloaded binary to somewhere in your executable PATH (eg. `sudo cp cnf-conformance /usr/local/bin/cnf-conformance`)
+
+</details>
+
 ### Curl install
 
 if that's your style. Unpack the CNF Conformance binary and add it to your PATH and you are good to go!
@@ -96,16 +107,6 @@ curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.
 
 
 
-### Manual Steps (optional):
-
-(**only** if you do not want to do the curl install)
-
-- Download the latest [binary release](https://github.com/cncf/cnf-conformance/releases) i.e via `wget`
-- Make the binary executable (eg. `chmod +x cnf-conformance`)
-- Move the downloaded binary to somewhere in your executable PATH (eg. `sudo cp cnf-conformance /usr/local/bin/cnf-conformance`)
-
-
-
 ### Post Install of binary
 
 once installed please follow the [setup instructions](#Setup) below while taking care to replace
@@ -119,7 +120,8 @@ cnf-conformance setup
 ```
 
 
-##### (optional) coredns example cnf check out [docs below for more on examples](#example-cnfs)
+
+##### (Recommended) coredns example cnf check out [docs below for more on examples](#example-cnfs)
 
 Download the conformance configuration to test CoreDNS:
 
@@ -130,8 +132,7 @@ crystal src/cnf-conformance.cr cnf_setup cnf-config=./cnf-conformance.yml
 ```
 
 
-
-#### Install tab completion (optional)
+<details> <summary>  (optional) Install tab completion </summary>
 
 Check out our (experimental) support for tab completion!
 
@@ -142,8 +143,7 @@ https://kubernetes.io/docs/tasks/tools/install-kubectl/#enable-kubectl-autocompl
 cnf-conformance completion -l error > test.sh
 source test.sh
 ```
-
-
+</details>
 
 ## Source Install
 
@@ -159,17 +159,16 @@ shards install
 
 once installed please follow the [setup instructions](#Setup) below
 
-#### (Optional) To set up a *sample cnf* for use with cnf-conformance
+<details> <summary> (Optional) To set up a *sample cnf* for use with cnf-conformance </summary>
 
 Pick this option if you want to quickly kick the tires and see how an already setup cnf works with the conformance suite
 
 ```
 crystal src/cnf-conformance.cr sample_coredns_setup
 ```
+</details>
 
-
-
-### (optional): Build binary from source
+<details> <summary>  (optional): Build binary from source </summary>
 
 we use the official crystal alpine docker image for builds as you can see in our [.travis.yml](.travis.yml)
 
@@ -186,6 +185,7 @@ then you can invoke the conformance suite from the binary i.e.
 ./cnf-conformance task_name_to_run
   ```
 
+</details>
 
 
 # Setup
@@ -338,7 +338,8 @@ To run the automated test suite:
 crystal spec
 ```
 
-**Binary build (dev)**
+
+<details> <summary> **Binary build (dev)** </summary>
 
 ```
 # this is how we build while developing. HAS runtime dependencies
@@ -347,3 +348,5 @@ crystal build src/cnf-conformance.cr
 sha256sum cnf-conformance
 # checksum here used for release validation
 ```
+
+</details>
