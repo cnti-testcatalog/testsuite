@@ -113,7 +113,7 @@ once installed please follow the [setup instructions](#Setup) below while taking
 
 references to `crystal src/cnf-conformance.cr` with `cnf-conformance`
 
-i.e. for setting up your workspace
+i.e. for setting up your workspace folder
 
 ```
 cnf-conformance setup
