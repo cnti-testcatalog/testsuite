@@ -63,6 +63,37 @@ namespace "platform" do
     task_response = task_runner(args) do |args|
       current_dir = FileUtils.pwd 
 
+      #Select the first node that isn't a master and is also schedulable
+      #worker_nodes = `kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
+      #worker_node = worker_nodes.split("\n")[0]
+
+      # Install and find CRI Tools name
+      File.write("cri_tools.yml", CRI_TOOLS)
+      install_cri_tools = `kubectl create -f cri_tools.yml`
+      cri_tools_pod = CNFManager.pod_status("cri-tools").split(",")[0]
+      #, "--field-selector spec.nodeName=#{worker_node}")
+      LOGGING.debug "cri_tools_pod: #{cri_tools_pod}"
+
+      # Fetch id sha256 sums for all repo_digests https://github.com/docker/distribution/issues/1662
+      repo_digest_list = KubectlClient::Get.all_container_image_ids
+      LOGGING.debug "repo_digests: #{repo_digest_list}"
+      LOGGING.info "repo_digests size: #{repo_digest_list.size}"
+      id_sha256_list = repo_digest_list.reduce([] of String) do |acc, repo_digest|
+        LOGGING.debug "repo_digest: #{repo_digest}"
+        cricti = `kubectl exec -ti #{cri_tools_pod} crictl inspecti #{repo_digest}`
+        LOGGING.debug "cricti: #{cricti}"
+        parsed_json = JSON.parse(cricti)
+        acc << parsed_json["status"]["id"].as_s
+      end
+      LOGGING.debug "id_sha256_list: #{id_sha256_list}"
+      LOGGING.debug "id_sha256_list.size: #{id_sha256_list.size}"
+
+      #Get TOKEN
+      target_ns_repo = "prom/node-exporter"
+      params = "service=registry.docker.io&scope=repository:#{target_ns_repo}:pull"
+      token = `curl --user "$DOCKERHUB_USERNAME:$DOCKERHUB_PASSWORD" "https://auth.docker.io/token?$PARAMS" | jq -r '.token'`
+      get_manifests = `curl --header "Accept: application/vnd.docker.distribution.manifest.v2+json" "https://registry-1.docker.io/v2/$TARGET_NS_REPO/manifests/$TAG" -H "Authorization:Bearer $TOKEN`
+
       # Get the sha hash for the kube-state-metrics container
       node_exporter = `curl -L -s 'https://registry.hub.docker.com/v2/repositories/prom/node-exporter/tags?page_size=1024'`
       sha_list = named_sha_list(node_exporter)
@@ -93,7 +124,7 @@ def named_sha_list(resp_json)
   LOGGING.debug "sha_list resp_json: #{resp_json}"
   parsed_json = JSON.parse(resp_json)
   LOGGING.debug "sha list parsed json: #{parsed_json}"
-  #TODO if tags then this is a quay repository, otherwise assume docker hub repository
+  #if tags then this is a quay repository, otherwise assume docker hub repository
   if parsed_json["tags"]?
     parsed_json["tags"].not_nil!.as_a.reduce([] of Hash(String, String)) do |acc, i|
       acc << {"name" => i["name"].not_nil!.as_s, "manifest_digest" => i["manifest_digest"].not_nil!.as_s}

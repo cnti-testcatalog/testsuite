@@ -6,7 +6,10 @@ require "halite"
 
 module EmbeddedFileManager 
   macro reboot_daemon
-    REBOOT_DAEMON = File.read("./tools/reboot_daemon/manifest.yml")  
+    REBOOT_DAEMON = File.read("./tools/reboot_daemon/manifest.yml")
+  end
+  macro cri_tools
+    CRI_TOOLS = File.read("./tools/cri-tools/manifest.yml")
   end
   macro node_failure_values
     NODE_FAILURE_VALUES = File.read("./embedded_files/node_failure_values.yml")
