@@ -42,7 +42,7 @@ module KubectlClient
       # LOGGING.info "pod container statuses: #{statuses}"
       statuses
     end
-    def self.all_container_image_ids
+    def self.all_container_repo_digests
       imageids = all_pod_container_statuses.reduce([] of String) do |acc, x|
         # acc << "hi"
         acc | x.map{|i| i["imageID"].as_s}

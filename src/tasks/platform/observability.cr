@@ -22,9 +22,6 @@ namespace "platform" do
     LOGGING.info "Running POC: kube_state_metrics"
     task_response = task_runner(args) do |args|
       current_dir = FileUtils.pwd 
-      # helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-
-      # state_metric_releases = `curl -L -s https://quay.io/api/v1/repository/coreos/kube-state-metrics/tag/?limit=100 | jq '.[] | .[] | .name + " " + .manifest_digest'`
 
       state_metric_releases = `curl -L -s https://quay.io/api/v1/repository/coreos/kube-state-metrics/tag/?limit=100`
       # Get the sha hash for the kube-state-metrics container
@@ -32,7 +29,7 @@ namespace "platform" do
       LOGGING.debug "sha_list: #{sha_list}"
 
       # TODO find hash for image
-      imageids = KubectlClient::Get.all_container_image_ids
+      imageids = KubectlClient::Get.all_container_repo_digests
       LOGGING.debug "imageids: #{imageids}"
       found = false
       release_name = ""
@@ -61,7 +58,6 @@ namespace "platform" do
     end
     LOGGING.info "Running POC: node_exporter"
     task_response = task_runner(args) do |args|
-      current_dir = FileUtils.pwd 
 
       #Select the first node that isn't a master and is also schedulable
       #worker_nodes = `kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
@@ -75,9 +71,8 @@ namespace "platform" do
       LOGGING.debug "cri_tools_pod: #{cri_tools_pod}"
 
       # Fetch id sha256 sums for all repo_digests https://github.com/docker/distribution/issues/1662
-      repo_digest_list = KubectlClient::Get.all_container_image_ids
-      LOGGING.debug "repo_digests: #{repo_digest_list}"
-      LOGGING.info "repo_digests size: #{repo_digest_list.size}"
+      repo_digest_list = KubectlClient::Get.all_container_repo_digests
+      LOGGING.info "container_repo_digests: #{repo_digest_list}"
       id_sha256_list = repo_digest_list.reduce([] of String) do |acc, repo_digest|
         LOGGING.debug "repo_digest: #{repo_digest}"
         cricti = `kubectl exec -ti #{cri_tools_pod} crictl inspecti #{repo_digest}`
@@ -86,25 +81,41 @@ namespace "platform" do
         acc << parsed_json["status"]["id"].as_s
       end
       LOGGING.debug "id_sha256_list: #{id_sha256_list}"
-      LOGGING.debug "id_sha256_list.size: #{id_sha256_list.size}"
 
-      #Get TOKEN
-      target_ns_repo = "prom/node-exporter"
-      params = "service=registry.docker.io&scope=repository:#{target_ns_repo}:pull"
-      token = `curl --user "$DOCKERHUB_USERNAME:$DOCKERHUB_PASSWORD" "https://auth.docker.io/token?$PARAMS" | jq -r '.token'`
-      get_manifests = `curl --header "Accept: application/vnd.docker.distribution.manifest.v2+json" "https://registry-1.docker.io/v2/$TARGET_NS_REPO/manifests/$TAG" -H "Authorization:Bearer $TOKEN`
 
-      # Get the sha hash for the kube-state-metrics container
-      node_exporter = `curl -L -s 'https://registry.hub.docker.com/v2/repositories/prom/node-exporter/tags?page_size=1024'`
-      sha_list = named_sha_list(node_exporter)
-      LOGGING.info "sha_list: #{sha_list}"
+      # Fetch image id sha256sums available for all upstream node-exporter releases
+      node_exporter_releases = `curl -L -s 'https://registry.hub.docker.com/v2/repositories/prom/node-exporter/tags?page_size=1024'`
+      tag_list = named_sha_list(node_exporter_releases)
+      LOGGING.info "tag_list: #{tag_list}"
+      if ENV["DOCKERHUB_USERNAME"]? && ENV["DOCKERHUB_PASSWORD"]?
+        target_ns_repo = "prom/node-exporter"
+        params = "service=registry.docker.io&scope=repository:#{target_ns_repo}:pull"
+        token = `curl --user "#{ENV["DOCKERHUB_USERNAME"]}:#{ENV["DOCKERHUB_PASSWORD"]}" "https://auth.docker.io/token?#{params}"`
+        parsed_token = JSON.parse(token)
+        release_id_list = tag_list.reduce([] of Hash(String, String)) do |acc, tag|
+          LOGGING.debug "tag: #{tag}"
+          tag = tag["name"]
 
-      imageids = KubectlClient::Get.all_container_image_ids
-      LOGGING.info "imageids: #{imageids}"
+          image_id = `curl --header "Accept: application/vnd.docker.distribution.manifest.v2+json" "https://registry-1.docker.io/v2/#{target_ns_repo}/manifests/#{tag}" -H "Authorization:Bearer #{parsed_token["token"].as_s}"`
+          parsed_image = JSON.parse(image_id)
+
+          LOGGING.debug "parsed_image config digest #{parsed_image["config"]["digest"]}"
+          if parsed_image["config"]["digest"]?
+              acc << {"name" => tag, "digest"=> parsed_image["config"]["digest"].as_s}
+          else
+            acc
+          end
+        end
+      else
+        puts "DOCKERHUB_USERNAME & DOCKERHUB_PASSWORD Must be set."
+        exit 1
+      end
+      LOGGING.debug "Release id sha256sum list: #{release_id_list}"
+
       found = false
       release_name = ""
-      sha_list.each do |x|
-        if imageids.find{|i| i.includes?(x["manifest_digest"])}
+      release_id_list.each do |x|
+        if id_sha256_list.find{|i| i.includes?(x["digest"])}
           found = true
           release_name = x["name"]
         end
