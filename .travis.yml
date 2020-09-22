@@ -46,6 +46,7 @@ jobs:
             cat <<< "export GITHUB_USER=$GITHUB_USER" > $(pwd)/.github-env
             cat <<< "export GITHUB_TOKEN=$GITHUB_TOKEN" >> $(pwd)/.github-env
             export TIME=$(date +%s)$RANDOM
+            export DOCKERHUB_PASSWORD=$(echo $DOCKERHUB_PASSWORD | base64 -d)
           # Install CNF-Conformance
             scp -o StrictHostKeyChecking=no -rp $(pwd) root@$SSH_HOST:/tmp/$TIME
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; git fetch --tags" || travis_terminate 1
