@@ -6,7 +6,6 @@ based on cluster-api/docs/book/src/developer/guide.md
 
 ## prereqs
 
-- existing cluster https://cluster-api.sigs.k8s.io/user/quick-start.html#install-andor-configure-a-kubernetes-cluster
 - `clusterclt` https://cluster-api.sigs.k8s.io/user/quick-start.html#install-clusterctl
 - a registry. you can easily setup one with https://github.com/tilt-dev/kind-local/
   - `KIND_CLUSTER_NAME='kind-registry' ./kind-with-registry.sh` 
@@ -47,6 +46,10 @@ export KUBECONFIG=$(pwd)/kind-cluster-api-manager-kubeconfig.yaml
 
 # make sure to use the same KUBECONFIG in any other windows
 echo $KUBECONFIG
+
+# test that you are using teh right cluster. node json should include name "kind-cluster-api-manager"
+kubectl cluster-info dump 
+
 # copy and the path and export it as KUBECONFIG in other terminal windows
 export path-to-your/kind-cluster-api-manager-kubeconfig.yaml
 
@@ -73,7 +76,7 @@ kubectl apply -f kind-local-cluster-config-map.yaml
 ## build docker containers
 
 ``` bash
-git clone https://github.com/kubernetes-sigs/cluster-api --branch v0.3.9
+localhost:5000/gcr.io_k8s-staging-cluster-api_capd-managergit clone https://github.com/kubernetes-sigs/cluster-api --branch v0.3.9
 
 ## parts of the cluster api dev setup scripts try, and generally fail lol, to install cert-manager just install ahead of time to avoid the headaches
 helm repo add jetstack https://charts.jetstack.io
@@ -102,7 +105,8 @@ cat > tilt-settings.json <<EOF
         "docker",
         "kubeadm-bootstrap",
         "kubeadm-control-plane"
-    ]
+    ],
+    "kind_cluster_name": "kind-cluster-api-manager"
 }
 EOF
 ```
@@ -113,43 +117,16 @@ patch `Tiltfile`
 
 
 ``` diff
-william@Will-LAPTOP-L47SIB7:/mnt/c/Users/william/UNSYNCED-symlinked-to-linux/cluster-api$ git diff
 diff --git a/Tiltfile b/Tiltfile
-index ef4a26158..5fde5a684 100644
+index d00a07d71..abec91ecd 100644
 --- a/Tiltfile
 +++ b/Tiltfile
-@@ -161,7 +161,10 @@ metadata:
-   namespace: cert-manager-test
- spec:
-   dnsNames:
--    - example.com
-+    - *.svc.cluster.local
-+    - *.docker.internal
-+    - localhost
-+    - 127.0.0.1
-   secretName: selfsigned-cert-tls
-   issuerRef:
-     name: test-selfsigned
-@@ -176,7 +179,7 @@ def enable_provider(name):
-     p = providers.get(name)
+@@ -225,7 +225,7 @@ def enable_provider(name):
 
-     context = p.get("context")
--    go_main = p.get("go_main")
-+    go_main = p.get("go_main", "main.go")
-
-     # Prefix each live reload dependency with context. For example, for if the context is
-     # test/infra/docker and main.go is listed as a dep, the result is test/infra/docker/main.go. This adjustment is
-@@ -263,9 +266,9 @@ def deploy_cert_manager():
-     local("kubectl wait --for=condition=Available --timeout=300s -n cert-manager deployment/cert-manager-webhook")
-
-     # 2. create a test certificate
--    local("cat << EOF | kubectl apply -f - " + cert_manager_test_resources + "EOF")
--    local("kubectl wait --for=condition=Ready --timeout=300s -n cert-manager-test certificate/selfsigned-cert ")
--    local("cat << EOF | kubectl delete -f - " + cert_manager_test_resources + "EOF")
-+    # local("cat << EOF | kubectl apply -f - " + cert_manager_test_resources + "EOF")
-+    # local("kubectl wait --for=condition=Ready --timeout=300s -n cert-manager-test certificate/selfsigned-cert ")
-+    # local("cat << EOF | kubectl delete -f - " + cert_manager_test_resources + "EOF")
-
+     # Apply the kustomized yaml for this provider
+     yaml = str(kustomize_with_envsubst(context + "/config"))
+-    k8s_yaml(blob(yaml))
++    k8s_yaml(blob(yaml), allow_duplicates=True)
 ```
 
 
@@ -175,9 +152,12 @@ wait for it to build all of the docker containers they are used to build control
 push the docker images to ur local registry
 
 ```
-docker tag localhost:5000/gcr.io_k8s-staging-cluster-api_cluster-api-controller:tilt-59e7996872fb6708 localhost:5000/gcr.io_k8s-staging-cluster-api_cluster-api-controller
+docker tag latest localhost:5000/gcr.io_k8s-staging-cluster-api_capd-manager
 
-docker push localhost:5000/gcr.io_k8s-staging-cluster-api_cluster-api-controller
+docker push localhost:5000/gcr.io_k8s-staging-cluster-api_capd-manager
+
+curl -X GET http://localhost:5000/v2/gcr.io_k8s-staging-cluster-api_capd-manager/tags/list
+
 ```
 
 
@@ -229,13 +209,13 @@ cd ~/.cluster-api/overrides
 vim cluster-api/v0.3.0/core-components.yaml
 
 # change name: system to name: capi-system
+# change name: webook-system to name: capi-webhook-system
 
 # then inside of
 
 control-plane-kubeadm/v0.3.0/control-plane-components.yaml
 
 # change namespace to capi-kubeadm-control-plane-system
-
 
 # then inside of 
 
@@ -282,16 +262,12 @@ kubectl -n capi-system describe pod capd-controller-manager<TAB>-<TAB>
 
 ## Build a workload cluster
 
-(9-15-2020: stuck here: its looking for a `CNI_RESOURCES` variable i don;t know how to set)
 
-
-
-(9-16-2020 workin here feel close)
 
 ```
 CNI_RESOURCES="$(cat test/e2e/data/cni/kindnet/kindnet.yaml)" \
-DOCKER_POD_CIDRS="172.17.0.0/16" \
-DOCKER_SERVICE_CIDRS="192.168.0.0/16" \
+DOCKER_POD_CIDRS="192.168.0.0/16" \
+DOCKER_SERVICE_CIDRS="127.0.0.240/28" \
 DOCKER_SERVICE_DOMAIN="cluster.local" \
 clusterctl config cluster capd --kubernetes-version v1.17.5 \
 --from ./test/e2e/data/infrastructure-docker/cluster-template.yaml \
@@ -309,6 +285,44 @@ kubectl apply -f capd.yaml
 
 
 
+Now follows insturctions here to access workload clusters
 
+https://cluster-api.sigs.k8s.io/user/quick-start.html#accessing-the-workload-cluster
+
+
+
+(9-21-2020 stuck here. if you to `kubectl descibe cluster capd` you'll see the control plane nodes are created but once I create the kubeconfig and try to connect it doesn't work)
+
+
+
+```
+kubectl get cluster --all-namespaces
+kubectl get kubeadmcontrolplane --all-namespaces
+clusterctl get kubeconfig capd > capd.kubeconfig
+
+docker run --name kubectl --rm -it --network="container:kind-cluster-api-manager-control-plane" -v $PWD:/workspace -w /workspace  --entrypoint sh alpine:latest
+
+apk update && apk add curl git
+curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.1/bin/linux/amd64/kubectl
+chmod u+x kubectl && mv kubectl /bin/kubectl
+
+
+cat > test.kubeconfig <<EOF
+ # YOUR KUBER CONFIG FROM EARLIER STUFF
+EOF
+
+export KUBECONFIG=$(pwd)/test.kubeconfig
+
+
+```
+
+
+
+sources:
 
 https://alexbrand.dev/post/understanding-the-role-of-cert-manager-in-cluster-api/
+
+
+
+
+
