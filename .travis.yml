@@ -66,6 +66,7 @@ jobs:
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME/ ; \$(pwd)/ephemeral_env setup -b \$(pwd)/ephemeral_env" || travis_terminate 1
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME/ ; source .github-env ; \$(pwd)/ephemeral_env create_env -n $TIME -k /tmp/$TIME/kubeconfig" || travis_terminate 1
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME crystal version || travis_terminate 1
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "export PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME ; cd /tmp/$TIME ; crystal spec spec/platform/hardware_and_scheduler_spec.cr -v" || travis_terminate 1
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "export PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME ; cd /tmp/$TIME ; crystal spec -v" || travis_terminate 1
           fi
       script: 
