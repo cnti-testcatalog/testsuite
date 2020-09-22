@@ -96,6 +96,7 @@ git clone git@github.com:kubernetes-sigs/cluster-api-provider-aws.git
 cd ../cluster-api
 
 
+https://github.com/kubernetes-sigs/cluster-api/blob/v0.3.9/docs/book/src/tasks/experimental-features/experimental-features.md
 
 cat > tilt-settings.json <<EOF
 {
@@ -106,7 +107,11 @@ cat > tilt-settings.json <<EOF
         "kubeadm-bootstrap",
         "kubeadm-control-plane"
     ],
-    "kind_cluster_name": "kind-cluster-api-manager"
+    "kind_cluster_name": "kind-cluster-api-manager",
+      "kustomize_substitutions": {
+    "EXP_CLUSTER_RESOURCE_SET": "true",
+    "EXP_MACHINE_POOL": "false"
+  }
 }
 EOF
 ```
@@ -291,29 +296,32 @@ https://cluster-api.sigs.k8s.io/user/quick-start.html#accessing-the-workload-clu
 
 
 
-(9-21-2020 stuck here. if you to `kubectl descibe cluster capd` you'll see the control plane nodes are created but once I create the kubeconfig and try to connect it doesn't work)
-
-
+Assess cluster state
 
 ```
 kubectl get cluster --all-namespaces
 kubectl get kubeadmcontrolplane --all-namespaces
+```
+
+
+
+(9-21-2020 stuck here. if you to `kubectl descibe cluster capd` you'll see the control plane nodes are created but once I create the kubeconfig and try to connect it gives `Unable to connect to the server: EOF`)
+
+
+
+```
+
 clusterctl get kubeconfig capd > capd.kubeconfig
 
-docker run --name kubectl --rm -it --network="container:kind-cluster-api-manager-control-plane" -v $PWD:/workspace -w /workspace  --entrypoint sh alpine:latest
 
-apk update && apk add curl git
-curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.1/bin/linux/amd64/kubectl
-chmod u+x kubectl && mv kubectl /bin/kubectl
+sed -i -e "s/server:.*/server: https:\/\/$(docker port capd-lb 6443/tcp | sed "s/0.0.0.0/127.0.0.1/")/g" capd.kubeconfig
 
+sed -i -e "s/certificate-authority-data:.*/insecure-skip-tls-verify: true/g" capd.kubeconfig
 
-cat > test.kubeconfig <<EOF
- # YOUR KUBER CONFIG FROM EARLIER STUFF
-EOF
 
 export KUBECONFIG=$(pwd)/test.kubeconfig
 
-
+kubectl get nodes
 ```
 
 
