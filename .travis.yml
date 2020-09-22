@@ -45,7 +45,7 @@ jobs:
             touch $(pwd)/.github-env
             touch $(pwd)/.docker-env
             cat <<< "export DOCKERHUB_USERNAME=$DOCKERHUB_USERNAME" > $(pwd)/.docker-env
-            cat <<< "export DOCKERHUB_PASSWORD=$DOCKERHUB_PASSWORD" >> $(pwd)/.docker-env
+            cat <<< "export DOCKERHUB_PASSWORD='$DOCKERHUB_PASSWORD'" >> $(pwd)/.docker-env
             cat <<< "export GITHUB_USER=$GITHUB_USER" > $(pwd)/.github-env
             cat <<< "export GITHUB_TOKEN=$GITHUB_TOKEN" >> $(pwd)/.github-env
             export TIME=$(date +%s)$RANDOM
