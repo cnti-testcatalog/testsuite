@@ -207,7 +207,7 @@ elsif ARGV[0]? && ARGV[0] == "command"
        system "docker exec -ti #{ENV["CRYSTAL_DEV_ENV"]} ./cnf-conformance #{execute_command}"
      else
       system "docker exec -ti #{ENV["CRYSTAL_DEV_ENV"]} crystal #{execute_command}"
-      puts "Command Status: #{$?}"
+      puts "Command Status: #{$?.exit_code}"
      end
   else
     puts "CRYSTAL_DEV_ENV Not Set. Run list_envs and select one"
