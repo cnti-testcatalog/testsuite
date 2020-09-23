@@ -16,7 +16,7 @@ task "k8s_conformance" do |_, args|
     sonobuoy = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy"
 
     # Clean up old results
-    delete = `#{sonobuoy} delete --wait`
+    delete = `#{sonobuoy} delete --all --wait`
     VERBOSE_LOGGING.info delete if check_verbose(args)
 
     # Run the tests
