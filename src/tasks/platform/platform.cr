@@ -56,6 +56,12 @@ end
 desc "Is Cluster Api available and managing a cluster?"
 task "clusterapi_enabled" do |_, args|
   task_runner(args) do
+    unless check_poc(args)
+      LOGGING.info "skipping clusterapi_enabled: not in poc mode"
+      puts "Skipped".colorize(:yellow)
+      next
+    end
+
     VERBOSE_LOGGING.info "clusterapi_enabled" if check_verbose(args)
     LOGGING.info("clusterapi_enabled args #{args.inspect}")
 
@@ -64,12 +70,16 @@ task "clusterapi_enabled" do |_, args|
     # clusterctl init
     # kubectl -n capi-system describe deployments.apps capi-controller-manager
     # https://cluster-api.sigs.k8s.io/clusterctl/commands/init.html#additional-information
+
+    # this indicates that cluster-api is installed
     clusterapi_namespaces_output = `kubectl get namespaces --selector clusterctl.cluster.x-k8s.io -o json`
     clusterapi_namespaces_json = JSON.parse(clusterapi_namespaces_output)
 
     LOGGING.info("clusterapi_namespaces_json: #{clusterapi_namespaces_json}")
 
-    clusterapi_control_planes_output = `kubectl get kubeadmcontrolplanes -o json`
+    # check that a node is actually being manageed
+    # TODO: suppress msg in the case that this resource does-not-exist which is what happens when cluster-api is not installed
+    clusterapi_control_planes_output = `kubectl get kubeadmcontrolplanes.controlplane.cluster.x-k8s.io -o json`
 
     proc_clusterapi_control_planes_json = -> do
       begin
