@@ -53,7 +53,7 @@ task "k8s_conformance" do |_, args|
   end
 end
 
-desc "Is Cluster Api available?"
+desc "Is Cluster Api available and managing a cluster?"
 task "clusterapi_enabled" do |_, args|
   task_runner(args) do
     VERBOSE_LOGGING.info "clusterapi_enabled" if check_verbose(args)
@@ -68,14 +68,25 @@ task "clusterapi_enabled" do |_, args|
     clusterapi_namespaces_json = JSON.parse(clusterapi_namespaces_output)
 
     LOGGING.info("clusterapi_namespaces_json: #{clusterapi_namespaces_json}")
-    # LOGGING.info("clusterapi_namespaces_json items array: #{clusterapi_namespaces_json["items"].as_a}")
 
-    # TODO: then we can test for other resources related to clusterctl to see if its managing a nod
-    if clusterapi_namespaces_json["items"]?.not_nil! && clusterapi_namespaces_json["items"].as_a.size > 0
-      resp = upsert_passed_task("clusterapi_enabled", "✔️  Cluster API is enabled ✨")
+    clusterapi_control_planes_output = `kubectl get kubeadmcontrolplanes -o json`
+
+    proc_clusterapi_control_planes_json = -> do
+      begin
+        JSON.parse(clusterapi_control_planes_output)
+      rescue JSON::ParseException
+        JSON.parse("{}")
+      end
+    end
+
+    clusterapi_control_planes_json = proc_clusterapi_control_planes_json.call
+
+    if clusterapi_namespaces_json["items"]?.not_nil! && clusterapi_namespaces_json["items"].as_a.size > 0 && clusterapi_control_planes_json["items"]?.not_nil! && clusterapi_control_planes_json["items"].as_a.size > 0
+      resp = upsert_passed_task("clusterapi_enabled", "✔️ Cluster API is enabled ✨")
     else
       resp = upsert_failed_task("clusterapi_enabled","✖️  Cluster API NOT enabled ✨")
     end
+
     resp
   end
 end

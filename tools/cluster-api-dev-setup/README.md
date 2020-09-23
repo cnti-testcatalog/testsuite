@@ -1,11 +1,14 @@
 how to cluster api
 ---
 
-based on cluster-api/docs/book/src/developer/guide.md
+
 
 
 ## prereqs
 
+- bootstrap cluster
+- kind
+- kustomize
 - `clusterclt` https://cluster-api.sigs.k8s.io/user/quick-start.html#install-clusterctl
 - a registry. you can easily setup one with https://github.com/tilt-dev/kind-local/
   - `KIND_CLUSTER_NAME='kind-registry' ./kind-with-registry.sh` 
@@ -39,7 +42,7 @@ nodes:
         containerPath: /var/run/docker.sock
 EOF
 
-kind create cluster --name kind-cluster-api-manager --config kind-cluster-with-extramounts-with-registry-access.yaml
+kind create cluster --name kind-cluster-api-manager --config kind-cluster-with-extramounts-with-registry-access.yaml --kubeconfig dslafjsdkjfakls
 
 kind get kubeconfig --name kind-cluster-api-manager > kind-cluster-api-manager-kubeconfig.yaml
 export KUBECONFIG=$(pwd)/kind-cluster-api-manager-kubeconfig.yaml
@@ -76,7 +79,7 @@ kubectl apply -f kind-local-cluster-config-map.yaml
 ## build docker containers
 
 ``` bash
-localhost:5000/gcr.io_k8s-staging-cluster-api_capd-managergit clone https://github.com/kubernetes-sigs/cluster-api --branch v0.3.9
+git clone https://github.com/kubernetes-sigs/cluster-api --branch v0.3.9
 
 ## parts of the cluster api dev setup scripts try, and generally fail lol, to install cert-manager just install ahead of time to avoid the headaches
 helm repo add jetstack https://charts.jetstack.io
@@ -93,10 +96,10 @@ cd < parent_dir i.e. ../ >
 # the tilfile python script breaks if this isn't there trust me lol
 git clone git@github.com:kubernetes-sigs/cluster-api-provider-aws.git
 
-cd ../cluster-api
+cd ./cluster-api
 
 
-https://github.com/kubernetes-sigs/cluster-api/blob/v0.3.9/docs/book/src/tasks/experimental-features/experimental-features.md
+# https://github.com/kubernetes-sigs/cluster-api/blob/v0.3.9/docs/book/src/tasks/experimental-features/experimental-features.md
 
 cat > tilt-settings.json <<EOF
 {
@@ -150,20 +153,8 @@ tilt up
 
 
 
-wait for it to build all of the docker containers they are used to build control plane nodes and such
+wait for it to build all of the docker containers they are used to build control plane nodes and such (you will need them in the yaml provider section below)
 
-
-
-push the docker images to ur local registry
-
-```
-docker tag latest localhost:5000/gcr.io_k8s-staging-cluster-api_capd-manager
-
-docker push localhost:5000/gcr.io_k8s-staging-cluster-api_capd-manager
-
-curl -X GET http://localhost:5000/v2/gcr.io_k8s-staging-cluster-api_capd-manager/tags/list
-
-```
 
 
 
@@ -198,7 +189,7 @@ providers:
 EOF
 ```
 
-fix up the yaml for the infra provider
+(if needed) fix up the yaml for the infra provider
 
 ``` bash
 
@@ -213,29 +204,37 @@ cd ~/.cluster-api/overrides
 
 vim cluster-api/v0.3.0/core-components.yaml
 
-# change name: system to name: capi-system
-# change name: webook-system to name: capi-webhook-system
+# in the namspace resource make sure
+# name: capi-webhook-system
 
 # then inside of
 
 control-plane-kubeadm/v0.3.0/control-plane-components.yaml
 
-# change namespace to capi-kubeadm-control-plane-system
+# in the namspace resource make sure
+# name: capi-kubeadm-control-plane-system
+
 
 # then inside of 
 
 vim bootstrap-kubeadm/v0.3.0/bootstrap-components.yaml
 
-# change namepsace to capi-kubeadm-bootstrap-system
+# in the namspace resource make sure
+# name: capi-kubeadm-bootstrap-system
+
 
 # then inside of 
 
 vim infrastructure-docker/v0.3.0/infrastructure-components.yaml
 
-# change name: capi-system to name: capd-system
+# in the namspace resource make sure
+# name: capd-system
 
 # also replace the image image: gcr.io/k8s-staging-cluster-api/capd-manager:dev
 # with the local version that was builit by tilt in teh first step for you i.e
+
+
+# finall push the images built by tilt to registry if needed
 
 docker images localhost:5000/gcr.io_k8s-staging-cluster-api_capd-manager
 
@@ -271,7 +270,7 @@ kubectl -n capi-system describe pod capd-controller-manager<TAB>-<TAB>
 
 ```
 CNI_RESOURCES="$(cat test/e2e/data/cni/kindnet/kindnet.yaml)" \
-DOCKER_POD_CIDRS="192.168.0.0/16" \
+DOCKER_POD_CIDRS="172.17.0.1/16" \
 DOCKER_SERVICE_CIDRS="127.0.0.240/28" \
 DOCKER_SERVICE_DOMAIN="cluster.local" \
 clusterctl config cluster capd --kubernetes-version v1.17.5 \
@@ -305,9 +304,7 @@ kubectl get kubeadmcontrolplane --all-namespaces
 
 
 
-(9-21-2020 stuck here. if you to `kubectl descibe cluster capd` you'll see the control plane nodes are created but once I create the kubeconfig and try to connect it gives `Unable to connect to the server: EOF`)
-
-
+Accss teh cluster that was created by cluster api
 
 ```
 
@@ -327,6 +324,10 @@ kubectl get nodes
 
 
 sources:
+
+cluster-api/docs/book/src/developer/guide.md
+
+based on https://networkop.co.uk/post/2020-05-cluster-api-intro/
 
 https://alexbrand.dev/post/understanding-the-role-of-cert-manager-in-cluster-api/
 
