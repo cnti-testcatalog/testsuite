@@ -78,3 +78,28 @@ def helm_v3_version(helm_response)
   helm_v3 = helm_response.match /BuildInfo{Version:\"(v([0-9]{1,3}[\.]){1,2}[0-9]{1,3})"/
   helm_v3 && helm_v3.not_nil![1]
 end
+
+#TODO Get global response for helm
+#TODO Get version number of global response for helm
+#TODO If version of helm not 3 or greater, act as if helm is not installed
+#TODO If version of helm is 3, return helm installed
+
+def global_helm_installed?
+  ghelm = helm_global_response
+  global_helm_version = helm_v3_version(ghelm)
+  if (global_helm_version)
+    true
+  else
+    false
+  end
+end
+
+def local_helm_installed?
+  lhelm = helm_local_response
+  local_helm_version = helm_version(lhelm)
+  if (local_helm_version)
+    true
+  else
+    false
+  end
+end

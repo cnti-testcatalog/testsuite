@@ -143,7 +143,18 @@ task "rolling_update" do |_, args|
     deployment_name = config.get("deployment_name").as_s
     helm_chart_container_name = config.get("helm_chart_container_name").as_s
 
-    helm_chart_values = JSON.parse(`#{CNFManager.tools_helm} get values #{release_name} -a --output json`)
+    # helm_chart_values = JSON.parse(`#{CNFManager.local_helm_path} get values #{release_name} -a --output json`)
+    LOGGING.info "helm path: #{CNFSingleton.helm}"
+    LOGGING.info "helm command: #{CNFSingleton.helm} get values #{release_name} -a --output json"
+    helm_resp = `#{CNFSingleton.helm} get values #{release_name} -a --output json`
+    # helm sometimes does not return valid json :/
+    helm_split = helm_resp.split("\n")
+    if helm_resp.split("\n").size > 1 
+      cleaned_resp = helm_resp.split("\n")[1] 
+    else
+      cleaned_resp = helm_split[0]
+    end
+    helm_chart_values = JSON.parse(cleaned_resp)
     VERBOSE_LOGGING.debug "helm_chart_values" if check_verbose(args)
     VERBOSE_LOGGING.debug helm_chart_values if check_verbose(args)
     image_name = helm_chart_values["image"]["repository"]

@@ -225,8 +225,10 @@ module CNFManager
     if helm_repo_name == nil || helm_repo_url == nil
       # config = get_parsed_cnf_conformance_yml(args)
       config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-      current_dir = FileUtils.pwd
-      helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+      LOGGING.info "helm path: #{CNFSingleton.helm}"
+      helm = CNFSingleton.helm
+      # current_dir = FileUtils.pwd
+      # helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
       helm_repo_name = config.get("helm_repository.name").as_s?
       helm_repo_url = config.get("helm_repository.repo_url").as_s?
     end
@@ -280,7 +282,9 @@ module CNFManager
 
     begin
 
-      helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+      # helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+      LOGGING.info "helm path: #{CNFSingleton.helm}"
+      helm = CNFSingleton.helm
       if deploy_with_chart
         VERBOSE_LOGGING.info "deploying with chart repository" if verbose 
         helm_install = `#{helm} install #{release_name} #{helm_chart}`
@@ -320,7 +324,12 @@ module CNFManager
     end
   end
 
-  def self.tools_helm
+  # def self.tools_helm
+  #   current_dir = FileUtils.pwd 
+  #   helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+  # end
+
+  def self.local_helm_path
     current_dir = FileUtils.pwd 
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
   end
@@ -332,8 +341,10 @@ module CNFManager
     VERBOSE_LOGGING.info "cleanup config: #{config.inspect}" if verbose
     release_name = config.get("release_name").as_s 
 
-    current_dir = FileUtils.pwd 
-    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    LOGGING.info "helm path: #{CNFSingleton.helm}"
+    helm = CNFSingleton.helm
+    # current_dir = FileUtils.pwd 
+    # helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     # VERBOSE_LOGGING.debug helm if verbose 
     # destination_cnf_dir = "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(config_path)}"
     dir_exists = File.directory?(destination_cnf_dir)

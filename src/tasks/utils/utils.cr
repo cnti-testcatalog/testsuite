@@ -6,6 +6,7 @@ require "./embedded_file_manager.cr"
 require "log"
 require "file_utils"
 require "option_parser"
+require "../constants.cr"
 
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
