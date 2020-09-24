@@ -123,7 +123,7 @@ elsif ARGV[0]? && ARGV[0] == "create_env"
     puts "Required argument missing [-n, --name]"
   else
     puts "Creating ENV For: \n Name: #{env_name} \n Kubeconfig: #{kubeconfig}"
-    `docker run --name #{env_name} --network host -d -e GITHUB_USER=$GITHUB_USER -e GITHUB_TOKEN=$GITHUB_TOKEN -v $(pwd):/cnf-conformance -v #{kubeconfig}:/root/.kube/config -ti cnf-test /bin/sleep infinity`
+    `docker run --name #{env_name} --network host -d -e GITHUB_USER=$GITHUB_USER -e GITHUB_TOKEN=$GITHUB_TOKEN -e DOCKERHUB_USERNAME=$DOCKERHUB_USERNAME -e DOCKERHUB_PASSWORD=$DOCKERHUB_PASSWORD -v $(pwd):/cnf-conformance -v #{kubeconfig}:/root/.kube/config -ti cnf-test /bin/sleep infinity`
     puts `docker ps -f name=#{env_name}`
   end
 
@@ -205,8 +205,10 @@ elsif ARGV[0]? && ARGV[0] == "command"
     # cyrstal ./cnf-conformance all
      if binary == true
        system "docker exec -ti #{ENV["CRYSTAL_DEV_ENV"]} ./cnf-conformance #{execute_command}"
+       exit $?.exit_code
      else
       system "docker exec -ti #{ENV["CRYSTAL_DEV_ENV"]} crystal #{execute_command}"
+      exit $?.exit_code
      end
   else
     puts "CRYSTAL_DEV_ENV Not Set. Run list_envs and select one"
