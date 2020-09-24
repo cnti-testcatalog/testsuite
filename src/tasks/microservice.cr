@@ -59,7 +59,7 @@ task "reasonable_startup_time" do |_, args|
       end
       kubectl_apply = `kubectl apply -f #{yml_file_path}/reasonable_startup_test.yml --namespace=startup-test`
       is_kubectl_applied = $?.success?
-      # CNFManager.wait_for_install(deployment_name, wait_count=180,"startup-test")
+      CNFManager.wait_for_install(deployment_name, wait_count=180,"startup-test")
       is_kubectl_deployed = $?.success?
     end
 
