@@ -9,7 +9,9 @@ desc "Sets up Sonobuoy in the K8s Cluster"
 task "install_sonobuoy" do |_, args|
   #TODO: Fetch version dynamically
   # k8s_version = HTTP::Client.get("https://storage.googleapis.com/kubernetes-release/release/stable.txt").body.chomp.split(".")[0..1].join(".").gsub("v", "") 
-  k8s_version = "0.17.2"
+  # TODO make k8s_version dynamic
+  # TODO use kubectl version and grab the server version
+  k8s_version = "0.19.0"
   VERBOSE_LOGGING.debug k8s_version if check_verbose(args)
   current_dir = FileUtils.pwd 
   VERBOSE_LOGGING.debug current_dir if check_verbose(args)
