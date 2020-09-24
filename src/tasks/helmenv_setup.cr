@@ -27,6 +27,7 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
         VERBOSE_LOGGING.debug helm if check_verbose(args)
         VERBOSE_LOGGING.debug `#{helm} version` if check_verbose(args)
         stable_repo = `#{helm} repo add stable https://kubernetes-charts.storage.googleapis.com`
+        # stable_repo = ""
         VERBOSE_LOGGING.debug stable_repo if check_verbose(args)
 
         #TODO grep for version.BuildInfo{Version:"v3.1.1", GitCommit:"afe70585407b420d0097d07b21c47dc511525ac8", GitTreeState:"clean", GoVersion:"go1.13.8"} 
@@ -36,6 +37,7 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
       end
     end
   end
+  # `#{CNFSingleton.helm} repo add stable https://kubernetes-charts.storage.googleapis.com`
 end
 
 desc "Cleans up helm 3.1.1"

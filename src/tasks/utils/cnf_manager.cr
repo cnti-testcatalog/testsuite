@@ -221,6 +221,7 @@ module CNFManager
   end
 
   def self.helm_repo_add(helm_repo_name=nil, helm_repo_url=nil, args : Sam::Args=Sam::Args.new)
+    LOGGING.info "helm_repo_add repo_name: #{helm_repo_name} repo_url: #{helm_repo_url} args: #{args.inspect}"
     ret = false
     if helm_repo_name == nil || helm_repo_url == nil
       # config = get_parsed_cnf_conformance_yml(args)

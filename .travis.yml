@@ -35,7 +35,7 @@ jobs:
           # Run Crystal Spec
             git fetch --tags 
             shards install
-            crystal spec -v || travis_terminate 1;
+            LOG_LEVEL=info crystal spec -v || travis_terminate 1;
           else
             echo "SSH Key found, using Packet Runner"
             base64 -d <<< $SSH_KEY > ~/.ssh/id_rsa
@@ -69,7 +69,7 @@ jobs:
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME/ ; \$(pwd)/ephemeral_env setup -b \$(pwd)/ephemeral_env" || travis_terminate 1
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME/ ; source .github-env ; source .docker-env ; \$(pwd)/ephemeral_env create_env -n $TIME -k /tmp/$TIME/kubeconfig" || travis_terminate 1
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME crystal version || travis_terminate 1
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "export PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME ; cd /tmp/$TIME ; crystal spec -v" || travis_terminate 1
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "export PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME ; cd /tmp/$TIME ; LOG_LEVEL=info crystal spec -v" || travis_terminate 1
           fi
       script: 
         - docker pull crystallang/crystal:0.35.1-alpine

@@ -6,7 +6,9 @@ describe "Observability" do
   before_all do
     current_dir = FileUtils.pwd 
     LOGGING.info current_dir
-    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    # helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    LOGGING.info "helm path: #{CNFSingleton.helm}"
+    helm = CNFSingleton.helm
     LOGGING.info "Installing kube_state_metrics" 
     resp = `#{helm} install kube-state-metrics stable/kube-state-metrics`
     LOGGING.info resp
@@ -32,7 +34,9 @@ describe "Observability" do
   after_all do
     current_dir = FileUtils.pwd 
     LOGGING.info current_dir
-    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    # helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    LOGGING.info "helm path: #{CNFSingleton.helm}"
+    helm = CNFSingleton.helm
     resp = `#{helm} delete kube-state-metrics`
     LOGGING.info resp
     $?.success?.should be_true

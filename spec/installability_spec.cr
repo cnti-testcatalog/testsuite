@@ -102,15 +102,18 @@ describe CnfConformance do
 
   it "'helm_chart_published' should fail on a bad helm chart repo", tags: "helm_chart_published" do
     begin
-      `#{CNFSingleton.helm} repo remove stable`
-      `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-bad-helm-repo`
+      LOGGING.info "search command: #{`helm search repo stable/coredns`}"
+      # LOGGING.info `#{CNFSingleton.helm} repo remove stable`
+      # LOGGING.info "search command: #{`helm search repo stable/coredns`}"
+      LOGGING.info `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-bad-helm-repo wait-time=5 verbose`
       $?.success?.should be_true
-      response_s = `./cnf-conformance helm_chart_published`
+      LOGGING.info "search command: #{`helm search repo stable/coredns`}"
+      response_s = `./cnf-conformance helm_chart_published verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/FAILURE: Published Helm Chart Not Found/ =~ response_s).should_not be_nil
     ensure
-      `#{CNFSingleton.helm} repo add stable https://kubernetes-charts.storage.googleapis.com`
+      `#{CNFSingleton.helm} repo remove badrepo`
       `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-repo`
     end
   end
