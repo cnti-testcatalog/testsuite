@@ -32,7 +32,8 @@ describe "SampleUtils" do
 
     current_dir = FileUtils.pwd 
     LOGGING.info current_dir
-    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    helm = CNFSingleton.helm
     LOGGING.info helm
     helm_install = `#{helm} install coredns stable/coredns`
     LOGGING.info helm_install
@@ -212,6 +213,10 @@ describe "SampleUtils" do
       end
       (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
     end
+  end
+
+  it "'CNFManager.helm_gives_k8s_warning?' should pass when k8s config = chmod 700"  do
+    (CNFManager.helm_gives_k8s_warning?(true)).should be_false
   end
 
 end

@@ -72,40 +72,47 @@ describe CnfConformance do
   it "'helm_chart_valid' should fail on a bad helm chart" do
     # LOGGING.debug `pwd` 
     # LOGGING.debug `echo $KUBECONFIG`
-    `./cnf-conformance sample_coredns_cleanup force=true`
-    $?.success?.should be_true
-    `./cnf-conformance bad_helm_cnf_setup`
-    $?.success?.should be_true
-    response_s = `./cnf-conformance helm_chart_valid`
-    LOGGING.info response_s
-    $?.success?.should be_true
-    (/Lint Failed/ =~ response_s).should_not be_nil
-    `./cnf-conformance bad_helm_cnf_cleanup force=true`
-    $?.success?.should be_true
-    `./cnf-conformance sample_coredns_setup`
-    $?.success?.should be_true
+    begin
+      `./cnf-conformance sample_coredns_cleanup force=true`
+      $?.success?.should be_true
+      `./cnf-conformance bad_helm_cnf_setup`
+      $?.success?.should be_true
+      response_s = `./cnf-conformance helm_chart_valid`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/Lint Failed/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-conformance bad_helm_cnf_cleanup force=true`
+      `./cnf-conformance sample_coredns_setup`
+    end
   end
 
   it "'helm_chart_published' should pass on a good helm chart repo", tags: ["helm_chart_published","happy-path"]  do
-    `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-coredns-cnf`
-    $?.success?.should be_true
-    response_s = `./cnf-conformance helm_chart_published`
-    LOGGING.info response_s
-    $?.success?.should be_true
-    (/PASSED: Published Helm Chart Found/ =~ response_s).should_not be_nil
-    `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-coredns-cnf`
-    $?.success?.should be_true
+    begin
+      `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-conformance helm_chart_published`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Published Helm Chart Found/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-coredns-cnf`
+    end
   end
 
   it "'helm_chart_published' should fail on a bad helm chart repo", tags: "helm_chart_published" do
-    `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-bad-helm-repo`
-    $?.success?.should be_true
-    response_s = `./cnf-conformance helm_chart_published`
-    LOGGING.info response_s
-    $?.success?.should be_true
-    (/FAILURE: Published Helm Chart Not Found/ =~ response_s).should_not be_nil
-    `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-repo`
-    $?.success?.should be_true
+    begin
+      `#{CNFSingleton.helm} repo remove stable`
+      `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-bad-helm-repo`
+      $?.success?.should be_true
+      response_s = `./cnf-conformance helm_chart_published`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILURE: Published Helm Chart Not Found/ =~ response_s).should_not be_nil
+    ensure
+      `#{CNFSingleton.helm} repo add stable https://kubernetes-charts.storage.googleapis.com`
+      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-repo`
+    end
   end
 
 end

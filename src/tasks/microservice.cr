@@ -23,16 +23,17 @@ task "reasonable_startup_time" do |_, args|
     # needs to be the source directory
     yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
     # yml_file_path = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    LOGGING.debug("reasonable_startup_time yml_file_path: #{yml_file_path}")
-    VERBOSE_LOGGING.debug "yaml_path: #{yml_file_path}" if check_verbose(args)
+    LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
+    VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
 
     helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_directory = "#{config.get("helm_directory").as_s?}"
     release_name = "#{config.get("release_name").as_s?}"
     deployment_name = "#{config.get("deployment_name").as_s?}"
     current_dir = FileUtils.pwd 
-    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-    VERBOSE_LOGGING.debug helm if check_verbose(args)
+    #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    helm = CNFSingleton.helm
+    VERBOSE_LOGGING.info helm if check_verbose(args)
 
     create_namespace = `kubectl create namespace startup-test`
     helm_template_orig = ""
@@ -44,27 +45,28 @@ task "reasonable_startup_time" do |_, args|
       LOGGING.info("reasonable_startup_time helm_chart.empty?: #{helm_chart.empty?}")
       unless helm_chart.empty?
         LOGGING.info("reasonable_startup_time #{helm} template #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_orig.yml")
+        LOGGING.info "helm_template_orig command: #{helm} template #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_orig.yml}"
         helm_template_orig = `#{helm} template #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_orig.yml`
         LOGGING.info("reasonable_startup_time #{helm} template --namespace=startup-test #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_test.yml")
         helm_template_test = `#{helm} template --namespace=startup-test #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_test.yml`
-        VERBOSE_LOGGING.debug "helm_chart: #{helm_chart}" if check_verbose(args)
+        VERBOSE_LOGGING.info "helm_chart: #{helm_chart}" if check_verbose(args)
       else
         LOGGING.info("reasonable_startup_time #{helm} template #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_orig.yml")
         helm_template_orig = `#{helm} template #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_orig.yml`
         LOGGING.info("reasonable_startup_time #{helm} template --namespace=startup-test #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_test.yml")
         helm_template_test = `#{helm} template --namespace=startup-test #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_test.yml`
-        VERBOSE_LOGGING.debug "helm_directory: #{helm_directory}" if check_verbose(args)
+        VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if check_verbose(args)
       end
       kubectl_apply = `kubectl apply -f #{yml_file_path}/reasonable_startup_test.yml --namespace=startup-test`
       is_kubectl_applied = $?.success?
-      CNFManager.wait_for_install(deployment_name, wait_count=180,"startup-test")
+      # CNFManager.wait_for_install(deployment_name, wait_count=180,"startup-test")
       is_kubectl_deployed = $?.success?
     end
 
-    VERBOSE_LOGGING.debug helm_template_test if check_verbose(args)
-    VERBOSE_LOGGING.debug kubectl_apply if check_verbose(args)
-    VERBOSE_LOGGING.debug "installed? #{is_kubectl_applied}" if check_verbose(args)
-    VERBOSE_LOGGING.debug "deployed? #{is_kubectl_deployed}" if check_verbose(args)
+    VERBOSE_LOGGING.info helm_template_test if check_verbose(args)
+    VERBOSE_LOGGING.info kubectl_apply if check_verbose(args)
+    VERBOSE_LOGGING.info "installed? #{is_kubectl_applied}" if check_verbose(args)
+    VERBOSE_LOGGING.info "deployed? #{is_kubectl_deployed}" if check_verbose(args)
 
     emoji_fast="🚀"
     emoji_slow="🐢"
@@ -76,7 +78,7 @@ task "reasonable_startup_time" do |_, args|
 
     delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
     rollback_non_namespaced = `kubectl apply -f #{yml_file_path}/reasonable_startup_orig.yml`
-    CNFManager.wait_for_install(deployment_name, wait_count=180)
+    # CNFManager.wait_for_install(deployment_name, wait_count=180)
   end
 end
 

@@ -2,6 +2,7 @@ require "file_utils"
 require "colorize"
 require "totem"
 
+# TODO put this in a module
 def helm_installation(verbose=false)
   gmsg = "No Global helm version found"
   lmsg = "No Local helm version found"
@@ -51,7 +52,8 @@ end
 def helm_local_response(verbose=false)
   current_dir = FileUtils.pwd 
   VERBOSE_LOGGING.info current_dir if verbose 
-  helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+  #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    helm = CNFSingleton.helm
   # helm_response = `#{helm} version`
   status = Process.run("#{helm} version", shell: true, output: helm_response = IO::Memory.new, error: stderr = IO::Memory.new)
   VERBOSE_LOGGING.info helm_response.to_s if verbose

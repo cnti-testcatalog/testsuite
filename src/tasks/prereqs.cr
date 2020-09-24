@@ -10,6 +10,7 @@ require "./utils/system_information/git.cr"
 
 task "prereqs" do  |_, args|
   if helm_installation.includes?("helm found") &&
+      !CNFManager.helm_gives_k8s_warning?(true) &&
       wget_installation.includes?("wget found") &&
       curl_installation.includes?("curl found") &&
       kubectl_installation.includes?("kubectl found") &&

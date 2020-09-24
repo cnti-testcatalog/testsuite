@@ -1,3 +1,5 @@
+require "./utils/system_information/helm.cr"
+
 CNFSingleton = CNFGlobals.new
 class CNFGlobals
   CNF_DIR = "cnfs"
