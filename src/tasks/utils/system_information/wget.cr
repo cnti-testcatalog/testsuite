@@ -29,7 +29,7 @@ def wget_installation(verbose=false)
     stdout_warning lmsg
   end
 
-  if !(global_wget_version && local_wget_version)
+  if global_wget_version.empty? && local_wget_version.empty?
     stdout_failure "Wget not found"
     stdout_failure %Q(
     Linux installation instructions for Wget can be found here: https://www.tecmint.com/install-wget-in-linux/ 

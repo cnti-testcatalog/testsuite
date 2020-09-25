@@ -52,3 +52,51 @@ task "k8s_conformance" do |_, args|
     VERBOSE_LOGGING.debug remove_tar if check_verbose(args)
   end
 end
+
+desc "Is Cluster Api available and managing a cluster?"
+task "clusterapi_enabled" do |_, args|
+  task_runner(args) do
+    unless check_poc(args)
+      LOGGING.info "skipping clusterapi_enabled: not in poc mode"
+      puts "Skipped".colorize(:yellow)
+      next
+    end
+
+    VERBOSE_LOGGING.info "clusterapi_enabled" if check_verbose(args)
+    LOGGING.info("clusterapi_enabled args #{args.inspect}")
+
+    # We test that the namespaces for cluster resources exist by looking for labels
+    # I found those by running
+    # clusterctl init
+    # kubectl -n capi-system describe deployments.apps capi-controller-manager
+    # https://cluster-api.sigs.k8s.io/clusterctl/commands/init.html#additional-information
+
+    # this indicates that cluster-api is installed
+    clusterapi_namespaces_output = `kubectl get namespaces --selector clusterctl.cluster.x-k8s.io -o json`
+    clusterapi_namespaces_json = JSON.parse(clusterapi_namespaces_output)
+
+    LOGGING.info("clusterapi_namespaces_json: #{clusterapi_namespaces_json}")
+
+    # check that a node is actually being manageed
+    # TODO: suppress msg in the case that this resource does-not-exist which is what happens when cluster-api is not installed
+    clusterapi_control_planes_output = `kubectl get kubeadmcontrolplanes.controlplane.cluster.x-k8s.io -o json`
+
+    proc_clusterapi_control_planes_json = -> do
+      begin
+        JSON.parse(clusterapi_control_planes_output)
+      rescue JSON::ParseException
+        JSON.parse("{}")
+      end
+    end
+
+    clusterapi_control_planes_json = proc_clusterapi_control_planes_json.call
+
+    if clusterapi_namespaces_json["items"]?.not_nil! && clusterapi_namespaces_json["items"].as_a.size > 0 && clusterapi_control_planes_json["items"]?.not_nil! && clusterapi_control_planes_json["items"].as_a.size > 0
+      resp = upsert_passed_task("clusterapi_enabled", "✔️ Cluster API is enabled ✨")
+    else
+      resp = upsert_failed_task("clusterapi_enabled","✖️  Cluster API NOT enabled ✨")
+    end
+
+    resp
+  end
+end
