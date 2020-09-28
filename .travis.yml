@@ -81,3 +81,7 @@ jobs:
           else
             ./cnf-conformance upsert_release
           fi
+        # Cleanup
+        - ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind delete clusters $TIME || travis_terminate 1
+        - ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST docker rm -f $TIME || travis_terminate 1
+        - ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST rm -rf /tmp/$TIME || travis_terminate 1
