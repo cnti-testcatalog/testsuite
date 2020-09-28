@@ -6,7 +6,7 @@ ENV["CRYSTAL_ENV"] = "TEST"
 
 
 LOGGING.info "Building ./cnf-conformance".colorize(:green)
-`crystal build src/cnf-conformance.cr`
+`crystal build --warnings none src/cnf-conformance.cr`
 if $?.success?
   LOGGING.info "Build Success!".colorize(:green)
 else
