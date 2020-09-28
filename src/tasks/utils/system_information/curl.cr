@@ -29,7 +29,7 @@ def curl_installation(verbose=false)
     stdout_warning lmsg
   end
 
-  if !(global_curl_version && local_curl_version)
+  if global_curl_version.empty? && local_curl_version.empty?
     stdout_failure "Curl not found"
     stdout_failure %Q(
     Linux installation instructions for Curl can be found here: https://www.tecmint.com/install-curl-in-linux/ 

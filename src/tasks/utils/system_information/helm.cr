@@ -31,7 +31,7 @@ def helm_installation(verbose=false)
     stdout_warning lmsg
   end
 
-  if !(global_helm_version && local_helm_version)
+  if global_helm_version.empty? && local_helm_version.empty?
     stdout_failure "Helm not found"
     stdout_failure %Q(
     Installation instructions for Helm can be found here: https://helm.sh/docs/intro/install
