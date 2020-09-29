@@ -82,11 +82,16 @@ namespace "platform" do
       repo_digest_list = KubectlClient::Get.all_container_repo_digests
       LOGGING.info "container_repo_digests: #{repo_digest_list}"
       id_sha256_list = repo_digest_list.reduce([] of String) do |acc, repo_digest|
-        LOGGING.debug "repo_digest: #{repo_digest}"
+        LOGGING.info "repo_digest: #{repo_digest}"
         cricti = `kubectl exec -ti #{cri_tools_pod} -- crictl inspecti #{repo_digest}`
-        LOGGING.debug "cricti: #{cricti}"
-        parsed_json = JSON.parse(cricti)
-        acc << parsed_json["status"]["id"].as_s
+        LOGGING.info "cricti: #{cricti}"
+        begin
+          parsed_json = JSON.parse(cricti)
+          acc << parsed_json["status"]["id"].as_s
+        rescue
+          LOGGING.error "cricti not valid json: #{cricti}"
+          acc
+        end
       end
       LOGGING.debug "id_sha256_list: #{id_sha256_list}"
 
@@ -99,15 +104,19 @@ namespace "platform" do
         target_ns_repo = "prom/node-exporter"
         params = "service=registry.docker.io&scope=repository:#{target_ns_repo}:pull"
         token = `curl --user "#{ENV["DOCKERHUB_USERNAME"]}:#{ENV["DOCKERHUB_PASSWORD"]}" "https://auth.docker.io/token?#{params}"`
+        LOGGING.debug "token: #{token}"
+        if token =~ /incorrect username/
+          LOGGING.error "error: #{token}"
+        end
         parsed_token = JSON.parse(token)
         release_id_list = tag_list.reduce([] of Hash(String, String)) do |acc, tag|
-          LOGGING.debug "tag: #{tag}"
+          LOGGING.info "tag: #{tag}"
           tag = tag["name"]
 
           image_id = `curl --header "Accept: application/vnd.docker.distribution.manifest.v2+json" "https://registry-1.docker.io/v2/#{target_ns_repo}/manifests/#{tag}" -H "Authorization:Bearer #{parsed_token["token"].as_s}"`
           parsed_image = JSON.parse(image_id)
 
-          LOGGING.debug "parsed_image config digest #{parsed_image["config"]["digest"]}"
+          LOGGING.info "parsed_image config digest #{parsed_image["config"]["digest"]}"
           if parsed_image["config"]["digest"]?
               acc << {"name" => tag, "digest"=> parsed_image["config"]["digest"].as_s}
           else
@@ -118,7 +127,7 @@ namespace "platform" do
         puts "DOCKERHUB_USERNAME & DOCKERHUB_PASSWORD Must be set."
         exit 1
       end
-      LOGGING.debug "Release id sha256sum list: #{release_id_list}"
+      LOGGING.info "Release id sha256sum list: #{release_id_list}"
 
       found = false
       release_name = ""
@@ -212,8 +221,13 @@ end
         LOGGING.debug "repo_digest: #{repo_digest}"
         cricti = `kubectl exec -ti #{cri_tools_pod} -- crictl inspecti #{repo_digest}`
         LOGGING.debug "cricti: #{cricti}"
-        parsed_json = JSON.parse(cricti)
-        acc << parsed_json["status"]["id"].as_s
+        begin
+          parsed_json = JSON.parse(cricti)
+          acc << parsed_json["status"]["id"].as_s
+        rescue
+          LOGGING.error "cricti not valid json: #{cricti}"
+          acc
+        end
       end
       LOGGING.info "id_sha256_list: #{id_sha256_list}"
 
@@ -226,6 +240,9 @@ end
         target_ns_repo = "bitnami/metrics-server"
         params = "service=registry.docker.io&scope=repository:#{target_ns_repo}:pull"
         token = `curl --user "#{ENV["DOCKERHUB_USERNAME"]}:#{ENV["DOCKERHUB_PASSWORD"]}" "https://auth.docker.io/token?#{params}"`
+        if token =~ /incorrect username/
+          LOGGING.error "error: #{token}"
+        end
         parsed_token = JSON.parse(token)
         release_id_list = tag_list.reduce([] of Hash(String, String)) do |acc, tag|
           LOGGING.debug "tag: #{tag}"

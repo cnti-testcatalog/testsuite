@@ -4,31 +4,36 @@ require "./../../src/tasks/utils/utils.cr"
 
 describe "Observability" do
   before_all do
-    current_dir = FileUtils.pwd 
-    LOGGING.info current_dir
-    # helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-    LOGGING.info "helm path: #{CNFSingleton.helm}"
-    helm = CNFSingleton.helm
-    LOGGING.info "Installing kube_state_metrics" 
-    resp = `#{helm} install kube-state-metrics stable/kube-state-metrics`
-    LOGGING.info resp
-    CNFManager.wait_for_install("kube-state-metrics")
+    begin
+      current_dir = FileUtils.pwd 
+      LOGGING.info current_dir
+      # helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+      LOGGING.info "helm path: #{CNFSingleton.helm}"
+      helm = CNFSingleton.helm
+      LOGGING.info "Installing kube_state_metrics" 
+      resp = `#{helm} install kube-state-metrics stable/kube-state-metrics`
+      LOGGING.info resp
+      CNFManager.wait_for_install("kube-state-metrics")
 
-    LOGGING.info "Installing prometheus-node-exporter" 
-    resp = `#{helm} install node-exporter stable/prometheus-node-exporter`
-    LOGGING.info resp
+			LOGGING.info "Installing prometheus-node-exporter" 
+			resp = `#{helm} install node-exporter stable/prometheus-node-exporter`
+			LOGGING.info resp
 
-    LOGGING.info "Installing prometheus-adapter" 
-    resp = `#{helm} install prometheus-adapter stable/prometheus-adapter`
-    LOGGING.info resp
-    CNFManager.wait_for_install("prometheus-adapter")
+			LOGGING.info "Installing prometheus-adapter" 
+			resp = `#{helm} install prometheus-adapter stable/prometheus-adapter`
+			LOGGING.info resp
+			CNFManager.wait_for_install("prometheus-adapter")
 
-    LOGGING.info "Installing metrics_server" 
-    resp = `kubectl create -f spec/fixtures/metrics-server.yaml`
-    LOGGING.info resp
-    CNFManager.wait_for_install(deployment_name: "metrics-server", namespace:"kube-system")
-    # The next line seems to avoid: "Error running at_exit handler" "Invalid Int32"
-    0
+			LOGGING.info "Installing metrics_server" 
+			resp = `kubectl create -f spec/fixtures/metrics-server.yaml`
+			LOGGING.info resp
+			CNFManager.wait_for_install(deployment_name: "metrics-server", namespace:"kube-system")
+		rescue ex
+			LOGGING.error ex.message
+			ex.backtrace.each do |x| 
+				LOGGING.error x
+			end 
+		end 
   end
 
   after_all do
