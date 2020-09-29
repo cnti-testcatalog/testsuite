@@ -6,6 +6,7 @@ require "./embedded_file_manager.cr"
 require "log"
 require "file_utils"
 require "option_parser"
+require "../constants.cr"
 
 # TODO make constants local or always retrieve from environment variables
 # TODO Move constants out
@@ -24,9 +25,9 @@ DEFAULT_POINTSFILENAME = "points_v1.yml"
 PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
 
 #Embedded global text variables
-EmbeddedFileManager.reboot_daemon
 EmbeddedFileManager.node_failure_values
 EmbeddedFileManager.cri_tools
+EmbeddedFileManager.reboot_daemon
 
 def log_formatter
   Log::Formatter.new do |entry, io|

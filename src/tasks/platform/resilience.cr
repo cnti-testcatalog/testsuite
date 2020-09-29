@@ -22,7 +22,8 @@ namespace "platform" do
     LOGGING.info "Running POC in destructive mode!"
     task_response = task_runner(args) do |args|
       current_dir = FileUtils.pwd 
-      helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+      #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    helm = CNFSingleton.helm
 
       #Select the first node that isn't a master and is also schedulable
       worker_nodes = `kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
