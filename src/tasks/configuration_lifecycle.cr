@@ -143,7 +143,22 @@ task "rolling_update" do |_, args|
     deployment_name = config.get("deployment_name").as_s
     helm_chart_container_name = config.get("helm_chart_container_name").as_s
 
-    helm_chart_values = JSON.parse(`#{CNFManager.tools_helm} get values #{release_name} -a --output json`)
+    # helm_chart_values = JSON.parse(`#{CNFManager.local_helm_path} get values #{release_name} -a --output json`)
+    LOGGING.info "helm path: #{CNFSingleton.helm}"
+    LOGGING.info "helm command: #{CNFSingleton.helm} get values #{release_name} -a --output json"
+    helm_resp = `#{CNFSingleton.helm} get values #{release_name} -a --output json`
+    # helm sometimes does not return valid json :/
+    helm_split = helm_resp.split("\n")
+    LOGGING.info "helm_split: #{helm_split}"
+    if helm_split[1] =~ /WARNING/ 
+      cleaned_resp = helm_split[2] 
+    elsif helm_split[0] =~ /WARNING/
+      cleaned_resp = helm_split[1] 
+    else
+      cleaned_resp = helm_split[0]
+    end
+    LOGGING.info "cleaned_resp: #{cleaned_resp}"
+    helm_chart_values = JSON.parse(cleaned_resp)
     VERBOSE_LOGGING.debug "helm_chart_values" if check_verbose(args)
     VERBOSE_LOGGING.debug helm_chart_values if check_verbose(args)
     image_name = helm_chart_values["image"]["repository"]
@@ -213,7 +228,8 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
 
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     current_dir = FileUtils.pwd
-    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    helm = CNFSingleton.helm
     VERBOSE_LOGGING.debug "Helm Path: #{helm}" if check_verbose(args)
 
     create_namespace = `kubectl create namespace hardcoded-ip-test`

@@ -13,6 +13,7 @@ describe CnfConformance do
     # `./cnf-conformance setup`
     # $?.success?.should be_true
   end
+
   it "'ip_addresses' should fail when ip addresses are found in the source that is set", tags: "happy-path"  do
     begin
       `./cnf-conformance sample_coredns_source_setup verbose`
@@ -75,28 +76,29 @@ describe CnfConformance do
   end
   it "'rolling_update' should pass when valid version is given", tags: ["rolling_update", "happy-path"]  do
     begin
-      `./cnf-conformance sample_coredns`
+      LOGGING.info `./cnf-conformance sample_coredns`
       $?.success?.should be_true
       response_s = `./cnf-conformance rolling_update verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Rolling Update Passed/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-conformance cleanup_sample_coredns`
+      # `./cnf-conformance cleanup_sample_coredns`
     end
   end
   it "'rolling_update' should fail when invalid version is given", tags: "rolling_update" do
     begin
-      `./cnf-conformance sample_coredns`
+      LOGGING.info `./cnf-conformance sample_coredns`
       $?.success?.should be_true
       response_s = `./cnf-conformance rolling_update verbose version_tag=this_is_not_real_version`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Rolling Update Failed/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-conformance cleanup_sample_coredns`
+      # `./cnf-conformance cleanup_sample_coredns`
     end
   end
+
   it "'nodeport_not_used' should fail when a node port is being used", tags: "nodeport_not_used" do
     begin
       `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample_nodeport deploy_with_chart=false`

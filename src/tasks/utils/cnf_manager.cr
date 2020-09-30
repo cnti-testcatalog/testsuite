@@ -221,18 +221,38 @@ module CNFManager
   end
 
   def self.helm_repo_add(helm_repo_name=nil, helm_repo_url=nil, args : Sam::Args=Sam::Args.new)
+    LOGGING.info "helm_repo_add repo_name: #{helm_repo_name} repo_url: #{helm_repo_url} args: #{args.inspect}"
     ret = false
     if helm_repo_name == nil || helm_repo_url == nil
       # config = get_parsed_cnf_conformance_yml(args)
       config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-      current_dir = FileUtils.pwd
-      helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+      LOGGING.info "helm path: #{CNFSingleton.helm}"
+      # current_dir = FileUtils.pwd
+      # #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+      helm = CNFSingleton.helm
       helm_repo_name = config.get("helm_repository.name").as_s?
+      LOGGING.info "helm_repo_name: #{helm_repo_name}"
       helm_repo_url = config.get("helm_repository.repo_url").as_s?
+      LOGGING.info "helm_repo_url: #{helm_repo_url}"
     end
     if helm_repo_name && helm_repo_url
-      `#{helm} repo add #{helm_repo_name} #{helm_repo_url}`
-      if $?.success?
+      LOGGING.info "helm  repo add command: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
+      # helm_resp = `#{helm} repo add #{helm_repo_name} #{helm_repo_url}`
+      stdout = IO::Memory.new
+      stderror = IO::Memory.new
+      begin
+      process = Process.new("#{helm}", ["repo", "add", "#{helm_repo_name}", "#{helm_repo_url}"], output: stdout, error: stderror)
+      status = process.wait
+      helm_resp = stdout.to_s
+      error = stderror.to_s
+      LOGGING.info "error: #{error}"
+      LOGGING.info "helm_resp (add): #{helm_resp}"
+      rescue
+        LOGGING.error "helm repo add command critically failed: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
+      end
+      # Helm version v3.3.3 gave us a surprise
+      if helm_resp =~ /has been added|already exists/ || error =~ /has been added|already exists/
+      # if $?.success?
         ret = true
       else
         ret = false
@@ -241,6 +261,25 @@ module CNFManager
       ret = false
     end
     ret
+  end
+
+  def self.helm_gives_k8s_warning?(verbose=false)
+    helm = CNFSingleton.helm
+    stdout = IO::Memory.new
+    stderror = IO::Memory.new
+    process = Process.new("#{helm}", ["list"], output: stdout, error: stderror)
+    status = process.wait
+    helm_resp = stdout.to_s
+    error = stderror.to_s
+    LOGGING.info "error: #{error}"
+    LOGGING.info "helm_resp (add): #{helm_resp}"
+    # Helm version v3.3.3 gave us a surprise
+    if (helm_resp + error) =~ /WARNING: Kubernetes configuration file is/
+      stdout_failure("For this version of helm you must set your K8s config file permissions to chmod 700") if verbose
+      true
+    else
+      false
+    end
   end
 
   def self.sample_setup(config_file, release_name, deployment_name, helm_chart, helm_directory, git_clone_url="", deploy_with_chart=true, verbose=false, wait_count=180)
@@ -280,7 +319,9 @@ module CNFManager
 
     begin
 
-      helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+      # #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+      helm = CNFSingleton.helm
+      LOGGING.info "helm path: #{CNFSingleton.helm}"
       if deploy_with_chart
         VERBOSE_LOGGING.info "deploying with chart repository" if verbose 
         helm_install = `#{helm} install #{release_name} #{helm_chart}`
@@ -320,7 +361,13 @@ module CNFManager
     end
   end
 
-  def self.tools_helm
+  # def self.tools_helm
+  #   current_dir = FileUtils.pwd 
+  #   #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    # helm = CNFSingleton.helm
+  # end
+
+  def self.local_helm_path
     current_dir = FileUtils.pwd 
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
   end
@@ -332,8 +379,9 @@ module CNFManager
     VERBOSE_LOGGING.info "cleanup config: #{config.inspect}" if verbose
     release_name = config.get("release_name").as_s 
 
-    current_dir = FileUtils.pwd 
-    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    LOGGING.info "helm path: #{CNFSingleton.helm}"
+    # #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    helm = CNFSingleton.helm
     # VERBOSE_LOGGING.debug helm if verbose 
     # destination_cnf_dir = "#{current_dir}/#{CNF_DIR}/#{short_sample_dir(config_path)}"
     dir_exists = File.directory?(destination_cnf_dir)
@@ -342,6 +390,7 @@ module CNFManager
     if dir_exists || force == true
       rm = `rm -rf #{destination_cnf_dir}`
       VERBOSE_LOGGING.info rm if verbose
+      LOGGING.info "helm uninstall command: #{helm} uninstall #{release_name}"
       helm_uninstall = `#{helm} uninstall #{release_name}`
       ret = $?.success?
       VERBOSE_LOGGING.info helm_uninstall if verbose

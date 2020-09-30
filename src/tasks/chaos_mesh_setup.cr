@@ -10,7 +10,8 @@ desc "Install Chaos Mesh"
 task "install_chaosmesh" do |_, args|
   VERBOSE_LOGGING.info "install_chaosmesh" if check_verbose(args)
   current_dir = FileUtils.pwd 
-  helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+  #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    helm = CNFSingleton.helm
   crd_install = `kubectl create -f https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml`
   VERBOSE_LOGGING.info "#{crd_install}" if check_verbose(args)
   unless Dir.exists?("#{current_dir}/#{TOOLS_DIR}/chaos_mesh")
@@ -28,7 +29,8 @@ desc "Uninstall Chaos Mesh"
 task "uninstall_chaosmesh" do |_, args|
   VERBOSE_LOGGING.info "uninstall_chaosmesh" if check_verbose(args)
   current_dir = FileUtils.pwd
-  helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+  #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    helm = CNFSingleton.helm
   crd_delete = `kubectl delete -f https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml`
   FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/chaos_mesh")
   delete_chaos_mesh = `#{helm} delete chaos-mesh`

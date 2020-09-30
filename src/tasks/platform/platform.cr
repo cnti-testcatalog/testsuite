@@ -1,6 +1,6 @@
 # coding: utf-8
 desc "Platform Tests"
-task "platform", ["k8s_conformance", "platform:resilience", "platform:hardware_and_scheduling"]  do |_, args|
+task "platform", ["helmenv_setup", "k8s_conformance", "platform:obervability", "platform:resilience", "platform:hardware_and_scheduling"]  do |_, args|
   VERBOSE_LOGGING.info "platform" if check_verbose(args)
   #TODO add CRYSTAL_ENV=TEST in new ISSUES when testing ./cnf-conformance platform or ./cnf-conformance all
 

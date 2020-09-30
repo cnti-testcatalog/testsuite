@@ -25,7 +25,8 @@ task "helm_deploy" do |_, args|
         release_name = "#{config.get("release_name").as_s?}"
 
         current_dir = FileUtils.pwd
-        helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+        #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    helm = CNFSingleton.helm
         VERBOSE_LOGGING.debug helm if check_verbose(args)
 
         if helm_chart.empty? 
@@ -104,12 +105,14 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
     helm_directory = "#{config.get("helm_directory").as_s?}"
 
     current_dir = FileUtils.pwd 
-    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    helm = CNFSingleton.helm
     VERBOSE_LOGGING.debug helm if check_verbose(args)
 
     if CNFManager.helm_repo_add(args: args)
       unless helm_chart.empty?
         helm_search = `#{helm} search repo #{helm_chart}`
+        LOGGING.info "helm search command: #{helm} search repo #{helm_chart}"
         VERBOSE_LOGGING.debug "#{helm_search}" if check_verbose(args)
         unless helm_search =~ /No results found/
           upsert_passed_task("helm_chart_published", "✔️  PASSED: Published Helm Chart Found")
@@ -147,7 +150,8 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
 
     current_dir = FileUtils.pwd 
     VERBOSE_LOGGING.debug current_dir if check_verbose(args)
-    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    helm = CNFSingleton.helm
 
     # current_cnf_dir_short_name = CNFManager.ensure_cnf_conformance_dir
     # VERBOSE_LOGGING.debug current_cnf_dir_short_name if check_verbose(args)

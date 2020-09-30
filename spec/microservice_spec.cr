@@ -19,17 +19,22 @@ describe "Microservice" do
   it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time", "happy-path"]  do
     begin
       response_s = `./cnf-conformance reasonable_startup_time cnf-config=sample-cnfs/sample_coredns/cnf-conformance.yml`
+      LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: CNF had a reasonable startup time/ =~ response_s).should_not be_nil
     ensure
       `kubectl delete -f sample-cnfs/sample_coredns/reasonable_startup_orig.yml`
+      `./cnf-conformance samples_cleanup force=true`
       $?.success?.should be_true
     end
   end
 
   it "'reasonable_startup_time' should fail if the cnf doesn't has a reasonable startup time(helm_directory)", tags: "reasonable_startup_time" do
+    `./cnf-conformance cnf_cleanup cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml force=true`
+      `kubectl delete -f sample-cnfs/sample_envoy_slow_startup/reasonable_startup_orig.yml`
     begin
-      response_s = `./cnf-conformance reasonable_startup_time cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml`
+      response_s = `./cnf-conformance reasonable_startup_time cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml verbose`
+      LOGGING.info response_s
       $?.success?.should be_true
       (/FAILURE: CNF had a startup time of/ =~ response_s).should_not be_nil
     ensure
