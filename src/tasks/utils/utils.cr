@@ -25,9 +25,9 @@ DEFAULT_POINTSFILENAME = "points_v1.yml"
 PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
 
 #Embedded global text variables
-EmbeddedFileManager.reboot_daemon
 EmbeddedFileManager.node_failure_values
 EmbeddedFileManager.cri_tools
+EmbeddedFileManager.reboot_daemon
 
 def log_formatter
   Log::Formatter.new do |entry, io|
