@@ -2,7 +2,21 @@
 desc "Platform Tests"
 task "platform", ["k8s_conformance", "platform:resilience", "platform:hardware_and_scheduling"]  do |_, args|
   VERBOSE_LOGGING.info "platform" if check_verbose(args)
-  stdout_score("platform")
+  #TODO add CRYSTAL_ENV=TEST in new ISSUES when testing ./cnf-conformance platform or ./cnf-conformance all
+
+  total = total_points("platform")
+  if total > 0
+    #TODO make new platform_total_points and platform_total_max_points
+    stdout_success "Final platform score: #{total} of #{total_max_points("platform")}"
+  else
+    stdout_failure "Final platform score: #{total} of #{total_max_points("platform")}"
+  end
+
+  if failed_required_tasks.size > 0
+    stdout_failure "Conformance Suite failed!"
+    stdout_failure "Failed required tasks: #{failed_required_tasks.inspect}"
+  end
+  stdout_info "Results have been saved to #{Results.file}".colorize(:green)
 end
 
 desc "Does the platform pass the K8s conformance tests?"
