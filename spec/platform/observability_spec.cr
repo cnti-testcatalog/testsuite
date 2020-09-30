@@ -4,7 +4,6 @@ require "./../../src/tasks/utils/utils.cr"
 
 describe "Observability" do
   before_all do
-
     begin
       current_dir = FileUtils.pwd 
       LOGGING.info current_dir
