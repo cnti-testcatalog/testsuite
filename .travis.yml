@@ -72,6 +72,8 @@ jobs:
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker build tools/curl_install_tester_docker_setup/ -t curl_install_tester --target ci_test " || failure_func
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker run --rm -it curl_install_tester ./cnf-conformance sample_coredns_setup" || failure_func
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker run --rm -it curl_install_tester ./cnf-conformance ip_addresses" || failure_func
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker run --rm -it curl_install_tester wget https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml" || failure_func
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker run --rm -it curl_install_tester ./cnf-conformance ip_addresses cnf-config=./cnf-conformance.yml" || failure_func
           # Setup ephemeral dev env
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker run --rm -it -v \$(pwd):/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build tools/ephemeral_env/ephemeral_env.cr --release --static --link-flags '-lxml2 -llzma'" || failure_func
             cat <<< "/tmp/$TIME/ephemeral_env command alias \$@" > ./crystal
