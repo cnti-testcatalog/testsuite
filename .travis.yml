@@ -37,11 +37,14 @@ jobs:
             shards install
             LOG_LEVEL=info crystal spec -v || travis_terminate 1;
           else
-            failure_func () {
-              exit 1
-            }
             echo "SSH Key found, using Packet Runner"
-            failure_func
+            export TIME=$(date +%s)$RANDOM
+            failure_func () {
+              ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind delete clusters $TIME 
+              ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST docker rm -f $TIME 
+              ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST rm -rf /tmp/$TIME
+              travis_terminate 1
+            }
             base64 -d <<< $SSH_KEY > ~/.ssh/id_rsa
             chmod 400 ~/.ssh/id_rsa
             eval $(ssh-agent)
@@ -52,7 +55,6 @@ jobs:
             cat <<< "export DOCKERHUB_PASSWORD=$DOCKERHUB_PASSWORD" >> $(pwd)/.docker-env
             cat <<< "export GITHUB_USER=$GITHUB_USER" > $(pwd)/.github-env
             cat <<< "export GITHUB_TOKEN=$GITHUB_TOKEN" >> $(pwd)/.github-env
-            export TIME=$(date +%s)$RANDOM
           # Install CNF-Conformance
             scp -o StrictHostKeyChecking=no -rp $(pwd) root@$SSH_HOST:/tmp/$TIME
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; git fetch --tags" || travis_terminate 1
@@ -73,7 +75,7 @@ jobs:
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME/ ; \$(pwd)/ephemeral_env setup -b \$(pwd)/ephemeral_env" || travis_terminate 1
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME/ ; source .github-env ; source .docker-env ; \$(pwd)/ephemeral_env create_env -n $TIME -k /tmp/$TIME/kubeconfig" || travis_terminate 1
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME crystal version || travis_terminate 1
-            failure
+            failure_func
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "export PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME ; cd /tmp/$TIME ; LOG_LEVEL=info crystal spec -v" || travis_terminate 1
           fi
       script: 
