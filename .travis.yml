@@ -14,8 +14,7 @@ jobs:
           if [ -z "${SSH_KEY+x}" ]; then
             echo "SSH Key not found, using Travis Runner"
           # Failure Function
-            source test.sh
-            function_test
+            ./test.sh
           # Download and install go
             wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
             tar -xvf go1.13.linux-amd64.tar.gz
