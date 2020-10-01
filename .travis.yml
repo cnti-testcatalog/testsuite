@@ -13,8 +13,6 @@ jobs:
         - |
           if [ -z "${SSH_KEY+x}" ]; then
             echo "SSH Key not found, using Travis Runner"
-          # Failure Function
-            ./test.sh
           # Download and install go
             wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
             tar -xvf go1.13.linux-amd64.tar.gz
@@ -39,7 +37,11 @@ jobs:
             shards install
             LOG_LEVEL=info crystal spec -v || travis_terminate 1;
           else
+            failure_func () {
+              exit 1
+            }
             echo "SSH Key found, using Packet Runner"
+            failure_func
             base64 -d <<< $SSH_KEY > ~/.ssh/id_rsa
             chmod 400 ~/.ssh/id_rsa
             eval $(ssh-agent)
