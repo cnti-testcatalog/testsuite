@@ -85,6 +85,7 @@ task "clusterapi_enabled" do |_, args|
       begin
         JSON.parse(clusterapi_control_planes_output)
       rescue JSON::ParseException
+        # resource does-not-exist rescue to empty json
         JSON.parse("{}")
       end
     end

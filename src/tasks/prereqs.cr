@@ -10,16 +10,15 @@ require "./utils/system_information/git.cr"
 require "./utils/system_information/clusterctl.cr"
 
 task "prereqs" do  |_, args|
+  verbose = check_verbose(args)
 
   if helm_installation.includes?("helm found") &&
       !CNFManager.helm_gives_k8s_warning?(true) &&
-      wget_installation.includes?("wget found") &&
-      curl_installation.includes?("curl found") &&
-      kubectl_installation.includes?("kubectl found") &&
-      git_installation.includes?("git found")
-  
-      verbose = check_verbose(args)
+      wget_installation(verbose).includes?("wget found") &&
+      curl_installation(verbose).includes?("curl found") &&
+      kubectl_installation(verbose).includes?("kubectl found") &&
       # clusterctl_installation(verbose).includes?("clusterctl found") && # not necessary for end users at this time
+      git_installation(verbose).includes?("git found")
 
       stdout_success "All prerequisites found."
   else
@@ -27,4 +26,3 @@ task "prereqs" do  |_, args|
     exit 1
   end
 end
-
