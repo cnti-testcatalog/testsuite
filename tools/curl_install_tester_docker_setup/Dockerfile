@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM ubuntu as base
 
 ARG VERSION=v3.2.4
 ARG FILENAME=helm-${VERSION}-linux-amd64.tar.gz
@@ -14,4 +14,7 @@ RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$KUBECTL/
 RUN mv ./kubectl /usr/local/bin/kubectl
 RUN chmod +x /usr/local/bin/kubectl
 
-WORKDIR /cnf-conformance
+WORKDIR /test_workspace
+
+from base as ci_test
+COPY cnf-conformance .
