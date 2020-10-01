@@ -15,7 +15,7 @@ crystal: 0.35.1
 dependencies:
   sam:
     github: vulk/sam.cr
-    commit: 117b5b2
+    commit: c243db2
   totem:
     github: icyleaf/totem
     version: 0.6.0
