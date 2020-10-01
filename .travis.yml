@@ -14,8 +14,8 @@ jobs:
           if [ -z "${SSH_KEY+x}" ]; then
             echo "SSH Key not found, using Travis Runner"
           # Failure Function
-          function_name () { ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind delete clusters $TIME; ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST docker rm -f $TIME; ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST rm -rf /tmp/$TIME; travis_terminate 1; }
-          function_name
+            function_name () { ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind delete clusters $TIME; ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST docker rm -f $TIME; ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST rm -rf /tmp/$TIME; travis_terminate 1; }
+            function_name
           # Download and install go
             wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
             tar -xvf go1.13.linux-amd64.tar.gz
