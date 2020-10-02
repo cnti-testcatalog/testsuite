@@ -38,6 +38,13 @@ jobs:
             LOG_LEVEL=info crystal spec -v || travis_terminate 1;
           else
             echo "SSH Key found, using Packet Runner"
+            export TIME=$(date +%s)$RANDOM
+            failure_func () {
+              ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind delete clusters $TIME 
+              ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST docker rm -f $TIME 
+              ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST rm -rf /tmp/$TIME
+              travis_terminate 1
+            }
             base64 -d <<< $SSH_KEY > ~/.ssh/id_rsa
             chmod 400 ~/.ssh/id_rsa
             eval $(ssh-agent)
@@ -48,28 +55,27 @@ jobs:
             cat <<< "export DOCKERHUB_PASSWORD=$DOCKERHUB_PASSWORD" >> $(pwd)/.docker-env
             cat <<< "export GITHUB_USER=$GITHUB_USER" > $(pwd)/.github-env
             cat <<< "export GITHUB_TOKEN=$GITHUB_TOKEN" >> $(pwd)/.github-env
-            export TIME=$(date +%s)$RANDOM
           # Install CNF-Conformance
             scp -o StrictHostKeyChecking=no -rp $(pwd) root@$SSH_HOST:/tmp/$TIME
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; git fetch --tags" || travis_terminate 1
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; git fetch --tags" || failure_func
           # Download and install go
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz || travis_terminate 1
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST tar -xvf go1.13.linux-amd64.tar.gz || travis_terminate 1
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST mv go /tmp/$TIME/go || travis_terminate 1
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz || failure_func
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST tar -xvf go1.13.linux-amd64.tar.gz || failure_func
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST mv go /tmp/$TIME/go || failure_func
           # Download and install KinD
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH GO111MODULE=on go get sigs.k8s.io/kind || travis_terminate 1
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind create cluster --kubeconfig /tmp/$TIME/kubeconfig --name $TIME || travis_terminate 1
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH GO111MODULE=on go get sigs.k8s.io/kind || failure_func
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind create cluster --kubeconfig /tmp/$TIME/kubeconfig --name $TIME || failure_func
           # Setup ephemeral dev env
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker run --rm -it -v \$(pwd):/workspace -w /workspace crystallang/crystal:0.35.1-alpine shards install" || travis_terminate 1
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker run --rm -it -v \$(pwd):/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build tools/ephemeral_env/ephemeral_env.cr --release --static --link-flags '-lxml2 -llzma'" || travis_terminate 1
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker run --rm -it -v \$(pwd):/workspace -w /workspace crystallang/crystal:0.35.1-alpine shards install" || failure_func
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker run --rm -it -v \$(pwd):/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build tools/ephemeral_env/ephemeral_env.cr --release --static --link-flags '-lxml2 -llzma'" || failure_func
             cat <<< "/tmp/$TIME/ephemeral_env command alias \$@" > ./crystal
             chmod +x ./crystal
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST mkdir -p /tmp/$TIME/crystal_dir || travis_terminate 1
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST mkdir -p /tmp/$TIME/crystal_dir || failure_func
             scp -o StrictHostKeyChecking=no $(pwd)/crystal root@$SSH_HOST:/tmp/$TIME/crystal_dir/crystal
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME/ ; \$(pwd)/ephemeral_env setup -b \$(pwd)/ephemeral_env" || travis_terminate 1
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME/ ; source .github-env ; source .docker-env ; \$(pwd)/ephemeral_env create_env -n $TIME -k /tmp/$TIME/kubeconfig" || travis_terminate 1
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME crystal version || travis_terminate 1
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "export PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME ; cd /tmp/$TIME ; LOG_LEVEL=info crystal spec -v" || travis_terminate 1
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME/ ; \$(pwd)/ephemeral_env setup -b \$(pwd)/ephemeral_env" || failure_func
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME/ ; source .github-env ; source .docker-env ; \$(pwd)/ephemeral_env create_env -n $TIME -k /tmp/$TIME/kubeconfig" || failure_func
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME crystal version || failure_func
+            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "export PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME ; cd /tmp/$TIME ; LOG_LEVEL=info crystal spec -v" || failure_func
           fi
       script: 
         - docker pull crystallang/crystal:0.35.1-alpine
@@ -82,6 +88,6 @@ jobs:
             ./cnf-conformance upsert_release
           fi
         # Cleanup
-        - ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind delete clusters $TIME || travis_terminate 1
-        - ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST docker rm -f $TIME || travis_terminate 1
-        - ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST rm -rf /tmp/$TIME || travis_terminate 1
+        - ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind delete clusters $TIME || failure_func
+        - ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST docker rm -f $TIME || failure_func
+        - ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST rm -rf /tmp/$TIME || failure_func
