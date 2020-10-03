@@ -49,9 +49,9 @@ _Note: this covers both workload (ie. application) and platform tests_
 _Note: this covers both workload (ie. application) and platform tests_
 
 **[Automated releases]**
-- Create a tag off of the master branch (**note: the tag must be a valid semantic version e.g. it can not be preceded with a 'v'**)
+- Create a tag off of the master branch 
 ```
-git tag -a 'MAJOR.MINOR.PATCH' -m "vMAJOR.MINOR.PATCH Release" 
+git tag -a 'vMAJOR.MINOR.PATCH' -m "vMAJOR.MINOR.PATCH Release" 
 git push --tags 
 ```
 - Wait for travis to complete the build
