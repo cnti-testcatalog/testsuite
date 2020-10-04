@@ -49,6 +49,11 @@ _Note: this covers both workload (ie. application) and platform tests_
 _Note: this covers both workload (ie. application) and platform tests_
 
 **[Automated releases]**
+- Create a branch off of the master branch 
+```
+git checkout origin master
+git checkout -b vMAJOR.MINOR.PATCH
+```
 - Create a tag off of the master branch 
 ```
 git tag -a 'vMAJOR.MINOR.PATCH' -m "vMAJOR.MINOR.PATCH Release" 
