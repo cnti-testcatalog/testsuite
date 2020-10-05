@@ -30,6 +30,7 @@ describe CnfConformance do
     # $?.success?.should be_true
     # LOGGING.debug build_s 
     `./cnf-conformance samples_cleanup`
+    LOGGING.info `ls -al cnfs`
     response_s = `./cnf-conformance all cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
     LOGGING.info response_s
     # $?.success?.should be_true
