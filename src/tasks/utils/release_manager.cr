@@ -17,7 +17,10 @@ module ReleaseManager
       LOGGING.info "upsert_release"
       found_release : (JSON::Any | Nil) = nil
       asset : (JSON::Any | Nil) = nil
+      LOGGING.info "CnfConformance::VERSION: #{CnfConformance::VERSION}"
+      LOGGING.info "version: #{version}"
       upsert_version = (version || CnfConformance::VERSION)
+      LOGGING.info "upsert_version: #{upsert_version}"
       # cnf_bin_path = "cnf-conformance"
       # cnf_bin_asset_name = "#{cnf_bin_path}"
       cnf_bin_asset_name = "cnf-conformance"
