@@ -9,8 +9,8 @@ describe "Platform" do
     $?.success?.should be_true
     `./cnf-conformance setup`
     $?.success?.should be_true
-    `./cnf-conformance sample_coredns_with_wait_setup`
-    $?.success?.should be_true
+    # `./cnf-conformance sample_coredns_with_wait_setup`
+    # $?.success?.should be_true
   end
   it "'platform:*' should not error out when no cnf is installed" do
     response_s = `./cnf-conformance cleanup`

@@ -280,10 +280,16 @@ white_list_helm_chart_container_names:
 # Running and checking results for the Conformance testing
 
 
-**Running all tests**
+**Running all (workload and platform) tests**
 
   ```
 cnf-conformance all cnf-config=<path to your config yml>/cnf-conformance.yml
+
+# running all of the workload tests
+cnf-conformance workload cnf-config=<path to your config yml>/cnf-conformance.yml
+
+# running all of the platform tests
+cnf-conformance platform 
   ```
 
 **Checking the results**
@@ -307,7 +313,7 @@ _NOTE: Does not handle manually deployed CNFs_
 
 
 ```
-# Run all ga tests (generally available tests)
+# Run all ga tests (generally available workload and platform tests)
 crystal src/cnf-conformance.cr all cnf-config=<path to your config yml>/cnf-conformance.yml
 
 # Run all beta and ga tests
@@ -324,6 +330,12 @@ crystal src/cnf-conformance.cr configuration_lifecycle
 
 # Run all tests in the installability
 crystal src/cnf-conformance.cr installability
+
+# Run only the workload tests
+cnf-conformance workload cnf-config=<path to your config yml>/cnf-conformance.yml
+
+# Run only the platform tests
+cnf-conformance platform
 ```
 
 

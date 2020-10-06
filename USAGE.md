@@ -24,7 +24,7 @@ crystal src/cnf-conformance.cr validate_config cnf-config=[PATH_TO]/cnf-conforma
 ```
 crystal build src/cnf-conformance.cr
 ```
-## Running all of the CNF Conformance tests
+## Running all of the CNF Conformance tests (platform and workload)
 ``` 
 crystal src/cnf-conformance.cr all cnf-config=<path_to_your_config_file>/cnf-conformance.yml
 ```
@@ -33,7 +33,16 @@ crystal src/cnf-conformance.cr all cnf-config=<path_to_your_config_file>/cnf-con
 ``` 
 crystal src/cnf-conformance.cr all poc cnf-config=<path_to_your_config_file>/cnf-conformance.yml
 ```
+## Running all of the workload CNF Conformance tests
+``` 
+crystal src/cnf-conformance.cr workload
+cnf-config=<path_to_your_config_file>/cnf-conformance.yml
+```
 
+## Running all of the platform CNF Conformance tests
+``` 
+crystal src/cnf-conformance.cr platform
+```
 ## Logging 
 
 ```
@@ -346,6 +355,11 @@ crystal src/cnf-conformance.cr k8s_conformance
 #### (PoC) Run All platform resilience tests 
 ```
 crystal src/cnf-conformance.cr platform:resilience poc
+
+```
+#### (PoC) Run All platform observability tests 
+```
+crystal src/cnf-conformance.cr platform:observability poc
 
 ```
 #### (PoC) Run node failure test **warning** this is a destructive test and will reboot your *host* node!
