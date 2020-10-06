@@ -12,6 +12,7 @@ require "../constants.cr"
 # TODO Move constants out
 # TODO put these functions into a module
 
+# TODO: error with proper exit_code when any of these don't exist and ask user to run setup command
 CNF_DIR = "cnfs"
 CONFIG_FILE = "cnf-conformance.yml"
 TOOLS_DIR = "tools"

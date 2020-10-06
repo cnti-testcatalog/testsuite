@@ -66,6 +66,8 @@ jobs:
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH GO111MODULE=on go get sigs.k8s.io/kind || failure_func
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind create cluster --kubeconfig /tmp/$TIME/kubeconfig --name $TIME || failure_func
           # Test static bin in empty folder and try to fail early if missing file dependenices
+            # to clarify we arent testing full curl install because that would always test an old bin
+            # we are testing the bin we just built with crystal alpine image to make sure it can run setup and a simple static test like for ip_addresses without failing
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker run --rm -it -v \$(pwd):/workspace -w /workspace crystallang/crystal:0.35.1-alpine shards install" || failure_func
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker run --rm -it -v \$(pwd):/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"" || failure_func
             ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; cp cnf-conformance tools/curl_install_tester_docker_setup/ " || failure_func
@@ -89,14 +91,6 @@ jobs:
         - docker pull crystallang/crystal:0.35.1-alpine
         - docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine shards install
         - docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"
-        - # add binary AND ONLY the binary in this container so we can fail if binary is broken
-        - cp cnf-conformance tools/curl_install_tester_docker_setup/
-        - docker build tools/curl_install_tester_docker_setup/ -t curl_install_tester --target ci_test
-        - # to clarify we arent testing full curl install because that would always test an old bin
-        - # we are testing the bin we just built with crystal alpine image tot make sure it can run setup and a simple staic test like for ip addresses withou failing
-        - docker run --rm -it curl_install_tester ./cnf-conformance setup
-        - docker run --rm -it curl_install_tester ./cnf-conformance sample_coredns_setup
-        - docker run --rm -it curl_install_tester ./cnf-conformance ip_addresses
         - |
           if [ -z "${GITHUB_USER+x}" ] || [ -z "${GITHUB_TOKEN+x}" ]; then
             exit 0
