@@ -5,9 +5,9 @@
   fail: -1 
 
 - name: reasonable_image_size
-  tags: microservice, dynamic
+  tags: microservice, dynamic, workload
 - name: reasonable_startup_time 
-  tags: microservice, dynamic
+  tags: microservice, dynamic, workload
 
 #- name: cni_spec 
 #  tags: compatibility, dynamic
@@ -24,7 +24,7 @@
 #  tags: statelessness, dynamic, configuration_lifecycle
 
 - name: privileged 
-  tags: security, dynamic
+  tags: security, dynamic, workload
   required: true
 #- name: shells 
 #  tags: security, dynamic
@@ -32,80 +32,80 @@
 #  tags: security, dynamic
 
 - name: increase_capacity 
-  tags: scalability, dynamic
+  tags: scalability, dynamic, workload
   pass: 10
   fail: -5 
 - name: decrease_capacity 
-  tags: scalability, dynamic
+  tags: scalability, dynamic, workload
   pass: 10
   fail: -5 
 #- name: small_autoscaling 
-#  tags: scalability, dynamic
+#  tags: scalability, dynamic, workload
 #- name: large_autoscaling 
-#  tags: scalability, dynamic
+#  tags: scalability, dynamic, workload
 - name: network_chaos 
-  tags: scalability, dynamic
+  tags: scalability, dynamic, workload
 #- name: external_retry 
-#  tags: scalability, dynamic
+#  tags: scalability, dynamic, workload
 
 #- name: versioned_helm_chart
-#  tags: configuration_lifecycle, dynamic
+#  tags: configuration_lifecycle, dynamic, workload
 - name: ip_addresses
   pass: 0
   fail: -1 
-  tags: configuration_lifecycle, static
+  tags: configuration_lifecycle, static, workload
 - name: liveness
-  tags: configuration_lifecycle, dynamic
+  tags: configuration_lifecycle, dynamic, workload
 - name: readiness
-  tags: configuration_lifecycle, dynamic
+  tags: configuration_lifecycle, dynamic, workload
 #- name: no_volume_with_configuration
 #  tags: configuration_lifecycle, dynamic
 - name: rolling_update
-  tags: configuration_lifecycle, dynamic
+  tags: configuration_lifecycle, dynamic, workload
 - name: nodeport_not_used
-  tags: configuration_lifecycle, dynamic
+  tags: configuration_lifecycle, dynamic, workload
 - name: hardcoded_ip_addresses_in_k8s_runtime_configuration
-  tags: configuration_lifecycle, dynamic
+  tags: configuration_lifecycle, dynamic, workload
 
 #- name: fluentd_traffic
-#  tags: observability, dynamic
+#  tags: observability, dynamic, workload
 #- name: jaeger_traffic
-#  tags: observability, dynamic
+#  tags: observability, dynamic, workload
 #- name: prometheus_traffic
-#  tags: observability, dynamic
+#  tags: observability, dynamic, workload
 #- name: opentelemetry_compatible
-#  tags: observability, dynamic
+#  tags: observability, dynamic, workload
 #- name: openmetric_compatible
-#  tags: observability, dynamic
+#  tags: observability, dynamic, workload
 
 - name: helm_deploy
-  tags: installability, dynamic
+  tags: installability, dynamic, workload
 - name: install_script_helm
-  tags: installability, static
+  tags: installability, static, workload
 - name: helm_chart_valid
-  tags: installability, dynamic
+  tags: installability, dynamic, workload
 - name: helm_chart_published
-  tags: installability, dynamic
+  tags: installability, dynamic, workload
   
 - name: chaos_network_loss 
-  tags: resilience, dynamic
+  tags: resilience, dynamic, workload
 - name: chaos_cpu_hog
-  tags: resilience, dynamic
+  tags: resilience, dynamic, workload
 - name: chaos_container_kill
-  tags: resilience, dynamic
+  tags: resilience, dynamic, workload
 
 - name: volume_hostpath_not_found
-  tags: statelessness, dynamic
+  tags: statelessness, dynamic, workload
 #- name: hardware_affinity
-#  tags: hardware, dynamic
+#  tags: hardware, dynamic, workload
 #- name: static_accessing_hardware 
-#  tags: hardware, static
+#  tags: hardware, static, workload
 #- name: dynamic_accessing_hardware 
-#  tags: hardware, dynamic
+#  tags: hardware, dynamic, workload
 #- name: direct_hugepages
-#  tags: hardware, dynamic
+#  tags: hardware, dynamic, workload
 #- name: performance
-#  tags: hardware, dynamic
+#  tags: hardware, dynamic, workload
 
 - name: k8s_conformance
   tags: platform, dynamic

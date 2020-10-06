@@ -6,14 +6,33 @@ require "./cnf_conformance.cr"
 
 
 desc "The CNF Conformance program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
-task "all", ["all_prereqs", "configuration_file_setup", "compatibility","statelessness", "security", "scalability", "configuration_lifecycle", "observability", "installability", "hardware_affinity", "microservice", "resilience"] do  |_, args|
+task "all", ["workload", "platform"] do  |_, args|
   VERBOSE_LOGGING.info "all" if check_verbose(args)
 
+  # TODO make a workload and a platform total points
   total = total_points
   if total > 0
     stdout_success "Final score: #{total} of #{total_max_points}"
   else
     stdout_failure "Final score: #{total} of #{total_max_points}"
+  end
+
+  if failed_required_tasks.size > 0
+    stdout_failure "Conformance Suite failed!"
+    stdout_failure "Failed required tasks: #{failed_required_tasks.inspect}"
+  end
+  stdout_info "Results have been saved to #{Results.file}".colorize(:green)
+end
+
+desc "The CNF Conformance program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
+task "workload", ["all_prereqs", "configuration_file_setup", "compatibility","statelessness", "security", "scalability", "configuration_lifecycle", "observability", "installability", "hardware_affinity", "microservice", "resilience"] do  |_, args|
+  VERBOSE_LOGGING.info "all" if check_verbose(args)
+
+  total = total_points("workload")
+  if total > 0
+    stdout_success "Final workload score: #{total} of #{total_max_points("workload")}"
+  else
+    stdout_failure "Final workload score: #{total} of #{total_max_points("workload")}"
   end
 
   if failed_required_tasks.size > 0
