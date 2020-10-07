@@ -31,17 +31,18 @@ jobs:
           # Create a new Kubernetes cluster using KinD
             kind create cluster
           # Run Tmate
-            wget https://github.com/tmate-io/tmate/releases/download/2.4.0/tmate-2.4.0-static-linux-amd64.tar.xz
-            tar -xvf ./tmate-2.4.0-static-linux-amd64.tar.xz
-            ./tmate-2.4.0-static-linux-amd64/tmate
-            ./tmate-2.4.0-static-linux-amd64/tmate show-messages
-            echo 'sleep'
-            sleep 1000
+            # wget https://github.com/tmate-io/tmate/releases/download/2.4.0/tmate-2.4.0-static-linux-amd64.tar.xz
+            # tar -xvf ./tmate-2.4.0-static-linux-amd64.tar.xz
+            # ./tmate-2.4.0-static-linux-amd64/tmate
+            # ./tmate-2.4.0-static-linux-amd64/tmate show-messages
+            # echo 'sleep'
+            # sleep 1000
           # Download and install kubectl
             curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
           # Run Crystal Spec
             git fetch --tags 
             shards install
+            crystal src/cnf-conformance.cr helm_local_install 
             LOG_LEVEL=info crystal spec -v || travis_terminate 1;
           else
             echo "SSH Key found, using Packet Runner"
