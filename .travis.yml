@@ -32,6 +32,7 @@ jobs:
         - git fetch --tags 
         - shards install
         - crystal src/cnf-conformance.cr helm_local_install 
+        - crystal src/cnf-conformance.cr setup 
         - LOG_LEVEL=info crystal spec -v || travis_terminate 1;
         # Build Static Bin
         - docker pull crystallang/crystal:0.35.1-alpine
