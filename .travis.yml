@@ -1,92 +1,40 @@
 language: minimal
 
-# crystal:
-#   - 'latest'
-
 services:
   - docker
 
 jobs:
   include:
     - stage: K8s
-      before_script:
-        - |
-          if [ -z "${SSH_KEY+x}" ]; then
-            echo "SSH Key not found, using Travis Runner"
-          # Download and install go
-            wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
-            tar -xvf go1.13.linux-amd64.tar.gz
-            sudo mv go /usr/local
-            export GOROOT=/usr/local/go
-            export GOPATH=$HOME/go
-            export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-          # Download and install KinD
-            GO111MODULE=on go get sigs.k8s.io/kind
-          # Download and install Crystal
-            sudo apt update && sudo apt install -y libevent-dev
-            wget https://github.com/crystal-lang/crystal/releases/download/0.35.1/crystal-0.35.1-1-linux-x86_64.tar.gz
-            tar -xvf crystal-*.tar.gz
-            export PATH=$(pwd)/crystal-0.35.1-1/bin:$PATH
-            crystal version
-          # Create a new Kubernetes cluster using KinD
-            kind create cluster
-          # Download and install kubectl
-            curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
-          # Run Crystal Spec
-            git fetch --tags 
-            shards install
-            LOG_LEVEL=info crystal spec -v || travis_terminate 1;
-          else
-            echo "SSH Key found, using Packet Runner"
-            export TIME=$(date +%s)$RANDOM
-            failure_func () {
-              ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind delete clusters $TIME 
-              ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST docker rm -f $TIME 
-              ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST rm -rf /tmp/$TIME
-              travis_terminate 1
-            }
-            base64 -d <<< $SSH_KEY > ~/.ssh/id_rsa
-            chmod 400 ~/.ssh/id_rsa
-            eval $(ssh-agent)
-            ssh-add ~/.ssh/id_rsa
-            touch $(pwd)/.github-env
-            touch $(pwd)/.docker-env
-            cat <<< "export DOCKERHUB_USERNAME=$DOCKERHUB_USERNAME" > $(pwd)/.docker-env
-            cat <<< "export DOCKERHUB_PASSWORD=$DOCKERHUB_PASSWORD" >> $(pwd)/.docker-env
-            cat <<< "export GITHUB_USER=$GITHUB_USER" > $(pwd)/.github-env
-            cat <<< "export GITHUB_TOKEN=$GITHUB_TOKEN" >> $(pwd)/.github-env
-          # Install CNF-Conformance
-            scp -o StrictHostKeyChecking=no -rp $(pwd) root@$SSH_HOST:/tmp/$TIME
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; git fetch --tags" || failure_func
-          # Download and install go
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz || failure_func
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST tar -xvf go1.13.linux-amd64.tar.gz || failure_func
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST mv go /tmp/$TIME/go || failure_func
-          # Download and install KinD
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH GO111MODULE=on go get sigs.k8s.io/kind || failure_func
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind create cluster --kubeconfig /tmp/$TIME/kubeconfig --name $TIME || failure_func
-          # Build staic bin
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker run --rm -it -v \$(pwd):/workspace -w /workspace crystallang/crystal:0.35.1-alpine shards install" || failure_func
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker run --rm -it -v \$(pwd):/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'" || failure_func
-          # Test static bin in empty folder and try to fail early if missing file dependenices
-            # to clarify we arent testing full curl install because that would always test an old bin
-            # we are testing the bin we just built with crystal alpine image to make sure it can run setup and a simple static test like for ip_addresses without failing
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; cp cnf-conformance tools/curl_install_tester_docker_setup/" || failure_func
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker build tools/curl_install_tester_docker_setup/ -t curl_install_tester --target ci_test " || failure_func
-          # Setup ephemeral dev env
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME ; docker run --rm -it -v \$(pwd):/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build tools/ephemeral_env/ephemeral_env.cr --release --static --link-flags '-lxml2 -llzma'" || failure_func
-            cat <<< "/tmp/$TIME/ephemeral_env command alias \$@" > ./crystal
-            chmod +x ./crystal
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST mkdir -p /tmp/$TIME/crystal_dir || failure_func
-            scp -o StrictHostKeyChecking=no $(pwd)/crystal root@$SSH_HOST:/tmp/$TIME/crystal_dir/crystal
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME/ ; \$(pwd)/ephemeral_env setup -b \$(pwd)/ephemeral_env" || failure_func
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "cd /tmp/$TIME/ ; source .github-env ; source .docker-env ; \$(pwd)/ephemeral_env create_env -n $TIME -k /tmp/$TIME/kubeconfig" || failure_func
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME crystal version || failure_func
-            ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST "export PATH=/tmp/$TIME/crystal_dir:\$PATH CRYSTAL_DEV_ENV=$TIME ; cd /tmp/$TIME ; LOG_LEVEL=info crystal spec -v" || failure_func
-          fi
+      before_script
+        # Download and install go
+        - wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
+        - tar -xvf go1.13.linux-amd64.tar.gz
+        - sudo mv go /usr/local
+        - export GOROOT=/usr/local/go
+        - export GOPATH=$HOME/go
+        - export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+        # Download and install KinD
+        - GO111MODULE=on go get sigs.k8s.io/kind
+        # Download and install Crystal
+        - sudo apt update && sudo apt install -y libevent-dev
+        - wget https://github.com/crystal-lang/crystal/releases/download/0.35.1/crystal-0.35.1-1-linux-x86_64.tar.gz
+        - tar -xvf crystal-*.tar.gz
+        - export PATH=$(pwd)/crystal-0.35.1-1/bin:$PATH
+        - crystal version
+        # Create a new Kubernetes cluster using KinD
+        - kind create cluster
+        # Download and install kubectl
+        - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
       script: 
+        # Run Crystal Spec
+        - git fetch --tags 
+        - shards install
+        - crystal src/cnf-conformance.cr helm_local_install 
+        - crystal src/cnf-conformance.cr setup 
+        - LOG_LEVEL=info crystal spec -v || travis_terminate 1;
+        # Build Static Bin
         - docker pull crystallang/crystal:0.35.1-alpine
-        - docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine shards install
         - docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"
         - |
           if [ -z "${GITHUB_USER+x}" ] || [ -z "${GITHUB_TOKEN+x}" ]; then
@@ -94,7 +42,3 @@ jobs:
           else
             ./cnf-conformance upsert_release
           fi
-        # Cleanup
-        - ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST GOROOT=/tmp/$TIME/go GOPATH=\$HOME/go PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH kind delete clusters $TIME || failure_func
-        - ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST docker rm -f $TIME || failure_func
-        - ssh -o StrictHostKeyChecking=no -t root@$SSH_HOST rm -rf /tmp/$TIME || failure_func
