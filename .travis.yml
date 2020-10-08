@@ -42,3 +42,4 @@ jobs:
           else
             ./cnf-conformance upsert_release
           fi
+
