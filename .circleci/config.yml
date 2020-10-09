@@ -8,7 +8,7 @@ orbs:
 jobs:
   build:
     docker:
-      - image: alpine:latest
+      - image: circleci/golang:1.13-alpine
     working_directory: /mnt/ramdisk
     steps:
       - checkout
