@@ -21,9 +21,9 @@ jobs:
       - checkout
       - run: docker build -f .circleci/Dockerfile . 
 # Orchestrate or schedule a set of jobs
-# workflows:
+workflows:
 #   # Name the workflow "welcome"
-#   welcome:
-#     # Run the welcome/run job in its own container
-#     jobs:
-#       - welcome/run
+  test:
+    jobs:
+      - build_docker
+      - build_vm
