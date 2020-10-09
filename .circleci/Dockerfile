@@ -83,6 +83,9 @@ RUN echo "$HELM_SHA *helm.tgz" | sha256sum --strict --check -; \
 	  gpgconf --kill all; \
 	  rm -rf "$GNUPGHOME" helm.tgz.asc
 
+RUN tar --strip-components 1 -C /usr/local/bin -xzf helm.tgz; \
+    rm helm.tgz
+
 # Install Kind
 RUN GO111MODULE="on" go get sigs.k8s.io/kind@$KIND_VERSION
 
