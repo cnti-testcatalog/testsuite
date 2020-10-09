@@ -14,6 +14,10 @@ ENV CRYSTAL_VERSION 0.35.1
 ENV CRYSTAL_FILE crystal_$CRYSTAL_VERSION-1_amd64.deb
 ENV CRYSTAL_URL https://github.com/crystal-lang/crystal/releases/download/$CRYSTAL_VERSION/$CRYSTAL_FILE
 
+ENV DOCKER_CHANNEL stable
+ENV DOCKER_VERSION 19.03.13
+ENV DOCKER_URL https://download.docker.com/linux/static/$DOCKER_CHANNEL/x86_64/docker-$DOCKER_VERSION.tgz
+
 ENV GOLANG_VERSION 1.15.2
 ENV GOLANG_FILE linux-amd64.tar.gz
 ENV GOLANG_SHA b49fda1ca29a1946d6bb2a5a6982cf07ccd2aba849289508ee0f9918f6bb4552
@@ -22,6 +26,11 @@ ENV GOLANG_URL https://storage.googleapis.com/golang/go$GOLANG_VERSION.$GOLANG_F
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:$PATH
 ENV PATH /usr/local/go/bin:$PATH
+
+# Install Docker
+RUN wget -O docker.tgz "$DOCKER_URL" --progress=dot:giga; 
+RUN tar --strip-components 1 -C /usr/local/bin -xzf docker.tgz; \
+    rm docker.tgz 
 
 # Install Kubectl 
 RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -; \
@@ -54,6 +63,7 @@ RUN tar -C /usr/local -xzf go.tgz; \
 # Install Crystal
 RUN wget -O crystal.deb "$CRYSTAL_URL" --progress=dot:giga; 
 RUN apt install -y --no-install-recommends \
+    git \
     libssl-dev \
     libxml2-dev \
     libyaml-dev \
