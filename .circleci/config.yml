@@ -5,23 +5,26 @@ version: 2.1
 #   docker: circleci/docker@1.4.0
 
 jobs:
-  build_docker:
+  build:
     docker:
       - image: docker:latest
     steps: 
       - setup_remote_docker:
           docker_layer_caching: true
       - checkout
-      - run: docker build -f .circleci/Dockerfile . 
-  build_vm:
-    machine:
-      docker_layer_caching: true
-    steps:
+      - run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASS
+          docker build -t conformance/base:latest -f .circleci/Dockerfile .
+          docker push conformance/base:latest
+  kind: 
+    docker:
+      - image: conformance/base:latest
+    steps: 
       - checkout
-      - run: docker build -f .circleci/Dockerfile . 
+      - echo 'test'
 # Orchestrate or schedule a set of jobs
 workflows:
   test:
     jobs:
-      - build_docker
-      - build_vm
+      - build
+      - kind
