@@ -21,6 +21,7 @@ jobs:
     docker:
       - image: conformance/base:latest
     steps: 
+      - setup_remote_docker
       - checkout
       - run: |
           kind create cluster
