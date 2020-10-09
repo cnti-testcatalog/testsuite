@@ -16,18 +16,22 @@ jobs:
           docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
           docker build -t conformance/base:latest -f .circleci/Dockerfile .
           docker push conformance/base:latest
-  kind: 
+
+  cnf_conformance: 
     docker:
       - image: conformance/base:latest
     steps: 
       - checkout
       - run: |
-          echo "test"
+          kind create cluster
+          shards install  
+          LOG_LEVEL=info crystal spec spec/cnf_conformance_spec.cr -v
+
 # Orchestrate or schedule a set of jobs
 workflows:
   test:
     jobs:
       - build
-      - kind:
+      - cnf_conformance:
           requires:
             - build
