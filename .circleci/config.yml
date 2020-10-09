@@ -29,3 +29,5 @@ workflows:
     jobs:
       - build
       - kind
+          requires:
+            - build
