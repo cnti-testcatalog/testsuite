@@ -9,7 +9,7 @@ jobs:
   build:
     docker:
       - image: docker:latest
-    working_directory: /mnt/ramdisk
+    # working_directory: /mnt/ramdisk
     steps:
       - checkout
       - setup_remote_docker:
