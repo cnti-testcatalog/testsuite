@@ -1,7 +1,7 @@
 version: 2.0
 shards:
   ameba:
-    github: crystal-ameba/ameba
+    git: https://github.com/crystal-ameba/ameba.git
     version: 0.12.1
 
   commander:
@@ -30,7 +30,7 @@ shards:
 
   sam:
     git: https://github.com/vulk/sam.cr.git
-    version: 0.3.2+git.commit.117b5b249ac696733951c0ac587d063de4fdea9f
+    version: 0.4.0+git.commit.c243db28c0825838c1851d75aaf9273460720625
 
   totem:
     git: https://github.com/icyleaf/totem.git
