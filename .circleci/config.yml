@@ -13,7 +13,7 @@ jobs:
           docker_layer_caching: true
       - checkout
       - run: |
-          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
           docker build -t conformance/base:latest -f .circleci/Dockerfile .
           docker push conformance/base:latest
   kind: 
