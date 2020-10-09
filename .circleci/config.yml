@@ -11,12 +11,12 @@ jobs:
       image: docker
       tag: latest
     steps: 
-      docker/build:
-        image: test/image
-        tag: latest
-        dockerfile: .circleci/Dockerfile
-        use-remote-docker: true
-        remote-docker-dlc: true
+      - docker/build:
+          image: test/image
+          tag: latest
+          dockerfile: .circleci/Dockerfile
+          use-remote-docker: true
+          remote-docker-dlc: true
       # - run: docker build -f .circleci/Dockerfile . 
   build_vm:
     machine:
