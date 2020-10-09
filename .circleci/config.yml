@@ -10,7 +10,7 @@ jobs:
       - image: docker:latest
     steps: 
       - setup_remote_docker:
-          docker_layer_caching: true
+          docker_layer_caching: false
       - checkout
       - run: |
           docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
