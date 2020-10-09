@@ -5,16 +5,16 @@ orbs:
   docker: circleci/docker@1.4.0
 
 jobs:
-  -  docker/build:
-       executor:
-         name: docker/docker
-         image: docker
-         tag: latest
-       image: test/image
-       tag: latest
-       dockerfile: .circleci/Dockerfile
-       use-remote-docker: true
-       remote-docker-dlc: true
+  - docker/build:
+      executor:
+        name: docker/docker
+        image: docker
+        tag: latest
+      image: test/image
+      tag: latest
+      dockerfile: .circleci/Dockerfile
+      use-remote-docker: true
+      remote-docker-dlc: true
       # - run: docker build -f .circleci/Dockerfile . 
   build_vm:
     machine:
