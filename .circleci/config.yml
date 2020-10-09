@@ -8,6 +8,7 @@ jobs:
   build_docker:
     docker:
       - image: alpine:latest
+    executor: docker/docker
     steps:
       - checkout
       - setup_remote_docker:
