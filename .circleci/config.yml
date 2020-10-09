@@ -1,23 +1,17 @@
 # Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 # Use a package of configuration called an orb.
-orbs:
-  docker: circleci/docker@1.4.0
+# orbs:
+#   docker: circleci/docker@1.4.0
 
 jobs:
   build_docker:
-    executor:
-      name: docker/docker
-      image: docker
-      tag: latest
+    docker:
+      - image: docker:latest
     steps: 
-      - docker/build:
-          image: test/image
-          tag: latest
-          dockerfile: .circleci/Dockerfile
-          use-remote-docker: true
-          remote-docker-dlc: true
-      # - run: docker build -f .circleci/Dockerfile . 
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: docker build -f .circleci/Dockerfile . 
   build_vm:
     machine:
       docker_layer_caching: true
