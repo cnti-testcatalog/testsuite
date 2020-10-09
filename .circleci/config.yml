@@ -11,6 +11,7 @@ jobs:
     steps: 
       - setup_remote_docker:
           docker_layer_caching: true
+      - checkout
       - run: docker build -f .circleci/Dockerfile . 
   build_vm:
     machine:
