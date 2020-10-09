@@ -5,7 +5,8 @@ orbs:
   docker: circleci/docker@1.4.0
 
 jobs:
-  - docker/build:
+  build_docker:
+    docker/build:
       executor:
         name: docker/docker
         image: docker
