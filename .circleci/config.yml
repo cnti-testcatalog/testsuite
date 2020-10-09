@@ -13,7 +13,7 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - docker/build:
-          image: test/image:latest
+          image: test/image
           dockerfile: .circleci/Dockerfile
       # - run: docker build -f .circleci/Dockerfile . 
   build_vm:
