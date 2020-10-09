@@ -6,19 +6,17 @@ orbs:
   welcome: circleci/welcome-orb@0.4.1
 
 jobs:
-  build-docker:
+  build_docker:
     docker:
       - image: docker:latest
-    # working_directory: /mnt/ramdisk
     steps:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
       - run: docker build -f .circleci/Dockerfile . 
-  build-vm:
+  build_vm:
     machine:
       docker_layer_caching: true
-    # working_directory: /mnt/ramdisk
     steps:
       - checkout
       - run: docker build -f .circleci/Dockerfile . 
