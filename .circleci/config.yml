@@ -21,7 +21,8 @@ jobs:
       - image: conformance/base:latest
     steps: 
       - checkout
-      - echo test
+      - run: |
+          echo "test"
 # Orchestrate or schedule a set of jobs
 workflows:
   test:
