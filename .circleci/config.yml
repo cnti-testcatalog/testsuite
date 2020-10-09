@@ -8,7 +8,7 @@ orbs:
 jobs:
   build:
     docker:
-      - image: circleci/buildpack-deps:zesty-curl-dind
+      - image: circleci/buildpack-deps:stable-curl
     working_directory: /mnt/ramdisk
     steps:
       - checkout
