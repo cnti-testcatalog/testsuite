@@ -28,6 +28,6 @@ workflows:
   test:
     jobs:
       - build
-      - kind
+      - kind:
           requires:
             - build
