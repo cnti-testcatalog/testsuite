@@ -8,7 +8,7 @@ orbs:
 jobs:
   build_docker:
     docker:
-      - image: circleci/golang:latest
+      - image: circleci/buildpack-deps:buster-curl
     steps:
       - checkout
       - setup_remote_docker:
