@@ -19,7 +19,8 @@ jobs:
 
   cnf_conformance: 
     docker:
-      - image: conformance/base:latest
+      - image: conformance/base:test
+    working_directory: /mnt/ramdisk
     steps: 
       - setup_remote_docker
       - checkout
