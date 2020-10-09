@@ -13,9 +13,9 @@ Curl install tester is a docker setup designed to
 # in the curl_install_tester_docker_setup folder
 # because the dockerfile is there
 
-docker build -t curl_install_tester_docker_setup .
+docker build -t curl_install_tester_docker_setup --target base .
 
-docker run --rm -it curl_install_tester_docker_setup
+docker run --rm -it curl_install_tester_docker_setup 
 
 source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.sh)
 

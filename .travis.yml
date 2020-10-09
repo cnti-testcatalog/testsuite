@@ -7,7 +7,6 @@ jobs:
   include:
     - stage: K8s
       before_script:
-        - |
         # Download and install go
         - wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
         - tar -xvf go1.13.linux-amd64.tar.gz
