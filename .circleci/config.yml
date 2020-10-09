@@ -8,7 +8,7 @@ orbs:
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.13-alpine
+      - image: circleci/buildpack-deps:zesty-curl-dind
     working_directory: /mnt/ramdisk
     steps:
       - checkout
