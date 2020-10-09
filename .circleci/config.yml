@@ -6,13 +6,11 @@ orbs:
 
 jobs:
   build_docker:
-    docker:
-      - image: alpine:latest
     executor: docker/docker
     steps:
-      - checkout
       - setup_remote_docker:
           docker_layer_caching: true
+      - checkout
       - docker/build:
           image: test/image
           dockerfile: .circleci/Dockerfile
