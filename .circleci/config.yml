@@ -20,7 +20,6 @@ jobs:
   cnf_conformance: 
     machine:
       image: ubuntu-1604:202007-01
-    # working_directory: /mnt/ramdisk
     environment:
       KUBECTL_VERSION: 1.19.2-00
       KIND_VERSION: v0.9.0 
@@ -37,7 +36,6 @@ jobs:
       GOLANG_URL: https://storage.googleapis.com/golang/go
       GOPATH: /go
     steps: 
-      # - setup_remote_docker
       - checkout
       - run:
           name: Install Kubectl
@@ -112,9 +110,9 @@ jobs:
             export PATH=$/usr/local/go/bin:$PATH
             kind create cluster
             kubectl get nodes 
-          # shards install  
-          # crystal src/cnf-conformance.cr setup
-          # LOG_LEVEL=info crystal spec spec/cnf_conformance_spec.cr -v
+            shards install  
+            crystal src/cnf-conformance.cr setup
+            LOG_LEVEL=info crystal spec spec/cnf_conformance_spec.cr -v
 
 
   #Docker executor
@@ -291,10 +289,8 @@ jobs:
 workflows:
   test:
     jobs:
-      - build
-      - cnf_conformance:
-          requires:
-            - build
+      # - build
+      - cnf_conformance
       # - configuration_lifecycle:
       #     requires:
       #       - build
