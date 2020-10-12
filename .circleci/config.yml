@@ -36,7 +36,6 @@ jobs:
       GOLANG_SHA: b49fda1ca29a1946d6bb2a5a6982cf07ccd2aba849289508ee0f9918f6bb4552
       GOLANG_URL: https://storage.googleapis.com/golang/go
       GOPATH: /go
-      TEST_PATH: /usr/local/go/bin:$GOPATH/bin:$PATH
     steps: 
       # - setup_remote_docker
       - checkout
@@ -103,12 +102,14 @@ jobs:
       - run:
           name: Install Kind
           command: |
-            echo "Real: $PATH"
-            echo "Test: $TEST_PATH"
+            export PATH=$GOPATH/bin:$PATH
+            export PATH=$/usr/local/go/bin:$PATH
             GO111MODULE="on" go get sigs.k8s.io/kind@$KIND_VERSION
       - run:
           name: Create Kind Cluster
           command: |
+            export PATH=$GOPATH/bin:$PATH
+            export PATH=$/usr/local/go/bin:$PATH
             kind create cluster
             kubectl get nodes 
           # shards install  
