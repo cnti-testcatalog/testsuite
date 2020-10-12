@@ -41,7 +41,7 @@ jobs:
     steps: 
       # - setup_remote_docker
       - checkout
-       run:
+      - run:
           name: Install Kubectl
           command: |
             curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -; \
