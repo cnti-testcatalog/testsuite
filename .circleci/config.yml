@@ -103,8 +103,8 @@ jobs:
       - run:
           name: Install Kind
           command: |
-            echo 'Real: $PATH'
-            echo 'Test: $TEST_PATH'
+            echo "Real: $PATH"
+            echo "Test: $TEST_PATH"
             GO111MODULE="on" go get sigs.k8s.io/kind@$KIND_VERSION
       - run:
           name: Create Kind Cluster
