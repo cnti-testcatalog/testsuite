@@ -22,7 +22,7 @@ jobs:
       image: ubuntu-1604:202007-01
     # working_directory: /mnt/ramdisk
     environment:
-      # KUBECTL_VERSION: 1.19.2-00
+      KUBECTL_VERSION: 1.19.2-00
       KIND_VERSION: v0.9.0 
       HELM_VERSION: v3.3.4
       HELM_FILE: linux-amd64.tar.gz 
