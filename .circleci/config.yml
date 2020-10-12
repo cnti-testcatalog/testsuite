@@ -18,18 +18,32 @@ jobs:
           docker push conformance/base:latest
 
   cnf_conformance: 
-    docker:
-      # - image: conformance/base:latest
-      - image: docker:19.03.13-dind
-    working_directory: /mnt/ramdisk
+    machine: true
+    # working_directory: /mnt/ramdisk
     steps: 
       # - setup_remote_docker
       - checkout
-      - run: |
-          kind create cluster
-          # shards install  
-          # crystal src/cnf-conformance.cr setup
-          # LOG_LEVEL=info crystal spec spec/cnf_conformance_spec.cr -v
+      - docker ps -a
+      # - run: |
+      #     kind create cluster
+      #     shards install  
+      #     crystal src/cnf-conformance.cr setup
+      #     LOG_LEVEL=info crystal spec spec/cnf_conformance_spec.cr -v
+
+
+  #Docker executor
+  # cnf_conformance: 
+  #   docker:
+  #     - image: conformance/base:latest
+  #   working_directory: /mnt/ramdisk
+  #   steps: 
+  #     - setup_remote_docker
+  #     - checkout
+  #     - run: |
+  #         kind create cluster
+  #         shards install  
+  #         crystal src/cnf-conformance.cr setup
+  #         LOG_LEVEL=info crystal spec spec/cnf_conformance_spec.cr -v
 
   configuration_lifecycle: 
     docker:
