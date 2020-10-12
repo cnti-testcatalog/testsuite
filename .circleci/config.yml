@@ -37,7 +37,7 @@ jobs:
       GOLANG_SHA: b49fda1ca29a1946d6bb2a5a6982cf07ccd2aba849289508ee0f9918f6bb4552
       GOLANG_URL: https://storage.googleapis.com/golang/go$GOLANG_VERSION.$GOLANG_FILE
       GOPATH: /go
-      PATH: /usr/local/go/bin:$GOPATH/bin:$PATH
+      TEST_PATH: /usr/local/go/bin:$GOPATH/bin:$PATH
     steps: 
       # - setup_remote_docker
       - checkout
@@ -108,6 +108,8 @@ jobs:
           command: |
             kind create cluster
             kubectl get nodes 
+            echo 'Real: $PATH'
+            echo 'Test: $TEST_PATH'
           # shards install  
           # crystal src/cnf-conformance.cr setup
           # LOG_LEVEL=info crystal spec spec/cnf_conformance_spec.cr -v
