@@ -18,7 +18,7 @@ jobs:
           docker push conformance/base:latest
           
   cnf_conformance: 
-    machine: true
+    machine:
       image: ubuntu-1604:202007-01
     # working_directory: /mnt/ramdisk
     environment:
