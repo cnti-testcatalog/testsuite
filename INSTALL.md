@@ -48,7 +48,13 @@ cd cnfs/ && git clone https://github.com/cncf/cnf-testbed.git
 
     - Running `kubectl cluster-info` should show a running Kubernetes master in the output
 
+## Other Prereqs
+- helm 3.1.1 (cnf-conformance will install helm if not found)
+- wget
+- curl
+- git
 
+See https://github.com/cncf/cnf-conformance/blob/master/src/tasks/prereqs.cr for the most up to date list. The prerequisites are checked automatically when the test suite is used and any missing dependencies will be shown on the CLI.
 
 ## CNF **must** have a [helm chart](https://helm.sh/)
 
