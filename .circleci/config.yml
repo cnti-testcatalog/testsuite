@@ -68,9 +68,9 @@ jobs:
             	  gpgconf --kill all || true; \
             	  rm -rf "$GNUPGHOME" go.tgz.asc
             
-            tar -C /usr/local -xzf go.tgz; \
-                mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"; \
-                rm go.tgz
+            sudo tar -C /usr/local -xzf go.tgz; \
+                 mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"; \
+                 rm go.tgz
       - run:       
           name: Install Crystal
           command: |
