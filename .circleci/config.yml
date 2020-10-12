@@ -51,7 +51,7 @@ jobs:
           name: Install Golang
           command: |
             sudo apt install -y --no-install-recommends \
-                     gpgconf \
+                     gnupg2 \
                      g++ \
                      gcc \
                      libc6-dev \
