@@ -27,15 +27,14 @@ jobs:
       HELM_VERSION: v3.3.4
       HELM_FILE: linux-amd64.tar.gz 
       HELM_SHA: b664632683c36446deeb85c406871590d879491e3de18978b426769e43a1e82c
-      HELM_URL: https://get.helm.sh/helm-$HELM_VERSION-$HELM_FILE
-      HELM_ASC: https://github.com/helm/helm/releases/download/$HELM_VERSION/helm-$HELM_VERSION-$HELM_FILE.asc
-      CRYSTAL_VERSION: 0.35.1
-      CRYSTAL_FILE: crystal_$CRYSTAL_VERSION-1_amd64.deb
-      CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download/$CRYSTAL_VERSION/$CRYSTAL_FILE
+      HELM_URL: https://get.helm.sh/helm
+      HELM_ASC: https://github.com/helm/helm/releases/download
+      CRYSTAL_VERSION: 0.35.1-1_amd64
+      CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download
       GOLANG_VERSION: 1.15.2
       GOLANG_FILE: linux-amd64.tar.gz
       GOLANG_SHA: b49fda1ca29a1946d6bb2a5a6982cf07ccd2aba849289508ee0f9918f6bb4552
-      GOLANG_URL: https://storage.googleapis.com/golang/go$GOLANG_VERSION.$GOLANG_FILE
+      GOLANG_URL: https://storage.googleapis.com/golang/go
       GOPATH: /go
       TEST_PATH: /usr/local/go/bin:$GOPATH/bin:$PATH
     steps: 
@@ -58,8 +57,8 @@ jobs:
                      make \
                      pkg-config 
             
-            wget -O go.tgz.asc "$GOLANG_URL.asc" --progress=dot:giga; \
-                wget -O go.tgz "$GOLANG_URL" --progress=dot:giga
+            wget -O go.tgz.asc "$GOLANG_URL$GOLANG_VERSION.$GOLANG_FILE.asc" --progress=dot:giga; \
+                wget -O go.tgz "$GOLANG_URL$GOLANG_VERSION.$GOLANG_FILE" --progress=dot:giga
             
             echo "$GOLANG_SHA *go.tgz" | sha256sum --strict --check -; \
             	  export GNUPGHOME="$(mktemp -d)"; \
@@ -74,7 +73,7 @@ jobs:
       - run:       
           name: Install Crystal
           command: |
-            wget -O crystal.deb "$CRYSTAL_URL" --progress=dot:giga; 
+            wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION.deb" --progress=dot:giga; 
             sudo apt install -y --no-install-recommends \
                      git \
                      libssl-dev \
@@ -87,8 +86,9 @@ jobs:
       - run:
           name: Install Helm
           command: |
-            wget -O helm.tgz.asc "$HELM_ASC" --progress=dot:giga; \
-            wget -O helm.tgz "$HELM_URL" --progress=dot:giga
+
+            wget -O helm.tgz.asc "$HELM_ASC/$HELM_VERSION/helm-$HELM_VERSION-$HELM_FILE.asc" --progress=dot:giga; \
+            wget -O helm.tgz "$HELM_URL-$HELM_VERSION-$HELM_FILE" --progress=dot:giga
             
             echo "$HELM_SHA *helm.tgz" | sha256sum --strict --check -; \
             export GNUPGHOME="$(mktemp -d)"; \
