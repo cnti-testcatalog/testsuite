@@ -19,6 +19,7 @@ jobs:
           
   cnf_conformance: 
     machine: true
+      image: ubuntu-1604:202007-01
     # working_directory: /mnt/ramdisk
     environment:
       # KUBECTL_VERSION: 1.19.2-00
