@@ -46,17 +46,17 @@ jobs:
           command: |
             curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -; \
             echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list; \
-            apt-get update ; \
-            apt-get install -y kubectl=$KUBECTL_VERSION 
+            sudo apt-get update ; \
+            sudo apt-get install -y kubectl=$KUBECTL_VERSION 
       - run:
           name: Install Golang
           command: |
-            apt-get install -y --no-install-recommends \
-            		g++ \
-            		gcc \
-            		libc6-dev \
-            		make \
-            		pkg-config 
+            sudo apt-get install -y --no-install-recommends \
+            		    g++ \
+                    gcc \
+                    libc6-dev \
+                    make \
+                    pkg-config 
             
             wget -O go.tgz.asc "$GOLANG_URL.asc" --progress=dot:giga; \
                 wget -O go.tgz "$GOLANG_URL" --progress=dot:giga
@@ -75,15 +75,15 @@ jobs:
           name: Install Crystal
           command: |
             wget -O crystal.deb "$CRYSTAL_URL" --progress=dot:giga; 
-            apt install -y --no-install-recommends \
-                git \
-                libssl-dev \
-                libxml2-dev \
-                libyaml-dev \
-                libgmp-dev \
-                libz-dev \
-                ./crystal.deb \
-            	  && rm -rf /var/lib/apt/lists/*
+            sudo apt install -y --no-install-recommends \
+                     git \
+                     libssl-dev \
+                     libxml2-dev \
+                     libyaml-dev \
+                     libgmp-dev \
+                     libz-dev \
+                     ./crystal.deb \
+                     && rm -rf /var/lib/apt/lists/*
       - run:
           name: Install Helm
           command: |
@@ -102,14 +102,14 @@ jobs:
       - run:
           name: Install Kind
           command: |
+            echo 'Real: $PATH'
+            echo 'Test: $TEST_PATH'
             GO111MODULE="on" go get sigs.k8s.io/kind@$KIND_VERSION
       - run:
           name: Create Kind Cluster
           command: |
             kind create cluster
             kubectl get nodes 
-            echo 'Real: $PATH'
-            echo 'Test: $TEST_PATH'
           # shards install  
           # crystal src/cnf-conformance.cr setup
           # LOG_LEVEL=info crystal spec spec/cnf_conformance_spec.cr -v
