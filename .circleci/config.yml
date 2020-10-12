@@ -106,8 +106,7 @@ jobs:
           name: Create Kind Cluster
           command: |
             kind create cluster
-
-      - kubectl get nodes 
+            kubectl get nodes 
           # shards install  
           # crystal src/cnf-conformance.cr setup
           # LOG_LEVEL=info crystal spec spec/cnf_conformance_spec.cr -v
