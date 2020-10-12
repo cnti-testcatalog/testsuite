@@ -83,7 +83,7 @@ jobs:
                      libgmp-dev \
                      libz-dev \
                      ./crystal.deb \
-                     && rm -rf /var/lib/apt/lists/*
+                     && sudo rm -rf /var/lib/apt/lists/*
       - run:
           name: Install Helm
           command: |
@@ -98,7 +98,7 @@ jobs:
             gpgconf --kill all || true; \
             rm -rf "$GNUPGHOME" helm.tgz.asc
             
-            tar --strip-components 1 -C /usr/local/bin -xzf helm.tgz; \
+            sudo tar --strip-components 1 -C /usr/local/bin -xzf helm.tgz; \
             rm helm.tgz
       - run:
           name: Install Kind
