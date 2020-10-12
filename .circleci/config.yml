@@ -29,7 +29,7 @@ jobs:
       HELM_SHA: b664632683c36446deeb85c406871590d879491e3de18978b426769e43a1e82c
       HELM_URL: https://get.helm.sh/helm
       HELM_ASC: https://github.com/helm/helm/releases/download
-      CRYSTAL_VERSION: 0.35.1-1_amd64
+      CRYSTAL_VERSION: 0.35.1
       CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download
       GOLANG_VERSION: 1.15.2
       GOLANG_FILE: linux-amd64.tar.gz
@@ -69,12 +69,12 @@ jobs:
             	  rm -rf "$GNUPGHOME" go.tgz.asc
             
             sudo tar -C /usr/local -xzf go.tgz; \
-                 mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"; \
+                 sudo mkdir -p "$GOPATH/src" "$GOPATH/bin" && sudo chmod -R 777 "$GOPATH"; \
                  rm go.tgz
       - run:       
           name: Install Crystal
           command: |
-            wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION.deb" --progress=dot:giga; 
+            wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga; 
             sudo apt install -y --no-install-recommends \
                      git \
                      libssl-dev \
