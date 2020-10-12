@@ -29,6 +29,7 @@ jobs:
           shards install  
           crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec spec/cnf_conformance_spec.cr -v
+          exit 1
 
   configuration_lifecycle: 
     docker:
@@ -194,39 +195,39 @@ workflows:
       - cnf_conformance:
           requires:
             - build
-      - configuration_lifecycle:
-          requires:
-            - build
-      - curl_install:
-          requires:
-            - build
-      - installability:
-          requires:
-            - build
-      - microservice:
-          requires:
-            - build
-      - prereqs:
-          requires:
-            - build
-      - resilience:
-          requires:
-            - build
-      - security:
-          requires:
-            - build
-      - setup:
-          requires:
-            - build
-      - spec_helper:
-          requires:
-            - build
-      - statelessness:
-          requires:
-            - build
-      - utils:
-          requires:
-            - build
-      - platform:
-          requires:
-            - build
+      # - configuration_lifecycle:
+      #     requires:
+      #       - build
+      # - curl_install:
+      #     requires:
+      #       - build
+      # - installability:
+      #     requires:
+      #       - build
+      # - microservice:
+      #     requires:
+      #       - build
+      # - prereqs:
+      #     requires:
+      #       - build
+      # - resilience:
+      #     requires:
+      #       - build
+      # - security:
+      #     requires:
+      #       - build
+      # - setup:
+      #     requires:
+      #       - build
+      # - spec_helper:
+      #     requires:
+      #       - build
+      # - statelessness:
+      #     requires:
+      #       - build
+      # - utils:
+      #     requires:
+      #       - build
+      # - platform:
+      #     requires:
+      #       - build
