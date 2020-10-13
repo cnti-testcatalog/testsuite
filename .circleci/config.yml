@@ -150,8 +150,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          kind create cluster
-          shards install  
           crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/configuration_lifecycle_spec.cr -v
 
@@ -162,8 +160,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          kind create cluster
-          shards install  
           crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/curl_install_spec.cr -v
 
@@ -174,8 +170,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          kind create cluster
-          shards install  
           crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/installability_spec.cr -v
 
@@ -186,8 +180,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          kind create cluster
-          shards install  
           crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/microservice_spec.cr -v
 
@@ -198,8 +190,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          kind create cluster
-          shards install  
           crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/prereqs_spec.cr -v
 
@@ -210,8 +200,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          kind create cluster
-          shards install  
           crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/resilience_spec.cr -v
 
@@ -222,8 +210,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          kind create cluster
-          shards install  
           crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/security_spec.cr -v
 
@@ -234,8 +220,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          kind create cluster
-          shards install  
           crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/setup_spec.cr -v
 
@@ -246,8 +230,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          kind create cluster
-          shards install  
           crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/spec_helper.cr -v
 
@@ -258,8 +240,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          kind create cluster
-          shards install  
           crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/statelessness_spec.cr -v
 
@@ -270,8 +250,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          kind create cluster
-          shards install  
           crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/utils -v
 
@@ -282,8 +260,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          kind create cluster
-          shards install  
           crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/platform -v
 
