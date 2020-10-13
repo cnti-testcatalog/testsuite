@@ -146,7 +146,6 @@ jobs:
   configuration_lifecycle: 
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /mnt/ramdisk
     steps: 
       - checkout
       - install_deps
@@ -159,7 +158,6 @@ jobs:
   curl_install: 
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /mnt/ramdisk
     steps: 
       - checkout
       - install_deps
@@ -172,7 +170,6 @@ jobs:
   installability: 
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /mnt/ramdisk
     steps: 
       - checkout
       - install_deps
@@ -185,7 +182,6 @@ jobs:
   microservice: 
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /mnt/ramdisk
     steps: 
       - checkout
       - install_deps
@@ -198,7 +194,6 @@ jobs:
   prereqs: 
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /mnt/ramdisk
     steps: 
       - checkout
       - install_deps
@@ -211,7 +206,6 @@ jobs:
   resilience: 
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /mnt/ramdisk
     steps: 
       - checkout
       - install_deps
@@ -224,7 +218,6 @@ jobs:
   security: 
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /mnt/ramdisk
     steps: 
       - checkout
       - install_deps
@@ -237,7 +230,6 @@ jobs:
   setup: 
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /mnt/ramdisk
     steps: 
       - checkout
       - install_deps
@@ -250,7 +242,6 @@ jobs:
   spec_helper: 
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /mnt/ramdisk
     steps: 
       - checkout
       - install_deps
@@ -263,7 +254,6 @@ jobs:
   statelessness: 
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /mnt/ramdisk
     steps: 
       - checkout
       - install_deps
@@ -276,7 +266,6 @@ jobs:
   utils: 
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /mnt/ramdisk
     steps: 
       - checkout
       - install_deps
@@ -289,7 +278,6 @@ jobs:
   platform: 
     machine:
       image: ubuntu-1604:202007-01
-    working_directory: /mnt/ramdisk
     steps: 
       - checkout
       - install_deps
