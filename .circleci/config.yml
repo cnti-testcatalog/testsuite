@@ -113,13 +113,13 @@ commands: # a reusable command with parameters
          - run:
              name: Install Kind
              command: |
-               export PATH=<<parameters.go_path>>/bin:$PATH
+               export PATH=<<parameters.golang_path>>/bin:$PATH
                export PATH=$/usr/local/go/bin:$PATH
                GO111MODULE="on" go get sigs.k8s.io/kind@<<parameters.kind_version>>
          - run:
              name: Create Kind Cluster
              command: |
-               export PATH=<<parameters.go_path>>/bin:$PATH
+               export PATH=<<parameters.golang_path>>/bin:$PATH
                export PATH=$/usr/local/go/bin:$PATH
                kind create cluster
                kubectl get nodes 
@@ -145,21 +145,6 @@ jobs:
   cnf_conformance: 
     machine:
       image: ubuntu-1604:202007-01
-    environment:
-      # KUBECTL_VERSION: 1.19.2-00
-      KIND_VERSION: v0.9.0 
-      HELM_VERSION: v3.3.4
-      HELM_FILE: linux-amd64.tar.gz 
-      HELM_SHA: b664632683c36446deeb85c406871590d879491e3de18978b426769e43a1e82c
-      HELM_URL: https://get.helm.sh/helm
-      HELM_ASC: https://github.com/helm/helm/releases/download
-      CRYSTAL_VERSION: 0.35.1
-      CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download
-      GOLANG_VERSION: 1.15.2
-      GOLANG_FILE: linux-amd64.tar.gz
-      GOLANG_SHA: b49fda1ca29a1946d6bb2a5a6982cf07ccd2aba849289508ee0f9918f6bb4552
-      GOLANG_URL: https://storage.googleapis.com/golang/go
-      GOPATH: /go
     steps: 
       - checkout
       - install_deps
