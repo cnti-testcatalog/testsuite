@@ -155,216 +155,176 @@ jobs:
             crystal src/cnf-conformance.cr setup
             LOG_LEVEL=info crystal spec --warnings none spec/cnf_conformance_spec.cr -v
 
-
-  #Docker executor
-  # cnf_conformance: 
-  #   docker:
-  #     - image: conformance/base:latest
-  #   working_directory: /mnt/ramdisk
-  #   steps: 
-  #     - setup_remote_docker
-  #     - checkout
-  #     - run: |
-  #         kind create cluster
-  #         shards install  
-  #         crystal src/cnf-conformance.cr setup
-  #         LOG_LEVEL=info crystal spec spec/cnf_conformance_spec.cr -v
-
   configuration_lifecycle: 
     docker:
       - image: conformance/base:latest
     working_directory: /mnt/ramdisk
     steps: 
-      - setup_remote_docker
       - checkout
+      - install_deps
       - run: |
           kind create cluster
           shards install  
           crystal src/cnf-conformance.cr setup
-          LOG_LEVEL=info crystal spec spec/configuration_lifecycle_spec.cr -v
+          LOG_LEVEL=info crystal spec --warnings none spec/configuration_lifecycle_spec.cr -v
 
   curl_install: 
     docker:
       - image: conformance/base:latest
     working_directory: /mnt/ramdisk
     steps: 
-      - setup_remote_docker
       - checkout
+      - install_deps
       - run: |
           kind create cluster
           shards install  
           crystal src/cnf-conformance.cr setup
-          LOG_LEVEL=info crystal spec spec/curl_install_spec.cr -v
+          LOG_LEVEL=info crystal spec --warnings none spec/curl_install_spec.cr -v
 
   installability: 
     docker:
       - image: conformance/base:latest
     working_directory: /mnt/ramdisk
     steps: 
-      - setup_remote_docker
       - checkout
+      - install_deps
       - run: |
           kind create cluster
           shards install  
           crystal src/cnf-conformance.cr setup
-          LOG_LEVEL=info crystal spec spec/installability_spec.cr -v
+          LOG_LEVEL=info crystal spec --warnings none spec/installability_spec.cr -v
 
   microservice: 
     docker:
       - image: conformance/base:latest
     working_directory: /mnt/ramdisk
     steps: 
-      - setup_remote_docker
       - checkout
+      - install_deps
       - run: |
           kind create cluster
           shards install  
           crystal src/cnf-conformance.cr setup
-          LOG_LEVEL=info crystal spec spec/microservice_spec.cr -v
+          LOG_LEVEL=info crystal spec --warnings none spec/microservice_spec.cr -v
 
   prereqs: 
     docker:
       - image: conformance/base:latest
     working_directory: /mnt/ramdisk
     steps: 
-      - setup_remote_docker
       - checkout
+      - install_deps
       - run: |
           kind create cluster
           shards install  
           crystal src/cnf-conformance.cr setup
-          LOG_LEVEL=info crystal spec spec/prereqs_spec.cr -v
+          LOG_LEVEL=info crystal spec --warnings none spec/prereqs_spec.cr -v
 
   resilience: 
     docker:
       - image: conformance/base:latest
     working_directory: /mnt/ramdisk
     steps: 
-      - setup_remote_docker
       - checkout
+      - install_deps
       - run: |
           kind create cluster
           shards install  
           crystal src/cnf-conformance.cr setup
-          LOG_LEVEL=info crystal spec spec/resilience_spec.cr -v
+          LOG_LEVEL=info crystal spec --warnings none spec/resilience_spec.cr -v
 
   security: 
     docker:
       - image: conformance/base:latest
     working_directory: /mnt/ramdisk
     steps: 
-      - setup_remote_docker
       - checkout
+      - install_deps
       - run: |
           kind create cluster
           shards install  
           crystal src/cnf-conformance.cr setup
-          LOG_LEVEL=info crystal spec spec/security_spec.cr -v
+          LOG_LEVEL=info crystal spec --warnings none spec/security_spec.cr -v
 
   setup: 
     docker:
       - image: conformance/base:latest
     working_directory: /mnt/ramdisk
     steps: 
-      - setup_remote_docker
       - checkout
+      - install_deps
       - run: |
           kind create cluster
           shards install  
           crystal src/cnf-conformance.cr setup
-          LOG_LEVEL=info crystal spec spec/setup_spec.cr -v
+          LOG_LEVEL=info crystal spec --warnings none spec/setup_spec.cr -v
 
   spec_helper: 
     docker:
       - image: conformance/base:latest
     working_directory: /mnt/ramdisk
     steps: 
-      - setup_remote_docker
       - checkout
+      - install_deps
       - run: |
           kind create cluster
           shards install  
           crystal src/cnf-conformance.cr setup
-          LOG_LEVEL=info crystal spec spec/spec_helper.cr -v
+          LOG_LEVEL=info crystal spec --warnings none spec/spec_helper.cr -v
 
   statelessness: 
     docker:
       - image: conformance/base:latest
     working_directory: /mnt/ramdisk
     steps: 
-      - setup_remote_docker
       - checkout
+      - install_deps
       - run: |
           kind create cluster
           shards install  
           crystal src/cnf-conformance.cr setup
-          LOG_LEVEL=info crystal spec spec/statelessness_spec.cr -v
+          LOG_LEVEL=info crystal spec --warnings none spec/statelessness_spec.cr -v
 
   utils: 
     docker:
       - image: conformance/base:latest
     working_directory: /mnt/ramdisk
     steps: 
-      - setup_remote_docker
       - checkout
+      - install_deps
       - run: |
           kind create cluster
           shards install  
           crystal src/cnf-conformance.cr setup
-          LOG_LEVEL=info crystal spec spec/utils -v
+          LOG_LEVEL=info crystal spec --warnings none spec/utils -v
 
   platform: 
     docker:
       - image: conformance/base:latest
     working_directory: /mnt/ramdisk
     steps: 
-      - setup_remote_docker
       - checkout
+      - install_deps
       - run: |
           kind create cluster
           shards install  
           crystal src/cnf-conformance.cr setup
-          LOG_LEVEL=info crystal spec spec/platform -v
+          LOG_LEVEL=info crystal spec --warnings none spec/platform -v
 
 # Orchestrate or schedule a set of jobs
 workflows:
   test:
     jobs:
-      # - build
       - cnf_conformance
-      # - configuration_lifecycle:
-      #     requires:
-      #       - build
-      # - curl_install:
-      #     requires:
-      #       - build
-      # - installability:
-      #     requires:
-      #       - build
-      # - microservice:
-      #     requires:
-      #       - build
-      # - prereqs:
-      #     requires:
-      #       - build
-      # - resilience:
-      #     requires:
-      #       - build
-      # - security:
-      #     requires:
-      #       - build
-      # - setup:
-      #     requires:
-      #       - build
-      # - spec_helper:
-      #     requires:
-      #       - build
-      # - statelessness:
-      #     requires:
-      #       - build
-      # - utils:
-      #     requires:
-      #       - build
-      # - platform:
-      #     requires:
-      #       - build
+      - configuration_lifecycle
+      - curl_install
+      - installability
+      - microservice
+      - prereqs
+      - resilience
+      - security
+      - setup
+      - spec_helper
+      - statelessness
+      - utils
+      - platform
