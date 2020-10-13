@@ -130,18 +130,6 @@ commands: # a reusable command with parameters
                crystal src/cnf-conformance.cr setup
 
 jobs:
-  build:
-    docker:
-      - image: docker:latest
-    steps: 
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - checkout
-      - run: |
-          docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
-          docker build -t conformance/base:latest -f .circleci/Dockerfile .
-          docker push conformance/base:latest
-          
   cnf_conformance: 
     machine:
       image: ubuntu-1604:202007-01
@@ -156,8 +144,8 @@ jobs:
             LOG_LEVEL=info crystal spec --warnings none spec/cnf_conformance_spec.cr -v
 
   configuration_lifecycle: 
-    docker:
-      - image: conformance/base:latest
+    machine:
+      image: ubuntu-1604:202007-01
     working_directory: /mnt/ramdisk
     steps: 
       - checkout
@@ -169,8 +157,8 @@ jobs:
           LOG_LEVEL=info crystal spec --warnings none spec/configuration_lifecycle_spec.cr -v
 
   curl_install: 
-    docker:
-      - image: conformance/base:latest
+    machine:
+      image: ubuntu-1604:202007-01
     working_directory: /mnt/ramdisk
     steps: 
       - checkout
@@ -182,8 +170,8 @@ jobs:
           LOG_LEVEL=info crystal spec --warnings none spec/curl_install_spec.cr -v
 
   installability: 
-    docker:
-      - image: conformance/base:latest
+    machine:
+      image: ubuntu-1604:202007-01
     working_directory: /mnt/ramdisk
     steps: 
       - checkout
@@ -195,8 +183,8 @@ jobs:
           LOG_LEVEL=info crystal spec --warnings none spec/installability_spec.cr -v
 
   microservice: 
-    docker:
-      - image: conformance/base:latest
+    machine:
+      image: ubuntu-1604:202007-01
     working_directory: /mnt/ramdisk
     steps: 
       - checkout
@@ -208,8 +196,8 @@ jobs:
           LOG_LEVEL=info crystal spec --warnings none spec/microservice_spec.cr -v
 
   prereqs: 
-    docker:
-      - image: conformance/base:latest
+    machine:
+      image: ubuntu-1604:202007-01
     working_directory: /mnt/ramdisk
     steps: 
       - checkout
@@ -221,8 +209,8 @@ jobs:
           LOG_LEVEL=info crystal spec --warnings none spec/prereqs_spec.cr -v
 
   resilience: 
-    docker:
-      - image: conformance/base:latest
+    machine:
+      image: ubuntu-1604:202007-01
     working_directory: /mnt/ramdisk
     steps: 
       - checkout
@@ -234,8 +222,8 @@ jobs:
           LOG_LEVEL=info crystal spec --warnings none spec/resilience_spec.cr -v
 
   security: 
-    docker:
-      - image: conformance/base:latest
+    machine:
+      image: ubuntu-1604:202007-01
     working_directory: /mnt/ramdisk
     steps: 
       - checkout
@@ -247,8 +235,8 @@ jobs:
           LOG_LEVEL=info crystal spec --warnings none spec/security_spec.cr -v
 
   setup: 
-    docker:
-      - image: conformance/base:latest
+    machine:
+      image: ubuntu-1604:202007-01
     working_directory: /mnt/ramdisk
     steps: 
       - checkout
@@ -260,8 +248,8 @@ jobs:
           LOG_LEVEL=info crystal spec --warnings none spec/setup_spec.cr -v
 
   spec_helper: 
-    docker:
-      - image: conformance/base:latest
+    machine:
+      image: ubuntu-1604:202007-01
     working_directory: /mnt/ramdisk
     steps: 
       - checkout
@@ -273,8 +261,8 @@ jobs:
           LOG_LEVEL=info crystal spec --warnings none spec/spec_helper.cr -v
 
   statelessness: 
-    docker:
-      - image: conformance/base:latest
+    machine:
+      image: ubuntu-1604:202007-01
     working_directory: /mnt/ramdisk
     steps: 
       - checkout
@@ -286,8 +274,8 @@ jobs:
           LOG_LEVEL=info crystal spec --warnings none spec/statelessness_spec.cr -v
 
   utils: 
-    docker:
-      - image: conformance/base:latest
+    machine:
+      image: ubuntu-1604:202007-01
     working_directory: /mnt/ramdisk
     steps: 
       - checkout
@@ -299,8 +287,8 @@ jobs:
           LOG_LEVEL=info crystal spec --warnings none spec/utils -v
 
   platform: 
-    docker:
-      - image: conformance/base:latest
+    machine:
+      image: ubuntu-1604:202007-01
     working_directory: /mnt/ramdisk
     steps: 
       - checkout
