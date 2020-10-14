@@ -230,19 +230,19 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     current_dir = FileUtils.pwd
     #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     helm = CNFSingleton.helm
-    VERBOSE_LOGGING.debug "Helm Path: #{helm}" if check_verbose(args)
+    VERBOSE_LOGGING.info "Helm Path: #{helm}" if check_verbose(args)
 
     create_namespace = `kubectl create namespace hardcoded-ip-test`
     unless helm_chart.empty?
       helm_install = `#{helm} install --namespace hardcoded-ip-test hardcoded-ip-test #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
-      VERBOSE_LOGGING.debug "helm_chart: #{helm_chart}" if check_verbose(args)
+      VERBOSE_LOGGING.info "helm_chart: #{helm_chart}" if check_verbose(args)
     else
       helm_install = `#{helm} install --namespace hardcoded-ip-test hardcoded-ip-test #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
-      VERBOSE_LOGGING.debug "helm_directory: #{helm_directory}" if check_verbose(args)
+      VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if check_verbose(args)
     end
 
     ip_search = File.read_lines("#{destination_cnf_dir}/helm_chart.yml").take_while{|x| x.match(/NOTES:/) == nil}.reduce([] of String){|acc, x| x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/) && x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/).try &.[0] != "0.0.0.0" ? acc << x : acc}
-    VERBOSE_LOGGING.debug "IPs: #{ip_search}" if check_verbose(args)
+    VERBOSE_LOGGING.info "IPs: #{ip_search}" if check_verbose(args)
 
     if ip_search.empty? 
       upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✔️  PASSED: No hard-coded IP addresses found in the runtime K8s configuration")

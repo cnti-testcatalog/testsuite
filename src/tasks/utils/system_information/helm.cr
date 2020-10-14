@@ -11,7 +11,7 @@ def helm_installation(verbose=false)
   
   global_helm_version = helm_version(ghelm, verbose)
    
-  if global_helm_version
+  if global_helm_version && !global_helm_version.empty?
     gmsg = "Global helm found. Version: #{global_helm_version}"
     stdout_success gmsg
   else
@@ -23,7 +23,7 @@ def helm_installation(verbose=false)
   
   local_helm_version = helm_version(lhelm, verbose)
    
-  if local_helm_version
+  if local_helm_version && !local_helm_version.empty?
     lmsg = "Local helm found. Version: #{local_helm_version}"
     stdout_success lmsg
 
