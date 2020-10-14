@@ -252,20 +252,36 @@ jobs:
       - run: |
           LOG_LEVEL=info crystal spec --warnings none spec/platform -v
 
-  release: 
+  build_release: 
     machine:
       image: ubuntu-1604:202007-01
     steps: 
       - checkout
-      - install_deps
       - run: |
           docker pull crystallang/crystal:0.35.1-alpine
+          docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine shards install
           docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"
+          mkdir -p release
+          mv ./cnf-conformance ./release
+      - persist_to_workspace:
+           root: release
+           paths:
+             - cnf-conformance
+
+  release: 
+    machine:
+      image: ubuntu-1604:202007-01
+    steps: 
+      - attach_workspace:
+          at: /tmp/release
+      - run: |
+          cp /tmp/release/cnf-conformance .
           if [ -z "${GITHUB_USER+x}" ] || [ -z "${GITHUB_TOKEN+x}" ]; then
             exit 0
           else
             ./cnf-conformance upsert_release
           fi
+
 
 # Orchestrate or schedule a set of jobs
 workflows:
@@ -284,8 +300,10 @@ workflows:
       - statelessness
       - utils
       - platform
+      - build_release 
       - release:
           requires:
+            - build_release
             - cnf_conformance
             - configuration_lifecycle
             - curl_install
