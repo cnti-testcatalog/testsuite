@@ -110,6 +110,7 @@ commands: # a reusable command with parameters
                gpg --batch --verify helm.tgz.asc helm.tgz; \
                gpgconf --kill all || true; \
                rm -rf "$GNUPGHOME" helm.tgz.asc
+               sudo tar --strip-components 1 -C /usr/local/bin -xzf helm.tgz; \
                helm repo add stable https://kubernetes-charts.storage.googleapis.com; \
                rm helm.tgz
          - run:
