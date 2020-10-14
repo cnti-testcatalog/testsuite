@@ -51,14 +51,16 @@ commands: # a reusable command with parameters
            type: string
       steps:
          - run:
+             name: Setup Retry Function
+             command: |
+               cat .circleci/retry.sh >> $BASH_ENV
+         - run:
              name: Install Kubectl
              command: |
-               source .circleci/retry.sh 
                curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -; \
                echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list; \
                sudo apt-get update ; \
                sudo apt-get install -y kubectl=<<parameters.kubectl_version>> 
-               retry "echo test"
          - run:
              name: Install Golang
              command: |

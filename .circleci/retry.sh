@@ -1,6 +1,4 @@
-#!/bin/bash
-
-retry () {
+ retry () {
 TIME=0
 EXIT=1
 until [[ $EXIT -eq 0 ]]; do 
