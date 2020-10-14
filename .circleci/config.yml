@@ -253,6 +253,7 @@ jobs:
       - checkout
       - install_deps
       - run: |
+          git fetch --tags
           crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/utils -v
 
@@ -270,16 +271,16 @@ jobs:
 workflows:
   test:
     jobs:
-      - cnf_conformance
-      - configuration_lifecycle
-      - curl_install
-      - installability
-      - microservice
-      - prereqs
-      - resilience
-      - security
-      - setup
-      - spec_helper
-      - statelessness
+      # - cnf_conformance
+      # - configuration_lifecycle
+      # - curl_install
+      # - installability
+      # - microservice
+      # - prereqs
+      # - resilience
+      # - security
+      # - setup
+      # - spec_helper
+      # - statelessness
       - utils
-      - platform
+      # - platform
