@@ -253,7 +253,7 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          git fetch --tags
+          # git fetch --tags
           crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/utils -v
 
