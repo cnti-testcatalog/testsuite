@@ -142,8 +142,6 @@ jobs:
       - run:
           name: Run Crystal Spec
           command: |
-            shards install  
-            crystal src/cnf-conformance.cr setup
             LOG_LEVEL=info crystal spec --warnings none spec/cnf_conformance_spec.cr -v
 
   configuration_lifecycle: 
@@ -153,7 +151,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/configuration_lifecycle_spec.cr -v
 
   curl_install: 
@@ -163,7 +160,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/curl_install_spec.cr -v
 
   installability: 
@@ -173,7 +169,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/installability_spec.cr -v
 
   microservice: 
@@ -183,7 +178,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/microservice_spec.cr -v
 
   prereqs: 
@@ -193,7 +187,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/prereqs_spec.cr -v
 
   resilience: 
@@ -203,7 +196,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/resilience_spec.cr -v
 
   security: 
@@ -213,7 +205,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/security_spec.cr -v
 
   setup: 
@@ -223,7 +214,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/setup_spec.cr -v
 
   spec_helper: 
@@ -233,7 +223,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/spec_helper.cr -v
 
   statelessness: 
@@ -243,7 +232,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/statelessness_spec.cr -v
 
   utils: 
@@ -253,8 +241,6 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          # git fetch --tags
-          crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/utils -v
 
   platform: 
@@ -264,23 +250,22 @@ jobs:
       - checkout
       - install_deps
       - run: |
-          crystal src/cnf-conformance.cr setup
           LOG_LEVEL=info crystal spec --warnings none spec/platform -v
 
 # Orchestrate or schedule a set of jobs
 workflows:
   test:
     jobs:
-      # - cnf_conformance
-      # - configuration_lifecycle
-      # - curl_install
-      # - installability
-      # - microservice
-      # - prereqs
-      # - resilience
-      # - security
-      # - setup
-      # - spec_helper
-      # - statelessness
+      - cnf_conformance
+      - configuration_lifecycle
+      - curl_install
+      - installability
+      - microservice
+      - prereqs
+      - resilience
+      - security
+      - setup
+      - spec_helper
+      - statelessness
       - utils
-      # - platform
+      - platform
