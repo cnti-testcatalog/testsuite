@@ -252,6 +252,21 @@ jobs:
       - run: |
           LOG_LEVEL=info crystal spec --warnings none spec/platform -v
 
+  release: 
+    machine:
+      image: ubuntu-1604:202007-01
+    steps: 
+      - checkout
+      - install_deps
+      - run: |
+          docker pull crystallang/crystal:0.35.1-alpine
+          docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"
+          if [ -z "${GITHUB_USER+x}" ] || [ -z "${GITHUB_TOKEN+x}" ]; then
+            exit 0
+          else
+            ./cnf-conformance upsert_release
+          fi
+
 # Orchestrate or schedule a set of jobs
 workflows:
   test:
@@ -269,3 +284,18 @@ workflows:
       - statelessness
       - utils
       - platform
+      - release:
+          requires:
+            - cnf_conformance
+            - configuration_lifecycle
+            - curl_install
+            - installability
+            - microservice
+            - prereqs
+            - resilience
+            - security
+            - setup
+            - spec_helper
+            - statelessness
+            - utils
+            - platform
