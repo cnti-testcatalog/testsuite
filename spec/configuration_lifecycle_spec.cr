@@ -14,14 +14,14 @@ describe CnfConformance do
     # $?.success?.should be_true
   end
 
-  it "'ip_addresses' should fail when ip addresses are found in the source that is set", tags: "happy-path"  do
+  it "'ip_addresses' should pass when no uncommented ip addresses are found in helm chart source", tags: "happy-path"  do
     begin
       `./cnf-conformance sample_coredns_source_setup verbose`
       $?.success?.should be_true
       response_s = `./cnf-conformance ip_addresses verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILURE: IP addresses found/ =~ response_s).should_not be_nil
+      (/PASSED: No IP addresses found/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance sample_coredns_source_cleanup verbose`
     end

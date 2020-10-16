@@ -28,7 +28,7 @@ task "ip_addresses" do |_, args|
       LOGGING.info "current directory: #{ FileUtils.pwd()}"
       # should catch comments (# // or /*) and ignore 0.0.0.0
       # note: grep wants * escaped twice
-      Process.run("grep -r -P '^(?!.+0\.0\.0\.0)(?!#)(?![[:space:]]*#)(?!\/\/)(?![[:space:]]*\/\/)(?!\/\\*)(?![[:space:]]*\/\\*)(.+([0-9]{1,3}[\.]){3}[0-9]{1,3})'", shell: true) do |proc|
+      Process.run("grep -r -P '^(?!.+0\.0\.0\.0)(?![[:space:]]*0\.0\.0\.0)(?!#)(?![[:space:]]*#)(?!\/\/)(?![[:space:]]*\/\/)(?!\/\\*)(?![[:space:]]*\/\\*)(.+([0-9]{1,3}[\.]){3}[0-9]{1,3})'", shell: true) do |proc|
         while line = proc.output.gets
           response << line
           VERBOSE_LOGGING.info "#{line}" if check_verbose(args)
