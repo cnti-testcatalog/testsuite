@@ -18,20 +18,34 @@ task "ip_addresses" do |_, args|
     LOGGING.info("ip_addresses args #{args.inspect}")
     cdir = FileUtils.pwd()
     response = String::Builder.new
-    Dir.cd(CNF_DIR)
-    Process.run("grep -rnw -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}'", shell: true) do |proc|
-      while line = proc.output.gets
-        response << line
-        VERBOSE_LOGGING.info "#{line}" if check_verbose(args)
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    helm_directory = "#{config.get("helm_directory").as_s?}" 
+    LOGGING.info "ip_addresses helm_directory: #{CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory}"
+    if File.directory?(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory)
+      # Switch to the helm chart directory
+      Dir.cd(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory)
+      # Look for all ip addresses that are not comments
+      LOGGING.info "current directory: #{ FileUtils.pwd()}"
+      # should catch comments (# // or /*) and ignore 0.0.0.0
+      # note: grep wants * escaped twice
+      Process.run("grep -r -P '^(?!.+0\.0\.0\.0)(?!#)(?![[:space:]]*#)(?!\/\/)(?![[:space:]]*\/\/)(?!\/\\*)(?![[:space:]]*\/\\*)(.+([0-9]{1,3}[\.]){3}[0-9]{1,3})'", shell: true) do |proc|
+        while line = proc.output.gets
+          response << line
+          VERBOSE_LOGGING.info "#{line}" if check_verbose(args)
+        end
       end
-    end
-    Dir.cd(cdir)
-    if response.to_s.size > 0
-      resp = upsert_failed_task("ip_addresses","✖️  FAILURE: IP addresses found")
+      Dir.cd(cdir)
+      if response.to_s.size > 0
+        resp = upsert_failed_task("ip_addresses","✖️  FAILURE: IP addresses found")
+      else
+        resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
+      end
+      resp
     else
+      # TODO If no helm chart directory, exit with 0 points
+      Dir.cd(cdir)
       resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
     end
-    resp
   end
 end
 
