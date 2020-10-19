@@ -241,12 +241,12 @@ module CNFManager
       stdout = IO::Memory.new
       stderror = IO::Memory.new
       begin
-      process = Process.new("#{helm}", ["repo", "add", "#{helm_repo_name}", "#{helm_repo_url}"], output: stdout, error: stderror)
-      status = process.wait
-      helm_resp = stdout.to_s
-      error = stderror.to_s
-      LOGGING.info "error: #{error}"
-      LOGGING.info "helm_resp (add): #{helm_resp}"
+        process = Process.new("#{helm}", ["repo", "add", "#{helm_repo_name}", "#{helm_repo_url}"], output: stdout, error: stderror)
+        status = process.wait
+        helm_resp = stdout.to_s
+        error = stderror.to_s
+        LOGGING.info "error: #{error}"
+        LOGGING.info "helm_resp (add): #{helm_resp}"
       rescue
         LOGGING.error "helm repo add command critically failed: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
       end
