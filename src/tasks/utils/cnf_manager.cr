@@ -63,7 +63,7 @@ module CNFManager
     second_count = 0
     apply_resp = `kubectl apply -f #{manifest_file}`
     LOGGING.info("apply response: #{apply_resp}")
-    until (apply_resp =~ /unable to recognize/) == nil || second_count > wait_count.to_i
+    until (apply_resp =~ /dockercluster.infrastructure.cluster.x-k8s.io\/capd unchanged/) != nil && (apply_resp =~ /cluster.cluster.x-k8s.io\/capd unchanged/) != nil && (apply_resp =~ /kubeadmcontrolplane.controlplane.cluster.x-k8s.io\/capd-control-plane unchanged/) != nil && (apply_resp =~ /kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io\/capd-md-0 unchanged/) !=nil && (apply_resp =~ /machinedeployment.cluster.x-k8s.io\/capd-md-0 unchanged/) != nil && (apply_resp =~ /machinehealthcheck.cluster.x-k8s.io\/capd-mhc-0 unchanged/) != nil || second_count > wait_count.to_i
       LOGGING.info("second_count = #{second_count}")
       sleep 1
       apply_resp = `kubectl apply -f #{manifest_file}`
