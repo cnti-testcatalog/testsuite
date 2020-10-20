@@ -127,6 +127,12 @@ commands: # a reusable command with parameters
                export PATH=$/usr/local/go/bin:$PATH
                GO111MODULE="on" go get sigs.k8s.io/kind@<<parameters.kind_version>>
          - run:
+             name: Install Kustomize
+             command: |
+               export PATH=<<parameters.golang_path>>/bin:$PATH
+               export PATH=$/usr/local/go/bin:$PATH
+               GO111MODULE=on go get sigs.k8s.io/kustomize/kustomize/v3
+         - run:
              name: Create Kind Cluster
              command: |
                export PATH=<<parameters.golang_path>>/bin:$PATH
