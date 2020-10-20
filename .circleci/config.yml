@@ -67,7 +67,7 @@ commands: # a reusable command with parameters
              command: |
                curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl
                chmod +x ./clusterctl
-               mv ./clusterctl /usr/local/bin/clusterctl
+               sudo mv ./clusterctl /usr/local/bin/clusterctl
          - run:
              name: Install Golang
              command: |
