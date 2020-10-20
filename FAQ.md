@@ -46,7 +46,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 <details> <summary>Can I run CNF Conformance without a Kubernetes cluster?</summary>
 <p>
 
- - In simple terms, no. You need some type of k8s (kubernetes) cluster whether it's baremetal, kind, docker and so on to run CNF Conformance suite against your CNF.
+ - In simple terms, no. You need some type of Kubernetes (K8s) cluster whether it's bare metal, kind, Docker and so on to run CNF Conformance suite against your CNF.
 
 </p>
 </details>
@@ -54,7 +54,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 <details> <summary>How are points assigned for tests?</summary>
 <p>
 
- - Points are different for each test and workload but in layman terms, pass defaults to 5 and fail is a -1. Seen [points.yml](https://github.com/cncf/cnf-conformance/blob/master/points.yml) for more details on the different points for default scoring.
+ - Points are different for each test and workload but in general terms, pass defaults to 5 and fail is a -1. Seen [points.yml](https://github.com/cncf/cnf-conformance/blob/master/points.yml) for more details on the different points for default scoring.
 
 </p>
 </details>
