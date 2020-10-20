@@ -63,11 +63,12 @@ clusterctl config cluster capd --kubernetes-version v1.17.5 \
 `
 
       LOGGING.info create_capd_response 
-      CNFManager.wait_for_install(deployment_name: "cert-manager", namespace: "cert-manager")
-
-      CNFManager.wait_for_install(deployment_name: "cert-manager-cainjector", namespace: "cert-manager")
-
-      CNFManager.wait_for_install(deployment_name: "cert-manager-webhook", namespace: "cert-manager")
+      # CNFManager.wait_for_install(deployment_name: "cert-manager", namespace: "cert-manager")
+      #
+      # CNFManager.wait_for_install(deployment_name: "cert-manager-cainjector", namespace: "cert-manager")
+      #
+      # CNFManager.wait_for_install(deployment_name: "cert-manager-webhook", namespace: "cert-manager")
+      CNFManager.wait_for_install_by_apply("capd.yaml")
 
       File.write("capd.yaml", create_capd_response)
 
@@ -75,10 +76,10 @@ clusterctl config cluster capd --kubernetes-version v1.17.5 \
       LOGGING.info `kubectl apply -f capd.yaml`
 
       ensure
-      FileUtils.cd("#{current_dir}")
-      response_s = `./cnf-conformance clusterapi_enabled poc`
-      LOGGING.info response_s
-      (/Cluster API is enabled/ =~ response_s).should_not be_nil
+        FileUtils.cd("#{current_dir}")
+        response_s = `./cnf-conformance clusterapi_enabled poc`
+        LOGGING.info response_s
+        (/Cluster API is enabled/ =~ response_s).should_not be_nil
     end
   end
 end
