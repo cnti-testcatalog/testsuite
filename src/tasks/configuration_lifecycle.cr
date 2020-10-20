@@ -18,20 +18,34 @@ task "ip_addresses" do |_, args|
     LOGGING.info("ip_addresses args #{args.inspect}")
     cdir = FileUtils.pwd()
     response = String::Builder.new
-    Dir.cd(CNF_DIR)
-    Process.run("grep -rnw -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}'", shell: true) do |proc|
-      while line = proc.output.gets
-        response << line
-        VERBOSE_LOGGING.info "#{line}" if check_verbose(args)
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    helm_directory = "#{config.get("helm_directory").as_s?}" 
+    LOGGING.info "ip_addresses helm_directory: #{CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory}"
+    if File.directory?(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory)
+      # Switch to the helm chart directory
+      Dir.cd(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory)
+      # Look for all ip addresses that are not comments
+      LOGGING.info "current directory: #{ FileUtils.pwd()}"
+      # should catch comments (# // or /*) and ignore 0.0.0.0
+      # note: grep wants * escaped twice
+      Process.run("grep -r -P '^(?!.+0\.0\.0\.0)(?![[:space:]]*0\.0\.0\.0)(?!#)(?![[:space:]]*#)(?!\/\/)(?![[:space:]]*\/\/)(?!\/\\*)(?![[:space:]]*\/\\*)(.+([0-9]{1,3}[\.]){3}[0-9]{1,3})'", shell: true) do |proc|
+        while line = proc.output.gets
+          response << line
+          VERBOSE_LOGGING.info "#{line}" if check_verbose(args)
+        end
       end
-    end
-    Dir.cd(cdir)
-    if response.to_s.size > 0
-      resp = upsert_failed_task("ip_addresses","✖️  FAILURE: IP addresses found")
+      Dir.cd(cdir)
+      if response.to_s.size > 0
+        resp = upsert_failed_task("ip_addresses","✖️  FAILURE: IP addresses found")
+      else
+        resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
+      end
+      resp
     else
+      # TODO If no helm chart directory, exit with 0 points
+      Dir.cd(cdir)
       resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
     end
-    resp
   end
 end
 
@@ -230,19 +244,19 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     current_dir = FileUtils.pwd
     #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     helm = CNFSingleton.helm
-    VERBOSE_LOGGING.debug "Helm Path: #{helm}" if check_verbose(args)
+    VERBOSE_LOGGING.info "Helm Path: #{helm}" if check_verbose(args)
 
     create_namespace = `kubectl create namespace hardcoded-ip-test`
     unless helm_chart.empty?
       helm_install = `#{helm} install --namespace hardcoded-ip-test hardcoded-ip-test #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
-      VERBOSE_LOGGING.debug "helm_chart: #{helm_chart}" if check_verbose(args)
+      VERBOSE_LOGGING.info "helm_chart: #{helm_chart}" if check_verbose(args)
     else
       helm_install = `#{helm} install --namespace hardcoded-ip-test hardcoded-ip-test #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
-      VERBOSE_LOGGING.debug "helm_directory: #{helm_directory}" if check_verbose(args)
+      VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if check_verbose(args)
     end
 
     ip_search = File.read_lines("#{destination_cnf_dir}/helm_chart.yml").take_while{|x| x.match(/NOTES:/) == nil}.reduce([] of String){|acc, x| x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/) && x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/).try &.[0] != "0.0.0.0" ? acc << x : acc}
-    VERBOSE_LOGGING.debug "IPs: #{ip_search}" if check_verbose(args)
+    VERBOSE_LOGGING.info "IPs: #{ip_search}" if check_verbose(args)
 
     if ip_search.empty? 
       upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✔️  PASSED: No hard-coded IP addresses found in the runtime K8s configuration")

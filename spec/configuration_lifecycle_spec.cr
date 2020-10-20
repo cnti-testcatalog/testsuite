@@ -14,14 +14,14 @@ describe CnfConformance do
     # $?.success?.should be_true
   end
 
-  it "'ip_addresses' should fail when ip addresses are found in the source that is set", tags: "happy-path"  do
+  it "'ip_addresses' should pass when no uncommented ip addresses are found in helm chart source", tags: "happy-path"  do
     begin
       `./cnf-conformance sample_coredns_source_setup verbose`
       $?.success?.should be_true
       response_s = `./cnf-conformance ip_addresses verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILURE: IP addresses found/ =~ response_s).should_not be_nil
+      (/PASSED: No IP addresses found/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance sample_coredns_source_cleanup verbose`
     end
@@ -131,7 +131,7 @@ describe CnfConformance do
     begin
       `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample_coredns_hardcoded_ips deploy_with_chart=false`
       $?.success?.should be_true
-      response_s = `./cnf-conformance hardcoded_ip_addresses_in_k8s_runtime_configuration verbose`
+      response_s = `LOG_LEVEL=info ./cnf-conformance hardcoded_ip_addresses_in_k8s_runtime_configuration verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/FAILURE: Hard-coded IP addresses found in the runtime K8s configuration/ =~ response_s).should_not be_nil

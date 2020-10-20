@@ -44,18 +44,23 @@ class LogLevel
   class_property command_line_loglevel : String = ""
 end
 
-OptionParser.parse do |parser|
-  parser.banner = "Usage: cnf-conformance [arguments]"
-  parser.on("-l LEVEL", "--loglevel=LEVEL", "Specifies the logging level for cnf-conformance suite") do |level|
-    LogLevel.command_line_loglevel = level
+begin
+  OptionParser.parse do |parser|
+    parser.banner = "Usage: cnf-conformance [arguments]"
+    parser.on("-l LEVEL", "--loglevel=LEVEL", "Specifies the logging level for cnf-conformance suite") do |level|
+      LogLevel.command_line_loglevel = level
+    end
+    parser.on("-h", "--help", "Show this help") { puts parser }
   end
-  parser.on("-h", "--help", "Show this help") { puts parser }
+rescue ex : OptionParser::InvalidOption 
+  puts ex 
 end
 
 # this first line necessary to make sure our custom formatter
 # is used in the default error log line also
-Log.setup(Log::Severity::Error, Log::IOBackend.new(formatter: log_formatter))
-Log.setup(loglevel, Log::IOBackend.new(formatter: log_formatter))
+  Log.setup(Log::Severity::Error, Log::IOBackend.new(formatter: log_formatter))
+  Log.setup(loglevel, Log::IOBackend.new(formatter: log_formatter))
+
 
 def loglevel
   levelstr = "" # default to unset
