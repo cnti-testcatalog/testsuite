@@ -105,6 +105,7 @@ task "clusterapi_enabled" do |_, args|
     end
 
     clusterapi_control_planes_json = proc_clusterapi_control_planes_json.call
+    LOGGING.info("clusterapi_control_planes_json: #{clusterapi_control_planes_json}")
 
     if clusterapi_namespaces_json["items"]?.not_nil! && clusterapi_namespaces_json["items"].as_a.size > 0 && clusterapi_control_planes_json["items"]?.not_nil! && clusterapi_control_planes_json["items"].as_a.size > 0
       resp = upsert_passed_task("clusterapi_enabled", "✔️ Cluster API is enabled ✨")
