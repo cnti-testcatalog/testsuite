@@ -63,6 +63,12 @@ commands: # a reusable command with parameters
                sudo apt-get update ; \
                sudo apt-get install -y kubectl=<<parameters.kubectl_version>> 
          - run:
+             name: Install Clusterctl
+             command: |
+               curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl
+               chmod +x ./clusterctl
+               mv ./clusterctl /usr/local/bin/clusterctl
+         - run:
              name: Install Golang
              command: |
                sudo apt install -y --no-install-recommends \
