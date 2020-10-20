@@ -51,6 +51,14 @@ CNF Conformance Test Suite Frequently Asked Questions
 </p>
 </details>
 
+<details> <summary>Does CNF Conformance have any pre-requisites or other requirements to run?</summary>
+<p>
+
+ - Yes. There are a few requirements for CNF Conformance. You can read about the requirements in the [INSTALL Guide](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#prerequisites)
+
+</p>
+</details>
+
 <details> <summary>How are points assigned for tests?</summary>
 <p>
 
