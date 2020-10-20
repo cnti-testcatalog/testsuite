@@ -63,10 +63,15 @@ clusterctl config cluster capd --kubernetes-version v1.17.5 \
 `
 
       LOGGING.info create_capd_response 
+      CNFManager.wait_for_install(deployment_name: "cert-manager", namespace: "cert-manager")
+
+      CNFManager.wait_for_install(deployment_name: "cert-manager-cainjector", namespace: "cert-manager")
+
+      CNFManager.wait_for_install(deployment_name: "cert-manager-webhook", namespace: "cert-manager")
 
       File.write("capd.yaml", create_capd_response)
 
-      CNFManager.wait_for_resource("#{current_dir}/capd.yaml")
+      # CNFManager.wait_for_crd("providers.clusterctl.cluster.x-k8s.io")
       LOGGING.info `kubectl apply -f capd.yaml`
 
       ensure

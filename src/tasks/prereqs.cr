@@ -17,7 +17,7 @@ task "prereqs" do  |_, args|
       wget_installation(verbose).includes?("wget found") &&
       curl_installation(verbose).includes?("curl found") &&
       kubectl_installation(verbose).includes?("kubectl found") &&
-      # clusterctl_installation(verbose).includes?("clusterctl found") && # not necessary for end users at this time
+      clusterctl_installation(verbose).includes?("clusterctl found") && # not necessary for end users at this time
       git_installation(verbose).includes?("git found")
 
       stdout_success "All prerequisites found."
