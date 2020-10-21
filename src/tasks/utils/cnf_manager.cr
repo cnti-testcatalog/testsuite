@@ -58,6 +58,22 @@ module CNFManager
     end
   end 
 
+  def self.wait_for_install_by_apply(manifest_file, wait_count=180)
+    LOGGING.info "wait_for_install_by_apply"
+    second_count = 0
+    apply_resp = `kubectl apply -f #{manifest_file}`
+    LOGGING.info("apply response: #{apply_resp}")
+    until (apply_resp =~ /dockercluster.infrastructure.cluster.x-k8s.io\/capd unchanged/) != nil && (apply_resp =~ /cluster.cluster.x-k8s.io\/capd unchanged/) != nil && (apply_resp =~ /kubeadmcontrolplane.controlplane.cluster.x-k8s.io\/capd-control-plane unchanged/) != nil && (apply_resp =~ /kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io\/capd-md-0 unchanged/) !=nil && (apply_resp =~ /machinedeployment.cluster.x-k8s.io\/capd-md-0 unchanged/) != nil && (apply_resp =~ /machinehealthcheck.cluster.x-k8s.io\/capd-mhc-0 unchanged/) != nil || second_count > wait_count.to_i
+      LOGGING.info("second_count = #{second_count}")
+      sleep 1
+      apply_resp = `kubectl apply -f #{manifest_file}`
+      LOGGING.info("apply response: #{apply_resp}")
+      second_count = second_count + 1 
+    end
+  end 
+
+
+
   def self.pod_status(pod_name_prefix, field_selector="", namespace="default")
     all_pods = `kubectl get pods #{field_selector} -o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}'`.split(",")
 
