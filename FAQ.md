@@ -10,6 +10,22 @@ CNF Conformance Test Suite Frequently Asked Questions
 </p>
 </details>
 
+<details> <summary>Can I contribute to the CNF Conformance Project?</summary>
+<p>
+
+ - Yes. You can start by reading the [CNF Conformance Contributing Guidelines](https://github.com/cncf/cnf-conformance/blob/master/CONTRIBUTING.md).
+
+</p>
+</details>
+
+<details> <summary>Does the CNF Conformance community or contributors meet?</summary>
+<p>
+
+ - Yes. The CNF Conformance team meets once a week on Thursdays at 14:15-15:00 UTC. You can find more info about the meeting [here.](https://github.com/cncf/cnf-conformance/blob/master/CONTRIBUTING.md#community-meeting)
+
+</p>
+</details>
+
 <details> <summary>What platforms does CNF Conformance run on?</summary>
 <p>
 
