@@ -24,7 +24,7 @@ jobs:
     name: Crystal Specs
     needs: tests
     runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.spec }}
+    continue-on-error: true
     strategy:
       matrix: ${{fromJson(needs.tests.outputs.matrix)}}
     steps:
