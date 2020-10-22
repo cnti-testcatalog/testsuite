@@ -1,20 +1,20 @@
 name: Crystal Specs
 on: [push, pull_request]
 jobs:
-  matrix:
-    name: Build Matrix
+  tests:
+    name: Fetch Matrix Tests
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
     - id: set-matrix
-      run: echo "::set-output name=matrix::{\"include\":[{\"test\":\"setup_spec.cr\"},{\"test\":\"curl_install_spec.cr\"}]}"
+      run: echo "::set-output name=matrix::{\"include\":[{\"python\":\"3.5\" },{\"python\":\"3.7\"}]}"
+      # run: echo "::set-output name=matrix::{\"include\":[{\"test\":\"setup_spec.cr\"},{\"test\":\"curl_install_spec.cr\"}]}"
   spec:
     name: Crystal Specs
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{fromJson(needs.matrix.outputs.matrix)}}
-        # spec_file: ["spec/prereqs_spec.cr", "spec/setup_spec.cr"]
+      matrix: ${{fromJson(needs.tests.outputs.matrix)}}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -48,4 +48,4 @@ jobs:
         crystal src/cnf-conformance.cr setup
     - name: Run Crystal Spec
       run: |
-        LOG_LEVEL=info crystal spec --warnings none ${{ matrix.test }} -v
+        LOG_LEVEL=info crystal spec --warnings none ${{ matrix.python }} -v
