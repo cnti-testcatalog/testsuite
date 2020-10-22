@@ -70,14 +70,16 @@ end
 def helm_v2_version(helm_response)
   # example
   # Client: &version.Version{SemVer:\"v2.14.3\", GitCommit:\"0e7f3b6637f7af8fcfddb3d2941fcc7cbebb0085\", GitTreeState:\"clean\"}\nServer: &version.Version{SemVer:\"v2.16.1\", GitCommit:\"bbdfe5e7803a12bbdf97e94cd847859890cf4050\", GitTreeState:\"clean\"}
-  helm_v2 = helm_response.match /Client: &version.Version{SemVer:\"(v([0-9]{1,3}[\.]){1,2}[0-9]{1,3})"/
+  helm_v2 = helm_response.match /Client: &version.Version{SemVer:\"(v([0-9]{1,3}[\.]){1,2}[0-9]{1,3}).+"/
+  LOGGING.info "helm_v2?: #{helm_v2}"
   helm_v2 && helm_v2.not_nil![1]
 end
 
 def helm_v3_version(helm_response)
   # example
   # version.BuildInfo{Version:"v3.1.1", GitCommit:"afe70585407b420d0097d07b21c47dc511525ac8", GitTreeState:"clean", GoVersion:"go1.13.8"}
-  helm_v3 = helm_response.match /BuildInfo{Version:\"(v([0-9]{1,3}[\.]){1,2}[0-9]{1,3})"/
+  helm_v3 = helm_response.match /BuildInfo{Version:\"(v([0-9]{1,3}[\.]){1,2}[0-9]{1,3}).+"/
+  LOGGING.info "helm_v3?: #{helm_v3}"
   helm_v3 && helm_v3.not_nil![1]
 end
 

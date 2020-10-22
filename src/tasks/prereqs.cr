@@ -10,6 +10,7 @@ require "./utils/system_information/git.cr"
 require "./utils/system_information/clusterctl.cr"
 
 task "prereqs" do  |_, args|
+  verbose = check_verbose(args)
 
   if (helm_installation.includes?("helm found") &&
       !CNFManager.helm_gives_k8s_warning?(true)) &
@@ -27,4 +28,3 @@ task "prereqs" do  |_, args|
     exit 1
   end
 end
-
