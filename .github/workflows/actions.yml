@@ -1,9 +1,7 @@
-name: Crystal-Specs
-
-on: push
-
+name: Crystal Specs
+on: [push, pull_request]
 jobs:
-  crystal-specs:
+  spec:
     name: Crystal Specs
     runs-on: ubuntu-latest
     strategy:
