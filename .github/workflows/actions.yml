@@ -20,7 +20,7 @@ jobs:
         TEST_LIST="${TEST_LIST%?}"
         JSON="$JSON$TEST_LIST"
         JSON="$JSON]}"
-        echo "::set-output name=matrix::$JSON"
+        echo "::set-output name=matrix::$( echo "$JSON" )"
   spec:
     name: Crystal Specs
     needs: tests
