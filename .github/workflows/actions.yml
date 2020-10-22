@@ -12,10 +12,12 @@ jobs:
     - id: set-matrix
       # run: echo "::set-output name=matrix::{\"include\":[{\"spec\":\"spec/setup_spec.cr\"},{\"spec\":\"spec/curl_install_spec.cr\"}]}"
       run: |
-        JSON="{\\\"include\\\":["
+        # JSON="{\\\"include\\\":["
+        JSON="{\"include\":["
         TEST_LIST=$(for i in $(find spec -name '*_spec.cr')
         do
-            echo "{\\\"spec\\\":\\\"$i\\\"}," | tr -d '\n'
+            # echo "{\\\"spec\\\":\\\"$i\\\"}," | tr -d '\n'
+            echo "{\"spec\":\"$i\"}," | tr -d '\n'
         done)
         TEST_LIST="${TEST_LIST%?}"
         JSON="$JSON$TEST_LIST"
