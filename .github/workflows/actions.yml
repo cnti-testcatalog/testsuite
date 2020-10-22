@@ -8,7 +8,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
     - id: set-matrix
-      run: echo "::set-output name=matrix::{\"include\":[{\"test\":\"spec/setup_spec.cr\"},{\"test\":\"spec/curl_install_spec.cr\"}]}"
+      run: echo "::set-output name=matrix::{\"include\":[{\"test\":\"setup_spec.cr\"},{\"test\":\"curl_install_spec.cr\"}]}"
   spec:
     name: Crystal Specs
     runs-on: ubuntu-latest
