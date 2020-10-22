@@ -1,12 +1,20 @@
 name: Crystal Specs
 on: [push, pull_request]
 jobs:
+  matrix:
+    name: Build Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+    - id: set-matrix
+      run: echo "::set-output name=matrix::{\"include\":[{\"spec\":\"spec/setup_spec.cr\"},{\"spec\":\"spec/curl_install_spec.cr\"}]}"
   spec:
     name: Crystal Specs
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        spec_file: ["spec/prereqs_spec.cr", "spec/setup_spec.cr"]
+      matrix: ${{fromJson(needs.matrix.outputs.matrix)}}
+        # spec_file: ["spec/prereqs_spec.cr", "spec/setup_spec.cr"]
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
