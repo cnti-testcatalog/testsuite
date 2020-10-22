@@ -32,8 +32,6 @@ jobs:
         && sudo rm -rf /var/lib/apt/lists/*
     - name: Create Kind Cluster 
       run: |
-        export PATH=<<parameters.golang_path>>/bin:$PATH
-        export PATH=$/usr/local/go/bin:$PATH
         kind create cluster
         kubectl get nodes 
     - name: Setup CNF-Conformance
