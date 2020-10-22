@@ -48,4 +48,4 @@ jobs:
         crystal src/cnf-conformance.cr setup
     - name: Run Crystal Spec
       run: |
-        LOG_LEVEL=info crystal spec --warnings none ${{ matrix.spec_file }} -v
+        LOG_LEVEL=info crystal spec --warnings none ${{ matrix.test }} -v
