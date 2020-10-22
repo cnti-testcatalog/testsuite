@@ -20,8 +20,8 @@ jobs:
         TEST_LIST="${TEST_LIST%?}"
         JSON="$JSON$TEST_LIST"
         JSON="$JSON]}"
-        echo $JSON 
-        echo $JSON | jq .
+        echo "$JSON" 
+        echo "$JSON" | jq .
         echo "::set-output name=matrix::$JSON"
   spec:
     name: Crystal Specs
