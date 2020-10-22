@@ -12,6 +12,7 @@ jobs:
       # run: echo "::set-output name=matrix::{\"include\":[{\"test\":\"setup_spec.cr\"},{\"test\":\"curl_install_spec.cr\"}]}"
   spec:
     name: Crystal Specs
+    needs: tests
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{fromJson(needs.tests.outputs.matrix)}}
