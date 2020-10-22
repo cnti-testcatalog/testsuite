@@ -21,6 +21,7 @@ jobs:
         JSON="$JSON$TEST_LIST"
         JSON="$JSON]}"
         echo "$JSON" 
+        echo 'running jq'
         echo "$JSON" | jq .
         echo "::set-output name=matrix::$JSON"
   spec:
