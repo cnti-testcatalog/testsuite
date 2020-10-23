@@ -56,8 +56,12 @@ jobs:
         kubectl get nodes 
     - name: Setup CNF-Conformance
       run: |
+        export GITHUB_USER=$GH_USER
+        export GITHUB_TOKEN=$GH_TOKEN
+        helm repo add stable https://charts.helm.sh/stable
         shards install  
         crystal src/cnf-conformance.cr setup
+        
     - name: Run Crystal Spec
       run: |
         LOG_LEVEL=info crystal spec --warnings none ${{ matrix.spec }} -v
