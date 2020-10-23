@@ -26,6 +26,14 @@ CNF Conformance Test Suite Frequently Asked Questions
 </p>
 </details>
 
+<details> <summary>Does CNF Conformance have a slack channel?</summary>
+<p>
+
+ - Yes. We have several two channels on [cloud-native.slack.com](https://cloud-native.slack.com), cnf-conformance and cnf-conformance-dev.
+
+</p>
+</details>
+
 <details> <summary>What platforms does CNF Conformance run on?</summary>
 <p>
 
@@ -103,6 +111,14 @@ CNF Conformance Test Suite Frequently Asked Questions
 <p>
 
  - All test results are stored in the results/ directory of where you installed CNF Conformance in yaml format.
+
+</p>
+</details>
+
+<details> <summary>Why is CNF Conformance written in crystal and not in other languages like Go?</summary>
+<p>
+
+ - The short answer is Crystal fit the criteria we were looking at in a language at the time which needed to run external programs/test suites and internal tests. -Taylor Carpenter via cloud-native.slack.com 
 
 </p>
 </details>
