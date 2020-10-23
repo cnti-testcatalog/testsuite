@@ -59,6 +59,7 @@ jobs:
         helm repo add stable https://charts.helm.sh/stable
         shards install  
         crystal src/cnf-conformance.cr setup
+        git fetch --all --tags 
     - name: Run Crystal Spec
       run: |
         export GITHUB_USER=$GH_USER
