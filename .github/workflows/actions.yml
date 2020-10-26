@@ -31,7 +31,7 @@ jobs:
     continue-on-error: ${{fromJson(needs.tests.outputs.matrix.experimental)}}
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.tests.outputs.matrix)}}
+      matrix: ${{fromJson(needs.tests.outputs.matrix.spec)}}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
