@@ -176,7 +176,7 @@ crystal src/cnf-conformance.cr sample_coredns_setup
 
 <details> <summary>  (optional): Build binary from source </summary>
 
-we use the official crystal alpine docker image for builds as you can see in our [.travis.yml](.travis.yml)
+we use the official crystal alpine docker image for builds as you can see in our [actions.yml](.github/workflows/actions.yml)
 
 ```
 # this is how we build for production. its static and DOES NOT have any runtime dependencies.
