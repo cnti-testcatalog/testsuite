@@ -270,8 +270,8 @@ kubectl -n capi-system describe pod capd-controller-manager<TAB>-<TAB>
 
 ```
 CNI_RESOURCES="$(cat test/e2e/data/cni/kindnet/kindnet.yaml)" \
-DOCKER_POD_CIDRS="172.17.0.1/16" \
-DOCKER_SERVICE_CIDRS="127.0.0.240/28" \
+DOCKER_POD_CIDRS="192.168.0.0/16" \
+DOCKER_SERVICE_CIDRS="172.17.0.0/16" \
 DOCKER_SERVICE_DOMAIN="cluster.local" \
 clusterctl config cluster capd --kubernetes-version v1.17.5 \
 --from ./test/e2e/data/infrastructure-docker/cluster-template.yaml \
