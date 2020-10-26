@@ -14,7 +14,11 @@ jobs:
         JSON="{\"include\":["
         TEST_LIST=$(for i in $(find spec -name '*_spec.cr')
         do
-            echo "{\"spec\":\"$i\"}," | tr -d '\n'
+            if [ "$i" == "spec/resilience_spec.cr" ] || [ "$i" == "spec/platform/cluster_api_spec.cr" ]; then
+                echo "{\"spec\":\"$i\", \"experimental\":\"true\"}," | tr -d '\n'
+            else
+                echo "{\"spec\":\"$i\", \"experimental\":\"false\"}," | tr -d '\n'
+            fi
         done)
         TEST_LIST="${TEST_LIST%?}"
         JSON="$JSON$TEST_LIST"
@@ -24,9 +28,10 @@ jobs:
     name: Crystal Specs
     needs: tests
     runs-on: ubuntu-latest
-    continue-on-error: true
-    # strategy:
-    #   matrix: ${{fromJson(needs.tests.outputs.matrix)}}
+    fail-fast: false
+    continue-on-error: ${{fromJson(needs.tests.outputs.matrix.experimental)}}
+    strategy:
+      matrix: ${{fromJson(needs.tests.outputs.matrix)}}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -60,8 +65,6 @@ jobs:
         git fetch --all --tags
         shards install  
         crystal src/cnf-conformance.cr setup
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
     - name: Run Crystal Spec
       env:
         GITHUB_USER: ${{ secrets.GH_USER }}
