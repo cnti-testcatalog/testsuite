@@ -14,11 +14,7 @@ jobs:
         JSON="{\"include\":["
         TEST_LIST=$(for i in $(find spec -name '*_spec.cr')
         do
-            if [ "$i" == "spec/resilience_spec.cr" ] || [ "$i" == "spec/platform/cluster_api_spec.cr" ]; then
-                echo "{\"spec\":\"$i\", \"experimental\":\"true\"}," | tr -d '\n'
-            else
-                echo "{\"spec\":\"$i\", \"experimental\":\"false\"}," | tr -d '\n'
-            fi
+             echo "{\"spec\":\"$i\"}," | tr -d '\n'
         done)
         TEST_LIST="${TEST_LIST%?}"
         JSON="$JSON$TEST_LIST"
@@ -28,10 +24,13 @@ jobs:
     name: Crystal Specs
     needs: tests
     runs-on: ubuntu-latest
-    continue-on-error: ${{fromJson(needs.tests.outputs.matrix.experimental)}}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.tests.outputs.matrix.spec)}}
+      include:
+      - spec: ["spec/platform/cluster_api_spec.cr"]
+        experimental: [true]
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
