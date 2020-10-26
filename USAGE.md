@@ -211,7 +211,7 @@ crystal src/cnf-conformance.cr configuration_lifecycle
 ```
 crystal src/cnf-conformance.cr versioned_helm_chart
 ```
-#### (PoC) To test if there are any (non-declarative) hardcoded IP addresses or subnet masks
+#### :heavy_check_mark: To test if there are any (non-declarative) hardcoded IP addresses or subnet masks
 ```
 crystal src/cnf-conformance.cr ip_addresses
 ```

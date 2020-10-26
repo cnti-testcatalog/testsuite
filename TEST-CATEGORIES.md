@@ -53,6 +53,7 @@ The CNF Conformance program validates interoperability of CNF **workloads** supp
 *  Testing to see if we can start pods/containers and see that the application continues to perform (e.g. using [Litmus](https://github.com/litmuschaos/litmus))
 *  Testing by reseting any child processes, and when the parent process is started, checking to see if those child processes are reaped (ie. monitoring processes with [Falco](https://github.com/falcosecurity/falco) or [sysdig-inspect](https://github.com/draios/sysdig-inspect))
 *  Testing if the CNF can perform a rolling update (i.e. [kubectl rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/))
+*  Testing if there are any (non-declarative) hardcoded IP addresses or subnet masks 
 
 ## Observability Tests 
 #### In order to maintain, debug, and have insight into a protected environment, its infrastructure elements must have the property of being observable. This means these elements must externalize their internal states in some way that lends itself to metrics, tracing, and logging. The Conformance suite checks this:
