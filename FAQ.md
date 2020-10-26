@@ -18,7 +18,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 </p>
 </details>
 
-<details> <summary>Does the CNF Conformance community or contributors meet?</summary>
+<details> <summary>Does the CNF Conformance community meet?</summary>
 <p>
 
  - Yes. The CNF Conformance team meets once a week on Thursdays at 14:15-15:00 UTC. You can find more info about the meeting [here.](https://github.com/cncf/cnf-conformance/blob/master/CONTRIBUTING.md#community-meeting)
@@ -34,7 +34,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 </p>
 </details>
 
-<details> <summary>What platforms does CNF Conformance run on?</summary>
+<details> <summary>What platforms are supported by CNF Conformance?</summary>
 <p>
 
  - CNF Conformance runs on most major Linux distributions and WSL (Windows Subsystem for Linux). 
@@ -58,7 +58,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 </p>
 </details>
 
-<details> <summary>Can I request new workload or platform tests for CNF Conformance?</summary>
+<details> <summary>Can I request a new workload or platform test for CNF Conformance?</summary>
 <p>
 
  - Yes. If you would like to request a new workload test, please create a [new issue](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=workload&template=new-workload-test.md&title=%5BWorkload%5D) (using the **New Workload Test** Template) or create a [new issue](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=platform&template=new-platform-test.md&title=%5BPlatform%5D) (using the **New Platform Test** Template)
@@ -86,7 +86,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 <details> <summary>How are points assigned for tests?</summary>
 <p>
 
- - Points are different for each test and workload but in general terms, pass defaults to 5 and fail is a -1. Seen [points.yml](https://github.com/cncf/cnf-conformance/blob/master/points.yml) for more details on the different points for default scoring.
+ - Points are different for each test and workload but in general terms, pass defaults to 5 and fail is a -1. See [points.yml](https://github.com/cncf/cnf-conformance/blob/master/points.yml) for more details on the different points for default scoring.
 
 </p>
 </details>
@@ -107,10 +107,10 @@ CNF Conformance Test Suite Frequently Asked Questions
 </p>
 </details>
 
-<details> <summary>I ran several tests and missed the output of results, are these lost or can I view past test results?</summary>
+<details> <summary>I ran several tests and missed the output of the results, are these lost or can I view past test results?</summary>
 <p>
 
- - All test results are stored in the results/ directory of where you installed CNF Conformance in yaml format.
+ - All test results are stored in the results/ directory of where you installed the CNF Conformance suite in yaml format.
 
 </p>
 </details>
@@ -118,14 +118,14 @@ CNF Conformance Test Suite Frequently Asked Questions
 <details> <summary>Why is CNF Conformance written in crystal and not in other languages like Go?</summary>
 <p>
 
- - The short answer is Crystal fit the criteria we were looking at in a language at the time which needed to run external programs/test suites and internal tests. -Taylor Carpenter via cloud-native.slack.com 
+ - The short answer is Crystal fit the criteria we looked at in a language at the time which needed to run external programs/test suites and internal tests. -Taylor Carpenter via cloud-native.slack.com 
 
 </p>
 </details>
 
 
 ### Troubleshooting
-<details> <summary>Running cnf-conformance says "Not found config" or similiar type errors?</summary>
+<details> <summary>Running cnf-conformance says "No found config" or similiar type errors?</summary>
 <p>
 
  - This may indicate that you are not pointing to a valid cnf-conformance.yml config file for your CNF. You may want to read or review the [CNF Conformance INSTALL](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md) instructions or the [USAGE Documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md). 
