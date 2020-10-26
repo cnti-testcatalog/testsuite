@@ -26,10 +26,9 @@ jobs:
     name: Crystal Specs
     needs: tests
     runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.tests.outputs.matrix.spec)}}
+      matrix: ${{fromJson(needs.tests.outputs.matrix)}}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
