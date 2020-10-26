@@ -14,7 +14,9 @@ jobs:
         JSON="{\"include\":["
         TEST_LIST=$(for i in $(find spec -name '*_spec.cr')
         do
-             echo "{\"spec\":\"$i\"}," | tr -d '\n'
+            if ! [ "$i" == "spec/resilience_spec.cr" ] || [ "$i" == "spec/platform/cluster_api_spec.cr" ]; then
+                 echo "{\"spec\":\"$i\"}," | tr -d '\n'
+            fi
         done)
         TEST_LIST="${TEST_LIST%?}"
         JSON="$JSON$TEST_LIST"
@@ -28,9 +30,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.tests.outputs.matrix.spec)}}
-      include:
-      - spec: ["spec/platform/cluster_api_spec.cr"]
-        experimental: [true]
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
