@@ -82,9 +82,10 @@ jobs:
         GITHUB_USER: ${{ secrets.GH_USER }}
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
+        source .github/workflows/retry.sh
         docker pull crystallang/crystal:0.35.1-alpine
         docker run --rm -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine shards install
-        docker run --rm -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"
+        retry "docker run --rm -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'"
         if [ -z "${GITHUB_USER+x}" ] || [ -z "${GITHUB_TOKEN+x}" ]; then
           exit 0
         else
