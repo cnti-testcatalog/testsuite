@@ -78,6 +78,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Create Release
+      env:
+        GITHUB_USER: ${{ secrets.GH_USER }}
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         docker pull crystallang/crystal:0.35.1-alpine
         docker run --rm -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine shards install
