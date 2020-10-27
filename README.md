@@ -1,7 +1,7 @@
 # CNF Conformance
 | Master |
 |---|
-|[![Build Status](https://www.travis-ci.org/cncf/cnf-conformance.svg?branch=master)](https://www.travis-ci.org/cncf/cnf-conformance)|
+|[![Build Status](https://github.com/cncf/cnf-conformance/workflows/Crystal%20Specs/badge.svg)](https://github.com/cncf/cnf-conformance/actions)|
 
 The CNF Conformance program enables interoperability of Cloud native Network Functions (CNFs) from multiple vendors running on top of Kubernetes. The goal is to provide an open source test suite to demonstrate conformance and implementation of best practices for both open and closed source Cloud native Network Functions. 
 
