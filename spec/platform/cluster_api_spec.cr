@@ -3,7 +3,7 @@ require "colorize"
 require "file_utils"
 require "./../../src/tasks/utils/utils.cr"
 
-describe "Platform" do
+describe "Cluster API" do
   before_all do
     `./cnf-conformance setup`
     $?.success?.should be_true
