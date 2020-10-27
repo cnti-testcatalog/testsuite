@@ -15,7 +15,7 @@ describe "Platform" do
     cluster_api_dir = "#{current_dir}/#{TOOLS_DIR}/cluster-api"
     `kubectl delete -f #{cluster_api_dir}/capd.yaml`
     `clusterctl delete --all --include-crd --include-namespace --config #{cluster_api_dir}/clusterctl.yaml`
-#    `rm -rf #{current_dir}/#{TOOLS_DIR}/cluster-api`
+    `rm -rf #{current_dir}/#{TOOLS_DIR}/cluster-api`
   end
 
   it "'clusterapi_enabled' test works" do
@@ -24,7 +24,7 @@ describe "Platform" do
       current_dir = FileUtils.pwd 
       cluster_api_dir =  "#{current_dir}/#{TOOLS_DIR}/cluster-api";
       unless Dir.exists?(cluster_api_dir)
-        `git clone https://github.com/kubernetes-sigs/cluster-api --depth 1 --branch v0.3.9 "#{cluster_api_dir}"`
+        `git clone https://github.com/kubernetes-sigs/cluster-api --depth 1 --branch v0.3.10 "#{cluster_api_dir}"`
       end
       FileUtils.cd(cluster_api_dir)
       File.write("clusterctl-settings.json",
@@ -32,18 +32,18 @@ describe "Platform" do
 {"providers": ["cluster-api","bootstrap-kubeadm","control-plane-kubeadm", "infrastructure-docker"]}
 EOF
   )
-      `./cmd/clusterctl/hack/local-overrides.py`
+      `./cmd/clusterctl/hack/create-local-repository.py`
       File.write("clusterctl.yaml", 
 <<-EOF
 providers:
   - name: docker
-    url: #{Path["~"].expand(home: true)}/.cluster-api/overrides/infrastructure-docker/v0.3.0/infrastructure-components.yaml
+    url: #{Path["~"].expand(home: true)}/.cluster-api/dev-repository/infrastructure-docker/v0.3.8/infrastructure-components.yaml
     type: InfrastructureProvider
 EOF
   )
 
 
-      test = `clusterctl init --core cluster-api:v0.3.0  --bootstrap kubeadm:v0.3.0    --control-plane kubeadm:v0.3.0    --infrastructure docker:v0.3.0 --config #{FileUtils.pwd}/clusterctl.yaml`
+      test = `clusterctl init --core cluster-api:v0.3.8  --bootstrap kubeadm:v0.3.8    --control-plane kubeadm:v0.3.8    --infrastructure docker:v0.3.8 --config #{FileUtils.pwd}/clusterctl.yaml`
       puts test
 
       $?.success?.should be_true
@@ -56,7 +56,7 @@ DOCKER_POD_CIDRS="192.168.0.0/16" \
 DOCKER_SERVICE_CIDRS="172.17.0.0/16" \
 DOCKER_SERVICE_DOMAIN="cluster.local" \
 clusterctl config cluster capd --kubernetes-version v1.17.5 \
---from ./test/e2e/data/infrastructure-docker/cluster-template.yaml \
+--from https://github.com/kubernetes-sigs/cluster-api/blob/v0.3.9/test/e2e/data/infrastructure-docker/cluster-template.yaml \
 --target-namespace default \
 --control-plane-machine-count=1 \
 --worker-machine-count=2
