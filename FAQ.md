@@ -29,7 +29,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 <details> <summary>Does CNF Conformance have a slack channel?</summary>
 <p>
 
- - Yes. We have several two channels on [cloud-native.slack.com](https://cloud-native.slack.com), cnf-conformance and cnf-conformance-dev.
+ - Yes. We have several two channels on [https://slack.cncf.io/](https://slack.cncf.io/), cnf-conformance and cnf-conformance-dev.
 
 </p>
 </details>
@@ -45,7 +45,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 <details> <summary>If I found a bug or I think it's a bug, how do I report it?</summary>
 <p>
 
- - If you would like to report a bug, please create a [new issue](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=bug&template=bug-report.md&title=%5BBUG%5D) (using the **Bug Report** Template)
+ - If you would like to report a bug, please create a [new issue](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=bug&template=bug-report.md&title=%5BBUG%5D) (using the **Bug Report** Template).
 
 </p>
 </details>
@@ -53,7 +53,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 <details> <summary>How do I request a new feature?</summary>
 <p>
 
- - If you would like to request an enhancement, please create a [new issue](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=enhancement&template=feature-request.md&title=%5BFeature%5D) (using the **Feature Request** Template)
+ - If you would like to request an enhancement, please create a [new issue](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=enhancement&template=feature-request.md&title=%5BFeature%5D) (using the **Feature Request** Template).
 
 </p>
 </details>
@@ -61,7 +61,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 <details> <summary>Can I request a new workload or platform test for CNF Conformance?</summary>
 <p>
 
- - Yes. If you would like to request a new workload test, please create a [new issue](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=workload&template=new-workload-test.md&title=%5BWorkload%5D) (using the **New Workload Test** Template) or create a [new issue](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=platform&template=new-platform-test.md&title=%5BPlatform%5D) (using the **New Platform Test** Template)
+ - Yes. If you would like to request a new workload test, please create a [new issue](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=workload&template=new-workload-test.md&title=%5BWorkload%5D) (using the **New Workload Test** Template) or create a [new issue](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=platform&template=new-platform-test.md&title=%5BPlatform%5D) (using the **New Platform Test** Template).
 
 </p>
 </details>
@@ -78,7 +78,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 <details> <summary>Does CNF Conformance have any pre-requisites or other requirements to run?</summary>
 <p>
 
- - Yes. There are a few requirements for CNF Conformance. You can read about the requirements in the [INSTALL Guide](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#prerequisites)
+ - Yes. There are a few requirements for CNF Conformance. You can read about the requirements in the [INSTALL Guide](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#prerequisites).
 
 </p>
 </details>
@@ -118,7 +118,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 <details> <summary>Why is CNF Conformance written in crystal and not in other languages like Go?</summary>
 <p>
 
- - The short answer is Crystal fit the criteria we looked at in a language at the time which needed to run external programs/test suites and internal tests. -Taylor Carpenter via cloud-native.slack.com 
+ - The short answer is Crystal fit the criteria we looked at in a language at the time which needed to run external programs/test suites and internal tests - [Taylor Carpenter](https://app.slack.com/client/T08PSQ7BQ/G019HM3K54H/user_profile/U7HCKCW90) via https://slack.cncf.io/ 
 
 </p>
 </details>
