@@ -229,8 +229,8 @@ TEMPLATE
   end
 
   def self.commit_message_issues(start_ref, end_ref)
-    fetch_tags = `git fetch --tags`
-    LOGGING.info "git fetch --tags: #{fetch_tags}"
+    fetch_tags = `git fetch --all --tags`
+    LOGGING.info "git fetch --all --tags: #{fetch_tags}"
     fetch = `git status`
     LOGGING.info "git status: #{fetch}"
     fetch = `git branch`
