@@ -28,6 +28,10 @@ shards:
     git: https://github.com/crystal-lang/crystal-readline.git
     version: 0.1.0+git.commit.0fb7d186da8e1b157998d98d1c96e99699b791eb
 
+  retriable:
+    git: https://github.com/Sija/retriable.cr.git
+    version: 0.2.2
+
   sam:
     git: https://github.com/vulk/sam.cr.git
     version: 0.4.0+git.commit.c243db28c0825838c1851d75aaf9273460720625
