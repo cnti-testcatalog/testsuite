@@ -62,6 +62,8 @@ jobs:
         git fetch --all --tags
         shards install  
         crystal src/cnf-conformance.cr setup
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Run Crystal Spec
       env:
         GITHUB_USER: ${{ secrets.GH_USER }}
