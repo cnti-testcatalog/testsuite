@@ -271,9 +271,16 @@ describe "Utils" do
     (/DEBUG -- cnf-conformance: debug test/ =~ response_s).should_not be_nil
   end
 
-  it "'logger' environment variable level setting works", tags: ["logger", "happy-path"]  do
+  it "'logger' LOGLEVEL NO underscore environment variable level setting works", tags: ["logger", "happy-path"]  do
     # Note: implicitly tests the override of config.yml if it exist in repo root
     response_s = `LOGLEVEL=DEBUG ./cnf-conformance test`
+    $?.success?.should be_true
+    (/DEBUG -- cnf-conformance: debug test/ =~ response_s).should_not be_nil
+  end
+
+  it "'logger' LOG_LEVEL WITH underscore environment variable level setting works", tags: ["logger", "happy-path"]  do
+    # Note: implicitly tests the override of config.yml if it exist in repo root
+    response_s = `LOG_LEVEL=DEBUG ./cnf-conformance test`
     $?.success?.should be_true
     (/DEBUG -- cnf-conformance: debug test/ =~ response_s).should_not be_nil
   end

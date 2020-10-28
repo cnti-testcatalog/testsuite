@@ -58,8 +58,8 @@ end
 
 # this first line necessary to make sure our custom formatter
 # is used in the default error log line also
-  Log.setup(Log::Severity::Error, Log::IOBackend.new(formatter: log_formatter))
-  Log.setup(loglevel, Log::IOBackend.new(formatter: log_formatter))
+Log.setup(Log::Severity::Error, Log::IOBackend.new(formatter: log_formatter))
+Log.setup(loglevel, Log::IOBackend.new(formatter: log_formatter))
 
 
 def loglevel
@@ -82,6 +82,10 @@ def loglevel
 
   if ENV.has_key?("LOGLEVEL") 
     levelstr = ENV["LOGLEVEL"]
+  end
+
+  if ENV.has_key?("LOG_LEVEL") 
+    levelstr = ENV["LOG_LEVEL"]
   end
 
   # highest priority is last
