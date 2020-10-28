@@ -1,0 +1,97 @@
+name: Crystal Specs
+on: [push, pull_request]
+jobs:
+  tests:
+    name: Fetch Matrix Tests
+    runs-on: ubuntu-20.04	
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - id: set-matrix
+      run: |
+        JSON="{\"include\":["
+        TEST_LIST=$(for i in $(find spec -name '*_spec.cr')
+        do
+            if ! [ "$i" == "spec/cpu_hog_spec.cr" ]; then
+                 echo "{\"spec\":\"$i\"}," | tr -d '\n'
+            fi
+        done)
+        TEST_LIST="${TEST_LIST%?}"
+        JSON="$JSON$TEST_LIST"
+        JSON="$JSON]}"
+        echo "::set-output name=matrix::$JSON"
+  spec:
+    name: Crystal Specs
+    needs: tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.tests.outputs.matrix)}}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Install Clusterctl
+      run: |
+        curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl
+        chmod +x ./clusterctl
+        sudo mv ./clusterctl /usr/local/bin/clusterctl
+    - name: Install Crystal
+      env:
+        CRYSTAL_VERSION: 0.35.1
+        CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download
+      run: |
+        wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga; 
+        sudo apt install -y --no-install-recommends \
+        git \
+        libssl-dev \
+        libxml2-dev \
+        libyaml-dev \
+        libgmp-dev \
+        libz-dev \
+        ./crystal.deb \
+        && sudo rm -rf /var/lib/apt/lists/*
+    - name: Create Kind Cluster 
+      run: |
+        kind create cluster
+        kubectl get nodes 
+    - name: Setup CNF-Conformance
+      run: |
+        helm repo add stable https://charts.helm.sh/stable
+        git fetch --all --tags
+        shards install  
+        crystal src/cnf-conformance.cr setup
+    - name: Run Crystal Spec
+      env:
+        GITHUB_USER: ${{ secrets.GH_USER }}
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+      run: |
+        LOG_LEVEL=info crystal spec --warnings none ${{ matrix.spec }} -v
+  release:
+    name: Release  
+    needs: spec
+    runs-on: ubuntu-latest
+    steps: 
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Create Release
+      env:
+        GITHUB_USER: ${{ secrets.GH_USER }}
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      run: |
+        source .github/workflows/retry.sh
+        docker pull crystallang/crystal:0.35.1-alpine
+        retry "docker run --rm -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine shards install"
+        retry "docker run --rm -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'"
+        if [ -z "${GITHUB_USER+x}" ] || [ -z "${GITHUB_TOKEN+x}" ]; then
+          exit 0
+        else
+          ./cnf-conformance upsert_release
+        fi

@@ -54,7 +54,7 @@ _Note: this covers both workload (ie. application) and platform tests_
 git tag -a 'vMAJOR.MINOR.PATCH' -m "vMAJOR.MINOR.PATCH Release" 
 git push --tags 
 ```
-- Wait for travis to complete the build
+- Wait for github actions to complete the build
 - Go to https://github.com/cncf/cnf-conformance/releases
 - Locate the draft release for the build
 - Modify the release notes to reflect the contents for the release

@@ -31,6 +31,8 @@ dependencies:
   crinja:
     github: straight-shoota/crinja
     commit: 849bd8a3c9600256ef797db66315dd757a1686a0 # master as of 7-29-2020
+  retriable:
+    github: Sija/retriable.cr
 
 development_dependencies:
   ameba:
