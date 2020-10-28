@@ -229,8 +229,14 @@ TEMPLATE
   end
 
   def self.commit_message_issues(start_ref, end_ref)
-    fetch_tags = `git fetch --all --tags`
-    LOGGING.info "git fetch --all --tags: #{fetch_tags}"
+    # github actions checkout must be set with this option for the git log command to work:
+    # steps: 
+    # - name: Checkout code
+    #   uses: actions/checkout@v2
+    #   with:
+    #     fetch-depth: 0
+    fetch_tags = `git fetch --tags`
+    LOGGING.info "git fetch --tags: #{fetch_tags}"
     fetch = `git status`
     LOGGING.info "git status: #{fetch}"
     fetch = `git branch`
