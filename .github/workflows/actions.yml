@@ -32,6 +32,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: Install Clusterctl
       run: |
         curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl
@@ -77,6 +79,8 @@ jobs:
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: Create Release
       env:
         GITHUB_USER: ${{ secrets.GH_USER }}
