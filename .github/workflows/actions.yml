@@ -102,8 +102,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         shards install
-        docker pull crystallang/crystal:0.35.1-alpine
-        docker run --rm -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'
+        docker pull conformance/crystal:0.35.1
+        docker run --rm -v $PWD:/workspace -w /workspace conformance/crystal:0.35.1 crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'
         if [ -z "${GITHUB_USER+x}" ] || [ -z "${GITHUB_TOKEN+x}" ]; then
           exit 0
         else
