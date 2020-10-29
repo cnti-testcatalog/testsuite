@@ -61,7 +61,7 @@ jobs:
     - name: Setup CNF-Conformance
       run: |
         helm repo add stable https://charts.helm.sh/stable
-        git fetch --all --tags
+        git fetch --all --tags --force
         shards install  
         crystal src/cnf-conformance.cr setup
     - name: Run Crystal Spec
@@ -81,15 +81,29 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    - name: Install Crystal
+      env:
+        CRYSTAL_VERSION: 0.35.1
+        CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download
+      run: |
+        wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga; 
+        sudo apt install -y --no-install-recommends \
+        git \
+        libssl-dev \
+        libxml2-dev \
+        libyaml-dev \
+        libgmp-dev \
+        libz-dev \
+        ./crystal.deb \
+        && sudo rm -rf /var/lib/apt/lists/*
     - name: Create Release
       env:
         GITHUB_USER: ${{ secrets.GH_USER }}
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
-        source .github/workflows/retry.sh
+        shards install
         docker pull crystallang/crystal:0.35.1-alpine
-        retry "docker run --rm -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine shards install"
-        retry "docker run --rm -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'"
+        docker run --rm -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'
         if [ -z "${GITHUB_USER+x}" ] || [ -z "${GITHUB_TOKEN+x}" ]; then
           exit 0
         else
