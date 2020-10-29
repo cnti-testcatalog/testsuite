@@ -58,6 +58,8 @@ jobs:
       run: |
         kind create cluster
         kubectl get nodes 
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Setup CNF-Conformance
       run: |
         helm repo add stable https://charts.helm.sh/stable
