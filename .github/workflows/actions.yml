@@ -58,12 +58,10 @@ jobs:
       run: |
         kind create cluster
         kubectl get nodes 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
     - name: Setup CNF-Conformance
       run: |
         helm repo add stable https://charts.helm.sh/stable
-        git fetch --all --tags
+        git fetch --all --tags --force
         shards install  
         crystal src/cnf-conformance.cr setup
     - name: Run Crystal Spec
