@@ -67,14 +67,3 @@ Chairs:
 
 Sonsors
 - TBD
-
-Members: 
-- TBD
-
-
-
-
-
-
-
-
