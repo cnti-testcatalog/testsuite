@@ -64,9 +64,9 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
     exit 1
 	end
   if args.named.keys.includes? "wait_count"
-    wait_count = args.named["wait_count"].as(Int32)
+    wait_count = args.named["wait_count"].to_i
   elsif args.named.keys.includes? "wait-count"
-    wait_count = args.named["wait-count"].as(Int32)
+    wait_count = args.named["wait-count"].to_i
   else
     wait_count = 180
   end
