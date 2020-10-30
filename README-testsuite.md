@@ -43,7 +43,7 @@ Welcome! We gladly accept contributions on new conformance tests, example CNFs, 
 
 ## Implementation overview
 
-The CNF Conformance Test Suite leverages upstream tools such as [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Helm linter](https://github.com/helm/chart-testing), and [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) for testing CNFs. The upstream tool installation, configuration and versioning has been made repeatable.
+The CNF Conformance Test Suite leverages upstream tools such as [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Helm linter](https://github.com/helm/chart-testing), and [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) for testing CNFs. The upstream tool installation, configuration, and versioning has been made repeatable.
 
 The test framework and tests (using the upstream tools) are written in the human readable, compiled language, [Crystal](https://crystal-lang.org/). Common capabilities like dependencies between tests and categories are supported.
 
@@ -52,11 +52,11 @@ Setup of vanilla upstream K8s on [Packet](https://www.packet.com/) is done with 
 
 ## Installation
 
-To quickly get CNF Conformance up and running, see the [Installation Guide](INSTALL.md). 
+To quickly get CNF Conformance Test Suite up and running, see the [Installation Guide](INSTALL.md). 
 
 ## Usage
 
-Check out the [usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md) for more info about invoking commands and logging
+Check out the [usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md) for more info about invoking commands and logging.
 
 ## Code of Conduct
 
@@ -64,4 +64,4 @@ The CNF Conformance community follows the [CNCF Code of Conduct](https://github.
 
 ## License terms
 
-CNF Conformance is available under the [Apache 2 license](https://github.com/cncf/cnf-conformance/blob/master/LICENSE).
+CNF Conformance Test Suite is available under the [Apache 2 license](https://github.com/cncf/cnf-conformance/blob/master/LICENSE).
