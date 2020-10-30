@@ -61,7 +61,6 @@ Establish a cloud native network function conformance program
 
 
 ## Governance and Operations
-This SIG follows the [standard operating model](https://github.com/cncf/toc/blob/master/sigs/cncf-sigs.md#operating-model) provided by the TOC unless otherwise stated here.
 
 ### Operating Model
 #### Chairs:
