@@ -60,10 +60,15 @@ Telco application cloud native requirements - including documentation, test defi
 Establish a cloud native network function conformance program
 
 
-## Chairs/Sponsors
+## Governance and Operations
+This SIG follows the [standard operating model](https://github.com/cncf/toc/blob/master/sigs/cncf-sigs.md#operating-model) provided by the TOC unless otherwise stated here.
 
-Chairs:
+### Operating Model
+#### Chairs:
 - TBD
 
-Sonsors
-- TBD
+#### Communications
+- Slack Channel (#sig-network)
+- Join CNF-WG mailer at lists.cncf.io
+- Repo: TBD
+- Meetings:TBD
