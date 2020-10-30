@@ -5,7 +5,7 @@
 
 The CNF Conformance test suite is a tool that makes it possible to validate telco applications, aka Cloud native Network Functions (CNFs), and the underlying Telecom platforms adherence to Cloud native principles and best pratices.
 
-This test suite initiative works closely with the [CNF WG](cnf-wg/README.md) which determines what requirements for the CNF Conformance program.
+This test suite initiative works closely with the [CNF WG](cnf-wg/README.md) which determines requirements for the CNF Conformance program.
 
 The CNF Conformance Test Suite will inspect CNFs for the following characteristics: 
 - **Compatibility** - CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements.
