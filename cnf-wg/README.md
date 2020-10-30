@@ -5,6 +5,9 @@ The CNF WG operates under the aegis of CNCF. The charter of the working group is
 
 The goal for the group is to create a software conformance program that any telco application implementation can use to demonstrate that they are conformant and interoperable with cloud native principles.
 
+## Chairs
+TBD
+
 ## Meetings
 We have meetings every Tuesday at 9:00am PDT.
 
