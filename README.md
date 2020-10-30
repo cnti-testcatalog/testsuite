@@ -1,7 +1,5 @@
 # CNF Conformance
-The CNF Conformance program enables interoperability of Cloud native Network Functions (CNFs) from multiple vendors running on top of Kubernetes. The goal is to provide an open source test suite to demonstrate conformance and implementation of best practices for both open and closed source Cloud native Network Functions. 
-
-The conformance program is a living thing. The CNCF community, through the [Cloud Native Network Function Working Group](cnf-wg/README.md), oversees and maintains what it means to be a cloud native conformant telco application (including those applications called network functions). It also develops the process and policy around the certification program. Work on the mechanics of the conformance tests occurs in the [CNF Conformance Test Suite](README-testsuite.md).
+The goal of the CNF Conformance Program is to provide an open source test suite to demonstrate conformance and implementation of cloud native best practices for both open and closed source Cloud Native Network Functions. The conformance program is a living thing. The CNCF community, through the [Cloud Native Network Function Working Group](cnf-wg/README.md), oversees and maintains what it means to be a cloud native conformant telco application (including those applications called network functions). It also develops the process and policy around the certification program. Work on the mechanics of the conformance tests occurs in the [CNF Conformance Test Suite](README-testsuite.md).
 
 ## CNF Conformance Program
 
