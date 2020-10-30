@@ -3,7 +3,7 @@
 |---|
 |[![Build Status](https://github.com/cncf/cnf-conformance/workflows/Crystal%20Specs/badge.svg)](https://github.com/cncf/cnf-conformance/actions)|
 
-The CNF Conformance test suite is a tool that makes it possible to validate telco applications, aka Cloud native Network Functions (CNFs), and the underlying Telecom platforms adherence to Cloud native principles and best pratices.
+The CNF Conformance test suite is a tool that makes it possible to validate telco applications, aka Cloud native Network Functions (CNFs), and the underlying Telecom platforms adherence to Cloud native principles and best practices.
 
 This test suite initiative works closely with the [CNF WG](cnf-wg/README.md) which determines requirements for the CNF Conformance program.
 
