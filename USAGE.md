@@ -152,6 +152,7 @@ crystal src/cnf-conformance.cr reset_cnf
 ```
 crystal src/cnf-conformance.cr check_reaped
 ```
+
 </p>
 </details>
 
@@ -168,6 +169,7 @@ crystal src/cnf-conformance.cr check_reaped
 
 <details> <summary>Details for Security Tests To Do's</summary>
 <p>
+
 #### :memo: (To Do) To check if there are any [shells running in the container](https://github.com/open-policy-agent/gatekeeper)
 ```
 crystal src/cnf-conformance.cr shells
