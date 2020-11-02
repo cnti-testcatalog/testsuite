@@ -61,7 +61,7 @@ describe "Microservice" do
   it "'reasonable_image_size' should fail if image is larger than 5gb", tags: "reasonable_image_size" do
     begin
       `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf force=true`
-      `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-large-cnf deploy_with_chart=false`
+      `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-large-cnf deploy_with_chart=false wait_count=0`
       response_s = `./cnf-conformance reasonable_image_size verbose`
       LOGGING.info response_s
       $?.success?.should be_true
