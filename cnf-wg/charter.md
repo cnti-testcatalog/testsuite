@@ -9,7 +9,7 @@ The goal for the group is to create a software conformance program that any appl
 
 ## Mission Statement
 Cloud Native Network Functions Working Group’s mission is to increase interoperability and standardization of cloud native workloads. It is committed to the following (aspirational) design ideals:
-- Portable - Cloud native workloads run everywhere -- public cloud, private cloud, bare metal, laptop -- with consistent behavior so that they are portable throughout the ecosystem as well as between development and production environments.
+- Portable - Cloud native workloads run everywhere -- public cloud, private cloud, bare metal, laptop -- with consistent functional behavior so that they are portable throughout the ecosystem as well as between development and production environments.
 - Meet users partway. Many applications today are not cloud native, but have been working in production for decades. The WG doesn’t just cater to purely greenfield cloud-native applications, nor does it meet all users where they are. It focuses on cloud-native applications, but provides some mechanisms to facilitate migration of monolithic and legacy applications.
 - Flexible. The cloud native technology ecosystem can be consumed a la carte and (in most cases) it does not prevent you from using your own solutions in lieu of built-in systems.
 - Extensible. Cloud native workloads should integrate into your environment and add the additional capabilities you need.
