@@ -72,9 +72,8 @@ jobs:
         DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
         LOG_LEVEL=info crystal spec --warnings none ${{ matrix.spec }} -v
-  release:
-    name: Release  
-    needs: spec
+  build:
+    name: Build Release
     runs-on: ubuntu-latest
     steps: 
     - name: Checkout code
@@ -96,16 +95,35 @@ jobs:
         libz-dev \
         ./crystal.deb \
         && sudo rm -rf /var/lib/apt/lists/*
-    - name: Create Release
+    - name: Build Release
+      run: |
+        shards install
+        docker pull conformance/crystal:0.35.1
+        docker run --rm -v $PWD:/workspace -w /workspace conformance/crystal:0.35.1-llvm10 crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: release
+        path: cnf-conformance
+  release:
+    name: Publish Release
+    needs: [spec, build]
+    runs-on: ubuntu-latest
+    steps: 
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: release
+    - name: Make release executable
+      run: chmod +x ./cnf-conformance
+    - name: Publish Release
       env:
         GITHUB_USER: ${{ secrets.GH_USER }}
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
-        shards install
-        docker pull crystallang/crystal:0.35.1-alpine
-        docker run --rm -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'
         if [ -z "${GITHUB_USER+x}" ] || [ -z "${GITHUB_TOKEN+x}" ]; then
           exit 0
         else
           ./cnf-conformance upsert_release
         fi
+
