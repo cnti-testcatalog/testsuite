@@ -12,11 +12,10 @@ crystal src/cnf-conformance.cr <testname>
 ```
 :star: *Note: All usage commands in this document will use the production (binary executable) syntax unless otherwise stated.
 
-:heavy_check_mark: indicates implemented into stable release
-
-:bulb: indicates Proof of Concept
-
-:x: indicates WARNINGS*
+* :heavy_check_mark: indicates implemented into stable release
+* :bulb: indicates Proof of Concept
+* :memo: indicates To Do
+* :x: indicates WARNINGS*
 
 ### Common Example Commands
 
@@ -112,19 +111,19 @@ crystal bin/ameba.cr
 <details> <summary>Details for Compatibility Tests To Do's</summary>
 <p>
 
-#### (To Do) To check of the CNF's CNI plugin accepts valid calls from the [CNI specification](https://github.com/containernetworking/cni/blob/master/SPEC.md)
+#### :memo: (To Do) To check of the CNF's CNI plugin accepts valid calls from the [CNI specification](https://github.com/containernetworking/cni/blob/master/SPEC.md)
 ```
 crystal src/cnf-conformance.cr cni_spec
 ```
-#### (To Do) To check for the use of alpha K8s API endpoints
+#### :memo: (To Do) To check for the use of alpha K8s API endpoints
 ```
 crystal src/cnf-conformance.cr api_snoop_alpha
 ```
-#### (To Do) To check for the use of beta K8s API endpoints
+#### :memo: (To Do) To check for the use of beta K8s API endpoints
 ```
 crystal src/cnf-conformance.cr api_snoop_beta
 ```
-#### (To Do) To check for the use of generally available (GA) K8s API endpoints
+#### :memo: (To Do) To check for the use of generally available (GA) K8s API endpoints
 ```
 crystal src/cnf-conformance.cr api_snoop_general_apis
 ```
@@ -145,11 +144,11 @@ crystal src/cnf-conformance.cr api_snoop_general_apis
 <details> <summary>Details for Statelessness Tests To Do's</summary>
 <p>
 
-#### (To Do) To test if the CNF responds properly [when being restarted](//https://github.com/litmuschaos/litmus)
+#### :memo: (To Do) To test if the CNF responds properly [when being restarted](//https://github.com/litmuschaos/litmus)
 ```
 crystal src/cnf-conformance.cr reset_cnf
 ```
-#### (To Do) To test if, when parent processes are restarted, the [child processes](https://github.com/falcosecurity/falco) are [reaped](https://github.com/draios/sysdig-inspect)
+#### :memo: (To Do) To test if, when parent processes are restarted, the [child processes](https://github.com/falcosecurity/falco) are [reaped](https://github.com/draios/sysdig-inspect)
 ```
 crystal src/cnf-conformance.cr check_reaped
 ```
@@ -169,11 +168,11 @@ crystal src/cnf-conformance.cr check_reaped
 
 <details> <summary>Details for Security Tests To Do's</summary>
 <p>
-#### (To Do) To check if there are any [shells running in the container](https://github.com/open-policy-agent/gatekeeper)
+#### :memo: (To Do) To check if there are any [shells running in the container](https://github.com/open-policy-agent/gatekeeper)
 ```
 crystal src/cnf-conformance.cr shells
 ```
-#### [To Do] To check if there are any [protected directories](https://github.com/open-policy-agent/gatekeeper) or files that are accessed from within the container
+#### :memo: (To Do) To check if there are any [protected directories](https://github.com/open-policy-agent/gatekeeper) or files that are accessed from within the container
 ```
 crystal src/cnf-conformance.cr protected_access
 ```
@@ -227,20 +226,20 @@ deployment_name: coredns/coredns
 <p>
 
 
-#### (To Do) To test small scale autoscaling
+#### :memo: (To Do) To test small scale autoscaling
 ```
 crystal src/cnf-conformance.cr small_autoscaling
 ```
-#### (To Do) To test [large scale autoscaling](https://github.com/cncf/cnf-testbed)
+#### :memo: (To Do) To test [large scale autoscaling](https://github.com/cncf/cnf-testbed)
 ```
 crystal src/cnf-conformance.cr large_autoscaling
 ```
-#### (To Do) To test if the CNF responds to [network](https://github.com/alexei-led/pumba) [chaos](https://github.com/worstcase/blockade)
+#### :memo: (To Do) To test if the CNF responds to [network](https://github.com/alexei-led/pumba) [chaos](https://github.com/worstcase/blockade)
 ```
 crystal src/cnf-conformance.cr network_chaos
 ```
 
-#### (To Do) To test if the CNF control layer uses [external retry logic](https://github.com/envoyproxy/envoy)
+#### :memo: (To Do) To test if the CNF control layer uses [external retry logic](https://github.com/envoyproxy/envoy)
 ```
 crystal src/cnf-conformance.cr external_retry
 ```
@@ -277,19 +276,19 @@ crystal src/cnf-conformance.cr external_retry
 <details> <summary>Details for Configuration and Lifecycle Tests To Do's</summary>
 <p>
 
-#### (To Do) To test if the CNF is installed with a versioned Helm v3 Chart
+#### :memo: (To Do) To test if the CNF is installed with a versioned Helm v3 Chart
 ```
 crystal src/cnf-conformance.cr versioned_helm_chart
 ```
-#### (To Do) Test starting a container without mounting a volume that has configuration files
+#### :memo: (To Do) Test starting a container without mounting a volume that has configuration files
 ```
 crystal src/cnf-conformance.cr no_volume_with_configuration
 ```
-#### (To Do) To test if the CNF responds properly [when being restarted](//https://github.com/litmuschaos/litmus)
+#### :memo: (To Do) To test if the CNF responds properly [when being restarted](//https://github.com/litmuschaos/litmus)
 ```
 crystal src/cnf-conformance.cr reset_cnf
 ```
-#### (To Do) To test if, when parent processes are restarted, the [child processes](https://github.com/falcosecurity/falco) are [reaped](https://github.com/draios/sysdig-inspect)
+#### :memo: (To Do) To test if, when parent processes are restarted, the [child processes](https://github.com/falcosecurity/falco) are [reaped](https://github.com/draios/sysdig-inspect)
 ```
 crystal src/cnf-conformance.cr check_reaped
 ```
@@ -306,23 +305,23 @@ crystal src/cnf-conformance.cr check_reaped
 <details> <summary>Details for Observability Tests To Do's</summary>
 <p>
 
-#### (To Do) Test if there traffic to Fluentd
+#### :memo: (To Do) Test if there traffic to Fluentd
 ```
 crystal src/cnf-conformance.cr fluentd_traffic
 ```
-#### (To Do) Test if there is traffic to Jaeger
+#### :memo: (To Do) Test if there is traffic to Jaeger
 ```
 crystal src/cnf-conformance.cr jaeger_traffic
 ```
-#### (To Do) Test if there is traffic to Prometheus
+#### :memo: (To Do) Test if there is traffic to Prometheus
 ```
 crystal src/cnf-conformance.cr prometheus traffic
 ```
-#### (To Do) Test if tracing calls are compatible with [OpenTelemetry](https://opentracing.io/) 
+#### :memo: (To Do) Test if tracing calls are compatible with [OpenTelemetry](https://opentracing.io/) 
 ```
 crystal src/cnf-conformance.cr opentelemetry_compatible
 ```
-#### (To Do) Test are if the monitoring calls are compatible with [OpenMetric](https://github.com/OpenObservability/OpenMetrics) 
+#### :memo: (To Do) Test are if the monitoring calls are compatible with [OpenMetric](https://github.com/OpenObservability/OpenMetrics) 
 ```
 crystal src/cnf-conformance.cr openmetric_compatible
 ```
@@ -371,19 +370,19 @@ crystal src/cnf-conformance.cr rolling_update
 <details> <summary>Details for Hardware and Scheduling Tests To Do's</summary>
 <p>
 
-#### (To Do) Test if the CNF is accessing hardware in its configuration files
+#### :memo: (To Do) Test if the CNF is accessing hardware in its configuration files
 ```
 crystal src/cnf-conformance.cr static_accessing_hardware
 ```
-#### (To Do) Test if the CNF is accessing hardware directly during run-time (e.g. accessing the host /dev or /proc from a mount)
+#### :memo: (To Do) Test if the CNF is accessing hardware directly during run-time (e.g. accessing the host /dev or /proc from a mount)
 ```
 crystal src/cnf-conformance.cr dynamic_accessing_hardware
 ```
-#### (To Do) Test if the CNF is accessing hugepages directly instead of via [Kubernetes resources](https://github.com/cncf/cnf-testbed/blob/c4458634deca5e8ab73adf118eedde32904c8458/examples/use_case/external-packet-filtering-on-k8s-nsm-on-packet/gateway.yaml#L29)
+#### :memo: (To Do) Test if the CNF is accessing hugepages directly instead of via [Kubernetes resources](https://github.com/cncf/cnf-testbed/blob/c4458634deca5e8ab73adf118eedde32904c8458/examples/use_case/external-packet-filtering-on-k8s-nsm-on-packet/gateway.yaml#L29)
 ```
 crystal src/cnf-conformance.cr direct_hugepages
 ```
-#### (To Do) Test if the CNF Testbed performance output shows adequate throughput and sessions using the [CNF Testbed](https://github.com/cncf/cnf-testbed) (vendor neutral) hardware environment
+#### :memo: (To Do) Test if the CNF Testbed performance output shows adequate throughput and sessions using the [CNF Testbed](https://github.com/cncf/cnf-testbed) (vendor neutral) hardware environment
 ```
 crystal src/cnf-conformance.cr performance
 ```
