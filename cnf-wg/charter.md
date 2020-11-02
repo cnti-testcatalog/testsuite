@@ -25,7 +25,7 @@ Cloud Native Network Functions Working Group’s mission is to increase interope
 - Best Practices and General Recommendations
 
 ## Potential Future Scope
-- Cloud native conformance test requirements for Telcom platforms (which run CNFs)
+- Cloud native conformance test requirements for Telco platforms (which run CNFs)
 
 ## Out of Scope
 
