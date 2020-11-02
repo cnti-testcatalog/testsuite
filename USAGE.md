@@ -11,8 +11,11 @@ The CNF Conformance Test suite can be run in production mode (using an executabl
 crystal src/cnf-conformance.cr <testname>
 ```
 :star: *Note: All usage commands in this document will use the production (binary executable) syntax unless otherwise stated.
+
 :heavy_check_mark: indicates implemented into stable release
+
 :bulb: indicates Proof of Concept
+
 :x: indicates WARNINGS*
 
 ### Common Example Commands
@@ -290,10 +293,6 @@ crystal src/cnf-conformance.cr reset_cnf
 ```
 crystal src/cnf-conformance.cr check_reaped
 ```
-#### (To Do) To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
-```
-crystal src/cnf-conformance.cr rolling_update
-```
 
 </p>
 </details>
@@ -354,21 +353,15 @@ Now run the test:
 ```
 ./cnf-conformance helm_deploy cnfs/<your-cnf-directory>/cnf-conformance.yml
 ```
-#### Proof of Concepts for Installable and Upgradeable Tests
-##### :bulb: (PoC) Test if the install script uses [Helm v3](https://github.com/helm/)
+#### :heavy_check_mark: Test if the install script uses [Helm v3](https://github.com/helm/)
 ```
 ./cnf-conformance install_script_helm
 ```
 
-<details> <summary>Details for Installable and Upgradeable Tests To Do's</summary>
-<p>
-
-#### (To Do) To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
+#### :heavy_check_mark: To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
 ```
 crystal src/cnf-conformance.cr rolling_update
 ```
-</p>
-</details>
 
 ## Hardware Resources and Scheduling Tests
 #### :heavy_check_mark: Run all hardware resources and scheduling tests
