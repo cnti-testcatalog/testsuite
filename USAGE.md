@@ -250,7 +250,14 @@ crystal src/cnf-conformance.cr external_retry
 ```
 ./cnf-conformance configuration_lifecycle
 ```
-
+#### :heavy_check_mark: To test if there is a liveness entry in the Helm chart
+```
+./cnf-conformance liveness
+```
+##### :heavy_check_mark: To test if there is a readiness entry in the Helm chart
+```
+./cnf-conformance readiness
+```
 #### :heavy_check_mark: To test if there are any (non-declarative) hardcoded IP addresses or subnet masks
 ```
 ./cnf-conformance ip_addresses
@@ -262,15 +269,6 @@ crystal src/cnf-conformance.cr external_retry
 #### :heavy_check_mark: To test if there are any (non-declarative) hardcoded IP addresses or subnet masks in the K8s runtime configuration
 ```
 ./cnf-conformance hardcoded_ip_addresses_in_k8s_runtime_configuration
-```
-#### Proof of Concepts for Configuration and Lifecycle Tests
-##### :bulb: (PoC) To test if there is a liveness entry in the Helm chart
-```
-./cnf-conformance liveness
-```
-##### :bulb: (PoC) To test if there is a readiness entry in the Helm chart
-```
-./cnf-conformance readiness
 ```
 
 <details> <summary>Details for Configuration and Lifecycle Tests To Do's</summary>
