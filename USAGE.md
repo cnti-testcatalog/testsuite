@@ -61,6 +61,11 @@ cnf-config=<path_to_your_config_file>/cnf-conformance.yml
 ./cnf-conformance help
 ```
 
+#### Clean up the CNF Conformance test suite, the K8s cluster, and upstream projects:
+```
+./cnf-conformance cleanup
+```
+
 ### Logging Options
 
 #### Update the loglevel from command line:
