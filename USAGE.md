@@ -223,6 +223,10 @@ Or optionally modify the your cnf's cnf-conformance.yml file to include the depl
 ```
 deployment_name: coredns/coredns 
 ```
+#### :heavy_check_mark: To test if Cluster API is enabled on the platform and manages a node
+```
+./cnf-conformance clusterapi_enabled
+```
 
 <details> <summary>Details for Scalability Tests To Do's</summary>
 <p>
