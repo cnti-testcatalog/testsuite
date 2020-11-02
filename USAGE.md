@@ -17,6 +17,7 @@ crystal src/cnf-conformance.cr <testname>
 * :memo: indicates To Do
 * :x: indicates WARNINGS*
 
+---
 ### Common Example Commands
 
 #### Validating a cnf-conformance.yml file:
@@ -65,7 +66,7 @@ cnf-config=<path_to_your_config_file>/cnf-conformance.yml
 ```
 ./cnf-conformance cleanup
 ```
-
+---
 ### Logging Options
 
 #### Update the loglevel from command line:
@@ -104,8 +105,7 @@ See https://github.com/crystal-ameba/ameba for more details. Follow the [INSTALL
 shards install # only for first install
 crystal bin/ameba.cr
 ```
-
-
+---
 ### Compatibility Tests
 
 #### :heavy_check_mark: To run all of the compatibility tests
@@ -135,6 +135,7 @@ crystal src/cnf-conformance.cr api_snoop_general_apis
 </p>
 </details>
 
+---
 ### Statelessness Tests
 #### :heavy_check_mark: To run all of the statelessness tests
 ```
@@ -161,6 +162,7 @@ crystal src/cnf-conformance.cr check_reaped
 </p>
 </details>
 
+---
 ### Security Tests
 #### :heavy_check_mark: To run all of the security tests
 ```
@@ -187,6 +189,7 @@ crystal src/cnf-conformance.cr protected_access
 </p>
 </details>
 
+---
 ### Microservice Tests
 #### :heavy_check_mark: To run all of the microservice tests
 ```
@@ -202,9 +205,8 @@ crystal src/cnf-conformance.cr protected_access
 ./cnf-conformance reasonable_startup_time
 ```
 
-
+---
 ### Scalability Tests
-
 #### :heavy_check_mark: To run all of the scalability tests
 ```
 ./cnf-conformance scalability
@@ -236,7 +238,6 @@ deployment_name: coredns/coredns
 <details> <summary>Details for Scalability Tests To Do's</summary>
 <p>
 
-
 #### :memo: (To Do) To test small scale autoscaling
 ```
 crystal src/cnf-conformance.cr small_autoscaling
@@ -254,10 +255,10 @@ crystal src/cnf-conformance.cr network_chaos
 ```
 crystal src/cnf-conformance.cr external_retry
 ```
-
 </p>
 </details>
 
+---
 ### Configuration and Lifecycle Tests
 #### :heavy_check_mark: To run all of the configuration and lifecycle tests
 ```
@@ -307,7 +308,8 @@ crystal src/cnf-conformance.cr check_reaped
 </p>
 </details>
 
-## Observability Tests
+---
+### Observability Tests
 #### :heavy_check_mark: To run all observability tests
 ```
 ./cnf-conformance observability
@@ -339,7 +341,8 @@ crystal src/cnf-conformance.cr openmetric_compatible
 </p>
 </details>
 
-## Installable and Upgradeable Tests
+---
+### Installable and Upgradeable Tests
 #### :heavy_check_mark: To run all installability tests
 ```
 ./cnf-conformance installability
@@ -373,7 +376,8 @@ Now run the test:
 crystal src/cnf-conformance.cr rolling_update
 ```
 
-## Hardware Resources and Scheduling Tests
+---
+### Hardware Resources and Scheduling Tests
 #### :heavy_check_mark: Run all hardware resources and scheduling tests
 ```
 ./cnf-conformance hardware_affinity
@@ -400,7 +404,8 @@ crystal src/cnf-conformance.cr performance
 </p>
 </details>
 
-## Resilience Tests
+---
+### Resilience Tests
 #### :heavy_check_mark: To run all resilience tests
 ```
 ./cnf-conformance resilience
@@ -418,7 +423,8 @@ crystal src/cnf-conformance.cr performance
 ./cnf-conformance chaos_container_kill
 ```
 
-## Platform Tests
+---
+### Platform Tests
 ####  :heavy_check_mark: Run all platform tests
 ```
 ./cnf-conformance platform
