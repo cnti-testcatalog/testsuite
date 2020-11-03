@@ -18,7 +18,8 @@ Cloud Native Network Functions Working Group’s mission is to increase interope
 
 ## In Scope
 - Definition of Cloud native Network Function (CNF)
-- Cloud native conformance test requirements for CNFs 
+- Cloud native conformance test requirements for CNFs
+  - Including dataplane CNFs
 - Process around certifying CNF conformance
 - Feedback into other related groups and specification bodies to improve CNF use cases (e.g. SIG App Delivery, SIG Networking, CNI)
 - Publishing metrics/white papers
