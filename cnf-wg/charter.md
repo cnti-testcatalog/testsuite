@@ -41,7 +41,7 @@ The CNF WG sees itself as providing the upstream definition of what makes a telc
 - CNTT R2 - is focused on Kubernetes-based platforms and basic interoperability between platform and workloads. CNTT R2 has not determined if workload cloud native requirements are in scope for CNTT R2. It is expecting CNCF to provide testing for the cloud native requirements it has defined. 
 - OVP 2.0 (Cloud Native) - is interested in leveraging an upstream source for cloud native requirements and test results (like deliverables from the CNCF CNF WG) to be used in the OVP 2.0 Badging Program.
 
-Telco applications and the workloads that are created with them are related to many topics in Cloud Native computing; therefore this WG may collaborate with many of the other CNCF and K8s SIGs, WGs, and projects. However, the following groups might have the largest potential interactions:
+Telco applications and the workloads that are created with them are related to many topics in Cloud Native computing; therefore this WG may collaborate with many of the other CNCF and K8s SIGs, WGs, and projects. A few of the groups with potential interactions/collaboration are:
 
 - CNCF SIG App Delivery
 - CNCF SIG Security 
