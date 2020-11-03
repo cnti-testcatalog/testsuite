@@ -1,5 +1,23 @@
 # CNF Conformance Test CLI Usage Documentation 
 
+### Table of Contents
+* [Overview](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#overview)
+* [Syntax and Usage](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#syntax-for-running-any-of-the-tests)
+* [Common Examples](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#common-example-commands)
+* [Logging Options](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#logging-options)
+* [Compatibility Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#compatibility-tests)
+* [Statelessness Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#statelessness-tests)
+* [Security Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#security-tests)
+* [Microservice Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#microservice-tests)
+* [Scalability Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#scalability-tests)
+* [Configuration and Lifecycle Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#configuration-and-lifecycle-tests)
+* [Observability Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#observability-tests)
+* [Installable and Upgradeable Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#installable-and-upgradeable-tests)
+* [Hardware Resources and Scheduling Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#hardware-resources-and-scheduling-tests)
+* [Resilience Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#resilience-tests)
+* [Platform Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#platform-tests)
+
+### Overview
 The CNF Conformance Test suite can be run in production mode (using an executable) or in developer mode (using [crystal lang directly](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#source-install)).  See the [pseudo code documentation](https://github.com/cncf/cnf-conformance/blob/master/PSEUDO-CODE.md) for examples of how the internals of WIP tests might work.
 
 ### Syntax for running any of the tests
