@@ -16,6 +16,8 @@ The CNF Conformance Test Suite will inspect CNFs for the following characteristi
 - **Installable and Upgradeable** - CNFs should use standard, in-band deployment tools such as Helm (version 3) charts.
 - **Hardware Resources and Scheduling** - The CNF container should access all hardware and schedule to specific worker nodes by using a device plugin.
 - **Resilience** - CNFs should be resilient to failures inevitable in cloud environments. CNF Resilience should be tested to ensure CNFs are designed to deal with non-carrier-grade shared cloud HW/SW platform.
+- **Optimal Resource Allocation** - CNFs should use integer resources and guranteed QOS class type whenever possible to avoid resource contention  
+
 
 See the [Conformance Test Categories Documentation](https://github.com/cncf/cnf-conformance/blob/master/TEST-CATEGORIES.md) for a complete overview of the tests.
 
