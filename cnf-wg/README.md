@@ -3,7 +3,7 @@
 
 The CNF WG operates under the aegis of CNCF. The charter of the working group is to define the process around certifying the cloud nativeness of telco applications,  aka CNFs. We collaborate with the [CNF Conformance test suite project](README-testsuite.md) who work on the mechanics of the conformance tests.
 
-The goal for the group is to create a software conformance program that any telco application implementation can use to demonstrate that they are conformant and interoperable with cloud native principles.
+The goal for the group is to create a software conformance program that any network application implementation can use to demonstrate that it is conformant and interoperable with cloud native principles.
 
 ## Chairs
 TBD
