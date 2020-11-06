@@ -10,7 +10,7 @@ Predictability: Your application acts in a predictable manner when running on cl
 
 Interoperability: Workloads can be ported across various cloud native infrastructures. This standardization is a key advantage of open source software, and allows you to avoid vendor lock-in.
 
-Running applications in a cloud native manner will allow you more fully utilize the advantages of cloud native infrastructure. The CNF Conformance program enables interoperability of Cloud native Network Functions (CNFs) from multiple vendors running on top of Kubernetes.
+Implementing and running applications in a cloud native manner will enable you to more fully benefit from the advantages cloud native infrastructure.
 
 ## CNF Conformance Program
 
