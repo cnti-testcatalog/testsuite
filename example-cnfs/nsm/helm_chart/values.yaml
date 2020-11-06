@@ -1,0 +1,41 @@
+---
+# Default values for nsm.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+registry: docker.io
+org: conformance
+tag: master
+pullPolicy: IfNotPresent
+
+forwardingPlane: vpp
+insecure: false
+preferredRemoteMechanism:
+networkservice: icmp-responder
+prometheus: false
+
+admission-webhook:
+  org: conformance
+  tag: master
+
+prefix-service:
+  org: conformance
+  tag: master
+
+vpp:
+  image: vppagent-forwarder
+
+kernel:
+  image: kernel-forwarder
+  resources:
+    limitCPU: 1
+    requestsCPU: 1m
+
+spire:
+  enabled: false
+
+global:
+  # set to true to enable Jaeger tracing for NSM components
+  JaegerTracing: false
+
+metricsCollectorEnabled: false

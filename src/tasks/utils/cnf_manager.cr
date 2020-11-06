@@ -42,17 +42,25 @@ module CNFManager
     Totem.from_file "./#{cnf_conformance}"
   end
 
-  def self.wait_for_install(deployment_name, wait_count=180, namespace="default")
+  def self.wait_for_install(deployment_name, wait_count : Int32 = 180, namespace="default")
+    # Not all cnfs have deployments.  some have only a pod.  need to check if the 
+    # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod 
     second_count = 0
     all_deployments = `kubectl get deployments --namespace=#{namespace}`
+    LOGGING.debug "all_deployments #{all_deployments}"
     desired_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.replicas}'`
+    LOGGING.debug "desired_replicas #{desired_replicas}"
     current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
+    LOGGING.debug "current_replicas #{current_replicas}"
     LOGGING.info(all_deployments)
-    until (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i) || second_count > wait_count.to_i
+    until (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i) || second_count > wait_count
       LOGGING.info("second_count = #{second_count}")
       sleep 1
       all_deployments = `kubectl get deployments --namespace=#{namespace}`
       current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
+      # Sometimes desired replicas is not available immediately
+      desired_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.replicas}'`
+      LOGGING.debug "desired_replicas #{desired_replicas}"
       LOGGING.info(all_deployments)
       second_count = second_count + 1 
     end
@@ -367,6 +375,8 @@ module CNFManager
         VERBOSE_LOGGING.info move_chart if verbose
       else
         VERBOSE_LOGGING.info "deploying with helm directory" if verbose 
+        #TODO Add helm options into cnf-conformance yml
+        #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
         LOGGING.info("#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}")
         helm_install = `#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}`
         VERBOSE_LOGGING.info helm_install if verbose 
@@ -411,12 +421,14 @@ module CNFManager
     if dir_exists || force == true
       rm = `rm -rf #{destination_cnf_dir}`
       VERBOSE_LOGGING.info rm if verbose
-      LOGGING.info "helm uninstall command: #{helm} uninstall #{release_name}"
-      helm_uninstall = `#{helm} uninstall #{release_name}`
+      LOGGING.info "helm uninstall command: #{helm} uninstall #{release_name.split(" ")[0]}"
+      #TODO add capability to add helm options for uninstall
+      # Remove split after todo
+      helm_uninstall = `#{helm} uninstall #{release_name.split(" ")[0]}`
       ret = $?.success?
       VERBOSE_LOGGING.info helm_uninstall if verbose
       if ret
-        stdout_success "Successfully cleaned up #{release_name}"
+        stdout_success "Successfully cleaned up #{release_name.split(" ")[0]}"
       end
     end
     ret
