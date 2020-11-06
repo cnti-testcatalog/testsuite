@@ -1,0 +1,14 @@
+---
+helm_directory: nat-cnf 
+git_clone_url: 
+install_script: 
+release_name: cnf-nat 
+deployment_name: cnf-nat44
+deployment_label: cnf-nat44 
+service_name: 
+application_deployment_names: [cnf-nat44]
+docker_repository: pantheontech/nsm-agent-vpp:v3.1.0
+helm_chart:
+helm_chart_container_name: cnf-nat44 
+rolling_update_tag: master 
+white_list_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy, kube-multus]
