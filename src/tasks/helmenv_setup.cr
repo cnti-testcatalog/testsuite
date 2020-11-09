@@ -26,7 +26,7 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
     helm = CNFSingleton.helm
         VERBOSE_LOGGING.debug helm if check_verbose(args)
         VERBOSE_LOGGING.debug `#{helm} version` if check_verbose(args)
-        stable_repo = `#{helm} repo add stable https://kubernetes-charts.storage.googleapis.com`
+        stable_repo = `#{helm} repo add stable https://charts.helm.sh/stable`
         # stable_repo = ""
         VERBOSE_LOGGING.debug stable_repo if check_verbose(args)
 
@@ -37,7 +37,7 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
       end
     end
   end
-  # `#{CNFSingleton.helm} repo add stable https://kubernetes-charts.storage.googleapis.com`
+  # `#{CNFSingleton.helm} repo add stable https://charts.helm.sh/stable`
 end
 
 desc "Cleans up helm 3.1.1"

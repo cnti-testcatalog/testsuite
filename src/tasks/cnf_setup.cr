@@ -64,13 +64,14 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
     exit 1
 	end
   if args.named.keys.includes? "wait_count"
-    wait_count = args.named["wait_count"].as(Int32)
+    wait_count = args.named["wait_count"].to_i
   elsif args.named.keys.includes? "wait-count"
-    wait_count = args.named["wait-count"].as(Int32)
+    wait_count = args.named["wait-count"].to_i
   else
     wait_count = 180
   end
   VERBOSE_LOGGING.info "cnf_setup cnf: #{cnf}" if check_verbose(args)
+  #TODO get cnf-conformance yml and if helm_directory supplied (or deploy with chart supplied) use deploy with chart
   if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
     deploy_with_chart = false
   else

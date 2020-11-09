@@ -94,7 +94,7 @@ TEMPLATE
         json = { "tag_name" => upsert_version, 
                  "draft" => draft, 
                  "prerelease" => prerelease, 
-                 "name" => "#{upsert_version} #{Time.local.to_s("%B, %d %Y")}", 
+                 "name" => "#{upsert_version} #{Time.local.to_s("%B %d, %Y")}", 
                  "body" => notes_template }
 
         LOGGING.info "Release not found.  Creating a release: # url: #{release_url} headers: #{headers} json #{json}"
@@ -111,7 +111,7 @@ TEMPLATE
               json: { "tag_name" => upsert_version,
                       "draft" => draft,
                       "prerelease" => prerelease,
-                      "name" => "#{upsert_version} #{Time.local.to_s("%B, %d %Y")}",
+                      "name" => "#{upsert_version} #{Time.local.to_s("%B %d, %Y")}",
                       "body" => notes_template })
       found_release = JSON.parse(found_resp.body)
 

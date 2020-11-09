@@ -105,7 +105,7 @@ describe CnfConformance do
       LOGGING.info "search command: #{`helm search repo stable/coredns`}"
       # LOGGING.info `#{CNFSingleton.helm} repo remove stable`
       # LOGGING.info "search command: #{`helm search repo stable/coredns`}"
-      LOGGING.info `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-bad-helm-repo wait-time=5 verbose`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-bad-helm-repo wait_count=0`
       $?.success?.should be_true
       LOGGING.info "search command: #{`helm search repo stable/coredns`}"
       response_s = `./cnf-conformance helm_chart_published verbose`

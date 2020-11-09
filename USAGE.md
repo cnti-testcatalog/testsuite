@@ -398,7 +398,8 @@ crystal src/cnf-conformance.cr rolling_update
 ### Hardware Resources and Scheduling Tests
 #### :heavy_check_mark: Run all hardware resources and scheduling tests
 ```
-./cnf-conformance hardware_affinity
+crystal src/cnf-conformance.cr hardware_and_scheduling
+
 ```
 <details> <summary>Details for Hardware and Scheduling Tests To Do's</summary>
 <p>

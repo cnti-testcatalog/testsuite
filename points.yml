@@ -96,7 +96,7 @@
 
 - name: volume_hostpath_not_found
   tags: statelessness, dynamic, workload
-#- name: hardware_affinity
+#- name: hardware_and_scheduling
 #  tags: hardware, dynamic, workload
 #- name: static_accessing_hardware 
 #  tags: hardware, static, workload
