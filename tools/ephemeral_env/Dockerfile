@@ -8,7 +8,7 @@ RUN apt update && apt install -y wget curl
 
 RUN curl -L https://get.helm.sh/${FILENAME} | tar zxv -C /tmp
 RUN mv /tmp/linux-amd64/helm /usr/local/bin/
-RUN helm repo add stable https://kubernetes-charts.storage.googleapis.com
+RUN helm repo add stable https://charts.helm.sh/stable
 
 RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$KUBECTL/bin/linux/amd64/kubectl
 RUN mv ./kubectl /usr/local/bin/kubectl
