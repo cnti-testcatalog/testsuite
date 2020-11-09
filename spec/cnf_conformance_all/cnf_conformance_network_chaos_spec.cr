@@ -15,7 +15,7 @@ describe "CNF Conformance all Network Chaos" do
 
   it "'all' should run the whole test suite", tags: "happy-path" do
     `./cnf-conformance samples_cleanup`
-    response_s = `./cnf-conformance all ~platform ~compatibilty ~statelessness ~security ~scalability ~configuration_lifecycle ~observability ~installability ~hardware_affinity ~microservice ~chaos_cpu_hog ~chaos_container_kill cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose`
+    response_s = `./cnf-conformance all ~platform ~compatibilty ~statelessness ~security ~scalability ~configuration_lifecycle ~observability ~installability ~hardware_and_scheduling ~microservice ~chaos_cpu_hog ~chaos_container_kill cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose`
     LOGGING.info response_s
     (/Final workload score:/ =~ response_s).should_not be_nil
     (/Final score:/ =~ response_s).should_not be_nil
