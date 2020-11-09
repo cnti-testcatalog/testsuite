@@ -1,375 +1,474 @@
 # CNF Conformance Test CLI Usage Documentation 
 
-The CNF Conformance Test suite can be run in developer mode (using crystal lang directly) or in production mode (using an executable).  See the [pseudo code documentation](https://github.com/cncf/cnf-conformance/blob/master/PSEUDO-CODE.md) for examples of how the internals of WIP tests might work.
+### Table of Contents
+* [Overview](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#overview)
+* [Syntax and Usage](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#syntax-for-running-any-of-the-tests)
+* [Common Examples](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#common-example-commands)
+* [Logging Options](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#logging-options)
+* [Compatibility Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#compatibility-tests)
+* [Statelessness Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#statelessness-tests)
+* [Security Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#security-tests)
+* [Microservice Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#microservice-tests)
+* [Scalability Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#scalability-tests)
+* [Configuration and Lifecycle Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#configuration-and-lifecycle-tests)
+* [Observability Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#observability-tests)
+* [Installable and Upgradeable Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#installable-and-upgradeable-tests)
+* [Hardware Resources and Scheduling Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#hardware-resources-and-scheduling-tests)
+* [Resilience Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#resilience-tests)
+* [Platform Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#platform-tests)
+
+### Overview
+The CNF Conformance Test suite can be run in production mode (using an executable) or in developer mode (using [crystal lang directly](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#source-install)).  See the [pseudo code documentation](https://github.com/cncf/cnf-conformance/blob/master/PSEUDO-CODE.md) for examples of how the internals of WIP tests might work.
 
 ### Syntax for running any of the tests
 ```
-# Developer mode
-crystal src/cnf-conformance.cr <testname>
-
 # Production mode
 ./cnf-conformance <testname>
-```
 
-### Validating a cnf-conformance.yml file
-```
 # Developer mode
-crystal src/cnf-conformance.cr validate_config cnf-config=[PATH_TO]/cnf-conformance.yml
+crystal src/cnf-conformance.cr <testname>
+```
+:star: *Note: All usage commands in this document will use the production (binary executable) syntax unless otherwise stated.
 
-# Production mode
+* :heavy_check_mark: indicates implemented into stable release
+* :bulb: indicates Proof of Concept
+* :memo: indicates To Do
+* :x: indicates WARNINGS*
+
+---
+### Common Example Commands
+
+#### Validating a cnf-conformance.yml file:
+```
 ./cnf-conformance validate_config cnf-config=[PATH_TO]/cnf-conformance.yml
 ```
 
-### Building the executable
+#### Building the executable
+This is the command to build the binary executable if in developer mode or using the source install method ([requires crystal](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#source-install)):
 ```
 crystal build src/cnf-conformance.cr
 ```
-## Running all of the CNF Conformance tests (platform and workload)
+
+#### Running all of the CNF Conformance tests (platform and workload):
 ``` 
-crystal src/cnf-conformance.cr all cnf-config=<path_to_your_config_file>/cnf-conformance.yml
+./cnf-conformance all cnf-config=<path_to_your_config_file>/cnf-conformance.yml
 ```
 
-## Running all of the CNF Conformance tests (including proofs of concepts)
+#### Running all of the CNF Conformance tests (including proofs of concepts)
 ``` 
-crystal src/cnf-conformance.cr all poc cnf-config=<path_to_your_config_file>/cnf-conformance.yml
+./cnf-conformance all poc cnf-config=<path_to_your_config_file>/cnf-conformance.yml
 ```
-## Running all of the workload CNF Conformance tests
+#### Running all of the workload CNF Conformance tests
 ``` 
 crystal src/cnf-conformance.cr workload
 cnf-config=<path_to_your_config_file>/cnf-conformance.yml
 ```
 
-## Running all of the platform CNF Conformance tests
-``` 
-crystal src/cnf-conformance.cr platform
-```
-## Logging 
+#### Running all of the platform or workload CNF Conformance tests independently:
 
+##### Run platform only tests:
+``` 
+./cnf-conformance platform
+```
+##### Run workload only tests:
+```
+./cnf-conformance workload 
+```
+
+#### Get available options and to see all available tests from command line:
+```
+./cnf-conformance help
+```
+
+#### Clean up the CNF Conformance test suite, the K8s cluster, and upstream projects:
+```
+./cnf-conformance cleanup
+```
+---
+### Logging Options
+
+#### Update the loglevel from command line:
 ```
 # cmd line
 ./cnf-conformance -l debug test
-
-# make sure to use -- if running from source
+```
+#### If in developer mode, make sure to use - - if running from source:
+```
 crystal src/cnf-conformance.cr -- -l debug test 
+```
 
-# env var
+#### You can also use env var for logging:
+```
 LOGLEVEL=DEBUG ./cnf-conformance test
 ```
 
-NOTE: When setting log level precedence highest of following wins 
+:star: Note: When setting log level, the following is the order of precedence:
 
-1. Cli flag is highest precedence
-2. Environment var is next level of precedence
-3. [Config file](https://github.com/cncf/cnf-conformance/blob/master/config.yml) is last level of precedence
+1. CLI or Command line flag
+2. Environment variable
+3. CNF-Conformance [Config file](https://github.com/cncf/cnf-conformance/blob/master/config.yml)
 
+##### Verbose Option
 Also setting the verbose option for many tasks will add extra output to help with debugging
 
 ```
-crystal src/cnf-conformance.cr test_name verbose
+./cnf-conformance test_name verbose
 ```
 
-### Running The Linter
+#### Running The Linter in Developer Mode
 
-https://github.com/crystal-ameba/ameba
+See https://github.com/crystal-ameba/ameba for more details. Follow the [INSTALL](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md) guide starting at the [Source Install](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#source-install) for more details running cnf-conformance in developer mode.
 
 ```
 shards install # only for first install
 crystal bin/ameba.cr
 ```
-## To see a list of all tasks in the test suite
-
-``` 
-crystal src/cnf-conformance.cr help 
-```
-
-
-## Compatibility Tests
+---
+### Compatibility Tests
 
 #### :heavy_check_mark: To run all of the compatibility tests
 ```
-crystal src/cnf-conformance.cr compatibility
+./cnf-conformance compatibility
 ```
-#### (To Do) To check of the CNF's CNI plugin accepts valid calls from the [CNI specification](https://github.com/containernetworking/cni/blob/master/SPEC.md)
+
+<details> <summary>Details for Compatibility Tests To Do's</summary>
+<p>
+
+#### :memo: (To Do) To check of the CNF's CNI plugin accepts valid calls from the [CNI specification](https://github.com/containernetworking/cni/blob/master/SPEC.md)
 ```
 crystal src/cnf-conformance.cr cni_spec
 ```
-#### (To Do) To check for the use of alpha K8s API endpoints
+#### :memo: (To Do) To check for the use of alpha K8s API endpoints
 ```
 crystal src/cnf-conformance.cr api_snoop_alpha
 ```
-#### (To Do) To check for the use of beta K8s API endpoints
+#### :memo: (To Do) To check for the use of beta K8s API endpoints
 ```
 crystal src/cnf-conformance.cr api_snoop_beta
 ```
-#### (To Do) To check for the use of generally available (GA) K8s API endpoints
+#### :memo: (To Do) To check for the use of generally available (GA) K8s API endpoints
 ```
 crystal src/cnf-conformance.cr api_snoop_general_apis
 ```
+</p>
+</details>
 
-
-## Statelessness Tests
+---
+### Statelessness Tests
 #### :heavy_check_mark: To run all of the statelessness tests
 ```
-crystal src/cnf-conformance.cr stateless
+./cnf-conformance stateless
 ```
-#### (To Do) To test if the CNF responds properly [when being restarted](//https://github.com/litmuschaos/litmus)
+
+#### :heavy_check_mark:  To test if the CNF uses a volume host path
+```
+./cnf-conformance volume_hostpath_not_found 
+```
+
+<details> <summary>Details for Statelessness Tests To Do's</summary>
+<p>
+
+#### :memo: (To Do) To test if the CNF responds properly [when being restarted](//https://github.com/litmuschaos/litmus)
 ```
 crystal src/cnf-conformance.cr reset_cnf
 ```
-#### (To Do) To test if, when parent processes are restarted, the [child processes](https://github.com/falcosecurity/falco) are [reaped](https://github.com/draios/sysdig-inspect)
+#### :memo: (To Do) To test if, when parent processes are restarted, the [child processes](https://github.com/falcosecurity/falco) are [reaped](https://github.com/draios/sysdig-inspect)
 ```
 crystal src/cnf-conformance.cr check_reaped
 ```
-#### :heavy_check_mark:  To test if the CNF uses a volume host path
-```
-crystal src/cnf-conformance.cr volume_hostpath_not_found 
-```
 
-## Security Tests
+</p>
+</details>
+
+---
+### Security Tests
 #### :heavy_check_mark: To run all of the security tests
 ```
-crystal src/cnf-conformance.cr security
+./cnf-conformance security
 ```
 
 #### :heavy_check_mark: To check if any containers are running in [privileged mode](https://github.com/open-policy-agent/gatekeeper)
 ```
-crystal src/cnf-conformance.cr privileged
+./cnf-conformance privileged
 ```
-#### (To Do) To check if there are any [shells running in the container](https://github.com/open-policy-agent/gatekeeper)
+
+<details> <summary>Details for Security Tests To Do's</summary>
+<p>
+
+#### :memo: (To Do) To check if there are any [shells running in the container](https://github.com/open-policy-agent/gatekeeper)
 ```
 crystal src/cnf-conformance.cr shells
 ```
-#### [To Do] To check if there are any [protected directories](https://github.com/open-policy-agent/gatekeeper) or files that are accessed from within the container
+#### :memo: (To Do) To check if there are any [protected directories](https://github.com/open-policy-agent/gatekeeper) or files that are accessed from within the container
 ```
 crystal src/cnf-conformance.cr protected_access
 ```
 
-## Microservice Tests
+</p>
+</details>
+
+---
+### Microservice Tests
 #### :heavy_check_mark: To run all of the microservice tests
 ```
-crystal src/cnf-conformance.cr microservice
+./cnf-conformance microservice
 ```
 
 #### :heavy_check_mark: To check if the CNF has a reasonable image size
 ```
-crystal src/cnf-conformance.cr reasonable_image_size
+./cnf-conformance reasonable_image_size
 ```
 #### :heavy_check_mark: To check if the CNF have a reasonable startup time
 ```
-crystal src/cnf-conformance.cr reasonable_startup_time
+./cnf-conformance reasonable_startup_time
 ```
 
-
-## Scalability Tests
-
+---
+### Scalability Tests
 #### :heavy_check_mark: To run all of the scalability tests
 ```
-crystal src/cnf-conformance.cr scalability
+./cnf-conformance scalability
 ```
 
 #### :heavy_check_mark: To test the [increasing and decreasing of capacity](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
 Optional: To install the sample coredns cnf:
 
 ```
-crystal src/cnf-conformance.cr sample_coredns_setup helm_chart=<helm chart name>
-# Or optionally modify the your cnf's cnf-conformance.yml file to include the helm_chart name
-# e.g. 
+./cnf-conformance sample_coredns_setup helm_chart=<helm chart name>
+```
+Or optionally modify the your cnf's cnf-conformance.yml file to include the helm_chart name, e.g. 
+```
 helm_chart: stable/coredns
 ```
-To run the capacity test
+To run the capacity test:
 ```
-crystal src/cnf-conformance.cr increase_decrease_capacity deployment_name=coredns-coredns
-# Or optionally modify the your cnf's cnf-conformance.yml file to include the deployment name
-# e.g. 
+./cnf-conformance increase_decrease_capacity deployment_name=coredns-coredns
+```
+Or optionally modify the your cnf's cnf-conformance.yml file to include the deployment name, e.g. 
+```
 deployment_name: coredns/coredns 
 ```
-#### (To Do) To test small scale autoscaling
+#### :heavy_check_mark: To test if Cluster API is enabled on the platform and manages a node
+```
+./cnf-conformance clusterapi_enabled
+```
+
+<details> <summary>Details for Scalability Tests To Do's</summary>
+<p>
+
+#### :memo: (To Do) To test small scale autoscaling
 ```
 crystal src/cnf-conformance.cr small_autoscaling
 ```
-#### (To Do) To test [large scale autoscaling](https://github.com/cncf/cnf-testbed)
+#### :memo: (To Do) To test [large scale autoscaling](https://github.com/cncf/cnf-testbed)
 ```
 crystal src/cnf-conformance.cr large_autoscaling
 ```
-#### (To Do) To test if the CNF responds to [network](https://github.com/alexei-led/pumba) [chaos](https://github.com/worstcase/blockade)
+#### :memo: (To Do) To test if the CNF responds to [network](https://github.com/alexei-led/pumba) [chaos](https://github.com/worstcase/blockade)
 ```
 crystal src/cnf-conformance.cr network_chaos
 ```
 
-#### (To Do) To test if the CNF control layer uses [external retry logic](https://github.com/envoyproxy/envoy)
+#### :memo: (To Do) To test if the CNF control layer uses [external retry logic](https://github.com/envoyproxy/envoy)
 ```
 crystal src/cnf-conformance.cr external_retry
 ```
+</p>
+</details>
 
-## Configuration and Lifecycle Tests
+---
+### Configuration and Lifecycle Tests
 #### :heavy_check_mark: To run all of the configuration and lifecycle tests
 ```
-crystal src/cnf-conformance.cr configuration_lifecycle
+./cnf-conformance configuration_lifecycle
 ```
-
-#### (To Do) To test if the CNF is installed with a versioned Helm v3 Chart
+#### :heavy_check_mark: To test if there is a liveness entry in the Helm chart
 ```
-crystal src/cnf-conformance.cr versioned_helm_chart
+./cnf-conformance liveness
+```
+##### :heavy_check_mark: To test if there is a readiness entry in the Helm chart
+```
+./cnf-conformance readiness
 ```
 #### :heavy_check_mark: To test if there are any (non-declarative) hardcoded IP addresses or subnet masks
 ```
-crystal src/cnf-conformance.cr ip_addresses
+./cnf-conformance ip_addresses
 ```
 #### :heavy_check_mark: To test if there are node ports used in the service configuration
 ```
-crystal src/cnf-conformance.cr nodeport_not_used
+./cnf-conformance nodeport_not_used
 ```
 #### :heavy_check_mark: To test if there are any (non-declarative) hardcoded IP addresses or subnet masks in the K8s runtime configuration
 ```
-crystal src/cnf-conformance.cr hardcoded_ip_addresses_in_k8s_runtime_configuration
+./cnf-conformance hardcoded_ip_addresses_in_k8s_runtime_configuration
 ```
-#### (PoC) To test if there is a liveness entry in the Helm chart
+
+<details> <summary>Details for Configuration and Lifecycle Tests To Do's</summary>
+<p>
+
+#### :memo: (To Do) To test if the CNF is installed with a versioned Helm v3 Chart
 ```
-crystal src/cnf-conformance.cr liveness
+crystal src/cnf-conformance.cr versioned_helm_chart
 ```
-#### (PoC) To test if there is a readiness entry in the Helm chart
-```
-crystal src/cnf-conformance.cr readiness
-```
-#### (To Do) Test starting a container without mounting a volume that has configuration files
+#### :memo: (To Do) Test starting a container without mounting a volume that has configuration files
 ```
 crystal src/cnf-conformance.cr no_volume_with_configuration
 ```
-#### (To Do) To test if the CNF responds properly [when being restarted](//https://github.com/litmuschaos/litmus)
+#### :memo: (To Do) To test if the CNF responds properly [when being restarted](//https://github.com/litmuschaos/litmus)
 ```
 crystal src/cnf-conformance.cr reset_cnf
 ```
-#### (To Do) To test if, when parent processes are restarted, the [child processes](https://github.com/falcosecurity/falco) are [reaped](https://github.com/draios/sysdig-inspect)
+#### :memo: (To Do) To test if, when parent processes are restarted, the [child processes](https://github.com/falcosecurity/falco) are [reaped](https://github.com/draios/sysdig-inspect)
 ```
 crystal src/cnf-conformance.cr check_reaped
 ```
-#### (To Do) To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
-```
-crystal src/cnf-conformance.cr rolling_update
-```
 
-## Observability Tests
+</p>
+</details>
+
+---
+### Observability Tests
 #### :heavy_check_mark: To run all observability tests
 ```
-crystal src/cnf-conformance.cr observability
+./cnf-conformance observability
 ```
-#### (To Do) Test if there traffic to Fluentd
+
+<details> <summary>Details for Observability Tests To Do's</summary>
+<p>
+
+#### :memo: (To Do) Test if there traffic to Fluentd
 ```
 crystal src/cnf-conformance.cr fluentd_traffic
 ```
-#### (To Do) Test if there is traffic to Jaeger
+#### :memo: (To Do) Test if there is traffic to Jaeger
 ```
 crystal src/cnf-conformance.cr jaeger_traffic
 ```
-#### (To Do) Test if there is traffic to Prometheus
+#### :memo: (To Do) Test if there is traffic to Prometheus
 ```
 crystal src/cnf-conformance.cr prometheus traffic
 ```
-#### (To Do) Test if tracing calls are compatible with [OpenTelemetry](https://opentracing.io/) 
+#### :memo: (To Do) Test if tracing calls are compatible with [OpenTelemetry](https://opentracing.io/) 
 ```
 crystal src/cnf-conformance.cr opentelemetry_compatible
 ```
-#### (To Do) Test are if the monitoring calls are compatible with [OpenMetric](https://github.com/OpenObservability/OpenMetrics) 
+#### :memo: (To Do) Test are if the monitoring calls are compatible with [OpenMetric](https://github.com/OpenObservability/OpenMetrics) 
 ```
 crystal src/cnf-conformance.cr openmetric_compatible
 ```
+</p>
+</details>
 
-## Installable and Upgradeable Tests
+---
+### Installable and Upgradeable Tests
 #### :heavy_check_mark: To run all installability tests
 ```
-crystal src/cnf-conformance.cr installability
+./cnf-conformance installability
 ```
-#### (PoC) Test if the install script uses [Helm v3](https://github.com/helm/)
-```
-crystal src/cnf-conformance.cr install_script_helm
-```
+
 #### :heavy_check_mark: Test if the Helm chart is published
 ```
-crystal src/cnf-conformance.cr helm_chart_published
+./cnf-conformance helm_chart_published
 ```
 #### :heavy_check_mark: Test if the [Helm chart is valid](https://github.com/helm/chart-testing))
 ```
-crystal src/cnf-conformance.cr helm_chart_valid
+./cnf-conformance helm_chart_valid
 ```
 #### :heavy_check_mark: Test if the Helm deploys
+Use a cnf-conformance.yml to manually call helm_deploy, e.g.:
+Copy your CNF into the `cnfs` directory:
 ```
-# Use a cnf-conformance.yml to manually call helm_deploy
-# e.g. cp -rf <your-cnf-directory> cnfs/<your-cnf-directory>
-crystal src/cnf-conformance.cr helm_deploy cnfs/<your-cnf-directory>/cnf-conformance.yml
+cp -rf <your-cnf-directory> cnfs/<your-cnf-directory>
 ```
-#### (To Do) To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
+Now run the test:
+```
+./cnf-conformance helm_deploy cnfs/<your-cnf-directory>/cnf-conformance.yml
+```
+#### :heavy_check_mark: Test if the install script uses [Helm v3](https://github.com/helm/)
+```
+./cnf-conformance install_script_helm
+```
+
+#### :heavy_check_mark: To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
 ```
 crystal src/cnf-conformance.cr rolling_update
 ```
 
-## Hardware Resources and Scheduling Tests
+---
+### Hardware Resources and Scheduling Tests
 #### :heavy_check_mark: Run all hardware resources and scheduling tests
 ```
 crystal src/cnf-conformance.cr hardware_and_scheduling
-```
 
-#### (To Do) Test if the CNF is accessing hardware in its configuration files
+```
+<details> <summary>Details for Hardware and Scheduling Tests To Do's</summary>
+<p>
+
+#### :memo: (To Do) Test if the CNF is accessing hardware in its configuration files
 ```
 crystal src/cnf-conformance.cr static_accessing_hardware
 ```
-#### (To Do) Test if the CNF is accessing hardware directly during run-time (e.g. accessing the host /dev or /proc from a mount)
+#### :memo: (To Do) Test if the CNF is accessing hardware directly during run-time (e.g. accessing the host /dev or /proc from a mount)
 ```
 crystal src/cnf-conformance.cr dynamic_accessing_hardware
 ```
-#### (To Do) Test if the CNF is accessing hugepages directly instead of via [Kubernetes resources](https://github.com/cncf/cnf-testbed/blob/c4458634deca5e8ab73adf118eedde32904c8458/examples/use_case/external-packet-filtering-on-k8s-nsm-on-packet/gateway.yaml#L29)
+#### :memo: (To Do) Test if the CNF is accessing hugepages directly instead of via [Kubernetes resources](https://github.com/cncf/cnf-testbed/blob/c4458634deca5e8ab73adf118eedde32904c8458/examples/use_case/external-packet-filtering-on-k8s-nsm-on-packet/gateway.yaml#L29)
 ```
 crystal src/cnf-conformance.cr direct_hugepages
 ```
-#### (To Do) Test if the CNF Testbed performance output shows adequate throughput and sessions using the [CNF Testbed](https://github.com/cncf/cnf-testbed) (vendor neutral) hardware environment
+#### :memo: (To Do) Test if the CNF Testbed performance output shows adequate throughput and sessions using the [CNF Testbed](https://github.com/cncf/cnf-testbed) (vendor neutral) hardware environment
 ```
 crystal src/cnf-conformance.cr performance
 ```
+</p>
+</details>
 
-## Resilience Tests
+---
+### Resilience Tests
 #### :heavy_check_mark: To run all resilience tests
 ```
-crystal src/cnf-conformance.cr resilience
+./cnf-conformance resilience
 ```
 #### :heavy_check_mark: Test if the CNF crashes when network loss occurs
 ```
-crystal src/cnf-conformance.cr chaos_network_loss
+./cnf-conformance chaos_network_loss
 ```
 #### :heavy_check_mark: Test if the CNF crashes under high CPU load 
 ```
-crystal src/cnf-conformance.cr chaos_cpu_hog 
+./cnf-conformance chaos_cpu_hog 
 ```
 #### :heavy_check_mark: Test if the CNF restarts after container is killed 
 ```
-crystal src/cnf-conformance.cr chaos_container_kill
+./cnf-conformance chaos_container_kill
 ```
 
-## Platform Tests
+---
+### Platform Tests
 ####  :heavy_check_mark: Run all platform tests
 ```
-crystal src/cnf-conformance.cr platform
+./cnf-conformance platform
 ```
 ####  :heavy_check_mark: Run the K8s conformance tests
 ```
-crystal src/cnf-conformance.cr k8s_conformance
-```
-#### (PoC) Run All platform resilience tests 
-```
-crystal src/cnf-conformance.cr platform:resilience poc
-
-```
-#### (PoC) Run All platform observability tests 
-```
-crystal src/cnf-conformance.cr platform:observability poc
-
-```
-#### (PoC) Run node failure test **warning** this is a destructive test and will reboot your *host* node!
-#### Don't run this unless you have completely separate cluster (e.g. you are not running KIND on a dev box)
-```
-crystal src/cnf-conformance.cr platform:node_failure poc destructive
+./cnf-conformance k8s_conformance
 ```
 #### :heavy_check_mark: Run runtime compliance test
 ```
-crystal src/cnf-conformance.cr platform:oci_compliant
-
+./cnf-conformance platform:oci_compliant
 ```
 
+#### Proof of Concepts for Platform Tests
+##### :bulb: (PoC) Run All platform resilience tests 
+```
+./cnf-conformance platform:resilience poc
+```
+##### :bulb: (PoC) Run All platform observability tests 
+```
+./cnf-conformance platform:observability poc
+```
+##### :x: :bulb: (PoC) Run node failure test. WARNING this is a destructive test and will reboot your *host* node!
+
+##### Do not run this unless you have completely separate cluster, e.g. development or test cluster.
+```
+./cnf-conformance platform:node_failure poc destructive
+```
