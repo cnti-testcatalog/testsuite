@@ -16,5 +16,5 @@ We have meetings every Tuesday at 9:00am PDT.
 - Recordings of previous meetings: TBD
 
 ## Community
-- Slack channel: #cnf-wg in CNCF workspace - TBD
-- Mailing list: TBD
+- Slack channel: #cnf-conformance in CNCF workspace
+- Mailing list: https://lists.cncf.io/g/cnf-wg
