@@ -352,6 +352,15 @@ crystal src/cnf-conformance.cr platform
 ```
 crystal src/cnf-conformance.cr k8s_conformance
 ```
+####  :heavy_check_mark: Run All platform harware and scheduling tests 
+```
+crystal src/cnf-conformance.cr platform:hardware_and_scheduling poc
+```
+#### :heavy_check_mark: Run runtime compliance test
+```
+crystal src/cnf-conformance.cr platform:oci_compliant
+
+```
 #### (PoC) Run All platform resilience tests 
 ```
 crystal src/cnf-conformance.cr platform:resilience poc
@@ -367,9 +376,5 @@ crystal src/cnf-conformance.cr platform:observability poc
 ```
 crystal src/cnf-conformance.cr platform:node_failure poc destructive
 ```
-#### :heavy_check_mark: Run runtime compliance test
-```
-crystal src/cnf-conformance.cr platform:oci_compliant
 
-```
 
