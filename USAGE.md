@@ -454,7 +454,7 @@ crystal src/cnf-conformance.cr performance
 ```
 ####  :heavy_check_mark: Run All platform harware and scheduling tests 
 ```
-./cnf-conformance  platform:hardware_and_scheduling poc
+./cnf-conformance  platform:hardware_and_scheduling
 ```
 #### :heavy_check_mark: Run runtime compliance test
 ```
