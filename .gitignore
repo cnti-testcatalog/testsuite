@@ -17,3 +17,5 @@ cnf-conformance-results*
 cnf-conformance.env
 *.tar
 *.tar*
+reasonable_startup_orig.yml
+reasonable_startup_test.yml

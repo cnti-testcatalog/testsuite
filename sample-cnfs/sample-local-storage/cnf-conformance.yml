@@ -1,0 +1,13 @@
+---
+helm_directory: chart
+git_clone_url: 
+install_script: chart
+release_name: coredns
+deployment_name: coredns-coredns 
+deployment_label: k8s-app
+service_name: coredns-coredns
+application_deployment_names: [coredns]
+helm_chart: stable/coredns
+helm_chart_container_name: coredns
+rolling_update_tag: 1.6.7
+white_list_helm_chart_container_names: []
