@@ -165,6 +165,10 @@ crystal src/cnf-conformance.cr api_snoop_general_apis
 ./cnf-conformance volume_hostpath_not_found 
 ```
 
+#### :heavy_check_mark:  To test if the CNF uses local storage
+```
+./cnf-conformance no_local_volume_configuration 
+```
 <details> <summary>Details for Statelessness Tests To Do's</summary>
 <p>
 
