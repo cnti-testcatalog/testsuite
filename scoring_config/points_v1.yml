@@ -71,7 +71,7 @@
 - name: helm_chart_valid
   tags: installability, dynamic
 
-- name: hardware_affinity
+- name: hardware_and_scheduling
   tags: hardware, dynamic
 - name: static_accessing_hardware 
   tags: hardware, static
