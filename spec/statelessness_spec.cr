@@ -47,4 +47,16 @@ describe "Statelessness" do
       $?.success?.should be_true
     end
   end
+  it "'no_local_volume_configuration' should pass if local storage configuration is not found", tags: ["no_local_volume_configuration"]  do
+    begin
+      `./cnf-conformance cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-conformance no_local_volume_configuration verbose`
+      LOGGING.info "Status:  #{response_s}"
+      (/PASSED: local storage configuration volumes not found/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-conformance cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml deploy_with_chart=false`
+      $?.success?.should be_true
+    end
+  end
 end

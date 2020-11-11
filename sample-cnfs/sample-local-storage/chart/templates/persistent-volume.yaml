@@ -19,5 +19,5 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - example-node
+          - kind-control-plane
 

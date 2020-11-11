@@ -4,6 +4,7 @@ require "file_utils"
 require "colorize"
 require "totem"
 require "./utils/utils.cr"
+require "./utils/kubectl_client.cr"
 
 desc "The CNF conformance suite checks if state is stored in a custom resource definition or a separate database (e.g. etcd) rather than requiring local storage.  It also checks to see if state is resilient to node failure"
 task "statelessness", ["volume_hostpath_not_found"] do |_, args|
@@ -57,20 +58,42 @@ task "no_local_volume_configuration", ["retrieve_manifest"] do |_, args|
 
     hostPath_found = nil 
     begin
-      # TODO if any volume claim templates have a local-storage classname, fail the test
-      storage_class_name = deployment.get("spec").as_h["storageClassName"].as_s
-        
-      # local_storage_found = volumeClaims.find do |volume_claim| 
-      #   if volume_claim.as_h["spec"].as_h["storageClassName"].as_s? &&
-      #       volume_claim.as_h["spec"].as_h["storageClassName"].as_s == "local-storage" 
-      #        true
-      #   end
-        if storage_class_name == "local-storage"
-         local_storage_found = true
-        else
-         local_storage_found = false
+      # Note: A storageClassName value of "local-storage" is insufficient to determine if the
+      # persistent volume is indeed local storage.  This is because the storageClass can be redefined
+      # to be anything (e.g. the name local-storage can be redefined to be block storage behind the scenes) 
+
+      volumes = [] of Totem::Any
+      if deployment.get("spec").as_h["template"].as_h["spec"].as_h["volumes"]?
+        volumes = deployment.get("spec").as_h["template"].as_h["spec"].as_h["volumes"].as_a 
+      end
+      LOGGING.debug "volumes: #{volumes}"
+      persistent_volume_claim_names = volumes.map do |volume|
+        # get persistent volume claim that matches persistent volume claim name
+        if volume.as_h["persistentVolumeClaim"]? && volume.as_h["persistentVolumeClaim"].as_h["claimName"]?
+            volume.as_h["persistentVolumeClaim"].as_h["claimName"]
+          else
+            nil 
+          end
+      end.compact
+      LOGGING.debug "persistent volume claim names: #{persistent_volume_claim_names}"
+
+      # TODO (optional) check storage class of persistent volume claim
+      # loop through all pvc names
+      # get persistent volume that matches pvc name
+      # get all items, get spec, get claimRef, get pvc name that matches pvc name 
+      local_storage_found = false
+      persistent_volume_claim_names.map do | claim_name|
+        items = KubectlClient::Get.pv_items_by_claim_name(claim_name)
+        items.map do |item|
+          begin
+          if item["spec"]["local"]? && item["spec"]["local"]["path"]?
+              local_storage_found = true
+          end
+          rescue ex
+            LOGGING.info ex.message 
+          end
         end
-      # end
+      end
     rescue ex
       VERBOSE_LOGGING.error ex.message if check_verbose(args)
       upsert_passed_task("no_local_volume_configuration","✔️  PASSED: local storage configuration volumes not found #{passed_emoji}")
