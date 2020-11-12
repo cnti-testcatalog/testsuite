@@ -19,5 +19,4 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - kind-control-plane
-
+          - "{{ .Values.worker_node }}"

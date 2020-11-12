@@ -73,17 +73,13 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         volumeMounts:
-        - name: state-volume
+        - name: task-pv-storage
           mountPath: /home
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         ports:
 {{ include "coredns.containerPorts" . | indent 8 }}
       volumes:
-        - name: state-volume
-          hostPath:
-            path: /tmp/{{ randAlphaNum 10 }}
-            type: DirectoryOrCreate	
         - name: task-pv-storage
           persistentVolumeClaim:
             claimName: foo-pvc 

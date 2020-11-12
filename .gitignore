@@ -10,6 +10,7 @@
 /tools/chaos_mesh
 /tools/helm
 /tools/sonobuoy
+/tools/cluster-api
 admin.conf
 cnf-conformance
 results.yml

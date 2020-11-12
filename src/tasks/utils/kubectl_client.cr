@@ -13,6 +13,16 @@ module KubectlClient
       LOGGING.debug "kubectl get nodes: #{resp}"
       JSON.parse(resp)
     end
+    def self.worker_nodes : Array(String)
+      resp = `kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
+      LOGGING.debug "kubectl get nodes: #{resp}"
+      resp.split("\n")
+    end
+    def self.schedulable_nodes : Array(String)
+      resp = `kubectl get nodes -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
+      LOGGING.debug "kubectl get nodes: #{resp}"
+      resp.split("\n")
+    end
     def self.pv : JSON::Any
       # TODO should this be all namespaces?
       resp = `kubectl get pv -o json`

@@ -1,6 +1,7 @@
 require "./spec_helper"
 require "colorize"
 require "../src/tasks/utils/utils.cr"
+require "../src/tasks/utils/kubectl_client.cr"
 require "../src/tasks/utils/system_information/helm.cr"
 require "file_utils"
 require "sam"
@@ -37,18 +38,23 @@ describe "Statelessness" do
   end
   it "'no_local_volume_configuration' should fail if local storage configuration found", tags: ["no_local_volume_configuration"]  do
     begin
-      `./cnf-conformance cnf_setup cnf-config=sample-cnfs/sample-local-storage/cnf-conformance.yml deploy_with_chart=false`
+      # update the helm parameter with a schedulable node for the pv chart
+      schedulable_nodes = KubectlClient::Get.schedulable_nodes
+      update_yml("sample-cnfs/sample-local-storage/cnf-conformance.yml", "release_name", "coredns --set worker_node='#{schedulable_nodes[0]}'")
+      `./cnf-conformance cnf_setup cnf-config=sample-cnfs/sample-local-storage/cnf-conformance.yml deploy_with_chart=false verbose`
       $?.success?.should be_true
       response_s = `./cnf-conformance no_local_volume_configuration verbose`
       LOGGING.info "Status:  #{response_s}"
       (/FAILURE: local storage configuration volumes found/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-config=sample-cnfs/sample-local-storage/cnf-conformance.yml deploy_with_chart=false`
+      update_yml("sample-cnfs/sample-local-storage/cnf-conformance.yml", "release_name", "coredns")
       $?.success?.should be_true
     end
   end
   it "'no_local_volume_configuration' should pass if local storage configuration is not found", tags: ["no_local_volume_configuration"]  do
     begin
+
       `./cnf-conformance cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
       $?.success?.should be_true
       response_s = `./cnf-conformance no_local_volume_configuration verbose`

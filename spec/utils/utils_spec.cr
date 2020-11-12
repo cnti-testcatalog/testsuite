@@ -309,5 +309,17 @@ describe "Utils" do
     $?.success?.should be_true
     (/INFO -- cnf-conformance-verbose: helm_deploy/ =~ response_s).should_not be_nil
   end
+
+  it "'#update_yml' should update the value for a key in a yml file"  do
+    begin
+    update_yml("spec/fixtures/cnf-conformance.yml", "release_name", "coredns --set worker-node='kind-control-plane'")
+    yaml = File.open("spec/fixtures/cnf-conformance.yml") do |file|
+      YAML.parse(file)
+    end
+    (yaml["release_name"]).should eq("coredns --set worker-node='kind-control-plane'")
+    ensure
+      update_yml("spec/fixtures/cnf-conformance.yml", "release_name", "coredns")
+    end
+  end
 end
 
