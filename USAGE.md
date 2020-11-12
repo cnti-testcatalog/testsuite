@@ -165,6 +165,10 @@ crystal src/cnf-conformance.cr api_snoop_general_apis
 ./cnf-conformance volume_hostpath_not_found 
 ```
 
+#### :heavy_check_mark:  To test if the CNF uses local storage
+```
+./cnf-conformance no_local_volume_configuration 
+```
 <details> <summary>Details for Statelessness Tests To Do's</summary>
 <p>
 
@@ -450,13 +454,16 @@ crystal src/cnf-conformance.cr performance
 ```
 ####  :heavy_check_mark: Run the K8s conformance tests
 ```
-./cnf-conformance k8s_conformance
+./cnf-conformance  k8s_conformance
+```
+####  :heavy_check_mark: Run All platform harware and scheduling tests 
+```
+./cnf-conformance  platform:hardware_and_scheduling
 ```
 #### :heavy_check_mark: Run runtime compliance test
 ```
 ./cnf-conformance platform:oci_compliant
 ```
-
 #### Proof of Concepts for Platform Tests
 ##### :bulb: (PoC) Run All platform resilience tests 
 ```
