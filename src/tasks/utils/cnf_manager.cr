@@ -324,7 +324,7 @@ module CNFManager
     FileUtils.mkdir_p(destination_cnf_dir) 
     # TODO enable recloning/fetching etc
     # TODO pass in block
-    git_clone = `git clone #{git_clone_url} #{destination_cnf_dir}/#{release_name}` if git_clone_url.empty? == false
+    git_clone = `git clone #{git_clone_url} #{destination_cnf_dir}/#{release_name}`  if git_clone_url.empty? == false
     VERBOSE_LOGGING.info git_clone if verbose
 
     # Copy the cnf-conformance.yml

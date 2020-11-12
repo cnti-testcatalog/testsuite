@@ -62,6 +62,10 @@
 #  tags: configuration_lifecycle, dynamic
 - name: rolling_update
   tags: configuration_lifecycle, dynamic, workload
+- name: rolling_downgrade
+  tags: configuration_lifecycle, dynamic, workload
+- name: rolling_version_change
+  tags: configuration_lifecycle, dynamic, workload
 - name: nodeport_not_used
   tags: configuration_lifecycle, dynamic, workload
 - name: hardcoded_ip_addresses_in_k8s_runtime_configuration

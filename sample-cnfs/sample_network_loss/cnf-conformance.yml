@@ -11,5 +11,5 @@ application_deployment_names: [coredns]
 helm_chart_container_name: coredns
 container_names: 
   - name: coredns 
-    upgrade_test_tag: "1.8.0"
+    rolling_update_test_tag: "1.8.0"
 white_list_helm_chart_container_names: []

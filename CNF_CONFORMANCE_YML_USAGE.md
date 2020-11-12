@@ -26,9 +26,9 @@ helm_chart_container_name: privileged-coredns-coredns # POD_SPEC_CONTAINER_NAME
 white_list_helm_chart_container_names: [coredns] # [LIST_OF_CONTAINERS_ALLOWED_TO_RUN_PRIVLIDGED]
 container_names: #[LIST_OF_CONTAINERS_NAMES_AND_VERSION_UPGRADE_TAGS]
   - name: sidecar-container1
-    upgrade_test_tag: "1.32.0"
+    rolling_update_test_tag: "1.32.0"
   - name: sidecar-container2
-    upgrade_test_tag: "1.32.0"
+    rolling_update_test_tag: "1.32.0"
 ```
 
 #### helm_directory: path to the helm chart directory (relative to the location of the cnf-conformance.yml)

@@ -75,28 +75,32 @@ describe CnfConformance do
       `./cnf-conformance sample_coredns_bad_liveness_cleanup`
     end
   end
-  it "'rolling_update' should pass when valid version is given", tags: ["rolling_update", "happy-path"]  do
-    begin
-      LOGGING.info `./cnf-conformance sample_coredns`
-      $?.success?.should be_true
-      response_s = `./cnf-conformance rolling_update verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/Rolling Update Passed/ =~ response_s).should_not be_nil
-    ensure
-      `./cnf-conformance cleanup_sample_coredns`
+
+  test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
+  test_names.each do |tn|
+    it "'#{tn}' should pass when valid version is given", tags: ["#{tn}", "happy-path"]  do
+      begin
+        LOGGING.info `./cnf-conformance sample_coredns`
+        $?.success?.should be_true
+        response_s = `./cnf-conformance rolling_update verbose`
+        LOGGING.info response_s
+        $?.success?.should be_true
+        (/Passed/ =~ response_s).should_not be_nil
+      ensure
+        `./cnf-conformance cleanup_sample_coredns`
+      end
     end
-  end
-  it "'rolling_update' should fail when invalid version is given", tags: "rolling_update" do
-    begin
-      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns_invalid_version/cnf-conformance.yml deploy_with_chart=false`
-      $?.success?.should be_true
-      response_s = `./cnf-conformance rolling_update verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/Rolling Update Failed/ =~ response_s).should_not be_nil
-    ensure
-      LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_coredns_invalid_version/cnf-conformance.yml deploy_with_chart=false`
+    it "'#{tn}' should fail when invalid version is given", tags: "#{tn}" do
+      begin
+        LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns_invalid_version/cnf-conformance.yml deploy_with_chart=false`
+        $?.success?.should be_true
+        response_s = `./cnf-conformance #{tn} verbose`
+        LOGGING.info response_s
+        $?.success?.should be_true
+        (/Failed/ =~ response_s).should_not be_nil
+      ensure
+        LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_coredns_invalid_version/cnf-conformance.yml deploy_with_chart=false`
+      end
     end
   end
 

@@ -16,4 +16,4 @@ helm_chart_container_name: envoy
 white_list_helm_chart_container_names: [falco, nginx, envoy, calico-node, kube-proxy, nginx-proxy, node-cache]
 container_names: 
   - name: envoy
-    upgrade_test_tag: 1.8.0
+    rolling_update_test_tag: 1.8.0

@@ -11,5 +11,7 @@ helm_chart: stable/coredns
 helm_chart_container_name: coredns
 container_names: 
   - name: coredns 
-    upgrade_test_tag: "1.8.0"
+    rolling_update_test_tag: "1.8.0"
+    rolling_downgrade_tag: 1.6.7
+    rolling_version_change_tag: latest
 white_list_helm_chart_container_names: []
