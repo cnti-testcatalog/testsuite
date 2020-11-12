@@ -9,7 +9,7 @@ The goal for the group is to create a software conformance program that any netw
 TBD
 
 ## Meetings
-We have meetings every Tuesday at 9:00am PDT.
+TBD
 
 - Agenda and notes: TBD
 - Zoom meeting: TBD
