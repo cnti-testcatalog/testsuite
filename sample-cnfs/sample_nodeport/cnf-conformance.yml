@@ -10,4 +10,6 @@ application_deployment_names: [unifi]
 helm_chart: stable/unifi
 helm_chart_container_name: unifi
 rolling_update_tag: latest
+rolling_downgrade_tag: 1.6.7
+rolling_version_change_tag: latest
 white_list_helm_chart_container_names: []

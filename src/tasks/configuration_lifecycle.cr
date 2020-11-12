@@ -130,73 +130,80 @@ task "retrieve_manifest" do |_, args|
   end
 end
 
-desc "Test if the CNF can perform a rolling update"
-task "rolling_update" do |_, args|
-  task_runner(args) do |args|
-    VERBOSE_LOGGING.info "rolling_update" if check_verbose(args)
-    # config = cnf_conformance_yml
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
-    version_tag = nil
+test_names.each do |tn|
+  pretty_test_name = tn.split(/:|_/).join(" ")
+  pretty_test_name_capitalized = tn.split(/:|_/).map(&.capitalize).join(" ")
 
-    if config.has_key? "rolling_update_tag"
-      version_tag = config.get("rolling_update_tag").as_s
-    end
+  desc "Test if the CNF can perform a #{pretty_test_name}"
+  task "#{tn}" do |_, args|
+    task_runner(args) do |args|
+      VERBOSE_LOGGING.info tn if check_verbose(args)
+      # config = cnf_conformance_yml
+      config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
 
-    if args.named.has_key? "version_tag"
-      version_tag = args.named["version_tag"]
-    end
-    
-    unless version_tag
-      fail_msg = "✖️  FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option 'rolling_update_tag'"
-      upsert_failed_task("rolling_update", fail_msg)
-      raise fail_msg
-    end
+      version_tag = nil
 
-    release_name = config.get("release_name").as_s
-    deployment_name = config.get("deployment_name").as_s
-    helm_chart_container_name = config.get("helm_chart_container_name").as_s
+      if config.has_key? "#{tn}_tag"
+        version_tag = config.get("#{tn}_tag").as_s
+      end
 
-    # helm_chart_values = JSON.parse(`#{CNFManager.local_helm_path} get values #{release_name} -a --output json`)
-    LOGGING.info "helm path: #{CNFSingleton.helm}"
-    LOGGING.info "helm command: #{CNFSingleton.helm} get values #{release_name} -a --output json"
-    helm_resp = `#{CNFSingleton.helm} get values #{release_name} -a --output json`
-    # helm sometimes does not return valid json :/
-    helm_split = helm_resp.split("\n")
-    LOGGING.info "helm_split: #{helm_split}"
-    if helm_split[1] =~ /WARNING/ 
-      cleaned_resp = helm_split[2] 
-    elsif helm_split[0] =~ /WARNING/
-      cleaned_resp = helm_split[1] 
-    else
-      cleaned_resp = helm_split[0]
-    end
-    LOGGING.info "cleaned_resp: #{cleaned_resp}"
-    helm_chart_values = JSON.parse(cleaned_resp)
-    VERBOSE_LOGGING.debug "helm_chart_values" if check_verbose(args)
-    VERBOSE_LOGGING.debug helm_chart_values if check_verbose(args)
-    image_name = helm_chart_values["image"]["repository"]
+      if args.named.has_key? "version_tag"
+        version_tag = args.named["version_tag"]
+      end
+      
+      unless version_tag
+        fail_msg = "✖️  FAILURE: please specify a version of the CNF's release's image with the option version_tag or with cnf_conformance_yml option '#{tn}_tag'"
+        upsert_failed_task(tn, fail_msg)
+        raise fail_msg
+      end
 
-    VERBOSE_LOGGING.debug "image_name: #{image_name}" if check_verbose(args)
+      release_name = config.get("release_name").as_s
+      deployment_name = config.get("deployment_name").as_s
+      helm_chart_container_name = config.get("helm_chart_container_name").as_s
 
-    VERBOSE_LOGGING.debug "rolling_update: setting new version" if check_verbose(args)
-    #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
-    VERBOSE_LOGGING.debug "kubectl set image deployment/#{deployment_name} #{helm_chart_container_name}=#{image_name}:#{version_tag} --record" if check_verbose(args)
-    update = `kubectl set image deployment/#{deployment_name} #{helm_chart_container_name}=#{image_name}:#{version_tag} --record`
-    update_applied = $?.success?
-    VERBOSE_LOGGING.debug "#{update}" if check_verbose(args)
-    VERBOSE_LOGGING.debug "update? #{update_applied}" if check_verbose(args)
+      # helm_chart_values = JSON.parse(`#{CNFManager.local_helm_path} get values #{release_name} -a --output json`)
+      LOGGING.info "helm path: #{CNFSingleton.helm}"
+      LOGGING.info "helm command: #{CNFSingleton.helm} get values #{release_name} -a --output json"
+      helm_resp = `#{CNFSingleton.helm} get values #{release_name} -a --output json`
+      # helm sometimes does not return valid json :/
+      helm_split = helm_resp.split("\n")
+      LOGGING.info "helm_split: #{helm_split}"
+      if helm_split[1] =~ /WARNING/ 
+        cleaned_resp = helm_split[2] 
+      elsif helm_split[0] =~ /WARNING/
+        cleaned_resp = helm_split[1] 
+      else
+        cleaned_resp = helm_split[0]
+      end
+      LOGGING.info "cleaned_resp: #{cleaned_resp}"
+      helm_chart_values = JSON.parse(cleaned_resp)
+      VERBOSE_LOGGING.debug "helm_chart_values" if check_verbose(args)
+      VERBOSE_LOGGING.debug helm_chart_values if check_verbose(args)
+      image_name = helm_chart_values["image"]["repository"]
 
-    # https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#rolling-update
-    VERBOSE_LOGGING.debug "rolling_update: checking status new version" if check_verbose(args)
-    rollout = `kubectl rollout status deployment/#{deployment_name} --timeout=30s`
-    rollout_status = $?.success?
-    VERBOSE_LOGGING.debug "#{rollout}" if check_verbose(args)
-    VERBOSE_LOGGING.debug "rollout? #{rollout_status}" if check_verbose(args)
-    if update_applied && rollout_status
-      upsert_passed_task("rolling_update","✔️  PASSED: CNF #{deployment_name} Rolling Update Passed" )
-    else
-      upsert_failed_task("rolling_update", "✖️  FAILURE: CNF #{deployment_name} Rolling Update Failed")
+      VERBOSE_LOGGING.debug "image_name: #{image_name}" if check_verbose(args)
+
+      VERBOSE_LOGGING.debug "#{tn} setting new version" if check_verbose(args)
+      #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
+      VERBOSE_LOGGING.debug "kubectl set image deployment/#{deployment_name} #{helm_chart_container_name}=#{image_name}:#{version_tag} --record" if check_verbose(args)
+      version_change = `kubectl set image deployment/#{deployment_name} #{helm_chart_container_name}=#{image_name}:#{version_tag} --record`
+      version_change_applied = $?.success?
+      VERBOSE_LOGGING.debug "#{version_change}" if check_verbose(args)
+      VERBOSE_LOGGING.debug "change successful? #{version_change_applied}" if check_verbose(args)
+
+      # https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#rolling-update
+      VERBOSE_LOGGING.debug "#{tn}: checking status new version" if check_verbose(args)
+      rollout = `kubectl rollout status deployment/#{deployment_name} --timeout=30s`
+      rollout_status = $?.success?
+      VERBOSE_LOGGING.debug "#{rollout}" if check_verbose(args)
+      VERBOSE_LOGGING.debug "rollout? #{rollout_status}" if check_verbose(args)
+      if version_change_applied && rollout_status
+        upsert_passed_task(tn,"✔️  PASSED: CNF #{deployment_name} #{pretty_test_name_capitalized} Passed" )
+      else
+        upsert_failed_task(tn, "✖️  FAILURE: CNF #{deployment_name} #{pretty_test_name_capitalized} Failed")
+      end
     end
   end
 end
