@@ -450,13 +450,16 @@ crystal src/cnf-conformance.cr performance
 ```
 ####  :heavy_check_mark: Run the K8s conformance tests
 ```
-./cnf-conformance k8s_conformance
+./cnf-conformance  k8s_conformance
+```
+####  :heavy_check_mark: Run All platform harware and scheduling tests 
+```
+./cnf-conformance  platform:hardware_and_scheduling
 ```
 #### :heavy_check_mark: Run runtime compliance test
 ```
 ./cnf-conformance platform:oci_compliant
 ```
-
 #### Proof of Concepts for Platform Tests
 ##### :bulb: (PoC) Run All platform resilience tests 
 ```
