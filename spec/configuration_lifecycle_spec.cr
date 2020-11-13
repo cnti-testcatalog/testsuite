@@ -103,6 +103,21 @@ describe CnfConformance do
     end
   end
 
+  it "'rollback' should pass ", tags: ["rollback", "happy-path"]  do
+    begin
+      LOGGING.info `./cnf-conformance sample_coredns`
+      $?.success?.should be_true
+      response_s = `./cnf-conformance rollback verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/Passed/ =~ response_s).should_not be_nil
+    ensure
+      # `./cnf-conformance cleanup_sample_coredns`
+    end
+  end
+
+  # TODO: figure out failing test for rollback
+
   it "'nodeport_not_used' should fail when a node port is being used", tags: "nodeport_not_used" do
     begin
       `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample_nodeport deploy_with_chart=false`
