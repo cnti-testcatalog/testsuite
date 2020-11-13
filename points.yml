@@ -96,6 +96,8 @@
 
 - name: volume_hostpath_not_found
   tags: statelessness, dynamic, workload
+- name: no_local_volume_configuration 
+  tags: statelessness, dynamic, workload
 #- name: hardware_and_scheduling
 #  tags: hardware, dynamic, workload
 #- name: static_accessing_hardware 

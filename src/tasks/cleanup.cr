@@ -31,7 +31,7 @@ end
 task "tools_cleanup", ["helm_local_cleanup", "sonobuoy_cleanup"] do  |_, args|
 end
 
-task "cleanup_all", ["cleanup_samples", "tools_cleanup"] do  |_, args|
+task "cleanup_all", ["samples_cleanup", "tools_cleanup"] do  |_, args|
 end
 
 task "results_yml_cleanup" do |_, args|

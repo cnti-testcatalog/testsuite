@@ -400,8 +400,20 @@ def points_yml
   points.as_a
 end
 
-def upsert_task(task, status, points)
-  results = File.open("#{Results.file}") do |f| 
+def update_yml(yml_file, top_level_key, value)
+  results = File.open("#{yml_file}") do |f| 
+    YAML.parse(f)
+  end 
+  LOGGING.debug "update_yml results: #{results}"
+  # The last key assigned wins
+  new_yaml = YAML.dump(results) + "\n#{top_level_key}: #{value}"
+  parsed_new_yml = YAML.parse(new_yaml)
+  File.open("#{yml_file}", "w") do |f| 
+    YAML.dump(parsed_new_yml,f)
+  end 
+end
+
+def upsert_task(task, status, points) results = File.open("#{Results.file}") do |f| 
     YAML.parse(f)
   end 
 

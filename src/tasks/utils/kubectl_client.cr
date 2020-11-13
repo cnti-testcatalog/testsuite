@@ -10,8 +10,40 @@ module KubectlClient
     def self.nodes : JSON::Any
       # TODO should this be all namespaces?
       resp = `kubectl get nodes -o json`
-      LOGGING.info "kubectl get nodes: #{resp}"
+      LOGGING.debug "kubectl get nodes: #{resp}"
       JSON.parse(resp)
+    end
+    def self.worker_nodes : Array(String)
+      resp = `kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
+      LOGGING.debug "kubectl get nodes: #{resp}"
+      resp.split("\n")
+    end
+    def self.schedulable_nodes : Array(String)
+      resp = `kubectl get nodes -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
+      LOGGING.debug "kubectl get nodes: #{resp}"
+      resp.split("\n")
+    end
+    def self.pv : JSON::Any
+      # TODO should this be all namespaces?
+      resp = `kubectl get pv -o json`
+      LOGGING.debug "kubectl get pv: #{resp}"
+      JSON.parse(resp)
+    end
+    def self.pv_items_by_claim_name(claim_name)
+      items = pv["items"].as_a.map do |x|
+        begin
+          if x["spec"]["claimRef"]["name"] == claim_name
+            x
+          else
+            nil
+          end
+        rescue ex
+          LOGGING.info ex.message 
+          nil
+        end
+      end.compact
+      LOGGING.debug "pv items : #{items}"
+      items 
     end
     def self.container_runtime
       nodes["items"][0]["status"]["nodeInfo"]["containerRuntimeVersion"].as_s
