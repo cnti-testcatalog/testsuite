@@ -24,6 +24,7 @@ describe "Cluster API" do
       (/Cluster API is enabled/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cluster_api_cleanup`
+      wait 5.0
     end
   end
   it "'clusterapi_enabled' should fail if cluster api is not installed" do
