@@ -4,7 +4,7 @@ require "colorize"
 require "totem"
 require "./utils/utils.cr"
 
-desc "Install Cluster API"
+desc "Install Cluster API for Kind"
 task "cluster_api_setup" do |_, args|
       # `./tools/cluster-api-dev-setup/spec_mock_cluster_api_spec_commands.sh`
       current_dir = FileUtils.pwd 

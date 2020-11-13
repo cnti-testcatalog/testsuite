@@ -11,22 +11,22 @@ describe "Cluster API" do
 
   after_all do
     # cleanup cluster api stuff
-    `./cnf-conformance cluster_api_cleanup`
+    # `./cnf-conformance cluster_api_cleanup`
   end
 
   it "'clusterapi_enabled' should pass if cluster api is installed" do
     begin
       `./cnf-conformance cluster_api_setup`
-    ensure
       current_dir = FileUtils.pwd 
       FileUtils.cd("#{current_dir}")
       response_s = `./cnf-conformance clusterapi_enabled poc`
       LOGGING.info response_s
       (/Cluster API is enabled/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-conformance cluster_api_cleanup`
     end
   end
   it "'clusterapi_enabled' should fail if cluster api is not installed" do
-    `./cnf-conformance cluster_api_cleanup`
     response_s = `./cnf-conformance clusterapi_enabled poc`
     LOGGING.info response_s
     (/Cluster API NOT enabled/ =~ response_s).should_not be_nil
