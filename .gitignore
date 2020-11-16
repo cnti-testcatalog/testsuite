@@ -10,6 +10,7 @@
 /tools/chaos_mesh
 /tools/helm
 /tools/sonobuoy
+/tools/cluster-api
 admin.conf
 cnf-conformance
 results.yml
@@ -17,3 +18,5 @@ cnf-conformance-results*
 cnf-conformance.env
 *.tar
 *.tar*
+reasonable_startup_orig.yml
+reasonable_startup_test.yml

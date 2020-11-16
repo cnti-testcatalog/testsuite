@@ -353,6 +353,7 @@ module CNFManager
       LOGGING.info "helm path: #{CNFSingleton.helm}"
       if deploy_with_chart
         VERBOSE_LOGGING.info "deploying with chart repository" if verbose 
+        LOGGING.info "helm command: #{helm} install #{release_name} #{helm_chart}"
         helm_install = `#{helm} install #{release_name} #{helm_chart}`
         VERBOSE_LOGGING.info helm_install if verbose 
 

@@ -112,7 +112,7 @@ describe "Utils" do
 
   it "'all_task_test_names' should return all tasks names" do
     clean_results_yml
-    (all_task_test_names()).should eq(["reasonable_image_size", "reasonable_startup_time", "privileged", "increase_capacity", "decrease_capacity", "network_chaos", "ip_addresses", "liveness", "readiness", "rolling_update", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "helm_deploy", "install_script_helm", "helm_chart_valid", "helm_chart_published", "chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill", "volume_hostpath_not_found"])
+    (all_task_test_names()).should eq(["reasonable_image_size", "reasonable_startup_time", "privileged", "increase_capacity", "decrease_capacity", "network_chaos", "ip_addresses", "liveness", "readiness", "rolling_update", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "helm_deploy", "install_script_helm", "helm_chart_valid", "helm_chart_published", "chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill", "volume_hostpath_not_found", "no_local_volume_configuration"])
   end
 
   it "'all_result_test_names' should return the tasks assigned to a tag" do
@@ -308,6 +308,18 @@ describe "Utils" do
     puts response_s
     $?.success?.should be_true
     (/INFO -- cnf-conformance-verbose: helm_deploy/ =~ response_s).should_not be_nil
+  end
+
+  it "'#update_yml' should update the value for a key in a yml file"  do
+    begin
+    update_yml("spec/fixtures/cnf-conformance.yml", "release_name", "coredns --set worker-node='kind-control-plane'")
+    yaml = File.open("spec/fixtures/cnf-conformance.yml") do |file|
+      YAML.parse(file)
+    end
+    (yaml["release_name"]).should eq("coredns --set worker-node='kind-control-plane'")
+    ensure
+      update_yml("spec/fixtures/cnf-conformance.yml", "release_name", "coredns")
+    end
   end
 end
 

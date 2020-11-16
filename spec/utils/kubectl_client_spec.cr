@@ -20,6 +20,13 @@ describe "KubectlClient" do
     resp = KubectlClient::Get.container_runtimes
     (resp[0].match(KubectlClient::OCI_RUNTIME_REGEX)).should_not be_nil
   end
+
+  it "'#KubectlClient.schedulable_nodes' should return all schedulable worker nodes"  do
+    resp = KubectlClient::Get.schedulable_nodes
+    (resp.size).should be > 0
+    (resp[0]).should_not be_nil
+    (resp[0]).should_not be_empty
+  end
  
 end
 

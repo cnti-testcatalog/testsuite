@@ -9,7 +9,7 @@ deployment_label: k8s-app
 application_deployment_names: [coredns-coredns]
 helm_repository:
   name: stable 
-  repo_url: https://charts.helm.sh/stable
+  repo_url: https://cncf.gitlab.io/stable
   test_on_helm_repo:
 helm_chart: stable/coredns
 helm_chart_container_name: coredns
