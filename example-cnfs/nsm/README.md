@@ -1,6 +1,6 @@
 # What is [NSM](https://https://networkservicemesh.io//)
 
-Network Service Mesh (NSM) is a novel approach solving complicated L2/L3 use cases in Kubernetes that are tricky to address with the existing Kubernetes Network Model. Inspired by Istio, Network Service Mesh maps the concept of a Service Mesh to L2/L3 payloads as part of an attempt to re-imagine NFV in a Cloud-native way!
+Network Service Mesh (NSM) is a novel approach solving complicated L2/L3 use cases in Kubernetes that are tricky to address with the existing Kubernetes Network Model. Inspired by Istio, Network Service Mesh maps the concept of a Service Mesh to L2/L3 payloads as part of an attempt to re-imagine NFV in a Cloud-native way.
 
 # Prerequistes
 Follow [Pre-req steps](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#prerequisites), including
