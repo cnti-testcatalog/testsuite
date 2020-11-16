@@ -60,7 +60,7 @@ jobs:
         kubectl get nodes 
     - name: Setup CNF-Conformance
       run: |
-        helm repo add stable https://charts.helm.sh/stable
+        helm repo add stable https://cncf.gitlab.io/stable
         git fetch --all --tags --force
         shards install  
         crystal src/cnf-conformance.cr setup
