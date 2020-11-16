@@ -58,7 +58,7 @@ Responsibilities
 The CNCF community, through CNF WG, is in charge of what it means to be a Certified cloud native workload -- with a focus on networking and telecom workloads. 
 The CNF WG creates and maintains the definitions, processes, as well as policies around the certification program. It determines what best pratices and cloud native principles are required to be conformant.
 
-The work on the mechanics of the conformance tests, implementation of tests which validate conformance, and the test framework itself occurs in [CNF test suite project](/cncf/cnf-conformance/README-testsuite.md) itself -- not in the working  group.
+The work on the mechanics of the conformance tests, implementation of tests which validate conformance, and the test framework itself occurs in [CNF test suite project](../README-testsuite.md) itself -- not in the working  group.
 
 Deliverables
 - Cloud native principles - framework documentation for cloud native requirements 
