@@ -1,23 +1,23 @@
-# Cloud Native Network Functions Working Group Charter
+# Cloud Native Network Function Working Group Charter
 
 ## Introduction
-The goal of the Cloud Native Network Functions Working Group (CNF WG)  is to aid companies such as telecom vendors, communications service providers and large scale enterprises, running internal telecommunications-like infrastructure, to better understand what cloud native means for telecommunications workloads and help build consensus around industry adoption of cloud native technologies (per CNCF TUG).
+The goal of the Cloud Native Network Function Working Group (CNF WG)  is to aid companies such as telecom vendors, communications service providers and large scale enterprises, running internal telecommunications-like infrastructure, to better understand what cloud native means for telecommunications workloads and help build consensus around industry adoption of cloud native technologies (per CNCF TUG).
 
-The CNF WG operates under the aegis of CNCF. The charter of the working group is to define the process around certifying the cloud nativeness of telco applications, aka CNFs. We collaborate with the cncf/cnf-conformance test suite who work on the mechanics of the conformance tests.
+The CNF WG operates under the aegis of CNCF. The charter of the working group is to define the process around certifying the cloud nativeness of telco applications, aka CNFs. We collaborate with the [CNF test suite project](/cncf/cnf-conformanece/README-testsuite.md) who works on the mechanics of the conformance tests.
 
 The goal for the group is to create a software conformance program that any application or network function implementation can use to demonstrate that they are conformant and interoperable with cloud native principles.
 
 ## Mission Statement
-Cloud Native Network Functions Working Group’s mission is to increase interoperability and standardization of cloud native workloads. It is committed to the following (aspirational) design ideals:
+Cloud Native Network Function Working Group’s mission is to increase interoperability and standardization of cloud native workloads. It is committed to the following (aspirational) design ideals:
 - Portable - Cloud native workloads run everywhere -- public cloud, private cloud, bare metal, laptop -- with consistent functional behavior so that they are portable throughout the ecosystem as well as between development and production environments.
-- Meet users partway. Many applications today are not cloud native, but have been working in production for decades. The WG doesn’t just cater to purely greenfield cloud-native applications, nor does it meet all users where they are. It focuses on cloud-native applications, but provides some mechanisms to facilitate migration of monolithic and legacy applications.
-- Flexible. The cloud native technology ecosystem can be consumed a la carte and (in most cases) it does not prevent you from using your own solutions in lieu of built-in systems.
-- Extensible. Cloud native workloads should integrate into your environment and add the additional capabilities you need.
-- Automatable. Cloud native workloads should aim to help dramatically reduce the burden of manual operations. They support both declarative control by specifying users’ desired intent via an API, as well as imperative control to support higher-level orchestration and automation. The declarative approach is key to the ecosystem’s self-healing and autonomic capabilities.
-- Advance the state of the art. While the WG intends to drive the modernization of non-cloud-native applications, it also aspires to advance the cloud native and DevOps state of the art, such as in the participation of applications in their own management. Workloads should not be bound by the lowest common denominator of systems upon which they depend, such as container runtimes and cloud providers.
+- Meet users partway - Many applications today are not cloud native, but have been working in production for decades. The WG doesn’t just cater to purely greenfield cloud-native applications, nor does it meet all users where they are. It focuses on cloud-native applications, but provides some mechanisms to facilitate migration of monolithic and legacy applications.
+- Flexible - The cloud native technology ecosystem can be consumed a la carte and (in most cases) it does not prevent you from using your own solutions in lieu of built-in systems.
+- Extensible - Cloud native workloads should integrate into your environment and add the additional capabilities you need.
+- Automatable -  Cloud native workloads should aim to help dramatically reduce the burden of manual operations. They support both declarative control by specifying users’ desired intent via an API, as well as imperative control to support higher-level orchestration and automation. The declarative approach is key to the ecosystem’s self-healing and autonomic capabilities.
+- Advance the state of the art - While the WG intends to drive the modernization of non-cloud-native applications, it also aspires to advance the cloud native and DevOps state of the art, such as in the participation of applications in their own management. Workloads should not be bound by the lowest common denominator of systems upon which they depend, such as container runtimes and cloud providers.
 
 ## In Scope
-- Definition of Cloud native Network Function (CNF)
+- Definition of Cloud Native Network Function (CNF)
 - Cloud native conformance test requirements for CNFs
   - Including dataplane CNFs
 - Process around certifying CNF conformance
