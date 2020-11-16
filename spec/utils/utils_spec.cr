@@ -19,6 +19,7 @@ describe "Utils" do
       YAML.parse(file)
     end
     (yaml["name"]).should eq("cnf conformance")
+    (yaml["exit_code"]).should eq(0) 
   end
 
   it "'CNFManager.final_cnf_results_yml' should return the latest time stamped results file"  do
@@ -196,6 +197,39 @@ describe "Utils" do
     end
     (task_response).should eq("✔️  PASSED: No privileged containers".colorize(:green))
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
+  end
+
+  it "'single_task_runner' should put a -1 in the results file if it has an exception"  do
+    clean_results_yml
+    args = Sam::Args.new(["cnf-config=./cnf-conformance.yml"])
+    task_response = single_task_runner(args) do
+      cdir = FileUtils.pwd()
+      response = String::Builder.new
+      config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+      helm_directory = "#{config.get("helm_directory").as_s?}" 
+      if File.directory?(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory)
+        Dir.cd(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory)
+        Process.run("grep -r -P '^(?!.+0\.0\.0\.0)(?![[:space:]]*0\.0\.0\.0)(?!#)(?![[:space:]]*#)(?!\/\/)(?![[:space:]]*\/\/)(?!\/\\*)(?![[:space:]]*\/\\*)(.+([0-9]{1,3}[\.]){3}[0-9]{1,3})'", shell: true) do |proc|
+          while line = proc.output.gets
+            response << line
+          end
+        end
+        Dir.cd(cdir)
+        if response.to_s.size > 0
+          resp = upsert_failed_task("ip_addresses","✖️  FAILURE: IP addresses found")
+        else
+          resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
+        end
+        resp
+      else
+        Dir.cd(cdir)
+        resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
+      end
+    end
+    yaml = File.open("#{Results.file}") do |file|
+      YAML.parse(file)
+    end
+    (yaml["exit_code"]).should eq(1)
   end
 
   it "'all_cnfs_task_runner' should run a test against all cnfs in the cnfs directory if there is not cnf-config argument passed to it"  do
