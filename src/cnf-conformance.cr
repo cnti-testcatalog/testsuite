@@ -88,4 +88,21 @@ TEMPLATE
 puts completion_template
 end
 
-Sam.help
+# Sam.help
+begin
+  # See issue #426 for exit code requirement
+  Sam.process_tasks(ARGV.clone) 
+  yaml = File.open("#{Results.file}") do |file|
+    YAML.parse(file)
+  end
+  LOGGING.debug "results yaml: #{yaml}"
+  if (yaml["exit_code"]) == 1
+    exit 1
+  end
+rescue e : Sam::NotFound
+  puts e.message
+  exit 1
+rescue e
+  puts e.backtrace.join("\n"), e
+  exit 1
+end
