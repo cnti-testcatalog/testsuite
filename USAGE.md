@@ -38,15 +38,15 @@ crystal src/cnf-conformance.cr <testname>
 ---
 ### Common Example Commands
 
-#### Validating a cnf-conformance.yml file:
-```
-./cnf-conformance validate_config cnf-config=[PATH_TO]/cnf-conformance.yml
-```
-
 #### Building the executable
 This is the command to build the binary executable if in developer mode or using the source install method ([requires crystal](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#source-install)):
 ```
 crystal build src/cnf-conformance.cr
+```
+
+#### Validating a cnf-conformance.yml file:
+```
+./cnf-conformance validate_config cnf-config=[PATH_TO]/cnf-conformance.yml
 ```
 
 #### Running all of the CNF Conformance tests (platform and workload):
