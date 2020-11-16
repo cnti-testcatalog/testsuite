@@ -131,26 +131,28 @@ task "retrieve_manifest" do |_, args|
   end
 end
 
-def get_helm_chart_values(release_name)
-      # helm_chart_values = JSON.parse(`#{CNFManager.local_helm_path} get values #{release_name} -a --output json`)
-      LOGGING.info "helm path: #{CNFSingleton.helm}"
-      LOGGING.info "helm command: #{CNFSingleton.helm} get values #{release_name} -a --output json"
-      helm_resp = `#{CNFSingleton.helm} get values #{release_name} -a --output json`
-      # helm sometimes does not return valid json :/
-      helm_split = helm_resp.split("\n")
-      LOGGING.info "helm_split: #{helm_split}"
-      if helm_split[1] =~ /WARNING/ 
-        cleaned_resp = helm_split[2] 
-      elsif helm_split[0] =~ /WARNING/
-        cleaned_resp = helm_split[1] 
-      else
-        cleaned_resp = helm_split[0]
-      end
-      LOGGING.info "cleaned_resp: #{cleaned_resp}"
-      helm_chart_values = JSON.parse(cleaned_resp)
-      VERBOSE_LOGGING.debug "helm_chart_values" if check_verbose(args)
-      VERBOSE_LOGGING.debug helm_chart_values if check_verbose(args)
+def get_helm_chart_values(sam_args, release_name)
+  # helm_chart_values = JSON.parse(`#{CNFManager.local_helm_path} get values #{release_name} -a --output json`)
+  LOGGING.info "helm path: #{CNFSingleton.helm}"
+  LOGGING.info "helm command: #{CNFSingleton.helm} get values #{release_name} -a --output json"
+  helm_resp = `#{CNFSingleton.helm} get values #{release_name} -a --output json`
+  # helm sometimes does not return valid json :/
+  helm_split = helm_resp.split("\n")
+  LOGGING.info "helm_split: #{helm_split}"
+  if helm_split[1] =~ /WARNING/ 
+    cleaned_resp = helm_split[2] 
+  elsif helm_split[0] =~ /WARNING/
+    cleaned_resp = helm_split[1] 
+  else
+    cleaned_resp = helm_split[0]
+  end
+  LOGGING.info "cleaned_resp: #{cleaned_resp}"
+  helm_chart_values = JSON.parse(cleaned_resp)
+  VERBOSE_LOGGING.debug "helm_chart_values" if check_verbose(sam_args)
+  VERBOSE_LOGGING.debug helm_chart_values if check_verbose(sam_args)
+  helm_chart_values
 end
+
 test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
 test_names.each do |tn|
@@ -188,7 +190,7 @@ test_names.each do |tn|
         LOGGING.debug "#{tn} container: #{container}"
         config_container = container_names.as_a.find{|x| x["name"]==container.as_h["name"]} if container_names
         LOGGING.debug "config_container: #{config_container}"
-        unless config_container && config_container["rolling_update_test_tag"]? && !config_container["#{tn}_tag"].as_s.empty?
+        unless config_container && config_container["#{tn}_test_tag"]? && !config_container["#{tn}_tag"].as_s.empty?
           puts "Please add the container name #{container.as_h["name"]} and a corresponding #{tn}_tag into your cnf-conformance.yml under container names".colorize(:red)
           valid_cnf_conformance_yml = false
         end
@@ -236,14 +238,16 @@ end
 desc "Test if the CNF can perform a rollback"
 task "rollback" do |_, args|
   task_runner(args) do |args|
-    VERBOSE_LOGGING.info tn if check_verbose(args)
+    VERBOSE_LOGGING.info "rollback" if check_verbose(args)
     # config = cnf_conformance_yml
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+
+    VERBOSE_LOGGING.debug "actual configin it #{config.inspect}" if check_verbose(args)
 
     rollback_from_tag = nil
 
     if config.has_key? "rollback_from_tag"
-      rollback_from_tag = config.get("#{tn}_tag").as_s
+      rollback_from_tag = config.get("rollback_from_tag").as_s
     end
 
     if args.named.has_key? "rollback_from_tag"
@@ -252,7 +256,7 @@ task "rollback" do |_, args|
     
     unless rollback_from_tag
       fail_msg = "✖️  FAILURE: please specify a version of the CNF's release's image with the cli option rollback_from_tag or with cnf_conformance_yml option 'rollback_from_tag'"
-      upsert_failed_task(tn, fail_msg)
+      upsert_failed_task("rollback", fail_msg)
       raise fail_msg
     end
 
@@ -260,19 +264,19 @@ task "rollback" do |_, args|
     deployment_name = config.get("deployment_name").as_s
     helm_chart_container_name = config.get("helm_chart_container_name").as_s
 
-    helm_chart_values = get_helm_chart_values(release_name)
+    helm_chart_values = get_helm_chart_values(args, release_name)
     image_name = helm_chart_values["image"]["repository"]
     image_tag = helm_chart_values["image"]["tag"]
 
     if rollback_from_tag == image_tag
       fail_msg = "✖️  FAILURE: please specify a different version than the helm chart default image.tag for 'rollback_from_tag' "
-      upsert_failed_task(tn, fail_msg)
+      upsert_failed_task("rollback", fail_msg)
       raise fail_msg
     end
 
     VERBOSE_LOGGING.debug "image_name: #{image_name}" if check_verbose(args)
 
-    VERBOSE_LOGGING.debug "#{tn} setting new version" if check_verbose(args)
+    VERBOSE_LOGGING.debug "rollback: setting new version" if check_verbose(args)
     #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
     VERBOSE_LOGGING.debug "kubectl set image deployment/#{deployment_name} #{helm_chart_container_name}=#{image_name}:#{rollback_from_tag} --record" if check_verbose(args)
     version_change = `kubectl set image deployment/#{deployment_name} #{helm_chart_container_name}=#{image_name}:#{rollback_from_tag} --record`
@@ -280,7 +284,7 @@ task "rollback" do |_, args|
     VERBOSE_LOGGING.debug "#{version_change}" if check_verbose(args)
     VERBOSE_LOGGING.debug "change successful? #{version_change_applied}" if check_verbose(args)
 
-    VERBOSE_LOGGING.debug "#{tn}: checking status new version" if check_verbose(args)
+    VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
     rollout = `kubectl rollout status deployment/#{deployment_name} --timeout=30s`
     rollout_status = $?.success?
     VERBOSE_LOGGING.debug "#{rollout}" if check_verbose(args)
@@ -288,17 +292,17 @@ task "rollback" do |_, args|
     
 
     # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision
-    VERBOSE_LOGGING.debug "#{tn}: checking status new version" if check_verbose(args)
-    rollback = `kubectl rollout undo deployment/#{deployment_name} --timeout=30s`
+    VERBOSE_LOGGING.debug "rollback: rolling back to old version" if check_verbose(args)
+    rollback = `kubectl rollout undo deployment/#{deployment_name}`
     rollback_status = $?.success?
     VERBOSE_LOGGING.debug "rollback: #{rollback}" if check_verbose(args)
-    VERBOSE_LOGGING.debug "rollout? #{rollout_status}" if check_verbose(args)
+    VERBOSE_LOGGING.debug "rollout status? #{rollback_status}" if check_verbose(args)
 
 
     if version_change_applied && rollout_status && rollback_status
-      upsert_passed_task(tn,"✔️  PASSED: CNF #{deployment_name} #{pretty_test_name_capitalized} Passed" )
+      upsert_passed_task("rollback","✔️  PASSED: CNF #{deployment_name} Rollback Passed" )
     else
-      upsert_failed_task(tn, "✖️  FAILURE: CNF #{deployment_name} #{pretty_test_name_capitalized} Failed")
+      upsert_failed_task("rollback", "✖️  FAILURE: CNF #{deployment_name} Rollback Failed")
     end
   end
 end

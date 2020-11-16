@@ -113,7 +113,7 @@ describe CnfConformance do
       $?.success?.should be_true
       (/Passed/ =~ response_s).should_not be_nil
     ensure
-      # `./cnf-conformance cleanup_sample_coredns`
+      `./cnf-conformance cleanup_sample_coredns`
     end
   end
 
@@ -143,9 +143,6 @@ describe CnfConformance do
       `./cnf-conformance cleanup_sample_coredns`
     end
   end
-
-
-
 
   it "'hardcoded_ip_addresses_in_k8s_runtime_configuration' should fail when a hardcoded ip is found in the K8s configuration", tags: "hardcoded_ip_addresses_in_k8s_runtime_configuration" do
     begin
