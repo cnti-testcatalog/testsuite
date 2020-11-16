@@ -255,6 +255,9 @@ def single_task_runner(args, &block)
   begin
   yield args
   rescue ex
+    # Set exception key/value in results
+    # file to -1
+    update_yml("#{Results.file}", "exit_code", "1")
     LOGGING.error ex.message
     ex.backtrace.each do |x|
       LOGGING.error x
@@ -353,6 +356,7 @@ def template_results_yml
 name: cnf conformance 
 status: 
 points: 
+exit_code: 0
 items: []
 END
 end
@@ -385,6 +389,7 @@ def clean_results_yml(verbose=false)
     File.open("#{Results.file}", "w") do |f| 
       YAML.dump({name: results["name"],
                  status: results["status"],
+                 exit_code: results["exit_code"],
                  points: results["points"],
                  items: [] of YAML::Any}, f)
     end 
