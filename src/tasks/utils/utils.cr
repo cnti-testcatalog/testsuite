@@ -433,6 +433,7 @@ def upsert_task(task, status, points) results = File.open("#{Results.file}") do 
     YAML.dump({name: results["name"],
                status: results["status"],
                points: results["points"],
+               exit_code: results["exit_code"],
                items: result_items}, f)
   end 
 end

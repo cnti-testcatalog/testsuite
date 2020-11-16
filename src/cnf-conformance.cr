@@ -95,6 +95,7 @@ begin
   yaml = File.open("#{Results.file}") do |file|
     YAML.parse(file)
   end
+  LOGGING.debug "results yaml: #{yaml}"
   if (yaml["exit_code"]) == 1
     exit 1
   end
