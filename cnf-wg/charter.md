@@ -3,7 +3,7 @@
 ## Introduction
 The goal of the Cloud Native Network Function Working Group (CNF WG)  is to aid companies such as telecom vendors, communications service providers and large scale enterprises, running internal telecommunications-like infrastructure, to better understand what cloud native means for telecommunications workloads and help build consensus around industry adoption of cloud native technologies (per CNCF TUG).
 
-The CNF WG operates under the aegis of CNCF. The charter of the working group is to define the process around certifying the cloud nativeness of telco applications, aka CNFs. We collaborate with the [CNF test suite project](../README-testsuite.md) who works on the mechanics of the conformance tests.
+The CNF WG operates under the aegis of CNCF. The charter of the working group is to define the process around certifying the cloud nativeness of networking applications, aka CNFs. We collaborate with the [CNF test suite project](../README-testsuite.md) who works on the mechanics of the conformance tests.
 
 The goal for the group is to create a software conformance program that any application or network function implementation can use to demonstrate that they are conformant and interoperable with cloud native principles.
 
@@ -26,7 +26,7 @@ Cloud Native Network Function Working Group’s mission is to increase interoper
 - Best Practices and General Recommendations
 
 ## Potential Future Scope
-- Cloud native conformance requirements for Telco platforms (which run CNFs)
+- Cloud native conformance requirements for Telecom infrastructure (which run CNFs)
 
 ## Out of Scope
 
@@ -37,12 +37,12 @@ Cloud Native Network Function Working Group’s mission is to increase interoper
 
 
 ## Overlap and Relations with other Groups and Projects
-The CNF WG sees itself as providing the upstream definition of what makes a telco application cloud native allowing downstream projects to create precise programs and/or implementations for their specific needs. Some of the groups who may utilize the CNF Conformance Programs deliverables are:
+The CNF WG sees itself as providing the upstream definition of what makes a networking application cloud native allowing downstream projects to create precise programs and/or implementations for their specific needs. Some of the groups who may utilize the CNF Conformance Programs deliverables are:
 
 - CNTT R2 - is focused on Kubernetes-based platforms and basic interoperability between platform and workloads. CNTT R2 has not determined if workload cloud native requirements are in scope for CNTT R2. It is expecting CNCF to provide testing for the cloud native requirements it has defined. 
 - OVP 2.0 (Cloud Native) - is interested in leveraging an upstream source for cloud native requirements and test results (like deliverables from the CNCF CNF WG) to be used in the OVP 2.0 Badging Program.
 
-Telco applications and the workloads that are created with them are related to many topics in Cloud Native computing; therefore this WG may collaborate with many of the other CNCF and K8s SIGs, WGs, and projects. A few of the groups with potential interactions/collaboration are:
+Networking applications and the workloads that are created with them are related to many topics in Cloud Native computing; therefore this WG may collaborate with many of the other CNCF and K8s SIGs, WGs, and projects. A few of the groups with potential interactions/collaboration are:
 
 - CNCF SIG App Delivery
 - CNCF SIG Security 
