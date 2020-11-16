@@ -72,8 +72,3 @@ Deliverables
 #### Chairs:
 - TBD
 
-#### Communications
-- Slack Channel (#sig-network)
-- Join CNF-WG mailer at lists.cncf.io
-- Repo: TBD
-- Meetings:TBD
