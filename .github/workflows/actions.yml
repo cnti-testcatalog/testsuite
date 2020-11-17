@@ -27,6 +27,19 @@ jobs:
         JSON="$JSON$TEST_LIST"
         JSON="$JSON]}"
         echo "::set-output name=matrix::$JSON"
+  skip:
+    name: Skip Build
+    runs-on: ubuntu-20.04	
+    outputs:
+      skip: ${{ steps.skip.outputs.skip }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - id: skip
+      run: |
+        echo "::set-output name=skip::$(.github/workflows/skip.sh)"
   spec:
     name: Crystal Specs
     needs: tests
@@ -77,9 +90,12 @@ jobs:
         DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
         LOG_LEVEL=info crystal spec --warnings none ${{ matrix.spec }} -v
+
   build:
     name: Build Release
+    needs: skip
     runs-on: ubuntu-latest
+    if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
