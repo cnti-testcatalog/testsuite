@@ -97,9 +97,6 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.skip.outputs.skip == 'false'
     steps: 
-    - name: test
-      run: |
-        echo ${{needs.skip.outputs.skip}}
     - name: Checkout code
       uses: actions/checkout@v2
       with:
