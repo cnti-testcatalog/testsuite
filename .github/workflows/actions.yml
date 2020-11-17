@@ -6,9 +6,11 @@ jobs:
     runs-on: ubuntu-20.04	
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
+    steps::
     - name: Checkout code
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - id: set-matrix
       run: |
         JSON="{\"include\":["
@@ -25,6 +27,9 @@ jobs:
         JSON="$JSON$TEST_LIST"
         JSON="$JSON]}"
         echo "::set-output name=matrix::$JSON"
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+
   spec:
     name: Crystal Specs
     needs: tests
