@@ -9,6 +9,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - id: set-matrix
       run: |
         JSON="{\"include\":["
@@ -19,6 +21,9 @@ jobs:
             fi
         done)
         TEST_LIST="${TEST_LIST%?}"
+        if ! git diff --name-only HEAD origin/master | grep -P '^((?!.md).)*$'; then
+            TEST_LIST=""
+        fi
         JSON="$JSON$TEST_LIST"
         JSON="$JSON]}"
         echo "::set-output name=matrix::$JSON"
@@ -71,9 +76,7 @@ jobs:
         DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
-        if ! git diff --name-only HEAD master | grep -P '^((?!.md).)*$'; then
-          LOG_LEVEL=info crystal spec --warnings none ${{ matrix.spec }} -v
-        fi
+        LOG_LEVEL=info crystal spec --warnings none ${{ matrix.spec }} -v
   build:
     name: Build Release
     runs-on: ubuntu-latest
