@@ -39,7 +39,7 @@ jobs:
         fetch-depth: 0
     - id: docs
       run: |
-        echo "::set-output name=docs::$(git diff --name-only HEAD origin/master)"
+        echo "::set-output name=docs::$(.github/workflows/skip.sh)"
   spec:
     name: Crystal Specs
     needs: tests
@@ -94,6 +94,7 @@ jobs:
   build:
     name: Build Release
     needs: docs
+    if: needs.docs.outputs.skip == 'false'
     runs-on: ubuntu-latest
     steps: 
     - name: test
