@@ -107,7 +107,7 @@ describe "Utils" do
 
   it "'tasks_by_tag' should return the tasks assigned to a tag" do
     clean_results_yml
-    (tasks_by_tag("configuration_lifecycle")).should eq(["ip_addresses", "liveness", "readiness", "rolling_update", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration"])
+    (tasks_by_tag("configuration_lifecycle")).should eq(["ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "rollback", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration"])
     (tasks_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
