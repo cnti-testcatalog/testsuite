@@ -27,6 +27,19 @@ jobs:
         JSON="$JSON$TEST_LIST"
         JSON="$JSON]}"
         echo "::set-output name=matrix::$JSON"
+  docs:
+    name: Fetch documentation changes
+    runs-on: ubuntu-20.04	
+    outputs:
+      skip: ${{ steps.docs.outputs.docs }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - id: docs
+      run: |
+        echo "::set-output name=docs::$(git diff --name-only HEAD origin/master)"
   spec:
     name: Crystal Specs
     needs: tests
@@ -78,26 +91,14 @@ jobs:
       run: |
         LOG_LEVEL=info crystal spec --warnings none ${{ matrix.spec }} -v
 
-  skip_build:
-    name: Skip build for doc only changes
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps: 
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Skip build for docs
-      run: |
-        if ! git diff --name-only HEAD origin/master | grep -P '^((?!.md).)*$'; then
-            exit 1
-        fi
-      
   build:
     name: Build Release
-    needs: [skip_build]
+    needs: docs
     runs-on: ubuntu-latest
     steps: 
+    - name: test
+      run: |
+        echo ${{needs.docs.outputs.docs}}
     - name: Checkout code
       uses: actions/checkout@v2
       with:
