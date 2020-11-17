@@ -21,15 +21,12 @@ jobs:
             fi
         done)
         TEST_LIST="${TEST_LIST%?}"
-        if ! git diff --name-only HEAD master | grep -P '^((?!.md).)*$'; then
+        if ! git diff --name-only HEAD origin/master | grep -P '^((?!.md).)*$'; then
             TEST_LIST=""
         fi
         JSON="$JSON$TEST_LIST"
         JSON="$JSON]}"
         echo "::set-output name=matrix::$JSON"
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-
   spec:
     name: Crystal Specs
     needs: tests
