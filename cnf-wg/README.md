@@ -12,12 +12,13 @@ The [CNF WG Charter](charter.md) futher outlines the scope of our group activiti
 TBD
 
 ## Meetings
-TBD. Please select your preferred day and time on the [poll](https://doodle.com/poll/zqi8mrhv9wi5tsdn)
+- Starting on Monday, November 30th at 16:00 UTC [poll](https://doodle.com/poll/zqi8mrhv9wi5tsdn)
 
-- Agenda and notes: TBD
-- Zoom meeting: TBD
-- Recordings of previous meetings: TBD
+- Agenda and notes are [available](https://docs.google.com/document/d/1YFimQftjkTUsxNGTsKdakvP7cJtJgCTqViH2kwJOrsc/edit)
+- Join zoom meeting [here](https://zoom.us/j/97556246445?pwd=VTMrSjRWQ3pSMVZGQmNRemEwUk14QT09)
+  - Passcode: :zero::four::zero::nine::six::three:
+- Recordings of previous meetings: YouTube URL, TBD
 
 ## Community
-- Slack channel: #cnf-wg in CNCF workspace
+- Slack channel: [#cnf-wg](https://cloud-native.slack.com/archives/C01F1LVAQCC) in [CNCF workspace](https://slack.cncf.io/)
 - Mailing list: https://lists.cncf.io/g/cnf-wg
