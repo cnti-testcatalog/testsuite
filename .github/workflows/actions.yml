@@ -94,8 +94,8 @@ jobs:
   build:
     name: Build Release
     needs: skip
-    # if: needs.skip.outputs.skip == 'false'
     runs-on: ubuntu-latest
+    if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: test
       run: |
