@@ -27,19 +27,19 @@ jobs:
         JSON="$JSON$TEST_LIST"
         JSON="$JSON]}"
         echo "::set-output name=matrix::$JSON"
-  docs:
+  skip:
     name: Fetch documentation changes
     runs-on: ubuntu-20.04	
     outputs:
-      skip: ${{ steps.docs.outputs.docs }}
+      skip: ${{ steps.skip.outputs.skip }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - id: docs
+    - id: skip
       run: |
-        echo "::set-output name=docs::$(.github/workflows/skip.sh)"
+        echo "::set-output name=skip::$(.github/workflows/skip.sh)"
   spec:
     name: Crystal Specs
     needs: tests
@@ -93,13 +93,13 @@ jobs:
 
   build:
     name: Build Release
-    needs: docs
-    if: needs.docs.outputs.skip == 'false'
+    needs: skip
+    # if: needs.skip.outputs.skip == 'false'
     runs-on: ubuntu-latest
     steps: 
     - name: test
       run: |
-        echo ${{needs.docs.outputs.skip}}
+        echo ${{needs.skip.outputs.skip}}
     - name: Checkout code
       uses: actions/checkout@v2
       with:
