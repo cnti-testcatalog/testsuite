@@ -98,7 +98,7 @@ jobs:
     steps: 
     - name: test
       run: |
-        echo ${{needs.docs.outputs.docs}}
+        echo ${{needs.docs.outputs.skip}}
     - name: Checkout code
       uses: actions/checkout@v2
       with:
