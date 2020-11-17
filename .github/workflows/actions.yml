@@ -28,7 +28,7 @@ jobs:
         JSON="$JSON]}"
         echo "::set-output name=matrix::$JSON"
   skip:
-    name: Fetch documentation changes
+    name: Skip Build
     runs-on: ubuntu-20.04	
     outputs:
       skip: ${{ steps.skip.outputs.skip }}
