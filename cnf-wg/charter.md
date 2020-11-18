@@ -70,3 +70,9 @@ Deliverables
 
 ### Interested Parties
 
+- Bell Canada
+- Charter Communications
+- Orange
+- MATRIXX
+
+
