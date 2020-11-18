@@ -83,7 +83,7 @@ describe CnfConformance do
       $?.success?.should be_true
       (/Rolling Update Passed/ =~ response_s).should_not be_nil
     ensure
-      # `./cnf-conformance cleanup_sample_coredns`
+      `./cnf-conformance cleanup_sample_coredns`
     end
   end
   it "'rolling_update' should fail when invalid version is given", tags: "rolling_update" do
@@ -95,7 +95,7 @@ describe CnfConformance do
       $?.success?.should be_true
       (/Rolling Update Failed/ =~ response_s).should_not be_nil
     ensure
-      # `./cnf-conformance cleanup_sample_coredns`
+      `./cnf-conformance cleanup_sample_coredns`
     end
   end
 

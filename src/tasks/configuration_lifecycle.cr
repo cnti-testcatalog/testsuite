@@ -114,7 +114,7 @@ task "retrieve_manifest" do |_, args|
     # config = cnf_conformance_yml
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     deployment_name = config.get("deployment_name").as_s
-    service_name = config.get("service_name").as_s
+    service_name = "#{config.get("service_name").as_s?}"
     VERBOSE_LOGGING.debug "Deployment_name: #{deployment_name}" if check_verbose(args)
     VERBOSE_LOGGING.debug service_name if check_verbose(args)
     helm_directory = config.get("helm_directory").as_s
@@ -160,6 +160,7 @@ task "rolling_update" do |_, args|
     # helm_chart_values = JSON.parse(`#{CNFManager.local_helm_path} get values #{release_name} -a --output json`)
     LOGGING.info "helm path: #{CNFSingleton.helm}"
     LOGGING.info "helm command: #{CNFSingleton.helm} get values #{release_name} -a --output json"
+    # TODO change this to derive image from k8s api 
     helm_resp = `#{CNFSingleton.helm} get values #{release_name} -a --output json`
     # helm sometimes does not return valid json :/
     helm_split = helm_resp.split("\n")
@@ -175,6 +176,7 @@ task "rolling_update" do |_, args|
     helm_chart_values = JSON.parse(cleaned_resp)
     VERBOSE_LOGGING.debug "helm_chart_values" if check_verbose(args)
     VERBOSE_LOGGING.debug helm_chart_values if check_verbose(args)
+    # TODO helm installation might not have a image or repository value
     image_name = helm_chart_values["image"]["repository"]
 
     VERBOSE_LOGGING.debug "image_name: #{image_name}" if check_verbose(args)
@@ -208,7 +210,7 @@ task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
     # config = cnf_conformance_yml
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     release_name = config.get("release_name").as_s
-    service_name = config.get("service_name").as_s
+    service_name = "#{config.get("service_name").as_s?}"
     # current_cnf_dir_short_name = CNFManager.ensure_cnf_conformance_dir
     # VERBOSE_LOGGING.debug current_cnf_dir_short_name if check_verbose(args)
     # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
@@ -223,6 +225,8 @@ task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
       else
         upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
       end
+    else
+      upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
     end
   end
 end
