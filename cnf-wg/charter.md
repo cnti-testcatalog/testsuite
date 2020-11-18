@@ -66,9 +66,7 @@ Deliverables
 - Cloud native network function conformance program
 
 
-## Governance and Operations
+## Governance
 
-### Operating Model
-#### Chairs:
-- TBD
+### Interested Parties
 
