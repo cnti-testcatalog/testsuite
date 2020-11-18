@@ -66,9 +66,13 @@ Deliverables
 - Cloud native network function conformance program
 
 
-## Governance and Operations
+## Governance
 
-### Operating Model
-#### Chairs:
-- TBD
+### Interested Parties
+
+- Bell Canada
+- Charter Communications
+- Orange
+- MATRIXX
+
 
