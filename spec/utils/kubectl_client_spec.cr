@@ -27,6 +27,14 @@ describe "KubectlClient" do
     (resp[0]).should_not be_nil
     (resp[0]).should_not be_empty
   end
+
+  it "'#KubectlClient.schedulable_nodes' should return all schedulable worker nodes"  do
+    `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-conformance.yml deploy_with_chart=false` 
+    resp = KubectlClient::Get.deployment_containers("nginx-webapp")
+    (resp.size).should be > 0
+  ensure
+    `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-conformance.yml deploy_with_chart=false` 
+  end
  
 end
 

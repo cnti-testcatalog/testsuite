@@ -76,6 +76,7 @@ task "reasonable_startup_time" do |_, args|
       upsert_failed_task("reasonable_startup_time", "✖️  FAILURE: CNF had a startup time of #{elapsed_time.seconds} seconds #{emoji_slow}")
     end
 
+   ensure
     delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
     rollback_non_namespaced = `kubectl apply -f #{yml_file_path}/reasonable_startup_orig.yml`
     # CNFManager.wait_for_install(deployment_name, wait_count=180)

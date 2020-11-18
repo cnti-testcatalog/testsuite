@@ -1,0 +1,13 @@
+---
+helm_directory: chart
+git_clone_url: 
+install_script: chart
+release_name: sidecar-container-demo
+deployment_name: nginx-webapp 
+deployment_label: nginx-webapp 
+service_name: 
+application_deployment_names: [nginx-webapp]
+helm_chart: 
+helm_chart_container_name: busybox 
+rolling_update_tag: 1.6.7
+white_list_helm_chart_container_names: []

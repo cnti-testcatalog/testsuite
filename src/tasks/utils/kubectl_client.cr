@@ -13,6 +13,23 @@ module KubectlClient
       LOGGING.debug "kubectl get nodes: #{resp}"
       JSON.parse(resp)
     end
+
+    def self.deployment(deployment_name) : JSON::Any
+      resp = `kubectl get deployment nginx-webapp -o json`
+      LOGGING.debug "kubectl get deployment: #{resp}"
+      JSON.parse(resp)
+    end
+
+    def self.deployment_containers(deployment_name) : JSON::Any 
+      resp = deployment(deployment_name).dig?("spec", "template", "spec", "containers")
+      LOGGING.debug "kubectl get deployment containers: #{resp}"
+      if resp 
+        resp
+      else
+        JSON.parse(%({}))
+      end
+    end
+
     def self.worker_nodes : Array(String)
       resp = `kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
       LOGGING.debug "kubectl get nodes: #{resp}"
