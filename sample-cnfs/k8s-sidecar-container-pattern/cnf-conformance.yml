@@ -19,6 +19,6 @@ container_names:
     upgrade_test_tag: "1.32.0"
   - name: sidecar-container2
     upgrade_test_tag: "1.32.0"
-  - name: main-container 
+  - name: main-container
     upgrade_test_tag: "1.9.9"
 white_list_helm_chart_container_names: [falco, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
