@@ -36,7 +36,7 @@ module KubectlClient
     end
 
     def self.deployment(deployment_name) : JSON::Any
-      resp = `kubectl get deployment nginx-webapp -o json`
+      resp = `kubectl get deployment #{deployment_name} -o json`
       LOGGING.debug "kubectl get deployment: #{resp}"
       JSON.parse(resp)
     end

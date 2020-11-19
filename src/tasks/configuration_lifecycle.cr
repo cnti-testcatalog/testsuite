@@ -141,6 +141,7 @@ task "rolling_update" do |_, args|
     # TODO use tag associated with image name string (e.g. busybox:v1.7.9) as the version tag
     # TODO optional get a valid version from the remote repo and roll to that, if no tag
     #  e.g. wget -q https://registry.hub.docker.com/v1/repositories/debian/tags -O -  | sed -e 's/[][]//g' -e 's/"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}'
+    # note: all images are not on docker hub nor are they always on a docker hub compatible api
 
     release_name = config.get("release_name").as_s
     deployment_name = config.get("deployment_name").as_s
