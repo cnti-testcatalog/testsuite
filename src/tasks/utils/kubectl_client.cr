@@ -6,6 +6,27 @@ require "halite"
 module KubectlClient 
   # https://www.capitalone.com/tech/cloud/container-runtime/
   OCI_RUNTIME_REGEX = /containerd|docker|runc|railcar|crun|rkt|gviso|nabla|runv|clearcontainers|kata|cri-o/i
+  module Rollout
+    def self.status(deployment_name, timeout="30s")
+      rollout = `kubectl rollout status deployment/#{deployment_name} --timeout=#{timeout}`
+      rollout_status = $?.success?
+      LOGGING.debug "#{rollout}"
+      LOGGING.debug "rollout? #{rollout_status}"
+      $?.success?
+    end
+  end
+  module Set
+    def self.image(deployment_name, container_name, image_name, version_tag=nil)
+      if version_tag
+        # use --record to have history
+        resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record`
+      else
+        resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record`
+      end
+      LOGGING.debug "set image: #{resp}" 
+      $?.success?
+    end
+  end
   module Get 
     def self.nodes : JSON::Any
       # TODO should this be all namespaces?
