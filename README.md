@@ -1,5 +1,5 @@
 # CNF Conformance
-The goal of the CNF Conformance Program is to provide an open source test suite to demonstrate conformance and implementation of cloud native best practices for both open and closed source Cloud Native Network Functions. The conformance program is a living thing. The CNCF community, through the [Cloud Native Network Function Working Group](cnf-wg/README.md), oversees and maintains what it means to be a cloud native conformant telco application (including those applications called network functions). It also develops the process and policy around the certification program. Work on the mechanics of the conformance tests occurs in the [CNF Conformance Test Suite](README-testsuite.md).
+The goal of the CNF Conformance Program is to provide an open source test suite to demonstrate conformance and implementation of cloud native best practices for both open and closed source Cloud Native Network Functions. The conformance program is a living thing. The CNCF community, through the [Cloud Native Network Function Working Group](https://github.com/cncf/cnf-wg/blob/master/README.md), oversees and maintains what it means to be a cloud native conformant telco application (including those applications called network functions). It also develops the process and policy around the certification program. Work on the mechanics of the conformance tests occurs in the [CNF Conformance Test Suite](README-testsuite.md).
 
 ## Why Conformance Matters
 With such a wide array of applications being developed today, workload conformance tests help ensure that developers can follow cloud native best practices when building greenfield applications and/or modernizing existing applications. A conformance passing application provides the following guarantees:
@@ -21,7 +21,7 @@ Implementing and running applications in a cloud native manner will enable you t
 
 To participate and contribute to the program itself (including discussion of
 issues affecting conformance and certification), join the mailing list and
-slack channel. Details: [Conformance WG](cnf-wg/README.md).
+slack channel. Details: [Conformance WG](https://github.com/cncf/cnf-wg/blob/master/README.md).
 
 ## Test Suite Information
 
