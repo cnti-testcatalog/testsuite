@@ -26,7 +26,10 @@ task "privileged" do |_, args|
     VERBOSE_LOGGING.info "privileged_response #{privileged_response}" if check_verbose(args)
     privileged_list = privileged_response.to_s.split(" ").uniq
     VERBOSE_LOGGING.info "privileged_list #{privileged_list}" if check_verbose(args)
-    white_list_containers = ((PRIVILEGED_WHITELIST_CONTAINERS + white_list_container_name) - [helm_chart_container_name])
+    # TODO add container list from k8s api
+    deployment_name = config.get("deployment_name").as_s
+    containers = KubectlClient::Get.deployment_containers(deployment_name)
+    white_list_containers = ((PRIVILEGED_WHITELIST_CONTAINERS + white_list_container_name) - [containers.as_a])
     violation_list = (privileged_list - white_list_containers)
     emoji_security="🔓🔑"
     if privileged_list.find {|x| x == helm_chart_container_name} ||
