@@ -10,3 +10,6 @@ application_deployment_names: [bad-helm-coredns]
 helm_chart: stable/coredns
 helm_chart_container_name: coredns
 white_list_helm_chart_container_names: [falco, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
+container_names: 
+  - name: coredns 
+    upgrade_test_tag: "1.8.0"

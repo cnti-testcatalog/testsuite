@@ -83,19 +83,19 @@ describe CnfConformance do
       $?.success?.should be_true
       (/Rolling Update Passed/ =~ response_s).should_not be_nil
     ensure
-      # `./cnf-conformance cleanup_sample_coredns`
+      `./cnf-conformance cleanup_sample_coredns`
     end
   end
   it "'rolling_update' should fail when invalid version is given", tags: "rolling_update" do
     begin
-      LOGGING.info `./cnf-conformance sample_coredns`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns_invalid_version/cnf-conformance.yml deploy_with_chart=false`
       $?.success?.should be_true
-      response_s = `./cnf-conformance rolling_update verbose version_tag=this_is_not_real_version`
+      response_s = `./cnf-conformance rolling_update verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Rolling Update Failed/ =~ response_s).should_not be_nil
     ensure
-      # `./cnf-conformance cleanup_sample_coredns`
+      LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_coredns_invalid_version/cnf-conformance.yml deploy_with_chart=false`
     end
   end
 

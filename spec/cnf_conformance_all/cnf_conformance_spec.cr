@@ -13,8 +13,9 @@ describe CnfConformance do
     $?.success?.should be_true
   end
 
-  it "'all' should run the whole test suite", tags: "happy-path" do
+  it "'all' should run the workloads test suite", tags: "happy-path" do
     `./cnf-conformance samples_cleanup`
+    # the workload resilience tests are run in the chaos specs
     response_s = `./cnf-conformance all ~platform ~resilience cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose`
     LOGGING.info response_s
     (/PASSED: Helm readiness probe found/ =~ response_s).should_not be_nil

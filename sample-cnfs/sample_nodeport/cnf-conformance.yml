@@ -9,5 +9,7 @@ service_name: unifi-controller
 application_deployment_names: [unifi]
 helm_chart: stable/unifi
 helm_chart_container_name: unifi
-rolling_update_tag: latest
+container_names: 
+  - name: unifi 
+    upgrade_test_tag: "5.12.34"
 white_list_helm_chart_container_names: []

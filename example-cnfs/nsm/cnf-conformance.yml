@@ -10,5 +10,7 @@ application_deployment_names: [nsm-admission-webhook]
 docker_repository: conformance/vppagent-forwarder
 helm_chart:
 helm_chart_container_name: vppagent-forwarder 
-rolling_update_tag: master 
+container_names: 
+  - name: nsm
+    upgrade_test_tag:  1.0.0
 white_list_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy, kube-multus]
