@@ -20,7 +20,7 @@ task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, arg
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     deployment_name = config.get("deployment_name").as_s
     deployment_label = config.get("deployment_label").as_s
-    helm_chart_container_name = config.get("helm_chart_container_name").as_s
+    # helm_chart_container_name = config.get("helm_chart_container_name").as_s
     LOGGING.debug "#{destination_cnf_dir}"
     LOGGING.info "destination_cnf_dir #{destination_cnf_dir}"
     deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
@@ -67,7 +67,7 @@ task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     deployment_name = config.get("deployment_name").as_s
     deployment_label = config.get("deployment_label").as_s
-    helm_chart_container_name = config.get("helm_chart_container_name").as_s
+    # helm_chart_container_name = config.get("helm_chart_container_name").as_s
     LOGGING.debug "#{destination_cnf_dir}"
     LOGGING.info "destination_cnf_dir #{destination_cnf_dir}"
     deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
@@ -127,24 +127,35 @@ task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, a
       LOGGING.error ex.message 
     end
     if errors < 1
-      template = Crinja.render(chaos_template_container_kill, { "deployment_label" => "#{deployment_label}", "deployment_label_value" => "#{deployment_label_value}", "helm_chart_container_name" => "#{helm_chart_container_name}" })
-      chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/chaos_container_kill.yml"`
-      VERBOSE_LOGGING.debug "#{chaos_config}" if check_verbose(args)
-      run_chaos = `kubectl create -f "#{destination_cnf_dir}/chaos_container_kill.yml"`
-      VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
-      # TODO fail if exceeds
-      if wait_for_test("PodChaos", "container-kill")
-        CNFManager.wait_for_install(deployment_name, wait_count=60)
-        if desired_is_available?(deployment_name)
-          resp = upsert_passed_task("chaos_container_kill","✔️  PASSED: Replicas available match desired count after container kill test #{emoji_chaos_container_kill}")
+      # TODO loop through all containers
+      containers = KubectlClient::Get.deployment_containers(deployment_name)
+      containers.as_a.each do |container|
+        template = Crinja.render(chaos_template_container_kill, { "deployment_label" => "#{deployment_label}", "deployment_label_value" => "#{deployment_label_value}", "helm_chart_container_name" => "#{container.as_h["name"]}" })
+        chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/chaos_container_kill.yml"`
+        VERBOSE_LOGGING.debug "#{chaos_config}" if check_verbose(args)
+        run_chaos = `kubectl create -f "#{destination_cnf_dir}/chaos_container_kill.yml"`
+        VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
+        if wait_for_test("PodChaos", "container-kill")
+          CNFManager.wait_for_install(deployment_name, wait_count=60)
         else
-          resp = upsert_failed_task("chaos_container_kill","✖️  FAILURE: Replicas did not return desired count after container kill test #{emoji_chaos_container_kill}")
+          # TODO Change this to an exception (points = 0)
+          # e.g. upsert_exception_task
+          resp = upsert_failed_task("chaos_container_kill","✖️  FAILURE: Chaosmesh failed to finish.")
         end
-      else
-        # TODO Change this to an exception (points = 0)
-        # e.g. upsert_exception_task
-        resp = upsert_failed_task("chaos_container_kill","✖️  FAILURE: Chaosmesh failed to finish.")
       end
+      # TODO fail if exceeds
+      # if wait_for_test("PodChaos", "container-kill")
+      # CNFManager.wait_for_install(deployment_name, wait_count=60)
+      if desired_is_available?(deployment_name)
+        resp = upsert_passed_task("chaos_container_kill","✔️  PASSED: Replicas available match desired count after container kill test #{emoji_chaos_container_kill}")
+      else
+        resp = upsert_failed_task("chaos_container_kill","✖️  FAILURE: Replicas did not return desired count after container kill test #{emoji_chaos_container_kill}")
+      end
+      # else
+      #   # TODO Change this to an exception (points = 0)
+      #   # e.g. upsert_exception_task
+      #   resp = upsert_failed_task("chaos_container_kill","✖️  FAILURE: Chaosmesh failed to finish.")
+      # end
       delete_chaos = `kubectl delete -f "#{destination_cnf_dir}/chaos_container_kill.yml"`
     else
       resp = upsert_failed_task("chaos_container_kill","✖️  FAILURE: No deployment label found for container kill test")

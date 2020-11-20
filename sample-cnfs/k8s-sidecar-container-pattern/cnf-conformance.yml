@@ -4,7 +4,7 @@ git_clone_url:
 install_script: 
 release_name: sidecar-container-demo
 deployment_name: nginx-webapp 
-deployment_label: nginx-webapp 
+deployment_label: app 
 service_name: 
 application_deployment_names: [nginx-webapp]
 docker_repository: coredns/coredns
