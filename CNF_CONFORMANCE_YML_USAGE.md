@@ -24,6 +24,11 @@ deployment_name: privileged-coredns-coredns  # CNFS_KUBERNETES_DEPLOYMENT_NAME
 application_deployment_names: N/A
 helm_chart_container_name: privileged-coredns-coredns # POD_SPEC_CONTAINER_NAME
 white_list_helm_chart_container_names: [coredns] # [LIST_OF_CONTAINERS_ALLOWED_TO_RUN_PRIVLIDGED]
+container_names: #[LIST_OF_CONTAINERS_NAMES_AND_VERSION_UPGRADE_TAGS]
+  - name: sidecar-container1
+    upgrade_test_tag: "1.32.0"
+  - name: sidecar-container2
+    upgrade_test_tag: "1.32.0"
 ```
 
 #### helm_directory: path to the helm chart directory (relative to the location of the cnf-conformance.yml)
@@ -68,3 +73,8 @@ This value is used to allow 'particular' pods to run in privileged mode on the K
 The reason this is needed is because the Test Suite will check, 'all' pods in the cluster, to see if they're running in privileged mode.
 
 This is done because it's a common cloud-native practice to delegate 'privileged' networking tasks to only a single app e.g Multus, NSM vs making the CNF privileged itself. As a consequence the whitelist can only be used to exempt 'privileged' infrastructure services running as pods e.g NSM, Multus and cannot be used to exempt the CNF being tested.
+
+#### container_names: This value is the name of the 'containers' defined in the Kubernetes pod spec of pods. 
+This MUST be set.
+This value is used to test the upgradeability of each container image.  The image tag version should be a minor version that will be used in conjunction with the kubnetes rollout feature.
+
