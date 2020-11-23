@@ -497,4 +497,8 @@ module CNFManager
 
     { valid, warning_output }
   end
+
+  # TODO move configuration lifecycle retreive manifest task code in here
+  def self.retrieve_manifest(args)
+  end
 end

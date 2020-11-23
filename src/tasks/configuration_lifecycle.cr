@@ -109,20 +109,25 @@ end
 
 desc "Retrieve the manifest for the CNF's helm chart"
 task "retrieve_manifest" do |_, args| 
+  # TODO put this in a function 
   task_runner(args) do |args|
     VERBOSE_LOGGING.info "retrieve_manifest" if check_verbose(args)
     # config = cnf_conformance_yml
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     deployment_name = config.get("deployment_name").as_s
+    # TODO get this from k8s manifest kind = service
     service_name = "#{config.get("service_name").as_s?}"
     VERBOSE_LOGGING.debug "Deployment_name: #{deployment_name}" if check_verbose(args)
     VERBOSE_LOGGING.debug service_name if check_verbose(args)
     helm_directory = config.get("helm_directory").as_s
     VERBOSE_LOGGING.debug helm_directory if check_verbose(args)
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/manifest.yml`
+    # TODO move to kubectl client
+    # deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/manifest.yml`
+    KubectlClient::Get.save_manifest(deployment_name, "#{destination_cnf_dir}/manifest.yml")
     VERBOSE_LOGGING.debug deployment if check_verbose(args)
     unless service_name.empty?
+      # TODO move to kubectl client
       service = `kubectl get service #{service_name} -o yaml  > #{destination_cnf_dir}/service.yml`
     end
     VERBOSE_LOGGING.debug service if check_verbose(args)

@@ -41,6 +41,18 @@ module KubectlClient
       JSON.parse(resp)
     end
 
+    def self.save_manifest(deployment_name, output_file) : JSON::Any
+      resp = `kubectl get deployment #{deployment_name} -o yaml  > #{output_file}`
+      LOGGING.debug "kubectl save_manifest: #{resp}"
+      $?.success?
+    end
+
+    def self.deployments : JSON::Any
+      resp = `kubectl get deployments -o json`
+      LOGGING.debug "kubectl get deployment: #{resp}"
+      JSON.parse(resp)
+    end
+
     def self.deployment_containers(deployment_name) : JSON::Any 
       resp = deployment(deployment_name).dig?("spec", "template", "spec", "containers")
       LOGGING.debug "kubectl get deployment containers: #{resp}"
