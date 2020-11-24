@@ -1,6 +1,6 @@
-require "./spec_helper"
+require "../spec_helper"
 require "colorize"
-require "../src/tasks/utils/utils.cr"
+require "../../src/tasks/utils/utils.cr"
 
 describe CnfConformance do
   before_all do

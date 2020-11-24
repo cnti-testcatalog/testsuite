@@ -3,7 +3,8 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
-require "./utils/utils.cr"
+require "../utils/utils.cr"
+require "../utils/docker_client.cr"
 require "halite"
 require "totem"
 
@@ -89,41 +90,27 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
     VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    #TODO get the docker repository segment from the helm chart
-    #TODO check all images
-    # helm_chart_values = JSON.parse(`#{CNFManager.tools_helm} get values #{release_name} -a --output json`)
-    # image_name = helm_chart_values["image"]["repository"]
-    docker_repository = config.get("docker_repository").as_s?
-    VERBOSE_LOGGING.info "docker_repository: #{docker_repository}"if check_verbose(args)
-    deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
+    deployment = config.get("deployment_name").as_s?
     VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
-    containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
-    image_tag = [] of Array(Hash(Int32, String))
-     image_tag = containers.map do |container|
-       {image: container.as_h["image"].as_s.split(":")[0],
-        tag: container.as_h["image"].as_s.split(":")[1]}
-    end
-    VERBOSE_LOGGING.debug "image_tag: #{image_tag.inspect}" if check_verbose(args)
-    if docker_repository
-      # e.g. `curl -s -H "Authorization: JWT " "https://hub.docker.com/v2/repositories/#{docker_repository}/tags/?page_size=100" | jq -r '.results[] | select(.name == "latest") | .full_size'`.split('\n')[0] 
-      docker_resp = Halite.get("https://hub.docker.com/v2/repositories/#{image_tag[0][:image]}/tags/?page_size=100", headers: {"Authorization" => "JWT"})
-      latest_image = docker_resp.parse("json")["results"].as_a.find{|x|x["name"]=="#{image_tag[0][:tag]}"} 
-      micro_size = latest_image && latest_image["full_size"] 
-    else
-      VERBOSE_LOGGING.info "no docker repository specified" if check_verbose(args)
-      micro_size = nil 
+    containers = KubectlClient::Get.deployment_containers(deployment)
+    local_image_tags = KubectlClient::Get.container_image_tags(containers)
+    test_passed = true
+    local_image_tags.each do |x|
+      dockerhub_image_tags = DockerClient::Get.image_tags(x[:image])
+      image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, x[:tag])
+      micro_size = image_by_tag && image_by_tag["full_size"] 
+      VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
+      unless dockerhub_image_tags && dockerhub_image_tags.status_code == 200 && micro_size.to_s.to_i64 < 5_000_000_000
+        test_passed=false
+      end
     end
 
-    VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
     emoji_image_size="⚖️👀"
     emoji_small="🐜"
     emoji_big="🦖"
 
     # if a sucessfull call and size of container is less than 5gb (5 billion bytes)
-    if docker_repository && 
-        docker_resp &&
-        docker_resp.status_code == 200 && 
-        micro_size.to_s.to_i64 < 5_000_000_000
+    if test_passed
       upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good #{emoji_small} #{emoji_image_size}")
     else
       upsert_failed_task("reasonable_image_size", "✖️  FAILURE: Image size too large #{emoji_big} #{emoji_image_size}")
