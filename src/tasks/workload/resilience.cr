@@ -2,7 +2,7 @@
 require "sam"
 require "colorize"
 require "crinja"
-require "./utils/utils.cr"
+require "../utils/utils.cr"
 
 desc "The CNF conformance suite checks to see if the CNFs are resilient to failures."
 task "resilience", ["chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill" ] do |t, args|

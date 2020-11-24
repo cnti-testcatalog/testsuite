@@ -1,5 +1,5 @@
-require "./spec_helper"
-require "../src/tasks/utils/utils.cr"
+require "../spec_helper"
+require "../../src/tasks/utils/utils.cr"
 require "colorize"
 
 describe "Scalability" do
