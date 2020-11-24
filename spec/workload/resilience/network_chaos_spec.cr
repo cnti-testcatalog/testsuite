@@ -7,6 +7,7 @@ require "sam"
 
 describe "Resilience Network Chaos" do
   before_all do
+    `./cnf-conformance setup`
     `./cnf-conformance configuration_file_setup`
     $?.success?.should be_true
   end
