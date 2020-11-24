@@ -48,6 +48,7 @@ describe "Microservice" do
   it "'reasonable_image_size' should pass if image is smaller than 5gb", tags: ["reasonable_image_size","happy-path"]  do
     begin
       `./cnf-conformance cleanup force=true`
+      # TODO test with multiple containers
       `./cnf-conformance sample_coredns_setup`
       response_s = `./cnf-conformance reasonable_image_size verbose`
       LOGGING.info response_s

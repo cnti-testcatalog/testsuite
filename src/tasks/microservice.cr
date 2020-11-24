@@ -4,6 +4,7 @@ require "file_utils"
 require "colorize"
 require "totem"
 require "./utils/utils.cr"
+require "./utils/docker_client.cr"
 require "halite"
 require "totem"
 
@@ -93,26 +94,35 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
     #TODO check all images
     # helm_chart_values = JSON.parse(`#{CNFManager.tools_helm} get values #{release_name} -a --output json`)
     # image_name = helm_chart_values["image"]["repository"]
-    docker_repository = config.get("docker_repository").as_s?
-    VERBOSE_LOGGING.info "docker_repository: #{docker_repository}"if check_verbose(args)
-    deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
+    # docker_repository = config.get("docker_repository").as_s?
+    deployment = config.get("deployment_name").as_s?
+    # VERBOSE_LOGGING.info "docker_repository: #{docker_repository}"if check_verbose(args)
+    # deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
     VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
-    containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
-    image_tag = [] of Array(Hash(Int32, String))
-     image_tag = containers.map do |container|
-       {image: container.as_h["image"].as_s.split(":")[0],
-        tag: container.as_h["image"].as_s.split(":")[1]}
-    end
-    VERBOSE_LOGGING.debug "image_tag: #{image_tag.inspect}" if check_verbose(args)
-    if docker_repository
+    # containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
+    containers = KubectlClient::Get.deployment_containers(deployment)
+    image_tags = KubectlClient::Get.container_image_tags(containers)
+    # image_tag = [] of Array(Hash(Int32, String))
+    #  image_tag = containers.map do |container|
+    #    LOGGING.debug "container (should have image and tag): #{container}"
+    #    {image: container.as_h["image"].as_s.split(":")[0],
+    #     #TODO an image may not have a tag
+    #     tag: container.as_h["image"].as_s.split(":")[1]?}
+    # end
+    # LOGGING.debug "image_tag: #{image_tag}"
+    # VERBOSE_LOGGING.debug "image_tag: #{image_tag.inspect}" if check_verbose(args)
+    # if docker_repository
       # e.g. `curl -s -H "Authorization: JWT " "https://hub.docker.com/v2/repositories/#{docker_repository}/tags/?page_size=100" | jq -r '.results[] | select(.name == "latest") | .full_size'`.split('\n')[0] 
-      docker_resp = Halite.get("https://hub.docker.com/v2/repositories/#{image_tag[0][:image]}/tags/?page_size=100", headers: {"Authorization" => "JWT"})
-      latest_image = docker_resp.parse("json")["results"].as_a.find{|x|x["name"]=="#{image_tag[0][:tag]}"} 
+      docker_image_list = DockerClient::Get.images(image_tags[0][:image])
+      # docker_resp = Halite.get("https://hub.docker.com/v2/repositories/#{image_tags[0][:image]}/tags/?page_size=100", headers: {"Authorization" => "JWT"})
+      # TODO make resilience if results not present
+      latest_image = DockerClient::Get.latest_image(docker_image_list, image_tags[0][:tag])
+      # latest_image = docker_resp.parse("json")["results"].as_a.find{|x|x["name"]=="#{image_tags[0][:tag]}"} 
       micro_size = latest_image && latest_image["full_size"] 
-    else
-      VERBOSE_LOGGING.info "no docker repository specified" if check_verbose(args)
-      micro_size = nil 
-    end
+    # else
+    #   VERBOSE_LOGGING.info "no docker repository specified" if check_verbose(args)
+    #   micro_size = nil 
+    # end
 
     VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
     emoji_image_size="⚖️👀"
@@ -120,9 +130,8 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
     emoji_big="🦖"
 
     # if a sucessfull call and size of container is less than 5gb (5 billion bytes)
-    if docker_repository && 
-        docker_resp &&
-        docker_resp.status_code == 200 && 
+    if docker_image_list &&
+        docker_image_list.status_code == 200 && 
         micro_size.to_s.to_i64 < 5_000_000_000
       upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good #{emoji_small} #{emoji_image_size}")
     else
