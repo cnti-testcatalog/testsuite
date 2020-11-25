@@ -4,14 +4,14 @@ require "./cnf_manager.cr"
 require "halite"
 
 module Helm
-  def self.read_template(template_file_name)
+  def self.read_template_as_ymls(template_file_name)
     templates = File.read(template_file_name)
     split_template = templates.split("---")
     ymls = split_template.map { | template |
       YAML.parse(template)
       # compact seems to have problems with yaml::any
     }.reject{|x|x==nil}
-    LOGGING.debug "read_template ymls: #{yml}"
+    LOGGING.debug "read_template ymls: #{ymls}"
     ymls
   end
 
@@ -25,7 +25,7 @@ module Helm
 
   def self.workload_resource_by_kind(ymls, kind)
     resources = ymls.map do |yml|
-      yml.select{|x| x["kind"]==kind}
+      yml.as_a.select{|x| x["kind"]==kind}
     end
     LOGGING.debug "resources: #{resources}"
     resources

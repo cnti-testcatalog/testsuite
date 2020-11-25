@@ -123,8 +123,8 @@ task "retrieve_manifest" do |_, args|
     VERBOSE_LOGGING.debug helm_directory if check_verbose(args)
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     # TODO move to kubectl client
-    # deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/manifest.yml`
-    KubectlClient::Get.save_manifest(deployment_name, "#{destination_cnf_dir}/manifest.yml")
+    deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/manifest.yml`
+    # KubectlClient::Get.save_manifest(deployment_name, "#{destination_cnf_dir}/manifest.yml")
     VERBOSE_LOGGING.debug deployment if check_verbose(args)
     unless service_name.empty?
       # TODO move to kubectl client

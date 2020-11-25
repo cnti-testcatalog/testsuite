@@ -23,7 +23,6 @@ task "reasonable_startup_time" do |_, args|
     # yml_file_path = cnf_conformance_yml_file_path(args)
     # needs to be the source directory
     yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
-    # yml_file_path = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
     VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
 
@@ -90,18 +89,37 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
     VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    deployment = config.get("deployment_name").as_s?
-    VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
-    containers = KubectlClient::Get.deployment_containers(deployment)
-    local_image_tags = KubectlClient::Get.container_image_tags(containers)
+    # TODO loop through all deployments in the helm chart 
+    yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
+    LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
+    VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
+    helm_chart = "#{config.get("helm_chart").as_s?}"
+    release_name = "#{config.get("release_name").as_s?}"
+    helm_chart_path = yml_file_path + "/" + helm_chart
+    manifest_file_path = yml_file_path + "/" + "temp_template.yml"
+    # get the manifest file from the helm chart
+    # TODO if no release name, then assume bare manifest file/directory with no helm chart
+    Helm.generate_manifest_from_templates(release_name, 
+                                          helm_chart_path, 
+                                          manifest_file_path)
+    template_ymls = Helm.read_template_as_ymls(manifest_file_path) 
+    deployment_ymls = Helm.workload_resource_by_kind(template_ymls, "deployment")
+    deployment_names = Helm.workload_resource_names(deployment_ymls)
     test_passed = true
-    local_image_tags.each do |x|
-      dockerhub_image_tags = DockerClient::Get.image_tags(x[:image])
-      image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, x[:tag])
-      micro_size = image_by_tag && image_by_tag["full_size"] 
-      VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
-      unless dockerhub_image_tags && dockerhub_image_tags.status_code == 200 && micro_size.to_s.to_i64 < 5_000_000_000
-        test_passed=false
+    deployment_names.each do | deployment |
+      deployment = config.get("deployment_name").as_s?
+      VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
+      containers = KubectlClient::Get.deployment_containers(deployment)
+      local_image_tags = KubectlClient::Get.container_image_tags(containers)
+      local_image_tags.each do |x|
+        dockerhub_image_tags = DockerClient::Get.image_tags(x[:image])
+        image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, x[:tag])
+        micro_size = image_by_tag && image_by_tag["full_size"] 
+        VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
+        unless dockerhub_image_tags && dockerhub_image_tags.status_code == 200 && micro_size.to_s.to_i64 < 5_000_000_000
+          puts "deployment: #{deployment} and container: #{x[:image]}:#{x[:tag]} Failed".colorize(:red)
+          test_passed=false
+        end
       end
     end
 
