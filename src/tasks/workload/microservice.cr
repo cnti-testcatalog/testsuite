@@ -93,9 +93,9 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
     yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
     LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
     VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
-    helm_chart = "#{config.get("helm_chart").as_s?}"
+    helm_directory = "#{config.get("helm_directory").as_s?}"
     release_name = "#{config.get("release_name").as_s?}"
-    helm_chart_path = yml_file_path + "/" + helm_chart
+    helm_chart_path = yml_file_path + "/" + helm_directory
     manifest_file_path = yml_file_path + "/" + "temp_template.yml"
     # get the manifest file from the helm chart
     # TODO if no release name, then assume bare manifest file/directory with no helm chart
@@ -103,9 +103,14 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
                                           helm_chart_path, 
                                           manifest_file_path)
     template_ymls = Helm.read_template_as_ymls(manifest_file_path) 
-    deployment_ymls = Helm.workload_resource_by_kind(template_ymls, "deployment")
+    deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
     deployment_names = Helm.workload_resource_names(deployment_ymls)
-    test_passed = true
+    LOGGING.info "deployment names: #{deployment_names}"
+    if deployment_names && deployment_names.size > 0 
+      test_passed = true
+    else
+      test_passed = false
+    end
     deployment_names.each do | deployment |
       VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
       containers = KubectlClient::Get.deployment_containers(deployment)

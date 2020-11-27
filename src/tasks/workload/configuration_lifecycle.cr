@@ -61,19 +61,32 @@ task "liveness", ["retrieve_manifest"] do |_, args|
     yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
     LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
     VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
-    helm_chart = "#{config.get("helm_chart").as_s?}"
+    helm_directory = "#{config.get("helm_directory").as_s?}"
     release_name = "#{config.get("release_name").as_s?}"
-    helm_chart_path = yml_file_path + "/" + helm_chart
+    helm_chart_path = yml_file_path + "/" + helm_directory
     manifest_file_path = yml_file_path + "/" + "temp_template.yml"
     # get the manifest file from the helm chart
     # TODO if no release name, then assume bare manifest file/directory with no helm chart
+    # TODO loop through all workload resource types and get containers from k8s api
+    # TODO looop through all podspecs and get containers from k8s api
+    # TODO save workload resource type and name with container
+    # TODO add podspec containers to list 
+    # TODO subtract duplicates
+    # TODO loop through all containers
+    # TODO separate this out to a workload resource function that accepts a block
     Helm.generate_manifest_from_templates(release_name, 
                                           helm_chart_path, 
                                           manifest_file_path)
     template_ymls = Helm.read_template_as_ymls(manifest_file_path) 
-    deployment_ymls = Helm.workload_resource_by_kind(template_ymls, "deployment")
+    deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
     deployment_names = Helm.workload_resource_names(deployment_ymls)
-    test_passed = true
+    LOGGING.info "deployment names: #{deployment_names}"
+    if deployment_names && deployment_names.size > 0 
+      test_passed = true
+    else
+      LOGGING.error "no deployment names found"
+      test_passed = false
+    end
 		deployment_names.each do | deployment |
 			VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
 			containers = KubectlClient::Get.deployment_containers(deployment)
@@ -103,24 +116,47 @@ task "readiness", ["retrieve_manifest"] do |_, args|
     VERBOSE_LOGGING.info "readiness" if check_verbose(args)
     # Parse the cnf-conformance.yml
     resp = ""
-    errors = 0
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
-    VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
-    containers = deployment.get("spec").as_h["template"].as_h["spec"].as_h["containers"].as_a
-    containers.each do |container|
-     begin
-        VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
-        container.as_h["readinessProbe"].as_h 
-      rescue ex
-        VERBOSE_LOGGING.error ex.message if check_verbose(args)
-        errors = errors + 1
-        resp = upsert_failed_task("readiness","✖️  FAILURE: No readinessProbe found")
+    yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
+    LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
+    VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
+    helm_directory = "#{config.get("helm_directory").as_s?}"
+    release_name = "#{config.get("release_name").as_s?}"
+    helm_chart_path = yml_file_path + "/" + helm_directory
+    manifest_file_path = yml_file_path + "/" + "temp_template.yml"
+    # get the manifest file from the helm chart
+    # TODO if no release name, then assume bare manifest file/directory with no helm chart
+    Helm.generate_manifest_from_templates(release_name, 
+                                          helm_chart_path, 
+                                          manifest_file_path)
+    template_ymls = Helm.read_template_as_ymls(manifest_file_path) 
+    deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
+    deployment_names = Helm.workload_resource_names(deployment_ymls)
+    LOGGING.info "deployment names: #{deployment_names}"
+    if deployment_names && deployment_names.size > 0 
+      test_passed = true
+    else
+      test_passed = false
+    end
+    deployment_names.each do | deployment |
+      VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
+      containers = KubectlClient::Get.deployment_containers(deployment)
+      containers.as_a.each do |container|
+        begin
+          VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
+          container.as_h["readinessProbe"].as_h 
+        rescue ex
+          VERBOSE_LOGGING.error ex.message if check_verbose(args)
+          test_passed = false 
+          puts "No readinessProbe found for deployment: #{deployment} and container: #{container.as_h["name"].as_s}".colorize(:red)
+        end
       end
     end
-    if errors == 0
+    if test_passed 
       resp = upsert_passed_task("readiness","✔️  PASSED: Helm readiness probe found")
+		else
+      resp = upsert_failed_task("readiness","✖️  FAILURE: No readinessProbe found")
     end
   end
 end
