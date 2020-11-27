@@ -107,7 +107,6 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
     deployment_names = Helm.workload_resource_names(deployment_ymls)
     test_passed = true
     deployment_names.each do | deployment |
-      deployment = config.get("deployment_name").as_s?
       VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
       containers = KubectlClient::Get.deployment_containers(deployment)
       local_image_tags = KubectlClient::Get.container_image_tags(containers)
