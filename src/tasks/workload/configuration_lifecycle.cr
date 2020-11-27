@@ -69,7 +69,7 @@ task "liveness", ["retrieve_manifest"] do |_, args|
       rescue ex
         VERBOSE_LOGGING.error ex.message if check_verbose(args)
         errors = errors + 1
-        resp = upsert_failed_task("liveness","✖️  FAILURE: No livenessProbe found #{emoji_probe}")
+        resp = upsert_failed_task("liveness","✖️  FAILURE: No livenessProbe found for container #{container.as_h["name"].as_s} #{emoji_probe}")
       end
     end
     if errors == 0
