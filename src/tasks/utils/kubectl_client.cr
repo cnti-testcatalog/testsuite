@@ -17,6 +17,7 @@ module KubectlClient
   end
   module Set
     def self.image(deployment_name, container_name, image_name, version_tag=nil)
+      #TODO check if image exists in repo? DockerClient::Get.image and image_by_tags
       if version_tag
         # use --record to have history
         resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record`
