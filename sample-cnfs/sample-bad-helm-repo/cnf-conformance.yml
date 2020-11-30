@@ -13,5 +13,7 @@ helm_repository:
   repo_url: https://bad-helm-repo.googleapis.com
 helm_chart: badrepo/coredns
 helm_chart_container_name: coredns
-rolling_update_tag: 1.6.7
+container_names: 
+  - name: coredns 
+    upgrade_test_tag: "1.8.0"
 white_list_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]

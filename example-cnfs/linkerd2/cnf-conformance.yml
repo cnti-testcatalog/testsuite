@@ -9,4 +9,6 @@ application_deployment_names: [linkerd2]
 helm_chart: linkerd/linkerd2
 helm_chart_container_name: linkerd2
 white_list_helm_chart_container_names: [falco, nginx, linkerd, calico-node, kube-proxy, nginx-proxy, node-cache]
-rolling_update_tag: v18.9.1
+container_names: 
+  - name: linkerd2
+    upgrade_test_tag: 1.0.0

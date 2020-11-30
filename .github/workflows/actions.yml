@@ -16,7 +16,7 @@ jobs:
         JSON="{\"include\":["
         TEST_LIST=$(for i in $(find spec -name '*_spec.cr')
         do
-            if ! [ "$i" == "spec/cpu_hog_spec.cr" ]; then
+            if ! [ "$i" == "spec/workload/cpu_hog_spec.cr" ]; then
                  echo "{\"spec\":\"$i\"}," | tr -d '\n'
             fi
         done)

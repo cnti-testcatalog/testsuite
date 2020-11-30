@@ -258,6 +258,11 @@ deployment_name:
 helm_chart:
 helm_chart_container_name:
 white_list_helm_chart_container_names:
+container_names:
+  - name: <container_name1>
+    upgrade_test_tag: <image-tag-version1>
+  - name: <container_name2>
+    upgrade_test_tag: <image-tag-version2>
   ```
 
   * Run the setup tasks to install any prerequisites (useful for setting up sample cnfs)

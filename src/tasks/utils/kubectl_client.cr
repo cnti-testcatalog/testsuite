@@ -6,6 +6,28 @@ require "halite"
 module KubectlClient 
   # https://www.capitalone.com/tech/cloud/container-runtime/
   OCI_RUNTIME_REGEX = /containerd|docker|runc|railcar|crun|rkt|gviso|nabla|runv|clearcontainers|kata|cri-o/i
+  module Rollout
+    def self.status(deployment_name, timeout="30s")
+      rollout = `kubectl rollout status deployment/#{deployment_name} --timeout=#{timeout}`
+      rollout_status = $?.success?
+      LOGGING.debug "#{rollout}"
+      LOGGING.debug "rollout? #{rollout_status}"
+      $?.success?
+    end
+  end
+  module Set
+    def self.image(deployment_name, container_name, image_name, version_tag=nil)
+      #TODO check if image exists in repo? DockerClient::Get.image and image_by_tags
+      if version_tag
+        # use --record to have history
+        resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record`
+      else
+        resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record`
+      end
+      LOGGING.debug "set image: #{resp}" 
+      $?.success?
+    end
+  end
   module Get 
     def self.nodes : JSON::Any
       # TODO should this be all namespaces?
@@ -13,6 +35,36 @@ module KubectlClient
       LOGGING.debug "kubectl get nodes: #{resp}"
       JSON.parse(resp)
     end
+
+    def self.deployment(deployment_name) : JSON::Any
+      resp = `kubectl get deployment #{deployment_name} -o json`
+      LOGGING.debug "kubectl get deployment: #{resp}"
+      JSON.parse(resp)
+    end
+
+    def self.deployment_containers(deployment_name) : JSON::Any 
+      LOGGING.debug "kubectl get deployment containers deployment_name: #{deployment_name}"
+      resp = deployment(deployment_name).dig?("spec", "template", "spec", "containers")
+      LOGGING.debug "kubectl get deployment containers: #{resp}"
+      if resp 
+        resp
+      else
+        JSON.parse(%({}))
+      end
+    end
+
+    def self.container_image_tags(deployment_containers) : Array(NamedTuple(image: String, 
+                                                                            tag: String | Nil))
+      image_tags = deployment_containers.as_a.map do |container|
+        LOGGING.debug "container (should have image and tag): #{container}"
+        {image: container.as_h["image"].as_s.split(":")[0],
+         #TODO an image may not have a tag
+         tag: container.as_h["image"].as_s.split(":")[1]?}
+      end
+      LOGGING.debug "image_tags: #{image_tags}"
+      image_tags
+    end
+
     def self.worker_nodes : Array(String)
       resp = `kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
       LOGGING.debug "kubectl get nodes: #{resp}"
