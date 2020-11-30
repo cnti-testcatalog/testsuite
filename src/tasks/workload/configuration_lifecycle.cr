@@ -61,6 +61,7 @@ task "liveness", ["retrieve_manifest"] do |_, args|
     yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
     LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
     VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
+    # TODO remove helm_directory and use base cnf directory
     helm_directory = "#{config.get("helm_directory").as_s?}"
     release_name = "#{config.get("release_name").as_s?}"
     helm_chart_path = yml_file_path + "/" + helm_directory
