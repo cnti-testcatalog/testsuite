@@ -102,7 +102,7 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
     Helm.generate_manifest_from_templates(release_name, 
                                           helm_chart_path, 
                                           manifest_file_path)
-    template_ymls = Helm.read_template_as_ymls(manifest_file_path) 
+    template_ymls = Helm.parse_manifest_as_ymls(manifest_file_path) 
     deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
     deployment_names = Helm.workload_resource_names(deployment_ymls)
     LOGGING.info "deployment names: #{deployment_names}"

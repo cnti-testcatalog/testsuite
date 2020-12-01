@@ -1,0 +1,25 @@
+---
+helm_directory: manifests
+manifest_directory: manifests 
+git_clone_url: 
+install_script: 
+release_name: 
+deployment_name: nginx-webapp  
+deployment_label: app 
+service_name: 
+application_deployment_names: [nginx-webapp]
+docker_repository: coredns/coredns
+helm_repository:
+  name:
+  repo_url:
+helm_chart: 
+helm_chart_container_name:
+rolling_update_tag: 1.6.7
+container_names: 
+  - name: sidecar-container1 
+    upgrade_test_tag: "1.32.0"
+  - name: sidecar-container2
+    upgrade_test_tag: "1.32.0"
+  - name: main-container
+    upgrade_test_tag: "1.9.9"
+white_list_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]

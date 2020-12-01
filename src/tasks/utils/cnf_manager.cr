@@ -4,6 +4,7 @@ require "colorize"
 require "./types/cnf_conformance_yml_type.cr"
 
 module CNFManager 
+
   def self.final_cnf_results_yml
     results_file = `find ./results/* -name "cnf-conformance-results-*.yml"`.split("\n")[-2].gsub("./", "")
     if results_file.empty?
@@ -231,6 +232,7 @@ module CNFManager
     end
     config = parsed_config_file(yml)
     current_dir = FileUtils.pwd 
+    # TODO get deployment name from manifest file
     deployment_name = "#{config.get("deployment_name").as_s?}" 
     LOGGING.info("deployment_name: #{deployment_name}")
     "#{current_dir}/#{CNF_DIR}/#{deployment_name}"
@@ -332,6 +334,7 @@ module CNFManager
     # TODO create helm chart directory if it doesn't exist
     # Document this behaviour of the helm chart directory (using it if it exists, 
     # creating it if it doesn't)
+    # TODO use manifest directory if helm directory empty
     LOGGING.info("File.directory?(#{config_source_dir(config_file)}/#{helm_directory}) #{File.directory?(config_source_dir(config_file) + "/" + helm_directory)}")
     if File.directory?(config_source_dir(config_file) + "/" + helm_directory)
       LOGGING.info("cp -a #{config_source_dir(config_file) + "/" + helm_directory} #{destination_cnf_dir}")
@@ -351,6 +354,7 @@ module CNFManager
       # #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
       helm = CNFSingleton.helm
       LOGGING.info "helm path: #{CNFSingleton.helm}"
+      # TODO if no helm_chart or helm_directory, use manifest file and kubectl apply to install
       if deploy_with_chart
         VERBOSE_LOGGING.info "deploying with chart repository" if verbose 
         LOGGING.info "helm command: #{helm} install #{release_name} #{helm_chart}"
