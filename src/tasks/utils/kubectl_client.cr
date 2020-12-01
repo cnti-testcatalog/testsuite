@@ -17,6 +17,7 @@ module KubectlClient
   end
   module Set
     def self.image(deployment_name, container_name, image_name, version_tag=nil)
+      #TODO check if image exists in repo? DockerClient::Get.image and image_by_tags
       if version_tag
         # use --record to have history
         resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record`
@@ -42,6 +43,7 @@ module KubectlClient
     end
 
     def self.deployment_containers(deployment_name) : JSON::Any 
+      LOGGING.debug "kubectl get deployment containers deployment_name: #{deployment_name}"
       resp = deployment(deployment_name).dig?("spec", "template", "spec", "containers")
       LOGGING.debug "kubectl get deployment containers: #{resp}"
       if resp 
@@ -49,6 +51,18 @@ module KubectlClient
       else
         JSON.parse(%({}))
       end
+    end
+
+    def self.container_image_tags(deployment_containers) : Array(NamedTuple(image: String, 
+                                                                            tag: String | Nil))
+      image_tags = deployment_containers.as_a.map do |container|
+        LOGGING.debug "container (should have image and tag): #{container}"
+        {image: container.as_h["image"].as_s.split(":")[0],
+         #TODO an image may not have a tag
+         tag: container.as_h["image"].as_s.split(":")[1]?}
+      end
+      LOGGING.debug "image_tags: #{image_tags}"
+      image_tags
     end
 
     def self.worker_nodes : Array(String)

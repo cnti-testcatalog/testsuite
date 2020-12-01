@@ -1,4 +1,4 @@
-require "./spec_helper"
+require "../spec_helper"
 require "colorize"
 
 describe CnfConformance do
@@ -6,6 +6,7 @@ describe CnfConformance do
     LOGGING.debug `pwd` 
     LOGGING.debug `echo $KUBECONFIG`
 
+    `./cnf-conformance setup`
     `./cnf-conformance samples_cleanup`
     $?.success?.should be_true
     `./cnf-conformance configuration_file_setup`

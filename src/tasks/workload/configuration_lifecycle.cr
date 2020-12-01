@@ -4,7 +4,7 @@ require "file_utils"
 require "colorize"
 require "totem"
 require "json"
-require "./utils/utils.cr"
+require "../utils/utils.cr"
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
 task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "rolling_update", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration"]  do |_, args|
