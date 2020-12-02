@@ -118,10 +118,21 @@ module KubectlClient
       LOGGING.info "runtimes: #{runtimes}"
       runtimes.uniq
     end
-    def self.pods : JSON::Any
-      resp = `kubectl get pods --all-namespaces -o json`
+    def self.pods(all_namespaces=true) : JSON::Any
+      option = all_namespaces ? "--all-namespaces" : ""
+      resp = `kubectl get pods #{option} -o json`
       LOGGING.debug "kubectl get pods: #{resp}"
       JSON.parse(resp)
+    end
+    def self.pod_exists?(pod_name, all_namespaces=false) 
+      LOGGING.debug "pod_exists? pod_name: #{pod_name}"
+      exists = pods(all_namespaces)["items"].as_a.any? do |x|
+        name_comparison = x["metadata"]["name"].as_s? =~ /#{pod_name}/
+        (x["metadata"]["name"].as_s? =~ /#{pod_name}/) || 
+          (x["metadata"]["generateName"]? && x["metadata"]["generateName"].as_s? =~ /#{pod_name}/)
+      end
+      LOGGING.debug "pod exists: #{exists}"
+      exists 
     end
     def self.all_pod_statuses
       statuses = pods["items"].as_a.map do |x|
