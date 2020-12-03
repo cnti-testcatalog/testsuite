@@ -44,9 +44,9 @@ class CnfConformanceYmlType
 
   property helm_chart_container_name : String?
 
-  property rolling_update_tag : String?
-  property rolling_downgrade_tag : String?
-  property rolling_version_change_tag : String?
+  property rolling_update_test_tag : String?
+  property rolling_downgrade_test_tag : String?
+  property rolling_version_change_test_tag : String?
 
   property rollback_from_tag : String?
 

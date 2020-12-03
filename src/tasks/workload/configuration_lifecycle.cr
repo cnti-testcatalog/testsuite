@@ -190,8 +190,8 @@ test_names.each do |tn|
         LOGGING.debug "#{tn} container: #{container}"
         config_container = container_names.as_a.find{|x| x["name"]==container.as_h["name"]} if container_names
         LOGGING.debug "config_container: #{config_container}"
-        unless config_container && config_container["#{tn}_test_tag"]? && !config_container["#{tn}_tag"].as_s.empty?
-          puts "Please add the container name #{container.as_h["name"]} and a corresponding #{tn}_tag into your cnf-conformance.yml under container names".colorize(:red)
+        unless config_container && config_container["#{tn}_test_tag"]? && !config_container["#{tn}_test_tag"].as_s.empty?
+          puts "Please add the container name #{container.as_h["name"]} and a corresponding #{tn}_test_tag into your cnf-conformance.yml under container names".colorize(:red)
           valid_cnf_conformance_yml = false
         end
       end
@@ -245,22 +245,6 @@ task "rollback" do |_, args|
 
     VERBOSE_LOGGING.debug "actual configin it #{config.inspect}" if check_verbose(args)
 
-    # rollback_from_tag = nil
-
-    # if config.has_key? "rollback_from_tag"
-    #   rollback_from_tag = config.get("rollback_from_tag").as_s
-    # end
-
-    # if args.named.has_key? "rollback_from_tag"
-    #   rollback_from_tag = args.named["rollback_from_tag"]
-    # end
-    
-    # unless rollback_from_tag
-    #   fail_msg = "✖️  FAILURE: please specify a version of the CNF's release's image with the cli option rollback_from_tag or with cnf_conformance_yml option 'rollback_from_tag'"
-    #   upsert_failed_task("rollback", fail_msg)
-    #   raise fail_msg
-    # end
-
     deployment_name = config.get("deployment_name").as_s
         
     unless container_names && !container_names.as_a.empty?
@@ -283,7 +267,7 @@ task "rollback" do |_, args|
     version_change_applied = false 
 
     config_container = container_names.as_a.find{|x| x["name"] == image_name } if container_names
-    
+
     if config_container
       
       rollback_from_tag = config_container["rollback_from_tag"].as_s

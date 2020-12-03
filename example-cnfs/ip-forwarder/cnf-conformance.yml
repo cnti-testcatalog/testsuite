@@ -10,7 +10,7 @@ application_deployment_names: [vpp]
 docker_repository: soelvkaer/vppcontainer
 helm_chart: 
 helm_chart_container_name: vpp-1
-rolling_update_tag: latest
+rolling_update_test_tag: latest
 white_list_helm_chart_container_names: [falco, nginx, calico-node, kube-proxy, nginx-proxy, node-cache, kube-multus]
 container_names: 
   - name: ipp_forwarder
