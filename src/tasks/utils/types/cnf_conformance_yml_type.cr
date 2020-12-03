@@ -53,7 +53,7 @@ class HelmRepositoryType
   include JSON::Serializable
   include JSON::Serializable::Unmapped
 
-  property name : String
+  property name : String?
 
-  property repo_url : String
+  property repo_url : String?
 end

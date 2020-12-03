@@ -7,20 +7,16 @@ require "sam"
 
 describe "SampleUtils" do
   before_all do
-    # LOGGING.debug `pwd` 
-    # LOGGING.debug `echo $KUBECONFIG`
     `./cnf-conformance helm_local_install`
     $?.success?.should be_true
     `./cnf-conformance cleanup`
     $?.success?.should be_true
   end
 
-   after_all do
-     # LOGGING.debug `pwd` 
-     # LOGGING.debug `echo $KUBECONFIG`
-     `./cnf-conformance sample_coredns_setup`
-     $?.success?.should be_true
-   end
+   # after_all do
+   #   LOGGING.debug `./cnf-conformance sample_coredns_setup`
+   #   $?.success?.should be_true
+   # end
 
   after_each do
     `./cnf-conformance cleanup`
@@ -98,7 +94,7 @@ describe "SampleUtils" do
     (Dir.exists? "cnfs/privileged-coredns-coredns").should be_false
   end
 
-  it "'CNFManager.sample_setup_args' should be able to deploy using a manifest_directory", tags: "happy-path"  do
+  it "'CNFManager.sample_setup_args and CNFManager.sample_cleanup' should be able to deploy and cleanup using a manifest_directory", tags: "happy-path"  do
     args = Sam::Args.new
     CNFManager.sample_setup_args(sample_dir: "sample-cnfs/k8s-non-helm", deploy_with_chart: false, args: args, verbose: true, install_from_manifest: true, wait_count: 0 )
     (Dir.exists? "cnfs/nginx-webapp").should be_true
@@ -106,7 +102,8 @@ describe "SampleUtils" do
     (File.exists? "cnfs/nginx-webapp/cnf-conformance.yml").should be_true
     (KubectlClient::Get.pod_exists?("nginx-webapp")).should be_true
     CNFManager.sample_cleanup(config_file: "sample-cnfs/k8s-non-helm", installed_from_manifest: true, verbose: true)
-    (KubectlClient::Get.pod_exists?("nginx-webapp")).should be_false
+    # TODO check for pod status = terminating
+    (KubectlClient::Get.pod_exists?("nginx-webapp", check_ready: true)).should be_false
     (Dir.exists? "cnfs/nginx-webapp").should be_false
   end
 

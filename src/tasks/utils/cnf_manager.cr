@@ -306,7 +306,7 @@ module CNFManager
     if args.named.keys.includes? "manifest_directory"
       manifest_directory = "#{args.named["manifest_directory"]}"
     else
-      manifest_directory = "#{config.get("manifest_directory").as_s?}" 
+      manifest_directory = "#{config["manifest_directory"]? && config["manifest_directory"].as_s?}" 
     end
     VERBOSE_LOGGING.info "manifest_directory: #{manifest_directory}" if verbose
 
@@ -322,6 +322,11 @@ module CNFManager
   end
 
   def self.sample_setup(config_file, release_name, deployment_name, helm_chart, helm_directory, manifest_directory = "", git_clone_url="", deploy_with_chart=true, verbose=false, wait_count=180, install_from_manifest=false)
+
+    #TODO generate release name based on all of the workload resource metadata names (or generatedName) 
+    #TODO make the cnfs/<directory> be the generated name
+    #TODO use the cnfs/<directory> (for helm installs) as the release name
+    #NOTE: manifest-file-only cnfs don't need a release name
     VERBOSE_LOGGING.info "sample_setup" if verbose
     LOGGING.info("config_file #{config_file}")
 
@@ -427,12 +432,13 @@ module CNFManager
   end
 
   def self.sample_cleanup(config_file, force=false, installed_from_manifest=false, verbose=true)
+    LOGGING.info "sample_cleanup"
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
     config = parsed_config_file(ensure_cnf_conformance_yml_path(config_file))
 
     VERBOSE_LOGGING.info "cleanup config: #{config.inspect}" if verbose
     release_name = "#{config.get("release_name").as_s?}"
-    manifest_directory = "#{config["manifest_directory"].as_s?}"
+    manifest_directory = destination_cnf_dir + "/" + "#{config["manifest_directory"]? && config["manifest_directory"].as_s?}"
 
     LOGGING.info "helm path: #{CNFSingleton.helm}"
     helm = CNFSingleton.helm
@@ -440,13 +446,13 @@ module CNFManager
     ret = true
     LOGGING.info("destination_cnf_dir: #{destination_cnf_dir}")
     if dir_exists || force == true
-      rm = `rm -rf #{destination_cnf_dir}`
-      VERBOSE_LOGGING.info rm if verbose
       if installed_from_manifest
         LOGGING.info "kubectl delete command: kubectl delete -f #{manifest_directory}"
         kubectl_delete = `kubectl delete -f #{manifest_directory}`
         ret = $?.success?
         VERBOSE_LOGGING.info kubectl_delete if verbose
+        rm = `rm -rf #{destination_cnf_dir}`
+        VERBOSE_LOGGING.info rm if verbose
         if ret
           stdout_success "Successfully cleaned up #{manifest_directory} directory"
         end
@@ -456,6 +462,8 @@ module CNFManager
         helm_uninstall = `#{helm} uninstall #{release_name.split(" ")[0]}`
         ret = $?.success?
         VERBOSE_LOGGING.info helm_uninstall if verbose
+        rm = `rm -rf #{destination_cnf_dir}`
+        VERBOSE_LOGGING.info rm if verbose
         if ret
           stdout_success "Successfully cleaned up #{release_name.split(" ")[0]}"
         end

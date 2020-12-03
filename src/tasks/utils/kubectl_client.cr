@@ -124,12 +124,17 @@ module KubectlClient
       LOGGING.debug "kubectl get pods: #{resp}"
       JSON.parse(resp)
     end
-    def self.pod_exists?(pod_name, all_namespaces=false) 
+
+    # *pod_exists* returns true if a pod containing *pod_name* exists, regardless of status.
+    # If *check_ready* is set to true, *pod_exists* validates that the pod exists and 
+    # has a ready status of true
+    def self.pod_exists?(pod_name, check_ready=false, all_namespaces=false) 
       LOGGING.debug "pod_exists? pod_name: #{pod_name}"
       exists = pods(all_namespaces)["items"].as_a.any? do |x|
-        name_comparison = x["metadata"]["name"].as_s? =~ /#{pod_name}/
+        (name_comparison = x["metadata"]["name"].as_s? =~ /#{pod_name}/
         (x["metadata"]["name"].as_s? =~ /#{pod_name}/) || 
-          (x["metadata"]["generateName"]? && x["metadata"]["generateName"].as_s? =~ /#{pod_name}/)
+          (x["metadata"]["generateName"]? && x["metadata"]["generateName"].as_s? =~ /#{pod_name}/)) &&
+        (check_ready && (x["status"]["conditions"].as_a.find{|x| x["type"].as_s? == "Ready"} && x["status"].as_s? == "True") || check_ready==false)
       end
       LOGGING.debug "pod exists: #{exists}"
       exists 

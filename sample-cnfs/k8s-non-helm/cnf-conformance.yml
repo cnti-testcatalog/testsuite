@@ -3,12 +3,12 @@ helm_directory: manifests
 manifest_directory: manifests 
 git_clone_url: 
 install_script: 
-release_name: 
+release_name: nginx-webapp
 deployment_name: nginx-webapp  
 deployment_label: app 
 service_name: 
 application_deployment_names: [nginx-webapp]
-docker_repository: coredns/coredns
+docker_repository: 
 helm_repository:
   name:
   repo_url:
