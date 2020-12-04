@@ -63,9 +63,10 @@ task "liveness", ["retrieve_manifest"] do |_, args|
     VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
     # TODO remove helm_directory and use base cnf directory
     helm_directory = "#{config.get("helm_directory").as_s?}"
+    manifest_directory = optional_key_as_string(config, "manifest_directory")
     release_name = "#{config.get("release_name").as_s?}"
-    helm_chart_path = yml_file_path + "/" + helm_directory
-    manifest_file_path = yml_file_path + "/" + "temp_template.yml"
+    helm_chart_path = destination_cnf_dir + "/" + helm_directory
+    manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
     # get the manifest file from the helm chart
     # TODO if no helm chart release name, then assume bare manifest file/directory with no helm chart
     # TODO loop through all workload resource types and get containers from k8s api
@@ -75,10 +76,15 @@ task "liveness", ["retrieve_manifest"] do |_, args|
     # TODO subtract duplicates
     # TODO loop through all containers
     # TODO separate this out to a workload resource function that accepts a block
-    Helm.generate_manifest_from_templates(release_name, 
-                                          helm_chart_path, 
-                                          manifest_file_path)
-    template_ymls = Helm.parse_manifest_as_ymls(manifest_file_path) 
+    LOGGING.info "release_name: #{release_name}"
+    if release_name.empty? # no helm chart
+      template_ymls = Helm.manifest_ymls_from_file_list(Helm.manifest_file_list( yml_file_path + "/" + manifest_directory))
+    else
+      Helm.generate_manifest_from_templates(release_name, 
+                                            helm_chart_path, 
+                                            manifest_file_path)
+      template_ymls = Helm.parse_manifest_as_ymls(manifest_file_path) 
+    end
     deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
     deployment_names = Helm.workload_resource_names(deployment_ymls)
     LOGGING.info "deployment names: #{deployment_names}"
@@ -123,10 +129,10 @@ task "readiness", ["retrieve_manifest"] do |_, args|
     LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
     VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
     helm_directory = "#{config.get("helm_directory").as_s?}"
-    manifest_directory = "#{config.get("manifest_directory").as_s?}"
+    manifest_directory = optional_key_as_string(config, "manifest_directory")
     release_name = "#{config.get("release_name").as_s?}"
-    helm_chart_path = yml_file_path + "/" + helm_directory
-    manifest_file_path = yml_file_path + "/" + "temp_template.yml"
+    helm_chart_path = destination_cnf_dir + "/" + helm_directory
+    manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
     # get the manifest file from the helm chart
     # TODO if no release name, then assume bare manifest file/directory with no helm chart
     LOGGING.info "release_name: #{release_name}"

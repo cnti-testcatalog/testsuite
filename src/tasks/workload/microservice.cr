@@ -94,15 +94,20 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
     LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
     VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
     helm_directory = "#{config.get("helm_directory").as_s?}"
+    manifest_directory = optional_key_as_string(config, "manifest_directory")
     release_name = "#{config.get("release_name").as_s?}"
-    helm_chart_path = yml_file_path + "/" + helm_directory
-    manifest_file_path = yml_file_path + "/" + "temp_template.yml"
+    helm_chart_path = destination_cnf_dir + "/" + helm_directory
+    manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
     # get the manifest file from the helm chart
-    # TODO if no release name, then assume bare manifest file/directory with no helm chart
-    Helm.generate_manifest_from_templates(release_name, 
+    if release_name.empty? # no helm chart
+      template_ymls = Helm.manifest_ymls_from_file_list(Helm.manifest_file_list( yml_file_path + "/" + manifest_directory))
+    else
+      Helm.generate_manifest_from_templates(release_name, 
                                           helm_chart_path, 
                                           manifest_file_path)
-    template_ymls = Helm.parse_manifest_as_ymls(manifest_file_path) 
+      template_ymls = Helm.parse_manifest_as_ymls(manifest_file_path) 
+    end
+
     deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
     deployment_names = Helm.workload_resource_names(deployment_ymls)
     LOGGING.info "deployment names: #{deployment_names}"

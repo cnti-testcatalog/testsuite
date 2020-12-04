@@ -625,3 +625,7 @@ def stdout_score(test_name)
     stdout_failure test_log_msg
   end
 end
+
+def optional_key_as_string(totem_config, key_name)
+  "#{totem_config[key_name]? && totem_config[key_name].as_s?}"
+end

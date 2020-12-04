@@ -323,10 +323,13 @@ module CNFManager
 
   def self.sample_setup(config_file, release_name, deployment_name, helm_chart, helm_directory, manifest_directory = "", git_clone_url="", deploy_with_chart=true, verbose=false, wait_count=180, install_from_manifest=false)
 
+    #TODO remove deployment_name, deployment_label, and release_name from the cnf-conformance.yml
+    #NOTE: deployment_name is currently used as the name of the directory under the cnfs sandbox directory
+    #TODO use a generated release name for helm
+    #NOTE: manifest-file-only cnfs don't need a release name
     #TODO generate release name based on all of the workload resource metadata names (or generatedName) 
     #TODO make the cnfs/<directory> be the generated name
     #TODO use the cnfs/<directory> (for helm installs) as the release name
-    #NOTE: manifest-file-only cnfs don't need a release name
     VERBOSE_LOGGING.info "sample_setup" if verbose
     LOGGING.info("config_file #{config_file}")
 
