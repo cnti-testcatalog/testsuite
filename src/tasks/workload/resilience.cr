@@ -163,8 +163,6 @@ task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, a
   end
 end
 
-
-
 desc "Does the CNF crash when network latency occurs"
 task "pod-network-latency", ["install_litmus", "retrieve_manifest"] do |_, args|
   task_response = task_runner(args) do |args|
@@ -199,10 +197,6 @@ task "pod-network-latency", ["install_litmus", "retrieve_manifest"] do |_, args|
     puts "#{chaos_config}" if check_verbose(args)
     run_chaos = `kubectl apply -f "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
     puts "#{run_chaos}" if check_verbose(args)
-
-    describe_chaos_result = "kubectl describe chaosresults.litmuschaos.io #{chaos_result_name}"
-    puts "initial checkin of #{describe_chaos_result}" if check_verbose(args)  
-    puts `#{describe_chaos_result}` if check_verbose(args) 
 
     LitmusManager.wait_for_test(test_name,chaos_experiment_name,args)
     LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
@@ -289,7 +283,7 @@ def chaos_template_pod_network_latency
     monitoring: false
     appinfo: 
       appns: 'default'
-      applabel: '{{ deployment_label}}': '{{ deployment_label_value }}'
+      applabel: '{{ deployment_label}}={{ deployment_label_value }}'
       appkind: 'deployment'
     chaosServiceAccount: {{ chaos_experiment_name }}-sa 
     experiments:

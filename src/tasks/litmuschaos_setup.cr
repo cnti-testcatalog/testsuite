@@ -6,13 +6,13 @@ require "./utils/utils.cr"
 
 desc "Install LitmusChaos"
 task "install_litmus" do |_, args|
-    litmus_install = `kubectl apply -f https://raw.githubusercontent.com/litmuschaos/litmus/master/docs/litmus-operator-latest.yaml`
+    litmus_install = `kubectl apply -f https://raw.githubusercontent.com/litmuschaos/litmus/master/docs/litmus-operator-v1.9.1.yaml`
     puts "#{litmus_install}" if check_verbose(args)
 end
 
 desc "Uninstall LitmusChaos"
 task "uninstall_litmus" do |_, args|
-    litmus_uninstall = `kubectl delete -f https://raw.githubusercontent.com/litmuschaos/litmus/master/docs/litmus-operator-latest.yaml`
+    litmus_uninstall = `kubectl delete -f https://raw.githubusercontent.com/litmuschaos/litmus/master/docs/litmus-operator-v1.9.1.yaml`
     puts "#{litmus_uninstall}" if check_verbose(args)
 end
 
@@ -26,9 +26,6 @@ module LitmusManager
     chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
     wait_count = 0 
     status_code = -1 
-    verdict = ""
-    verdict_cmd = "kubectl get chaosresults.litmuschaos.io #{chaos_result_name} -o jsonpath='{.status.experimentstatus.verdict}'" 
-    puts "Checking experiment verdict  #{verdict_cmd}" if check_verbose(args)
     experimentStatus = ""
     experimentStatus_cmd = "kubectl get chaosengine.litmuschaos.io #{test_name} -o jsonpath='{.status.engineStatus}'"
     puts "Checking experiment status  #{experimentStatus_cmd}" if check_verbose(args)
@@ -49,6 +46,9 @@ module LitmusManager
       end
     end
 
+    verdict = ""
+    verdict_cmd = "kubectl get chaosresults.litmuschaos.io #{chaos_result_name} -o jsonpath='{.status.experimentstatus.verdict}'" 
+    puts "Checking experiment verdict  #{verdict_cmd}" if check_verbose(args)
     ## Check the chaosresult verdict
     until (status_code == 0 && verdict != "Awaited") || wait_count >= 20
       sleep 2
