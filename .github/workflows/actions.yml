@@ -37,7 +37,7 @@ jobs:
     - name: Output status
       run: |
         git diff --name-only HEAD origin/master | grep -q -P '^((?!.md).)*$'
-        ./github/workflows/skip.sh
+        .github/workflows/skip.sh
     - id: skip
       run: |
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
