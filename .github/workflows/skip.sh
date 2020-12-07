@@ -1,7 +1,15 @@
 #!/bin/bash
 
-if ! git diff --name-only HEAD origin/master | grep -q -P '^((?!.md).)*$'; then
-    echo 'true'
+if git branch | grep '^* master$'
+   if ! git diff --name-only HEAD HEAD~1 | grep -q -P '^((?!.md).)*$'; then
+       echo 'true'
+   else
+       echo 'false'
+   fi
 else
-    echo 'false'
+   if ! git diff --name-only HEAD origin/master | grep -q -P '^((?!.md).)*$'; then
+       echo 'true'
+   else
+       echo 'false'
+   fi
 fi
