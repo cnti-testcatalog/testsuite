@@ -22,6 +22,7 @@ module DockerClient
       modified_tag = tag == nil ? "latest" : tag
       latest_image = docker_image_list.parse("json")["results"].as_a.find{|x|x["name"]=="#{modified_tag}"} 
       LOGGING.debug "docker parse resp: #{latest_image}"
+      (LOGGING.error "no image found for tag: #{modified_tag}") if latest_image == nil
       latest_image 
     end
   end
