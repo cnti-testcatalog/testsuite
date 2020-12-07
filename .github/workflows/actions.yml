@@ -36,7 +36,7 @@ jobs:
         fetch-depth: 0
     - name: Output status
       run: |
-        git diff --name-only HEAD origin/master | grep -q -P '^((?!.md).)*$'
+        echo "git diff --name-only HEAD origin/master | grep -q -P '^((?!.md).)*$'"
         .github/workflows/skip.sh
     - id: skip
       run: |
