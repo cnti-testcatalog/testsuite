@@ -38,6 +38,8 @@ jobs:
       run: |
         echo "$(git diff --name-only HEAD origin/master | grep -q -P '^((?!.md).)*$')"
         .github/workflows/skip.sh
+    - name: Tmate
+      uses: mxschmitt/action-tmate@v3
     - id: skip
       run: |
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
