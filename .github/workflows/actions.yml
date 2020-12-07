@@ -34,12 +34,6 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Output status
-      run: |
-        echo "$(git diff --name-only HEAD origin/master | grep -q -P '^((?!.md).)*$')"
-        .github/workflows/skip.sh
-    - name: Tmate
-      uses: mxschmitt/action-tmate@v3
     - id: skip
       run: |
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
