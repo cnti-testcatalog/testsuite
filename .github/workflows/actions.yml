@@ -27,6 +27,8 @@ jobs:
   skip:
     name: Skip Build
     runs-on: ubuntu-20.04	
+    env:
+      debug: ${{secrets.DEBUG_SKIP}}
     outputs:
       skip: ${{ steps.skip.outputs.skip }}
     steps:
@@ -34,6 +36,9 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    - name: Skip Debug
+      if: ${{env.debug}} == 'true'
+      uses: mxschmitt/action-tmate@v3
     - id: skip
       run: |
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
