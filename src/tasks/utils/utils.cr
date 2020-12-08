@@ -629,3 +629,20 @@ end
 def optional_key_as_string(totem_config, key_name)
   "#{totem_config[key_name]? && totem_config[key_name].as_s?}"
 end
+
+def desired_is_available?(deployment_name)
+  resp = `kubectl get deployments #{deployment_name} -o=yaml`
+  describe = Totem.from_yaml(resp)
+  LOGGING.info("desired_is_available describe: #{describe.inspect}")
+  desired_replicas = describe.get("status").as_h["replicas"].as_i
+  LOGGING.info("desired_is_available desired_replicas: #{desired_replicas}")
+  ready_replicas = describe.get("status").as_h["readyReplicas"]?
+  unless ready_replicas.nil?
+    ready_replicas = ready_replicas.as_i
+  else
+    ready_replicas = 0
+  end
+  LOGGING.info("desired_is_available ready_replicas: #{ready_replicas}")
+
+  desired_replicas == ready_replicas
+end

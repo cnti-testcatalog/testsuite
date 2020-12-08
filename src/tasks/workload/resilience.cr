@@ -111,55 +111,82 @@ task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, a
     VERBOSE_LOGGING.info "chaos_container_kill" if check_verbose(args)
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    deployment_name = config.get("deployment_name").as_s
-    deployment_label = config.get("deployment_label").as_s
-    helm_chart_container_name = config.get("helm_chart_container_name").as_s
+    helm_directory = "#{config.get("helm_directory").as_s?}"
+    manifest_directory = optional_key_as_string(config, "manifest_directory")
+    release_name = "#{config.get("release_name").as_s?}"
+    helm_chart_path = destination_cnf_dir + "/" + helm_directory
+    manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
     LOGGING.debug "#{destination_cnf_dir}"
     LOGGING.info "destination_cnf_dir #{destination_cnf_dir}"
-    deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
     emoji_chaos_container_kill="🗡️💀♻️"
 
-    errors = 0
-    begin
-      deployment_label_value = deployment.get("metadata").as_h["labels"].as_h[deployment_label].as_s
-    rescue ex
-      errors = errors + 1
-      LOGGING.error ex.message 
-    end
-    if errors < 1
-      # TODO loop through all containers
-      containers = KubectlClient::Get.deployment_containers(deployment_name)
-      containers.as_a.each do |container|
-        template = Crinja.render(chaos_template_container_kill, { "deployment_label" => "#{deployment_label}", "deployment_label_value" => "#{deployment_label_value}", "helm_chart_container_name" => "#{container.as_h["name"]}" })
-        chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/chaos_container_kill.yml"`
-        VERBOSE_LOGGING.debug "#{chaos_config}" if check_verbose(args)
-        run_chaos = `kubectl create -f "#{destination_cnf_dir}/chaos_container_kill.yml"`
-        VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
-        if wait_for_test("PodChaos", "container-kill")
-          CNFManager.wait_for_install(deployment_name, wait_count=60)
-        else
-          # TODO Change this to an exception (points = 0)
-          # e.g. upsert_exception_task
-          resp = upsert_failed_task("chaos_container_kill","✖️  FAILURE: Chaosmesh failed to finish.")
-        end
-      end
-      # TODO fail if exceeds
-      # if wait_for_test("PodChaos", "container-kill")
-      # CNFManager.wait_for_install(deployment_name, wait_count=60)
-      if desired_is_available?(deployment_name)
-        resp = upsert_passed_task("chaos_container_kill","✔️  PASSED: Replicas available match desired count after container kill test #{emoji_chaos_container_kill}")
-      else
-        resp = upsert_failed_task("chaos_container_kill","✖️  FAILURE: Replicas did not return desired count after container kill test #{emoji_chaos_container_kill}")
-      end
-      # else
-      #   # TODO Change this to an exception (points = 0)
-      #   # e.g. upsert_exception_task
-      #   resp = upsert_failed_task("chaos_container_kill","✖️  FAILURE: Chaosmesh failed to finish.")
-      # end
-      delete_chaos = `kubectl delete -f "#{destination_cnf_dir}/chaos_container_kill.yml"`
+    if release_name.empty? # no helm chart
+      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
     else
-      resp = upsert_failed_task("chaos_container_kill","✖️  FAILURE: No deployment label found for container kill test")
+      Helm.generate_manifest_from_templates(release_name, 
+                                          helm_chart_path, 
+                                          manifest_file_path)
+      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
     end
+
+    deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
+    deployment_names = Helm.workload_resource_names(deployment_ymls)
+    LOGGING.info "deployment names: #{deployment_names}"
+    if deployment_names && deployment_names.size > 0 
+      test_passed = true
+    else
+        puts "No deployment names found for container kill test".colorize(:red)
+      test_passed = false
+    end
+    deployment_names.each do | deployment_name |
+
+      if KubectlClient::Get.deployment_spec_labels(deployment_name).as_h? && KubectlClient::Get.deployment_spec_labels(deployment_name).as_h.size > 0
+        test_passed = true
+      else
+        puts "No deployment label found for container kill test for deployment: #{deployment_name}".colorize(:red)
+        test_passed = false
+      end
+      if test_passed
+        containers = KubectlClient::Get.deployment_containers(deployment_name)
+        containers.as_a.each do |container|
+          # TODO change helm_chart_container_name to container_name
+          template = Crinja.render(chaos_template_container_kill, { "labels" => KubectlClient::Get.deployment_spec_labels(deployment_name).as_h, "helm_chart_container_name" => "#{container.as_h["name"]}" })
+          LOGGING.debug "chaos template: #{template}"
+          # template = Crinja.render(chaos_template_container_kill, { "deployment_label" => "#{deployment_label}", "deployment_label_value" => "#{deployment_label_value}", "helm_chart_container_name" => "#{container.as_h["name"]}" })
+          chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/chaos_container_kill.yml"`
+          VERBOSE_LOGGING.debug "#{chaos_config}" if check_verbose(args)
+          run_chaos = `kubectl create -f "#{destination_cnf_dir}/chaos_container_kill.yml"`
+          VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
+          if wait_for_test("PodChaos", "container-kill")
+            CNFManager.wait_for_install(deployment_name, wait_count=60)
+          else
+            # TODO Change this to an exception (points = 0)
+            # e.g. upsert_exception_task
+            test_passed = false
+            puts "Chaosmesh chaos_container_kill failed to finish for deployment: #{deployment_name} and container: #{container.as_h["name"].as_s}".colorize(:red)
+          end
+        end
+        # TODO fail if exceeds
+        # if wait_for_test("PodChaos", "container-kill")
+        # CNFManager.wait_for_install(deployment_name, wait_count=60)
+
+      end
+    end
+    desired_passed = deployment_names.map do |x| 
+     if desired_is_available?(x)
+       true
+     else
+       puts "Replicas did not return desired count after container kill test for deployment: #{x}".colorize(:red)
+       false
+     end
+    end
+    if test_passed && desired_passed.all?
+      resp = upsert_passed_task("chaos_container_kill","✔️  PASSED: Replicas available match desired count after container kill test #{emoji_chaos_container_kill}")
+    else
+      resp = upsert_failed_task("chaos_container_kill","✖️  FAILURE: Replicas did not return desired count after container kill test #{emoji_chaos_container_kill}")
+    end
+  ensure
+    delete_chaos = `kubectl delete -f "#{destination_cnf_dir}/chaos_container_kill.yml"`
   end
 end
 
@@ -176,7 +203,9 @@ def network_chaos_template
     mode: one
     selector:
       labelSelectors:
-        '{{ deployment_label}}': '{{ deployment_label_value }}'
+        {% for label in labels %}
+        '{{ label[0]}}': '{{ label[1] }}'
+        {% endfor %}
     loss:
       loss: '100'
       correlation: '100'
@@ -197,7 +226,9 @@ def cpu_chaos_template
     mode: one
     selector:
       labelSelectors:
-        '{{ deployment_label}}': '{{ deployment_label_value }}'
+        {% for label in labels %}
+        '{{ label[0]}}': '{{ label[1] }}'
+        {% endfor %}
     stressors:
       cpu:
         workers: 1
@@ -222,7 +253,9 @@ def chaos_template_container_kill
     containerName: '{{ helm_chart_container_name }}'
     selector:
       labelSelectors:
-        '{{ deployment_label}}': '{{ deployment_label_value }}'
+        {% for label in labels %}
+        '{{ label[0]}}': '{{ label[1] }}'
+        {% endfor %}
     scheduler:
       cron: '@every 600s'
   TEMPLATE

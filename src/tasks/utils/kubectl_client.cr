@@ -64,6 +64,17 @@ module KubectlClient
       end
     end
 
+    def self.deployment_spec_labels(deployment_name) : JSON::Any 
+      LOGGING.debug "deployment_labels deployment_name: #{deployment_name}"
+      resp = deployment(deployment_name).dig?("spec", "template", "metadata", "labels")
+      LOGGING.debug "deployment_labels: #{resp}"
+      if resp 
+        resp
+      else
+        JSON.parse(%({}))
+      end
+    end
+
     def self.container_image_tags(deployment_containers) : Array(NamedTuple(image: String, 
                                                                             tag: String | Nil))
       image_tags = deployment_containers.as_a.map do |container|

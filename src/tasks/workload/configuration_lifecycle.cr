@@ -78,12 +78,12 @@ task "liveness", ["retrieve_manifest"] do |_, args|
     # TODO separate this out to a workload resource function that accepts a block
     LOGGING.info "release_name: #{release_name}"
     if release_name.empty? # no helm chart
-      template_ymls = Helm.manifest_ymls_from_file_list(Helm.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
+      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
     else
       Helm.generate_manifest_from_templates(release_name, 
                                             helm_chart_path, 
                                             manifest_file_path)
-      template_ymls = Helm.parse_manifest_as_ymls(manifest_file_path) 
+      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
     end
     deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
     deployment_names = Helm.workload_resource_names(deployment_ymls)
@@ -137,12 +137,12 @@ task "readiness", ["retrieve_manifest"] do |_, args|
     # TODO if no release name, then assume bare manifest file/directory with no helm chart
     LOGGING.info "release_name: #{release_name}"
     if release_name.empty? # no helm chart
-      template_ymls = Helm.manifest_ymls_from_file_list(Helm.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
+      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
     else
       Helm.generate_manifest_from_templates(release_name, 
                                           helm_chart_path, 
                                           manifest_file_path)
-      template_ymls = Helm.parse_manifest_as_ymls(manifest_file_path) 
+      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
     end
     deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
     deployment_names = Helm.workload_resource_names(deployment_ymls)
@@ -223,12 +223,12 @@ task "rolling_update" do |_, args|
     manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
     LOGGING.info "release_name: #{release_name}"
     if release_name.empty? # no helm chart
-      template_ymls = Helm.manifest_ymls_from_file_list(Helm.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
+      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
     else
       Helm.generate_manifest_from_templates(release_name, 
                                           helm_chart_path, 
                                           manifest_file_path)
-      template_ymls = Helm.parse_manifest_as_ymls(manifest_file_path) 
+      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
     end
     deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
     deployment_names = Helm.workload_resource_names(deployment_ymls)

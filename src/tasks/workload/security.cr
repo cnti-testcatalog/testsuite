@@ -18,6 +18,8 @@ task "privileged" do |_, args|
     VERBOSE_LOGGING.info "privileged" if check_verbose(args)
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
 
+    # get all container names from deployment
+    # TODO remove helm_chart_container_name from cnf-conformance.yml
     helm_chart_container_name = config.get("helm_chart_container_name").as_s
     white_list_container_name = config.get("white_list_helm_chart_container_names").as_a
     VERBOSE_LOGGING.info "helm_chart_container_name #{helm_chart_container_name}" if check_verbose(args)
@@ -32,6 +34,7 @@ task "privileged" do |_, args|
     white_list_containers = ((PRIVILEGED_WHITELIST_CONTAINERS + white_list_container_name) - [containers.as_a])
     violation_list = (privileged_list - white_list_containers)
     emoji_security="🔓🔑"
+    # TODO use list of names in containers variable
     if privileged_list.find {|x| x == helm_chart_container_name} ||
         violation_list.size > 0
       upsert_failed_task("privileged", "✖️  FAILURE: Found #{violation_list.size} privileged containers: #{violation_list.inspect} #{emoji_security}")
