@@ -138,7 +138,7 @@ jobs:
       with:
         name: release
     - name: Release Debug
-      if: ${{secrets.release_debug}} == 'true'
+      if: ${{secrets.RELEASE_DEBUG}} == 'true'
       uses: mxschmitt/action-tmate@v3
     - name: Make release executable
       run: chmod +x ./cnf-conformance
