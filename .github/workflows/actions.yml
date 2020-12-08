@@ -128,6 +128,8 @@ jobs:
     name: Publish Release
     needs: [spec, build]
     runs-on: ubuntu-latest
+    env:
+      debug: ${{secrets.DEBUG_RELEASE}}
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -138,7 +140,7 @@ jobs:
       with:
         name: release
     - name: Release Debug
-      if: ${{secrets.RELEASE_DEBUG}} == 'true'
+      if: ${{env.debug}} == 'true'
       uses: mxschmitt/action-tmate@v3
     - name: Make release executable
       run: chmod +x ./cnf-conformance
