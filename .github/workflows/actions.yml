@@ -137,6 +137,9 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: release
+    - name: Release Debug
+      if: ${{secrets.release_debug}} == 'true'
+      uses: mxschmitt/action-tmate@v3
     - name: Make release executable
       run: chmod +x ./cnf-conformance
     - name: Publish Release
