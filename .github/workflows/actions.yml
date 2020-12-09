@@ -5,34 +5,46 @@ jobs:
     name: Debug Status
     runs-on: ubuntu-20.04	
     env:
-      debug: ${{secrets.SKIP_DEBUG}}
+      skip_debug: ${{secrets.SKIP_DEBUG}}
+      release_debug: ${{secrets.RELEASE_DEBUG}}
     steps:
     - name: Skip Debug
       run: |
         touch skip_debug
-        if [[ "$debug" == 'true' ]]; then
+        if [[ "$skip_debug" == 'true' ]]; then
            echo 'true' > skip_debug
+        fi
+        if [[ "$release_debug" == 'true' ]]; then
+           echo 'true' > release_debug
         fi
     - name: upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: skip_debug
         path: skip_debug
+        name: release_debug
+        path: release_debug
   debug_output:
     name: Debug Outputs
     needs: [debug_status]
     runs-on: ubuntu-20.04	
     outputs:
       skip-debug: ${{ steps.skip-debug.outputs.debug }}
-      # release-debug: ${{ steps.release-debug.outputs.debug }}
+      release-debug: ${{ steps.release-debug.outputs.debug }}
     steps:
     - name: Download artifact
       uses: actions/download-artifact@v2
       with:
         name: skip_debug
+        name: release_debug
     - id: skip-debug
       run: |
         if grep -q 'true' "./skip_debug"; then 
+          echo "::set-output name=debug::true"
+        fi
+    - id: release-debug
+      run: |
+        if grep -q 'true' "./release_debug"; then 
           echo "::set-output name=debug::true"
         fi
   tests:
@@ -163,7 +175,7 @@ jobs:
         path: cnf-conformance
   release:
     name: Publish Release
-    needs: [spec, build]
+    needs: [spec, build, debug_output]
     runs-on: ubuntu-latest
     env:
       debug: ${{secrets.RELEASE_DEBUG}}
@@ -177,7 +189,7 @@ jobs:
       with:
         name: release
     - uses: mxschmitt/action-tmate@v3
-      if: env.debug == 'true'
+      if: needs.debug_output.outputs.release-debug == 'true'
     - name: Make release executable
       run: chmod +x ./cnf-conformance
     - name: Publish Release
