@@ -8,6 +8,7 @@ jobs:
       debug: ${{secrets.SKIP_DEBUG}}
     outputs:
       skip: ${{ steps.skip-debug.outputs.debug }}
+    steps:
     - id: skip-debug
       run: |
         if [[ "$SKIP_DEBUG" == 'true' ]]; then 
