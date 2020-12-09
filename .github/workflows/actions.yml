@@ -36,9 +36,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Skip Debug
+    - uses: mxschmitt/action-tmate@v3
       if: ${{env.debug_skip}} == 'true'
-      uses: mxschmitt/action-tmate@v3
     - id: skip
       run: |
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
@@ -144,9 +143,8 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: release
-    - name: Release Debug
+    - uses: mxschmitt/action-tmate@v3
       if: ${{env.debug_release}} == 'true'
-      uses: mxschmitt/action-tmate@v3
     - name: Make release executable
       run: chmod +x ./cnf-conformance
     - name: Publish Release
