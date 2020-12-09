@@ -28,7 +28,7 @@ jobs:
     name: Skip Build
     runs-on: ubuntu-20.04	
     env:
-      debug_skip: ${{secrets.DEBUG_SKIP}}
+      debug: ${{secrets.SKIP_DEBUG}}
     outputs:
       skip: ${{ steps.skip.outputs.skip }}
     steps:
@@ -37,7 +37,7 @@ jobs:
       with:
         fetch-depth: 0
     - uses: mxschmitt/action-tmate@v3
-      if: env.debug_skip == 'true'
+      if: env.debug == 'true'
     - id: skip
       run: |
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
@@ -133,8 +133,7 @@ jobs:
     needs: [spec, build]
     runs-on: ubuntu-latest
     env:
-      debug_release: ${{secrets.DEBUG_RELEASE}}
-      # DEBUG_RELEASE: ${{secrets.DEBUG_RELEASE}}
+      debug: ${{secrets.RELEASE_DEBUG}}
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -144,14 +143,8 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: release
-    - id: debug
-      run: |
-        if [[ "$DEBUG_RELEASE" == 'true' ]]; then 
-          echo "::set-output name=debug::true"
-        fi
     - uses: mxschmitt/action-tmate@v3
-      if: env.debug_release == 'true'
-      # if: steps.debug.output.debug == 'false'
+      if: env.debug == 'true'
     - name: Make release executable
       run: chmod +x ./cnf-conformance
     - name: Publish Release
