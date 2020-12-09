@@ -134,6 +134,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       debug_release: ${{secrets.DEBUG_RELEASE}}
+      # DEBUG_RELEASE: ${{secrets.DEBUG_RELEASE}}
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -143,8 +144,14 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: release
+    - id: debug
+      run: |
+        if [[ "$DEBUG_RELEASE" == 'true' ]]; then 
+          echo "::set-output name=debug::true"
+        fi
     - uses: mxschmitt/action-tmate@v3
-      if: ${{env.debug_release}} == 'true'
+      if: env.debug_release == 'true'
+      # if: steps.debug.output.debug == 'false'
     - name: Make release executable
       run: chmod +x ./cnf-conformance
     - name: Publish Release
