@@ -20,10 +20,10 @@ jobs:
     - name: upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: skip_debug
-        path: skip_debug
-        name: release_debug
-        path: release_debug
+        name: debug_status
+        path: |
+          skip_debug
+          release_debug
   debug_output:
     name: Debug Outputs
     needs: [debug_status]
@@ -35,8 +35,7 @@ jobs:
     - name: Download artifact
       uses: actions/download-artifact@v2
       with:
-        name: skip_debug
-        name: release_debug
+        name: debug_status
     - id: skip-debug
       run: |
         if grep -q 'true' "./skip_debug"; then 
