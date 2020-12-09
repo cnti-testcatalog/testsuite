@@ -8,9 +8,10 @@ jobs:
       skip_debug: ${{secrets.SKIP_DEBUG}}
       release_debug: ${{secrets.RELEASE_DEBUG}}
     steps:
-    - name: Skip Debug
+    - name: Create Debug Files
       run: |
         touch skip_debug
+        touch release_debug
         if [[ "$skip_debug" == 'true' ]]; then
            echo 'true' > skip_debug
         fi
