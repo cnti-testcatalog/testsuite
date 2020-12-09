@@ -195,7 +195,7 @@ TEMPLATE
   end
 
   def self.current_branch
-    results = `git rev-parse --abbrev-ref HEAD`
+    results = `git rev-parse --abbrev-ref HEAD`.split("\n")[0].strip
     LOGGING.info "current_branch rev-parse: #{results}"
     results.strip("\n")
   end
