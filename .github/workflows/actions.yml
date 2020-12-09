@@ -4,17 +4,15 @@ jobs:
   debug:
     name: Debug Status
     runs-on: ubuntu-20.04	
-    env:
-      debug: ${{secrets.SKIP_DEBUG}}
     outputs:
       skip-debug: ${{ steps.skip-debug.outputs.debug }}
       release-debug: ${{ steps.release-debug.outputs.debug }}
     steps:
     - id: skip-debug
       run: |
-        # if [[ "$SKIP_DEBUG" == 'true' ]]; then 
-        echo "::set-output name=debug::true"
-        # fi
+        if [[ "${{secrets.SKIP_DEBUG}}" == 'true' ]]; then 
+          echo "::set-output name=debug::true"
+        fi
     - id: skip-release
       run: |
         if [[ "$SKIP_RELEASE" == 'true' ]]; then 
