@@ -27,8 +27,6 @@ jobs:
   skip:
     name: Skip Build
     runs-on: ubuntu-20.04	
-    env:
-      debug: ${{secrets.SKIP_DEBUG}}
     outputs:
       skip: ${{ steps.skip.outputs.skip }}
     steps:
@@ -36,11 +34,13 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - uses: mxschmitt/action-tmate@v3
-      if: env.debug == 'true'
     - id: skip
       run: |
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
+    - uses: mxschmitt/action-tmate@v3
+      if: env.debug == 'true'
+      env:
+        debug: ${{secrets.SKIP_DEBUG}}
   spec:
     name: Crystal Specs
     needs: [tests, skip]
