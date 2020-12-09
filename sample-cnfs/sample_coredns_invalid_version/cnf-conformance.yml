@@ -14,5 +14,5 @@ helm_chart: stable/coredns
 helm_chart_container_name: coredns
 container_names: 
   - name: coredns 
-    upgrade_test_tag: "this_is_not_a_valid_version"
+    rolling_update_test_tag: "this_is_not_a_valid_version"
 white_list_helm_chart_container_names: []

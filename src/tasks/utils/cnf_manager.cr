@@ -53,6 +53,7 @@ module CNFManager
     current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
     LOGGING.debug "current_replicas #{current_replicas}"
     LOGGING.info(all_deployments)
+
     until (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i) || second_count > wait_count
       LOGGING.info("second_count = #{second_count}")
       sleep 1
@@ -64,7 +65,13 @@ module CNFManager
       LOGGING.info(all_deployments)
       second_count = second_count + 1 
     end
-  end 
+
+    if (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i)
+      true
+    else
+      false
+    end
+  end
 
   def self.wait_for_install_by_apply(manifest_file, wait_count=180)
     LOGGING.info "wait_for_install_by_apply"
@@ -324,7 +331,7 @@ module CNFManager
     FileUtils.mkdir_p(destination_cnf_dir) 
     # TODO enable recloning/fetching etc
     # TODO pass in block
-    git_clone = `git clone #{git_clone_url} #{destination_cnf_dir}/#{release_name}` if git_clone_url.empty? == false
+    git_clone = `git clone #{git_clone_url} #{destination_cnf_dir}/#{release_name}`  if git_clone_url.empty? == false
     VERBOSE_LOGGING.info git_clone if verbose
 
     # Copy the cnf-conformance.yml

@@ -11,5 +11,7 @@ helm_chart: stable/unifi
 helm_chart_container_name: unifi
 container_names: 
   - name: unifi 
-    upgrade_test_tag: "5.12.34"
+    rolling_update_test_tag: "5.12.34"
+    rolling_downgrade_test_tag: "5.12.12"
+    rolling_version_change_test_tag: latest
 white_list_helm_chart_container_names: []

@@ -107,6 +107,7 @@ task "readiness", ["retrieve_manifest"] do |_, args|
   end
 end
 
+
 desc "Retrieve the manifest for the CNF's helm chart"
 task "retrieve_manifest" do |_, args| 
   task_runner(args) do |args|
@@ -130,77 +131,181 @@ task "retrieve_manifest" do |_, args|
   end
 end
 
-desc "Test if the CNF containers are loosely coupled by performing a rolling update"
-task "rolling_update" do |_, args|
+def get_helm_chart_values(sam_args, release_name)
+  # helm_chart_values = JSON.parse(`#{CNFManager.local_helm_path} get values #{release_name} -a --output json`)
+  LOGGING.info "helm path: #{CNFSingleton.helm}"
+  LOGGING.info "helm command: #{CNFSingleton.helm} get values #{release_name} -a --output json"
+  helm_resp = `#{CNFSingleton.helm} get values #{release_name} -a --output json`
+  # helm sometimes does not return valid json :/
+  helm_split = helm_resp.split("\n")
+  LOGGING.info "helm_split: #{helm_split}"
+  if helm_split[1] =~ /WARNING/ 
+    cleaned_resp = helm_split[2] 
+  elsif helm_split[0] =~ /WARNING/
+    cleaned_resp = helm_split[1] 
+  else
+    cleaned_resp = helm_split[0]
+  end
+  LOGGING.info "cleaned_resp: #{cleaned_resp}"
+  helm_chart_values = JSON.parse(cleaned_resp)
+  VERBOSE_LOGGING.debug "helm_chart_values" if check_verbose(sam_args)
+  VERBOSE_LOGGING.debug helm_chart_values if check_verbose(sam_args)
+  helm_chart_values
+end
+
+test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
+
+test_names.each do |tn|
+  pretty_test_name = tn.split(/:|_/).join(" ")
+  pretty_test_name_capitalized = tn.split(/:|_/).map(&.capitalize).join(" ")
+
+  desc "Test if the CNF containers are loosely coupled by performing a #{pretty_test_name}"
+  task "#{tn}" do |_, args|
+    task_runner(args) do |args|
+      # TODO mark as destructive?
+      VERBOSE_LOGGING.info "#{tn}" if check_verbose(args)
+      # config = cnf_conformance_yml
+      config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+
+      # TODO use tag associated with image name string (e.g. busybox:v1.7.9) as the version tag
+      # TODO optional get a valid version from the remote repo and roll to that, if no tag
+      #  e.g. wget -q https://registry.hub.docker.com/v1/repositories/debian/tags -O -  | sed -e 's/[][]//g' -e 's/"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}'
+      # note: all images are not on docker hub nor are they always on a docker hub compatible api
+
+      release_name = config.get("release_name").as_s
+      deployment_name = config.get("deployment_name").as_s
+      containers = KubectlClient::Get.deployment_containers(deployment_name)
+
+      container_names = config["container_names"]?
+      LOGGING.debug "container_names: #{container_names}"
+
+      unless container_names && !container_names.as_a.empty?
+        puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red) unless container_names
+        upsert_failed_task("#{tn}", "✖️  FAILURE: CNF #{deployment_name} #{pretty_test_name_capitalized} Failed")
+        exit 0
+      end
+
+      valid_cnf_conformance_yml = true
+      containers.as_a.each do | container |
+        LOGGING.debug "#{tn} container: #{container}"
+        config_container = container_names.as_a.find{|x| x["name"]==container.as_h["name"]} if container_names
+        LOGGING.debug "config_container: #{config_container}"
+        unless config_container && config_container["#{tn}_test_tag"]? && !config_container["#{tn}_test_tag"].as_s.empty?
+          puts "Please add the container name #{container.as_h["name"]} and a corresponding #{tn}_test_tag into your cnf-conformance.yml under container names".colorize(:red)
+          valid_cnf_conformance_yml = false
+        end
+      end
+      unless valid_cnf_conformance_yml
+        upsert_failed_task("#{tn}", "✖️  FAILURE: CNF #{deployment_name} #{pretty_test_name_capitalized} Failed")
+        exit 0
+      end
+
+      if containers.as_a.empty?
+        update_applied = false 
+      else
+        update_applied = true 
+      end
+      containers.as_a.each do | container |
+        LOGGING.debug "#{pretty_test_name} container: #{container}"
+        config_container = container_names.as_a.find{|x| x["name"]==container.as_h["name"]} if container_names
+        LOGGING.debug "config container: #{config_container}"
+        if config_container
+          resp = KubectlClient::Set.image(deployment_name, 
+                                        container.as_h["name"], 
+                                        # split out image name from version tag
+                                        container.as_h["image"].as_s.split(":")[0], 
+                                        config_container["rolling_update_test_tag"].as_s) 
+        else 
+          resp = false
+        end
+        # If any containers dont have an update applied, fail
+        update_applied = false if resp == false
+      end
+
+      rollout_status = KubectlClient::Rollout.status(deployment_name)
+      if update_applied && rollout_status
+        upsert_passed_task("#{tn}","✔️  PASSED: CNF #{deployment_name} #{pretty_test_name_capitalized} Passed" )
+      else
+        upsert_failed_task("#{tn}", "✖️  FAILURE: CNF #{deployment_name} #{pretty_test_name_capitalized} Failed")
+      end
+      # TODO should we roll the image back to original version in an ensure? 
+      # TODO Use the kubectl rollback to history command
+    end
+  end
+  
+end
+
+desc "Test if the CNF can perform a rollback"
+task "rollback" do |_, args|
   task_runner(args) do |args|
-    # TODO mark as destructive?
-    VERBOSE_LOGGING.info "rolling_update" if check_verbose(args)
+    VERBOSE_LOGGING.info "rollback" if check_verbose(args)
     # config = cnf_conformance_yml
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-
-    # TODO use tag associated with image name string (e.g. busybox:v1.7.9) as the version tag
-    # TODO optional get a valid version from the remote repo and roll to that, if no tag
-    #  e.g. wget -q https://registry.hub.docker.com/v1/repositories/debian/tags -O -  | sed -e 's/[][]//g' -e 's/"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}'
-    # note: all images are not on docker hub nor are they always on a docker hub compatible api
-
-    release_name = config.get("release_name").as_s
-    deployment_name = config.get("deployment_name").as_s
-    containers = KubectlClient::Get.deployment_containers(deployment_name)
-
     container_names = config["container_names"]?
-    LOGGING.debug "container_names: #{container_names}"
 
+    VERBOSE_LOGGING.debug "actual configin it #{config.inspect}" if check_verbose(args)
+
+    deployment_name = config.get("deployment_name").as_s
+        
     unless container_names && !container_names.as_a.empty?
       puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red) unless container_names
-      upsert_failed_task("rolling_update", "✖️  FAILURE: CNF #{deployment_name} Rolling Update Failed")
+      upsert_failed_task("rollback", "✖️  FAILURE: CNF #{deployment_name} Rollback Failed")
       exit 0
     end
 
-    valid_cnf_conformance_yml = true
-    containers.as_a.each do | container |
-      LOGGING.debug "rolling update container: #{container}"
-      config_container = container_names.as_a.find{|x| x["name"]==container.as_h["name"]} if container_names
-      LOGGING.debug "config_container: #{config_container}"
-      unless config_container && config_container["upgrade_test_tag"]? && !config_container["upgrade_test_tag"].as_s.empty?
-        puts "Please add the container name #{container.as_h["name"]} and a corresponding upgrade_test_tag into your cnf-conformance.yml under container names".colorize(:red)
-        valid_cnf_conformance_yml = false
+    plural_containers = KubectlClient::Get.deployment_containers(deployment_name)
+    container = plural_containers[0]
+
+    image_name = container.as_h["name"]
+    image_tag = container.as_h["image"].as_s.split(":")[0]
+
+    VERBOSE_LOGGING.debug "image_name: #{image_name}" if check_verbose(args)
+
+    VERBOSE_LOGGING.debug "rollback: setting new version" if check_verbose(args)
+    #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
+
+    version_change_applied = false 
+
+    config_container = container_names.as_a.find{|x| x["name"] == image_name } if container_names
+
+    if config_container
+      
+      rollback_from_tag = config_container["rollback_from_tag"].as_s
+
+      if rollback_from_tag == image_tag
+        fail_msg = "✖️  FAILURE: please specify a different version than the helm chart default image.tag for 'rollback_from_tag' "
+        upsert_failed_task("rollback", fail_msg)
+        raise fail_msg
       end
-    end
-    unless valid_cnf_conformance_yml
-      upsert_failed_task("rolling_update", "✖️  FAILURE: CNF #{deployment_name} Rolling Update Failed")
-      exit 0
+
+      version_change_applied = KubectlClient::Set.image(deployment_name, 
+        image_name, 
+        # split out image name from version tag
+        image_tag, 
+        rollback_from_tag) 
     end
 
-    if containers.as_a.empty?
-      update_applied = false 
-    else
-      update_applied = true 
-    end
-    containers.as_a.each do | container |
-      LOGGING.debug "rolling update container: #{container}"
-      config_container = container_names.as_a.find{|x| x["name"]==container.as_h["name"]} if container_names
-      LOGGING.debug "config container: #{config_container}"
-      if config_container
-        resp = KubectlClient::Set.image(deployment_name, 
-                                      container.as_h["name"], 
-                                      # split out image name from version tag
-                                      container.as_h["image"].as_s.split(":")[0], 
-                                      config_container["upgrade_test_tag"].as_s) 
-      else 
-        resp = false
-      end
-      # If any containers dont have an update applied, fail
-      update_applied = false if resp == false
-    end
+    VERBOSE_LOGGING.debug "change successful? #{version_change_applied}" if check_verbose(args)
 
-    rollout_status = KubectlClient::Rollout.status(deployment_name)
-    if update_applied && rollout_status
-      upsert_passed_task("rolling_update","✔️  PASSED: CNF #{deployment_name} Rolling Update Passed" )
+    VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
+    rollout = `kubectl rollout status deployment/#{deployment_name} --timeout=30s`
+    rollout_status = $?.success?
+    VERBOSE_LOGGING.debug "#{rollout}" if check_verbose(args)
+    VERBOSE_LOGGING.debug "rollout? #{rollout_status}" if check_verbose(args)
+    
+    # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision
+    VERBOSE_LOGGING.debug "rollback: rolling back to old version" if check_verbose(args)
+    rollback = `kubectl rollout undo deployment/#{deployment_name}`
+    rollback_status = $?.success?
+    VERBOSE_LOGGING.debug "rollback: #{rollback}" if check_verbose(args)
+    VERBOSE_LOGGING.debug "rollout status? #{rollback_status}" if check_verbose(args)
+
+
+    if version_change_applied && rollout_status && rollback_status
+      upsert_passed_task("rollback","✔️  PASSED: CNF #{deployment_name} Rollback Passed" )
     else
-      upsert_failed_task("rolling_update", "✖️  FAILURE: CNF #{deployment_name} Rolling Update Failed")
+      upsert_failed_task("rollback", "✖️  FAILURE: CNF #{deployment_name} Rollback Failed")
     end
-    # TODO should we roll the image back to original version in an ensure? 
-    # TODO Use the kubectl rollback to history command
   end
 end
 
