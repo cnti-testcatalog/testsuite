@@ -28,7 +28,7 @@ jobs:
     name: Skip Build
     runs-on: ubuntu-20.04	
     env:
-      debug: ${{secrets.DEBUG_SKIP}}
+      debug_skip: ${{secrets.DEBUG_SKIP}}
     outputs:
       skip: ${{ steps.skip.outputs.skip }}
     steps:
@@ -37,7 +37,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: Skip Debug
-      if: ${{env.debug}} == 'true'
+      if: ${{env.debug_skip}} == 'true'
       uses: mxschmitt/action-tmate@v3
     - id: skip
       run: |
@@ -134,7 +134,7 @@ jobs:
     needs: [spec, build]
     runs-on: ubuntu-latest
     env:
-      debug: ${{secrets.DEBUG_RELEASE}}
+      debug_release: ${{secrets.DEBUG_RELEASE}}
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -145,7 +145,7 @@ jobs:
       with:
         name: release
     - name: Release Debug
-      if: ${{env.debug}} == 'true'
+      if: ${{env.debug_release}} == 'true'
       uses: mxschmitt/action-tmate@v3
     - name: Make release executable
       run: chmod +x ./cnf-conformance
