@@ -39,8 +39,6 @@ jobs:
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
     - uses: mxschmitt/action-tmate@v3
       if: env.debug == 'true'
-      env:
-        debug: ${{secrets.SKIP_DEBUG}}
   spec:
     name: Crystal Specs
     needs: [tests, skip]
