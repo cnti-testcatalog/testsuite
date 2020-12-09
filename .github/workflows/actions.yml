@@ -10,7 +10,6 @@ jobs:
       skip-debug: ${{ steps.skip-debug.outputs.debug }}
       release-debug: ${{ steps.release-debug.outputs.debug }}
     steps:
-
     - id: skip-debug
       run: |
         if [[ "$SKIP_DEBUG" == 'true' ]]; then 
@@ -55,6 +54,9 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    - name: Debug
+      run: |
+        echo "${{ needs.debug.outputs.skip-debug }}"
     - id: skip
       run: |
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
