@@ -17,7 +17,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: skip_debug
-   debug_output:
+  debug_output:
     name: Debug Outputs
     needs: [debug_status]
     runs-on: ubuntu-20.04	
