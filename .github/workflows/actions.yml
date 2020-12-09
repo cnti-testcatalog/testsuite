@@ -12,9 +12,9 @@ jobs:
     steps:
     - id: skip-debug
       run: |
-        if [[ "$SKIP_DEBUG" == 'true' ]]; then 
-          echo "::set-output name=debug::true"
-        fi
+        # if [[ "$SKIP_DEBUG" == 'true' ]]; then 
+        echo "::set-output name=debug::true"
+        # fi
     - id: skip-release
       run: |
         if [[ "$SKIP_RELEASE" == 'true' ]]; then 
