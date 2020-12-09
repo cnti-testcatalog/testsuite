@@ -1,6 +1,18 @@
 name: Crystal Specs
 on: [push, pull_request]
 jobs:
+  debug:
+    name: Debug Status
+    runs-on: ubuntu-20.04	
+    env:
+      debug: ${{secrets.SKIP_DEBUG}}
+    outputs:
+      skip: ${{ steps.debug.outputs.skip-debug }}
+    - id: skip-debug
+      run: |
+        if [[ "$SKIP_DEBUG" == 'true' ]]; then 
+          echo "::set-output name=skip-debug::true"
+        fi
   tests:
     name: Fetch Matrix Tests
     runs-on: ubuntu-20.04	
