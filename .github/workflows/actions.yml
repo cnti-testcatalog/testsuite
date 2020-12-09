@@ -7,11 +7,11 @@ jobs:
     env:
       debug: ${{secrets.SKIP_DEBUG}}
     outputs:
-      skip: ${{ steps.skip-debug.outputs.skip-debug }}
+      skip: ${{ steps.skip-debug.outputs.debug }}
     - id: skip-debug
       run: |
         if [[ "$SKIP_DEBUG" == 'true' ]]; then 
-          echo "::set-output name=skip-debug::true"
+          echo "::set-output name=debug::true"
         fi
   tests:
     name: Fetch Matrix Tests
