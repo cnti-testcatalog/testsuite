@@ -7,11 +7,18 @@ jobs:
     env:
       debug: ${{secrets.SKIP_DEBUG}}
     outputs:
-      skip: ${{ steps.skip-debug.outputs.debug }}
+      skip-debug: ${{ steps.skip-debug.outputs.debug }}
+      release-debug: ${{ steps.release-debug.outputs.debug }}
     steps:
+
     - id: skip-debug
       run: |
         if [[ "$SKIP_DEBUG" == 'true' ]]; then 
+          echo "::set-output name=debug::true"
+        fi
+    - id: skip-release
+      run: |
+        if [[ "$SKIP_RELEASE" == 'true' ]]; then 
           echo "::set-output name=debug::true"
         fi
   tests:
@@ -40,6 +47,7 @@ jobs:
   skip:
     name: Skip Build
     runs-on: ubuntu-20.04	
+    needs: [debug]
     outputs:
       skip: ${{ steps.skip.outputs.skip }}
     steps:
@@ -51,7 +59,7 @@ jobs:
       run: |
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
     - uses: mxschmitt/action-tmate@v3
-      if: env.debug == 'true'
+      if: needs.debug.outputs.skip-debug == 'true'
   spec:
     name: Crystal Specs
     needs: [tests, skip]
