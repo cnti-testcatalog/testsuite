@@ -169,7 +169,7 @@ TEMPLATE
   end
   module CompileTimeVersionGenerater
     macro tagged_version
-      {% current_branch = `git rev-parse --abbrev-ref HEAD` %}
+      {% current_branch = `git rev-parse --abbrev-ref HEAD`.split("\n")[0] %}
       {% current_hash = `git rev-parse --short HEAD` %}
       {% current_tag = `git tag --points-at HEAD` %}
       {% if current_tag.strip == "" %}
