@@ -4,20 +4,19 @@ jobs:
   debug:
     name: Debug Status
     runs-on: ubuntu-20.04	
-    outputs:
-      skip-debug: ${{ steps.skip-debug.outputs.debug }}
-      release-debug: ${{ steps.release-debug.outputs.debug }}
+    env:
+      debug: ${{secrets.SKIP_DEBUG}}
     steps:
-    - id: skip-debug
+    - name: Skip Debug
+      if: env.debug == 'true'
       run: |
-        if [[ "${{secrets.SKIP_DEBUG}}" == 'true' ]]; then 
-          echo "::set-output name=debug::true"
-        fi
-    - id: skip-release
-      run: |
-        if [[ "$SKIP_RELEASE" == 'true' ]]; then 
-          echo "::set-output name=debug::true"
-        fi
+        touch skip_debug
+    - name: upload artifact
+      if: env.debug == 'true'
+      uses: actions/upload-artifact@v2
+      with:
+        name: skip_debug
+        path: skip_debug
   tests:
     name: Fetch Matrix Tests
     runs-on: ubuntu-20.04	
@@ -52,9 +51,13 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Debug
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: skip_debug
+    - name: test artifact
       run: |
-        echo "${{ needs.debug.outputs.skip-debug }}"
+        cat skip_debug
     - id: skip
       run: |
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
@@ -142,7 +145,7 @@ jobs:
         shards install
         docker pull conformance/crystal:0.35.1
         docker run --rm -v $PWD:/workspace -w /workspace conformance/crystal:0.35.1-llvm10 crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'
-    - name: Upload artifact
+    - name: upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: release
