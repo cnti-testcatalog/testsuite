@@ -37,7 +37,7 @@ jobs:
       with:
         fetch-depth: 0
     - uses: mxschmitt/action-tmate@v3
-      if: ${{env.debug_skip}} == 'true'
+      if: env.debug_skip == 'true'
     - id: skip
       run: |
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
