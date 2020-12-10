@@ -6,8 +6,10 @@ require "totem"
 require "json"
 require "../utils/utils.cr"
 
+rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
+
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
-task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "rolling_update", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration"]  do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback"].concat(rolling_version_change_test_names) do |_, args|
   stdout_score("configuration_lifecycle")
 end
 
@@ -153,9 +155,7 @@ def get_helm_chart_values(sam_args, release_name)
   helm_chart_values
 end
 
-test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
-
-test_names.each do |tn|
+rolling_version_change_test_names.each do |tn|
   pretty_test_name = tn.split(/:|_/).join(" ")
   pretty_test_name_capitalized = tn.split(/:|_/).map(&.capitalize).join(" ")
 
