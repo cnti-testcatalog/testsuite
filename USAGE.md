@@ -307,6 +307,15 @@ crystal src/cnf-conformance.cr external_retry
 ./cnf-conformance hardcoded_ip_addresses_in_k8s_runtime_configuration
 ```
 
+#### :heavy_check_mark: To check if a CNF version can be downgraded through a rolling_downgrade, aka [rollback](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment)
+```
+./cnf-conformance rolling_downgrade
+```
+or
+```
+./cnf-conformance rollback
+```
+
 <details> <summary>Details for Configuration and Lifecycle Tests To Do's</summary>
 <p>
 
@@ -396,15 +405,6 @@ Now run the test:
 #### :heavy_check_mark: To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
 ```
 ./cnf-conformance rolling_update
-```
-
-#### :heavy_check_mark: To check if a CNF version can be downgraded through a rolling_downgrade, aka [rollback](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment)
-```
-./cnf-conformance rolling_downgrade
-```
-or
-```
-./cnf-conformance rollback
 ```
 
 ---
