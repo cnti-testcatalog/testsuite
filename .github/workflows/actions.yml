@@ -1,6 +1,52 @@
 name: Crystal Specs
 on: [push, pull_request]
 jobs:
+  debug_status:
+    name: Debug Status
+    runs-on: ubuntu-20.04	
+    env:
+      skip_debug: ${{secrets.SKIP_DEBUG}}
+      release_debug: ${{secrets.RELEASE_DEBUG}}
+    steps:
+    - name: Create Debug Files
+      run: |
+        touch skip_debug
+        touch release_debug
+        if [[ "$skip_debug" == 'true' ]]; then
+           echo 'true' > skip_debug
+        fi
+        if [[ "$release_debug" == 'true' ]]; then
+           echo 'true' > release_debug
+        fi
+    - name: upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: debug_status
+        path: |
+          skip_debug
+          release_debug
+  debug_output:
+    name: Debug Outputs
+    needs: [debug_status]
+    runs-on: ubuntu-20.04	
+    outputs:
+      skip-debug: ${{ steps.skip-debug.outputs.debug }}
+      release-debug: ${{ steps.release-debug.outputs.debug }}
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: debug_status
+    - id: skip-debug
+      run: |
+        if grep -q 'true' "./skip_debug"; then 
+          echo "::set-output name=debug::true"
+        fi
+    - id: release-debug
+      run: |
+        if grep -q 'true' "./release_debug"; then 
+          echo "::set-output name=debug::true"
+        fi
   tests:
     name: Fetch Matrix Tests
     runs-on: ubuntu-20.04	
@@ -27,8 +73,7 @@ jobs:
   skip:
     name: Skip Build
     runs-on: ubuntu-20.04	
-    env:
-      debug: ${{secrets.DEBUG_SKIP}}
+    needs: [debug_output]
     outputs:
       skip: ${{ steps.skip.outputs.skip }}
     steps:
@@ -36,12 +81,11 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Skip Debug
-      if: ${{env.debug}} == 'true'
-      uses: mxschmitt/action-tmate@v3
     - id: skip
       run: |
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
+    - uses: mxschmitt/action-tmate@v3
+      if: needs.debug_output.outputs.skip-debug == 'true'
   spec:
     name: Crystal Specs
     needs: [tests, skip]
@@ -124,17 +168,17 @@ jobs:
         shards install
         docker pull conformance/crystal:0.35.1
         docker run --rm -v $PWD:/workspace -w /workspace conformance/crystal:0.35.1-llvm10 crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'
-    - name: Upload artifact
+    - name: upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: release
         path: cnf-conformance
   release:
     name: Publish Release
-    needs: [spec, build]
+    needs: [spec, build, debug_output]
     runs-on: ubuntu-latest
     env:
-      debug: ${{secrets.DEBUG_RELEASE}}
+      debug: ${{secrets.RELEASE_DEBUG}}
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -144,9 +188,8 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: release
-    - name: Release Debug
-      if: ${{env.debug}} == 'true'
-      uses: mxschmitt/action-tmate@v3
+    - uses: mxschmitt/action-tmate@v3
+      if: needs.debug_output.outputs.release-debug == 'true'
     - name: Make release executable
       run: chmod +x ./cnf-conformance
     - name: Publish Release
