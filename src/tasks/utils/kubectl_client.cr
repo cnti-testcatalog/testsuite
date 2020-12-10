@@ -28,6 +28,14 @@ module KubectlClient
     end
   end
   module Get 
+    def self.privileged_containers(namespace="--all-namespaces")
+      privileged_response = `kubectl get pods #{namespace} -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
+      # TODO parse this as json
+      resp = privileged_response.to_s.split(" ").uniq
+      LOGGING.debug "kubectl get privileged_containers: #{resp}"
+      resp
+    end
+
     def self.nodes : JSON::Any
       # TODO should this be all namespaces?
       resp = `kubectl get nodes -o json`
