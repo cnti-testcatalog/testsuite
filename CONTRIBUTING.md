@@ -32,7 +32,7 @@ To request an enhancement, please create a new issue using the [**Feature Reques
 **2. Report Bugs:**
 To report a bug, please create a new issue using the [**Bug Report**](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=bug&template=bug-report.md&title=%5BBUG%5D) Template. Check out [How to Report Bugs Effectively](https://www.chiark.greenend.org.uk/~sgtatham/bugs.html.).
 
-NOTE: you can enable higher logging level output via the command line or env var. to help with debugging
+NOTE: To help with debugging, you can enable higher logging level output via the command line or env var
 
 ```
 # cmd line

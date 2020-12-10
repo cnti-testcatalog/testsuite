@@ -14,9 +14,17 @@ module KubectlClient
       LOGGING.debug "rollout? #{rollout_status}"
       $?.success?
     end
+    def self.undo(deployment_name)
+      rollback = `kubectl rollout undo deployment/#{deployment_name}`
+      rollback_status = $?.success?
+      LOGGING.debug "#{rollback}"
+      LOGGING.debug "rollback? #{rollback_status}"
+      $?.success?
+    end
   end
   module Set
     def self.image(deployment_name, container_name, image_name, version_tag=nil)
+      #TODO check if image exists in repo? DockerClient::Get.image and image_by_tags
       if version_tag
         # use --record to have history
         resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record`

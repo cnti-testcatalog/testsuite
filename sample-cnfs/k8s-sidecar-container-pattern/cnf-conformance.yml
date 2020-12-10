@@ -13,12 +13,12 @@ helm_repository:
   repo_url: https://cncf.gitlab.io/stable
 helm_chart: 
 helm_chart_container_name: busybox 
-rolling_update_tag: 1.6.7
+rolling_update_test_tag: 1.6.7
 container_names: 
   - name: sidecar-container1 
-    upgrade_test_tag: "1.32.0"
+    rolling_update_test_tag: "1.32.0"
   - name: sidecar-container2
-    upgrade_test_tag: "1.32.0"
+    rolling_update_test_tag: "1.32.0"
   - name: main-container
-    upgrade_test_tag: "1.9.9"
+    rolling_update_test_tag: "1.16.0"
 white_list_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
