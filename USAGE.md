@@ -307,11 +307,12 @@ crystal src/cnf-conformance.cr external_retry
 ./cnf-conformance hardcoded_ip_addresses_in_k8s_runtime_configuration
 ```
 
-#### :heavy_check_mark: To check if a CNF version can be downgraded through a rolling_downgrade, aka [rollback](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment)
+#### :heavy_check_mark: To check if a CNF version can be downgraded through a rolling_downgrade 
 ```
 ./cnf-conformance rolling_downgrade
 ```
-or
+
+#### :heavy_check_mark: To check if a CNF version can be rolled back [rollback](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment)
 ```
 ./cnf-conformance rollback
 ```
