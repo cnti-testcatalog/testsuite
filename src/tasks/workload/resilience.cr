@@ -79,7 +79,7 @@ task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, arg
     if test_passed
       resp = upsert_passed_task("chaos_network_loss","✔️  PASSED: Replicas available match desired count after network chaos test #{emoji_chaos_network_loss}")
     else
-      resp = upsert_failed_task("chaos_network_loss","✖️  FAILURE: No deployment label found for network chaos test")
+      resp = upsert_failed_task("chaos_network_loss","✖️  FAILURE: Replicas did not return desired count after network chaos test #{emoji_chaos_network_loss}")
     end
   ensure
     delete_chaos = `kubectl delete -f "#{destination_cnf_dir}/chaos_network_loss.yml"`
