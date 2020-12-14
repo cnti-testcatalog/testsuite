@@ -167,7 +167,7 @@ jobs:
       run: |
         shards install
         docker pull conformance/crystal:0.35.1
-        docker run --rm -v $PWD:/workspace -w /workspace conformance/crystal:0.35.1-llvm10 crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'
+        docker run --rm -v $PWD:/workspace -w /workspace conformance/crystal:0.35.1-llvm10-grep crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'
     - name: upload artifact
       uses: actions/upload-artifact@v2
       with:
