@@ -172,6 +172,8 @@ TEMPLATE
       {% current_branch = `git rev-parse --abbrev-ref HEAD`.split("\n")[0].strip %}
       {% current_hash = `git rev-parse --short HEAD` %}
       {% current_tag = `git status | grep -oP 'HEAD.*\K(v[0-9]+[0-9]?\.[0-9]+[0-9]?(\.[0-9]+[0-9]?)?)' || true` %}
+      {% puts "git status during compile: #{`git status`}" %}
+      {% puts "current_tag during compile: #{current_tag}" %}
       {% if current_tag.strip == "" %}
         VERSION = {{current_branch}} + "-{{current_hash.strip}}"
       {% else %}
