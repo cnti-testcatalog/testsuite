@@ -1,5 +1,6 @@
 require "totem"
 require "colorize"
+require "string_scanner"
 require "./cnf_manager.cr"
 require "halite"
 
@@ -171,13 +172,15 @@ TEMPLATE
     macro tagged_version
       {% current_branch = `git rev-parse --abbrev-ref HEAD`.split("\n")[0].strip %}
       {% current_hash = `git rev-parse --short HEAD` %}
-      {% current_tag = `git status | grep -oP 'HEAD.*\K(v[0-9]+[0-9]?\.[0-9]+[0-9]?(\.[0-9]+[0-9]?)?)' || true` %}
+      {% current_status = `git status`.split("\n")[0].strip %}
+      {% current_tag = `git tag --points-at HEAD`.split("\n")[-2].strip %} 
       {% puts "git status during compile: #{`git status`}" %}
+      {% puts "current_branch during compile: #{current_branch}" %}
       {% puts "current_tag during compile: #{current_tag}" %}
       {% if current_tag.strip == "" %}
         VERSION = {{current_branch}} + "-{{current_hash.strip}}"
       {% else %}
-        VERSION = "{{current_tag.strip}}"
+        VERSION = {{current_tag.strip}}
       {% end %}
     end
   end
