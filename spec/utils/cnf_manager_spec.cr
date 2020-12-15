@@ -1,25 +1,22 @@
 require "../spec_helper"
 require "colorize"
 require "../../src/tasks/utils/utils.cr"
+require "../../src/tasks/utils/kubectl_client.cr"
 require "file_utils"
 require "sam"
 
 describe "SampleUtils" do
   before_all do
-    # LOGGING.debug `pwd` 
-    # LOGGING.debug `echo $KUBECONFIG`
     `./cnf-conformance helm_local_install`
     $?.success?.should be_true
     `./cnf-conformance cleanup`
     $?.success?.should be_true
   end
 
-   after_all do
-     # LOGGING.debug `pwd` 
-     # LOGGING.debug `echo $KUBECONFIG`
-     `./cnf-conformance sample_coredns_setup`
-     $?.success?.should be_true
-   end
+   # after_all do
+   #   LOGGING.debug `./cnf-conformance sample_coredns_setup`
+   #   $?.success?.should be_true
+   # end
 
   after_each do
     `./cnf-conformance cleanup`
@@ -95,6 +92,19 @@ describe "SampleUtils" do
     (File.exists? "cnfs/privileged-coredns-coredns/chart/Chart.yaml").should be_true
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
     (Dir.exists? "cnfs/privileged-coredns-coredns").should be_false
+  end
+
+  it "'CNFManager.sample_setup_args and CNFManager.sample_cleanup' should be able to deploy and cleanup using a manifest_directory", tags: "happy-path"  do
+    args = Sam::Args.new
+    CNFManager.sample_setup_args(sample_dir: "sample-cnfs/k8s-non-helm", deploy_with_chart: false, args: args, verbose: true, install_from_manifest: true, wait_count: 0 )
+    (Dir.exists? "cnfs/nginx-webapp").should be_true
+    (Dir.exists? "cnfs/nginx-webapp/manifests").should be_true
+    (File.exists? "cnfs/nginx-webapp/cnf-conformance.yml").should be_true
+    (KubectlClient::Get.pod_exists?("nginx-webapp")).should be_true
+    CNFManager.sample_cleanup(config_file: "sample-cnfs/k8s-non-helm", installed_from_manifest: true, verbose: true)
+    # TODO check for pod status = terminating
+    (KubectlClient::Get.pod_exists?("nginx-webapp", check_ready: true)).should be_false
+    (Dir.exists? "cnfs/nginx-webapp").should be_false
   end
 
   it "'cnf_destination_dir' should return the full path of the potential destination cnf directory based on the deployment name", tags: "WIP" do

@@ -20,3 +20,13 @@ cnf-conformance.env
 *.tar*
 reasonable_startup_orig.yml
 reasonable_startup_test.yml
+cri_tools.yml
+ephemeral_env 
+kubeconfig.conf 
+linux-amd64/
+reasonable_startup_orig_gobal.yml
+reasonable_startup_orig_local.yml
+sam.cr
+test.file 
+tools/k8s-infra/
+tmp/

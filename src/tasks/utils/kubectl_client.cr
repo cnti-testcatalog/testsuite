@@ -14,6 +14,13 @@ module KubectlClient
       LOGGING.debug "rollout? #{rollout_status}"
       $?.success?
     end
+    def self.undo(deployment_name)
+      rollback = `kubectl rollout undo deployment/#{deployment_name}`
+      rollback_status = $?.success?
+      LOGGING.debug "#{rollback}"
+      LOGGING.debug "rollback? #{rollback_status}"
+      $?.success?
+    end
   end
   module Set
     def self.image(deployment_name, container_name, image_name, version_tag=nil)
@@ -29,6 +36,14 @@ module KubectlClient
     end
   end
   module Get 
+    def self.privileged_containers(namespace="--all-namespaces")
+      privileged_response = `kubectl get pods #{namespace} -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
+      # TODO parse this as json
+      resp = privileged_response.to_s.split(" ").uniq
+      LOGGING.debug "kubectl get privileged_containers: #{resp}"
+      resp
+    end
+
     def self.nodes : JSON::Any
       # TODO should this be all namespaces?
       resp = `kubectl get nodes -o json`
@@ -42,10 +57,33 @@ module KubectlClient
       JSON.parse(resp)
     end
 
+    def self.save_manifest(deployment_name, output_file) 
+      resp = `kubectl get deployment #{deployment_name} -o yaml  > #{output_file}`
+      LOGGING.debug "kubectl save_manifest: #{resp}"
+      $?.success?
+    end
+
+    def self.deployments : JSON::Any
+      resp = `kubectl get deployments -o json`
+      LOGGING.debug "kubectl get deployment: #{resp}"
+      JSON.parse(resp)
+    end
+
     def self.deployment_containers(deployment_name) : JSON::Any 
       LOGGING.debug "kubectl get deployment containers deployment_name: #{deployment_name}"
       resp = deployment(deployment_name).dig?("spec", "template", "spec", "containers")
       LOGGING.debug "kubectl get deployment containers: #{resp}"
+      if resp 
+        resp
+      else
+        JSON.parse(%({}))
+      end
+    end
+
+    def self.deployment_spec_labels(deployment_name) : JSON::Any 
+      LOGGING.debug "deployment_labels deployment_name: #{deployment_name}"
+      resp = deployment(deployment_name).dig?("spec", "template", "metadata", "labels")
+      LOGGING.debug "deployment_labels: #{resp}"
       if resp 
         resp
       else
@@ -107,10 +145,26 @@ module KubectlClient
       LOGGING.info "runtimes: #{runtimes}"
       runtimes.uniq
     end
-    def self.pods : JSON::Any
-      resp = `kubectl get pods --all-namespaces -o json`
+    def self.pods(all_namespaces=true) : JSON::Any
+      option = all_namespaces ? "--all-namespaces" : ""
+      resp = `kubectl get pods #{option} -o json`
       LOGGING.debug "kubectl get pods: #{resp}"
       JSON.parse(resp)
+    end
+
+    # *pod_exists* returns true if a pod containing *pod_name* exists, regardless of status.
+    # If *check_ready* is set to true, *pod_exists* validates that the pod exists and 
+    # has a ready status of true
+    def self.pod_exists?(pod_name, check_ready=false, all_namespaces=false) 
+      LOGGING.debug "pod_exists? pod_name: #{pod_name}"
+      exists = pods(all_namespaces)["items"].as_a.any? do |x|
+        (name_comparison = x["metadata"]["name"].as_s? =~ /#{pod_name}/
+        (x["metadata"]["name"].as_s? =~ /#{pod_name}/) || 
+          (x["metadata"]["generateName"]? && x["metadata"]["generateName"].as_s? =~ /#{pod_name}/)) &&
+        (check_ready && (x["status"]["conditions"].as_a.find{|x| x["type"].as_s? == "Ready"} && x["status"].as_s? == "True") || check_ready==false)
+      end
+      LOGGING.debug "pod exists: #{exists}"
+      exists 
     end
     def self.all_pod_statuses
       statuses = pods["items"].as_a.map do |x|
