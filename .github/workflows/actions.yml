@@ -161,7 +161,7 @@ jobs:
       with:
         fetch-depth: 0
     - uses: mxschmitt/action-tmate@v3
-      # if: needs.debug_output.outputs.build-debug == 'true'
+      if: needs.debug_output.outputs.build-debug == 'true'
     - name: Install Crystal
       env:
         CRYSTAL_VERSION: 0.35.1
