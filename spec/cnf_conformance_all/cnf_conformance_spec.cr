@@ -16,6 +16,7 @@ describe CnfConformance do
   it "'all' should run the workloads test suite", tags: "happy-path" do
     `./cnf-conformance samples_cleanup`
     # the workload resilience tests are run in the chaos specs
+    # the ommisions (i.e. ~resilience) are done for performance reasons for the spec suite
     response_s = `./cnf-conformance all ~platform ~resilience cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose`
     LOGGING.info response_s
     (/PASSED: Helm readiness probe found/ =~ response_s).should_not be_nil
