@@ -1,5 +1,6 @@
 require "totem"
 require "colorize"
+require "string_scanner"
 require "./cnf_manager.cr"
 require "halite"
 
@@ -36,8 +37,8 @@ module ReleaseManager
         draft = true 
       end
       LOGGING.info "upsert_version: #{upsert_version}"
-      LOGGING.info "upsert_version comparison: upsert_version =~ /(?i)(master|v[0-1]|test_version)/ : #{upsert_version =~ /(?i)(master|v[0-1]|test_version)/}"
-      unless upsert_version =~ /(?i)(master|v[0-1]|test_version)/
+      LOGGING.info "upsert_version comparison: upsert_version =~ /(?i)(master|v[0-9]|test_version)/ : #{upsert_version =~ /(?i)(master|v[0-9]|test_version)/}"
+      unless upsert_version =~ /(?i)(master|v[0-9]|test_version)/
         LOGGING.info "Not creating a release for : #{upsert_version}"
         return {found_release, asset} 
       end
@@ -171,11 +172,15 @@ TEMPLATE
     macro tagged_version
       {% current_branch = `git rev-parse --abbrev-ref HEAD`.split("\n")[0].strip %}
       {% current_hash = `git rev-parse --short HEAD` %}
-      {% current_tag = `git tag --points-at HEAD` %}
+      {% current_status = `git status`.split("\n")[0].strip %}
+      {% current_tag = `git tag --points-at HEAD`.split("\n")[-2].strip %} 
+      {% puts "git status during compile: #{`git status`}" %}
+      {% puts "current_branch during compile: #{current_branch}" %}
+      {% puts "current_tag during compile: #{current_tag}" %}
       {% if current_tag.strip == "" %}
         VERSION = {{current_branch}} + "-{{current_hash.strip}}"
       {% else %}
-        VERSION = "{{current_tag.strip}}"
+        VERSION = {{current_tag.strip}}
       {% end %}
     end
   end

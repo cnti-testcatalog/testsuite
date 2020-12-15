@@ -60,7 +60,6 @@ git push --tags
 - Modify the release notes to reflect the contents for the release
 - Mark the release as non-draft 
 
-
 **[Manually create builds]**
 based on [INSTALL.md#optional-build-binary](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#optional-build-binary) and [Minimal instructions to run the tests from source (as of 2020-06-23)](https://hackmd.io/hcHoJEKaRWuyf_fZ7ITxLw)
 - Download source: `git clone https://github.com/cncf/cnf-conformance.git`
