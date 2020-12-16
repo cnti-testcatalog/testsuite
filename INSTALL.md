@@ -93,7 +93,7 @@ curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.
 ```
 #### Source Install
 
-This is a brief install method and [does have requirements](#Requirements-for-source-installation) in order to compile a binary from source. To read more on source installation, see the [SOURCE-INSTALL](SOURCE-INSTALL.md) document.
+This is a brief install method and [does have requirements](#Requirements-for-source-installation) in order to compile a binary from source. To read more on source installation, see the [SOURCE-INSTALL](SOURCE_INSTALL.md) document.
 
 Follow these steps to checkout the source from github and compile a cnf-conformance binary:
 
