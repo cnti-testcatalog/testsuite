@@ -17,6 +17,10 @@ task "helm_deploy" do |_, args|
   if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
     task_runner(args) do |args|
       begin
+        # TODO if manifest file and not helm, fail
+        # TODO helm should template the metadata.name attribute based on the helm release name
+        # TODO if we dont detect a templated metadata.name, use a namespace
+        # TODO do something if using rbac roles since they cant be namespaced 
         release_name_prefix = "helm-deploy-"
         config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
 
