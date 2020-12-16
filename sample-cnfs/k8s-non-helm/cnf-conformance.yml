@@ -26,8 +26,8 @@ container_names:
     rolling_version_change_test_tag: latest
     rollback_from_tag: latest
   - name: main-container
-    rolling_update_test_tag: "1.9.9"
-    rolling_downgrade_test_tag: 1.9.9
+    rolling_update_test_tag: "1.16.0"
+    rolling_downgrade_test_tag: 1.16.0
     rolling_version_change_test_tag: latest
     rollback_from_tag: latest
 white_list_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]

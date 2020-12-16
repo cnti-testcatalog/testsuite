@@ -22,6 +22,7 @@ task "helm_deploy" do |_, args|
         # TODO if we dont detect a templated metadata.name, use a namespace
         # TODO do something if using rbac roles since they cant be namespaced 
         release_name_prefix = "helm-deploy-"
+        create_namespace = `kubectl create namespace helm-deploy`
         config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
 
         helm_chart = "#{config.get("helm_chart").as_s?}"
@@ -37,11 +38,11 @@ task "helm_deploy" do |_, args|
           #TODO make this work off of a helm directory if helm_directory was passed
           # yml_file_path = cnf_conformance_yml_file_path(args)
           yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
-          VERBOSE_LOGGING.debug "#{helm} install #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}" if check_verbose(args)
-          helm_install = `#{helm} install #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}`
+          VERBOSE_LOGGING.debug "#{helm} install --namespace helm-deploy #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}" if check_verbose(args)
+          helm_install = `#{helm} install --namespace helm-deploy #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}`
         else 
-          VERBOSE_LOGGING.debug "#{helm} install #{release_name_prefix}#{release_name} #{helm_chart}" if check_verbose(args)
-          helm_install = `#{helm} install #{release_name_prefix}#{release_name} #{helm_chart}`
+          VERBOSE_LOGGING.debug "#{helm} install --namespace helm-deploy #{release_name_prefix}#{release_name} #{helm_chart}" if check_verbose(args)
+          helm_install = `#{helm} install --namespace helm-deploy #{release_name_prefix}#{release_name} #{helm_chart}`
         end
 
         is_helm_installed = $?.success?
@@ -53,8 +54,9 @@ task "helm_deploy" do |_, args|
           upsert_failed_task("helm_deploy", "✖️  FAILURE: Helm deploy failed")
         end
       ensure
-        VERBOSE_LOGGING.debug "#{helm} uninstall #{release_name_prefix}#{release_name}" if check_verbose(args)
-        helm_uninstall = `#{helm} uninstall #{release_name_prefix}#{release_name}`
+        VERBOSE_LOGGING.debug "#{helm} uninstall --namespace helm-deploy #{release_name_prefix}#{release_name}" if check_verbose(args)
+        helm_uninstall = `#{helm} uninstall --namespace helm-deploy #{release_name_prefix}#{release_name}`
+        delete_namespace = `kubectl delete namespace helm-deploy`
       end
     end
   else
