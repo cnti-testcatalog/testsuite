@@ -58,6 +58,7 @@ task "liveness", ["retrieve_manifest"] do |_, args|
     # Parse the cnf-conformance.yml
     resp = ""
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    #TODO use a named tuple (e.g. cnf_config), used in the task_runner, with all of the config options from cnf-conformance.yml
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     emoji_probe="🧫"
     yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
@@ -65,6 +66,7 @@ task "liveness", ["retrieve_manifest"] do |_, args|
     VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
     # TODO remove helm_directory and use base cnf directory
     helm_directory = "#{config.get("helm_directory").as_s?}"
+    # cnf_config[:helm_directory]
     manifest_directory = optional_key_as_string(config, "manifest_directory")
     release_name = "#{config.get("release_name").as_s?}"
     helm_chart_path = destination_cnf_dir + "/" + helm_directory
@@ -87,8 +89,12 @@ task "liveness", ["retrieve_manifest"] do |_, args|
                                             manifest_file_path)
       template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
     end
+    #TODO create a workload resource function that accepts a block. Use it here
+    #TODO e.g. test_passes_completely = workload_resource_test do | cnf_config, resource, container, initialized |
     deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
     deployment_names = Helm.workload_resource_names(deployment_ymls)
+    #TODO change all deployments to resources
+    resource_names = Helm.workload_resource_kind_names(deployment_ymls)
     LOGGING.info "deployment names: #{deployment_names}"
     if deployment_names && deployment_names.size > 0 
       test_passed = true
@@ -100,6 +106,7 @@ task "liveness", ["retrieve_manifest"] do |_, args|
 			VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
 			containers = KubectlClient::Get.deployment_containers(deployment)
 			containers.as_a.each do |container|
+        #TODO this is the only code that is unique to this test
 				begin
 					VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
 					container.as_h["livenessProbe"].as_h 

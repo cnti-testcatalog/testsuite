@@ -5,6 +5,24 @@ require "./types/cnf_conformance_yml_type.cr"
 
 module CNFManager 
 
+  class Config
+    property cnf_config : NamedTuple(helm_directory: String | Nil, 
+                                     git_clone_url: String | Nil,
+                                     install_script: String | Nil,
+                                     release_name: String | Nil,
+                                     deployment_name: String | Nil,
+                                     deployment_label: String | Nil,
+                                     service_name:  String | Nil,
+                                     application_deployment_names: String | Nil,
+                                     docker_repository: String | Nil,
+                                     helm_repository: NamedTuple(name:  String | Nil, repo_url:  String | Nil) | Nil,
+                                     helm_chart:  String | Nil,
+                                     helm_chart_container_name: String | Nil,
+                                     rolling_update_tag: String | Nil,
+                                     container_names: Array(NamedTuple(name:  String | Nil, upgrade_test_tag: String | Nil) | Nil ) | Nil,
+                                     white_list_helm_chart_container_names: String | Nil) | Nil
+  end
+
   def self.final_cnf_results_yml
     results_file = `find ./results/* -name "cnf-conformance-results-*.yml"`.split("\n")[-2].gsub("./", "")
     if results_file.empty?

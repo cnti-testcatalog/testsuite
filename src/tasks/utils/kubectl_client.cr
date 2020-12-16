@@ -4,6 +4,13 @@ require "./cnf_manager.cr"
 require "halite"
 
 module KubectlClient 
+  WORKLOAD_RESOURCES = {deployment: "Deployment", 
+                        service: "Service", 
+                        pod: "Pod", 
+                        replicaset: "ReplicaSet", 
+                        statefulset: "StatefulSet", 
+                        daemonset: "DaemonSet"}
+
   # https://www.capitalone.com/tech/cloud/container-runtime/
   OCI_RUNTIME_REGEX = /containerd|docker|runc|railcar|crun|rkt|gviso|nabla|runv|clearcontainers|kata|cri-o/i
   module Rollout
