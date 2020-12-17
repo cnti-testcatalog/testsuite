@@ -146,7 +146,7 @@ source test.sh
 ### Configuration
 Now cnf-conformance is setup, we're ready to configure it to point at a CNF to test.
 
-#### Example CNF
+#### Using an Example CNF
 
 - If you want to use an example CNF, you can download our CoreDNS example CNF by doing the following:
 
