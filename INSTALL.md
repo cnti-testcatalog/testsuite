@@ -74,12 +74,13 @@ cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git
 We support the following methods of installing the cnf-conformance suite:
 
 - [Curl installation](#Curl-Binary-Installation) (via latest binary release)
+- [Latest Binary](https://github.com/cncf/cnf-conformance/releases) (manual download)
 - From [**Source**](#Source-Install) on github.
 
 
 #### Curl Binary Installation
 
-There are two methods to install via curl:
+There are two methods to install via curl, we prefer the first method (the others including the manual and source install are optional):
 
 - This first command using curl will download, install, and export the path automatically (recommended method):
 
@@ -87,13 +88,29 @@ There are two methods to install via curl:
 source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.sh)
 ```
 
-- Or you can use curl to download and install, but you will have to export the PATH to the location of the executable:
+<details><summary>Click here for the other curl and manual install method</summary>
+<p>
+
+- The other curl method to download and install requires you to export the PATH to the location of the executable:
 ```
 curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.sh | bash
 ```
+
+- The Latest Binary (or you can select a previous release if desired) can be pulled down with wget, curl or you're own preferred method. Once downloaded you'll need to make the binary executable and manually add to your path:
+```
+wget https://github.com/cncf/cnf-conformance/releases/download/latest/latest.tar.gz
+chmod +x cnf-conformance
+export OLDPATH=$PATH; export PATH=$PATH:(pwd)
+```
+</p>
+</details>
+
 #### Source Install
 
 This is a brief install method and [does have requirements](#Requirements-for-source-installation) in order to compile a binary from source. To read more on source installation, see the [SOURCE-INSTALL](SOURCE_INSTALL.md) document.
+
+<details><summary> Click here for brief source install details</summary>
+<p>
 
 Follow these steps to checkout the source from github and compile a cnf-conformance binary:
 
@@ -104,7 +121,8 @@ shards install
 crystal build src/cnf-conformance.cr
 ```
 This should build a cnf-conformance binary in the root directory of the git repo clone.
-
+</p>
+</details>
 
 ### Preparation
 
@@ -160,7 +178,7 @@ cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
 
 - There are other examples in the [examples-cnfs](https://github.com/cncf/cnf-conformance/tree/master/example-cnfs) directory that can be used for testing as well.
 
-#### Testing Your Own CNF
+#### Bring Your Own CNF
 
 If you've brought your own CNF to test, review the [CNF_CONFORMANCE_YML_USAGE.md](CNF_CONFORMANCE_YML_USAGE.md) document on formatting and other requirements.
 
@@ -169,6 +187,7 @@ If you've brought your own CNF to test, review the [CNF_CONFORMANCE_YML_USAGE.md
 #### Running Tests
 
 If you want to run all tests, do the following (this is assuming you your `cnf_setup` ran without errors in the [configuration](#Configuration) steps:)
+_For complete usage, see the [USAGE.md](USAGE.md) doc._
 
 ```
 cnf-conformance all
@@ -183,8 +202,6 @@ The following would run only the platform tests:
 ```
 cnf-conformance platform 
 ```
-
-For complete usage, see the [USAGE.md](USAGE.md) doc.
 
 #### Checking Results
 
