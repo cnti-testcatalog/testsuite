@@ -182,6 +182,12 @@ cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
 
 If you've brought your own CNF to test, review the [CNF_CONFORMANCE_YML_USAGE.md](CNF_CONFORMANCE_YML_USAGE.md) document on formatting and other requirements.
 
+If you've followed the [CNF_CONFORMANCE_YML_USAGE.md](CNF_CONFORMANCE_YML_USAGE.md) guide and have your cnf-conformance.yml ready, you can run the same command in the example CNF to set it up:
+
+```
+cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
+```
+
 ### Running cnf-conformance for the first time
 
 #### Running Tests
