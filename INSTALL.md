@@ -88,7 +88,7 @@ There are two methods to install via curl, we prefer the first method (the other
 source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.sh)
 ```
 
-<details><summary>Click here for the other curl and manual install method</summary>
+<details><summary>Click here for the alternate curl and manual install method</summary>
 <p>
 
 - The other curl method to download and install requires you to export the PATH to the location of the executable:
@@ -107,7 +107,7 @@ export OLDPATH=$PATH; export PATH=$PATH:(pwd)
 
 #### Source Install
 
-This is a brief install method and [does have requirements](#Requirements-for-source-installation) in order to compile a binary from source. To read more on source installation, see the [SOURCE-INSTALL](SOURCE_INSTALL.md) document.
+This is a brief summary for source installations and [does have requirements](#Requirements-for-source-installation) in order to compile a binary from source. To read more on source installation, see the [SOURCE-INSTALL](SOURCE_INSTALL.md) document.
 
 <details><summary> Click here for brief source install details</summary>
 <p>
@@ -186,7 +186,7 @@ If you've brought your own CNF to test, review the [CNF_CONFORMANCE_YML_USAGE.md
 
 #### Running Tests
 
-If you want to run all tests, do the following (this is assuming you your `cnf_setup` ran without errors in the [configuration](#Configuration) steps:)
+If you want to run all tests, do the following (this is assuming your `cnf_setup` ran without errors in the [configuration](#Configuration) steps:)
 _For complete usage, see the [USAGE.md](USAGE.md) doc._
 
 ```
