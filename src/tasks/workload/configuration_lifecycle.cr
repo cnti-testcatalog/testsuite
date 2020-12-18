@@ -53,71 +53,26 @@ end
 
 desc "Is there a liveness entry in the helm chart?"
 task "liveness", ["retrieve_manifest"] do |_, args|
-  task_runner(args) do |args|
+  task_runner(args) do |args, config|
+    LOGGING.debug "cnf_config: #{config.cnf_config}"
     VERBOSE_LOGGING.info "liveness" if check_verbose(args)
-    # Parse the cnf-conformance.yml
     resp = ""
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    #TODO use a named tuple (e.g. cnf_config), used in the task_runner, with all of the config options from cnf-conformance.yml
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     emoji_probe="🧫"
-    yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
-    LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
-    VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
-    # TODO remove helm_directory and use base cnf directory
-    helm_directory = "#{config.get("helm_directory").as_s?}"
-    # cnf_config[:helm_directory]
-    manifest_directory = optional_key_as_string(config, "manifest_directory")
-    release_name = "#{config.get("release_name").as_s?}"
-    helm_chart_path = destination_cnf_dir + "/" + helm_directory
-    manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
-    # get the manifest file from the helm chart
-    # TODO if no helm chart release name, then assume bare manifest file/directory with no helm chart
-    # TODO loop through all workload resource types and get containers from k8s api
-    # TODO looop through all podspecs and get containers from k8s api
-    # TODO save workload resource type and name with container
-    # TODO add podspec containers to list 
-    # TODO subtract duplicates
-    # TODO loop through all containers
-    # TODO separate this out to a workload resource function that accepts a block
-    LOGGING.info "release_name: #{release_name}"
-    if release_name.empty? # no helm chart
-      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
-    else
-      Helm.generate_manifest_from_templates(release_name, 
-                                            helm_chart_path, 
-                                            manifest_file_path)
-      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
-    end
-    #TODO create a workload resource function that accepts a block. Use it here
-    #TODO e.g. test_passes_completely = workload_resource_test do | cnf_config, resource, container, initialized |
-    deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
-    deployment_names = Helm.workload_resource_names(deployment_ymls)
-    #TODO change all deployments to resources
-    resource_names = Helm.workload_resource_kind_names(deployment_ymls)
-    LOGGING.info "deployment names: #{deployment_names}"
-    if deployment_names && deployment_names.size > 0 
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
-    else
-      LOGGING.error "no deployment names found"
-      test_passed = false
+      begin
+        VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
+        container.as_h["livenessProbe"].as_h 
+      rescue ex
+        VERBOSE_LOGGING.error ex.message if check_verbose(args)
+        test_passed = false 
+        puts "No livenessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+      end
+      LOGGING.debug "liveness test_passed: #{test_passed}"
+      test_passed 
     end
-		deployment_names.each do | deployment |
-			VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
-			containers = KubectlClient::Get.deployment_containers(deployment)
-			containers.as_a.each do |container|
-        #TODO this is the only code that is unique to this test
-				begin
-					VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
-					container.as_h["livenessProbe"].as_h 
-				rescue ex
-					VERBOSE_LOGGING.error ex.message if check_verbose(args)
-					test_passed = false 
-          puts "No livenessProbe found for deployment: #{deployment} and container: #{container.as_h["name"].as_s}".colorize(:red)
-				end
-			end
-		end
-    if test_passed 
+    LOGGING.debug "liveness task response: #{task_response}"
+    if task_response 
       resp = upsert_passed_task("liveness","✔️  PASSED: Helm liveness probe found #{emoji_probe}")
 		else
 			resp = upsert_failed_task("liveness","✖️  FAILURE: No livenessProbe found #{emoji_probe}")

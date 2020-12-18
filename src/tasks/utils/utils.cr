@@ -225,7 +225,7 @@ def check_cnf_config_then_deploy(args)
   CNFManager.sample_setup_args(sample_dir: config_file, deploy_with_chart: deploy_with_chart, args: args, verbose: check_verbose(args) ) if config_file
 end
 
-def task_runner(args, &block : Sam::Args, CNFManager::Config | Nil -> String | Colorize::Object(String) | Nil)
+def task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
   # LOGGING.info("single_or_all_cnfs_task_runner: #{args.inspect}")
   if check_cnf_config(args)
     single_task_runner(args, &block)
@@ -235,7 +235,7 @@ def task_runner(args, &block : Sam::Args, CNFManager::Config | Nil -> String | C
 end
 
 # TODO give example for calling
-def all_cnfs_task_runner(args, &block : Sam::Args, CNFManager::Config | Nil  -> String | Colorize::Object(String) | Nil)
+def all_cnfs_task_runner(args, &block : Sam::Args, CNFManager::Config  -> String | Colorize::Object(String) | Nil)
 
   # Platforms tests dont have any cnfs
   if CNFManager.cnf_config_list(silent: true).size == 0
@@ -250,9 +250,10 @@ def all_cnfs_task_runner(args, &block : Sam::Args, CNFManager::Config | Nil  -> 
 end
 
 # TODO give example for calling
-def single_task_runner(args, config=nil, &block : Sam::Args, CNFManager::Config | Nil  -> String | Colorize::Object(String) | Nil)
+def single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
   # LOGGING.info("task_runner args: #{args.inspect}")
   # TODO instantiate and populate CNFManager::Config.cnf_config from config file
+  config = CNFManager::Config.parse_config_yml(args.named["cnf-config"].as(String))    
   begin
   yield args, config
   rescue ex

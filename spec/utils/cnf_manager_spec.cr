@@ -230,6 +230,34 @@ describe "SampleUtils" do
     (CNFManager.helm_gives_k8s_warning?(true)).should be_false
   end
 
+  it "'CNFManager::Config#parse_config_yml' should return a populated CNFManager::Config.cnf_config"  do
+    begin
+      yaml = CNFManager::Config.parse_config_yml("spec/fixtures/cnf-conformance.yml")    
+    (yaml.cnf_config[:release_name]).should eq("coredns")
+    ensure
+    end
+  end
+
+  it "'CNFManager.workload_resource_test' should accept an args and cnf-config argument, populate a deployment, container, and intialized argument, and then apply a test to a cnf"  do
+    args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
+    check_cnf_config_then_deploy(args)
+    config = CNFManager::Config.parse_config_yml("./sample-cnfs/sample-generic-cnf/cnf-conformance.yml")    
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      test_passed = true
+				begin
+					VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
+					container.as_h["livenessProbe"].as_h 
+				rescue ex
+					VERBOSE_LOGGING.error ex.message if check_verbose(args)
+					test_passed = false 
+          puts "No livenessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+				end
+      test_passed 
+    end
+    (task_response).should be_true 
+    CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
+  end
+
 end
 
 

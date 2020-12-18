@@ -61,7 +61,22 @@ module KubectlClient
     def self.deployment(deployment_name) : JSON::Any
       resp = `kubectl get deployment #{deployment_name} -o json`
       LOGGING.debug "kubectl get deployment: #{resp}"
-      JSON.parse(resp)
+      if resp 
+        JSON.parse(resp)
+      else
+        JSON.parse(%({}))
+      end
+    end
+
+    def self.resource(kind, resource_name) : JSON::Any
+      LOGGING.debug "kubectl get kind: #{kind} resource name: #{resource_name}"
+      resp = `kubectl get #{kind} #{resource_name} -o json`
+      LOGGING.debug "kubectl get resource: #{resp}"
+      if resp 
+        JSON.parse(resp)
+      else
+        JSON.parse(%({}))
+      end
     end
 
     def self.save_manifest(deployment_name, output_file) 
@@ -73,13 +88,30 @@ module KubectlClient
     def self.deployments : JSON::Any
       resp = `kubectl get deployments -o json`
       LOGGING.debug "kubectl get deployment: #{resp}"
-      JSON.parse(resp)
+      if resp 
+        JSON.parse(resp)
+      else
+        JSON.parse(%({}))
+      end
     end
 
     def self.deployment_containers(deployment_name) : JSON::Any 
       LOGGING.debug "kubectl get deployment containers deployment_name: #{deployment_name}"
       resp = deployment(deployment_name).dig?("spec", "template", "spec", "containers")
       LOGGING.debug "kubectl get deployment containers: #{resp}"
+      if resp 
+        resp
+      else
+        JSON.parse(%({}))
+      end
+    end
+
+    def self.resource_containers(kind, resource_name) : JSON::Any 
+      LOGGING.debug "kubectl get resource containers kind: #{kind} resource_name: #{resource_name}"
+      unless kind.as_s.downcase == "service" ## services have no containers
+        resp = resource(kind, resource_name).dig?("spec", "template", "spec", "containers")
+      end
+      LOGGING.debug "kubectl get resource containers: #{resp}"
       if resp 
         resp
       else

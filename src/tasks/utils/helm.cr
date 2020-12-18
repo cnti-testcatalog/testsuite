@@ -57,8 +57,6 @@ module Helm
   def self.workload_resource_by_kind(ymls : Array(YAML::Any), kind)
     LOGGING.info "workload_resource_by_kind kind: #{kind}"
     LOGGING.debug "workload_resource_by_kind ymls: #{ymls}"
-    # resources = ymls.map do |yml|
-      # yml.as_a.select{|x| x["kind"]?==kind}
     resources = ymls.select{|x| x["kind"]?==kind}
     # end
     LOGGING.debug "resources: #{resources}"
@@ -66,9 +64,9 @@ module Helm
   end
 
   def self.all_workload_resources(yml : Array(YAML::Any))
-    resources = KubectlClient::WORKLOAD_RESOURCES.maps do |_, resource_kind|
-      workload_resource_by_kind(yml, resource_kind)
-    end
+    resources = KubectlClient::WORKLOAD_RESOURCES.map { |k,v| 
+      Helm.workload_resource_by_kind(yml, v)
+    }.flatten
     LOGGING.debug "all resource: #{resources}"
     resources
   end

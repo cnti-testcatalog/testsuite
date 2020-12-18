@@ -174,7 +174,6 @@ TEMPLATE
       {% current_hash = `git rev-parse --short HEAD` %}
       {% current_status = `git status`.split("\n")[0].strip %}
       {% current_tag = (!`git tag --points-at HEAD`.empty? && `git tag --points-at HEAD`.split("\n")[-2].strip) || `git tag --points-at HEAD` %} 
-      {% puts "git status during compile: #{`git status`}" %}
       {% puts "current_branch during compile: #{current_branch}" %}
       {% puts "current_tag during compile: #{current_tag}" %}
       {% if current_tag.strip == "" %}
