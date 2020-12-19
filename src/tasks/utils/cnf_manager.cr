@@ -71,6 +71,51 @@ module CNFManager
     end
   end
 
+  #test_passes_completely = workload_resource_test do | cnf_config, resource, container, initialized |
+  def self.workload_resource_test(args, config, &block)
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    yml_file_path = config.cnf_config[:yml_file_path] 
+    # TODO remove helm_directory and use base cnf directory
+    helm_directory = config.cnf_config[:helm_directory]
+    manifest_directory = config.cnf_config[:manifest_directory] 
+    release_name = config.cnf_config[:release_name]
+    helm_chart_path = config.cnf_config[:helm_chart_path]
+    manifest_file_path = config.cnf_config[:manifest_file_path]
+    test_passed = true
+    if release_name.empty? # no helm chart
+      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
+    else
+      Helm.generate_manifest_from_templates(release_name, 
+                                            helm_chart_path, 
+                                            manifest_file_path)
+      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
+    end
+    resource_ymls = Helm.all_workload_resources(template_ymls)
+    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+    LOGGING.info "resource names: #{resource_names}"
+    if resource_names && resource_names.size > 0 
+      initialized = true
+    else
+      LOGGING.error "no resource names found"
+      initialized = false
+    end
+		resource_names.each do | resource |
+			VERBOSE_LOGGING.debug resource.inspect if check_verbose(args)
+      #TODO create get resource containers
+      unless resource[:kind].as_s.downcase == "service" ## services have no containers
+        containers = KubectlClient::Get.resource_containers(resource[:kind], resource[:name])
+        containers.as_a.each do |container|
+          resp = yield resource, container, initialized
+          LOGGING.debug "yield resp: #{resp}"
+          test_passed = false if resp == false
+        end
+      end
+    end
+    LOGGING.debug "workload resource test intialized: #{initialized} test_passed: #{test_passed}"
+    initialized && test_passed
+  end
+
+
   def self.final_cnf_results_yml
     results_file = `find ./results/* -name "cnf-conformance-results-*.yml"`.split("\n")[-2].gsub("./", "")
     if results_file.empty?
@@ -392,50 +437,6 @@ module CNFManager
 
     sample_setup(config_file: config_dir, release_name: release_name, deployment_name: deployment_name, helm_chart: helm_chart, helm_directory: helm_directory, git_clone_url: git_clone_url, deploy_with_chart: deploy_with_chart, verbose: verbose, wait_count: wait_count, manifest_directory: manifest_directory, install_from_manifest: install_from_manifest )
 
-  end
-
-  #test_passes_completely = workload_resource_test do | cnf_config, resource, container, initialized |
-  def self.workload_resource_test(args, config, &block)
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    yml_file_path = config.cnf_config[:yml_file_path] 
-    # TODO remove helm_directory and use base cnf directory
-    helm_directory = config.cnf_config[:helm_directory]
-    manifest_directory = config.cnf_config[:manifest_directory] 
-    release_name = config.cnf_config[:release_name]
-    helm_chart_path = config.cnf_config[:helm_chart_path]
-    manifest_file_path = config.cnf_config[:manifest_file_path]
-    test_passed = true
-    if release_name.empty? # no helm chart
-      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
-    else
-      Helm.generate_manifest_from_templates(release_name, 
-                                            helm_chart_path, 
-                                            manifest_file_path)
-      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
-    end
-    resource_ymls = Helm.all_workload_resources(template_ymls)
-    resource_names = Helm.workload_resource_kind_names(resource_ymls)
-    LOGGING.info "resource names: #{resource_names}"
-    if resource_names && resource_names.size > 0 
-      initialized = true
-    else
-      LOGGING.error "no resource names found"
-      initialized = false
-    end
-		resource_names.each do | resource |
-			VERBOSE_LOGGING.debug resource.inspect if check_verbose(args)
-      #TODO create get resource containers
-      unless resource[:kind].as_s.downcase == "service" ## services have no containers
-        containers = KubectlClient::Get.resource_containers(resource[:kind], resource[:name])
-        containers.as_a.each do |container|
-          resp = yield resource, container, initialized
-          LOGGING.debug "yield resp: #{resp}"
-          test_passed = false if resp == false
-        end
-      end
-    end
-    LOGGING.debug "workload resource test intialized: #{initialized} test_passed: #{test_passed}"
-    initialized && test_passed
   end
 
   def self.sample_setup(config_file, release_name, deployment_name, helm_chart, helm_directory, manifest_directory = "", git_clone_url="", deploy_with_chart=true, verbose=false, wait_count=180, install_from_manifest=false)

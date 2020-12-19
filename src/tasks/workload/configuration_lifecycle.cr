@@ -15,17 +15,17 @@ end
 
 desc "Does a search for IP addresses or subnets come back as negative?"
 task "ip_addresses" do |_, args|
-  task_runner(args) do |args|
+  task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "ip_addresses" if check_verbose(args)
     LOGGING.info("ip_addresses args #{args.inspect}")
     cdir = FileUtils.pwd()
     response = String::Builder.new
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    helm_directory = "#{config.get("helm_directory").as_s?}" 
-    LOGGING.info "ip_addresses helm_directory: #{CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory}"
-    if File.directory?(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory)
+    # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    helm_directory = config.cnf_config[:helm_directory]
+    helm_chart_path = config.cnf_config[:helm_chart_path]
+    if File.directory?(helm_chart_path)
       # Switch to the helm chart directory
-      Dir.cd(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory)
+      Dir.cd(helm_chart_path)
       # Look for all ip addresses that are not comments
       LOGGING.info "current directory: #{ FileUtils.pwd()}"
       # should catch comments (# // or /*) and ignore 0.0.0.0
