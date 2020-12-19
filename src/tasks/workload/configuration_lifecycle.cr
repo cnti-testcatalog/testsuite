@@ -83,58 +83,30 @@ end
 
 desc "Is there a readiness entry in the helm chart?"
 task "readiness", ["retrieve_manifest"] do |_, args|
-  task_runner(args) do |args|
+  task_runner(args) do |args, config|
+    LOGGING.debug "cnf_config: #{config}"
     VERBOSE_LOGGING.info "readiness" if check_verbose(args)
     # Parse the cnf-conformance.yml
     resp = ""
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
-    LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
-    VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
-    helm_directory = "#{config.get("helm_directory").as_s?}"
-    manifest_directory = optional_key_as_string(config, "manifest_directory")
-    release_name = "#{config.get("release_name").as_s?}"
-    helm_chart_path = destination_cnf_dir + "/" + helm_directory
-    manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
-    # get the manifest file from the helm chart
-    # TODO if no release name, then assume bare manifest file/directory with no helm chart
-    LOGGING.info "release_name: #{release_name}"
-    if release_name.empty? # no helm chart
-      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
-    else
-      Helm.generate_manifest_from_templates(release_name, 
-                                          helm_chart_path, 
-                                          manifest_file_path)
-      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
-    end
-    deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
-    deployment_names = Helm.workload_resource_names(deployment_ymls)
-    LOGGING.info "deployment names: #{deployment_names}"
-    if deployment_names && deployment_names.size > 0 
+    emoji_probe="🧫"
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
-    else
-      test_passed = false
-    end
-    deployment_names.each do | deployment |
-      VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
-      containers = KubectlClient::Get.deployment_containers(deployment)
-      containers.as_a.each do |container|
-        begin
-          VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
-          container.as_h["readinessProbe"].as_h 
-        rescue ex
-          VERBOSE_LOGGING.error ex.message if check_verbose(args)
-          test_passed = false 
-          puts "No readinessProbe found for deployment: #{deployment} and container: #{container.as_h["name"].as_s}".colorize(:red)
-        end
+      begin
+        VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
+        container.as_h["readinessProbe"].as_h 
+      rescue ex
+        VERBOSE_LOGGING.error ex.message if check_verbose(args)
+        test_passed = false 
+        puts "No readinessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
       end
+      test_passed 
     end
-    if test_passed 
-      resp = upsert_passed_task("readiness","✔️  PASSED: Helm readiness probe found")
+    if task_response 
+      resp = upsert_passed_task("readiness","✔️  PASSED: Helm readiness probe found #{emoji_probe}")
 		else
-      resp = upsert_failed_task("readiness","✖️  FAILURE: No readinessProbe found")
+      resp = upsert_failed_task("readiness","✖️  FAILURE: No readinessProbe found #{emoji_probe}")
     end
+    resp
   end
 end
 
