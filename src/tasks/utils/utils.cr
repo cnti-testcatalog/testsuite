@@ -251,11 +251,10 @@ end
 
 # TODO give example for calling
 def single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
-  # LOGGING.info("task_runner args: #{args.inspect}")
-  # TODO instantiate and populate CNFManager::Config.cnf_config from config file
-  config = CNFManager::Config.parse_config_yml(args.named["cnf-config"].as(String))    
+  LOGGING.debug("task_runner args: #{args.inspect}")
   begin
-  yield args, config
+    config = CNFManager::Config.parse_config_yml(args.named["cnf-config"].as(String))    
+    yield args, config
   rescue ex
     # Set exception key/value in results
     # file to -1
