@@ -54,7 +54,7 @@ end
 desc "Is there a liveness entry in the helm chart?"
 task "liveness", ["retrieve_manifest"] do |_, args|
   task_runner(args) do |args, config|
-    LOGGING.debug "cnf_config: #{config.cnf_config}"
+    LOGGING.debug "cnf_config: #{config}"
     VERBOSE_LOGGING.info "liveness" if check_verbose(args)
     resp = ""
     emoji_probe="🧫"

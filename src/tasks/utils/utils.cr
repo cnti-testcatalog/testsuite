@@ -253,7 +253,30 @@ end
 def single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
   LOGGING.debug("task_runner args: #{args.inspect}")
   begin
-    config = CNFManager::Config.parse_config_yml(args.named["cnf-config"].as(String))    
+    if args.named["cnf-config"]? # platform tests don't have a cnf-config
+      config = CNFManager::Config.parse_config_yml(args.named["cnf-config"].as(String))    
+    else
+      config = CNFManager::Config.new({ destination_cnf_dir: "",
+                               yml_file_path: "",
+                               manifest_directory: "",
+                               helm_directory: "", 
+                               helm_chart_path: "", 
+                               manifest_file_path: "",
+                               git_clone_url: "",
+                               install_script: "",
+                               release_name: "",
+                               deployment_name: "",
+                               deployment_label: "",
+                               service_name: "",
+                               application_deployment_names: "",
+                               docker_repository: "",
+                               helm_repository: {name: "", repo_url: ""},
+                               helm_chart: "",
+                               helm_chart_container_name: "",
+                               rolling_update_tag: "",
+                               container_names: [{"name" =>  "", "rolling_update_test_tag" => ""}],
+                               white_list_helm_chart_container_names: ""} )
+    end
     yield args, config
   rescue ex
     # Set exception key/value in results
