@@ -21,6 +21,14 @@ module KubectlClient
       LOGGING.debug "rollout? #{rollout_status}"
       $?.success?
     end
+    def self.resource_status(kind, resource_name, timeout="30s")
+      rollout = `kubectl rollout status #{kind}/#{resource_name} --timeout=#{timeout}`
+      rollout_status = $?.success?
+      LOGGING.debug "#{rollout}"
+      LOGGING.debug "rollout? #{rollout_status}"
+      $?.success?
+    end
+
     def self.undo(deployment_name)
       rollback = `kubectl rollout undo deployment/#{deployment_name}`
       rollback_status = $?.success?

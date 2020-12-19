@@ -45,6 +45,15 @@ module CNFManager
       release_name = "#{config.get("release_name").as_s?}"
       helm_chart_path = destination_cnf_dir + "/" + helm_directory
       manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
+      container_names_totem = config["container_names"]
+      container_names = container_names_totem.as_a.map do |container|
+        {"name" => optional_key_as_string(container, "name"),
+         "rolling_update_test_tag" => optional_key_as_string(container, "rolling_update_test_tag"),
+         "rolling_downgrade_test_tag" => optional_key_as_string(container, "rolling_downgrade_test_tag"),
+         "rolling_version_change_test_tag" => optional_key_as_string(container, "rolling_version_change_test_tag"),
+         "rollback_from_tag" => optional_key_as_string(container, "rollback_from_tag"),
+         }
+      end
 
       # TODO populate nils with entries from cnf-conformance file
       CNFManager::Config.new({ destination_cnf_dir: destination_cnf_dir,
@@ -65,7 +74,7 @@ module CNFManager
                                helm_chart: "",
                                helm_chart_container_name: "",
                                rolling_update_tag: "",
-                               container_names: [{"name" =>  "", "rolling_update_test_tag" => ""}],
+                               container_names: container_names,
                                white_list_helm_chart_container_names: ""} )
 
     end
