@@ -13,31 +13,37 @@ end
 
 desc "Does the CNF use a non-cloud native data store: hostPath volume"
 task "volume_hostpath_not_found", ["retrieve_manifest"] do |_, args|
-  failed_emoji = "(ভ_ভ) ރ 💾"
-  passed_emoji = "🖥️  💾"
-  task_response = task_runner(args) do |args|
+  task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "volume_hostpath_not_found" if check_verbose(args)
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    # TODO loop through all depployments
+    failed_emoji = "(ভ_ভ) ރ 💾"
+    passed_emoji = "🖥️  💾"
+    LOGGING.debug "cnf_config: #{config}"
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    # destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    # TODO loop through all deployments
     deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
-    VERBOSE_LOGGING.info deployment.inspect if check_verbose(args)
+    # VERBOSE_LOGGING.info deployment.inspect if check_verbose(args)
+    # TODO use new workload_yml function
+    task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource|
 
-    hostPath_found = nil 
-    begin
-      # TODO check to see if this fails with container storage (and then erroneously fails the test as having hostpath volumes)
-      volumes = deployment.get("spec").as_h["template"].as_h["spec"].as_h["volumes"].as_a
-      hostPath_found = volumes.find do |volume| 
-        if volume.as_h["hostPath"]?
-             true
+      hostPath_found = nil 
+      begin
+        # TODO check to see if this fails with container storage (and then erroneously fails the test as having hostpath volumes)
+        volumes = deployment.get("spec").as_h["template"].as_h["spec"].as_h["volumes"].as_a
+        hostPath_found = volumes.find do |volume| 
+          if volume.as_h["hostPath"]?
+              true
+          end
         end
+      rescue ex
+        VERBOSE_LOGGING.error ex.message if check_verbose(args)
+        puts "✖️  FAILURE: On resource #{deployment}, hostPath volumes found #{failed_emoji}".colorize(:red)
+        false
       end
-    rescue ex
-      VERBOSE_LOGGING.error ex.message if check_verbose(args)
-      upsert_failed_task("volume_hostpath_not_found","✖️  FAILURE: hostPath volumes found #{failed_emoji}")
     end
 
-    if hostPath_found 
+    if task_response
       upsert_failed_task("volume_hostpath_not_found","✖️  FAILURE: hostPath volumes found #{failed_emoji}")
     else
       upsert_passed_task("volume_hostpath_not_found","✔️  PASSED: hostPath volumes not found #{passed_emoji}")
