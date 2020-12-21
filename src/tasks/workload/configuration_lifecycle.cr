@@ -242,35 +242,6 @@ task "rollback" do |_, args|
     end
 
     task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-    # LOGGING.info "deployment names: #{deployment_names}"
-    # if deployment_names && deployment_names.size > 0 
-    #   update_applied = true
-    #   rollout_status = true
-    #   rollback_status = true 
-    #   version_change_applied = true 
-    # else
-    #   update_applied = false
-    #   rollout_status = false 
-    #   rollback_status = false 
-    #   version_change_applied = false
-    # end
-    # deployment_names.each do | deployment_name |
-    #   VERBOSE_LOGGING.debug deployment_name.inspect if check_verbose(args)
-    #   containers = KubectlClient::Get.deployment_containers(deployment_name)
-    #
-    #   container_names = config["container_names"]?
-    #     LOGGING.debug "container_names: #{container_names}"
-    #
-    #   unless container_names && !container_names.as_a.empty?
-    #     puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red) unless container_names
-    #     upsert_failed_task("rolling_update", "✖️  FAILURE: CNF #{deployment_name} Rolling Update Failed")
-    #     exit 0
-    #   end
-    #
-    #   containers.as_a.each do | container |
-    #
-        # plural_containers = KubectlClient::Get.deployment_containers(deployment_name)
-        # container = plural_containers[0]
 
 
         image_name = container.as_h["name"]
@@ -293,7 +264,6 @@ task "rollback" do |_, args|
 
           version_change_applied = KubectlClient::Set.image(resource["name"], 
                                                             image_name, 
-                                                            # split out image name from version tag
                                                             image_tag, 
                                                             rollback_from_tag) 
         end
@@ -323,16 +293,12 @@ end
 
 desc "Does the CNF use NodePort"
 task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
-  task_response = task_runner(args) do |args|
+  task_response = task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "nodeport_not_used" if check_verbose(args)
-    # config = cnf_conformance_yml
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    release_name = config.get("release_name").as_s
-    service_name = "#{config.get("service_name").as_s?}"
-    # current_cnf_dir_short_name = CNFManager.ensure_cnf_conformance_dir
-    # VERBOSE_LOGGING.debug current_cnf_dir_short_name if check_verbose(args)
-    # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    LOGGING.debug "cnf_config: #{config}"
+    release_name = config.cnf_config[:release_name]
+    service_name  = config.cnf_config[:service_name]
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     if File.exists?("#{destination_cnf_dir}/service.yml")
       service = Totem.from_file "#{destination_cnf_dir}/service.yml"
       VERBOSE_LOGGING.debug service.inspect if check_verbose(args)

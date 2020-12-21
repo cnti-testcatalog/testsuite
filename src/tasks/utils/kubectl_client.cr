@@ -104,19 +104,12 @@ module KubectlClient
     end
 
     def self.deployment_containers(deployment_name) : JSON::Any 
-      LOGGING.debug "kubectl get deployment containers deployment_name: #{deployment_name}"
-      resp = deployment(deployment_name).dig?("spec", "template", "spec", "containers")
-      LOGGING.debug "kubectl get deployment containers: #{resp}"
-      if resp 
-        resp
-      else
-        JSON.parse(%({}))
-      end
+      resource_containers("deployment", deployment_name)
     end
 
     def self.resource_containers(kind, resource_name) : JSON::Any 
       LOGGING.debug "kubectl get resource containers kind: #{kind} resource_name: #{resource_name}"
-      unless kind.as_s.downcase == "service" ## services have no containers
+      unless kind.downcase == "service" ## services have no containers
         resp = resource(kind, resource_name).dig?("spec", "template", "spec", "containers")
       end
       LOGGING.debug "kubectl get resource containers: #{resp}"
@@ -126,11 +119,33 @@ module KubectlClient
         JSON.parse(%({}))
       end
     end
+    def self.resource_desired_is_available?(kind, resource_name)
+      resp = `kubectl get #{kind} #{resource_name} -o=yaml`
+      describe = Totem.from_yaml(resp)
+      LOGGING.info("desired_is_available describe: #{describe.inspect}")
+      desired_replicas = describe.get("status").as_h["replicas"].as_i
+      LOGGING.info("desired_is_available desired_replicas: #{desired_replicas}")
+      ready_replicas = describe.get("status").as_h["readyReplicas"]?
+        unless ready_replicas.nil?
+          ready_replicas = ready_replicas.as_i
+      else
+        ready_replicas = 0
+      end
+      LOGGING.info("desired_is_available ready_replicas: #{ready_replicas}")
+
+      desired_replicas == ready_replicas
+    end
+    def self.desired_is_available?(deployment_name)
+      resource_desired_is_available?("deployment", deployment_name)
+    end
 
     def self.deployment_spec_labels(deployment_name) : JSON::Any 
-      LOGGING.debug "deployment_labels deployment_name: #{deployment_name}"
-      resp = deployment(deployment_name).dig?("spec", "template", "metadata", "labels")
-      LOGGING.debug "deployment_labels: #{resp}"
+      resource_spec_labels("deployment", deployment_name)
+    end
+    def self.resource_spec_labels(kind, resource_name) : JSON::Any 
+      LOGGING.debug "resource_labels kind: #{kind} resource_name: #{resource_name}"
+      resp = resource(kind, resource_name).dig?("spec", "template", "metadata", "labels")
+      LOGGING.debug "resource_labels: #{resp}"
       if resp 
         resp
       else

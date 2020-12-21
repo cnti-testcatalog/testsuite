@@ -85,59 +85,31 @@ end
 
 desc "Does the CNF have a reasonable container image size?"
 task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
-  task_response = task_runner(args) do |args|
+  task_runner(args) do |args,config|
     VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    # TODO loop through all deployments in the helm chart 
-    yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
-    LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
-    VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
-    helm_directory = "#{config.get("helm_directory").as_s?}"
-    manifest_directory = optional_key_as_string(config, "manifest_directory")
-    release_name = "#{config.get("release_name").as_s?}"
-    helm_chart_path = destination_cnf_dir + "/" + helm_directory
-    manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
-    # get the manifest file from the helm chart
-    if release_name.empty? # no helm chart
-      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
-    else
-      Helm.generate_manifest_from_templates(release_name, 
-                                          helm_chart_path, 
-                                          manifest_file_path)
-      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
-    end
-
-    deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
-    deployment_names = Helm.workload_resource_names(deployment_ymls)
-    LOGGING.info "deployment names: #{deployment_names}"
-    if deployment_names && deployment_names.size > 0 
+    LOGGING.debug "cnf_config: #{config}"
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
-    else
-      test_passed = false
-    end
-    deployment_names.each do | deployment |
-      VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
-      containers = KubectlClient::Get.deployment_containers(deployment)
-      local_image_tags = KubectlClient::Get.container_image_tags(containers)
-      local_image_tags.each do |x|
-        dockerhub_image_tags = DockerClient::Get.image_tags(x[:image])
-        image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, x[:tag])
-        micro_size = image_by_tag && image_by_tag["full_size"] 
-        VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
-        unless dockerhub_image_tags && dockerhub_image_tags.status_code == 200 && micro_size.to_s.to_i64 < 5_000_000_000
-          puts "deployment: #{deployment} and container: #{x[:image]}:#{x[:tag]} Failed".colorize(:red)
-          test_passed=false
-        end
+      local_image_tag = {image: container.as_h["image"].as_s.split(":")[0],
+                         #TODO an image may not have a tag
+                         tag: container.as_h["image"].as_s.split(":")[1]?}
+
+      dockerhub_image_tags = DockerClient::Get.image_tags(local_image_tag[:image])
+      image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, local_image_tag[:tag])
+      micro_size = image_by_tag && image_by_tag["full_size"] 
+      VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
+      unless dockerhub_image_tags && dockerhub_image_tags.status_code == 200 && micro_size.to_s.to_i64 < 5_000_000_000
+        puts "resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} Failed".colorize(:red)
+        test_passed=false
       end
+      test_passed
     end
 
     emoji_image_size="⚖️👀"
     emoji_small="🐜"
     emoji_big="🦖"
 
-    # if a sucessfull call and size of container is less than 5gb (5 billion bytes)
-    if test_passed
+    if task_response 
       upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good #{emoji_small} #{emoji_image_size}")
     else
       upsert_failed_task("reasonable_image_size", "✖️  FAILURE: Image size too large #{emoji_big} #{emoji_image_size}")

@@ -43,6 +43,7 @@ module CNFManager
       helm_directory = "#{config.get("helm_directory").as_s?}"
       manifest_directory = optional_key_as_string(config, "manifest_directory")
       release_name = "#{config.get("release_name").as_s?}"
+      service_name = "#{config.get("service_name").as_s?}"
       helm_chart_path = destination_cnf_dir + "/" + helm_directory
       manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
       container_names_totem = config["container_names"]
@@ -67,7 +68,7 @@ module CNFManager
                                release_name: release_name,
                                deployment_name: "",
                                deployment_label: "",
-                               service_name: "",
+                               service_name: service_name,
                                application_deployment_names: "",
                                docker_repository: "",
                                helm_repository: {name: "", repo_url: ""},
@@ -112,7 +113,7 @@ module CNFManager
 			VERBOSE_LOGGING.debug resource.inspect if check_verbose(args)
       #TODO create get resource containers
       unless resource[:kind].as_s.downcase == "service" ## services have no containers
-        containers = KubectlClient::Get.resource_containers(resource[:kind], resource[:name])
+        containers = KubectlClient::Get.resource_containers(resource[:kind].as_s, resource[:name].as_s)
         containers.as_a.each do |container|
           resp = yield resource, container, initialized
           LOGGING.debug "yield resp: #{resp}"
@@ -164,26 +165,58 @@ module CNFManager
   end
 
   def self.wait_for_install(deployment_name, wait_count : Int32 = 180, namespace="default")
+    resource_wait_for_install("deployment", deployment_name, wait_count, namespace)
     # Not all cnfs have deployments.  some have only a pod.  need to check if the 
     # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod 
+    # second_count = 0
+    # all_deployments = `kubectl get deployments --namespace=#{namespace}`
+    # LOGGING.debug "all_deployments #{all_deployments}"
+    # desired_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.replicas}'`
+    # LOGGING.debug "desired_replicas #{desired_replicas}"
+    # current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
+    # LOGGING.debug "current_replicas #{current_replicas}"
+    # LOGGING.info(all_deployments)
+    #
+    # until (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i) || second_count > wait_count
+    #   LOGGING.info("second_count = #{second_count}")
+    #   sleep 1
+    #   all_deployments = `kubectl get deployments --namespace=#{namespace}`
+    #   current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
+    #   # Sometimes desired replicas is not available immediately
+    #   desired_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.replicas}'`
+    #   LOGGING.debug "desired_replicas #{desired_replicas}"
+    #   LOGGING.info(all_deployments)
+    #   second_count = second_count + 1 
+    # end
+    #
+    # if (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i)
+    #   true
+    # else
+    #   false
+    # end
+  end
+
+  def self.resource_wait_for_install(kind, resource_name, wait_count : Int32 = 180, namespace="default")
+    # Not all cnfs have #{kind}.  some have only a pod.  need to check if the 
+    # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod 
     second_count = 0
-    all_deployments = `kubectl get deployments --namespace=#{namespace}`
-    LOGGING.debug "all_deployments #{all_deployments}"
-    desired_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.replicas}'`
+    all_kind = `kubectl get #{kind} --namespace=#{namespace}`
+    LOGGING.debug "all_kind #{all_kind}}"
+    desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
     LOGGING.debug "desired_replicas #{desired_replicas}"
-    current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
+    current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
     LOGGING.debug "current_replicas #{current_replicas}"
-    LOGGING.info(all_deployments)
+    LOGGING.info(all_kind)
 
     until (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i) || second_count > wait_count
       LOGGING.info("second_count = #{second_count}")
       sleep 1
-      all_deployments = `kubectl get deployments --namespace=#{namespace}`
-      current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
+      all_kind = `kubectl get #{kind} --namespace=#{namespace}`
+      current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
       # Sometimes desired replicas is not available immediately
-      desired_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.replicas}'`
+      desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
       LOGGING.debug "desired_replicas #{desired_replicas}"
-      LOGGING.info(all_deployments)
+      LOGGING.info(all_kind)
       second_count = second_count + 1 
     end
 
