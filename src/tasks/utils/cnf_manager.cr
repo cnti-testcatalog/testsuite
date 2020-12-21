@@ -43,7 +43,7 @@ module CNFManager
       helm_directory = "#{config.get("helm_directory").as_s?}"
       manifest_directory = optional_key_as_string(config, "manifest_directory")
       release_name = "#{config.get("release_name").as_s?}"
-      service_name = "#{config.get("service_name").as_s?}"
+      service_name = optional_key_as_string(config, "service_name")
       helm_chart_path = destination_cnf_dir + "/" + helm_directory
       manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
       container_names_totem = config["container_names"]
