@@ -53,8 +53,8 @@ end
 desc "Is there a liveness entry in the helm chart?"
 task "liveness", ["retrieve_manifest"] do |_, args|
   task_runner(args) do |args, config|
-    LOGGING.debug "cnf_config: #{config}"
     VERBOSE_LOGGING.info "liveness" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
     resp = ""
     emoji_probe="🧫"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
@@ -171,6 +171,7 @@ rolling_version_change_test_names.each do |tn|
       VERBOSE_LOGGING.info "#{tn}" if check_verbose(args)
       container_names = config.cnf_config[:container_names]
       LOGGING.debug "container_names: #{container_names}"
+      update_applied = true
       unless container_names
         puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red) 
         update_applied = false
@@ -181,7 +182,7 @@ rolling_version_change_test_names.each do |tn|
       #  e.g. wget -q https://registry.hub.docker.com/v1/repositories/debian/tags -O -  | sed -e 's/[][]//g' -e 's/"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}'
       # note: all images are not on docker hub nor are they always on a docker hub compatible api
 
-      task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
         test_passed = true
         LOGGING.debug "#{tn} container: #{container}"
         LOGGING.debug "container_names: #{container_names}"
@@ -223,61 +224,54 @@ end
 
 desc "Test if the CNF can perform a rollback"
 task "rollback" do |_, args|
-  task_runner(args) do |args|
+  task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "rollback" if check_verbose(args)
-    # config = cnf_conformance_yml
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    container_names = config["container_names"]?
+    LOGGING.debug "cnf_config: #{config}"
 
-    VERBOSE_LOGGING.debug "actual configin it #{config.inspect}" if check_verbose(args)
+    container_names = config.cnf_config[:container_names]
+    LOGGING.debug "container_names: #{container_names}"
 
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    helm_directory = "#{config.get("helm_directory").as_s?}"
-    manifest_directory = optional_key_as_string(config, "manifest_directory")
-    release_name = "#{config.get("release_name").as_s?}"
-    helm_chart_path = destination_cnf_dir + "/" + helm_directory
-    manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
-    LOGGING.info "release_name: #{release_name}"
-    if release_name.empty? # no helm chart
-      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
-    else
-      Helm.generate_manifest_from_templates(release_name, 
-                                          helm_chart_path, 
-                                          manifest_file_path)
-      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
-    end
-    deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
-    deployment_names = Helm.workload_resource_names(deployment_ymls)
+    update_applied = true
+    rollout_status = true
+    rollback_status = true 
+    version_change_applied = true 
 
-    LOGGING.info "deployment names: #{deployment_names}"
-    if deployment_names && deployment_names.size > 0 
-      update_applied = true
-      rollout_status = true
-      rollback_status = true 
-      version_change_applied = true 
-    else
+    unless container_names
+      puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red) 
       update_applied = false
-      rollout_status = false 
-      rollback_status = false 
-      version_change_applied = false
     end
-    deployment_names.each do | deployment_name |
-      VERBOSE_LOGGING.debug deployment_name.inspect if check_verbose(args)
-      containers = KubectlClient::Get.deployment_containers(deployment_name)
 
-      container_names = config["container_names"]?
-        LOGGING.debug "container_names: #{container_names}"
-
-      unless container_names && !container_names.as_a.empty?
-        puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red) unless container_names
-        upsert_failed_task("rolling_update", "✖️  FAILURE: CNF #{deployment_name} Rolling Update Failed")
-        exit 0
-      end
-
-      containers.as_a.each do | container |
-
+    task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+    # LOGGING.info "deployment names: #{deployment_names}"
+    # if deployment_names && deployment_names.size > 0 
+    #   update_applied = true
+    #   rollout_status = true
+    #   rollback_status = true 
+    #   version_change_applied = true 
+    # else
+    #   update_applied = false
+    #   rollout_status = false 
+    #   rollback_status = false 
+    #   version_change_applied = false
+    # end
+    # deployment_names.each do | deployment_name |
+    #   VERBOSE_LOGGING.debug deployment_name.inspect if check_verbose(args)
+    #   containers = KubectlClient::Get.deployment_containers(deployment_name)
+    #
+    #   container_names = config["container_names"]?
+    #     LOGGING.debug "container_names: #{container_names}"
+    #
+    #   unless container_names && !container_names.as_a.empty?
+    #     puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red) unless container_names
+    #     upsert_failed_task("rolling_update", "✖️  FAILURE: CNF #{deployment_name} Rolling Update Failed")
+    #     exit 0
+    #   end
+    #
+    #   containers.as_a.each do | container |
+    #
         # plural_containers = KubectlClient::Get.deployment_containers(deployment_name)
         # container = plural_containers[0]
+
 
         image_name = container.as_h["name"]
         image_tag = container.as_h["image"].as_s.split(":")[0]
@@ -287,9 +281,9 @@ task "rollback" do |_, args|
         #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
 
         version_change_applied = false 
-        config_container = container_names.as_a.find{|x| x["name"] == image_name } if container_names
+        config_container = container_names.find{|x| x["name"] == image_name } if container_names
         if config_container
-          rollback_from_tag = config_container["rollback_from_tag"].as_s
+          rollback_from_tag = config_container["rollback_from_tag"]
 
           if rollback_from_tag == image_tag
             fail_msg = "✖️  FAILURE: please specify a different version than the helm chart default image.tag for 'rollback_from_tag' "
@@ -297,7 +291,7 @@ task "rollback" do |_, args|
             version_change_applied=false
           end
 
-          version_change_applied = KubectlClient::Set.image(deployment_name, 
+          version_change_applied = KubectlClient::Set.image(resource["name"], 
                                                             image_name, 
                                                             # split out image name from version tag
                                                             image_tag, 
@@ -307,20 +301,19 @@ task "rollback" do |_, args|
         VERBOSE_LOGGING.debug "change successful? #{version_change_applied}" if check_verbose(args)
 
         VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
-        rollout_status = KubectlClient::Rollout.status(deployment_name)
+        rollout_status = KubectlClient::Rollout.status(resource["name"])
         if  rollout_status == false
-          puts "Rolling update failed on deployment: #{deployment_name} and container: #{container.as_h["name"].as_s}".colorize(:red)
+          puts "Rolling update failed on resource: #{resource["name"]} and container: #{container.as_h["name"].as_s}".colorize(:red)
         end
 
         # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision
         VERBOSE_LOGGING.debug "rollback: rolling back to old version" if check_verbose(args)
-        rollback_status = KubectlClient::Rollout.undo(deployment_name)
-      end
+        rollback_status = KubectlClient::Rollout.undo(resource["name"])
 
     end
 
 
-    if version_change_applied && rollout_status && rollback_status
+    if task_response && version_change_applied && rollout_status && rollback_status
       upsert_passed_task("rollback","✔️  PASSED: CNF Rollback Passed" )
     else
       upsert_failed_task("rollback", "✖️  FAILURE: CNF Rollback Failed")
