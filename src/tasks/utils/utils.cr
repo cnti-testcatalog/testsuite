@@ -80,7 +80,7 @@ def single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | 
                                helm_chart_container_name: "",
                                rolling_update_tag: "",
                                container_names: [{"name" =>  "", "rolling_update_test_tag" => ""}],
-                               white_list_helm_chart_container_names: ""} )
+                               white_list_container_names: [""]} )
     end
     yield args, config
   rescue ex

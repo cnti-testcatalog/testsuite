@@ -30,7 +30,7 @@ module CNFManager
                                      helm_chart_container_name: String,
                                      rolling_update_tag: String,
                                      container_names: Array(Hash(String, String )) | Nil,
-                                     white_list_helm_chart_container_names: String) 
+                                     white_list_container_names: Array(String)) 
 
     def self.parse_config_yml(config_yml_path) : CNFManager::Config
       config = CNFManager.parsed_config_file(
@@ -46,6 +46,9 @@ module CNFManager
       service_name = optional_key_as_string(config, "service_name")
       helm_chart_path = destination_cnf_dir + "/" + helm_directory
       manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
+      white_list_container_names = config.get("white_list_helm_chart_container_names").as_a.map do |c|
+        "#{c.as_s?}"
+      end
       container_names_totem = config["container_names"]
       container_names = container_names_totem.as_a.map do |container|
         {"name" => optional_key_as_string(container, "name"),
@@ -76,7 +79,7 @@ module CNFManager
                                helm_chart_container_name: "",
                                rolling_update_tag: "",
                                container_names: container_names,
-                               white_list_helm_chart_container_names: ""} )
+                               white_list_container_names: white_list_container_names })
 
     end
   end
@@ -117,6 +120,7 @@ module CNFManager
         containers.as_a.each do |container|
           resp = yield resource, container, initialized
           LOGGING.debug "yield resp: #{resp}"
+          # if any response is false, the test fails
           test_passed = false if resp == false
         end
       end

@@ -118,7 +118,6 @@ task "retrieve_manifest" do |_, args|
     # config = cnf_conformance_yml
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     deployment_name = config.get("deployment_name").as_s
-    # TODO get this from k8s manifest kind = service
     service_name = "#{config.get("service_name").as_s?}"
     VERBOSE_LOGGING.debug "Deployment_name: #{deployment_name}" if check_verbose(args)
     VERBOSE_LOGGING.debug service_name if check_verbose(args)
