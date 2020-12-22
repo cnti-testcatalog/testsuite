@@ -52,8 +52,8 @@ The CNF Conformance program validates interoperability of CNF **workloads** supp
 *  Checking if the pod/container can be started without mounting a volume (e.g. using [helm configuration](https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/)) that has configuration files
 *  Testing to see if we can start pods/containers and see that the application continues to perform (e.g. using [Litmus](https://github.com/litmuschaos/litmus))
 *  Testing by reseting any child processes, and when the parent process is started, checking to see if those child processes are reaped (ie. monitoring processes with [Falco](https://github.com/falcosecurity/falco) or [sysdig-inspect](https://github.com/draios/sysdig-inspect))
-*  Testing if the CNF can perform a rolling update (i.e. [kubectl rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/))
-*  Testing if the CNF can perform a rolling_downgrade and rollback (i.e. [kubectl_rollout_undo](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision))
+*  Testing if the CNF can perform a rolling update (also rolling downgrade) (i.e. [kubectl rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/))
+*  Testing if the CNF can perform a rollback (i.e. [kubectl_rollout_undo](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision))
 *  Testing if there are any (non-declarative) hardcoded IP addresses or subnet masks 
 
 ## Observability Tests 
