@@ -31,7 +31,7 @@ task "volume_hostpath_not_found", ["retrieve_manifest"] do |_, args|
       begin
         # TODO check to see if this fails with container storage (and then erroneously fails the test as having hostpath volumes)
         volumes = deployment.get("spec").as_h["template"].as_h["spec"].as_h["volumes"].as_a
-        hostPath_found = volumes.find do |volume| 
+        hostPath_not_found = volumes.none? do |volume| 
           if volume.as_h["hostPath"]?
               true
           end
@@ -39,14 +39,15 @@ task "volume_hostpath_not_found", ["retrieve_manifest"] do |_, args|
       rescue ex
         VERBOSE_LOGGING.error ex.message if check_verbose(args)
         puts "✖️  FAILURE: On resource #{deployment}, hostPath volumes found #{failed_emoji}".colorize(:red)
-        false
+        hostPath_not_found = true
       end
+      hostPath_not_found 
     end
 
     if task_response
-      upsert_failed_task("volume_hostpath_not_found","✖️  FAILURE: hostPath volumes found #{failed_emoji}")
-    else
       upsert_passed_task("volume_hostpath_not_found","✔️  PASSED: hostPath volumes not found #{passed_emoji}")
+    else
+      upsert_failed_task("volume_hostpath_not_found","✖️  FAILURE: hostPath volumes found #{failed_emoji}")
     end
   end
 end
