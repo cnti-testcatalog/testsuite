@@ -84,9 +84,10 @@ module CNFManager
     end
   end
 
-  #test_passes_completely = workload_resource_test do | cnf_config, resource, container, initialized |
-  def self.workload_resource_test(args, config, check_containers = true, &block)
-    # TODO extract into new function that accepts block, loops over resource yml
+  # Applies a block to each cnf resource
+  #
+  # `CNFManager.cnf_workload_resources(args, config) {|cnf_config, resource| #your code}
+  def self.cnf_workload_resources(args, config, &block)
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     yml_file_path = config.cnf_config[:yml_file_path] 
     # TODO remove helm_directory and use base cnf directory
@@ -105,7 +106,20 @@ module CNFManager
       template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
     end
     resource_ymls = Helm.all_workload_resources(template_ymls)
-    # TODO pass to new resource yml function
+		resource_resp = resource_ymls.map do | resource |
+      resp = yield resource 
+      LOGGING.debug "cnf_workload_resource yield resp: #{resp}"
+      resp
+    end
+    resource_resp
+  end
+
+  #test_passes_completely = workload_resource_test do | cnf_config, resource, container, initialized |
+  def self.workload_resource_test(args, config, check_containers = true, &block)
+    test_passed = true
+    resource_ymls = cnf_workload_resources(args, config) do |resource|
+      resource 
+    end
     resource_names = Helm.workload_resource_kind_names(resource_ymls)
     LOGGING.info "resource names: #{resource_names}"
     if resource_names && resource_names.size > 0 
@@ -116,7 +130,6 @@ module CNFManager
     end
 		resource_names.each do | resource |
 			VERBOSE_LOGGING.debug resource.inspect if check_verbose(args)
-      #TODO create get resource containers
       unless resource[:kind].as_s.downcase == "service" ## services have no containers
         containers = KubectlClient::Get.resource_containers(resource[:kind].as_s, resource[:name].as_s)
         if check_containers
