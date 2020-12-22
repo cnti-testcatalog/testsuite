@@ -174,9 +174,9 @@ task "pod-network-latency", ["install_litmus", "retrieve_manifest"] do |_, args|
     puts "#{destination_cnf_dir}"
     LOGGING.info "destination_cnf_dir #{destination_cnf_dir}"
     deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
-    install_experiment = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.9.1?file=charts/generic/pod-network-latency/experiment.yaml`
-    install_rbac = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.9.1?file=charts/generic/pod-network-latency/rbac.yaml`
-    annotate = `kubectl annotate deploy/#{deployment_name} litmuschaos.io/chaos="true"`
+    install_experiment = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/experiment.yaml`
+    install_rbac = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/rbac.yaml`
+    annotate = `kubectl annotate --overwrite deploy/#{deployment_name} litmuschaos.io/chaos="true"`
     puts "#{install_experiment}" if check_verbose(args)
     puts "#{install_rbac}" if check_verbose(args)
     puts "#{annotate}" if check_verbose(args)
@@ -200,6 +200,7 @@ task "pod-network-latency", ["install_litmus", "retrieve_manifest"] do |_, args|
 
     LitmusManager.wait_for_test(test_name,chaos_experiment_name,args)
     LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+
   end
 end
 
@@ -297,9 +298,6 @@ def chaos_template_pod_network_latency
 
               - name: NETWORK_INTERFACE
                 value: 'eth0'     
-
-              - name: LIB_IMAGE
-                value: 'litmuschaos/go-runner:latest'
 
               - name: NETWORK_LATENCY
                 value: '60000'

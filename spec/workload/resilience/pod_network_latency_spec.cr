@@ -23,6 +23,8 @@ describe "Resilience Pod Network Latency Chaos" do
     ensure
       `./cnf-conformance cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
       $?.success?.should be_true
+      `./cnf-conformance uninstall_litmus`
+      $?.success?.should be_true
     end
   end
 end

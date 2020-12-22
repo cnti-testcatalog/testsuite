@@ -6,14 +6,8 @@ require "./utils/utils.cr"
 
 desc "Install LitmusChaos"
 task "install_litmus" do |_, args|
-    litmus_install = `kubectl apply -f https://raw.githubusercontent.com/litmuschaos/litmus/master/docs/litmus-operator-v1.9.1.yaml`
+    litmus_install = `kubectl apply -f https://litmuschaos.github.io/litmus/litmus-operator-v1.11.0.yaml`
     puts "#{litmus_install}" if check_verbose(args)
-end
-
-desc "Uninstall LitmusChaos"
-task "uninstall_litmus" do |_, args|
-    litmus_uninstall = `kubectl delete -f https://raw.githubusercontent.com/litmuschaos/litmus/master/docs/litmus-operator-v1.9.1.yaml`
-    puts "#{litmus_uninstall}" if check_verbose(args)
 end
 
 module LitmusManager
@@ -24,13 +18,13 @@ module LitmusManager
     delay=15
     retry=60
     chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
-    wait_count = 0 
+    wait_count = 0
     status_code = -1 
     experimentStatus = ""
     experimentStatus_cmd = "kubectl get chaosengine.litmuschaos.io #{test_name} -o jsonpath='{.status.engineStatus}'"
     puts "Checking experiment status  #{experimentStatus_cmd}" if check_verbose(args)
 
-    ## Wait for completion of chaosengine which indicates the complition of chaos  
+    ## Wait for completion of chaosengine which indicates the completion of chaos  
     until (status_code == 0 && experimentStatus == "Completed") || wait_count >= retry
       sleep delay
       experimentStatus_cmd = "kubectl get chaosengine.litmuschaos.io #{test_name} -o jsonpath='{.status.experiments[0].status}'"
@@ -78,5 +72,4 @@ module LitmusManager
     
     resp
   end
-
 end
