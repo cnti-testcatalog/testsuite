@@ -45,7 +45,7 @@
 #  tags: scalability, dynamic, workload
 - name: network_chaos 
   tags: scalability, dynamic, workload
-- name: pod-network-latency
+- name: pod_network_latency
   tags: scalability, dynamic, workload
 #- name: external_retry 
 #  tags: scalability, dynamic, workload

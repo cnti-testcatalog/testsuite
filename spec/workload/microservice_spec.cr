@@ -48,14 +48,13 @@ describe "Microservice" do
   it "'reasonable_image_size' should pass if image is smaller than 5gb", tags: ["reasonable_image_size","happy-path"]  do
     begin
       `./cnf-conformance cleanup force=true`
-      # TODO test with multiple containers
-      `./cnf-conformance sample_coredns_setup`
+      `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-conformance.yml deploy_with_chart=false`
       response_s = `./cnf-conformance reasonable_image_size verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Image size is good/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-conformance sample_coredns_cleanup force=true`
+      `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-conformance.yml deploy_with_chart=false `
     end
   end
 
