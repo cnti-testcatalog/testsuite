@@ -18,7 +18,7 @@ task "reasonable_startup_time" do |_, args|
   task_response = task_runner(args) do |args|
     VERBOSE_LOGGING.info "reasonable_startup_time" if check_verbose(args)
 
-    # config = get_parsed_cnf_conformance_yml(args)
+    # config = get_parsed_cnf_conforma(args)
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     # yml_file_path = cnf_conformance_yml_file_path(args)
     # needs to be the source directory
@@ -57,8 +57,10 @@ task "reasonable_startup_time" do |_, args|
         helm_template_test = `#{helm} template --namespace=startup-test #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_test.yml`
         VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if check_verbose(args)
       end
+      #TODO Get resource ymls from reasonable_startup_test.yml
       kubectl_apply = `kubectl apply -f #{yml_file_path}/reasonable_startup_test.yml --namespace=startup-test`
       is_kubectl_applied = $?.success?
+      #TODO loop through all resource types and wait for install (pass in namespace)
       CNFManager.wait_for_install(deployment_name, wait_count=180,"startup-test")
       is_kubectl_deployed = $?.success?
     end

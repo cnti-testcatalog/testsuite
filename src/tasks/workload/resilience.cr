@@ -21,8 +21,8 @@ task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, arg
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
-      if KubectlClient::Get.deployment_spec_labels(resource["name"]).as_h? && 
-          KubectlClient::Get.deployment_spec_labels(resource["name"]).as_h.size > 0
+      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && 
+          KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
         test_passed = true
       else
         puts "No resource label found for container kill test for resource: #{resource}".colorize(:red)
@@ -68,7 +68,7 @@ task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     emoji_chaos_cpu_hog="📦💻🐷📈"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.deployment_spec_labels(resource["name"]).as_h.size > 0
+      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
         test_passed = true
       else
         puts "No resource label found for container kill test for resource: #{resource["name"]}".colorize(:red)
@@ -150,7 +150,7 @@ task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, a
       if KubectlClient::Get.resource_desired_is_available?(x["kind"], x["name"])
         true
       else
-        puts "Replicas did not return desired count after container kill test for deployment: #{x}".colorize(:red)
+        puts "Replicas did not return desired count after container kill test for resource: #{x}".colorize(:red)
         false
       end
     end

@@ -192,34 +192,6 @@ module CNFManager
 
   def self.wait_for_install(deployment_name, wait_count : Int32 = 180, namespace="default")
     resource_wait_for_install("deployment", deployment_name, wait_count, namespace)
-    # Not all cnfs have deployments.  some have only a pod.  need to check if the 
-    # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod 
-    # second_count = 0
-    # all_deployments = `kubectl get deployments --namespace=#{namespace}`
-    # LOGGING.debug "all_deployments #{all_deployments}"
-    # desired_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.replicas}'`
-    # LOGGING.debug "desired_replicas #{desired_replicas}"
-    # current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
-    # LOGGING.debug "current_replicas #{current_replicas}"
-    # LOGGING.info(all_deployments)
-    #
-    # until (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i) || second_count > wait_count
-    #   LOGGING.info("second_count = #{second_count}")
-    #   sleep 1
-    #   all_deployments = `kubectl get deployments --namespace=#{namespace}`
-    #   current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
-    #   # Sometimes desired replicas is not available immediately
-    #   desired_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.replicas}'`
-    #   LOGGING.debug "desired_replicas #{desired_replicas}"
-    #   LOGGING.info(all_deployments)
-    #   second_count = second_count + 1 
-    # end
-    #
-    # if (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i)
-    #   true
-    # else
-    #   false
-    # end
   end
 
   def self.resource_wait_for_install(kind, resource_name, wait_count : Int32 = 180, namespace="default")
