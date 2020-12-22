@@ -15,21 +15,27 @@ end
 
 desc "Does the CNF have a reasonable startup time?"
 task "reasonable_startup_time" do |_, args|
-  task_response = task_runner(args) do |args|
+  task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "reasonable_startup_time" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
 
     # config = get_parsed_cnf_conforma(args)
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     # yml_file_path = cnf_conformance_yml_file_path(args)
-    # needs to be the source directory
-    yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
-    LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
-    VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
-
-    helm_chart = "#{config.get("helm_chart").as_s?}"
-    helm_directory = "#{config.get("helm_directory").as_s?}"
-    release_name = "#{config.get("release_name").as_s?}"
-    deployment_name = "#{config.get("deployment_name").as_s?}"
+    # # needs to be the source directory
+    # yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
+    # LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
+    # VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
+    #
+    # helm_chart = "#{config.get("helm_chart").as_s?}"
+    # helm_directory = "#{config.get("helm_directory").as_s?}"
+    # release_name = "#{config.get("release_name").as_s?}"
+    # deployment_name = "#{config.get("deployment_name").as_s?}"
+    yml_file_path = config.cnf_config[:yml_file_path]
+    helm_chart = config.cnf_config[:helm_chart]
+    helm_directory = config.cnf_config[:helm_directory]
+    release_name = config.cnf_config[:release_name]
+    
     current_dir = FileUtils.pwd 
     #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     helm = CNFSingleton.helm
@@ -61,8 +67,25 @@ task "reasonable_startup_time" do |_, args|
       kubectl_apply = `kubectl apply -f #{yml_file_path}/reasonable_startup_test.yml --namespace=startup-test`
       is_kubectl_applied = $?.success?
       #TODO loop through all resource types and wait for install (pass in namespace)
-      CNFManager.wait_for_install(deployment_name, wait_count=180,"startup-test")
-      is_kubectl_deployed = $?.success?
+      template_ymls = Helm::Manifest.parse_manifest_as_ymls("#{yml_file_path}/reasonable_startup_test.yml") 
+      # task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
+      LOGGING.debug "template_ymls: #{template_ymls}"
+      task_response = template_ymls.map do | resource|
+        LOGGING.debug "Waiting on resource: #{resource["metadata"]["name"]} of type #{resource["kind"]}"
+        if resource["kind"].as_s.downcase == "deployment" ||
+            resource["kind"].as_s.downcase == "pod" ||
+            resource["kind"].as_s.downcase == "daemonset" ||
+            resource["kind"].as_s.downcase == "statefulset" ||
+            resource["kind"].as_s.downcase == "replicaset"
+
+          CNFManager.resource_wait_for_install(resource["kind"], resource["metadata"]["name"], wait_count=180, "startup-test")
+          # is_kubectl_deployed = $?.success?
+          $?.success?
+        else
+          true
+        end
+      end
+      is_kubectl_deployed = task_response.none?{|x| x == false}
     end
 
     VERBOSE_LOGGING.info helm_template_test if check_verbose(args)
@@ -79,6 +102,7 @@ task "reasonable_startup_time" do |_, args|
     end
 
    ensure
+    LOGGING.debug "Reasonable startup cleanup"
     delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
     rollback_non_namespaced = `kubectl apply -f #{yml_file_path}/reasonable_startup_orig.yml`
     # CNFManager.wait_for_install(deployment_name, wait_count=180)
