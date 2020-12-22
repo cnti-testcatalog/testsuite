@@ -29,14 +29,14 @@ describe CnfConformance do
   end
   it "'liveness' should pass when livenessProbe is set", tags: ["liveness", "happy-path"]  do
     begin
-      `./cnf-conformance sample_coredns`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-conformance.yml deploy_with_chart=false`
       $?.success?.should be_true
-      response_s = `./cnf-conformance liveness verbose`
+      response_s = `LOG_LEVEL=debug ./cnf-conformance liveness verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: Helm liveness probe/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-conformance cleanup_sample_coredns verbose`
+      LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-conformance.yml deploy_with_chart=false `
     end
   end
   it "'liveness' should fail when livenessProbe is not set", tags: "liveness" do
@@ -53,14 +53,14 @@ describe CnfConformance do
   end
   it "'readiness' should pass when readinessProbe is set", tags: ["readiness","happy-path"]  do
     begin
-      `./cnf-conformance sample_coredns`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-conformance.yml deploy_with_chart=false`
       $?.success?.should be_true
-      response_s = `./cnf-conformance readiness verbose`
+      response_s = `LOG_LEVEL=debug ./cnf-conformance readiness verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: Helm readiness probe/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-conformance cleanup_sample_coredns verbose`
+      LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-conformance.yml deploy_with_chart=false `
     end
   end
   it "'readiness' should fail when readinessProbe is not set", tags: "readiness" do

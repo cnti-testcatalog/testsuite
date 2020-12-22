@@ -1,0 +1,200 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: nginx-webapp
+  name: nginx-webapp
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: nginx-webapp
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: nginx-webapp
+    spec:
+      containers:
+      - image: busybox
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo echo $(date -u) 'Hi I am from Sidecar container 1' >> /var/log/index.html; sleep 5;done"]
+        name: sidecar-container1
+        resources: {}
+        livenessProbe:
+          exec:
+            command:
+            - touch
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - touch
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+          - name: var-logs
+            mountPath: /var/log
+      - image: busybox
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo echo $(date -u) 'Hi I am from Sidecar container 2' >> /var/log/index.html; sleep 5;done"]
+        name: sidecar-container2
+        resources: {}
+        livenessProbe:
+          exec:
+            command:
+            - touch
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - touch
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+          - name: var-logs
+            mountPath: /var/log
+      - image: nginx
+        name: main-container
+        resources: {}
+        livenessProbe:
+          exec:
+            command:
+            - touch
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - touch
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        ports:
+          - containerPort: 80
+        volumeMounts:
+          - name: var-logs
+            mountPath: /usr/share/nginx/html
+      dnsPolicy: Default
+      volumes:
+      - name: var-logs
+        emptyDir: {}
+status: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: nginx-webapp-deployment2
+  name: nginx-webapp-deployment2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-webapp-deployment2
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: nginx-webapp-deployment2
+    spec:
+      containers:
+      - image: busybox
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo echo $(date -u) 'Hi I am from Sidecar container 1' >> /var/log/index.html; sleep 5;done"]
+        name: sidecar-container3
+        resources: {}
+        livenessProbe:
+          exec:
+            command:
+            - touch
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - touch
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+          - name: var-logs
+            mountPath: /var/log
+      - image: busybox
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo echo $(date -u) 'Hi I am from Sidecar container 2' >> /var/log/index.html; sleep 5;done"]
+        name: sidecar-container4
+        resources: {}
+        volumeMounts:
+          - name: var-logs
+            mountPath: /var/log
+        livenessProbe:
+          exec:
+            command:
+            - touch
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - touch
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      - image: nginx
+        name: main-container2
+        resources: {}
+        ports:
+          - containerPort: 80
+        livenessProbe:
+          exec:
+            command:
+            - touch
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - touch
+            - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+          - name: var-logs
+            mountPath: /usr/share/nginx/html
+      dnsPolicy: Default
+      volumes:
+      - name: var-logs
+        emptyDir: {}
+status: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-webapp-deployment2
+  labels:
+    run: nginx-webapp-deployment2
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    app: nginx-webapp-deployment2
+  type: NodePort

@@ -29,11 +29,19 @@ describe "KubectlClient" do
   end
 
   it "'#KubectlClient.schedulable_nodes' should return all schedulable worker nodes"  do
-    `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-conformance.yml deploy_with_chart=false` 
+    LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-conformance.yml deploy_with_chart=false` 
     resp = KubectlClient::Get.deployment_containers("nginx-webapp")
     (resp.size).should be > 0
   ensure
-    `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-conformance.yml deploy_with_chart=false` 
+    LOGGING.debug `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-conformance.yml deploy_with_chart=false` 
+  end
+
+  it "'#KubectlClient.pod_exists?' should true if a pod exists"  do
+    LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml` 
+    resp = KubectlClient::Get.pod_exists?("coredns")
+    (resp).should be_true 
+  ensure
+    LOGGING.debug `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml` 
   end
  
 end
