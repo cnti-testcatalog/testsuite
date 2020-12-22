@@ -216,6 +216,8 @@ In the console where the test suite runs:
 
 A test log file, eg. `cnf-conformance-results-20201216.txt`, will be created which lists PASS or FAIL for every test based on the date.
 
+For more details on points, see our [POINTS.md](./POINTS.md) documentation.
+
 #### Cleaning Up
 
 Run the following to cleanup the specific cnf-conformance test (this is assuming you installed the cnf-conformance.yml in your present working directory):
