@@ -1,4 +1,4 @@
-﻿# Usage Document for the cnf-conformance.yml
+# Test Suite configuration usage: cnf-conformance.yml
 ---
 
 ### What is the cnf-conformance.yml and why is it required?:
