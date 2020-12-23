@@ -28,10 +28,12 @@ task "increase_capacity" do |_, args|
 
     target_replicas = "3"
     base_replicas = "1"
+    # TODO scale replicatsets separately
+    # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset
+    # resource["kind"].as_s.downcase == "replicaset"
     task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
       if resource["kind"].as_s.downcase == "deployment" ||
-          resource["kind"].as_s.downcase == "statefulset" ||
-          resource["kind"].as_s.downcase == "replicaset"
+          resource["kind"].as_s.downcase == "statefulset"
         final_count = change_capacity(base_replicas, target_replicas, args, config, resource)
         target_replicas == final_count
       else
@@ -54,9 +56,11 @@ task "decrease_capacity" do |_, args|
     target_replicas = "1"
     base_replicas = "3"
     task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
+      # TODO scale replicatsets separately
+      # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset
+      # resource["kind"].as_s.downcase == "replicaset"
       if resource["kind"].as_s.downcase == "deployment" ||
-          resource["kind"].as_s.downcase == "statefulset" ||
-          resource["kind"].as_s.downcase == "replicaset"
+          resource["kind"].as_s.downcase == "statefulset"
         final_count = change_capacity(base_replicas, target_replicas, args, config, resource)
         target_replicas == final_count
       else
@@ -85,13 +89,14 @@ def change_capacity(base_replicas, target_replica_count, args, config, resource 
   initialization_time = base_replicas.to_i * 10
   VERBOSE_LOGGING.info "resource: #{resource["metadata"]["name"]}" if check_verbose(args)
 
-  #TODO use kubectl scale command that is specific to the kind
-  case resource["kind"]
+  case resource["kind"].as_s.downcase
   when "deployment"
     LOGGING.debug "kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
 
     base = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}`
-  else
+  when "statefulset"
+    `kubectl scale statefulsets #{resource["metadata"]["name"]} --replicas=#{base_replicas}`
+  else #TODO what else can be scaled?
     LOGGING.debug "kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
 
     base = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}`
@@ -103,10 +108,17 @@ def change_capacity(base_replicas, target_replica_count, args, config, resource 
   else
     VERBOSE_LOGGING.info "#{resource["kind"]} initialized to #{initialized_count}" if check_verbose(args)
   end
- 
-  LOGGING.debug "kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}"
-  #TODO use kubectl scale command that is specific to the kind
-  increase = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}`
+
+  case resource["kind"].as_s.downcase
+  when "deployment"
+    increase = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}`
+  when "statefulset"
+    `kubectl scale statefulsets #{resource["metadata"]["name"]} --replicas=#{target_replica_count}`
+  else #TODO what else can be scaled?
+    LOGGING.debug "kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
+    base = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}`
+  end
+
   current_replicas = wait_for_scaling(resource, target_replica_count, args)
   current_replicas
 end
