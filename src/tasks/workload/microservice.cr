@@ -101,18 +101,25 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
     VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      test_passed = true
-      local_image_tag = {image: container.as_h["image"].as_s.split(":")[0],
-                         #TODO an image may not have a tag
-                         tag: container.as_h["image"].as_s.split(":")[1]?}
+      if resource["kind"].as_s.downcase == "deployment" ||
+          resource["kind"].as_s.downcase == "statefulset" ||
+          resource["kind"].as_s.downcase == "pod" ||
+          resource["kind"].as_s.downcase == "replicaset"
+        test_passed = true
+        local_image_tag = {image: container.as_h["image"].as_s.split(":")[0],
+                           #TODO an image may not have a tag
+                           tag: container.as_h["image"].as_s.split(":")[1]?}
 
-      dockerhub_image_tags = DockerClient::Get.image_tags(local_image_tag[:image])
-      image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, local_image_tag[:tag])
-      micro_size = image_by_tag && image_by_tag["full_size"] 
-      VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
-      unless dockerhub_image_tags && dockerhub_image_tags.status_code == 200 && micro_size.to_s.to_i64 < 5_000_000_000
-        puts "resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} Failed".colorize(:red)
-        test_passed=false
+        dockerhub_image_tags = DockerClient::Get.image_tags(local_image_tag[:image])
+        image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, local_image_tag[:tag])
+        micro_size = image_by_tag && image_by_tag["full_size"] 
+        VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
+        unless dockerhub_image_tags && dockerhub_image_tags.status_code == 200 && micro_size.to_s.to_i64 < 5_000_000_000
+          puts "resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} Failed".colorize(:red)
+          test_passed=false
+        end
+      else
+        test_passed = true
       end
       test_passed
     end

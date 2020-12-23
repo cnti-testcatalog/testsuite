@@ -82,17 +82,7 @@ def change_capacity(base_replicas, target_replica_count, args, config, resource 
   VERBOSE_LOGGING.info "base replicas: #{base_replicas}" if check_verbose(args)
   LOGGING.debug "resource: #{resource}"
 
-  # Parse the cnf-conformance.yml
-  # config = cnf_conformance_yml
-    # helm_directory = config.cnf_config[:helm_directory]
-  # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-
   initialization_time = base_replicas.to_i * 10
-  # if args.named.keys.includes? "resource"
-  #   resource = args.named["resource"]
-  # else
-  #   resource = config.get("resource").as_s 
-  # end
   VERBOSE_LOGGING.info "resource: #{resource["metadata"]["name"]}" if check_verbose(args)
 
   #TODO use kubectl scale command that is specific to the kind
