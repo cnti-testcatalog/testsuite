@@ -111,11 +111,17 @@ task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
                            tag: container.as_h["image"].as_s.split(":")[1]?}
 
         dockerhub_image_tags = DockerClient::Get.image_tags(local_image_tag[:image])
-        image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, local_image_tag[:tag])
-        micro_size = image_by_tag && image_by_tag["full_size"] 
-        VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
-        unless dockerhub_image_tags && dockerhub_image_tags.status_code == 200 && micro_size.to_s.to_i64 < 5_000_000_000
-          puts "resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} Failed".colorize(:red)
+        if dockerhub_image_tags && dockerhub_image_tags.status_code == 200
+          image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, local_image_tag[:tag])
+          micro_size = image_by_tag && image_by_tag["full_size"] 
+          VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
+          max_size = 5_000_000_000
+          unless micro_size.to_s.to_i64 < max_size
+            puts "resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} was more than #{max_size}".colorize(:red)
+            test_passed=false
+          end
+        else
+          puts "Failed to find resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} on dockerhub".colorize(:yellow)
           test_passed=false
         end
       else

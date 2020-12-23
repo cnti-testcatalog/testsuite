@@ -130,7 +130,8 @@ task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, a
         run_chaos = `kubectl create -f "#{destination_cnf_dir}/chaos_container_kill.yml"`
         VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
         if wait_for_test("PodChaos", "container-kill")
-          CNFManager.wait_for_install(resource["name"], wait_count=60)
+          # CNFManager.wait_for_install(resource["name"], wait_count=60)
+          CNFManager.resource_wait_for_install(resource["kind"], resource["name"], wait_count=60)
         else
           # TODO Change this to an exception (points = 0)
           # e.g. upsert_exception_task

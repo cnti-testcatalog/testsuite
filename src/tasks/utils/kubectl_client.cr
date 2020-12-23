@@ -69,7 +69,7 @@ module KubectlClient
     def self.deployment(deployment_name) : JSON::Any
       resp = `kubectl get deployment #{deployment_name} -o json`
       LOGGING.debug "kubectl get deployment: #{resp}"
-      if resp 
+      if resp && !resp.empty?
         JSON.parse(resp)
       else
         JSON.parse(%({}))
@@ -80,7 +80,7 @@ module KubectlClient
       LOGGING.debug "kubectl get kind: #{kind} resource name: #{resource_name}"
       resp = `kubectl get #{kind} #{resource_name} -o json`
       LOGGING.debug "kubectl get resource: #{resp}"
-      if resp 
+      if resp && !resp.empty?
         JSON.parse(resp)
       else
         JSON.parse(%({}))
@@ -96,7 +96,7 @@ module KubectlClient
     def self.deployments : JSON::Any
       resp = `kubectl get deployments -o json`
       LOGGING.debug "kubectl get deployment: #{resp}"
-      if resp 
+      if resp && !resp.empty?
         JSON.parse(resp)
       else
         JSON.parse(%({}))
@@ -113,10 +113,10 @@ module KubectlClient
         resp = resource(kind, resource_name).dig?("spec", "template", "spec", "containers")
       end
       LOGGING.debug "kubectl get resource containers: #{resp}"
-      if resp 
+      if resp && resp.as_a.size > 0
         resp
       else
-        JSON.parse(%({}))
+        JSON.parse(%([]))
       end
     end
     def self.resource_desired_is_available?(kind, resource_name)
@@ -146,7 +146,7 @@ module KubectlClient
       LOGGING.debug "resource_labels kind: #{kind} resource_name: #{resource_name}"
       resp = resource(kind, resource_name).dig?("spec", "template", "metadata", "labels")
       LOGGING.debug "resource_labels: #{resp}"
-      if resp 
+      if resp
         resp
       else
         JSON.parse(%({}))
