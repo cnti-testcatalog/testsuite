@@ -5,7 +5,7 @@ require "totem"
 
 desc "Cleans up the CNF Conformance test suite, the K8s cluster, and upstream projects"
 # task "cleanup", ["samples_cleanup", "results_yml_cleanup"] do  |_, args|
-task "cleanup", ["samples_cleanup", "uninstall_chaosmesh"] do  |_, args|
+task "cleanup", ["samples_cleanup", "uninstall_chaosmesh","uninstall_litmus"] do  |_, args|
 end
 
 desc "Cleans up the CNF Conformance sample projects"
