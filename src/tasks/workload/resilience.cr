@@ -241,6 +241,47 @@ task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, a
   end
 end
 
+desc "Does the CNF crash when network latency occurs"
+task "pod_network_latency", ["install_litmus", "retrieve_manifest"] do |_, args|
+  task_response = task_runner(args) do |args|
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    deployment_name = config.get("deployment_name").as_s
+    deployment_name = "coredns-coredns"
+    deployment_label = config.get("deployment_label").as_s
+    puts "#{destination_cnf_dir}"
+    LOGGING.info "destination_cnf_dir #{destination_cnf_dir}"
+    deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
+    install_experiment = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/experiment.yaml`
+    install_rbac = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/rbac.yaml`
+    annotate = `kubectl annotate --overwrite deploy/#{deployment_name} litmuschaos.io/chaos="true"`
+    puts "#{install_experiment}" if check_verbose(args)
+    puts "#{install_rbac}" if check_verbose(args)
+    puts "#{annotate}" if check_verbose(args)
+    
+    errors = 0
+    begin
+      deployment_label_value = deployment.get("metadata").as_h["labels"].as_h[deployment_label].as_s
+    rescue ex
+      errors = errors + 1
+      LOGGING.error ex.message 
+    end
+    chaos_experiment_name = "pod-network-latency"
+    test_name = "#{deployment_name}-conformance-#{Time.local.to_unix}" 
+    chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
+
+    template = Crinja.render(chaos_template_pod_network_latency, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{deployment_label}", "deployment_label_value" => "#{deployment_label_value}", "test_name" => test_name})
+    chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
+    puts "#{chaos_config}" if check_verbose(args)
+    run_chaos = `kubectl apply -f "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
+    puts "#{run_chaos}" if check_verbose(args)
+
+    LitmusManager.wait_for_test(test_name,chaos_experiment_name,args)
+    LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+
+  end
+end
+
 
 def network_chaos_template
   <<-TEMPLATE
@@ -311,3 +352,53 @@ def chaos_template_container_kill
       cron: '@every 600s'
   TEMPLATE
 end
+
+def chaos_template_pod_network_latency
+  <<-TEMPLATE
+  apiVersion: litmuschaos.io/v1alpha1
+  kind: ChaosEngine
+  metadata:
+    name: {{ test_name }}
+    namespace: default
+  spec: 
+    jobCleanUpPolicy: 'delete'
+    annotationCheck: 'true'
+    engineState: 'active'
+    auxiliaryAppInfo: ''
+    monitoring: false
+    appinfo: 
+      appns: 'default'
+      applabel: '{{ deployment_label}}={{ deployment_label_value }}'
+      appkind: 'deployment'
+    chaosServiceAccount: {{ chaos_experiment_name }}-sa 
+    experiments:
+      - name: {{ chaos_experiment_name }}
+        spec:
+          components:
+            env:
+              # If not provided it will take the first container of target pod
+              - name: TARGET_CONTAINER
+                value: '' 
+
+              - name: NETWORK_INTERFACE
+                value: 'eth0'     
+
+              - name: NETWORK_LATENCY
+                value: '60000'
+
+              - name: TOTAL_CHAOS_DURATION
+                value: '60' # in seconds
+
+              # provide the name of container runtime
+              # it supports docker, containerd, crio
+              # default to docker
+              - name: CONTAINER_RUNTIME
+                value: 'containerd'
+
+              # provide the socket file path
+              # applicable only for containerd and crio runtime
+              - name: SOCKET_PATH
+                value: '/run/containerd/containerd.sock'
+
+  TEMPLATE
+  end

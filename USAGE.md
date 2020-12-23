@@ -455,6 +455,10 @@ crystal src/cnf-conformance.cr performance
 ```
 ./cnf-conformance chaos_container_kill
 ```
+#### :heavy_check_mark: Test if the CNF crashes when network latency occurs 
+```
+./cnf-conformance pod_network_latency
+```
 
 ---
 ### Platform Tests
