@@ -1,12 +1,10 @@
-﻿# Usage document for the cnf-conformance.yml
-
+# Test Suite configuration usage: cnf-conformance.yml
+---
 
 ### What is the cnf-conformance.yml and why is it required?:
 The cnf-conformance.yml is used by the CNF-Conformance suite to locate a deployed CNF on an existing K8s cluster or get enough information about the CNF and it's helm chart that will allow the test suite to deploy the CNF itself.
 
 This information is also required for running various tests e.g. The 'deployment_name' is used for finding the name of the CNF deployment in the K8s cluster and is then used to run tests like [increase_capacity](https://github.com/cncf/cnf-conformance/blob/master/src/tasks/scalability.cr#L20) and [decrease_capacity](https://github.com/cncf/cnf-conformance/blob/master/src/tasks/scalability.cr#L42)
-
-
 
 
 ### All cnf-conformance.yml keys/values
@@ -78,3 +76,47 @@ This is done because it's a common cloud-native practice to delegate 'privileged
 This MUST be set.
 This value is used to test the upgradeability of each container image.  The image tag version should be a minor version that will be used in conjunction with the kubnetes rollout feature.
 
+- Create a Conformance configuration file called `cnf-conformance.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`)
+  - See example config (See [latest example in repo](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml)):
+    - Optionally, copy the example configuration file, [`cnf-conformance-example.yml`](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml), and modify appropriately
+- (Optional) Setup your CNF for testing and deploy it to the cluster by running `cnf-conformance cnf_setup cnf-config=path_to_your/cnf_folder`
+  - _NOTE: if you do not want to automatically deploy the using the helm chart defined in the configuration then you MUST pass `deploy_with_chart=false` to the `cnf_setup` command._
+  - _NOTE: you can pass the path to your cnf-conformance.yml to the 'all' command which will install the CNF for you (see below)_
+
+
+
+### Detailed Steps (for setting up your own cnf):
+
+  * Modify the  [`cnf-conformance.yml`](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml)  file settings for your cnfs
+  ```
+  # In ./<YOURCNFDIRECTORY>/cnf-conformance.yml
+
+helm_directory:
+install_script:
+deployment_name:
+helm_chart:
+helm_chart_container_name:
+white_list_helm_chart_container_names:
+container_names:
+  - name: <container_name1>
+    rolling_update_test_tag: <image-tag-version1>
+  - name: <container_name2>
+    rolling_update_test_tag: <image-tag-version2>
+  ```
+
+  * Run the setup tasks to install any prerequisites (useful for setting up sample cnfs)
+  ```
+  crystal src/cnf-conformance.cr setup
+  ```
+  * Run the cleanup tasks to remove prerequisites (useful for starting fresh)
+  ```
+  crystal src/cnf-conformance.cr cleanup
+  ```
+  * Install your CNF into the cnfs directory, download the helm charts, and download the source code:
+  ```
+  crystal src/cnf-conformance.cr cnf_setup cnf-config=<path to your cnf config file>
+  ```
+  * To remove your CNF from the cnfs directory and cluster
+  ```
+  crystal src/cnf-conformance.cr cnf_cleanup cnf-config=<path to your cnf config file>
+  ```
