@@ -167,7 +167,7 @@ end
 
 desc "Does the CNF crash when network latency occurs"
 task "pod_network_latency", ["install_litmus", "retrieve_manifest"] do |_, args|
-  task_response = task_runner(args) do |args|
+  task_response = task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "pod_network_latency" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
