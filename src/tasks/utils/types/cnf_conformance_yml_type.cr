@@ -34,9 +34,9 @@ class CnfConformanceYmlType
 
   property deployment_name : String?
 
-  property deployment_label : String
+  property deployment_label : String?
 
-  property application_deployment_names : Array(String)
+  property application_deployment_names : Array(String)?
 
   property helm_repository : HelmRepositoryType?
 

@@ -19,10 +19,7 @@ module CNFManager
                                      git_clone_url: String,
                                      install_script: String,
                                      release_name: String,
-                                     deployment_name: String,
-                                     deployment_label: String,
                                      service_name:  String,
-                                     application_deployment_names: String,
                                      docker_repository: String,
                                      helm_repository: NamedTuple(name:  String, 
                                                                  repo_url:  String) | Nil,
@@ -69,10 +66,7 @@ module CNFManager
                                git_clone_url: "",
                                install_script: "",
                                release_name: release_name,
-                               deployment_name: "",
-                               deployment_label: "",
                                service_name: service_name,
-                               application_deployment_names: "",
                                docker_repository: "",
                                helm_repository: {name: "", repo_url: ""},
                                helm_chart: "",
@@ -343,9 +337,7 @@ module CNFManager
     end
     config = parsed_config_file(yml)
     current_dir = FileUtils.pwd 
-    # deployment_name = "#{config.get("deployment_name").as_s?}" 
     release_name = optional_key_as_string(config, "release_name").split(" ")[0]
-    # TODO change directory name to release name
     LOGGING.info("release_name: #{release_name}")
     "#{current_dir}/#{CNF_DIR}/#{release_name}"
   end
