@@ -15,23 +15,16 @@ end
 
 desc "Does the CNF have a reasonable startup time?"
 task "reasonable_startup_time" do |_, args|
-  task_response = task_runner(args) do |args|
+  task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "reasonable_startup_time" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
 
-    # config = get_parsed_cnf_conformance_yml(args)
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    # yml_file_path = cnf_conformance_yml_file_path(args)
-    # needs to be the source directory
-    yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
-    LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
-    VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
-
-    helm_chart = "#{config.get("helm_chart").as_s?}"
-    helm_directory = "#{config.get("helm_directory").as_s?}"
-    release_name = "#{config.get("release_name").as_s?}"
-    deployment_name = "#{config.get("deployment_name").as_s?}"
+    yml_file_path = config.cnf_config[:yml_file_path]
+    helm_chart = config.cnf_config[:helm_chart]
+    helm_directory = config.cnf_config[:helm_directory]
+    release_name = config.cnf_config[:release_name]
+    
     current_dir = FileUtils.pwd 
-    #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     helm = CNFSingleton.helm
     VERBOSE_LOGGING.info helm if check_verbose(args)
 
@@ -57,10 +50,28 @@ task "reasonable_startup_time" do |_, args|
         helm_template_test = `#{helm} template --namespace=startup-test #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_test.yml`
         VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if check_verbose(args)
       end
+
       kubectl_apply = `kubectl apply -f #{yml_file_path}/reasonable_startup_test.yml --namespace=startup-test`
       is_kubectl_applied = $?.success?
-      CNFManager.wait_for_install(deployment_name, wait_count=180,"startup-test")
-      is_kubectl_deployed = $?.success?
+
+      template_ymls = Helm::Manifest.parse_manifest_as_ymls("#{yml_file_path}/reasonable_startup_test.yml") 
+
+      LOGGING.debug "template_ymls: #{template_ymls}"
+      task_response = template_ymls.map do | resource|
+        LOGGING.debug "Waiting on resource: #{resource["metadata"]["name"]} of type #{resource["kind"]}"
+        if resource["kind"].as_s.downcase == "deployment" ||
+            resource["kind"].as_s.downcase == "pod" ||
+            resource["kind"].as_s.downcase == "daemonset" ||
+            resource["kind"].as_s.downcase == "statefulset" ||
+            resource["kind"].as_s.downcase == "replicaset"
+
+          CNFManager.resource_wait_for_install(resource["kind"], resource["metadata"]["name"], wait_count=180, "startup-test")
+          $?.success?
+        else
+          true
+        end
+      end
+      is_kubectl_deployed = task_response.none?{|x| x == false}
     end
 
     VERBOSE_LOGGING.info helm_template_test if check_verbose(args)
@@ -77,6 +88,7 @@ task "reasonable_startup_time" do |_, args|
     end
 
    ensure
+    LOGGING.debug "Reasonable startup cleanup"
     delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
     rollback_non_namespaced = `kubectl apply -f #{yml_file_path}/reasonable_startup_orig.yml`
     # CNFManager.wait_for_install(deployment_name, wait_count=180)
@@ -85,59 +97,44 @@ end
 
 desc "Does the CNF have a reasonable container image size?"
 task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
-  task_response = task_runner(args) do |args|
+  task_runner(args) do |args,config|
     VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    # TODO loop through all deployments in the helm chart 
-    yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
-    LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
-    VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
-    helm_directory = "#{config.get("helm_directory").as_s?}"
-    manifest_directory = optional_key_as_string(config, "manifest_directory")
-    release_name = "#{config.get("release_name").as_s?}"
-    helm_chart_path = destination_cnf_dir + "/" + helm_directory
-    manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
-    # get the manifest file from the helm chart
-    if release_name.empty? # no helm chart
-      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
-    else
-      Helm.generate_manifest_from_templates(release_name, 
-                                          helm_chart_path, 
-                                          manifest_file_path)
-      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
-    end
+    LOGGING.debug "cnf_config: #{config}"
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      if resource["kind"].as_s.downcase == "deployment" ||
+          resource["kind"].as_s.downcase == "statefulset" ||
+          resource["kind"].as_s.downcase == "pod" ||
+          resource["kind"].as_s.downcase == "replicaset"
+        test_passed = true
+        local_image_tag = {image: container.as_h["image"].as_s.split(":")[0],
+                           #TODO an image may not have a tag
+                           tag: container.as_h["image"].as_s.split(":")[1]?}
 
-    deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
-    deployment_names = Helm.workload_resource_names(deployment_ymls)
-    LOGGING.info "deployment names: #{deployment_names}"
-    if deployment_names && deployment_names.size > 0 
-      test_passed = true
-    else
-      test_passed = false
-    end
-    deployment_names.each do | deployment |
-      VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
-      containers = KubectlClient::Get.deployment_containers(deployment)
-      local_image_tags = KubectlClient::Get.container_image_tags(containers)
-      local_image_tags.each do |x|
-        dockerhub_image_tags = DockerClient::Get.image_tags(x[:image])
-        image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, x[:tag])
-        micro_size = image_by_tag && image_by_tag["full_size"] 
-        VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
-        unless dockerhub_image_tags && dockerhub_image_tags.status_code == 200 && micro_size.to_s.to_i64 < 5_000_000_000
-          puts "deployment: #{deployment} and container: #{x[:image]}:#{x[:tag]} Failed".colorize(:red)
+        dockerhub_image_tags = DockerClient::Get.image_tags(local_image_tag[:image])
+        if dockerhub_image_tags && dockerhub_image_tags.status_code == 200
+          image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, local_image_tag[:tag])
+          micro_size = image_by_tag && image_by_tag["full_size"] 
+          VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
+          max_size = 5_000_000_000
+          unless micro_size.to_s.to_i64 < max_size
+            puts "resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} was more than #{max_size}".colorize(:red)
+            test_passed=false
+          end
+        else
+          puts "Failed to find resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} on dockerhub".colorize(:yellow)
           test_passed=false
         end
+      else
+        test_passed = true
       end
+      test_passed
     end
 
     emoji_image_size="⚖️👀"
     emoji_small="🐜"
     emoji_big="🦖"
 
-    # if a sucessfull call and size of container is less than 5gb (5 billion bytes)
-    if test_passed
+    if task_response 
       upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good #{emoji_small} #{emoji_image_size}")
     else
       upsert_failed_task("reasonable_image_size", "✖️  FAILURE: Image size too large #{emoji_big} #{emoji_image_size}")

@@ -22,14 +22,26 @@ end
 
 desc "Test increasing capacity by setting replicas to 1 and then increasing to 3"
 task "increase_capacity" do |_, args|
-  task_runner(args) do |args|
+  task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "increase_capacity" if check_verbose(args)
     emoji_increase_capacity="📦📈"
 
     target_replicas = "3"
     base_replicas = "1"
-    final_count = change_capacity(base_replicas, target_replicas, args)
-    if target_replicas == final_count 
+    # TODO scale replicatsets separately
+    # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset
+    # resource["kind"].as_s.downcase == "replicaset"
+    task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
+      if resource["kind"].as_s.downcase == "deployment" ||
+          resource["kind"].as_s.downcase == "statefulset"
+        final_count = change_capacity(base_replicas, target_replicas, args, config, resource)
+        target_replicas == final_count
+      else
+        true
+      end
+    end
+    # if target_replicas == final_count 
+    if task_response.none?(false) 
       upsert_passed_task("increase_capacity", "✔️  PASSED: Replicas increased to #{target_replicas} #{emoji_increase_capacity}")
     else
       upsert_failed_task("increase_capacity", "✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji_increase_capacity}")
@@ -39,14 +51,26 @@ end
 
 desc "Test decrease capacity by setting replicas to 3 and then decreasing to 1"
 task "decrease_capacity" do |_, args|
-  task_runner(args) do |args|
+  task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "decrease_capacity" if check_verbose(args)
     target_replicas = "1"
     base_replicas = "3"
-    final_count = change_capacity(base_replicas, target_replicas, args)
+    task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
+      # TODO scale replicatsets separately
+      # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset
+      # resource["kind"].as_s.downcase == "replicaset"
+      if resource["kind"].as_s.downcase == "deployment" ||
+          resource["kind"].as_s.downcase == "statefulset"
+        final_count = change_capacity(base_replicas, target_replicas, args, config, resource)
+        target_replicas == final_count
+      else
+        true
+      end
+    end
     emoji_decrease_capacity="📦📉"
 
-    if target_replicas == final_count 
+    # if target_replicas == final_count 
+    if task_response.none?(false) 
       upsert_passed_task("decrease_capacity", "✔️  PASSED: Replicas decreased to #{target_replicas} #{emoji_decrease_capacity}")
     else
       upsert_failed_task("decrease_capacity", "✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji_decrease_capacity}")
@@ -54,39 +78,52 @@ task "decrease_capacity" do |_, args|
   end
 end
 
-def change_capacity(base_replicas, target_replica_count, args)
+def change_capacity(base_replicas, target_replica_count, args, config, resource = {kind: "", 
+                                                                                   metadata: {name: ""}})
   VERBOSE_LOGGING.info "change_capacity" if check_verbose(args)
   VERBOSE_LOGGING.debug "increase_capacity args.raw: #{args.raw}" if check_verbose(args)
   VERBOSE_LOGGING.debug "increase_capacity args.named: #{args.named}" if check_verbose(args)
   VERBOSE_LOGGING.info "base replicas: #{base_replicas}" if check_verbose(args)
-
-  # Parse the cnf-conformance.yml
-  # config = cnf_conformance_yml
-  config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+  LOGGING.debug "resource: #{resource}"
 
   initialization_time = base_replicas.to_i * 10
-  if args.named.keys.includes? "deployment_name"
-    deployment_name = args.named["deployment_name"]
-  else
-    deployment_name = config.get("deployment_name").as_s 
-  end
-  VERBOSE_LOGGING.info "deployment_name: #{deployment_name}" if check_verbose(args)
+  VERBOSE_LOGGING.info "resource: #{resource["metadata"]["name"]}" if check_verbose(args)
 
-  base = `kubectl scale deployment.v1.apps/#{deployment_name} --replicas=#{base_replicas}`
+  case resource["kind"].as_s.downcase
+  when "deployment"
+    LOGGING.debug "kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
+
+    base = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}`
+  when "statefulset"
+    `kubectl scale statefulsets #{resource["metadata"]["name"]} --replicas=#{base_replicas}`
+  else #TODO what else can be scaled?
+    LOGGING.debug "kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
+
+    base = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}`
+  end
   VERBOSE_LOGGING.info "base: #{base}" if check_verbose(args) 
-  initialized_count = wait_for_scaling(deployment_name, base_replicas, args)
+  initialized_count = wait_for_scaling(resource, base_replicas, args)
   if initialized_count != base_replicas
-    VERBOSE_LOGGING.info "deployment initialized to #{initialized_count} and could not be set to #{base_replicas}" if check_verbose(args)
+    VERBOSE_LOGGING.info "#{resource["kind"]} initialized to #{initialized_count} and could not be set to #{base_replicas}" if check_verbose(args)
   else
-    VERBOSE_LOGGING.info "deployment initialized to #{initialized_count}" if check_verbose(args)
+    VERBOSE_LOGGING.info "#{resource["kind"]} initialized to #{initialized_count}" if check_verbose(args)
   end
 
-  increase = `kubectl scale deployment.v1.apps/#{deployment_name} --replicas=#{target_replica_count}`
-  current_replicas = wait_for_scaling(deployment_name, target_replica_count, args)
+  case resource["kind"].as_s.downcase
+  when "deployment"
+    increase = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}`
+  when "statefulset"
+    `kubectl scale statefulsets #{resource["metadata"]["name"]} --replicas=#{target_replica_count}`
+  else #TODO what else can be scaled?
+    LOGGING.debug "kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
+    base = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}`
+  end
+
+  current_replicas = wait_for_scaling(resource, target_replica_count, args)
   current_replicas
 end
 
-def wait_for_scaling(deployment_name, target_replica_count, args)
+def wait_for_scaling(resource, target_replica_count, args)
   VERBOSE_LOGGING.info "target_replica_count: #{target_replica_count}" if check_verbose(args)
   if args.named.keys.includes? "wait_count"
     wait_count_value = args.named["wait_count"]
@@ -96,15 +133,15 @@ def wait_for_scaling(deployment_name, target_replica_count, args)
   wait_count = wait_count_value.to_i
   second_count = 0
   current_replicas = "0"
-  previous_replicas = `kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
+  previous_replicas = `kubectl get #{resource["kind"]} #{resource["metadata"]["name"]} -o=jsonpath='{.status.readyReplicas}'`
   until current_replicas == target_replica_count || second_count > wait_count
     VERBOSE_LOGGING.debug "secound_count: #{second_count} wait_count: #{wait_count}" if check_verbose(args)
-    VERBOSE_LOGGING.info "current_replicas before get deployments: #{current_replicas}" if check_verbose(args)
+    VERBOSE_LOGGING.info "current_replicas before get #{resource["kind"]}: #{current_replicas}" if check_verbose(args)
     sleep 1
     VERBOSE_LOGGING.debug `echo $KUBECONFIG` if check_verbose(args)
-    VERBOSE_LOGGING.info "Get deployments command: kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'" if check_verbose(args)
-    current_replicas = `kubectl get deployments #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
-    VERBOSE_LOGGING.info "current_replicas after get deployments: #{current_replicas.inspect}" if check_verbose(args)
+    VERBOSE_LOGGING.info "Get #{resource["kind"]} command: kubectl get #{resource["kind"]} #{resource["metadata"]["name"]} -o=jsonpath='{.status.readyReplicas}'" if check_verbose(args)
+    current_replicas = `kubectl get #{resource["kind"]} #{resource["metadata"]["name"]} -o=jsonpath='{.status.readyReplicas}'`
+    VERBOSE_LOGGING.info "current_replicas after get #{resource["kind"]}: #{current_replicas.inspect}" if check_verbose(args)
 
     if current_replicas.empty?
       current_replicas = "0"

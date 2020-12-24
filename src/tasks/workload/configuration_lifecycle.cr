@@ -15,17 +15,16 @@ end
 
 desc "Does a search for IP addresses or subnets come back as negative?"
 task "ip_addresses" do |_, args|
-  task_runner(args) do |args|
+  task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "ip_addresses" if check_verbose(args)
     LOGGING.info("ip_addresses args #{args.inspect}")
     cdir = FileUtils.pwd()
     response = String::Builder.new
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    helm_directory = "#{config.get("helm_directory").as_s?}" 
-    LOGGING.info "ip_addresses helm_directory: #{CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory}"
-    if File.directory?(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory)
+    helm_directory = config.cnf_config[:helm_directory]
+    helm_chart_path = config.cnf_config[:helm_chart_path]
+    if File.directory?(helm_chart_path)
       # Switch to the helm chart directory
-      Dir.cd(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory)
+      Dir.cd(helm_chart_path)
       # Look for all ip addresses that are not comments
       LOGGING.info "current directory: #{ FileUtils.pwd()}"
       # should catch comments (# // or /*) and ignore 0.0.0.0
@@ -53,64 +52,26 @@ end
 
 desc "Is there a liveness entry in the helm chart?"
 task "liveness", ["retrieve_manifest"] do |_, args|
-  task_runner(args) do |args|
+  task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "liveness" if check_verbose(args)
-    # Parse the cnf-conformance.yml
+    LOGGING.debug "cnf_config: #{config}"
     resp = ""
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     emoji_probe="🧫"
-    yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
-    LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
-    VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
-    # TODO remove helm_directory and use base cnf directory
-    helm_directory = "#{config.get("helm_directory").as_s?}"
-    manifest_directory = optional_key_as_string(config, "manifest_directory")
-    release_name = "#{config.get("release_name").as_s?}"
-    helm_chart_path = destination_cnf_dir + "/" + helm_directory
-    manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
-    # get the manifest file from the helm chart
-    # TODO if no helm chart release name, then assume bare manifest file/directory with no helm chart
-    # TODO loop through all workload resource types and get containers from k8s api
-    # TODO looop through all podspecs and get containers from k8s api
-    # TODO save workload resource type and name with container
-    # TODO add podspec containers to list 
-    # TODO subtract duplicates
-    # TODO loop through all containers
-    # TODO separate this out to a workload resource function that accepts a block
-    LOGGING.info "release_name: #{release_name}"
-    if release_name.empty? # no helm chart
-      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
-    else
-      Helm.generate_manifest_from_templates(release_name, 
-                                            helm_chart_path, 
-                                            manifest_file_path)
-      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
-    end
-    deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
-    deployment_names = Helm.workload_resource_names(deployment_ymls)
-    LOGGING.info "deployment names: #{deployment_names}"
-    if deployment_names && deployment_names.size > 0 
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
-    else
-      LOGGING.error "no deployment names found"
-      test_passed = false
+      begin
+        VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
+        container.as_h["livenessProbe"].as_h 
+      rescue ex
+        VERBOSE_LOGGING.error ex.message if check_verbose(args)
+        test_passed = false 
+        puts "No livenessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+      end
+      LOGGING.debug "liveness test_passed: #{test_passed}"
+      test_passed 
     end
-		deployment_names.each do | deployment |
-			VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
-			containers = KubectlClient::Get.deployment_containers(deployment)
-			containers.as_a.each do |container|
-				begin
-					VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
-					container.as_h["livenessProbe"].as_h 
-				rescue ex
-					VERBOSE_LOGGING.error ex.message if check_verbose(args)
-					test_passed = false 
-          puts "No livenessProbe found for deployment: #{deployment} and container: #{container.as_h["name"].as_s}".colorize(:red)
-				end
-			end
-		end
-    if test_passed 
+    LOGGING.debug "liveness task response: #{task_response}"
+    if task_response 
       resp = upsert_passed_task("liveness","✔️  PASSED: Helm liveness probe found #{emoji_probe}")
 		else
 			resp = upsert_failed_task("liveness","✖️  FAILURE: No livenessProbe found #{emoji_probe}")
@@ -121,58 +82,30 @@ end
 
 desc "Is there a readiness entry in the helm chart?"
 task "readiness", ["retrieve_manifest"] do |_, args|
-  task_runner(args) do |args|
+  task_runner(args) do |args, config|
+    LOGGING.debug "cnf_config: #{config}"
     VERBOSE_LOGGING.info "readiness" if check_verbose(args)
     # Parse the cnf-conformance.yml
     resp = ""
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
-    LOGGING.info("reasonable_startup_time yml_file_path: #{yml_file_path}")
-    VERBOSE_LOGGING.info "yaml_path: #{yml_file_path}" if check_verbose(args)
-    helm_directory = "#{config.get("helm_directory").as_s?}"
-    manifest_directory = optional_key_as_string(config, "manifest_directory")
-    release_name = "#{config.get("release_name").as_s?}"
-    helm_chart_path = destination_cnf_dir + "/" + helm_directory
-    manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
-    # get the manifest file from the helm chart
-    # TODO if no release name, then assume bare manifest file/directory with no helm chart
-    LOGGING.info "release_name: #{release_name}"
-    if release_name.empty? # no helm chart
-      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
-    else
-      Helm.generate_manifest_from_templates(release_name, 
-                                          helm_chart_path, 
-                                          manifest_file_path)
-      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
-    end
-    deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
-    deployment_names = Helm.workload_resource_names(deployment_ymls)
-    LOGGING.info "deployment names: #{deployment_names}"
-    if deployment_names && deployment_names.size > 0 
+    emoji_probe="🧫"
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
-    else
-      test_passed = false
-    end
-    deployment_names.each do | deployment |
-      VERBOSE_LOGGING.debug deployment.inspect if check_verbose(args)
-      containers = KubectlClient::Get.deployment_containers(deployment)
-      containers.as_a.each do |container|
-        begin
-          VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
-          container.as_h["readinessProbe"].as_h 
-        rescue ex
-          VERBOSE_LOGGING.error ex.message if check_verbose(args)
-          test_passed = false 
-          puts "No readinessProbe found for deployment: #{deployment} and container: #{container.as_h["name"].as_s}".colorize(:red)
-        end
+      begin
+        VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
+        container.as_h["readinessProbe"].as_h 
+      rescue ex
+        VERBOSE_LOGGING.error ex.message if check_verbose(args)
+        test_passed = false 
+        puts "No readinessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
       end
+      test_passed 
     end
-    if test_passed 
-      resp = upsert_passed_task("readiness","✔️  PASSED: Helm readiness probe found")
+    if task_response 
+      resp = upsert_passed_task("readiness","✔️  PASSED: Helm readiness probe found #{emoji_probe}")
 		else
-      resp = upsert_failed_task("readiness","✖️  FAILURE: No readinessProbe found")
+      resp = upsert_failed_task("readiness","✖️  FAILURE: No readinessProbe found #{emoji_probe}")
     end
+    resp
   end
 end
 
@@ -185,7 +118,6 @@ task "retrieve_manifest" do |_, args|
     # config = cnf_conformance_yml
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     deployment_name = config.get("deployment_name").as_s
-    # TODO get this from k8s manifest kind = service
     service_name = "#{config.get("service_name").as_s?}"
     VERBOSE_LOGGING.debug "Deployment_name: #{deployment_name}" if check_verbose(args)
     VERBOSE_LOGGING.debug service_name if check_verbose(args)
@@ -205,27 +137,27 @@ task "retrieve_manifest" do |_, args|
   end
 end
 
-def get_helm_chart_values(sam_args, release_name)
-  # helm_chart_values = JSON.parse(`#{CNFManager.local_helm_path} get values #{release_name} -a --output json`)
-  LOGGING.info "helm path: #{CNFSingleton.helm}"
-  LOGGING.info "helm command: #{CNFSingleton.helm} get values #{release_name} -a --output json"
-  helm_resp = `#{CNFSingleton.helm} get values #{release_name} -a --output json`
-  # helm sometimes does not return valid json :/
-  helm_split = helm_resp.split("\n")
-  LOGGING.info "helm_split: #{helm_split}"
-  if helm_split[1] =~ /WARNING/ 
-    cleaned_resp = helm_split[2] 
-  elsif helm_split[0] =~ /WARNING/
-    cleaned_resp = helm_split[1] 
-  else
-    cleaned_resp = helm_split[0]
-  end
-  LOGGING.info "cleaned_resp: #{cleaned_resp}"
-  helm_chart_values = JSON.parse(cleaned_resp)
-  VERBOSE_LOGGING.debug "helm_chart_values" if check_verbose(sam_args)
-  VERBOSE_LOGGING.debug helm_chart_values if check_verbose(sam_args)
-  helm_chart_values
-end
+# def get_helm_chart_values(sam_args, release_name)
+#   # helm_chart_values = JSON.parse(`#{CNFManager.local_helm_path} get values #{release_name} -a --output json`)
+#   LOGGING.info "helm path: #{CNFSingleton.helm}"
+#   LOGGING.info "helm command: #{CNFSingleton.helm} get values #{release_name} -a --output json"
+#   helm_resp = `#{CNFSingleton.helm} get values #{release_name} -a --output json`
+#   # helm sometimes does not return valid json :/
+#   helm_split = helm_resp.split("\n")
+#   LOGGING.info "helm_split: #{helm_split}"
+#   if helm_split[1] =~ /WARNING/ 
+#     cleaned_resp = helm_split[2] 
+#   elsif helm_split[0] =~ /WARNING/
+#     cleaned_resp = helm_split[1] 
+#   else
+#     cleaned_resp = helm_split[0]
+#   end
+#   LOGGING.info "cleaned_resp: #{cleaned_resp}"
+#   helm_chart_values = JSON.parse(cleaned_resp)
+#   VERBOSE_LOGGING.debug "helm_chart_values" if check_verbose(sam_args)
+#   VERBOSE_LOGGING.debug helm_chart_values if check_verbose(sam_args)
+#   helm_chart_values
+# end
 
 rolling_version_change_test_names.each do |tn|
   pretty_test_name = tn.split(/:|_/).join(" ")
@@ -233,96 +165,56 @@ rolling_version_change_test_names.each do |tn|
 
   desc "Test if the CNF containers are loosely coupled by performing a #{pretty_test_name}"
   task "#{tn}" do |_, args|
-    task_runner(args) do |args|
-      # TODO mark as destructive?
+    task_runner(args) do |args, config|
+      LOGGING.debug "cnf_config: #{config}"
       VERBOSE_LOGGING.info "#{tn}" if check_verbose(args)
-      config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-      destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-      helm_directory = "#{config.get("helm_directory").as_s?}"
-      manifest_directory = optional_key_as_string(config, "manifest_directory")
-      release_name = "#{config.get("release_name").as_s?}"
-      helm_chart_path = destination_cnf_dir + "/" + helm_directory
-      manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
-      container_names = config["container_names"]?
-        LOGGING.debug "container_names: #{container_names}"
+      container_names = config.cnf_config[:container_names]
+      LOGGING.debug "container_names: #{container_names}"
+      update_applied = true
+      unless container_names
+        puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red) 
+        update_applied = false
+      end
 
       # TODO use tag associated with image name string (e.g. busybox:v1.7.9) as the version tag
       # TODO optional get a valid version from the remote repo and roll to that, if no tag
       #  e.g. wget -q https://registry.hub.docker.com/v1/repositories/debian/tags -O -  | sed -e 's/[][]//g' -e 's/"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}'
       # note: all images are not on docker hub nor are they always on a docker hub compatible api
 
-      LOGGING.info "release_name: #{release_name}"
-      if release_name.empty? # no helm chart
-        template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
-      else
-        Helm.generate_manifest_from_templates(release_name, 
-                                              helm_chart_path, 
-                                              manifest_file_path)
-        template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
-      end
-      deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
-      deployment_names = Helm.workload_resource_names(deployment_ymls)
-
-      LOGGING.info "deployment names: #{deployment_names}"
-      if deployment_names && deployment_names.size > 0 
-        update_applied = true
-      else
-        update_applied = false
-      end
-
-      deployment_names.each do | deployment_name |
-        VERBOSE_LOGGING.debug deployment_name.inspect if check_verbose(args)
-        containers = KubectlClient::Get.deployment_containers(deployment_name)
-        unless container_names && !container_names.as_a.empty?
-          puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red) unless container_names
-          update_applied = false
+      task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+        test_passed = true
+        LOGGING.debug "#{tn} container: #{container}"
+        LOGGING.debug "container_names: #{container_names}"
+        config_container = container_names.find{|x| x["name"]==container.as_h["name"]} if container_names
+        LOGGING.debug "config_container: #{config_container}"
+        unless config_container && config_container["#{tn}_test_tag"]? && !config_container["#{tn}_test_tag"].empty?
+          puts "Please add the container name #{container.as_h["name"]} and a corresponding #{tn}_test_tag into your cnf-conformance.yml under container names".colorize(:red)
+          # valid_cnf_conformance_yml = false
         end
 
-        valid_cnf_conformance_yml = true
-        containers.as_a.each do | container |
-          LOGGING.debug "#{tn} container: #{container}"
-          config_container = container_names.as_a.find{|x| x["name"]==container.as_h["name"]} if container_names
-          LOGGING.debug "config_container: #{config_container}"
-          unless config_container && config_container["#{tn}_test_tag"]? && !config_container["#{tn}_test_tag"].as_s.empty?
-            puts "Please add the container name #{container.as_h["name"]} and a corresponding #{tn}_test_tag into your cnf-conformance.yml under container names".colorize(:red)
-            valid_cnf_conformance_yml = false
-          end
+        if config_container
+          resp = KubectlClient::Set.image(resource["name"], 
+                                          container.as_h["name"], 
+                                          # split out image name from version tag
+                                          container.as_h["image"].as_s.split(":")[0], 
+                                          config_container["rolling_update_test_tag"]) 
+        else 
+          resp = false
         end
-        unless valid_cnf_conformance_yml
-          puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red) unless container_names
-          update_applied = false
-        end
+        # If any containers dont have an update applied, fail
+        test_passed = false if resp == false
 
-        if containers.as_a.empty?
-          update_applied = false 
-        end
-        containers.as_a.each do | container |
-          LOGGING.debug "#{pretty_test_name} container: #{container}"
-          config_container = container_names.as_a.find{|x| x["name"]==container.as_h["name"]} if container_names
-          LOGGING.debug "config container: #{config_container}"
-          if config_container
-            resp = KubectlClient::Set.image(deployment_name, 
-                                            container.as_h["name"], 
-                                            # split out image name from version tag
-                                            container.as_h["image"].as_s.split(":")[0], 
-                                            config_container["rolling_update_test_tag"].as_s) 
-          else 
-            resp = false
-          end
-          # If any containers dont have an update applied, fail
-          update_applied = false if resp == false
-        end
-
-        rollout_status = KubectlClient::Rollout.status(deployment_name)
+        rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"])
         unless rollout_status 
-          update_applied = false
+          test_passed = false
         end
       end
-      if update_applied 
-        upsert_passed_task("#{tn}","✔️  PASSED: CNF for #{pretty_test_name_capitalized} Passed" )
+      if task_response 
+        resp = upsert_passed_task("#{tn}","✔️  PASSED: CNF for #{pretty_test_name_capitalized} Passed" )
       else
-        upsert_failed_task("#{tn}", "✖️  FAILURE: CNF for #{pretty_test_name_capitalized} Failed")
+        resp = upsert_failed_task("#{tn}", "✖️  FAILURE: CNF for #{pretty_test_name_capitalized} Failed")
       end
+      resp
       # TODO should we roll the image back to original version in an ensure? 
       # TODO Use the kubectl rollback to history command
     end
@@ -331,61 +223,25 @@ end
 
 desc "Test if the CNF can perform a rollback"
 task "rollback" do |_, args|
-  task_runner(args) do |args|
+  task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "rollback" if check_verbose(args)
-    # config = cnf_conformance_yml
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    container_names = config["container_names"]?
+    LOGGING.debug "cnf_config: #{config}"
 
-    VERBOSE_LOGGING.debug "actual configin it #{config.inspect}" if check_verbose(args)
+    container_names = config.cnf_config[:container_names]
+    LOGGING.debug "container_names: #{container_names}"
 
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    helm_directory = "#{config.get("helm_directory").as_s?}"
-    manifest_directory = optional_key_as_string(config, "manifest_directory")
-    release_name = "#{config.get("release_name").as_s?}"
-    helm_chart_path = destination_cnf_dir + "/" + helm_directory
-    manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
-    LOGGING.info "release_name: #{release_name}"
-    if release_name.empty? # no helm chart
-      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
-    else
-      Helm.generate_manifest_from_templates(release_name, 
-                                          helm_chart_path, 
-                                          manifest_file_path)
-      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
-    end
-    deployment_ymls = Helm.workload_resource_by_kind(template_ymls, Helm::DEPLOYMENT)
-    deployment_names = Helm.workload_resource_names(deployment_ymls)
+    update_applied = true
+    rollout_status = true
+    rollback_status = true 
+    version_change_applied = true 
 
-    LOGGING.info "deployment names: #{deployment_names}"
-    if deployment_names && deployment_names.size > 0 
-      update_applied = true
-      rollout_status = true
-      rollback_status = true 
-      version_change_applied = true 
-    else
+    unless container_names
+      puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red) 
       update_applied = false
-      rollout_status = false 
-      rollback_status = false 
-      version_change_applied = false
     end
-    deployment_names.each do | deployment_name |
-      VERBOSE_LOGGING.debug deployment_name.inspect if check_verbose(args)
-      containers = KubectlClient::Get.deployment_containers(deployment_name)
 
-      container_names = config["container_names"]?
-        LOGGING.debug "container_names: #{container_names}"
+    task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
-      unless container_names && !container_names.as_a.empty?
-        puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red) unless container_names
-        upsert_failed_task("rolling_update", "✖️  FAILURE: CNF #{deployment_name} Rolling Update Failed")
-        exit 0
-      end
-
-      containers.as_a.each do | container |
-
-        # plural_containers = KubectlClient::Get.deployment_containers(deployment_name)
-        # container = plural_containers[0]
 
         image_name = container.as_h["name"]
         image_tag = container.as_h["image"].as_s.split(":")[0]
@@ -395,9 +251,9 @@ task "rollback" do |_, args|
         #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
 
         version_change_applied = false 
-        config_container = container_names.as_a.find{|x| x["name"] == image_name } if container_names
+        config_container = container_names.find{|x| x["name"] == image_name } if container_names
         if config_container
-          rollback_from_tag = config_container["rollback_from_tag"].as_s
+          rollback_from_tag = config_container["rollback_from_tag"]
 
           if rollback_from_tag == image_tag
             fail_msg = "✖️  FAILURE: please specify a different version than the helm chart default image.tag for 'rollback_from_tag' "
@@ -405,9 +261,8 @@ task "rollback" do |_, args|
             version_change_applied=false
           end
 
-          version_change_applied = KubectlClient::Set.image(deployment_name, 
+          version_change_applied = KubectlClient::Set.image(resource["name"], 
                                                             image_name, 
-                                                            # split out image name from version tag
                                                             image_tag, 
                                                             rollback_from_tag) 
         end
@@ -415,20 +270,19 @@ task "rollback" do |_, args|
         VERBOSE_LOGGING.debug "change successful? #{version_change_applied}" if check_verbose(args)
 
         VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
-        rollout_status = KubectlClient::Rollout.status(deployment_name)
+        rollout_status = KubectlClient::Rollout.status(resource["name"])
         if  rollout_status == false
-          puts "Rolling update failed on deployment: #{deployment_name} and container: #{container.as_h["name"].as_s}".colorize(:red)
+          puts "Rolling update failed on resource: #{resource["name"]} and container: #{container.as_h["name"].as_s}".colorize(:red)
         end
 
         # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision
         VERBOSE_LOGGING.debug "rollback: rolling back to old version" if check_verbose(args)
-        rollback_status = KubectlClient::Rollout.undo(deployment_name)
-      end
+        rollback_status = KubectlClient::Rollout.undo(resource["name"])
 
     end
 
 
-    if version_change_applied && rollout_status && rollback_status
+    if task_response && version_change_applied && rollout_status && rollback_status
       upsert_passed_task("rollback","✔️  PASSED: CNF Rollback Passed" )
     else
       upsert_failed_task("rollback", "✖️  FAILURE: CNF Rollback Failed")
@@ -438,16 +292,12 @@ end
 
 desc "Does the CNF use NodePort"
 task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
-  task_response = task_runner(args) do |args|
+  task_response = task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "nodeport_not_used" if check_verbose(args)
-    # config = cnf_conformance_yml
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    release_name = config.get("release_name").as_s
-    service_name = "#{config.get("service_name").as_s?}"
-    # current_cnf_dir_short_name = CNFManager.ensure_cnf_conformance_dir
-    # VERBOSE_LOGGING.debug current_cnf_dir_short_name if check_verbose(args)
-    # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    LOGGING.debug "cnf_config: #{config}"
+    release_name = config.cnf_config[:release_name]
+    service_name  = config.cnf_config[:service_name]
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     if File.exists?("#{destination_cnf_dir}/service.yml")
       service = Totem.from_file "#{destination_cnf_dir}/service.yml"
       VERBOSE_LOGGING.debug service.inspect if check_verbose(args)

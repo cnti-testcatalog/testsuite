@@ -2,8 +2,155 @@
 require "totem"
 require "colorize"
 require "./types/cnf_conformance_yml_type.cr"
+require "./helm.cr"
 
 module CNFManager 
+
+  class Config
+    def initialize(cnf_config)
+      @cnf_config = cnf_config 
+    end
+    property cnf_config : NamedTuple(destination_cnf_dir: String,
+                                     yml_file_path: String,
+                                     manifest_directory: String,
+                                     helm_directory: String, 
+                                     helm_chart_path: String, 
+                                     manifest_file_path: String, 
+                                     git_clone_url: String,
+                                     install_script: String,
+                                     release_name: String,
+                                     deployment_name: String,
+                                     deployment_label: String,
+                                     service_name:  String,
+                                     application_deployment_names: String,
+                                     docker_repository: String,
+                                     helm_repository: NamedTuple(name:  String, 
+                                                                 repo_url:  String) | Nil,
+                                     helm_chart:  String,
+                                     helm_chart_container_name: String,
+                                     rolling_update_tag: String,
+                                     container_names: Array(Hash(String, String )) | Nil,
+                                     white_list_container_names: Array(String)) 
+
+    def self.parse_config_yml(config_yml_path) : CNFManager::Config
+      config = CNFManager.parsed_config_file(
+        CNFManager.ensure_cnf_conformance_yml_path(config_yml_path))
+
+      destination_cnf_dir = CNFManager.cnf_destination_dir(
+        CNFManager.ensure_cnf_conformance_dir(config_yml_path))
+
+      yml_file_path = CNFManager.ensure_cnf_conformance_dir(config_yml_path)
+      helm_directory = "#{config.get("helm_directory").as_s?}"
+      manifest_directory = optional_key_as_string(config, "manifest_directory")
+      release_name = "#{config.get("release_name").as_s?}"
+      service_name = optional_key_as_string(config, "service_name")
+      helm_chart_path = destination_cnf_dir + "/" + helm_directory
+      manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
+      white_list_container_names = config.get("white_list_helm_chart_container_names").as_a.map do |c|
+        "#{c.as_s?}"
+      end
+      container_names_totem = config["container_names"]
+      container_names = container_names_totem.as_a.map do |container|
+        {"name" => optional_key_as_string(container, "name"),
+         "rolling_update_test_tag" => optional_key_as_string(container, "rolling_update_test_tag"),
+         "rolling_downgrade_test_tag" => optional_key_as_string(container, "rolling_downgrade_test_tag"),
+         "rolling_version_change_test_tag" => optional_key_as_string(container, "rolling_version_change_test_tag"),
+         "rollback_from_tag" => optional_key_as_string(container, "rollback_from_tag"),
+         }
+      end
+
+      # TODO populate nils with entries from cnf-conformance file
+      CNFManager::Config.new({ destination_cnf_dir: destination_cnf_dir,
+                               yml_file_path: yml_file_path,
+                               manifest_directory: manifest_directory,
+                               helm_directory: helm_directory, 
+                               helm_chart_path: helm_chart_path, 
+                               manifest_file_path: manifest_file_path,
+                               git_clone_url: "",
+                               install_script: "",
+                               release_name: release_name,
+                               deployment_name: "",
+                               deployment_label: "",
+                               service_name: service_name,
+                               application_deployment_names: "",
+                               docker_repository: "",
+                               helm_repository: {name: "", repo_url: ""},
+                               helm_chart: "",
+                               helm_chart_container_name: "",
+                               rolling_update_tag: "",
+                               container_names: container_names,
+                               white_list_container_names: white_list_container_names })
+
+    end
+  end
+
+  # Applies a block to each cnf resource
+  #
+  # `CNFManager.cnf_workload_resources(args, config) {|cnf_config, resource| #your code}
+  def self.cnf_workload_resources(args, config, &block)
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    yml_file_path = config.cnf_config[:yml_file_path] 
+    # TODO remove helm_directory and use base cnf directory
+    helm_directory = config.cnf_config[:helm_directory]
+    manifest_directory = config.cnf_config[:manifest_directory] 
+    release_name = config.cnf_config[:release_name]
+    helm_chart_path = config.cnf_config[:helm_chart_path]
+    manifest_file_path = config.cnf_config[:manifest_file_path]
+    test_passed = true
+    if release_name.empty? # no helm chart
+      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
+    else
+      Helm.generate_manifest_from_templates(release_name, 
+                                            helm_chart_path, 
+                                            manifest_file_path)
+      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
+    end
+    resource_ymls = Helm.all_workload_resources(template_ymls)
+		resource_resp = resource_ymls.map do | resource |
+      resp = yield resource 
+      LOGGING.debug "cnf_workload_resource yield resp: #{resp}"
+      resp
+    end
+    resource_resp
+  end
+
+  #test_passes_completely = workload_resource_test do | cnf_config, resource, container, initialized |
+  def self.workload_resource_test(args, config, check_containers = true, &block)
+    test_passed = true
+    resource_ymls = cnf_workload_resources(args, config) do |resource|
+      resource 
+    end
+    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+    LOGGING.info "resource names: #{resource_names}"
+    if resource_names && resource_names.size > 0 
+      initialized = true
+    else
+      LOGGING.error "no resource names found"
+      initialized = false
+    end
+		resource_names.each do | resource |
+			VERBOSE_LOGGING.debug resource.inspect if check_verbose(args)
+      unless resource[:kind].as_s.downcase == "service" ## services have no containers
+        containers = KubectlClient::Get.resource_containers(resource[:kind].as_s, resource[:name].as_s)
+        if check_containers
+        containers.as_a.each do |container|
+          resp = yield resource, container, initialized
+          LOGGING.debug "yield resp: #{resp}"
+          # if any response is false, the test fails
+          test_passed = false if resp == false
+        end
+        else
+          resp = yield resource, containers[0], initialized
+          LOGGING.debug "yield resp: #{resp}"
+          # if any response is false, the test fails
+          test_passed = false if resp == false
+        end
+      end
+    end
+    LOGGING.debug "workload resource test intialized: #{initialized} test_passed: #{test_passed}"
+    initialized && test_passed
+  end
+
 
   def self.final_cnf_results_yml
     results_file = `find ./results/* -name "cnf-conformance-results-*.yml"`.split("\n")[-2].gsub("./", "")
@@ -44,26 +191,30 @@ module CNFManager
   end
 
   def self.wait_for_install(deployment_name, wait_count : Int32 = 180, namespace="default")
-    # Not all cnfs have deployments.  some have only a pod.  need to check if the 
+    resource_wait_for_install("deployment", deployment_name, wait_count, namespace)
+  end
+
+  def self.resource_wait_for_install(kind, resource_name, wait_count : Int32 = 180, namespace="default")
+    # Not all cnfs have #{kind}.  some have only a pod.  need to check if the 
     # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod 
     second_count = 0
-    all_deployments = `kubectl get deployments --namespace=#{namespace}`
-    LOGGING.debug "all_deployments #{all_deployments}"
-    desired_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.replicas}'`
+    all_kind = `kubectl get #{kind} --namespace=#{namespace}`
+    LOGGING.debug "all_kind #{all_kind}}"
+    desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
     LOGGING.debug "desired_replicas #{desired_replicas}"
-    current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
+    current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
     LOGGING.debug "current_replicas #{current_replicas}"
-    LOGGING.info(all_deployments)
+    LOGGING.info(all_kind)
 
     until (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i) || second_count > wait_count
       LOGGING.info("second_count = #{second_count}")
       sleep 1
-      all_deployments = `kubectl get deployments --namespace=#{namespace}`
-      current_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.readyReplicas}'`
+      all_kind = `kubectl get #{kind} --namespace=#{namespace}`
+      current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
       # Sometimes desired replicas is not available immediately
-      desired_replicas = `kubectl get deployments --namespace=#{namespace} #{deployment_name} -o=jsonpath='{.status.replicas}'`
+      desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
       LOGGING.debug "desired_replicas #{desired_replicas}"
-      LOGGING.info(all_deployments)
+      LOGGING.info(all_kind)
       second_count = second_count + 1 
     end
 

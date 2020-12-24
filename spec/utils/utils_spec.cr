@@ -355,5 +355,6 @@ describe "Utils" do
       update_yml("spec/fixtures/cnf-conformance.yml", "release_name", "coredns")
     end
   end
+
 end
 

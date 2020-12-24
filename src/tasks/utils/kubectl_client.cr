@@ -4,6 +4,13 @@ require "./cnf_manager.cr"
 require "halite"
 
 module KubectlClient 
+  WORKLOAD_RESOURCES = {deployment: "Deployment", 
+                        service: "Service", 
+                        pod: "Pod", 
+                        replicaset: "ReplicaSet", 
+                        statefulset: "StatefulSet", 
+                        daemonset: "DaemonSet"}
+
   # https://www.capitalone.com/tech/cloud/container-runtime/
   OCI_RUNTIME_REGEX = /containerd|docker|runc|railcar|crun|rkt|gviso|nabla|runv|clearcontainers|kata|cri-o/i
   module Rollout
@@ -14,6 +21,14 @@ module KubectlClient
       LOGGING.debug "rollout? #{rollout_status}"
       $?.success?
     end
+    def self.resource_status(kind, resource_name, timeout="30s")
+      rollout = `kubectl rollout status #{kind}/#{resource_name} --timeout=#{timeout}`
+      rollout_status = $?.success?
+      LOGGING.debug "#{rollout}"
+      LOGGING.debug "rollout? #{rollout_status}"
+      $?.success?
+    end
+
     def self.undo(deployment_name)
       rollback = `kubectl rollout undo deployment/#{deployment_name}`
       rollback_status = $?.success?
@@ -54,7 +69,22 @@ module KubectlClient
     def self.deployment(deployment_name) : JSON::Any
       resp = `kubectl get deployment #{deployment_name} -o json`
       LOGGING.debug "kubectl get deployment: #{resp}"
-      JSON.parse(resp)
+      if resp && !resp.empty?
+        JSON.parse(resp)
+      else
+        JSON.parse(%({}))
+      end
+    end
+
+    def self.resource(kind, resource_name) : JSON::Any
+      LOGGING.debug "kubectl get kind: #{kind} resource name: #{resource_name}"
+      resp = `kubectl get #{kind} #{resource_name} -o json`
+      LOGGING.debug "kubectl get resource: #{resp}"
+      if resp && !resp.empty?
+        JSON.parse(resp)
+      else
+        JSON.parse(%({}))
+      end
     end
 
     def self.save_manifest(deployment_name, output_file) 
@@ -66,25 +96,57 @@ module KubectlClient
     def self.deployments : JSON::Any
       resp = `kubectl get deployments -o json`
       LOGGING.debug "kubectl get deployment: #{resp}"
-      JSON.parse(resp)
-    end
-
-    def self.deployment_containers(deployment_name) : JSON::Any 
-      LOGGING.debug "kubectl get deployment containers deployment_name: #{deployment_name}"
-      resp = deployment(deployment_name).dig?("spec", "template", "spec", "containers")
-      LOGGING.debug "kubectl get deployment containers: #{resp}"
-      if resp 
-        resp
+      if resp && !resp.empty?
+        JSON.parse(resp)
       else
         JSON.parse(%({}))
       end
     end
 
+    def self.deployment_containers(deployment_name) : JSON::Any 
+      resource_containers("deployment", deployment_name)
+    end
+
+    def self.resource_containers(kind, resource_name) : JSON::Any 
+      LOGGING.debug "kubectl get resource containers kind: #{kind} resource_name: #{resource_name}"
+      unless kind.downcase == "service" ## services have no containers
+        resp = resource(kind, resource_name).dig?("spec", "template", "spec", "containers")
+      end
+      LOGGING.debug "kubectl get resource containers: #{resp}"
+      if resp && resp.as_a.size > 0
+        resp
+      else
+        JSON.parse(%([]))
+      end
+    end
+    def self.resource_desired_is_available?(kind, resource_name)
+      resp = `kubectl get #{kind} #{resource_name} -o=yaml`
+      describe = Totem.from_yaml(resp)
+      LOGGING.info("desired_is_available describe: #{describe.inspect}")
+      desired_replicas = describe.get("status").as_h["replicas"].as_i
+      LOGGING.info("desired_is_available desired_replicas: #{desired_replicas}")
+      ready_replicas = describe.get("status").as_h["readyReplicas"]?
+        unless ready_replicas.nil?
+          ready_replicas = ready_replicas.as_i
+      else
+        ready_replicas = 0
+      end
+      LOGGING.info("desired_is_available ready_replicas: #{ready_replicas}")
+
+      desired_replicas == ready_replicas
+    end
+    def self.desired_is_available?(deployment_name)
+      resource_desired_is_available?("deployment", deployment_name)
+    end
+
     def self.deployment_spec_labels(deployment_name) : JSON::Any 
-      LOGGING.debug "deployment_labels deployment_name: #{deployment_name}"
-      resp = deployment(deployment_name).dig?("spec", "template", "metadata", "labels")
-      LOGGING.debug "deployment_labels: #{resp}"
-      if resp 
+      resource_spec_labels("deployment", deployment_name)
+    end
+    def self.resource_spec_labels(kind, resource_name) : JSON::Any 
+      LOGGING.debug "resource_labels kind: #{kind} resource_name: #{resource_name}"
+      resp = resource(kind, resource_name).dig?("spec", "template", "metadata", "labels")
+      LOGGING.debug "resource_labels: #{resp}"
+      if resp
         resp
       else
         JSON.parse(%({}))

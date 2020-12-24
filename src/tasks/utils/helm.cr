@@ -5,12 +5,10 @@ require "halite"
 
 module Helm
 
-  # TODO change constants to named tuples
-  # https://crystal-lang.org/reference/syntax_and_semantics/literals/named_tuple.html
+  #TODO move to kubectlclient
   DEPLOYMENT="Deployment"
   SERVICE="Service"
   POD="Pod"
-
 
   # Utilities for manifest files that are not templates or have been converted already
   module Manifest
@@ -59,17 +57,31 @@ module Helm
   def self.workload_resource_by_kind(ymls : Array(YAML::Any), kind)
     LOGGING.info "workload_resource_by_kind kind: #{kind}"
     LOGGING.debug "workload_resource_by_kind ymls: #{ymls}"
-    # resources = ymls.map do |yml|
-      # yml.as_a.select{|x| x["kind"]?==kind}
     resources = ymls.select{|x| x["kind"]?==kind}
     # end
     LOGGING.debug "resources: #{resources}"
     resources
   end
 
+  def self.all_workload_resources(yml : Array(YAML::Any))
+    resources = KubectlClient::WORKLOAD_RESOURCES.map { |k,v| 
+      Helm.workload_resource_by_kind(yml, v)
+    }.flatten
+    LOGGING.debug "all resource: #{resources}"
+    resources
+  end
+
   def self.workload_resource_names(resources : Array(YAML::Any) )
     resource_names = resources.map do |x|
       x["metadata"]["name"]
+    end
+    LOGGING.debug "resource names: #{resource_names}"
+    resource_names
+  end
+
+  def self.workload_resource_kind_names(resources : Array(YAML::Any) )
+    resource_names = resources.map do |x|
+      {kind: x["kind"], name: x["metadata"]["name"]}
     end
     LOGGING.debug "resource names: #{resource_names}"
     resource_names

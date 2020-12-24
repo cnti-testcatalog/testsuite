@@ -26,7 +26,7 @@ end
 
 desc "The CNF Conformance program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
 task "workload", ["all_prereqs", "configuration_file_setup", "compatibility","statelessness", "security", "scalability", "configuration_lifecycle", "observability", "installability", "hardware_and_scheduling", "microservice", "resilience"] do  |_, args|
-  VERBOSE_LOGGING.info "all" if check_verbose(args)
+  VERBOSE_LOGGING.info "workload" if check_verbose(args)
 
   total = total_points("workload")
   if total > 0

@@ -30,6 +30,70 @@ EmbeddedFileManager.node_failure_values
 EmbeddedFileManager.cri_tools
 EmbeddedFileManager.reboot_daemon
 
+def task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
+  # LOGGING.info("single_or_all_cnfs_task_runner: #{args.inspect}")
+  if check_cnf_config(args)
+    single_task_runner(args, &block)
+  else
+    all_cnfs_task_runner(args, &block)
+  end
+end
+
+# TODO give example for calling
+def all_cnfs_task_runner(args, &block : Sam::Args, CNFManager::Config  -> String | Colorize::Object(String) | Nil)
+
+  # Platforms tests dont have any cnfs
+  if CNFManager.cnf_config_list(silent: true).size == 0
+    single_task_runner(args, &block)
+  else
+    CNFManager.cnf_config_list(silent: true).map do |x|
+      new_args = Sam::Args.new(args.named, args.raw)
+      new_args.named["cnf-config"] = x
+      single_task_runner(new_args, &block)
+    end
+  end
+end
+
+# TODO give example for calling
+def single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
+  LOGGING.debug("task_runner args: #{args.inspect}")
+  begin
+    if args.named["cnf-config"]? # platform tests don't have a cnf-config
+      config = CNFManager::Config.parse_config_yml(args.named["cnf-config"].as(String))    
+    else
+      config = CNFManager::Config.new({ destination_cnf_dir: "",
+                               yml_file_path: "",
+                               manifest_directory: "",
+                               helm_directory: "", 
+                               helm_chart_path: "", 
+                               manifest_file_path: "",
+                               git_clone_url: "",
+                               install_script: "",
+                               release_name: "",
+                               deployment_name: "",
+                               deployment_label: "",
+                               service_name: "",
+                               application_deployment_names: "",
+                               docker_repository: "",
+                               helm_repository: {name: "", repo_url: ""},
+                               helm_chart: "",
+                               helm_chart_container_name: "",
+                               rolling_update_tag: "",
+                               container_names: [{"name" =>  "", "rolling_update_test_tag" => ""}],
+                               white_list_container_names: [""]} )
+    end
+    yield args, config
+  rescue ex
+    # Set exception key/value in results
+    # file to -1
+    update_yml("#{Results.file}", "exit_code", "1")
+    LOGGING.error ex.message
+    ex.backtrace.each do |x|
+      LOGGING.error x
+    end
+  end
+end
+
 def log_formatter
   Log::Formatter.new do |entry, io|
     progname = "cnf-conformance"
@@ -223,46 +287,6 @@ end
 def check_cnf_config_then_deploy(args)
   config_file, deploy_with_chart = check_all_cnf_args(args)
   CNFManager.sample_setup_args(sample_dir: config_file, deploy_with_chart: deploy_with_chart, args: args, verbose: check_verbose(args) ) if config_file
-end
-
-def task_runner(args, &block : Sam::Args -> String | Colorize::Object(String) | Nil)
-  # LOGGING.info("single_or_all_cnfs_task_runner: #{args.inspect}")
-  if check_cnf_config(args)
-    single_task_runner(args, &block)
-  else
-    all_cnfs_task_runner(args, &block)
-  end
-end
-
-# TODO give example for calling
-def all_cnfs_task_runner(args, &block : Sam::Args -> String | Colorize::Object(String) | Nil)
-
-  # Platforms tests dont have any cnfs
-  if CNFManager.cnf_config_list(silent: true).size == 0
-    single_task_runner(args, &block)
-  else
-    CNFManager.cnf_config_list(silent: true).map do |x|
-      new_args = Sam::Args.new(args.named, args.raw)
-      new_args.named["cnf-config"] = x
-      single_task_runner(new_args, &block)
-    end
-  end
-end
-
-# TODO give example for calling
-def single_task_runner(args, &block)
-  # LOGGING.info("task_runner args: #{args.inspect}")
-  begin
-  yield args
-  rescue ex
-    # Set exception key/value in results
-    # file to -1
-    update_yml("#{Results.file}", "exit_code", "1")
-    LOGGING.error ex.message
-    ex.backtrace.each do |x|
-      LOGGING.error x
-    end
-  end
 end
 
 def toggle(toggle_name)
@@ -630,19 +654,5 @@ def optional_key_as_string(totem_config, key_name)
   "#{totem_config[key_name]? && totem_config[key_name].as_s?}"
 end
 
-def desired_is_available?(deployment_name)
-  resp = `kubectl get deployments #{deployment_name} -o=yaml`
-  describe = Totem.from_yaml(resp)
-  LOGGING.info("desired_is_available describe: #{describe.inspect}")
-  desired_replicas = describe.get("status").as_h["replicas"].as_i
-  LOGGING.info("desired_is_available desired_replicas: #{desired_replicas}")
-  ready_replicas = describe.get("status").as_h["readyReplicas"]?
-  unless ready_replicas.nil?
-    ready_replicas = ready_replicas.as_i
-  else
-    ready_replicas = 0
-  end
-  LOGGING.info("desired_is_available ready_replicas: #{ready_replicas}")
-
-  desired_replicas == ready_replicas
-end
+# TODO move to kubectl_client
+# TODO make resource version
