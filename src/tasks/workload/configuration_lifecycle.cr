@@ -51,7 +51,7 @@ task "ip_addresses" do |_, args|
 end
 
 desc "Is there a liveness entry in the helm chart?"
-task "liveness", ["retrieve_manifest"] do |_, args|
+task "liveness" do |_, args|
   task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "liveness" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
@@ -81,7 +81,7 @@ task "liveness", ["retrieve_manifest"] do |_, args|
 end
 
 desc "Is there a readiness entry in the helm chart?"
-task "readiness", ["retrieve_manifest"] do |_, args|
+task "readiness" do |_, args|
   task_runner(args) do |args, config|
     LOGGING.debug "cnf_config: #{config}"
     VERBOSE_LOGGING.info "readiness" if check_verbose(args)
@@ -117,17 +117,17 @@ task "retrieve_manifest" do |_, args|
     VERBOSE_LOGGING.info "retrieve_manifest" if check_verbose(args)
     # config = cnf_conformance_yml
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    deployment_name = config.get("deployment_name").as_s
+    # deployment_name = config.get("deployment_name").as_s
     service_name = "#{config.get("service_name").as_s?}"
-    VERBOSE_LOGGING.debug "Deployment_name: #{deployment_name}" if check_verbose(args)
+    # VERBOSE_LOGGING.debug "Deployment_name: #{deployment_name}" if check_verbose(args)
     VERBOSE_LOGGING.debug service_name if check_verbose(args)
     helm_directory = config.get("helm_directory").as_s
     VERBOSE_LOGGING.debug helm_directory if check_verbose(args)
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     # TODO move to kubectl client
-    deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/manifest.yml`
+    # deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/manifest.yml`
     # KubectlClient::Get.save_manifest(deployment_name, "#{destination_cnf_dir}/manifest.yml")
-    VERBOSE_LOGGING.debug deployment if check_verbose(args)
+    # VERBOSE_LOGGING.debug deployment if check_verbose(args)
     unless service_name.empty?
       # TODO move to kubectl client
       service = `kubectl get service #{service_name} -o yaml  > #{destination_cnf_dir}/service.yml`
@@ -298,6 +298,7 @@ task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
     release_name = config.cnf_config[:release_name]
     service_name  = config.cnf_config[:service_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    #TODO loop through all resources that have a kind of service
     if File.exists?("#{destination_cnf_dir}/service.yml")
       service = Totem.from_file "#{destination_cnf_dir}/service.yml"
       VERBOSE_LOGGING.debug service.inspect if check_verbose(args)

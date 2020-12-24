@@ -13,7 +13,7 @@ task "resilience", ["chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill
 end
 
 desc "Does the CNF crash when network loss occurs"
-task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
+task "chaos_network_loss", ["install_chaosmesh"] do |_, args|
   task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "chaos_network_loss" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
@@ -61,7 +61,7 @@ task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, arg
 end
 
 desc "Does the CNF crash when CPU usage is high"
-task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
+task "chaos_cpu_hog", ["install_chaosmesh"] do |_, args|
   task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "chaos_cpu_hog" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
@@ -105,7 +105,7 @@ task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
 end
 
 desc "Does the CNF recover when its container is killed"
-task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
+task "chaos_container_kill", ["install_chaosmesh"] do |_, args|
   task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "chaos_container_kill" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
@@ -168,6 +168,8 @@ end
 desc "Does the CNF crash when network latency occurs"
 task "pod_network_latency", ["install_litmus", "retrieve_manifest"] do |_, args|
   task_response = task_runner(args) do |args|
+    VERBOSE_LOGGING.info "pod_network_latency" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     deployment_name = config.get("deployment_name").as_s
@@ -201,6 +203,8 @@ task "pod_network_latency", ["install_litmus", "retrieve_manifest"] do |_, args|
     puts "#{run_chaos}" if check_verbose(args)
 
     LitmusManager.wait_for_test(test_name,chaos_experiment_name,args)
+    #TODO call check chaos repeatededly for answers to chaos experiment
+    #TODO add final test result/score
     LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
 
   end

@@ -96,7 +96,7 @@ task "reasonable_startup_time" do |_, args|
 end
 
 desc "Does the CNF have a reasonable container image size?"
-task "reasonable_image_size", ["retrieve_manifest"] do |_, args|
+task "reasonable_image_size" do |_, args|
   task_runner(args) do |args,config|
     VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
