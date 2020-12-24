@@ -51,7 +51,7 @@ task "ip_addresses" do |_, args|
 end
 
 desc "Is there a liveness entry in the helm chart?"
-task "liveness", ["retrieve_manifest"] do |_, args|
+task "liveness" do |_, args|
   task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "liveness" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
@@ -81,7 +81,7 @@ task "liveness", ["retrieve_manifest"] do |_, args|
 end
 
 desc "Is there a readiness entry in the helm chart?"
-task "readiness", ["retrieve_manifest"] do |_, args|
+task "readiness" do |_, args|
   task_runner(args) do |args, config|
     LOGGING.debug "cnf_config: #{config}"
     VERBOSE_LOGGING.info "readiness" if check_verbose(args)
@@ -117,17 +117,18 @@ task "retrieve_manifest" do |_, args|
     VERBOSE_LOGGING.info "retrieve_manifest" if check_verbose(args)
     # config = cnf_conformance_yml
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    deployment_name = config.get("deployment_name").as_s
+    # deployment_name = config.get("deployment_name").as_s
+    #TODO loop through all services
     service_name = "#{config.get("service_name").as_s?}"
-    VERBOSE_LOGGING.debug "Deployment_name: #{deployment_name}" if check_verbose(args)
+    # VERBOSE_LOGGING.debug "Deployment_name: #{deployment_name}" if check_verbose(args)
     VERBOSE_LOGGING.debug service_name if check_verbose(args)
     helm_directory = config.get("helm_directory").as_s
     VERBOSE_LOGGING.debug helm_directory if check_verbose(args)
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     # TODO move to kubectl client
-    deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/manifest.yml`
+    # deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/manifest.yml`
     # KubectlClient::Get.save_manifest(deployment_name, "#{destination_cnf_dir}/manifest.yml")
-    VERBOSE_LOGGING.debug deployment if check_verbose(args)
+    # VERBOSE_LOGGING.debug deployment if check_verbose(args)
     unless service_name.empty?
       # TODO move to kubectl client
       service = `kubectl get service #{service_name} -o yaml  > #{destination_cnf_dir}/service.yml`
@@ -136,28 +137,6 @@ task "retrieve_manifest" do |_, args|
     service
   end
 end
-
-# def get_helm_chart_values(sam_args, release_name)
-#   # helm_chart_values = JSON.parse(`#{CNFManager.local_helm_path} get values #{release_name} -a --output json`)
-#   LOGGING.info "helm path: #{CNFSingleton.helm}"
-#   LOGGING.info "helm command: #{CNFSingleton.helm} get values #{release_name} -a --output json"
-#   helm_resp = `#{CNFSingleton.helm} get values #{release_name} -a --output json`
-#   # helm sometimes does not return valid json :/
-#   helm_split = helm_resp.split("\n")
-#   LOGGING.info "helm_split: #{helm_split}"
-#   if helm_split[1] =~ /WARNING/ 
-#     cleaned_resp = helm_split[2] 
-#   elsif helm_split[0] =~ /WARNING/
-#     cleaned_resp = helm_split[1] 
-#   else
-#     cleaned_resp = helm_split[0]
-#   end
-#   LOGGING.info "cleaned_resp: #{cleaned_resp}"
-#   helm_chart_values = JSON.parse(cleaned_resp)
-#   VERBOSE_LOGGING.debug "helm_chart_values" if check_verbose(sam_args)
-#   VERBOSE_LOGGING.debug helm_chart_values if check_verbose(sam_args)
-#   helm_chart_values
-# end
 
 rolling_version_change_test_names.each do |tn|
   pretty_test_name = tn.split(/:|_/).join(" ")
@@ -298,6 +277,7 @@ task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
     release_name = config.cnf_config[:release_name]
     service_name  = config.cnf_config[:service_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    #TODO loop through all resources that have a kind of service
     if File.exists?("#{destination_cnf_dir}/service.yml")
       service = Totem.from_file "#{destination_cnf_dir}/service.yml"
       VERBOSE_LOGGING.debug service.inspect if check_verbose(args)
@@ -318,18 +298,13 @@ desc "Does the CNF have hardcoded IPs in the K8s resource configuration"
 task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
   task_response = task_runner(args) do |args|
     VERBOSE_LOGGING.info "Task Name: hardcoded_ip_addresses_in_k8s_runtime_configuration" if check_verbose(args)
-    # config = cnf_conformance_yml
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_directory = config.get("helm_directory").as_s
     release_name = "#{config.get("release_name").as_s?}"
-    # current_cnf_dir_short_name = CNFManager.ensure_cnf_conformance_dir
-    # VERBOSE_LOGGING.debug "Current_CNF_Dir: #{current_cnf_dir_short_name}" if check_verbose(args)
-    # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
 
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     current_dir = FileUtils.pwd
-    #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     helm = CNFSingleton.helm
     VERBOSE_LOGGING.info "Helm Path: #{helm}" if check_verbose(args)
 

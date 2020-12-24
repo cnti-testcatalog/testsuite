@@ -43,22 +43,22 @@ describe "SampleUtils" do
     args = Sam::Args.new
     CNFManager.sample_setup(config_file: "sample-cnfs/sample-generic-cnf", release_name: "coredns", deployment_name: "coredns-coredns", helm_chart: "stable/coredns", helm_directory: "helm_chart", git_clone_url: "https://github.com/coredns/coredns.git", wait_count: 0 )
     # check if directory exists
-    (Dir.exists? "cnfs/coredns-coredns").should be_true
-    (File.exists?("cnfs/coredns-coredns/cnf-conformance.yml")).should be_true
-    (File.exists?("cnfs/coredns-coredns/helm_chart/Chart.yaml")).should be_true
+    (Dir.exists? "cnfs/coredns").should be_true
+    (File.exists?("cnfs/coredns/cnf-conformance.yml")).should be_true
+    (File.exists?("cnfs/coredns/helm_chart/Chart.yaml")).should be_true
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
-    (Dir.exists? "cnfs/coredns-coredns").should be_false
+    (Dir.exists? "cnfs/coredns").should be_false
   end
 
   it "'CNFManager.sample_setup_args' should set up a sample cnf from a argument", tags: "happy-path"  do
     args = Sam::Args.new
     CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 0 )
     # check if directory exists
-    (Dir.exists? "cnfs/coredns-coredns").should be_true
-    (File.exists?("cnfs/coredns-coredns/cnf-conformance.yml")).should be_true
-    (File.exists?("cnfs/coredns-coredns/helm_chart/Chart.yaml")).should be_true
+    (Dir.exists? "cnfs/coredns").should be_true
+    (File.exists?("cnfs/coredns/cnf-conformance.yml")).should be_true
+    (File.exists?("cnfs/coredns/helm_chart/Chart.yaml")).should be_true
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
-    (Dir.exists? "cnfs/coredns-coredns").should be_false
+    (Dir.exists? "cnfs/coredns").should be_false
   end
 
   it "'CNFManager.sample_setup_args' should set up a sample cnf from a config file", tags: "happy-path"  do
@@ -66,10 +66,10 @@ describe "SampleUtils" do
     CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf/cnf-conformance.yml", args: args, verbose: true, wait_count: 0 )
     # check if directory exists
     (Dir.exists? "sample-cnfs/sample-generic-cnf").should be_true
-    (File.exists?("cnfs/coredns-coredns/cnf-conformance.yml")).should be_true
-    (File.exists?("cnfs/coredns-coredns/helm_chart/Chart.yaml")).should be_true
+    (File.exists?("cnfs/coredns/cnf-conformance.yml")).should be_true
+    (File.exists?("cnfs/coredns/helm_chart/Chart.yaml")).should be_true
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
-    (Dir.exists? "cnfs/coredns-coredns").should be_false
+    (Dir.exists? "cnfs/coredns").should be_false
   end
 
   it "'CNFManager.sample_cleanup' should clean up a sample cnf from a argument", tags: "happy-path"  do
@@ -77,21 +77,21 @@ describe "SampleUtils" do
     CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 0 )
     cleanup = CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
     (cleanup).should be_true 
-    (Dir.exists? "cnfs/coredns-coredns").should be_false
-    (File.exists?("cnfs/coredns-coredns/cnf-conformance.yml")).should be_false
-    (File.exists?("cnfs/coredns-coredns/helm_chart/Chart.yaml")).should be_false
+    (Dir.exists? "cnfs/coredns").should be_false
+    (File.exists?("cnfs/coredns/cnf-conformance.yml")).should be_false
+    (File.exists?("cnfs/coredns/helm_chart/Chart.yaml")).should be_false
   end
 
   it "'CNFManager.sample_setup_args' should be able to deploy using a helm_directory", tags: "happy-path"  do
     args = Sam::Args.new
     CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
-    (Dir.exists? "cnfs/privileged-coredns-coredns").should be_true
+    (Dir.exists? "cnfs/privileged-coredns").should be_true
     # should not clone
-    (Dir.exists? "cnfs/privileged-coredns-coredns/privileged-coredns").should be_false
-    (File.exists? "cnfs/privileged-coredns-coredns/cnf-conformance.yml").should be_true
-    (File.exists? "cnfs/privileged-coredns-coredns/chart/Chart.yaml").should be_true
+    (Dir.exists? "cnfs/privileged-coredns/privileged-coredns").should be_false
+    (File.exists? "cnfs/privileged-coredns/cnf-conformance.yml").should be_true
+    (File.exists? "cnfs/privileged-coredns/chart/Chart.yaml").should be_true
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
-    (Dir.exists? "cnfs/privileged-coredns-coredns").should be_false
+    (Dir.exists? "cnfs/privileged-coredns").should be_false
   end
 
   it "'CNFManager.sample_setup_args and CNFManager.sample_cleanup' should be able to deploy and cleanup using a manifest_directory", tags: "happy-path"  do
@@ -109,14 +109,14 @@ describe "SampleUtils" do
 
   it "'cnf_destination_dir' should return the full path of the potential destination cnf directory based on the deployment name", tags: "WIP" do
     args = Sam::Args.new
-    CNFManager.cnf_destination_dir("spec/fixtures/cnf-conformance.yml").should contain("/cnfs/coredns-coredns")
+    CNFManager.cnf_destination_dir("spec/fixtures/cnf-conformance.yml").should contain("/cnfs/coredns")
   end
 
   it "'CNFManager.cnf_config_list' should return a list of all of the config files from the cnf directory", tags: "happy-path"  do
     args = Sam::Args.new
     CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
     CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: args, verbose: true )
-    CNFManager.cnf_config_list()[0].should contain("coredns-coredns/#{CONFIG_FILE}")
+    CNFManager.cnf_config_list()[0].should contain("coredns/#{CONFIG_FILE}")
   end
 
   it "'CNFManager.helm_repo_add' should add a helm repo if the helm repo is valid", tags: "happy-path"  do

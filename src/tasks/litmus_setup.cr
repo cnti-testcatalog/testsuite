@@ -52,8 +52,7 @@ module LitmusManager
       verdict = verdict_response.to_s 
       wait_count = wait_count + 1
     end
-
-  end
+end
 
   ## check_chaos_verdict will check the verdict of chaosexperiment
   def self.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
@@ -65,11 +64,10 @@ module LitmusManager
     verdict = verdict_response.to_s 
 
     if verdict == "Pass"
-      resp = upsert_passed_task("pod-network-latency","✔️  PASSED: #{chaos_experiment_name} chaos test passed 🗡️💀♻️")
+      true
     else
-      resp = upsert_failed_task("pod-network-latency","✖️  FAILURE: #{chaos_experiment_name} chaos test failed 🗡️💀♻️")
+      puts "#{chaos_experiment_name} chaos test failed 🗡️💀♻️"
+      false
     end
-    
-    resp
   end
 end

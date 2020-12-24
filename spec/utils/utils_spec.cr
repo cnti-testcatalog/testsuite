@@ -174,7 +174,7 @@ describe "Utils" do
   it "'check_cnf_config_then_deploy' should accept a cnf-config argument"  do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
     check_cnf_config_then_deploy(args)
-    CNFManager.cnf_config_list()[0].should contain("coredns-coredns/#{CONFIG_FILE}")
+    CNFManager.cnf_config_list()[0].should contain("coredns/#{CONFIG_FILE}")
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
   end
 
@@ -261,7 +261,7 @@ describe "Utils" do
     my_args = Sam::Args.new
     CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: my_args)
     CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: my_args )
-    installed_args = Sam::Args.new(["cnf-config=./cnfs/coredns-coredns/cnf-conformance.yml"])
+    installed_args = Sam::Args.new(["cnf-config=./cnfs/coredns/cnf-conformance.yml"])
     task_response = task_runner(installed_args) do |args|
       LOGGING.info("task_runner spec args #{args.inspect}")
       # config = cnf_conformance_yml(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))

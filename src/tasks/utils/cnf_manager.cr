@@ -19,10 +19,7 @@ module CNFManager
                                      git_clone_url: String,
                                      install_script: String,
                                      release_name: String,
-                                     deployment_name: String,
-                                     deployment_label: String,
                                      service_name:  String,
-                                     application_deployment_names: String,
                                      docker_repository: String,
                                      helm_repository: NamedTuple(name:  String, 
                                                                  repo_url:  String) | Nil,
@@ -69,10 +66,7 @@ module CNFManager
                                git_clone_url: "",
                                install_script: "",
                                release_name: release_name,
-                               deployment_name: "",
-                               deployment_label: "",
                                service_name: service_name,
-                               application_deployment_names: "",
                                docker_repository: "",
                                helm_repository: {name: "", repo_url: ""},
                                helm_chart: "",
@@ -343,10 +337,9 @@ module CNFManager
     end
     config = parsed_config_file(yml)
     current_dir = FileUtils.pwd 
-    # TODO get deployment name from manifest file
-    deployment_name = "#{config.get("deployment_name").as_s?}" 
-    LOGGING.info("deployment_name: #{deployment_name}")
-    "#{current_dir}/#{CNF_DIR}/#{deployment_name}"
+    release_name = optional_key_as_string(config, "release_name").split(" ")[0]
+    LOGGING.info("release_name: #{release_name}")
+    "#{current_dir}/#{CNF_DIR}/#{release_name}"
   end
 
   def self.config_source_dir(config_file)
@@ -443,7 +436,8 @@ module CNFManager
     if args.named.keys.includes? "deployment_name"
       deployment_name = "#{args.named["deployment_name"]}"
     else
-      deployment_name = "#{config.get("deployment_name").as_s?}" 
+      # deployment_name = "#{config.get("deployment_name").as_s?}" 
+      deployment_name = optional_key_as_string(config, "deployment_name")
     end
     VERBOSE_LOGGING.info "deployment_name: #{deployment_name}" if verbose
 
@@ -571,6 +565,8 @@ module CNFManager
         VERBOSE_LOGGING.info helm_install if verbose 
       end
 
+      #TODO change deployment_name to resource name
+      #TODO loop through all resources and wait for all resources to install
       wait_for_install(deployment_name, wait_count)
       if helm_install.to_s.size > 0 # && helm_pull.to_s.size > 0
         LOGGING.info "Successfully setup #{release_name}".colorize(:green)
@@ -696,29 +692,4 @@ module CNFManager
     { valid, warning_output }
   end
 
-  # TODO move configuration lifecycle retreive manifest task code in here
-  def self.retrieve_manifest(args)
-    task_runner(args) do |args|
-      LOGGING.info "retrieve_manifest" if check_verbose(args)
-      config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-      deployment_name = config.get("deployment_name").as_s
-      # TODO get this from k8s manifest kind = service
-      service_name = "#{config.get("service_name").as_s?}"
-      LOGGING.debug "Deployment_name: #{deployment_name}" if check_verbose(args)
-      LOGGING.debug service_name if check_verbose(args)
-      helm_directory = config.get("helm_directory").as_s
-      LOGGING.debug helm_directory if check_verbose(args)
-      destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-      # TODO move to kubectl client
-      # deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/manifest.yml`
-      KubectlClient::Get.save_manifest(deployment_name, "#{destination_cnf_dir}/manifest.yml")
-      LOGGING.debug deployment if check_verbose(args)
-      unless service_name.empty?
-        # TODO move to kubectl client
-        service = `kubectl get service #{service_name} -o yaml  > #{destination_cnf_dir}/service.yml`
-      end
-      LOGGING.debug service if check_verbose(args)
-      service
-    end
-  end
 end

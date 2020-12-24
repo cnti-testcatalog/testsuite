@@ -13,7 +13,7 @@ task "resilience", ["chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill
 end
 
 desc "Does the CNF crash when network loss occurs"
-task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
+task "chaos_network_loss", ["install_chaosmesh"] do |_, args|
   task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "chaos_network_loss" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
@@ -61,7 +61,7 @@ task "chaos_network_loss", ["install_chaosmesh", "retrieve_manifest"] do |_, arg
 end
 
 desc "Does the CNF crash when CPU usage is high"
-task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
+task "chaos_cpu_hog", ["install_chaosmesh"] do |_, args|
   task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "chaos_cpu_hog" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
@@ -93,6 +93,7 @@ task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
             puts "Chaosmesh failed to finish for resource: #{resource["name"]}".colorize(:red)
         end
       end
+      test_passed
     end
     if task_response 
       resp = upsert_passed_task("chaos_cpu_hog","✔️  PASSED: Application pod is healthy after high CPU consumption #{emoji_chaos_cpu_hog}")
@@ -105,7 +106,7 @@ task "chaos_cpu_hog", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
 end
 
 desc "Does the CNF recover when its container is killed"
-task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, args|
+task "chaos_container_kill", ["install_chaosmesh"] do |_, args|
   task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "chaos_container_kill" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
@@ -166,43 +167,50 @@ task "chaos_container_kill", ["install_chaosmesh", "retrieve_manifest"] do |_, a
 end
 
 desc "Does the CNF crash when network latency occurs"
-task "pod_network_latency", ["install_litmus", "retrieve_manifest"] do |_, args|
-  task_response = task_runner(args) do |args|
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    deployment_name = config.get("deployment_name").as_s
-    deployment_name = "coredns-coredns"
-    deployment_label = config.get("deployment_label").as_s
-    puts "#{destination_cnf_dir}"
-    LOGGING.info "destination_cnf_dir #{destination_cnf_dir}"
-    deployment = Totem.from_file "#{destination_cnf_dir}/manifest.yml"
-    install_experiment = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/experiment.yaml`
-    install_rbac = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/rbac.yaml`
-    annotate = `kubectl annotate --overwrite deploy/#{deployment_name} litmuschaos.io/chaos="true"`
-    puts "#{install_experiment}" if check_verbose(args)
-    puts "#{install_rbac}" if check_verbose(args)
-    puts "#{annotate}" if check_verbose(args)
-    
-    errors = 0
-    begin
-      deployment_label_value = deployment.get("metadata").as_h["labels"].as_h[deployment_label].as_s
-    rescue ex
-      errors = errors + 1
-      LOGGING.error ex.message 
+task "pod_network_latency", ["install_litmus"] do |_, args|
+  task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "pod_network_latency" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    # destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    # deployment_name = config.get("deployment_name").as_s
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+        test_passed = true
+      else
+        puts "No resource label found for pod_network_latency test for resource: #{resource["name"]}".colorize(:red)
+        test_passed = false
+      end
+      if test_passed
+        install_experiment = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/experiment.yaml`
+        install_rbac = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/rbac.yaml`
+        annotate = `kubectl annotate --overwrite deploy/#{resource["name"]} litmuschaos.io/chaos="true"`
+        puts "#{install_experiment}" if check_verbose(args)
+        puts "#{install_rbac}" if check_verbose(args)
+        puts "#{annotate}" if check_verbose(args)
+
+        chaos_experiment_name = "pod-network-latency"
+        test_name = "#{resource["name"]}-conformance-#{Time.local.to_unix}" 
+        chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
+
+        template = Crinja.render(chaos_template_pod_network_latency, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name})
+        chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
+        puts "#{chaos_config}" if check_verbose(args)
+        run_chaos = `kubectl apply -f "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
+        puts "#{run_chaos}" if check_verbose(args)
+
+        LitmusManager.wait_for_test(test_name,chaos_experiment_name,args)
+        LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+      end
+      test_passed
     end
-    chaos_experiment_name = "pod-network-latency"
-    test_name = "#{deployment_name}-conformance-#{Time.local.to_unix}" 
-    chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
-
-    template = Crinja.render(chaos_template_pod_network_latency, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{deployment_label}", "deployment_label_value" => "#{deployment_label_value}", "test_name" => test_name})
-    chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
-    puts "#{chaos_config}" if check_verbose(args)
-    run_chaos = `kubectl apply -f "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
-    puts "#{run_chaos}" if check_verbose(args)
-
-    LitmusManager.wait_for_test(test_name,chaos_experiment_name,args)
-    LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
-
+    if task_response 
+      resp = upsert_passed_task("pod-network-latency","✔️  PASSED: pod-network-latency chaos test passed 🗡️💀♻️")
+    else
+      resp = upsert_failed_task("pod-network-latency","✖️  FAILURE: pod-network-latency chaos test failed 🗡️💀♻️")
+    end
+    resp
   end
 end
 
