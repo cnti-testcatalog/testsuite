@@ -3,7 +3,7 @@
 |---|
 |[![Build Status](https://github.com/cncf/cnf-conformance/workflows/Crystal%20Specs/badge.svg)](https://github.com/cncf/cnf-conformance/actions)|
 
-The CNF Conformance test suite is a tool that makes it possible to validate telco applications, aka Cloud native Network Functions (CNFs), and the underlying Telecom platforms adherence to Cloud native principles and best practices.
+The CNF Conformance test suite is a tool that makes it possible to validate telco applications, aka Cloud-native Network Functions (CNFs), and the underlying Telecom platforms adherence to Cloud-native principles and best practices.
 
 This test suite initiative works closely with the [CNF WG](cnf-wg/README.md) which determines requirements for the CNF Conformance program.
 
@@ -17,13 +17,13 @@ The CNF Conformance Test Suite will inspect CNFs for the following characteristi
 - **Observability** - CNFs should externalize their internal states in a way that supports metrics, tracing, and logging.
 - **Installable and Upgradeable** - CNFs should use standard, in-band deployment tools such as Helm (version 3) charts.
 - **Hardware Resources and Scheduling** - The CNF container should access all hardware and schedule to specific worker nodes by using a device plugin.
-- **Resilience** - CNFs should be resilient to failures inevitable in cloud environments. CNF Resilience should be tested to ensure CNFs are designed to deal with non-carrier-grade shared cloud HW/SW platform.
+- **Resilience** - CNFs should be resilient to failures inevitable in cloud environments. CNF Resilience should be tested to ensure CNFs are designed to deal with non-carrier-grade shared cloud HW/SW platforms.
 
 See the [Conformance Test Categories Documentation](https://github.com/cncf/cnf-conformance/blob/master/TEST-CATEGORIES.md) for a complete overview of the tests.
 
 ## Contributing
 
-Welcome! We gladly accept contributions on new conformance tests, example CNFs, updates to documentation, enhancements, bug reports and more.
+Welcome! We gladly accept contributions on new conformance tests, example CNFs, updates to documentation, enhancements, bug reports, and more.
 - [Contributing guide](https://github.com/cncf/cnf-conformance/blob/master/CONTRIBUTING.md)
 - [Good first issues](https://github.com/cncf/cnf-conformance/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
@@ -45,7 +45,7 @@ Welcome! We gladly accept contributions on new conformance tests, example CNFs, 
 
 The CNF Conformance Test Suite leverages upstream tools such as [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Helm linter](https://github.com/helm/chart-testing), and [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) for testing CNFs. The upstream tool installation, configuration, and versioning has been made repeatable.
 
-The test framework and tests (using the upstream tools) are written in the human readable, compiled language, [Crystal](https://crystal-lang.org/). Common capabilities like dependencies between tests and categories are supported.
+The test framework and tests (using the upstream tools) are written in the human-readable, compiled language, [Crystal](https://crystal-lang.org/). Common capabilities like dependencies between tests and categories are supported.
 
 Setup of vanilla upstream K8s on [Equinix Metal](https://metal.equinix.com/) is done with the [CNF Testbed](https://github.com/cncf/cnf-testbed/) platform tool chain, which includes [k8s-infra](https://github.com/crosscloudci/k8s-infra), [Kubespray](https://kubespray.io/). To add support for other providers, please submit a [Pull Request](https://github.com/cncf/cnf-testbed/pulls) to the [CNF Testbed](https://github.com/cncf/cnf-testbed/) repo.
 
