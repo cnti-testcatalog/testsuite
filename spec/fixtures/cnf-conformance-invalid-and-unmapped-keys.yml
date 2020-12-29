@@ -9,10 +9,10 @@ helm_repository:
   name: stable 
   repo_url: https://cncf.gitlab.io/stable
   test_on_helm_repo:
-helm_chart: stable/coredns
+# helm_chart: stable/coredns
 helm_chart_container_name: coredns
-container_names: 
-  - name: coredns 
-    rolling_update_test_tag: 1.8.0 
-white_list_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
+# container_names: 
+#   - name: coredns 
+#     rolling_update_test_tag: 1.8.0 
+# white_list_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
 test_at_root:

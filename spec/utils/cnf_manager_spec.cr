@@ -41,35 +41,45 @@ describe "SampleUtils" do
 
   it "'CNFManager.sample_setup' should set up a sample cnf", tags: "happy-path"  do
     args = Sam::Args.new
-    CNFManager.sample_setup(config_file: "sample-cnfs/sample-generic-cnf", release_name: "coredns", deployment_name: "coredns-coredns", helm_chart: "stable/coredns", helm_directory: "helm_chart", git_clone_url: "https://github.com/coredns/coredns.git", wait_count: 0 )
+    config_file = "sample-cnfs/sample-generic-cnf"
+    CNFManager.sample_setup(config_file: config_file, release_name: "", deployment_name: "coredns-coredns", helm_chart: "stable/coredns", helm_directory: "", git_clone_url: "https://github.com/coredns/coredns.git", wait_count: 0, verbose: true)
     # check if directory exists
-    (Dir.exists? "cnfs/coredns").should be_true
-    (File.exists?("cnfs/coredns/cnf-conformance.yml")).should be_true
-    (File.exists?("cnfs/coredns/helm_chart/Chart.yaml")).should be_true
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    release_name = config.cnf_config[:release_name]
+
+    (Dir.exists? "cnfs/#{release_name}").should be_true
+    (File.exists?("cnfs/#{release_name}/cnf-conformance.yml")).should be_true
+    (File.exists?("cnfs/#{release_name}/exported_chart/Chart.yaml")).should be_true
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
-    (Dir.exists? "cnfs/coredns").should be_false
+    (Dir.exists? "cnfs/#{release_name}").should be_false
   end
 
   it "'CNFManager.sample_setup_args' should set up a sample cnf from a argument", tags: "happy-path"  do
     args = Sam::Args.new
-    CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 0 )
+    config_file = "sample-cnfs/sample-generic-cnf"
+    CNFManager.sample_setup_args(sample_dir: config_file, args: args, verbose: true, wait_count: 0 )
     # check if directory exists
-    (Dir.exists? "cnfs/coredns").should be_true
-    (File.exists?("cnfs/coredns/cnf-conformance.yml")).should be_true
-    (File.exists?("cnfs/coredns/helm_chart/Chart.yaml")).should be_true
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    release_name = config.cnf_config[:release_name]
+    (Dir.exists? "cnfs/#{release_name}").should be_true
+    (File.exists?("cnfs/#{release_name}/cnf-conformance.yml")).should be_true
+    # (File.exists?("cnfs/#{release_name}/helm_chart/Chart.yaml")).should be_true
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
-    (Dir.exists? "cnfs/coredns").should be_false
+    (Dir.exists? "cnfs/#{release_name}").should be_false
   end
 
   it "'CNFManager.sample_setup_args' should set up a sample cnf from a config file", tags: "happy-path"  do
     args = Sam::Args.new
-    CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf/cnf-conformance.yml", args: args, verbose: true, wait_count: 0 )
+    config_file = "sample-cnfs/sample-generic-cnf/cnf-conformance.yml"
+    CNFManager.sample_setup_args(sample_dir: config_file, args: args, verbose: true, wait_count: 0 )
     # check if directory exists
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    release_name = config.cnf_config[:release_name]
     (Dir.exists? "sample-cnfs/sample-generic-cnf").should be_true
-    (File.exists?("cnfs/coredns/cnf-conformance.yml")).should be_true
-    (File.exists?("cnfs/coredns/helm_chart/Chart.yaml")).should be_true
+    (File.exists?("cnfs/#{release_name}/cnf-conformance.yml")).should be_true
+    # (File.exists?("cnfs/#{release_name}/helm_chart/Chart.yaml")).should be_true
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
-    (Dir.exists? "cnfs/coredns").should be_false
+    (Dir.exists? "cnfs/#{release_name}").should be_false
   end
 
   it "'CNFManager.sample_cleanup' should clean up a sample cnf from a argument", tags: "happy-path"  do
@@ -84,27 +94,33 @@ describe "SampleUtils" do
 
   it "'CNFManager.sample_setup_args' should be able to deploy using a helm_directory", tags: "happy-path"  do
     args = Sam::Args.new
-    CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
-    (Dir.exists? "cnfs/privileged-coredns").should be_true
+    config_file = "sample-cnfs/sample_privileged_cnf"
+    CNFManager.sample_setup_args(sample_dir: config_file, deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    release_name = config.cnf_config[:release_name]
+    (Dir.exists? "cnfs/#{release_name}").should be_true
     # should not clone
-    (Dir.exists? "cnfs/privileged-coredns/privileged-coredns").should be_false
-    (File.exists? "cnfs/privileged-coredns/cnf-conformance.yml").should be_true
-    (File.exists? "cnfs/privileged-coredns/chart/Chart.yaml").should be_true
+    (Dir.exists? "cnfs/#{release_name}/privileged-coredns").should be_false
+    (File.exists? "cnfs/#{release_name}/cnf-conformance.yml").should be_true
+    (File.exists? "cnfs/#{release_name}/chart/Chart.yaml").should be_true
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
-    (Dir.exists? "cnfs/privileged-coredns").should be_false
+    (Dir.exists? "cnfs/#{release_name}").should be_false
   end
 
   it "'CNFManager.sample_setup_args and CNFManager.sample_cleanup' should be able to deploy and cleanup using a manifest_directory", tags: "happy-path"  do
     args = Sam::Args.new
-    CNFManager.sample_setup_args(sample_dir: "sample-cnfs/k8s-non-helm", deploy_with_chart: false, args: args, verbose: true, install_from_manifest: true, wait_count: 0 )
-    (Dir.exists? "cnfs/nginx-webapp").should be_true
-    (Dir.exists? "cnfs/nginx-webapp/manifests").should be_true
-    (File.exists? "cnfs/nginx-webapp/cnf-conformance.yml").should be_true
+    config_file = "sample-cnfs/k8s-non-helm"
+    CNFManager.sample_setup_args(sample_dir: config_file, deploy_with_chart: false, args: args, verbose: true, install_from_manifest: true, wait_count: 0 )
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    release_name = config.cnf_config[:release_name]
+    (Dir.exists? "cnfs/#{release_name}").should be_true
+    (Dir.exists? "cnfs/#{release_name}/manifests").should be_true
+    (File.exists? "cnfs/#{release_name}/cnf-conformance.yml").should be_true
     (KubectlClient::Get.pod_exists?("nginx-webapp")).should be_true
     CNFManager.sample_cleanup(config_file: "sample-cnfs/k8s-non-helm", installed_from_manifest: true, verbose: true)
     # TODO check for pod status = terminating
     (KubectlClient::Get.pod_exists?("nginx-webapp", check_ready: true)).should be_false
-    (Dir.exists? "cnfs/nginx-webapp").should be_false
+    (Dir.exists? "cnfs/#{release_name}").should be_false
   end
 
   it "'cnf_destination_dir' should return the full path of the potential destination cnf directory based on the deployment name", tags: "WIP" do
@@ -114,9 +130,12 @@ describe "SampleUtils" do
 
   it "'CNFManager.cnf_config_list' should return a list of all of the config files from the cnf directory", tags: "happy-path"  do
     args = Sam::Args.new
-    CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: args, verbose: true, wait_count: 1 )
+    config_file = "sample-cnfs/sample-generic-cnf"
+    CNFManager.sample_setup_args(sample_dir: config_file, args: args, verbose: true, wait_count: 1 )
     CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: args, verbose: true )
-    CNFManager.cnf_config_list()[0].should contain("coredns/#{CONFIG_FILE}")
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    release_name = config.cnf_config[:release_name]
+    CNFManager.cnf_config_list()[0].should contain("#{release_name}/#{CONFIG_FILE}")
   end
 
   it "'CNFManager.helm_repo_add' should add a helm repo if the helm repo is valid", tags: "happy-path"  do
@@ -180,9 +199,12 @@ describe "SampleUtils" do
   it "'CNFManager.validate_cnf_conformance_yml' (function) should fail when an invalid cnf config file yml is used", tags: ["unhappy-path", "validate_config"]  do
     args = Sam::Args.new(["cnf-config=spec/fixtures/cnf-conformance-invalid-and-unmapped-keys.yml"])
 
+
     yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     LOGGING.info yml.inspect
-    ("#{yml.get("release_name").as_s?}").should eq("coredns")
+    # config = CNFManager::Config.parse_config_yml(args.named["cnf-config"].as(String))    
+    # release_name = config.cnf_config[:release_name]
+    # ("#{yml.get("release_name").as_s?}").should eq(release_name)
 
     status, warning_output = CNFManager.validate_cnf_conformance_yml(yml)
 

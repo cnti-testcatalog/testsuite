@@ -20,7 +20,7 @@ class CnfConformanceYmlType
     {{ @type.methods.map &.name.stringify }}
   end
 
-  property helm_directory : String
+  property helm_directory : String?
 
   property git_clone_url : String?
 
@@ -28,7 +28,7 @@ class CnfConformanceYmlType
 
   property service_name : String?
 
-  property release_name : String
+  property release_name : String?
 
   property docker_repository : String?
 

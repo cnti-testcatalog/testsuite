@@ -434,6 +434,7 @@ def update_yml(yml_file, top_level_key, value)
   # The last key assigned wins
   new_yaml = YAML.dump(results) + "\n#{top_level_key}: #{value}"
   parsed_new_yml = YAML.parse(new_yaml)
+  LOGGING.debug "update_yml parsed_new_yml: #{parsed_new_yml}"
   File.open("#{yml_file}", "w") do |f| 
     YAML.dump(parsed_new_yml,f)
   end 

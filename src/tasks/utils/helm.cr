@@ -16,6 +16,7 @@ module Helm
       templates = File.read(template_file_name)
       split_template = templates.split("---")
       ymls = split_template.map { | template |
+        #TODO strip out NOTES
         YAML.parse(template)
         # compact seems to have problems with yaml::any
       }.reject{|x|x==nil}
