@@ -2,6 +2,7 @@
 require "../spec_helper"
 require "colorize"
 require "../../src/tasks/utils/utils.cr"
+require "../../src/tasks/utils/kubectl_client.cr"
 require "file_utils"
 require "sam"
 
@@ -172,9 +173,12 @@ describe "Utils" do
     (check_all_cnf_args(args)).should eq({"./sample-cnfs/sample-generic-cnf", true})
   end
   it "'check_cnf_config_then_deploy' should accept a cnf-config argument"  do
-    args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
+    config_file = "./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"
+    args = Sam::Args.new(["cnf-config=#{config_file}"])
     check_cnf_config_then_deploy(args)
-    CNFManager.cnf_config_list()[0].should contain("coredns/#{CONFIG_FILE}")
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    release_name = config.cnf_config[:release_name]
+    CNFManager.cnf_config_list()[0].should contain("#{release_name}/#{CONFIG_FILE}")
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
   end
 
@@ -234,34 +238,54 @@ describe "Utils" do
 
   it "'all_cnfs_task_runner' should run a test against all cnfs in the cnfs directory if there is not cnf-config argument passed to it"  do
     my_args = Sam::Args.new
-    CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: my_args)
-    CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: my_args )
-    task_response = all_cnfs_task_runner(my_args) do |args|
+    # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: my_args)
+      LOGGING.info `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-generic-cnf`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample_privileged_cnf`
+    # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: my_args )
+    task_response = all_cnfs_task_runner(my_args) do |args, config|
       LOGGING.info("all_cnfs_task_runner spec args #{args.inspect}")
-      # config = cnf_conformance_yml(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-      config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-      helm_chart_container_name = config.get("helm_chart_container_name").as_s
-      privileged_response = `kubectl get pods --all-namespaces -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
-      privileged_list = privileged_response.to_s.split(" ").uniq
-      LOGGING.info "privileged_list #{privileged_list}"
-      if privileged_list.select {|x| x == helm_chart_container_name}.size > 0
-        resp = "✖️  FAILURE: Found privileged containers: #{privileged_list.inspect}".colorize(:red)
-      else
-        resp = "✔️  PASSED: No privileged containers".colorize(:green)
+      VERBOSE_LOGGING.info "privileged" if check_verbose(args)
+      white_list_container_names = config.cnf_config[:white_list_container_names]
+      VERBOSE_LOGGING.info "white_list_container_names #{white_list_container_names.inspect}" if check_verbose(args)
+      violation_list = [] of String
+      resource_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+
+        privileged_list = KubectlClient::Get.privileged_containers
+        white_list_containers = ((PRIVILEGED_WHITELIST_CONTAINERS + white_list_container_names) - [container])
+        # Only check the containers that are in the deployed helm chart or manifest
+        (privileged_list & ([container.as_h["name"].as_s] - white_list_containers)).each do |x|
+          violation_list << x
+        end
+        if violation_list.size > 0
+          false
+        else
+          true
+        end
       end
-      LOGGING.info resp
+      LOGGING.debug "violator list: #{violation_list.flatten}"
+      emoji_security=""
+      if resource_response 
+        resp = upsert_passed_task("privileged", "✔️  PASSED: No privileged containers")
+      else
+        resp = upsert_failed_task("privileged", "✖️  FAILURE: Found #{violation_list.size} privileged containers: #{violation_list.inspect}")
+      end
       resp
     end
-    (task_response).should eq(["✔️  PASSED: No privileged containers".colorize(:green), "✔️  PASSED: No privileged containers".colorize(:green)])
+    (task_response).should eq(["✔️  PASSED: No privileged containers", 
+                               "✖️  FAILURE: Found 1 privileged containers: [\"coredns\"]"])
+  ensure
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
   end
 
   it "'task_runner' should run a test against a single cnf if passed a cnf-config argument even if there are multiple cnfs installed"  do
     my_args = Sam::Args.new
-    CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: my_args)
+    config_file = "sample-cnfs/sample-generic-cnf"
+    CNFManager.sample_setup_args(sample_dir: config_file, args: my_args)
     CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: my_args )
-    installed_args = Sam::Args.new(["cnf-config=./cnfs/coredns/cnf-conformance.yml"])
+    cnfmng_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    release_name = cnfmng_config.cnf_config[:release_name]
+    installed_args = Sam::Args.new(["cnf-config=./cnfs/#{release_name}/cnf-conformance.yml"])
     task_response = task_runner(installed_args) do |args|
       LOGGING.info("task_runner spec args #{args.inspect}")
       # config = cnf_conformance_yml(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
@@ -278,7 +302,7 @@ describe "Utils" do
       LOGGING.info resp
       resp
     end
-    (task_response).should eq("✔️  PASSED: No privileged containers".colorize(:green))
+    (task_response).should eq("✖️  FAILURE: Found privileged containers: [\"coredns\", \"kube-proxy\"]".colorize(:red))
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
   end

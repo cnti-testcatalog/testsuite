@@ -7,7 +7,7 @@ deployment_name: privileged-coredns-coredns
 deployment_label: k8s-app
 service_name: privileged-coredns-coredns 
 application_deployment_names: [privileged-coredns-coredns]
-helm_chart: stable/coredns
+helm_chart:
 helm_chart_container_name: privileged-coredns-coredns
 white_list_helm_chart_container_names: [coredns]
 container_names: 

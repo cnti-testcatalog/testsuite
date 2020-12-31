@@ -3,25 +3,16 @@ require "colorize"
 
 describe CnfConformance do
   before_all do
-    # LOGGING.debug `pwd` 
-    # LOGGING.debug `echo $KUBECONFIG`
-
     `./cnf-conformance samples_cleanup`
     $?.success?.should be_true
-    # `./cnf-conformance configuration_file_setup`
     LOGGING.info `./cnf-conformance setup`
-    # $?.success?.should be_true
   end
 
   it "'install_script_helm' should fail if install script does not have helm", tags: "happy-path"  do
-    # LOGGING.debug `pwd` 
-    # LOGGING.debug `echo $KUBECONFIG`
-    # `./cnf-conformance cleanup`
-    # $?.success?.should be_true
-    `./cnf-conformance sample_coredns_source_setup`
+    LOGGING.info `./cnf-conformance sample_coredns_source_setup`
     $?.success?.should be_true
-    response_s = `./cnf-conformance install_script_helm`
-    #LOGGING.info response_s
+    response_s =  `./cnf-conformance install_script_helm`
+    LOGGING.info response_s
     $?.success?.should be_true
     (/FAILURE: Helm not found in supplied install script/ =~ response_s).should_not be_nil
     `./cnf-conformance sample_coredns_source_cleanup`
@@ -61,9 +52,9 @@ describe CnfConformance do
     # LOGGING.debug `echo $KUBECONFIG`
     # `./cnf-conformance cleanup`
     # $?.success?.should be_true
-    `./cnf-conformance sample_coredns_setup`
+    LOGGING.info `./cnf-conformance sample_coredns_setup`
     $?.success?.should be_true
-    response_s = `./cnf-conformance helm_chart_valid`
+    response_s = `./cnf-conformance helm_chart_valid verbose`
     LOGGING.info response_s
     $?.success?.should be_true
     (/Lint Passed/ =~ response_s).should_not be_nil

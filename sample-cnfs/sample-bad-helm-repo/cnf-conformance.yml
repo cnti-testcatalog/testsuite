@@ -1,6 +1,5 @@
 ---
-helm_directory: cnfs/coredns/helm_chart/coredns
-# helm_directory: helm_chart
+helm_directory:
 git_clone_url: 
 install_script: 
 release_name: coredns

@@ -67,15 +67,9 @@ end
 desc "Does the install script use helm?"
 task "install_script_helm" do |_, args|
   task_runner(args) do |args|
-    # Parse the cnf-conformance.yml
-    # config = cnf_conformance_yml
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
 
     found = 0
-    # current_cnf_dir_short_name = CNFManager.ensure_cnf_conformance_dir
-    # current_cnf_dir_short_name = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
-    # VERBOSE_LOGGING.debug current_cnf_dir_short_name if check_verbose(args)
-    # destination_cnf_dir = sample_destination_dir(current_cnf_dir_short_name)
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     VERBOSE_LOGGING.debug destination_cnf_dir if check_verbose(args)
     install_script = config.get("install_script").as_s?

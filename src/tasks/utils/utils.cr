@@ -63,6 +63,7 @@ def single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | 
     else
       config = CNFManager::Config.new({ destination_cnf_dir: "",
                                yml_file_path: "",
+                               install_method: {:helm_chart, ""},
                                manifest_directory: "",
                                helm_directory: "", 
                                helm_chart_path: "", 

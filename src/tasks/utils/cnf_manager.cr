@@ -13,6 +13,7 @@ module CNFManager
     end
     property cnf_config : NamedTuple(destination_cnf_dir: String,
                                      yml_file_path: String,
+                                     install_method: Tuple(Symbol, String),
                                      manifest_directory: String,
                                      helm_directory: String, 
                                      helm_chart_path: String, 
@@ -34,6 +35,8 @@ module CNFManager
       LOGGING.debug "parse_config_yml config_yml_path: #{config_yml_path}"
       yml_file = CNFManager.ensure_cnf_conformance_yml_path(config_yml_path)
       config = CNFManager.parsed_config_file(yml_file)
+
+      install_method = CNFManager.cnf_installation_method(config)
 
       CNFManager.generate_and_set_release_name(config_yml_path)
 
@@ -67,6 +70,7 @@ module CNFManager
       # TODO populate nils with entries from cnf-conformance file
       CNFManager::Config.new({ destination_cnf_dir: destination_cnf_dir,
                                yml_file_path: yml_file_path,
+                               install_method: install_method,
                                manifest_directory: manifest_directory,
                                helm_directory: helm_directory, 
                                helm_chart_path: helm_chart_path, 
@@ -201,6 +205,7 @@ module CNFManager
   def self.resource_wait_for_install(kind, resource_name, wait_count : Int32 = 180, namespace="default")
     # Not all cnfs have #{kind}.  some have only a pod.  need to check if the 
     # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod 
+    LOGGING.info "resource_wait_for_install kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}"
     second_count = 0
     all_kind = `kubectl get #{kind} --namespace=#{namespace}`
     LOGGING.debug "all_kind #{all_kind}}"
@@ -217,7 +222,7 @@ module CNFManager
       current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
       # Sometimes desired replicas is not available immediately
       desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
-      LOGGING.debug "desired_replicas #{desired_replicas}"
+      LOGGING.debug "desired_replicas: #{desired_replicas}"
       LOGGING.info(all_kind)
       second_count = second_count + 1 
     end
@@ -355,6 +360,8 @@ module CNFManager
   #TODO Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
   def self.cnf_installation_method(config)
     LOGGING.info "cnf_installation_method"
+    LOGGING.info "cnf_installation_method config: #{config}"
+    LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
     helm_chart = optional_key_as_string(config, "helm_chart")
     helm_directory = optional_key_as_string(config, "helm_directory")
     manifest_directory = optional_key_as_string(config, "manifest_directory")
@@ -369,7 +376,8 @@ module CNFManager
     end
     LOGGING.debug "installation_type_count: #{installation_type_count}"
     if installation_type_count > 1
-      raise "Error: can only have one installation type in the cnf-conformance.yml: choose either helm_chart, helm_directory, or manifest_directory."
+      puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory.".colorize(:red)
+      raise "Error in cnf-conformance.yml!"
     end
     if !helm_chart.empty?
       {:helm_chart, helm_chart}
@@ -378,7 +386,8 @@ module CNFManager
     elsif !manifest_directory.empty?
       {:manifest_directory, manifest_directory}
     else
-      raise "Error: Must populate at lease one installation type in the cnf-conformance.yml: choose either helm_chart, helm_directory, or manifest_directory."
+      puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory.".colorize(:red)
+      raise "Error in cnf-conformance.yml!"
     end
   end
 
@@ -535,6 +544,7 @@ module CNFManager
 
     config = config_from_path_or_dir(sample_dir)
     config_dir = ensure_cnf_conformance_dir(sample_dir)
+    LOGGING.info "sample_setup_args config for #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
 
     VERBOSE_LOGGING.info "config #{config}" if verbose
 
@@ -606,6 +616,11 @@ module CNFManager
     LOGGING.debug "config in sample_setup: #{config.cnf_config}"
 
     release_name = config.cnf_config[:release_name]
+    install_method = config.cnf_config[:install_method]
+
+    if install_method[0] == :helm_directory
+      deploy_with_chart = false
+    end 
     helm_chart_path = config.cnf_config[:helm_chart_path]
     LOGGING.debug "helm_directory: #{helm_directory}"
 
@@ -627,6 +642,7 @@ module CNFManager
 
     # Use manifest directory if helm directory empty
     #TODO move to sandbox module
+    # TODO make an 'install from' function that returns {:helm_chart (etc), <install from string>}
     if install_from_manifest
       manifest_or_helm_directory = config_source_dir(config_file) + "/" + manifest_directory 
     elsif !helm_directory.empty?
@@ -638,16 +654,21 @@ module CNFManager
       
     LOGGING.info("File.directory?(#{manifest_or_helm_directory}) #{File.directory?(manifest_or_helm_directory)}")
     # if the helm directory already exists, copy helm_directory contents into cnfs/<cnf-name>/<helm-directory-of-the-same-name>
-    if !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory) 
+    if !manifest_or_helm_directory.empty? && manifest_or_helm_directory =~ /exported_chart/ 
+      LOGGING.info "Ensuring exported helm directory is created"
+      LOGGING.debug "mkdir_p destination_cnf_dir/exported_chart: #{manifest_or_helm_directory}"
+      FileUtils.mkdir_p("#{manifest_or_helm_directory}") 
+    elsif !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory) 
+      # if !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory) 
       LOGGING.info "Ensuring helm directory is copied"
       LOGGING.info("cp -a #{manifest_or_helm_directory} #{destination_cnf_dir}")
       yml_cp = `cp -a #{manifest_or_helm_directory} #{destination_cnf_dir}`
       VERBOSE_LOGGING.info yml_cp if verbose
       raise "Copy of #{manifest_or_helm_directory} to #{destination_cnf_dir} failed!" unless $?.success?
-    else
-      LOGGING.info "Ensuring exported helm directory is created"
-      LOGGING.debug "mkdir_p destination_cnf_dir/exported_chart: #{manifest_or_helm_directory}"
-      FileUtils.mkdir_p("#{manifest_or_helm_directory}") 
+      # else
+      #   LOGGING.info "Ensuring exported helm directory is created"
+      #   LOGGING.debug "mkdir_p destination_cnf_dir/exported_chart: #{manifest_or_helm_directory}"
+      #   FileUtils.mkdir_p("#{manifest_or_helm_directory}") 
     end
 
     #TODO move to sandbox module
@@ -677,6 +698,7 @@ module CNFManager
         #TODO move to sandbox module
         LOGGING.debug "mkdir_p destination_cnf_dir/helm_directory: #{destination_cnf_dir}/#{helm_directory}"
         FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}") 
+        LOGGING.debug "helm command pull: #{helm} pull #{helm_chart}"
         helm_pull = `#{helm} pull #{helm_chart}`
         VERBOSE_LOGGING.info helm_pull if verbose 
         # core_mv = `mv #{release_name}-*.tgz #{destination_cnf_dir}/#{helm_directory}`
