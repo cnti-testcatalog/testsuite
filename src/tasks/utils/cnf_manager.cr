@@ -44,6 +44,7 @@ module CNFManager
 
       yml_file_path = CNFManager.ensure_cnf_conformance_dir(config_yml_path)
       manifest_directory = optional_key_as_string(config, "manifest_directory")
+      helm_chart = optional_key_as_string(config, "helm_chart")
       release_name = "#{config.get("release_name").as_s?}"
       service_name = optional_key_as_string(config, "service_name")
       helm_directory = optional_key_as_string(config, "helm_directory")
@@ -81,7 +82,7 @@ module CNFManager
                                service_name: service_name,
                                docker_repository: "",
                                helm_repository: {name: "", repo_url: ""},
-                               helm_chart: "",
+                               helm_chart: helm_chart,
                                helm_chart_container_name: "",
                                rolling_update_tag: "",
                                container_names: container_names,
