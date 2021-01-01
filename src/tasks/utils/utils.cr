@@ -63,6 +63,7 @@ def single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | 
     else
       config = CNFManager::Config.new({ destination_cnf_dir: "",
                                yml_file_path: "",
+                               install_method: {:helm_chart, ""},
                                manifest_directory: "",
                                helm_directory: "", 
                                helm_chart_path: "", 
@@ -434,6 +435,7 @@ def update_yml(yml_file, top_level_key, value)
   # The last key assigned wins
   new_yaml = YAML.dump(results) + "\n#{top_level_key}: #{value}"
   parsed_new_yml = YAML.parse(new_yaml)
+  LOGGING.debug "update_yml parsed_new_yml: #{parsed_new_yml}"
   File.open("#{yml_file}", "w") do |f| 
     YAML.dump(parsed_new_yml,f)
   end 

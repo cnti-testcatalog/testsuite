@@ -1,5 +1,5 @@
 ---
-helm_directory: cnfs/coredns/helm_chart/coredns
+helm_directory: 
 git_clone_url: 
 install_script: 
 release_name: coredns
@@ -11,12 +11,12 @@ helm_repository:
   repo_url: https://cncf.gitlab.io/stable
 helm_chart: stable/coredns
 helm_chart_container_name: coredns
-container_names: 
-  - name: coredns 
-    rolling_update_test_tag: "1.8.0"
-    rolling_downgrade_test_tag: 1.6.7
-    rolling_version_change_test_tag: latest
-    rollback_from_tag: latest
+container_names:
+- name: coredns
+  rolling_update_test_tag: 1.8.0
+  rolling_downgrade_test_tag: 1.6.7
+  rolling_version_change_test_tag: latest
+  rollback_from_tag: latest
 white_list_helm_chart_container_names:
 - falco
 - node-cache

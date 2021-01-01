@@ -17,12 +17,13 @@ desc "Does the CNF have a reasonable startup time?"
 task "reasonable_startup_time" do |_, args|
   task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "reasonable_startup_time" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    LOGGING.debug "cnf_config: #{config.cnf_config}"
 
     yml_file_path = config.cnf_config[:yml_file_path]
     helm_chart = config.cnf_config[:helm_chart]
     helm_directory = config.cnf_config[:helm_directory]
     release_name = config.cnf_config[:release_name]
+    install_method = config.cnf_config[:install_method]
     
     current_dir = FileUtils.pwd 
     helm = CNFSingleton.helm
@@ -34,21 +35,26 @@ task "reasonable_startup_time" do |_, args|
     kubectl_apply = ""
     is_kubectl_applied = ""
     is_kubectl_deployed = ""
+    # TODO make this work with a manifest installation 
     elapsed_time = Time.measure do
       LOGGING.info("reasonable_startup_time helm_chart.empty?: #{helm_chart.empty?}")
-      unless helm_chart.empty?
+      if install_method[0] == :helm_chart
+      # unless helm_chart.empty? #TODO make this work for a manifest
         LOGGING.info("reasonable_startup_time #{helm} template #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_orig.yml")
         LOGGING.info "helm_template_orig command: #{helm} template #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_orig.yml}"
         helm_template_orig = `#{helm} template #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_orig.yml`
         LOGGING.info("reasonable_startup_time #{helm} template --namespace=startup-test #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_test.yml")
         helm_template_test = `#{helm} template --namespace=startup-test #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_test.yml`
         VERBOSE_LOGGING.info "helm_chart: #{helm_chart}" if check_verbose(args)
-      else
+      elsif install_method[0] == :helm_directory
         LOGGING.info("reasonable_startup_time #{helm} template #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_orig.yml")
         helm_template_orig = `#{helm} template #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_orig.yml`
         LOGGING.info("reasonable_startup_time #{helm} template --namespace=startup-test #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_test.yml")
         helm_template_test = `#{helm} template --namespace=startup-test #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_test.yml`
         VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if check_verbose(args)
+      else # manifest file installation not supported
+        puts "Manifest file not supported for reasonable startup time yet".colorize(:yellow)
+        raise "Manifest file not supported yet"
       end
 
       kubectl_apply = `kubectl apply -f #{yml_file_path}/reasonable_startup_test.yml --namespace=startup-test`
@@ -57,7 +63,7 @@ task "reasonable_startup_time" do |_, args|
       template_ymls = Helm::Manifest.parse_manifest_as_ymls("#{yml_file_path}/reasonable_startup_test.yml") 
 
       LOGGING.debug "template_ymls: #{template_ymls}"
-      task_response = template_ymls.map do | resource|
+      task_response = template_ymls.map do |resource|
         LOGGING.debug "Waiting on resource: #{resource["metadata"]["name"]} of type #{resource["kind"]}"
         if resource["kind"].as_s.downcase == "deployment" ||
             resource["kind"].as_s.downcase == "pod" ||

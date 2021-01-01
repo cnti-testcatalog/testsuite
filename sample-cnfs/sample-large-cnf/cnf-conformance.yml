@@ -1,6 +1,5 @@
 ---
 helm_directory: chart 
-# helm_directory: helm_chart
 git_clone_url: 
 install_script: 
 release_name: coredns
@@ -12,7 +11,7 @@ docker_repository: coredns/coredns
 helm_repository:
   name: stable 
   repo_url: https://cncf.gitlab.io/stable
-helm_chart: stable/coredns
+helm_chart:
 helm_chart_container_name: coredns
 container_names: 
   - name: coredns 
