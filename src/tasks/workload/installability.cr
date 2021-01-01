@@ -156,16 +156,14 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     helm = CNFSingleton.helm
 
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    ls_helm_directory = `ls -al #{destination_cnf_dir}/#{working_chart_directory}`
-    VERBOSE_LOGGING.debug "ls -al of helm_directory: #{ls_helm_directory}" if check_verbose(args)
 
     helm_lint = `#{helm} lint #{destination_cnf_dir}/#{working_chart_directory}`
     VERBOSE_LOGGING.debug "helm_lint: #{helm_lint}" if check_verbose(args)
 
     if $?.success? 
-      upsert_passed_task("helm_chart_valid", "✔️  PASSED: Helm Chart #{ls_helm_directory} Lint Passed")
+      upsert_passed_task("helm_chart_valid", "✔️  PASSED: Helm Chart #{working_chart_directory} Lint Passed")
     else
-      upsert_failed_task("helm_chart_valid", "✖️  FAILURE: Helm Chart #{ls_helm_directory} Lint Failed")
+      upsert_failed_task("helm_chart_valid", "✖️  FAILURE: Helm Chart #{working_chart_directory} Lint Failed")
     end
   end
 end

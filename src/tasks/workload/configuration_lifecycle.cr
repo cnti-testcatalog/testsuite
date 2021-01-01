@@ -122,8 +122,6 @@ task "retrieve_manifest" do |_, args|
     service_name = "#{config.get("service_name").as_s?}"
     # VERBOSE_LOGGING.debug "Deployment_name: #{deployment_name}" if check_verbose(args)
     VERBOSE_LOGGING.debug service_name if check_verbose(args)
-    helm_directory = config.get("helm_directory").as_s
-    VERBOSE_LOGGING.debug helm_directory if check_verbose(args)
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     # TODO move to kubectl client
     # deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/manifest.yml`

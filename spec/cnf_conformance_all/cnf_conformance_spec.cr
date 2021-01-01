@@ -19,7 +19,6 @@ describe CnfConformance do
     # the ommisions (i.e. ~resilience) are done for performance reasons for the spec suite
     response_s = `./cnf-conformance all ~platform ~resilience cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose`
     LOGGING.info response_s
-    $?.success?.should be_true
     (/PASSED: Helm readiness probe found/ =~ response_s).should_not be_nil
     (/PASSED: Helm liveness probe/ =~ response_s).should_not be_nil
     (/Lint Passed/ =~ response_s).should_not be_nil
@@ -30,5 +29,7 @@ describe CnfConformance do
     (/Final score:/ =~ response_s).should_not be_nil
     (all_result_test_names(CNFManager.final_cnf_results_yml).sort).should eq(["volume_hostpath_not_found", "privileged", "increase_capacity", "decrease_capacity", "ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "install_script_helm", "helm_chart_valid", "helm_chart_published","helm_deploy", "reasonable_image_size", "reasonable_startup_time", "rollback" ].sort)
     (/^.*\.cr:[0-9].*/ =~ response_s).should be_nil
+    LOGGING.debug "$?: #{success}"
+    $?.success?.should be_true
   end
 end
