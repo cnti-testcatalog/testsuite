@@ -12,7 +12,7 @@ This information is also required for running various tests e.g. The 'container_
 ```yaml=
 ---
 #helm_directory: coredns # PATH_TO_CNFS_HELM_CHART ; or
-helm_chart_repo: stable/coredns # PUBLISHED_CNFS_HELM_CHART_REPO/NAME
+helm_chart: stable/coredns # PUBLISHED_CNFS_HELM_CHART_REPO/NAME
  
 git_clone_url: https://github.com/coredns/coredns.git # GIT_REPO_FOR_CNFS_SOURCE_CODE
 install_script: cnfs/coredns/Makefile # PATH_TO_CNFS_INSTALL_SCRIPT
@@ -50,7 +50,7 @@ The value of git_clone_url is used to clone the source code for the CNF being te
 Path to script used for installing the CNF (relative to the location of the cnf-conformance.yml). This is used by the CNF-Conformance suite to install the CNF if a wrapper around helm is used or helm isn't used at all. If this is blank, the CNF will be installed using the helm_chart value.
 
 #### release_name: The helm release name of the CNF; if the CNF isn't pre-deployed to the cluster then the test suite will perform the installation and use this name for the helm release / version.
-This MUST be set.
+This MAY be set.  If release_name is not set, a release name will be generated
 This is used by the CNF-Conformance suite to interact with the Helm release / installation of the CNF being tested and find meta-data about the CNF. For example the [rolling_update](https://github.com/cncf/cnf-conformance/blob/96cee8cefc9a71e62e971f8f4abad56e5db59866/src/tasks/configuration_lifecycle.cr#L156) test uses the helm release_name to fetch the docker image name and tag of the CNF so it can preform a rolling update. [See: rolling_update test](https://github.com/cncf/cnf-conformance/blob/96cee8cefc9a71e62e971f8f4abad56e5db59866/src/tasks/configuration_lifecycle.cr#L179)
 
 #### helm_chart_container_name: This value is the name of the 'container' defined in the Kubernetes pod spec of the CNF being tested. (See: [for example](https://github.com/helm/charts/blob/master/stable/coredns/templates/deployment.yaml#L72)) 
