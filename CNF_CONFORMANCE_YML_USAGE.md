@@ -22,7 +22,7 @@ This information is also required for running various tests e.g. The 'container_
     - [helm_chart_container_name](#helm_chart_container_name)
     - [white_list_helm_chart_container_names](#white_list_helm_chart_container_names)
     - [container_names](#container_names)
-- [Creating Your Own cnf-conformance.yml](#Creating-Your-Own-cnf-conformance.yml)
+- [Creating Your Own cnf-conformance.yml](#creating-your-own-cnf-conformanceyml)
 - [Detailed Steps](#Detailed-Steps)
 - [Setup and Configuration](#Setup-and-Configuration)
 - [Quick Setup and Config Reference Steps](#Quick-Setup-and-Config-Reference-Steps)
