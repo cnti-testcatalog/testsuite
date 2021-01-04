@@ -37,7 +37,7 @@ task "chaos_network_loss", ["install_chaosmesh"] do |_, args|
         VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
         if wait_for_test("NetworkChaos", "network-loss")
           LOGGING.info( "Wait Done")
-          unless KubectlClient::Get.resource_desired_is_available?(resource["kind"], resource["name"])
+          unless KubectlClient::Get.resource_desired_is_available?(resource["kind"].as_s, resource["name"].as_s)
             test_passed = false
             puts "Replicas did not return desired count after network chaos test for resource: #{resource["name"]}".colorize(:red)
           end
@@ -82,7 +82,7 @@ task "chaos_cpu_hog", ["install_chaosmesh"] do |_, args|
         VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
         # TODO fail if exceeds
         if wait_for_test("StressChaos", "burn-cpu")
-          unless KubectlClient::Get.resource_desired_is_available?(resource["kind"], resource["name"])
+          unless KubectlClient::Get.resource_desired_is_available?(resource["kind"].as_s, resource["name"].as_s)
             test_passed = false
             puts "Chaosmesh Application pod is not healthy after high CPU consumption for resource: #{resource["name"]}".colorize(:red)
           end
@@ -132,7 +132,7 @@ task "chaos_container_kill", ["install_chaosmesh"] do |_, args|
         VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
         if wait_for_test("PodChaos", "container-kill")
           # CNFManager.wait_for_install(resource["name"], wait_count=60)
-          CNFManager.resource_wait_for_install(resource["kind"], resource["name"], wait_count=60)
+          CNFManager.resource_wait_for_install(resource["kind"].as_s, resource["name"].as_s, wait_count=60)
         else
           # TODO Change this to an exception (points = 0)
           # e.g. upsert_exception_task
