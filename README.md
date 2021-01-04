@@ -6,11 +6,11 @@ With such a wide array of applications being developed today, workload conforman
 
 Best practices: Your application follows cloud native best practices. This is useful to know whether you are building upon the work of the community or handling your own custom setup.
 
-Predictability: Your application acts in a predictable manner when running on cloud native infrastructure like Kubernetes. Unexpected behavior should be rare, because application specific issues are weeded out during the conformance tests.
+Predictability: Your application acts in a predictable manner when running on cloud native infrastructure like Kubernetes. Unexpected behavior should be rare because application specific issues are weeded out during the conformance tests.
 
-Interoperability: Workloads can be ported across various cloud native infrastructures. This standardization is a key advantage of open source software, and allows you to avoid vendor lock-in.
+Interoperability: Workloads can be ported across various cloud native infrastructures. This standardization is a key advantage of open source software and allows you to avoid vendor lock-in.
 
-Implementing and running applications in a cloud native manner will enable you to more fully benefit from the advantages cloud native infrastructure.
+Implementing and running applications in a cloud native manner will enable you to more fully benefit from the advantages of cloud native infrastructure.
 
 ## CNF Conformance Program
 
@@ -25,4 +25,4 @@ slack channel. Details: [Conformance WG](https://github.com/cncf/cnf-wg/blob/mas
 
 ## Test Suite Information
 
-To contribute to or use the test suite you can join the slack channel, weekly meetings, and interact in github. Details: [Test suite](README-testsuite.md).
+To contribute to or use the test suite you can join the slack channel, weekly meetings, and interact in GitHub. Details: [Test suite](README-testsuite.md).
