@@ -23,7 +23,6 @@ This information is also required for running various tests e.g. The 'container_
     - [white_list_helm_chart_container_names](#white_list_helm_chart_container_names)
     - [container_names](#container_names)
 - [Creating Your Own cnf-conformance.yml](#creating-your-own-cnf-conformanceyml)
-- [Detailed Steps](#Detailed-Steps)
 - [Setup and Configuration](#Setup-and-Configuration)
 - [Quick Setup and Config Reference Steps](#Quick-Setup-and-Config-Reference-Steps)
 
@@ -197,8 +196,6 @@ This value is used to test the upgradeability of each container image.  The imag
   - _NOTE: you can pass the path to your cnf-conformance.yml to the 'all' command which will install the CNF for you (see below)_
 
 
-
-### Detailed Steps
 A configuration file called `cnf-conformance.yml` needs to be created for each CNF you want to test (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`).
 
 You can start by copying an example cnf-conformance.yml or copy and paste the below to get started and then filling our the appropriate values:
