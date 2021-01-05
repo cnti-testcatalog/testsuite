@@ -49,7 +49,7 @@ container_names: #[LIST_OF_CONTAINERS_NAMES_AND_VERSION_UPGRADE_TAGS]
 ### Keys and Values
 
 #### helm_directory
-This is the path to the helm chart directory (relative to the location of the cnf-conformance.yml). This is a must and is mutually exclusive with [helm_chart](#helm_chart)
+This is the path to the helm chart directory (relative to the location of the cnf-conformance.yml). This or [helm_chart](#helm_chart) must be set, but only one (mutually exclusive).
 
 Used for doing static tests on the helm chart code e.g. searching for Hardcoded IPs.
 
