@@ -201,7 +201,7 @@ This value is used to test the upgradeability of each container image.  The imag
 ### Detailed Steps
 A configuration file called `cnf-conformance.yml` needs to be created for each CNF you want to test (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`).
 
-You can start by copying the example cnf-conformance.yml or copy and paste the below to get started and then filling our the appropriate values:
+You can start by copying an example cnf-conformance.yml or copy and paste the below to get started and then filling our the appropriate values:
 
 The [`cnf-conformance.yml`](https://github.com/cncf/cnf-conformance/blob/master/cnf-conformance.example.yml)  file can be used (included in source code or below):
   ```yaml=
