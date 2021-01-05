@@ -119,21 +119,31 @@ module KubectlClient
         JSON.parse(%([]))
       end
     end
-    def self.resource_desired_is_available?(kind, resource_name)
+    def self.resource_desired_is_available?(kind : String, resource_name)
       resp = `kubectl get #{kind} #{resource_name} -o=yaml`
-      describe = Totem.from_yaml(resp)
-      LOGGING.info("desired_is_available describe: #{describe.inspect}")
-      desired_replicas = describe.get("status").as_h["replicas"].as_i
-      LOGGING.info("desired_is_available desired_replicas: #{desired_replicas}")
-      ready_replicas = describe.get("status").as_h["readyReplicas"]?
+      replicas_applicable = false
+      case kind.downcase
+      when "deployment", "statefulset", "replicaset" 
+        replicas_applicable = true
+        describe = Totem.from_yaml(resp)
+        LOGGING.info("desired_is_available describe: #{describe.inspect}")
+        desired_replicas = describe.get("status").as_h["replicas"].as_i
+        LOGGING.info("desired_is_available desired_replicas: #{desired_replicas}")
+        ready_replicas = describe.get("status").as_h["readyReplicas"]?
         unless ready_replicas.nil?
           ready_replicas = ready_replicas.as_i
+        else
+          ready_replicas = 0
+        end
+        LOGGING.info("desired_is_available ready_replicas: #{ready_replicas}")
       else
-        ready_replicas = 0
+        replicas_applicable = false 
       end
-      LOGGING.info("desired_is_available ready_replicas: #{ready_replicas}")
-
-      desired_replicas == ready_replicas
+      if replicas_applicable
+        desired_replicas == ready_replicas
+      else
+        true
+      end
     end
     def self.desired_is_available?(deployment_name)
       resource_desired_is_available?("deployment", deployment_name)

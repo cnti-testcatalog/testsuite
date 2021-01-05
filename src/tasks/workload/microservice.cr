@@ -71,7 +71,7 @@ task "reasonable_startup_time" do |_, args|
             resource["kind"].as_s.downcase == "statefulset" ||
             resource["kind"].as_s.downcase == "replicaset"
 
-          CNFManager.resource_wait_for_install(resource["kind"], resource["metadata"]["name"], wait_count=180, "startup-test")
+          CNFManager.resource_wait_for_install(resource["kind"].as_s, resource["metadata"]["name"].as_s, wait_count=180, "startup-test")
           $?.success?
         else
           true

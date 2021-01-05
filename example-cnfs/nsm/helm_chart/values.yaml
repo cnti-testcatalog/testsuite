@@ -5,6 +5,7 @@
 
 registry: docker.io
 org: conformance
+# org: networkservicemesh 
 tag: master
 pullPolicy: IfNotPresent
 
@@ -16,10 +17,12 @@ prometheus: false
 
 admission-webhook:
   org: conformance
+  # org: networkservicemesh 
   tag: master
 
 prefix-service:
   org: conformance
+  # org: networkservicemesh 
   tag: master
 
 vpp:
