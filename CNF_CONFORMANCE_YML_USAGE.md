@@ -160,7 +160,7 @@ Example setting:
 
 #### white_list_helm_chart_container_names
 
-This key and value is the name of the 'container' defined in the Kubernetes pod spec of pods that are allowed to be running in privileged mode. (Optional)
+The values of this key are the names of the 'containers' defined in the Kubernetes pod spec of pods that are allowed to be running in privileged mode. (Optional)
 
 This value is used to allow 'particular' pods to run in privileged mode on the K8s cluster where is CNF being tested is installed.
 The reason this is needed is because the Test Suite will check, 'all' pods in the cluster, to see if they're running in privileged mode.
