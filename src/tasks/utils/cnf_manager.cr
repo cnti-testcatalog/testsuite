@@ -203,26 +203,48 @@ module CNFManager
   end
 
   #TODO move to kubectlclient
-  def self.resource_wait_for_install(kind, resource_name, wait_count : Int32 = 180, namespace="default")
+  def self.resource_wait_for_install(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default")
     # Not all cnfs have #{kind}.  some have only a pod.  need to check if the 
     # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod 
     LOGGING.info "resource_wait_for_install kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}"
     second_count = 0
     all_kind = `kubectl get #{kind} --namespace=#{namespace}`
-    LOGGING.debug "all_kind #{all_kind}}"
-    desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
-    LOGGING.debug "desired_replicas #{desired_replicas}"
-    current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
-    LOGGING.debug "current_replicas #{current_replicas}"
-    LOGGING.info(all_kind)
+      LOGGING.debug "all_kind #{all_kind}}"
+    # TODO make this work for pods
+    case kind.downcase
+    when "replicaset", "deployment", "statefulset"
+      desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
+      LOGGING.debug "desired_replicas #{desired_replicas}"
+      current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
+      LOGGING.debug "current_replicas #{current_replicas}"
+    when "daemonset"
+      desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.desiredNumberScheduled}'`
+      LOGGING.debug "desired_replicas #{desired_replicas}"
+      current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.numberAvailable}'`
+      LOGGING.debug "current_replicas #{current_replicas}"
+    else
+      desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
+      LOGGING.debug "desired_replicas #{desired_replicas}"
+      current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
+      LOGGING.debug "current_replicas #{current_replicas}"
+    end
 
     until (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i) || second_count > wait_count
       LOGGING.info("second_count = #{second_count}")
       sleep 1
+      LOGGING.debug "wait command: kubectl get #{kind} --namespace=#{namespace}"
       all_kind = `kubectl get #{kind} --namespace=#{namespace}`
-      current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
-      # Sometimes desired replicas is not available immediately
-      desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
+      case kind.downcase
+      when "replicaset", "deployment", "statefulset"
+        current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
+        desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
+      when "daemonset"
+        current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.numberAvailable}'`
+        desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.desiredNumberScheduled}'`
+      else
+        current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
+        desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
+      end
       LOGGING.debug "desired_replicas: #{desired_replicas}"
       LOGGING.info(all_kind)
       second_count = second_count + 1 
@@ -739,7 +761,7 @@ module CNFManager
       resource_names = Helm.workload_resource_kind_names(resource_ymls)
       resource_names.each do | resource |
         case resource[:kind].as_s.downcase 
-        when "replicaset", "deployment", "statefulset"
+        when "replicaset", "deployment", "statefulset", "pod", "daemonset"
         # wait_for_install(resource_name, wait_count)
           resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
         end
