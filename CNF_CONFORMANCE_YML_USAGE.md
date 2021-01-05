@@ -199,7 +199,7 @@ This value is used to test the upgradeability of each container image.  The imag
 
 
 ### Detailed Steps
-This will help guide you in setting up your own cnf-conformance.yml to test your own CNF.
+A configuration file called `cnf-conformance.yml` needs to be created for each CNF you want to test (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`).
 
 You can start by copying the example cnf-conformance.yml or copy and paste the below to get started and then filling our the appropriate values:
 
