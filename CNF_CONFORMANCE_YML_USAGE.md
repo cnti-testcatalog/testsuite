@@ -140,7 +140,7 @@ helm_repository:
 ```
 
 #### helm_chart
-The published helm chart name. Like [helm_directory](#helm_directory), this is a must and is exclusive with helm_directory.
+The published helm chart name. Like [helm_directory](#helm_directory), this or [helm_directory](#helm_directory) must be set, but not both (mutually exclusive).
 
 Exmple setting:
 
