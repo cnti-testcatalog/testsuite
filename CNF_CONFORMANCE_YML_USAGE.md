@@ -55,7 +55,7 @@ Used for doing static tests on the helm chart code e.g. searching for Hardcoded 
 
 An example of a helm chart source directory can be found [here](https://github.com/helm/charts/tree/master/stable/coredns).
 
-The PATH is also relative to the location of the cnf-conformance.yml. So if the cnf-conformance.yml in the directory ```charts/stable/cnf-conformance.yml``` and helm_directory is set to ```helm_directory: coredns``` the test suite would expect to find the chart under [```charts/stable/coredns```](https://github.com/helm/charts/tree/master/stable/coredns)
+The PATH is also relative to the location of the cnf-conformance.yml. So if the cnf-conformance.yml in the directory ```cnfs/coredns/cnf-conformance.yml``` and helm_directory is set to ```helm_directory: coredns``` the test suite would expect to find the chart under [```cnfs/coredns/coredns```](https://github.com/helm/charts/tree/master/stable/coredns)
 
 Example Setting:
 
