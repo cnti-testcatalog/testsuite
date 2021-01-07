@@ -74,7 +74,7 @@ cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git
 We support the following methods of installing the cnf-conformance suite:
 
 - [Curl installation](#Curl-Binary-Installation) (via latest binary release)
-- [Latest Binary](https://github.com/cncf/cnf-conformance/releases) (manual download)
+- [Latest Binary](https://github.com/cncf/cnf-conformance/releases/latest) (manual download)
 - From [**Source**](#Source-Install) on github.
 
 
