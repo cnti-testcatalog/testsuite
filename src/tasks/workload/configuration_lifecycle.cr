@@ -326,3 +326,25 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
 
   end
 end
+
+desc "Does the CNF use imutable configmaps?"
+task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
+  task_response = task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "immutable_configmap" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}" 
+
+    # figure out the feature gate stuff too https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
+    config_maps_json = KubectlClient::Get.configmaps
+
+    # TODO: figure out how to create configmap and a cnf with one
+    # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
+
+    if config_maps_json.as_a.select {|x| x["immmutable"]? && x["immmutable"] === "true"}.size === config_maps_json.as_a.size
+        resp = "✔️  PASSED: All configmaps immmutable".colorize(:green)
+        upsert_passed_task("immutable_configmap", resp)
+    else
+      resp = "✖️  FAILURE: Found mmutable configmap(s): ".colorize(:red)
+        upsert_failed_task("immutable_configmap", resp)
+    end
+  end
+end
