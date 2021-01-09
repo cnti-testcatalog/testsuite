@@ -34,8 +34,11 @@ module LitmusManager
       puts "Checking experiment status  #{experimentStatus_cmd}" if check_verbose(args)
       experimentStatus = experimentStatus_response.to_s
       LOGGING.info "#{chaos_experiment_name} experiment status: "+experimentStatus
-      if (experimentStatus != "Waiting for Job Creation" && experimentStatus != "Running" && experimentStatus != "Completed")
-        resp = upsert_failed_task("pod-network-latency","✖️  FAILURE: #{chaos_experiment_name} chaos test failed 🗡️ 💀♻️")
+     
+      emoji_test_failed= "🗡️💀♻️"
+      if         
+        (experimentStatus != "Waiting for Job Creation" && experimentStatus != "Running" && experimentStatus != "Completed")
+        resp = upsert_failed_task("pod-network-latency","✖️  FAILURE: #{chaos_experiment_name} chaos test failed #{emoji_test_failed}")
         resp
       end
     end
@@ -63,10 +66,11 @@ end
     puts "verdict: #{verdict_response.to_s}"  if check_verbose(args)  
     verdict = verdict_response.to_s 
 
+    emoji_test_failed= "🗡️💀♻️"
     if verdict == "Pass"
       true
-    else
-      puts "#{chaos_experiment_name} chaos test failed 🗡️💀♻️"
+    else      
+      puts "#{chaos_experiment_name} chaos test failed #{emoji_test_failed}"
       false
     end
   end
