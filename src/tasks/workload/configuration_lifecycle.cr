@@ -294,14 +294,13 @@ end
 
 desc "Does the CNF have hardcoded IPs in the K8s resource configuration"
 task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
-  task_response = task_runner(args) do |args|
+  task_response = task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "Task Name: hardcoded_ip_addresses_in_k8s_runtime_configuration" if check_verbose(args)
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    helm_chart = "#{config.get("helm_chart").as_s?}"
-    helm_directory = optional_key_as_string(config, "helm_directory")
-    release_name = "#{config.get("release_name").as_s?}"
-
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    helm_chart = config.cnf_config[:helm_chart]
+    helm_directory = config.cnf_config[:helm_directory]
+    release_name = config.cnf_config[:release_name]
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     current_dir = FileUtils.pwd
     helm = CNFSingleton.helm
     VERBOSE_LOGGING.info "Helm Path: #{helm}" if check_verbose(args)

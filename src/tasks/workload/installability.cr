@@ -15,7 +15,7 @@ task "helm_deploy" do |_, args|
   VERBOSE_LOGGING.info "helm_deploy" if check_verbose(args)
   LOGGING.info("helm_deploy args: #{args.inspect}")
   if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
-    task_runner(args) do |args|
+    task_runner(args) do |args, config|
       begin
         # TODO if manifest file and not helm, fail
         # TODO helm should template the metadata.name attribute based on the helm release name
@@ -23,21 +23,18 @@ task "helm_deploy" do |_, args|
         # TODO do something if using rbac roles since they cant be namespaced 
         release_name_prefix = "helm-deploy-"
         create_namespace = `kubectl create namespace helm-deploy`
-        config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
 
-        helm_chart = "#{config.get("helm_chart").as_s?}"
-        helm_directory = "#{config.get("helm_directory").as_s?}"
-        release_name = "#{config.get("release_name").as_s?}"
+        helm_chart = config.cnf_config[:helm_chart]
+        helm_directory = config.cnf_config[:helm_directory]
+        release_name = config.cnf_config[:release_name]
+        yml_file_path = config.cnf_config[:yml_file_path]
 
         current_dir = FileUtils.pwd
-        #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-    helm = CNFSingleton.helm
+
+        helm = CNFSingleton.helm
         VERBOSE_LOGGING.debug helm if check_verbose(args)
 
         if helm_chart.empty? 
-          #TODO make this work off of a helm directory if helm_directory was passed
-          # yml_file_path = cnf_conformance_yml_file_path(args)
-          yml_file_path = CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String))
           VERBOSE_LOGGING.debug "#{helm} install --namespace helm-deploy #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}" if check_verbose(args)
           helm_install = `#{helm} install --namespace helm-deploy #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}`
         else 
