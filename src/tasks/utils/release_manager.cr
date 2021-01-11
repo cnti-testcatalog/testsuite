@@ -71,7 +71,7 @@ module ReleaseManager
 
       issues = ReleaseManager.commit_message_issues(ReleaseManager.latest_release, "HEAD")
       titles = issues.reduce("") do |acc, x| 
-        acc + "issue: #{x} Title: #{ReleaseManager.issue_title(x)}\n"
+        acc + "- #{x} - #{ReleaseManager.issue_title(x)}\n"
       end
       # LOGGING.info "titles: #{titles}"
 notes_template = <<-TEMPLATE
