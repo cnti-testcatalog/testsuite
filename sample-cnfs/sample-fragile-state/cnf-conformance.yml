@@ -7,7 +7,6 @@ deployment_name: coredns-coredns
 deployment_label: k8s-app
 service_name: coredns-coredns
 application_deployment_names: [coredns]
-helm_chart:
 helm_chart_container_name: coredns
 rolling_update_test_tag: 1.6.7
 white_list_helm_chart_container_names: []

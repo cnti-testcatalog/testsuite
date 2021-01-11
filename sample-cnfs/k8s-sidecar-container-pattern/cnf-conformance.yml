@@ -11,7 +11,6 @@ docker_repository: coredns/coredns
 helm_repository:
   name: stable 
   repo_url: https://cncf.gitlab.io/stable
-helm_chart: 
 helm_chart_container_name: busybox 
 rolling_update_test_tag: 1.6.7
 container_names: 
