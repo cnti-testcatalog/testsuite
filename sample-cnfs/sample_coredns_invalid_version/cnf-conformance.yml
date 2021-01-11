@@ -10,7 +10,6 @@ application_deployment_names: [coredns]
 helm_repository:
   name: stable 
   repo_url: https://cncf.gitlab.io/stable
-helm_chart:
 helm_chart_container_name: coredns
 container_names: 
   - name: coredns 

@@ -7,7 +7,6 @@ deployment_name: coredns-coredns
 deployment_label: k8s-app
 service_name: coredns-coredns
 application_deployment_names: [coredns-coredns]
-helm_chart:
 helm_chart_container_name: coredns-coredns
 container_names: 
   - name: coredns 

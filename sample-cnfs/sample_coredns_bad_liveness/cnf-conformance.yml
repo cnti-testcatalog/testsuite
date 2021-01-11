@@ -7,7 +7,6 @@ deployment_name: bad-liveness-coredns
 deployment_label: k8s-app
 service_name: bad-liveness-coredns 
 application_deployment_names: [bad-liveness-coredns]
-helm_chart:
 helm_chart_container_name: bad-liveness-coredns
 white_list_helm_chart_container_names: []
 container_names: 

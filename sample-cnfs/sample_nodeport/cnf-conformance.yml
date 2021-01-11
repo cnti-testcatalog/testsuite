@@ -8,7 +8,6 @@ deployment_label: app.kubernetes.io/name
 service_name: unifi-controller 
 application_deployment_names: [unifi]
 # helm_chart: stable/unifi
-helm_chart:
 helm_chart_container_name: unifi
 container_names: 
   - name: unifi 

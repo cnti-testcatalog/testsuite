@@ -1,5 +1,4 @@
 ---
-helm_directory:
 git_clone_url: https://github.com/coredns/coredns.git
 install_script: coredns/Makefile
 release_name: coredns

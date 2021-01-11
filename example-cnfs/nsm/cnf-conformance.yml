@@ -8,7 +8,6 @@ docker_repository: conformance/vppagent-forwarder
 helm_repository:
   name: stable 
   repo_url: https://cncf.gitlab.io/stable
-helm_chart:
 container_names: 
   - name: nsm
     rolling_update_test_tag:  1.0.0
