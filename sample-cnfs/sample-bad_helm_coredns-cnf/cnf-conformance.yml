@@ -7,7 +7,6 @@ deployment_name: bad-helm-coredns-coredns
 deployment_label: k8s-app
 service_name: bad-helm-coredns-coredns
 application_deployment_names: [bad-helm-coredns]
-helm_chart: 
 helm_chart_container_name: coredns
 white_list_helm_chart_container_names: [falco, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
 container_names: 

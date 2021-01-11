@@ -1,6 +1,5 @@
 ---
 helm_directory: chart
-helm_chart:
 git_clone_url: 
 install_script: chart
 release_name: coredns

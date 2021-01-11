@@ -1,5 +1,4 @@
 ---
-helm_directory:
 manifest_directory: manifests 
 git_clone_url: 
 install_script: 
@@ -12,7 +11,6 @@ docker_repository:
 helm_repository:
   name:
   repo_url:
-helm_chart: 
 helm_chart_container_name:
 container_names: 
   - name: sidecar-container1 

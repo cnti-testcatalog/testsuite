@@ -6,7 +6,6 @@ release_name: privileged-coredns
 deployment_name: privileged-coredns
 deployment_label: k8s-app
 service_name: privileged-coredns
-helm_chart:
 helm_chart_container_name: 
 white_list_helm_chart_container_names: []
 container_names: 
