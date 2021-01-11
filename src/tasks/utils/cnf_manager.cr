@@ -379,6 +379,32 @@ module CNFManager
     end
   end
 
+  def self.exclusive_install_method_tags?(config)
+    installation_type_count = ["helm_chart", "helm_directory", "manifest_directory"].reduce(0) do |acc, install_type|
+      begin
+        test_tag = config[install_type]
+        LOGGING.debug "install type count install_type: #{install_type}"
+        if install_type.empty?
+          acc
+        else
+          acc = acc + 1
+        end
+      rescue ex
+        LOGGING.debug "install_type: #{install_type} not found in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
+        # LOGGING.debug ex.message
+        # ex.backtrace.each do |x|
+        #   LOGGING.debug x
+        # end
+        acc
+      end
+    end
+    LOGGING.debug "installation_type_count: #{installation_type_count}"
+    if installation_type_count > 1
+      false
+    else
+      true
+    end
+  end
 
   #TODO Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
   def self.cnf_installation_method(config)
@@ -389,18 +415,9 @@ module CNFManager
     helm_directory = optional_key_as_string(config, "helm_directory")
     manifest_directory = optional_key_as_string(config, "manifest_directory")
 
-    installation_type_count = [helm_chart, helm_directory, manifest_directory].reduce(0) do |acc, install_type|
-      LOGGING.debug "install type count install_type: #{install_type}"
-      if install_type.empty?
-        acc
-      else
-        acc = acc + 1
-      end
-    end
-    LOGGING.debug "installation_type_count: #{installation_type_count}"
-    if installation_type_count > 1
-      puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory.".colorize(:red)
-      raise "Error in cnf-conformance.yml!"
+    unless CNFManager.exclusive_install_method_tags?(config)
+      puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-conformance.yml!".colorize(:red)
+      raise "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-conformance.yml!"
     end
     if !helm_chart.empty?
       {:helm_chart, helm_chart}
@@ -417,8 +434,8 @@ module CNFManager
   def self.helm_template_header(helm_chart_or_directory, template_file="/tmp/temp_template.yml")
     LOGGING.info "helm_template_header"
     helm = CNFSingleton.helm
-  # generate helm chart release name
-  # use --dry-run to generate yml file
+    # generate helm chart release name
+    # use --dry-run to generate yml file
     LOGGING.info("#{helm} install --dry-run --generate-name #{helm_chart_or_directory} > #{template_file}")
     helm_install = `#{helm} install --dry-run --generate-name #{helm_chart_or_directory} > #{template_file}`
     raw_template = File.read(template_file)
@@ -427,7 +444,6 @@ module CNFManager
     parsed_template_header = YAML.parse(template_header)
   end
 
-  #TODO get generated helm chart release name
   def self.helm_chart_template_release_name(helm_chart_or_directory, template_file="/tmp/temp_template.yml")
     LOGGING.info "helm_chart_template_release_name"
     hth = helm_template_header(helm_chart_or_directory, template_file)
@@ -440,7 +456,6 @@ module CNFManager
     yml_file = CNFManager.ensure_cnf_conformance_yml_path(config_yml_path)
     config = CNFManager.parsed_config_file(yml_file)
 
-    # TODO if release name exists, use pre defined release name
     predefined_release_name = optional_key_as_string(config, "release_name")
     LOGGING.debug "predefined_release_name: #{predefined_release_name}"
     if predefined_release_name.empty?
@@ -455,7 +470,6 @@ module CNFManager
         release_name = helm_chart_template_release_name("#{yml_file}/#{install_method[1]}")
       when :manifest_directory
         LOGGING.debug "manifest_directory install method"
-        #TODO generate manifest unique identifier and use as release name
         release_name = UUID.random.to_s
       else 
         raise "Install method should be either helm_chart, helm_directory, or manifest_directory"
@@ -581,7 +595,6 @@ module CNFManager
     if args.named.keys.includes? "deployment_name"
       deployment_name = "#{args.named["deployment_name"]}"
     else
-      # deployment_name = "#{config.get("deployment_name").as_s?}" 
       deployment_name = optional_key_as_string(config, "deployment_name")
     end
     VERBOSE_LOGGING.info "deployment_name: #{deployment_name}" if verbose
@@ -589,21 +602,21 @@ module CNFManager
     if args.named.keys.includes? "helm_chart"
       helm_chart = "#{args.named["helm_chart"]}"
     else
-      helm_chart = "#{config.get("helm_chart").as_s?}" 
+      helm_chart = optional_key_as_string(config, "helm_chart")
     end
     VERBOSE_LOGGING.info "helm_chart: #{helm_chart}" if verbose
 
     if args.named.keys.includes? "helm_directory"
       helm_directory = "#{args.named["helm_directory"]}"
     else
-      helm_directory = "#{config.get("helm_directory").as_s?}" 
+      helm_directory = optional_key_as_string(config, "helm_directory")
     end
     VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if verbose
 
     if args.named.keys.includes? "manifest_directory"
       manifest_directory = "#{args.named["manifest_directory"]}"
     else
-      manifest_directory = "#{config["manifest_directory"]? && config["manifest_directory"].as_s?}" 
+      manifest_directory = optional_key_as_string(config, "manifest_directory")
     end
     VERBOSE_LOGGING.info "manifest_directory: #{manifest_directory}" if verbose
 
@@ -775,6 +788,7 @@ module CNFManager
     end
   end
 
+  # TODO move to helm module
   def self.local_helm_path
     current_dir = FileUtils.pwd 
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
@@ -821,6 +835,7 @@ module CNFManager
     ret
   end
 
+  # TODO move to helm module
   def self.chart_name(helm_chart_repo)
     helm_chart_repo.split("/").last 
   end

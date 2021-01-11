@@ -1,5 +1,4 @@
 ---
-helm_directory:
 git_clone_url: 
 install_script: 
 release_name: my-release --set mariadb.primary.persistence.enabled=false --set persistence.enabled=false 

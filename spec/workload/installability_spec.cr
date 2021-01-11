@@ -20,8 +20,8 @@ describe CnfConformance do
 
 	it "'helm_deploy' should fail on a bad helm chart", tags: "helm" do
     response_s = `./cnf-conformance helm_deploy cnf-config=sample-cnfs/sample-bad-helm-deploy-repo/cnf-conformance.yml verbose`
-    $?.success?.should be_true
     LOGGING.info response_s
+    $?.success?.should be_true
     (/FAILURE: Helm deploy failed/ =~ response_s).should_not be_nil
   end
 

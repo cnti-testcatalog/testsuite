@@ -280,6 +280,12 @@ describe "SampleUtils" do
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
   end
 
+  it "'CNFManager.exclusive_install_method_tags' should return false if install method tags are not exclusive"  do
+    config = CNFManager.parsed_config_file("./spec/fixtures/cnf-conformance-not-exclusive.yml")
+    resp = CNFManager.exclusive_install_method_tags?(config)
+    (resp).should be_false 
+  end
+
 end
 
 
