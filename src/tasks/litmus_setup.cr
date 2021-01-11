@@ -68,7 +68,8 @@ end
     emoji_test_failed= "🗡️💀♻️"
     if verdict == "Pass"
       true
-    else puts "#{chaos_experiment_name} chaos test failed #{emoji_test_failed}"
+    else 
+      puts "#{chaos_experiment_name} chaos test failed #{emoji_test_failed}"
       false
     end
   end
