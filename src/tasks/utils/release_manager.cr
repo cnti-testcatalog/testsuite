@@ -69,7 +69,11 @@ module ReleaseManager
       found_release = release_resp.find {|x| x["tag_name"] == upsert_version} 
       LOGGING.info "find found_release?: #{found_release}"
 
-      issues = ReleaseManager.commit_message_issues(ReleaseManager.latest_release, "HEAD")
+      if upsert_version =~ /(?i)(master)/
+        issues = ReleaseManager.commit_message_issues(ReleaseManager.latest_snapshot, "HEAD")
+      else
+        issues = ReleaseManager.commit_message_issues(ReleaseManager.latest_release, "HEAD")
+      end
       titles = issues.reduce("") do |acc, x| 
         acc + "- #{x} - #{ReleaseManager.issue_title(x)}\n"
       end
@@ -258,6 +262,14 @@ TEMPLATE
     LOGGING.info "latest_release: #{resp}"
     parsed_resp = JSON.parse(resp)
     parsed_resp["tag_name"]?.not_nil!.to_s
+  end
+
+  def self.latest_snapshot
+    resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} --silent "https://api.github.com/repos/cncf/cnf-conformance/releases"`
+    LOGGING.info "latest_release: #{resp}"
+    parsed_resp = JSON.parse(resp)
+    latest_snapshot = parsed_resp.as_a.select{ | x | x["prerelease"]==true }.sort { |a, b| Time.parse(b["published_at"].as_s, "%Y-%m-%dT%H:%M:%SZ", Time::Location::UTC) <=> Time.parse(a["published_at"].as_s, "%Y-%m-%dT%H:%M:%SZ", Time::Location::UTC)  }
+    latest_snapshot[0]["tag_name"]?.not_nil!.to_s
   end
 
   def self.issue_title(issue_number)
