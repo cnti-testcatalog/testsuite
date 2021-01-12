@@ -37,6 +37,15 @@ module KubectlClient
       $?.success?
     end
   end
+  module Apply
+    def self.file(file_name)
+      apply = `kubectl apply -f #{file_name}`
+      apply_status = $?.success?
+      LOGGING.debug "#{apply}"
+      LOGGING.debug "apply? #{apply_status}"
+      apply_status
+    end
+  end
   module Set
     def self.image(deployment_name, container_name, image_name, version_tag=nil)
       #TODO check if image exists in repo? DockerClient::Get.image and image_by_tags
