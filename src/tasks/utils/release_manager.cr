@@ -38,7 +38,9 @@ module ReleaseManager
       end
       LOGGING.info "upsert_version: #{upsert_version}"
       LOGGING.info "upsert_version comparison: upsert_version =~ /(?i)(master|v[0-9]|test_version)/ : #{upsert_version =~ /(?i)(master|v[0-9]|test_version)/}"
-      if (ReleaseManager.current_branch != "master") && (upsert_version =~ /(?i)(master-)/ || !(upsert_version =~ /(?i)(master|v[0-9]|test_version)/))
+      invalid_version = !(upsert_version =~ /(?i)(master|v[0-9]|test_version)/)
+      skip_snap_shot_branch = (upsert_version =~ /(?i)(master-)/)
+      if skip_snap_shot_branch || invalid_version
         LOGGING.info "Not creating a release for : #{upsert_version}"
         return {found_release, asset} 
       end
@@ -271,7 +273,21 @@ TEMPLATE
     resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} --silent "https://api.github.com/repos/cncf/cnf-conformance/releases"`
     LOGGING.info "latest_release: #{resp}"
     parsed_resp = JSON.parse(resp)
-    latest_snapshot = parsed_resp.as_a.select{ | x | x["prerelease"]==true }.sort { |a, b| Time.parse(b["published_at"].as_s, "%Y-%m-%dT%H:%M:%SZ", Time::Location::UTC) <=> Time.parse(a["published_at"].as_s, "%Y-%m-%dT%H:%M:%SZ", Time::Location::UTC)  }
+    prerelease = parsed_resp.as_a.select{ | x | x["prerelease"]==true && !("#{x["published_at"]?}".empty?) }
+    latest_snapshot = prerelease.sort do |a, b|
+      LOGGING.info "a #{a}"
+      LOGGING.info "b #{b}"
+      if (b["published_at"]? && a["published_at"]?)
+        Time.parse(b["published_at"].as_s,
+                   "%Y-%m-%dT%H:%M:%SZ",
+                   Time::Location::UTC) <=>
+          Time.parse(a["published_at"].as_s,
+                     "%Y-%m-%dT%H:%M:%SZ",
+                     Time::Location::UTC)
+      else
+        0
+      end
+    end
     LOGGING.info "latest_snapshot: #{latest_snapshot}"
     latest_snapshot[0]["tag_name"]?.not_nil!.to_s
   end
