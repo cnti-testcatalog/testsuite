@@ -38,7 +38,7 @@ module ReleaseManager
       end
       LOGGING.info "upsert_version: #{upsert_version}"
       LOGGING.info "upsert_version comparison: upsert_version =~ /(?i)(master|v[0-9]|test_version)/ : #{upsert_version =~ /(?i)(master|v[0-9]|test_version)/}"
-      if upsert_version =~ /(?i)(master-)/ || !(upsert_version =~ /(?i)(master|v[0-9]|test_version)/)
+      if (ReleaseManager.current_branch != "master") && (upsert_version =~ /(?i)(master-)/ || !(upsert_version =~ /(?i)(master|v[0-9]|test_version)/))
         LOGGING.info "Not creating a release for : #{upsert_version}"
         return {found_release, asset} 
       end
