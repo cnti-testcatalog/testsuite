@@ -87,6 +87,17 @@ describe "ReleaseManager" do
     end
   end
 
+  it "'#ReleaseManager.latest_snapshot' should return the latest snapshot", tags: "release"  do
+    if ENV["GITHUB_USER"]?.nil?
+      puts "Warning: Set GITHUB_USER and GITHUB_TOKEN to activate release manager tests!".colorize(:red) 
+    else 
+      issues = ReleaseManager.latest_snapshot
+      # https://github.com/semver/semver/blob/master/semver.md#is-v123-a-semantic-version
+      (issues.match(/(?i)(master)/)).should_not be_nil
+    end
+  end
+
+
   it "'#ReleaseManager.issue_title' should return issue title", tags: "release"  do
     if ENV["GITHUB_USER"]?.nil?
       puts "Warning: Set GITHUB_USER and GITHUB_TOKEN to activate release manager tests!".colorize(:red) 

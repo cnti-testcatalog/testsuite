@@ -38,7 +38,9 @@ module ReleaseManager
       end
       LOGGING.info "upsert_version: #{upsert_version}"
       LOGGING.info "upsert_version comparison: upsert_version =~ /(?i)(master|v[0-9]|test_version)/ : #{upsert_version =~ /(?i)(master|v[0-9]|test_version)/}"
-      unless upsert_version =~ /(?i)(master|v[0-9]|test_version)/
+      invalid_version = !(upsert_version =~ /(?i)(master|v[0-9]|test_version)/)
+      skip_snap_shot_branch = (upsert_version =~ /(?i)(master-)/)
+      if skip_snap_shot_branch || invalid_version
         LOGGING.info "Not creating a release for : #{upsert_version}"
         return {found_release, asset} 
       end
@@ -69,7 +71,14 @@ module ReleaseManager
       found_release = release_resp.find {|x| x["tag_name"] == upsert_version} 
       LOGGING.info "find found_release?: #{found_release}"
 
-      issues = ReleaseManager.commit_message_issues(ReleaseManager.latest_release, "HEAD")
+      if upsert_version =~ /(?i)(master)/
+        latest_build = ReleaseManager.latest_snapshot
+      else
+        latest_build = ReleaseManager.latest_release
+      end
+      LOGGING.info "latest_build: #{latest_build}"
+      issues = ReleaseManager.commit_message_issues(latest_build, "HEAD")
+      LOGGING.info "issues: #{issues}"
       titles = issues.reduce("") do |acc, x| 
         acc + "- #{x} - #{ReleaseManager.issue_title(x)}\n"
       end
@@ -258,6 +267,29 @@ TEMPLATE
     LOGGING.info "latest_release: #{resp}"
     parsed_resp = JSON.parse(resp)
     parsed_resp["tag_name"]?.not_nil!.to_s
+  end
+
+  def self.latest_snapshot
+    resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} --silent "https://api.github.com/repos/cncf/cnf-conformance/releases"`
+    LOGGING.info "latest_release: #{resp}"
+    parsed_resp = JSON.parse(resp)
+    prerelease = parsed_resp.as_a.select{ | x | x["prerelease"]==true && !("#{x["published_at"]?}".empty?) }
+    latest_snapshot = prerelease.sort do |a, b|
+      LOGGING.info "a #{a}"
+      LOGGING.info "b #{b}"
+      if (b["published_at"]? && a["published_at"]?)
+        Time.parse(b["published_at"].as_s,
+                   "%Y-%m-%dT%H:%M:%SZ",
+                   Time::Location::UTC) <=>
+          Time.parse(a["published_at"].as_s,
+                     "%Y-%m-%dT%H:%M:%SZ",
+                     Time::Location::UTC)
+      else
+        0
+      end
+    end
+    LOGGING.info "latest_snapshot: #{latest_snapshot}"
+    latest_snapshot[0]["tag_name"]?.not_nil!.to_s
   end
 
   def self.issue_title(issue_number)
