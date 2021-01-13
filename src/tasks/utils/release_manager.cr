@@ -40,10 +40,13 @@ module ReleaseManager
       LOGGING.info "upsert_version comparison: upsert_version =~ /(?i)(master|v[0-9]|test_version)/ : #{upsert_version =~ /(?i)(master|v[0-9]|test_version)/}"
       #master-381d20d
       invalid_version = !(upsert_version =~ /(?i)(master|v[0-9]|test_version)/)
+      snap_shot_version = (upsert_version =~ /(?i)(master-)/)
+      head = (ReleaseManager.current_branch == "HEAD")
+      skip_snapshot_detached_head = (head && snap_shot_version)
       LOGGING.info "invalid_version: #{invalid_version}"
-      skip_snap_shot_branch = (ReleaseManager.current_branch =~ /(?i)(master-)/)
-      LOGGING.info "skip_snap_shot_branch: #{skip_snap_shot_branch}"
-      if skip_snap_shot_branch || invalid_version
+      LOGGING.info "current_branch: #{ReleaseManager.current_branch}"
+      LOGGING.info "skip_snapshot_detached_head: #{skip_snapshot_detached_head}"
+      if skip_snapshot_detached_head || invalid_version
         LOGGING.info "Not creating a release for : #{upsert_version}"
         return {found_release, asset} 
       end
