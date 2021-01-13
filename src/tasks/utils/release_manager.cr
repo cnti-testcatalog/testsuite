@@ -38,8 +38,11 @@ module ReleaseManager
       end
       LOGGING.info "upsert_version: #{upsert_version}"
       LOGGING.info "upsert_version comparison: upsert_version =~ /(?i)(master|v[0-9]|test_version)/ : #{upsert_version =~ /(?i)(master|v[0-9]|test_version)/}"
+      #master-381d20d
       invalid_version = !(upsert_version =~ /(?i)(master|v[0-9]|test_version)/)
+      LOGGING.info "invalid_version: #{invalid_version}"
       skip_snap_shot_branch = (upsert_version =~ /(?i)(master-)/)
+      LOGGING.info "skip_snap_shot_branch: #{skip_snap_shot_branch}"
       if skip_snap_shot_branch || invalid_version
         LOGGING.info "Not creating a release for : #{upsert_version}"
         return {found_release, asset} 
