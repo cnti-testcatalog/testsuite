@@ -687,6 +687,7 @@ module CNFManager
 
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
+    helm_directory = config.cnf_config[:helm_directory]
 
     if install_method[0] == :helm_directory
       deploy_with_chart = false
