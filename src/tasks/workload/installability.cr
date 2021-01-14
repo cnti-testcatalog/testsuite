@@ -12,6 +12,12 @@ end
 
 desc "Will the CNF install using helm with helm_deploy?"
 task "helm_deploy" do |_, args|
+  unless check_destructive(args)
+    LOGGING.info "skipping helm_deploy: not in destructive mode"
+    puts "Skipped".colorize(:yellow)
+    next
+  end
+  LOGGING.info "Running helm_deploy in destructive mode!"
   VERBOSE_LOGGING.info "helm_deploy" if check_verbose(args)
   LOGGING.info("helm_deploy args: #{args.inspect}")
   if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
