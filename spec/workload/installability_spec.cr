@@ -19,28 +19,28 @@ describe CnfConformance do
   end
 
 	it "'helm_deploy' should fail on a bad helm chart", tags: "helm" do
-    response_s = `./cnf-conformance helm_deploy cnf-config=sample-cnfs/sample-bad-helm-deploy-repo/cnf-conformance.yml verbose`
+    response_s = `./cnf-conformance helm_deploy destructive cnf-config=sample-cnfs/sample-bad-helm-deploy-repo/cnf-conformance.yml verbose`
     LOGGING.info response_s
     $?.success?.should be_true
     (/FAILURE: Helm deploy failed/ =~ response_s).should_not be_nil
   end
 
   it "'helm_deploy' should fail if command is not supplied cnf-config argument", tags: "helm" do
-    response_s = `./cnf-conformance helm_deploy`
+    response_s = `./cnf-conformance helm_deploy destructive`
     LOGGING.info response_s
     $?.success?.should be_true
     (/No cnf_conformance.yml found! Did you run the setup task/ =~ response_s).should_not be_nil
   end
 
   it "'helm_deploy' should pass if command is supplied cnf-config argument with helm_chart declared", tags: ["helm", "happy-path"]  do
-    response_s = `./cnf-conformance helm_deploy cnf-config=sample-cnfs/sample_coredns/cnf-conformance.yml verbose`
+    response_s = `./cnf-conformance helm_deploy destructive cnf-config=sample-cnfs/sample_coredns/cnf-conformance.yml verbose`
     $?.success?.should be_true
     LOGGING.info response_s
     (/PASSED: Helm deploy successful/ =~ response_s).should_not be_nil
   end
 
   it "'helm_deploy' should pass if command is supplied cnf-config argument without helm_chart declared", tags: ["helm", "happy-path"]  do
-    response_s = `./cnf-conformance helm_deploy cnf-config=sample-cnfs/sample_coredns_chart_directory/cnf-conformance.yml verbose`
+    response_s = `./cnf-conformance helm_deploy destructive cnf-config=sample-cnfs/sample_coredns_chart_directory/cnf-conformance.yml verbose`
     $?.success?.should be_true
     LOGGING.info response_s
     (/PASSED: Helm deploy successful/ =~ response_s).should_not be_nil
