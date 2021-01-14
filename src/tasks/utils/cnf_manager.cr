@@ -631,7 +631,41 @@ module CNFManager
 
   end
 
+  def self.sample_setup_cli_args(args)
+    VERBOSE_LOGGING.info "sample_setup_cli_args" if check_verbose(args)
+    VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
+    if args.named.keys.includes? "cnf-config"
+      yml_file = args.named["cnf-config"].as(String)
+      cnf_path = File.dirname(yml_file)
+    elsif args.named.keys.includes? "cnf-path"
+      cnf_path = args.named["cnf-path"].as(String)
+    else
+      stdout_failure "Error: You must supply either cnf-config or cnf-path"
+      exit 1
+    end
+    if args.named.keys.includes? "wait_count"
+      wait_count = args.named["wait_count"].to_i
+    elsif args.named.keys.includes? "wait-count"
+      wait_count = args.named["wait-count"].to_i
+    else
+      wait_count = 180
+    end
+    {config_file: cnf_path, wait_count: wait_count, verbose: check_verbose(args)}
+  end
+
   #TODO replace with the CNFManager::Config named tuple functionality
+  #sample_setup({config_file: cnf_path, wait_count: wait_count})
+  def self.sample_setup(cli_args) 
+    config_file = cli_args[:config_file]
+    wait_count = cli_args[:wait_count]
+    verbose = cli_args[:verbose]
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    release_name = config.cnf_config[:release_name]
+    install_method = config.cnf_config[:install_method]
+
+    sample_setup(config_file: config_file, release_name: "", deployment_name: "", helm_chart: "", helm_directory: "", verbose: verbose, wait_count: wait_count)
+  end
+  
   def self.sample_setup(config_file, release_name, deployment_name, helm_chart, helm_directory, manifest_directory = "", git_clone_url="", deploy_with_chart=true, verbose=false, wait_count=180, install_from_manifest=false)
 
     #TODO remove deployment_name, deployment_label, and release_name from the cnf-conformance.yml
@@ -657,6 +691,7 @@ module CNFManager
     if install_method[0] == :helm_directory
       deploy_with_chart = false
     end 
+    helm_chart = config.cnf_config[:helm_chart]
     helm_chart_path = config.cnf_config[:helm_chart_path]
     LOGGING.debug "helm_directory: #{helm_directory}"
 

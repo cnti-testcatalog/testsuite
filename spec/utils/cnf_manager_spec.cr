@@ -24,7 +24,7 @@ describe "SampleUtils" do
   end
 
   it "'CNFManager.wait_for_install' should wait for a cnf to be installed", tags: "happy-path"  do
-    `./cnf-conformance sample_coredns_setup`
+    LOGGING.debug `./cnf-conformance sample_coredns_setup`
     $?.success?.should be_true
 
     current_dir = FileUtils.pwd 
@@ -37,6 +37,19 @@ describe "SampleUtils" do
     CNFManager.wait_for_install("coredns-coredns")
     current_replicas = `kubectl get deployments coredns-coredns -o=jsonpath='{.status.readyReplicas}'`
     (current_replicas.to_i > 0).should be_true
+  end
+  it "'CNFManager.sample_setup_cli_args(args) and CNFManager.sample_setup(cli_args)' should set up a sample cnf", tags: "happy-path"  do
+    args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml", "verbose", "wait_count=180"])
+    cli_hash = CNFManager.sample_setup_cli_args(args)
+    CNFManager.sample_setup(cli_hash)
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(cli_hash[:config_file]))    
+    release_name = config.cnf_config[:release_name]
+
+    (Dir.exists? "cnfs/#{release_name}").should be_true
+    (File.exists?("cnfs/#{release_name}/cnf-conformance.yml")).should be_true
+    (File.exists?("cnfs/#{release_name}/exported_chart/Chart.yaml")).should be_true
+    CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
+    (Dir.exists? "cnfs/#{release_name}").should be_false
   end
 
   it "'CNFManager.sample_setup' should set up a sample cnf", tags: "happy-path"  do
