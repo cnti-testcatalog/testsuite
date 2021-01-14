@@ -15,6 +15,12 @@ end
 
 desc "Does the CNF have a reasonable startup time?"
 task "reasonable_startup_time" do |_, args|
+  unless check_destructive(args)
+    LOGGING.info "skipping reasonable_startup_time: not in destructive mode"
+    puts "Skipped".colorize(:yellow)
+    next
+  end
+  LOGGING.info "Running reasonable_startup_time in destructive mode!"
   task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "reasonable_startup_time" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config.cnf_config}"

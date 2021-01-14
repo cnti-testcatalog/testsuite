@@ -224,7 +224,7 @@ crystal src/cnf-conformance.cr protected_access
 ```
 #### :heavy_check_mark: To check if the CNF have a reasonable startup time
 ```
-./cnf-conformance reasonable_startup_time
+./cnf-conformance reasonable_startup_time destructive
 ```
 
 ---
@@ -396,7 +396,7 @@ cp -rf <your-cnf-directory> cnfs/<your-cnf-directory>
 ```
 Now run the test:
 ```
-./cnf-conformance helm_deploy cnfs/<your-cnf-directory>/cnf-conformance.yml
+./cnf-conformance helm_deploy destructive cnfs/<your-cnf-directory>/cnf-conformance.yml
 ```
 #### :heavy_check_mark: Test if the install script uses [Helm v3](https://github.com/helm/)
 ```
