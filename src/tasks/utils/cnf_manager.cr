@@ -48,6 +48,9 @@ module CNFManager
       release_name = "#{config.get("release_name").as_s?}"
       service_name = optional_key_as_string(config, "service_name")
       helm_directory = optional_key_as_string(config, "helm_directory")
+      git_clone_url = optional_key_as_string(config, "git_clone_url")
+      install_script = optional_key_as_string(config, "install_script")
+      docker_repository = optional_key_as_string(config, "docker_repository")
       if helm_directory.empty?
         working_chart_directory = "exported_chart"
       else
@@ -76,11 +79,11 @@ module CNFManager
                                helm_directory: helm_directory, 
                                helm_chart_path: helm_chart_path, 
                                manifest_file_path: manifest_file_path,
-                               git_clone_url: "",
-                               install_script: "",
+                               git_clone_url: git_clone_url,
+                               install_script: install_script,
                                release_name: release_name,
                                service_name: service_name,
-                               docker_repository: "",
+                               docker_repository: docker_repository,
                                helm_repository: {name: "", repo_url: ""},
                                helm_chart: helm_chart,
                                helm_chart_container_name: "",
@@ -688,6 +691,7 @@ module CNFManager
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
     helm_directory = config.cnf_config[:helm_directory]
+    git_clone_url = config.cnf_config[:git_clone_url]
 
     if install_method[0] == :helm_directory
       deploy_with_chart = false
