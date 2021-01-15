@@ -725,54 +725,52 @@ module CNFManager
 
     sandbox_setup(config_file, config, cli_args)
 
-    begin
+    helm = CNFSingleton.helm
+    LOGGING.info "helm path: #{CNFSingleton.helm}"
 
-      helm = CNFSingleton.helm
-      LOGGING.info "helm path: #{CNFSingleton.helm}"
+    case install_method[0] 
+    when :manifest_directory
+      VERBOSE_LOGGING.info "deploying by manifest file" if verbose 
+      #kubectl apply -f ./sample-cnfs/k8s-non-helm/manifests 
+      # TODO move to kubectlclient
+      LOGGING.info("kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}")
+      manifest_install = `kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}`
+      VERBOSE_LOGGING.info manifest_install if verbose 
 
-      case install_method[0] 
-      when :manifest_directory
-        VERBOSE_LOGGING.info "deploying by manifest file" if verbose 
-        #kubectl apply -f ./sample-cnfs/k8s-non-helm/manifests 
-        # TODO move to kubectlclient
-        LOGGING.info("kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}")
-        manifest_install = `kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}`
-        VERBOSE_LOGGING.info manifest_install if verbose 
+    when :helm_chart
+      VERBOSE_LOGGING.info "deploying with chart repository" if verbose 
+      LOGGING.info "helm command: #{helm} install #{release_name} #{helm_chart}"
+      #TODO move to Helm module
+      helm_install = `#{helm} install #{release_name} #{helm_chart}`
+      VERBOSE_LOGGING.info helm_install if verbose 
+      export_published_chart(config_file, config, cli_args)
+    when :helm_directory
+      VERBOSE_LOGGING.info "deploying with helm directory" if verbose 
+      #TODO Add helm options into cnf-conformance yml
+      #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
+      LOGGING.info("#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}")
+      #TODO move to helm module
+      helm_install = `#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}`
+      VERBOSE_LOGGING.info helm_install if verbose 
+    else
+      raise "Deployment method not found"
+    end
 
-      when :helm_chart
-        VERBOSE_LOGGING.info "deploying with chart repository" if verbose 
-        LOGGING.info "helm command: #{helm} install #{release_name} #{helm_chart}"
-        #TODO move to Helm module
-        helm_install = `#{helm} install #{release_name} #{helm_chart}`
-        VERBOSE_LOGGING.info helm_install if verbose 
-        export_published_chart(config_file, config, cli_args)
-      when :helm_directory
-        VERBOSE_LOGGING.info "deploying with helm directory" if verbose 
-        #TODO Add helm options into cnf-conformance yml
-        #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
-        LOGGING.info("#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}")
-        #TODO move to helm module
-        helm_install = `#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}`
-        VERBOSE_LOGGING.info helm_install if verbose 
-      else
-        raise "Deployment method not found"
-      end
-
-      resource_ymls = cnf_workload_resources(nil, config) do |resource|
-        resource 
-      end
-      resource_names = Helm.workload_resource_kind_names(resource_ymls)
-      #TODO move to kubectlclient and make resource_install_and_wait_for_all function
-      resource_names.each do | resource |
-        case resource[:kind].as_s.downcase 
-        when "replicaset", "deployment", "statefulset", "pod", "daemonset"
+    resource_ymls = cnf_workload_resources(nil, config) do |resource|
+      resource 
+    end
+    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+    #TODO move to kubectlclient and make resource_install_and_wait_for_all function
+    resource_names.each do | resource |
+      case resource[:kind].as_s.downcase 
+      when "replicaset", "deployment", "statefulset", "pod", "daemonset"
         # wait_for_install(resource_name, wait_count)
-          resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
-        end
+        resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
       end
-      if helm_install.to_s.size > 0 # && helm_pull.to_s.size > 0
-        LOGGING.info "Successfully setup #{release_name}".colorize(:green)
-      end
+    end
+    if helm_install.to_s.size > 0 # && helm_pull.to_s.size > 0
+      LOGGING.info "Successfully setup #{release_name}".colorize(:green)
+    end
   end
 
   # TODO move to helm module
