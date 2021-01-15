@@ -46,6 +46,15 @@ module KubectlClient
       apply_status
     end
   end
+  module Delete
+    def self.file(file_name)
+      delete = `kubectl delete -f #{file_name}`
+      delete_status = $?.success?
+      LOGGING.debug "#{delete}"
+      LOGGING.debug "delete? #{delete_status}"
+      delete_status
+    end
+  end
   module Set
     def self.image(deployment_name, container_name, image_name, version_tag=nil)
       #TODO check if image exists in repo? DockerClient::Get.image and image_by_tags
