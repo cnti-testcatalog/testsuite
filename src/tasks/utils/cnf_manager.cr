@@ -48,6 +48,9 @@ module CNFManager
       release_name = "#{config.get("release_name").as_s?}"
       service_name = optional_key_as_string(config, "service_name")
       helm_directory = optional_key_as_string(config, "helm_directory")
+      git_clone_url = optional_key_as_string(config, "git_clone_url")
+      install_script = optional_key_as_string(config, "install_script")
+      docker_repository = optional_key_as_string(config, "docker_repository")
       if helm_directory.empty?
         working_chart_directory = "exported_chart"
       else
@@ -76,11 +79,11 @@ module CNFManager
                                helm_directory: helm_directory, 
                                helm_chart_path: helm_chart_path, 
                                manifest_file_path: manifest_file_path,
-                               git_clone_url: "",
-                               install_script: "",
+                               git_clone_url: git_clone_url,
+                               install_script: install_script,
                                release_name: release_name,
                                service_name: service_name,
-                               docker_repository: "",
+                               docker_repository: docker_repository,
                                helm_repository: {name: "", repo_url: ""},
                                helm_chart: helm_chart,
                                helm_chart_container_name: "",
@@ -574,112 +577,41 @@ module CNFManager
     end
   end
 
-
-  #TODO replace with the CNFManager::Config named tuple functionality
-  def self.sample_setup_args(sample_dir, args, deploy_with_chart=true, verbose=false, wait_count=180, install_from_manifest=false)
-    VERBOSE_LOGGING.info "sample_setup_args" if verbose
-
-    config = config_from_path_or_dir(sample_dir)
-    config_dir = ensure_cnf_conformance_dir(sample_dir)
-    LOGGING.info "sample_setup_args config for #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
-
-    VERBOSE_LOGGING.info "config #{config}" if verbose
-
-    if args.named.keys.includes? "release_name"
-      release_name = "#{args.named["release_name"]}"
+  def self.sample_setup_cli_args(args)
+    VERBOSE_LOGGING.info "sample_setup_cli_args" if check_verbose(args)
+    VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
+    if args.named.keys.includes? "cnf-config"
+      yml_file = args.named["cnf-config"].as(String)
+      cnf_path = File.dirname(yml_file)
+    elsif args.named.keys.includes? "cnf-path"
+      cnf_path = args.named["cnf-path"].as(String)
     else
-      release_name = "#{config.get("release_name").as_s?}"
+      stdout_failure "Error: You must supply either cnf-config or cnf-path"
+      exit 1
     end
-    VERBOSE_LOGGING.info "release_name: #{release_name}" if verbose
-
-    if args.named.keys.includes? "deployment_name"
-      deployment_name = "#{args.named["deployment_name"]}"
+    if args.named.keys.includes? "wait_count"
+      wait_count = args.named["wait_count"].to_i
+    elsif args.named.keys.includes? "wait-count"
+      wait_count = args.named["wait-count"].to_i
     else
-      deployment_name = optional_key_as_string(config, "deployment_name")
+      wait_count = 180
     end
-    VERBOSE_LOGGING.info "deployment_name: #{deployment_name}" if verbose
-
-    if args.named.keys.includes? "helm_chart"
-      helm_chart = "#{args.named["helm_chart"]}"
-    else
-      helm_chart = optional_key_as_string(config, "helm_chart")
-    end
-    VERBOSE_LOGGING.info "helm_chart: #{helm_chart}" if verbose
-
-    if args.named.keys.includes? "helm_directory"
-      helm_directory = "#{args.named["helm_directory"]}"
-    else
-      helm_directory = optional_key_as_string(config, "helm_directory")
-    end
-    VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if verbose
-
-    if args.named.keys.includes? "manifest_directory"
-      manifest_directory = "#{args.named["manifest_directory"]}"
-    else
-      manifest_directory = optional_key_as_string(config, "manifest_directory")
-    end
-    VERBOSE_LOGGING.info "manifest_directory: #{manifest_directory}" if verbose
-
-    if args.named.keys.includes? "git_clone_url"
-      git_clone_url = "#{args.named["git_clone_url"]}"
-    else
-      git_clone_url = "#{config.get("git_clone_url").as_s?}"
-    end
-    VERBOSE_LOGGING.info "git_clone_url: #{git_clone_url}" if verbose
-
-    sample_setup(config_file: config_dir, release_name: release_name, deployment_name: deployment_name, helm_chart: helm_chart, helm_directory: helm_directory, git_clone_url: git_clone_url, deploy_with_chart: deploy_with_chart, verbose: verbose, wait_count: wait_count, manifest_directory: manifest_directory, install_from_manifest: install_from_manifest )
-
+    {config_file: cnf_path, wait_count: wait_count, verbose: check_verbose(args)}
   end
 
-  #TODO replace with the CNFManager::Config named tuple functionality
-  def self.sample_setup(config_file, release_name, deployment_name, helm_chart, helm_directory, manifest_directory = "", git_clone_url="", deploy_with_chart=true, verbose=false, wait_count=180, install_from_manifest=false)
-
-    #TODO remove deployment_name, deployment_label, and release_name from the cnf-conformance.yml
-    #NOTE: deployment_name is currently used as the name of the directory under the cnfs sandbox directory
-    #TODO use a generated release name for helm
-    #NOTE: manifest-file-only cnfs don't need a release name
-    #TODO generate release name based on all of the workload resource metadata names (or generatedName) 
-    #TODO make the cnfs/<directory> be the generated name
-    #TODO use the cnfs/<directory> (for helm installs) as the release name
-    #TODO add helm arguments to the cnf-conformance yml
-    VERBOSE_LOGGING.info "sample_setup" if verbose
-    LOGGING.info("config_file #{config_file}")
-
-    current_dir = FileUtils.pwd 
-    VERBOSE_LOGGING.info current_dir if verbose 
-
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
-    LOGGING.debug "config in sample_setup: #{config.cnf_config}"
-
+  # Create a unique directory for the cnf that is to be installed under ./cnfs
+  # Only copy the cnf's cnf-conformance.yml and it's helm_directory or manifest directory (if it exists)
+  # Use manifest directory if helm directory empty
+  def self.sandbox_setup(config_file, config, cli_args)
+    verbose = cli_args[:verbose]
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
-
-    if install_method[0] == :helm_directory
-      deploy_with_chart = false
-    end 
+    helm_directory = config.cnf_config[:helm_directory]
+    manifest_directory = config.cnf_config[:manifest_directory]
     helm_chart_path = config.cnf_config[:helm_chart_path]
-    LOGGING.debug "helm_directory: #{helm_directory}"
-
-    #TODO move to sandbox module
-    # generate_and_set_release_name(config)
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
 
-    VERBOSE_LOGGING.info "destination_cnf_dir: #{destination_cnf_dir}" if verbose 
-    LOGGING.debug "mkdir_p destination_cnf_dir: #{destination_cnf_dir}"
-    FileUtils.mkdir_p(destination_cnf_dir) 
-
-    # TODO enable recloning/fetching etc
-    # TODO pass in block
-    git_clone = `git clone #{git_clone_url} #{destination_cnf_dir}/#{release_name}`  if git_clone_url.empty? == false
-    VERBOSE_LOGGING.info git_clone if verbose
-
-    # Create a unique directory for the cnf that is to be installed under ./cnfs
-    # Only copy the cnf's cnf-conformance.yml and it's helm_directory or manifest directory (if it exists)
-
-    # Use manifest directory if helm directory empty
-    #TODO move to sandbox module
-    # TODO make an 'install from' function that returns {:helm_chart (etc), <install from string>}
-    if install_from_manifest
+    if install_method[0] == :manifest_directory
       manifest_or_helm_directory = config_source_dir(config_file) + "/" + manifest_directory 
     elsif !helm_directory.empty?
       manifest_or_helm_directory = config_source_dir(config_file) + "/" + helm_directory 
@@ -690,101 +622,154 @@ module CNFManager
       
     LOGGING.info("File.directory?(#{manifest_or_helm_directory}) #{File.directory?(manifest_or_helm_directory)}")
     # if the helm directory already exists, copy helm_directory contents into cnfs/<cnf-name>/<helm-directory-of-the-same-name>
+
+    destination_chart_directory = {creation_type: :created, chart_directory: ""}
     if !manifest_or_helm_directory.empty? && manifest_or_helm_directory =~ /exported_chart/ 
       LOGGING.info "Ensuring exported helm directory is created"
       LOGGING.debug "mkdir_p destination_cnf_dir/exported_chart: #{manifest_or_helm_directory}"
-      FileUtils.mkdir_p("#{manifest_or_helm_directory}") 
+      destination_chart_directory = {creation_type: :created,
+                                     chart_directory: "#{manifest_or_helm_directory}"}
+      FileUtils.mkdir_p(destination_chart_directory[:chart_directory]) 
     elsif !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory) 
       # if !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory) 
       LOGGING.info "Ensuring helm directory is copied"
       LOGGING.info("cp -a #{manifest_or_helm_directory} #{destination_cnf_dir}")
-      yml_cp = `cp -a #{manifest_or_helm_directory} #{destination_cnf_dir}`
+      destination_chart_directory = {creation_type: :copied,
+                                     chart_directory: "#{manifest_or_helm_directory}"}
+      yml_cp = `cp -a #{destination_chart_directory[:chart_directory]} #{destination_cnf_dir}`
       VERBOSE_LOGGING.info yml_cp if verbose
-      raise "Copy of #{manifest_or_helm_directory} to #{destination_cnf_dir} failed!" unless $?.success?
-      # else
-      #   LOGGING.info "Ensuring exported helm directory is created"
-      #   LOGGING.debug "mkdir_p destination_cnf_dir/exported_chart: #{manifest_or_helm_directory}"
-      #   FileUtils.mkdir_p("#{manifest_or_helm_directory}") 
+      raise "Copy of #{destination_chart_directory[:chart_directory]} to #{destination_cnf_dir} failed!" unless $?.success?
     end
-
-    #TODO move to sandbox module
     LOGGING.info "copy cnf-conformance.yml file"
     LOGGING.info("cp -a #{ensure_cnf_conformance_yml_path(config_file)} #{destination_cnf_dir}")
     yml_cp = `cp -a #{ensure_cnf_conformance_yml_path(config_file)} #{destination_cnf_dir}`
+    destination_chart_directory
+  end
 
-    begin
+  # Retrieve the helm chart source
+  def self.export_published_chart(config_file, config, cli_args)
+    verbose = cli_args[:verbose]
+    helm_directory = config.cnf_config[:helm_directory]
+    helm_chart = config.cnf_config[:helm_chart]
+    destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
 
-      helm = CNFSingleton.helm
-      LOGGING.info "helm path: #{CNFSingleton.helm}"
+    current_dir = FileUtils.pwd 
+    VERBOSE_LOGGING.info current_dir if verbose 
 
-      if install_from_manifest
-        VERBOSE_LOGGING.info "deploying by manifest file" if verbose 
-        #kubectl apply -f ./sample-cnfs/k8s-non-helm/manifests 
-        LOGGING.info("kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}")
-        manifest_install = `kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}`
-        VERBOSE_LOGGING.info manifest_install if verbose 
+    helm = CNFSingleton.helm
+    LOGGING.info "helm path: #{CNFSingleton.helm}"
 
-      elsif deploy_with_chart
-        VERBOSE_LOGGING.info "deploying with chart repository" if verbose 
-        LOGGING.info "helm command: #{helm} install #{release_name} #{helm_chart}"
-        helm_install = `#{helm} install #{release_name} #{helm_chart}`
-        VERBOSE_LOGGING.info helm_install if verbose 
+    LOGGING.debug "mkdir_p destination_cnf_dir/helm_directory: #{destination_cnf_dir}/#{helm_directory}"
+    #TODO don't think we need to make this here
+    FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}") 
+    LOGGING.debug "helm command pull: #{helm} pull #{helm_chart}"
+    #TODO move to helm module
+    helm_pull = `#{helm} pull #{helm_chart}`
+    VERBOSE_LOGGING.info helm_pull if verbose 
+    # TODO helm_chart should be helm_chart_repo
+    # TODO make this into a tar chart function
+    VERBOSE_LOGGING.info "mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart" if verbose
+    core_mv = `mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart`
+    VERBOSE_LOGGING.info core_mv if verbose 
 
-        # Retrieve the helm chart source
-        #TODO move to sandbox module
-        LOGGING.debug "mkdir_p destination_cnf_dir/helm_directory: #{destination_cnf_dir}/#{helm_directory}"
-        FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}") 
-        LOGGING.debug "helm command pull: #{helm} pull #{helm_chart}"
-        helm_pull = `#{helm} pull #{helm_chart}`
-        VERBOSE_LOGGING.info helm_pull if verbose 
-        # core_mv = `mv #{release_name}-*.tgz #{destination_cnf_dir}/#{helm_directory}`
-        # TODO helm_chart should be helm_chart_repo
-        # TODO make this into a tar chart function
-        # VERBOSE_LOGGING.info "mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/#{helm_directory}" if verbose
-        # core_mv = `mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/#{helm_directory}`
-        VERBOSE_LOGGING.info "mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart" if verbose
-        core_mv = `mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart`
-        VERBOSE_LOGGING.info core_mv if verbose 
+    VERBOSE_LOGGING.info "cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}-*.tgz" if verbose
+    tar = `cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}-*.tgz`
+    VERBOSE_LOGGING.info tar if verbose
 
-        # VERBOSE_LOGGING.info "cd #{destination_cnf_dir}/#{helm_directory}; tar -xvf #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}-*.tgz" if verbose
-        # tar = `cd #{destination_cnf_dir}/#{helm_directory}; tar -xvf #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}-*.tgz`
-        VERBOSE_LOGGING.info "cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}-*.tgz" if verbose
-        tar = `cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}-*.tgz`
-        VERBOSE_LOGGING.info tar if verbose
+    VERBOSE_LOGGING.info "mv #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart" if verbose
+    move_chart = `mv #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart`
+    VERBOSE_LOGGING.info move_chart if verbose
+  ensure
+    cd = `cd #{current_dir}`
+    VERBOSE_LOGGING.info cd if verbose 
+  end
 
-        # VERBOSE_LOGGING.info "mv #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/#{helm_directory}" if verbose
-        # move_chart = `mv #{destination_cnf_dir}/#{helm_directory}/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/#{helm_directory}`
-        VERBOSE_LOGGING.info "mv #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart" if verbose
-        move_chart = `mv #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart`
-        VERBOSE_LOGGING.info move_chart if verbose
-      else
-        VERBOSE_LOGGING.info "deploying with helm directory" if verbose 
-        #TODO Add helm options into cnf-conformance yml
-        #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
-        LOGGING.info("#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}")
-        helm_install = `#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}`
-        VERBOSE_LOGGING.info helm_install if verbose 
-      end
+  #sample_setup({config_file: cnf_path, wait_count: wait_count})
+  def self.sample_setup(cli_args) 
+    config_file = cli_args[:config_file]
+    wait_count = cli_args[:wait_count]
+    verbose = cli_args[:verbose]
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    release_name = config.cnf_config[:release_name]
+    install_method = config.cnf_config[:install_method]
 
-      #TODO change deployment_name to resource name
-      #TODO loop through all resources and wait for all resources to install
-      resource_ymls = cnf_workload_resources(nil, config) do |resource|
-        resource 
-      end
-      resource_names = Helm.workload_resource_kind_names(resource_ymls)
-      resource_names.each do | resource |
-        case resource[:kind].as_s.downcase 
-        when "replicaset", "deployment", "statefulset", "pod", "daemonset"
+    #TODO add helm arguments to the cnf-conformance yml
+    VERBOSE_LOGGING.info "sample_setup" if verbose
+    LOGGING.info("config_file #{config_file}")
+
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    LOGGING.debug "config in sample_setup: #{config.cnf_config}"
+
+    release_name = config.cnf_config[:release_name]
+    install_method = config.cnf_config[:install_method]
+    helm_directory = config.cnf_config[:helm_directory]
+    manifest_directory = config.cnf_config[:manifest_directory]
+    git_clone_url = config.cnf_config[:git_clone_url]
+
+    helm_chart = config.cnf_config[:helm_chart]
+    helm_chart_path = config.cnf_config[:helm_chart_path]
+    LOGGING.debug "helm_directory: #{helm_directory}"
+
+    #TODO move to sandbox module
+    destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
+
+    VERBOSE_LOGGING.info "destination_cnf_dir: #{destination_cnf_dir}" if verbose 
+    LOGGING.debug "mkdir_p destination_cnf_dir: #{destination_cnf_dir}"
+    FileUtils.mkdir_p(destination_cnf_dir) 
+
+    # TODO enable recloning/fetching etc
+    # TODO pass in block
+    # TODO move to git module
+    git_clone = `git clone #{git_clone_url} #{destination_cnf_dir}/#{release_name}`  if git_clone_url.empty? == false
+    VERBOSE_LOGGING.info git_clone if verbose
+
+    sandbox_setup(config_file, config, cli_args)
+
+    helm = CNFSingleton.helm
+    LOGGING.info "helm path: #{CNFSingleton.helm}"
+
+    case install_method[0] 
+    when :manifest_directory
+      VERBOSE_LOGGING.info "deploying by manifest file" if verbose 
+      #kubectl apply -f ./sample-cnfs/k8s-non-helm/manifests 
+      # TODO move to kubectlclient
+      LOGGING.info("kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}")
+      manifest_install = `kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}`
+      VERBOSE_LOGGING.info manifest_install if verbose 
+
+    when :helm_chart
+      VERBOSE_LOGGING.info "deploying with chart repository" if verbose 
+      LOGGING.info "helm command: #{helm} install #{release_name} #{helm_chart}"
+      #TODO move to Helm module
+      helm_install = `#{helm} install #{release_name} #{helm_chart}`
+      VERBOSE_LOGGING.info helm_install if verbose 
+      export_published_chart(config_file, config, cli_args)
+    when :helm_directory
+      VERBOSE_LOGGING.info "deploying with helm directory" if verbose 
+      #TODO Add helm options into cnf-conformance yml
+      #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
+      LOGGING.info("#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}")
+      #TODO move to helm module
+      helm_install = `#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}`
+      VERBOSE_LOGGING.info helm_install if verbose 
+    else
+      raise "Deployment method not found"
+    end
+
+    resource_ymls = cnf_workload_resources(nil, config) do |resource|
+      resource 
+    end
+    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+    #TODO move to kubectlclient and make resource_install_and_wait_for_all function
+    resource_names.each do | resource |
+      case resource[:kind].as_s.downcase 
+      when "replicaset", "deployment", "statefulset", "pod", "daemonset"
         # wait_for_install(resource_name, wait_count)
-          resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
-        end
+        resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
       end
-      if helm_install.to_s.size > 0 # && helm_pull.to_s.size > 0
-        LOGGING.info "Successfully setup #{release_name}".colorize(:green)
-      end
-    ensure
-      cd = `cd #{current_dir}`
-      VERBOSE_LOGGING.info cd if verbose 
+    end
+    if helm_install.to_s.size > 0 # && helm_pull.to_s.size > 0
+      LOGGING.info "Successfully setup #{release_name}".colorize(:green)
     end
   end
 

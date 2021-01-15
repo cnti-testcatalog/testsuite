@@ -284,7 +284,9 @@ end
 
 def check_cnf_config_then_deploy(args)
   config_file, deploy_with_chart = check_all_cnf_args(args)
-  CNFManager.sample_setup_args(sample_dir: config_file, deploy_with_chart: deploy_with_chart, args: args, verbose: check_verbose(args) ) if config_file
+  cli_hash = CNFManager.sample_setup_cli_args(args)
+  # CNFManager.sample_setup_args(sample_dir: config_file, deploy_with_chart: deploy_with_chart, args: args, verbose: check_verbose(args) ) if config_file
+  CNFManager.sample_setup(cli_hash) if config_file
 end
 
 def toggle(toggle_name)

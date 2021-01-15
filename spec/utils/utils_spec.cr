@@ -279,10 +279,17 @@ describe "Utils" do
   end
 
   it "'task_runner' should run a test against a single cnf if passed a cnf-config argument even if there are multiple cnfs installed"  do
-    my_args = Sam::Args.new
     config_file = "sample-cnfs/sample-generic-cnf"
-    CNFManager.sample_setup_args(sample_dir: config_file, args: my_args)
-    CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: my_args )
+    args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-conformance.yml", "verbose", "wait_count=0"])
+    cli_hash = CNFManager.sample_setup_cli_args(args)
+    CNFManager.sample_setup(cli_hash)
+    args = Sam::Args.new(["cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-conformance.yml", "verbose", "wait_count=0"])
+    cli_hash = CNFManager.sample_setup_cli_args(args)
+    CNFManager.sample_setup(cli_hash)
+    # my_args = Sam::Args.new
+    # config_file = "sample-cnfs/sample-generic-cnf"
+    # CNFManager.sample_setup_args(sample_dir: config_file, args: my_args)
+    # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: my_args )
     cnfmng_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
     release_name = cnfmng_config.cnf_config[:release_name]
     installed_args = Sam::Args.new(["cnf-config=./cnfs/#{release_name}/cnf-conformance.yml"])
