@@ -62,7 +62,7 @@ describe CnfConformance do
     begin
       `./cnf-conformance sample_coredns_cleanup force=true`
       $?.success?.should be_true
-      `./cnf-conformance bad_helm_cnf_setup`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-bad_helm_coredns-cnf/cnf-conformance.yml verbose wait_count=0`
       $?.success?.should be_true
       response_s = `./cnf-conformance helm_chart_valid`
       LOGGING.info response_s
