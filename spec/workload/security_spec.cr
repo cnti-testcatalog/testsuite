@@ -25,7 +25,7 @@ describe CnfConformance do
   end
   it "'privileged' should fail on a non-whitelisted, privileged cnf", tags: "privileged" do
     begin
-      `./cnf-conformance sample_privileged_cnf_non_whitelisted_setup`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-conformance.yml verbose wait_count=0`
       $?.success?.should be_true
       response_s = `./cnf-conformance privileged cnf-config=sample-cnfs/sample_privileged_cnf verbose`
       LOGGING.info response_s

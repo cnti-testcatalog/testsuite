@@ -30,55 +30,61 @@ require "./utils/utils.cr"
 #   CNFManager.sample_setup(cli_hash)
 # end
 
-desc "Sets up an alternate sample CoreDNS CNF"
-task "sample_coredns", ["helm_local_install"] do |_, args|
-  VERBOSE_LOGGING.info "sample_coredns new setup" if check_verbose(args)
-  # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_coredns", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
-  args = Sam::Args.new(["cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml", "verbose", "wait_count=0"])
-  cli_hash = CNFManager.sample_setup_cli_args(args)
-  CNFManager.sample_setup(cli_hash)
-end
+# desc "Sets up an alternate sample CoreDNS CNF"
+# task "sample_coredns", ["helm_local_install"] do |_, args|
+#   VERBOSE_LOGGING.info "sample_coredns new setup" if check_verbose(args)
+#   # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_coredns", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
+#   args = Sam::Args.new(["cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml", "verbose", "wait_count=0"])
+#   response_s = `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml verbose wait_count=0`
+#   cli_hash = CNFManager.sample_setup_cli_args(args)
+#   CNFManager.sample_setup(cli_hash)
+# end
 
-desc "Sets up a Bad helm CNF Setup"
-task "bad_helm_cnf_setup", ["helm_local_install"] do |_, args|
-  VERBOSE_LOGGING.info "bad_helm_cnf_setup" if check_verbose(args)
-  # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-bad_helm_coredns-cnf", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
-  args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-bad_helm_coredns-cnf/cnf-conformance.yml", "verbose", "wait_count=0"])
-  cli_hash = CNFManager.sample_setup_cli_args(args)
-  CNFManager.sample_setup(cli_hash)
-end
+# desc "Sets up a Bad helm CNF Setup"
+# task "bad_helm_cnf_setup", ["helm_local_install"] do |_, args|
+#   VERBOSE_LOGGING.info "bad_helm_cnf_setup" if check_verbose(args)
+#   # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-bad_helm_coredns-cnf", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
+#   args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-bad_helm_coredns-cnf/cnf-conformance.yml", "verbose", "wait_count=0"])
+#   response_s = `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-bad_helm_coredns-cnf/cnf-conformance.yml verbose wait_count=0`
+#   cli_hash = CNFManager.sample_setup_cli_args(args)
+#   CNFManager.sample_setup(cli_hash)
+# end
 
-task "sample_privileged_cnf_whitelisted_setup", ["helm_local_install"] do |_, args|
-  VERBOSE_LOGGING.info "sample_privileged_cnf_whitelisted_setup" if check_verbose(args)
-  # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_whitelisted_privileged_cnf", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
-  args = Sam::Args.new(["cnf-config=./sample-cnfs/sample_whitelisted_privileged_cnf/cnf-conformance.yml", "verbose", "wait_count=0"])
-  cli_hash = CNFManager.sample_setup_cli_args(args)
-  CNFManager.sample_setup(cli_hash)
-end
+# task "sample_privileged_cnf_whitelisted_setup", ["helm_local_install"] do |_, args|
+#   VERBOSE_LOGGING.info "sample_privileged_cnf_whitelisted_setup" if check_verbose(args)
+#   # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_whitelisted_privileged_cnf", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
+#   args = Sam::Args.new(["cnf-config=./sample-cnfs/sample_whitelisted_privileged_cnf/cnf-conformance.yml", "verbose", "wait_count=0"])
+#   response_s = `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_whitelisted_privileged_cnf/cnf-conformance.yml verbose wait_count=0`
+#   cli_hash = CNFManager.sample_setup_cli_args(args)
+#   CNFManager.sample_setup(cli_hash)
+# end
 
-task "sample_privileged_cnf_non_whitelisted_setup", ["helm_local_install"] do |_, args|
-  VERBOSE_LOGGING.info "sample_privileged_cnf_non_whitelisted_setup" if check_verbose(args)
-  # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
-  args = Sam::Args.new(["cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-conformance.yml", "verbose", "wait_count=0"])
-  cli_hash = CNFManager.sample_setup_cli_args(args)
-  CNFManager.sample_setup(cli_hash)
-end
+# task "sample_privileged_cnf_non_whitelisted_setup", ["helm_local_install"] do |_, args|
+#   VERBOSE_LOGGING.info "sample_privileged_cnf_non_whitelisted_setup" if check_verbose(args)
+#   # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
+#   args = Sam::Args.new(["cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-conformance.yml", "verbose", "wait_count=0"])
+#   response_s = `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-conformance.yml verbose wait_count=0`
+#   cli_hash = CNFManager.sample_setup_cli_args(args)
+#   CNFManager.sample_setup(cli_hash)
+# end
 
-task "sample_coredns_bad_liveness", ["helm_local_install"] do |_, args|
-  VERBOSE_LOGGING.info "sample_coredns_bad_liveness" if check_verbose(args)
-  # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_coredns_bad_liveness", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
-  args = Sam::Args.new(["cnf-config=./sample-cnfs/sample_coredns_bad_liveness/cnf-conformance.yml", "verbose", "wait_count=0"])
-  cli_hash = CNFManager.sample_setup_cli_args(args)
-  CNFManager.sample_setup(cli_hash)
-end
+# task "sample_coredns_bad_liveness", ["helm_local_install"] do |_, args|
+#   VERBOSE_LOGGING.info "sample_coredns_bad_liveness" if check_verbose(args)
+#   # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_coredns_bad_liveness", deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
+#   args = Sam::Args.new(["cnf-config=./sample-cnfs/sample_coredns_bad_liveness/cnf-conformance.yml", "verbose", "wait_count=0"])
+#   response_s = `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns_bad_liveness/cnf-conformance.yml verbose wait_count=0`
+#   cli_hash = CNFManager.sample_setup_cli_args(args)
+#   CNFManager.sample_setup(cli_hash)
+# end
 
-task "sample_generic_cnf_setup", ["helm_local_install"] do |_, args|
-  VERBOSE_LOGGING.info "sample_generic_cnf" if check_verbose(args)
-  # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", deploy_with_chart: false, args: args, verbose: true )
-  args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml", "verbose", "wait_count=0"])
-  cli_hash = CNFManager.sample_setup_cli_args(args)
-  CNFManager.sample_setup(cli_hash)
-end
+# task "sample_generic_cnf_setup", ["helm_local_install"] do |_, args|
+#   VERBOSE_LOGGING.info "sample_generic_cnf" if check_verbose(args)
+#   # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", deploy_with_chart: false, args: args, verbose: true )
+#   args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml", "verbose", "wait_count=0"])
+#   response_s = `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml verbose wait_count=0`
+#   cli_hash = CNFManager.sample_setup_cli_args(args)
+#   CNFManager.sample_setup(cli_hash)
+# end
 
 task "cnf_setup", ["helm_local_install"] do |_, args|
   VERBOSE_LOGGING.info "cnf_setup" if check_verbose(args)
