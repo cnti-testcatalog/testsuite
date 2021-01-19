@@ -17,7 +17,7 @@ describe CnfConformance do
 
   it "'ip_addresses' should pass when no uncommented ip addresses are found in helm chart source", tags: "happy-path"  do
     begin
-      `./cnf-conformance sample_coredns_source_setup verbose`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf-source/cnf-conformance.yml verbose wait_count=0`
       $?.success?.should be_true
       response_s = `./cnf-conformance ip_addresses verbose`
       LOGGING.info response_s

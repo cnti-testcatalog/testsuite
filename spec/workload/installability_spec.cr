@@ -9,7 +9,7 @@ describe CnfConformance do
   end
 
   it "'install_script_helm' should fail if install script does not have helm", tags: "happy-path"  do
-    LOGGING.info `./cnf-conformance sample_coredns_source_setup`
+    LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf-source/cnf-conformance.yml verbose wait_count=0`
     $?.success?.should be_true
     response_s =  `./cnf-conformance install_script_helm`
     LOGGING.info response_s

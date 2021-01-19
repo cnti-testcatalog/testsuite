@@ -4,7 +4,7 @@ require "colorize"
 require "totem"
 require "./utils/utils.cr"
 
-desc "Sets up sample CoreDNS CNF"
+# desc "Sets up sample CoreDNS CNF"
 # task "sample_coredns_setup", ["helm_local_install"] do |_, args|
 #   # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-coredns-cnf", args: args, verbose: true, wait_count: 0 )
 #   args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml", "verbose", "wait_count=0"])
@@ -13,20 +13,22 @@ desc "Sets up sample CoreDNS CNF"
 #   CNFManager.sample_setup(cli_hash)
 # end
 
-task "sample_coredns_with_wait_setup", ["helm_local_install"] do |_, args|
-  # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-coredns-cnf", args: args, verbose: true)
-  args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml", "verbose"])
-  cli_hash = CNFManager.sample_setup_cli_args(args)
-  CNFManager.sample_setup(cli_hash)
-end
+# task "sample_coredns_with_wait_setup", ["helm_local_install"] do |_, args|
+#   # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-coredns-cnf", args: args, verbose: true)
+#   args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml", "verbose"])
+#   response_s = `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose`
+#   cli_hash = CNFManager.sample_setup_cli_args(args)
+#   CNFManager.sample_setup(cli_hash)
+# end
 
-desc "Sets up sample CoreDNS CNF with source"
-task "sample_coredns_source_setup", ["helm_local_install"] do |_, args|
-  # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-coredns-cnf-source", args: args, verbose: true, wait_count: 0 )
-  args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-coredns-cnf-source/cnf-conformance.yml", "verbose", "wait_count=0"])
-  cli_hash = CNFManager.sample_setup_cli_args(args)
-  CNFManager.sample_setup(cli_hash)
-end
+# desc "Sets up sample CoreDNS CNF with source"
+# task "sample_coredns_source_setup", ["helm_local_install"] do |_, args|
+#   # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-coredns-cnf-source", args: args, verbose: true, wait_count: 0 )
+#   args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-coredns-cnf-source/cnf-conformance.yml", "verbose", "wait_count=0"])
+#    response_s = `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf-source/cnf-conformance.yml verbose wait_count=0`
+#   cli_hash = CNFManager.sample_setup_cli_args(args)
+#   CNFManager.sample_setup(cli_hash)
+# end
 
 desc "Sets up an alternate sample CoreDNS CNF"
 task "sample_coredns", ["helm_local_install"] do |_, args|
