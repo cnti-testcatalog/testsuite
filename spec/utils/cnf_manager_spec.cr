@@ -14,7 +14,7 @@ describe "SampleUtils" do
   end
 
    # after_all do
-   #   LOGGING.debug `./cnf-conformance sample_coredns_setup`
+      # LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose wait_count=0`
    #   $?.success?.should be_true
    # end
 
@@ -24,7 +24,8 @@ describe "SampleUtils" do
   end
 
   it "'CNFManager.wait_for_install' should wait for a cnf to be installed", tags: "happy-path"  do
-    LOGGING.debug `./cnf-conformance sample_coredns_setup`
+    LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose wait_count=0`
+
     $?.success?.should be_true
 
     current_dir = FileUtils.pwd 

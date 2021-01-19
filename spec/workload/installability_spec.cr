@@ -48,11 +48,7 @@ describe CnfConformance do
 
 
   it "'helm_chart_valid' should pass on a good helm chart", tags: "happy-path"  do
-    # LOGGING.debug `pwd` 
-    # LOGGING.debug `echo $KUBECONFIG`
-    # `./cnf-conformance cleanup`
-    # $?.success?.should be_true
-    LOGGING.info `./cnf-conformance sample_coredns_setup`
+    LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose wait_count=0`
     $?.success?.should be_true
     response_s = `./cnf-conformance helm_chart_valid verbose`
     LOGGING.info response_s
@@ -74,7 +70,7 @@ describe CnfConformance do
       (/Lint Failed/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance bad_helm_cnf_cleanup force=true`
-      `./cnf-conformance sample_coredns_setup`
+      `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose wait_count=0`
     end
   end
 
