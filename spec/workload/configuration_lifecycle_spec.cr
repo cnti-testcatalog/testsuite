@@ -17,7 +17,7 @@ describe CnfConformance do
 
   it "'ip_addresses' should pass when no uncommented ip addresses are found in helm chart source", tags: "happy-path"  do
     begin
-      `./cnf-conformance sample_coredns_source_setup verbose`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf-source/cnf-conformance.yml verbose wait_count=0`
       $?.success?.should be_true
       response_s = `./cnf-conformance ip_addresses verbose`
       LOGGING.info response_s
@@ -41,7 +41,7 @@ describe CnfConformance do
   end
   it "'liveness' should fail when livenessProbe is not set", tags: "liveness" do
     begin
-      `./cnf-conformance sample_coredns_bad_liveness`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns_bad_liveness/cnf-conformance.yml verbose wait_count=0`
       $?.success?.should be_true
       response_s = `./cnf-conformance liveness verbose`
       LOGGING.info response_s
@@ -65,7 +65,7 @@ describe CnfConformance do
   end
   it "'readiness' should fail when readinessProbe is not set", tags: "readiness" do
     begin
-      `./cnf-conformance sample_coredns_bad_liveness`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns_bad_liveness/cnf-conformance.yml verbose wait_count=0`
       $?.success?.should be_true
       response_s = `./cnf-conformance readiness verbose`
       LOGGING.info response_s
@@ -80,7 +80,7 @@ describe CnfConformance do
   test_names.each do |tn|
     it "'#{tn}' should pass when valid version is given", tags: ["#{tn}", "happy-path"]  do
       begin
-        LOGGING.info `./cnf-conformance sample_coredns`
+        LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml verbose wait_count=0`
         $?.success?.should be_true
         response_s = `./cnf-conformance rolling_update verbose`
         LOGGING.info response_s
@@ -106,7 +106,7 @@ describe CnfConformance do
 
   it "'rollback' should pass ", tags: ["rollback", "happy-path"]  do
     begin
-      LOGGING.info `./cnf-conformance sample_coredns`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml verbose wait_count=0`
       $?.success?.should be_true
       response_s = `./cnf-conformance rollback verbose`
       LOGGING.info response_s
@@ -133,7 +133,7 @@ describe CnfConformance do
   end
   it "'nodeport_not_used' should pass when a node port is not being used", tags: "nodeport_not_used" do
     begin
-      `./cnf-conformance sample_coredns`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml verbose wait_count=0`
       $?.success?.should be_true
       response_s = `./cnf-conformance nodeport_not_used verbose`
       LOGGING.info response_s
@@ -158,7 +158,7 @@ describe CnfConformance do
   end
   it "'hardcoded_ip_addresses_in_k8s_runtime_configuration' should pass when no ip addresses are found in the K8s configuration", tags: "hardcoded_ip_addresses_in_k8s_runtime_configuration" do
     begin
-      `./cnf-conformance sample_coredns`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml verbose wait_count=0`
       $?.success?.should be_true
       response_s = `./cnf-conformance hardcoded_ip_addresses_in_k8s_runtime_configuration verbose`
       LOGGING.info response_s

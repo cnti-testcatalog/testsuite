@@ -31,7 +31,7 @@ EmbeddedFileManager.cri_tools
 EmbeddedFileManager.reboot_daemon
 
 def task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
-  # LOGGING.info("single_or_all_cnfs_task_runner: #{args.inspect}")
+  LOGGING.info("task_runner args: #{args.inspect}")
   if check_cnf_config(args)
     single_task_runner(args, &block)
   else
@@ -56,29 +56,31 @@ end
 
 # TODO give example for calling
 def single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
-  LOGGING.debug("task_runner args: #{args.inspect}")
+  LOGGING.debug("single_task_runner args: #{args.inspect}")
   begin
     if args.named["cnf-config"]? # platform tests don't have a cnf-config
       config = CNFManager::Config.parse_config_yml(args.named["cnf-config"].as(String))    
     else
       config = CNFManager::Config.new({ destination_cnf_dir: "",
-                               yml_file_path: "",
-                               install_method: {:helm_chart, ""},
-                               manifest_directory: "",
-                               helm_directory: "", 
-                               helm_chart_path: "", 
-                               manifest_file_path: "",
-                               git_clone_url: "",
-                               install_script: "",
-                               release_name: "",
-                               service_name: "",
-                               docker_repository: "",
-                               helm_repository: {name: "", repo_url: ""},
-                               helm_chart: "",
-                               helm_chart_container_name: "",
-                               rolling_update_tag: "",
-                               container_names: [{"name" =>  "", "rolling_update_test_tag" => ""}],
-                               white_list_container_names: [""]} )
+                                        source_cnf_file: "",
+                                        source_cnf_dir: "",
+                                        yml_file_path: "",
+                                        install_method: {:helm_chart, ""},
+                                        manifest_directory: "",
+                                        helm_directory: "", 
+                                        helm_chart_path: "", 
+                                        manifest_file_path: "",
+                                        git_clone_url: "",
+                                        install_script: "",
+                                        release_name: "",
+                                        service_name: "",
+                                        docker_repository: "",
+                                        helm_repository: {name: "", repo_url: ""},
+                                        helm_chart: "",
+                                        helm_chart_container_name: "",
+                                        rolling_update_tag: "",
+                                        container_names: [{"name" =>  "", "rolling_update_test_tag" => ""}],
+                                        white_list_container_names: [""]} )
     end
     yield args, config
   rescue ex
@@ -269,25 +271,29 @@ def check_cnf_config(args)
   cnf
 end
 
-def check_all_cnf_args(args)
-  VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
-  cnf = check_cnf_config(args)
-  deploy_with_chart = true
-  if cnf 
-    VERBOSE_LOGGING.info "all cnf: #{cnf}" if check_verbose(args)
-    if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
-      deploy_with_chart = false
-    end
-	end
-  return cnf, deploy_with_chart
-end
-
-def check_cnf_config_then_deploy(args)
-  config_file, deploy_with_chart = check_all_cnf_args(args)
-  cli_hash = CNFManager.sample_setup_cli_args(args)
-  # CNFManager.sample_setup_args(sample_dir: config_file, deploy_with_chart: deploy_with_chart, args: args, verbose: check_verbose(args) ) if config_file
-  CNFManager.sample_setup(cli_hash) if config_file
-end
+# def check_all_cnf_args(args)
+#   VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
+#   cnf = check_cnf_config(args)
+#   deploy_with_chart = true
+#   if cnf 
+#     VERBOSE_LOGGING.info "all cnf: #{cnf}" if check_verbose(args)
+#     if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
+#       deploy_with_chart = false
+#     end
+# 	end
+#   return cnf, deploy_with_chart
+# end
+#
+# def check_cnf_config_then_deploy(args)
+#   LOGGING.info "check_cnf_config_then_deploy args: #{args.inspect}"
+#   config_file, deploy_with_chart = check_all_cnf_args(args)
+#   if config_file
+#     cli_hash = CNFManager.sample_setup_cli_args(args)
+#     CNFManager.sample_setup(cli_hash) if config_file
+#   else 
+#     LOGGING.error "not deploying in check_cnf_config_then_deploy because there is not config_file"
+#   end
+# end
 
 def toggle(toggle_name)
   toggle_on = false

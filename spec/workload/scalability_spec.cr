@@ -17,7 +17,8 @@ it "'scalability' should run all of the scalability tests", tags: "happy-path"  
     `./cnf-conformance samples_cleanup`
     response_s = `./cnf-conformance setup`
     LOGGING.info response_s
-    `./cnf-conformance sample_coredns_with_wait_setup`
+    # `./cnf-conformance sample_coredns_with_wait_setup`
+    LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose`
     $?.success?.should be_true
     response_s = `./cnf-conformance scalability`
     LOGGING.info response_s

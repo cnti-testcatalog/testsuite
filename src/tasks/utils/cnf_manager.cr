@@ -12,6 +12,8 @@ module CNFManager
       @cnf_config = cnf_config 
     end
     property cnf_config : NamedTuple(destination_cnf_dir: String,
+                                     source_cnf_file: String,
+                                     source_cnf_dir: String,
                                      yml_file_path: String,
                                      install_method: Tuple(Symbol, String),
                                      manifest_directory: String,
@@ -43,6 +45,8 @@ module CNFManager
       destination_cnf_dir = CNFManager.cnf_destination_dir(yml_file)
 
       yml_file_path = CNFManager.ensure_cnf_conformance_dir(config_yml_path)
+      source_cnf_file = yml_file
+      source_cnf_dir = yml_file_path
       manifest_directory = optional_key_as_string(config, "manifest_directory")
       helm_chart = optional_key_as_string(config, "helm_chart")
       release_name = "#{config.get("release_name").as_s?}"
@@ -73,6 +77,8 @@ module CNFManager
 
       # TODO populate nils with entries from cnf-conformance file
       CNFManager::Config.new({ destination_cnf_dir: destination_cnf_dir,
+                               source_cnf_file: source_cnf_file,
+                               source_cnf_dir: source_cnf_dir,
                                yml_file_path: yml_file_path,
                                install_method: install_method,
                                manifest_directory: manifest_directory,
@@ -163,6 +169,7 @@ module CNFManager
 
 
   def self.final_cnf_results_yml
+    LOGGING.info "final_cnf_results_yml" 
     results_file = `find ./results/* -name "cnf-conformance-results-*.yml"`.split("\n")[-2].gsub("./", "")
     if results_file.empty?
       raise "No cnf_conformance-results-*.yml found! Did you run the all task?"
@@ -193,6 +200,7 @@ module CNFManager
   end
 
   def self.sample_conformance_yml(sample_dir)
+    LOGGING.info "sample_conformance_yml sample_dir: #{sample_dir}"
     cnf_conformance = `find #{sample_dir}/* -name "cnf-conformance.yml"`.split("\n")[0]
     if cnf_conformance.empty?
       raise "No cnf_conformance.yml found in #{sample_dir}!"
@@ -577,7 +585,7 @@ module CNFManager
     end
   end
 
-  def self.sample_setup_cli_args(args)
+  def self.sample_setup_cli_args(args, noisy=true)
     VERBOSE_LOGGING.info "sample_setup_cli_args" if check_verbose(args)
     VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
     if args.named.keys.includes? "cnf-config"
@@ -585,9 +593,11 @@ module CNFManager
       cnf_path = File.dirname(yml_file)
     elsif args.named.keys.includes? "cnf-path"
       cnf_path = args.named["cnf-path"].as(String)
-    else
+    elsif noisy 
       stdout_failure "Error: You must supply either cnf-config or cnf-path"
       exit 1
+    else
+      cnf_path = ""
     end
     if args.named.keys.includes? "wait_count"
       wait_count = args.named["wait_count"].to_i
@@ -602,8 +612,11 @@ module CNFManager
   # Create a unique directory for the cnf that is to be installed under ./cnfs
   # Only copy the cnf's cnf-conformance.yml and it's helm_directory or manifest directory (if it exists)
   # Use manifest directory if helm directory empty
-  def self.sandbox_setup(config_file, config, cli_args)
+  def self.sandbox_setup(config, cli_args)
+    LOGGING.info "sandbox_setup"
+    LOGGING.info "sandbox_setup config: #{config.cnf_config}"
     verbose = cli_args[:verbose]
+    config_file = config.cnf_config[:source_cnf_dir]
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
     helm_directory = config.cnf_config[:helm_directory]
@@ -647,8 +660,9 @@ module CNFManager
   end
 
   # Retrieve the helm chart source
-  def self.export_published_chart(config_file, config, cli_args)
+  def self.export_published_chart(config, cli_args)
     verbose = cli_args[:verbose]
+    config_file = config.cnf_config[:source_cnf_dir]
     helm_directory = config.cnf_config[:helm_directory]
     helm_chart = config.cnf_config[:helm_chart]
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
@@ -686,6 +700,7 @@ module CNFManager
 
   #sample_setup({config_file: cnf_path, wait_count: wait_count})
   def self.sample_setup(cli_args) 
+    LOGGING.info "sample_setup cli_args: #{cli_args}"
     config_file = cli_args[:config_file]
     wait_count = cli_args[:wait_count]
     verbose = cli_args[:verbose]
@@ -723,7 +738,7 @@ module CNFManager
     git_clone = `git clone #{git_clone_url} #{destination_cnf_dir}/#{release_name}`  if git_clone_url.empty? == false
     VERBOSE_LOGGING.info git_clone if verbose
 
-    sandbox_setup(config_file, config, cli_args)
+    sandbox_setup(config, cli_args)
 
     helm = CNFSingleton.helm
     LOGGING.info "helm path: #{CNFSingleton.helm}"
@@ -743,7 +758,7 @@ module CNFManager
       #TODO move to Helm module
       helm_install = `#{helm} install #{release_name} #{helm_chart}`
       VERBOSE_LOGGING.info helm_install if verbose 
-      export_published_chart(config_file, config, cli_args)
+      export_published_chart(config, cli_args)
     when :helm_directory
       VERBOSE_LOGGING.info "deploying with helm directory" if verbose 
       #TODO Add helm options into cnf-conformance yml
