@@ -33,13 +33,18 @@ module Helm
 
     def self.manifest_file_list(manifest_directory, silent=false)
       LOGGING.info("manifest_file_list")
-      LOGGING.info("find: find #{CNF_DIR}/* -name #{CONFIG_FILE}")
-      manifests = `find #{manifest_directory}/ -name "*.yml" -o -name "*.yaml"`.split("\n").select{|x| x.empty? == false}
-      LOGGING.info("find response: #{manifests}")
-      if manifests.size == 0 && !silent
-        raise "No manifest ymls found in the #{manifest_directory} directory!"
+      LOGGING.info "manifest_directory: #{manifest_directory}"
+      if manifest_directory && !manifest_directory.empty?
+        LOGGING.info("find: find #{manifest_directory}/ -name *.yml -o -name *.yaml")
+        manifests = `find #{manifest_directory}/ -name "*.yml" -o -name "*.yaml"`.split("\n").select{|x| x.empty? == false}
+        LOGGING.info("find response: #{manifests}")
+        if manifests.size == 0 && !silent
+          raise "No manifest ymls found in the #{manifest_directory} directory!"
+        end
+        manifests
+      else
+        [] of String
       end
-      manifests
     end
   end
 

@@ -305,7 +305,9 @@ describe "SampleUtils" do
 
   it "'CNFManager.workload_resource_test' should accept an args and cnf-config argument, populate a deployment, container, and intialized argument, and then apply a test to a cnf"  do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
-    check_cnf_config_then_deploy(args)
+    # check_cnf_config_then_deploy(args)
+    cli_hash = CNFManager.sample_setup_cli_args(args, false)
+    CNFManager.sample_setup(cli_hash) if cli_hash["config_file"]
     config = CNFManager::Config.parse_config_yml("./sample-cnfs/sample-generic-cnf/cnf-conformance.yml")    
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true

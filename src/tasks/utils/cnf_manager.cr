@@ -169,6 +169,7 @@ module CNFManager
 
 
   def self.final_cnf_results_yml
+    LOGGING.info "final_cnf_results_yml" 
     results_file = `find ./results/* -name "cnf-conformance-results-*.yml"`.split("\n")[-2].gsub("./", "")
     if results_file.empty?
       raise "No cnf_conformance-results-*.yml found! Did you run the all task?"
@@ -199,6 +200,7 @@ module CNFManager
   end
 
   def self.sample_conformance_yml(sample_dir)
+    LOGGING.info "sample_conformance_yml sample_dir: #{sample_dir}"
     cnf_conformance = `find #{sample_dir}/* -name "cnf-conformance.yml"`.split("\n")[0]
     if cnf_conformance.empty?
       raise "No cnf_conformance.yml found in #{sample_dir}!"
@@ -583,7 +585,7 @@ module CNFManager
     end
   end
 
-  def self.sample_setup_cli_args(args)
+  def self.sample_setup_cli_args(args, noisy=true)
     VERBOSE_LOGGING.info "sample_setup_cli_args" if check_verbose(args)
     VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
     if args.named.keys.includes? "cnf-config"
@@ -591,9 +593,11 @@ module CNFManager
       cnf_path = File.dirname(yml_file)
     elsif args.named.keys.includes? "cnf-path"
       cnf_path = args.named["cnf-path"].as(String)
-    else
+    elsif noisy 
       stdout_failure "Error: You must supply either cnf-config or cnf-path"
       exit 1
+    else
+      cnf_path = ""
     end
     if args.named.keys.includes? "wait_count"
       wait_count = args.named["wait_count"].to_i
