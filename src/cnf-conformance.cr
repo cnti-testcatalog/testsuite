@@ -61,7 +61,7 @@ task "automatic_cnf_install" do |_, args|
   VERBOSE_LOGGING.info "all_prereqs" if check_verbose(args)
   # check_cnf_config_then_deploy(args)
   cli_hash = CNFManager.sample_setup_cli_args(args, false)
-  CNFManager.sample_setup(cli_hash) if cli_hash["config_file"]
+  CNFManager.sample_setup(cli_hash) if !cli_hash["config_file"].empty?
 end
 
 task "test" do
