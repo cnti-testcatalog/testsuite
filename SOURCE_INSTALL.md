@@ -89,7 +89,7 @@ We can assume you have access to a working kubernetes cluster. We recommend only
   ```
 - Now build a cnf-conformance binary (this method will have runtime dependencies but should not pose any issues):
   ```
-  crystal build src/cnf-conformance
+  crystal build src/cnf-conformance.cr
   ```
   This should create an executable `cnf-conformance` binary in your source checkout.
   
@@ -144,7 +144,7 @@ Now that we have a `cnf-conformance` binary, we can run `setup` to ensure it has
   ```
 - If you have crystal installed, you can also run by:
   ```
-  crystal spec src/cnf-conformance.cr setup
+  crystal src/cnf-conformance.cr setup
   ```
 This should display output of all the pre-requisites (and install helm if not found on the system you intend to run from). Any missing requirements will need to be satisfied before proceeding or could result in errors, etc.
 
