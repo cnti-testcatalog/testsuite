@@ -148,15 +148,16 @@ module CNFManager
 			VERBOSE_LOGGING.debug resource.inspect if check_verbose(args)
       unless resource[:kind].as_s.downcase == "service" ## services have no containers
         containers = KubectlClient::Get.resource_containers(resource[:kind].as_s, resource[:name].as_s)
+        volumes = KubectlClient::Get.resource_volumes(resource[:kind].as_s, resource[:name].as_s)
         if check_containers
-        containers.as_a.each do |container|
-          resp = yield resource, container, initialized
-          LOGGING.debug "yield resp: #{resp}"
-          # if any response is false, the test fails
-          test_passed = false if resp == false
-        end
+          containers.as_a.each do |container|
+            resp = yield resource, container, volumes, initialized
+            LOGGING.debug "yield resp: #{resp}"
+            # if any response is false, the test fails
+            test_passed = false if resp == false
+          end
         else
-          resp = yield resource, containers[0], initialized
+          resp = yield resource, containers[0], volumes, initialized
           LOGGING.debug "yield resp: #{resp}"
           # if any response is false, the test fails
           test_passed = false if resp == false

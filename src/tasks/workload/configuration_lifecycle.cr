@@ -326,3 +326,35 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
 
   end
 end
+
+desc "Does the CNF use K8s Secrets?"
+task "secrets_used" do |_, args|
+  task_runner(args) do |args, config|
+    LOGGING.debug "cnf_config: #{config}"
+    VERBOSE_LOGGING.info "secrets_used" if check_verbose(args)
+    # Parse the cnf-conformance.yml
+    resp = ""
+    emoji_probe="🧫"
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, volumes, initialized|
+      test_passed = true
+      puts "Volumes: #{volumes}"
+      puts "Container: #{container}"
+      begin
+        VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
+        container.as_h["readinessProbe"].as_h 
+      rescue ex
+        VERBOSE_LOGGING.error ex.message if check_verbose(args)
+        test_passed = false 
+        puts "No readinessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+      end
+      test_passed 
+    end
+    if task_response 
+      resp = upsert_passed_task("readiness","✔️  PASSED: Helm readiness probe found #{emoji_probe}")
+		else
+      resp = upsert_failed_task("readiness","✖️  FAILURE: No readinessProbe found #{emoji_probe}")
+    end
+    resp
+  end
+end
+
