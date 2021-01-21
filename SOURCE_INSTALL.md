@@ -89,7 +89,7 @@ We can assume you have access to a working kubernetes cluster. We recommend only
   ```
 - Now build a cnf-conformance binary (this method will have runtime dependencies but should not pose any issues):
   ```
-  crystal build src/cnf-conformance
+  crystal build src/cnf-conformance.cr
   ```
   This should create an executable `cnf-conformance` binary in your source checkout.
   
