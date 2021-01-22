@@ -139,7 +139,7 @@ module KubectlClient
     end
 
     def self.configmaps : JSON::Any
-      resp = `kubectl get configmaps --all-namespaces -o json`
+      resp = `kubectl get configmaps -o json`
       LOGGING.debug "kubectl get configmaps: #{resp}"
       if resp && !resp.empty?
         JSON.parse(resp)

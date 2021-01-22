@@ -369,20 +369,21 @@ task "immutable_configmap", ["retrieve_manifest"] do |_, args|
 
     # if the reapply with a change succedes immmutable configmaps is NOT enabled
     if KubectlClient::Apply.file(test_config_map_filename) == 0
-      resp = "✖️  FAILURE: immmutable configmaps note enabled. ".colorize(:red)
+      resp = "✖️  FAILURE: immmutable configmaps are not enabled in this k8s cluster.".colorize(:red)
         upsert_failed_task("immutable_configmap", resp)
     end
 
+    # cleanup test configmap
     KubectlClient::Delete.file(test_config_map_filename) 
 
     # re: feature gates: https://github.com/cncf/cnf-conformance/issues/508#issuecomment-758388434
     config_maps_json = KubectlClient::Get.configmaps
 
-    if config_maps_json.as_a.select {|x| x["immmutable"]? && x["immmutable"] === "true"}.size === config_maps_json.as_a.size
-        resp = "✔️  PASSED: All configmaps immmutable".colorize(:green)
+    if config_maps_json["items"].as_a.select {|x| x["immutable"]? && x["immutable"] === true}.size === config_maps_json["items"].as_a.size
+        resp = "✔️  PASSED: All configmaps immutable".colorize(:green)
         upsert_passed_task("immutable_configmap", resp)
     else
-      resp = "✖️  FAILURE: Found mmutable configmap(s). ".colorize(:red)
+      resp = "✖️  FAILURE: Found mutable configmap(s)".colorize(:red)
         upsert_failed_task("immutable_configmap", resp)
     end
   end

@@ -175,12 +175,12 @@ describe CnfConformance do
 
   it "'immutable_configmap' fail without immutable configmaps", tags: "immutable_configmap" do
     begin
-      `./cnf-conformance sample_coredns`
+      `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml deploy_with_chart=false`
       $?.success?.should be_true
       response_s = `./cnf-conformance immutable_configmap verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILURE: Found mmutable configmap(s)/ =~ response_s).should_not be_nil
+      (/FAILURE: Found mutable configmap/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cleanup_sample_coredns`
     end
@@ -193,7 +193,7 @@ describe CnfConformance do
       response_s = `./cnf-conformance immutable_configmap verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: All configmaps immmutable/ =~ response_s).should_not be_nil
+      (/PASSED: All configmaps immutable/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_coredns_with_immutable_configmaps/cnf-conformance.yml deploy_with_chart=false`
     end
