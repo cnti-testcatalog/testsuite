@@ -182,20 +182,33 @@ describe CnfConformance do
       $?.success?.should be_true
       (/FAILURE: Found mutable configmap/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-conformance cleanup_sample_coredns`
+      `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml deploy_with_chart=false`
+    end
+  end
+
+  it "'immutable_configmap' fail with only some immutable configmaps", tags: "immutable_configmap" do
+    begin
+      `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml deploy_with_chart=false`
+      $?.success?.should be_true
+      response_s = `./cnf-conformance immutable_configmap verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILURE: Found mutable configmap/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_some/cnf-conformance.yml deploy_with_chart=false`
     end
   end
 
   it "'immutable_configmap' should pass with all immutable configmaps", tags: "immutable_configmap" do
     begin
-      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns_with_immutable_configmaps/cnf-conformance.yml deploy_with_chart=false`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-conformance.yml deploy_with_chart=false`
       $?.success?.should be_true
       response_s = `./cnf-conformance immutable_configmap verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: All configmaps immutable/ =~ response_s).should_not be_nil
     ensure
-      LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_coredns_with_immutable_configmaps/cnf-conformance.yml deploy_with_chart=false`
+      LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-conformance.yml deploy_with_chart=false`
     end
   end
 
