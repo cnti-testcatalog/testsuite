@@ -336,23 +336,28 @@ task "secrets_used" do |_, args|
     resp = ""
     emoji_probe="🧫"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, volumes, initialized|
-      test_passed = true
-      puts "Volumes: #{volumes}"
-      puts "Container: #{container}"
+
+      test_passed = false
+      volumes.as_a.each do |secret_volume|
+        if secret_volume["secret"]?
+          puts secret_volume["name"]
+          test_passed = true
+        end
+      end
+
       begin
         VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
-        container.as_h["readinessProbe"].as_h 
       rescue ex
         VERBOSE_LOGGING.error ex.message if check_verbose(args)
         test_passed = false 
-        puts "No readinessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+        puts "No Secret Volume found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
       end
       test_passed 
     end
     if task_response 
-      resp = upsert_passed_task("readiness","✔️  PASSED: Helm readiness probe found #{emoji_probe}")
+      resp = upsert_passed_task("secrets_used","✔️  PASSED: Secret Volume found #{emoji_probe}")
 		else
-      resp = upsert_failed_task("readiness","✖️  FAILURE: No readinessProbe found #{emoji_probe}")
+      resp = upsert_failed_task("secrets_used","✖️  FAILURE: Secret Volume not found #{emoji_probe}")
     end
     resp
   end
