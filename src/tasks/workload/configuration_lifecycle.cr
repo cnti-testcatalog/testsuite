@@ -335,28 +335,44 @@ task "secrets_used" do |_, args|
     # Parse the cnf-conformance.yml
     resp = ""
     emoji_probe="🧫"
-    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, volumes, initialized|
+    task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
 
-      test_passed = false
+      test_passed = true 
+      secret_volumes = false
+      # Check to see if every volume that is a secret is actually used
       volumes.as_a.each do |secret_volume|
         if secret_volume["secret"]?
-          puts secret_volume["name"]
-          test_passed = true
+            secret_volumes = true 
+          LOGGING.info "secret_volume: #{secret_volume["name"]}"
+          volume_found = false
+          containers.as_a.each do |container|
+            if container["volumeMounts"]?
+                vmount = container["volumeMounts"].as_a
+              LOGGING.info "vmount: #{vmount}"
+              LOGGING.debug "container[env]: #{container["env"]}"
+              if (vmount.find { |x| x["name"] == secret_volume["name"]? }) || 
+                  (container["env"]? && container["env"].as_a.find { |c| c.dig?("valueFrom", "secretKeyRef", "name") == secret_volume["name"] })
+
+                LOGGING.debug secret_volume["name"]
+                volume_found = true 
+              end
+            end
+          end
+          if volume_found = false
+            test_passed = false
+          end
         end
       end
 
-      begin
-        VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
-      rescue ex
-        VERBOSE_LOGGING.error ex.message if check_verbose(args)
+      unless secret_volumes
         test_passed = false 
-        puts "No Secret Volume found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+        puts "No Secret Volumes found for resource: #{resource}".colorize(:red)
       end
       test_passed 
     end
     if task_response 
       resp = upsert_passed_task("secrets_used","✔️  PASSED: Secret Volume found #{emoji_probe}")
-		else
+    else
       resp = upsert_failed_task("secrets_used","✖️  FAILURE: Secret Volume not found #{emoji_probe}")
     end
     resp

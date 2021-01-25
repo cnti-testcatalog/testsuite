@@ -133,7 +133,7 @@ module CNFManager
   #test_passes_completely = workload_resource_test do | cnf_config, resource, container, initialized |
   def self.workload_resource_test(args, config, 
                                   check_containers = true, 
-                                  &block  : (YAML::Any | NamedTuple(kind: YAML::Any, name: YAML::Any), 
+                                  &block  : (NamedTuple(kind: YAML::Any, name: YAML::Any), 
                                              JSON::Any, JSON::Any, Bool | Nil) -> Bool | Nil)
             # resp = yield resource, container, volumes, initialized
     test_passed = true
