@@ -62,6 +62,7 @@ describe "ReleaseManager" do
     if ENV["GITHUB_USER"]?.nil?
       puts "Warning: Set GITHUB_USER and GITHUB_TOKEN to activate release manager tests!".colorize(:red) 
     else 
+      #TODO causes collisions with other builds
       found_release, asset = ReleaseManager::GithubReleaseManager.upsert_release("test_version")
       resp_code = ReleaseManager::GithubReleaseManager.delete_release("test_version")
       (resp_code == 204).should be_truthy
@@ -73,7 +74,7 @@ describe "ReleaseManager" do
 
   it "'#ReleaseManager.commit_message_issues' should list previsions releases", tags: "release"  do
     hash = ReleaseManager.current_hash
-    issues = ReleaseManager.commit_message_issues("0.0.5", hash)
+    issues = ReleaseManager.commit_message_issues("v0.9.19", hash)
     (issues[0].match(/#/)).should_not be_nil
   end
 
