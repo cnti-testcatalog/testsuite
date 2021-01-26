@@ -168,5 +168,43 @@ describe CnfConformance do
       `./cnf-conformance cleanup_sample_coredns`
     end
   end
+  it "'secrets_used' should pass when secrets are provided as volumes and used by a container", tags: "secrets_used" do
+    begin
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_secret_volume/cnf-conformance.yml verbose `
+      $?.success?.should be_true
+      response_s = `./cnf-conformance secrets_used verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Secret Volume found/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_secret_volume verbose`
+    end
+  end
+
+  it "'secrets_used' should fail when secrets are provided as volumes and not mounted by a container", tags: "secrets_used" do
+    begin
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_unmounted_secret_volume/cnf-conformance.yml verbose wait_count=0 `
+      $?.success?.should be_true
+      response_s = `./cnf-conformance secrets_used verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILURE: Secret Volume not found/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_unmounted_secret_volume verbose`
+    end
+  end
+
+  it "'secrets_used' should pass when secrets are provided as environment variables and used by a container", tags: "secrets_used" do
+    begin
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_secret_env/cnf-conformance.yml verbose `
+      $?.success?.should be_true
+      response_s = `./cnf-conformance secrets_used verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Secret Volume found/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_secret_env verbose`
+    end
+  end
 
 end

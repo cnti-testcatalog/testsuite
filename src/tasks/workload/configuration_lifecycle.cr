@@ -9,7 +9,7 @@ require "../utils/utils.cr"
 rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
-task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback"].concat(rolling_version_change_test_names) do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used"].concat(rolling_version_change_test_names) do |_, args|
   stdout_score("configuration_lifecycle")
 end
 
@@ -336,37 +336,78 @@ task "secrets_used" do |_, args|
     resp = ""
     emoji_probe="🧫"
     task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
+      LOGGING.info "resource: #{resource}"
+      LOGGING.info "volumes: #{volumes}"
 
-      test_passed = true 
-      secret_volumes = false
-      # Check to see if every volume that is a secret is actually used
+      # TODO cnf must have either a used secret volume or a defined container secret key ref
+      # test_passed = true 
+      volume_test_passed = false
+      secret_volume_exists = false
+      secret_volume_mounted = true 
+      # Check to see all volume secrets are actually used
       volumes.as_a.each do |secret_volume|
         if secret_volume["secret"]?
-            secret_volumes = true 
+          secret_volume_exists = true 
           LOGGING.info "secret_volume: #{secret_volume["name"]}"
-          volume_found = false
+          container_secret_mounted = false 
           containers.as_a.each do |container|
             if container["volumeMounts"]?
                 vmount = container["volumeMounts"].as_a
               LOGGING.info "vmount: #{vmount}"
               LOGGING.debug "container[env]: #{container["env"]}"
-              if (vmount.find { |x| x["name"] == secret_volume["name"]? }) || 
-                  (container["env"]? && container["env"].as_a.find { |c| c.dig?("valueFrom", "secretKeyRef", "name") == secret_volume["name"] })
-
+              if (vmount.find { |x| x["name"] == secret_volume["name"]? }) 
                 LOGGING.debug secret_volume["name"]
-                volume_found = true 
+                container_secret_mounted = true 
               end
             end
           end
-          if volume_found = false
-            test_passed = false
+          # If any secret volume exists, and it is not mounted by a
+          # container, fail test
+          if container_secret_mounted == false
+            secret_volume_mounted = false
           end
         end
       end
+      if secret_volume_exists && secret_volume_mounted
+        volume_test_passed = true
+      end
 
-      unless secret_volumes
-        test_passed = false 
-        puts "No Secret Volumes found for resource: #{resource}".colorize(:red)
+      
+      # TODO if a container exists which has a secretkeyref defined 
+      #   and also has a corresponding k8s secret defined, the whole test passes
+
+      # TODO if there are any containers that have a secretkeyref defined 
+      #  but do not have a corresponding k8s secret defined, this 
+      #  is an installation problem
+
+      secrets = KubectlClient::Get.secrets
+      secret_keyref_found = false 
+      containers.as_a.each do |container|
+        LOGGING.debug "container secrets #{container["env"]?}"
+        if container["env"]? 
+          container["env"].as_a.find do |c| 
+          if secrets["items"].as_a.find{|s|
+              s["metadata"]["name"] == c.dig?("valueFrom", "secretKeyRef", "name")}
+              secret_keyref_found = true
+            end
+          end
+        end 
+      end
+
+      # if at least 1 secret volume exists, and it is mounted, test passes
+      # if at least 1 secret volume exists, but it is not mounted, test fails
+      # if no secret volumes exist, but a container secret exists 
+      #  and is defined, test passes
+      # if at least 1 container secret exists, but it is not defined, (see 
+      #  TODO on line 374)
+      # if no secret volume exists and no container secret exists, test fails
+      test_passed = false
+      if secret_keyref_found || volume_test_passed
+        test_passed = true
+      end
+
+      unless test_passed 
+        puts "No Secret Volumes or Container secretKey_refs found for resource: #{resource}".colorize(:red)
       end
       test_passed 
     end

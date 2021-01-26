@@ -133,6 +133,16 @@ module KubectlClient
       end
     end
 
+    def self.secrets : JSON::Any
+      resp = `kubectl get secrets -o json`
+      LOGGING.debug "kubectl get secrets: #{resp}"
+      if resp && !resp.empty?
+        JSON.parse(resp)
+      else
+        JSON.parse(%({}))
+      end
+    end
+
     def self.resource_desired_is_available?(kind : String, resource_name)
       resp = `kubectl get #{kind} #{resource_name} -o=yaml`
       replicas_applicable = false

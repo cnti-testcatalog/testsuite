@@ -74,6 +74,8 @@
   tags: configuration_lifecycle, dynamic, workload
 - name: hardcoded_ip_addresses_in_k8s_runtime_configuration
   tags: configuration_lifecycle, dynamic, workload
+- name: secrets_used
+  tags: configuration_lifecycle, dynamic, workload
 
 #- name: fluentd_traffic
 #  tags: observability, dynamic, workload
