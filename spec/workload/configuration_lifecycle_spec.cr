@@ -156,6 +156,7 @@ describe CnfConformance do
       `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_coredns_hardcoded_ips deploy_with_chart=false`
     end
   end
+
   it "'hardcoded_ip_addresses_in_k8s_runtime_configuration' should pass when no ip addresses are found in the K8s configuration", tags: "hardcoded_ip_addresses_in_k8s_runtime_configuration" do
     begin
       LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml verbose wait_count=0`
@@ -204,6 +205,48 @@ describe CnfConformance do
       (/PASSED: Secret Volume found/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_secret_env verbose`
+    end
+  end
+
+  # 1. test 1 fails buecase the sample_coredns helm chart configmap is not immutable
+  # 2. copay that sample_coredns cnf  and and make the config map immutable rename it and make sure test passes
+
+  it "'immutable_configmap' fail without immutable configmaps", tags: "immutable_configmap" do
+    begin
+      `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml deploy_with_chart=false`
+      $?.success?.should be_true
+      response_s = `./cnf-conformance immutable_configmap verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILURE: Found mutable configmap/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml deploy_with_chart=false`
+    end
+  end
+
+  it "'immutable_configmap' fail with only some immutable configmaps", tags: "immutable_configmap" do
+    begin
+      `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml deploy_with_chart=false`
+      $?.success?.should be_true
+      response_s = `./cnf-conformance immutable_configmap verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILURE: Found mutable configmap/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_some/cnf-conformance.yml deploy_with_chart=false`
+    end
+  end
+
+  it "'immutable_configmap' should pass with all immutable configmaps", tags: "immutable_configmap" do
+    begin
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-conformance.yml deploy_with_chart=false`
+      $?.success?.should be_true
+      response_s = `./cnf-conformance immutable_configmap verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: All configmaps immutable/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-conformance.yml deploy_with_chart=false`
     end
   end
 

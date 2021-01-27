@@ -37,6 +37,24 @@ module KubectlClient
       $?.success?
     end
   end
+  module Apply
+    def self.file(file_name)
+      apply = `kubectl apply -f #{file_name}`
+      apply_status = $?.success?
+      LOGGING.debug "#{apply}"
+      LOGGING.debug "apply? #{apply_status}"
+      apply_status
+    end
+  end
+  module Delete
+    def self.file(file_name)
+      delete = `kubectl delete -f #{file_name}`
+      delete_status = $?.success?
+      LOGGING.debug "#{delete}"
+      LOGGING.debug "delete? #{delete_status}"
+      delete_status
+    end
+  end
   module Set
     def self.image(deployment_name, container_name, image_name, version_tag=nil)
       #TODO check if image exists in repo? DockerClient::Get.image and image_by_tags
@@ -136,6 +154,11 @@ module KubectlClient
     def self.secrets : JSON::Any
       resp = `kubectl get secrets -o json`
       LOGGING.debug "kubectl get secrets: #{resp}"
+    end
+
+    def self.configmaps : JSON::Any
+      resp = `kubectl get configmaps -o json`
+      LOGGING.debug "kubectl get configmaps: #{resp}"
       if resp && !resp.empty?
         JSON.parse(resp)
       else
