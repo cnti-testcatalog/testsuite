@@ -154,6 +154,11 @@ module KubectlClient
     def self.secrets : JSON::Any
       resp = `kubectl get secrets -o json`
       LOGGING.debug "kubectl get secrets: #{resp}"
+      if resp && !resp.empty?
+        JSON.parse(resp)
+      else
+        JSON.parse(%({}))
+      end
     end
 
     def self.configmaps : JSON::Any
