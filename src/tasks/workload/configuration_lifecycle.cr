@@ -326,3 +326,65 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
 
   end
 end
+
+# https://www.cloudytuts.com/tutorials/kubernetes/how-to-create-immutable-configmaps-and-secrets/
+def configmap_template
+  <<-TEMPLATE
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: myapp
+  immutable: true
+  data:
+    api.server: {{ test_url }}
+  TEMPLATE
+end
+
+desc "Does the CNF use immutable configmaps?"
+task "immutable_configmap", ["retrieve_manifest"] do |_, args|
+  task_response = task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "immutable_configmap" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+
+    # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
+    # https://github.com/cncf/cnf-conformance/issues/508#issuecomment-758438413
+
+    test_config_map_filename = "#{destination_cnf_dir}/test_config_map.yml";
+
+    template = Crinja.render(configmap_template, { "test_url" => "doesnt_matter" })
+    LOGGING.debug "test immutable_configmap template: #{template}"
+    test_config_map_create = `echo "#{template}" > "#{test_config_map_filename}"`
+    VERBOSE_LOGGING.debug "#{test_config_map_create}" if check_verbose(args)
+
+    KubectlClient::Apply.file(test_config_map_filename)
+
+    # now we change then apply again
+
+    template = Crinja.render(configmap_template, { "test_url" => "doesnt_matter_again" })
+    LOGGING.debug "test immutable_configmap change template: #{template}"
+    test_config_map_create = `echo "#{template}" > "#{test_config_map_filename}"`
+    VERBOSE_LOGGING.debug "#{test_config_map_create}" if check_verbose(args)
+
+    # if the reapply with a change succedes immmutable configmaps is NOT enabled
+    if KubectlClient::Apply.file(test_config_map_filename) == 0
+      resp = "✖️  FAILURE: immmutable configmaps are not enabled in this k8s cluster.".colorize(:red)
+        upsert_failed_task("immutable_configmap", resp)
+    end
+
+    # cleanup test configmap
+    KubectlClient::Delete.file(test_config_map_filename) 
+
+    # re: feature gates: https://github.com/cncf/cnf-conformance/issues/508#issuecomment-758388434
+    config_maps_json = KubectlClient::Get.configmaps
+
+    if config_maps_json["items"].as_a.select {|x| x["immutable"]? && x["immutable"] === true}.size === config_maps_json["items"].as_a.size
+        resp = "✔️  PASSED: All configmaps immutable".colorize(:green)
+        upsert_passed_task("immutable_configmap", resp)
+    else
+      resp = "✖️  FAILURE: Found mutable configmap(s)".colorize(:red)
+        upsert_failed_task("immutable_configmap", resp)
+    end
+  end
+end

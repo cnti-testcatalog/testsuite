@@ -317,6 +317,11 @@ crystal src/cnf-conformance.cr external_retry
 ./cnf-conformance rollback
 ```
 
+#### :heavy_check_mark: To check if a CNF version uses [immutable configmaps](https://kubernetes.io/docs/concepts/configuration/configmap/#configmap-immutable)
+```
+./cnf-conformance rollback
+```
+
 <details> <summary>Details for Configuration and Lifecycle Tests To Do's</summary>
 <p>
 
