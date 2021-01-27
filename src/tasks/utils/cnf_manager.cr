@@ -131,7 +131,11 @@ module CNFManager
   end
 
   #test_passes_completely = workload_resource_test do | cnf_config, resource, container, initialized |
-  def self.workload_resource_test(args, config, check_containers = true, &block)
+  def self.workload_resource_test(args, config, 
+                                  check_containers = true, 
+                                  &block  : (NamedTuple(kind: YAML::Any, name: YAML::Any), 
+                                             JSON::Any, JSON::Any, Bool | Nil) -> Bool | Nil)
+            # resp = yield resource, container, volumes, initialized
     test_passed = true
     resource_ymls = cnf_workload_resources(args, config) do |resource|
       resource 
@@ -148,15 +152,16 @@ module CNFManager
 			VERBOSE_LOGGING.debug resource.inspect if check_verbose(args)
       unless resource[:kind].as_s.downcase == "service" ## services have no containers
         containers = KubectlClient::Get.resource_containers(resource[:kind].as_s, resource[:name].as_s)
+        volumes = KubectlClient::Get.resource_volumes(resource[:kind].as_s, resource[:name].as_s)
         if check_containers
-        containers.as_a.each do |container|
-          resp = yield resource, container, initialized
-          LOGGING.debug "yield resp: #{resp}"
-          # if any response is false, the test fails
-          test_passed = false if resp == false
-        end
+          containers.as_a.each do |container|
+            resp = yield resource, container, volumes, initialized
+            LOGGING.debug "yield resp: #{resp}"
+            # if any response is false, the test fails
+            test_passed = false if resp == false
+          end
         else
-          resp = yield resource, containers[0], initialized
+          resp = yield resource, containers, volumes, initialized
           LOGGING.debug "yield resp: #{resp}"
           # if any response is false, the test fails
           test_passed = false if resp == false

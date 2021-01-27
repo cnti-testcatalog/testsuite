@@ -316,6 +316,10 @@ crystal src/cnf-conformance.cr external_retry
 ```
 ./cnf-conformance rollback
 ```
+#### :heavy_check_mark: To check if a CNF uses K8s secrets
+```
+./cnf-conformance secrets_used
+```
 
 #### :heavy_check_mark: To check if a CNF version uses [immutable configmaps](https://kubernetes.io/docs/concepts/configuration/configmap/#configmap-immutable)
 ```

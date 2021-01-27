@@ -138,6 +138,29 @@ module KubectlClient
       end
     end
 
+    def self.resource_volumes(kind, resource_name) : JSON::Any 
+      LOGGING.debug "kubectl get resource volumes kind: #{kind} resource_name: #{resource_name}"
+      unless kind.downcase == "service" ## services have no volumes
+        resp = resource(kind, resource_name).dig?("spec", "template", "spec", "volumes")
+      end
+      LOGGING.debug "kubectl get resource volumes: #{resp}"
+      if resp && resp.as_a.size > 0
+        resp
+      else
+        JSON.parse(%([]))
+      end
+    end
+
+    def self.secrets : JSON::Any
+      resp = `kubectl get secrets -o json`
+      LOGGING.debug "kubectl get secrets: #{resp}"
+      if resp && !resp.empty?
+        JSON.parse(resp)
+      else
+        JSON.parse(%({}))
+      end
+    end
+
     def self.configmaps : JSON::Any
       resp = `kubectl get configmaps -o json`
       LOGGING.debug "kubectl get configmaps: #{resp}"
@@ -147,7 +170,7 @@ module KubectlClient
         JSON.parse(%({}))
       end
     end
-    
+
     def self.resource_desired_is_available?(kind : String, resource_name)
       resp = `kubectl get #{kind} #{resource_name} -o=yaml`
       replicas_applicable = false
