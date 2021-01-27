@@ -316,6 +316,10 @@ crystal src/cnf-conformance.cr external_retry
 ```
 ./cnf-conformance rollback
 ```
+#### :heavy_check_mark: To check if a CNF uses K8s secrets
+```
+./cnf-conformance secrets_used
+```
 
 <details> <summary>Details for Configuration and Lifecycle Tests To Do's</summary>
 <p>
