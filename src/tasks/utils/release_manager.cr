@@ -192,7 +192,7 @@ TEMPLATE
       {% puts "current_branch during compile: #{current_branch}" %}
       {% puts "current_tag during compile: #{current_tag}" %}
       {% if current_tag.strip == "" %}
-        VERSION = {{current_branch}} + "-{{current_hash.strip}}"
+        VERSION = {{current_branch}} + "-#{Time.local.to_s("%Y-%m-%d-%H%M%S")}-{{current_hash.strip}}"
       {% else %}
         VERSION = {{current_tag.strip}}
       {% end %}
