@@ -458,20 +458,24 @@ task "immutable_configmap", ["retrieve_manifest"] do |_, args|
     template = Crinja.render(configmap_template, { "test_url" => "doesnt_matter_again" })
     LOGGING.debug "test immutable_configmap change template: #{template}"
     test_config_map_create = `echo "#{template}" > "#{test_config_map_filename}"`
-    VERBOSE_LOGGING.debug "#{test_config_map_create}" if check_verbose(args)
+    VERBOSE_LOGGING.debug "test_config_map_create: #{test_config_map_create}" if check_verbose(args)
 
     # if the reapply with a change succedes immmutable configmaps is NOT enabled
-    if KubectlClient::Apply.file(test_config_map_filename) == 0
+    # if KubectlClient::Apply.file(test_config_map_filename) == 0
+    if KubectlClient::Apply.file(test_config_map_filename)
+      LOGGING.info "kubectl apply failed for: #{test_config_map_filename}"
       resp = "✖️  FAILURE: immmutable configmaps are not enabled in this k8s cluster.".colorize(:red)
-        upsert_failed_task("immutable_configmap", resp)
+      upsert_failed_task("immutable_configmap", resp)
     end
 
     # cleanup test configmap
     KubectlClient::Delete.file(test_config_map_filename) 
 
     # re: feature gates: https://github.com/cncf/cnf-conformance/issues/508#issuecomment-758388434
+    # TODO get only config maps that are installed with the cnf (i.e. export helm template)
     config_maps_json = KubectlClient::Get.configmaps
 
+    LOGGING.debug "immutable config maps: #{config_maps_json["items"]}"
     if config_maps_json["items"].as_a.select {|x| x["immutable"]? && x["immutable"] === true}.size === config_maps_json["items"].as_a.size
         resp = "✔️  PASSED: All configmaps immutable".colorize(:green)
         upsert_passed_task("immutable_configmap", resp)

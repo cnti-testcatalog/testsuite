@@ -38,10 +38,11 @@ module KubectlClient
     end
   end
   module Apply
-    def self.file(file_name)
+    def self.file(file_name) : Bool
+      LOGGING.info "apply file: #{file_name}"
       apply = `kubectl apply -f #{file_name}`
       apply_status = $?.success?
-      LOGGING.debug "#{apply}"
+      LOGGING.debug "kubectl apply resp: #{apply}"
       LOGGING.debug "apply? #{apply_status}"
       apply_status
     end
