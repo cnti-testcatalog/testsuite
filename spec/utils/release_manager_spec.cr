@@ -62,8 +62,9 @@ describe "ReleaseManager" do
     if ENV["GITHUB_USER"]?.nil?
       puts "Warning: Set GITHUB_USER and GITHUB_TOKEN to activate release manager tests!".colorize(:red) 
     else 
-      #TODO causes collisions with other builds
       found_release, asset = ReleaseManager::GithubReleaseManager.upsert_release("test_version")
+      # wait for upsert to finish
+      sleep 5.0
       resp_code = ReleaseManager::GithubReleaseManager.delete_release("test_version")
       (resp_code == 204).should be_truthy
     end
