@@ -48,6 +48,14 @@ module CNFManager
       source_cnf_file = yml_file
       source_cnf_dir = yml_file_path
       manifest_directory = optional_key_as_string(config, "manifest_directory")
+      if config["helm_repository"]?
+          helm_repository = config["helm_repository"].as_h
+        helm_repo_name = optional_key_as_string(helm_repository, "name")
+        helm_repo_url = optional_key_as_string(helm_repository, "repo_url")
+      else
+        helm_repo_name = ""
+        helm_repo_url = ""
+      end
       helm_chart = optional_key_as_string(config, "helm_chart")
       release_name = "#{config.get("release_name").as_s?}"
       service_name = optional_key_as_string(config, "service_name")
@@ -90,7 +98,7 @@ module CNFManager
                                release_name: release_name,
                                service_name: service_name,
                                docker_repository: docker_repository,
-                               helm_repository: {name: "", repo_url: ""},
+                               helm_repository: {name: helm_repo_name, repo_url: helm_repo_url},
                                helm_chart: helm_chart,
                                helm_chart_container_name: "",
                                rolling_update_tag: "",
@@ -527,38 +535,39 @@ module CNFManager
     ret = false
     if helm_repo_name == nil || helm_repo_url == nil
       # config = get_parsed_cnf_conformance_yml(args)
-      config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+      # config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))    
       LOGGING.info "helm path: #{CNFSingleton.helm}"
-      # current_dir = FileUtils.pwd
-      # #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
       helm = CNFSingleton.helm
-      helm_repo_name = config.get("helm_repository.name").as_s?
+      # helm_repo_name = config.get("helm_repository.name").as_s?
+      helm_repository = config.cnf_config[:helm_repository]
+      helm_repo_name = "#{helm_repository && helm_repository["name"]}"
+      helm_repo_url = "#{helm_repository && helm_repository["repo_url"]}"
       LOGGING.info "helm_repo_name: #{helm_repo_name}"
-      helm_repo_url = config.get("helm_repository.repo_url").as_s?
+      # helm_repo_url = config.get("helm_repository.repo_url").as_s?
       LOGGING.info "helm_repo_url: #{helm_repo_url}"
     end
     if helm_repo_name && helm_repo_url
-      LOGGING.info "helm  repo add command: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
-      # helm_resp = `#{helm} repo add #{helm_repo_name} #{helm_repo_url}`
-      stdout = IO::Memory.new
-      stderror = IO::Memory.new
-      begin
-        process = Process.new("#{helm}", ["repo", "add", "#{helm_repo_name}", "#{helm_repo_url}"], output: stdout, error: stderror)
-        status = process.wait
-        helm_resp = stdout.to_s
-        error = stderror.to_s
-        LOGGING.info "error: #{error}"
-        LOGGING.info "helm_resp (add): #{helm_resp}"
-      rescue
-        LOGGING.error "helm repo add command critically failed: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
-      end
-      # Helm version v3.3.3 gave us a surprise
-      if helm_resp =~ /has been added|already exists/ || error =~ /has been added|already exists/
-      # if $?.success?
-        ret = true
-      else
-        ret = false
-      end
+      ret = Helm.helm_repo_add(helm_repo_name, helm_repo_url)
+      # LOGGING.info "helm  repo add command: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
+      # stdout = IO::Memory.new
+      # stderror = IO::Memory.new
+      # begin
+      #   process = Process.new("#{helm}", ["repo", "add", "#{helm_repo_name}", "#{helm_repo_url}"], output: stdout, error: stderror)
+      #   status = process.wait
+      #   helm_resp = stdout.to_s
+      #   error = stderror.to_s
+      #   LOGGING.info "error: #{error}"
+      #   LOGGING.info "helm_resp (add): #{helm_resp}"
+      # rescue
+      #   LOGGING.info "helm repo add command critically failed: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
+      # end
+      # # Helm version v3.3.3 gave us a surprise
+      # if helm_resp =~ /has been added|already exists/ || error =~ /has been added|already exists/
+      #   ret = true
+      # else
+      #   ret = false
+      # end
     else
       ret = false
     end
@@ -725,6 +734,11 @@ module CNFManager
     helm_directory = config.cnf_config[:helm_directory]
     manifest_directory = config.cnf_config[:manifest_directory]
     git_clone_url = config.cnf_config[:git_clone_url]
+    helm_repository = config.cnf_config[:helm_repository]
+    helm_repo_name = "#{helm_repository && helm_repository["name"]}"
+    helm_repo_url = "#{helm_repository && helm_repository["repo_url"]}"
+    LOGGING.info "helm_repo_name: #{helm_repo_name}"
+    LOGGING.info "helm_repo_url: #{helm_repo_url}"
 
     helm_chart = config.cnf_config[:helm_chart]
     helm_chart_path = config.cnf_config[:helm_chart_path]
@@ -758,6 +772,9 @@ module CNFManager
       VERBOSE_LOGGING.info manifest_install if verbose 
 
     when :helm_chart
+      if !helm_repo_name.empty? || !helm_repo_url.empty?
+        Helm.helm_repo_add(helm_repo_name, helm_repo_url)
+      end
       VERBOSE_LOGGING.info "deploying with chart repository" if verbose 
       LOGGING.info "helm command: #{helm} install #{release_name} #{helm_chart}"
       #TODO move to Helm module

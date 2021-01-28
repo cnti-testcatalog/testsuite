@@ -93,6 +93,27 @@ module Helm
     resource_names
   end
 
-  # TODO loop through all files in directory of manifests
-
+  def self.helm_repo_add(helm_repo_name, helm_repo_url)
+    helm = CNFSingleton.helm
+    LOGGING.info "helm_repo_add: helm repo add command: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
+    stdout = IO::Memory.new
+    stderror = IO::Memory.new
+    begin
+      process = Process.new("#{helm}", ["repo", "add", "#{helm_repo_name}", "#{helm_repo_url}"], output: stdout, error: stderror)
+      status = process.wait
+      helm_resp = stdout.to_s
+      error = stderror.to_s
+      LOGGING.info "error: #{error}"
+      LOGGING.info "helm_resp (add): #{helm_resp}"
+    rescue
+      LOGGING.info "helm repo add command critically failed: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
+    end
+    # Helm version v3.3.3 gave us a surprise
+    if helm_resp =~ /has been added|already exists/ || error =~ /has been added|already exists/
+      ret = true
+    else
+      ret = false
+    end
+    ret
+  end
 end 
