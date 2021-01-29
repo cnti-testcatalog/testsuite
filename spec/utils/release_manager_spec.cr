@@ -64,7 +64,6 @@ describe "ReleaseManager" do
     else 
       found_release, asset = ReleaseManager::GithubReleaseManager.upsert_release("test_version")
       # wait for upsert to finish
-      sleep 5.0
       resp_code = ReleaseManager::GithubReleaseManager.delete_release("test_version")
       (resp_code == 204).should be_truthy
     end

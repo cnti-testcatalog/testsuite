@@ -30,3 +30,6 @@ sam.cr
 test.file 
 tools/k8s-infra/
 tmp/
+chaos_network_loss.yml
+chaos_cpu_hog.yml
+chaos_container_kill.yml

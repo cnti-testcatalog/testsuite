@@ -20,9 +20,12 @@ task "install_chaosmesh" do |_, args|
     checkout_tag = `cd #{current_dir}/#{TOOLS_DIR}/chaos_mesh && git checkout tags/#{CHAOS_MESH_VERSION} && cd -`
   end
   install_chaos_mesh = `#{helm} install chaos-mesh #{current_dir}/#{TOOLS_DIR}/chaos_mesh/helm/chaos-mesh --set chaosDaemon.runtime=containerd --set chaosDaemon.socketPath=/run/containerd/containerd.sock`
-  wait_for_resource("#{current_dir}/spec/fixtures/chaos_network_loss.yml")
-  wait_for_resource("#{current_dir}/spec/fixtures/chaos_cpu_hog.yml")
-  wait_for_resource("#{current_dir}/spec/fixtures/chaos_container_kill.yml")
+  File.write("chaos_network_loss.yml", CHAOS_NETWORK_LOSS)
+  File.write("chaos_cpu_hog.yml", CHAOS_CPU_HOG)
+  File.write("chaos_container_kill.yml", CHAOS_CONTAINER_KILL)
+  wait_for_resource("chaos_network_loss.yml")
+  wait_for_resource("chaos_cpu_hog.yml")
+  wait_for_resource("chaos_container_kill.yml")
 end
 
 desc "Uninstall Chaos Mesh"
