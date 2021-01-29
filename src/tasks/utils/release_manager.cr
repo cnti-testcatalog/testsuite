@@ -241,7 +241,8 @@ TEMPLATE
       #           "Content-Type" => "application/gzip",
       #           "Content-Length" => File.size("#{cnf_tarball_name}").to_s
       #   }, raw: "#{File.open("#{cnf_tarball_name}")}")A
-    asset_resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{asset_name})" --data-binary @#{asset_name} "https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{release_id}/assets?name=$(basename #{asset_name})"`
+    asset_resp = `curl --http1.1 -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{asset_name})" --data-binary @#{asset_name} "https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{release_id}/assets?name=$(basename #{asset_name})"`
+    LOGGING.info "asset_resp: #{asset_resp}"
     asset = JSON.parse(asset_resp.strip)
     LOGGING.info "asset: #{asset}"
     asset
@@ -281,8 +282,8 @@ TEMPLATE
     parsed_resp = JSON.parse(resp)
     prerelease = parsed_resp.as_a.select{ | x | x["prerelease"]==true && !("#{x["published_at"]?}".empty?) }
     latest_snapshot = prerelease.sort do |a, b|
-      LOGGING.info "a #{a}"
-      LOGGING.info "b #{b}"
+      LOGGING.debug "a #{a}"
+      LOGGING.debug "b #{b}"
       if (b["published_at"]? && a["published_at"]?)
         Time.parse(b["published_at"].as_s,
                    "%Y-%m-%dT%H:%M:%SZ",
@@ -294,7 +295,7 @@ TEMPLATE
         0
       end
     end
-    LOGGING.info "latest_snapshot: #{latest_snapshot}"
+    LOGGING.debug "latest_snapshot: #{latest_snapshot}"
     latest_snapshot[0]["tag_name"]?.not_nil!.to_s
   end
 
