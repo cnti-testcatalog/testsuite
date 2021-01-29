@@ -16,4 +16,13 @@ module EmbeddedFileManager
   macro reboot_daemon
     REBOOT_DAEMON = Base64.decode_string("{{ `cat ./tools/reboot_daemon/manifest.yml | base64` }}")
   end
+  macro chaos_network_loss 
+    CHAOS_NETWORK_LOSS = Base64.decode_string("{{ `cat ./embedded_files/chaos_network_loss.yml  | base64`}}")
+  end
+  macro chaos_cpu_hog 
+    CHAOS_CPU_HOG = Base64.decode_string("{{ `cat ./embedded_files/chaos_cpu_hog.yml  | base64`}}")
+  end
+  macro chaos_container_kill 
+    CHAOS_CONTAINER_KILL = Base64.decode_string("{{ `cat ./embedded_files/chaos_container_kill.yml  | base64`}}")
+  end
 end

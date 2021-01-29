@@ -29,6 +29,9 @@ PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
 EmbeddedFileManager.node_failure_values
 EmbeddedFileManager.cri_tools
 EmbeddedFileManager.reboot_daemon
+EmbeddedFileManager.chaos_network_loss
+EmbeddedFileManager.chaos_cpu_hog
+EmbeddedFileManager.chaos_container_kill
 
 def task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
   LOGGING.info("task_runner args: #{args.inspect}")
