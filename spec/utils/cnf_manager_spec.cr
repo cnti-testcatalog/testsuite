@@ -275,9 +275,6 @@ describe "SampleUtils" do
     end
   end
 
-  it "'CNFManager.helm_gives_k8s_warning?' should pass when k8s config = chmod 700"  do
-    (CNFManager.helm_gives_k8s_warning?(true)).should be_false
-  end
 
   it "'CNFManager::Config#parse_config_yml' should return a populated CNFManager::Config.cnf_config"  do
     begin

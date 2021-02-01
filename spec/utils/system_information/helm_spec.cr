@@ -24,4 +24,8 @@ describe "Helm" do
   it "'helm_installations()' should return the information about the helm installation", tags: "happy-path"  do
     (helm_installation(true)).should contain("helm found")
   end
+
+  it "'Helm.helm_gives_k8s_warning?' should pass when k8s config = chmod 700"  do
+    (Helm.helm_gives_k8s_warning?(true)).should be_false
+  end
 end

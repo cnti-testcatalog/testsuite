@@ -257,7 +257,6 @@ module CNFManager
     dir + "/"
   end
 
-  #TODO check in yml file for release_name, if none, generate name
   def self.release_name?(config)
     release_name = optional_key_as_string(config, "release_name").split(" ")[0]
     if release_name.empty?
@@ -294,7 +293,7 @@ module CNFManager
     end
   end
 
-  #TODO Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
+  #Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
   def self.cnf_installation_method(config)
     LOGGING.info "cnf_installation_method"
     LOGGING.info "cnf_installation_method config: #{config}"
@@ -362,7 +361,7 @@ module CNFManager
       else 
         raise "Install method should be either helm_chart, helm_directory, or manifest_directory"
       end
-      #TODO set generated helm chart release name in yml file
+      #set generated helm chart release name in yml file
       LOGGING.debug "generate_and_set_release_name: #{release_name}"
       update_yml(yml_file, "release_name", release_name)
     end
@@ -393,7 +392,6 @@ module CNFManager
     end
   end
 
-  #TODO extract this and put into the helm module
   def self.helm_repo_add(helm_repo_name=nil, helm_repo_url=nil, args : Sam::Args=Sam::Args.new)
     LOGGING.info "helm_repo_add repo_name: #{helm_repo_name} repo_url: #{helm_repo_url} args: #{args.inspect}"
     ret = false
@@ -413,54 +411,10 @@ module CNFManager
     end
     if helm_repo_name && helm_repo_url
       ret = Helm.helm_repo_add(helm_repo_name, helm_repo_url)
-      # LOGGING.info "helm  repo add command: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
-      # stdout = IO::Memory.new
-      # stderror = IO::Memory.new
-      # begin
-      #   process = Process.new("#{helm}", ["repo", "add", "#{helm_repo_name}", "#{helm_repo_url}"], output: stdout, error: stderror)
-      #   status = process.wait
-      #   helm_resp = stdout.to_s
-      #   error = stderror.to_s
-      #   LOGGING.info "error: #{error}"
-      #   LOGGING.info "helm_resp (add): #{helm_resp}"
-      # rescue
-      #   LOGGING.info "helm repo add command critically failed: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
-      # end
-      # # Helm version v3.3.3 gave us a surprise
-      # if helm_resp =~ /has been added|already exists/ || error =~ /has been added|already exists/
-      #   ret = true
-      # else
-      #   ret = false
-      # end
     else
       ret = false
     end
     ret
-  end
-
-  #TODO extract this and put into the helm module
-  def self.helm_gives_k8s_warning?(verbose=false)
-    helm = CNFSingleton.helm
-    stdout = IO::Memory.new
-    stderror = IO::Memory.new
-    begin
-      process = Process.new("#{helm}", ["list"], output: stdout, error: stderror)
-      status = process.wait
-      helm_resp = stdout.to_s
-      error = stderror.to_s
-      LOGGING.info "error: #{error}"
-      LOGGING.info "helm_resp (add): #{helm_resp}"
-      # Helm version v3.3.3 gave us a surprise
-      if (helm_resp + error) =~ /WARNING: Kubernetes configuration file is/
-        stdout_failure("For this version of helm you must set your K8s config file permissions to chmod 700") if verbose
-        true
-      else
-        false
-      end
-    rescue ex
-      stdout_failure("Please use newer version of helm")
-      true
-    end
   end
 
   def self.sample_setup_cli_args(args, noisy=true)
@@ -560,16 +514,16 @@ module CNFManager
     VERBOSE_LOGGING.info helm_pull if verbose 
     # TODO helm_chart should be helm_chart_repo
     # TODO make this into a tar chart function
-    VERBOSE_LOGGING.info "mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart" if verbose
-    core_mv = `mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart`
+    VERBOSE_LOGGING.info "mv #{Helm.chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart" if verbose
+    core_mv = `mv #{Helm.chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart`
     VERBOSE_LOGGING.info core_mv if verbose 
 
-    VERBOSE_LOGGING.info "cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}-*.tgz" if verbose
-    tar = `cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}-*.tgz`
+    VERBOSE_LOGGING.info "cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}-*.tgz" if verbose
+    tar = `cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}-*.tgz`
     VERBOSE_LOGGING.info tar if verbose
 
-    VERBOSE_LOGGING.info "mv #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart" if verbose
-    move_chart = `mv #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart`
+    VERBOSE_LOGGING.info "mv #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart" if verbose
+    move_chart = `mv #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart`
     VERBOSE_LOGGING.info move_chart if verbose
   ensure
     cd = `cd #{current_dir}`
@@ -674,12 +628,6 @@ module CNFManager
     end
   end
 
-  # TODO move to helm module
-  def self.local_helm_path
-    current_dir = FileUtils.pwd 
-    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-  end
-
   def self.sample_cleanup(config_file, force=false, installed_from_manifest=false, verbose=true)
     LOGGING.info "sample_cleanup"
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
@@ -719,11 +667,6 @@ module CNFManager
       end
     end
     ret
-  end
-
-  # TODO move to helm module
-  def self.chart_name(helm_chart_repo)
-    helm_chart_repo.split("/").last 
   end
 
   # TODO: figure out how to check this recursively 

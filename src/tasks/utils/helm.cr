@@ -116,4 +116,37 @@ module Helm
     end
     ret
   end
+
+  def self.helm_gives_k8s_warning?(verbose=false)
+    helm = CNFSingleton.helm
+    stdout = IO::Memory.new
+    stderror = IO::Memory.new
+    begin
+      process = Process.new("#{helm}", ["list"], output: stdout, error: stderror)
+      status = process.wait
+      helm_resp = stdout.to_s
+      error = stderror.to_s
+      LOGGING.info "error: #{error}"
+      LOGGING.info "helm_resp (add): #{helm_resp}"
+      # Helm version v3.3.3 gave us a surprise
+      if (helm_resp + error) =~ /WARNING: Kubernetes configuration file is/
+        stdout_failure("For this version of helm you must set your K8s config file permissions to chmod 700") if verbose
+        true
+      else
+        false
+      end
+    rescue ex
+      stdout_failure("Please use newer version of helm")
+      true
+    end
+  end
+
+  def self.local_helm_path
+    current_dir = FileUtils.pwd 
+    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+  end
+
+  def self.chart_name(helm_chart_repo)
+    helm_chart_repo.split("/").last 
+  end
 end 
