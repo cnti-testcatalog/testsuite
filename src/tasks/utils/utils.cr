@@ -193,6 +193,7 @@ end
 LOGGING = LogginGenerator.new
 VERBOSE_LOGGING = VerboseLogginGenerator.new
 
+#TODO no longer used, removed
 def generate_version
   version = ""
   if ReleaseManager.on_a_tag?
@@ -250,30 +251,6 @@ def check_cnf_config(args)
   LOGGING.info("check_cnf_config cnf: #{cnf}")
   cnf
 end
-
-# def check_all_cnf_args(args)
-#   VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
-#   cnf = check_cnf_config(args)
-#   deploy_with_chart = true
-#   if cnf 
-#     VERBOSE_LOGGING.info "all cnf: #{cnf}" if check_verbose(args)
-#     if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
-#       deploy_with_chart = false
-#     end
-# 	end
-#   return cnf, deploy_with_chart
-# end
-#
-# def check_cnf_config_then_deploy(args)
-#   LOGGING.info "check_cnf_config_then_deploy args: #{args.inspect}"
-#   config_file, deploy_with_chart = check_all_cnf_args(args)
-#   if config_file
-#     cli_hash = CNFManager.sample_setup_cli_args(args)
-#     CNFManager.sample_setup(cli_hash) if config_file
-#   else 
-#     LOGGING.error "not deploying in check_cnf_config_then_deploy because there is not config_file"
-#   end
-# end
 
 def toggle(toggle_name)
   toggle_on = false
@@ -511,19 +488,6 @@ def failed_required_tasks
     end
   end
 end
-
-# def total_points
-#   yaml = File.open("#{Results.file}") do |file|
-#     YAML.parse(file)
-#   end
-#   yaml["items"].as_a.reduce(0) do |acc, i|
-#     if i["points"].as_i?
-#       (acc + i["points"].as_i)
-#     else
-#       acc
-#     end
-#   end
-# end
 
 def total_points(tag=nil)
   if tag
