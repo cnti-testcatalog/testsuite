@@ -46,6 +46,7 @@ This is a preliminary list of CNF samples for each layer in the [OSI model](http
 - [Tungsten Fabric](https://tungsten.io/)
 - [OpenSwitch NAS Layer 3](https://github.com/open-switch/opx-nas-l3)
 - CNI K8s add-ons operating on Layer 3 such as the Calico kube-policy-controller container
+- [A dockerized version of free5gc](https://github.com/free5gc/free5gc-compose/)
 
 
 ## [Layer 2 - Data](https://en.wikipedia.org/wiki/Data_link_layer)
