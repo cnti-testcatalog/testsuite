@@ -83,7 +83,6 @@ module CNFManager
          }
       end
 
-      # TODO populate nils with entries from cnf-conformance file
       CNFManager::Config.new({ destination_cnf_dir: destination_cnf_dir,
                                source_cnf_file: source_cnf_file,
                                source_cnf_dir: source_cnf_dir,
@@ -114,7 +113,6 @@ module CNFManager
   def self.cnf_workload_resources(args, config, &block)
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     yml_file_path = config.cnf_config[:yml_file_path] 
-    # TODO remove helm_directory and use base cnf directory
     helm_directory = config.cnf_config[:helm_directory]
     manifest_directory = config.cnf_config[:manifest_directory] 
     release_name = config.cnf_config[:release_name]
@@ -221,140 +219,6 @@ module CNFManager
     Totem.from_file "./#{cnf_conformance}"
   end
 
-  #TODO move to kubectlclient
-  def self.wait_for_install(deployment_name, wait_count : Int32 = 180, namespace="default")
-    resource_wait_for_install("deployment", deployment_name, wait_count, namespace)
-  end
-
-  #TODO move to kubectlclient
-  def self.resource_wait_for_install(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default")
-    # Not all cnfs have #{kind}.  some have only a pod.  need to check if the 
-    # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod 
-    LOGGING.info "resource_wait_for_install kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}"
-    second_count = 0
-    all_kind = `kubectl get #{kind} --namespace=#{namespace}`
-      LOGGING.debug "all_kind #{all_kind}}"
-    # TODO make this work for pods
-    case kind.downcase
-    when "replicaset", "deployment", "statefulset"
-      desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
-      LOGGING.debug "desired_replicas #{desired_replicas}"
-      current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
-      LOGGING.debug "current_replicas #{current_replicas}"
-    when "daemonset"
-      desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.desiredNumberScheduled}'`
-      LOGGING.debug "desired_replicas #{desired_replicas}"
-      current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.numberAvailable}'`
-      LOGGING.debug "current_replicas #{current_replicas}"
-    else
-      desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
-      LOGGING.debug "desired_replicas #{desired_replicas}"
-      current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
-      LOGGING.debug "current_replicas #{current_replicas}"
-    end
-
-    until (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i) || second_count > wait_count
-      LOGGING.info("second_count = #{second_count}")
-      sleep 1
-      LOGGING.debug "wait command: kubectl get #{kind} --namespace=#{namespace}"
-      all_kind = `kubectl get #{kind} --namespace=#{namespace}`
-      case kind.downcase
-      when "replicaset", "deployment", "statefulset"
-        current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
-        desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
-      when "daemonset"
-        current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.numberAvailable}'`
-        desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.desiredNumberScheduled}'`
-      else
-        current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
-        desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
-      end
-      LOGGING.debug "desired_replicas: #{desired_replicas}"
-      LOGGING.info(all_kind)
-      second_count = second_count + 1 
-    end
-
-    if (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i)
-      true
-    else
-      false
-    end
-  end
-
-  #TODO move to kubectlclient
-  def self.wait_for_install_by_apply(manifest_file, wait_count=180)
-    LOGGING.info "wait_for_install_by_apply"
-    second_count = 0
-    apply_resp = `kubectl apply -f #{manifest_file}`
-    LOGGING.info("apply response: #{apply_resp}")
-    until (apply_resp =~ /dockercluster.infrastructure.cluster.x-k8s.io\/capd unchanged/) != nil && (apply_resp =~ /cluster.cluster.x-k8s.io\/capd unchanged/) != nil && (apply_resp =~ /kubeadmcontrolplane.controlplane.cluster.x-k8s.io\/capd-control-plane unchanged/) != nil && (apply_resp =~ /kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io\/capd-md-0 unchanged/) !=nil && (apply_resp =~ /machinedeployment.cluster.x-k8s.io\/capd-md-0 unchanged/) != nil && (apply_resp =~ /machinehealthcheck.cluster.x-k8s.io\/capd-mhc-0 unchanged/) != nil || second_count > wait_count.to_i
-      LOGGING.info("second_count = #{second_count}")
-      sleep 1
-      apply_resp = `kubectl apply -f #{manifest_file}`
-      LOGGING.info("apply response: #{apply_resp}")
-      second_count = second_count + 1 
-    end
-  end 
-
-
-
-  #TODO move to kubectlclient
-  def self.pod_status(pod_name_prefix, field_selector="", namespace="default")
-    all_pods = `kubectl get pods #{field_selector} -o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}'`.split(",")
-
-    LOGGING.info(all_pods)
-    all_pod_names = all_pods[0].split(" ")
-    time_stamps = all_pods[1].split(" ")
-    pods_times = all_pod_names.map_with_index do |name, i|
-      {:name => name, :time => time_stamps[i]}
-    end
-    LOGGING.info("pods_times: #{pods_times}")
-
-    # puts "Name: #{all_pods[0]}"
-    # puts "Time Stamp: #{all_pods[1]}"
-    latest_pod_time = pods_times.reduce() do | acc, i |
-      # if current i > acc
-      LOGGING.info("ACC: #{acc}")
-      LOGGING.info("I:#{i}")
-      LOGGING.info("pod_name_prefix: #{pod_name_prefix}")
-      if (acc[:name] =~ /#{pod_name_prefix}/).nil?
-        acc = {:name => "not found", :time => "not_found"} 
-      end
-      if i[:name] =~ /#{pod_name_prefix}/
-        acc = i
-        if acc == ""
-          existing_time = Time.parse!( "#{i[:time]} +00:00", "%Y-%m-%dT%H:%M:%SZ %z")
-        else
-          existing_time = Time.parse!( "#{acc[:time]} +00:00", "%Y-%m-%dT%H:%M:%SZ %z")
-        end
-        new_time = Time.parse!( "#{i[:time]} +00:00", "%Y-%m-%dT%H:%M:%SZ %z")
-        if new_time <= existing_time
-          acc = i
-        else
-          acc
-        end
-      else
-        acc
-      end
-    end
-    LOGGING.info("latest_pod_time: #{latest_pod_time}")
-
-    pod = latest_pod_time[:name].not_nil!
-    # pod = all_pod_names[time_stamps.index(latest_time).not_nil!]
-    # pod = all_pods.select{ | x | x =~ /#{pod_name_prefix}/ }
-    puts "Pods Found: #{pod}"
-    status = `kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}'`
-    status
-  end
-
-  #TODO move to kubectlclient
-  def self.node_status(node_name)
-    all_nodes = `kubectl get nodes -o jsonpath='{.items[*].metadata.name}'`
-    LOGGING.info(all_nodes)
-    status = `kubectl get nodes #{node_name} -o jsonpath='{.status.conditions[?(@.type == "Ready")].status}'`
-    status
-  end
-
   def self.path_has_yml?(config_path)
     if config_path =~ /\.yml/  
       true
@@ -393,7 +257,6 @@ module CNFManager
     dir + "/"
   end
 
-  #TODO check in yml file for release_name, if none, generate name
   def self.release_name?(config)
     release_name = optional_key_as_string(config, "release_name").split(" ")[0]
     if release_name.empty?
@@ -430,7 +293,7 @@ module CNFManager
     end
   end
 
-  #TODO Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
+  #Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
   def self.cnf_installation_method(config)
     LOGGING.info "cnf_installation_method"
     LOGGING.info "cnf_installation_method config: #{config}"
@@ -498,7 +361,7 @@ module CNFManager
       else 
         raise "Install method should be either helm_chart, helm_directory, or manifest_directory"
       end
-      #TODO set generated helm chart release name in yml file
+      #set generated helm chart release name in yml file
       LOGGING.debug "generate_and_set_release_name: #{release_name}"
       update_yml(yml_file, "release_name", release_name)
     end
@@ -529,7 +392,6 @@ module CNFManager
     end
   end
 
-  #TODO extract this and put into the helm module
   def self.helm_repo_add(helm_repo_name=nil, helm_repo_url=nil, args : Sam::Args=Sam::Args.new)
     LOGGING.info "helm_repo_add repo_name: #{helm_repo_name} repo_url: #{helm_repo_url} args: #{args.inspect}"
     ret = false
@@ -549,54 +411,10 @@ module CNFManager
     end
     if helm_repo_name && helm_repo_url
       ret = Helm.helm_repo_add(helm_repo_name, helm_repo_url)
-      # LOGGING.info "helm  repo add command: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
-      # stdout = IO::Memory.new
-      # stderror = IO::Memory.new
-      # begin
-      #   process = Process.new("#{helm}", ["repo", "add", "#{helm_repo_name}", "#{helm_repo_url}"], output: stdout, error: stderror)
-      #   status = process.wait
-      #   helm_resp = stdout.to_s
-      #   error = stderror.to_s
-      #   LOGGING.info "error: #{error}"
-      #   LOGGING.info "helm_resp (add): #{helm_resp}"
-      # rescue
-      #   LOGGING.info "helm repo add command critically failed: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
-      # end
-      # # Helm version v3.3.3 gave us a surprise
-      # if helm_resp =~ /has been added|already exists/ || error =~ /has been added|already exists/
-      #   ret = true
-      # else
-      #   ret = false
-      # end
     else
       ret = false
     end
     ret
-  end
-
-  #TODO extract this and put into the helm module
-  def self.helm_gives_k8s_warning?(verbose=false)
-    helm = CNFSingleton.helm
-    stdout = IO::Memory.new
-    stderror = IO::Memory.new
-    begin
-      process = Process.new("#{helm}", ["list"], output: stdout, error: stderror)
-      status = process.wait
-      helm_resp = stdout.to_s
-      error = stderror.to_s
-      LOGGING.info "error: #{error}"
-      LOGGING.info "helm_resp (add): #{helm_resp}"
-      # Helm version v3.3.3 gave us a surprise
-      if (helm_resp + error) =~ /WARNING: Kubernetes configuration file is/
-        stdout_failure("For this version of helm you must set your K8s config file permissions to chmod 700") if verbose
-        true
-      else
-        false
-      end
-    rescue ex
-      stdout_failure("Please use newer version of helm")
-      true
-    end
   end
 
   def self.sample_setup_cli_args(args, noisy=true)
@@ -696,16 +514,16 @@ module CNFManager
     VERBOSE_LOGGING.info helm_pull if verbose 
     # TODO helm_chart should be helm_chart_repo
     # TODO make this into a tar chart function
-    VERBOSE_LOGGING.info "mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart" if verbose
-    core_mv = `mv #{chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart`
+    VERBOSE_LOGGING.info "mv #{Helm.chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart" if verbose
+    core_mv = `mv #{Helm.chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart`
     VERBOSE_LOGGING.info core_mv if verbose 
 
-    VERBOSE_LOGGING.info "cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}-*.tgz" if verbose
-    tar = `cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}-*.tgz`
+    VERBOSE_LOGGING.info "cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}-*.tgz" if verbose
+    tar = `cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}-*.tgz`
     VERBOSE_LOGGING.info tar if verbose
 
-    VERBOSE_LOGGING.info "mv #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart" if verbose
-    move_chart = `mv #{destination_cnf_dir}/exported_chart/#{chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart`
+    VERBOSE_LOGGING.info "mv #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart" if verbose
+    move_chart = `mv #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart`
     VERBOSE_LOGGING.info move_chart if verbose
   ensure
     cd = `cd #{current_dir}`
@@ -802,18 +620,12 @@ module CNFManager
       case resource[:kind].as_s.downcase 
       when "replicaset", "deployment", "statefulset", "pod", "daemonset"
         # wait_for_install(resource_name, wait_count)
-        resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
+        KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
       end
     end
     if helm_install.to_s.size > 0 # && helm_pull.to_s.size > 0
       LOGGING.info "Successfully setup #{release_name}".colorize(:green)
     end
-  end
-
-  # TODO move to helm module
-  def self.local_helm_path
-    current_dir = FileUtils.pwd 
-    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
   end
 
   def self.sample_cleanup(config_file, force=false, installed_from_manifest=false, verbose=true)
@@ -855,11 +667,6 @@ module CNFManager
       end
     end
     ret
-  end
-
-  # TODO move to helm module
-  def self.chart_name(helm_chart_repo)
-    helm_chart_repo.split("/").last 
   end
 
   # TODO: figure out how to check this recursively 

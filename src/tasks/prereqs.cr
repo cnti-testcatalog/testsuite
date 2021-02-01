@@ -13,7 +13,7 @@ task "prereqs" do  |_, args|
   verbose = check_verbose(args)
 
   if (helm_installation.includes?("helm found") &&
-      !CNFManager.helm_gives_k8s_warning?(true)) &
+      !Helm.helm_gives_k8s_warning?(true)) &
       wget_installation.includes?("wget found") &
       curl_installation.includes?("curl found") &
       kubectl_installation.includes?("kubectl found") &
