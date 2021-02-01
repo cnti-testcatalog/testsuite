@@ -13,7 +13,7 @@ describe "Observability" do
       LOGGING.info "Installing kube_state_metrics" 
       resp = `#{helm} install kube-state-metrics stable/kube-state-metrics`
       LOGGING.info resp
-      CNFManager.wait_for_install("kube-state-metrics")
+      KubectlClient::Get.wait_for_install("kube-state-metrics")
 
 			LOGGING.info "Installing prometheus-node-exporter" 
 			resp = `#{helm} install node-exporter stable/prometheus-node-exporter`
@@ -22,12 +22,12 @@ describe "Observability" do
 			LOGGING.info "Installing prometheus-adapter" 
 			resp = `#{helm} install prometheus-adapter stable/prometheus-adapter`
 			LOGGING.info resp
-			CNFManager.wait_for_install("prometheus-adapter")
+			KubectlClient::Get.wait_for_install("prometheus-adapter")
 
 			LOGGING.info "Installing metrics_server" 
 			resp = `kubectl create -f spec/fixtures/metrics-server.yaml`
 			LOGGING.info resp
-			CNFManager.wait_for_install(deployment_name: "metrics-server", namespace:"kube-system")
+			KubectlClient::Get.wait_for_install(deployment_name: "metrics-server", namespace:"kube-system")
 		rescue ex
 			LOGGING.error ex.message
 			ex.backtrace.each do |x| 

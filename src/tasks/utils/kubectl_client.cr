@@ -172,6 +172,79 @@ module KubectlClient
       end
     end
 
+    def self.wait_for_install(deployment_name, wait_count : Int32 = 180, namespace="default")
+      resource_wait_for_install("deployment", deployment_name, wait_count, namespace)
+    end
+
+    def self.resource_wait_for_install(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default")
+      # Not all cnfs have #{kind}.  some have only a pod.  need to check if the 
+      # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod 
+      LOGGING.info "resource_wait_for_install kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}"
+      second_count = 0
+      all_kind = `kubectl get #{kind} --namespace=#{namespace}`
+      LOGGING.debug "all_kind #{all_kind}}"
+      # TODO make this work for pods
+      case kind.downcase
+      when "replicaset", "deployment", "statefulset"
+        desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
+        LOGGING.debug "desired_replicas #{desired_replicas}"
+        current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
+        LOGGING.debug "current_replicas #{current_replicas}"
+      when "daemonset"
+        desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.desiredNumberScheduled}'`
+        LOGGING.debug "desired_replicas #{desired_replicas}"
+        current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.numberAvailable}'`
+        LOGGING.debug "current_replicas #{current_replicas}"
+      else
+        desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
+        LOGGING.debug "desired_replicas #{desired_replicas}"
+        current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
+        LOGGING.debug "current_replicas #{current_replicas}"
+      end
+
+      until (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i) || second_count > wait_count
+        LOGGING.info("second_count = #{second_count}")
+        sleep 1
+        LOGGING.debug "wait command: kubectl get #{kind} --namespace=#{namespace}"
+        all_kind = `kubectl get #{kind} --namespace=#{namespace}`
+        case kind.downcase
+        when "replicaset", "deployment", "statefulset"
+          current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
+          desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
+        when "daemonset"
+          current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.numberAvailable}'`
+          desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.desiredNumberScheduled}'`
+        else
+          current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
+          desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
+        end
+        LOGGING.debug "desired_replicas: #{desired_replicas}"
+        LOGGING.info(all_kind)
+        second_count = second_count + 1 
+      end
+
+      if (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i)
+        true
+      else
+        false
+      end
+    end
+
+    #TODO make dockercluser reference generic
+    def self.wait_for_install_by_apply(manifest_file, wait_count=180)
+      LOGGING.info "wait_for_install_by_apply"
+      second_count = 0
+      apply_resp = `kubectl apply -f #{manifest_file}`
+      LOGGING.info("apply response: #{apply_resp}")
+      until (apply_resp =~ /dockercluster.infrastructure.cluster.x-k8s.io\/capd unchanged/) != nil && (apply_resp =~ /cluster.cluster.x-k8s.io\/capd unchanged/) != nil && (apply_resp =~ /kubeadmcontrolplane.controlplane.cluster.x-k8s.io\/capd-control-plane unchanged/) != nil && (apply_resp =~ /kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io\/capd-md-0 unchanged/) !=nil && (apply_resp =~ /machinedeployment.cluster.x-k8s.io\/capd-md-0 unchanged/) != nil && (apply_resp =~ /machinehealthcheck.cluster.x-k8s.io\/capd-mhc-0 unchanged/) != nil || second_count > wait_count.to_i
+        LOGGING.info("second_count = #{second_count}")
+        sleep 1
+        apply_resp = `kubectl apply -f #{manifest_file}`
+        LOGGING.info("apply response: #{apply_resp}")
+        second_count = second_count + 1 
+      end
+    end 
+
     def self.resource_desired_is_available?(kind : String, resource_name)
       resp = `kubectl get #{kind} #{resource_name} -o=yaml`
       replicas_applicable = false

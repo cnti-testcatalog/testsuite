@@ -31,12 +31,12 @@ namespace "platform" do
 
       File.write("node_failure_values.yml", NODE_FAILURE_VALUES)
       install_coredns = `#{helm} install node-failure -f ./node_failure_values.yml --set nodeSelector."kubernetes\\.io/hostname"=#{worker_node} stable/coredns`
-      CNFManager.wait_for_install("node-failure-coredns")
+      KubectlClient::Get.wait_for_install("node-failure-coredns")
 
 
       File.write("reboot_daemon_pod.yml", REBOOT_DAEMON)
       install_reboot_daemon = `kubectl create -f reboot_daemon_pod.yml`
-      CNFManager.wait_for_install("node-failure-coredns")
+      KubectlClient::Get.wait_for_install("node-failure-coredns")
 
       pod_ready = ""
       pod_ready_timeout = 45

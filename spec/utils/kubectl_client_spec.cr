@@ -8,6 +8,24 @@ require "sam"
 describe "KubectlClient" do
   # after_all do
   # end
+
+  it "'Kubectl::Get.wait_for_install' should wait for a cnf to be installed", tags: "happy-path"  do
+    LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose wait_count=0`
+
+    $?.success?.should be_true
+
+    current_dir = FileUtils.pwd 
+    LOGGING.info current_dir
+    #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+    helm = CNFSingleton.helm
+    LOGGING.info helm
+    helm_install = `#{helm} install coredns stable/coredns`
+    LOGGING.info helm_install
+    KubectlClient::Get.wait_for_install("coredns-coredns")
+    current_replicas = `kubectl get deployments coredns-coredns -o=jsonpath='{.status.readyReplicas}'`
+    (current_replicas.to_i > 0).should be_true
+  end
+
   it "'#KubectlClient.get_nodes' should return the information about a node in json"  do
     json = KubectlClient::Get.nodes
     (json["items"].size).should be > 0

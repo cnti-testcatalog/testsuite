@@ -49,7 +49,7 @@ clusterctl config cluster capd --kubernetes-version v1.17.5 \
 
       File.write("capd.yaml", create_capd_response)
 
-      CNFManager.wait_for_install_by_apply("capd.yaml")
+      KubectlClient::Get.wait_for_install_by_apply("capd.yaml")
 
       LOGGING.info `kubectl apply -f capd.yaml`
 end

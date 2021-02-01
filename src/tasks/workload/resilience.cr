@@ -131,8 +131,8 @@ task "chaos_container_kill", ["install_chaosmesh"] do |_, args|
         run_chaos = `kubectl create -f "#{destination_cnf_dir}/chaos_container_kill.yml"`
         VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
         if wait_for_test("PodChaos", "container-kill")
-          # CNFManager.wait_for_install(resource["name"], wait_count=60)
-          CNFManager.resource_wait_for_install(resource["kind"].as_s, resource["name"].as_s, wait_count=60)
+          # KubectlClient::Get.wait_for_install(resource["name"], wait_count=60)
+          KubectlClient::Get.resource_wait_for_install(resource["kind"].as_s, resource["name"].as_s, wait_count=60)
         else
           # TODO Change this to an exception (points = 0)
           # e.g. upsert_exception_task
@@ -142,7 +142,7 @@ task "chaos_container_kill", ["install_chaosmesh"] do |_, args|
       end
       # TODO fail if exceeds
       # if wait_for_test("PodChaos", "container-kill")
-      # CNFManager.wait_for_install(deployment_name, wait_count=60)
+      # KubectlClient::Get.wait_for_install(deployment_name, wait_count=60)
 
       resource_names << {"kind" => resource["kind"].as_s,
                          "name" => resource["name"].as_s}

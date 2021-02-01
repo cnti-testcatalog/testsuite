@@ -77,7 +77,7 @@ task "reasonable_startup_time" do |_, args|
             resource["kind"].as_s.downcase == "statefulset" ||
             resource["kind"].as_s.downcase == "replicaset"
 
-          CNFManager.resource_wait_for_install(resource["kind"].as_s, resource["metadata"]["name"].as_s, wait_count=180, "startup-test")
+          KubectlClient::Get.resource_wait_for_install(resource["kind"].as_s, resource["metadata"]["name"].as_s, wait_count=180, "startup-test")
           $?.success?
         else
           true
@@ -103,7 +103,7 @@ task "reasonable_startup_time" do |_, args|
     LOGGING.debug "Reasonable startup cleanup"
     delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
     rollback_non_namespaced = `kubectl apply -f #{yml_file_path}/reasonable_startup_orig.yml`
-    # CNFManager.wait_for_install(deployment_name, wait_count=180)
+    # KubectlClient::Get.wait_for_install(deployment_name, wait_count=180)
   end
 end
 
