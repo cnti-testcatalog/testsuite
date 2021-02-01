@@ -42,7 +42,7 @@ namespace "platform" do
       pod_ready_timeout = 45
       begin
         until (pod_ready == "true" || pod_ready_timeout == 0)
-          pod_ready = CNFManager.pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[2]
+          pod_ready = KubectlClient::Get.pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[2]
           pod_ready_timeout = pod_ready_timeout - 1
           if pod_ready_timeout == 0
             upsert_failed_task("worker_reboot_recovery", "✖️  FAILURE: Failed to install reboot daemon")
@@ -54,7 +54,7 @@ namespace "platform" do
         end
 
         # Find Reboot Daemon name
-        reboot_daemon_pod = CNFManager.pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[0]
+        reboot_daemon_pod = KubectlClient::Get.pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[0]
         start_reboot = `kubectl exec -ti #{reboot_daemon_pod} touch /tmp/reboot`
 
         #Watch for Node Failure.
@@ -62,8 +62,8 @@ namespace "platform" do
         node_ready = ""
         node_failure_timeout = 30
         until (pod_ready == "false" || node_ready == "False" || node_ready == "Unknown" || node_failure_timeout == 0)
-          pod_ready = CNFManager.pod_status("node-failure").split(",")[2]
-          node_ready = CNFManager.node_status("#{worker_node}")
+          pod_ready = KubectlClient::Get.pod_status("node-failure").split(",")[2]
+          node_ready = KubectlClient::Get.node_status("#{worker_node}")
           puts "Waiting for Node to go offline"
           puts "Pod Ready Status: #{pod_ready}"
           puts "Node Ready Status: #{node_ready}"
@@ -80,8 +80,8 @@ namespace "platform" do
         node_ready = ""
         node_online_timeout = 300
         until (pod_ready == "true" && node_ready == "True" || node_online_timeout == 0)
-          pod_ready = CNFManager.pod_status("node-failure", "").split(",")[2]
-          node_ready = CNFManager.node_status("#{worker_node}")
+          pod_ready = KubectlClient::Get.pod_status("node-failure", "").split(",")[2]
+          node_ready = KubectlClient::Get.node_status("#{worker_node}")
           puts "Waiting for Node to come back online"
           puts "Pod Ready Status: #{pod_ready}"
           puts "Node Ready Status: #{node_ready}"

@@ -73,12 +73,12 @@ namespace "platform" do
         pod_ready = ""
         pod_ready_timeout = 45
         until (pod_ready == "true" || pod_ready_timeout == 0)
-          pod_ready = CNFManager.pod_status("cri-tools").split(",")[2]
+          pod_ready = KubectlClient::Get.pod_status("cri-tools").split(",")[2]
           puts "Pod Ready Status: #{pod_ready}"
           sleep 1
           pod_ready_timeout = pod_ready_timeout - 1
         end
-        cri_tools_pod = CNFManager.pod_status("cri-tools").split(",")[0]
+        cri_tools_pod = KubectlClient::Get.pod_status("cri-tools").split(",")[0]
         #, "--field-selector spec.nodeName=#{worker_node}")
         LOGGING.debug "cri_tools_pod: #{cri_tools_pod}"
 
@@ -213,12 +213,12 @@ end
         pod_ready = ""
         pod_ready_timeout = 45
         until (pod_ready == "true" || pod_ready_timeout == 0)
-          pod_ready = CNFManager.pod_status("cri-tools").split(",")[2]
+          pod_ready = KubectlClient::Get.pod_status("cri-tools").split(",")[2]
           puts "Pod Ready Status: #{pod_ready}"
           sleep 1
           pod_ready_timeout = pod_ready_timeout - 1
         end
-        cri_tools_pod = CNFManager.pod_status("cri-tools").split(",")[0]
+        cri_tools_pod = KubectlClient::Get.pod_status("cri-tools").split(",")[0]
         #, "--field-selector spec.nodeName=#{worker_node}")
         LOGGING.debug "cri_tools_pod: #{cri_tools_pod}"
 
