@@ -2,11 +2,9 @@
 desc "Platform Tests"
 task "platform", ["helm_local_install", "k8s_conformance", "platform:observability", "platform:resilience", "platform:hardware_and_scheduling"]  do |_, args|
   VERBOSE_LOGGING.info "platform" if check_verbose(args)
-  #TODO add CRYSTAL_ENV=TEST in new ISSUES when testing ./cnf-conformance platform or ./cnf-conformance all
 
   total = total_points("platform")
   if total > 0
-    #TODO make new platform_total_points and platform_total_max_points
     stdout_success "Final platform score: #{total} of #{total_max_points("platform")}"
   else
     stdout_failure "Final platform score: #{total} of #{total_max_points("platform")}"
@@ -23,8 +21,6 @@ desc "Does the platform pass the K8s conformance tests?"
 task "k8s_conformance" do |_, args|
   VERBOSE_LOGGING.info "k8s_conformance" if check_verbose(args)
   begin
-    #TODO enable full test with production mode
-    #sonobuoy = `sonobuoy run --wait` if PRODUCTION_MODE and not in test_mode
     current_dir = FileUtils.pwd 
     VERBOSE_LOGGING.debug current_dir if check_verbose(args)
     sonobuoy = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy"
@@ -34,7 +30,6 @@ task "k8s_conformance" do |_, args|
     VERBOSE_LOGGING.info delete if check_verbose(args)
 
     # Run the tests
-    #TODO when in test mode --mode quick, prod mode no quick
     testrun = ""
     VERBOSE_LOGGING.info ENV["CRYSTAL_ENV"]? if check_verbose(args)
     if ENV["CRYSTAL_ENV"]? == "TEST"

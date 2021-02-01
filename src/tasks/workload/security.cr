@@ -11,9 +11,6 @@ end
 
 desc "Check if any containers are running in privileged mode"
 task "privileged" do |_, args|
-  #TODO Document all arguments
-  #TODO check if container exists
-  #TODO Check if args exist
   task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "privileged" if check_verbose(args)
     white_list_container_names = config.cnf_config[:white_list_container_names]

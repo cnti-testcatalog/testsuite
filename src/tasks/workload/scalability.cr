@@ -89,6 +89,7 @@ def change_capacity(base_replicas, target_replica_count, args, config, resource 
   initialization_time = base_replicas.to_i * 10
   VERBOSE_LOGGING.info "resource: #{resource["metadata"]["name"]}" if check_verbose(args)
 
+  #TODO make a KubectlClient.scale command
   case resource["kind"].as_s.downcase
   when "deployment"
     LOGGING.debug "kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"

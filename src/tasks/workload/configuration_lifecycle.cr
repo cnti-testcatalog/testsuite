@@ -44,6 +44,7 @@ task "ip_addresses" do |_, args|
       resp
     else
       # TODO If no helm chart directory, exit with 0 points
+      # ADD SKIPPED tag for points.yml to allow for 0 points
       Dir.cd(cdir)
       resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
     end
@@ -339,8 +340,6 @@ task "secrets_used" do |_, args|
       LOGGING.info "resource: #{resource}"
       LOGGING.info "volumes: #{volumes}"
 
-      # TODO cnf must have either a used secret volume or a defined container secret key ref
-      # test_passed = true 
       volume_test_passed = false
       secret_volume_exists = false
       secret_volume_mounted = true 
@@ -374,11 +373,11 @@ task "secrets_used" do |_, args|
 
       
       # TODO if a container exists which has a secretkeyref defined 
-      #   and also has a corresponding k8s secret defined, the whole test passes
+      # and also has a corresponding k8s secret defined, the whole test passes.
 
-      # TODO if there are any containers that have a secretkeyref defined 
+      #  if there are any containers that have a secretkeyref defined 
       #  but do not have a corresponding k8s secret defined, this 
-      #  is an installation problem
+      #  is an installation problem, and does not stop the test from passing
 
       secrets = KubectlClient::Get.secrets
       secret_keyref_found = false 
@@ -398,8 +397,8 @@ task "secrets_used" do |_, args|
       # if at least 1 secret volume exists, but it is not mounted, test fails
       # if no secret volumes exist, but a container secret exists 
       #  and is defined, test passes
-      # if at least 1 container secret exists, but it is not defined, (see 
-      #  TODO on line 374)
+      # if at least 1 container secret exists, but it is not defined, this 
+      # is an installation problem
       # if no secret volume exists and no container secret exists, test fails
       test_passed = false
       if secret_keyref_found || volume_test_passed

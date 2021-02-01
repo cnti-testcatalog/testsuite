@@ -23,9 +23,9 @@ task "install_chaosmesh" do |_, args|
   File.write("chaos_network_loss.yml", CHAOS_NETWORK_LOSS)
   File.write("chaos_cpu_hog.yml", CHAOS_CPU_HOG)
   File.write("chaos_container_kill.yml", CHAOS_CONTAINER_KILL)
-  wait_for_resource("chaos_network_loss.yml")
-  wait_for_resource("chaos_cpu_hog.yml")
-  wait_for_resource("chaos_container_kill.yml")
+  ChaosMeshSetup.wait_for_resource("chaos_network_loss.yml")
+  ChaosMeshSetup.wait_for_resource("chaos_cpu_hog.yml")
+  ChaosMeshSetup.wait_for_resource("chaos_container_kill.yml")
 end
 
 desc "Uninstall Chaos Mesh"
@@ -39,41 +39,44 @@ task "uninstall_chaosmesh" do |_, args|
   delete_chaos_mesh = `#{helm} delete chaos-mesh`
 end
 
-def wait_for_test(test_type, test_name)
-  second_count = 0
-  wait_count = 60
-  status = ""
-  until (status.empty? != true && status == "Finished") || second_count > wait_count.to_i
-    LOGGING.debug "second_count = #{second_count}"
-    sleep 1
-    get_status = `kubectl get "#{test_type}" "#{test_name}" -o yaml`
-    LOGGING.info("#{get_status}")
-    status_data = Totem.from_yaml("#{get_status}")
-    LOGGING.info "Status: #{get_status}"
-    LOGGING.debug("#{status_data}")
-    status = status_data.get("status").as_h["experiment"].as_h["phase"].as_s
-    second_count = second_count + 1
-    LOGGING.info "#{get_status}"
-    LOGGING.info "#{second_count}"
-  end
-  # Did chaos mesh finish the test successfully
-  (status.empty? !=true && status == "Finished")
-end
+module ChaosMeshSetup
 
-# TODO make generate without delete?
-def wait_for_resource(resource_file)
-  second_count = 0
-  wait_count = 60
-  is_resource_created = nil
-  until (is_resource_created.nil? != true && is_resource_created == true) || second_count > wait_count.to_i
-    LOGGING.info "second_count = #{second_count}"
-    sleep 3
-    `kubectl create -f #{resource_file} 2>&1 >/dev/null`
-    is_resource_created = $?.success?
-    LOGGING.info "Waiting for CRD"
-    LOGGING.info "Status: #{is_resource_created}"
-    LOGGING.debug "resource file: #{resource_file}"
-    second_count = second_count + 1
+  def self.wait_for_test(test_type, test_name)
+    second_count = 0
+    wait_count = 60
+    status = ""
+    until (status.empty? != true && status == "Finished") || second_count > wait_count.to_i
+      LOGGING.debug "second_count = #{second_count}"
+      sleep 1
+      get_status = `kubectl get "#{test_type}" "#{test_name}" -o yaml`
+      LOGGING.info("#{get_status}")
+      status_data = Totem.from_yaml("#{get_status}")
+      LOGGING.info "Status: #{get_status}"
+      LOGGING.debug("#{status_data}")
+      status = status_data.get("status").as_h["experiment"].as_h["phase"].as_s
+      second_count = second_count + 1
+      LOGGING.info "#{get_status}"
+      LOGGING.info "#{second_count}"
+    end
+    # Did chaos mesh finish the test successfully
+    (status.empty? !=true && status == "Finished")
   end
-  `kubectl delete -f #{resource_file}`
+
+  # TODO make generate without delete?
+  def self.wait_for_resource(resource_file)
+    second_count = 0
+    wait_count = 60
+    is_resource_created = nil
+    until (is_resource_created.nil? != true && is_resource_created == true) || second_count > wait_count.to_i
+      LOGGING.info "second_count = #{second_count}"
+      sleep 3
+      `kubectl create -f #{resource_file} 2>&1 >/dev/null`
+      is_resource_created = $?.success?
+      LOGGING.info "Waiting for CRD"
+      LOGGING.info "Status: #{is_resource_created}"
+      LOGGING.debug "resource file: #{resource_file}"
+      second_count = second_count + 1
+    end
+    `kubectl delete -f #{resource_file}`
+  end
 end

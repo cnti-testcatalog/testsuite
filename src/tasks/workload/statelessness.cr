@@ -22,7 +22,7 @@ task "volume_hostpath_not_found" do |_, args|
     task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
       hostPath_found = nil 
       begin
-        # TODO check to see if this fails with container storage (and then erroneously fails the test as having hostpath volumes)
+        # TODO check to see if volume is actually mounted.  Check to see if mount (without volume) has host path as well
         volumes = resource.dig?("spec", "template", "spec", "volumes")
         if volumes
           hostPath_not_found = volumes.as_a.none? do |volume| 

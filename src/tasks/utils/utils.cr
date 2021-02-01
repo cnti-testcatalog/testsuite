@@ -8,30 +8,7 @@ require "file_utils"
 require "option_parser"
 require "../constants.cr"
 
-# TODO make constants local or always retrieve from environment variables
-# TODO Move constants out
 # TODO put these functions into a module
-
-# TODO: error with proper exit_code when any of these don't exist and ask user to run setup command
-CNF_DIR = "cnfs"
-CONFIG_FILE = "cnf-conformance.yml"
-TOOLS_DIR = "tools"
-BASE_CONFIG = "./config.yml"
-# Results.file = "cnf-conformance-results-#{Time.utc.to_s("%Y%m%d")}.log"
-# Results.file = "results.yml"
-POINTSFILE = "points.yml"
-PASSED = "passed"
-FAILED = "failed"
-DEFAULT_POINTSFILENAME = "points_v1.yml"
-PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
-
-#Embedded global text variables
-EmbeddedFileManager.node_failure_values
-EmbeddedFileManager.cri_tools
-EmbeddedFileManager.reboot_daemon
-EmbeddedFileManager.chaos_network_loss
-EmbeddedFileManager.chaos_cpu_hog
-EmbeddedFileManager.chaos_container_kill
 
 def task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
   LOGGING.info("task_runner args: #{args.inspect}")
@@ -664,5 +641,3 @@ def optional_key_as_string(totem_config, key_name)
   "#{totem_config[key_name]? && totem_config[key_name].as_s?}"
 end
 
-# TODO move to kubectl_client
-# TODO make resource version
