@@ -30,7 +30,7 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
         # stable_repo = ""
         VERBOSE_LOGGING.debug stable_repo if check_verbose(args)
 
-        #TODO grep for version.BuildInfo{Version:"v3.1.1", GitCommit:"afe70585407b420d0097d07b21c47dc511525ac8", GitTreeState:"clean", GoVersion:"go1.13.8"} 
+        #TODO grep for specific version e.g. version.BuildInfo{Version:"v3.1.1", GitCommit:"afe70585407b420d0097d07b21c47dc511525ac8", GitTreeState:"clean", GoVersion:"go1.13.8"} 
       ensure
         cd = `cd #{current_dir}`
         VERBOSE_LOGGING.debug cd if check_verbose(args)

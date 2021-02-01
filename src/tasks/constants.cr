@@ -1,4 +1,23 @@
 require "./utils/system_information/helm.cr"
+require "./utils/embedded_file_manager.cr"
+
+CNF_DIR = "cnfs"
+CONFIG_FILE = "cnf-conformance.yml"
+TOOLS_DIR = "tools"
+BASE_CONFIG = "./config.yml"
+POINTSFILE = "points.yml"
+PASSED = "passed"
+FAILED = "failed"
+DEFAULT_POINTSFILENAME = "points_v1.yml"
+PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
+
+#Embedded global text variables
+EmbeddedFileManager.node_failure_values
+EmbeddedFileManager.cri_tools
+EmbeddedFileManager.reboot_daemon
+EmbeddedFileManager.chaos_network_loss
+EmbeddedFileManager.chaos_cpu_hog
+EmbeddedFileManager.chaos_container_kill
 
 CNFSingleton = CNFGlobals.new
 class CNFGlobals

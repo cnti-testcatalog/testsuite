@@ -9,7 +9,6 @@ desc "The CNF Conformance program enables interoperability of CNFs from multiple
 task "all", ["workload", "platform"] do  |_, args|
   VERBOSE_LOGGING.info "all" if check_verbose(args)
 
-  # TODO make a workload and a platform total points
   total = total_points
   if total > 0
     stdout_success "Final score: #{total} of #{total_max_points}"

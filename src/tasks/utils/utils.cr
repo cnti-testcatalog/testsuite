@@ -8,30 +8,7 @@ require "file_utils"
 require "option_parser"
 require "../constants.cr"
 
-# TODO make constants local or always retrieve from environment variables
-# TODO Move constants out
 # TODO put these functions into a module
-
-# TODO: error with proper exit_code when any of these don't exist and ask user to run setup command
-CNF_DIR = "cnfs"
-CONFIG_FILE = "cnf-conformance.yml"
-TOOLS_DIR = "tools"
-BASE_CONFIG = "./config.yml"
-# Results.file = "cnf-conformance-results-#{Time.utc.to_s("%Y%m%d")}.log"
-# Results.file = "results.yml"
-POINTSFILE = "points.yml"
-PASSED = "passed"
-FAILED = "failed"
-DEFAULT_POINTSFILENAME = "points_v1.yml"
-PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
-
-#Embedded global text variables
-EmbeddedFileManager.node_failure_values
-EmbeddedFileManager.cri_tools
-EmbeddedFileManager.reboot_daemon
-EmbeddedFileManager.chaos_network_loss
-EmbeddedFileManager.chaos_cpu_hog
-EmbeddedFileManager.chaos_container_kill
 
 def task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
   LOGGING.info("task_runner args: #{args.inspect}")
@@ -216,6 +193,7 @@ end
 LOGGING = LogginGenerator.new
 VERBOSE_LOGGING = VerboseLogginGenerator.new
 
+#TODO no longer used, removed
 def generate_version
   version = ""
   if ReleaseManager.on_a_tag?
@@ -273,30 +251,6 @@ def check_cnf_config(args)
   LOGGING.info("check_cnf_config cnf: #{cnf}")
   cnf
 end
-
-# def check_all_cnf_args(args)
-#   VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
-#   cnf = check_cnf_config(args)
-#   deploy_with_chart = true
-#   if cnf 
-#     VERBOSE_LOGGING.info "all cnf: #{cnf}" if check_verbose(args)
-#     if args.named["deploy_with_chart"]? && args.named["deploy_with_chart"] == "false"
-#       deploy_with_chart = false
-#     end
-# 	end
-#   return cnf, deploy_with_chart
-# end
-#
-# def check_cnf_config_then_deploy(args)
-#   LOGGING.info "check_cnf_config_then_deploy args: #{args.inspect}"
-#   config_file, deploy_with_chart = check_all_cnf_args(args)
-#   if config_file
-#     cli_hash = CNFManager.sample_setup_cli_args(args)
-#     CNFManager.sample_setup(cli_hash) if config_file
-#   else 
-#     LOGGING.error "not deploying in check_cnf_config_then_deploy because there is not config_file"
-#   end
-# end
 
 def toggle(toggle_name)
   toggle_on = false
@@ -535,19 +489,6 @@ def failed_required_tasks
   end
 end
 
-# def total_points
-#   yaml = File.open("#{Results.file}") do |file|
-#     YAML.parse(file)
-#   end
-#   yaml["items"].as_a.reduce(0) do |acc, i|
-#     if i["points"].as_i?
-#       (acc + i["points"].as_i)
-#     else
-#       acc
-#     end
-#   end
-# end
-
 def total_points(tag=nil)
   if tag
     tasks = tasks_by_tag(tag)
@@ -664,5 +605,3 @@ def optional_key_as_string(totem_config, key_name)
   "#{totem_config[key_name]? && totem_config[key_name].as_s?}"
 end
 
-# TODO move to kubectl_client
-# TODO make resource version

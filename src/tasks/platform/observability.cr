@@ -30,7 +30,7 @@ namespace "platform" do
         sha_list = named_sha_list(state_metric_releases)
         LOGGING.debug "sha_list: #{sha_list}"
 
-        # TODO find hash for image
+        # find hash for image
         imageids = KubectlClient::Get.all_container_repo_digests
         LOGGING.debug "imageids: #{imageids}"
         found = false
@@ -169,7 +169,7 @@ end
         sha_list = named_sha_list(prometheus_adapter_releases)
         LOGGING.debug "sha_list: #{sha_list}"
 
-        # TODO find hash for image
+        # find hash for image
         imageids = KubectlClient::Get.all_container_repo_digests
         LOGGING.debug "imageids: #{imageids}"
         found = false
@@ -304,7 +304,7 @@ def named_sha_list(resp_json)
     end
   else
     parsed_json["results"].not_nil!.as_a.reduce([] of Hash(String, String)) do |acc, i|
-      #TODO always use amd64
+      # always use amd64
       amd64image = i["images"].as_a.find{|x| x["architecture"].as_s == "amd64"}
       LOGGING.debug "amd64image: #{amd64image}"
       if amd64image && amd64image["digest"]?

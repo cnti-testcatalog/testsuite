@@ -35,7 +35,7 @@ task "chaos_network_loss", ["install_chaosmesh"] do |_, args|
         VERBOSE_LOGGING.debug "#{chaos_config}" if check_verbose(args)
         run_chaos = `kubectl create -f "#{destination_cnf_dir}/chaos_network_loss.yml"`
         VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
-        if wait_for_test("NetworkChaos", "network-loss")
+        if ChaosMeshSetup.wait_for_test("NetworkChaos", "network-loss")
           LOGGING.info( "Wait Done")
           unless KubectlClient::Get.resource_desired_is_available?(resource["kind"].as_s, resource["name"].as_s)
             test_passed = false
@@ -43,6 +43,7 @@ task "chaos_network_loss", ["install_chaosmesh"] do |_, args|
           end
         else
           # TODO Change this to an exception (points = 0)
+          # Add SKIPPED to points.yml and set to points = 0
           # e.g. upsert_exception_task
           test_passed = false
           puts "Chaosmesh failed to finish for resource: #{resource["name"]}".colorize(:red)
@@ -81,13 +82,14 @@ task "chaos_cpu_hog", ["install_chaosmesh"] do |_, args|
         run_chaos = `kubectl create -f "#{destination_cnf_dir}/chaos_cpu_hog.yml"`
         VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
         # TODO fail if exceeds
-        if wait_for_test("StressChaos", "burn-cpu")
+        if ChaosMeshSetup.wait_for_test("StressChaos", "burn-cpu")
           unless KubectlClient::Get.resource_desired_is_available?(resource["kind"].as_s, resource["name"].as_s)
             test_passed = false
             puts "Chaosmesh Application pod is not healthy after high CPU consumption for resource: #{resource["name"]}".colorize(:red)
           end
         else
           # TODO Change this to an exception (points = 0)
+          # TODO Add SKIPPED to points.yml and set to points = 0
           # e.g. upsert_exception_task
             test_passed = false
             puts "Chaosmesh failed to finish for resource: #{resource["name"]}".colorize(:red)
@@ -130,19 +132,16 @@ task "chaos_container_kill", ["install_chaosmesh"] do |_, args|
         VERBOSE_LOGGING.debug "#{chaos_config}" if check_verbose(args)
         run_chaos = `kubectl create -f "#{destination_cnf_dir}/chaos_container_kill.yml"`
         VERBOSE_LOGGING.debug "#{run_chaos}" if check_verbose(args)
-        if wait_for_test("PodChaos", "container-kill")
-          # KubectlClient::Get.wait_for_install(resource["name"], wait_count=60)
+        if ChaosMeshSetup.wait_for_test("PodChaos", "container-kill")
           KubectlClient::Get.resource_wait_for_install(resource["kind"].as_s, resource["name"].as_s, wait_count=60)
         else
           # TODO Change this to an exception (points = 0)
+          # TODO Add SKIPPED to points.yml and set to points = 0
           # e.g. upsert_exception_task
           test_passed = false
           puts "Chaosmesh chaos_container_kill failed to finish forresource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
         end
       end
-      # TODO fail if exceeds
-      # if wait_for_test("PodChaos", "container-kill")
-      # KubectlClient::Get.wait_for_install(deployment_name, wait_count=60)
 
       resource_names << {"kind" => resource["kind"].as_s,
                          "name" => resource["name"].as_s}

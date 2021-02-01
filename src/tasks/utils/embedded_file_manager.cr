@@ -1,6 +1,5 @@
 require "totem"
 require "colorize"
-require "./cnf_manager.cr"
 require "logger"
 require "halite"
 
