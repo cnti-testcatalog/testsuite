@@ -113,6 +113,11 @@ task "reasonable_image_size" do |_, args|
     VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+
+      yml_file_path = config.cnf_config[:yml_file_path]
+
+      install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
+      KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
       if resource["kind"].as_s.downcase == "deployment" ||
           resource["kind"].as_s.downcase == "statefulset" ||
           resource["kind"].as_s.downcase == "pod" ||
@@ -122,20 +127,55 @@ task "reasonable_image_size" do |_, args|
                            #TODO an image may not have a tag
                            tag: container.as_h["image"].as_s.split(":")[1]?}
 
-        dockerhub_image_tags = DockerClient::Get.image_tags(local_image_tag[:image])
-        if dockerhub_image_tags && dockerhub_image_tags.status_code == 200
-          image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, local_image_tag[:tag])
-          micro_size = image_by_tag && image_by_tag["full_size"] 
-          VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
-          max_size = 5_000_000_000
-          unless micro_size.to_s.to_i64 < max_size
-            puts "resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} was more than #{max_size}".colorize(:red)
-            test_passed=false
-          end
-        else
-          puts "Failed to find resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} on dockerhub".colorize(:yellow)
-          test_passed=false
+        image_pull_secrets = KubectlClient::Get.resource(resource[:kind], resource[:name]).dig?("spec", "template", "spec", "imagePullSecrets") 
+        if image_pull_secrets
+          auths = image_pull_secrets.as_a.map { |secret| 
+            puts secret["name"]
+            secret_data = KubectlClient::Get.resource("Secret", "#{secret["name"]}").dig?("data")
+            if secret_data
+              dockerconfigjson = Base64.decode_string("#{secret_data[".dockerconfigjson"]}")
+              puts "#{dockerconfigjson}"
+              dockerconfigjson.gsub(%({"auths":{),"")[0..-3]
+              # parsed_dockerconfigjson = JSON.parse(dockerconfigjson)
+              # parsed_dockerconfigjson["auths"].to_json.gsub("{","").gsub("}", "")
+            else
+              # JSON.parse(%({}))
+              ""
+            end
+          }
         end
+        puts "auths: #{auths}"
+        if auths
+          str_auths = %({"auths":{#{auths.reduce("") { | acc, x|
+            acc + x.to_s + ","
+          }[0..-2]}}})
+          puts "str_auths: #{str_auths}"
+        end
+        File.write("#{yml_file_path}/config.json", str_auths)
+        mkdir = `kubectl exec dockerd -ti -- mkdir -p /root/.docker/`
+        copy_auth = `kubectl cp #{yml_file_path}/config.json default/dockerd:/root/.docker/config.json`
+        # TODO strip out secret from under auths, save in array
+        # TODO make a new auths array, assign previous array into auths array
+        # TODO save auths array to a file
+        # secret_name = image_pull_secrets[0].dig?("name")
+        # puts "#{secret_name}"
+        # puts "#{image_pull_secrets.[0].dig?("name")}"
+        # image_pull_secret_data = KubectlClient::Get.resource("Secret", "#{image_pull_secrets}").dig?("data")  
+        # secret_data
+        # dockerhub_image_tags = DockerClient::Get.image_tags(local_image_tag[:image])
+        # if dockerhub_image_tags && dockerhub_image_tags.status_code == 200
+        #   image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, local_image_tag[:tag])
+        #   micro_size = image_by_tag && image_by_tag["full_size"] 
+        #   VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
+        #   max_size = 5_000_000_000
+        #   unless micro_size.to_s.to_i64 < max_size
+        #     puts "resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} was more than #{max_size}".colorize(:red)
+        #     test_passed=false
+        #   end
+        # else
+        #   puts "Failed to find resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} on dockerhub".colorize(:yellow)
+        #   test_passed=false
+        # end
       else
         test_passed = true
       end
