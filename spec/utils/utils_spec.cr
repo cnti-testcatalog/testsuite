@@ -187,7 +187,7 @@ describe "Utils" do
     # check_cnf_config_then_deploy(args)
     cli_hash = CNFManager.sample_setup_cli_args(args, false)
     CNFManager.sample_setup(cli_hash) if cli_hash["config_file"]
-    task_response = single_task_runner(args) do
+    task_response = CNFManager::Task.single_task_runner(args) do
       config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
       helm_chart_container_name = config.get("helm_chart_container_name").as_s
       privileged_response = `kubectl get pods --all-namespaces -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
@@ -208,7 +208,7 @@ describe "Utils" do
   it "'single_task_runner' should put a -1 in the results file if it has an exception"  do
     clean_results_yml
     args = Sam::Args.new(["cnf-config=./cnf-conformance.yml"])
-    task_response = single_task_runner(args) do
+    task_response = CNFManager::Task.single_task_runner(args) do
       cdir = FileUtils.pwd()
       response = String::Builder.new
       config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
