@@ -48,27 +48,25 @@ describe "Microservice" do
   it "'reasonable_image_size' should pass if image is smaller than 5gb", tags: ["reasonable_image_size","happy-path"]  do
     begin
       `./cnf-conformance cleanup force=true`
-      `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-conformance.yml deploy_with_chart=false`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-path=./sample-cnfs/sample-coredns-cnf`
       response_s = `./cnf-conformance reasonable_image_size verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Image size is good/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-conformance.yml deploy_with_chart=false `
+      `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
     end
   end
 
   it "'reasonable_image_size' should fail if image is larger than 5gb", tags: "reasonable_image_size" do
     begin
-      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf force=true`
-      `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-large-cnf deploy_with_chart=false wait_count=0`
+      `./cnf-conformance cnf_setup cnf-path=./sample-cnfs/sample_envoy_slow_startup wait_count=0`
       response_s = `./cnf-conformance reasonable_image_size verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Image size too large/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf force=true`
+      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup force=true`
     end
   end
-
 end

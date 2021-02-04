@@ -112,12 +112,13 @@ task "reasonable_image_size" do |_, args|
   task_runner(args) do |args,config|
     VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
+    install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
+    LOGGING.debug "Dockerd_Install: #{install_dockerd}"
+    KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-
+      
       yml_file_path = config.cnf_config[:yml_file_path]
-
-      install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
-      KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
+      
       if resource["kind"].as_s.downcase == "deployment" ||
           resource["kind"].as_s.downcase == "statefulset" ||
           resource["kind"].as_s.downcase == "pod" ||
@@ -134,7 +135,6 @@ task "reasonable_image_size" do |_, args|
             secret_data = KubectlClient::Get.resource("Secret", "#{secret["name"]}").dig?("data")
             if secret_data
               dockerconfigjson = Base64.decode_string("#{secret_data[".dockerconfigjson"]}")
-              puts "#{dockerconfigjson}"
               dockerconfigjson.gsub(%({"auths":{),"")[0..-3]
               # parsed_dockerconfigjson = JSON.parse(dockerconfigjson)
               # parsed_dockerconfigjson["auths"].to_json.gsub("{","").gsub("}", "")
@@ -143,39 +143,45 @@ task "reasonable_image_size" do |_, args|
               ""
             end
           }
-        end
-        puts "auths: #{auths}"
-        if auths
-          str_auths = %({"auths":{#{auths.reduce("") { | acc, x|
+          if auths
+            str_auths = %({"auths":{#{auths.reduce("") { | acc, x|
             acc + x.to_s + ","
           }[0..-2]}}})
-          puts "str_auths: #{str_auths}"
+            puts "str_auths: #{str_auths}"
+          end
+          File.write("#{yml_file_path}/config.json", str_auths)
+          mkdir = `kubectl exec dockerd -ti -- mkdir -p /root/.docker/`
+          LOGGING.debug "Mkdir: #{mkdir}"
+          copy_auth = `kubectl cp #{yml_file_path}/config.json default/dockerd:/root/.docker/config.json`
+          LOGGING.debug "Copy_auth: #{copy_auth}"
         end
-        File.write("#{yml_file_path}/config.json", str_auths)
-        mkdir = `kubectl exec dockerd -ti -- mkdir -p /root/.docker/`
-        copy_auth = `kubectl cp #{yml_file_path}/config.json default/dockerd:/root/.docker/config.json`
+
+        pull_image = `kubectl exec dockerd -ti -- docker pull #{local_image_tag[:image]}:#{local_image_tag[:tag]}` 
+        save_image = `kubectl exec dockerd -ti -- docker save #{local_image_tag[:image]}:#{local_image_tag[:tag]} -o /tmp/image.tar`
+        gzip_image = `kubectl exec dockerd -ti -- gzip -f /tmp/image.tar`
+        compressed_size = `kubectl exec dockerd -ti -- wc -c /tmp/image.tar.gz | awk '{print$1}'`
         # TODO strip out secret from under auths, save in array
         # TODO make a new auths array, assign previous array into auths array
         # TODO save auths array to a file
-        # secret_name = image_pull_secrets[0].dig?("name")
-        # puts "#{secret_name}"
-        # puts "#{image_pull_secrets.[0].dig?("name")}"
-        # image_pull_secret_data = KubectlClient::Get.resource("Secret", "#{image_pull_secrets}").dig?("data")  
-        # secret_data
         # dockerhub_image_tags = DockerClient::Get.image_tags(local_image_tag[:image])
         # if dockerhub_image_tags && dockerhub_image_tags.status_code == 200
         #   image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, local_image_tag[:tag])
         #   micro_size = image_by_tag && image_by_tag["full_size"] 
-        #   VERBOSE_LOGGING.info "micro_size: #{micro_size.to_s}" if check_verbose(args)
-        #   max_size = 5_000_000_000
-        #   unless micro_size.to_s.to_i64 < max_size
-        #     puts "resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} was more than #{max_size}".colorize(:red)
-        #     test_passed=false
-        #   end
         # else
         #   puts "Failed to find resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} on dockerhub".colorize(:yellow)
         #   test_passed=false
         # end
+        VERBOSE_LOGGING.info "compressed_size: #{compressed_size.to_s}" if check_verbose(args)
+        max_size = 5_000_000_000
+        if ENV["CRYSTAL_ENV"]? == "TEST"
+           LOGGING.info("Using Test Mode max_size")
+           max_size = 16_000_000
+        end
+
+        unless compressed_size.to_s.to_i64 < max_size
+          puts "resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} was more than #{max_size}".colorize(:red)
+          test_passed=false
+        end
       else
         test_passed = true
       end
@@ -191,6 +197,8 @@ task "reasonable_image_size" do |_, args|
     else
       upsert_failed_task("reasonable_image_size", "✖️  FAILURE: Image size too large #{emoji_big} #{emoji_image_size}")
     end
+  ensure
+    delete_dockerd = `kubectl delete -f #{TOOLS_DIR}/dockerd/manifest.yml`
   end
 end
 
