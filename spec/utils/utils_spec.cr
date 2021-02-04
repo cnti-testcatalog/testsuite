@@ -244,7 +244,7 @@ describe "Utils" do
       LOGGING.info `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-generic-cnf`
       LOGGING.info `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample_privileged_cnf`
     # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: my_args )
-    task_response = all_cnfs_task_runner(my_args) do |args, config|
+    task_response = CNFManager::Task.all_cnfs_task_runner(my_args) do |args, config|
       LOGGING.info("all_cnfs_task_runner spec args #{args.inspect}")
       VERBOSE_LOGGING.info "privileged" if check_verbose(args)
       white_list_container_names = config.cnf_config[:white_list_container_names]

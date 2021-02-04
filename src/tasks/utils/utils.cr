@@ -15,24 +15,24 @@ require "../constants.cr"
 #   if check_cnf_config(args)
 #     single_task_runner(args, &block)
 #   else
-#     all_cnfs_task_runner(args, &block)
+#     CNFManager::Task.all_cnfs_task_runner(args, &block)
 #   end
 # end
 
-# TODO give example for calling
-def all_cnfs_task_runner(args, &block : Sam::Args, CNFManager::Config  -> String | Colorize::Object(String) | Nil)
-
-  # Platforms tests dont have any cnfs
-  if CNFManager.cnf_config_list(silent: true).size == 0
-    single_task_runner(args, &block)
-  else
-    CNFManager.cnf_config_list(silent: true).map do |x|
-      new_args = Sam::Args.new(args.named, args.raw)
-      new_args.named["cnf-config"] = x
-      single_task_runner(new_args, &block)
-    end
-  end
-end
+# # TODO give example for calling
+# def CNFManager::Task.all_cnfs_task_runner(args, &block : Sam::Args, CNFManager::Config  -> String | Colorize::Object(String) | Nil)
+#
+#   # Platforms tests dont have any cnfs
+#   if CNFManager.cnf_config_list(silent: true).size == 0
+#     single_task_runner(args, &block)
+#   else
+#     CNFManager.cnf_config_list(silent: true).map do |x|
+#       new_args = Sam::Args.new(args.named, args.raw)
+#       new_args.named["cnf-config"] = x
+#       single_task_runner(new_args, &block)
+#     end
+#   end
+# end
 
 # TODO give example for calling
 def single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
