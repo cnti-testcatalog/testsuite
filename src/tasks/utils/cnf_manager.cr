@@ -6,6 +6,16 @@ require "./helm.cr"
 require "uuid"
 
 module CNFManager 
+  module Task
+    def self.task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
+      LOGGING.info("task_runner args: #{args.inspect}")
+      if check_cnf_config(args)
+        single_task_runner(args, &block)
+      else
+        all_cnfs_task_runner(args, &block)
+      end
+    end
+  end
 
   class Config
     def initialize(cnf_config)

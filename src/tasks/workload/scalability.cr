@@ -22,7 +22,7 @@ end
 
 desc "Test increasing capacity by setting replicas to 1 and then increasing to 3"
 task "increase_capacity" do |_, args|
-  task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "increase_capacity" if check_verbose(args)
     emoji_increase_capacity="📦📈"
 
@@ -51,7 +51,7 @@ end
 
 desc "Test decrease capacity by setting replicas to 3 and then decreasing to 1"
 task "decrease_capacity" do |_, args|
-  task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "decrease_capacity" if check_verbose(args)
     target_replicas = "1"
     base_replicas = "3"

@@ -14,7 +14,7 @@ namespace "platform" do
 
   desc "Does the Platform use a runtime that is oci compliant"
   task "oci_compliant" do |_, args|
-    task_response = task_runner(args) do |args|
+    task_response = CNFManager::Task.task_runner(args) do |args|
       resp = KubectlClient::Get.container_runtimes
       all_oci_runtimes = true
       resp.each do |x|

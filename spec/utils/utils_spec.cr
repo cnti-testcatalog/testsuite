@@ -295,7 +295,7 @@ describe "Utils" do
     cnfmng_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
     release_name = cnfmng_config.cnf_config[:release_name]
     installed_args = Sam::Args.new(["cnf-config=./cnfs/#{release_name}/cnf-conformance.yml"])
-    task_response = task_runner(installed_args) do |args|
+    task_response = CNFManager::Task.task_runner(installed_args) do |args|
       LOGGING.info("task_runner spec args #{args.inspect}")
       # config = cnf_conformance_yml(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
       config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))

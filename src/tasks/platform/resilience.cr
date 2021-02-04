@@ -20,7 +20,7 @@ namespace "platform" do
       next
     end
     LOGGING.info "Running POC in destructive mode!"
-    task_response = task_runner(args) do |args|
+    task_response = CNFManager::Task.task_runner(args) do |args|
       current_dir = FileUtils.pwd 
       helm = CNFSingleton.helm
 

@@ -10,14 +10,14 @@ require "../constants.cr"
 
 # TODO put these functions into a module
 
-def task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
-  LOGGING.info("task_runner args: #{args.inspect}")
-  if check_cnf_config(args)
-    single_task_runner(args, &block)
-  else
-    all_cnfs_task_runner(args, &block)
-  end
-end
+# def CNFManager::Task.task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
+#   LOGGING.info("task_runner args: #{args.inspect}")
+#   if check_cnf_config(args)
+#     single_task_runner(args, &block)
+#   else
+#     all_cnfs_task_runner(args, &block)
+#   end
+# end
 
 # TODO give example for calling
 def all_cnfs_task_runner(args, &block : Sam::Args, CNFManager::Config  -> String | Colorize::Object(String) | Nil)

@@ -21,7 +21,7 @@ task "helm_deploy" do |_, args|
   VERBOSE_LOGGING.info "helm_deploy" if check_verbose(args)
   LOGGING.info("helm_deploy args: #{args.inspect}")
   if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
-    task_runner(args) do |args, config|
+    CNFManager::Task.task_runner(args) do |args, config|
       begin
         # TODO if manifest file and not helm, fail
         # TODO helm should template the metadata.name attribute based on the helm release name
@@ -69,7 +69,7 @@ end
 
 desc "Does the install script use helm?"
 task "install_script_helm" do |_, args|
-  task_runner(args) do |args|
+  CNFManager::Task.task_runner(args) do |args|
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
 
     found = 0
@@ -97,7 +97,7 @@ task "install_script_helm" do |_, args|
 end
 
 task "helm_chart_published", ["helm_local_install"] do |_, args|
-  task_runner(args) do |args|
+  CNFManager::Task.task_runner(args) do |args|
     VERBOSE_LOGGING.info "helm_chart_published" if check_verbose(args)
     VERBOSE_LOGGING.debug "helm_chart_published args.raw: #{args.raw}" if check_verbose(args)
     VERBOSE_LOGGING.debug "helm_chart_published args.named: #{args.named}" if check_verbose(args)
@@ -132,7 +132,7 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
 end
 
 task "helm_chart_valid", ["helm_local_install"] do |_, args|
-  task_runner(args) do |args|
+  CNFManager::Task.task_runner(args) do |args|
     VERBOSE_LOGGING.info "helm_chart_valid" if check_verbose(args)
     VERBOSE_LOGGING.debug "helm_chart_valid args.raw: #{args.raw}" if check_verbose(args)
     VERBOSE_LOGGING.debug "helm_chart_valid args.named: #{args.named}" if check_verbose(args)

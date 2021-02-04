@@ -21,7 +21,7 @@ task "reasonable_startup_time" do |_, args|
     next
   end
   LOGGING.info "Running reasonable_startup_time in destructive mode!"
-  task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "reasonable_startup_time" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config.cnf_config}"
 
@@ -109,7 +109,7 @@ end
 
 desc "Does the CNF have a reasonable container image size?"
 task "reasonable_image_size" do |_, args|
-  task_runner(args) do |args,config|
+  CNFManager::Task.task_runner(args) do |args,config|
     VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
