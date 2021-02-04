@@ -441,6 +441,8 @@ task "immutable_configmap", ["retrieve_manifest"] do |_, args|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
 
     # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
+    
+    # feature test to see if immutable_configmaps are enabled
     # https://github.com/cncf/cnf-conformance/issues/508#issuecomment-758438413
 
     test_config_map_filename = "#{destination_cnf_dir}/test_config_map.yml";
@@ -470,18 +472,109 @@ task "immutable_configmap", ["retrieve_manifest"] do |_, args|
     # cleanup test configmap
     KubectlClient::Delete.file(test_config_map_filename) 
 
-    # re: feature gates: https://github.com/cncf/cnf-conformance/issues/508#issuecomment-758388434
-    # TODO get only config maps that are installed with the cnf (i.e. export helm template)
-    config_maps_json = KubectlClient::Get.configmaps
+    resp = ""
+    emoji_probe="🧫"
+    task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
+      LOGGING.info "resource: #{resource}"
+      LOGGING.info "volumes: #{volumes}"
 
-    LOGGING.debug "immutable config maps: #{config_maps_json["items"]}"
-    if config_maps_json["items"].as_a.select {|x| x["immutable"]? && x["immutable"] === true}.size === config_maps_json["items"].as_a.size
-        resp = "✔️  PASSED: All configmaps immutable".colorize(:green)
-        upsert_passed_task("immutable_configmap", resp)
-    else
-      resp = "✖️  FAILURE: Found mutable configmap(s)".colorize(:red)
-        upsert_failed_task("immutable_configmap", resp)
+      volume_test_passed = false
+      config_map_volume_exists = false
+      config_map_volume_mounted = true 
+      # Check to see all volume config maps are actually used
+      # https://kubernetes.io/docs/concepts/storage/volumes/#configmap
+      volumes.as_a.each do |config_map_volume|
+        if config_map_volume["configMap"]?
+          config_map_volume_exists = true 
+          LOGGING.info "config_map_volume: #{config_map_volume["name"]}"
+          container_config_map_mounted = false 
+          containers.as_a.each do |container|
+            if container["volumeMounts"]?
+                vmount = container["volumeMounts"].as_a
+              LOGGING.info "vmount: #{vmount}"
+              LOGGING.debug "container[env]: #{container["env"]}"
+              if (vmount.find { |x| x["name"] == config_map_volume["name"]? }) 
+                LOGGING.debug config_map_volume["name"]
+                container_config_map_mounted = true 
+              end
+            end
+          end
+          # If any config_map volume exists, and it is not mounted by a
+          # container, fail test
+          if container_config_map_mounted == false
+            config_map_volume_mounted = false
+          end
+        end
+      end
+      if config_map_volume_exists && config_map_volume_mounted
+        volume_test_passed = true
+      end
+
+      
+      # TODO if a container exists which has a config_mapkeyref defined 
+      # and also has a corresponding k8s config_map defined, the whole test passes.
+
+      #  if there are any containers that have a config_mapkeyref defined 
+      #  but do not have a corresponding k8s config_map defined, this 
+      #  is an installation problem, and does not stop the test from passing
+
+      # TODO: start here , need to figure out how to make sure we are
+      # checking config map volumes that are mounted and whatnot to see if they are immutable
+
+      # re: feature gates: https://github.com/cncf/cnf-conformance/issues/508#issuecomment-758388434
+      # TODO get only config maps that are installed with the cnf (i.e. export helm template)
+      config_maps_json = KubectlClient::Get.configmaps
+
+      LOGGING.debug "immutable config maps: #{config_maps_json["items"]}"
+      if config_maps_json["items"].as_a.select {|x| x["immutable"]? && x["immutable"] === true}.size === config_maps_json["items"].as_a.size
+          resp = "✔️  PASSED: All configmaps immutable".colorize(:green)
+          upsert_passed_task("immutable_configmap", resp)
+      else
+        resp = "✖️  FAILURE: Found mutable configmap(s)".colorize(:red)
+          upsert_failed_task("immutable_configmap", resp)
+      end
+
+
+      # old secret ref code TODO: mmerge belowe with above ^
+
+      config_maps = KubectlClient::Get.config_maps
+      config_map_keyref_found = false 
+      containers.as_a.each do |container|
+        LOGGING.debug "container config_maps #{container["env"]?}"
+        if container["env"]? 
+          container["env"].as_a.find do |c| 
+          if config_maps["items"].as_a.find{|s|
+              s["metadata"]["name"] == c.dig?("valueFrom", "config_mapKeyRef", "name")}
+              config_map_keyref_found = true
+            end
+          end
+        end 
+      end
+
+      # if at least 1 config_map volume exists, and it is mounted, test passes
+      # if at least 1 config_map volume exists, but it is not mounted, test fails
+      # if no config_map volumes exist, but a container config_map exists 
+      #  and is defined, test passes
+      # if at least 1 container config_map exists, but it is not defined, this 
+      # is an installation problem
+      # if no config_map volume exists and no container config_map exists, test fails
+      test_passed = false
+      if config_map_keyref_found || volume_test_passed
+        test_passed = true
+      end
+
+      unless test_passed 
+        puts "No Secret Volumes or Container config_mapKey_refs found for resource: #{resource}".colorize(:red)
+      end
+      test_passed 
     end
+
+    if task_response 
+      resp = upsert_passed_task("config_maps_used","✔️  PASSED: Secret Volume found #{emoji_probe}")
+    else
+      resp = upsert_failed_task("config_maps_used","✖️  FAILURE: Secret Volume not found #{emoji_probe}")
+    end
+    resp
   end
 end
 
