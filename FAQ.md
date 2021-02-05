@@ -124,6 +124,7 @@ CNF Conformance Test Suite Frequently Asked Questions
  - Compiled language for portability, reduced size, and performance
  - Metaprogramming through Crystal's powerful macro system
  - Concurrency throughy green threads, called fiberes, which communicate over channels like Go lang and Clojure
+ - Dependency management for libraries and applications via the [crystal manager Shards](https://github.com/crystal-lang/shards)
 
 </p>
 </details>
