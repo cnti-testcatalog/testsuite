@@ -156,9 +156,13 @@ task "reasonable_image_size" do |_, args|
           LOGGING.debug "Copy_auth: #{copy_auth}"
         end
 
+        LOGGING.info "kubectl exec dockerd -ti -- docker pull #{local_image_tag[:image]}:#{local_image_tag[:tag]}" 
         pull_image = `kubectl exec dockerd -ti -- docker pull #{local_image_tag[:image]}:#{local_image_tag[:tag]}` 
+        LOGGING.info "kubectl exec dockerd -ti -- docker save #{local_image_tag[:image]}:#{local_image_tag[:tag]} -o /tmp/image.tar"
         save_image = `kubectl exec dockerd -ti -- docker save #{local_image_tag[:image]}:#{local_image_tag[:tag]} -o /tmp/image.tar`
+        LOGGING.info "kubectl exec dockerd -ti -- gzip -f /tmp/image.tar" 
         gzip_image = `kubectl exec dockerd -ti -- gzip -f /tmp/image.tar`
+        LOGGING.info "kubectl exec dockerd -ti -- wc -c /tmp/image.tar.gz | awk '{print$1}'"
         compressed_size = `kubectl exec dockerd -ti -- wc -c /tmp/image.tar.gz | awk '{print$1}'`
         # TODO strip out secret from under auths, save in array
         # TODO make a new auths array, assign previous array into auths array
