@@ -1,11 +1,15 @@
 ---
 #helm_directory: coredns # PATH_TO_CNFS_HELM_CHART ; or
-helm_chart_repo: stable/coredns # PUBLISHED_CNFS_HELM_CHART_REPO/NAME
+helm_chart: stable/coredns
+
+helm_repository:
+  name: stable 
+  repo_url: https://cncf.gitlab.io/stable
  
 git_clone_url: https://github.com/coredns/coredns.git # GIT_REPO_FOR_CNFS_SOURCE_CODE
 install_script: cnfs/coredns/Makefile # PATH_TO_CNFS_INSTALL_SCRIPT
 
-release_name: privileged-coredns # DESIRED_HELM_RELEASE_NAME
-deployment_name: privileged-coredns-coredns  # CNFS_KUBERNETES_DEPLOYMENT_NAME
-helm_chart_container_name: privileged-coredns-coredns # POD_SPEC_CONTAINER_NAME
+container_names: 
+  - name: coredns 
+    rolling_update_test_tag: "1.8.0"
 white_list_helm_chart_container_names: [coredns] # [LIST_OF_CONTAINERS_ALLOWED_TO_RUN_PRIVLIDGED]
