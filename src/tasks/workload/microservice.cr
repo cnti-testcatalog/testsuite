@@ -113,9 +113,9 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
   task_runner(args) do |args,config|
     VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
-    install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
-    LOGGING.debug "Dockerd_Install: #{install_dockerd}"
-    KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
+    # install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
+    # LOGGING.debug "Dockerd_Install: #{install_dockerd}"
+    # KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       
       yml_file_path = config.cnf_config[:yml_file_path]
