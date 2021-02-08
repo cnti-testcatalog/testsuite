@@ -181,9 +181,12 @@ module KubectlClient
       # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod 
       LOGGING.info "resource_wait_for_install kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}"
       second_count = 0
+      pod_ready : String | Nil
+      current_replicas : String | Nil 
+      desired_replicas : String | Nil 
       all_kind = `kubectl get #{kind} --namespace=#{namespace}`
       LOGGING.debug "all_kind #{all_kind}}"
-      # TODO make this work for pods
+      # Intialization
       case kind.downcase
       when "replicaset", "deployment", "statefulset"
         desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
@@ -195,6 +198,8 @@ module KubectlClient
         LOGGING.debug "desired_replicas #{desired_replicas}"
         current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.numberAvailable}'`
         LOGGING.debug "current_replicas #{current_replicas}"
+      when "pod"
+        pod_ready = KubectlClient::Get.pod_status(pod_name_prefix: resource_name, namespace: namespace).split(",")[2] # true/false
       else
         desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
         LOGGING.debug "desired_replicas #{desired_replicas}"
@@ -202,7 +207,9 @@ module KubectlClient
         LOGGING.debug "current_replicas #{current_replicas}"
       end
 
-      until (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i) || second_count > wait_count
+        until (pod_ready && !pod_ready.empty? && pod_ready == "true") || 
+            (current_replicas && desired_replicas && !current_replicas.empty? && current_replicas.to_i == desired_replicas.to_i) || 
+            second_count > wait_count
         LOGGING.info("second_count = #{second_count}")
         sleep 1
         LOGGING.debug "wait command: kubectl get #{kind} --namespace=#{namespace}"
@@ -214,16 +221,21 @@ module KubectlClient
         when "daemonset"
           current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.numberAvailable}'`
           desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.desiredNumberScheduled}'`
+        when "pod"
+          #TODO remove split and return true /false
+          pod_ready = KubectlClient::Get.pod_status(pod_name_prefix: resource_name, namespace: namespace).split(",")[2] # true/false
         else
           current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
           desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
         end
         LOGGING.debug "desired_replicas: #{desired_replicas}"
+        LOGGING.debug "pod_read: #{pod_ready}"
         LOGGING.info(all_kind)
         second_count = second_count + 1 
       end
 
-      if (current_replicas.empty? != true && current_replicas.to_i == desired_replicas.to_i)
+      if (pod_ready && !pod_ready.empty? && pod_ready == "true") ||
+          (current_replicas && desired_replicas && !current_replicas.empty? && current_replicas.to_i == desired_replicas.to_i)
         true
       else
         false
@@ -275,6 +287,7 @@ module KubectlClient
       resource_desired_is_available?("deployment", deployment_name)
     end
 
+    #TODO remove the need for a split and return name/ true /false in a hash
     def self.pod_status(pod_name_prefix, field_selector="", namespace="default")
       all_pods = `kubectl get pods #{field_selector} -o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}'`.split(",")
 

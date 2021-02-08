@@ -89,13 +89,19 @@ If the CNF isn't pre-deployed to the cluster then the test suite will perform th
 
 This MAY be set.  If release_name is not set, a release name will be generated. 
 
-Example setting:
+Example setting (with no parameters):
 
 `release_name: privileged-coredns`
 
 This is used by the CNF-Conformance suite to interact with the Helm release / installation of the CNF being tested and find meta-data about the CNF.
 
 For example, the [rolling_update](https://github.com/cncf/cnf-conformance/blob/96cee8cefc9a71e62e971f8f4abad56e5db59866/src/tasks/configuration_lifecycle.cr#L156) test uses the helm release_name to fetch the docker image name and tag of the CNF so it can preform a rolling update. [See: rolling_update test](https://github.com/cncf/cnf-conformance/blob/96cee8cefc9a71e62e971f8f4abad56e5db59866/src/tasks/configuration_lifecycle.cr#L179)
+
+For a protected docker registry you must use helm parameters in conjunction with the release name:
+```
+release_name: coredns --set imageCredentials.registry=https://index.docker.io/v1/ --set imageCredentials.username=$PROTECTED_DOCKERHUB_USERNAME --set imageCredentials.password=$PROTECTED_DOCKERHUB_PASSWORD --set imageCredentials.email=$PROTECTED_DOCKERHUB_EMAIL
+```
+In the above example, $PROTECTED_DOCKERHUB_USERNAME and $PROTECTED_DOCKERHUB_PASSWORD are environment variables that were previously exported.  The values can then be used as secrets in the helm chart.
 
 #### deployment_name
 
