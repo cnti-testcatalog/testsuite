@@ -98,6 +98,15 @@ jobs:
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
     - uses: mxschmitt/action-tmate@v3
       if: needs.debug_output.outputs.skip-debug == 'true'
+      env:
+        GITHUB_USER: ${{ secrets.GH_USER }}
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        PROTECTED_DOCKERHUB_EMAIL: ${{ secrets.PROTECTED_DOCKERHUB_EMAIL }}
+        PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+
   spec:
     name: Crystal Specs
     needs: [tests, skip]
@@ -141,8 +150,6 @@ jobs:
         git fetch --all --tags --force
         shards install  
         crystal src/cnf-conformance.cr setup
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
     - name: Run Crystal Spec
       env:
         GITHUB_USER: ${{ secrets.GH_USER }}
