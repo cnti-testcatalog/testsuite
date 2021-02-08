@@ -11,7 +11,6 @@ task "install_dockerd" do |_, args|
   install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
   LOGGING.debug "Dockerd_Install: #{install_dockerd}"
   KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
-  sleep 2.0
 end
 
 desc "Uninstall dockerd"
