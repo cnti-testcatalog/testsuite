@@ -96,6 +96,36 @@ jobs:
     - id: skip
       run: |
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
+    - name: Install Clusterctl
+      run: |
+        curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl
+        chmod +x ./clusterctl
+        sudo mv ./clusterctl /usr/local/bin/clusterctl
+    - name: Install Crystal
+      env:
+        CRYSTAL_VERSION: 0.35.1
+        CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download
+      run: |
+        wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga; 
+        sudo apt install -y --no-install-recommends \
+        git \
+        libssl-dev \
+        libxml2-dev \
+        libyaml-dev \
+        libgmp-dev \
+        libz-dev \
+        ./crystal.deb \
+        && sudo rm -rf /var/lib/apt/lists/*
+    - name: Create Kind Cluster 
+      run: |
+        kind create cluster
+        kubectl get nodes 
+    - name: Setup CNF-Conformance
+      run: |
+        helm repo add stable https://cncf.gitlab.io/stable
+        git fetch --all --tags --force
+        shards install  
+        crystal src/cnf-conformance.cr setup
     - uses: mxschmitt/action-tmate@v3
       if: needs.debug_output.outputs.skip-debug == 'true'
       env:
