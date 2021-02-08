@@ -108,8 +108,8 @@ task "reasonable_startup_time" do |_, args|
 end
 
 desc "Does the CNF have a reasonable container image size?"
-# task "reasonable_image_size", ["install_dockerd"] do |_, args|
-task "reasonable_image_size" do |_, args|
+task "reasonable_image_size", ["install_dockerd"] do |_, args|
+# task "reasonable_image_size" do |_, args|
   task_runner(args) do |args,config|
     VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
@@ -151,20 +151,27 @@ task "reasonable_image_size" do |_, args|
             puts "str_auths: #{str_auths}"
           end
           File.write("#{yml_file_path}/config.json", str_auths)
-          mkdir = `kubectl exec dockerd -ti -- mkdir -p /root/.docker/`
-          LOGGING.debug "Mkdir: #{mkdir}"
-          copy_auth = `kubectl cp #{yml_file_path}/config.json default/dockerd:/root/.docker/config.json`
-          LOGGING.debug "Copy_auth: #{copy_auth}"
+          # mkdir = `kubectl exec dockerd -ti -- mkdir -p /root/.docker/`
+          KubectlClient.exec("dockerd -ti -- mkdir -p /root/.docker/")
+          # LOGGING.debug "Mkdir: #{mkdir}"
+          # copy_auth = `kubectl cp #{yml_file_path}/config.json default/dockerd:/root/.docker/config.json`
+          KubectlClient.cp("#{yml_file_path}/config.json default/dockerd:/root/.docker/config.json")
+          # LOGGING.debug "Copy_auth: #{copy_auth}"
         end
 
-        LOGGING.info "kubectl exec dockerd -ti -- docker pull #{local_image_tag[:image]}:#{local_image_tag[:tag]}" 
-        pull_image = `kubectl exec dockerd -ti -- docker pull #{local_image_tag[:image]}:#{local_image_tag[:tag]}` 
-        LOGGING.info "kubectl exec dockerd -ti -- docker save #{local_image_tag[:image]}:#{local_image_tag[:tag]} -o /tmp/image.tar"
-        save_image = `kubectl exec dockerd -ti -- docker save #{local_image_tag[:image]}:#{local_image_tag[:tag]} -o /tmp/image.tar`
-        LOGGING.info "kubectl exec dockerd -ti -- gzip -f /tmp/image.tar" 
-        gzip_image = `kubectl exec dockerd -ti -- gzip -f /tmp/image.tar`
-        LOGGING.info "kubectl exec dockerd -ti -- wc -c /tmp/image.tar.gz | awk '{print$1}'"
-        compressed_size = `kubectl exec dockerd -ti -- wc -c /tmp/image.tar.gz | awk '{print$1}'`
+        # LOGGING.info "kubectl exec dockerd -ti -- docker pull #{local_image_tag[:image]}:#{local_image_tag[:tag]}" 
+        # pull_image = `kubectl exec dockerd -ti -- docker pull #{local_image_tag[:image]}:#{local_image_tag[:tag]}` 
+          KubectlClient.exec("dockerd -ti -- docker pull #{local_image_tag[:image]}:#{local_image_tag[:tag]}")
+        # LOGGING.info "kubectl exec dockerd -ti -- docker save #{local_image_tag[:image]}:#{local_image_tag[:tag]} -o /tmp/image.tar"
+        # save_image = `kubectl exec dockerd -ti -- docker save #{local_image_tag[:image]}:#{local_image_tag[:tag]} -o /tmp/image.tar`
+          KubectlClient.exec("dockerd -ti -- docker save #{local_image_tag[:image]}:#{local_image_tag[:tag]} -o /tmp/image.tar")
+        # LOGGING.info "kubectl exec dockerd -ti -- gzip -f /tmp/image.tar" 
+        # gzip_image = `kubectl exec dockerd -ti -- gzip -f /tmp/image.tar`
+          KubectlClient.exec("dockerd -ti -- gzip -f /tmp/image.tar")
+        # LOGGING.info "kubectl exec dockerd -ti -- wc -c /tmp/image.tar.gz | awk '{print$1}'"
+        # compressed_size = `kubectl exec dockerd -ti -- wc -c /tmp/image.tar.gz | awk '{print$1}'`
+          exec_resp =  KubectlClient.exec("dockerd -ti -- wc -c /tmp/image.tar.gz | awk '{print$1}'")
+          compressed_size = exec_resp[:output]
         # TODO strip out secret from under auths, save in array
         # TODO make a new auths array, assign previous array into auths array
         # TODO save auths array to a file
