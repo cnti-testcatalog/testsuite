@@ -119,6 +119,12 @@ CNF Conformance Test Suite Frequently Asked Questions
 <p>
 
  - The short answer is Crystal fit the criteria we looked at in a language at the time which needed to run external programs/test suites and internal tests - [Taylor Carpenter](https://app.slack.com/client/T08PSQ7BQ/G019HM3K54H/user_profile/U7HCKCW90) via https://slack.cncf.io/ 
+ - Usability for Humans - Crystal, puts readablility for humans as a priority, which is why its syntax heavily inspired by Ruby.
+ - Type checking system to help humans catch their errors earlier
+ - Compiled language for portability, reduced size, and performance
+ - Metaprogramming through Crystal's powerful macro system
+ - Concurrency throughy green threads, called fiberes, which communicate over channels like Go lang and Clojure
+ - Dependency management for libraries and applications via the [crystal manager Shards](https://github.com/crystal-lang/shards)
 
 </p>
 </details>
