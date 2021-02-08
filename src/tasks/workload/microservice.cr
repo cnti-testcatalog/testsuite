@@ -202,7 +202,7 @@ task "reasonable_image_size" do |_, args|
       upsert_failed_task("reasonable_image_size", "✖️  FAILURE: Image size too large #{emoji_big} #{emoji_image_size}")
     end
   ensure
-    delete_dockerd = `kubectl delete -f #{TOOLS_DIR}/dockerd/manifest.yml`
+    # delete_dockerd = `kubectl delete -f #{TOOLS_DIR}/dockerd/manifest.yml`
   end
 end
 
