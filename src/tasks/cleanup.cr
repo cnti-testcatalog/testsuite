@@ -29,7 +29,7 @@ task "samples_cleanup", ["sample_coredns_cleanup", "cleanup_sample_coredns", "ba
 end
 
 desc "Cleans up the CNF Conformance helper tools and containers"
-task "tools_cleanup", ["helm_local_cleanup", "sonobuoy_cleanup", "uninstall_chaosmesh","uninstall_litmus"] do  |_, args|
+task "tools_cleanup", ["helm_local_cleanup", "sonobuoy_cleanup", "uninstall_chaosmesh","uninstall_litmus", "uninstall_dockerd"] do  |_, args|
 end
 
 desc "Cleans up the CNF Conformance sample projects, helper tools, and containers"
