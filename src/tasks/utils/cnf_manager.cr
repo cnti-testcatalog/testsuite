@@ -7,6 +7,49 @@ require "uuid"
 
 module CNFManager 
 
+  module Points
+    class Results
+      @@file : String
+      @@file = create_final_results_yml_name
+      LOGGING.info "CNFManager::Points::Results.file"
+      continue = false
+      LOGGING.info "file exists?:#{File.exists?(@@file)}"
+      if File.exists?("#{@@file}")
+        stdout_info "Do you wish to overwrite the #{@@file} file? If so, your previous results.yml will be lost."
+        print "(Y/N) (Default N): > "
+        if ENV["CRYSTAL_ENV"]? == "TEST"
+          continue = true
+        else
+          user_input = gets
+          if user_input == "Y" || user_input == "y"
+            continue = true
+          end
+        end
+      else
+        continue = true
+      end
+      if continue
+        File.open("#{@@file}", "w") do |f|
+          YAML.dump(CNFManager::Points.template_results_yml, f)
+        end
+      end
+      def self.file
+        @@file
+      end
+    end
+
+    def self.template_results_yml
+  #TODO add tags for category summaries
+  YAML.parse <<-END
+name: cnf conformance 
+status: 
+points: 
+exit_code: 0
+items: []
+END
+    end
+  end
+
   module Task
     def self.task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
       LOGGING.info("task_runner args: #{args.inspect}")
@@ -63,7 +106,7 @@ module CNFManager
       rescue ex
         # Set exception key/value in results
         # file to -1
-        update_yml("#{Results.file}", "exit_code", "1")
+        update_yml("#{CNFManager::Points::Results.file}", "exit_code", "1")
         LOGGING.error ex.message
         ex.backtrace.each do |x|
           LOGGING.error x

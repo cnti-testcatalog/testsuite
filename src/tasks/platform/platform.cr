@@ -14,7 +14,7 @@ task "platform", ["helm_local_install", "k8s_conformance", "platform:observabili
     stdout_failure "Conformance Suite failed!"
     stdout_failure "Failed required tasks: #{failed_required_tasks.inspect}"
   end
-  stdout_info "Results have been saved to #{Results.file}".colorize(:green)
+  stdout_info "CNFManager::Points::Results.have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
 end
 
 desc "Does the platform pass the K8s conformance tests?"

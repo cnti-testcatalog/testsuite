@@ -23,6 +23,20 @@ describe "SampleUtils" do
     $?.success?.should be_true
   end
 
+  it "'#CNFManager::Points::Results.file' should return the name of the current yaml file"  do
+    clean_results_yml
+    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
+      YAML.parse(file)
+    end
+    (yaml["name"]).should eq("cnf conformance")
+    (yaml["exit_code"]).should eq(0) 
+  end
+
+  it "'CNFManager.final_cnf_results_yml' should return the latest time stamped results file"  do
+    (CNFManager.final_cnf_results_yml).should contain("cnf-conformance-results")
+  end
+
+
   it "'CNFManager.sample_setup_cli_args(args) and CNFManager.sample_setup(cli_args)' should set up a sample cnf", tags: "happy-path"  do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml", "verbose", "wait_count=180"])
     cli_hash = CNFManager.sample_setup_cli_args(args)

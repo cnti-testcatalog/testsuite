@@ -20,7 +20,7 @@ task "all", ["workload", "platform"] do  |_, args|
     stdout_failure "Conformance Suite failed!"
     stdout_failure "Failed required tasks: #{failed_required_tasks.inspect}"
   end
-  stdout_info "Results have been saved to #{Results.file}".colorize(:green)
+  stdout_info "CNFManager::Points::Results.have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
 end
 
 desc "The CNF Conformance program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
@@ -38,7 +38,7 @@ task "workload", ["automatic_cnf_install", "configuration_file_setup", "compatib
     stdout_failure "Conformance Suite failed!"
     stdout_failure "Failed required tasks: #{failed_required_tasks.inspect}"
   end
-  stdout_info "Results have been saved to #{Results.file}".colorize(:green)
+  stdout_info "CNFManager::Points::Results.have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
 end
 
 task "version" do |_, args|
@@ -93,7 +93,7 @@ end
 begin
   # See issue #426 for exit code requirement
   Sam.process_tasks(ARGV.clone) 
-  yaml = File.open("#{Results.file}") do |file|
+  yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
     YAML.parse(file)
   end
   LOGGING.debug "results yaml: #{yaml}"

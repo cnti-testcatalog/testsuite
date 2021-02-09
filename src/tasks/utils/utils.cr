@@ -8,72 +8,6 @@ require "file_utils"
 require "option_parser"
 require "../constants.cr"
 
-# TODO put these functions into a module
-
-# def CNFManager::Task.task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
-#   LOGGING.info("task_runner args: #{args.inspect}")
-#   if check_cnf_config(args)
-#     CNFManager::Task.single_task_runner(args, &block)
-#   else
-#     CNFManager::Task.all_cnfs_task_runner(args, &block)
-#   end
-# end
-
-# # TODO give example for calling
-# def CNFManager::Task.all_cnfs_task_runner(args, &block : Sam::Args, CNFManager::Config  -> String | Colorize::Object(String) | Nil)
-#
-#   # Platforms tests dont have any cnfs
-#   if CNFManager.cnf_config_list(silent: true).size == 0
-#     CNFManager::Task.single_task_runner(args, &block)
-#   else
-#     CNFManager.cnf_config_list(silent: true).map do |x|
-#       new_args = Sam::Args.new(args.named, args.raw)
-#       new_args.named["cnf-config"] = x
-#       CNFManager::Task.single_task_runner(new_args, &block)
-#     end
-#   end
-# end
-
-# # TODO give example for calling
-# def CNFManager::Task.single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
-#   LOGGING.debug("single_task_runner args: #{args.inspect}")
-#   begin
-#     if args.named["cnf-config"]? # platform tests don't have a cnf-config
-#       config = CNFManager::Config.parse_config_yml(args.named["cnf-config"].as(String))    
-#     else
-#       config = CNFManager::Config.new({ destination_cnf_dir: "",
-#                                         source_cnf_file: "",
-#                                         source_cnf_dir: "",
-#                                         yml_file_path: "",
-#                                         install_method: {:helm_chart, ""},
-#                                         manifest_directory: "",
-#                                         helm_directory: "", 
-#                                         helm_chart_path: "", 
-#                                         manifest_file_path: "",
-#                                         git_clone_url: "",
-#                                         install_script: "",
-#                                         release_name: "",
-#                                         service_name: "",
-#                                         docker_repository: "",
-#                                         helm_repository: {name: "", repo_url: ""},
-#                                         helm_chart: "",
-#                                         helm_chart_container_name: "",
-#                                         rolling_update_tag: "",
-#                                         container_names: [{"name" =>  "", "rolling_update_test_tag" => ""}],
-#                                         white_list_container_names: [""]} )
-#     end
-#     yield args, config
-#   rescue ex
-#     # Set exception key/value in results
-#     # file to -1
-#     update_yml("#{Results.file}", "exit_code", "1")
-#     LOGGING.error ex.message
-#     ex.backtrace.each do |x|
-#       LOGGING.error x
-#     end
-#   end
-# end
-
 def log_formatter
   Log::Formatter.new do |entry, io|
     progname = "cnf-conformance"
@@ -193,47 +127,6 @@ end
 LOGGING = LogginGenerator.new
 VERBOSE_LOGGING = VerboseLogginGenerator.new
 
-#TODO no longer used, removed
-def generate_version
-  version = ""
-  if ReleaseManager.on_a_tag?
-    version = ReleaseManager.tag
-  else
-    version = "#{ReleaseManager.current_branch} #{ReleaseManager.current_hash}"
-  end
-  return version
-end
-
-class Results
-  @@file : String
-  @@file = create_final_results_yml_name
-  LOGGING.info "Results file"
-  continue = false
-  LOGGING.info "file exists?:#{File.exists?(@@file)}"
-  if File.exists?("#{@@file}")
-    stdout_info "Do you wish to overwrite the #{@@file} file? If so, your previous results.yml will be lost."
-    print "(Y/N) (Default N): > "
-    if ENV["CRYSTAL_ENV"]? == "TEST"
-      continue = true
-    else
-      user_input = gets
-      if user_input == "Y" || user_input == "y"
-        continue = true
-      end
-    end
-  else
-    continue = true
-  end
-  if continue
-    File.open("#{@@file}", "w") do |f|
-      YAML.dump(template_results_yml, f)
-    end
-  end
-  def self.file
-    @@file
-  end
-end
-
 def check_verbose(args)
   ((args.raw.includes? "verbose") || (args.raw.includes? "v"))
 end
@@ -337,16 +230,16 @@ def check_destructive(args)
   toggle("destructive") || args.raw.includes?("destructive")
 end
 
-def template_results_yml
-  #TODO add tags for category summaries
-  YAML.parse <<-END
-name: cnf conformance 
-status: 
-points: 
-exit_code: 0
-items: []
-END
-end
+# def template_results_yml
+#   #TODO add tags for category summaries
+#   YAML.parse <<-END
+# name: cnf conformance 
+# status: 
+# points: 
+# exit_code: 0
+# items: []
+# END
+# end
 
 def create_final_results_yml_name
   FileUtils.mkdir_p("results") unless Dir.exists?("results")
@@ -363,17 +256,17 @@ def create_points_yml
 end
 
 def delete_results_yml(verbose=false)
-  if File.exists?("#{Results.file}")
-    File.delete("#{Results.file}")
+  if File.exists?("#{CNFManager::Points::Results.file}")
+    File.delete("#{CNFManager::Points::Results.file}")
   end
 end
 
 def clean_results_yml(verbose=false)
-  if File.exists?("#{Results.file}")
-    results = File.open("#{Results.file}") do |f| 
+  if File.exists?("#{CNFManager::Points::Results.file}")
+    results = File.open("#{CNFManager::Points::Results.file}") do |f| 
       YAML.parse(f)
     end 
-    File.open("#{Results.file}", "w") do |f| 
+    File.open("#{CNFManager::Points::Results.file}", "w") do |f| 
       YAML.dump({name: results["name"],
                  status: results["status"],
                  exit_code: results["exit_code"],
@@ -406,7 +299,7 @@ def update_yml(yml_file, top_level_key, value)
   end 
 end
 
-def upsert_task(task, status, points) results = File.open("#{Results.file}") do |f| 
+def upsert_task(task, status, points) results = File.open("#{CNFManager::Points::Results.file}") do |f| 
     YAML.parse(f)
   end 
 
@@ -417,7 +310,7 @@ def upsert_task(task, status, points) results = File.open("#{Results.file}") do 
   end
 
   result_items << YAML.parse "{name: #{task}, status: #{status}, points: #{points}}"
-  File.open("#{Results.file}", "w") do |f| 
+  File.open("#{CNFManager::Points::Results.file}", "w") do |f| 
     YAML.dump({name: results["name"],
                status: results["status"],
                points: results["points"],
@@ -475,7 +368,7 @@ def task_required(task)
 end
 
 def failed_required_tasks
-  yaml = File.open("#{Results.file}") do |file|
+  yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
     YAML.parse(file)
   end
   yaml["items"].as_a.reduce([] of String) do |acc, i|
@@ -495,7 +388,7 @@ def total_points(tag=nil)
   else
     tasks = all_task_test_names
   end
-  yaml = File.open("#{Results.file}") do |file|
+  yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
     YAML.parse(file)
   end
   yaml["items"].as_a.reduce(0) do |acc, i|
@@ -559,7 +452,7 @@ end
 def results_by_tag(tag)
   task_list = tasks_by_tag(tag)
 
-  results = File.open("#{Results.file}") do |f| 
+  results = File.open("#{CNFManager::Points::Results.file}") do |f| 
     YAML.parse(f)
   end 
 

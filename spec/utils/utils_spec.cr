@@ -14,9 +14,9 @@ describe "Utils" do
     `./cnf-conformance results_yml_cleanup`
   end
 
-  it "'#Results.file' should return the name of the current yaml file"  do
+  it "'#CNFManager::Points::Results.file' should return the name of the current yaml file"  do
     clean_results_yml
-    yaml = File.open("#{Results.file}") do |file|
+    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end
     (yaml["name"]).should eq("cnf conformance")
@@ -49,7 +49,7 @@ describe "Utils" do
     clean_results_yml
     failed_task("liveness", "FAILURE: No livenessProbe found")
 
-    yaml = File.open("#{Results.file}") do |file|
+    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end
     LOGGING.info yaml.inspect
@@ -60,7 +60,7 @@ describe "Utils" do
     clean_results_yml
     passed_task("liveness", "PASSED: livenessProbe found")
 
-    yaml = File.open("#{Results.file}") do |file|
+    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end
     LOGGING.info yaml.inspect
@@ -81,7 +81,7 @@ describe "Utils" do
   it "'upsert_task' insert task in the results file"  do
     clean_results_yml
     upsert_task("liveness", PASSED, task_points("liveness"))
-    yaml = File.open("#{Results.file}") do |file|
+    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end
     # LOGGING.debug yaml["items"].as_a.inspect
@@ -92,7 +92,7 @@ describe "Utils" do
     clean_results_yml
     upsert_task("liveness", PASSED, task_points("liveness"))
     upsert_task("liveness", PASSED, task_points("liveness"))
-    yaml = File.open("#{Results.file}") do |file|
+    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end
     # LOGGING.debug yaml["items"].as_a.inspect
@@ -120,7 +120,7 @@ describe "Utils" do
   it "'all_result_test_names' should return the tasks assigned to a tag" do
     clean_results_yml
     upsert_task("liveness", PASSED, task_points("liveness"))
-    (all_result_test_names(Results.file)).should eq(["liveness"])
+    (all_result_test_names(CNFManager::Points::Results.file)).should eq(["liveness"])
   end
   it "'results_by_tag' should return a list of results by tag" do
     clean_results_yml
@@ -232,7 +232,7 @@ describe "Utils" do
         resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
       end
     end
-    yaml = File.open("#{Results.file}") do |file|
+    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end
     (yaml["exit_code"]).should eq(1)
@@ -314,10 +314,6 @@ describe "Utils" do
     (task_response).should eq("✖️  FAILURE: Found privileged containers: [\"coredns\", \"kube-proxy\"]".colorize(:red))
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
-  end
-
-  it "'generate_version' should return the current version of the cnf_conformance library" do
-    (generate_version).should_not eq("")
   end
 
   it "'logger' command line logger level setting via config.yml", tags: ["logger", "happy-path"]  do
