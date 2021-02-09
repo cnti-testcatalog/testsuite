@@ -15,7 +15,7 @@ end
 
 desc "Does a search for IP addresses or subnets come back as negative?"
 task "ip_addresses" do |_, args|
-  task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "ip_addresses" if check_verbose(args)
     LOGGING.info("ip_addresses args #{args.inspect}")
     cdir = FileUtils.pwd()
@@ -53,7 +53,7 @@ end
 
 desc "Is there a liveness entry in the helm chart?"
 task "liveness" do |_, args|
-  task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "liveness" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     resp = ""
@@ -83,7 +83,7 @@ end
 
 desc "Is there a readiness entry in the helm chart?"
 task "readiness" do |_, args|
-  task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     LOGGING.debug "cnf_config: #{config}"
     VERBOSE_LOGGING.info "readiness" if check_verbose(args)
     # Parse the cnf-conformance.yml
@@ -114,7 +114,7 @@ end
 desc "Retrieve the manifest for the CNF's helm chart"
 task "retrieve_manifest" do |_, args| 
   # TODO put this in a function 
-  task_runner(args) do |args|
+  CNFManager::Task.task_runner(args) do |args|
     VERBOSE_LOGGING.info "retrieve_manifest" if check_verbose(args)
     # config = cnf_conformance_yml
     config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
@@ -143,7 +143,7 @@ rolling_version_change_test_names.each do |tn|
 
   desc "Test if the CNF containers are loosely coupled by performing a #{pretty_test_name}"
   task "#{tn}" do |_, args|
-    task_runner(args) do |args, config|
+    CNFManager::Task.task_runner(args) do |args, config|
       LOGGING.debug "cnf_config: #{config}"
       VERBOSE_LOGGING.info "#{tn}" if check_verbose(args)
       container_names = config.cnf_config[:container_names]
@@ -201,7 +201,7 @@ end
 
 desc "Test if the CNF can perform a rollback"
 task "rollback" do |_, args|
-  task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "rollback" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
 
@@ -270,7 +270,7 @@ end
 
 desc "Does the CNF use NodePort"
 task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
-  task_response = task_runner(args) do |args, config|
+  task_response = CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "nodeport_not_used" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     release_name = config.cnf_config[:release_name]
@@ -295,7 +295,7 @@ end
 
 desc "Does the CNF have hardcoded IPs in the K8s resource configuration"
 task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
-  task_response = task_runner(args) do |args, config|
+  task_response = CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "Task Name: hardcoded_ip_addresses_in_k8s_runtime_configuration" if check_verbose(args)
     # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     helm_chart = config.cnf_config[:helm_chart]
@@ -330,7 +330,7 @@ end
 
 desc "Does the CNF use K8s Secrets?"
 task "secrets_used" do |_, args|
-  task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     LOGGING.debug "cnf_config: #{config}"
     VERBOSE_LOGGING.info "secrets_used" if check_verbose(args)
     # Parse the cnf-conformance.yml
@@ -434,7 +434,7 @@ end
 
 desc "Does the CNF use immutable configmaps?"
 task "immutable_configmap", ["retrieve_manifest"] do |_, args|
-  task_response = task_runner(args) do |args, config|
+  task_response = CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "immutable_configmap" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
 

@@ -22,7 +22,7 @@ namespace "platform" do
     end
     LOGGING.info "Running POC: kube_state_metrics"
     Retriable.retry do
-      task_response = task_runner(args) do |args|
+      task_response = CNFManager::Task.task_runner(args) do |args|
         current_dir = FileUtils.pwd 
 
         state_metric_releases = `curl -L -s https://quay.io/api/v1/repository/coreos/kube-state-metrics/tag/?limit=100`
@@ -61,7 +61,7 @@ namespace "platform" do
     end
     LOGGING.info "Running POC: node_exporter"
     Retriable.retry do
-      task_response = task_runner(args) do |args|
+      task_response = CNFManager::Task.task_runner(args) do |args|
 
         #Select the first node that isn't a master and is also schedulable
         #worker_nodes = `kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
@@ -163,7 +163,7 @@ end
     end
     LOGGING.info "Running POC: prometheus_adapter"
     Retriable.retry do
-      task_response = task_runner(args) do |args|
+      task_response = CNFManager::Task.task_runner(args) do |args|
         # Fetch image id sha256sums available for all upstream prometheus_adapter releases
         prometheus_adapter_releases = `curl -L -s 'https://registry.hub.docker.com/v2/repositories/directxman12/k8s-prometheus-adapter-amd64/tags?page_size=1024'`
         sha_list = named_sha_list(prometheus_adapter_releases)
@@ -201,7 +201,7 @@ end
     end
     LOGGING.info "Running POC: metrics_server"
     Retriable.retry do
-      task_response = task_runner(args) do |args|
+      task_response = CNFManager::Task.task_runner(args) do |args|
 
         #Select the first node that isn't a master and is also schedulable
         #worker_nodes = `kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`

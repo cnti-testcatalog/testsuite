@@ -13,7 +13,7 @@ end
 
 desc "Does the CNF use a non-cloud native data store: hostPath volume"
 task "volume_hostpath_not_found" do |_, args|
-  task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "volume_hostpath_not_found" if check_verbose(args)
     failed_emoji = "(ভ_ভ) ރ 💾"
     passed_emoji = "🖥️  💾"
@@ -53,7 +53,7 @@ desc "Does the CNF use a non-cloud native data store: local volumes on the node?
 task "no_local_volume_configuration" do |_, args|
   failed_emoji = "(ভ_ভ) ރ 💾"
   passed_emoji = "🖥️  💾"
-  task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "no_local_volume_configuration" if check_verbose(args)
 
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]

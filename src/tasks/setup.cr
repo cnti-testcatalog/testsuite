@@ -10,6 +10,6 @@ end
 
 task "configuration_file_setup" do |_, args|
   VERBOSE_LOGGING.info "configuration_file_setup" if check_verbose(args)
-  create_points_yml
+  CNFManager::Points.create_points_yml
 end
 

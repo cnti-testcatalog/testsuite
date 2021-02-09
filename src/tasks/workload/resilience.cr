@@ -14,7 +14,7 @@ end
 
 desc "Does the CNF crash when network loss occurs"
 task "chaos_network_loss", ["install_chaosmesh"] do |_, args|
-  task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "chaos_network_loss" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     emoji_chaos_network_loss="📶☠️"
@@ -63,7 +63,7 @@ end
 
 desc "Does the CNF crash when CPU usage is high"
 task "chaos_cpu_hog", ["install_chaosmesh"] do |_, args|
-  task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "chaos_cpu_hog" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
@@ -109,7 +109,7 @@ end
 
 desc "Does the CNF recover when its container is killed"
 task "chaos_container_kill", ["install_chaosmesh"] do |_, args|
-  task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "chaos_container_kill" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
@@ -167,7 +167,7 @@ end
 
 desc "Does the CNF crash when network latency occurs"
 task "pod_network_latency", ["install_litmus"] do |_, args|
-  task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "pod_network_latency" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))

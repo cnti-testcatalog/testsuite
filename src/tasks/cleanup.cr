@@ -37,8 +37,8 @@ task "cleanup_all", ["samples_cleanup", "tools_cleanup"] do  |_, args|
 end
 
 task "results_yml_cleanup" do |_, args|
-  if File.exists?("#{Results.file}")
-    rm = `rm #{Results.file}`
+  if File.exists?("#{CNFManager::Points::Results.file}")
+    rm = `rm #{CNFManager::Points::Results.file}`
     VERBOSE_LOGGING.info rm if check_verbose(args)
   end
 end
