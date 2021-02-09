@@ -3,16 +3,16 @@ desc "Platform Tests"
 task "platform", ["helm_local_install", "k8s_conformance", "platform:observability", "platform:resilience", "platform:hardware_and_scheduling"]  do |_, args|
   VERBOSE_LOGGING.info "platform" if check_verbose(args)
 
-  total = total_points("platform")
+  total = CNFManager::Points.total_points("platform")
   if total > 0
-    stdout_success "Final platform score: #{total} of #{total_max_points("platform")}"
+    stdout_success "Final platform score: #{total} of #{CNFManager::Points.total_max_points("platform")}"
   else
-    stdout_failure "Final platform score: #{total} of #{total_max_points("platform")}"
+    stdout_failure "Final platform score: #{total} of #{CNFManager::Points.total_max_points("platform")}"
   end
 
-  if failed_required_tasks.size > 0
+  if CNFManager::Points.failed_required_tasks.size > 0
     stdout_failure "Conformance Suite failed!"
-    stdout_failure "Failed required tasks: #{failed_required_tasks.inspect}"
+    stdout_failure "Failed required tasks: #{CNFManager::Points.failed_required_tasks.inspect}"
   end
   stdout_info "CNFManager::Points::Results.have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
 end

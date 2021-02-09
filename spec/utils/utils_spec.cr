@@ -14,121 +14,6 @@ describe "Utils" do
     `./cnf-conformance results_yml_cleanup`
   end
 
-  it "'#CNFManager::Points::Results.file' should return the name of the current yaml file"  do
-    clean_results_yml
-    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
-      YAML.parse(file)
-    end
-    (yaml["name"]).should eq("cnf conformance")
-    (yaml["exit_code"]).should eq(0) 
-  end
-
-  it "'CNFManager.final_cnf_results_yml' should return the latest time stamped results file"  do
-    (CNFManager.final_cnf_results_yml).should contain("cnf-conformance-results")
-  end
-
-  it "'points_yml' should parse and return the points yaml file"  do
-    (points_yml.find {|x| x["name"] =="liveness"}).should be_truthy 
-  end
-
-  it  "'task_points' should return the amount of points for a passing test" do
-    # default
-    (task_points("liveness")).should eq(5)
-    # assigned
-    (task_points("increase_capacity")).should eq(10)
-  end
-
-  it  "'task_points(, false)' should return the amount of points for a failing test"  do
-    # default
-    (task_points("liveness", false)).should eq(-1)
-    # assigned
-    (task_points("increase_capacity", false)).should eq(-5)
-  end
-
-  it "'failed_task' should find and update an existing task in the file"  do
-    clean_results_yml
-    failed_task("liveness", "FAILURE: No livenessProbe found")
-
-    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
-      YAML.parse(file)
-    end
-    LOGGING.info yaml.inspect
-    (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == task_points("liveness", false)}).should be_truthy
-  end
-
-  it "'passed_task' should find and update an existing task in the file"  do
-    clean_results_yml
-    passed_task("liveness", "PASSED: livenessProbe found")
-
-    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
-      YAML.parse(file)
-    end
-    LOGGING.info yaml.inspect
-    (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == task_points("liveness")}).should be_truthy
-  end
-
-  it "'task_required' should return if the passed task is required"  do
-    clean_results_yml
-    (task_required("privileged")).should be_true
-  end
-
-  it "'failed_required_tasks' should return a list of failed required tasks"  do
-    clean_results_yml
-    failed_task("privileged", "FAILURE: Privileged container found")
-    (failed_required_tasks).should eq(["privileged"])
-  end
-
-  it "'upsert_task' insert task in the results file"  do
-    clean_results_yml
-    upsert_task("liveness", PASSED, task_points("liveness"))
-    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
-      YAML.parse(file)
-    end
-    # LOGGING.debug yaml["items"].as_a.inspect
-    (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == task_points("liveness")}).should be_truthy
-  end
-
-  it "'upsert_task' should find and update an existing task in the file"  do
-    clean_results_yml
-    upsert_task("liveness", PASSED, task_points("liveness"))
-    upsert_task("liveness", PASSED, task_points("liveness"))
-    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
-      YAML.parse(file)
-    end
-    # LOGGING.debug yaml["items"].as_a.inspect
-    (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == task_points("liveness")}).should be_truthy
-    (total_points).should eq(5)
-  end
-
-  it "'total_points' should sum the total amount of points in the results" do
-    clean_results_yml
-    upsert_task("liveness", PASSED, task_points("liveness"))
-    (total_points).should eq(5)
-  end
-
-  it "'tasks_by_tag' should return the tasks assigned to a tag" do
-    clean_results_yml
-    (tasks_by_tag("configuration_lifecycle")).should eq(["ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "rollback", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used"])
-    (tasks_by_tag("does-not-exist")).should eq([] of YAML::Any) 
-  end
-
-  it "'all_task_test_names' should return all tasks names" do
-    clean_results_yml
-    (all_task_test_names()).should eq(["reasonable_image_size", "reasonable_startup_time", "privileged", "increase_capacity", "decrease_capacity", "network_chaos", "pod_network_latency", "ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "rollback", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "helm_deploy", "install_script_helm", "helm_chart_valid", "helm_chart_published", "chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill", "volume_hostpath_not_found", "no_local_volume_configuration"])
-  end
-
-  it "'all_result_test_names' should return the tasks assigned to a tag" do
-    clean_results_yml
-    upsert_task("liveness", PASSED, task_points("liveness"))
-    (all_result_test_names(CNFManager::Points::Results.file)).should eq(["liveness"])
-  end
-  it "'results_by_tag' should return a list of results by tag" do
-    clean_results_yml
-    upsert_task("liveness", PASSED, task_points("liveness"))
-    (results_by_tag("configuration_lifecycle")).should eq([{"name" => "liveness", "status" => "passed", "points" => 5}])
-    (results_by_tag("does-not-exist")).should eq([] of YAML::Any) 
-  end
-
   it "'toggle' should return a boolean for a toggle in the config.yml" do
     (toggle("wip")).should eq(false) 
   end
@@ -206,7 +91,7 @@ describe "Utils" do
   end
 
   it "'single_task_runner' should put a -1 in the results file if it has an exception"  do
-    clean_results_yml
+    CNFManager::Points.clean_results_yml
     args = Sam::Args.new(["cnf-config=./cnf-conformance.yml"])
     task_response = CNFManager::Task.single_task_runner(args) do
       cdir = FileUtils.pwd()

@@ -9,16 +9,16 @@ desc "The CNF Conformance program enables interoperability of CNFs from multiple
 task "all", ["workload", "platform"] do  |_, args|
   VERBOSE_LOGGING.info "all" if check_verbose(args)
 
-  total = total_points
+  total = CNFManager::Points.total_points
   if total > 0
-    stdout_success "Final score: #{total} of #{total_max_points}"
+    stdout_success "Final score: #{total} of #{CNFManager::Points.total_max_points}"
   else
-    stdout_failure "Final score: #{total} of #{total_max_points}"
+    stdout_failure "Final score: #{total} of #{CNFManager::Points.total_max_points}"
   end
 
-  if failed_required_tasks.size > 0
+  if CNFManager::Points.failed_required_tasks.size > 0
     stdout_failure "Conformance Suite failed!"
-    stdout_failure "Failed required tasks: #{failed_required_tasks.inspect}"
+    stdout_failure "Failed required tasks: #{CNFManager::Points.failed_required_tasks.inspect}"
   end
   stdout_info "CNFManager::Points::Results.have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
 end
@@ -27,16 +27,16 @@ desc "The CNF Conformance program enables interoperability of CNFs from multiple
 task "workload", ["automatic_cnf_install", "configuration_file_setup", "compatibility","statelessness", "security", "scalability", "configuration_lifecycle", "observability", "installability", "hardware_and_scheduling", "microservice", "resilience"] do  |_, args|
   VERBOSE_LOGGING.info "workload" if check_verbose(args)
 
-  total = total_points("workload")
+  total = CNFManager::Points.total_points("workload")
   if total > 0
-    stdout_success "Final workload score: #{total} of #{total_max_points("workload")}"
+    stdout_success "Final workload score: #{total} of #{CNFManager::Points.total_max_points("workload")}"
   else
-    stdout_failure "Final workload score: #{total} of #{total_max_points("workload")}"
+    stdout_failure "Final workload score: #{total} of #{CNFManager::Points.total_max_points("workload")}"
   end
 
-  if failed_required_tasks.size > 0
+  if CNFManager::Points.failed_required_tasks.size > 0
     stdout_failure "Conformance Suite failed!"
-    stdout_failure "Failed required tasks: #{failed_required_tasks.inspect}"
+    stdout_failure "Failed required tasks: #{CNFManager::Points.failed_required_tasks.inspect}"
   end
   stdout_info "CNFManager::Points::Results.have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
 end

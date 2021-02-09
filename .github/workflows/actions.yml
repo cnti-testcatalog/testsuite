@@ -93,11 +93,12 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    - uses: mxschmitt/action-tmate@v3
+      if: needs.debug_output.outputs.skip-debug == 'true'
     - id: skip
       run: |
         echo "::set-output name=skip::$(.github/workflows/skip.sh)"
-    - uses: mxschmitt/action-tmate@v3
-      if: needs.debug_output.outputs.skip-debug == 'true'
+
   spec:
     name: Crystal Specs
     needs: [tests, skip]
@@ -147,6 +148,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        PROTECTED_DOCKERHUB_EMAIL: ${{ secrets.PROTECTED_DOCKERHUB_EMAIL }}
+        PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
         LOG_LEVEL=info crystal spec --warnings none ${{ matrix.spec }} -v
 

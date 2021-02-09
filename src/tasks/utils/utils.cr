@@ -230,61 +230,6 @@ def check_destructive(args)
   toggle("destructive") || args.raw.includes?("destructive")
 end
 
-# def template_results_yml
-#   #TODO add tags for category summaries
-#   YAML.parse <<-END
-# name: cnf conformance 
-# status: 
-# points: 
-# exit_code: 0
-# items: []
-# END
-# end
-
-def create_final_results_yml_name
-  FileUtils.mkdir_p("results") unless Dir.exists?("results")
-  "results/cnf-conformance-results-" + Time.local.to_s("%Y%m%d-%H%M%S-%L") + ".yml"
-end
-
-def create_points_yml
-  unless File.exists?("#{POINTSFILE}")
-    branch = ENV.has_key?("SCORING_ENV") ? ENV["SCORING_ENV"] : "master"
-    default_scoring_yml = "https://raw.githubusercontent.com/cncf/cnf-conformance/#{branch}/scoring_config/#{DEFAULT_POINTSFILENAME}"
-    `wget #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}`
-    `mv #{DEFAULT_POINTSFILENAME} #{POINTSFILE}`
-  end
-end
-
-def delete_results_yml(verbose=false)
-  if File.exists?("#{CNFManager::Points::Results.file}")
-    File.delete("#{CNFManager::Points::Results.file}")
-  end
-end
-
-def clean_results_yml(verbose=false)
-  if File.exists?("#{CNFManager::Points::Results.file}")
-    results = File.open("#{CNFManager::Points::Results.file}") do |f| 
-      YAML.parse(f)
-    end 
-    File.open("#{CNFManager::Points::Results.file}", "w") do |f| 
-      YAML.dump({name: results["name"],
-                 status: results["status"],
-                 exit_code: results["exit_code"],
-                 points: results["points"],
-                 items: [] of YAML::Any}, f)
-    end 
-  end
-end
-
-def points_yml
-  # TODO get points.yml from remote http
-  points = File.open("points.yml") do |f| 
-    YAML.parse(f)
-  end 
-  # LOGGING.debug "points: #{points.inspect}"
-  points.as_a
-end
-
 def update_yml(yml_file, top_level_key, value)
   results = File.open("#{yml_file}") do |f| 
     YAML.parse(f)
@@ -299,171 +244,16 @@ def update_yml(yml_file, top_level_key, value)
   end 
 end
 
-def upsert_task(task, status, points) results = File.open("#{CNFManager::Points::Results.file}") do |f| 
-    YAML.parse(f)
-  end 
-
-  result_items = results["items"].as_a
-  # remove the existing entry
-  result_items = result_items.reject do |x| 
-    x["name"] == task  
-  end
-
-  result_items << YAML.parse "{name: #{task}, status: #{status}, points: #{points}}"
-  File.open("#{CNFManager::Points::Results.file}", "w") do |f| 
-    YAML.dump({name: results["name"],
-               status: results["status"],
-               points: results["points"],
-               exit_code: results["exit_code"],
-               items: result_items}, f)
-  end 
-end
-
-def failed_task(task, msg)
-  upsert_task(task, FAILED, task_points(task, false))
-  stdout_failure "#{msg}"
-end
-
-def passed_task(task, msg)
-  upsert_task(task, PASSED, task_points(task))
-  stdout_success "#{msg}"
-end
-
 def upsert_failed_task(task, message)
-  upsert_task(task, FAILED, task_points(task, false))
+ CNFManager::Points.upsert_task(task, FAILED, CNFManager::Points.task_points(task, false))
   stdout_failure message
   message
 end
 
 def upsert_passed_task(task, message)
-  upsert_task(task, PASSED, task_points(task))
+ CNFManager::Points.upsert_task(task, PASSED, CNFManager::Points.task_points(task))
   stdout_success message
   message
-end
-
-def task_points(task, passed=true)
-  if passed
-    field_name = "pass"
-  else
-    field_name = "fail"
-  end
-  points = points_yml.find {|x| x["name"] == task}
-  LOGGING.warn "****Warning**** task #{task} not found in points.yml".colorize(:yellow) unless points
-  if points && points[field_name]? 
-    points[field_name].as_i if points
-  else
-    points = points_yml.find {|x| x["name"] == "default_scoring"}
-    points[field_name].as_i if points
-  end
-end
-
-def task_required(task)
-  points = points_yml.find {|x| x["name"] == task}
-  LOGGING.warn "task #{task} not found in points.yml".colorize(:yellow) unless points
-  if points && points["required"]? && points["required"].as_bool == true
-    true
-  else
-    false
-  end
-end
-
-def failed_required_tasks
-  yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
-    YAML.parse(file)
-  end
-  yaml["items"].as_a.reduce([] of String) do |acc, i|
-    if i["status"].as_s == "failed" && 
-        i["name"].as_s? && 
-        task_required(i["name"].as_s)
-      (acc << i["name"].as_s)
-    else
-      acc
-    end
-  end
-end
-
-def total_points(tag=nil)
-  if tag
-    tasks = tasks_by_tag(tag)
-  else
-    tasks = all_task_test_names
-  end
-  yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
-    YAML.parse(file)
-  end
-  yaml["items"].as_a.reduce(0) do |acc, i|
-    if i["points"].as_i? && i["name"].as_s? &&
-        tasks.find{|x| x == i["name"]}
-      (acc + i["points"].as_i)
-    else
-      acc
-    end
-  end
-end
-
-def total_max_points(tag=nil)
-  if tag
-    tasks = tasks_by_tag(tag)
-  else
-    tasks = all_task_test_names
-  end
-  tasks.reduce(0) do |acc, x|
-    points = task_points(x)
-    if points
-      acc + points
-    else
-      acc
-    end
-  end
-end
-
-def all_task_test_names
-  result_items = points_yml.reduce([] of String) do |acc, x|
-    if x["name"].as_s == "default_scoring" ||
-        x["tags"].as_s.split(",").find{|x|x=="platform"}
-      acc
-    else
-      acc << x["name"].as_s
-    end
-  end
-end
-
-def tasks_by_tag(tag)
-  #TODO cross reference points.yml tags with results
-  found = false
-  result_items = points_yml.reduce([] of String) do |acc, x|
-    if x["tags"].as_s? && x["tags"].as_s.includes?(tag)
-      acc << x["name"].as_s
-    else
-      acc
-    end
-  end
-end
-
-def all_result_test_names(results_file)
-  results = File.open(results_file) do |f| 
-    YAML.parse(f)
-  end 
-  result_items = results["items"].as_a.reduce([] of String) do |acc, x|
-      acc << x["name"].as_s
-  end
-end
-
-def results_by_tag(tag)
-  task_list = tasks_by_tag(tag)
-
-  results = File.open("#{CNFManager::Points::Results.file}") do |f| 
-    YAML.parse(f)
-  end 
-
-  found = false
-  result_items = results["items"].as_a.reduce([] of YAML::Any) do |acc, x|
-    if x["name"].as_s? && task_list.find{|tl| tl == x["name"].as_s}
-      acc << x
-    else
-      acc
-    end
-  end
 end
 
 def stdout_info(msg) 
@@ -483,9 +273,9 @@ def stdout_failure(msg)
 end
 
 def stdout_score(test_name)
-  total = total_points(test_name)
+  total = CNFManager::Points.total_points(test_name)
   pretty_test_name = test_name.split(/:|_/).map(&.capitalize).join(" ")
-  test_log_msg = "#{pretty_test_name} final score: #{total} of #{total_max_points(test_name)}"
+  test_log_msg = "#{pretty_test_name} final score: #{total} of #{CNFManager::Points.total_max_points(test_name)}"
 
   if total > 0
     stdout_success test_log_msg
