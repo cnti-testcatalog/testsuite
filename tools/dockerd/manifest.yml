@@ -6,6 +6,16 @@ spec:
   containers:
   - name: dockerd
     image: docker:dind
+    livenessProbe:
+      tcpSocket:
+        port: 2376
+      initialDelaySeconds: 3
+      periodSeconds: 3
+    readinessProbe:
+      tcpSocket:
+        port: 2376
+      initialDelaySeconds: 3
+      periodSeconds: 3
     # command: ["/bin/sh"]
     # args: ["-c", "sleep infinity"]
     securityContext:
