@@ -1,4 +1,3 @@
-# coding: utf-8
 require "totem"
 require "colorize"
 require "./types/cnf_conformance_yml_type.cr"
@@ -12,28 +11,28 @@ module CNFManager
     def self.task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
       LOGGING.info("task_runner args: #{args.inspect}")
       if check_cnf_config(args)
-        CNFManager::Task.single_task_runner(args, &block)
+        single_task_runner(args, &block)
       else
-        CNFManager::Task.all_cnfs_task_runner(args, &block)
+        all_cnfs_task_runner(args, &block)
       end
     end
 
     # TODO give example for calling
-    def CNFManager::Task.all_cnfs_task_runner(args, &block : Sam::Args, CNFManager::Config  -> String | Colorize::Object(String) | Nil)
+    def self.all_cnfs_task_runner(args, &block : Sam::Args, CNFManager::Config  -> String | Colorize::Object(String) | Nil)
 
       # Platforms tests dont have any cnfs
       if CNFManager.cnf_config_list(silent: true).size == 0
-        CNFManager::Task.single_task_runner(args, &block)
+        single_task_runner(args, &block)
       else
         CNFManager.cnf_config_list(silent: true).map do |x|
           new_args = Sam::Args.new(args.named, args.raw)
           new_args.named["cnf-config"] = x
-          CNFManager::Task.single_task_runner(new_args, &block)
+          single_task_runner(new_args, &block)
         end
       end
     end
     # TODO give example for calling
-    def CNFManager::Task.single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
+    def self.single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
       LOGGING.debug("single_task_runner args: #{args.inspect}")
       begin
         if args.named["cnf-config"]? # platform tests don't have a cnf-config

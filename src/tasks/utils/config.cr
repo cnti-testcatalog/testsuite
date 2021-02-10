@@ -1,4 +1,3 @@
-# coding: utf-8
 require "totem"
 require "colorize"
 require "./types/cnf_conformance_yml_type.cr"
@@ -85,7 +84,7 @@ module CNFManager
          }
       end
 
-      CNFManager::Config.new({ destination_cnf_dir: destination_cnf_dir,
+      new({ destination_cnf_dir: destination_cnf_dir,
                                source_cnf_file: source_cnf_file,
                                source_cnf_dir: source_cnf_dir,
                                yml_file_path: yml_file_path,

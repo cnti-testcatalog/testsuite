@@ -136,7 +136,7 @@ describe "SampleUtils" do
   end
 
   it "'CNFManager::Points.final_cnf_results_yml. should return the latest time stamped results file"  do
-    (CNFManager::Points.final_cnf_results_yml..should contain("cnf-conformance-results")
+    (CNFManager::Points.final_cnf_results_yml).should contain("cnf-conformance-results")
   end
 
 
