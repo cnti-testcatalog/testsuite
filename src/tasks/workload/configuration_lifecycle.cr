@@ -495,7 +495,7 @@ task "immutable_configmap", ["retrieve_manifest"] do |_, args|
             if container["volumeMounts"]?
                 vmount = container["volumeMounts"].as_a
               LOGGING.info "vmount: #{vmount}"
-              LOGGING.debug "container[env]: #{container["env"]}"
+              LOGGING.debug "container[env]: #{container["env"]? && container["env"]}"
               if (vmount.find { |x| x["name"] == config_map_volume["name"]? }) 
                 LOGGING.debug config_map_volume["name"]
                 container_config_map_mounted = true 
@@ -508,8 +508,13 @@ task "immutable_configmap", ["retrieve_manifest"] do |_, args|
             config_map_volume_mounted = false
           end
 
-          this_volume_config_map = config_maps_json["items"].as_a.find {|x| x["name"] == config_map_volume["name"]? }
+          LOGGING.debug "blarf config_maps_json[items][0]: #{config_maps_json["items"][0]}"
+          LOGGING.debug "blarf config_map_volume[configMap] #{config_map_volume["configMap"]}"
 
+          this_volume_config_map = config_maps_json["items"].as_a.find {|x| x["metadata"]? && x["metadata"]["name"]? && x["metadata"]["name"] == config_map_volume["configMap"]["name"] }
+
+          # TODO: start here  below is mismatched. also we gonna need to make a cnf witha  env mounted config map to test
+          LOGGING.debug "blarf this_volume_config_map: #{this_volume_config_map}"
           # https://crystal-lang.org/api/0.20.4/Hash.html#key%3F%28value%29-instance-method
           unless config_map_volume_mounted && this_volume_config_map && this_volume_config_map["immutable"]? && this_volume_config_map["immutable"] == true
             all_volume_configmap_are_immutable = false
