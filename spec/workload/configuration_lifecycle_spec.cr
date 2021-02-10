@@ -263,4 +263,31 @@ describe CnfConformance do
     end
   end
 
+
+  it "'immutable_configmap' should pass with all immutable configmaps with env mounted", tags: "immutable_configmap" do
+    begin
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_immutable_configmap_all_plus_env/cnf-conformance.yml deploy_with_chart=false`
+      $?.success?.should be_true
+      response_s = `./cnf-conformance immutable_configmap verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: All volume or container mounted configmaps immutable/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-conformance.yml deploy_with_chart=false`
+    end
+  end
+
+  it "'immutable_configmap' should fail with a mutable env mounted configmap", tags: "immutable_configmap" do
+    begin
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_immutable_configmap_all_plus_env/cnf-conformance.yml deploy_with_chart=false`
+      $?.success?.should be_true
+      response_s = `./cnf-conformance immutable_configmap verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILURE: Found mutable configmap/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-conformance.yml deploy_with_chart=false`
+    end
+  end
+
 end

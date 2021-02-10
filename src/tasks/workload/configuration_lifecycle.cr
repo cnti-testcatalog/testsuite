@@ -508,13 +508,12 @@ task "immutable_configmap", ["retrieve_manifest"] do |_, args|
             config_map_volume_mounted = false
           end
 
-          LOGGING.debug "blarf config_maps_json[items][0]: #{config_maps_json["items"][0]}"
-          LOGGING.debug "blarf config_map_volume[configMap] #{config_map_volume["configMap"]}"
+          LOGGING.debug "config_maps_json[items][0]: #{config_maps_json["items"][0]}"
+          LOGGING.debug "config_map_volume[configMap] #{config_map_volume["configMap"]}"
 
           this_volume_config_map = config_maps_json["items"].as_a.find {|x| x["metadata"]? && x["metadata"]["name"]? && x["metadata"]["name"] == config_map_volume["configMap"]["name"] }
 
-          # TODO: start here  below is mismatched. also we gonna need to make a cnf witha  env mounted config map to test
-          LOGGING.debug "blarf this_volume_config_map: #{this_volume_config_map}"
+          LOGGING.debug "this_volume_config_map: #{this_volume_config_map}"
           # https://crystal-lang.org/api/0.20.4/Hash.html#key%3F%28value%29-instance-method
           unless config_map_volume_mounted && this_volume_config_map && this_volume_config_map["immutable"]? && this_volume_config_map["immutable"] == true
             all_volume_configmap_are_immutable = false
@@ -538,7 +537,8 @@ task "immutable_configmap", ["retrieve_manifest"] do |_, args|
 
           this_env_mounted_config_map_json = config_maps_json["items"].as_a.find{ |s| s["metadata"]["name"] == this_env_mounted_config_map_name }
 
-            unless this_env_mounted_config_map_json && this_env_mounted_config_map_json["immutable"]? && !this_env_mounted_config_map_json["immutable"] == true
+            LOGGING.debug "blarf this_env_mounted_config_map_json #{this_env_mounted_config_map_json}"
+            unless this_env_mounted_config_map_json && this_env_mounted_config_map_json["immutable"]? && this_env_mounted_config_map_json["immutable"] == true
               all_env_configmap_are_immutable = false
             end
           end
