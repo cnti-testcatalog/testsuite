@@ -279,7 +279,7 @@ describe CnfConformance do
 
   it "'immutable_configmap' should fail with a mutable env mounted configmap", tags: "immutable_configmap" do
     begin
-      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_immutable_configmap_all_plus_env/cnf-conformance.yml deploy_with_chart=false`
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_immutable_configmap_all_plus_env_but_fail/cnf-conformance.yml deploy_with_chart=false`
       $?.success?.should be_true
       response_s = `./cnf-conformance immutable_configmap verbose`
       LOGGING.info response_s
