@@ -81,16 +81,6 @@ module CNFManager
     initialized && test_passed
   end
 
-
-  def self.final_cnf_results_yml
-    LOGGING.info "final_cnf_results_yml" 
-    results_file = `find ./results/* -name "cnf-conformance-results-*.yml"`.split("\n")[-2].gsub("./", "")
-    if results_file.empty?
-      raise "No cnf_conformance-results-*.yml found! Did you run the all task?"
-    end
-    results_file
-  end
-
   def self.cnf_config_list(silent=false)
     LOGGING.info("cnf_config_list")
     LOGGING.info("find: find #{CNF_DIR}/* -name #{CONFIG_FILE}")
