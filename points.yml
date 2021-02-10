@@ -78,6 +78,10 @@
   tags: configuration_lifecycle, dynamic, workload
   pass: 5
   fail: 0 
+- name: immutable_configmap
+  tags: configuration_lifecycle, dynamic, workload
+  pass: 1
+  fail: 0 
 
 #- name: fluentd_traffic
 #  tags: observability, dynamic, workload
