@@ -2,6 +2,9 @@
 
 This CoreDNS sample uses a modified Helm chart supporting a private Docker Hub registry.  The access credentials are passed to the helm command line through the cnf-conformance.yml key [release_name](https://github.com/cncf/cnf-conformance/blob/master/sample-cnfs/sample_coredns_protected/cnf-conformance.yml#L5). 
 
+
+You need to set the environment options listed in the [cnf-conformance.yml](cnf-conformance.yml).
+
 # Prerequistes
 ### Install helm
 ```
