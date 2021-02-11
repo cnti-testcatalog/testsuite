@@ -9,7 +9,7 @@ require "../utils/utils.cr"
 rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
-task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used"].concat(rolling_version_change_test_names) do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used", "immutable_configmap"].concat(rolling_version_change_test_names) do |_, args|
   stdout_score("configuration_lifecycle")
 end
 
@@ -441,6 +441,8 @@ task "immutable_configmap", ["retrieve_manifest"] do |_, args|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
 
     # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
+    
+    # feature test to see if immutable_configmaps are enabled
     # https://github.com/cncf/cnf-conformance/issues/508#issuecomment-758438413
 
     test_config_map_filename = "#{destination_cnf_dir}/test_config_map.yml";
@@ -470,18 +472,90 @@ task "immutable_configmap", ["retrieve_manifest"] do |_, args|
     # cleanup test configmap
     KubectlClient::Delete.file(test_config_map_filename) 
 
-    # re: feature gates: https://github.com/cncf/cnf-conformance/issues/508#issuecomment-758388434
-    # TODO get only config maps that are installed with the cnf (i.e. export helm template)
-    config_maps_json = KubectlClient::Get.configmaps
+    resp = ""
+    emoji_probe="⚖️"
+    cnf_manager_workload_resource_task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
+      LOGGING.info "resource: #{resource}"
+      LOGGING.info "volumes: #{volumes}"
 
-    LOGGING.debug "immutable config maps: #{config_maps_json["items"]}"
-    if config_maps_json["items"].as_a.select {|x| x["immutable"]? && x["immutable"] === true}.size === config_maps_json["items"].as_a.size
-        resp = "✔️  PASSED: All configmaps immutable".colorize(:green)
-        upsert_passed_task("immutable_configmap", resp)
-    else
-      resp = "✖️  FAILURE: Found mutable configmap(s)".colorize(:red)
-        upsert_failed_task("immutable_configmap", resp)
+      config_maps_json = KubectlClient::Get.configmaps
+
+      volume_test_passed = false
+      config_map_volume_exists = false
+      config_map_volume_mounted = true 
+      all_volume_configmap_are_immutable = true
+      # Check to see all volume config maps are actually used
+      # https://kubernetes.io/docs/concepts/storage/volumes/#configmap
+      volumes.as_a.each do |config_map_volume|
+        if config_map_volume["configMap"]?
+          config_map_volume_exists = true 
+          LOGGING.info "config_map_volume: #{config_map_volume["name"]}"
+          container_config_map_mounted = false 
+          containers.as_a.each do |container|
+            if container["volumeMounts"]?
+                vmount = container["volumeMounts"].as_a
+              LOGGING.info "vmount: #{vmount}"
+              LOGGING.debug "container[env]: #{container["env"]? && container["env"]}"
+              if (vmount.find { |x| x["name"] == config_map_volume["name"]? }) 
+                LOGGING.debug config_map_volume["name"]
+                container_config_map_mounted = true 
+              end
+            end
+          end
+          # If any config_map volume exists, and it is not mounted by a
+          # container, fail test
+          if container_config_map_mounted == false
+            config_map_volume_mounted = false
+          end
+
+          LOGGING.debug "config_maps_json[items][0]: #{config_maps_json["items"][0]}"
+          LOGGING.debug "config_map_volume[configMap] #{config_map_volume["configMap"]}"
+
+          this_volume_config_map = config_maps_json["items"].as_a.find {|x| x["metadata"]? && x["metadata"]["name"]? && x["metadata"]["name"] == config_map_volume["configMap"]["name"] }
+
+          LOGGING.debug "this_volume_config_map: #{this_volume_config_map}"
+          # https://crystal-lang.org/api/0.20.4/Hash.html#key%3F%28value%29-instance-method
+          unless config_map_volume_mounted && this_volume_config_map && this_volume_config_map["immutable"]? && this_volume_config_map["immutable"] == true
+            all_volume_configmap_are_immutable = false
+          end
+        end
+      end
+
+      if config_map_volume_exists && config_map_volume_mounted && all_volume_configmap_are_immutable
+        volume_test_passed = true
+      end
+
+      all_env_configmap_are_immutable = true
+
+      containers.as_a.each do |container|
+        LOGGING.debug "container config_maps #{container["env"]?}"
+        if container["env"]? 
+          container["env"].as_a.find do |c| 
+
+          # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#define-container-environment-variables-with-data-from-multiple-configmaps
+          this_env_mounted_config_map_name = c.dig?("valueFrom", "configMapKeyRef", "name")
+
+          this_env_mounted_config_map_json = config_maps_json["items"].as_a.find{ |s| s["metadata"]["name"] == this_env_mounted_config_map_name }
+
+            LOGGING.debug "blarf this_env_mounted_config_map_json #{this_env_mounted_config_map_json}"
+            unless this_env_mounted_config_map_json && this_env_mounted_config_map_json["immutable"]? && this_env_mounted_config_map_json["immutable"] == true
+              all_env_configmap_are_immutable = false
+            end
+          end
+        end 
+      end
+
+      all_volume_configmap_are_immutable && all_env_configmap_are_immutable
     end
+
+    if cnf_manager_workload_resource_task_response 
+      resp = "✔️  PASSED: All volume or container mounted configmaps immutable #{emoji_probe}".colorize(:green)
+      upsert_passed_task("immutable_configmap", resp)
+    else
+      resp = "✖️  FAILURE: Found mutable configmap(s) #{emoji_probe}".colorize(:red)
+      upsert_failed_task("immutable_configmap", resp)
+    end
+    resp
   end
 end
 
