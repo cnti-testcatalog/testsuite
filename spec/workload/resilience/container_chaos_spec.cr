@@ -26,17 +26,18 @@ describe "Resilience Container Chaos" do
     end
   end
 
-  it "'chaos_container_kill' A 'Bad' CNF should NOT recover when its container is killed", tags: ["chaos_container_kill"]  do
-    begin
-      `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-fragile-state deploy_with_chart=false`
-      $?.success?.should be_true
-      response_s = `./cnf-conformance chaos_container_kill verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/FAILURE: Replicas did not return desired count after container kill test/ =~ response_s).should_not be_nil
-    ensure
-      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-fragile-state deploy_with_chart=false`
-      $?.success?.should be_true
-    end
-  end
+  # TODO upgrade chaos mesh
+  # it "'chaos_container_kill' A 'Bad' CNF should NOT recover when its container is killed", tags: ["chaos_container_kill"]  do
+  #   begin
+  #     `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-fragile-state deploy_with_chart=false`
+  #     $?.success?.should be_true
+  #     response_s = `./cnf-conformance chaos_container_kill verbose`
+  #     LOGGING.info response_s
+  #     $?.success?.should be_true
+  #     (/FAILURE: Replicas did not return desired count after container kill test/ =~ response_s).should_not be_nil
+  #   ensure
+  #     `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-fragile-state deploy_with_chart=false`
+  #     $?.success?.should be_true
+  #   end
+  # end
 end
