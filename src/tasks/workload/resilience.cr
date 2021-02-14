@@ -190,7 +190,7 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         puts "#{install_rbac}" if check_verbose(args)
         puts "#{annotate}" if check_verbose(args)
 
-        chaos_experiment_name = "pod-network-latency"
+        chaos_experiment_name = "pod_network_latency"
         test_name = "#{resource["name"]}-conformance-#{Time.local.to_unix}" 
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
@@ -206,9 +206,9 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
       test_passed
     end
     if task_response 
-      resp = upsert_passed_task("pod-network-latency","✔️  PASSED: pod-network-latency chaos test passed 🗡️💀♻️")
+      resp = upsert_passed_task("pod_network_latency","✔️  PASSED: pod-network-latency chaos test passed 🗡️💀♻️")
     else
-      resp = upsert_failed_task("pod-network-latency","✖️  FAILURE: pod-network-latency chaos test failed 🗡️💀♻️")
+      resp = upsert_failed_task("pod_network_latency","✖️  FAILURE: pod-network-latency chaos test failed 🗡️💀♻️")
     end
     resp
   end
