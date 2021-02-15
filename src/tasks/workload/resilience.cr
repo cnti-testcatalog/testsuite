@@ -190,7 +190,7 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         puts "#{install_rbac}" if check_verbose(args)
         puts "#{annotate}" if check_verbose(args)
 
-        chaos_experiment_name = "pod_network_latency"
+        chaos_experiment_name = "pod-network-latency"
         test_name = "#{resource["name"]}-conformance-#{Time.local.to_unix}" 
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
