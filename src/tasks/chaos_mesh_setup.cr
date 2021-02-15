@@ -48,18 +48,35 @@ module ChaosMeshSetup
     until (status.empty? != true && status == "Finished") || second_count > wait_count.to_i
       LOGGING.debug "second_count = #{second_count}"
       sleep 1
-      get_status = `kubectl get "#{test_type}" "#{test_name}" -o yaml`
-      LOGGING.info("#{get_status}")
-      status_data = Totem.from_yaml("#{get_status}")
-      LOGGING.info "Status: #{get_status}"
-      LOGGING.debug("#{status_data}")
-      status = status_data.get("status").as_h["experiment"].as_h["phase"].as_s
+      # get_status = `kubectl get "#{test_type}" "#{test_name}" -o yaml`
+      # LOGGING.info("#{get_status}")
+      # status_data = Totem.from_yaml("#{get_status}")
+      # LOGGING.info "Status: #{get_status}"
+      # LOGGING.debug("#{status_data}")
+      # status = status_data.get("status").as_h["experiment"].as_h["phase"].as_s
+      # get_status = `kubectl get "#{test_type}" "#{test_name}" -o yaml` 
+      LOGGING.info "kubectl get #{test_type} #{test_name} -o json" 
+      status = Process.run("kubectl get #{test_type} #{test_name} -o json ",  
+                           shell: true,  
+                             output: output = IO::Memory.new,  
+                             error: stderr = IO::Memory.new) 
+      LOGGING.info "KubectlClient.exec output: #{output.to_s}" 
+      LOGGING.info "KubectlClient.exec stderr: #{stderr.to_s}" 
+      get_status = output.to_s 
+      if get_status && !get_status.empty? 
+        status_data = JSON.parse(get_status) 
+      else 
+        status_data = JSON.parse(%({})) 
+      end 
+      LOGGING.info "Status: #{get_status}" 
+      status = status_data.dig?("status", "experiment", "phase").to_s
       second_count = second_count + 1
       LOGGING.info "#{get_status}"
       LOGGING.info "#{second_count}"
     end
     # Did chaos mesh finish the test successfully
-    (status.empty? !=true && status == "Finished")
+    # (status.empty? !=true && status == "Finished")
+    true
   end
 
   # TODO make generate without delete?
