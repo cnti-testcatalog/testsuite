@@ -358,7 +358,7 @@ END
         helm_repo_url = ""
       end
       helm_chart = optional_key_as_string(config, "helm_chart")
-      release_name = "#{config.get("release_name").as_s?}"
+      release_name = optional_key_as_string(config, "release_name")
       service_name = optional_key_as_string(config, "service_name")
       helm_directory = optional_key_as_string(config, "helm_directory")
       git_clone_url = optional_key_as_string(config, "git_clone_url")
