@@ -19,7 +19,7 @@ describe "Resilience Pod Network Latency Chaos" do
       response_s = `./cnf-conformance pod_network_latency verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: pod-network-latency chaos test passed/ =~ response_s).should_not be_nil
+      (/PASSED: pod_network_latency chaos test passed/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
       $?.success?.should be_true

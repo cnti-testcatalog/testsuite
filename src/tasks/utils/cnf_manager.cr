@@ -478,9 +478,10 @@ module CNFManager
       VERBOSE_LOGGING.info "deploying by manifest file" if verbose 
       #kubectl apply -f ./sample-cnfs/k8s-non-helm/manifests 
       # TODO move to kubectlclient
-      LOGGING.info("kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}")
-      manifest_install = `kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}`
-      VERBOSE_LOGGING.info manifest_install if verbose 
+      # LOGGING.info("kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}")
+      # manifest_install = `kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}`
+      # VERBOSE_LOGGING.info manifest_install if verbose 
+      KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
 
     when :helm_chart
       if !helm_repo_name.empty? || !helm_repo_url.empty?
@@ -537,10 +538,12 @@ module CNFManager
     LOGGING.info("destination_cnf_dir: #{destination_cnf_dir}")
     if dir_exists || force == true
       if installed_from_manifest
-        LOGGING.info "kubectl delete command: kubectl delete -f #{manifest_directory}"
-        kubectl_delete = `kubectl delete -f #{manifest_directory}`
-        ret = $?.success?
-        VERBOSE_LOGGING.info kubectl_delete if verbose
+        # LOGGING.info "kubectl delete command: kubectl delete -f #{manifest_directory}"
+        # kubectl_delete = `kubectl delete -f #{manifest_directory}`
+        # ret = $?.success?
+        ret = KubectlClient::Delete.file("#{manifest_directory}")
+        # VERBOSE_LOGGING.info kubectl_delete if verbose
+        # TODO put more safety around this
         rm = `rm -rf #{destination_cnf_dir}`
         VERBOSE_LOGGING.info rm if verbose
         if ret
