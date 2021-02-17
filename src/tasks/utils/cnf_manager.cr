@@ -358,7 +358,7 @@ END
         helm_repo_url = ""
       end
       helm_chart = optional_key_as_string(config, "helm_chart")
-      release_name = "#{config.get("release_name").as_s?}"
+      release_name = optional_key_as_string(config, "release_name")
       service_name = optional_key_as_string(config, "service_name")
       helm_directory = optional_key_as_string(config, "helm_directory")
       git_clone_url = optional_key_as_string(config, "git_clone_url")
@@ -642,6 +642,7 @@ END
   def self.generate_and_set_release_name(config_yml_path)
     LOGGING.info "generate_and_set_release_name"
     yml_file = CNFManager.ensure_cnf_conformance_yml_path(config_yml_path)
+    yml_path = CNFManager.ensure_cnf_conformance_dir(config_yml_path)
     config = CNFManager.parsed_config_file(yml_file)
 
     predefined_release_name = optional_key_as_string(config, "release_name")
@@ -654,8 +655,8 @@ END
         LOGGING.debug "helm_chart install method: #{install_method[1]}"
         release_name = helm_chart_template_release_name(install_method[1])
       when :helm_directory
-        LOGGING.debug "helm_directory install method: #{yml_file}/#{install_method[1]}"
-        release_name = helm_chart_template_release_name("#{yml_file}/#{install_method[1]}")
+        LOGGING.debug "helm_directory install method: #{yml_path}/#{install_method[1]}"
+        release_name = helm_chart_template_release_name("#{yml_path}/#{install_method[1]}")
       when :manifest_directory
         LOGGING.debug "manifest_directory install method"
         release_name = UUID.random.to_s
