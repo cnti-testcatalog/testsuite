@@ -48,13 +48,6 @@ module ChaosMeshSetup
     until (status.empty? != true && status == "Finished") || second_count > wait_count.to_i
       LOGGING.debug "second_count = #{second_count}"
       sleep 1
-      # get_status = `kubectl get "#{test_type}" "#{test_name}" -o yaml`
-      # LOGGING.info("#{get_status}")
-      # status_data = Totem.from_yaml("#{get_status}")
-      # LOGGING.info "Status: #{get_status}"
-      # LOGGING.debug("#{status_data}")
-      # status = status_data.get("status").as_h["experiment"].as_h["phase"].as_s
-      # get_status = `kubectl get "#{test_type}" "#{test_name}" -o yaml` 
       LOGGING.info "kubectl get #{test_type} #{test_name} -o json" 
       status = Process.run("kubectl get #{test_type} #{test_name} -o json ",  
                            shell: true,  

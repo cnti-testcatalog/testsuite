@@ -135,8 +135,8 @@ describe "SampleUtils" do
     (yaml["exit_code"]).should eq(0) 
   end
 
-  it "'CNFManager.final_cnf_results_yml' should return the latest time stamped results file"  do
-    (CNFManager.final_cnf_results_yml).should contain("cnf-conformance-results")
+  it "'CNFManager::Points.final_cnf_results_yml. should return the latest time stamped results file"  do
+    (CNFManager::Points.final_cnf_results_yml).should contain("cnf-conformance-results")
   end
 
 

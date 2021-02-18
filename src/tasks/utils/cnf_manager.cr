@@ -4,6 +4,9 @@ require "colorize"
 require "./types/cnf_conformance_yml_type.cr"
 require "./helm.cr"
 require "uuid"
+require "./points.cr"
+require "./task.cr"
+require "./config.cr"
 
 module CNFManager 
 
@@ -477,16 +480,6 @@ END
     end
     LOGGING.debug "workload resource test intialized: #{initialized} test_passed: #{test_passed}"
     initialized && test_passed
-  end
-
-
-  def self.final_cnf_results_yml
-    LOGGING.info "final_cnf_results_yml" 
-    results_file = `find ./results/* -name "cnf-conformance-results-*.yml"`.split("\n")[-2].gsub("./", "")
-    if results_file.empty?
-      raise "No cnf_conformance-results-*.yml found! Did you run the all task?"
-    end
-    results_file
   end
 
   def self.cnf_config_list(silent=false)
