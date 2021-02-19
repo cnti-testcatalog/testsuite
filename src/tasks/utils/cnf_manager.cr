@@ -57,24 +57,24 @@ module CNFManager
       LOGGING.error "no resource names found"
       initialized = false
     end
-		resource_names.each do | resource |
-			VERBOSE_LOGGING.debug resource.inspect if check_verbose(args)
-      unless resource[:kind].as_s.downcase == "service" ## services have no containers
-        containers = KubectlClient::Get.resource_containers(resource[:kind].as_s, resource[:name].as_s)
-        volumes = KubectlClient::Get.resource_volumes(resource[:kind].as_s, resource[:name].as_s)
-        if check_containers
+    resource_names.each do | resource |
+      VERBOSE_LOGGING.debug resource.inspect if check_verbose(args)
+      volumes = KubectlClient::Get.resource_volumes(resource[:kind].as_s, resource[:name].as_s)
+      if check_containers
+        unless resource[:kind].as_s.downcase == "service" ## services have no containers
+          containers = KubectlClient::Get.resource_containers(resource[:kind].as_s, resource[:name].as_s)
           containers.as_a.each do |container|
             resp = yield resource, container, volumes, initialized
             LOGGING.debug "yield resp: #{resp}"
             # if any response is false, the test fails
             test_passed = false if resp == false
           end
-        else
-          resp = yield resource, containers, volumes, initialized
-          LOGGING.debug "yield resp: #{resp}"
-          # if any response is false, the test fails
-          test_passed = false if resp == false
         end
+      else
+        resp = yield resource, JSON.parse(%({})), volumes, initialized
+        LOGGING.debug "yield resp: #{resp}"
+        # if any response is false, the test fails
+        test_passed = false if resp == false
       end
     end
     LOGGING.debug "workload resource test intialized: #{initialized} test_passed: #{test_passed}"

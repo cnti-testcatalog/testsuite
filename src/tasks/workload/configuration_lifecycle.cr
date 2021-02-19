@@ -110,33 +110,6 @@ task "readiness" do |_, args|
   end
 end
 
-
-desc "Retrieve the manifest for the CNF's helm chart"
-task "retrieve_manifest" do |_, args| 
-  # TODO put this in a function 
-  CNFManager::Task.task_runner(args) do |args|
-    VERBOSE_LOGGING.info "retrieve_manifest" if check_verbose(args)
-    # config = cnf_conformance_yml
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    # deployment_name = config.get("deployment_name").as_s
-    #TODO loop through all services
-    service_name = "#{config.get("service_name").as_s?}"
-    # VERBOSE_LOGGING.debug "Deployment_name: #{deployment_name}" if check_verbose(args)
-    VERBOSE_LOGGING.debug service_name if check_verbose(args)
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-    # TODO move to kubectl client
-    # deployment = `kubectl get deployment #{deployment_name} -o yaml  > #{destination_cnf_dir}/manifest.yml`
-    # KubectlClient::Get.save_manifest(deployment_name, "#{destination_cnf_dir}/manifest.yml")
-    # VERBOSE_LOGGING.debug deployment if check_verbose(args)
-    unless service_name.empty?
-      # TODO move to kubectl client
-      service = `kubectl get service #{service_name} -o yaml  > #{destination_cnf_dir}/service.yml`
-    end
-    VERBOSE_LOGGING.debug service if check_verbose(args)
-    service
-  end
-end
-
 rolling_version_change_test_names.each do |tn|
   pretty_test_name = tn.split(/:|_/).join(" ")
   pretty_test_name_capitalized = tn.split(/:|_/).map(&.capitalize).join(" ")
@@ -269,32 +242,37 @@ task "rollback" do |_, args|
 end
 
 desc "Does the CNF use NodePort"
-task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
+task "nodeport_not_used" do |_, args|
   # TODO rename task_runner to multi_cnf_task_runner
-  task_response = CNFManager::Task.task_runner(args, config) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "nodeport_not_used" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     release_name = config.cnf_config[:release_name]
     service_name  = config.cnf_config[:service_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+    task_response = CNFManager.workload_resource_test(args, config, check_containers:false) do |resource, container, initialized|
+      LOGGING.info "nodeport_not_used resource: #{resource}"
       if resource["kind"].as_s.downcase == "service" 
-        LOGGING.info "resource kind: #{resource]}"
-        # if File.exists?("#{destination_cnf_dir}/service.yml")
-        #   service = Totem.from_file "#{destination_cnf_dir}/service.yml"
-        #     VERBOSE_LOGGING.debug service.inspect if check_verbose(args)
-        # service_type = service.get("spec").as_h["type"].as_s
-        service_type = KubectlClient::Get.resource(resource[:kind], resource[:name]).dig?("spec", "type") 
+        LOGGING.info "resource kind: #{resource}"
+        service = KubectlClient::Get.resource(resource[:kind], resource[:name])
+        LOGGING.debug "service: #{service}"
+        service_type = service.dig?("spec", "type") 
+        LOGGING.info "service_type: #{service_type}"
         VERBOSE_LOGGING.debug service_type if check_verbose(args)
         if service_type == "NodePort" 
-          upsert_failed_task("nodeport_not_used", "✖️  FAILURE: NodePort is being used")
-        else
-          upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
+          #TODO make a service selector and display the related resources 
+          # that are tied to this service
+          puts "resource service: #{resource} has a NodePort that is being used".colorize(:red)
+          test_passed=false
         end
+        test_passed
       end
     end
-  else
-    upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
+    if task_response 
+      upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
+    else
+      upsert_failed_task("nodeport_not_used", "✖️  FAILURE: NodePort is being used")
+    end
   end
 end
 
@@ -438,7 +416,7 @@ def configmap_template
 end
 
 desc "Does the CNF use immutable configmaps?"
-task "immutable_configmap", ["retrieve_manifest"] do |_, args|
+task "immutable_configmap" do |_, args|
   task_response = CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "immutable_configmap" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
