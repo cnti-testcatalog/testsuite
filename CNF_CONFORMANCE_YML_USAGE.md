@@ -14,7 +14,6 @@ This information is also required for running various tests e.g. The 'container_
     - [release_name](#release_name)
     - [deployment_name](#deployment_name)
     - [deployment_label](#deployment_label)
-    - [service_name](#service_name)
     - [application_deployment_name](#application_deployment_name)
     - [docker_repository](#docker_repository)
     - [helm_repository](#helm_repository)
@@ -114,12 +113,6 @@ Example setting:
 Example setting:
 
 `deployment_label: k8s-app`
-
-#### service_name
-
-Example setting:
-
-`service_name: coredns-coredns`
 
 #### application_deployment_name
 
@@ -231,8 +224,7 @@ git_clone_url:
 install_script: 
 release_name: coredns
 deployment_name: coredns-coredns 
-deployment_label: k8s-app
-service_name: coredns-coredns 
+deployment_label: k8s-app 
 application_deployment_names: [coredns-coredns]
 docker_repository: coredns/coredns
 helm_repository:
