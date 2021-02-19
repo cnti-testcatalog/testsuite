@@ -71,7 +71,7 @@ module CNFManager
           end
         end
       else
-        resp = yield resource, JSON.parse(%({})), volumes, initialized
+        resp = yield resource, JSON.parse(%([{}])), volumes, initialized
         LOGGING.debug "yield resp: #{resp}"
         # if any response is false, the test fails
         test_passed = false if resp == false
