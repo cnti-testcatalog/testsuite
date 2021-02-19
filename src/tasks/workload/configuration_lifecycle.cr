@@ -433,7 +433,7 @@ def configmap_template
 end
 
 desc "Does the CNF use immutable configmaps?"
-task "immutable_configmap", ["retrieve_manifest"] do |_, args|
+task "immutable_configmap", ["retrieve_manifest"]  do |_, args|
   task_response = CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "immutable_configmap" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
@@ -474,7 +474,7 @@ task "immutable_configmap", ["retrieve_manifest"] do |_, args|
 
     resp = ""
     emoji_probe="⚖️"
-    cnf_manager_workload_resource_task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
+    cnf_manager_workload_resource_task_response = CNFManager.workload_resource_test(args, config, check_containers=false, check_service=true) do |resource, containers, volumes, initialized|
       LOGGING.info "resource: #{resource}"
       LOGGING.info "volumes: #{volumes}"
 
