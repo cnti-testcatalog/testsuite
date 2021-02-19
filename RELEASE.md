@@ -1,6 +1,15 @@
-# 2020-03-13 - [DRAFT] when to tag a new release on the CNF Conformance repo
-
 ## How to create a tagged release
+**[Automated releases]**
+- Create a tag off of the master branch 
+```
+git tag -a 'vMAJOR.MINOR.PATCH' -m "vMAJOR.MINOR.PATCH Release" 
+git push --tags 
+```
+- Wait for github actions to complete the build
+- Go to https://github.com/cncf/cnf-conformance/releases
+- Locate the draft release for the build
+- Modify the release notes to reflect the contents for the release
+- Mark the release as non-draft 
 
 See https://help.github.com/en/github/administering-a-repository/managing-releases-in-a-repository#creating-a-release
 
@@ -47,18 +56,6 @@ _Note: this covers both workload (ie. application) and platform tests_
 - Tag with new major version vMAJOR_VERSION.MINOR.PATCH, eg. v2.0.0
 
 _Note: this covers both workload (ie. application) and platform tests_
-
-**[Automated releases]**
-- Create a tag off of the master branch 
-```
-git tag -a 'vMAJOR.MINOR.PATCH' -m "vMAJOR.MINOR.PATCH Release" 
-git push --tags 
-```
-- Wait for github actions to complete the build
-- Go to https://github.com/cncf/cnf-conformance/releases
-- Locate the draft release for the build
-- Modify the release notes to reflect the contents for the release
-- Mark the release as non-draft 
 
 **[Manually create builds]**
 based on [INSTALL.md#optional-build-binary](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#optional-build-binary) and [Minimal instructions to run the tests from source (as of 2020-06-23)](https://hackmd.io/hcHoJEKaRWuyf_fZ7ITxLw)
