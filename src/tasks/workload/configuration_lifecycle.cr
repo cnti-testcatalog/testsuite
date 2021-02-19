@@ -270,26 +270,31 @@ end
 
 desc "Does the CNF use NodePort"
 task "nodeport_not_used", ["retrieve_manifest"] do |_, args|
-  task_response = CNFManager::Task.task_runner(args) do |args, config|
+  # TODO rename task_runner to multi_cnf_task_runner
+  task_response = CNFManager::Task.task_runner(args, config) do |args, config|
     VERBOSE_LOGGING.info "nodeport_not_used" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     release_name = config.cnf_config[:release_name]
     service_name  = config.cnf_config[:service_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    #TODO loop through all resources that have a kind of service
-    if File.exists?("#{destination_cnf_dir}/service.yml")
-      service = Totem.from_file "#{destination_cnf_dir}/service.yml"
-      VERBOSE_LOGGING.debug service.inspect if check_verbose(args)
-      service_type = service.get("spec").as_h["type"].as_s
-      VERBOSE_LOGGING.debug service_type if check_verbose(args)
-      if service_type == "NodePort" 
-        upsert_failed_task("nodeport_not_used", "✖️  FAILURE: NodePort is being used")
-      else
-        upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      if resource["kind"].as_s.downcase == "service" 
+        LOGGING.info "resource kind: #{resource]}"
+        # if File.exists?("#{destination_cnf_dir}/service.yml")
+        #   service = Totem.from_file "#{destination_cnf_dir}/service.yml"
+        #     VERBOSE_LOGGING.debug service.inspect if check_verbose(args)
+        # service_type = service.get("spec").as_h["type"].as_s
+        service_type = KubectlClient::Get.resource(resource[:kind], resource[:name]).dig?("spec", "type") 
+        VERBOSE_LOGGING.debug service_type if check_verbose(args)
+        if service_type == "NodePort" 
+          upsert_failed_task("nodeport_not_used", "✖️  FAILURE: NodePort is being used")
+        else
+          upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
+        end
       end
-    else
-      upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
     end
+  else
+    upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
   end
 end
 
