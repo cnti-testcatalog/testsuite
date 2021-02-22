@@ -199,6 +199,24 @@ jobs:
       with:
         name: release
         path: cnf-conformance
+  test_binary_no_source:
+    name: Test Binary Without Source
+    needs: [spec, build, debug_output]
+    runs-on: ubuntu-latest
+    steps: 
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: release
+    - uses: mxschmitt/action-tmate@v3
+      if: needs.debug_output.outputs.release-debug == 'true'
+    - name: Run Test Suite without source
+      run: |
+        chmod +x ./cnf-conformance
+        cnf-conformance setup
+        wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
+        cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
+        cnf-conformance workload
   release:
     name: Publish Release
     needs: [spec, build, debug_output]
