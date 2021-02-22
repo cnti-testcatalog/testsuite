@@ -157,7 +157,7 @@ export DOCKERHUB_USERNAME=<USERNAME>
 export DOCKERHUB_PASSWORD=<PASSWORD>
 ```
 
-Please refer to the [CNF_CONFORMANCE_YML_USAGE.md](CNF_CONFORMANCE_YML_USAGE.md) for details on using a private registry.
+Please refer to the [CNF_CONFORMANCE_YML_USAGE.md](CNF_CONFORMANCE_YML_USAGE.md#Using-a-Private-Registry) for details on using a private registry.
 
 
 <details><summary>Install Tab Completion for cnf-conformance (Optional)</summary>
