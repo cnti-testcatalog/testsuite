@@ -24,6 +24,7 @@ This information is also required for running various tests e.g. The 'container_
 - [Creating Your Own cnf-conformance.yml](#creating-your-own-cnf-conformanceyml)
 - [Setup and Configuration](#Setup-and-Configuration)
 - [Quick Setup and Config Reference Steps](#Quick-Setup-and-Config-Reference-Steps)
+- [Using a Private Registry](#Using-a-Private-Registry)
 
 
 ### Overview of all cnf-conformance.yml
@@ -268,3 +269,41 @@ This assumes you have already followed [INSTALL](INSTALL.md) and or [SOURCE-INST
   ```
   ./cnf-conformance cnf_cleanup cnf-config=<path to your cnf config file>
   ```
+
+### Using a Private Registry
+To setup and use a private registry if you are not pulling images from a public repository like Docker Hub, this is the current method to specify a private registry with username and password to pull down images used for the test suite.
+
+You can pass this information directly in the `cnf-conformance.yml` under the `release_name` setting:
+
+Example usage:
+
+```
+release_name: release --set imageCredentials.registry=$PROTECTED_REGISTRY_URL --set imageCredentials.username=$PROTECTED_REGISTRY_USERNAME --set imageCredentials.password=$PROTECTED_REGISTRY_PASSWORD --set imageCredentials.email=$PROTECTED_REGISTRY_EMAIL
+```
+
+In this example, we are using ENV variables to avoid using usernames and passwords in the actual config files which we highly recommend.
+
+To set the ENV variables, do the following:
+
+```
+export PROTECTED_REGISTRY_URL="example.io"
+export PROTECTED_REGISTRY_USERNAME=username
+export PROTECTED_REGISTRY_PASSWORD=password
+export PROTECTED_REGISTRY_EMAIL="email@example.io"
+```
+
+In some cases, the email is not necessary. You can leave it blank if not required, eg. `export PROTECTED_REGISTRY_EMAIL=""`
+
+These values are specified in your specific Helm Chart values.yml, e.g.:
+
+```
+# Default values for your image
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+imageCredentials:
+  registry: example.io
+  username: username
+  password: password
+  email: email@example.io
+```
