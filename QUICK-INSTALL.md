@@ -35,4 +35,4 @@ Now pull down an example CNF to test with and configure the test suite with it:
 wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
 cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
 ```
-This should get produce results using our example CNF (coredns). If you see any errors or failures, you might need to read our more indepth [INSTALL.md](INSTALL.md) documentation on getting CNF Test suite working. We also have a guide if you prefer to [install by source](INSTALL_SOURCE.md).
+This should get produce results using our example CNF (CoreDNS). If you see any errors or failures, you might need to read our more indepth [INSTALL.md](INSTALL.md) documentation on getting CNF Test suite working. We also have a guide if you prefer to [install by source](INSTALL_SOURCE.md).
