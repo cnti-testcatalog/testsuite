@@ -44,7 +44,7 @@ This will detail the required minimum requirements needed in order to support cn
 
 - Follow the [kind install](KIND-INSTALL.md) instructions to setup a cluster in [kind](https://kind.sigs.k8s.io/)
 
-##### k8s-infra
+##### CNF-Testbed
 
 - You can clone the CNF-Testbed project if you have an account at Equinix Metal (formerly Packet.net). Get the code by running the following:
 
@@ -52,7 +52,7 @@ This will detail the required minimum requirements needed in order to support cn
 git clone https://github.com/cncf/cnf-testbed.git
 ```
 
-- Clone the K8s-infra repo then Follow the [prerequisites](https://github.com/cncf/cnf-testbed/tree/master/tools#pre-requisites) for [deploying a K8s cluster](https://github.com/cncf/cnf-testbed/tree/master/tools#deploying-a-kubernetes-cluster-using-the-makefile--ci-tools) for a Equinix Metal host.
+- Clone the K8s-infra repo then follow the [prerequisites](https://github.com/cncf/cnf-testbed/tree/master/tools#pre-requisites) for [deploying a K8s cluster](https://github.com/cncf/cnf-testbed/tree/master/tools#deploying-a-kubernetes-cluster-using-the-makefile--ci-tools) for a Equinix Metal host.
 - If you already have IP addresses for your provider, and you want to manually install a K8s cluster, you can use k8s-infra to do this within your cnf-testbed repo clone.
 
 ```
@@ -99,8 +99,10 @@ curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.
 - The Latest Binary (or you can select a previous release if desired) can be pulled down with wget, curl or you're own preferred method. Once downloaded you'll need to make the binary executable and manually add to your path:
 ```
 wget https://github.com/cncf/cnf-conformance/releases/download/latest/latest.tar.gz
+tar xzf latest.tar.gz
+cd cnf-conformance
 chmod +x cnf-conformance
-export OLDPATH=$PATH; export PATH=$PATH:(pwd)
+export OLDPATH=$PATH; export PATH=$PATH:$(pwd)
 ```
 </p>
 </details>
@@ -115,7 +117,7 @@ This is a brief summary for source installations and [does have requirements](#R
 Follow these steps to checkout the source from github and compile a cnf-conformance binary:
 
 ```
-git clone git@github.com:cncf/cnf-conformance.git
+git clone https://github.com/cncf/cnf-conformance.git
 cd cnf-conformance/
 shards install
 crystal build src/cnf-conformance.cr
@@ -147,6 +149,16 @@ The next step for cnf-conformance is to run the `setup` which prepares the cnf-c
 ```
 cnf-conformance setup
 ```
+
+The test suite by default will pull docker images from https://docker.io. You can set your own username and password with local environment variables by doing the following:
+
+```
+export DOCKERHUB_USERNAME=<USERNAME>
+export DOCKERHUB_PASSWORD=<PASSWORD>
+```
+
+Please refer to the [CNF_CONFORMANCE_YML_USAGE.md](CNF_CONFORMANCE_YML_USAGE.md#Using-a-Private-Registry) for details on using a private registry.
+
 
 <details><summary>Install Tab Completion for cnf-conformance (Optional)</summary>
 
