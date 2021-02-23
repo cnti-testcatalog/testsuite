@@ -21,7 +21,7 @@ Implementing and running applications in a cloud native manner will enable you t
 
 To participate and contribute to the program itself (including discussion of
 issues affecting conformance and certification), join the mailing list and
-slack channel. Details: [Conformance WG](https://github.com/cncf/cnf-wg/blob/master/README.md).
+slack channel. Details: [CNF WG](https://github.com/cncf/cnf-wg/blob/master/README.md).
 
 ## Test Suite Information
 
