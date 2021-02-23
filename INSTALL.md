@@ -102,7 +102,7 @@ wget https://github.com/cncf/cnf-conformance/releases/download/latest/latest.tar
 tar xzf latest.tar.gz
 cd cnf-conformance
 chmod +x cnf-conformance
-export OLDPATH=$PATH; export PATH=$PATH:(pwd)
+export OLDPATH=$PATH; export PATH=$PATH:$(pwd)
 ```
 </p>
 </details>
