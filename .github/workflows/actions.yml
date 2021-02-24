@@ -213,10 +213,10 @@ jobs:
     - name: Run Test Suite without source
       run: |
         chmod +x ./cnf-conformance
-        cnf-conformance setup
+        ./cnf-conformance setup
         wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
-        cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
-        cnf-conformance workload
+        ./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
+        ./cnf-conformance workload
   release:
     name: Publish Release
     needs: [spec, build, debug_output]
@@ -244,4 +244,3 @@ jobs:
         else
           ./cnf-conformance upsert_release
         fi
-
