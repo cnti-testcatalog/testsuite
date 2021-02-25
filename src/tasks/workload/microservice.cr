@@ -108,6 +108,7 @@ task "reasonable_startup_time" do |_, args|
 end
 
 desc "Does the CNF have a reasonable container image size?"
+#TODO Move install_dockerd dep out.
 task "reasonable_image_size", ["install_dockerd"] do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
     VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
