@@ -51,8 +51,17 @@ Setup of vanilla upstream K8s on [Equinix Metal](https://metal.equinix.com/) is 
 
 
 ## Installation
+To get the CNF Test Suite up and running, see the [Installation Guide](INSTALL.md). 
 
-To quickly get CNF Conformance Test Suite up and running, see the [Installation Guide](INSTALL.md). 
+#### To give it a try immediately you can use these quick install steps
+Prereqs: kubernetes cluster, wget, curl, helm 3.1.1 or greater on your system already.
+
+1. Install the latest test suite binary:  `source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.sh)`
+2. Run `setup` to prepare the cnf-conformance suite: `cnf-conformance setup`
+3. Pull down an example CNF configuration to try: `wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml`
+4. Initialize the test suite for using the CNF: `cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml`
+5. Run all of application/workload tests: `cnf-conformance workload`
+
 
 ## Usage
 
