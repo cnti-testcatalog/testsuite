@@ -1,3 +1,14 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: docker-config
+data:
+  config.yaml: |
+    {
+      "insecure-registries" : ["registry:5000"] 
+    }
+---
 apiVersion: v1
 kind: Pod
 metadata:
@@ -6,6 +17,10 @@ spec:
   containers:
   - name: dockerd
     image: docker:dind
+    volumeMounts:
+    - name: config-volume
+      mountPath: /etc/docker/daemon.json
+      subPath: config.yaml
     livenessProbe:
       tcpSocket:
         port: 2376
@@ -16,7 +31,9 @@ spec:
         port: 2376
       initialDelaySeconds: 3
       periodSeconds: 3
-    # command: ["/bin/sh"]
-    # args: ["-c", "sleep infinity"]
     securityContext:
       privileged: true
+  volumes:
+    - name: config-volume
+      configMap:
+        name: docker-config

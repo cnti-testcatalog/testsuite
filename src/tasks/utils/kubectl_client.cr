@@ -151,7 +151,7 @@ module KubectlClient
       unless kind.downcase == "service" ## services have no containers
         resp = resource(kind, resource_name).dig?("spec", "template", "spec", "containers")
       end
-      LOGGING.debug "kubectl get resource containers: #{resp}"
+      LOGGING.info "kubectl get resource containers: #{resp}"
       if resp && resp.as_a.size > 0
         resp
       else

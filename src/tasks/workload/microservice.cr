@@ -124,9 +124,38 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
           resource["kind"].as_s.downcase == "pod" ||
           resource["kind"].as_s.downcase == "replicaset"
         test_passed = true
-        local_image_tag = {image: container.as_h["image"].as_s.split(":")[0],
+      # if there are three elements in the array, use the last two elements as the org/image:tag combo
+      # if there are two elements in the array, use both elements as the image/tag combo
+        fqdn_image = container.as_h["image"].as_s
+        LOGGING.info "fqdn_image: #{fqdn_image}"
+        case fqdn_image.split("/").size 
+        when 3 
+          org_image = "#{fqdn_image.split("/")[1]}/#{fqdn_image.split("/")[2]}"
+          org = fqdn_image.split("/")[1]
+          image =  fqdn_image.split("/")[2]
+        when 2
+          # TODO if there is a port in the first element, it is not an org, but a url
+
+          org_image = "#{fqdn_image.split("/")[0]}/#{fqdn_image.split("/")[1]}"
+          org = fqdn_image.split("/")[0]
+          image =  fqdn_image.split("/")[1]
+        when 1
+          org_image = fqdn_image.split("/")[0]
+          org = "" 
+          image =  fqdn_image.split("/")[0]
+        else
+          org_image = "" 
+          org = "" 
+          image =  ""
+          LOGGING.error "Invalid container image name"
+        end
+        LOGGING.info "org_image: #{org_image}"
+        LOGGING.info "org: #{org}"
+        LOGGING.info "image: #{image}"
+        local_image_tag = {image: image.split(":")[0],
                            #TODO an image may not have a tag
-                           tag: container.as_h["image"].as_s.split(":")[1]?}
+                           tag: image.split(":")[1]?}
+        LOGGING.info "local_image_tag: #{local_image_tag}"
 
         image_pull_secrets = KubectlClient::Get.resource(resource[:kind], resource[:name]).dig?("spec", "template", "spec", "imagePullSecrets") 
         if image_pull_secrets
@@ -160,10 +189,10 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
 
         # LOGGING.info "kubectl exec dockerd -ti -- docker pull #{local_image_tag[:image]}:#{local_image_tag[:tag]}" 
         # pull_image = `kubectl exec dockerd -ti -- docker pull #{local_image_tag[:image]}:#{local_image_tag[:tag]}` 
-          KubectlClient.exec("dockerd -ti -- docker pull #{local_image_tag[:image]}:#{local_image_tag[:tag]}")
+        KubectlClient.exec("dockerd -ti -- docker pull #{org.empty? ? "" : org + "/"}#{local_image_tag[:image]}:#{local_image_tag[:tag]}")
         # LOGGING.info "kubectl exec dockerd -ti -- docker save #{local_image_tag[:image]}:#{local_image_tag[:tag]} -o /tmp/image.tar"
         # save_image = `kubectl exec dockerd -ti -- docker save #{local_image_tag[:image]}:#{local_image_tag[:tag]} -o /tmp/image.tar`
-          KubectlClient.exec("dockerd -ti -- docker save #{local_image_tag[:image]}:#{local_image_tag[:tag]} -o /tmp/image.tar")
+          KubectlClient.exec("dockerd -ti -- docker save #{org.empty? ? "" : org + "/"}#{local_image_tag[:image]}:#{local_image_tag[:tag]} -o /tmp/image.tar")
         # LOGGING.info "kubectl exec dockerd -ti -- gzip -f /tmp/image.tar" 
         # gzip_image = `kubectl exec dockerd -ti -- gzip -f /tmp/image.tar`
           KubectlClient.exec("dockerd -ti -- gzip -f /tmp/image.tar")
@@ -183,6 +212,7 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
         #   test_passed=false
         # end
         VERBOSE_LOGGING.info "compressed_size: #{compressed_size.to_s}" if check_verbose(args)
+        LOGGING.info "compressed_size: #{compressed_size.to_s}" 
         max_size = 5_000_000_000
         if ENV["CRYSTAL_ENV"]? == "TEST"
            LOGGING.info("Using Test Mode max_size")

@@ -69,4 +69,21 @@ describe "Microservice" do
   ensure
     `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup force=true`
   end
+
+  it "'reasonable_image_size' should pass if using local registry and a port", tags: ["reasonable_image_size","happy-path"]  do
+    # if ENV["PROTECTED_DOCKERHUB_USERNAME"]? && ENV["PROTECTED_DOCKERHUB_PASSWORD"]? && ENV["PROTECTED_DOCKERHUB_EMAIL"]?
+
+    cnf="./sample-cnfs/sample_local_registry"
+
+    #    else
+    #      cnf="./sample-cnfs/sample-coredns-cnf"
+    # end
+    LOGGING.info `./cnf-conformance cnf_setup cnf-path=#{cnf}`
+    response_s = `./cnf-conformance reasonable_image_size verbose`
+    LOGGING.info response_s
+    $?.success?.should be_true
+    (/Image size is good/ =~ response_s).should_not be_nil
+  ensure
+    LOGGING.info `./cnf-conformance cnf_cleanup cnf-path=#{cnf}`
+  end
 end
