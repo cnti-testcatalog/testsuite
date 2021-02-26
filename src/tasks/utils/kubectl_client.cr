@@ -35,6 +35,7 @@ module KubectlClient
   end
   module Rollout
     def self.status(deployment_name, timeout="30s")
+      #TODO use process command to print both standard out and error 
       rollout = `kubectl rollout status deployment/#{deployment_name} --timeout=#{timeout}`
       rollout_status = $?.success?
       LOGGING.debug "#{rollout}"
@@ -79,6 +80,7 @@ module KubectlClient
   module Set
     def self.image(deployment_name, container_name, image_name, version_tag=nil)
       #TODO check if image exists in repo? DockerClient::Get.image and image_by_tags
+      #TODO use process command to print both standard out and error 
       if version_tag
         # use --record to have history
         resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record`
@@ -151,7 +153,7 @@ module KubectlClient
       unless kind.downcase == "service" ## services have no containers
         resp = resource(kind, resource_name).dig?("spec", "template", "spec", "containers")
       end
-      LOGGING.debug "kubectl get resource containers: #{resp}"
+      LOGGING.info "kubectl get resource containers: #{resp}"
       if resp && resp.as_a.size > 0
         resp
       else

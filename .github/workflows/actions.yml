@@ -134,7 +134,15 @@ jobs:
         && sudo rm -rf /var/lib/apt/lists/*
     - name: Create Kind Cluster 
       run: |
-        kind create cluster
+        cat << EOF > /tmp/cluster.yml
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        containerdConfigPatches:
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
+            endpoint = ["http://localhost:5000"]
+        EOF
+        kind create cluster --config=/tmp/cluster.yml
         kubectl get nodes 
     - name: Setup CNF-Conformance
       run: |

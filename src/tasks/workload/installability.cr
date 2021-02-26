@@ -69,14 +69,18 @@ end
 
 desc "Does the install script use helm?"
 task "install_script_helm" do |_, args|
-  CNFManager::Task.task_runner(args) do |args|
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+  CNFManager::Task.task_runner(args) do |args, config|
+    # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
 
     found = 0
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    # destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    # install_script = config.get("install_script").as_s?
+    install_script = config.cnf_config[:install_script]
+    LOGGING.info "install_script: #{install_script}"
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    LOGGING.info "destination_cnf_dir: #{destination_cnf_dir}"
     VERBOSE_LOGGING.debug destination_cnf_dir if check_verbose(args)
-    install_script = config.get("install_script").as_s?
-    if install_script
+    if !install_script.empty?
       response = String::Builder.new
       content = File.open("#{destination_cnf_dir}/#{install_script}") do |file|
         file.gets_to_end
@@ -97,18 +101,17 @@ task "install_script_helm" do |_, args|
 end
 
 task "helm_chart_published", ["helm_local_install"] do |_, args|
-  CNFManager::Task.task_runner(args) do |args|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "helm_chart_published" if check_verbose(args)
     VERBOSE_LOGGING.debug "helm_chart_published args.raw: #{args.raw}" if check_verbose(args)
     VERBOSE_LOGGING.debug "helm_chart_published args.named: #{args.named}" if check_verbose(args)
 
     # config = cnf_conformance_yml
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    helm_chart = "#{config.get("helm_chart").as_s?}"
-    # helm_directory = "#{config.get("helm_directory").as_s?}"
+    # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    # helm_chart = "#{config.get("helm_chart").as_s?}"
+    helm_chart = config.cnf_config[:helm_chart]
 
     current_dir = FileUtils.pwd 
-    #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     helm = CNFSingleton.helm
     VERBOSE_LOGGING.debug helm if check_verbose(args)
 
