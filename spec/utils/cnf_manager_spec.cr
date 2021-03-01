@@ -23,6 +23,13 @@ describe "SampleUtils" do
     $?.success?.should be_true
   end
 
+  it "'cnf_setup' should pass with a minimal cnf-conformance.yml" do
+    LOGGING.info `./cnf-conformance cnf_setup cnf-path=./sample-cnfs/sample-minimal-cnf/ wait_count=0`
+    $?.success?.should be_true
+  ensure
+    `./cnf-conformance cnf_cleanup cnf-path=./sample-cnfs/sample-minimal-cnf/ force=true`
+  end
+
   it "'points_yml' should parse and return the points yaml file"  do
     (CNFManager::Points.points_yml.find {|x| x["name"] =="liveness"}).should be_truthy 
   end
