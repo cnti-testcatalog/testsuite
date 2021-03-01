@@ -37,6 +37,10 @@ module CNFManager
     def self.parse_config_yml(config_yml_path : String) : CNFManager::Config
       LOGGING.debug "parse_config_yml config_yml_path: #{config_yml_path}"
       yml_file = CNFManager.ensure_cnf_conformance_yml_path(config_yml_path)
+      #TODO modify the destination conformance yml instead of the source conformance yml 
+      # (especially in the case of the release manager).  Then reread the destination config
+      # TODO for cleanup, read source, then find destination and use release name from destination config
+      # TODO alternatively use a CRD to save the release name
       config = CNFManager.parsed_config_file(yml_file)
 
       install_method = CNFManager.cnf_installation_method(config)
@@ -58,7 +62,7 @@ module CNFManager
         helm_repo_url = ""
       end
       helm_chart = optional_key_as_string(config, "helm_chart")
-      release_name = "#{config.get("release_name").as_s?}"
+      release_name = optional_key_as_string(config, "release_name")
       service_name = optional_key_as_string(config, "service_name")
       helm_directory = optional_key_as_string(config, "helm_directory")
       git_clone_url = optional_key_as_string(config, "git_clone_url")
@@ -71,17 +75,31 @@ module CNFManager
       end
       helm_chart_path = destination_cnf_dir + "/" + working_chart_directory 
       manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
-      white_list_container_names = config.get("white_list_helm_chart_container_names").as_a.map do |c|
-        "#{c.as_s?}"
+      white_list_container_names = optional_key_as_string(config, "white_list_helm_chart_container_names")
+      if config["white_list_helm_chart_container_names"]?
+        white_list_container_names = config["white_list_helm_chart_container_names"].as_a.map do |c|
+          "#{c.as_s?}"
+        end
+      else
+        white_list_container_names = [] of String
       end
-      container_names_totem = config["container_names"]
-      container_names = container_names_totem.as_a.map do |container|
-        {"name" => optional_key_as_string(container, "name"),
-         "rolling_update_test_tag" => optional_key_as_string(container, "rolling_update_test_tag"),
-         "rolling_downgrade_test_tag" => optional_key_as_string(container, "rolling_downgrade_test_tag"),
-         "rolling_version_change_test_tag" => optional_key_as_string(container, "rolling_version_change_test_tag"),
-         "rollback_from_tag" => optional_key_as_string(container, "rollback_from_tag"),
-         }
+      if config["container_names"]?
+        container_names_totem = config["container_names"]
+        container_names = container_names_totem.as_a.map do |container|
+          {"name" => optional_key_as_string(container, "name"),
+           "rolling_update_test_tag" => optional_key_as_string(container, "rolling_update_test_tag"),
+           "rolling_downgrade_test_tag" => optional_key_as_string(container, "rolling_downgrade_test_tag"),
+           "rolling_version_change_test_tag" => optional_key_as_string(container, "rolling_version_change_test_tag"),
+           "rollback_from_tag" => optional_key_as_string(container, "rollback_from_tag"),
+           }
+        end
+      else
+        container_names = [{"name" => "",
+         "rolling_update_test_tag" => "",
+         "rolling_downgrade_test_tag" => "",
+         "rolling_version_change_test_tag" => "",
+         "rollback_from_tag" => "",
+         }]
       end
 
       new({ destination_cnf_dir: destination_cnf_dir,
