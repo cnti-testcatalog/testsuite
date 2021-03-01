@@ -52,7 +52,7 @@ class CnfConformanceYmlType
 
   property white_list_helm_chart_container_names : Array(String)?
 
-  property container_names : Array(Hash(String,String))?
+  property container_names : Array(Hash(String,String))
 end
 
 class HelmRepositoryType

@@ -83,14 +83,23 @@ module CNFManager
       else
         white_list_container_names = [] of String
       end
-      container_names_totem = config["container_names"]
-      container_names = container_names_totem.as_a.map do |container|
-        {"name" => optional_key_as_string(container, "name"),
-         "rolling_update_test_tag" => optional_key_as_string(container, "rolling_update_test_tag"),
-         "rolling_downgrade_test_tag" => optional_key_as_string(container, "rolling_downgrade_test_tag"),
-         "rolling_version_change_test_tag" => optional_key_as_string(container, "rolling_version_change_test_tag"),
-         "rollback_from_tag" => optional_key_as_string(container, "rollback_from_tag"),
-         }
+      if config["container_names"]?
+        container_names_totem = config["container_names"]
+        container_names = container_names_totem.as_a.map do |container|
+          {"name" => optional_key_as_string(container, "name"),
+           "rolling_update_test_tag" => optional_key_as_string(container, "rolling_update_test_tag"),
+           "rolling_downgrade_test_tag" => optional_key_as_string(container, "rolling_downgrade_test_tag"),
+           "rolling_version_change_test_tag" => optional_key_as_string(container, "rolling_version_change_test_tag"),
+           "rollback_from_tag" => optional_key_as_string(container, "rollback_from_tag"),
+           }
+        end
+      else
+        container_names = [{"name" => "",
+         "rolling_update_test_tag" => "",
+         "rolling_downgrade_test_tag" => "",
+         "rolling_version_change_test_tag" => "",
+         "rollback_from_tag" => "",
+         }]
       end
 
       new({ destination_cnf_dir: destination_cnf_dir,
