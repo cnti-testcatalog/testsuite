@@ -250,7 +250,7 @@ task "nodeport_not_used" do |_, args|
     release_name = config.cnf_config[:release_name]
     service_name  = config.cnf_config[:service_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    task_response = CNFManager.workload_resource_test(args, config, check_containers:false) do |resource, container, initialized|
+    task_response = CNFManager.workload_resource_test(args, config, check_containers:false, check_service: true) do |resource, container, initialized|
       LOGGING.info "nodeport_not_used resource: #{resource}"
       if resource["kind"].as_s.downcase == "service" 
         LOGGING.info "resource kind: #{resource}"
