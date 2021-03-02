@@ -63,7 +63,8 @@ task "reasonable_startup_time" do |_, args|
         raise "Manifest file not supported yet"
       end
 
-      kubectl_apply = `kubectl apply -f #{yml_file_path}/reasonable_startup_test.yml --namespace=startup-test`
+      # kubectl_apply = `kubectl apply -f #{yml_file_path}/reasonable_startup_test.yml --namespace=startup-test`
+      KubectlClient::Apply.file("#{yml_file_path}/reasonable_startup_test.yml --namespace=startup-test")
       is_kubectl_applied = $?.success?
 
       template_ymls = Helm::Manifest.parse_manifest_as_ymls("#{yml_file_path}/reasonable_startup_test.yml") 
@@ -102,7 +103,8 @@ task "reasonable_startup_time" do |_, args|
    ensure
     LOGGING.debug "Reasonable startup cleanup"
     delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
-    rollback_non_namespaced = `kubectl apply -f #{yml_file_path}/reasonable_startup_orig.yml`
+    # rollback_non_namespaced = `kubectl apply -f #{yml_file_path}/reasonable_startup_orig.yml`
+    KubectlClient::Apply.file("#{yml_file_path}/reasonable_startup_orig.yml")
     # KubectlClient::Get.wait_for_install(deployment_name, wait_count=180)
   end
 end

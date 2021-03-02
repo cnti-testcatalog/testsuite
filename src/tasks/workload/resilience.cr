@@ -183,12 +183,14 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         test_passed = false
       end
       if test_passed
-        install_experiment = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/experiment.yaml`
-        install_rbac = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/rbac.yaml`
+        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/experiment.yaml")
+        # install_experiment = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/experiment.yaml`
+        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/rbac.yaml")
+        # install_rbac = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/rbac.yaml`
         annotate = `kubectl annotate --overwrite deploy/#{resource["name"]} litmuschaos.io/chaos="true"`
-        puts "#{install_experiment}" if check_verbose(args)
-        puts "#{install_rbac}" if check_verbose(args)
-        puts "#{annotate}" if check_verbose(args)
+        # puts "#{install_experiment}" if check_verbose(args)
+        # puts "#{install_rbac}" if check_verbose(args)
+        # puts "#{annotate}" if check_verbose(args)
 
         chaos_experiment_name = "pod-network-latency"
         test_name = "#{resource["name"]}-conformance-#{Time.local.to_unix}" 
@@ -197,9 +199,9 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         template = Crinja.render(chaos_template_pod_network_latency, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name})
         chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
         puts "#{chaos_config}" if check_verbose(args)
-        run_chaos = `kubectl apply -f "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
-        puts "#{run_chaos}" if check_verbose(args)
-
+        # run_chaos = `kubectl apply -f "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
+        # puts "#{run_chaos}" if check_verbose(args)
+        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
         LitmusManager.wait_for_test(test_name,chaos_experiment_name,args)
         LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
       end

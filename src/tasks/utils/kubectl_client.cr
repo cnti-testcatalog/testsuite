@@ -60,21 +60,38 @@ module KubectlClient
   end
   module Apply
     def self.file(file_name) : Bool
+      # LOGGING.info "apply file: #{file_name}"
+      # apply = `kubectl apply -f #{file_name}`
+      # apply_status = $?.success?
+      # LOGGING.debug "kubectl apply resp: #{apply}"
+      # LOGGING.debug "apply? #{apply_status}"
+      # apply_status
       LOGGING.info "apply file: #{file_name}"
-      apply = `kubectl apply -f #{file_name}`
+      status = Process.run("kubectl apply -f #{file_name}", 
+                           shell: true, 
+                           output: output = IO::Memory.new, 
+                           error: stderr = IO::Memory.new)
+      LOGGING.info "KubectlClient.apply output: #{output.to_s}"
+      LOGGING.info "KubectlClient.apply stderr: #{stderr.to_s}"
+      # {status: status, output: output, error: stderr}
       apply_status = $?.success?
-      LOGGING.debug "kubectl apply resp: #{apply}"
-      LOGGING.debug "apply? #{apply_status}"
-      apply_status
     end
   end
   module Delete
     def self.file(file_name)
-      delete = `kubectl delete -f #{file_name}`
-      delete_status = $?.success?
-      LOGGING.debug "#{delete}"
-      LOGGING.debug "delete? #{delete_status}"
-      delete_status
+      # delete = `kubectl delete -f #{file_name}`
+      # delete_status = $?.success?
+      # LOGGING.debug "#{delete}"
+      # LOGGING.debug "delete? #{delete_status}"
+      # delete_status
+      # LOGGING.info "delete file: #{file_name}"
+      status = Process.run("kubectl delete -f #{file_name}", 
+                           shell: true, 
+                           output: output = IO::Memory.new, 
+                           error: stderr = IO::Memory.new)
+      LOGGING.info "KubectlClient.delete output: #{output.to_s}"
+      LOGGING.info "KubectlClient.delete stderr: #{stderr.to_s}"
+      {status: status, output: output, error: stderr}
     end
   end
   module Set
