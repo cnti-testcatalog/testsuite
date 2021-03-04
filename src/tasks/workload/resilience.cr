@@ -193,7 +193,7 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         # puts "#{annotate}" if check_verbose(args)
 
         chaos_experiment_name = "pod-network-latency"
-        test_name = "#{resource["name"]}-conformance-#{Time.local.to_unix}" 
+        test_name = "#{resource["name"]}-#{Random.rand(99)}" 
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
         template = Crinja.render(chaos_template_pod_network_latency, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name})
