@@ -95,6 +95,26 @@ Using the automated [pull request template](https://github.com/cncf/cnf-conforma
 
 For general advice on how to submit a pull request, please see [Creating a pull request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request).
 
+Accepting a PR:
+---
+**Problem:** Pull requests from forks do not have the permissions to run through the github actions CI, so they will fail
+
+**Solution:** Pull down the source from the fork and branch, then push up the source to the original cnf-conformance repo.
+
+1. Make a directory based on the forked user's name in the the pull request.
+`mkdir <contributor-username>`
+`cd <contributer-username>`
+2. Clone the fork.
+`git clone git@github.com:<contributor-username>/cnf-conformance.git`
+`cd cnf-conformance`
+3. Add the original cnf-conformance repo.
+`git remote add cncf git@github.com:cncf/cnf-conformance.git`
+4. Checkout the pull request's branch.
+`git checkout <pull-request's-branch-name>`
+5. Push the branch to the original cnf-conformance repo.
+`git push <pull-request's-branch-name>`
+6. Observe results of the github actions.
+7. Accept the pull request if the review and tests pass.
 
 Community Meeting: 
 ---
