@@ -30,8 +30,8 @@ task "reasonable_startup_time" do |_, args|
     helm_directory = config.cnf_config[:helm_directory]
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
-    
-    current_dir = FileUtils.pwd 
+
+    current_dir = FileUtils.pwd
     helm = CNFSingleton.helm
     VERBOSE_LOGGING.info helm if check_verbose(args)
 
@@ -41,7 +41,7 @@ task "reasonable_startup_time" do |_, args|
     kubectl_apply = ""
     is_kubectl_applied = ""
     is_kubectl_deployed = ""
-    # TODO make this work with a manifest installation 
+    # TODO make this work with a manifest installation
     elapsed_time = Time.measure do
       LOGGING.info("reasonable_startup_time helm_chart.empty?: #{helm_chart.empty?}")
       if install_method[0] == :helm_chart
@@ -67,7 +67,7 @@ task "reasonable_startup_time" do |_, args|
       KubectlClient::Apply.file("#{yml_file_path}/reasonable_startup_test.yml --namespace=startup-test")
       is_kubectl_applied = $?.success?
 
-      template_ymls = Helm::Manifest.parse_manifest_as_ymls("#{yml_file_path}/reasonable_startup_test.yml") 
+      template_ymls = Helm::Manifest.parse_manifest_as_ymls("#{yml_file_path}/reasonable_startup_test.yml")
 
       LOGGING.debug "template_ymls: #{template_ymls}"
       task_response = template_ymls.map do |resource|
@@ -119,9 +119,9 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
     # LOGGING.debug "Dockerd_Install: #{install_dockerd}"
     # KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      
+
       yml_file_path = config.cnf_config[:yml_file_path]
-      
+
       if resource["kind"].as_s.downcase == "deployment" ||
           resource["kind"].as_s.downcase == "statefulset" ||
           resource["kind"].as_s.downcase == "pod" ||
@@ -131,8 +131,8 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
       # if there are two elements in the array, use both elements as the image/tag combo
         fqdn_image = container.as_h["image"].as_s
         LOGGING.info "fqdn_image: #{fqdn_image}"
-        case fqdn_image.split("/").size 
-        when 3 
+        case fqdn_image.split("/").size
+        when 3
           org_image = "#{fqdn_image.split("/")[1]}/#{fqdn_image.split("/")[2]}"
           org = fqdn_image.split("/")[1]
           image =  fqdn_image.split("/")[2]
@@ -144,25 +144,25 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
           image =  fqdn_image.split("/")[1]
         when 1
           org_image = fqdn_image.split("/")[0]
-          org = "" 
+          org = ""
           image =  fqdn_image.split("/")[0]
         else
-          org_image = "" 
-          org = "" 
+          org_image = ""
+          org = ""
           image =  ""
           LOGGING.error "Invalid container image name"
         end
         LOGGING.info "org_image: #{org_image}"
         LOGGING.info "org: #{org}"
         LOGGING.info "image: #{image}"
-        local_image_tag = {image: image.split(":")[0],
+        local_image_tag = {image: image.rpartition(":")[0],
                            #TODO an image may not have a tag
-                           tag: image.split(":")[1]?}
+                           tag: image.rpartition(":")[2]?}
         LOGGING.info "local_image_tag: #{local_image_tag}"
 
-        image_pull_secrets = KubectlClient::Get.resource(resource[:kind], resource[:name]).dig?("spec", "template", "spec", "imagePullSecrets") 
+        image_pull_secrets = KubectlClient::Get.resource(resource[:kind], resource[:name]).dig?("spec", "template", "spec", "imagePullSecrets")
         if image_pull_secrets
-          auths = image_pull_secrets.as_a.map { |secret| 
+          auths = image_pull_secrets.as_a.map { |secret|
             puts secret["name"]
             secret_data = KubectlClient::Get.resource("Secret", "#{secret["name"]}").dig?("data")
             if secret_data
@@ -190,13 +190,13 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
           # LOGGING.debug "Copy_auth: #{copy_auth}"
         end
 
-        # LOGGING.info "kubectl exec dockerd -ti -- docker pull #{local_image_tag[:image]}:#{local_image_tag[:tag]}" 
-        # pull_image = `kubectl exec dockerd -ti -- docker pull #{local_image_tag[:image]}:#{local_image_tag[:tag]}` 
+        # LOGGING.info "kubectl exec dockerd -ti -- docker pull #{local_image_tag[:image]}:#{local_image_tag[:tag]}"
+        # pull_image = `kubectl exec dockerd -ti -- docker pull #{local_image_tag[:image]}:#{local_image_tag[:tag]}`
         KubectlClient.exec("dockerd -ti -- docker pull #{org.empty? ? "" : org + "/"}#{local_image_tag[:image]}:#{local_image_tag[:tag]}")
         # LOGGING.info "kubectl exec dockerd -ti -- docker save #{local_image_tag[:image]}:#{local_image_tag[:tag]} -o /tmp/image.tar"
         # save_image = `kubectl exec dockerd -ti -- docker save #{local_image_tag[:image]}:#{local_image_tag[:tag]} -o /tmp/image.tar`
           KubectlClient.exec("dockerd -ti -- docker save #{org.empty? ? "" : org + "/"}#{local_image_tag[:image]}:#{local_image_tag[:tag]} -o /tmp/image.tar")
-        # LOGGING.info "kubectl exec dockerd -ti -- gzip -f /tmp/image.tar" 
+        # LOGGING.info "kubectl exec dockerd -ti -- gzip -f /tmp/image.tar"
         # gzip_image = `kubectl exec dockerd -ti -- gzip -f /tmp/image.tar`
           KubectlClient.exec("dockerd -ti -- gzip -f /tmp/image.tar")
         # LOGGING.info "kubectl exec dockerd -ti -- wc -c /tmp/image.tar.gz | awk '{print$1}'"
@@ -209,13 +209,13 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
         # dockerhub_image_tags = DockerClient::Get.image_tags(local_image_tag[:image])
         # if dockerhub_image_tags && dockerhub_image_tags.status_code == 200
         #   image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, local_image_tag[:tag])
-        #   micro_size = image_by_tag && image_by_tag["full_size"] 
+        #   micro_size = image_by_tag && image_by_tag["full_size"]
         # else
         #   puts "Failed to find resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} on dockerhub".colorize(:yellow)
         #   test_passed=false
         # end
         VERBOSE_LOGGING.info "compressed_size: #{compressed_size.to_s}" if check_verbose(args)
-        LOGGING.info "compressed_size: #{compressed_size.to_s}" 
+        LOGGING.info "compressed_size: #{compressed_size.to_s}"
         max_size = 5_000_000_000
         if ENV["CRYSTAL_ENV"]? == "TEST"
            LOGGING.info("Using Test Mode max_size")
@@ -236,7 +236,7 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
     emoji_small="🐜"
     emoji_big="🦖"
 
-    if task_response 
+    if task_response
       upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good #{emoji_small} #{emoji_image_size}")
     else
       upsert_failed_task("reasonable_image_size", "✖️  FAILURE: Image size too large #{emoji_big} #{emoji_image_size}")
