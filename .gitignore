@@ -34,5 +34,4 @@ chaos_network_loss.yml
 chaos_cpu_hog.yml
 chaos_container_kill.yml
 /.idea/
-build.sh
-shards.sh
+*.sh
