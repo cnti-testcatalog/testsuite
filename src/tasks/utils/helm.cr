@@ -64,7 +64,9 @@ module Helm
     LOGGING.debug "workload_resource_by_kind ymls: #{ymls}"
     resources = ymls.select{|x| x["kind"]?==kind}.reject! {|x|
         # reject resources that contain the 'helm.sh/hook: test' annotation
-        x["metadata"]? && x["metadata"]["annotations"]? && x["metadata"]["annotations"]["helm.sh/hook"]? == "test"
+      LOGGING.debug "x[metadata]?: #{x["metadata"]?}"
+      LOGGING.debug "x[metadata][annotations]?: #{x["metadata"]? && x["metadata"]["annotations"]?}"
+      x.dig?("metadata","annotations","helm.sh/hook")
       }
     # end
     LOGGING.debug "resources: #{resources}"
