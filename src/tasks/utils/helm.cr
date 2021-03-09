@@ -62,14 +62,19 @@ module Helm
   def self.workload_resource_by_kind(ymls : Array(YAML::Any), kind)
     LOGGING.info "workload_resource_by_kind kind: #{kind}"
     LOGGING.debug "workload_resource_by_kind ymls: #{ymls}"
-    resources = ymls.select{|x| x["kind"]?==kind}
+    resources = ymls.select{|x| x["kind"]?==kind}.reject! {|x|
+        # reject resources that contain the 'helm.sh/hook: test' annotation
+      LOGGING.debug "x[metadata]?: #{x["metadata"]?}"
+      LOGGING.debug "x[metadata][annotations]?: #{x["metadata"]? && x["metadata"]["annotations"]?}"
+      x.dig?("metadata","annotations","helm.sh/hook")
+      }
     # end
     LOGGING.debug "resources: #{resources}"
     resources
   end
 
   def self.all_workload_resources(yml : Array(YAML::Any))
-    resources = KubectlClient::WORKLOAD_RESOURCES.map { |k,v| 
+    resources = KubectlClient::WORKLOAD_RESOURCES.map { |k,v|
       Helm.workload_resource_by_kind(yml, v)
     }.flatten
     LOGGING.debug "all resource: #{resources}"
@@ -141,11 +146,11 @@ module Helm
   end
 
   def self.local_helm_path
-    current_dir = FileUtils.pwd 
+    current_dir = FileUtils.pwd
     helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
   end
 
   def self.chart_name(helm_chart_repo)
-    helm_chart_repo.split("/").last 
+    helm_chart_repo.split("/").last
   end
-end 
+end
