@@ -93,4 +93,27 @@ describe "Microservice" do
     delete_registry = `kubectl delete -f #{TOOLS_DIR}/registry/manifest.yml`
     delete_dockerd = `kubectl delete -f #{TOOLS_DIR}/dockerd/manifest.yml`
   end
+
+  it "'reasonable_image_size' should pass if using local registry, a port and an org", tags: ["reasonable_image_size","happy-path"]  do
+
+    install_registry = `kubectl create -f #{TOOLS_DIR}/registry/manifest.yml`
+    install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
+    KubectlClient::Get.resource_wait_for_install("Pod", "registry")
+    KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
+    KubectlClient.exec("dockerd -ti -- docker pull coredns/coredns:1.6.7")
+    KubectlClient.exec("dockerd -ti -- docker tag coredns/coredns:1.6.7 registry:5000/coredns/coredns:1.6.7")
+    KubectlClient.exec("dockerd -ti -- docker push registry:5000/coredns/coredns:1.6.7")
+
+    cnf="./sample-cnfs/sample_local_registry_org_image"
+
+    LOGGING.info `./cnf-conformance cnf_setup cnf-path=#{cnf}`
+    response_s = `./cnf-conformance reasonable_image_size verbose`
+    LOGGING.info response_s
+    $?.success?.should be_true
+    (/Image size is good/ =~ response_s).should_not be_nil
+  ensure
+    LOGGING.info `./cnf-conformance cnf_cleanup cnf-path=#{cnf}`
+    delete_registry = `kubectl delete -f #{TOOLS_DIR}/registry/manifest.yml`
+    delete_dockerd = `kubectl delete -f #{TOOLS_DIR}/dockerd/manifest.yml`
+  end
 end
