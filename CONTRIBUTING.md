@@ -114,7 +114,8 @@ Accepting a PR:
 5. Push the branch to the original cnf-conformance repo.
 `git push <pull-request's-branch-name>`
 6. Observe results of the github actions.
-7. Accept the pull request if the review and tests pass.
+7. (optional) Accept the original pull request if the review and tests pass.
+8. (optional -- changes required) Create a new PR, make changes, and merge into master (Github will automatically merge the original PR since it's changes will be included in the new PR)
 
 Community Meeting: 
 ---
