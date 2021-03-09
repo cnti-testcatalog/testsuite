@@ -194,18 +194,20 @@ task "rollback" do |_, args|
 
     task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
-
+        deployment_name = resource["name"]
         container_name = container.as_h["name"]
-        image_name = container.as_h["image"].as_s.rpartition(":")[0]
-        image_tag = container.as_h["image"].as_s.rpartition(":")[2]
+        full_image_name_tag = container.as_h["image"].as_s.rpartition(":")
+        image_name = full_image_name_tag[0]
+        image_tag = full_image_name_tag[2]
 
+        VERBOSE_LOGGING.debug "deployment_name: #{deployment_name}" if check_verbose(args)
         VERBOSE_LOGGING.debug "container_name: #{container_name}" if check_verbose(args)
         VERBOSE_LOGGING.debug "image_name: #{image_name}" if check_verbose(args)
         VERBOSE_LOGGING.debug "image_tag: #{image_tag}" if check_verbose(args)
         LOGGING.debug "rollback: setting new version"
         #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
 
-        version_change_applied = false
+        version_change_applied = true
         config_container = container_names.find{|x| x["name"] == container_name } if container_names
         unless config_container && config_container["rollback_from_tag"]? && !config_container["rollback_from_tag"].empty?
           puts "Please add the container name #{container.as_h["name"]} and a corresponding rollback_from_tag into your cnf-conformance.yml under container names".colorize(:red)
@@ -220,23 +222,24 @@ task "rollback" do |_, args|
             version_change_applied=false
           end
 
-          version_change_applied = KubectlClient::Set.image(resource["name"],
+          VERBOSE_LOGGING.debug "rollback: update deployment: #{deployment_name}, container: #{container_name}, image: #{image_name}, tag: #{rollback_from_tag}" if check_verbose(args)
+          version_change_applied = KubectlClient::Set.image(deployment_name,
                                                             container_name,
                                                             image_name,
                                                             rollback_from_tag)
         end
 
-        VERBOSE_LOGGING.debug "change successful? #{version_change_applied}" if check_verbose(args)
+        LOGGING.info "rollback version change successful? #{version_change_applied}"
 
         VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
-        rollout_status = KubectlClient::Rollout.status(resource["name"])
+        rollout_status = KubectlClient::Rollout.status(deployment_name, timeout="60s")
         if  rollout_status == false
-          puts "Rolling update failed on resource: #{resource["name"]} and container: #{container.as_h["name"].as_s}".colorize(:red)
+          puts "Rolling update failed on resource: #{deployment_name} and container: #{container_name}".colorize(:red)
         end
 
         # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision
         VERBOSE_LOGGING.debug "rollback: rolling back to old version" if check_verbose(args)
-        rollback_status = KubectlClient::Rollout.undo(resource["name"])
+        rollback_status = KubectlClient::Rollout.undo(deployment_name)
 
     end
 

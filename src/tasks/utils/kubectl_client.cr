@@ -96,7 +96,7 @@ module KubectlClient
   end
   module Set
     def self.image(deployment_name, container_name, image_name, version_tag=nil)
-      LOGGING.debug "set container: #{container_name} = image: #{image_name}, tag: #{version_tag}"
+      LOGGING.debug "kubectl set deployment: #{deployment_name}, container: #{container_name} = image: #{image_name}, tag: #{version_tag}"
       #TODO check if image exists in repo? DockerClient::Get.image and image_by_tags
       #TODO use process command to print both standard out and error
       if version_tag
@@ -105,7 +105,7 @@ module KubectlClient
       else
         resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record`
       end
-      LOGGING.debug "set image: #{resp}"
+      LOGGING.debug "kubectl set image: #{resp}"
       $?.success?
     end
   end
@@ -372,7 +372,10 @@ module KubectlClient
       # pod = all_pod_names[time_stamps.index(latest_time).not_nil!]
       # pod = all_pods.select{ | x | x =~ /#{pod_name_prefix}/ }
       puts "Pods Found: #{pod}"
-      status = `kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}'`
+      status = false
+      if #{pod} != "not found"
+        status = `kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}'`
+      end
       status
     end
 

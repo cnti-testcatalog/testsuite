@@ -8,16 +8,16 @@ require "./points.cr"
 require "./task.cr"
 require "./config.cr"
 
-module CNFManager 
+module CNFManager
 
   # Applies a block to each cnf resource
   #
   # `CNFManager.cnf_workload_resources(args, config) {|cnf_config, resource| #your code}
   def self.cnf_workload_resources(args, config, &block)
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    yml_file_path = config.cnf_config[:yml_file_path] 
+    yml_file_path = config.cnf_config[:yml_file_path]
     helm_directory = config.cnf_config[:helm_directory]
-    manifest_directory = config.cnf_config[:manifest_directory] 
+    manifest_directory = config.cnf_config[:manifest_directory]
     release_name = config.cnf_config[:release_name]
     helm_chart_path = config.cnf_config[:helm_chart_path]
     manifest_file_path = config.cnf_config[:manifest_file_path]
@@ -25,14 +25,14 @@ module CNFManager
     if release_name.empty? # no helm chart
       template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
     else
-      Helm.generate_manifest_from_templates(release_name, 
-                                            helm_chart_path, 
+      Helm.generate_manifest_from_templates(release_name,
+                                            helm_chart_path,
                                             manifest_file_path)
-      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path) 
+      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
     end
     resource_ymls = Helm.all_workload_resources(template_ymls)
 		resource_resp = resource_ymls.map do | resource |
-      resp = yield resource 
+      resp = yield resource
       LOGGING.debug "cnf_workload_resource yield resp: #{resp}"
       resp
     end
@@ -40,19 +40,19 @@ module CNFManager
   end
 
   #test_passes_completely = workload_resource_test do | cnf_config, resource, container, initialized |
-  def self.workload_resource_test(args, config, 
-                                  check_containers = true, 
-                                  check_service = false, 
-                                  &block  : (NamedTuple(kind: YAML::Any, name: YAML::Any), 
+  def self.workload_resource_test(args, config,
+                                  check_containers = true,
+                                  check_service = false,
+                                  &block  : (NamedTuple(kind: YAML::Any, name: YAML::Any),
                                              JSON::Any, JSON::Any, Bool | Nil) -> Bool | Nil)
             # resp = yield resource, container, volumes, initialized
     test_passed = true
     resource_ymls = cnf_workload_resources(args, config) do |resource|
-      resource 
+      resource
     end
     resource_names = Helm.workload_resource_kind_names(resource_ymls)
     LOGGING.info "resource names: #{resource_names}"
-    if resource_names && resource_names.size > 0 
+    if resource_names && resource_names.size > 0
       initialized = true
     else
       LOGGING.error "no resource names found"
@@ -61,7 +61,8 @@ module CNFManager
 		resource_names.each do | resource |
 			VERBOSE_LOGGING.debug resource.inspect if check_verbose(args)
 			volumes = KubectlClient::Get.resource_volumes(resource[:kind].as_s, resource[:name].as_s)
-      LOGGING.info "check_service: #{check_service}"
+      VERBOSE_LOGGING.debug "check_service: #{check_service}" if check_verbose(args)
+      VERBOSE_LOGGING.debug "check_containers: #{check_containers}" if check_verbose(args)
       case resource[:kind].as_s.downcase
       when "service"
         if check_service
@@ -124,7 +125,7 @@ module CNFManager
   end
 
   def self.path_has_yml?(config_path)
-    if config_path =~ /\.yml/  
+    if config_path =~ /\.yml/
       true
     else
       false
@@ -145,9 +146,9 @@ module CNFManager
   def self.ensure_cnf_conformance_yml_path(path : String)
     LOGGING.info("ensure_cnf_conformance_yml_path")
     if path_has_yml?(path)
-      yml = path 
+      yml = path
     else
-      yml = path + "/cnf-conformance.yml" 
+      yml = path + "/cnf-conformance.yml"
     end
   end
 
@@ -263,7 +264,7 @@ module CNFManager
       when :manifest_directory
         LOGGING.debug "manifest_directory install method"
         release_name = UUID.random.to_s
-      else 
+      else
         raise "Install method should be either helm_chart, helm_directory, or manifest_directory"
       end
       #set generated helm chart release name in yml file
@@ -278,11 +279,11 @@ module CNFManager
     if path_has_yml?(config_file)
       yml = config_file
     else
-      yml = config_file + "/cnf-conformance.yml" 
+      yml = config_file + "/cnf-conformance.yml"
     end
     config = parsed_config_file(yml)
     LOGGING.info "cnf_destination_dir parsed_config_file config: #{config}"
-    current_dir = FileUtils.pwd 
+    current_dir = FileUtils.pwd
     release_name = optional_key_as_string(config, "release_name").split(" ")[0]
     LOGGING.info "release_name: #{release_name}"
     LOGGING.info "cnf destination dir: #{current_dir}/#{CNF_DIR}/#{release_name}"
@@ -303,7 +304,7 @@ module CNFManager
     if helm_repo_name == nil || helm_repo_url == nil
       # config = get_parsed_cnf_conformance_yml(args)
       # config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))    
+      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
       LOGGING.info "helm path: #{CNFSingleton.helm}"
       helm = CNFSingleton.helm
       # helm_repo_name = config.get("helm_repository.name").as_s?
@@ -330,7 +331,7 @@ module CNFManager
       cnf_path = File.dirname(yml_file)
     elsif args.named.keys.includes? "cnf-path"
       cnf_path = args.named["cnf-path"].as(String)
-    elsif noisy 
+    elsif noisy
       stdout_failure "Error: You must supply either cnf-config or cnf-path"
       exit 1
     else
@@ -362,26 +363,26 @@ module CNFManager
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
 
     if install_method[0] == :manifest_directory
-      manifest_or_helm_directory = config_source_dir(config_file) + "/" + manifest_directory 
+      manifest_or_helm_directory = config_source_dir(config_file) + "/" + manifest_directory
     elsif !helm_directory.empty?
-      manifest_or_helm_directory = config_source_dir(config_file) + "/" + helm_directory 
+      manifest_or_helm_directory = config_source_dir(config_file) + "/" + helm_directory
     else
       # this is not going to exist
       manifest_or_helm_directory = helm_chart_path #./cnfs/<cnf-release-name>/exported_chart
     end
-      
+
     LOGGING.info("File.directory?(#{manifest_or_helm_directory}) #{File.directory?(manifest_or_helm_directory)}")
     # if the helm directory already exists, copy helm_directory contents into cnfs/<cnf-name>/<helm-directory-of-the-same-name>
 
     destination_chart_directory = {creation_type: :created, chart_directory: ""}
-    if !manifest_or_helm_directory.empty? && manifest_or_helm_directory =~ /exported_chart/ 
+    if !manifest_or_helm_directory.empty? && manifest_or_helm_directory =~ /exported_chart/
       LOGGING.info "Ensuring exported helm directory is created"
       LOGGING.debug "mkdir_p destination_cnf_dir/exported_chart: #{manifest_or_helm_directory}"
       destination_chart_directory = {creation_type: :created,
                                      chart_directory: "#{manifest_or_helm_directory}"}
-      FileUtils.mkdir_p(destination_chart_directory[:chart_directory]) 
-    elsif !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory) 
-      # if !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory) 
+      FileUtils.mkdir_p(destination_chart_directory[:chart_directory])
+    elsif !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory)
+      # if !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory)
       LOGGING.info "Ensuring helm directory is copied"
       LOGGING.info("cp -a #{manifest_or_helm_directory} #{destination_cnf_dir}")
       destination_chart_directory = {creation_type: :copied,
@@ -404,24 +405,24 @@ module CNFManager
     helm_chart = config.cnf_config[:helm_chart]
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
 
-    current_dir = FileUtils.pwd 
-    VERBOSE_LOGGING.info current_dir if verbose 
+    current_dir = FileUtils.pwd
+    VERBOSE_LOGGING.info current_dir if verbose
 
     helm = CNFSingleton.helm
     LOGGING.info "helm path: #{CNFSingleton.helm}"
 
     LOGGING.debug "mkdir_p destination_cnf_dir/helm_directory: #{destination_cnf_dir}/#{helm_directory}"
     #TODO don't think we need to make this here
-    FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}") 
+    FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}")
     LOGGING.debug "helm command pull: #{helm} pull #{helm_chart}"
     #TODO move to helm module
     helm_pull = `#{helm} pull #{helm_chart}`
-    VERBOSE_LOGGING.info helm_pull if verbose 
+    VERBOSE_LOGGING.info helm_pull if verbose
     # TODO helm_chart should be helm_chart_repo
     # TODO make this into a tar chart function
     VERBOSE_LOGGING.info "mv #{Helm.chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart" if verbose
     core_mv = `mv #{Helm.chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart`
-    VERBOSE_LOGGING.info core_mv if verbose 
+    VERBOSE_LOGGING.info core_mv if verbose
 
     VERBOSE_LOGGING.info "cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}-*.tgz" if verbose
     tar = `cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}-*.tgz`
@@ -432,16 +433,16 @@ module CNFManager
     VERBOSE_LOGGING.info move_chart if verbose
   ensure
     cd = `cd #{current_dir}`
-    VERBOSE_LOGGING.info cd if verbose 
+    VERBOSE_LOGGING.info cd if verbose
   end
 
   #sample_setup({config_file: cnf_path, wait_count: wait_count})
-  def self.sample_setup(cli_args) 
+  def self.sample_setup(cli_args)
     LOGGING.info "sample_setup cli_args: #{cli_args}"
     config_file = cli_args[:config_file]
     wait_count = cli_args[:wait_count]
     verbose = cli_args[:verbose]
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
 
@@ -449,7 +450,7 @@ module CNFManager
     VERBOSE_LOGGING.info "sample_setup" if verbose
     LOGGING.info("config_file #{config_file}")
 
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))
     LOGGING.debug "config in sample_setup: #{config.cnf_config}"
 
     release_name = config.cnf_config[:release_name]
@@ -470,9 +471,9 @@ module CNFManager
     #TODO move to sandbox module
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
 
-    VERBOSE_LOGGING.info "destination_cnf_dir: #{destination_cnf_dir}" if verbose 
+    VERBOSE_LOGGING.info "destination_cnf_dir: #{destination_cnf_dir}" if verbose
     LOGGING.debug "mkdir_p destination_cnf_dir: #{destination_cnf_dir}"
-    FileUtils.mkdir_p(destination_cnf_dir) 
+    FileUtils.mkdir_p(destination_cnf_dir)
 
     # TODO enable recloning/fetching etc
     # TODO pass in block
@@ -485,45 +486,45 @@ module CNFManager
     helm = CNFSingleton.helm
     LOGGING.info "helm path: #{CNFSingleton.helm}"
 
-    case install_method[0] 
+    case install_method[0]
     when :manifest_directory
-      VERBOSE_LOGGING.info "deploying by manifest file" if verbose 
-      #kubectl apply -f ./sample-cnfs/k8s-non-helm/manifests 
+      VERBOSE_LOGGING.info "deploying by manifest file" if verbose
+      #kubectl apply -f ./sample-cnfs/k8s-non-helm/manifests
       # TODO move to kubectlclient
       # LOGGING.info("kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}")
       # manifest_install = `kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}`
-      # VERBOSE_LOGGING.info manifest_install if verbose 
+      # VERBOSE_LOGGING.info manifest_install if verbose
       KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
 
     when :helm_chart
       if !helm_repo_name.empty? || !helm_repo_url.empty?
         Helm.helm_repo_add(helm_repo_name, helm_repo_url)
       end
-      VERBOSE_LOGGING.info "deploying with chart repository" if verbose 
+      VERBOSE_LOGGING.info "deploying with chart repository" if verbose
       LOGGING.info "helm command: #{helm} install #{release_name} #{helm_chart}"
       #TODO move to Helm module
       helm_install = `#{helm} install #{release_name} #{helm_chart}`
-      VERBOSE_LOGGING.info helm_install if verbose 
+      VERBOSE_LOGGING.info helm_install if verbose
       export_published_chart(config, cli_args)
     when :helm_directory
-      VERBOSE_LOGGING.info "deploying with helm directory" if verbose 
+      VERBOSE_LOGGING.info "deploying with helm directory" if verbose
       #TODO Add helm options into cnf-conformance yml
       #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
       LOGGING.info("#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}")
       #TODO move to helm module
       helm_install = `#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}`
-      VERBOSE_LOGGING.info helm_install if verbose 
+      VERBOSE_LOGGING.info helm_install if verbose
     else
       raise "Deployment method not found"
     end
 
     resource_ymls = cnf_workload_resources(nil, config) do |resource|
-      resource 
+      resource
     end
     resource_names = Helm.workload_resource_kind_names(resource_ymls)
     #TODO move to kubectlclient and make resource_install_and_wait_for_all function
     resource_names.each do | resource |
-      case resource[:kind].as_s.downcase 
+      case resource[:kind].as_s.downcase
       when "replicaset", "deployment", "statefulset", "pod", "daemonset"
         # wait_for_install(resource_name, wait_count)
         KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
@@ -577,7 +578,7 @@ module CNFManager
     ret
   end
 
-  # TODO: figure out how to check this recursively 
+  # TODO: figure out how to check this recursively
   #
   # def self.recursive_json_unmapped(hashy_thing): JSON::Any
   #   unmapped_stuff = hashy_thing.json_unmapped
@@ -595,7 +596,7 @@ module CNFManager
   # https://github.com/Nicolab/crystal-validator#check
   def self.validate_cnf_conformance_yml(config)
     ccyt_validator = nil
-    valid = true 
+    valid = true
 
     begin
       ccyt_validator = CnfConformanceYmlType.from_json(config.settings.to_json)
@@ -622,7 +623,7 @@ module CNFManager
     end
 
     #TODO Differentiate between unmapped subkeys or unset top level key.
-    if ccyt_validator && !ccyt_validator.try &.helm_repository.try &.json_unmapped.empty? 
+    if ccyt_validator && !ccyt_validator.try &.helm_repository.try &.json_unmapped.empty?
       root = {} of String => (Hash(String, JSON::Any) | Nil)
       root["helm_repository"] = ccyt_validator.try &.helm_repository.try &.json_unmapped
 
