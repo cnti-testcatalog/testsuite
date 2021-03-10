@@ -531,7 +531,7 @@ module CNFManager
       end
     end
     if helm_install.to_s.size > 0 # && helm_pull.to_s.size > 0
-      LOGGING.info "Successfully setup #{release_name}".colorize(:green)
+      stdout_success "Successfully setup #{release_name}"
     end
   end
 
