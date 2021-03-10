@@ -160,6 +160,7 @@ rolling_version_change_test_names.each do |tn|
         unless rollout_status
           test_passed = false
         end
+        test_passed
       end
       if task_response
         resp = upsert_passed_task("#{tn}","✔️  PASSED: CNF for #{pretty_test_name_capitalized} Passed" )
