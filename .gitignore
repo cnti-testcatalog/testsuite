@@ -35,3 +35,4 @@ chaos_cpu_hog.yml
 chaos_container_kill.yml
 /.idea/
 *.sh
+*.log

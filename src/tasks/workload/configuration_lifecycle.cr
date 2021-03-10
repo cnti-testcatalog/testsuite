@@ -144,6 +144,8 @@ rolling_version_change_test_names.each do |tn|
           valid_cnf_conformance_yml = false
         end
 
+        VERBOSE_LOGGING.debug "#{tn}: #{container} valid_cnf_conformance_yml=#{valid_cnf_conformance_yml}" if check_verbose(args)
+        VERBOSE_LOGGING.debug "#{tn}: #{container} config_container=#{config_container}" if check_verbose(args)
         if valid_cnf_conformance_yml && config_container
           resp = KubectlClient::Set.image(resource["name"],
                                           container.as_h["name"],
@@ -160,8 +162,10 @@ rolling_version_change_test_names.each do |tn|
         unless rollout_status
           test_passed = false
         end
+        VERBOSE_LOGGING.debug "#{tn}: #{container} test_passed=#{test_passed}" if check_verbose(args)
         test_passed
       end
+      VERBOSE_LOGGING.debug "#{tn}: task_response=#{task_response}" if check_verbose(args)
       if task_response
         resp = upsert_passed_task("#{tn}","✔️  PASSED: CNF for #{pretty_test_name_capitalized} Passed" )
       else

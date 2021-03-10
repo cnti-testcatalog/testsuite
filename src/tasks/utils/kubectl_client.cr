@@ -339,6 +339,7 @@ module KubectlClient
 
     #TODO remove the need for a split and return name/ true /false in a hash
     def self.pod_status(pod_name_prefix, field_selector="", namespace="default")
+      LOGGING.info "pod_status: #{pod_name_prefix}"
       all_pods = `kubectl get pods #{field_selector} -o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}'`.split(",")
 
       LOGGING.info(all_pods)
@@ -382,9 +383,11 @@ module KubectlClient
       # pod = all_pod_names[time_stamps.index(latest_time).not_nil!]
       # pod = all_pods.select{ | x | x =~ /#{pod_name_prefix}/ }
       puts "Pods Found: #{pod}"
-      status = false
-      if #{pod} != "not found"
+      status = "#{pod_name_prefix},NotFound,false"
+      if pod != "not found"
         status = `kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}'`
+      else
+        LOGGING.info "pod: #{pod_name_prefix} is NOT found"
       end
       status
     end
