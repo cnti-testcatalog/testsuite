@@ -282,7 +282,7 @@ module CNFManager
       yml = config_file + "/cnf-conformance.yml"
     end
     config = parsed_config_file(yml)
-    LOGGING.info "cnf_destination_dir parsed_config_file config: #{config}"
+    LOGGING.debug "cnf_destination_dir parsed_config_file config: #{config}"
     current_dir = FileUtils.pwd
     release_name = optional_key_as_string(config, "release_name").split(" ")[0]
     LOGGING.info "release_name: #{release_name}"
