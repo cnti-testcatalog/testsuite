@@ -201,17 +201,21 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
         #   puts "Failed to find resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} on dockerhub".colorize(:yellow)
         #   test_passed=false
         # end
-        VERBOSE_LOGGING.info "compressed_size: #{compressed_size.to_s}" if check_verbose(args)
-        LOGGING.info "compressed_size: #{compressed_size.to_s}"
+        LOGGING.info "compressed_size: #{fqdn_image} = '#{compressed_size.to_s}'"
         max_size = 5_000_000_000
         if ENV["CRYSTAL_ENV"]? == "TEST"
            LOGGING.info("Using Test Mode max_size")
            max_size = 16_000_000
         end
 
-        unless compressed_size.to_s.to_i64 < max_size
-          puts "resource: #{resource} and container: #{fqdn_image} was more than #{max_size}".colorize(:red)
-          test_passed=false
+        begin
+          unless compressed_size.to_s.to_i64 < max_size
+            puts "resource: #{resource} and container: #{fqdn_image} was more than #{max_size}".colorize(:red)
+            test_passed=false
+          end
+        rescue ex
+          LOGGING.error "invalid compressed_size: #{fqdn_image} = '#{compressed_size.to_s}', #{ex.message}".colorize(:red)
+          test_passed = false
         end
       else
         test_passed = true
