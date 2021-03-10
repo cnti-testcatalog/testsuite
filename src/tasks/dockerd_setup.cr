@@ -9,13 +9,20 @@ task "install_dockerd" do |_, args|
   VERBOSE_LOGGING.info "install_dockerd" if check_verbose(args)
   #TODO used process command to remove command line noise
   # install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
-  status = Process.run("kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml", 
-                                shell: true, 
-                                output: install_dockerd = IO::Memory.new, 
-                                error: stderr = IO::Memory.new)
+  status = Process.run("kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml",
+                                shell: true,
+                                output: install_dockerd = IO::Memory.new,
+                                error: stderr = IO::Memory.new).success?
   LOGGING.info "Dockerd_Install output: #{install_dockerd.to_s}"
   LOGGING.info "Dockerd_Install stderr: #{stderr.to_s}"
-  KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
+  LOGGING.info "Dockerd_Install status: #{status}"
+  if status
+    status = KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
+  else
+    LOGGING.error "Dockerd_Install failed: #{stderr.to_s}".colorize(:red)
+  end
+  LOGGING.info "Dockerd_Install status: #{status}"
+  status
 end
 
 desc "Uninstall dockerd"

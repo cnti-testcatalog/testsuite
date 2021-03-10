@@ -62,17 +62,17 @@ task "liveness" do |_, args|
       test_passed = true
       begin
         VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
-        container.as_h["livenessProbe"].as_h 
+        container.as_h["livenessProbe"].as_h
       rescue ex
         VERBOSE_LOGGING.error ex.message if check_verbose(args)
-        test_passed = false 
+        test_passed = false
         puts "No livenessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
       end
       LOGGING.debug "liveness test_passed: #{test_passed}"
-      test_passed 
+      test_passed
     end
     LOGGING.debug "liveness task response: #{task_response}"
-    if task_response 
+    if task_response
       resp = upsert_passed_task("liveness","✔️  PASSED: Helm liveness probe found #{emoji_probe}")
 		else
 			resp = upsert_failed_task("liveness","✖️  FAILURE: No livenessProbe found #{emoji_probe}")
@@ -93,15 +93,15 @@ task "readiness" do |_, args|
       test_passed = true
       begin
         VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
-        container.as_h["readinessProbe"].as_h 
+        container.as_h["readinessProbe"].as_h
       rescue ex
         VERBOSE_LOGGING.error ex.message if check_verbose(args)
-        test_passed = false 
+        test_passed = false
         puts "No readinessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
       end
-      test_passed 
+      test_passed
     end
-    if task_response 
+    if task_response
       resp = upsert_passed_task("readiness","✔️  PASSED: Helm readiness probe found #{emoji_probe}")
 		else
       resp = upsert_failed_task("readiness","✖️  FAILURE: No readinessProbe found #{emoji_probe}")
@@ -123,7 +123,7 @@ rolling_version_change_test_names.each do |tn|
       LOGGING.debug "container_names: #{container_names}"
       update_applied = true
       unless container_names
-        puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red) 
+        puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red)
         update_applied = false
       end
 
@@ -134,39 +134,45 @@ rolling_version_change_test_names.each do |tn|
 
       task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
         test_passed = true
+        valid_cnf_conformance_yml = true
         LOGGING.debug "#{tn} container: #{container}"
         LOGGING.debug "container_names: #{container_names}"
         config_container = container_names.find{|x| x["name"]==container.as_h["name"]} if container_names
         LOGGING.debug "config_container: #{config_container}"
         unless config_container && config_container["#{tn}_test_tag"]? && !config_container["#{tn}_test_tag"].empty?
           puts "Please add the container name #{container.as_h["name"]} and a corresponding #{tn}_test_tag into your cnf-conformance.yml under container names".colorize(:red)
-          # valid_cnf_conformance_yml = false
+          valid_cnf_conformance_yml = false
         end
 
-        if config_container
-          resp = KubectlClient::Set.image(resource["name"], 
-                                          container.as_h["name"], 
+        VERBOSE_LOGGING.debug "#{tn}: #{container} valid_cnf_conformance_yml=#{valid_cnf_conformance_yml}" if check_verbose(args)
+        VERBOSE_LOGGING.debug "#{tn}: #{container} config_container=#{config_container}" if check_verbose(args)
+        if valid_cnf_conformance_yml && config_container
+          resp = KubectlClient::Set.image(resource["name"],
+                                          container.as_h["name"],
                                           # split out image name from version tag
-                                          container.as_h["image"].as_s.split(":")[0], 
-                                          config_container["rolling_update_test_tag"]) 
-        else 
+                                          container.as_h["image"].as_s.rpartition(":")[0],
+                                          config_container["#{tn}_test_tag"])
+        else
           resp = false
         end
         # If any containers dont have an update applied, fail
         test_passed = false if resp == false
 
         rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"])
-        unless rollout_status 
+        unless rollout_status
           test_passed = false
         end
+        VERBOSE_LOGGING.debug "#{tn}: #{container} test_passed=#{test_passed}" if check_verbose(args)
+        test_passed
       end
-      if task_response 
+      VERBOSE_LOGGING.debug "#{tn}: task_response=#{task_response}" if check_verbose(args)
+      if task_response
         resp = upsert_passed_task("#{tn}","✔️  PASSED: CNF for #{pretty_test_name_capitalized} Passed" )
       else
         resp = upsert_failed_task("#{tn}", "✖️  FAILURE: CNF for #{pretty_test_name_capitalized} Failed")
       end
       resp
-      # TODO should we roll the image back to original version in an ensure? 
+      # TODO should we roll the image back to original version in an ensure?
       # TODO Use the kubectl rollback to history command
     end
   end
@@ -183,27 +189,36 @@ task "rollback" do |_, args|
 
     update_applied = true
     rollout_status = true
-    rollback_status = true 
-    version_change_applied = true 
+    rollback_status = true
+    version_change_applied = true
 
     unless container_names
-      puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red) 
+      puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red)
       update_applied = false
     end
 
     task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
+        deployment_name = resource["name"]
+        container_name = container.as_h["name"]
+        full_image_name_tag = container.as_h["image"].as_s.rpartition(":")
+        image_name = full_image_name_tag[0]
+        image_tag = full_image_name_tag[2]
 
-        image_name = container.as_h["name"]
-        image_tag = container.as_h["image"].as_s.split(":")[0]
-
+        VERBOSE_LOGGING.debug "deployment_name: #{deployment_name}" if check_verbose(args)
+        VERBOSE_LOGGING.debug "container_name: #{container_name}" if check_verbose(args)
         VERBOSE_LOGGING.debug "image_name: #{image_name}" if check_verbose(args)
-        VERBOSE_LOGGING.debug "rollback: setting new version" if check_verbose(args)
+        VERBOSE_LOGGING.debug "image_tag: #{image_tag}" if check_verbose(args)
+        LOGGING.debug "rollback: setting new version"
         #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
 
-        version_change_applied = false 
-        config_container = container_names.find{|x| x["name"] == image_name } if container_names
-        if config_container
+        version_change_applied = true
+        config_container = container_names.find{|x| x["name"] == container_name } if container_names
+        unless config_container && config_container["rollback_from_tag"]? && !config_container["rollback_from_tag"].empty?
+          puts "Please add the container name #{container.as_h["name"]} and a corresponding rollback_from_tag into your cnf-conformance.yml under container names".colorize(:red)
+          version_change_applied = false
+        end
+        if version_change_applied && config_container
           rollback_from_tag = config_container["rollback_from_tag"]
 
           if rollback_from_tag == image_tag
@@ -212,23 +227,24 @@ task "rollback" do |_, args|
             version_change_applied=false
           end
 
-          version_change_applied = KubectlClient::Set.image(resource["name"], 
-                                                            image_name, 
-                                                            image_tag, 
-                                                            rollback_from_tag) 
+          VERBOSE_LOGGING.debug "rollback: update deployment: #{deployment_name}, container: #{container_name}, image: #{image_name}, tag: #{rollback_from_tag}" if check_verbose(args)
+          version_change_applied = KubectlClient::Set.image(deployment_name,
+                                                            container_name,
+                                                            image_name,
+                                                            rollback_from_tag)
         end
 
-        VERBOSE_LOGGING.debug "change successful? #{version_change_applied}" if check_verbose(args)
+        LOGGING.info "rollback version change successful? #{version_change_applied}"
 
         VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
-        rollout_status = KubectlClient::Rollout.status(resource["name"])
+        rollout_status = KubectlClient::Rollout.status(deployment_name, timeout="60s")
         if  rollout_status == false
-          puts "Rolling update failed on resource: #{resource["name"]} and container: #{container.as_h["name"].as_s}".colorize(:red)
+          puts "Rolling update failed on resource: #{deployment_name} and container: #{container_name}".colorize(:red)
         end
 
         # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision
         VERBOSE_LOGGING.debug "rollback: rolling back to old version" if check_verbose(args)
-        rollback_status = KubectlClient::Rollout.undo(resource["name"])
+        rollback_status = KubectlClient::Rollout.undo(deployment_name)
 
     end
 
@@ -252,15 +268,15 @@ task "nodeport_not_used" do |_, args|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false, check_service: true) do |resource, container, initialized|
       LOGGING.info "nodeport_not_used resource: #{resource}"
-      if resource["kind"].as_s.downcase == "service" 
+      if resource["kind"].as_s.downcase == "service"
         LOGGING.info "resource kind: #{resource}"
         service = KubectlClient::Get.resource(resource[:kind], resource[:name])
         LOGGING.debug "service: #{service}"
-        service_type = service.dig?("spec", "type") 
+        service_type = service.dig?("spec", "type")
         LOGGING.info "service_type: #{service_type}"
         VERBOSE_LOGGING.debug service_type if check_verbose(args)
-        if service_type == "NodePort" 
-          #TODO make a service selector and display the related resources 
+        if service_type == "NodePort"
+          #TODO make a service selector and display the related resources
           # that are tied to this service
           puts "resource service: #{resource} has a NodePort that is being used".colorize(:red)
           test_passed=false
@@ -268,7 +284,7 @@ task "nodeport_not_used" do |_, args|
         test_passed
       end
     end
-    if task_response 
+    if task_response
       upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
     else
       upsert_failed_task("nodeport_not_used", "✖️  FAILURE: NodePort is being used")
@@ -301,7 +317,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     ip_search = File.read_lines("#{destination_cnf_dir}/helm_chart.yml").take_while{|x| x.match(/NOTES:/) == nil}.reduce([] of String){|acc, x| x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/) && x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/).try &.[0] != "0.0.0.0" ? acc << x : acc}
     VERBOSE_LOGGING.info "IPs: #{ip_search}" if check_verbose(args)
 
-    if ip_search.empty? 
+    if ip_search.empty?
       upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✔️  PASSED: No hard-coded IP addresses found in the runtime K8s configuration")
     else
       upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  FAILURE: Hard-coded IP addresses found in the runtime K8s configuration")
@@ -325,21 +341,21 @@ task "secrets_used" do |_, args|
 
       volume_test_passed = false
       secret_volume_exists = false
-      secret_volume_mounted = true 
+      secret_volume_mounted = true
       # Check to see all volume secrets are actually used
       volumes.as_a.each do |secret_volume|
         if secret_volume["secret"]?
-          secret_volume_exists = true 
+          secret_volume_exists = true
           LOGGING.info "secret_volume: #{secret_volume["name"]}"
-          container_secret_mounted = false 
+          container_secret_mounted = false
           containers.as_a.each do |container|
             if container["volumeMounts"]?
                 vmount = container["volumeMounts"].as_a
               LOGGING.info "vmount: #{vmount}"
               LOGGING.debug "container[env]: #{container["env"]}"
-              if (vmount.find { |x| x["name"] == secret_volume["name"]? }) 
+              if (vmount.find { |x| x["name"] == secret_volume["name"]? })
                 LOGGING.debug secret_volume["name"]
-                container_secret_mounted = true 
+                container_secret_mounted = true
               end
             end
           end
@@ -354,33 +370,33 @@ task "secrets_used" do |_, args|
         volume_test_passed = true
       end
 
-      
-      # TODO if a container exists which has a secretkeyref defined 
+
+      # TODO if a container exists which has a secretkeyref defined
       # and also has a corresponding k8s secret defined, the whole test passes.
 
-      #  if there are any containers that have a secretkeyref defined 
-      #  but do not have a corresponding k8s secret defined, this 
+      #  if there are any containers that have a secretkeyref defined
+      #  but do not have a corresponding k8s secret defined, this
       #  is an installation problem, and does not stop the test from passing
 
       secrets = KubectlClient::Get.secrets
-      secret_keyref_found = false 
+      secret_keyref_found = false
       containers.as_a.each do |container|
         LOGGING.debug "container secrets #{container["env"]?}"
-        if container["env"]? 
-          container["env"].as_a.find do |c| 
+        if container["env"]?
+          container["env"].as_a.find do |c|
           if secrets["items"].as_a.find{|s|
               s["metadata"]["name"] == c.dig?("valueFrom", "secretKeyRef", "name")}
               secret_keyref_found = true
             end
           end
-        end 
+        end
       end
 
       # if at least 1 secret volume exists, and it is mounted, test passes
       # if at least 1 secret volume exists, but it is not mounted, test fails
-      # if no secret volumes exist, but a container secret exists 
+      # if no secret volumes exist, but a container secret exists
       #  and is defined, test passes
-      # if at least 1 container secret exists, but it is not defined, this 
+      # if at least 1 container secret exists, but it is not defined, this
       # is an installation problem
       # if no secret volume exists and no container secret exists, test fails
       test_passed = false
@@ -388,12 +404,12 @@ task "secrets_used" do |_, args|
         test_passed = true
       end
 
-      unless test_passed 
+      unless test_passed
         puts "No Secret Volumes or Container secretKey_refs found for resource: #{resource}".colorize(:red)
       end
-      test_passed 
+      test_passed
     end
-    if task_response 
+    if task_response
       resp = upsert_passed_task("secrets_used","✔️  PASSED: Secret Volume found #{emoji_probe}")
     else
       resp = upsert_failed_task("secrets_used","✖️  FAILURE: Secret Volume not found #{emoji_probe}")
@@ -424,7 +440,7 @@ task "immutable_configmap" do |_, args|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
 
     # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
-    
+
     # feature test to see if immutable_configmaps are enabled
     # https://github.com/cncf/cnf-conformance/issues/508#issuecomment-758438413
 
@@ -453,7 +469,7 @@ task "immutable_configmap" do |_, args|
     end
 
     # cleanup test configmap
-    KubectlClient::Delete.file(test_config_map_filename) 
+    KubectlClient::Delete.file(test_config_map_filename)
 
     resp = ""
     emoji_probe="⚖️"
@@ -465,23 +481,23 @@ task "immutable_configmap" do |_, args|
 
       volume_test_passed = false
       config_map_volume_exists = false
-      config_map_volume_mounted = true 
+      config_map_volume_mounted = true
       all_volume_configmap_are_immutable = true
       # Check to see all volume config maps are actually used
       # https://kubernetes.io/docs/concepts/storage/volumes/#configmap
       volumes.as_a.each do |config_map_volume|
         if config_map_volume["configMap"]?
-          config_map_volume_exists = true 
+          config_map_volume_exists = true
           LOGGING.info "config_map_volume: #{config_map_volume["name"]}"
-          container_config_map_mounted = false 
+          container_config_map_mounted = false
           containers.as_a.each do |container|
             if container["volumeMounts"]?
                 vmount = container["volumeMounts"].as_a
               LOGGING.info "vmount: #{vmount}"
               LOGGING.debug "container[env]: #{container["env"]? && container["env"]}"
-              if (vmount.find { |x| x["name"] == config_map_volume["name"]? }) 
+              if (vmount.find { |x| x["name"] == config_map_volume["name"]? })
                 LOGGING.debug config_map_volume["name"]
-                container_config_map_mounted = true 
+                container_config_map_mounted = true
               end
             end
           end
@@ -512,8 +528,8 @@ task "immutable_configmap" do |_, args|
 
       containers.as_a.each do |container|
         LOGGING.debug "container config_maps #{container["env"]?}"
-        if container["env"]? 
-          container["env"].as_a.find do |c| 
+        if container["env"]?
+          container["env"].as_a.find do |c|
 
           # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#define-container-environment-variables-with-data-from-multiple-configmaps
           this_env_mounted_config_map_name = c.dig?("valueFrom", "configMapKeyRef", "name")
@@ -525,13 +541,13 @@ task "immutable_configmap" do |_, args|
               all_env_configmap_are_immutable = false
             end
           end
-        end 
+        end
       end
 
       all_volume_configmap_are_immutable && all_env_configmap_are_immutable
     end
 
-    if cnf_manager_workload_resource_task_response 
+    if cnf_manager_workload_resource_task_response
       resp = "✔️  PASSED: All volume or container mounted configmaps immutable #{emoji_probe}".colorize(:green)
       upsert_passed_task("immutable_configmap", resp)
     else

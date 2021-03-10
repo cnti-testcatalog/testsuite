@@ -3,21 +3,21 @@ require "colorize"
 require "./cnf_manager.cr"
 require "halite"
 
-module KubectlClient 
-  WORKLOAD_RESOURCES = {deployment: "Deployment", 
-                        service: "Service", 
-                        pod: "Pod", 
-                        replicaset: "ReplicaSet", 
-                        statefulset: "StatefulSet", 
+module KubectlClient
+  WORKLOAD_RESOURCES = {deployment: "Deployment",
+                        service: "Service",
+                        pod: "Pod",
+                        replicaset: "ReplicaSet",
+                        statefulset: "StatefulSet",
                         daemonset: "DaemonSet"}
 
   # https://www.capitalone.com/tech/cloud/container-runtime/
   OCI_RUNTIME_REGEX = /containerd|docker|runc|railcar|crun|rkt|gviso|nabla|runv|clearcontainers|kata|cri-o/i
   def self.exec(command)
     LOGGING.info "KubectlClient.exec command: #{command}"
-    status = Process.run("kubectl exec #{command}", 
-                         shell: true, 
-                         output: output = IO::Memory.new, 
+    status = Process.run("kubectl exec #{command}",
+                         shell: true,
+                         output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
     LOGGING.info "KubectlClient.exec output: #{output.to_s}"
     LOGGING.info "KubectlClient.exec stderr: #{stderr.to_s}"
@@ -25,9 +25,9 @@ module KubectlClient
   end
   def self.cp(command)
     LOGGING.info "KubectlClient.cp command: #{command}"
-    status = Process.run("kubectl cp #{command}", 
-                         shell: true, 
-                         output: output = IO::Memory.new, 
+    status = Process.run("kubectl cp #{command}",
+                         shell: true,
+                         output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
     LOGGING.info "KubectlClient.cp output: #{output.to_s}"
     LOGGING.info "KubectlClient.cp stderr: #{stderr.to_s}"
@@ -35,7 +35,7 @@ module KubectlClient
   end
   module Rollout
     def self.status(deployment_name, timeout="30s")
-      #TODO use process command to print both standard out and error 
+      #TODO use process command to print both standard out and error
       rollout = `kubectl rollout status deployment/#{deployment_name} --timeout=#{timeout}`
       rollout_status = $?.success?
       LOGGING.debug "#{rollout}"
@@ -67,9 +67,9 @@ module KubectlClient
       # LOGGING.debug "apply? #{apply_status}"
       # apply_status
       LOGGING.info "apply file: #{file_name}"
-      status = Process.run("kubectl apply -f #{file_name}", 
-                           shell: true, 
-                           output: output = IO::Memory.new, 
+      status = Process.run("kubectl apply -f #{file_name}",
+                           shell: true,
+                           output: output = IO::Memory.new,
                            error: stderr = IO::Memory.new)
       LOGGING.info "KubectlClient.apply output: #{output.to_s}"
       LOGGING.info "KubectlClient.apply stderr: #{stderr.to_s}"
@@ -85,9 +85,9 @@ module KubectlClient
       # LOGGING.debug "delete? #{delete_status}"
       # delete_status
       # LOGGING.info "delete file: #{file_name}"
-      status = Process.run("kubectl delete -f #{file_name}", 
-                           shell: true, 
-                           output: output = IO::Memory.new, 
+      status = Process.run("kubectl delete -f #{file_name}",
+                           shell: true,
+                           output: output = IO::Memory.new,
                            error: stderr = IO::Memory.new)
       LOGGING.info "KubectlClient.delete output: #{output.to_s}"
       LOGGING.info "KubectlClient.delete stderr: #{stderr.to_s}"
@@ -97,18 +97,29 @@ module KubectlClient
   module Set
     def self.image(deployment_name, container_name, image_name, version_tag=nil)
       #TODO check if image exists in repo? DockerClient::Get.image and image_by_tags
-      #TODO use process command to print both standard out and error 
       if version_tag
+        LOGGING.debug "kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record"
         # use --record to have history
-        resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record`
+        # resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record`
+        status = Process.run("kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record",
+                             shell: true,
+                             output: output = IO::Memory.new,
+                             error: stderr = IO::Memory.new)
       else
-        resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record`
+        LOGGING.debug "kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record"
+        # resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record`
+        status = Process.run("kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record",
+                             shell: true,
+                             output: output = IO::Memory.new,
+                             error: stderr = IO::Memory.new)
       end
-      LOGGING.debug "set image: #{resp}" 
+      LOGGING.info "KubectlClient.set image output: #{output.to_s}"
+      LOGGING.info "KubectlClient.set image stderr: #{stderr.to_s}"
+      # LOGGING.debug "kubectl set image: #{resp}"
       $?.success?
     end
   end
-  module Get 
+  module Get
     def self.privileged_containers(namespace="--all-namespaces")
       privileged_response = `kubectl get pods #{namespace} -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
       # TODO parse this as json
@@ -145,7 +156,7 @@ module KubectlClient
       end
     end
 
-    def self.save_manifest(deployment_name, output_file) 
+    def self.save_manifest(deployment_name, output_file)
       resp = `kubectl get deployment #{deployment_name} -o yaml  > #{output_file}`
       LOGGING.debug "kubectl save_manifest: #{resp}"
       $?.success?
@@ -161,11 +172,11 @@ module KubectlClient
       end
     end
 
-    def self.deployment_containers(deployment_name) : JSON::Any 
+    def self.deployment_containers(deployment_name) : JSON::Any
       resource_containers("deployment", deployment_name)
     end
 
-    def self.resource_containers(kind, resource_name) : JSON::Any 
+    def self.resource_containers(kind, resource_name) : JSON::Any
       LOGGING.debug "kubectl get resource containers kind: #{kind} resource_name: #{resource_name}"
       unless kind.downcase == "service" ## services have no containers
         resp = resource(kind, resource_name).dig?("spec", "template", "spec", "containers")
@@ -178,7 +189,7 @@ module KubectlClient
       end
     end
 
-    def self.resource_volumes(kind, resource_name) : JSON::Any 
+    def self.resource_volumes(kind, resource_name) : JSON::Any
       LOGGING.debug "kubectl get resource volumes kind: #{kind} resource_name: #{resource_name}"
       unless kind.downcase == "service" ## services have no volumes
         resp = resource(kind, resource_name).dig?("spec", "template", "spec", "volumes")
@@ -216,13 +227,13 @@ module KubectlClient
     end
 
     def self.resource_wait_for_install(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default")
-      # Not all cnfs have #{kind}.  some have only a pod.  need to check if the 
-      # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod 
+      # Not all cnfs have #{kind}.  some have only a pod.  need to check if the
+      # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod
       LOGGING.info "resource_wait_for_install kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}"
       second_count = 0
       pod_ready : String | Nil
-      current_replicas : String | Nil 
-      desired_replicas : String | Nil 
+      current_replicas : String | Nil
+      desired_replicas : String | Nil
       all_kind = `kubectl get #{kind} --namespace=#{namespace}`
       LOGGING.debug "all_kind #{all_kind}}"
       # Intialization
@@ -246,8 +257,8 @@ module KubectlClient
         LOGGING.debug "current_replicas #{current_replicas}"
       end
 
-        until (pod_ready && !pod_ready.empty? && pod_ready == "true") || 
-            (current_replicas && desired_replicas && !current_replicas.empty? && current_replicas.to_i == desired_replicas.to_i) || 
+        until (pod_ready && !pod_ready.empty? && pod_ready == "true") ||
+            (current_replicas && desired_replicas && !current_replicas.empty? && current_replicas.to_i == desired_replicas.to_i) ||
             second_count > wait_count
         LOGGING.info("second_count = #{second_count}")
         sleep 1
@@ -270,7 +281,7 @@ module KubectlClient
         LOGGING.debug "desired_replicas: #{desired_replicas}"
         LOGGING.debug "pod_read: #{pod_ready}"
         LOGGING.info(all_kind)
-        second_count = second_count + 1 
+        second_count = second_count + 1
       end
 
       if (pod_ready && !pod_ready.empty? && pod_ready == "true") ||
@@ -292,15 +303,15 @@ module KubectlClient
         sleep 1
         apply_resp = `kubectl apply -f #{manifest_file}`
         LOGGING.info("apply response: #{apply_resp}")
-        second_count = second_count + 1 
+        second_count = second_count + 1
       end
-    end 
+    end
 
     def self.resource_desired_is_available?(kind : String, resource_name)
       resp = `kubectl get #{kind} #{resource_name} -o=yaml`
       replicas_applicable = false
       case kind.downcase
-      when "deployment", "statefulset", "replicaset" 
+      when "deployment", "statefulset", "replicaset"
         replicas_applicable = true
         describe = Totem.from_yaml(resp)
         LOGGING.info("desired_is_available describe: #{describe.inspect}")
@@ -314,7 +325,7 @@ module KubectlClient
         end
         LOGGING.info("desired_is_available ready_replicas: #{ready_replicas}")
       else
-        replicas_applicable = false 
+        replicas_applicable = false
       end
       if replicas_applicable
         desired_replicas == ready_replicas
@@ -328,6 +339,7 @@ module KubectlClient
 
     #TODO remove the need for a split and return name/ true /false in a hash
     def self.pod_status(pod_name_prefix, field_selector="", namespace="default")
+      LOGGING.info "pod_status: #{pod_name_prefix}"
       all_pods = `kubectl get pods #{field_selector} -o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}'`.split(",")
 
       LOGGING.info(all_pods)
@@ -346,7 +358,7 @@ module KubectlClient
         LOGGING.info("I:#{i}")
         LOGGING.info("pod_name_prefix: #{pod_name_prefix}")
         if (acc[:name] =~ /#{pod_name_prefix}/).nil?
-          acc = {:name => "not found", :time => "not_found"} 
+          acc = {:name => "not found", :time => "not_found"}
         end
         if i[:name] =~ /#{pod_name_prefix}/
           acc = i
@@ -371,7 +383,12 @@ module KubectlClient
       # pod = all_pod_names[time_stamps.index(latest_time).not_nil!]
       # pod = all_pods.select{ | x | x =~ /#{pod_name_prefix}/ }
       puts "Pods Found: #{pod}"
-      status = `kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}'`
+      status = "#{pod_name_prefix},NotFound,false"
+      if pod != "not found"
+        status = `kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}'`
+      else
+        LOGGING.info "pod: #{pod_name_prefix} is NOT found"
+      end
       status
     end
 
@@ -382,10 +399,10 @@ module KubectlClient
       status
     end
 
-    def self.deployment_spec_labels(deployment_name) : JSON::Any 
+    def self.deployment_spec_labels(deployment_name) : JSON::Any
       resource_spec_labels("deployment", deployment_name)
     end
-    def self.resource_spec_labels(kind, resource_name) : JSON::Any 
+    def self.resource_spec_labels(kind, resource_name) : JSON::Any
       LOGGING.debug "resource_labels kind: #{kind} resource_name: #{resource_name}"
       resp = resource(kind, resource_name).dig?("spec", "template", "metadata", "labels")
       LOGGING.debug "resource_labels: #{resp}"
@@ -396,13 +413,13 @@ module KubectlClient
       end
     end
 
-    def self.container_image_tags(deployment_containers) : Array(NamedTuple(image: String, 
+    def self.container_image_tags(deployment_containers) : Array(NamedTuple(image: String,
                                                                             tag: String | Nil))
       image_tags = deployment_containers.as_a.map do |container|
         LOGGING.debug "container (should have image and tag): #{container}"
-        {image: container.as_h["image"].as_s.split(":")[0],
+        {image: container.as_h["image"].as_s.rpartition(":")[0],
          #TODO an image may not have a tag
-         tag: container.as_h["image"].as_s.split(":")[1]?}
+         tag: container.as_h["image"].as_s.rpartition(":")[2]?}
       end
       LOGGING.debug "image_tags: #{image_tags}"
       image_tags
@@ -433,12 +450,12 @@ module KubectlClient
             nil
           end
         rescue ex
-          LOGGING.info ex.message 
+          LOGGING.info ex.message
           nil
         end
       end.compact
       LOGGING.debug "pv items : #{items}"
-      items 
+      items
     end
     def self.container_runtime
       nodes["items"][0]["status"]["nodeInfo"]["containerRuntimeVersion"].as_s
@@ -458,18 +475,18 @@ module KubectlClient
     end
 
     # *pod_exists* returns true if a pod containing *pod_name* exists, regardless of status.
-    # If *check_ready* is set to true, *pod_exists* validates that the pod exists and 
+    # If *check_ready* is set to true, *pod_exists* validates that the pod exists and
     # has a ready status of true
-    def self.pod_exists?(pod_name, check_ready=false, all_namespaces=false) 
+    def self.pod_exists?(pod_name, check_ready=false, all_namespaces=false)
       LOGGING.debug "pod_exists? pod_name: #{pod_name}"
       exists = pods(all_namespaces)["items"].as_a.any? do |x|
         (name_comparison = x["metadata"]["name"].as_s? =~ /#{pod_name}/
-        (x["metadata"]["name"].as_s? =~ /#{pod_name}/) || 
+        (x["metadata"]["name"].as_s? =~ /#{pod_name}/) ||
           (x["metadata"]["generateName"]? && x["metadata"]["generateName"].as_s? =~ /#{pod_name}/)) &&
         (check_ready && (x["status"]["conditions"].as_a.find{|x| x["type"].as_s? == "Ready"} && x["status"].as_s? == "True") || check_ready==false)
       end
       LOGGING.debug "pod exists: #{exists}"
-      exists 
+      exists
     end
     def self.all_pod_statuses
       statuses = pods["items"].as_a.map do |x|
