@@ -96,16 +96,26 @@ module KubectlClient
   end
   module Set
     def self.image(deployment_name, container_name, image_name, version_tag=nil)
-      LOGGING.debug "kubectl set deployment: #{deployment_name}, container: #{container_name} = image: #{image_name}, tag: #{version_tag}"
       #TODO check if image exists in repo? DockerClient::Get.image and image_by_tags
-      #TODO use process command to print both standard out and error
       if version_tag
+        LOGGING.debug "kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record"
         # use --record to have history
-        resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record`
+        # resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record`
+        status = Process.run("kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record",
+                             shell: true,
+                             output: output = IO::Memory.new,
+                             error: stderr = IO::Memory.new)
       else
-        resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record`
+        LOGGING.debug "kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record"
+        # resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record`
+        status = Process.run("kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record",
+                             shell: true,
+                             output: output = IO::Memory.new,
+                             error: stderr = IO::Memory.new)
       end
-      LOGGING.debug "kubectl set image: #{resp}"
+      LOGGING.info "KubectlClient.set image output: #{output.to_s}"
+      LOGGING.info "KubectlClient.set image stderr: #{stderr.to_s}"
+      # LOGGING.debug "kubectl set image: #{resp}"
       $?.success?
     end
   end

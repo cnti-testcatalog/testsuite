@@ -128,36 +128,6 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
 				fqdn_image = container.as_h["image"].as_s
         # parsed_image = DockerClient.parse_image(fqdn_image)
 
-        LOGGING.info "fqdn_image: #{fqdn_image}"
-        case fqdn_image.split("/").size
-        when 3
-          org_image = "#{fqdn_image.split("/")[1]}/#{fqdn_image.split("/")[2]}"
-          org = fqdn_image.split("/")[1]
-          image =  fqdn_image.split("/")[2]
-        when 2
-          # TODO if there is a port in the first element, it is not an org, but a url
-
-          org_image = "#{fqdn_image.split("/")[0]}/#{fqdn_image.split("/")[1]}"
-          org = fqdn_image.split("/")[0]
-          image =  fqdn_image.split("/")[1]
-        when 1
-          org_image = fqdn_image.split("/")[0]
-          org = ""
-          image =  fqdn_image.split("/")[0]
-        else
-          org_image = ""
-          org = ""
-          image =  ""
-          LOGGING.error "Invalid container image name"
-        end
-        LOGGING.info "org_image: #{org_image}"
-        LOGGING.info "org: #{org}"
-        LOGGING.info "image: #{image}"
-        local_image_tag = {image: image.rpartition(":")[0],
-                           #TODO an image may not have a tag
-                           tag: image.rpartition(":")[2]?}
-        LOGGING.info "local_image_tag: #{local_image_tag}"
-
         image_pull_secrets = KubectlClient::Get.resource(resource[:kind], resource[:name]).dig?("spec", "template", "spec", "imagePullSecrets")
         if image_pull_secrets
           auths = image_pull_secrets.as_a.map { |secret|
