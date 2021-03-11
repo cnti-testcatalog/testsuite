@@ -3,10 +3,18 @@ require "colorize"
 require "./types/cnf_conformance_yml_type.cr"
 require "./helm.cr"
 require "uuid"
+
 module CNFManager 
 
   module Points
     class Results
+
+      enum ResultStatus 
+        Passed 
+        Failed 
+        Skipped
+      end
+
       @@file : String
       @@file = CNFManager::Points.create_final_results_yml_name
       LOGGING.info "Results.file"
@@ -73,6 +81,25 @@ module CNFManager
       end
     end
 
+    def self.task_points(task, status : CNFManager::Points::Results::ResultStatus = CNFManager::Points::Results::ResultStatus::Passed)
+      case status  
+      when CNFManager::Points::Results::ResultStatus::Passed
+        CNFManager::Points.task_points(task)
+      when CNFManager::Points::Results::ResultStatus::Failed
+        CNFManager::Points.task_points(task, false)
+      when CNFManager::Points::Results::ResultStatus::Skipped
+        field_name = "skipped"
+        points =points_yml.find {|x| x["name"] == task}
+        LOGGING.warn "****Warning**** task #{task} not found in points.yml".colorize(:yellow) unless points
+        if points && points[field_name]? 
+            points[field_name].as_i if points
+        else
+          points =points_yml.find {|x| x["name"] == "default_scoring"}
+          points[field_name].as_i if points
+        end
+      end
+    end
+
     def self.task_points(task, passed=true)
       if passed
         field_name = "pass"
@@ -87,8 +114,7 @@ module CNFManager
         points =points_yml.find {|x| x["name"] == "default_scoring"}
         points[field_name].as_i if points
       end
-    end
-
+    end 
     def self.total_points(tag=nil)
       if tag
         tasks = tasks_by_tag(tag)
@@ -152,6 +178,11 @@ module CNFManager
 
     def self.passed_task(task, msg)
       upsert_task(task, PASSED, task_points(task))
+      stdout_success "#{msg}"
+    end
+
+    def self.skipped_task(task, msg)
+      upsert_task(task, SKIPPED, task_points(task))
       stdout_success "#{msg}"
     end
 

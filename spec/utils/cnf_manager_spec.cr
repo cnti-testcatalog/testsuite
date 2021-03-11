@@ -48,6 +48,11 @@ describe "SampleUtils" do
     (CNFManager::Points.task_points("increase_capacity", false)).should eq(-5)
   end
 
+  it  "'task_points(, skipped)' should return the amount of points for a skipped test"  do
+    # default
+    (CNFManager::Points.task_points("liveness", CNFManager::Points::Results::ResultStatus::Skipped)).should eq(0)
+  end
+
   # it "'failed_task' should find and update an existing task in the file"  do
   #   CNFManager::Points.clean_results_yml
   #   failed_task("liveness", "FAILURE: No livenessProbe found")
