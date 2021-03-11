@@ -1,5 +1,3 @@
-# CNF Conformance PR Template
-
 ## Description
 (name of issue/change)
 
