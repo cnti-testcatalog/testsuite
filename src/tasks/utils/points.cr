@@ -84,20 +84,22 @@ module CNFManager
     def self.task_points(task, status : CNFManager::Points::Results::ResultStatus = CNFManager::Points::Results::ResultStatus::Passed)
       case status  
       when CNFManager::Points::Results::ResultStatus::Passed
-        CNFManager::Points.task_points(task, true)
+        resp = CNFManager::Points.task_points(task, true)
       when CNFManager::Points::Results::ResultStatus::Failed
-        CNFManager::Points.task_points(task, false)
+        resp = CNFManager::Points.task_points(task, false)
       when CNFManager::Points::Results::ResultStatus::Skipped
         field_name = "skipped"
         points =points_yml.find {|x| x["name"] == task}
         LOGGING.warn "****Warning**** task #{task} not found in points.yml".colorize(:yellow) unless points
         if points && points[field_name]? 
-            points[field_name].as_i if points
+            resp = points[field_name].as_i if points
         else
           points =points_yml.find {|x| x["name"] == "default_scoring"}
-          points[field_name].as_i if points
+          resp = points[field_name].as_i if points
         end
       end
+      LOGGING.info "task_points resp: #{resp}"
+      resp
     end
 
     def self.task_points(task, passed=true)

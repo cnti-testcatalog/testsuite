@@ -53,28 +53,6 @@ describe "SampleUtils" do
     (CNFManager::Points.task_points("liveness", CNFManager::Points::Results::ResultStatus::Skipped)).should eq(0)
   end
 
-  # it "'failed_task' should find and update an existing task in the file"  do
-  #   CNFManager::Points.clean_results_yml
-  #   failed_task("liveness", "FAILURE: No livenessProbe found")
-  #
-  #   yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
-  #     YAML.parse(file)
-  #   end
-  #   LOGGING.info yaml.inspect
-  #   (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == CNFManager::Points.task_points("liveness", false)}).should be_truthy
-  # end
-  #
-  # it "'passed_task' should find and update an existing task in the file"  do
-  #   CNFManager::Points.clean_results_yml
-  #   passed_task("liveness", "PASSED: livenessProbe found")
-  #
-  #   yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
-  #     YAML.parse(file)
-  #   end
-  #   LOGGING.info yaml.inspect
-  #   (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == CNFManager::Points.task_points("liveness")}).should be_truthy
-  # end
-
   it "'task_required' should return if the passed task is required"  do
     CNFManager::Points.clean_results_yml
     (CNFManager::Points.task_required("privileged")).should be_true
