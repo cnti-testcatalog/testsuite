@@ -8,6 +8,7 @@ BASE_CONFIG = "./config.yml"
 POINTSFILE = "points.yml"
 PASSED = "passed"
 FAILED = "failed"
+SKIPPED = "skipped"
 DEFAULT_POINTSFILENAME = "points_v1.yml"
 PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
 

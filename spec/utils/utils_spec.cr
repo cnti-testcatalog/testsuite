@@ -43,30 +43,28 @@ describe "Utils" do
     (check_beta(args)).should be_true
     (check_wip(args)).should be_false
   end
-  # it "'LOGGGING.level' should be Severity::ERROR when checked in"  do
-  #   (LOGGING.level).should eq(Logger::ERROR)
-  # end
+
   it "'check_cnf_config' should return the value for a cnf-config argument"  do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
     #TODO make CNFManager.sample_setup_args accept the full path to the config yml instead of the directory
     (check_cnf_config(args)).should eq("./sample-cnfs/sample-generic-cnf")
   end
+ 
 
-  # it "'check_all_cnf_args' should return the value for a cnf-config argument"  do
-  #   args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
-  #   #TODO make CNFManager.sample_setup_args accept the full path to the config yml instead of the directory
-  #   (check_all_cnf_args(args)).should eq({"./sample-cnfs/sample-generic-cnf", true})
-  # end
-  # it "'check_cnf_config_then_deploy' should accept a cnf-config argument"  do
-  #   config_file = "./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"
-  #   args = Sam::Args.new(["cnf-config=#{config_file}"])
-  #   check_cnf_config_then_deploy(args)
-  #   config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
-  #   release_name = config.cnf_config[:release_name]
-  #   CNFManager.cnf_config_list()[0].should contain("#{release_name}/#{CONFIG_FILE}")
-  #   CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
-  # end
-  #
+  it "'upsert_skipped_task' should put a 0 in the results file", tags: ["upsert_skipped_task"]  do
+    CNFManager::Points.clean_results_yml
+    resp = upsert_skipped_task("ip_addresses","✖️  FAILURE: IP addresses found")
+    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
+      YAML.parse(file)
+    end
+    (yaml["items"].as_a.find {|x| 
+      x["name"] == "ip_addresses" && 
+        x["points"] == CNFManager::Points.task_points("ip_addresses", CNFManager::Points::Results::ResultStatus::Skipped)
+    }).should be_truthy
+
+    (yaml["items"].as_a.find {|x| x["name"] == "ip_addresses" && x["points"] == 0 }).should be_truthy
+  end
+
   it "'single_task_runner' should accept a cnf-config argument and apply a test to that cnf"  do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
     # check_cnf_config_then_deploy(args)
@@ -90,7 +88,7 @@ describe "Utils" do
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
   end
 
-  it "'single_task_runner' should put a -1 in the results file if it has an exception"  do
+  it "'single_task_runner' should put a 1 in the results file if it has an exception"  do
     CNFManager::Points.clean_results_yml
     args = Sam::Args.new(["cnf-config=./cnf-conformance.yml"])
     task_response = CNFManager::Task.single_task_runner(args) do
