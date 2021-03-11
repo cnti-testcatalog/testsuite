@@ -84,7 +84,7 @@ module CNFManager
     def self.task_points(task, status : CNFManager::Points::Results::ResultStatus = CNFManager::Points::Results::ResultStatus::Passed)
       case status  
       when CNFManager::Points::Results::ResultStatus::Passed
-        CNFManager::Points.task_points(task)
+        CNFManager::Points.task_points(task, true)
       when CNFManager::Points::Results::ResultStatus::Failed
         CNFManager::Points.task_points(task, false)
       when CNFManager::Points::Results::ResultStatus::Skipped
