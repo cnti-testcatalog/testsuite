@@ -16,6 +16,8 @@
   tags: statelessness, dynamic, configuration_lifecycle
 - name: check_reaped 
   tags: statelessness, dynamic, configuration_lifecycle
+- name: volume_hostpath_not_found
+  tags: statelessness, dynamic
 
 - name: privileged 
   tags: security, dynamic
