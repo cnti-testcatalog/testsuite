@@ -16,8 +16,7 @@ end
 desc "Does the CNF have a reasonable startup time?"
 task "reasonable_startup_time" do |_, args|
   unless check_destructive(args)
-    LOGGING.info "skipping reasonable_startup_time: not in destructive mode"
-    puts "Skipped".colorize(:yellow)
+    upsert_skipped_task("reasonable_startup_time", "✖️  SKIPPED: skipping reasonable_startup_time: not in destructive mode")
     next
   end
   LOGGING.info "Running reasonable_startup_time in destructive mode!"
@@ -110,8 +109,11 @@ task "reasonable_startup_time" do |_, args|
 end
 
 desc "Does the CNF have a reasonable container image size?"
-#TODO Move install_dockerd dep out.
 task "reasonable_image_size", ["install_dockerd"] do |_, args|
+  unless check_dockerd
+    upsert_skipped_task("reasonable_image_size", "✖️  SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install")
+    next
+  end
   CNFManager::Task.task_runner(args) do |args,config|
     VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
