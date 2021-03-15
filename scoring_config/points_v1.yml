@@ -2,7 +2,8 @@
 - name: default_scoring
   tags: 
   pass: 5
-  fail: -1 
+  fail: -1
+  skipped: 0 
 - name: cni_spec 
   tags: compatibility, dynamic
 - name: api_snoop_alpha 
