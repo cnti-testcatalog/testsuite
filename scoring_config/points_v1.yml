@@ -56,6 +56,20 @@
   tags: configuration_lifecycle, dynamic
 - name: rolling_update
   tags: configuration_lifecycle, dynamic, installability
+- name: rolling_downgrade
+  tags: configuration_lifecycle, dynamic
+- name: rolling_version_change
+  tags: configuration_lifecycle, dynamic
+- name: nodeport_not_used
+  tags: configuration_lifecycle, dynamic
+- name: hardcoded_ip_addresses_in_k8s_runtime_configuration
+  tags: configuration_lifecycle, dynamic
+- name: rollback
+  tags: configuration_lifecycle, dynamic
+- name: secrets_used
+  tags: configuration_lifecycle, dynamic
+- name: immutable_configmap
+  tags: configuration_lifecycle, dynamic
 
 - name: fluentd_traffic
   tags: observability, dynamic
