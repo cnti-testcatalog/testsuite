@@ -258,7 +258,7 @@ end
 
 def upsert_skipped_task(task, message)
  CNFManager::Points.upsert_task(task, SKIPPED, CNFManager::Points.task_points(task, CNFManager::Points::Results::ResultStatus::Skipped))
-  stdout_success message
+  stdout_warning message
   message
 end
 
