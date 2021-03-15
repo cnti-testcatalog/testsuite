@@ -86,3 +86,10 @@
 
 - name: k8s_conformance
   tags: platform, dynamic
+
+- name: pod_network_latency
+  tags: resilience, dynamic
+- name: chaos_cpu_hog
+  tags: resilience, dynamic
+- name: chaos_container_kill
+  tags: resilience, dynamic
