@@ -7,23 +7,23 @@ require "retriable"
 namespace "platform" do
   desc "The CNF conformance suite checks to see if the Platform has Observability support."
   task "observability", ["kube_state_metrics", "node_exporter", "prometheus_adapter", "metrics_server"] do |t, args|
-    VERBOSE_LOGGING.info "resilience" if check_verbose(args)
-    VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
-    VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
-    stdout_score("platform:resilience")
+    VERBOSE_LOGGING.info "observability" if check_verbose(args)
+    VERBOSE_LOGGING.debug "observability args.raw: #{args.raw}" if check_verbose(args)
+    VERBOSE_LOGGING.debug "observability args.named: #{args.named}" if check_verbose(args)
+    stdout_score("platform:observability")
   end
 
   desc "Does the Platform have Kube State Metrics installed"
   task "kube_state_metrics" do |_, args|
     unless check_poc(args)
       LOGGING.info "skipping kube_state_metrics: not in poc mode"
-      puts "Skipped".colorize(:yellow)
+      puts "SKIPPED: Kube State Metrics".colorize(:yellow)
       next
     end
     LOGGING.info "Running POC: kube_state_metrics"
     Retriable.retry do
       task_response = CNFManager::Task.task_runner(args) do |args|
-        current_dir = FileUtils.pwd 
+        current_dir = FileUtils.pwd
 
         state_metric_releases = `curl -L -s https://quay.io/api/v1/repository/coreos/kube-state-metrics/tag/?limit=100`
         # Get the sha hash for the kube-state-metrics container
@@ -56,7 +56,7 @@ namespace "platform" do
   task "node_exporter" do |_, args|
     unless check_poc(args)
       LOGGING.info "skipping node_exporter: not in poc mode"
-      puts "Skipped".colorize(:yellow)
+      puts "SKIPPED: Node Exporter".colorize(:yellow)
       next
     end
     LOGGING.info "Running POC: node_exporter"
@@ -158,7 +158,7 @@ end
   task "prometheus_adapter" do |_, args|
     unless check_poc(args)
       LOGGING.info "skipping prometheus_adapter: not in poc mode"
-      puts "Skipped".colorize(:yellow)
+      puts "SKIPPED: Prometheus Adapter".colorize(:yellow)
       next
     end
     LOGGING.info "Running POC: prometheus_adapter"
@@ -196,7 +196,7 @@ end
   task "metrics_server" do |_, args|
     unless check_poc(args)
       LOGGING.info "skipping metrics_server: not in poc mode"
-      puts "Skipped".colorize(:yellow)
+      puts "SKIPPED: Metrics Server".colorize(:yellow)
       next
     end
     LOGGING.info "Running POC: metrics_server"

@@ -21,7 +21,7 @@ desc "Does the platform pass the K8s conformance tests?"
 task "k8s_conformance" do |_, args|
   VERBOSE_LOGGING.info "k8s_conformance" if check_verbose(args)
   begin
-    current_dir = FileUtils.pwd 
+    current_dir = FileUtils.pwd
     VERBOSE_LOGGING.debug current_dir if check_verbose(args)
     sonobuoy = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy"
 
@@ -41,12 +41,12 @@ task "k8s_conformance" do |_, args|
     end
     VERBOSE_LOGGING.info testrun if check_verbose(args)
 
-    results = `results=$(#{sonobuoy} retrieve); #{sonobuoy} results $results` 
+    results = `results=$(#{sonobuoy} retrieve); #{sonobuoy} results $results`
     VERBOSE_LOGGING.info results if check_verbose(args)
 
     # Grab the failed line from the results
-    failed_count = ((results.match(/Failed: (.*)/)).try &.[1]) 
-    if failed_count.to_s.to_i > 0 
+    failed_count = ((results.match(/Failed: (.*)/)).try &.[1])
+    if failed_count.to_s.to_i > 0
       upsert_failed_task("k8s_conformance", "✖️  FAILURE: K8s conformance test has #{failed_count} failure(s)!")
     else
       upsert_passed_task("k8s_conformance", "✔️  PASSED: K8s conformance test has no failures")
@@ -67,7 +67,7 @@ task "clusterapi_enabled" do |_, args|
   CNFManager::Task.task_runner(args) do
     unless check_poc(args)
       LOGGING.info "skipping clusterapi_enabled: not in poc mode"
-      puts "Skipped".colorize(:yellow)
+      puts "SKIPPED: ClusterAPI Enabled".colorize(:yellow)
       next
     end
 
@@ -101,7 +101,7 @@ task "clusterapi_enabled" do |_, args|
 
     clusterapi_control_planes_json = proc_clusterapi_control_planes_json.call
     LOGGING.info("clusterapi_control_planes_json: #{clusterapi_control_planes_json}")
-     
+
     emoji_control="✨"
     if clusterapi_namespaces_json["items"]? && clusterapi_namespaces_json["items"].as_a.size > 0 && clusterapi_control_planes_json["items"]? && clusterapi_control_planes_json["items"].as_a.size > 0
       resp = upsert_passed_task("clusterapi_enabled", "✔️ Cluster API is enabled #{emoji_control}")

@@ -16,12 +16,12 @@ namespace "platform" do
   task "worker_reboot_recovery" do |_, args|
     unless check_destructive(args)
       LOGGING.info "skipping node_failure: not in destructive mode"
-      puts "Skipped".colorize(:yellow)
+      puts "SKIPPED: Node Failure".colorize(:yellow)
       next
     end
     LOGGING.info "Running POC in destructive mode!"
     task_response = CNFManager::Task.task_runner(args) do |args|
-      current_dir = FileUtils.pwd 
+      current_dir = FileUtils.pwd
       helm = CNFSingleton.helm
 
       #Select the first node that isn't a master and is also schedulable
