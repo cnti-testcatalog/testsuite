@@ -201,7 +201,7 @@ jobs:
         path: cnf-conformance
   test_binary_no_source:
     name: Test Binary Without Source
-    needs: [spec, build, debug_output]
+    needs: [build, debug_output]
     runs-on: ubuntu-latest
     steps: 
     - name: Download artifact
