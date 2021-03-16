@@ -31,11 +31,11 @@ task "uninstall_dockerd" do |_, args|
 end
 
 def dockerd_filename
-  "#{TOOLS_DIR}/dockerd/manifest.yml"
+  "./#{TOOLS_DIR}/dockerd/manifest.yml"
 end
 
 def dockerd_tempname
-  "#{TOOLS_DIR}/dockerd/manifest.tmp"
+  "./#{TOOLS_DIR}/dockerd/manifest.tmp"
 end
 
 def dockerd_tempname_helper
