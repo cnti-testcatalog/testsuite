@@ -4,10 +4,11 @@ require "colorize"
 require "totem"
 require "./utils/utils.cr"
 
+
 desc "The dockerd tool is used to run docker commands against the cluster."
 task "install_dockerd" do |_, args|
   VERBOSE_LOGGING.info "install_dockerd" if check_verbose(args)
-  status = Process.run("kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml",
+  status = Process.run("kubectl create -f #{dockerd_filename}",
                                 shell: true,
                                 output: install_dockerd = IO::Memory.new,
                                 error: stderr = IO::Memory.new).success?
@@ -25,10 +26,26 @@ end
 desc "Uninstall dockerd"
 task "uninstall_dockerd" do |_, args|
   VERBOSE_LOGGING.info "uninstall_dockerd" if check_verbose(args)
-  delete_dockerd = `kubectl delete -f #{TOOLS_DIR}/dockerd/manifest.yml`
+  delete_dockerd = `kubectl delete -f #{dockerd_filename}`
   LOGGING.debug "Dockerd_uninstall: #{delete_dockerd}"
 end
 
+def dockerd_filename
+  "#{TOOLS_DIR}/dockerd/manifest.yml"
+end
+
+def dockerd_tempname
+  "#{TOOLS_DIR}/dockerd/manifest.tmp"
+end
+
+def dockerd_tempname_helper
+  `mv #{dockerd_filename} #{dockerd_tempname}`
+end
+
+def dockerd_name_helper
+  `mv #{dockerd_tempname} #{dockerd_filename}`
+end
+
 def check_dockerd
-  KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
+  KubectlClient::Get.resource_wait_for_install("Pod", "dockerd", wait_count = 5)
 end
