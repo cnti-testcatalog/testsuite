@@ -286,8 +286,10 @@ module KubectlClient
 
       if (pod_ready && !pod_ready.empty? && pod_ready == "true") ||
           (current_replicas && desired_replicas && !current_replicas.empty? && current_replicas.to_i == desired_replicas.to_i)
+        LOGGING.info "kind/resource #{kind}, #{resource_name} found."
         true
       else
+        LOGGING.info "kind/resource #{kind}, #{resource_name} not found."
         false
       end
     end

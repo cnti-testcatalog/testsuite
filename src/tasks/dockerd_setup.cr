@@ -39,10 +39,18 @@ def dockerd_tempname
 end
 
 def dockerd_tempname_helper
+  LOGGING.info "ls #{TOOLS_DIR}"
+  LOGGING.info `ls #{TOOLS_DIR}`
+  LOGGING.info "ls #{TOOLS_DIR}/dockerd"
+  LOGGING.info `ls #{TOOLS_DIR}/dockerd`
   `mv #{dockerd_filename} #{dockerd_tempname}`
 end
 
 def dockerd_name_helper
+  LOGGING.info "ls #{TOOLS_DIR}"
+  LOGGING.info `ls #{TOOLS_DIR}`
+  LOGGING.info "ls #{TOOLS_DIR}/dockerd"
+  LOGGING.info `ls #{TOOLS_DIR}/dockerd`
   `mv #{dockerd_tempname} #{dockerd_filename}`
 end
 
