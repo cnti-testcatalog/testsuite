@@ -85,6 +85,7 @@ describe "Microservice" do
   ensure
     LOGGING.info `./cnf-conformance cnf_cleanup cnf-path=#{cnf}`
     dockerd_name_helper
+    LOGGING.info `./cnf-conformance install_dockerd`
   end
 
   it "'reasonable_image_size' should pass if using local registry and a port", tags: ["reasonable_image_size","happy-path"]  do
