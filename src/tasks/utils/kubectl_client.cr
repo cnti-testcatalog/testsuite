@@ -386,6 +386,7 @@ module KubectlClient
       else
         LOGGING.info "pod: #{pod_name_prefix} is NOT found"
       end
+      LOGGING.info "pod_status status: #{status}"
       status
     end
 
