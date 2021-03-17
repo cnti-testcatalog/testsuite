@@ -383,6 +383,7 @@ module KubectlClient
       if pod != "not found"
         status = `kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}'`
       else
+        status = false 
         LOGGING.info "pod: #{pod_name_prefix} is NOT found"
       end
       status
