@@ -68,5 +68,5 @@ end
 
 def check_dockerd
   LOGGING.info "check_dockerd"
-  KubectlClient::Get.resource_wait_for_install("Pod", "dockerd", wait_count = 5)
+  KubectlClient::Get.resource_wait_for_install("Pod", "dockerd", wait_count = 1)
 end
