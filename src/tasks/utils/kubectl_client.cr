@@ -378,7 +378,7 @@ module KubectlClient
       pod = latest_pod_time[:name].not_nil!
       # pod = all_pod_names[time_stamps.index(latest_time).not_nil!]
       # pod = all_pods.select{ | x | x =~ /#{pod_name_prefix}/ }
-      puts "Pods Found: #{pod}"
+      LOGGING.info "Pods Found: #{pod}"
       status = "#{pod_name_prefix},NotFound,false"
       if pod != "not found"
         status = `kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}'`
