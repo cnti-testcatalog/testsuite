@@ -83,6 +83,7 @@ describe "Microservice" do
     $?.success?.should be_true
     (/SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install/ =~ response_s).should_not be_nil
   ensure
+    LOGGING.info "reasonable_image_size skipped ensure"
     LOGGING.info `./cnf-conformance cnf_cleanup cnf-path=#{cnf}`
     dockerd_name_helper
     LOGGING.info `./cnf-conformance install_dockerd`
