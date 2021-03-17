@@ -46,7 +46,7 @@ namespace "platform" do
           upsert_passed_task("kube_state_metrics","✔️  PASSED: Your platform is using the #{release_name} release for kube state metrics #{emoji_kube_state_metrics}")
         else
           emoji_kube_state_metrics="📶☠️"
-          upsert_failed_task("kube_state_metrics", "✖️  FAILURE: Your platform does not have kube state metrics installed #{emoji_kube_state_metrics}")
+          upsert_failed_task("kube_state_metrics", "✖️  FAILED: Your platform does not have kube state metrics installed #{emoji_kube_state_metrics}")
         end
       end
     end
@@ -146,7 +146,7 @@ namespace "platform" do
           upsert_passed_task("node_exporter","✔️  PASSED: Your platform is using the #{release_name} release for the node exporter #{emoji_node_exporter}")
         else
           emoji_node_exporter="📶☠️"
-          upsert_failed_task("node_exporter", "✖️  FAILURE: Your platform does not have the node exporter installed #{emoji_node_exporter}")
+          upsert_failed_task("node_exporter", "✖️  FAILED: Your platform does not have the node exporter installed #{emoji_node_exporter}")
         end
       end
     end
@@ -186,7 +186,7 @@ end
           upsert_passed_task("prometheus_adapter","✔️  PASSED: Your platform is using the #{release_name} release for the prometheus adapter #{emoji_prometheus_adapter}")
         else
           emoji_prometheus_adapter="📶☠️"
-          upsert_failed_task("prometheus_adapter", "✖️  FAILURE: Your platform does not have the prometheus adapter installed #{emoji_prometheus_adapter}")
+          upsert_failed_task("prometheus_adapter", "✖️  FAILED: Your platform does not have the prometheus adapter installed #{emoji_prometheus_adapter}")
         end
       end
     end
@@ -285,7 +285,7 @@ end
           upsert_passed_task("metrics_server","✔️  PASSED: Your platform is using the #{release_name} release for the metrics server #{emoji_metrics_server}")
         else
           emoji_metrics_server="📶☠️"
-          upsert_failed_task("metrics_server", "✖️  FAILURE: Your platform does not have the metrics server installed #{emoji_metrics_server}")
+          upsert_failed_task("metrics_server", "✖️  FAILED: Your platform does not have the metrics server installed #{emoji_metrics_server}")
         end
       end
     end

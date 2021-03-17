@@ -53,7 +53,7 @@ describe "Utils" do
 
   it "'upsert_skipped_task' should put a 0 in the results file", tags: ["upsert_skipped_task"]  do
     CNFManager::Points.clean_results_yml
-    resp = upsert_skipped_task("ip_addresses","✖️  FAILURE: IP addresses found")
+    resp = upsert_skipped_task("ip_addresses","✖️  FAILED: IP addresses found")
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end
@@ -77,7 +77,7 @@ describe "Utils" do
       privileged_list = privileged_response.to_s.split(" ").uniq
       LOGGING.info "privileged_list #{privileged_list}"
       if privileged_list.select {|x| x == helm_chart_container_name}.size > 0
-        resp = "✖️  FAILURE: Found privileged containers: #{privileged_list.inspect}".colorize(:red)
+        resp = "✖️  FAILED: Found privileged containers: #{privileged_list.inspect}".colorize(:red)
       else
         resp = "✔️  PASSED: No privileged containers".colorize(:green)
       end
@@ -105,7 +105,7 @@ describe "Utils" do
         end
         Dir.cd(cdir)
         if response.to_s.size > 0
-          resp = upsert_failed_task("ip_addresses","✖️  FAILURE: IP addresses found")
+          resp = upsert_failed_task("ip_addresses","✖️  FAILED: IP addresses found")
         else
           resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
         end
@@ -152,12 +152,12 @@ describe "Utils" do
       if resource_response 
         resp = upsert_passed_task("privileged", "✔️  PASSED: No privileged containers")
       else
-        resp = upsert_failed_task("privileged", "✖️  FAILURE: Found #{violation_list.size} privileged containers: #{violation_list.inspect}")
+        resp = upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect}")
       end
       resp
     end
     (task_response).should eq(["✔️  PASSED: No privileged containers", 
-                               "✖️  FAILURE: Found 1 privileged containers: [\"coredns\"]"])
+                               "✖️  FAILED: Found 1 privileged containers: [\"coredns\"]"])
   ensure
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
@@ -187,14 +187,14 @@ describe "Utils" do
       privileged_list = privileged_response.to_s.split(" ").uniq
       LOGGING.info "privileged_list #{privileged_list}"
       if privileged_list.select {|x| x == helm_chart_container_name}.size > 0
-        resp = "✖️  FAILURE: Found privileged containers: #{privileged_list.inspect}".colorize(:red)
+        resp = "✖️  FAILED: Found privileged containers: #{privileged_list.inspect}".colorize(:red)
       else
         resp = "✔️  PASSED: No privileged containers".colorize(:green)
       end
       LOGGING.info resp
       resp
     end
-    (task_response).should eq("✖️  FAILURE: Found privileged containers: [\"coredns\", \"kube-proxy\"]".colorize(:red))
+    (task_response).should eq("✖️  FAILED: Found privileged containers: [\"coredns\", \"kube-proxy\"]".colorize(:red))
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
   end

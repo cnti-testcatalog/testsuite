@@ -96,7 +96,7 @@ task "reasonable_startup_time" do |_, args|
     if is_kubectl_applied && is_kubectl_deployed && elapsed_time.seconds < 30
       upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time #{emoji_fast}")
     else
-      upsert_failed_task("reasonable_startup_time", "✖️  FAILURE: CNF had a startup time of #{elapsed_time.seconds} seconds #{emoji_slow}")
+      upsert_failed_task("reasonable_startup_time", "✖️  FAILED: CNF had a startup time of #{elapsed_time.seconds} seconds #{emoji_slow}")
     end
 
    ensure
@@ -202,7 +202,7 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
     if task_response
       upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good #{emoji_small} #{emoji_image_size}")
     else
-      upsert_failed_task("reasonable_image_size", "✖️  FAILURE: Image size too large #{emoji_big} #{emoji_image_size}")
+      upsert_failed_task("reasonable_image_size", "✖️  FAILED: Image size too large #{emoji_big} #{emoji_image_size}")
     end
   # ensure
   #   delete_dockerd = `kubectl delete -f #{TOOLS_DIR}/dockerd/manifest.yml`

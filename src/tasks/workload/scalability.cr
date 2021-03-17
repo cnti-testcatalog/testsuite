@@ -44,7 +44,7 @@ task "increase_capacity" do |_, args|
     if task_response.none?(false) 
       upsert_passed_task("increase_capacity", "✔️  PASSED: Replicas increased to #{target_replicas} #{emoji_increase_capacity}")
     else
-      upsert_failed_task("increase_capacity", "✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji_increase_capacity}")
+      upsert_failed_task("increase_capacity", "✖️  FAILED: Replicas did not reach #{target_replicas} #{emoji_increase_capacity}")
     end
   end
 end
@@ -73,7 +73,7 @@ task "decrease_capacity" do |_, args|
     if task_response.none?(false) 
       upsert_passed_task("decrease_capacity", "✔️  PASSED: Replicas decreased to #{target_replicas} #{emoji_decrease_capacity}")
     else
-      upsert_failed_task("decrease_capacity", "✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji_decrease_capacity}")
+      upsert_failed_task("decrease_capacity", "✖️  FAILED: Replicas did not reach #{target_replicas} #{emoji_decrease_capacity}")
     end
   end
 end

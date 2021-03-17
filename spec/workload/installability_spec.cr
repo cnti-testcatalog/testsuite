@@ -14,7 +14,7 @@ describe CnfConformance do
     response_s =  `./cnf-conformance install_script_helm`
     LOGGING.info response_s
     $?.success?.should be_true
-    (/FAILURE: Helm not found in supplied install script/ =~ response_s).should_not be_nil
+    (/FAILED: Helm not found in supplied install script/ =~ response_s).should_not be_nil
     `./cnf-conformance sample_coredns_source_cleanup`
   end
 
@@ -22,7 +22,7 @@ describe CnfConformance do
     response_s = `./cnf-conformance helm_deploy destructive cnf-config=sample-cnfs/sample-bad-helm-deploy-repo/cnf-conformance.yml verbose`
     LOGGING.info response_s
     $?.success?.should be_true
-    (/FAILURE: Helm deploy failed/ =~ response_s).should_not be_nil
+    (/FAILED: Helm deploy failed/ =~ response_s).should_not be_nil
   end
 
   it "'helm_deploy' should fail if command is not supplied cnf-config argument", tags: "helm" do
@@ -98,7 +98,7 @@ describe CnfConformance do
       response_s = `./cnf-conformance helm_chart_published verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILURE: Published Helm Chart Not Found/ =~ response_s).should_not be_nil
+      (/FAILED: Published Helm Chart Not Found/ =~ response_s).should_not be_nil
     ensure
       `#{CNFSingleton.helm} repo remove badrepo`
       `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-repo`

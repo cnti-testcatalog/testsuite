@@ -35,7 +35,7 @@ task "privileged" do |_, args|
     if task_response 
       upsert_passed_task("privileged", "✔️  PASSED: No privileged containers #{emoji_security}")
     else
-      upsert_failed_task("privileged", "✖️  FAILURE: Found #{violation_list.size} privileged containers: #{violation_list.inspect} #{emoji_security}")
+      upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect} #{emoji_security}")
     end
   end
 end
