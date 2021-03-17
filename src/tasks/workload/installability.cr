@@ -54,7 +54,7 @@ task "helm_deploy" do |_, args|
         if is_helm_installed
           upsert_passed_task("helm_deploy", "✔️  PASSED: Helm deploy successful")
         else
-          upsert_failed_task("helm_deploy", "✖️  FAILURE: Helm deploy failed")
+          upsert_failed_task("helm_deploy", "✖️  FAILED: Helm deploy failed")
         end
       ensure
         VERBOSE_LOGGING.debug "#{helm} uninstall --namespace helm-deploy #{release_name_prefix}#{release_name}" if check_verbose(args)
@@ -63,7 +63,7 @@ task "helm_deploy" do |_, args|
       end
     end
   else
-    upsert_failed_task("helm_deploy", "✖️  FAILURE: No cnf_conformance.yml found! Did you run the setup task?")
+    upsert_failed_task("helm_deploy", "✖️  FAILED: No cnf_conformance.yml found! Did you run the setup task?")
   end
 end
 
@@ -90,7 +90,7 @@ task "install_script_helm" do |_, args|
         found = 1
       end
       if found < 1
-        upsert_failed_task("install_script_helm", "✖️  FAILURE: Helm not found in supplied install script")
+        upsert_failed_task("install_script_helm", "✖️  FAILED: Helm not found in supplied install script")
       else
         upsert_passed_task("install_script_helm", "✔️  PASSED: Helm found in supplied install script")
       end
@@ -123,13 +123,13 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
         unless helm_search =~ /No results found/
           upsert_passed_task("helm_chart_published", "✔️  PASSED: Published Helm Chart Found")
         else
-          upsert_failed_task("helm_chart_published", "✖️  FAILURE: Published Helm Chart Not Found")
+          upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found")
         end
       else
-        upsert_failed_task("helm_chart_published", "✖️  FAILURE: Published Helm Chart Not Found")
+        upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found")
       end
     else
-      upsert_failed_task("helm_chart_published", "✖️  FAILURE: Published Helm Chart Not Found")
+      upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found")
     end
   end
 end
@@ -169,7 +169,7 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     if $?.success? 
       upsert_passed_task("helm_chart_valid", "✔️  PASSED: Helm Chart #{working_chart_directory} Lint Passed")
     else
-      upsert_failed_task("helm_chart_valid", "✖️  FAILURE: Helm Chart #{working_chart_directory} Lint Failed")
+      upsert_failed_task("helm_chart_valid", "✖️  FAILED: Helm Chart #{working_chart_directory} Lint Failed")
     end
   end
 end
@@ -181,6 +181,6 @@ task "validate_config" do |_, args|
   if valid
     stdout_success "✔️ PASSED: CNF configuration validated #{emoji_config}"
   else
-    stdout_failure "❌ FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file #{emoji_config}"
+    stdout_failure "❌ FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file #{emoji_config}"
   end
 end
