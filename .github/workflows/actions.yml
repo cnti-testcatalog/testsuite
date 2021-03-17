@@ -229,7 +229,7 @@ jobs:
         ./cnf-conformance setup
         wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
         ./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
-        ./cnf-conformance workload
+        ./cnf-conformance workload ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform
   release:
     name: Publish Release
     needs: [spec, build, debug_output]
