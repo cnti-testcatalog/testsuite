@@ -42,20 +42,28 @@ end
 
 def dockerd_tempname_helper
   LOGGING.info "dockerd_tempname_helper"
-  LOGGING.info "ls #{TOOLS_DIR}"
+  LOGGING.info "before ls #{TOOLS_DIR}"
   LOGGING.info `ls #{TOOLS_DIR}`
   LOGGING.info "ls #{TOOLS_DIR}/dockerd"
   LOGGING.info `ls #{TOOLS_DIR}/dockerd`
   `mv #{dockerd_filename} #{dockerd_tempname}`
+  LOGGING.info "after ls #{TOOLS_DIR}"
+  LOGGING.info `ls #{TOOLS_DIR}`
+  LOGGING.info "ls #{TOOLS_DIR}/dockerd"
+  LOGGING.info `ls #{TOOLS_DIR}/dockerd`
 end
 
 def dockerd_name_helper
   LOGGING.info "dockerd_name_helper"
-  LOGGING.info "ls #{TOOLS_DIR}"
+  LOGGING.info "before ls #{TOOLS_DIR}"
   LOGGING.info `ls #{TOOLS_DIR}`
   LOGGING.info "ls #{TOOLS_DIR}/dockerd"
   LOGGING.info `ls #{TOOLS_DIR}/dockerd`
   `mv #{dockerd_tempname} #{dockerd_filename}`
+  LOGGING.info "after ls #{TOOLS_DIR}"
+  LOGGING.info `ls #{TOOLS_DIR}`
+  LOGGING.info "ls #{TOOLS_DIR}/dockerd"
+  LOGGING.info `ls #{TOOLS_DIR}/dockerd`
 end
 
 def check_dockerd

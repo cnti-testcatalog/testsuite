@@ -76,7 +76,6 @@ describe "Microservice" do
     cnf="./sample-cnfs/sample-coredns-cnf"
     LOGGING.info `./cnf-conformance cnf_setup cnf-path=#{cnf}`
     LOGGING.info `./cnf-conformance uninstall_dockerd`
-    sleep 10.0
     dockerd_tempname_helper
 
     response_s = `./cnf-conformance reasonable_image_size verbose`
