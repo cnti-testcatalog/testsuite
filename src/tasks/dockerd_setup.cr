@@ -68,5 +68,11 @@ end
 
 def check_dockerd
   LOGGING.info "check_dockerd"
-  KubectlClient::Get.resource_wait_for_install("Pod", "dockerd", wait_count = 1)
+  # KubectlClient::Get.resource_wait_for_install("Pod", "dockerd", wait_count = 1)
+  pod_ready = KubectlClient::Get.pod_status(pod_name_prefix: "dockerd").split(",")[2] # true/false
+  if  (pod_ready && !pod_ready.empty? && pod_ready == "true") 
+    true
+  else
+    false
+  end
 end
