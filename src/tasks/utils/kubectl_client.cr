@@ -278,6 +278,8 @@ module KubectlClient
         second_count = second_count + 1
       end
 
+      LOGGING.info "final pod_ready: #{pod_ready}"
+      LOGGING.info "final current_replicas: #{current_replicas}"
       if (pod_ready && !pod_ready.empty? && pod_ready == "true") ||
           (current_replicas && desired_replicas && !current_replicas.empty? && current_replicas.to_i == desired_replicas.to_i)
         LOGGING.info "kind/resource #{kind}, #{resource_name} found."
