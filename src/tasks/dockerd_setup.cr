@@ -18,7 +18,7 @@ task "install_dockerd" do |_, args|
   # LOGGING.info "Dockerd_Install status: #{status}"
   status = check_dockerd
   if status
-    LOGGING.error "Dockerd_Install failed: #{resp[:error]}".colorize(:red)
+    LOGGING.error "Dockerd_Install failed.".colorize(:red)
   end
   LOGGING.info "Dockerd_Install status: #{status}"
   status
