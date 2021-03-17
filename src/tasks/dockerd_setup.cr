@@ -70,7 +70,7 @@ def check_dockerd
   LOGGING.info "check_dockerd"
   # KubectlClient::Get.resource_wait_for_install("Pod", "dockerd", wait_count = 1)
   pod_ready = ""
-  pod_ready_timeout = 2 
+  pod_ready_timeout = 25 
   until (pod_ready == "true" || pod_ready_timeout == 0)
     pod_ready = KubectlClient::Get.pod_status("dockerd").split(",")[2]
     puts "Pod Ready Status: #{pod_ready}"
