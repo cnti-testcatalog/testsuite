@@ -72,22 +72,22 @@ describe "Microservice" do
     `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup force=true`
   end
 
-  # it "'reasonable_image_size' should skip if dockerd does not install", tags: "reasonable_image_size" do
-  #   cnf="./sample-cnfs/sample-coredns-cnf"
-  #   LOGGING.info `./cnf-conformance cnf_setup cnf-path=#{cnf}`
-  #   LOGGING.info `./cnf-conformance uninstall_dockerd`
-  #   sleep 10.0
-  #   dockerd_tempname_helper
-  #
-  #   response_s = `./cnf-conformance reasonable_image_size verbose`
-  #   LOGGING.info response_s
-  #   $?.success?.should be_true
-  #   (/SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install/ =~ response_s).should_not be_nil
-  # ensure
-  #   LOGGING.info `./cnf-conformance cnf_cleanup cnf-path=#{cnf}`
-  #   dockerd_name_helper
-  #   LOGGING.info `./cnf-conformance install_dockerd`
-  # end
+  it "'reasonable_image_size' should skip if dockerd does not install", tags: "reasonable_image_size" do
+    cnf="./sample-cnfs/sample-coredns-cnf"
+    LOGGING.info `./cnf-conformance cnf_setup cnf-path=#{cnf}`
+    LOGGING.info `./cnf-conformance uninstall_dockerd`
+    sleep 10.0
+    dockerd_tempname_helper
+
+    response_s = `./cnf-conformance reasonable_image_size verbose`
+    LOGGING.info response_s
+    $?.success?.should be_true
+    (/SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install/ =~ response_s).should_not be_nil
+  ensure
+    LOGGING.info `./cnf-conformance cnf_cleanup cnf-path=#{cnf}`
+    dockerd_name_helper
+    LOGGING.info `./cnf-conformance install_dockerd`
+  end
 
   it "'reasonable_image_size' should pass if using local registry and a port", tags: ["reasonable_image_size","happy-path"]  do
 

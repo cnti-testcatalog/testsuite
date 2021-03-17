@@ -8,13 +8,14 @@ require "./utils/utils.cr"
 desc "The dockerd tool is used to run docker commands against the cluster."
 task "install_dockerd" do |_, args|
   VERBOSE_LOGGING.info "install_dockerd" if check_verbose(args)
-  status = Process.run("kubectl create -f #{dockerd_filename}",
-                                shell: true,
-                                output: install_dockerd = IO::Memory.new,
-                                error: stderr = IO::Memory.new).success?
-  LOGGING.info "Dockerd_Install output: #{install_dockerd.to_s}"
-  LOGGING.info "Dockerd_Install stderr: #{stderr.to_s}"
-  LOGGING.info "Dockerd_Install status: #{status}"
+  resp = KubectlClient::Delete.file(dockerd_filename)
+  # status = Process.run("kubectl create -f #{dockerd_filename}",
+  #                               shell: true,
+  #                               output: install_dockerd = IO::Memory.new,
+  #                               error: stderr = IO::Memory.new).success?
+  # LOGGING.info "Dockerd_Install output: #{install_dockerd.to_s}"
+  # LOGGING.info "Dockerd_Install stderr: #{stderr.to_s}"
+  # LOGGING.info "Dockerd_Install status: #{status}"
   status = check_dockerd
   if status
     LOGGING.error "Dockerd_Install failed: #{stderr.to_s}".colorize(:red)
@@ -25,9 +26,10 @@ end
 
 desc "Uninstall dockerd"
 task "uninstall_dockerd" do |_, args|
-  VERBOSE_LOGGING.info "uninstall_dockerd" if check_verbose(args)
-  delete_dockerd = `kubectl delete -f #{dockerd_filename}`
-  LOGGING.debug "Dockerd_uninstall: #{delete_dockerd}"
+  LOGGING.info "uninstall_dockerd" 
+  # delete_dockerd = `kubectl delete -f #{dockerd_filename}`
+  KubectlClient::Delete.file(dockerd_filename)
+  # LOGGING.info "Dockerd_uninstall: #{delete_dockerd}"
 end
 
 def dockerd_filename
@@ -39,6 +41,7 @@ def dockerd_tempname
 end
 
 def dockerd_tempname_helper
+  LOGGING.info "dockerd_tempname_helper"
   LOGGING.info "ls #{TOOLS_DIR}"
   LOGGING.info `ls #{TOOLS_DIR}`
   LOGGING.info "ls #{TOOLS_DIR}/dockerd"
@@ -47,6 +50,7 @@ def dockerd_tempname_helper
 end
 
 def dockerd_name_helper
+  LOGGING.info "dockerd_name_helper"
   LOGGING.info "ls #{TOOLS_DIR}"
   LOGGING.info `ls #{TOOLS_DIR}`
   LOGGING.info "ls #{TOOLS_DIR}/dockerd"
@@ -55,5 +59,6 @@ def dockerd_name_helper
 end
 
 def check_dockerd
+  LOGGING.info "check_dockerd"
   KubectlClient::Get.resource_wait_for_install("Pod", "dockerd", wait_count = 5)
 end

@@ -79,12 +79,6 @@ module KubectlClient
   end
   module Delete
     def self.file(file_name)
-      # delete = `kubectl delete -f #{file_name}`
-      # delete_status = $?.success?
-      # LOGGING.debug "#{delete}"
-      # LOGGING.debug "delete? #{delete_status}"
-      # delete_status
-      # LOGGING.info "delete file: #{file_name}"
       status = Process.run("kubectl delete -f #{file_name}",
                            shell: true,
                            output: output = IO::Memory.new,
