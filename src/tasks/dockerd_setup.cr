@@ -8,7 +8,7 @@ require "./utils/utils.cr"
 desc "The dockerd tool is used to run docker commands against the cluster."
 task "install_dockerd" do |_, args|
   VERBOSE_LOGGING.info "install_dockerd" if check_verbose(args)
-  resp = KubectlClient::Create.file(dockerd_filename)
+  resp = KubectlClient::Apply.file(dockerd_filename)
   # status = Process.run("kubectl create -f #{dockerd_filename}",
   #                               shell: true,
   #                               output: install_dockerd = IO::Memory.new,
