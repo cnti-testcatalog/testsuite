@@ -1,7 +1,18 @@
 name: Crystal Specs
 on: [push, pull_request]
 jobs:
-  debug_statuh release_debug
+  debug_status:
+    name: Debug Status
+    runs-on: ubuntu-20.04	
+    env:
+      skip_debug: ${{secrets.SKIP_DEBUG}}
+      release_debug: ${{secrets.RELEASE_DEBUG}}
+      build_debug: ${{secrets.BUILD_DEBUG}}
+    steps:
+    - name: Create Debug Files
+      run: |
+        touch skip_debug
+        touch release_debug
         touch build_debug
         if [[ "$skip_debug" == 'true' ]]; then
            echo 'true' > skip_debug
