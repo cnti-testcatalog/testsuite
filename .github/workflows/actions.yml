@@ -72,13 +72,13 @@ jobs:
     - id: set-matrix
       run: |
         JSON="{\"include\":["
-        # TEST_LIST=$(for i in $(find spec -name '*_spec.cr')
-        # do
-        #     if ! [ "$i" == "spec/workload/cpu_hog_spec.cr" ]; then
-        #          echo "{\"spec\":\"$i\"}," | tr -d '\n'
-        #     fi
-        # done)
-        TEST_LIST=$(grep -roP --no-filename 'tags: \K(\[|")(.*)(\]|")' spec/ | sort -u | tr -d '[] ' | tr -s '\n' ',')
+        TEST_LIST=$(for i in $(find spec -name '*_spec.cr')
+        do
+            if ! [ "$i" == "spec/workload/cpu_hog_spec.cr" ]; then
+                 echo "{\"spec\":\"$i\"}," | tr -d '\n'
+            fi
+        done)
+        # TEST_LIST=$(grep -roP --no-filename 'tags: \K(\[|")(.*)(\]|")' spec/ | sort -u | tr -d '[] ' | tr -s '\n' ',')
         TEST_LIST="${TEST_LIST%?}"
         JSON="$JSON$TEST_LIST"
         JSON="$JSON]}"
