@@ -72,14 +72,16 @@ jobs:
     - id: set-matrix
       run: |
         JSON="{\"include\":["
-        TEST_LIST=$(for i in $(find spec -name '*_spec.cr')
-        do
-            if ! [ "$i" == "spec/workload/cpu_hog_spec.cr" ]; then
-                 echo "{\"spec\":\"$i\"}," | tr -d '\n'
-            fi
-        done)
-        TEST_LIST="${TEST_LIST%?}"
-        JSON="$JSON$TEST_LIST"
+        # TEST_LIST=$(for i in $(find spec -name '*_spec.cr')
+        # do
+        #     if ! [ "$i" == "spec/workload/cpu_hog_spec.cr" ]; then
+        #          echo "{\"spec\":\"$i\"}," | tr -d '\n'
+        #     fi
+        # done)
+        # TEST_LIST="${TEST_LIST%?}"
+        TEST_LIST_ONE="$(grep -roP --no-filename 'tags: \K(\[.*\])' spec/ | sort -u | tr -d '[]' | tr -s ',' ' ' | tr -s '\n' ' ')"
+        TEST_LIST_TWO="$(grep -roP --no-filename 'tags: \K(".*")' spec/ | sort -u | tr -d '[]' | tr -s ',' ' ' | tr -s '\n' ' ')"
+        JSON="$JSON$TEST_LIST_ONE$TEST_LIST_TWO"
         JSON="$JSON]}"
         echo "::set-output name=matrix::$JSON"
   skip:
@@ -160,7 +162,7 @@ jobs:
         PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
-        LOG_LEVEL=info crystal spec --warnings none ${{ matrix.spec }} -v
+        LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
 
   build:
     name: Build Release
