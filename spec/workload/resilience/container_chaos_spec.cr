@@ -34,7 +34,7 @@ describe "Resilience Container Chaos" do
   #     response_s = `./cnf-conformance chaos_container_kill verbose`
   #     LOGGING.info response_s
   #     $?.success?.should be_true
-  #     (/FAILURE: Replicas did not return desired count after container kill test/ =~ response_s).should_not be_nil
+  #     (/FAILED: Replicas did not return desired count after container kill test/ =~ response_s).should_not be_nil
   #   ensure
   #     `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-fragile-state deploy_with_chart=false`
   #     $?.success?.should be_true

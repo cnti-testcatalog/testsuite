@@ -60,7 +60,7 @@ describe "SampleUtils" do
 
   it "'failed_required_tasks' should return a list of failed required tasks"  do
     CNFManager::Points.clean_results_yml
-    CNFManager::Points.failed_task("privileged", "FAILURE: Privileged container found")
+    CNFManager::Points.failed_task("privileged", "FAILED: Privileged container found")
     (CNFManager::Points.failed_required_tasks).should eq(["privileged"])
   end
 
@@ -351,7 +351,7 @@ describe "SampleUtils" do
     $?.success?.should be_true
 
     (/ERROR: cnf_conformance.yml field validation error/ =~ response_s).should_not be_nil
-    (/FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s).should_not be_nil
+    (/FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s).should_not be_nil
   end
 
   it "'CNFManager.validate_cnf_conformance_yml' (command) should pass, for all sample-cnfs", tags: ["unhappy-path", "validate_config"]  do
@@ -361,7 +361,7 @@ describe "SampleUtils" do
     dir_list.each do |dir|
       conformance_yml = "sample-cnfs/#{dir}/cnf-conformance.yml"
       response_s = `./cnf-conformance validate_config cnf-config=#{conformance_yml}`
-      if (/FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
+      if (/FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
         LOGGING.info "\n #{conformance_yml}: #{response_s}"
       end
       (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
@@ -375,7 +375,7 @@ describe "SampleUtils" do
     dir_list.each do |dir|
       conformance_yml = "example-cnfs/#{dir}/cnf-conformance.yml"
       response_s = `./cnf-conformance validate_config cnf-config=#{conformance_yml}`
-      if (/FAILURE: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
+      if (/FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
         LOGGING.info "\n #{conformance_yml}: #{response_s}"
       end
       (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil

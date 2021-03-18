@@ -38,7 +38,7 @@ describe "Microservice" do
       response_s = `./cnf-conformance reasonable_startup_time  destructive cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILURE: CNF had a startup time of/ =~ response_s).should_not be_nil
+      (/FAILED: CNF had a startup time of/ =~ response_s).should_not be_nil
     ensure
       `kubectl delete -f sample-cnfs/sample_envoy_slow_startup/reasonable_startup_orig.yml`
       $?.success?.should be_true
