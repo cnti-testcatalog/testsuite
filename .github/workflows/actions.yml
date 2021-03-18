@@ -79,9 +79,10 @@ jobs:
         #     fi
         # done)
         # TEST_LIST="${TEST_LIST%?}"
-        TEST_LIST_ONE="$(grep -roP --no-filename 'tags: \K(\[.*\])' spec/ | sort -u | tr -d '[]' | tr -s ',' ' ' | tr -s '\n' ' ')"
-        TEST_LIST_TWO="$(grep -roP --no-filename 'tags: \K(".*")' spec/ | sort -u | tr -d '[]' | tr -s ',' ' ' | tr -s '\n' ' ')"
-        JSON="$JSON$TEST_LIST_ONE$TEST_LIST_TWO"
+        TEST_LIST_ONE=$(grep -roP --no-filename 'tags: \K(\[.*\])' spec/ | sort -u | tr -d '[] ' | tr -s '\n' ',')
+        TEST_LIST_TWO=$(grep -roP --no-filename 'tags: \K(".*")' spec/ | sort -u | tr -d '[] ' | tr -s '\n' ',')
+        TEST_LIST="${TEST_LIST_ONE%?}${TEST_LIST_TWO%?}"
+        JSON="$JSON$TEST_LIST"
         JSON="$JSON]}"
         echo "TESTS: $JSON"
         echo "::set-output name=matrix::$JSON"
