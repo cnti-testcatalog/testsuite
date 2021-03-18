@@ -42,7 +42,7 @@ task "volume_hostpath_not_found" do |_, args|
     end
 
     if task_response.any?(false)
-      upsert_failed_task("volume_hostpath_not_found","✖️  FAILURE: hostPath volumes found #{failed_emoji}")
+      upsert_failed_task("volume_hostpath_not_found","✖️  FAILED: hostPath volumes found #{failed_emoji}")
     else
       upsert_passed_task("volume_hostpath_not_found","✔️  PASSED: hostPath volumes not found #{passed_emoji}")
     end
@@ -106,7 +106,7 @@ task "no_local_volume_configuration" do |_, args|
     end
 
     if task_response.any?(false) 
-      upsert_failed_task("no_local_volume_configuration","✖️  FAILURE: local storage configuration volumes found #{failed_emoji}")
+      upsert_failed_task("no_local_volume_configuration","✖️  FAILED: local storage configuration volumes found #{failed_emoji}")
     else
       upsert_passed_task("no_local_volume_configuration","✔️  PASSED: local storage configuration volumes not found #{passed_emoji}")
     end

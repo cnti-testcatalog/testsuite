@@ -45,9 +45,11 @@ task "k8s_conformance" do |_, args|
     VERBOSE_LOGGING.info results if check_verbose(args)
 
     # Grab the failed line from the results
-    failed_count = ((results.match(/Failed: (.*)/)).try &.[1])
-    if failed_count.to_s.to_i > 0
-      upsert_failed_task("k8s_conformance", "✖️  FAILURE: K8s conformance test has #{failed_count} failure(s)!")
+
+    failed_count = ((results.match(/Failed: (.*)/)).try &.[1]) 
+    if failed_count.to_s.to_i > 0 
+      upsert_failed_task("k8s_conformance", "✖️  FAILED: K8s conformance test has #{failed_count} failure(s)!")
+
     else
       upsert_passed_task("k8s_conformance", "✔️  PASSED: K8s conformance test has no failures")
     end

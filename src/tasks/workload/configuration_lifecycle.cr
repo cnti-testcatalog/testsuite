@@ -37,7 +37,7 @@ task "ip_addresses" do |_, args|
       end
       Dir.cd(cdir)
       if response.to_s.size > 0
-        resp = upsert_failed_task("ip_addresses","✖️  FAILURE: IP addresses found")
+        resp = upsert_failed_task("ip_addresses","✖️  FAILED: IP addresses found")
       else
         resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
       end
@@ -75,7 +75,7 @@ task "liveness" do |_, args|
     if task_response
       resp = upsert_passed_task("liveness","✔️  PASSED: Helm liveness probe found #{emoji_probe}")
 		else
-			resp = upsert_failed_task("liveness","✖️  FAILURE: No livenessProbe found #{emoji_probe}")
+			resp = upsert_failed_task("liveness","✖️  FAILED: No livenessProbe found #{emoji_probe}")
     end
     resp
   end
@@ -104,7 +104,7 @@ task "readiness" do |_, args|
     if task_response
       resp = upsert_passed_task("readiness","✔️  PASSED: Helm readiness probe found #{emoji_probe}")
 		else
-      resp = upsert_failed_task("readiness","✖️  FAILURE: No readinessProbe found #{emoji_probe}")
+      resp = upsert_failed_task("readiness","✖️  FAILED: No readinessProbe found #{emoji_probe}")
     end
     resp
   end
@@ -169,7 +169,7 @@ rolling_version_change_test_names.each do |tn|
       if task_response
         resp = upsert_passed_task("#{tn}","✔️  PASSED: CNF for #{pretty_test_name_capitalized} Passed" )
       else
-        resp = upsert_failed_task("#{tn}", "✖️  FAILURE: CNF for #{pretty_test_name_capitalized} Failed")
+        resp = upsert_failed_task("#{tn}", "✖️  FAILED: CNF for #{pretty_test_name_capitalized} Failed")
       end
       resp
       # TODO should we roll the image back to original version in an ensure?
@@ -222,7 +222,7 @@ task "rollback" do |_, args|
           rollback_from_tag = config_container["rollback_from_tag"]
 
           if rollback_from_tag == image_tag
-            fail_msg = "✖️  FAILURE: please specify a different version than the helm chart default image.tag for 'rollback_from_tag' "
+            fail_msg = "✖️  FAILED: please specify a different version than the helm chart default image.tag for 'rollback_from_tag' "
             puts fail_msg.colorize(:red)
             version_change_applied=false
           end
@@ -252,7 +252,7 @@ task "rollback" do |_, args|
     if task_response && version_change_applied && rollout_status && rollback_status
       upsert_passed_task("rollback","✔️  PASSED: CNF Rollback Passed" )
     else
-      upsert_failed_task("rollback", "✖️  FAILURE: CNF Rollback Failed")
+      upsert_failed_task("rollback", "✖️  FAILED: CNF Rollback Failed")
     end
   end
 end
@@ -287,7 +287,7 @@ task "nodeport_not_used" do |_, args|
     if task_response
       upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
     else
-      upsert_failed_task("nodeport_not_used", "✖️  FAILURE: NodePort is being used")
+      upsert_failed_task("nodeport_not_used", "✖️  FAILED: NodePort is being used")
     end
   end
 end
@@ -320,7 +320,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     if ip_search.empty?
       upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✔️  PASSED: No hard-coded IP addresses found in the runtime K8s configuration")
     else
-      upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  FAILURE: Hard-coded IP addresses found in the runtime K8s configuration")
+      upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  FAILED: Hard-coded IP addresses found in the runtime K8s configuration")
     end
     delete_namespace = `kubectl delete namespace hardcoded-ip-test --force --grace-period 0 2>&1 >/dev/null`
 
@@ -412,7 +412,7 @@ task "secrets_used" do |_, args|
     if task_response
       resp = upsert_passed_task("secrets_used","✔️  PASSED: Secret Volume found #{emoji_probe}")
     else
-      resp = upsert_failed_task("secrets_used","✖️  FAILURE: Secret Volume not found #{emoji_probe}")
+      resp = upsert_failed_task("secrets_used","✖️  FAILED: Secret Volume not found #{emoji_probe}")
     end
     resp
   end
@@ -464,7 +464,7 @@ task "immutable_configmap" do |_, args|
     # if KubectlClient::Apply.file(test_config_map_filename) == 0
     if KubectlClient::Apply.file(test_config_map_filename)
       LOGGING.info "kubectl apply failed for: #{test_config_map_filename}"
-      resp = "✖️  FAILURE: immmutable configmaps are not enabled in this k8s cluster.".colorize(:red)
+      resp = "✖️  FAILED: immmutable configmaps are not enabled in this k8s cluster.".colorize(:red)
       upsert_failed_task("immutable_configmap", resp)
     end
 
@@ -551,7 +551,7 @@ task "immutable_configmap" do |_, args|
       resp = "✔️  PASSED: All volume or container mounted configmaps immutable #{emoji_probe}".colorize(:green)
       upsert_passed_task("immutable_configmap", resp)
     else
-      resp = "✖️  FAILURE: Found mutable configmap(s) #{emoji_probe}".colorize(:red)
+      resp = "✖️  FAILED: Found mutable configmap(s) #{emoji_probe}".colorize(:red)
       upsert_failed_task("immutable_configmap", resp)
     end
     resp

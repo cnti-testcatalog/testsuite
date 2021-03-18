@@ -30,7 +30,7 @@ describe "Statelessness" do
       $?.success?.should be_true
       response_s = `./cnf-conformance volume_hostpath_not_found verbose`
       LOGGING.info "Status:  #{response_s}"
-      (/FAILURE: hostPath volumes found/ =~ response_s).should_not be_nil
+      (/FAILED: hostPath volumes found/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-config=sample-cnfs/sample-fragile-state/cnf-conformance.yml deploy_with_chart=false`
       $?.success?.should be_true
@@ -45,7 +45,7 @@ describe "Statelessness" do
       $?.success?.should be_true
       response_s = `./cnf-conformance no_local_volume_configuration verbose`
       LOGGING.info "Status:  #{response_s}"
-      (/FAILURE: local storage configuration volumes found/ =~ response_s).should_not be_nil
+      (/FAILED: local storage configuration volumes found/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-config=sample-cnfs/sample-local-storage/cnf-conformance.yml deploy_with_chart=false`
       update_yml("sample-cnfs/sample-local-storage/cnf-conformance.yml", "release_name", "coredns")

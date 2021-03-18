@@ -9,7 +9,6 @@
   tags: workload, microservice, dynamic
 - name: reasonable_startup_time
   tags: workload, microservice, dynamic
-
 - name: cni_spec 
   tags: compatibility, dynamic
 - name: api_snoop_alpha 

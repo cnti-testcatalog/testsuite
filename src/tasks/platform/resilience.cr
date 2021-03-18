@@ -29,7 +29,7 @@ namespace "platform" do
       worker_node = worker_nodes.split("\n")[0]
 
 
-      File.write("node_failure_values.yml", NODE_FAILURE_VALUES)
+      File.write("node_failure_values.yml", NODE_FAILED_VALUES)
       install_coredns = `#{helm} install node-failure -f ./node_failure_values.yml --set nodeSelector."kubernetes\\.io/hostname"=#{worker_node} stable/coredns`
       KubectlClient::Get.wait_for_install("node-failure-coredns")
 
@@ -45,7 +45,7 @@ namespace "platform" do
           pod_ready = KubectlClient::Get.pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[2]
           pod_ready_timeout = pod_ready_timeout - 1
           if pod_ready_timeout == 0
-            upsert_failed_task("worker_reboot_recovery", "✖️  FAILURE: Failed to install reboot daemon")
+            upsert_failed_task("worker_reboot_recovery", "✖️  FAILED: Failed to install reboot daemon")
             exit 1
           end
           sleep 1
@@ -69,7 +69,7 @@ namespace "platform" do
           puts "Node Ready Status: #{node_ready}"
           node_failure_timeout = node_failure_timeout - 1
           if node_failure_timeout == 0
-            upsert_failed_task("worker_reboot_recovery", "✖️  FAILURE: Node failed to go offline")
+            upsert_failed_task("worker_reboot_recovery", "✖️  FAILED: Node failed to go offline")
             exit 1
           end
           sleep 1
@@ -87,7 +87,7 @@ namespace "platform" do
           puts "Node Ready Status: #{node_ready}"
           node_online_timeout = node_online_timeout - 1
           if node_online_timeout == 0
-            upsert_failed_task("worker_reboot_recovery", "✖️  FAILURE: Node failed to come back online")
+            upsert_failed_task("worker_reboot_recovery", "✖️  FAILED: Node failed to come back online")
             exit 1
           end
           sleep 1

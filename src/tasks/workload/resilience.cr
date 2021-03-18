@@ -55,7 +55,7 @@ task "chaos_network_loss", ["install_chaosmesh"] do |_, args|
     if task_response 
       resp = upsert_passed_task("chaos_network_loss","✔️  PASSED: Replicas available match desired count after network chaos test #{emoji_chaos_network_loss}")
     else
-      resp = upsert_failed_task("chaos_network_loss","✖️  FAILURE: Replicas did not return desired count after network chaos test #{emoji_chaos_network_loss}")
+      resp = upsert_failed_task("chaos_network_loss","✖️  FAILED: Replicas did not return desired count after network chaos test #{emoji_chaos_network_loss}")
     end
   ensure
     delete_chaos = `kubectl delete -f "#{destination_cnf_dir}/chaos_network_loss.yml"`
@@ -101,7 +101,7 @@ task "chaos_cpu_hog", ["install_chaosmesh"] do |_, args|
     if task_response 
       resp = upsert_passed_task("chaos_cpu_hog","✔️  PASSED: Application pod is healthy after high CPU consumption #{emoji_chaos_cpu_hog}")
     else
-      resp = upsert_failed_task("chaos_cpu_hog","✖️  FAILURE: Application pod is not healthy after high CPU consumption #{emoji_chaos_cpu_hog}")
+      resp = upsert_failed_task("chaos_cpu_hog","✖️  FAILED: Application pod is not healthy after high CPU consumption #{emoji_chaos_cpu_hog}")
     end
   ensure
     delete_chaos = `kubectl delete -f "#{destination_cnf_dir}/chaos_cpu_hog.yml"`
@@ -159,7 +159,7 @@ task "chaos_container_kill", ["install_chaosmesh"] do |_, args|
     if task_response && desired_passed.all?
       resp = upsert_passed_task("chaos_container_kill","✔️  PASSED: Replicas available match desired count after container kill test #{emoji_chaos_container_kill}")
     else
-      resp = upsert_failed_task("chaos_container_kill","✖️  FAILURE: Replicas did not return desired count after container kill test #{emoji_chaos_container_kill}")
+      resp = upsert_failed_task("chaos_container_kill","✖️  FAILED: Replicas did not return desired count after container kill test #{emoji_chaos_container_kill}")
     end
   ensure
     delete_chaos = `kubectl delete -f "#{destination_cnf_dir}/chaos_container_kill.yml"`
@@ -210,7 +210,7 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
     if task_response 
       resp = upsert_passed_task("pod_network_latency","✔️  PASSED: pod_network_latency chaos test passed 🗡️💀♻️")
     else
-      resp = upsert_failed_task("pod_network_latency","✖️  FAILURE: pod_network_latency chaos test failed 🗡️💀♻️")
+      resp = upsert_failed_task("pod_network_latency","✖️  FAILED: pod_network_latency chaos test failed 🗡️💀♻️")
     end
     resp
   end
