@@ -3,15 +3,15 @@ require "../../src/tasks/utils/utils.cr"
 require "colorize"
 
 describe "CNF Conformance all Network Chaos" do
-  before_all do
-    `./cnf-conformance setup`
-    $?.success?.should be_true
-  end
+  # before_all do
+  #   `./cnf-conformance setup`
+  #   $?.success?.should be_true
+  # end
 
-  after_all do
-    `./cnf-conformance samples_cleanup`
-    $?.success?.should be_true
-  end
+  # after_all do
+  #   `./cnf-conformance samples_cleanup`
+  #   $?.success?.should be_true
+  # end
 
   # it "'all' should run the whole test suite", tags: "happy-path" do
     # `./cnf-conformance samples_cleanup`
@@ -26,5 +26,5 @@ describe "CNF Conformance all Network Chaos" do
   # ensure
   #   LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-conformance.yml deploy_with_chart=false `
 
-  end
+  # end
 end
