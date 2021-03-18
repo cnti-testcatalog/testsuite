@@ -72,7 +72,7 @@ jobs:
     - id: set-matrix
       run: |
         JSON="{\"include\":["
-        TEST_ARRAY=$(grep -roP --no-filename 'tags: \K(\[|")(.*)(\]|")' spec/ | sort -u | tr -d '[]' | tr -s '\n' ' ' | tr -s ',' ' ')
+        TEST_ARRAY=$(grep -roP --no-filename 'tags: \K(\[|")(.*)(\]|")' spec/workload/microservice_spec.cr | sort -u | tr -d '[]' | tr -s '\n' ' ' | tr -s ',' ' ')
         
         TEST_LIST=$(for i in ${TEST_ARRAY[@]}
         do
