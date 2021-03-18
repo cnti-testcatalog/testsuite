@@ -6,7 +6,7 @@ require "file_utils"
 require "sam"
 
 describe "Prereq" do
-  it "'prereq' should check the system for prerequisites", tags: "prereqs"  do
+  it "'prereq' should check the system for prerequisites", tags: ["prereqs"]  do
     response_s = `./cnf-conformance prereqs verbose`
     LOGGING.info response_s
     $?.success?.should be_true

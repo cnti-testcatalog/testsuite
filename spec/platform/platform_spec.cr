@@ -12,14 +12,14 @@ describe "Platform" do
     # LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose`
     # $?.success?.should be_true
   end
-  it "'platform:*' should not error out when no cnf is installed" do
+  it "'platform:*' should not error out when no cnf is installed", tags: ["platform"] do
     response_s = `./cnf-conformance cleanup`
     response_s = `./cnf-conformance platform:oci_compliant`
     LOGGING.info response_s
     puts response_s
     (/No cnf_conformance.yml found/ =~ response_s).should be_nil
   end
-  it "'platform' should not run prerequisites that are prefixed with a ~" do
+  it "'platform' should not run prerequisites that are prefixed with a ~", tags: ["platform"] do
     response_s = `./cnf-conformance cleanup`
     # response_s = `./cnf-conformance platform`
     stdout = IO::Memory.new

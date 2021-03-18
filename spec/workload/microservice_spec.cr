@@ -17,7 +17,7 @@ describe "Microservice" do
     # $?.success?.should be_true
   end
 
-  it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time", "happy-path"]  do
+  it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"]  do
     begin
       response_s = `./cnf-conformance reasonable_startup_time destructive cnf-config=sample-cnfs/sample_coredns/cnf-conformance.yml`
       LOGGING.info response_s
@@ -30,7 +30,7 @@ describe "Microservice" do
     end
   end
 
-  it "'reasonable_startup_time' should fail if the cnf doesn't has a reasonable startup time(helm_directory)", tags: "reasonable_startup_time" do
+  it "'reasonable_startup_time' should fail if the cnf doesn't has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"] do
     `./cnf-conformance cnf_cleanup cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml force=true`
       `kubectl delete -f sample-cnfs/sample_envoy_slow_startup/reasonable_startup_orig.yml`
     begin
@@ -46,7 +46,7 @@ describe "Microservice" do
     end
   end
 
-  it "'reasonable_image_size' should pass if image is smaller than 5gb", tags: ["reasonable_image_size","happy-path"]  do
+  it "'reasonable_image_size' should pass if image is smaller than 5gb", tags: ["reasonable_image_size"]  do
     if ENV["PROTECTED_DOCKERHUB_USERNAME"]? && ENV["PROTECTED_DOCKERHUB_PASSWORD"]? && ENV["PROTECTED_DOCKERHUB_EMAIL"]?
          cnf="./sample-cnfs/sample_coredns_protected"
        else
@@ -61,7 +61,7 @@ describe "Microservice" do
     LOGGING.info `./cnf-conformance cnf_cleanup cnf-path=#{cnf}`
   end
 
-  it "'reasonable_image_size' should fail if image is larger than 5gb", tags: "reasonable_image_size" do
+  it "'reasonable_image_size' should fail if image is larger than 5gb", tags: ["reasonable_image_size"] do
     `./cnf-conformance cnf_setup cnf-path=./sample-cnfs/sample_envoy_slow_startup wait_count=0`
     response_s = `./cnf-conformance reasonable_image_size verbose`
     LOGGING.info response_s
@@ -71,7 +71,7 @@ describe "Microservice" do
     `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup force=true`
   end
 
-  it "'reasonable_image_size' should pass if using local registry and a port", tags: ["reasonable_image_size","happy-path"]  do
+  it "'reasonable_image_size' should pass if using local registry and a port", tags: ["private_registry"]  do
 
     install_registry = `kubectl create -f #{TOOLS_DIR}/registry/manifest.yml`
     install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
@@ -94,7 +94,7 @@ describe "Microservice" do
     delete_dockerd = `kubectl delete -f #{TOOLS_DIR}/dockerd/manifest.yml`
   end
 
-  it "'reasonable_image_size' should pass if using local registry, a port and an org", tags: ["reasonable_image_size","happy-path"]  do
+  it "'reasonable_image_size' should pass if using local registry, a port and an org", tags: ["private_registry"]  do
 
     install_registry = `kubectl create -f #{TOOLS_DIR}/registry/manifest.yml`
     install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`

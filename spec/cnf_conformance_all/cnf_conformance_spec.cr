@@ -13,7 +13,7 @@ describe CnfConformance do
     $?.success?.should be_true
   end
 
-  it "'all' should run the workloads test suite", tags: "happy-path" do
+  it "'all' should run the workloads test suite", tags: ["conformance-all"] do
     `./cnf-conformance samples_cleanup`
     # the workload resilience tests are run in the chaos specs
     # the ommisions (i.e. ~resilience) are done for performance reasons for the spec suite
