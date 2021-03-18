@@ -76,7 +76,7 @@ jobs:
         
         TEST_LIST=$(for i in ${TEST_ARRAY[@]}
         do
-                 echo "{\"spec\":$i},"
+                 echo "{\"spec\":$i}," | tr -d '\n'
         done)
         TEST_LIST="${TEST_LIST%?}"
         JSON="$JSON$TEST_LIST"
