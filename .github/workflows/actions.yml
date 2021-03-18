@@ -199,6 +199,68 @@ jobs:
       with:
         name: release
         path: cnf-conformance
+  test_binary_no_source_no_litmus:
+    name: Test Binary Without Source
+    needs: [build, debug_output]
+    runs-on: ubuntu-latest
+    steps: 
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: release
+    - uses: mxschmitt/action-tmate@v3
+      if: needs.debug_output.outputs.release-debug == 'true'
+    - name: Create Kind Cluster 
+      run: |
+        cat << EOF > /tmp/cluster.yml
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        containerdConfigPatches:
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
+            endpoint = ["http://localhost:5000"]
+        EOF
+        kind create cluster --config=/tmp/cluster.yml
+        kubectl get nodes 
+    - name: Run Test Suite without source
+      run: |
+        helm repo add stable https://cncf.gitlab.io/stable
+        chmod +x ./cnf-conformance
+        ./cnf-conformance setup
+        wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
+        ./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
+        LOG_LEVEL=info ./cnf-conformance workload ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~pod_network_latency
+  test_binary_no_source_litmus:
+    name: Test Binary Without Source
+    needs: [build, debug_output]
+    runs-on: ubuntu-latest
+    steps: 
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: release
+    - uses: mxschmitt/action-tmate@v3
+      if: needs.debug_output.outputs.release-debug == 'true'
+    - name: Create Kind Cluster 
+      run: |
+        cat << EOF > /tmp/cluster.yml
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        containerdConfigPatches:
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
+            endpoint = ["http://localhost:5000"]
+        EOF
+        kind create cluster --config=/tmp/cluster.yml
+        kubectl get nodes 
+    - name: Run Test Suite without source
+      run: |
+        helm repo add stable https://cncf.gitlab.io/stable
+        chmod +x ./cnf-conformance
+        ./cnf-conformance setup
+        wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
+        ./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
+        LOG_LEVEL=info ./cnf-conformance pod_network_latency
   release:
     name: Publish Release
     needs: [spec, build, debug_output]
@@ -226,4 +288,3 @@ jobs:
         else
           ./cnf-conformance upsert_release
         fi
-
