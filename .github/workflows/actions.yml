@@ -1,18 +1,7 @@
 name: Crystal Specs
 on: [push, pull_request]
 jobs:
-  debug_status:
-    name: Debug Status
-    runs-on: ubuntu-20.04	
-    env:
-      skip_debug: ${{secrets.SKIP_DEBUG}}
-      release_debug: ${{secrets.RELEASE_DEBUG}}
-      build_debug: ${{secrets.BUILD_DEBUG}}
-    steps:
-    - name: Create Debug Files
-      run: |
-        touch skip_debug
-        touch release_debug
+  debug_statuh release_debug
         touch build_debug
         if [[ "$skip_debug" == 'true' ]]; then
            echo 'true' > skip_debug
@@ -72,16 +61,16 @@ jobs:
     - id: set-matrix
       run: |
         JSON="{\"include\":["
-        TEST_LIST=$(for i in $(find spec -name '*_spec.cr')
+        TEST_ARRAY=$(grep -roP --no-filename 'tags: \K(\[|")(.*)(\]|")' spec/utils/cnf_manager_spec.cr | sort -u | tr -d '[]' | tr -s '\n' ' ' | tr -s ',' ' ')
+        
+        TEST_LIST=$(for i in ${TEST_ARRAY[@]}
         do
-            if ! [ "$i" == "spec/workload/cpu_hog_spec.cr" ]; then
-                 echo "{\"spec\":\"$i\"}," | tr -d '\n'
-            fi
+                 echo "{\"spec\":$i},"
         done)
-        # TEST_LIST=$(grep -roP --no-filename 'tags: \K(\[|")(.*)(\]|")' spec/ | sort -u | tr -d '[] ' | tr -s '\n' ',')
         TEST_LIST="${TEST_LIST%?}"
         JSON="$JSON$TEST_LIST"
         JSON="$JSON]}"
+
         echo "TESTS: $JSON"
         echo "::set-output name=matrix::$JSON"
   skip:
