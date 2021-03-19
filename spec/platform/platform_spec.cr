@@ -33,7 +33,7 @@ describe "Platform" do
     LOGGING.info "response #{response_s}"
     (/kind=namespace namespace=sonobuoy/ =~ (response_s + error)).should be_nil
   end
-  it "'k8s_conformance' should pass if the sonobuoy tests pass" do
+  it "'k8s_conformance' should pass if the sonobuoy tests pass" tags: ["platform"] do
     response_s = `./cnf-conformance k8s_conformance`
     LOGGING.info response_s
     (/PASSED: K8s conformance test has no failures/ =~ response_s).should_not be_nil
