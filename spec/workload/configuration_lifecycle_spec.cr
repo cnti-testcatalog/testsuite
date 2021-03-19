@@ -71,7 +71,7 @@ describe CnfConformance do
 
   test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
   test_names.each do |tn|
-    it "'#{tn}' should pass when valid version is given", tags: ["#{tn}"]  do
+    it "'#{tn}' should pass when valid version is given", tags: ["rolling_tests"]  do
       begin
         LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml verbose wait_count=0`
         $?.success?.should be_true
@@ -84,7 +84,7 @@ describe CnfConformance do
       end
     end
 
-    it "'#{tn}' should fail when invalid version is given", tags: "#{tn}" do
+    it "'#{tn}' should fail when invalid version is given", tags: ["rolling_tests"] do
       begin
         LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns_invalid_version/cnf-conformance.yml deploy_with_chart=false`
         $?.success?.should be_true
@@ -97,7 +97,7 @@ describe CnfConformance do
       end
     end
 
-    it "'#{tn}' should pass if using local registry and a port", tags: ["#{tn}"]  do
+    it "'#{tn}' should pass if using local registry and a port", tags: ["rolling_tests"]  do
       install_registry = `kubectl create -f #{TOOLS_DIR}/registry/manifest.yml`
       install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
       KubectlClient::Get.resource_wait_for_install("Pod", "registry")
