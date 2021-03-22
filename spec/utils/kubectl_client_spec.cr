@@ -26,28 +26,28 @@ describe "KubectlClient" do
     (current_replicas.to_i > 0).should be_true
   end
 
-  it "'#KubectlClient.get_nodes' should return the information about a node in json", tags: ["kubectl-get"]  do
+  it "'#KubectlClient.get_nodes' should return the information about a node in json", tags: ["kubectl-nodes"]  do
     json = KubectlClient::Get.nodes
     (json["items"].size).should be > 0
   end
-  it "'#KubectlClient.container_runtime' should return the information about a node in json", tags: ["kubectl-get"]  do
+  it "'#KubectlClient.container_runtime' should return the information about the container runtime", tags: ["kubectl-runtime"]  do
     resp = KubectlClient::Get.container_runtime
     (resp.match(KubectlClient::OCI_RUNTIME_REGEX)).should_not be_nil
   end
-  it "'#KubectlClient.container_runtimes' should return all container runtimes", tags: ["kubectl-get"]  do
+  it "'#KubectlClient.container_runtimes' should return all container runtimes", tags: ["kubectl-runtime"]  do
     resp = KubectlClient::Get.container_runtimes
     (resp[0].match(KubectlClient::OCI_RUNTIME_REGEX)).should_not be_nil
   end
 
-  it "'#KubectlClient.schedulable_nodes' should return all schedulable worker nodes", tags: ["kubectl-get"]  do
+  it "'#KubectlClient.schedulable_nodes' should return all schedulable worker nodes", tags: ["kubectl-nodes"]  do
     resp = KubectlClient::Get.schedulable_nodes
     (resp.size).should be > 0
     (resp[0]).should_not be_nil
     (resp[0]).should_not be_empty
   end
 
-  it "'#KubectlClient.schedulable_nodes' should return all schedulable worker nodes", tags: ["kubectl-nodes"]  do
-    LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-conformance.yml deploy_with_chart=false` 
+  it "'#KubectlClient.containers' should return all containers defined in a deployment", tags: ["kubectl-pods"]  do
+    LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-conformance.yml wait_count=0` 
     resp = KubectlClient::Get.deployment_containers("nginx-webapp")
     (resp.size).should be > 0
   ensure
