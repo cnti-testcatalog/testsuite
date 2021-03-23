@@ -84,31 +84,32 @@ jobs:
 
         echo "TESTS: $JSON"
         echo "::set-output name=matrix::$JSON"
-  skip:
-    name: Skip Build
-    runs-on: ubuntu-20.04	
-    needs: [debug_output]
-    outputs:
-      skip: ${{ steps.skip.outputs.skip }}
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - uses: mxschmitt/action-tmate@v3
-      if: needs.debug_output.outputs.skip-debug == 'true'
-    - id: skip
-      run: |
-        echo "::set-output name=skip::$(.github/workflows/skip.sh)"
+  # skip:
+  #   name: Skip Build
+  #   runs-on: ubuntu-20.04	
+  #   needs: [debug_output]
+  #   outputs:
+  #     skip: ${{ steps.skip.outputs.skip }}
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
+  #   - uses: mxschmitt/action-tmate@v3
+  #     if: needs.debug_output.outputs.skip-debug == 'true'
+  #   - id: skip
+  #     run: |
+  #       echo "::set-output name=skip::$(.github/workflows/skip.sh)"
 
   spec:
     name: Crystal Specs
-    needs: [tests, skip]
+    # needs: [tests, skip]
+    needs: [tests]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.tests.outputs.matrix)}}
-    if: needs.skip.outputs.skip == 'false'
+    # if: needs.skip.outputs.skip == 'false'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -146,12 +147,21 @@ jobs:
         EOF
         kind create cluster --config=/tmp/cluster.yml
         kubectl get nodes 
+    - name: Cache crystal shards
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-crystal-shards
+      with:
+        path: ./lib
+        key: lib-${{ hashFiles('**/shard.lock') }}
+        restore-keys: |
+          lib-
     - name: Setup CNF-Conformance
       run: |
         helm repo add stable https://cncf.gitlab.io/stable
         git fetch --all --tags --force
         shards install  
-        crystal src/cnf-conformance.cr setup
+        # crystal src/cnf-conformance.cr setup
     - name: Run Crystal Spec
       env:
         GITHUB_USER: ${{ secrets.GH_USER }}
@@ -166,9 +176,10 @@ jobs:
 
   build:
     name: Build Release
-    needs: [skip, debug_output]
+    # needs: [skip, debug_output]
+    needs: [debug_output]
     runs-on: ubuntu-latest
-    if: needs.skip.outputs.skip == 'false'
+    # if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
