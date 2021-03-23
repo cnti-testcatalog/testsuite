@@ -115,11 +115,6 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Install Clusterctl
-      run: |
-        curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl
-        chmod +x ./clusterctl
-        sudo mv ./clusterctl /usr/local/bin/clusterctl
     - name: Install Crystal
       env:
         CRYSTAL_VERSION: 0.35.1
