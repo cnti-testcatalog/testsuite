@@ -41,7 +41,7 @@ describe "Statelessness" do
       # update the helm parameter with a schedulable node for the pv chart
       schedulable_nodes = KubectlClient::Get.schedulable_nodes
       update_yml("sample-cnfs/sample-local-storage/cnf-conformance.yml", "release_name", "coredns --set worker_node='#{schedulable_nodes[0]}'")
-      `./cnf-conformance cnf_setup cnf-config=sample-cnfs/sample-local-storage/cnf-conformance.yml deploy_with_chart=false verbose`
+      `./cnf-conformance cnf_setup cnf-config=sample-cnfs/sample-local-storage/cnf-conformance.yml wait_count=0 verbose`
       $?.success?.should be_true
       response_s = `./cnf-conformance no_local_volume_configuration verbose`
       LOGGING.info "Status:  #{response_s}"
@@ -54,8 +54,7 @@ describe "Statelessness" do
   end
   it "'no_local_volume_configuration' should pass if local storage configuration is not found", tags: ["no_local_volume_configuration"]  do
     begin
-
-      `./cnf-conformance cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
+      `./cnf-conformance cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml wait_count=0 verbose`
       $?.success?.should be_true
       response_s = `./cnf-conformance no_local_volume_configuration verbose`
       LOGGING.info "Status:  #{response_s}"
