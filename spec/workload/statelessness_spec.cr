@@ -41,7 +41,7 @@ describe "Statelessness" do
       # update the helm parameter with a schedulable node for the pv chart
       schedulable_nodes = KubectlClient::Get.schedulable_nodes
       update_yml("sample-cnfs/sample-local-storage/cnf-conformance.yml", "release_name", "coredns --set worker_node='#{schedulable_nodes[0]}'")
-      `./cnf-conformance cnf_setup cnf-config=sample-cnfs/sample-local-storage/cnf-conformance.yml wait_count=0 verbose`
+      `./cnf-conformance cnf_setup cnf-config=sample-cnfs/sample-local-storage/cnf-conformance.yml verbose`
       $?.success?.should be_true
       response_s = `./cnf-conformance no_local_volume_configuration verbose`
       LOGGING.info "Status:  #{response_s}"
