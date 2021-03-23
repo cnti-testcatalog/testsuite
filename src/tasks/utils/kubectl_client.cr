@@ -79,12 +79,6 @@ module KubectlClient
   end
   module Delete
     def self.file(file_name)
-      # delete = `kubectl delete -f #{file_name}`
-      # delete_status = $?.success?
-      # LOGGING.debug "#{delete}"
-      # LOGGING.debug "delete? #{delete_status}"
-      # delete_status
-      # LOGGING.info "delete file: #{file_name}"
       status = Process.run("kubectl delete -f #{file_name}",
                            shell: true,
                            output: output = IO::Memory.new,
@@ -284,10 +278,14 @@ module KubectlClient
         second_count = second_count + 1
       end
 
+      LOGGING.info "final pod_ready: #{pod_ready}"
+      LOGGING.info "final current_replicas: #{current_replicas}"
       if (pod_ready && !pod_ready.empty? && pod_ready == "true") ||
           (current_replicas && desired_replicas && !current_replicas.empty? && current_replicas.to_i == desired_replicas.to_i)
+        LOGGING.info "kind/resource #{kind}, #{resource_name} found."
         true
       else
+        LOGGING.info "kind/resource #{kind}, #{resource_name} not found."
         false
       end
     end
@@ -338,6 +336,7 @@ module KubectlClient
     end
 
     #TODO remove the need for a split and return name/ true /false in a hash
+    #TODO add a spec for this
     def self.pod_status(pod_name_prefix, field_selector="", namespace="default")
       LOGGING.info "pod_status: #{pod_name_prefix}"
       all_pods = `kubectl get pods #{field_selector} -o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}'`.split(",")
@@ -350,25 +349,28 @@ module KubectlClient
       end
       LOGGING.info("pods_times: #{pods_times}")
 
-      # puts "Name: #{all_pods[0]}"
-      # puts "Time Stamp: #{all_pods[1]}"
-      latest_pod_time = pods_times.reduce() do | acc, i |
+      latest_pod_time = pods_times.reduce({:name => "not found", :time => "not_found"}) do | acc, i |
         # if current i > acc
         LOGGING.info("ACC: #{acc}")
         LOGGING.info("I:#{i}")
         LOGGING.info("pod_name_prefix: #{pod_name_prefix}")
-        if (acc[:name] =~ /#{pod_name_prefix}/).nil?
-          acc = {:name => "not found", :time => "not_found"}
+        if (i[:name] =~ /#{pod_name_prefix}/).nil?
+          LOGGING.info "pod_name_prefix: #{pod_name_prefix} does not match #{i[:name]}"
+          acc 
         end
         if i[:name] =~ /#{pod_name_prefix}/
-          acc = i
-          if acc == ""
-            existing_time = Time.parse!( "#{i[:time]} +00:00", "%Y-%m-%dT%H:%M:%SZ %z")
+          LOGGING.info "pod_name_prefix: #{pod_name_prefix} matches #{i[:name]}"
+          # acc = i
+          if acc[:name] == "not found"
+            LOGGING.info "acc not found"
+            # if there is no previous time, use the time in the index
+            previous_time = Time.parse!( "#{i[:time]} +00:00", "%Y-%m-%dT%H:%M:%SZ %z")
           else
-            existing_time = Time.parse!( "#{acc[:time]} +00:00", "%Y-%m-%dT%H:%M:%SZ %z")
+            LOGGING.info "acc found. time: #{acc[:time]}"
+            previous_time = Time.parse!( "#{acc[:time]} +00:00", "%Y-%m-%dT%H:%M:%SZ %z")
           end
           new_time = Time.parse!( "#{i[:time]} +00:00", "%Y-%m-%dT%H:%M:%SZ %z")
-          if new_time <= existing_time
+          if new_time >= previous_time
             acc = i
           else
             acc
@@ -379,16 +381,22 @@ module KubectlClient
       end
       LOGGING.info("latest_pod_time: #{latest_pod_time}")
 
-      pod = latest_pod_time[:name].not_nil!
+      if latest_pod_time[:name]
+        pod = latest_pod_time[:name]
+      else
+        pod = ""
+      end
       # pod = all_pod_names[time_stamps.index(latest_time).not_nil!]
       # pod = all_pods.select{ | x | x =~ /#{pod_name_prefix}/ }
-      puts "Pods Found: #{pod}"
+      LOGGING.info "Pods Found: #{pod}"
+      # TODO refactor to return container statuses  
       status = "#{pod_name_prefix},NotFound,false"
       if pod != "not found"
         status = `kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}'`
       else
         LOGGING.info "pod: #{pod_name_prefix} is NOT found"
       end
+      LOGGING.info "pod_status status: #{status}"
       status
     end
 
