@@ -9,9 +9,9 @@ task "cluster_api_setup" do |_, args|
       current_dir = FileUtils.pwd 
       cluster_api_dir =  "#{current_dir}/#{TOOLS_DIR}/cluster-api";
 
-      curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl
-      sudo chmod +x ./clusterctl
-      sudo mv ./clusterctl /usr/local/bin/clusterctl
+      `curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl`
+      `sudo chmod +x ./clusterctl`
+      `sudo mv ./clusterctl /usr/local/bin/clusterctl`
       
       unless Dir.exists?(cluster_api_dir)
         `git clone https://github.com/kubernetes-sigs/cluster-api --depth 1 --branch v0.3.10 "#{cluster_api_dir}"`

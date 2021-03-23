@@ -8,7 +8,7 @@ require "sam"
 
 describe "Kubectl" do
 
-  it "'kubectl_global_response()' should return the information about the kubectl installation", tags: ["kubctl-utils"]  do
+  it "'kubectl_global_response()' should return the information about the kubectl installation", tags: ["kubectl-utils"]  do
     (kubectl_global_response(true)).should contain("Client Version")
   end
 
