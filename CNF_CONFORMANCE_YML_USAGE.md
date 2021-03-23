@@ -19,7 +19,7 @@ This information is also required for running various tests e.g. The 'container_
     - [helm_repository](#helm_repository)
     - [helm_chart](#helm_chart)
     - [helm_chart_container_name](#helm_chart_container_name)
-    - [white_list_helm_chart_container_names](#white_list_helm_chart_container_names)
+    - [allowlist_helm_chart_container_names](#allowlist_helm_chart_container_names)
     - [container_names](#container_names)
 - [Creating Your Own cnf-conformance.yml](#creating-your-own-cnf-conformanceyml)
 - [Setup and Configuration](#Setup-and-Configuration)
@@ -39,7 +39,7 @@ install_script: cnfs/coredns/Makefile # PATH_TO_CNFS_INSTALL_SCRIPT
 
 release_name: privileged-coredns # DESIRED_HELM_RELEASE_NAME
 helm_chart_container_name: privileged-coredns-coredns # POD_SPEC_CONTAINER_NAME
-white_list_helm_chart_container_names: [coredns] # [LIST_OF_CONTAINERS_ALLOWED_TO_RUN_PRIVLIDGED]
+allowlist_helm_chart_container_names: [coredns] # [LIST_OF_CONTAINERS_ALLOWED_TO_RUN_PRIVLIDGED]
 container_names: #[LIST_OF_CONTAINERS_NAMES_AND_VERSION_UPGRADE_TAGS]
   - name: sidecar-container1
     rolling_update_test_tag: "1.32.0"
@@ -157,7 +157,7 @@ Example setting:
 
 `helm_chart_container_name: privileged-coredns-coredns`
 
-#### white_list_helm_chart_container_names
+#### allowlist_helm_chart_container_names
 
 The values of this key are the names of the 'containers' defined in the Kubernetes pod spec of pods that are allowed to be running in privileged mode. (Optional)
 
@@ -168,7 +168,7 @@ This is done because it's a common cloud-native practice to delegate 'privileged
 
 Example setting:
 
-`white_list_helm_chart_container_names: [coredns]`
+`allowlist_helm_chart_container_names: [coredns]`
 
 #### container_names
 
@@ -207,7 +207,7 @@ helm_directory:
 install_script:
 helm_chart:
 helm_chart_container_name:
-white_list_helm_chart_container_names:
+allowlist_helm_chart_container_names:
 container_names:
   - name: <container_name1>
     rolling_update_test_tag: <image-tag-version1>
@@ -233,7 +233,7 @@ helm_repository:
   repo_url: https://cncf.gitlab.io/stable
 helm_chart: stable/coredns
 helm_chart_container_name: coredns
-white_list_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy, kube-multus]
+allowlist_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy, kube-multus]
 
 container_names: 
   - name: coredns 

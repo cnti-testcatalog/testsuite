@@ -8,7 +8,7 @@ deployment_label: k8s-app
 service_name: bad-liveness-coredns 
 application_deployment_names: [bad-liveness-coredns]
 helm_chart_container_name: bad-liveness-coredns
-white_list_helm_chart_container_names: []
+allowlist_helm_chart_container_names: []
 container_names: 
   - name: coredns 
     rolling_update_test_tag: "1.8.0"
