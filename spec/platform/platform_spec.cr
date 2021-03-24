@@ -12,14 +12,14 @@ describe "Platform" do
     # LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose`
     # $?.success?.should be_true
   end
-  it "'platform:*' should not error out when no cnf is installed" do
+  it "'platform:*' should not error out when no cnf is installed", tags: ["platform"] do
     response_s = `./cnf-conformance cleanup`
     response_s = `./cnf-conformance platform:oci_compliant`
     LOGGING.info response_s
     puts response_s
     (/No cnf_conformance.yml found/ =~ response_s).should be_nil
   end
-  it "'platform' should not run prerequisites that are prefixed with a ~" do
+  it "'platform' should not run prerequisites that are prefixed with a ~", tags: ["platform"] do
     response_s = `./cnf-conformance cleanup`
     # response_s = `./cnf-conformance platform`
     stdout = IO::Memory.new
@@ -33,7 +33,7 @@ describe "Platform" do
     LOGGING.info "response #{response_s}"
     (/kind=namespace namespace=sonobuoy/ =~ (response_s + error)).should be_nil
   end
-  it "'k8s_conformance' should pass if the sonobuoy tests pass" do
+  it "'k8s_conformance' should pass if the sonobuoy tests pass", tags: ["platform"] do
     response_s = `./cnf-conformance k8s_conformance`
     LOGGING.info response_s
     (/PASSED: K8s conformance test has no failures/ =~ response_s).should_not be_nil

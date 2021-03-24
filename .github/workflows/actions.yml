@@ -72,16 +72,22 @@ jobs:
     - id: set-matrix
       run: |
         JSON="{\"include\":["
-        TEST_LIST=$(for i in $(find spec -name '*_spec.cr')
+        TEST_ARRAY=$(grep -roP --no-filename 'tags: \K(\[|")(.*)(\]|")' spec/ | tr -d '[],' | tr -s '\n' ' ' | xargs -n1 | sort -u | xargs)
+        TEST_ARRAY=("${TEST_ARRAY[@]/conformance-config-lifecycle/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/conformance-microservice/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/conformance-all/}")
+        
+        TEST_LIST=$(for i in ${TEST_ARRAY[@]}
         do
-            if ! [ "$i" == "spec/workload/cpu_hog_spec.cr" ]; then
                  echo "{\"spec\":\"$i\"}," | tr -d '\n'
-            fi
         done)
         TEST_LIST="${TEST_LIST%?}"
         JSON="$JSON$TEST_LIST"
         JSON="$JSON]}"
+
+        echo "TESTS: $JSON"
         echo "::set-output name=matrix::$JSON"
+
   skip:
     name: Skip Build
     runs-on: ubuntu-20.04	
@@ -112,11 +118,6 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Install Clusterctl
-      run: |
-        curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl
-        chmod +x ./clusterctl
-        sudo mv ./clusterctl /usr/local/bin/clusterctl
     - name: Install Crystal
       env:
         CRYSTAL_VERSION: 0.35.1
@@ -144,12 +145,20 @@ jobs:
         EOF
         kind create cluster --config=/tmp/cluster.yml
         kubectl get nodes 
+    - name: Cache crystal shards
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-crystal-shards
+      with:
+        path: ./lib
+        key: lib-${{ hashFiles('**/shard.lock') }}
+        restore-keys: |
+          lib-
     - name: Setup CNF-Conformance
       run: |
         helm repo add stable https://cncf.gitlab.io/stable
         git fetch --all --tags --force
         shards install  
-        crystal src/cnf-conformance.cr setup
     - name: Run Crystal Spec
       env:
         GITHUB_USER: ${{ secrets.GH_USER }}
@@ -160,47 +169,42 @@ jobs:
         PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
-        LOG_LEVEL=info crystal spec --warnings none ${{ matrix.spec }} -v
+        LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
 
   build:
     name: Build Release
-    needs: [skip, debug_output]
+    # needs: [skip, debug_output]
     runs-on: ubuntu-latest
-    if: needs.skip.outputs.skip == 'false'
+    # if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - uses: mxschmitt/action-tmate@v3
-      if: needs.debug_output.outputs.build-debug == 'true'
-    - name: Install Crystal
+    # - uses: mxschmitt/action-tmate@v3
+      # if: needs.debug_output.outputs.build-debug == 'true'
+    - name: Cache crystal shards
+      uses: actions/cache@v2
       env:
-        CRYSTAL_VERSION: 0.35.1
-        CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download
-      run: |
-        wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga; 
-        sudo apt install -y --no-install-recommends \
-        git \
-        libssl-dev \
-        libxml2-dev \
-        libyaml-dev \
-        libgmp-dev \
-        libz-dev \
-        ./crystal.deb \
-        && sudo rm -rf /var/lib/apt/lists/*
+        cache-name: cache-crystal-shards
+      with:
+        path: ./lib
+        key: lib-${{ hashFiles('**/shard.lock') }}
+        restore-keys: |
+          lib-
     - name: Build Release
       run: |
-        shards install
         docker pull conformance/crystal:0.35.1
+        docker run --rm -v $PWD:/workspace -w /workspace conformance/crystal:0.35.1-llvm10-grep shards install
         docker run --rm -v $PWD:/workspace -w /workspace conformance/crystal:0.35.1-llvm10-grep crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'
     - name: upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: release
         path: cnf-conformance
-  test_binary_no_source_no_litmus:
-    name: Test Binary Without Source
+
+  test_binary_configuration_lifecycle:
+    name: Test Binary Without Source(config_lifecycle)
     needs: [build, debug_output]
     runs-on: ubuntu-latest
     steps: 
@@ -222,16 +226,17 @@ jobs:
         EOF
         kind create cluster --config=/tmp/cluster.yml
         kubectl get nodes 
-    - name: Run Test Suite without source
+    - name: Run Test Suite without source(config_lifecycle)
       run: |
         helm repo add stable https://cncf.gitlab.io/stable
         chmod +x ./cnf-conformance
         ./cnf-conformance setup
         wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
         ./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
-        LOG_LEVEL=info ./cnf-conformance workload ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~pod_network_latency
-  test_binary_no_source_litmus:
-    name: Test Binary Without Source
+        LOG_LEVEL=info ./cnf-conformance all ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose
+
+  test_binary_microservice:
+    name: Test Binary Without Source(microservice)
     needs: [build, debug_output]
     runs-on: ubuntu-latest
     steps: 
@@ -253,14 +258,47 @@ jobs:
         EOF
         kind create cluster --config=/tmp/cluster.yml
         kubectl get nodes 
-    - name: Run Test Suite without source
+    - name: Run Test Suite without source(microservice)
       run: |
         helm repo add stable https://cncf.gitlab.io/stable
         chmod +x ./cnf-conformance
         ./cnf-conformance setup
         wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
         ./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
-        LOG_LEVEL=info ./cnf-conformance pod_network_latency
+        LOG_LEVEL=info ./cnf-conformance all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~install_script_helm ~helm_chart_valid ~helm_chart_published ~rollback ~secrets_used ~immutable_configmap verbose
+
+  test_binary_all:
+    name: Test Binary Without Source(all)
+    needs: [build, debug_output]
+    runs-on: ubuntu-latest
+    steps: 
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: release
+    - uses: mxschmitt/action-tmate@v3
+      if: needs.debug_output.outputs.release-debug == 'true'
+    - name: Create Kind Cluster 
+      run: |
+        cat << EOF > /tmp/cluster.yml
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        containerdConfigPatches:
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
+            endpoint = ["http://localhost:5000"]
+        EOF
+        kind create cluster --config=/tmp/cluster.yml
+        kubectl get nodes 
+    - name: Run Test Suite without source(all)
+      run: |
+        helm repo add stable https://cncf.gitlab.io/stable
+        chmod +x ./cnf-conformance
+        ./cnf-conformance setup
+        wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
+        ./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
+        LOG_LEVEL=info ./cnf-conformance all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size verbose
+
   release:
     name: Publish Release
     needs: [spec, build, debug_output]
