@@ -34,7 +34,7 @@ describe "Resilience Network Chaos" do
   #     response_s = `./cnf-conformance chaos_network_loss verbose`
   #     LOGGING.info response_s
   #     $?.success?.should be_true
-  #     (/FAILURE: Replicas did not return desired count after network chaos test/ =~ response_s).should_not be_nil
+  #     (/FAILED: Replicas did not return desired count after network chaos test/ =~ response_s).should_not be_nil
   #   ensure
   #     `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_network_loss deploy_with_chart=false`
   #     $?.success?.should be_true

@@ -37,7 +37,7 @@ describe CnfConformance do
       response_s = `./cnf-conformance liveness verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILURE: No livenessProbe found/ =~ response_s).should_not be_nil
+      (/FAILED: No livenessProbe found/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance sample_coredns_bad_liveness_cleanup`
     end
@@ -63,7 +63,7 @@ describe CnfConformance do
       response_s = `./cnf-conformance readiness verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILURE: No readinessProbe found/ =~ response_s).should_not be_nil
+      (/FAILED: No readinessProbe found/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance sample_coredns_bad_liveness_cleanup`
     end
@@ -250,7 +250,7 @@ describe CnfConformance do
       response_s = `./cnf-conformance nodeport_not_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILURE: NodePort is being used/ =~ response_s).should_not be_nil
+      (/FAILED: NodePort is being used/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_nodeport deploy_with_chart=false`
     end
@@ -289,7 +289,7 @@ describe CnfConformance do
       response_s = `LOG_LEVEL=info ./cnf-conformance hardcoded_ip_addresses_in_k8s_runtime_configuration verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILURE: Hard-coded IP addresses found in the runtime K8s configuration/ =~ response_s).should_not be_nil
+      (/FAILED: Hard-coded IP addresses found in the runtime K8s configuration/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_coredns_hardcoded_ips deploy_with_chart=false`
     end
@@ -328,7 +328,7 @@ describe CnfConformance do
       response_s = `./cnf-conformance secrets_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILURE: Secret Volume not found/ =~ response_s).should_not be_nil
+      (/FAILED: Secret Volume not found/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_unmounted_secret_volume verbose`
     end
@@ -354,7 +354,7 @@ describe CnfConformance do
       response_s = `./cnf-conformance secrets_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILURE: Secret Volume not found/ =~ response_s).should_not be_nil
+      (/FAILED: Secret Volume not found/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_coredns verbose`
     end
@@ -370,7 +370,7 @@ describe CnfConformance do
       response_s = `./cnf-conformance immutable_configmap verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILURE: Found mutable configmap/ =~ response_s).should_not be_nil
+      (/FAILED: Found mutable configmap/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml deploy_with_chart=false`
     end
@@ -383,7 +383,7 @@ describe CnfConformance do
       response_s = `./cnf-conformance immutable_configmap verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILURE: Found mutable configmap/ =~ response_s).should_not be_nil
+      (/FAILED: Found mutable configmap/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_some/cnf-conformance.yml deploy_with_chart=false`
     end
@@ -423,7 +423,7 @@ describe CnfConformance do
       response_s = `./cnf-conformance immutable_configmap verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILURE: Found mutable configmap/ =~ response_s).should_not be_nil
+      (/FAILED: Found mutable configmap/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-conformance.yml deploy_with_chart=false`
     end
