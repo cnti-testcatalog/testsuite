@@ -3,7 +3,12 @@
   tags: 
   pass: 5
   fail: -1
-  skipped: 0 
+  skipped: 0
+
+- name: reasonable_image_size
+  tags: workload, microservice, dynamic
+- name: reasonable_startup_time
+  tags: workload, microservice, dynamic
 - name: cni_spec 
   tags: compatibility, dynamic
 - name: api_snoop_alpha 
@@ -13,67 +18,102 @@
 - name: api_snoop_general_apis 
   tags: compatibility, dynamic
 
-- name: reset_cnf 
-  tags: statelessness, dynamic, configuration_lifecycle
-- name: check_reaped 
-  tags: statelessness, dynamic, configuration_lifecycle
+#- name: reset_cnf
+#  tags: workload, statelessness, dynamic, configuration_lifecycle
+#- name: check_reaped
+#  tags: workload, statelessness, dynamic, configuration_lifecycle
+- name: volume_hostpath_not_found
+  tags: workload, statelessness, dynamic
+- name: no_local_volume_configuration
+  tags: workload, statelessness, dynamic
 
 - name: privileged 
-  tags: security, dynamic
+  tags: workload, security, dynamic
   required: true
-- name: shells 
-  tags: security, dynamic
-- name: protected_access 
-  tags: security, dynamic
+#- name: shells
+#  tags: workload, security, dynamic
+#- name: protected_access
+#  tags: workload, security, dynamic
 
 - name: increase_capacity 
-  tags: scalability, dynamic
+  tags: workload, scalability, dynamic
   pass: 10
   fail: -5 
 - name: decrease_capacity 
-  tags: scalability, dynamic
+  tags: workload, scalability, dynamic
   pass: 10
   fail: -5 
 - name: small_autoscaling 
-  tags: scalability, dynamic
+  tags: workload, scalability, dynamic
 - name: large_autoscaling 
-  tags: scalability, dynamic
+  tags: workload, scalability, dynamic
 - name: network_chaos 
-  tags: scalability, dynamic
+  tags: workload, scalability, dynamic
 - name: external_retry 
-  tags: scalability, dynamic
+  tags: workload, scalability, dynamic
+- name: pod_network_latency
+  tags: workload, scalability, dynamic
 
 - name: versioned_helm_chart
-  tags: configuration_lifecycle, dynamic
+  tags: workload, configuration_lifecycle, dynamic
 - name: ip_addresses
-  tags: configuration_lifecycle, static
+  pass: 0
+  fail: -1
+  tags: workload, configuration_lifecycle, static
 - name: liveness
-  tags: configuration_lifecycle, dynamic
+  tags: workload, configuration_lifecycle, dynamic
 - name: readiness
-  tags: configuration_lifecycle, dynamic
+  tags: workload, configuration_lifecycle, dynamic
 - name: no_volume_with_configuration
-  tags: configuration_lifecycle, dynamic
+  tags: workload, configuration_lifecycle, dynamic
 - name: rolling_update
-  tags: configuration_lifecycle, dynamic, installability
+  tags: workload, configuration_lifecycle, dynamic
+- name: rolling_downgrade
+  tags: workload, configuration_lifecycle, dynamic
+- name: rolling_version_change
+  tags: workload, configuration_lifecycle, dynamic
+- name: rollback
+  tags: workload, configuration_lifecycle, dynamic
+- name: nodeport_not_used
+  tags: workload, configuration_lifecycle, dynamic
+- name: hardcoded_ip_addresses_in_k8s_runtime_configuration
+  tags: workload, configuration_lifecycle, dynamic
+- name: secrets_used
+  tags: workload, configuration_lifecycle, dynamic
+- name: immutable_configmap
+  tags: workload, configuration_lifecycle, dynamic
 
 - name: fluentd_traffic
-  tags: observability, dynamic
+  tags: workload, observability, dynamic
 - name: jaeger_traffic
-  tags: observability, dynamic
+  tags: workload, observability, dynamic
 - name: prometheus_traffic
-  tags: observability, dynamic
+  tags: workload, observability, dynamic
 - name: opentelemetry_compatible
-  tags: observability, dynamic
+  tags: workload, observability, dynamic
 - name: openmetric_compatible
-  tags: observability, dynamic
+  tags: workload, observability, dynamic
 
+- name: helm_deploy
+  tags: workload, installability, dynamic
 - name: install_script_helm
-  tags: installability, static
+  tags: workload, installability, static
 - name: helm_chart_valid
-  tags: installability, dynamic
+  tags: workload, installability, dynamic
+- name: helm_chart_published
+  tags: workload, installability, dynamic
+
+- name: chaos_network_loss
+  tags: workload, resilience, dynamic
+- name: pod_network_latency
+  tags: workload, resilience, dynamic
+- name: chaos_cpu_hog
+  tags: workload, resilience, dynamic
+- name: chaos_container_kill
+  tags: workload, resilience, dynamic
 
 - name: hardware_and_scheduling
-  tags: hardware, dynamic
+  tags: workload, hardware, dynamic
 - name: static_accessing_hardware 
   tags: hardware, static
 - name: dynamic_accessing_hardware 
@@ -85,3 +125,18 @@
 
 - name: k8s_conformance
   tags: platform, dynamic
+
+- name: kube_state_metrics
+  tags: platform, platform:observability, dynamic
+- name: node_exporter
+  tags: platform, platform:observability, dynamic
+- name: prometheus_adapter
+  tags: platform, platform:observability, dynamic
+- name: metrics_server
+  tags: platform, platform:observability, dynamic
+
+- name: worker_reboot_recovery
+  tags: platform, platform:resilience, dynamic
+
+- name: oci_compliant
+  tags: platform, platform:hardware_and_scheduling, dynamic
