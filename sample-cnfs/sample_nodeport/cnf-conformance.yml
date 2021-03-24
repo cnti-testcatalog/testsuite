@@ -14,4 +14,4 @@ container_names:
     rolling_update_test_tag: "5.12.34"
     rolling_downgrade_test_tag: "5.12.12"
     rolling_version_change_test_tag: latest
-white_list_helm_chart_container_names: []
+allowlist_helm_chart_container_names: []

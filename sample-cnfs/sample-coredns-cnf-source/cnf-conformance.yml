@@ -8,7 +8,7 @@ service_name: coredns-coredns
 application_deployment_names: [coredns-coredns]
 helm_chart: stable/coredns
 helm_chart_container_name: coredns
-white_list_helm_chart_container_names: [falco, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
+allowlist_helm_chart_container_names: [falco, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
 container_names: 
   - name: coredns 
     rolling_update_test_tag: "1.8.0"

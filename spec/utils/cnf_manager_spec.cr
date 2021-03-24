@@ -23,48 +23,48 @@ describe "SampleUtils" do
     $?.success?.should be_true
   end
 
-  it "'cnf_setup' should pass with a minimal cnf-conformance.yml" do
+  it "'cnf_setup' should pass with a minimal cnf-conformance.yml", tags: ["cnf-setup"] do
     LOGGING.info `./cnf-conformance cnf_setup cnf-path=./sample-cnfs/sample-minimal-cnf/ wait_count=0`
     $?.success?.should be_true
   ensure
     `./cnf-conformance cnf_cleanup cnf-path=./sample-cnfs/sample-minimal-cnf/ force=true`
   end
 
-  it "'points_yml' should parse and return the points yaml file"  do
+  it "'points_yml' should parse and return the points yaml file", tags: ["points"]  do
     (CNFManager::Points.points_yml.find {|x| x["name"] =="liveness"}).should be_truthy 
   end
 
-  it  "'task_points' should return the amount of points for a passing test" do
+  it  "'task_points' should return the amount of points for a passing test", tags: ["points"] do
     # default
     (CNFManager::Points.task_points("liveness")).should eq(5)
     # assigned
     (CNFManager::Points.task_points("increase_capacity")).should eq(10)
   end
 
-  it  "'task_points(, false)' should return the amount of points for a failing test"  do
+  it  "'task_points(, false)' should return the amount of points for a failing test", tags: ["points"]  do
     # default
     (CNFManager::Points.task_points("liveness", false)).should eq(-1)
     # assigned
     (CNFManager::Points.task_points("increase_capacity", false)).should eq(-5)
   end
 
-  it  "'task_points(, skipped)' should return the amount of points for a skipped test"  do
+  it  "'task_points(, skipped)' should return the amount of points for a skipped test", tags: ["points"]  do
     # default
     (CNFManager::Points.task_points("liveness", CNFManager::Points::Results::ResultStatus::Skipped)).should eq(0)
   end
 
-  it "'task_required' should return if the passed task is required"  do
+  it "'task_required' should return if the passed task is required", tags: ["tasks"]  do
     CNFManager::Points.clean_results_yml
     (CNFManager::Points.task_required("privileged")).should be_true
   end
 
-  it "'failed_required_tasks' should return a list of failed required tasks"  do
+  it "'failed_required_tasks' should return a list of failed required tasks", tags: ["tasks"]  do
     CNFManager::Points.clean_results_yml
     CNFManager::Points.failed_task("privileged", "FAILED: Privileged container found")
     (CNFManager::Points.failed_required_tasks).should eq(["privileged"])
   end
 
-  it "'upsert_task' insert task in the results file"  do
+  it "'upsert_task' insert task in the results file", tags: ["tasks"]  do
     CNFManager::Points.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
@@ -74,7 +74,7 @@ describe "SampleUtils" do
     (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == CNFManager::Points.task_points("liveness")}).should be_truthy
   end
 
-  it "'upsert_task' should find and update an existing task in the file"  do
+  it "'upsert_task' should find and update an existing task in the file", tags: ["tasks"]  do
     CNFManager::Points.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
@@ -86,29 +86,29 @@ describe "SampleUtils" do
     (CNFManager::Points.total_points).should eq(5)
   end
 
-  it "'CNFManager::Points.total_points' should sum the total amount of points in the results" do
+  it "'CNFManager::Points.total_points' should sum the total amount of points in the results", tags: ["points"] do
     CNFManager::Points.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
     (CNFManager::Points.total_points).should eq(5)
   end
 
-  it "'CNFManager::Points.tasks_by_tag' should return the tasks assigned to a tag" do
+  it "'CNFManager::Points.tasks_by_tag' should return the tasks assigned to a tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
     (CNFManager::Points.tasks_by_tag("configuration_lifecycle")).should eq(["ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "rollback", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap"])
     (CNFManager::Points.tasks_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
-  it "'CNFManager::Points.all_task_test_names' should return all tasks names" do
+  it "'CNFManager::Points.all_task_test_names' should return all tasks names", tags: ["points"] do
     CNFManager::Points.clean_results_yml
     (CNFManager::Points.all_task_test_names()).should eq(["reasonable_image_size", "reasonable_startup_time", "privileged", "increase_capacity", "decrease_capacity", "network_chaos", "pod_network_latency", "ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "rollback", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap" , "helm_deploy", "install_script_helm", "helm_chart_valid", "helm_chart_published", "chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill", "volume_hostpath_not_found", "no_local_volume_configuration"])
   end
 
-  it "'CNFManager::Points.all_result_test_names' should return the tasks assigned to a tag" do
+  it "'CNFManager::Points.all_result_test_names' should return the tasks assigned to a tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
     (CNFManager::Points.all_result_test_names(CNFManager::Points::Results.file)).should eq(["liveness"])
   end
-  it "'CNFManager::Points.results_by_tag' should return a list of results by tag" do
+  it "'CNFManager::Points.results_by_tag' should return a list of results by tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
     (CNFManager::Points.results_by_tag("configuration_lifecycle")).should eq([{"name" => "liveness", "status" => "passed", "points" => 5}])
@@ -116,7 +116,7 @@ describe "SampleUtils" do
   end
 
 
-  it "'#CNFManager::Points::Results.file' should return the name of the current yaml file"  do
+  it "'#CNFManager::Points::Results.file' should return the name of the current yaml file", tags: ["points"]  do
     CNFManager::Points.clean_results_yml
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
@@ -125,12 +125,12 @@ describe "SampleUtils" do
     (yaml["exit_code"]).should eq(0) 
   end
 
-  it "'CNFManager::Points.final_cnf_results_yml. should return the latest time stamped results file"  do
+  it "'CNFManager::Points.final_cnf_results_yml. should return the latest time stamped results file", tags: ["points"]  do
     (CNFManager::Points.final_cnf_results_yml).should contain("cnf-conformance-results")
   end
 
 
-  it "'CNFManager.sample_setup_cli_args(args) and CNFManager.sample_setup(cli_args)' should set up a sample cnf", tags: "happy-path"  do
+  it "'CNFManager.sample_setup_cli_args(args) and CNFManager.sample_setup(cli_args)' should set up a sample cnf", tags: ["cnf-setup"]  do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml", "verbose", "wait_count=180"])
     cli_hash = CNFManager.sample_setup_cli_args(args)
     CNFManager.sample_setup(cli_hash)
@@ -144,7 +144,7 @@ describe "SampleUtils" do
     (Dir.exists? "cnfs/#{release_name}").should be_false
   end
 
-  it "'CNFManager.sample_setup' should set up a sample cnf", tags: "happy-path"  do
+  it "'CNFManager.sample_setup' should set up a sample cnf", tags: ["cnf-setup"]  do
     config_file = "sample-cnfs/sample-generic-cnf"
     args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-conformance.yml", "verbose", "wait_count=0"])
     cli_hash = CNFManager.sample_setup_cli_args(args)
@@ -162,7 +162,7 @@ describe "SampleUtils" do
     (Dir.exists? "cnfs/#{release_name}").should be_false
   end
 
-  it "'CNFManager.sample_setup_args' should set up a sample cnf from a argument", tags: "happy-path"  do
+  it "'CNFManager.sample_setup_args' should set up a sample cnf from a argument", tags: ["cnf-setup"]  do
     config_file = "sample-cnfs/sample-generic-cnf"
     args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-conformance.yml", "verbose", "wait_count=0"])
     cli_hash = CNFManager.sample_setup_cli_args(args)
@@ -179,7 +179,7 @@ describe "SampleUtils" do
     (Dir.exists? "cnfs/#{release_name}").should be_false
   end
 
-  it "'CNFManager.sample_setup_args' should set up a sample cnf from a config file", tags: "happy-path"  do
+  it "'CNFManager.sample_setup_args' should set up a sample cnf from a config file", tags: ["cnf-setup"]  do
     config_file = "sample-cnfs/sample-generic-cnf"
     args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-conformance.yml", "verbose", "wait_count=0"])
     cli_hash = CNFManager.sample_setup_cli_args(args)
@@ -196,7 +196,7 @@ describe "SampleUtils" do
     (Dir.exists? "cnfs/#{release_name}").should be_false
   end
 
-  it "'CNFManager.sample_cleanup' should clean up a sample cnf from a argument", tags: "happy-path"  do
+  it "'CNFManager.sample_cleanup' should clean up a sample cnf from a argument", tags: ["cnf-setup"]  do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml", "verbose", "wait_count=0"])
     cli_hash = CNFManager.sample_setup_cli_args(args)
     CNFManager.sample_setup(cli_hash)
@@ -209,7 +209,7 @@ describe "SampleUtils" do
     (File.exists?("cnfs/coredns/helm_chart/Chart.yaml")).should be_false
   end
 
-  it "'CNFManager.sample_setup_args' should be able to deploy using a helm_directory", tags: "happy-path"  do
+  it "'CNFManager.sample_setup_args' should be able to deploy using a helm_directory", tags: ["cnf-setup"]  do
     config_file = "sample-cnfs/sample_privileged_cnf"
     args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-conformance.yml", "verbose", "wait_count=0"])
     cli_hash = CNFManager.sample_setup_cli_args(args)
@@ -227,7 +227,7 @@ describe "SampleUtils" do
     (Dir.exists? "cnfs/#{release_name}").should be_false
   end
 
-  it "'CNFManager.sample_setup_args and CNFManager.sample_cleanup' should be able to deploy and cleanup using a manifest_directory", tags: "happy-path"  do
+  it "'CNFManager.sample_setup_args and CNFManager.sample_cleanup' should be able to deploy and cleanup using a manifest_directory", tags: ["cnf-setup"]  do
     config_file = "sample-cnfs/k8s-non-helm"
     args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-conformance.yml", "verbose", "wait_count=0"])
     cli_hash = CNFManager.sample_setup_cli_args(args)
@@ -252,7 +252,7 @@ describe "SampleUtils" do
     CNFManager.cnf_destination_dir("spec/fixtures/cnf-conformance.yml").should contain("/cnfs/coredns")
   end
 
-  it "'CNFManager.cnf_config_list' should return a list of all of the config files from the cnf directory", tags: "happy-path"  do
+  it "'CNFManager.cnf_config_list' should return a list of all of the config files from the cnf directory", tags: ["cnf-setup"]  do
     config_file = "sample-cnfs/sample-generic-cnf"
     args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-conformance.yml", "verbose", "wait_count=0"])
     cli_hash = CNFManager.sample_setup_cli_args(args)
@@ -269,7 +269,7 @@ describe "SampleUtils" do
     CNFManager.cnf_config_list()[0].should contain("#{release_name}/#{CONFIG_FILE}")
   end
 
-  it "'CNFManager.helm_repo_add' should add a helm repo if the helm repo is valid", tags: "happy-path"  do
+  it "'CNFManager.helm_repo_add' should add a helm repo if the helm repo is valid", tags: ["helm-repo"] do
     config_file = "sample-cnfs/sample-generic-cnf"
     args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-conformance.yml", "verbose", "wait_count=0"])
     cli_hash = CNFManager.sample_setup_cli_args(args)
@@ -280,11 +280,11 @@ describe "SampleUtils" do
     CNFManager.helm_repo_add(args: args).should eq(true)
   end
 
-  it "'CNFManager.helm_repo_add' should return false if the helm repo is invalid", tags: "happy-path"  do
+  it "'CNFManager.helm_repo_add' should return false if the helm repo is invalid", tags: ["helm-repo"]  do
     CNFManager.helm_repo_add("invalid", "invalid").should eq(false)
   end
 
-  it "'CNFManager.validate_cnf_conformance_yml' (function) should pass, when a cnf has a valid config file yml", tags: ["unhappy-path", "validate_config"]  do
+  it "'CNFManager.validate_cnf_conformance_yml' (function) should pass, when a cnf has a valid config file yml", tags: ["validate_config"]  do
     args = Sam::Args.new(["cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml"])
 
     yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
@@ -297,14 +297,14 @@ describe "SampleUtils" do
     (command_output).should eq (nil)
   end
 
-  it "'CNFManager.validate_cnf_conformance_yml' (command) should pass, when a cnf has a valid config file yml", tags: ["unhappy-path", "validate_config"]  do
+  it "'CNFManager.validate_cnf_conformance_yml' (command) should pass, when a cnf has a valid config file yml", tags: ["validate_config"]  do
     response_s = `./cnf-conformance validate_config cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
     $?.success?.should be_true
     (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
   end
 
 
-  it "'CNFManager.validate_cnf_conformance_yml' (function) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["unhappy-path", "validate_config"]  do
+  it "'CNFManager.validate_cnf_conformance_yml' (function) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["validate_config"]  do
     args = Sam::Args.new(["cnf-config=./spec/fixtures/cnf-conformance-unmapped-keys-and-subkeys.yml"])
 
     yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
@@ -320,7 +320,7 @@ describe "SampleUtils" do
   end
 
 
-  it "'CNFManager.validate_cnf_conformance_yml' (command) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["unhappy-path", "validate_config"]  do
+  it "'CNFManager.validate_cnf_conformance_yml' (command) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["validate_config"]  do
     response_s = `./cnf-conformance validate_config cnf-config=spec/fixtures/cnf-conformance-unmapped-keys-and-subkeys.yml`
     $?.success?.should be_true
     LOGGING.debug "validate_config resp: #{response_s}"
@@ -330,7 +330,7 @@ describe "SampleUtils" do
   end
 
 
-  it "'CNFManager.validate_cnf_conformance_yml' (function) should fail when an invalid cnf config file yml is used", tags: ["unhappy-path", "validate_config"]  do
+  it "'CNFManager.validate_cnf_conformance_yml' (function) should fail when an invalid cnf config file yml is used", tags: ["validate_config"]  do
     args = Sam::Args.new(["cnf-config=spec/fixtures/cnf-conformance-invalid-and-unmapped-keys.yml"])
 
 
@@ -346,7 +346,7 @@ describe "SampleUtils" do
     (warning_output).should eq(nil)
   end
 
-  it "'CNFManager.validate_cnf_conformance_yml' (command) should fail when an invalid cnf config file yml is used", tags: ["unhappy-path", "validate_config"]  do
+  it "'CNFManager.validate_cnf_conformance_yml' (command) should fail when an invalid cnf config file yml is used", tags: ["validate_config"]  do
     response_s = `./cnf-conformance validate_config cnf-config=spec/fixtures/cnf-conformance-invalid-and-unmapped-keys.yml`
     $?.success?.should be_true
 
@@ -354,7 +354,7 @@ describe "SampleUtils" do
     (/FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s).should_not be_nil
   end
 
-  it "'CNFManager.validate_cnf_conformance_yml' (command) should pass, for all sample-cnfs", tags: ["unhappy-path", "validate_config"]  do
+  it "'CNFManager.validate_cnf_conformance_yml' (command) should pass, for all sample-cnfs", tags: ["validate_config"]  do
 
     get_dirs = Dir.entries("sample-cnfs")
     dir_list = get_dirs - [".", ".."]
@@ -368,7 +368,7 @@ describe "SampleUtils" do
     end
   end
 
-  it "'CNFManager.validate_cnf_conformance_yml' (command) should pass, for all example-cnfs", tags: ["unhappy-path", "validate_config"]  do
+  it "'CNFManager.validate_cnf_conformance_yml' (command) should pass, for all example-cnfs", tags: ["validate_config"]  do
 
     get_dirs = Dir.entries("example-cnfs")
     dir_list = get_dirs - [".", ".."]
@@ -383,7 +383,7 @@ describe "SampleUtils" do
   end
 
 
-  it "'CNFManager::Config#parse_config_yml' should return a populated CNFManager::Config.cnf_config"  do
+  it "'CNFManager::Config#parse_config_yml' should return a populated CNFManager::Config.cnf_config", tags: ["cnf-config"]  do
     begin
       yaml = CNFManager::Config.parse_config_yml("spec/fixtures/cnf-conformance.yml")    
     (yaml.cnf_config[:release_name]).should eq("coredns")
@@ -391,7 +391,7 @@ describe "SampleUtils" do
     end
   end
 
-  it "'CNFManager.workload_resource_test' should accept an args and cnf-config argument, populate a deployment, container, and intialized argument, and then apply a test to a cnf"  do
+  it "'CNFManager.workload_resource_test' should accept an args and cnf-config argument, populate a deployment, container, and intialized argument, and then apply a test to a cnf", tags: ["cnf-config"]  do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml"])
     # check_cnf_config_then_deploy(args)
     cli_hash = CNFManager.sample_setup_cli_args(args, false)
@@ -413,7 +413,7 @@ describe "SampleUtils" do
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
   end
 
-  it "'CNFManager.exclusive_install_method_tags' should return false if install method tags are not exclusive"  do
+  it "'CNFManager.exclusive_install_method_tags' should return false if install method tags are not exclusive", tags: ["cnf-config"]  do
     config = CNFManager.parsed_config_file("./spec/fixtures/cnf-conformance-not-exclusive.yml")
     resp = CNFManager.exclusive_install_method_tags?(config)
     (resp).should be_false 

@@ -43,4 +43,4 @@ container_names:
     rolling_downgrade_test_tag: "1.16"
     rolling_version_change_test_tag: latest
     rollback_from_tag: latest
-white_list_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
+allowlist_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
