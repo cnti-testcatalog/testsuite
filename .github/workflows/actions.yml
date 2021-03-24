@@ -180,25 +180,20 @@ jobs:
         fetch-depth: 0
     - uses: mxschmitt/action-tmate@v3
       if: needs.debug_output.outputs.build-debug == 'true'
-    - name: Install Crystal
+    - name: Cache crystal shards
+      uses: actions/cache@v2
       env:
-        CRYSTAL_VERSION: 0.35.1
-        CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download
-      run: |
-        wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga; 
-        sudo apt install -y --no-install-recommends \
-        git \
-        libssl-dev \
-        libxml2-dev \
-        libyaml-dev \
-        libgmp-dev \
-        libz-dev \
-        ./crystal.deb \
-        && sudo rm -rf /var/lib/apt/lists/*
+        cache-name: cache-crystal-shards
+      with:
+        path: ./lib
+        key: lib-${{ hashFiles('**/shard.lock') }}
+        restore-keys: |
+          lib-
     - name: Build Release
       run: |
         shards install
         docker pull conformance/crystal:0.35.1
+        docker run --rm -v $PWD:/workspace -w /workspace conformance/crystal:0.35.1-llvm10-grep shards install
         docker run --rm -v $PWD:/workspace -w /workspace conformance/crystal:0.35.1-llvm10-grep crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'
     - name: upload artifact
       uses: actions/upload-artifact@v2
