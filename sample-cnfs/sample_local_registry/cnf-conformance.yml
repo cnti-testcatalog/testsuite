@@ -14,4 +14,4 @@ container_names:
     rolling_downgrade_test_tag: 1.6.7
     rolling_version_change_test_tag: 1.8.0
     rollback_from_tag: 1.8.0
-white_list_helm_chart_container_names: []
+allowlist_helm_chart_container_names: []
