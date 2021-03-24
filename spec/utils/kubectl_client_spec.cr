@@ -63,7 +63,7 @@ describe "KubectlClient" do
     LOGGING.debug `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml` 
   end
  
-  it "'#KubectlClient.pod_status' should return a status of false if the pod is not installed (failed to install) and other pods exist"  do
+  it "'#KubectlClient.pod_status' should return a status of false if the pod is not installed (failed to install) and other pods exist", tags: ["kubectl-pods"]  do
     cnf="./sample-cnfs/sample-coredns-cnf"
     LOGGING.info `./cnf-conformance cnf_setup cnf-path=#{cnf}`
     LOGGING.info `./cnf-conformance uninstall_dockerd`
@@ -79,7 +79,7 @@ describe "KubectlClient" do
     LOGGING.info `./cnf-conformance install_dockerd`
   end
 
-  it "'#KubectlClient.pod_status' should return a status of true if the pod is installed and other pods exist"  do
+  it "'#KubectlClient.pod_status' should return a status of true if the pod is installed and other pods exist", tags: ["kubectl-pods"]  do
     cnf="./sample-cnfs/sample-coredns-cnf"
     LOGGING.info `./cnf-conformance cnf_setup cnf-path=#{cnf}`
     LOGGING.info `./cnf-conformance install_dockerd`
