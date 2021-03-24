@@ -3,15 +3,15 @@ require "../../src/tasks/utils/utils.cr"
 require "colorize"
 
 describe "CNF Conformance all Container Chaos" do
-  before_all do
-    `./cnf-conformance setup`
-    $?.success?.should be_true
-  end
+  # before_all do
+  #   `./cnf-conformance setup`
+  #   $?.success?.should be_true
+  # end
 
-  after_all do
-    `./cnf-conformance samples_cleanup`
-    $?.success?.should be_true
-  end
+  # after_all do
+  #   `./cnf-conformance samples_cleanup`
+  #   $?.success?.should be_true
+  # end
 
   # it "'all ~platform ~compatibilty ~statelessness ~security ~scalability ~configuration_lifecycle ~observability ~installability ~hardware_and_scheduling ~microservice ~chaos_network_loss' should run the chaos tests", tags: "happy-path" do
   #   `./cnf-conformance samples_cleanup`
