@@ -205,8 +205,9 @@ jobs:
       with:
         name: release
         path: cnf-conformance
-  test_binary_no_source_no_litmus:
-    name: Test Binary Without Source
+
+  test_binary_configuration_lifecycle:
+    name: Test Binary Without Source(config_lifecycle)
     needs: [build, debug_output]
     runs-on: ubuntu-latest
     steps: 
@@ -228,16 +229,17 @@ jobs:
         EOF
         kind create cluster --config=/tmp/cluster.yml
         kubectl get nodes 
-    - name: Run Test Suite without source
+    - name: Run Test Suite without source(config_lifecycle)
       run: |
         helm repo add stable https://cncf.gitlab.io/stable
         chmod +x ./cnf-conformance
         ./cnf-conformance setup
         wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
         ./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
-        LOG_LEVEL=info ./cnf-conformance workload ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~pod_network_latency
-  test_binary_no_source_litmus:
-    name: Test Binary Without Source
+        LOG_LEVEL=info ./cnf-conformance all ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose
+
+  test_binary_microservice:
+    name: Test Binary Without Source(microservice)
     needs: [build, debug_output]
     runs-on: ubuntu-latest
     steps: 
@@ -259,14 +261,47 @@ jobs:
         EOF
         kind create cluster --config=/tmp/cluster.yml
         kubectl get nodes 
-    - name: Run Test Suite without source
+    - name: Run Test Suite without source(microservice)
       run: |
         helm repo add stable https://cncf.gitlab.io/stable
         chmod +x ./cnf-conformance
         ./cnf-conformance setup
         wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
         ./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
-        LOG_LEVEL=info ./cnf-conformance pod_network_latency
+        LOG_LEVEL=info ./cnf-conformance all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~install_script_helm ~helm_chart_valid ~helm_chart_published ~rollback ~secrets_used ~immutable_configmap verbose
+
+  test_binary_all:
+    name: Test Binary Without Source(all)
+    needs: [build, debug_output]
+    runs-on: ubuntu-latest
+    steps: 
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: release
+    - uses: mxschmitt/action-tmate@v3
+      if: needs.debug_output.outputs.release-debug == 'true'
+    - name: Create Kind Cluster 
+      run: |
+        cat << EOF > /tmp/cluster.yml
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        containerdConfigPatches:
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
+            endpoint = ["http://localhost:5000"]
+        EOF
+        kind create cluster --config=/tmp/cluster.yml
+        kubectl get nodes 
+    - name: Run Test Suite without source(all)
+      run: |
+        helm repo add stable https://cncf.gitlab.io/stable
+        chmod +x ./cnf-conformance
+        ./cnf-conformance setup
+        wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
+        ./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
+        LOG_LEVEL=info ./cnf-conformance all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size "cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml" verbose
+
   release:
     name: Publish Release
     needs: [spec, build, debug_output]
