@@ -35,6 +35,12 @@ crystal src/cnf-conformance.cr <testname>
 * :memo: indicates To Do
 * :x: indicates WARNINGS*
 
+### Results Output
+
+* :heavy_check_mark: PASSED indicates it meets best practice, positive points given.
+* :heavy_multiplication_x: SKIPPED indicates the test was skipped (output should provide a reason), no points given.
+* :x: FAILED indicates the test failed, negative points given.
+
 ---
 ### Common Example Commands
 

@@ -1,6 +1,7 @@
 require "../spec_helper"
 require "colorize"
 require "../../src/tasks/utils/utils.cr"
+require "../../src/tasks/dockerd_setup.cr"
 require "../../src/tasks/utils/kubectl_client.cr"
 require "file_utils"
 require "sam"
@@ -62,5 +63,34 @@ describe "KubectlClient" do
     LOGGING.debug `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml` 
   end
  
+  it "'#KubectlClient.pod_status' should return a status of false if the pod is not installed (failed to install) and other pods exist"  do
+    cnf="./sample-cnfs/sample-coredns-cnf"
+    LOGGING.info `./cnf-conformance cnf_setup cnf-path=#{cnf}`
+    LOGGING.info `./cnf-conformance uninstall_dockerd`
+    dockerd_tempname_helper
+    LOGGING.info `./cnf-conformance install_dockerd`
+
+    resp = KubectlClient::Get.pod_status(pod_name_prefix: "dockerd").split(",")[2] # true/false
+    LOGGING.info resp 
+    (resp && !resp.empty? && resp == "true").should be_false
+  ensure
+    LOGGING.info `./cnf-conformance cnf_cleanup cnf-path=#{cnf}`
+    dockerd_name_helper
+    LOGGING.info `./cnf-conformance install_dockerd`
+  end
+
+  it "'#KubectlClient.pod_status' should return a status of true if the pod is installed and other pods exist"  do
+    cnf="./sample-cnfs/sample-coredns-cnf"
+    LOGGING.info `./cnf-conformance cnf_setup cnf-path=#{cnf}`
+    LOGGING.info `./cnf-conformance install_dockerd`
+
+    resp = KubectlClient::Get.pod_status(pod_name_prefix: "dockerd").split(",")[2] # true/false
+    LOGGING.info resp 
+    (resp && !resp.empty? && resp == "true").should be_true
+  ensure
+    LOGGING.info `./cnf-conformance cnf_cleanup cnf-path=#{cnf}`
+    dockerd_name_helper
+    LOGGING.info `./cnf-conformance install_dockerd`
+  end
 end
 
