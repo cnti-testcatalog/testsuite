@@ -19,7 +19,7 @@ describe "Resilience Disk Fill Chaos" do
       response_s = `./cnf-conformance disk_fill verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: disk-fill chaos test passed/ =~ response_s).should_not be_nil
+      (/PASSED: disk_fill chaos test passed/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
       $?.success?.should be_true
