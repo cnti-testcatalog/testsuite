@@ -108,6 +108,9 @@
   tags: workload, resilience, dynamic
 - name: chaos_container_kill
   tags: workload, resilience, dynamic
+- name: disk_fill
+  tags: scalability, dynamic, workload
+
 
 - name: hardware_and_scheduling
   tags: workload, hardware, dynamic
