@@ -475,6 +475,11 @@ crystal src/cnf-conformance.cr performance
 ./cnf-conformance pod_network_latency
 ```
 
+#### :heavy_check_mark: Test if the CNF crashes when disk fill occurs 
+```
+./cnf-conformance disk_fill
+```
+
 ---
 ### Platform Tests
 ####  :heavy_check_mark: Run all platform tests

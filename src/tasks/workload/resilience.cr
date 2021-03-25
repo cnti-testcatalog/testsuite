@@ -6,7 +6,7 @@ require "../utils/utils.cr"
 
 desc "The CNF conformance suite checks to see if the CNFs are resilient to failures."
 #task "resilience", ["chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill" ] do |t, args|
- task "resilience", ["pod_network_latency", "chaos_cpu_hog", "chaos_container_kill"] do |t, args|
+ task "resilience", ["pod_network_latency", "chaos_cpu_hog", "chaos_container_kill", "disk_fill"] do |t, args|
   VERBOSE_LOGGING.info "resilience" if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
@@ -183,9 +183,9 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         test_passed = false
       end
       if test_passed
-        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/experiment.yaml")
+        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml")
         # install_experiment = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/experiment.yaml`
-        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/rbac.yaml")
+        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml")
         # install_rbac = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/rbac.yaml`
         annotate = `kubectl annotate --overwrite deploy/#{resource["name"]} litmuschaos.io/chaos="true"`
         # puts "#{install_experiment}" if check_verbose(args)
@@ -211,6 +211,46 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
       resp = upsert_passed_task("pod_network_latency","✔️  PASSED: pod_network_latency chaos test passed 🗡️💀♻️")
     else
       resp = upsert_failed_task("pod_network_latency","✖️  FAILED: pod_network_latency chaos test failed 🗡️💀♻️")
+    end
+    resp
+  end
+end
+
+desc "Does the CNF crash when disk fill occurs"
+task "disk_fill", ["install_litmus"] do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "disk_fill" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+        test_passed = true
+      else
+        puts "No resource label found for disk_fill test for resource: #{resource["name"]}".colorize(:red)
+        test_passed = false
+      end
+      if test_passed
+        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/experiment.yaml")
+        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml")
+        annotate = `kubectl annotate --overwrite deploy/#{resource["name"]} litmuschaos.io/chaos="true"`
+
+        chaos_experiment_name = "disk-fill"
+        test_name = "#{resource["name"]}-#{Random.rand(99)}" 
+        chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
+
+        template = Crinja.render(chaos_template_disk_fill, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name})
+        chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
+        puts "#{chaos_config}" if check_verbose(args)
+        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        LitmusManager.wait_for_test(test_name,chaos_experiment_name,args)
+        LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+      end
+      test_passed
+    end
+    if task_response 
+      resp = upsert_passed_task("disk_fill","✔️  PASSED: disk_fill chaos test passed 🗡️💀♻️")
+    else
+      resp = upsert_failed_task("disk_fill","✖️  FAILED: disk_fill chaos test failed 🗡️💀♻️")
     end
     resp
   end
@@ -336,3 +376,42 @@ def chaos_template_pod_network_latency
 
   TEMPLATE
   end
+
+  def chaos_template_disk_fill
+    <<-TEMPLATE
+    apiVersion: litmuschaos.io/v1alpha1
+    kind: ChaosEngine
+    metadata:
+      name: {{ test_name }}
+      namespace: default
+    spec:
+      annotationCheck: 'true'
+      engineState: 'active'
+      auxiliaryAppInfo: ''
+      appinfo:
+        appns: 'default'
+        applabel: '{{ deployment_label}}={{ deployment_label_value }}'
+        appkind: 'deployment'
+      chaosServiceAccount: {{ chaos_experiment_name }}-sa
+      monitoring: false
+      jobCleanUpPolicy: 'delete'
+      experiments:
+        - name: {{ chaos_experiment_name }}
+          spec:
+            components:
+              env:
+                # specify the fill percentage according to the disk pressure required
+                - name: EPHEMERAL_STORAGE_MEBIBYTES
+                  value: '500'
+                  
+                - name: TARGET_CONTAINER
+                  value: '' 
+
+                - name: FILL_PERCENTAGE
+                  value: ''
+
+                - name: CONTAINER_PATH
+                  value: '/var/lib/containerd/io.containerd.grpc.v1.cri/containers/'
+                              
+    TEMPLATE
+    end

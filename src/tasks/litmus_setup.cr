@@ -7,7 +7,7 @@ require "./utils/utils.cr"
 desc "Install LitmusChaos"
 task "install_litmus" do |_, args|
     # litmus_install = `kubectl apply -f https://litmuschaos.github.io/litmus/litmus-operator-v1.11.0.yaml`
-    KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v1.11.0.yaml")
+    KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml")
     # puts "#{litmus_install}" if check_verbose(args)
 end
 

@@ -48,6 +48,8 @@
   tags: scalability, dynamic, workload
 - name: pod_network_latency
   tags: scalability, dynamic, workload
+- name: disk_fill
+  tags: scalability, dynamic, workload  
 #- name: external_retry 
 #  tags: scalability, dynamic, workload
 
