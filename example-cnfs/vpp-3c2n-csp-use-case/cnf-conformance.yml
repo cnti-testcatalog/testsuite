@@ -7,7 +7,7 @@ deployment_name: ip-forwarder-csp
 deployment_label: app
 application_deployment_names: [ip-forwarder-csp]
 helm_chart_container_name: ip-forwarder-csp
-white_list_helm_chart_container_names: [falco, nginx, calico-node, kube-proxy, nginx-proxy, node-cache]
+allowlist_helm_chart_container_names: [falco, nginx, calico-node, kube-proxy, nginx-proxy, node-cache]
 container_names: 
   - name:  csp
     rolling_update_test_tag: 1.0.0

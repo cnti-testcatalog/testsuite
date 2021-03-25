@@ -7,7 +7,7 @@ describe "Platform" do
     `./cnf-conformance setup`
     $?.success?.should be_true
   end
-  it "'worker_reboot_recovery' should pass if platform successfully recovers after reboot", tags: "platform:worker_reboot_recovery" do
+  it "'worker_reboot_recovery' should pass if platform successfully recovers after reboot", tags: ["platform:worker_reboot_recovery"] do
     if check_destructive
       puts "Tests running in destructive mode".colorize(:red)
       response_s = `./cnf-conformance platform:worker_reboot_recovery destructive`

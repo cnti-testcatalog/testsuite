@@ -7,7 +7,7 @@ deployment_label: linkerd.io/control-plane-component
 application_deployment_names: [linkerd2]
 helm_chart: linkerd/linkerd2
 helm_chart_container_name: linkerd2
-white_list_helm_chart_container_names: [falco, nginx, linkerd, calico-node, kube-proxy, nginx-proxy, node-cache]
+allowlist_helm_chart_container_names: [falco, nginx, linkerd, calico-node, kube-proxy, nginx-proxy, node-cache]
 container_names: 
   - name: linkerd2
     rolling_update_test_tag: 1.0.0

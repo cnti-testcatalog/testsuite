@@ -13,22 +13,20 @@ describe CnfConformance do
     $?.success?.should be_true
   end
 
-  it "'all' should run the workloads test suite", tags: "happy-path" do
+  it "'all' should run the workloads test suite", tags: ["conformance-all"] do
     `./cnf-conformance samples_cleanup`
     # the workload resilience tests are run in the chaos specs
     # the ommisions (i.e. ~resilience) are done for performance reasons for the spec suite
     # response_s = `./cnf-conformance all ~platform ~resilience cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose`
-    response_s = `./cnf-conformance all ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose`
+    response_s = `./cnf-conformance all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size "cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml" verbose`
     LOGGING.info response_s
-    (/PASSED: Helm readiness probe found/ =~ response_s).should_not be_nil
-    (/PASSED: Helm liveness probe/ =~ response_s).should_not be_nil
     (/Lint Passed/ =~ response_s).should_not be_nil
     (/PASSED: Replicas increased to 3/ =~ response_s).should_not be_nil
     (/PASSED: Replicas decreased to 1/ =~ response_s).should_not be_nil
     (/PASSED: Published Helm Chart Found/ =~ response_s).should_not be_nil
     (/Final workload score:/ =~ response_s).should_not be_nil
     (/Final score:/ =~ response_s).should_not be_nil
-    (CNFManager::Points.all_result_test_names(CNFManager::Points.final_cnf_results_yml).sort).should eq(["volume_hostpath_not_found", "privileged", "increase_capacity", "decrease_capacity", "ip_addresses", "liveness", "readiness", "reasonable_startup_time", "rolling_update", "rolling_downgrade", "rolling_version_change", "nodeport_not_used",  "pod_network_latency", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "install_script_helm", "helm_chart_valid", "helm_chart_published", "reasonable_image_size", "rollback", "secrets_used", "immutable_configmap"].sort)
+    (CNFManager::Points.all_result_test_names(CNFManager::Points.final_cnf_results_yml).sort).should eq(["volume_hostpath_not_found", "privileged", "increase_capacity", "decrease_capacity", "install_script_helm", "helm_chart_valid", "helm_chart_published"].sort)
     (/^.*\.cr:[0-9].*/ =~ response_s).should be_nil
     $?.success?.should be_true
   end
