@@ -44,19 +44,15 @@
   tags: workload, scalability, dynamic
   pass: 10
   fail: -5 
-- name: small_autoscaling 
-  tags: workload, scalability, dynamic
-- name: large_autoscaling 
-  tags: workload, scalability, dynamic
-- name: network_chaos 
-  tags: workload, scalability, dynamic
-- name: external_retry 
-  tags: workload, scalability, dynamic
-- name: pod_network_latency
-  tags: workload, scalability, dynamic
+#- name: small_autoscaling
+#  tags: workload, scalability, dynamic
+#- name: large_autoscaling
+#  tags: workload, scalability, dynamic
+#- name: external_retry
+#  tags: workload, scalability, dynamic
 
-- name: versioned_helm_chart
-  tags: workload, configuration_lifecycle, dynamic
+#- name: versioned_helm_chart
+#  tags: workload, configuration_lifecycle, dynamic
 - name: ip_addresses
   pass: 0
   fail: -1
@@ -84,16 +80,16 @@
 - name: immutable_configmap
   tags: workload, configuration_lifecycle, dynamic
 
-- name: fluentd_traffic
-  tags: workload, observability, dynamic
-- name: jaeger_traffic
-  tags: workload, observability, dynamic
-- name: prometheus_traffic
-  tags: workload, observability, dynamic
-- name: opentelemetry_compatible
-  tags: workload, observability, dynamic
-- name: openmetric_compatible
-  tags: workload, observability, dynamic
+#- name: fluentd_traffic
+#  tags: workload, observability, dynamic
+#- name: jaeger_traffic
+#  tags: workload, observability, dynamic
+#- name: prometheus_traffic
+#  tags: workload, observability, dynamic
+#- name: opentelemetry_compatible
+#  tags: workload, observability, dynamic
+#- name: openmetric_compatible
+#  tags: workload, observability, dynamic
 
 - name: helm_deploy
   tags: workload, installability, dynamic
