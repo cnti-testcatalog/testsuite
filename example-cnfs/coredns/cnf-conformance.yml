@@ -12,7 +12,7 @@ helm_repository:
   repo_url: https://cncf.gitlab.io/stable
 helm_chart: stable/coredns
 helm_chart_container_name: coredns
-white_list_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy, kube-multus]
+allowlist_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy, kube-multus]
 
 container_names: 
   - name: coredns 

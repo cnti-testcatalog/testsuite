@@ -14,7 +14,7 @@ desc "Will the CNF install using helm with helm_deploy?"
 task "helm_deploy" do |_, args|
   unless check_destructive(args)
     LOGGING.info "skipping helm_deploy: not in destructive mode"
-    puts "Skipped".colorize(:yellow)
+    puts "SKIPPED: Helm Deploy".colorize(:yellow)
     next
   end
   LOGGING.info "Running helm_deploy in destructive mode!"
@@ -26,7 +26,7 @@ task "helm_deploy" do |_, args|
         # TODO if manifest file and not helm, fail
         # TODO helm should template the metadata.name attribute based on the helm release name
         # TODO if we dont detect a templated metadata.name, use a namespace
-        # TODO do something if using rbac roles since they cant be namespaced 
+        # TODO do something if using rbac roles since they cant be namespaced
         release_name_prefix = "helm-deploy-"
         create_namespace = `kubectl create namespace helm-deploy`
 
@@ -40,10 +40,10 @@ task "helm_deploy" do |_, args|
         helm = CNFSingleton.helm
         VERBOSE_LOGGING.debug helm if check_verbose(args)
 
-        if helm_chart.empty? 
+        if helm_chart.empty?
           VERBOSE_LOGGING.debug "#{helm} install --namespace helm-deploy #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}" if check_verbose(args)
           helm_install = `#{helm} install --namespace helm-deploy #{release_name_prefix}#{release_name} #{yml_file_path}/#{helm_directory}`
-        else 
+        else
           VERBOSE_LOGGING.debug "#{helm} install --namespace helm-deploy #{release_name_prefix}#{release_name} #{helm_chart}" if check_verbose(args)
           helm_install = `#{helm} install --namespace helm-deploy #{release_name_prefix}#{release_name} #{helm_chart}`
         end
@@ -86,7 +86,7 @@ task "install_script_helm" do |_, args|
         file.gets_to_end
       end
       # LOGGING.debug content
-      if /helm/ =~ content 
+      if /helm/ =~ content
         found = 1
       end
       if found < 1
@@ -111,7 +111,7 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
     # helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_chart = config.cnf_config[:helm_chart]
 
-    current_dir = FileUtils.pwd 
+    current_dir = FileUtils.pwd
     helm = CNFSingleton.helm
     VERBOSE_LOGGING.debug helm if check_verbose(args)
 
@@ -157,7 +157,7 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
 
     VERBOSE_LOGGING.debug "working_chart_directory: #{working_chart_directory}" if check_verbose(args)
 
-    current_dir = FileUtils.pwd 
+    current_dir = FileUtils.pwd
     VERBOSE_LOGGING.debug current_dir if check_verbose(args)
     helm = CNFSingleton.helm
 
@@ -166,7 +166,7 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     helm_lint = `#{helm} lint #{destination_cnf_dir}/#{working_chart_directory}`
     VERBOSE_LOGGING.debug "helm_lint: #{helm_lint}" if check_verbose(args)
 
-    if $?.success? 
+    if $?.success?
       upsert_passed_task("helm_chart_valid", "✔️  PASSED: Helm Chart #{working_chart_directory} Lint Passed")
     else
       upsert_failed_task("helm_chart_valid", "✖️  FAILED: Helm Chart #{working_chart_directory} Lint Failed")

@@ -16,14 +16,14 @@ describe "Setup" do
     $?.success?.should be_true
   end
 
-  it "'setup' should completely setup the cnf conformance environment before installing cnfs", tags: "happy-path"  do
+  it "'setup' should completely setup the cnf conformance environment before installing cnfs", tags: ["setup"]  do
     response_s = `./cnf-conformance setup`
     LOGGING.info response_s
     $?.success?.should be_true
     (/Setup complete/ =~ response_s).should_not be_nil
   end
 
-  it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf with a cnf-conformance.yml", tags: "happy-path"  do
+  it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf with a cnf-conformance.yml", tags: ["setup"]  do
     begin
       response_s = `./cnf-conformance cnf_setup cnf-config=example-cnfs/coredns/cnf-conformance.yml`
       LOGGING.info response_s
@@ -37,7 +37,7 @@ describe "Setup" do
       (/Successfully cleaned up/ =~ response_s).should_not be_nil
     end
   end
-  it "'cnf_setup/cnf_cleanup' should work with cnf-conformance.yml that has no directory associated with it", tags: "happy-path" do
+  it "'cnf_setup/cnf_cleanup' should work with cnf-conformance.yml that has no directory associated with it", tags: ["setup"] do
     begin
       #TODO force cnfs/<name> to be deployment name and not the directory name
       response_s = `./cnf-conformance cnf_setup cnf-config=spec/fixtures/cnf-conformance.yml verbose`

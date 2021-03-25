@@ -379,9 +379,14 @@ task "secrets_used" do |_, args|
       #  is an installation problem, and does not stop the test from passing
 
       secrets = KubectlClient::Get.secrets
+      secrets["items"].as_a.each do |s|
+        s_name = s["metadata"]["name"]
+        s_type = s["type"]
+        VERBOSE_LOGGING.info "secret name: #{s_name}, type: #{s_type}" if check_verbose(args)
+      end
       secret_keyref_found = false
       containers.as_a.each do |container|
-        LOGGING.debug "container secrets #{container["env"]?}"
+        VERBOSE_LOGGING.info "container envs #{container["env"]?}" if check_verbose(args)
         if container["env"]?
           container["env"].as_a.find do |c|
           if secrets["items"].as_a.find{|s|
@@ -405,7 +410,7 @@ task "secrets_used" do |_, args|
       end
 
       unless test_passed
-        puts "No Secret Volumes or Container secretKey_refs found for resource: #{resource}".colorize(:red)
+        puts "No Secret Volumes or Container secretKeyRefs found for resource: #{resource}".colorize(:red)
       end
       test_passed
     end
