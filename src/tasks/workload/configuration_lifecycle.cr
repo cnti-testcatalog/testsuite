@@ -379,14 +379,29 @@ task "secrets_used" do |_, args|
       #  is an installation problem, and does not stop the test from passing
 
       secrets = KubectlClient::Get.secrets
-      secret_keyref_found = false
+      secret_keyref_found_or_ignored = false
       containers.as_a.each do |container|
-        LOGGING.debug "container secrets #{container["env"]?}"
+        c_name = container["name"]
+        VERBOSE_LOGGING.info "container: #{c_name} envs #{container["env"]?}" if check_verbose(args)
         if container["env"]?
           container["env"].as_a.find do |c|
-          if secrets["items"].as_a.find{|s|
-              s["metadata"]["name"] == c.dig?("valueFrom", "secretKeyRef", "name")}
-              secret_keyref_found = true
+          VERBOSE_LOGGING.debug "checking container: #{c_name}" if check_verbose(args)
+          if secrets["items"].as_a.all?{|s|
+              s_name = s["metadata"]["name"]
+              VERBOSE_LOGGING.debug "checking secret: #{s_name}" if check_verbose(args)
+              found = s_name == c.dig?("valueFrom", "secretKeyRef", "name")
+              ignored = false
+              if found
+                VERBOSE_LOGGING.info "container: #{c_name} found secret reference: #{s_name}" if check_verbose(args)
+              else
+                ignored = IGNORED_SECRET_TYPES.includes?(s["type"])
+                if ignored
+                  VERBOSE_LOGGING.info "container: #{c_name} ignored secret: #{s_name}" if check_verbose(args)
+                end
+              end
+              ignored || found
+              }
+              secret_keyref_found_or_ignored = true
             end
           end
         end
@@ -399,8 +414,9 @@ task "secrets_used" do |_, args|
       # if at least 1 container secret exists, but it is not defined, this
       # is an installation problem
       # if no secret volume exists and no container secret exists, test fails
+      # unless the secret is ignored
       test_passed = false
-      if secret_keyref_found || volume_test_passed
+      if secret_keyref_found_or_ignored || volume_test_passed
         test_passed = true
       end
 
@@ -410,9 +426,9 @@ task "secrets_used" do |_, args|
       test_passed
     end
     if task_response
-      resp = upsert_passed_task("secrets_used","✔️  PASSED: Secret Volume found #{emoji_probe}")
+      resp = upsert_passed_task("secrets_used","✔️  PASSED: Secret Volume or Reference found or ignored #{emoji_probe}")
     else
-      resp = upsert_failed_task("secrets_used","✖️  FAILED: Secret Volume not found #{emoji_probe}")
+      resp = upsert_failed_task("secrets_used","✖️  FAILED: Secret Volume or Reference not found #{emoji_probe}")
     end
     resp
   end
