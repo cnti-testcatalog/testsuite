@@ -351,7 +351,7 @@ describe CnfConformance do
     begin
       LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_secret_ignore/cnf-conformance.yml verbose`
       $?.success?.should be_true
-      response_s = `./cnf-conformance secrets_used verbose`
+      response_s = `./cnf-conformance -lDEBUG secrets_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: Secret Volume or Reference found or ignored/ =~ response_s).should_not be_nil
