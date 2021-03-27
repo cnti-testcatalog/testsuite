@@ -391,23 +391,31 @@ task "secrets_used" do |_, args|
         if container["env"]?
           container["env"].as_a.find do |c|
           VERBOSE_LOGGING.debug "checking container: #{c_name}" if check_verbose(args)
-          if secrets["items"].as_a.all?{|s|
+          if secrets["items"].as_a.find{|s|
               s_name = s["metadata"]["name"]
               VERBOSE_LOGGING.debug "checking secret: #{s_name}" if check_verbose(args)
               found = s_name == c.dig?("valueFrom", "secretKeyRef", "name")
-              ignored = false
               if found
                 VERBOSE_LOGGING.info "container: #{c_name} found secret reference: #{s_name}" if check_verbose(args)
-              else
-                ignored = IGNORED_SECRET_TYPES.includes?(s["type"])
-                if ignored
-                  VERBOSE_LOGGING.info "container: #{c_name} ignored secret: #{s_name}" if check_verbose(args)
-                end
               end
-              ignored || found
+              found
               }
               secret_keyref_found_or_ignored = true
             end
+          end
+          if !secret_keyref_found_or_ignored
+            if secrets["items"].as_a.all?{|s|
+              s_name = s["metadata"]["name"]
+              VERBOSE_LOGGING.debug "checking secret: #{s_name}" if check_verbose(args)
+              ignored = IGNORED_SECRET_TYPES.includes?(s["type"])
+              if ignored
+                VERBOSE_LOGGING.info "container: #{c_name} ignored secret: #{s_name}" if check_verbose(args)
+              end
+              ignored
+              }
+              secret_keyref_found_or_ignored = true
+            end
+            secret_keyref_found_or_ignored
           end
         end
       end
