@@ -2,8 +2,8 @@
 helm_directory: chart
 git_clone_url: 
 install_script: chart
-release_name: coredns
-deployment_name: coredns-coredns 
+release_name: ignoresecret
+deployment_name: coredns-coredns
 deployment_label: k8s-app
 service_name: coredns-coredns
 application_deployment_names: [coredns]
@@ -15,4 +15,3 @@ container_names:
     rolling_version_change_test_tag: 1.8.0
     rollback_from_tag: 1.8.0 
 allowlist_helm_chart_container_names: []
-white_list_helm_chart_container_names: []

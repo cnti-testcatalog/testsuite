@@ -415,8 +415,8 @@ task "secrets_used" do |_, args|
               }
               secret_keyref_found_or_ignored = true
             end
-            secret_keyref_found_or_ignored
           end
+          secret_keyref_found_or_ignored
         end
       end
 

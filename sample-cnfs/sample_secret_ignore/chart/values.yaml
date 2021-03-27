@@ -49,7 +49,7 @@ rbac:
   # name:
 
 # isClusterService specifies whether chart should be deployed as cluster-service or normal k8s app.
-isClusterService: true
+isClusterService: false
 
 # Optional priority class to be used for the coredns pods. Used for autoscaler if autoscaler.priorityClassName not set.
 priorityClassName: ""
@@ -58,7 +58,7 @@ priorityClassName: ""
 # https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#coredns-configmap-options
 servers:
 - zones:
-  - zone: .
+  - zone: secret.zone
   port: 53
   plugins:
   - name: errors

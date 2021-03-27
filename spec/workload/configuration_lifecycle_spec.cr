@@ -349,7 +349,7 @@ describe CnfConformance do
 
   it "'secrets_used' should pass when secrets are ignored", tags: ["secrets_used"] do
     begin
-      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_secret_ignore/cnf-conformance.yml verbose `
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_secret_ignore/cnf-conformance.yml verbose`
       $?.success?.should be_true
       response_s = `./cnf-conformance secrets_used verbose`
       LOGGING.info response_s
