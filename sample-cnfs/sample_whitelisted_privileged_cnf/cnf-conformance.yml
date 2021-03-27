@@ -8,7 +8,7 @@ deployment_label: k8s-app
 service_name: privileged-coredns-coredns 
 application_deployment_names: [privileged-coredns-coredns]
 helm_chart_container_name: privileged-coredns-coredns
-white_list_helm_chart_container_names: [coredns]
+allowlist_helm_chart_container_names: [coredns]
 container_names: 
   - name: coredns 
     rolling_update_test_tag: "1.8.0"

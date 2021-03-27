@@ -13,7 +13,7 @@ task "microservice", ["reasonable_image_size", "reasonable_startup_time"] do |_,
   stdout_score("microservice")
 end
 
-desc "Does the CNF have a reasonable startup time?"
+desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
 task "reasonable_startup_time" do |_, args|
   unless check_destructive(args)
     upsert_skipped_task("reasonable_startup_time", "✖️  SKIPPED: skipping reasonable_startup_time: not in destructive mode")
@@ -108,7 +108,7 @@ task "reasonable_startup_time" do |_, args|
   end
 end
 
-desc "Does the CNF have a reasonable container image size?"
+desc "Does the CNF have a reasonable container image size (< 5GB)?"
 task "reasonable_image_size", ["install_dockerd"] do |_, args|
   unless check_dockerd
     upsert_skipped_task("reasonable_image_size", "✖️  SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install")

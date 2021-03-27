@@ -12,7 +12,7 @@ describe "Platform" do
     $?.success?.should be_true
   end
 
-  it "'oci_compliant' should pass if all runtimes are oci_compliant", tags: "platform:oci_compliant" do
+  it "'oci_compliant' should pass if all runtimes are oci_compliant", tags: ["platform:oci_compliant"] do
       response_s = `./cnf-conformance platform:oci_compliant`
       LOGGING.info response_s
       (/(PASSED){1}.*(which are OCI compliant runtimes){1}/ =~ response_s).should_not be_nil

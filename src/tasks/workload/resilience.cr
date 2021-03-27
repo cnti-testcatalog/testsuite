@@ -6,7 +6,7 @@ require "../utils/utils.cr"
 
 desc "The CNF conformance suite checks to see if the CNFs are resilient to failures."
 #task "resilience", ["chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill" ] do |t, args|
- task "resilience", ["pod_network_latency", "chaos_cpu_hog", "chaos_container_kill"] do |t, args|
+ task "resilience", ["pod_network_latency", "chaos_cpu_hog", "chaos_container_kill", "disk_fill"] do |t, args|
   VERBOSE_LOGGING.info "resilience" if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
@@ -22,7 +22,7 @@ task "chaos_network_loss", ["install_chaosmesh"] do |_, args|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
-      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && 
+      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? &&
           KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
         test_passed = true
       else
@@ -52,7 +52,7 @@ task "chaos_network_loss", ["install_chaosmesh"] do |_, args|
       end
       test_passed
     end
-    if task_response 
+    if task_response
       resp = upsert_passed_task("chaos_network_loss","✔️  PASSED: Replicas available match desired count after network chaos test #{emoji_chaos_network_loss}")
     else
       resp = upsert_failed_task("chaos_network_loss","✖️  FAILED: Replicas did not return desired count after network chaos test #{emoji_chaos_network_loss}")
@@ -98,7 +98,7 @@ task "chaos_cpu_hog", ["install_chaosmesh"] do |_, args|
       end
       test_passed
     end
-    if task_response 
+    if task_response
       resp = upsert_passed_task("chaos_cpu_hog","✔️  PASSED: Application pod is healthy after high CPU consumption #{emoji_chaos_cpu_hog}")
     else
       resp = upsert_failed_task("chaos_cpu_hog","✖️  FAILED: Application pod is not healthy after high CPU consumption #{emoji_chaos_cpu_hog}")
@@ -118,7 +118,7 @@ task "chaos_container_kill", ["install_chaosmesh"] do |_, args|
     resource_names = [] of Hash(String, String)
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
-      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && 
+      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? &&
           KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
         test_passed = true
       else
@@ -140,7 +140,7 @@ task "chaos_container_kill", ["install_chaosmesh"] do |_, args|
           # TODO Add SKIPPED to points.yml and set to points = 0
           # e.g. upsert_exception_task
           test_passed = false
-          puts "Chaosmesh chaos_container_kill failed to finish forresource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+          puts "Chaosmesh chaos_container_kill failed to finish for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
         end
       end
 
@@ -148,7 +148,7 @@ task "chaos_container_kill", ["install_chaosmesh"] do |_, args|
                          "name" => resource["name"].as_s}
       test_passed
     end
-    desired_passed = resource_names.map do |x| 
+    desired_passed = resource_names.map do |x|
       if KubectlClient::Get.resource_desired_is_available?(x["kind"], x["name"])
         true
       else
@@ -183,9 +183,9 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         test_passed = false
       end
       if test_passed
-        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/experiment.yaml")
+        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml")
         # install_experiment = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/experiment.yaml`
-        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/rbac.yaml")
+        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml")
         # install_rbac = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/rbac.yaml`
         annotate = `kubectl annotate --overwrite deploy/#{resource["name"]} litmuschaos.io/chaos="true"`
         # puts "#{install_experiment}" if check_verbose(args)
@@ -193,7 +193,7 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         # puts "#{annotate}" if check_verbose(args)
 
         chaos_experiment_name = "pod-network-latency"
-        test_name = "#{resource["name"]}-#{Random.rand(99)}" 
+        test_name = "#{resource["name"]}-#{Random.rand(99)}"
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
         template = Crinja.render(chaos_template_pod_network_latency, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name})
@@ -207,10 +207,50 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
       end
       test_passed
     end
-    if task_response 
+    if task_response
       resp = upsert_passed_task("pod_network_latency","✔️  PASSED: pod_network_latency chaos test passed 🗡️💀♻️")
     else
       resp = upsert_failed_task("pod_network_latency","✖️  FAILED: pod_network_latency chaos test failed 🗡️💀♻️")
+    end
+    resp
+  end
+end
+
+desc "Does the CNF crash when disk fill occurs"
+task "disk_fill", ["install_litmus"] do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "disk_fill" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+        test_passed = true
+      else
+        puts "No resource label found for disk_fill test for resource: #{resource["name"]}".colorize(:red)
+        test_passed = false
+      end
+      if test_passed
+        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/experiment.yaml")
+        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml")
+        annotate = `kubectl annotate --overwrite deploy/#{resource["name"]} litmuschaos.io/chaos="true"`
+
+        chaos_experiment_name = "disk-fill"
+        test_name = "#{resource["name"]}-#{Random.rand(99)}" 
+        chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
+
+        template = Crinja.render(chaos_template_disk_fill, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name})
+        chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
+        puts "#{chaos_config}" if check_verbose(args)
+        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        LitmusManager.wait_for_test(test_name,chaos_experiment_name,args)
+        LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+      end
+      test_passed
+    end
+    if task_response 
+      resp = upsert_passed_task("disk_fill","✔️  PASSED: disk_fill chaos test passed 🗡️💀♻️")
+    else
+      resp = upsert_failed_task("disk_fill","✖️  FAILED: disk_fill chaos test failed 🗡️💀♻️")
     end
     resp
   end
@@ -294,17 +334,17 @@ def chaos_template_pod_network_latency
   metadata:
     name: {{ test_name }}
     namespace: default
-  spec: 
+  spec:
     jobCleanUpPolicy: 'delete'
     annotationCheck: 'true'
     engineState: 'active'
     auxiliaryAppInfo: ''
     monitoring: false
-    appinfo: 
+    appinfo:
       appns: 'default'
       applabel: '{{ deployment_label}}={{ deployment_label_value }}'
       appkind: 'deployment'
-    chaosServiceAccount: {{ chaos_experiment_name }}-sa 
+    chaosServiceAccount: {{ chaos_experiment_name }}-sa
     experiments:
       - name: {{ chaos_experiment_name }}
         spec:
@@ -312,10 +352,10 @@ def chaos_template_pod_network_latency
             env:
               # If not provided it will take the first container of target pod
               - name: TARGET_CONTAINER
-                value: '' 
+                value: ''
 
               - name: NETWORK_INTERFACE
-                value: 'eth0'     
+                value: 'eth0'
 
               - name: NETWORK_LATENCY
                 value: '60000'
@@ -336,3 +376,42 @@ def chaos_template_pod_network_latency
 
   TEMPLATE
   end
+
+  def chaos_template_disk_fill
+    <<-TEMPLATE
+    apiVersion: litmuschaos.io/v1alpha1
+    kind: ChaosEngine
+    metadata:
+      name: {{ test_name }}
+      namespace: default
+    spec:
+      annotationCheck: 'true'
+      engineState: 'active'
+      auxiliaryAppInfo: ''
+      appinfo:
+        appns: 'default'
+        applabel: '{{ deployment_label}}={{ deployment_label_value }}'
+        appkind: 'deployment'
+      chaosServiceAccount: {{ chaos_experiment_name }}-sa
+      monitoring: false
+      jobCleanUpPolicy: 'delete'
+      experiments:
+        - name: {{ chaos_experiment_name }}
+          spec:
+            components:
+              env:
+                # specify the fill percentage according to the disk pressure required
+                - name: EPHEMERAL_STORAGE_MEBIBYTES
+                  value: '500'
+                  
+                - name: TARGET_CONTAINER
+                  value: '' 
+
+                - name: FILL_PERCENTAGE
+                  value: ''
+
+                - name: CONTAINER_PATH
+                  value: '/var/lib/containerd/io.containerd.grpc.v1.cri/containers/'
+                              
+    TEMPLATE
+    end
