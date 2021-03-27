@@ -403,21 +403,21 @@ task "secrets_used" do |_, args|
               secret_keyref_found_or_ignored = true
             end
           end
-          if !secret_keyref_found_or_ignored
-            if secrets["items"].as_a.all?{|s|
-              s_name = s["metadata"]["name"]
-              VERBOSE_LOGGING.debug "checking secret: #{s_name}" if check_verbose(args)
-              ignored = IGNORED_SECRET_TYPES.includes?(s["type"])
-              if ignored
-                VERBOSE_LOGGING.info "container: #{c_name} ignored secret: #{s_name}" if check_verbose(args)
-              end
-              ignored
-              }
-              secret_keyref_found_or_ignored = true
-            end
-          end
-          secret_keyref_found_or_ignored
         end
+        if !secret_keyref_found_or_ignored
+          if secrets["items"].as_a.all?{|s|
+            s_name = s["metadata"]["name"]
+            VERBOSE_LOGGING.debug "checking secret: #{s_name}" if check_verbose(args)
+            ignored = IGNORED_SECRET_TYPES.includes?(s["type"])
+            if ignored
+              VERBOSE_LOGGING.info "container: #{c_name} ignored secret: #{s_name}" if check_verbose(args)
+            end
+            ignored
+            }
+            secret_keyref_found_or_ignored = true
+          end
+        end
+        secret_keyref_found_or_ignored
       end
 
       # if at least 1 secret volume exists, and it is mounted, test passes
