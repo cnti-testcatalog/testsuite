@@ -347,6 +347,19 @@ describe CnfConformance do
     end
   end
 
+  it "'secrets_used' should fail when secrets should be referenced as environment variables by a container", tags: ["secrets_used"] do
+    begin
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_secret_env_no_ref/cnf-conformance.yml verbose `
+      $?.success?.should be_true
+      response_s = `./cnf-conformance secrets_used verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Secret Volume or Reference not found/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_secret_env verbose`
+    end
+  end
+
   it "'secrets_used' should pass when no secret volumes are mounted or no container secrets are provided (secrets ignored)`", tags: ["secrets_used"] do
     begin
       LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml verbose wait_count=0 `
