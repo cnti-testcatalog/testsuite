@@ -93,6 +93,18 @@ module CNFManager
     initialized && test_passed
   end
 
+  def self.cnf_installed?
+    LOGGING.info("cnf_config_list")
+    LOGGING.info("find: find #{CNF_DIR}/* -name #{CONFIG_FILE}")
+    cnf_conformance = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
+    LOGGING.info("find response: #{cnf_conformance}")
+    if cnf_conformance.size == 0 
+      false
+    else 
+      true
+    end
+  end
+
   def self.cnf_config_list(silent=false)
     LOGGING.info("cnf_config_list")
     LOGGING.info("find: find #{CNF_DIR}/* -name #{CONFIG_FILE}")
