@@ -56,7 +56,7 @@ module CNFManager
       unless File.exists?("#{POINTSFILE}")
         branch = ENV.has_key?("SCORING_ENV") ? ENV["SCORING_ENV"] : "master"
         default_scoring_yml = "https://raw.githubusercontent.com/cncf/cnf-conformance/#{branch}/scoring_config/#{DEFAULT_POINTSFILENAME}"
-        `wget #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}`
+        `curl #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}`
         `mv #{DEFAULT_POINTSFILENAME} #{POINTSFILE}`
       end
     end
