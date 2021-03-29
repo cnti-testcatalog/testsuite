@@ -241,7 +241,9 @@ crystal src/cnf-conformance.cr protected_access
 ```
 
 #### :heavy_check_mark: To test the [increasing and decreasing of capacity](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
-Optional: To install the sample coredns cnf:
+
+<details> <summary>Optional: To install the sample coredns cnf: to run test </summary>
+<p>
 
 ```
 ./cnf-conformance sample_coredns_setup helm_chart=<helm chart name>
@@ -258,6 +260,21 @@ Or optionally modify the your cnf's cnf-conformance.yml file to include the depl
 ```
 deployment_name: coredns/coredns 
 ```
+</p>
+</details>
+
+
+Remediation for failing this test:
+
+Check out the kubectl docs for how to manually scale your cnf
+
+https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources
+
+
+Here is some info about things that could cause failures:
+
+https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#failed-deployment
+
 #### :heavy_check_mark: To test if Cluster API is enabled on the platform and manages a node
 ```
 ./cnf-conformance clusterapi_enabled
