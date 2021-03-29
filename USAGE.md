@@ -264,16 +264,12 @@ deployment_name: coredns/coredns
 </details>
 
 
-Remediation for failing this test:
+**Remediation for failing this test:**
 
-Check out the kubectl docs for how to manually scale your cnf
+Check out the kubectl docs for how to [manually scale your cnf.](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
 
-https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources
+Also here is some info about [things that could cause failures.](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#failed-deployment)
 
-
-Here is some info about things that could cause failures:
-
-https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#failed-deployment
 
 #### :heavy_check_mark: To test if Cluster API is enabled on the platform and manages a node
 ```
