@@ -35,7 +35,6 @@ module CNFManager
                                      white_list_container_names: Array(String)) 
 
     def self.parse_config_yml(config_yml_path : String) : CNFManager::Config
-      puts "You must install a CNF first".colorize(:yellow) unless CNFManager.cnf_installed?
       LOGGING.debug "parse_config_yml config_yml_path: #{config_yml_path}"
       yml_file = CNFManager.ensure_cnf_conformance_yml_path(config_yml_path)
       #TODO modify the destination conformance yml instead of the source conformance yml 

@@ -24,7 +24,7 @@ task "all", ["workload", "platform"] do  |_, args|
 end
 
 desc "The CNF Conformance program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
-task "workload", ["automatic_cnf_install", "configuration_file_setup", "compatibility","statelessness", "security", "scalability", "configuration_lifecycle", "observability", "installability", "hardware_and_scheduling", "microservice", "resilience"] do  |_, args|
+task "workload", ["automatic_cnf_install", "ensure_cnf_installed", "configuration_file_setup", "compatibility","statelessness", "security", "scalability", "configuration_lifecycle", "observability", "installability", "hardware_and_scheduling", "microservice", "resilience"] do  |_, args|
   VERBOSE_LOGGING.info "workload" if check_verbose(args)
 
   total = CNFManager::Points.total_points("workload")
@@ -39,6 +39,14 @@ task "workload", ["automatic_cnf_install", "configuration_file_setup", "compatib
     stdout_failure "Failed required tasks: #{CNFManager::Points.failed_required_tasks.inspect}"
   end
   stdout_info "CNFManager::Points::Results.have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+end
+
+desc "Makes sure a cnf is in the cnf directory"
+task "ensure_cnf_installed" do |_, args|
+  unless CNFManager.cnf_installed?
+    puts "You must install a CNF first.".colorize(:yellow)
+    exit 1
+  end
 end
 
 task "version" do |_, args|
