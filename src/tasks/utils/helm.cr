@@ -33,7 +33,7 @@ module Helm
     def self.manifest_file_list(manifest_directory, silent=false)
       LOGGING.info("manifest_file_list")
       LOGGING.info "manifest_directory: #{manifest_directory}"
-      if manifest_directory && !manifest_directory.empty?
+      if manifest_directory && !manifest_directory.empty? && manifest_directory != "/"
         LOGGING.info("find: find #{manifest_directory}/ -name *.yml -o -name *.yaml")
         manifests = `find #{manifest_directory}/ -name "*.yml" -o -name "*.yaml"`.split("\n").select{|x| x.empty? == false}
         LOGGING.info("find response: #{manifests}")
