@@ -95,7 +95,7 @@ task "reasonable_startup_time" do |_, args|
     emoji_slow="🐢"
     startup_time_limit = 30
     if ENV["CRYSTAL_ENV"]? == "TEST"
-      startup_time_limit = 50
+      startup_time_limit = 37 
       LOGGING.info "startup_time_limit TEST mode: #{startup_time_limit}"
     end
     LOGGING.info "startup_time_limit: #{startup_time_limit}"
