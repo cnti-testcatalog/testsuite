@@ -48,7 +48,7 @@ describe "KubectlClient" do
       nodes = KubectlClient::Get.schedulable_nodes
       retries = retries + 1
     end
-    LOGGING.info "schedulable_node node: #{node}"
+    LOGGING.info "schedulable_node node: #{nodes}"
     # resp = KubectlClient::Get.schedulable_nodes
     (nodes).should_not be_nil
     if nodes 
