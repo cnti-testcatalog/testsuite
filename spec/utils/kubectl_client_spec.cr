@@ -40,7 +40,7 @@ describe "KubectlClient" do
   end
 
   it "'#KubectlClient.schedulable_nodes' should return all schedulable worker nodes", tags: ["kubectl-nodes"]  do
-    retry_limit = 6
+    retry_limit = 8
     retries = 1
     nodes = nil
     until (nodes && nodes.size > 0 && !nodes[0].empty?) || retries > retry_limit
@@ -48,6 +48,7 @@ describe "KubectlClient" do
       nodes = KubectlClient::Get.schedulable_nodes
       retries = retries + 1
     end
+    LOGGING.info "schedulable_node node: #{node}"
     # resp = KubectlClient::Get.schedulable_nodes
     (nodes).should_not be_nil
     if nodes 
