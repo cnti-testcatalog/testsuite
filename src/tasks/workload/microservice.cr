@@ -93,6 +93,12 @@ task "reasonable_startup_time" do |_, args|
 
     emoji_fast="🚀"
     emoji_slow="🐢"
+    startup_time_limit = 30
+    if ENV["CRYSTAL_ENV"]? == "TEST"
+      startup_time_limit = 50
+      LOGGING.info "startup_time_limit TEST mode: #{startup_time_limit}"
+    end
+
     if is_kubectl_applied && is_kubectl_deployed && elapsed_time.seconds < 30
       upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time #{emoji_fast}")
     else
