@@ -98,8 +98,9 @@ task "reasonable_startup_time" do |_, args|
       startup_time_limit = 50
       LOGGING.info "startup_time_limit TEST mode: #{startup_time_limit}"
     end
+    LOGGING.info "startup_time_limit: #{startup_time_limit}"
 
-    if is_kubectl_applied && is_kubectl_deployed && elapsed_time.seconds < 30
+    if is_kubectl_applied && is_kubectl_deployed && elapsed_time.seconds < startup_time_limit
       upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time #{emoji_fast}")
     else
       upsert_failed_task("reasonable_startup_time", "✖️  FAILED: CNF had a startup time of #{elapsed_time.seconds} seconds #{emoji_slow}")
