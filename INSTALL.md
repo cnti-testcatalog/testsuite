@@ -16,8 +16,7 @@ This will detail the required minimum requirements needed in order to support cn
 #### Minimum Requirements
 * **kubernetes cluster** *(Working k8s cluster, see [supported k8s and installation details](#Details-on-supported-k8s-clusters-and-installation) on installation.*
 * **kubectl** *(run commands against k8 clusters, see [installing kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for more details.*
-* **wget**
-* **curl** *(for binary only installs)*
+* **curl**
 * **helm 3.1.1** *or newer* *(cnf-conformance installs if not found locally)*
 
 #### Requirements for source installation

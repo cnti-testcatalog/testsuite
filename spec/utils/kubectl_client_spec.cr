@@ -1,5 +1,4 @@
 require "../spec_helper"
-require "colorize"
 require "../../src/tasks/utils/utils.cr"
 require "../../src/tasks/dockerd_setup.cr"
 require "../../src/tasks/utils/kubectl_client.cr"
@@ -41,10 +40,23 @@ describe "KubectlClient" do
   end
 
   it "'#KubectlClient.schedulable_nodes' should return all schedulable worker nodes", tags: ["kubectl-nodes"]  do
-    resp = KubectlClient::Get.schedulable_nodes
-    (resp.size).should be > 0
-    (resp[0]).should_not be_nil
-    (resp[0]).should_not be_empty
+    retry_limit = 50
+    retries = 1
+    nodes = nil
+    until (nodes && nodes.size > 0 && !nodes[0].empty?) || retries > retry_limit
+      LOGGING.info "schedulable_node retry: #{retries}"
+      sleep 1.0
+      nodes = KubectlClient::Get.schedulable_nodes
+      retries = retries + 1
+    end
+    LOGGING.info "schedulable_node node: #{nodes}"
+    # resp = KubectlClient::Get.schedulable_nodes
+    (nodes).should_not be_nil
+    if nodes 
+      (nodes.size).should be > 0
+      (nodes[0]).should_not be_nil
+      (nodes[0]).should_not be_empty
+    end
   end
 
   it "'#KubectlClient.containers' should return all containers defined in a deployment", tags: ["kubectl-pods"]  do

@@ -13,7 +13,7 @@ describe "CNF Conformance all Container Chaos" do
   #   $?.success?.should be_true
   # end
 
-  # it "'all ~platform ~compatibilty ~statelessness ~security ~scalability ~configuration_lifecycle ~observability ~installability ~hardware_and_scheduling ~microservice ~chaos_network_loss' should run the chaos tests", tags: "happy-path" do
+  # it "'all ~platform ~compatibilty ~statelessness ~security ~scalability ~configuration_lifecycle ~observability ~installability ~hardware_and_scheduling ~microservice ~chaos_network_loss' should run the chaos tests" do
   #   `./cnf-conformance samples_cleanup`
   #   response_s = `./cnf-conformance all ~platform ~compatibilty ~statelessness ~security ~scalability ~configuration_lifecycle ~observability ~installability ~hardware_and_scheduling ~microservice ~chaos_network_loss cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-conformance.yml deploy_with_chart=false verbose`
   #   LOGGING.info response_s
