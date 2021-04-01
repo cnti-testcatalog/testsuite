@@ -61,6 +61,7 @@ module ReleaseManager
         # build_resp = `crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"`
         # LOGGING.info "build_resp: #{build_resp}"
         # the name of the binary asset must be unique across all releases in github for project
+        # TODO if upsert version == test then make unique
         cnf_tarball_name = "cnf-conformance-#{upsert_version}.tar.gz"
         cnf_tarball = `tar -czvf #{cnf_tarball_name} ./#{cnf_bin_asset_name}`
         LOGGING.info "cnf_tarball: #{cnf_tarball}"

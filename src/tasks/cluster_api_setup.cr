@@ -2,6 +2,8 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
+require "http/client" 
+require "halite" 
 require "./utils/utils.cr"
 
 desc "Install Cluster API for Kind"
@@ -9,12 +11,16 @@ task "cluster_api_setup" do |_, args|
       current_dir = FileUtils.pwd 
       cluster_api_dir =  "#{current_dir}/#{TOOLS_DIR}/cluster-api";
 
-      `curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl`
-      `sudo chmod +x ./clusterctl`
-      `sudo mv ./clusterctl /usr/local/bin/clusterctl`
+      # `curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl`
+      Halite.follow.get("https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64") do |response| 
+        LOGGING.info "clusterctl response: #{response}"
+        File.write("clusterctl", response.body_io)
+      end 
+      LOGGING.info `sudo chmod +x ./clusterctl`
+      LOGGING.info `sudo mv ./clusterctl /usr/local/bin/clusterctl`
       
       unless Dir.exists?(cluster_api_dir)
-        `git clone https://github.com/kubernetes-sigs/cluster-api --depth 1 --branch v0.3.10 "#{cluster_api_dir}"`
+        LOGGING.info `git clone https://github.com/kubernetes-sigs/cluster-api --depth 1 --branch v0.3.10 "#{cluster_api_dir}"`
       end
       FileUtils.cd(cluster_api_dir)
       File.write("clusterctl-settings.json",
@@ -56,6 +62,7 @@ clusterctl config cluster capd --kubernetes-version v1.17.5 \
       KubectlClient::Get.wait_for_install_by_apply("capd.yaml")
 
       LOGGING.info `kubectl apply -f capd.yaml`
+      LOGGING.info "cluster api setup complete"
 end
 
 desc "Cleanup Cluster API"
