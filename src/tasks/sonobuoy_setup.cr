@@ -23,8 +23,12 @@ task "install_sonobuoy" do |_, args|
       FileUtils.mkdir_p("#{current_dir}/#{TOOLS_DIR}/sonobuoy") 
       # curl = `VERSION="#{k8s_version}" OS=linux ; curl -L "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_amd64.tar.gz" --output #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz`
       os="linux"
-      resp = HTTP::Client.get("https://github.com/vmware-tanzu/sonobuoy/releases/download/v#{k8s_version}/sonobuoy_#{k8s_version}_#{os}_amd64.tar.gz") do |response| 
-        File.write("#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz", response.body_io)
+      url = "https://github.com/vmware-tanzu/sonobuoy/releases/download/v#{k8s_version}/sonobuoy_#{k8s_version}_#{os}_amd64.tar.gz"
+      write_file = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz"
+      LOGGING.info "url: #{url}"
+      LOGGING.info "write_file: #{write_file}"
+      resp = HTTP::Client.get("#{url}") do |response| 
+        File.write("write_file", response.body_io)
       end 
       LOGGING.info "resp: #{resp}"
       # VERBOSE_LOGGING.debug curl if check_verbose(args)

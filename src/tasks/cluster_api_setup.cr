@@ -2,6 +2,7 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
+require "http/client" 
 require "./utils/utils.cr"
 
 desc "Install Cluster API for Kind"
