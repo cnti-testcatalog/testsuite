@@ -61,6 +61,7 @@ clusterctl config cluster capd --kubernetes-version v1.17.5 \
       KubectlClient::Get.wait_for_install_by_apply("capd.yaml")
 
       LOGGING.info `kubectl apply -f capd.yaml`
+      LOGGING.info "cluster api setup complete"
 end
 
 desc "Cleanup Cluster API"
