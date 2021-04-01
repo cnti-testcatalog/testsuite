@@ -25,7 +25,11 @@ namespace "platform" do
       task_response = CNFManager::Task.task_runner(args) do |args|
         current_dir = FileUtils.pwd
 
-        state_metric_releases = `curl -L -s https://quay.io/api/v1/repository/coreos/kube-state-metrics/tag/?limit=100`
+        # state_metric_releases = `curl -L -s https://quay.io/api/v1/repository/coreos/kube-state-metrics/tag/?limit=100`
+
+        resp = Halite.get("https://quay.io/api/v1/repository/coreos/kube-state-metrics/tag/?limit=100")
+        state_metric_releases = resp.body
+
         # Get the sha hash for the kube-state-metrics container
         sha_list = named_sha_list(state_metric_releases)
         LOGGING.debug "sha_list: #{sha_list}"
@@ -101,13 +105,18 @@ namespace "platform" do
 
 
         # Fetch image id sha256sums available for all upstream node-exporter releases
-        node_exporter_releases = `curl -L -s 'https://registry.hub.docker.com/v2/repositories/prom/node-exporter/tags?page_size=1024'`
+        # node_exporter_releases = `curl -L -s 'https://registry.hub.docker.com/v2/repositories/prom/node-exporter/tags?page_size=1024'`
+        resp = Halite.get("https://registry.hub.docker.com/v2/repositories/prom/node-exporter/tags?page_size=1024")
+        node_exporter_releases = resp.body
         tag_list = named_sha_list(node_exporter_releases)
         LOGGING.info "tag_list: #{tag_list}"
         if ENV["DOCKERHUB_USERNAME"]? && ENV["DOCKERHUB_PASSWORD"]?
             target_ns_repo = "prom/node-exporter"
           params = "service=registry.docker.io&scope=repository:#{target_ns_repo}:pull"
-          token = `curl --user "#{ENV["DOCKERHUB_USERNAME"]}:#{ENV["DOCKERHUB_PASSWORD"]}" "https://auth.docker.io/token?#{params}"`
+          # token = `curl --user "#{ENV["DOCKERHUB_USERNAME"]}:#{ENV["DOCKERHUB_PASSWORD"]}" "https://auth.docker.io/token?#{params}"`
+          resp = Halite.basic_auth(user: ENV["DOCKERHUB_USERNAME"], pass: ENV["DOCKERHUB_PASSWORD"]).
+            get("https://auth.docker.io/token?#{params}")
+          token = resp.body
           LOGGING.debug "token: #{token}"
           if token =~ /incorrect username/
             LOGGING.error "error: #{token}"
@@ -117,7 +126,12 @@ namespace "platform" do
             LOGGING.info "tag: #{tag}"
             tag = tag["name"]
 
-            image_id = `curl --header "Accept: application/vnd.docker.distribution.manifest.v2+json" "https://registry-1.docker.io/v2/#{target_ns_repo}/manifests/#{tag}" -H "Authorization:Bearer #{parsed_token["token"].as_s}"`
+            # image_id = `curl --header "Accept: application/vnd.docker.distribution.manifest.v2+json" "https://registry-1.docker.io/v2/#{target_ns_repo}/manifests/#{tag}" -H "Authorization:Bearer #{parsed_token["token"].as_s}"`
+            resp = Halite.auth("Bearer #{parsed_token["token"].as_s}").
+              get("https://registry-1.docker.io/v2/#{target_ns_repo}/manifests/#{tag}", 
+                  headers: {Accept: "application/vnd.docker.distribution.manifest.v2+json"})
+            image_id = resp.body
+
             parsed_image = JSON.parse(image_id)
 
             LOGGING.info "parsed_image config digest #{parsed_image["config"]["digest"]}"
@@ -165,7 +179,9 @@ end
     Retriable.retry do
       task_response = CNFManager::Task.task_runner(args) do |args|
         # Fetch image id sha256sums available for all upstream prometheus_adapter releases
-        prometheus_adapter_releases = `curl -L -s 'https://registry.hub.docker.com/v2/repositories/directxman12/k8s-prometheus-adapter-amd64/tags?page_size=1024'`
+        # prometheus_adapter_releases = `curl -L -s 'https://registry.hub.docker.com/v2/repositories/directxman12/k8s-prometheus-adapter-amd64/tags?page_size=1024'`
+        resp = Halite.get("https://registry.hub.docker.com/v2/repositories/directxman12/k8s-prometheus-adapter-amd64/tags?page_size=1024")
+        prometheus_adapter_releases = resp.body
         sha_list = named_sha_list(prometheus_adapter_releases)
         LOGGING.debug "sha_list: #{sha_list}"
 
@@ -241,13 +257,18 @@ end
 
 
         # Fetch image id sha256sums available for all upstream node-exporter releases
-        metrics_server_releases = `curl -L -s 'https://registry.hub.docker.com/v2/repositories/bitnami/metrics-server/tags?page=1'`
+        # metrics_server_releases = `curl -L -s 'https://registry.hub.docker.com/v2/repositories/bitnami/metrics-server/tags?page=1'`
+        resp = Halite.get("https://registry.hub.docker.com/v2/repositories/bitnami/metrics-server/tags?page=1")
+        metrics_server_releases = resp.body
         tag_list = named_sha_list(metrics_server_releases)
         LOGGING.info "tag_list: #{tag_list}"
         if ENV["DOCKERHUB_USERNAME"]? && ENV["DOCKERHUB_PASSWORD"]?
             target_ns_repo = "bitnami/metrics-server"
           params = "service=registry.docker.io&scope=repository:#{target_ns_repo}:pull"
-          token = `curl --user "#{ENV["DOCKERHUB_USERNAME"]}:#{ENV["DOCKERHUB_PASSWORD"]}" "https://auth.docker.io/token?#{params}"`
+          # token = `curl --user "#{ENV["DOCKERHUB_USERNAME"]}:#{ENV["DOCKERHUB_PASSWORD"]}" "https://auth.docker.io/token?#{params}"`
+          resp = Halite.basic_auth(user: ENV["DOCKERHUB_USERNAME"], pass: ENV["DOCKERHUB_PASSWORD"]).
+            get("https://auth.docker.io/token?#{params}")
+          token = resp.body
           if token =~ /incorrect username/
             LOGGING.error "error: #{token}"
           end
@@ -256,7 +277,11 @@ end
             LOGGING.debug "tag: #{tag}"
             tag = tag["name"]
 
-            image_id = `curl --header "Accept: application/vnd.docker.distribution.manifest.v2+json" "https://registry-1.docker.io/v2/#{target_ns_repo}/manifests/#{tag}" -H "Authorization:Bearer #{parsed_token["token"].as_s}"`
+            # image_id = `curl --header "Accept: application/vnd.docker.distribution.manifest.v2+json" "https://registry-1.docker.io/v2/#{target_ns_repo}/manifests/#{tag}" -H "Authorization:Bearer #{parsed_token["token"].as_s}"`
+            resp = Halite.auth("Bearer #{parsed_token["token"].as_s}").
+              get("https://registry-1.docker.io/v2/#{target_ns_repo}/manifests/#{tag}", 
+                  headers: {Accept: "application/vnd.docker.distribution.manifest.v2+json"})
+            image_id = resp.body
             parsed_image = JSON.parse(image_id)
 
             LOGGING.debug "parsed_image config digest #{parsed_image["config"]["digest"]}"

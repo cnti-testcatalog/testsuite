@@ -56,8 +56,11 @@ module CNFManager
       unless File.exists?("#{POINTSFILE}")
         branch = ENV.has_key?("SCORING_ENV") ? ENV["SCORING_ENV"] : "master"
         default_scoring_yml = "https://raw.githubusercontent.com/cncf/cnf-conformance/#{branch}/scoring_config/#{DEFAULT_POINTSFILENAME}"
-        LOGGING.info "curl -o #{DEFAULT_POINTSFILENAME} #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}"
-        `curl -o #{DEFAULT_POINTSFILENAME} #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}`
+        # LOGGING.info "curl -o #{DEFAULT_POINTSFILENAME} #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}"
+        # `curl -o #{DEFAULT_POINTSFILENAME} #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}`
+        HTTP::Client.get("#{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}") do |response| 
+          File.write("#{DEFAULT_POINTSFILENAME}", response.body_io)
+        end
         `mv #{DEFAULT_POINTSFILENAME} #{POINTSFILE}`
       end
     end
