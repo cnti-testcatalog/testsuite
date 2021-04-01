@@ -7,7 +7,7 @@ describe "Platform" do
     # LOGGING.debug `echo $KUBECONFIG`
     `./cnf-conformance samples_cleanup`
     $?.success?.should be_true
-    `./cnf-conformance setup`
+    LOGGING.info `./cnf-conformance setup`
     $?.success?.should be_true
     # LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose`
     # $?.success?.should be_true
