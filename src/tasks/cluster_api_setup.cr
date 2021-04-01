@@ -9,7 +9,10 @@ task "cluster_api_setup" do |_, args|
       current_dir = FileUtils.pwd 
       cluster_api_dir =  "#{current_dir}/#{TOOLS_DIR}/cluster-api";
 
-      `curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl`
+      # `curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl`
+      HTTP::Client.get("https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64") do |response| 
+        File.write("clusterctl", response.body_io)
+      end 
       `sudo chmod +x ./clusterctl`
       `sudo mv ./clusterctl /usr/local/bin/clusterctl`
       

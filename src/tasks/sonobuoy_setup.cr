@@ -21,8 +21,13 @@ task "install_sonobuoy" do |_, args|
       VERBOSE_LOGGING.debug "toolsdir : #{TOOLS_DIR}" if check_verbose(args)
       VERBOSE_LOGGING.debug "full path?: #{current_dir.to_s}/#{TOOLS_DIR}/sonobuoy" if check_verbose(args)
       FileUtils.mkdir_p("#{current_dir}/#{TOOLS_DIR}/sonobuoy") 
-      curl = `VERSION="#{k8s_version}" OS=linux ; curl -L "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_amd64.tar.gz" --output #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz`
-      VERBOSE_LOGGING.debug curl if check_verbose(args)
+      # curl = `VERSION="#{k8s_version}" OS=linux ; curl -L "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_amd64.tar.gz" --output #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz`
+      os="linux"
+      resp = HTTP::Client.get("https://github.com/vmware-tanzu/sonobuoy/releases/download/v#{k8s_version}/sonobuoy_#{k8s_version}_#{os}_amd64.tar.gz") do |response| 
+        File.write("#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz", response.body_io)
+      end 
+      LOGGING.info "resp: #{resp}"
+      # VERBOSE_LOGGING.debug curl if check_verbose(args)
       `tar -xzf #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz -C #{current_dir}/#{TOOLS_DIR}/sonobuoy/ && \
        chmod +x #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy && \
        rm #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz`

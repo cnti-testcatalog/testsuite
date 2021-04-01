@@ -73,6 +73,7 @@ namespace "platform" do
 
         # Install and find CRI Tools name
         File.write("cri_tools.yml", CRI_TOOLS)
+        #TODO use kubectlclient
         install_cri_tools = `kubectl create -f cri_tools.yml`
         pod_ready = ""
         pod_ready_timeout = 45
@@ -91,6 +92,7 @@ namespace "platform" do
         LOGGING.info "container_repo_digests: #{repo_digest_list}"
         id_sha256_list = repo_digest_list.reduce([] of String) do |acc, repo_digest|
           LOGGING.info "repo_digest: #{repo_digest}"
+          #TODO use kubectlclient
           cricti = `kubectl exec -ti #{cri_tools_pod} -- crictl inspecti #{repo_digest}`
           LOGGING.info "cricti: #{cricti}"
           begin
