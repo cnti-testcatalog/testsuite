@@ -12,13 +12,14 @@ task "cluster_api_setup" do |_, args|
 
       # `curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl`
       HTTP::Client.get("https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64") do |response| 
+        LOGGING.info "clusterctl response: #{response}"
         File.write("clusterctl", response.body_io)
       end 
-      `sudo chmod +x ./clusterctl`
-      `sudo mv ./clusterctl /usr/local/bin/clusterctl`
+      LOGGING.info `sudo chmod +x ./clusterctl`
+      LOGGING.info `sudo mv ./clusterctl /usr/local/bin/clusterctl`
       
       unless Dir.exists?(cluster_api_dir)
-        `git clone https://github.com/kubernetes-sigs/cluster-api --depth 1 --branch v0.3.10 "#{cluster_api_dir}"`
+        LOGGING.info `git clone https://github.com/kubernetes-sigs/cluster-api --depth 1 --branch v0.3.10 "#{cluster_api_dir}"`
       end
       FileUtils.cd(cluster_api_dir)
       File.write("clusterctl-settings.json",
