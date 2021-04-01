@@ -16,7 +16,7 @@ describe "Cluster API" do
 
   it "'clusterapi_enabled' should pass if cluster api is installed", tags: ["cluster-api"] do
     begin
-      `./cnf-conformance cluster_api_setup`
+      LOGGING.info `./cnf-conformance cluster_api_setup`
       current_dir = FileUtils.pwd 
       FileUtils.cd("#{current_dir}")
       response_s = `./cnf-conformance clusterapi_enabled poc`
