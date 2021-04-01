@@ -3,6 +3,7 @@ require "file_utils"
 require "colorize"
 require "totem"
 require "http/client"
+require "halite" 
 require "./utils/utils.cr"
 
 desc "Sets up Sonobuoy in the K8s Cluster"
@@ -27,9 +28,10 @@ task "install_sonobuoy" do |_, args|
       write_file = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz"
       LOGGING.info "url: #{url}"
       LOGGING.info "write_file: #{write_file}"
-      resp = HTTP::Client.get("#{url}") do |response| 
-        File.write("write_file", response.body_io)
+      resp = Halite.follow.get("#{url}") do |response| 
+        File.write("#{write_file}", response.body_io)
       end 
+      LOGGING.info "resp: #{resp}"
       LOGGING.info "resp: #{resp}"
       # VERBOSE_LOGGING.debug curl if check_verbose(args)
       `tar -xzf #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz -C #{current_dir}/#{TOOLS_DIR}/sonobuoy/ && \
