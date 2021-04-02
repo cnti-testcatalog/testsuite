@@ -228,11 +228,14 @@ module KubectlClient
       pod_ready : String | Nil
       current_replicas : String | Nil
       desired_replicas : String | Nil
+      #TODO use the kubectl client get
       all_kind = `kubectl get #{kind} --namespace=#{namespace}`
       LOGGING.debug "all_kind #{all_kind}}"
       # Intialization
       case kind.downcase
       when "replicaset", "deployment", "statefulset"
+        #TODO use the kubectl client get
+        #TODO add extra params for kubectl client get
         desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
         LOGGING.debug "desired_replicas #{desired_replicas}"
         current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
@@ -286,6 +289,42 @@ module KubectlClient
         true
       else
         LOGGING.info "kind/resource #{kind}, #{resource_name} not found."
+        false
+      end
+    end
+
+    #TODO add parameter and functionality that checks for individual pods to be successfully terminated
+    def self.resource_wait_for_uninstall(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default")
+      # Not all cnfs have #{kind}.  some have only a pod.  need to check if the
+      # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod
+      LOGGING.info "resource_wait_for_uninstall kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}"
+      empty_hash = {} of String => JSON::Any 
+      second_count = 0
+      pod_ready : String | Nil
+      #TODO use the kubectl client get
+      all_kind = `kubectl get #{kind} --namespace=#{namespace}`
+      LOGGING.debug "all_kind #{all_kind}}"
+
+      resource_uninstalled = KubectlClient::Get.resource(kind, resource_name)
+      # resource_uninstalled = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
+      LOGGING.debug "resource_uninstalled #{resource_uninstalled}"
+      
+      until (resource_uninstalled && resource_uninstalled.as_h == empty_hash)  || second_count > wait_count
+        LOGGING.info("second_count = #{second_count}")
+        sleep 1
+        LOGGING.debug "wait command: kubectl get #{kind} --namespace=#{namespace}"
+        # all_kind = `kubectl get #{kind} --namespace=#{namespace}`
+        resource_uninstalled = KubectlClient::Get.resource(kind, resource_name)
+        LOGGING.debug "resource_uninstalled #{resource_uninstalled}}"
+        second_count = second_count + 1
+      end
+
+        LOGGING.info "final resource_uninstalled #{resource_uninstalled}}"
+      if (resource_uninstalled && resource_uninstalled.as_h == empty_hash)
+        LOGGING.info "kind/resource #{kind}, #{resource_name} uninstalled."
+        true
+      else
+        LOGGING.info "kind/resource #{kind}, #{resource_name} is still present."
         false
       end
     end

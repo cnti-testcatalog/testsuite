@@ -19,11 +19,22 @@ describe "KubectlClient" do
     #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     helm = CNFSingleton.helm
     LOGGING.info helm
+    #TODO only need previous install now this helm install
     helm_install = `#{helm} install coredns stable/coredns`
     LOGGING.info helm_install
     KubectlClient::Get.wait_for_install("coredns-coredns")
     current_replicas = `kubectl get deployments coredns-coredns -o=jsonpath='{.status.readyReplicas}'`
     (current_replicas.to_i > 0).should be_true
+  end
+
+  it "'Kubectl::Get.resource_wait_for_uninstall' should wait for a cnf to be installed", tags: ["kubectl-install"]  do
+    LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-statefulset-cnf/cnf-conformance.yml verbose wait_count=0`
+
+    $?.success?.should be_true
+
+    LOGGING.debug `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample-statefulset-cnf/cnf-conformance.yml`
+    resp = KubectlClient::Get.resource_wait_for_uninstall("deployment", "my-release-wordpress")
+    (resp).should be_true
   end
 
   it "'#KubectlClient.get_nodes' should return the information about a node in json", tags: ["kubectl-nodes"]  do
