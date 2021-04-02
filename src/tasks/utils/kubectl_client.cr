@@ -374,6 +374,35 @@ module KubectlClient
       resource_desired_is_available?("deployment", deployment_name)
     end
 
+
+    #TODO make a function that gives all the pods for a resource
+    def self.pods_for_resource(kind : String, resource_name)
+      LOGGING.info "kind: #{kind}"
+      LOGGING.info "resource_name: #{resource_name}"
+      #TODO use get pods and use json
+      # all_pods = `kubectl get pods #{field_selector} -o json'`
+      all_pods = KubectlClient::Get.pods
+      LOGGING.info("all_pods: #{all_pods}")
+      # all_pod_names = all_pods[0].split(" ")
+      # time_stamps = all_pods[1].split(" ")
+      # pods_times = all_pod_names.map_with_index do |name, i|
+      #   {:name => name, :time => time_stamps[i]}
+      # end
+      # LOGGING.info("pods_times: #{pods_times}")
+      #
+      # latest_pod_time = pods_times.reduce({:name => "not found", :time => "not_found"}) do | acc, i |
+
+    end
+
+    #TODO create a function for waiting for the complete uninstall of a resource 
+    # that has pods
+    #TODO get all resources for a cnf
+    #TODO for a replicaset, deployment, statefulset, or daemonset list all pods
+    #TODO check for terminated status of all pods to be complete (check if pod 
+    # no longer exists)
+    # def self.resource_wait_for_termination
+    # end
+
     #TODO remove the need for a split and return name/ true /false in a hash
     #TODO add a spec for this
     def self.pod_status(pod_name_prefix, field_selector="", namespace="default")

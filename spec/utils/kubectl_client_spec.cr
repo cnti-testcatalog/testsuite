@@ -37,6 +37,12 @@ describe "KubectlClient" do
     (resp).should be_true
   end
 
+  it "'#KubectlClient.pods_for_resource' should return the pods for a resource", tags: ["kubectl-nodes"]  do
+    LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-statefulset-cnf/cnf-conformance.yml verbose wait_count=0`
+    json = KubectlClient::Get.pods_for_resource("deployment", "my-release-wordpress")
+    #(json["items"].size).should be > 0
+  end
+
   it "'#KubectlClient.get_nodes' should return the information about a node in json", tags: ["kubectl-nodes"]  do
     json = KubectlClient::Get.nodes
     (json["items"].size).should be > 0
