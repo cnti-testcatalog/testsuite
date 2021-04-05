@@ -126,7 +126,15 @@ describe CnfConformance do
     begin
       LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml verbose wait_count=0`
       $?.success?.should be_true
-      response_s = `./cnf-conformance rolling_downgrade verbose`
+      retry_limit = 5 
+      retries = 1
+      response_s = "" 
+      until (/Passed/ =~ response_s) || retries > retry_limit
+        LOGGING.info "rolling_downgrade retry: #{retries}"
+        sleep 1.0
+        response_s = `./cnf-conformance rolling_downgrade verbose`
+        retries = retries + 1
+      end
       LOGGING.info response_s
       $?.success?.should be_true
       (/Passed/ =~ response_s).should_not be_nil
