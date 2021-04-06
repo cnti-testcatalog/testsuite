@@ -323,7 +323,7 @@ describe CnfConformance do
       response_s = `./cnf-conformance secrets_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Secret Volume found/ =~ response_s).should_not be_nil
+      (/PASSED: Secrets defined and used/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_secret_volume verbose`
     end
@@ -336,7 +336,7 @@ describe CnfConformance do
       response_s = `./cnf-conformance secrets_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Secret Volume not found/ =~ response_s).should_not be_nil
+      (/SKIPPED: Secrets not used/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_unmounted_secret_volume verbose`
     end
@@ -349,7 +349,7 @@ describe CnfConformance do
       response_s = `./cnf-conformance secrets_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Secret Volume found/ =~ response_s).should_not be_nil
+      (/PASSED: Secrets defined and used/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_secret_env verbose`
     end
@@ -362,7 +362,7 @@ describe CnfConformance do
       response_s = `./cnf-conformance secrets_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Secret Volume not found/ =~ response_s).should_not be_nil
+      (/SKIPPED: Secrets not used/ =~ response_s).should_not be_nil
     ensure
       `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_coredns verbose`
     end

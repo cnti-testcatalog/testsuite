@@ -415,9 +415,9 @@ task "secrets_used" do |_, args|
       test_passed
     end
     if task_response
-      resp = upsert_passed_task("secrets_used","✔️  PASSED: Secret Volume found #{emoji_probe}")
+      resp = upsert_passed_task("secrets_used","✔️  PASSED: Secrets defined and used #{emoji_probe}")
     else
-      resp = upsert_failed_task("secrets_used","✖️  FAILED: Secret Volume not found #{emoji_probe}")
+      resp = upsert_skipped_task("secrets_used","✖️  SKIPPED: Secrets not used #{emoji_probe}")
     end
     resp
   end
