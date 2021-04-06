@@ -426,8 +426,9 @@ task "secrets_used" do |_, args|
       #  and is defined, test passes
       # if at least 1 container secret exists, but it is not defined, this
       # is an installation problem
-      # if no secret volume exists and no container secret exists, test fails
-      # unless the secret is ignored
+      # if no secret volume exists and no container secret exists, test skipped 
+      # if no secret volume exists and no container secret exists, and all the rest of the 
+      #  secrets are ignored, test skipped
       test_passed = false
       if secret_keyref_found_or_ignored || volume_test_passed
         test_passed = true
