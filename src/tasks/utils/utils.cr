@@ -290,6 +290,8 @@ def stdout_score(test_name)
   end
 end
 
+# this method extracts a string value from a config section if it exists
+# if the value is an integer it will be converted to a string before extraction
 def optional_key_as_string(totem_config, key_name)
   "#{totem_config[key_name]? && (totem_config[key_name].as_s? || totem_config[key_name].as_i?)}"
 end
