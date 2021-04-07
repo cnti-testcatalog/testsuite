@@ -228,11 +228,14 @@ module KubectlClient
       pod_ready : String | Nil
       current_replicas : String | Nil
       desired_replicas : String | Nil
+      #TODO use the kubectl client get
       all_kind = `kubectl get #{kind} --namespace=#{namespace}`
       LOGGING.debug "all_kind #{all_kind}}"
       # Intialization
       case kind.downcase
       when "replicaset", "deployment", "statefulset"
+        #TODO use the kubectl client get
+        #TODO add extra params for kubectl client get
         desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
         LOGGING.debug "desired_replicas #{desired_replicas}"
         current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
@@ -290,6 +293,42 @@ module KubectlClient
       end
     end
 
+    #TODO add parameter and functionality that checks for individual pods to be successfully terminated
+    def self.resource_wait_for_uninstall(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default")
+      # Not all cnfs have #{kind}.  some have only a pod.  need to check if the
+      # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod
+      LOGGING.info "resource_wait_for_uninstall kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}"
+      empty_hash = {} of String => JSON::Any 
+      second_count = 0
+      pod_ready : String | Nil
+      #TODO use the kubectl client get
+      all_kind = `kubectl get #{kind} --namespace=#{namespace}`
+      LOGGING.debug "all_kind #{all_kind}}"
+
+      resource_uninstalled = KubectlClient::Get.resource(kind, resource_name)
+      # resource_uninstalled = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
+      LOGGING.debug "resource_uninstalled #{resource_uninstalled}"
+      
+      until (resource_uninstalled && resource_uninstalled.as_h == empty_hash)  || second_count > wait_count
+        LOGGING.info("second_count = #{second_count}")
+        sleep 1
+        LOGGING.debug "wait command: kubectl get #{kind} --namespace=#{namespace}"
+        # all_kind = `kubectl get #{kind} --namespace=#{namespace}`
+        resource_uninstalled = KubectlClient::Get.resource(kind, resource_name)
+        LOGGING.debug "resource_uninstalled #{resource_uninstalled}}"
+        second_count = second_count + 1
+      end
+
+        LOGGING.info "final resource_uninstalled #{resource_uninstalled}}"
+      if (resource_uninstalled && resource_uninstalled.as_h == empty_hash)
+        LOGGING.info "kind/resource #{kind}, #{resource_name} uninstalled."
+        true
+      else
+        LOGGING.info "kind/resource #{kind}, #{resource_name} is still present."
+        false
+      end
+    end
+
     #TODO make dockercluser reference generic
     def self.wait_for_install_by_apply(manifest_file, wait_count=180)
       LOGGING.info "wait_for_install_by_apply"
@@ -334,6 +373,35 @@ module KubectlClient
     def self.desired_is_available?(deployment_name)
       resource_desired_is_available?("deployment", deployment_name)
     end
+
+
+    #TODO make a function that gives all the pods for a resource
+    def self.pods_for_resource(kind : String, resource_name)
+      LOGGING.info "kind: #{kind}"
+      LOGGING.info "resource_name: #{resource_name}"
+      #TODO use get pods and use json
+      # all_pods = `kubectl get pods #{field_selector} -o json'`
+      all_pods = KubectlClient::Get.pods
+      LOGGING.info("all_pods: #{all_pods}")
+      # all_pod_names = all_pods[0].split(" ")
+      # time_stamps = all_pods[1].split(" ")
+      # pods_times = all_pod_names.map_with_index do |name, i|
+      #   {:name => name, :time => time_stamps[i]}
+      # end
+      # LOGGING.info("pods_times: #{pods_times}")
+      #
+      # latest_pod_time = pods_times.reduce({:name => "not found", :time => "not_found"}) do | acc, i |
+
+    end
+
+    #TODO create a function for waiting for the complete uninstall of a resource 
+    # that has pods
+    #TODO get all resources for a cnf
+    #TODO for a replicaset, deployment, statefulset, or daemonset list all pods
+    #TODO check for terminated status of all pods to be complete (check if pod 
+    # no longer exists)
+    # def self.resource_wait_for_termination
+    # end
 
     #TODO remove the need for a split and return name/ true /false in a hash
     #TODO add a spec for this

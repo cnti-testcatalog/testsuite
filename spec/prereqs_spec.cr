@@ -11,8 +11,8 @@ describe "Prereq" do
     LOGGING.info response_s
     $?.success?.should be_true
     (/helm found/ =~ response_s).should_not be_nil
-    (/wget found/ =~ response_s).should_not be_nil
-    (/curl found/ =~ response_s).should_not be_nil
+    # (/wget found/ =~ response_s).should_not be_nil
+    # (/curl found/ =~ response_s).should_not be_nil
     (/kubectl found/ =~ response_s).should_not be_nil
     (/git found/ =~ response_s).should_not be_nil
   end

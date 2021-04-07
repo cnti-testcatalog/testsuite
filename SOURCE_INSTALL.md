@@ -15,7 +15,7 @@ This INSTALL guide will detail the minimum requirements needed for cnf-conforman
 #### Requirements
 * **kubernetes cluster** *(Working k8s cluster, see [supported k8s and installation details](#Details-on-supported-k8s-clusters-and-installation) on installation.*
 * **kubectl** *(run commands against k8 clusters, see [installing kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for more details.*
-* **wget**
+* **curl**
 * **helm 3.1.1** *or newer* *(cnf-conformance installs if not found locally)*
 * **git** *(used to check out code from github)*
 * **crystal-lang** version 0.35.1 *(to compile the source and build the binary, see [crystal installation](https://crystal-lang.org/install/)) for more information.*
@@ -158,7 +158,7 @@ To use CoreDNS as an example CNF. Download the conformance configuration to test
 
 - Make sure you are in your cnf-conformance/ source repo checkout directory and do the following:
   ```
-  wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
+  curl -o cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
   ```
 - Prepare the test suite to use the CNF by running:
   ```

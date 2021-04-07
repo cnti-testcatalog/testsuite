@@ -1,5 +1,4 @@
 require "../spec_helper"
-require "colorize"
 require "../../src/tasks/utils/utils.cr"
 require "../../src/tasks/dockerd_setup.cr"
 require "../../src/tasks/utils/kubectl_client.cr"
@@ -20,11 +19,28 @@ describe "KubectlClient" do
     #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     helm = CNFSingleton.helm
     LOGGING.info helm
+    #TODO only need previous install now this helm install
     helm_install = `#{helm} install coredns stable/coredns`
     LOGGING.info helm_install
     KubectlClient::Get.wait_for_install("coredns-coredns")
     current_replicas = `kubectl get deployments coredns-coredns -o=jsonpath='{.status.readyReplicas}'`
     (current_replicas.to_i > 0).should be_true
+  end
+
+  it "'Kubectl::Get.resource_wait_for_uninstall' should wait for a cnf to be installed", tags: ["kubectl-install"]  do
+    LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-statefulset-cnf/cnf-conformance.yml verbose wait_count=0`
+
+    $?.success?.should be_true
+
+    LOGGING.debug `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample-statefulset-cnf/cnf-conformance.yml`
+    resp = KubectlClient::Get.resource_wait_for_uninstall("deployment", "my-release-wordpress")
+    (resp).should be_true
+  end
+
+  it "'#KubectlClient.pods_for_resource' should return the pods for a resource", tags: ["kubectl-nodes"]  do
+    LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-statefulset-cnf/cnf-conformance.yml verbose wait_count=0`
+    json = KubectlClient::Get.pods_for_resource("deployment", "my-release-wordpress")
+    #(json["items"].size).should be > 0
   end
 
   it "'#KubectlClient.get_nodes' should return the information about a node in json", tags: ["kubectl-nodes"]  do
@@ -41,10 +57,23 @@ describe "KubectlClient" do
   end
 
   it "'#KubectlClient.schedulable_nodes' should return all schedulable worker nodes", tags: ["kubectl-nodes"]  do
-    resp = KubectlClient::Get.schedulable_nodes
-    (resp.size).should be > 0
-    (resp[0]).should_not be_nil
-    (resp[0]).should_not be_empty
+    retry_limit = 50
+    retries = 1
+    nodes = nil
+    until (nodes && nodes.size > 0 && !nodes[0].empty?) || retries > retry_limit
+      LOGGING.info "schedulable_node retry: #{retries}"
+      sleep 1.0
+      nodes = KubectlClient::Get.schedulable_nodes
+      retries = retries + 1
+    end
+    LOGGING.info "schedulable_node node: #{nodes}"
+    # resp = KubectlClient::Get.schedulable_nodes
+    (nodes).should_not be_nil
+    if nodes 
+      (nodes.size).should be > 0
+      (nodes[0]).should_not be_nil
+      (nodes[0]).should_not be_empty
+    end
   end
 
   it "'#KubectlClient.containers' should return all containers defined in a deployment", tags: ["kubectl-pods"]  do
