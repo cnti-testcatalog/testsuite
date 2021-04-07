@@ -11,6 +11,7 @@ FAILED = "failed"
 SKIPPED = "skipped"
 DEFAULT_POINTSFILENAME = "points_v1.yml"
 PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
+IGNORED_SECRET_TYPES = ["kubernetes.io/service-account-token", "kubernetes.io/dockercfg", "kubernetes.io/dockerconfigjson", "helm.sh/release.v1"]
 
 #Embedded global text variables
 EmbeddedFileManager.node_failure_values
@@ -25,7 +26,7 @@ class CNFGlobals
   CNF_DIR = "cnfs"
   @helm: String?
   # Get helm directory
-  def helm 
+  def helm
     @helm ||= global_helm_installed? ? "helm" : Helm.local_helm_path
   end
 end
