@@ -20,6 +20,16 @@ task "increase_decrease_capacity", ["increase_capacity", "decrease_capacity"] do
 end
 
 
+def increase_decrease_capacity_failure_msg(target_replicas, emoji)
+<<-TEMPLATE
+✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji}
+
+To addresss this issue please follow this link here
+
+https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#heavy_check_mark-to-test-the-increasing-and-decreasing-of-capacity
+TEMPLATE
+end
+
 desc "Test increasing capacity by setting replicas to 1 and then increasing to 3"
 task "increase_capacity" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
@@ -44,7 +54,7 @@ task "increase_capacity" do |_, args|
     if task_response.none?(false) 
       upsert_passed_task("increase_capacity", "✔️  PASSED: Replicas increased to #{target_replicas} #{emoji_increase_capacity}")
     else
-      upsert_failed_task("increase_capacity", "✖️  FAILED: Replicas did not reach #{target_replicas} #{emoji_increase_capacity}")
+      upsert_failed_task("increase_capacity", increase_decrease_capacity_failure_msg(target_replicas, emoji_increase_capacity))
     end
   end
 end
@@ -73,7 +83,7 @@ task "decrease_capacity" do |_, args|
     if task_response.none?(false) 
       upsert_passed_task("decrease_capacity", "✔️  PASSED: Replicas decreased to #{target_replicas} #{emoji_decrease_capacity}")
     else
-      upsert_failed_task("decrease_capacity", "✖️  FAILED: Replicas did not reach #{target_replicas} #{emoji_decrease_capacity}")
+      upsert_failed_task("decrease_capacity", increase_decrease_capacity_failure_msg(target_replicas, emoji_decrease_capacity))
     end
   end
 end
