@@ -7,6 +7,7 @@ require "log"
 require "file_utils"
 require "option_parser"
 require "../constants.cr"
+require "semantic_version"
 
 def log_formatter
   Log::Formatter.new do |entry, io|
@@ -296,3 +297,11 @@ def optional_key_as_string(totem_config, key_name)
   "#{totem_config[key_name]? && (totem_config[key_name].as_s? || totem_config[key_name].as_i?)}"
 end
 
+# compare 2 SemVer strings and return true if v1 is less than v2
+def version_less_than(v1str, v2str)
+  v1 = SemanticVersion.parse(v1str)
+  v2 = SemanticVersion.parse(v2str)
+  less_than = (v1 <=> v2) == -1
+  LOGGING.debug "version_less_than: #{v1} < #{v2}: #{less_than}"
+  less_than
+end

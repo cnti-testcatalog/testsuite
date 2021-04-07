@@ -1,0 +1,10 @@
+---
+helm_directory: postgresql
+git_clone_url: 
+install_script: chart
+release_name: postgresql
+service_name: postgresql
+container_names: 
+  - name: postgresql 
+    rolling_update_test_tag: "1.8.0"
+allowlist_helm_chart_container_names: []

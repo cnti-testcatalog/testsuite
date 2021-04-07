@@ -340,12 +340,10 @@ task "secrets_used" do |_, args|
       LOGGING.info "volumes: #{volumes}"
 
       volume_test_passed = false
-      secret_volume_exists = false
-      secret_volume_mounted = true
-      # Check to see all volume secrets are actually used
+      container_secret_mounted = false
+      # Check to see any volume secrets are actually used
       volumes.as_a.each do |secret_volume|
         if secret_volume["secret"]?
-          secret_volume_exists = true
           LOGGING.info "secret_volume: #{secret_volume["name"]}"
           container_secret_mounted = false
           containers.as_a.each do |container|
@@ -356,23 +354,17 @@ task "secrets_used" do |_, args|
               if (vmount.find { |x| x["name"] == secret_volume["name"]? })
                 LOGGING.debug secret_volume["name"]
                 container_secret_mounted = true
+                volume_test_passed = true
               end
             end
           end
           # If any secret volume exists, and it is not mounted by a
-          # container, fail test
-          if container_secret_mounted == false
-            secret_volume_mounted = false
+          # container, issue a warning 
+          unless container_secret_mounted
+            puts "Warning: secret volume #{secret_volume["name"]} not mounted".colorize(:yellow)
           end
         end
       end
-      if secret_volume_exists && secret_volume_mounted
-        volume_test_passed = true
-      end
-
-
-      # TODO if a container exists which has a secretkeyref defined
-      # and also has a corresponding k8s secret defined, the whole test passes.
 
       #  if there are any containers that have a secretkeyref defined
       #  but do not have a corresponding k8s secret defined, this
@@ -384,40 +376,47 @@ task "secrets_used" do |_, args|
         s_type = s["type"]
         VERBOSE_LOGGING.info "secret name: #{s_name}, type: #{s_type}" if check_verbose(args)
       end
-      secret_keyref_found = false
+      secret_keyref_found_and_not_ignored = false
       containers.as_a.each do |container|
-        VERBOSE_LOGGING.info "container envs #{container["env"]?}" if check_verbose(args)
+        c_name = container["name"]
+        VERBOSE_LOGGING.info "container: #{c_name} envs #{container["env"]?}" if check_verbose(args)
         if container["env"]?
-          container["env"].as_a.find do |c|
-          if secrets["items"].as_a.find{|s|
-              s["metadata"]["name"] == c.dig?("valueFrom", "secretKeyRef", "name")}
-              secret_keyref_found = true
-            end
+          container["env"].as_a.find do |env|
+            VERBOSE_LOGGING.debug "checking container: #{c_name}" if check_verbose(args)
+            secret_keyref_found_and_not_ignored = secrets["items"].as_a.find do |s|
+              s_name = s["metadata"]["name"]
+              if IGNORED_SECRET_TYPES.includes?(s["type"])
+                VERBOSE_LOGGING.info "container: #{c_name} ignored secret: #{s_name}" if check_verbose(args)
+                next
+              end
+              VERBOSE_LOGGING.debug "checking secret: #{s_name}" if check_verbose(args)
+              found = (s_name == env.dig?("valueFrom", "secretKeyRef", "name"))
+              if found
+                VERBOSE_LOGGING.info "container: #{c_name} found secret reference: #{s_name}" if check_verbose(args)
+              end
+              found
+            end 
           end
         end
       end
 
-      # if at least 1 secret volume exists, and it is mounted, test passes
-      # if at least 1 secret volume exists, but it is not mounted, test fails
-      # if no secret volumes exist, but a container secret exists
-      #  and is defined, test passes
-      # if at least 1 container secret exists, but it is not defined, this
-      # is an installation problem
-      # if no secret volume exists and no container secret exists, test fails
+      # Always pass if any workload resource in a cnf uses a (non-exempt) secret. 
+      # If the  workload resource does not use a (non-exempt) secret, always skip.  
+
       test_passed = false
-      if secret_keyref_found || volume_test_passed
+      if secret_keyref_found_and_not_ignored || volume_test_passed
         test_passed = true
       end
 
       unless test_passed
-        puts "No Secret Volumes or Container secretKeyRefs found for resource: #{resource}".colorize(:red)
+        puts "No Secret Volumes or Container secretKeyRefs found for resource: #{resource}".colorize(:yellow)
       end
       test_passed
     end
     if task_response
-      resp = upsert_passed_task("secrets_used","✔️  PASSED: Secret Volume found #{emoji_probe}")
+      resp = upsert_passed_task("secrets_used","✔️  PASSED: Secrets defined and used #{emoji_probe}")
     else
-      resp = upsert_failed_task("secrets_used","✖️  FAILED: Secret Volume not found #{emoji_probe}")
+      resp = upsert_skipped_task("secrets_used","⏭  #{secrets_used_skipped_msg(emoji_probe)}")
     end
     resp
   end
@@ -465,12 +464,20 @@ task "immutable_configmap" do |_, args|
     test_config_map_create = `echo "#{template}" > "#{test_config_map_filename}"`
     VERBOSE_LOGGING.debug "test_config_map_create: #{test_config_map_create}" if check_verbose(args)
 
+    immutable_configmap_supported = true
     # if the reapply with a change succedes immmutable configmaps is NOT enabled
     # if KubectlClient::Apply.file(test_config_map_filename) == 0
     if KubectlClient::Apply.file(test_config_map_filename)
       LOGGING.info "kubectl apply failed for: #{test_config_map_filename}"
-      resp = "✖️  FAILED: immmutable configmaps are not enabled in this k8s cluster.".colorize(:red)
-      upsert_failed_task("immutable_configmap", resp)
+      k8s_ver = KubectlClient.server_version
+      if version_less_than(k8s_ver, "1.19.0")
+        resp = "✖️  SKIPPED: immmutable configmaps are not supported in this k8s cluster.".colorize(:yellow)
+        upsert_skipped_task("immutable_configmap", resp)
+        immutable_configmap_supported = false
+      else
+        resp = "✖️  FAILED: immmutable configmaps are not enabled in this k8s cluster.".colorize(:red)
+        upsert_failed_task("immutable_configmap", resp)
+      end
     end
 
     # cleanup test configmap
@@ -555,11 +562,22 @@ task "immutable_configmap" do |_, args|
     if cnf_manager_workload_resource_task_response
       resp = "✔️  PASSED: All volume or container mounted configmaps immutable #{emoji_probe}".colorize(:green)
       upsert_passed_task("immutable_configmap", resp)
-    else
+    elsif immutable_configmap_supported
       resp = "✖️  FAILED: Found mutable configmap(s) #{emoji_probe}".colorize(:red)
       upsert_failed_task("immutable_configmap", resp)
+    else
+      resp = "✖️  SKIPPED: Immutable configmap(s) not supported #{emoji_probe}".colorize(:yellow)
+      upsert_skipped_task("immutable_configmap", resp)
     end
     resp
   end
 end
 
+def secrets_used_skipped_msg(emoji)
+<<-TEMPLATE
+SKIPPED: Secrets not used #{emoji}
+
+To addresss this issue please see the USAGE.md documentation 
+
+TEMPLATE
+end
