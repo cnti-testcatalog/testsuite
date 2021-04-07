@@ -339,6 +339,10 @@ crystal src/cnf-conformance.cr external_retry
 ```
 ./cnf-conformance secrets_used
 ```
+##Additional information##
+Rules for the test:
+The whole test passes if *any* workload resource in the cnf uses a (non-exempt) secret. 
+If no workload resources use a (non-exempt) secret, the test is skipped.  
 
 #### :heavy_check_mark: To check if a CNF version uses [immutable configmaps](https://kubernetes.io/docs/concepts/configuration/configmap/#configmap-immutable)
 ```

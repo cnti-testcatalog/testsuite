@@ -4,7 +4,7 @@ require "colorize"
 
 describe CnfConformance do
   before_all do
-    LOGGING.debug `pwd` 
+    LOGGING.debug `pwd`
     LOGGING.debug `echo $KUBECONFIG`
 
     `./cnf-conformance setup`
@@ -16,7 +16,7 @@ describe CnfConformance do
     # $?.success?.should be_true
   end
 
-  
+
   it "'liveness' should pass when livenessProbe is set", tags: ["liveness"] do
     begin
       LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-conformance.yml deploy_with_chart=false`
@@ -29,8 +29,8 @@ describe CnfConformance do
       LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-conformance.yml deploy_with_chart=false `
     end
   end
-  
-  it "'liveness' should fail when livenessProbe is not set", tags: ["liveness"] do 
+
+  it "'liveness' should fail when livenessProbe is not set", tags: ["liveness"] do
     begin
       LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns_bad_liveness/cnf-conformance.yml verbose wait_count=0`
       $?.success?.should be_true
@@ -42,7 +42,7 @@ describe CnfConformance do
       `./cnf-conformance sample_coredns_bad_liveness_cleanup`
     end
   end
-  
+
   it "'readiness' should pass when readinessProbe is set", tags: ["readiness"] do
     begin
       LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-conformance.yml deploy_with_chart=false`
@@ -55,7 +55,7 @@ describe CnfConformance do
       LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-conformance.yml deploy_with_chart=false `
     end
   end
-  
+
   it "'readiness' should fail when readinessProbe is not set", tags: ["readiness"] do
     begin
       LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns_bad_liveness/cnf-conformance.yml verbose wait_count=0`
@@ -107,9 +107,9 @@ describe CnfConformance do
       KubectlClient.exec("dockerd -ti -- docker pull coredns/coredns:1.8.0")
       KubectlClient.exec("dockerd -ti -- docker tag coredns/coredns:1.8.0 registry:5000/coredns:1.8.0")
       KubectlClient.exec("dockerd -ti -- docker push registry:5000/coredns:1.8.0")
-      
+
       cnf="./sample-cnfs/sample_local_registry"
-      
+
       LOGGING.info `./cnf-conformance cnf_setup cnf-path=#{cnf}`
       response_s = `./cnf-conformance rolling_update verbose`
       LOGGING.info response_s
@@ -168,9 +168,9 @@ describe CnfConformance do
       KubectlClient.exec("dockerd -ti -- docker pull coredns/coredns:1.8.0")
       KubectlClient.exec("dockerd -ti -- docker tag coredns/coredns:1.8.0 registry:5000/coredns:1.8.0")
       KubectlClient.exec("dockerd -ti -- docker push registry:5000/coredns:1.8.0")
-      
+
       cnf="./sample-cnfs/sample_local_registry"
-      
+
       LOGGING.info `./cnf-conformance cnf_setup cnf-path=#{cnf}`
       response_s = `./cnf-conformance rolling_update verbose`
       LOGGING.info response_s
@@ -208,7 +208,7 @@ describe CnfConformance do
       LOGGING.info `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample_coredns_invalid_version/cnf-conformance.yml deploy_with_chart=false`
     end
   end
-  
+
   it "'rolling_version_change' should pass if using local registry and a port", tags: ["rolling_version_change"]  do
     begin
       install_registry = `kubectl create -f #{TOOLS_DIR}/registry/manifest.yml`
@@ -221,9 +221,9 @@ describe CnfConformance do
       KubectlClient.exec("dockerd -ti -- docker pull coredns/coredns:1.8.0")
       KubectlClient.exec("dockerd -ti -- docker tag coredns/coredns:1.8.0 registry:5000/coredns:1.8.0")
       KubectlClient.exec("dockerd -ti -- docker push registry:5000/coredns:1.8.0")
-      
+
       cnf="./sample-cnfs/sample_local_registry"
-      
+
       LOGGING.info `./cnf-conformance cnf_setup cnf-path=#{cnf}`
       response_s = `./cnf-conformance rolling_version_change verbose`
       LOGGING.info response_s
@@ -355,7 +355,20 @@ describe CnfConformance do
     end
   end
 
-  it "'secrets_used' should fail when no secret volumes are mounted or no container secrets are provided`", tags: ["secrets_used"] do
+  it "'secrets_used' should skip when secrets are not referenced as environment variables by a container", tags: ["secrets_used"] do
+    begin
+      LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_secret_env_no_ref/cnf-conformance.yml verbose `
+      $?.success?.should be_true
+      response_s = `./cnf-conformance secrets_used verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/SKIPPED: Secrets not used/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_secret_env verbose`
+    end
+  end
+
+  it "'secrets_used' should pass when no secret volumes are mounted or no container secrets are provided (secrets ignored)`", tags: ["secrets_used"] do
     begin
       LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-conformance.yml verbose wait_count=0 `
       $?.success?.should be_true
