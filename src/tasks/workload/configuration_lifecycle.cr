@@ -470,8 +470,8 @@ task "immutable_configmap" do |_, args|
     # if KubectlClient::Apply.file(test_config_map_filename) == 0
     if KubectlClient::Apply.file(test_config_map_filename)
       LOGGING.info "kubectl apply failed for: #{test_config_map_filename}"
-      k8s_ver = KubectlClient.version
-      if k8s_ver <= "1.18"
+      k8s_ver = KubectlClient.server_version
+      if version_less_than(k8s_ver, "1.19.0")
         resp = "✖️  SKIPPED: immmutable configmaps are not supported in this k8s cluster.".colorize(:yellow)
         upsert_skipped_task("immutable_configmap", resp)
         immutable_configmap_supported = false

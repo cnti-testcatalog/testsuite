@@ -33,24 +33,24 @@ module KubectlClient
     LOGGING.info "KubectlClient.cp stderr: #{stderr.to_s}"
     {status: status, output: output, error: stderr}
   end
-  def self.version()
-    LOGGING.debug "KubectlClient.version"
+  def self.server_version()
+    LOGGING.debug "KubectlClient.server_version"
     status = Process.run("kubectl version",
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    LOGGING.debug "KubectlClient.version output: #{output.to_s}"
-    LOGGING.debug "KubectlClient.version stderr: #{stderr.to_s}"
+    LOGGING.debug "KubectlClient.server_version output: #{output.to_s}"
+    LOGGING.debug "KubectlClient.server_version stderr: #{stderr.to_s}"
     # example
     # Server Version: version.Info{Major:"1", Minor:"18", GitVersion:"v1.18.16", GitCommit:"7a98bb2b7c9112935387825f2fce1b7d40b76236", GitTreeState:"clean", BuildDate:"2021-02-17T11:52:32Z", GoVersion:"go1.13.15", Compiler:"gc", Platform:"linux/amd64"}
     resp = output.to_s.match /Server Version: version.Info{(Major:"(([0-9]{1,3})"\, )Minor:"([0-9]{1,3}[+]?)")/
-    LOGGING.debug "KubectlClient.version match: #{resp}"
+    LOGGING.debug "KubectlClient.server_version match: #{resp}"
     if resp
-      version = "#{resp && resp.not_nil![3]}.#{resp && resp.not_nil![4]}"
+      version = "#{resp && resp.not_nil![3]}.#{resp && resp.not_nil![4]}.0"
     else
       version = ""
     end
-    LOGGING.info "KubectlClient.version: #{version}"
+    LOGGING.info "KubectlClient.server_version: #{version}"
     version
   end
   module Rollout
