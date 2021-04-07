@@ -464,12 +464,20 @@ task "immutable_configmap" do |_, args|
     test_config_map_create = `echo "#{template}" > "#{test_config_map_filename}"`
     VERBOSE_LOGGING.debug "test_config_map_create: #{test_config_map_create}" if check_verbose(args)
 
+    immutable_configmap_supported = true
     # if the reapply with a change succedes immmutable configmaps is NOT enabled
     # if KubectlClient::Apply.file(test_config_map_filename) == 0
     if KubectlClient::Apply.file(test_config_map_filename)
       LOGGING.info "kubectl apply failed for: #{test_config_map_filename}"
-      resp = "✖️  FAILED: immmutable configmaps are not enabled in this k8s cluster.".colorize(:red)
-      upsert_failed_task("immutable_configmap", resp)
+      k8s_ver = KubectlClient.server_version
+      if version_less_than(k8s_ver, "1.19.0")
+        resp = "✖️  SKIPPED: immmutable configmaps are not supported in this k8s cluster.".colorize(:yellow)
+        upsert_skipped_task("immutable_configmap", resp)
+        immutable_configmap_supported = false
+      else
+        resp = "✖️  FAILED: immmutable configmaps are not enabled in this k8s cluster.".colorize(:red)
+        upsert_failed_task("immutable_configmap", resp)
+      end
     end
 
     # cleanup test configmap
@@ -554,9 +562,12 @@ task "immutable_configmap" do |_, args|
     if cnf_manager_workload_resource_task_response
       resp = "✔️  PASSED: All volume or container mounted configmaps immutable #{emoji_probe}".colorize(:green)
       upsert_passed_task("immutable_configmap", resp)
-    else
+    elsif immutable_configmap_supported
       resp = "✖️  FAILED: Found mutable configmap(s) #{emoji_probe}".colorize(:red)
       upsert_failed_task("immutable_configmap", resp)
+    else
+      resp = "✖️  SKIPPED: Immutable configmap(s) not supported #{emoji_probe}".colorize(:yellow)
+      upsert_skipped_task("immutable_configmap", resp)
     end
     resp
   end

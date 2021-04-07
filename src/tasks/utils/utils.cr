@@ -7,6 +7,7 @@ require "log"
 require "file_utils"
 require "option_parser"
 require "../constants.cr"
+require "semantic_version"
 
 def log_formatter
   Log::Formatter.new do |entry, io|
@@ -30,8 +31,8 @@ begin
     end
     parser.on("-h", "--help", "Show this help") { puts parser }
   end
-rescue ex : OptionParser::InvalidOption 
-  puts ex 
+rescue ex : OptionParser::InvalidOption
+  puts ex
 end
 
 # this first line necessary to make sure our custom formatter
@@ -58,11 +59,11 @@ def loglevel
     end
   end
 
-  if ENV.has_key?("LOGLEVEL") 
+  if ENV.has_key?("LOGLEVEL")
     levelstr = ENV["LOGLEVEL"]
   end
 
-  if ENV.has_key?("LOG_LEVEL") 
+  if ENV.has_key?("LOG_LEVEL")
     levelstr = ENV["LOG_LEVEL"]
   end
 
@@ -148,9 +149,9 @@ end
 def toggle(toggle_name)
   toggle_on = false
   if File.exists?(BASE_CONFIG)
-    config = Totem.from_file BASE_CONFIG 
+    config = Totem.from_file BASE_CONFIG
     if config["toggles"].as_a?
-      feature_flag = config["toggles"].as_a.find do |x| 
+      feature_flag = config["toggles"].as_a.find do |x|
         x["name"] == toggle_name
       end
       toggle_on = feature_flag["toggle_on"].as_bool if feature_flag
@@ -231,17 +232,17 @@ def check_destructive(args)
 end
 
 def update_yml(yml_file, top_level_key, value)
-  results = File.open("#{yml_file}") do |f| 
+  results = File.open("#{yml_file}") do |f|
     YAML.parse(f)
-  end 
+  end
   LOGGING.debug "update_yml results: #{results}"
   # The last key assigned wins
   new_yaml = YAML.dump(results) + "\n#{top_level_key}: #{value}"
   parsed_new_yml = YAML.parse(new_yaml)
   LOGGING.debug "update_yml parsed_new_yml: #{parsed_new_yml}"
-  File.open("#{yml_file}", "w") do |f| 
+  File.open("#{yml_file}", "w") do |f|
     YAML.dump(parsed_new_yml,f)
-  end 
+  end
 end
 
 def upsert_failed_task(task, message)
@@ -262,7 +263,7 @@ def upsert_skipped_task(task, message)
   message
 end
 
-def stdout_info(msg) 
+def stdout_info(msg)
   puts msg
 end
 
@@ -294,3 +295,11 @@ def optional_key_as_string(totem_config, key_name)
   "#{totem_config[key_name]? && totem_config[key_name].as_s?}"
 end
 
+# compare 2 SemVer strings and return true if v1 is less than v2
+def version_less_than(v1str, v2str)
+  v1 = SemanticVersion.parse(v1str)
+  v2 = SemanticVersion.parse(v2str)
+  less_than = (v1 <=> v2) == -1
+  LOGGING.debug "version_less_than: #{v1} < #{v2}: #{less_than}"
+  less_than
+end
