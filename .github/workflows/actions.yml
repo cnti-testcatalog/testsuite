@@ -301,8 +301,7 @@ jobs:
 
   release:
     name: Publish Release
-    # needs: [spec, build, debug_output]
-    needs: [build, debug_output]
+    needs: [spec, build, debug_output]
     runs-on: ubuntu-latest
     steps: 
     - name: Checkout code
