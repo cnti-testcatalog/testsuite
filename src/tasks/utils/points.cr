@@ -54,7 +54,7 @@ module CNFManager
     end
     def self.create_points_yml
       unless File.exists?("#{POINTSFILE}")
-        branch = ENV.has_key?("SCORING_ENV") ? ENV["SCORING_ENV"] : "master"
+        branch = ENV.has_key?("SCORING_ENV") ? ENV["SCORING_ENV"] : "main"
         default_scoring_yml = "https://raw.githubusercontent.com/cncf/cnf-conformance/#{branch}/scoring_config/#{DEFAULT_POINTSFILENAME}"
         # LOGGING.info "curl -o #{DEFAULT_POINTSFILENAME} #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}"
         # `curl -o #{DEFAULT_POINTSFILENAME} #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}`

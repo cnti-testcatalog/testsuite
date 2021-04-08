@@ -13,7 +13,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 <details> <summary>Can I contribute to the CNF Conformance Project?</summary>
 <p>
 
- - Yes. You can start by reading the [CNF Conformance Contributing Guidelines](https://github.com/cncf/cnf-conformance/blob/master/CONTRIBUTING.md).
+ - Yes. You can start by reading the [CNF Conformance Contributing Guidelines](https://github.com/cncf/cnf-conformance/blob/main/CONTRIBUTING.md).
 
 </p>
 </details>
@@ -21,7 +21,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 <details> <summary>Does the CNF Conformance community meet?</summary>
 <p>
 
- - Yes. The CNF Conformance team meets once a week on Thursdays at 14:15-15:00 UTC. You can find more info about the meeting [here.](https://github.com/cncf/cnf-conformance/blob/master/CONTRIBUTING.md#community-meeting)
+ - Yes. The CNF Conformance team meets once a week on Thursdays at 14:15-15:00 UTC. You can find more info about the meeting [here.](https://github.com/cncf/cnf-conformance/blob/main/CONTRIBUTING.md#community-meeting)
 
 </p>
 </details>
@@ -78,7 +78,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 <details> <summary>Does CNF Conformance have any pre-requisites or other requirements to run?</summary>
 <p>
 
- - Yes. There are a few requirements for CNF Conformance. You can read about the requirements in the [INSTALL Guide](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#prerequisites).
+ - Yes. There are a few requirements for CNF Conformance. You can read about the requirements in the [INSTALL Guide](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md#prerequisites).
 
 </p>
 </details>
@@ -86,7 +86,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 <details> <summary>How are points assigned for tests?</summary>
 <p>
 
- - Points are different for each test and workload but in general terms, pass defaults to 5 and fail is a -1. See [points.yml](https://github.com/cncf/cnf-conformance/blob/master/points.yml) for more details on the different points for default scoring.
+ - Points are different for each test and workload but in general terms, pass defaults to 5 and fail is a -1. See [points.yml](https://github.com/cncf/cnf-conformance/blob/main/points.yml) for more details on the different points for default scoring.
 
 </p>
 </details>
@@ -134,7 +134,7 @@ CNF Conformance Test Suite Frequently Asked Questions
 <details> <summary>Running cnf-conformance says "No found config" or similiar type errors?</summary>
 <p>
 
- - This may indicate that you are not pointing to a valid cnf-conformance.yml config file for your CNF. You may want to read or review the [CNF Conformance INSTALL](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md) instructions or the [USAGE Documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md). 
+ - This may indicate that you are not pointing to a valid cnf-conformance.yml config file for your CNF. You may want to read or review the [CNF Conformance INSTALL](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md) instructions or the [USAGE Documentation](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md). 
 
 </p>
 </details>

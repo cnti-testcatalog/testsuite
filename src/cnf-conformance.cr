@@ -82,7 +82,7 @@ end
 # https://www.thegeekstuff.com/2013/12/bash-completion-complete/
 # https://kubernetes.io/docs/tasks/tools/install-kubectl/#enable-kubectl-autocompletion
 # https://stackoverflow.com/questions/43794270/disable-or-unset-specific-bash-completion
-desc "Install Shell Completion: check https://github.com/cncf/cnf-conformance/blob/master/USAGE.md for usage"
+desc "Install Shell Completion: check https://github.com/cncf/cnf-conformance/blob/main/USAGE.md for usage"
 task "completion" do |_|
 
 # assumes bash completion feel free to make a pr for zsh and check an arg for it

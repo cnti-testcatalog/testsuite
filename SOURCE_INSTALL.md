@@ -158,7 +158,7 @@ To use CoreDNS as an example CNF. Download the conformance configuration to test
 
 - Make sure you are in your cnf-conformance/ source repo checkout directory and do the following:
   ```
-  curl -o cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
+  curl -o cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/main/example-cnfs/coredns/cnf-conformance.yml
   ```
 - Prepare the test suite to use the CNF by running:
   ```
@@ -171,12 +171,12 @@ To use CoreDNS as an example CNF. Download the conformance configuration to test
   crystal src/cnf-conformance.cr cnf_setup cnf-config=./cnf-  conformance.yml
   ```
 
-There are other examples in the [examples cnfs](https://github.com/cncf/cnf-conformance/tree/master/example-cnfs) folder if you would like to test others.
+There are other examples in the [examples cnfs](https://github.com/cncf/cnf-conformance/tree/main/example-cnfs) folder if you would like to test others.
 
 #### NOTE: CNF **must** have a [helm chart](https://helm.sh/)
 
 - To pass all current tests
-- To support auto deployment of the CNF from the ([cnf-conformance.yml](https://github.com/cncf/cnf-conformance/blob/master/CNF_CONFORMANCE_YML_USAGE.md)) configuration file.
+- To support auto deployment of the CNF from the ([cnf-conformance.yml](https://github.com/cncf/cnf-conformance/blob/main/CNF_CONFORMANCE_YML_USAGE.md)) configuration file.
 
 ### Running cnf-conformance for the first time
 
@@ -200,7 +200,7 @@ The following would run only the platform tests:
 ```
 You can also run via `crystal` by replacing the `./cnf-conformance` with `crystal spec src/cnf-conformance.cr` and then the argument.
 
-#### More Example Usage (also see the [complete usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md))
+#### More Example Usage (also see the [complete usage documentation](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md))
 
 ```
 # These assume you've already run the cnf_setup pointing at a cnf-conformance.yml config above. You can always specify your config at the end of each command as well, eg:
@@ -245,7 +245,7 @@ You can also run `cleanall` and cnf-conformance will attempt to cleanup everythi
 _NOTE: Cleanup does not handle manually deployed CNFs_
 
 ### Ready to Bring Your Own CNF?
-You can check out our [CNF_CONFORMANCE_YML_USAGE.md](https://github.com/cncf/cnf-conformance/blob/master/CNF_CONFORMANCE_YML_USAGE.md) document on what is required to bring or use your own CNF.
+You can check out our [CNF_CONFORMANCE_YML_USAGE.md](https://github.com/cncf/cnf-conformance/blob/main/CNF_CONFORMANCE_YML_USAGE.md) document on what is required to bring or use your own CNF.
 
-- Follow the [INSTALL](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md) or [SOURCE-INSTALL](https://github.com/cncf/cnf-conformance/blob/master/SOURCE-INSTALL.md) to build the binary.
-- Now head over to [CNF_CONFORMANCE_YML_USAGE.md](https://github.com/cncf/cnf-conformance/blob/master/CNF_CONFORMANCE_YML_USAGE.md) for more detailed steps.
+- Follow the [INSTALL](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md) or [SOURCE-INSTALL](https://github.com/cncf/cnf-conformance/blob/main/SOURCE-INSTALL.md) to build the binary.
+- Now head over to [CNF_CONFORMANCE_YML_USAGE.md](https://github.com/cncf/cnf-conformance/blob/main/CNF_CONFORMANCE_YML_USAGE.md) for more detailed steps.

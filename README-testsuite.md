@@ -1,5 +1,5 @@
 # CNF Conformance Test Suite
-| Master |
+| Main |
 |---|
 |[![Build Status](https://github.com/cncf/cnf-conformance/workflows/Crystal%20Specs/badge.svg)](https://github.com/cncf/cnf-conformance/actions)|
 
@@ -19,12 +19,12 @@ The CNF Conformance Test Suite will inspect CNFs for the following characteristi
 - **Hardware Resources and Scheduling** - The CNF container should access all hardware and schedule to specific worker nodes by using a device plugin.
 - **Resilience** - CNFs should be resilient to failures inevitable in cloud environments. CNF Resilience should be tested to ensure CNFs are designed to deal with non-carrier-grade shared cloud HW/SW platforms.
 
-See the [Conformance Test Categories Documentation](https://github.com/cncf/cnf-conformance/blob/master/TEST-CATEGORIES.md) for a complete overview of the tests.
+See the [Conformance Test Categories Documentation](https://github.com/cncf/cnf-conformance/blob/main/TEST-CATEGORIES.md) for a complete overview of the tests.
 
 ## Contributing
 
 Welcome! We gladly accept contributions on new conformance tests, example CNFs, updates to documentation, enhancements, bug reports, and more.
-- [Contributing guide](https://github.com/cncf/cnf-conformance/blob/master/CONTRIBUTING.md)
+- [Contributing guide](https://github.com/cncf/cnf-conformance/blob/main/CONTRIBUTING.md)
 - [Good first issues](https://github.com/cncf/cnf-conformance/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 ## Communication and community meetings
@@ -56,21 +56,21 @@ To get the CNF Test Suite up and running, see the [Installation Guide](INSTALL.m
 #### To give it a try immediately you can use these quick install steps
 Prereqs: kubernetes cluster, wget, curl, helm 3.1.1 or greater on your system already.
 
-1. Install the latest test suite binary:  `source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.sh)`
+1. Install the latest test suite binary:  `source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/main/curl_install.sh)`
 2. Run `setup` to prepare the cnf-conformance suite: `cnf-conformance setup`
-3. Pull down an example CNF configuration to try: `wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml`
+3. Pull down an example CNF configuration to try: `wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/main/example-cnfs/coredns/cnf-conformance.yml`
 4. Initialize the test suite for using the CNF: `cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml`
 5. Run all of application/workload tests: `cnf-conformance workload`
 
 
 ## Usage
 
-Check out the [usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md) for more info about invoking commands and logging.
+Check out the [usage documentation](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md) for more info about invoking commands and logging.
 
 ## Code of Conduct
 
-The CNF Conformance community follows the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/master/code-of-conduct.md).
+The CNF Conformance community follows the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/main/code-of-conduct.md).
 
 ## License terms
 
-CNF Conformance Test Suite is available under the [Apache 2 license](https://github.com/cncf/cnf-conformance/blob/master/LICENSE).
+CNF Conformance Test Suite is available under the [Apache 2 license](https://github.com/cncf/cnf-conformance/blob/main/LICENSE).

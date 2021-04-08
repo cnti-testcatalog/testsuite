@@ -13,7 +13,7 @@ This is a preliminary list of CNF samples for each layer in the [OSI model](http
 
 
 ## [Layer 7 - Application](https://en.wikipedia.org/wiki/Application_layer)
-- [CoreDNS Sample CNF](https://github.com/cncf/cnf-conformance/tree/master/sample-cnfs/sample-coredns-cnf)
+- [CoreDNS Sample CNF](https://github.com/cncf/cnf-conformance/tree/main/sample-cnfs/sample-coredns-cnf)
 - [NFF Go Deep Packet Inspection example](https://github.com/intel-go/nff-go/tree/master/examples/dpi) example
 
 
@@ -37,7 +37,7 @@ This is a preliminary list of CNF samples for each layer in the [OSI model](http
 
 ## [Layer 3 - Network](https://en.wikipedia.org/wiki/Network_layer)
 
-- [Pantheon Network Service Mesh NAT](https://github.com/cncf/cnf-conformance/blob/master/example-cnfs/pantheon-nsm-nat/README.md)
+- [Pantheon Network Service Mesh NAT](https://github.com/cncf/cnf-conformance/blob/main/example-cnfs/pantheon-nsm-nat/README.md)
 - [NFF Go IP Forwarding example](https://github.com/intel-go/nff-go/tree/master/examples/forwarding)
 - [NFF Go IPsec example](https://github.com/intel-go/nff-go/tree/master/examples/ipsec)
 - [CNF Testbed IPsec example](https://github.com/cncf/cnf-testbed/tree/master/examples/use_case/ipsec)

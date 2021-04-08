@@ -28,8 +28,8 @@ describe "ReleaseManager" do
     (ReleaseManager.current_hash).should_not eq("")
   end
 
-  it "'#ReleaseManager.remote_master_branch_hash' should return the current hash as a string", tags: ["release"]  do
-    (ReleaseManager.remote_master_branch_hash).should_not eq("")
+  it "'#ReleaseManager.remote_main_branch_hash' should return the current hash as a string", tags: ["release"]  do
+    (ReleaseManager.remote_main_branch_hash).should_not eq("")
   end
 
   it "'#ReleaseManager::GithubReleaseManager.github_releases' should return the existing releases", tags: ["release"]  do
@@ -94,7 +94,7 @@ describe "ReleaseManager" do
     else 
       issues = ReleaseManager.latest_snapshot
       # https://github.com/semver/semver/blob/master/semver.md#is-v123-a-semantic-version
-      (issues.match(/(?i)(master)/)).should_not be_nil
+      (issues.match(/(?i)(main)/)).should_not be_nil
     end
   end
 

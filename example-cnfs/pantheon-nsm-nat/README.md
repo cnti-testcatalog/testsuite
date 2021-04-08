@@ -11,7 +11,7 @@ The configuration to apply is described declaratively and submitted to NSM agent
 More information about cloud-native tools and network functions provided by PANTHEON.tech can be found on our website cdnf.io.
 
 # Prerequistes
-Follow [Pre-req steps](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#prerequisites), including
+Follow [Pre-req steps](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md#prerequisites), including
 - Set the KUBECONFIG environment to point to the remote K8s cluster
 - Downloading the binary cnf-conformance release
 

@@ -26,7 +26,7 @@ def increase_decrease_capacity_failure_msg(target_replicas, emoji)
 
 To addresss this issue please follow this link here
 
-https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#heavy_check_mark-to-test-the-increasing-and-decreasing-of-capacity
+https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#heavy_check_mark-to-test-the-increasing-and-decreasing-of-capacity
 TEMPLATE
 end
 

@@ -37,4 +37,4 @@ for node in $(kind get nodes); do
 done
 ```
 
-Now you can use CNFs that require Multus and CNIs, e.g. [examples/ip-forwarder](https://github.com/cncf/cnf-conformance/tree/master/example-cnfs/ip-forwarder)
+Now you can use CNFs that require Multus and CNIs, e.g. [examples/ip-forwarder](https://github.com/cncf/cnf-conformance/tree/main/example-cnfs/ip-forwarder)

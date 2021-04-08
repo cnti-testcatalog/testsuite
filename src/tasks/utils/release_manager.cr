@@ -26,10 +26,10 @@ module ReleaseManager
       # cnf_bin_asset_name = "#{cnf_bin_path}"
       cnf_bin_asset_name = "cnf-conformance"
 
-      if ReleaseManager.remote_master_branch_hash == ReleaseManager.current_hash
-        upsert_version = upsert_version.sub("HEAD", "master")
+      if ReleaseManager.remote_main_branch_hash == ReleaseManager.current_hash
+        upsert_version = upsert_version.sub("HEAD", "main")
       end
-      if upsert_version =~ /(?i)(master)/
+      if upsert_version =~ /(?i)(main)/
         prerelease = true 
         draft = false
       else
@@ -37,10 +37,10 @@ module ReleaseManager
         draft = true 
       end
       LOGGING.info "upsert_version: #{upsert_version}"
-      LOGGING.info "upsert_version comparison: upsert_version =~ /(?i)(master|v[0-9]|test_version)/ : #{upsert_version =~ /(?i)(master|v[0-9]|test_version)/}"
+      LOGGING.info "upsert_version comparison: upsert_version =~ /(?i)(main|v[0-9]|test_version)/ : #{upsert_version =~ /(?i)(main|v[0-9]|test_version)/}"
       #master-381d20d
-      invalid_version = !(upsert_version =~ /(?i)(master|v[0-9]|test_version)/)
-      snap_shot_version = (upsert_version =~ /(?i)(master-)/)
+      invalid_version = !(upsert_version =~ /(?i)(main|v[0-9]|test_version)/)
+      snap_shot_version = (upsert_version =~ /(?i)(main-)/)
       head = (ReleaseManager.current_branch == "HEAD")
       skip_snapshot_detached_head = (head && snap_shot_version)
       LOGGING.info "invalid_version: #{invalid_version}"
@@ -78,7 +78,7 @@ module ReleaseManager
       found_release = release_resp.find {|x| x["tag_name"] == upsert_version} 
       LOGGING.info "find found_release?: #{found_release}"
 
-      if upsert_version =~ /(?i)(master)/
+      if upsert_version =~ /(?i)(main)/
         latest_build = ReleaseManager.latest_snapshot
       else
         latest_build = ReleaseManager.latest_release
@@ -226,9 +226,9 @@ TEMPLATE
     results.strip("\n")
   end
 
-  def self.remote_master_branch_hash(owner_repo="cncf/cnf-conformance")
-    results =  `git ls-remote https://github.com/#{owner_repo}.git master | awk '{ print $1}' | cut -c1-7`.strip
-    LOGGING.info "remote_master_branch_hash: #{results}"
+  def self.remote_main_branch_hash(owner_repo="cncf/cnf-conformance")
+    results =  `git ls-remote https://github.com/#{owner_repo}.git main | awk '{ print $1}' | cut -c1-7`.strip
+    LOGGING.info "remote_main_branch_hash: #{results}"
     results.strip("\n")
   end
 
