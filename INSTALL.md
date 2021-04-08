@@ -84,7 +84,7 @@ There are two methods to install via curl, we prefer the first method (the other
 - This first command using curl will download, install, and export the path automatically (recommended method):
 
 ```
-source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.sh)
+source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/main/curl_install.sh)
 ```
 
 <details><summary>Click here for the alternate curl and manual install method</summary>
@@ -92,7 +92,7 @@ source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl
 
 - The other curl method to download and install requires you to export the PATH to the location of the executable:
 ```
-curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.sh | bash
+curl https://raw.githubusercontent.com/cncf/cnf-conformance/main/curl_install.sh | bash
 ```
 
 - The Latest Binary (or you can select a previous release if desired) can be pulled down with wget, curl or you're own preferred method. Once downloaded you'll need to make the binary executable and manually add to your path:
@@ -180,7 +180,7 @@ Now cnf-conformance is setup, we're ready to configure it to point at a CNF to t
 - If you want to use an example CNF, you can download our CoreDNS example CNF by doing the following:
 
 ```
-wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/master/example-cnfs/coredns/cnf-conformance.yml
+wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/main/example-cnfs/coredns/cnf-conformance.yml
 ```
 - The wget gets a working config file, now tell cnf-conformance to use it by doing the following:
 ```

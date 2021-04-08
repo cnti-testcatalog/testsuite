@@ -2,7 +2,7 @@ Contributing Guidelines
 ---
 Welcome! We gladly accept contributions on new conformance tests, example CNFs, updates to documentation, enhancements, bug reports and more.
 
-CNF Conformance is [Apache 2.0 licensed](https://github.com/cncf/cnf-conformance/blob/master/LICENSE) and accepts contributions via GitHub pull requests.  Please read the following guidelines carefully to make it easier to get your contribution accepted.
+CNF Conformance is [Apache 2.0 licensed](https://github.com/cncf/cnf-conformance/blob/main/LICENSE) and accepts contributions via GitHub pull requests.  Please read the following guidelines carefully to make it easier to get your contribution accepted.
 
 Support Channels:
 ---
@@ -51,7 +51,7 @@ Also setting the verbose option for many tasks will add extra output to help wit
 crystal src/cnf-conformance.cr test_name verbose
 ```
 
-Check [usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md) for more info about invoking commands and loggin
+Check [usage documentation](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md) for more info about invoking commands and loggin
 
 **3. New Conformance Tests:**
 - To request a new workload test, please create a new issue using the [**New Workload Test**](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=workload&template=new-workload-test.md&title=%5BWorkload%5D) Template
@@ -61,7 +61,7 @@ Check [usage documentation](https://github.com/cncf/cnf-conformance/blob/master/
 To suggest a new CNF, please create a GitHub issue using the [New Example CNF template](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=example+CNF&template=new-example-cnf.md&title=%5BCNF%5D).
 
 To install the CNF Conformance test suite and run a CNF, follow instructions at:
-- [CNF Developer Install and Usage Guide](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#cnf-developer-install-and-usage-guide)
+- [CNF Developer Install and Usage Guide](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md#cnf-developer-install-and-usage-guide)
 
 Coding Style: 
 ---
@@ -74,13 +74,13 @@ Contribution Flow
 Outline of what a contributor's workflow looks like:
 
 1. Fork it (https://github.com/cncf/cnf-conformance/fork)
-1. Create a branch from where you want to base your work (usually master). Example `git checkout -b my-new-feature)`
+1. Create a branch from where you want to base your work (usually main). Example `git checkout -b my-new-feature)`
 1. Read the [INSTALL.md](install for build and test instructions)
 1. Make your changes and arrange them in readable commits.
 1. Commit your changes (Ex. `git commit -am 'Add some feature'``)
     - Make sure your commit messages are in the proper format (see below).
 1. Push to the branch (Ex. `git push origin my-new-feature`)
-1. Make sure branch is up to date with upstream base branch (eg. `master`)
+1. Make sure branch is up to date with upstream base branch (eg. `main`)
 1. Make sure all tests pass, and add any new tests as appropriate.
 1. Create a new Pull Request (PR)
 
@@ -91,7 +91,7 @@ Once you have implemented the feature or bug fix in your branch, you will open a
 
 In order to open a pull request (PR) it is required to be up to date with the latest changes upstream. If other commits are pushed upstream before your PR is merged, you will also need to rebase again before it will be merged.
 
-Using the automated [pull request template](https://github.com/cncf/cnf-conformance/blob/master/.github/PULL_REQUEST_TEMPLATE.md), please note a description of the changes, the type of change, the issue(s) related to the PR, how the changes have been tested and if updates are needed in the documentation.
+Using the automated [pull request template](https://github.com/cncf/cnf-conformance/blob/main/.github/PULL_REQUEST_TEMPLATE.md), please note a description of the changes, the type of change, the issue(s) related to the PR, how the changes have been tested and if updates are needed in the documentation.
 
 For general advice on how to submit a pull request, please see [Creating a pull request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request).
 
@@ -115,7 +115,7 @@ Accepting a PR:
 `git push <pull-request's-branch-name>`
 6. Observe results of the github actions.
 7. (optional) Accept the original pull request if the review and tests pass.
-8. (optional -- changes required) Create a new PR, make changes, and merge into master (Github will automatically merge the original PR since it's changes will be included in the new PR)
+8. (optional -- changes required) Create a new PR, make changes, and merge into main (Github will automatically merge the original PR since it's changes will be included in the new PR)
 
 Community Meeting: 
 ---

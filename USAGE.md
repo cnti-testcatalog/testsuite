@@ -1,24 +1,24 @@
 # CNF Conformance Test CLI Usage Documentation 
 
 ### Table of Contents
-* [Overview](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#overview)
-* [Syntax and Usage](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#syntax-for-running-any-of-the-tests)
-* [Common Examples](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#common-example-commands)
-* [Logging Options](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#logging-options)
-* [Compatibility Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#compatibility-tests)
-* [Statelessness Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#statelessness-tests)
-* [Security Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#security-tests)
-* [Microservice Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#microservice-tests)
-* [Scalability Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#scalability-tests)
-* [Configuration and Lifecycle Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#configuration-and-lifecycle-tests)
-* [Observability Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#observability-tests)
-* [Installable and Upgradeable Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#installable-and-upgradeable-tests)
-* [Hardware Resources and Scheduling Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#hardware-resources-and-scheduling-tests)
-* [Resilience Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#resilience-tests)
-* [Platform Tests](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md#platform-tests)
+* [Overview](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#overview)
+* [Syntax and Usage](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#syntax-for-running-any-of-the-tests)
+* [Common Examples](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#common-example-commands)
+* [Logging Options](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#logging-options)
+* [Compatibility Tests](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#compatibility-tests)
+* [Statelessness Tests](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#statelessness-tests)
+* [Security Tests](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#security-tests)
+* [Microservice Tests](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#microservice-tests)
+* [Scalability Tests](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#scalability-tests)
+* [Configuration and Lifecycle Tests](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#configuration-and-lifecycle-tests)
+* [Observability Tests](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#observability-tests)
+* [Installable and Upgradeable Tests](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#installable-and-upgradeable-tests)
+* [Hardware Resources and Scheduling Tests](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#hardware-resources-and-scheduling-tests)
+* [Resilience Tests](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#resilience-tests)
+* [Platform Tests](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#platform-tests)
 
 ### Overview
-The CNF Conformance Test suite can be run in production mode (using an executable) or in developer mode (using [crystal lang directly](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#source-install)).  See the [pseudo code documentation](https://github.com/cncf/cnf-conformance/blob/master/PSEUDO-CODE.md) for examples of how the internals of WIP tests might work.
+The CNF Conformance Test suite can be run in production mode (using an executable) or in developer mode (using [crystal lang directly](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md#source-install)).  See the [pseudo code documentation](https://github.com/cncf/cnf-conformance/blob/main/PSEUDO-CODE.md) for examples of how the internals of WIP tests might work.
 
 ### Syntax for running any of the tests
 ```
@@ -45,7 +45,7 @@ crystal src/cnf-conformance.cr <testname>
 ### Common Example Commands
 
 #### Building the executable
-This is the command to build the binary executable if in developer mode or using the source install method ([requires crystal](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#source-install)):
+This is the command to build the binary executable if in developer mode or using the source install method ([requires crystal](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md#source-install)):
 ```
 crystal build src/cnf-conformance.cr
 ```
@@ -112,7 +112,7 @@ LOGLEVEL=DEBUG ./cnf-conformance test
 
 1. CLI or Command line flag
 2. Environment variable
-3. CNF-Conformance [Config file](https://github.com/cncf/cnf-conformance/blob/master/config.yml)
+3. CNF-Conformance [Config file](https://github.com/cncf/cnf-conformance/blob/main/config.yml)
 
 ##### Verbose Option
 Also setting the verbose option for many tasks will add extra output to help with debugging
@@ -123,7 +123,7 @@ Also setting the verbose option for many tasks will add extra output to help wit
 
 #### Running The Linter in Developer Mode
 
-See https://github.com/crystal-ameba/ameba for more details. Follow the [INSTALL](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md) guide starting at the [Source Install](https://github.com/cncf/cnf-conformance/blob/master/INSTALL.md#source-install) for more details running cnf-conformance in developer mode.
+See https://github.com/crystal-ameba/ameba for more details. Follow the [INSTALL](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md) guide starting at the [Source Install](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md#source-install) for more details running cnf-conformance in developer mode.
 
 ```
 shards install # only for first install
