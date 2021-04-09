@@ -245,10 +245,10 @@ module CNFManager
         if x["tags"].as_s? 
           tags_list = x["tags"].as_s.split(",")
           tag_match = tags_list.map { |parsed_tag|
-            LOGGING.debug "parsed_tag #{parsed_tag} tag: #{tag}"
+            # LOGGING.debug "parsed_tag #{parsed_tag} tag: #{tag}"
             parsed_tag if parsed_tag == tag
           }.uniq.compact
-          LOGGING.debug "tag_match #{tag_match} name #{x["name"]}"
+          # LOGGING.debug "tag_match #{tag_match} name #{x["name"]}"
           if !tag_match.empty?
             acc << x["name"].as_s
           else

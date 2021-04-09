@@ -47,9 +47,9 @@
 - name: network_chaos 
   tags: scalability, dynamic, workload
 - name: pod_network_latency
-  tags: scalability, dynamic, workload
+  tags: resilience, dynamic, workload
 - name: disk_fill
-  tags: scalability, dynamic, workload  
+  tags: resilience, dynamic, workload  
 #- name: external_retry 
 #  tags: scalability, dynamic, workload
 
@@ -106,8 +106,8 @@
 - name: helm_chart_published
   tags: installability, dynamic, workload
   
-- name: chaos_network_loss 
-  tags: resilience, dynamic, workload
+# - name: chaos_network_loss 
+#   tags: resilience, dynamic, workload
 - name: chaos_cpu_hog
   tags: resilience, dynamic, workload
 - name: chaos_container_kill
