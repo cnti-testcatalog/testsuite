@@ -98,6 +98,12 @@ describe "SampleUtils" do
     (CNFManager::Points.tasks_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
+  it "'CNFManager::Points.tasks_by_tag' should only return the tasks that are within their category ", tags: ["points"] do
+    CNFManager::Points.clean_results_yml
+    (CNFManager::Points.tasks_by_tag("resilience").
+     find{|x| x=="worker_reboot_recovery"}).should be_nil
+  end
+
   it "'CNFManager::Points.all_task_test_names' should return all tasks names", tags: ["points"] do
     CNFManager::Points.clean_results_yml
     (CNFManager::Points.all_task_test_names()).should eq(["reasonable_image_size", "reasonable_startup_time", "privileged", "increase_capacity", "decrease_capacity", "network_chaos", "pod_network_latency", "disk_fill", "ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "rollback", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap" , "helm_deploy", "install_script_helm", "helm_chart_valid", "helm_chart_published", "chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill", "volume_hostpath_not_found", "no_local_volume_configuration"])
