@@ -5,7 +5,6 @@ CNF_DIR = "cnfs"
 CONFIG_FILE = "cnf-conformance.yml"
 TOOLS_DIR = "tools"
 BASE_CONFIG = "./config.yml"
-POINTSFILE = "points.yml"
 PASSED = "passed"
 FAILED = "failed"
 SKIPPED = "skipped"
@@ -20,6 +19,7 @@ EmbeddedFileManager.reboot_daemon
 EmbeddedFileManager.chaos_network_loss
 EmbeddedFileManager.chaos_cpu_hog
 EmbeddedFileManager.chaos_container_kill
+EmbeddedFileManager.points_yml
 
 CNFSingleton = CNFGlobals.new
 class CNFGlobals

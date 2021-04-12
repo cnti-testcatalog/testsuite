@@ -24,4 +24,7 @@ module EmbeddedFileManager
   macro chaos_container_kill 
     CHAOS_CONTAINER_KILL = Base64.decode_string("{{ `cat ./embedded_files/chaos_container_kill.yml  | base64`}}")
   end
+  macro points_yml 
+    POINTSFILE = Base64.decode_string("{{ `cat ./embedded_files/points.yml  | base64`}}")
+  end
 end

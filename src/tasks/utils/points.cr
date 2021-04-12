@@ -45,24 +45,24 @@ module CNFManager
     end
 
     def self.points_yml
-      # TODO get points.yml from remote http
+      File.write("points.yml", POINTSFILE)
       points = File.open("points.yml") do |f|
         YAML.parse(f)
       end
-      # LOGGING.debug "points: #{points.inspect}"
       points.as_a
     end
     def self.create_points_yml
-      unless File.exists?("#{POINTSFILE}")
-        branch = ENV.has_key?("SCORING_ENV") ? ENV["SCORING_ENV"] : "main"
-        default_scoring_yml = "https://raw.githubusercontent.com/cncf/cnf-conformance/#{branch}/scoring_config/#{DEFAULT_POINTSFILENAME}"
-        # LOGGING.info "curl -o #{DEFAULT_POINTSFILENAME} #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}"
-        # `curl -o #{DEFAULT_POINTSFILENAME} #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}`
-        HTTP::Client.get("#{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}") do |response| 
-          File.write("#{DEFAULT_POINTSFILENAME}", response.body_io)
-        end
-        `mv #{DEFAULT_POINTSFILENAME} #{POINTSFILE}`
-      end
+      File.write("points.yml", POINTSFILE)
+      # unless File.exists?("#{POINTSFILE}")
+      #   branch = ENV.has_key?("SCORING_ENV") ? ENV["SCORING_ENV"] : "main"
+      #   default_scoring_yml = "https://raw.githubusercontent.com/cncf/cnf-conformance/#{branch}/scoring_config/#{DEFAULT_POINTSFILENAME}"
+      #   # LOGGING.info "curl -o #{DEFAULT_POINTSFILENAME} #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}"
+      #   # `curl -o #{DEFAULT_POINTSFILENAME} #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}`
+      #   HTTP::Client.get("#{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}") do |response| 
+      #     File.write("#{DEFAULT_POINTSFILENAME}", response.body_io)
+      #   end
+      #   `mv #{DEFAULT_POINTSFILENAME} #{POINTSFILE}`
+      # end
     end
 
     def self.create_final_results_yml_name
