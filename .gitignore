@@ -36,3 +36,4 @@ chaos_container_kill.yml
 /.idea/
 *.sh
 *.log
+./points.yml
