@@ -239,13 +239,29 @@ module CNFManager
     def self.tasks_by_tag(tag)
       #TODO cross reference points.yml tags with results
       found = false
-      result_items =points_yml.reduce([] of String) do |acc, x|
+      result_items = points_yml.reduce([] of String) do |acc, x|
         # LOGGING.debug "tasks_by_tag: tag:#{tag}, points.name:#{x["name"].as_s?}, points.tags:#{x["tags"].as_s?}"
-        if x["tags"].as_s? && x["tags"].as_s.includes?(tag)
-          acc << x["name"].as_s
+        # TODO parse tags using ',' then get an exact match
+        if x["tags"].as_s? 
+          tags_list = x["tags"].as_s.split(",")
+          tag_match = tags_list.map { |parsed_tag|
+            # LOGGING.debug "parsed_tag #{parsed_tag} tag: #{tag}"
+            parsed_tag if parsed_tag == tag
+          }.uniq.compact
+          # LOGGING.debug "tag_match #{tag_match} name #{x["name"]}"
+          if !tag_match.empty?
+            acc << x["name"].as_s
+          else
+            acc
+          end
         else
           acc
         end
+        # if x["tags"].as_s? && x["tags"].as_s.includes?(tag)
+        #   acc << x["name"].as_s
+        # else
+        #   acc
+        # end
       end
     end
 
