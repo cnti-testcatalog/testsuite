@@ -45,24 +45,13 @@ module CNFManager
     end
 
     def self.points_yml
-      File.write("points.yml", POINTSFILE)
       points = File.open("points.yml") do |f|
         YAML.parse(f)
       end
       points.as_a
     end
     def self.create_points_yml
-      File.write("points.yml", POINTSFILE)
-      # unless File.exists?("#{POINTSFILE}")
-      #   branch = ENV.has_key?("SCORING_ENV") ? ENV["SCORING_ENV"] : "main"
-      #   default_scoring_yml = "https://raw.githubusercontent.com/cncf/cnf-conformance/#{branch}/scoring_config/#{DEFAULT_POINTSFILENAME}"
-      #   # LOGGING.info "curl -o #{DEFAULT_POINTSFILENAME} #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}"
-      #   # `curl -o #{DEFAULT_POINTSFILENAME} #{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}`
-      #   HTTP::Client.get("#{ENV.has_key?("SCORING_YML") ? ENV["SCORING_YML"] : default_scoring_yml}") do |response| 
-      #     File.write("#{DEFAULT_POINTSFILENAME}", response.body_io)
-      #   end
-      #   `mv #{DEFAULT_POINTSFILENAME} #{POINTSFILE}`
-      # end
+      EmbeddedFileManager.points_yml_write_file
     end
 
     def self.create_final_results_yml_name
@@ -146,10 +135,13 @@ module CNFManager
     end
 
     def self.total_max_points(tag=nil)
+      LOGGING.debug "total_max_points tag: #{tag}"
       if tag
         tasks = tasks_by_tag(tag)
+        LOGGING.debug "tasks_by_tag tag: #{tag} tasks: #{tasks}"
       else
         tasks = all_task_test_names
+        LOGGING.debug "all_task_test_names tasks: #{tasks}"
       end
       max = tasks.reduce(0) do |acc, x|
         points = task_points(x)
@@ -237,18 +229,16 @@ module CNFManager
     end
 
     def self.tasks_by_tag(tag)
-      #TODO cross reference points.yml tags with results
       found = false
       result_items = points_yml.reduce([] of String) do |acc, x|
-        # LOGGING.debug "tasks_by_tag: tag:#{tag}, points.name:#{x["name"].as_s?}, points.tags:#{x["tags"].as_s?}"
-        # TODO parse tags using ',' then get an exact match
+        LOGGING.debug "tasks_by_tag: tag:#{tag}, points.name:#{x["name"].as_s?}, points.tags:#{x["tags"].as_s?}"
         if x["tags"].as_s? 
           tags_list = x["tags"].as_s.split(",")
           tag_match = tags_list.map { |parsed_tag|
-            # LOGGING.debug "parsed_tag #{parsed_tag} tag: #{tag}"
-            parsed_tag if parsed_tag == tag
+            LOGGING.debug "parsed_tag #{parsed_tag} tag: #{tag}"
+            parsed_tag.strip if parsed_tag.strip == tag.strip
           }.uniq.compact
-          # LOGGING.debug "tag_match #{tag_match} name #{x["name"]}"
+          LOGGING.debug "tag_match #{tag_match} name #{x["name"]}"
           if !tag_match.empty?
             acc << x["name"].as_s
           else
@@ -257,11 +247,6 @@ module CNFManager
         else
           acc
         end
-        # if x["tags"].as_s? && x["tags"].as_s.includes?(tag)
-        #   acc << x["name"].as_s
-        # else
-        #   acc
-        # end
       end
     end
 
