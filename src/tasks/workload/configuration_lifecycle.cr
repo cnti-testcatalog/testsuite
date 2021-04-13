@@ -29,14 +29,17 @@ task "ip_addresses" do |_, args|
       LOGGING.info "current directory: #{ FileUtils.pwd()}"
       # should catch comments (# // or /*) and ignore 0.0.0.0
       # note: grep wants * escaped twice
-      Process.run("grep -r -P '^(?!.+0\.0\.0\.0)(?![[:space:]]*0\.0\.0\.0)(?!#)(?![[:space:]]*#)(?!\/\/)(?![[:space:]]*\/\/)(?!\/\\*)(?![[:space:]]*\/\\*)(.+([0-9]{1,3}[\.]){3}[0-9]{1,3})'", shell: true) do |proc|
+      Process.run("grep -r -P '^(?!.+0\.0\.0\.0)(?![[:space:]]*0\.0\.0\.0)(?!#)(?![[:space:]]*#)(?!\/\/)(?![[:space:]]*\/\/)(?!\/\\*)(?![[:space:]]*\/\\*)(.+([0-9]{1,3}[\.]){3}[0-9]{1,3})'  --exclude=*.txt", shell: true) do |proc|
         while line = proc.output.gets
           response << line
           VERBOSE_LOGGING.info "#{line}" if check_verbose(args)
         end
       end
       Dir.cd(cdir)
-      if response.to_s.size > 0
+      parsed_resp = response.to_s
+      if parsed_resp.size > 0
+        puts "HARD CODED IP ADDRESSES".colorize(:red)
+        puts parsed_resp 
         resp = upsert_failed_task("ip_addresses","✖️  FAILED: IP addresses found")
       else
         resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
@@ -314,7 +317,11 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
       VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if check_verbose(args)
     end
 
-    ip_search = File.read_lines("#{destination_cnf_dir}/helm_chart.yml").take_while{|x| x.match(/NOTES:/) == nil}.reduce([] of String){|acc, x| x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/) && x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/).try &.[0] != "0.0.0.0" ? acc << x : acc}
+    ip_search = File.read_lines("#{destination_cnf_dir}/helm_chart.yml").take_while{|x| x.match(/NOTES:/) == nil}.reduce([] of String) do |acc, x| 
+      (x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/) && 
+       x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/).try &.[0] != "0.0.0.0") ? acc << x : acc
+    end
+
     VERBOSE_LOGGING.info "IPs: #{ip_search}" if check_verbose(args)
 
     if ip_search.empty?
