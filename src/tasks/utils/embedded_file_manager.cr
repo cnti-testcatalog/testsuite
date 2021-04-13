@@ -27,4 +27,7 @@ module EmbeddedFileManager
   macro points_yml 
     POINTSFILE = Base64.decode_string("{{ `cat ./embedded_files/points.yml  | base64`}}")
   end
+  def self.points_yml_write_file
+    File.write("points.yml", POINTSFILE)
+  end
 end
