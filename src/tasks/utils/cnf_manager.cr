@@ -221,7 +221,7 @@ module CNFManager
 
     unless CNFManager.exclusive_install_method_tags?(config)
       puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-conformance.yml!".colorize(:red)
-      raise "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-conformance.yml!"
+      exit 1
     end
     if !helm_chart.empty?
       {:helm_chart, helm_chart}
@@ -231,7 +231,7 @@ module CNFManager
       {:manifest_directory, manifest_directory}
     else
       puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory.".colorize(:red)
-      raise "Error in cnf-conformance.yml!"
+      exit 1
     end
   end
 
