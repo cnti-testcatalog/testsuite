@@ -171,10 +171,8 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "pod_network_latency" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
-    # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-    # destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    #TODO tests should fail if cnf not installed
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    # deployment_name = config.get("deployment_name").as_s
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
         test_passed = true
@@ -184,13 +182,9 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
       end
       if test_passed
         KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml")
-        # install_experiment = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/experiment.yaml`
         KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml")
-        # install_rbac = `kubectl apply -f https://hub.litmuschaos.io/api/chaos/1.11.1?file=charts/generic/pod-network-latency/rbac.yaml`
-        annotate = `kubectl annotate --overwrite deploy/#{resource["name"]} litmuschaos.io/chaos="true"`
-        # puts "#{install_experiment}" if check_verbose(args)
-        # puts "#{install_rbac}" if check_verbose(args)
-        # puts "#{annotate}" if check_verbose(args)
+        # annotate = `kubectl annotate --overwrite deploy/#{resource["name"]} litmuschaos.io/chaos="true"`
+        KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-network-latency"
         test_name = "#{resource["name"]}-#{Random.rand(99)}"
@@ -232,7 +226,8 @@ task "disk_fill", ["install_litmus"] do |_, args|
       if test_passed
         KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/experiment.yaml")
         KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml")
-        annotate = `kubectl annotate --overwrite deploy/#{resource["name"]} litmuschaos.io/chaos="true"`
+        # annotate = `kubectl annotate --overwrite deploy/#{resource["name"]} litmuschaos.io/chaos="true"`
+        KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "disk-fill"
         test_name = "#{resource["name"]}-#{Random.rand(99)}" 
