@@ -78,6 +78,18 @@ module KubectlClient
       $?.success?
     end
   end
+  module Annotate
+    def self.run(cli) 
+      LOGGING.info "annotate cli:  #{cli}"
+      status = Process.run("kubectl annotate #{cli}",
+                           shell: true,
+                           output: output = IO::Memory.new,
+                           error: stderr = IO::Memory.new)
+      LOGGING.info "KubectlClient.Annotate.run output: #{output.to_s}"
+      LOGGING.info "KubectlClient.Annotate.run stderr: #{stderr.to_s}"
+      {status: status, output: output, error: stderr}
+    end
+  end
   module Apply
     def self.file(file_name) : Bool
       # LOGGING.info "apply file: #{file_name}"
