@@ -299,7 +299,6 @@ desc "Does the CNF have hardcoded IPs in the K8s resource configuration"
 task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
   task_response = CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "Task Name: hardcoded_ip_addresses_in_k8s_runtime_configuration" if check_verbose(args)
-    # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     helm_chart = config.cnf_config[:helm_chart]
     helm_directory = config.cnf_config[:helm_directory]
     release_name = config.cnf_config[:release_name]
@@ -310,10 +309,12 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
 
     create_namespace = `kubectl create namespace hardcoded-ip-test`
     unless helm_chart.empty?
-      helm_install = `#{helm} install --namespace hardcoded-ip-test hardcoded-ip-test #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
-      VERBOSE_LOGGING.info "helm_chart: #{helm_chart}" if check_verbose(args)
+      helm_install = Helm.install("--namespace hardcoded-ip-test hardcoded-ip-test #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml")
+      # helm_install = `#{helm} install --namespace hardcoded-ip-test hardcoded-ip-test #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
+      # VERBOSE_LOGGING.info "helm_chart: #{helm_chart}" if check_verbose(args)
     else
-      helm_install = `#{helm} install --namespace hardcoded-ip-test hardcoded-ip-test #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
+      helm_install = Helm.install("--namespace hardcoded-ip-test hardcoded-ip-test #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml")
+      # helm_install = `#{helm} install --namespace hardcoded-ip-test hardcoded-ip-test #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
       VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if check_verbose(args)
     end
 
