@@ -153,4 +153,15 @@ module Helm
   def self.chart_name(helm_chart_repo)
     helm_chart_repo.split("/").last
   end
+
+  def self.install(cli)
+    helm = CNFSingleton.helm
+    status = Process.run("#{helm} install #{cli}",
+                         shell: true,
+                         output: output = IO::Memory.new,
+                         error: stderr = IO::Memory.new)
+    LOGGING.info "Helm.install output: #{output.to_s}"
+    LOGGING.info "Helm.install stderr: #{stderr.to_s}"
+    {status: status, output: output, error: stderr}
+  end
 end
