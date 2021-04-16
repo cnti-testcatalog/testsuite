@@ -19,7 +19,7 @@ module CNFManager
       @@file = CNFManager::Points.create_final_results_yml_name
       LOGGING.debug "Results.file"
       continue = false
-      LOGGING.info "file exists?:#{File.exists?(@@file)}"
+      # LOGGING.info "file exists?:#{File.exists?(@@file)}"
       if File.exists?("#{@@file}")
         stdout_info "Do you wish to overwrite the #{@@file} file? If so, your previous results.yml will be lost."
         print "(Y/N) (Default N): > "
