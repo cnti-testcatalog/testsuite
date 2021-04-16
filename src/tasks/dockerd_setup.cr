@@ -10,7 +10,7 @@ task "install_dockerd" do |_, args|
   VERBOSE_LOGGING.info "install_dockerd" if check_verbose(args)
   resp = KubectlClient::Apply.file(dockerd_filename)
   status = check_dockerd(180)
-  if status
+  unless status
     LOGGING.error "Dockerd_Install failed.".colorize(:red)
   end
   LOGGING.info "Dockerd_Install status: #{status}"
