@@ -1,7 +1,6 @@
 ---
 helm_directory: chart
 git_clone_url: 
-install_script: chart
 release_name: coredns
 deployment_name: coredns-coredns 
 deployment_label: k8s-app
