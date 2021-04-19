@@ -237,7 +237,9 @@ task "disk_fill", ["install_litmus"] do |_, args|
         chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
         puts "#{chaos_config}" if check_verbose(args)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        #TODO return whether the test timed out or not
         LitmusManager.wait_for_test(test_name,chaos_experiment_name,args)
+        #TODO return whether the test passed or not
         LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
       end
       test_passed
