@@ -58,7 +58,7 @@ Prereqs: kubernetes cluster, wget, curl, helm 3.1.1 or greater on your system al
 
 1. Install the latest test suite binary:  `source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/main/curl_install.sh)`
 2. Run `setup` to prepare the cnf-conformance suite: `cnf-conformance setup`
-3. Pull down an example CNF configuration to try: `wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/main/example-cnfs/coredns/cnf-conformance.yml`
+3. Pull down an example CNF configuration to try: `curl -o cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/main/example-cnfs/coredns/cnf-conformance.yml`
 4. Initialize the test suite for using the CNF: `cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml`
 5. Run all of application/workload tests: `cnf-conformance workload`
 
