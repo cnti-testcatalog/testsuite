@@ -480,24 +480,27 @@ module CNFManager
     helm_chart_path = config.cnf_config[:helm_chart_path]
     LOGGING.debug "helm_directory: #{helm_directory}"
 
-    #TODO move to sandbox module
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
 
     VERBOSE_LOGGING.info "destination_cnf_dir: #{destination_cnf_dir}" if verbose
     LOGGING.debug "mkdir_p destination_cnf_dir: #{destination_cnf_dir}"
     FileUtils.mkdir_p(destination_cnf_dir)
 
-    # TODO enable recloning/fetching etc
-    # TODO pass in block
-    # TODO move to git module
-    git_clone = `git clone #{git_clone_url} #{destination_cnf_dir}/#{release_name}`  if git_clone_url.empty? == false
-    VERBOSE_LOGGING.info git_clone if verbose
+    # git_clone = `git clone #{git_clone_url} #{destination_cnf_dir}/#{release_name}`  if git_clone_url.empty? == false
+    GitClient.clone("#{git_clone_url} #{destination_cnf_dir}/#{release_name}")  if git_clone_url.empty? == false
 
     sandbox_setup(config, cli_args)
 
     helm = CNFSingleton.helm
     LOGGING.info "helm path: #{CNFSingleton.helm}"
 
+    # TODO get installation data for reasonable startup time
+    # TODO separate all installation code into other functions
+    # TODO timer function that accepts a block, pass installation function
+    # TODO save to an [preferrably immutable] config map 
+    # TODO retrieve config map data in reasonable start time test and display it
+    # TODO when uninstalling, remove config map
+    # TODO if the config map exists on install, complain, delete then overwrite?
     case install_method[0]
     when :manifest_directory
       VERBOSE_LOGGING.info "deploying by manifest file" if verbose
