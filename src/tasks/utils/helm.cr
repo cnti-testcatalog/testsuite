@@ -156,6 +156,7 @@ module Helm
 
   def self.install(cli)
     helm = CNFSingleton.helm
+    LOGGING.info "helm command: #{helm} install #{cli}"
     status = Process.run("#{helm} install #{cli}",
                          shell: true,
                          output: output = IO::Memory.new,

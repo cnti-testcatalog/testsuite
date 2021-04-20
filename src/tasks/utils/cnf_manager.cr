@@ -3,6 +3,7 @@ require "totem"
 require "colorize"
 require "./types/cnf_conformance_yml_type.cr"
 require "./helm.cr"
+require "./git_client.cr"
 require "uuid"
 require "./points.cr"
 require "./task.cr"
@@ -458,7 +459,6 @@ module CNFManager
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
 
-    #TODO add helm arguments to the cnf-conformance yml
     VERBOSE_LOGGING.info "sample_setup" if verbose
     LOGGING.info("config_file #{config_file}")
 
@@ -501,37 +501,38 @@ module CNFManager
     # TODO retrieve config map data in reasonable start time test and display it
     # TODO when uninstalling, remove config map
     # TODO if the config map exists on install, complain, delete then overwrite?
-    case install_method[0]
-    when :manifest_directory
-      VERBOSE_LOGGING.info "deploying by manifest file" if verbose
-      #kubectl apply -f ./sample-cnfs/k8s-non-helm/manifests
-      # TODO move to kubectlclient
-      # LOGGING.info("kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}")
-      # manifest_install = `kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}`
-      # VERBOSE_LOGGING.info manifest_install if verbose
-      KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
-
-    when :helm_chart
-      if !helm_repo_name.empty? || !helm_repo_url.empty?
-        Helm.helm_repo_add(helm_repo_name, helm_repo_url)
+    helm_install = {status: "", output: IO::Memory.new, error: IO::Memory.new}
+    elapsed_time = Time.measure do
+      case install_method[0]
+      when :manifest_directory
+        VERBOSE_LOGGING.info "deploying by manifest file" if verbose
+        KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
+      when :helm_chart
+        if !helm_repo_name.empty? || !helm_repo_url.empty?
+          Helm.helm_repo_add(helm_repo_name, helm_repo_url)
+        end
+        VERBOSE_LOGGING.info "deploying with chart repository" if verbose
+        # LOGGING.info "helm command: #{helm} install #{release_name} #{helm_chart}"
+        Helm.install("#{release_name} #{helm_chart}")
+        # helm_install = `#{helm} install #{release_name} #{helm_chart}`
+        # VERBOSE_LOGGING.info helm_install if verbose
+        export_published_chart(config, cli_args)
+      when :helm_directory
+        VERBOSE_LOGGING.info "deploying with helm directory" if verbose
+        #TODO Add helm options into cnf-conformance yml
+        #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
+        # LOGGING.info("#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}")
+        # helm_install = `#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}`
+        helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory}")
+        # VERBOSE_LOGGING.info helm_install if verbose
+      else
+        raise "Deployment method not found"
       end
-      VERBOSE_LOGGING.info "deploying with chart repository" if verbose
-      LOGGING.info "helm command: #{helm} install #{release_name} #{helm_chart}"
-      #TODO move to Helm module
-      helm_install = `#{helm} install #{release_name} #{helm_chart}`
-      VERBOSE_LOGGING.info helm_install if verbose
-      export_published_chart(config, cli_args)
-    when :helm_directory
-      VERBOSE_LOGGING.info "deploying with helm directory" if verbose
-      #TODO Add helm options into cnf-conformance yml
-      #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
-      LOGGING.info("#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}")
-      #TODO move to helm module
-      helm_install = `#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}`
-      VERBOSE_LOGGING.info helm_install if verbose
-    else
-      raise "Deployment method not found"
     end
+
+    LOGGING.info "elapsed_time.seconds: #{elapsed_time.seconds}"
+
+    # save elapsed time elapsed_time.seconds
 
     resource_ymls = cnf_workload_resources(nil, config) do |resource|
       resource
@@ -545,7 +546,7 @@ module CNFManager
         KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
       end
     end
-    if helm_install.to_s.size > 0 # && helm_pull.to_s.size > 0
+    if helm_install && helm_install[:output].to_s.size > 0 # && helm_pull.to_s.size > 0
       stdout_success "Successfully setup #{release_name}"
     end
   end
