@@ -585,7 +585,7 @@ def secrets_used_skipped_msg(emoji)
 <<-TEMPLATE
 SKIPPED: Secrets not used #{emoji}
 
-To addresss this issue please see the USAGE.md documentation 
+To address this issue please see the USAGE.md documentation 
 
 TEMPLATE
 end
