@@ -1,6 +1,7 @@
 # coding: utf-8
 require "totem"
 require "colorize"
+require "crinja"
 require "./types/cnf_conformance_yml_type.cr"
 require "./helm.cr"
 require "./git_client.cr"
@@ -546,10 +547,33 @@ module CNFManager
         KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
       end
     end
+
     if helm_install && helm_install[:output].to_s.size > 0 # && helm_pull.to_s.size > 0
       stdout_success "Successfully setup #{release_name}"
     end
+
+    if version_less_than(KubectlClient.server_version, "1.19.0")
+      k8s_ver = true
+    end
+
+    elapsed_time_template = Crinja.render(configmap_temp, { "release_name" => "#{release_name}-timestamp", "elapsed_time" => "#{elapsed_time}", "k8s_ver" => "#{k8s_ver}"})
+    write_template= `echo "#{elapsed_time_template}" > "#{destination_cnf_dir}/configmap_test.yml"`
   end
+
+def self.configmap_temp
+  <<-TEMPLATE
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: '{{ release_name }}'
+  {% if k8s_ver %}
+  immutable: true
+  {% endif %}
+  data:
+    startup_time: '{{ elapsed_time }}'
+  TEMPLATE
+end
+
 
   def self.sample_cleanup(config_file, force=false, installed_from_manifest=false, verbose=true)
     LOGGING.info "sample_cleanup"
