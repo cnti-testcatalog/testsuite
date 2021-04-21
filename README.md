@@ -1,11 +1,11 @@
-# CNF Conformance Test Suite
+# CNF Test Suite
 | Main |
 |---|
 |[![Build Status](https://github.com/cncf/cnf-conformance/workflows/Crystal%20Specs/badge.svg)](https://github.com/cncf/cnf-conformance/actions)|
 
-The CNF Conformance test suite is a tool that makes it possible to validate telco applications, aka Cloud native Network Functions (CNFs), and the underlying Telecom platforms adherence to Cloud native principles and best practices.
+The CNF Test Suite is a tool that makes it possible to validate telco applications, aka Cloud native Network Functions (CNFs), and the underlying Telecom platforms adherence to Cloud native principles and best practices.
 
-This test suite initiative works closely with the [CNF WG](cnf-wg/README.md) which determines requirements for the CNF Conformance program.
+This Test Suite initiative works closely with the [CNF WG](cnf-wg/README.md) which determines requirements for the CNF Conformance program.
 
 ## Installation and Usage
 To get the CNF Test Suite up and running, see the [Installation Guide](INSTALL.md). 
@@ -27,7 +27,7 @@ Check out the [usage documentation](https://github.com/cncf/cnf-conformance/blob
 
 ## Cloud Native Categories
 
-The CNF Conformance Test Suite will inspect CNFs for the following characteristics: 
+The CNF Test Suite will inspect CNFs for the following characteristics: 
 - **Compatibility** - CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements.
 - **Statelessness** - The CNF's state should be stored in a custom resource definition or a separate database (e.g. etcd) rather than requiring local storage. The CNF should also be resilient to node failure.
 - **Security** - CNF containers should be isolated from one another and the host.
@@ -39,19 +39,19 @@ The CNF Conformance Test Suite will inspect CNFs for the following characteristi
 - **Hardware Resources and Scheduling** - The CNF container should access all hardware and schedule to specific worker nodes by using a device plugin.
 - **Resilience** - CNFs should be resilient to failures inevitable in cloud environments. CNF Resilience should be tested to ensure CNFs are designed to deal with non-carrier-grade shared cloud HW/SW platforms.
 
-See the [Conformance Test Categories Documentation](https://github.com/cncf/cnf-conformance/blob/main/TEST-CATEGORIES.md) for a complete overview of the tests.
+See the [Test Categories Documentation](https://github.com/cncf/cnf-conformance/blob/main/TEST-CATEGORIES.md) for a complete overview of the tests.
 
 ## Contributing
 
-Welcome! We gladly accept contributions on new conformance tests, example CNFs, updates to documentation, enhancements, bug reports, and more.
+Welcome! We gladly accept contributions on new tests, example CNFs, updates to documentation, enhancements, bug reports, and more.
 - [Contributing guide](https://github.com/cncf/cnf-conformance/blob/main/CONTRIBUTING.md)
 - [Good first issues](https://github.com/cncf/cnf-conformance/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 ## Communication and community meetings
 
 - Join the conversation on [CNCF's Slack](https://slack.cncf.io/) channels
-    - [#cnf-conformance](https://cloud-native.slack.com/archives/CV69TQW7Q)  
-    - [#cnf-conformance-dev](https://cloud-native.slack.com/archives/C014TNCEX8R)
+    - [#cnf-testsuite](https://cloud-native.slack.com/archives/C01V28MLYEP)  
+    - [#cnf-testsuite-dev](https://cloud-native.slack.com/archives/C014TNCEX8R)
     
 - Join the monthly [Telecom User Group meetings](https://github.com/cncf/telecom-user-group#meeting-time) 
     - Meetings on the 1st Mondays of the month 
@@ -63,7 +63,7 @@ Welcome! We gladly accept contributions on new conformance tests, example CNFs, 
 
 ## Implementation overview
 
-The CNF Conformance Test Suite leverages upstream tools such as [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Helm linter](https://github.com/helm/chart-testing), and [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) for testing CNFs. The upstream tool installation, configuration, and versioning has been made repeatable.
+The CNF Test Suite leverages upstream tools such as [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Helm linter](https://github.com/helm/chart-testing), and [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) for testing CNFs. The upstream tool installation, configuration, and versioning has been made repeatable.
 
 The test framework and tests (using the upstream tools) are written in the human-readable, compiled language, [Crystal](https://crystal-lang.org/). Common capabilities like dependencies between tests and categories are supported.
 
@@ -72,8 +72,8 @@ Setup of vanilla upstream K8s on [Equinix Metal](https://metal.equinix.com/) is 
 
 ## Code of Conduct
 
-The CNF Conformance community follows the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/main/code-of-conduct.md).
+The CNF Test Suite community follows the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/main/code-of-conduct.md).
 
 ## License terms
 
-CNF Conformance Test Suite is available under the [Apache 2 license](https://github.com/cncf/cnf-conformance/blob/main/LICENSE).
+The CNF Test Suite is available under the [Apache 2 license](https://github.com/cncf/cnf-conformance/blob/main/LICENSE).
