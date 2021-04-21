@@ -60,7 +60,7 @@ Check [usage documentation](https://github.com/cncf/cnf-conformance/blob/main/US
 **4. New CNF Example:** 
 To suggest a new CNF, please create a GitHub issue using the [New Example CNF template](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=example+CNF&template=new-example-cnf.md&title=%5BCNF%5D).
 
-To install the CNF CNF Test Suite and run a CNF, follow instructions at:
+To install the CNF Test Suite and run a CNF, follow instructions at:
 - [CNF Developer Install and Usage Guide](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md#cnf-developer-install-and-usage-guide)
 
 Coding Style: 
