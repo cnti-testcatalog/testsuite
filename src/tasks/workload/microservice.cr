@@ -34,62 +34,71 @@ task "reasonable_startup_time" do |_, args|
     helm = CNFSingleton.helm
     VERBOSE_LOGGING.info helm if check_verbose(args)
 
-    create_namespace = `kubectl create namespace startup-test`
-    helm_template_orig = ""
-    helm_template_test = ""
-    kubectl_apply = ""
-    is_kubectl_applied = ""
-    is_kubectl_deployed = ""
-    # TODO make this work with a manifest installation
-    elapsed_time = Time.measure do
-      LOGGING.info("reasonable_startup_time helm_chart.empty?: #{helm_chart.empty?}")
-      if install_method[0] == :helm_chart
-      # unless helm_chart.empty? #TODO make this work for a manifest
-        LOGGING.info("reasonable_startup_time #{helm} template #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_orig.yml")
-        LOGGING.info "helm_template_orig command: #{helm} template #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_orig.yml}"
-        helm_template_orig = `#{helm} template #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_orig.yml`
-        LOGGING.info("reasonable_startup_time #{helm} template --namespace=startup-test #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_test.yml")
-        helm_template_test = `#{helm} template --namespace=startup-test #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_test.yml`
-        VERBOSE_LOGGING.info "helm_chart: #{helm_chart}" if check_verbose(args)
-      elsif install_method[0] == :helm_directory
-        LOGGING.info("reasonable_startup_time #{helm} template #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_orig.yml")
-        helm_template_orig = `#{helm} template #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_orig.yml`
-        LOGGING.info("reasonable_startup_time #{helm} template --namespace=startup-test #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_test.yml")
-        helm_template_test = `#{helm} template --namespace=startup-test #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_test.yml`
-        VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if check_verbose(args)
-      else # manifest file installation not supported
-        puts "Manifest file not supported for reasonable startup time yet".colorize(:yellow)
-        raise "Manifest file not supported yet"
-      end
+    # create_namespace = `kubectl create namespace startup-test`
+    # helm_template_orig = ""
+    # helm_template_test = ""
+    # kubectl_apply = ""
+    # is_kubectl_applied = ""
+    # is_kubectl_deployed = ""
+    # # TODO make this work with a manifest installation
+    # elapsed_time = Time.measure do
+    #   LOGGING.info("reasonable_startup_time helm_chart.empty?: #{helm_chart.empty?}")
+    #   if install_method[0] == :helm_chart
+    #   # unless helm_chart.empty? #TODO make this work for a manifest
+    #     LOGGING.info("reasonable_startup_time #{helm} template #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_orig.yml")
+    #     LOGGING.info "helm_template_orig command: #{helm} template #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_orig.yml}"
+    #     helm_template_orig = `#{helm} template #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_orig.yml`
+    #     LOGGING.info("reasonable_startup_time #{helm} template --namespace=startup-test #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_test.yml")
+    #     helm_template_test = `#{helm} template --namespace=startup-test #{release_name} #{helm_chart} > #{yml_file_path}/reasonable_startup_test.yml`
+    #     VERBOSE_LOGGING.info "helm_chart: #{helm_chart}" if check_verbose(args)
+    #   elsif install_method[0] == :helm_directory
+    #     LOGGING.info("reasonable_startup_time #{helm} template #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_orig.yml")
+    #     helm_template_orig = `#{helm} template #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_orig.yml`
+    #     LOGGING.info("reasonable_startup_time #{helm} template --namespace=startup-test #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_test.yml")
+    #     helm_template_test = `#{helm} template --namespace=startup-test #{release_name} #{yml_file_path}/#{helm_directory} > #{yml_file_path}/reasonable_startup_test.yml`
+    #     VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if check_verbose(args)
+    #   else # manifest file installation not supported
+    #     puts "Manifest file not supported for reasonable startup time yet".colorize(:yellow)
+    #     raise "Manifest file not supported yet"
+    #   end
+    #
+    #   # kubectl_apply = `kubectl apply -f #{yml_file_path}/reasonable_startup_test.yml --namespace=startup-test`
+    #   KubectlClient::Apply.file("#{yml_file_path}/reasonable_startup_test.yml --namespace=startup-test")
+    #   is_kubectl_applied = $?.success?
+    #
+    #   template_ymls = Helm::Manifest.parse_manifest_as_ymls("#{yml_file_path}/reasonable_startup_test.yml")
+    #
+    #   LOGGING.debug "template_ymls: #{template_ymls}"
+    #   task_response = template_ymls.map do |resource|
+    #     LOGGING.debug "Waiting on resource: #{resource["metadata"]["name"]} of type #{resource["kind"]}"
+    #     if resource["kind"].as_s.downcase == "deployment" ||
+    #         resource["kind"].as_s.downcase == "pod" ||
+    #         resource["kind"].as_s.downcase == "daemonset" ||
+    #         resource["kind"].as_s.downcase == "statefulset" ||
+    #         resource["kind"].as_s.downcase == "replicaset"
+    #
+    #       KubectlClient::Get.resource_wait_for_install(resource["kind"].as_s, resource["metadata"]["name"].as_s, wait_count=180, "startup-test")
+    #       $?.success?
+    #     else
+    #       true
+    #     end
+    #   end
+    #   is_kubectl_deployed = task_response.none?{|x| x == false}
+    # end
+    #
+    # VERBOSE_LOGGING.info helm_template_test if check_verbose(args)
+    # VERBOSE_LOGGING.info kubectl_apply if check_verbose(args)
+    # VERBOSE_LOGGING.info "installed? #{is_kubectl_applied}" if check_verbose(args)
+    # VERBOSE_LOGGING.info "deployed? #{is_kubectl_deployed}" if check_verbose(args)
 
-      # kubectl_apply = `kubectl apply -f #{yml_file_path}/reasonable_startup_test.yml --namespace=startup-test`
-      KubectlClient::Apply.file("#{yml_file_path}/reasonable_startup_test.yml --namespace=startup-test")
-      is_kubectl_applied = $?.success?
 
-      template_ymls = Helm::Manifest.parse_manifest_as_ymls("#{yml_file_path}/reasonable_startup_test.yml")
-
-      LOGGING.debug "template_ymls: #{template_ymls}"
-      task_response = template_ymls.map do |resource|
-        LOGGING.debug "Waiting on resource: #{resource["metadata"]["name"]} of type #{resource["kind"]}"
-        if resource["kind"].as_s.downcase == "deployment" ||
-            resource["kind"].as_s.downcase == "pod" ||
-            resource["kind"].as_s.downcase == "daemonset" ||
-            resource["kind"].as_s.downcase == "statefulset" ||
-            resource["kind"].as_s.downcase == "replicaset"
-
-          KubectlClient::Get.resource_wait_for_install(resource["kind"].as_s, resource["metadata"]["name"].as_s, wait_count=180, "startup-test")
-          $?.success?
-        else
-          true
-        end
-      end
-      is_kubectl_deployed = task_response.none?{|x| x == false}
-    end
-
-    VERBOSE_LOGGING.info helm_template_test if check_verbose(args)
-    VERBOSE_LOGGING.info kubectl_apply if check_verbose(args)
-    VERBOSE_LOGGING.info "installed? #{is_kubectl_applied}" if check_verbose(args)
-    VERBOSE_LOGGING.info "deployed? #{is_kubectl_deployed}" if check_verbose(args)
+    #TODO create a way to retrieve the config map as json yml
+    configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
+    #TODO check if json is empty
+    startup_time = configmap["data"].as_h["startup_time"].as_s
+    #TODO create a way to parse the config map
+    #TODO display pass or fail based on time in config map
+    # TODO retrieve config map data in reasonable start time test and display it
 
     emoji_fast="🚀"
     emoji_slow="🐢"
@@ -100,17 +109,18 @@ task "reasonable_startup_time" do |_, args|
     end
     LOGGING.info "startup_time_limit: #{startup_time_limit}"
 
-    if is_kubectl_applied && is_kubectl_deployed && elapsed_time.seconds < startup_time_limit
+    # if is_kubectl_applied && is_kubectl_deployed && elapsed_time.seconds < startup_time_limit
+    if startup_time.to_i < startup_time_limit
       upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time #{emoji_fast}")
     else
-      upsert_failed_task("reasonable_startup_time", "✖️  FAILED: CNF had a startup time of #{elapsed_time.seconds} seconds #{emoji_slow}")
+      upsert_failed_task("reasonable_startup_time", "✖️  FAILED: CNF had a startup time of #{startup_time} seconds #{emoji_slow}")
     end
 
-   ensure
-    LOGGING.debug "Reasonable startup cleanup"
-    delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
-    # rollback_non_namespaced = `kubectl apply -f #{yml_file_path}/reasonable_startup_orig.yml`
-    KubectlClient::Apply.file("#{yml_file_path}/reasonable_startup_orig.yml")
+   # ensure
+   #  LOGGING.debug "Reasonable startup cleanup"
+   #  delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
+   #  # rollback_non_namespaced = `kubectl apply -f #{yml_file_path}/reasonable_startup_orig.yml`
+   #  KubectlClient::Apply.file("#{yml_file_path}/reasonable_startup_orig.yml")
     # KubectlClient::Get.wait_for_install(deployment_name, wait_count=180)
   end
 end

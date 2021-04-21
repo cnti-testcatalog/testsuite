@@ -529,24 +529,22 @@ module CNFManager
       else
         raise "Deployment method not found"
       end
+
+      resource_ymls = cnf_workload_resources(nil, config) do |resource|
+        resource
+      end
+      resource_names = Helm.workload_resource_kind_names(resource_ymls)
+      #TODO move to kubectlclient and make resource_install_and_wait_for_all function
+      resource_names.each do | resource |
+        case resource[:kind].as_s.downcase
+        when "replicaset", "deployment", "statefulset", "pod", "daemonset"
+          # wait_for_install(resource_name, wait_count)
+          KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
+        end
+      end
     end
 
     LOGGING.info "elapsed_time.seconds: #{elapsed_time.seconds}"
-
-    # save elapsed time elapsed_time.seconds
-
-    resource_ymls = cnf_workload_resources(nil, config) do |resource|
-      resource
-    end
-    resource_names = Helm.workload_resource_kind_names(resource_ymls)
-    #TODO move to kubectlclient and make resource_install_and_wait_for_all function
-    resource_names.each do | resource |
-      case resource[:kind].as_s.downcase
-      when "replicaset", "deployment", "statefulset", "pod", "daemonset"
-        # wait_for_install(resource_name, wait_count)
-        KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
-      end
-    end
 
     if helm_install && helm_install[:output].to_s.size > 0 # && helm_pull.to_s.size > 0
       stdout_success "Successfully setup #{release_name}"
@@ -556,8 +554,18 @@ module CNFManager
       k8s_ver = true
     end
 
-    elapsed_time_template = Crinja.render(configmap_temp, { "release_name" => "#{release_name}-timestamp", "elapsed_time" => "#{elapsed_time}", "k8s_ver" => "#{k8s_ver}"})
+    # TODO save to an [preferrably immutable] config map 
+    LOGGING.info "save config"
+    elapsed_time_template = Crinja.render(configmap_temp, { "release_name" => "cnf-testsuite-#{release_name}-startup-information", "elapsed_time" => "#{elapsed_time.seconds}", "k8s_ver" => "#{k8s_ver}"})
+    #TODO find a way to kubectlapply directly without a map
+    LOGGING.debug "elapsed_time_template : #{elapsed_time_template}"
+    `rm #{destination_cnf_dir}/configmap_test.yml`
     write_template= `echo "#{elapsed_time_template}" > "#{destination_cnf_dir}/configmap_test.yml"`
+    # TODO if the config map exists on install, complain, delete then overwrite?
+    KubectlClient::Delete.file("#{destination_cnf_dir}/configmap_test.yml")
+    #TODO call kubectl apply on file
+    KubectlClient::Apply.file("#{destination_cnf_dir}/configmap_test.yml")
+    # TODO when uninstalling, remove config map
   end
 
 def self.configmap_temp
@@ -615,6 +623,7 @@ end
         end
       end
     end
+    KubectlClient::Delete.file("#{destination_cnf_dir}/configmap_test.yml")
     ret
   end
 
