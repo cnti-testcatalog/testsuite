@@ -22,7 +22,7 @@ Prereqs: kubernetes cluster, wget, curl, helm 3.1.1 or greater on your system al
 
 #### More Usage docs
 
-Check out the [usage documentation](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md) for more info about invoking commands and logging.
+Check out the [usage documentation](USAGE.md) for more info about invoking commands and logging.
 
 
 ## Cloud Native Categories
@@ -39,27 +39,32 @@ The CNF Test Suite will inspect CNFs for the following characteristics:
 - **Hardware Resources and Scheduling** - The CNF container should access all hardware and schedule to specific worker nodes by using a device plugin.
 - **Resilience** - CNFs should be resilient to failures inevitable in cloud environments. CNF Resilience should be tested to ensure CNFs are designed to deal with non-carrier-grade shared cloud HW/SW platforms.
 
-See the [Test Categories Documentation](https://github.com/cncf/cnf-conformance/blob/main/TEST-CATEGORIES.md) for a complete overview of the tests.
+See the [Test Categories Documentation](TEST-CATEGORIES.md) for a complete overview of the tests.
 
 ## Contributing
 
 Welcome! We gladly accept contributions on new tests, example CNFs, updates to documentation, enhancements, bug reports, and more.
-- [Contributing guide](https://github.com/cncf/cnf-conformance/blob/main/CONTRIBUTING.md)
-- [Good first issues](https://github.com/cncf/cnf-conformance/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+- [Contributing guide](CONTRIBUTING.md)
+- [Good first issues](https://github.com/cncf/cnf-testsuite/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 ## Communication and community meetings
 
 - Join the conversation on [CNCF's Slack](https://slack.cncf.io/) channels
     - [#cnf-testsuite](https://cloud-native.slack.com/archives/C01V28MLYEP)  
     - [#cnf-testsuite-dev](https://cloud-native.slack.com/archives/C014TNCEX8R)
-    
-- Join the monthly [Telecom User Group meetings](https://github.com/cncf/telecom-user-group#meeting-time) 
-    - Meetings on the 1st Mondays of the month 
-    - Meeting minutes are [here](https://docs.google.com/document/d/1yhtI7aiwpdAiRBKyUX6mOJDHAbjOog2mI4Ur2k27D7s/edit) 
-    
+     
 - Join the weekly developer meetings 
     - Meetings every Thursday at 14:15 - 15:00 UTC
     - Meeting minutes are [here](https://docs.google.com/document/d/1IbrgjqIkOCvrrSG0DRE6X62UUZpBq-818Mn8q0nkkd0/edit)
+
+- Join the weekly [CNF Working Group meetings](https://github.com/cncf/cnf-wg#recurring-meetings) 
+    - Meetings on Mondays at 16:00 - 17:00 UTC
+    - Meeting minutes are [here](https://docs.google.com/document/d/1YFimQftjkTUsxNGTsKdakvP7cJtJgCTqViH2kwJOrsc/edit)
+
+- Join the monthly [Telecom User Group meetings](https://github.com/cncf/telecom-user-group#meeting-time) 
+    - Meetings on the 1st Mondays of the month 
+    - Meeting minutes are [here](https://docs.google.com/document/d/1yhtI7aiwpdAiRBKyUX6mOJDHAbjOog2mI4Ur2k27D7s/edit) 
+   
 
 ## Implementation overview
 
@@ -76,4 +81,4 @@ The CNF Test Suite community follows the [CNCF Code of Conduct](https://github.c
 
 ## License terms
 
-The CNF Test Suite is available under the [Apache 2 license](https://github.com/cncf/cnf-conformance/blob/main/LICENSE).
+The CNF Test Suite is available under the [Apache 2 license](LICENSE.md).
