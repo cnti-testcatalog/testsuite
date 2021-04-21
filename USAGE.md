@@ -1,4 +1,4 @@
-# CNF Conformance Test CLI Usage Documentation 
+# CNF Test Suite CLI Usage Documentation 
 
 ### Table of Contents
 * [Overview](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#overview)
@@ -18,7 +18,7 @@
 * [Platform Tests](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#platform-tests)
 
 ### Overview
-The CNF Conformance Test suite can be run in production mode (using an executable) or in developer mode (using [crystal lang directly](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md#source-install)).  See the [pseudo code documentation](https://github.com/cncf/cnf-conformance/blob/main/PSEUDO-CODE.md) for examples of how the internals of WIP tests might work.
+The CNF Test suite can be run in production mode (using an executable) or in developer mode (using [crystal lang directly](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md#source-install)).  See the [pseudo code documentation](https://github.com/cncf/cnf-conformance/blob/main/PSEUDO-CODE.md) for examples of how the internals of WIP tests might work.
 
 ### Syntax for running any of the tests
 ```
@@ -55,22 +55,22 @@ crystal build src/cnf-conformance.cr
 ./cnf-conformance validate_config cnf-config=[PATH_TO]/cnf-conformance.yml
 ```
 
-#### Running all of the CNF Conformance tests (platform and workload):
+#### Running all of the platform and workload tests:
 ``` 
 ./cnf-conformance all cnf-config=<path_to_your_config_file>/cnf-conformance.yml
 ```
 
-#### Running all of the CNF Conformance tests (including proofs of concepts)
+#### Running all of the tests (including proofs of concepts)
 ``` 
 ./cnf-conformance all poc cnf-config=<path_to_your_config_file>/cnf-conformance.yml
 ```
-#### Running all of the workload CNF Conformance tests
+#### Running all of the workload tests
 ``` 
 crystal src/cnf-conformance.cr workload
 cnf-config=<path_to_your_config_file>/cnf-conformance.yml
 ```
 
-#### Running all of the platform or workload CNF Conformance tests independently:
+#### Running all of the platform or workload tests independently:
 
 ##### Run platform only tests:
 ``` 
@@ -86,7 +86,7 @@ cnf-config=<path_to_your_config_file>/cnf-conformance.yml
 ./cnf-conformance help
 ```
 
-#### Clean up the CNF Conformance test suite, the K8s cluster, and upstream projects:
+#### Clean up the CNF Test Suite, the K8s cluster, and upstream projects:
 ```
 ./cnf-conformance cleanup
 ```

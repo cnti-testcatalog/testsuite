@@ -2,7 +2,7 @@ Contributing Guidelines
 ---
 Welcome! We gladly accept contributions on new conformance tests, example CNFs, updates to documentation, enhancements, bug reports and more.
 
-CNF Conformance is [Apache 2.0 licensed](https://github.com/cncf/cnf-conformance/blob/main/LICENSE) and accepts contributions via GitHub pull requests.  Please read the following guidelines carefully to make it easier to get your contribution accepted.
+The CNF Test Suite is [Apache 2.0 licensed](https://github.com/cncf/cnf-conformance/blob/main/LICENSE) and accepts contributions via GitHub pull requests.  Please read the following guidelines carefully to make it easier to get your contribution accepted.
 
 Support Channels:
 ---
@@ -18,7 +18,7 @@ Before starting work on a major feature, please reach out to us via [GitHub Issu
 
 Issues
 ---
-Issues are used as the primary method for tracking items in the CNF Conformance initiative. Please self-assign an issue to yourself when you start to work on it so we don't duplicate work :) 
+Issues are used as the primary method for tracking items in the CNF Test Suite initiative. Please self-assign an issue to yourself when you start to work on it so we don't duplicate work :) 
 
 - [Issues](https://github.com/cncf/cnf-conformance/issues)
     - [Good first issues](https://github.com/cncf/cnf-conformance/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
@@ -53,14 +53,14 @@ crystal src/cnf-conformance.cr test_name verbose
 
 Check [usage documentation](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md) for more info about invoking commands and loggin
 
-**3. New Conformance Tests:**
+**3. New CNF Test Suite Tests:**
 - To request a new workload test, please create a new issue using the [**New Workload Test**](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=workload&template=new-workload-test.md&title=%5BWorkload%5D) Template
 - To request a new platform test, please create a new issue using the [**New Platform Test**](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=platform&template=new-platform-test.md&title=%5BPlatform%5D) Template
 
 **4. New CNF Example:** 
 To suggest a new CNF, please create a GitHub issue using the [New Example CNF template](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=example+CNF&template=new-example-cnf.md&title=%5BCNF%5D).
 
-To install the CNF Conformance test suite and run a CNF, follow instructions at:
+To install the CNF Test Suite and run a CNF, follow instructions at:
 - [CNF Developer Install and Usage Guide](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md#cnf-developer-install-and-usage-guide)
 
 Coding Style: 

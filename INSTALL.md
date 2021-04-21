@@ -1,4 +1,4 @@
-Installing the CNF Conformance Test Suite
+Installing the CNF Test Suite
 ---
 ### Overview
 This INSTALL guide will detail the minimum requirements needed for cnf-conformance while then providing installation with configuration steps to run the cnf-conformance binary from both a binary installation and source installation method.
@@ -14,8 +14,8 @@ This INSTALL guide will detail the minimum requirements needed for cnf-conforman
 This will detail the required minimum requirements needed in order to support cnf-conformance.
 
 #### Minimum Requirements
-* **kubernetes cluster** *(Working k8s cluster, see [supported k8s and installation details](#Details-on-supported-k8s-clusters-and-installation) on installation.*
-* **kubectl** *(run commands against k8 clusters, see [installing kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for more details.*
+* **Kubernetes cluster** *(Working K8s cluster, see [supported K8s and installation details](#Details-on-supported-k8s-clusters-and-installation) on installation.*
+* **kubectl** *(run commands against K8s clusters, see [installing kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for more details.*
 * **curl**
 * **helm 3.1.1** *or newer* *(cnf-conformance installs if not found locally)*
 
@@ -30,14 +30,14 @@ This will detail the required minimum requirements needed in order to support cn
 ---
 
 
-#### Details on supported k8s clusters and installation:
+#### Details on supported K8s clusters and installation:
 <details><summary>Click here to drop down details</summary>
 
 <p>
 
-##### Supported k8s Clusters
+##### Supported K8s Clusters
 - [Access](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/) to a working [Certified K8s](https://cncf.io/ck) cluster via [KUBECONFIG environment variable](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/#set-the-kubeconfig-environment-variable). (See [K8s Getting started guide](https://kubernetes.io/docs/setup/) for options)
--  Follow the optional instructions below if you don't already have a k8s cluster setup
+-  Follow the optional instructions below if you don't already have a K8s cluster setup
 
 ##### Kind
 
@@ -51,14 +51,14 @@ This will detail the required minimum requirements needed in order to support cn
 git clone https://github.com/cncf/cnf-testbed.git
 ```
 
-- Clone the K8s-infra repo then follow the [prerequisites](https://github.com/cncf/cnf-testbed/tree/master/tools#pre-requisites) for [deploying a K8s cluster](https://github.com/cncf/cnf-testbed/tree/master/tools#deploying-a-kubernetes-cluster-using-the-makefile--ci-tools) for a Equinix Metal host.
+- Clone the k8s-infra repo then follow the [prerequisites](https://github.com/cncf/cnf-testbed/tree/master/tools#pre-requisites) for [deploying a K8s cluster](https://github.com/cncf/cnf-testbed/tree/master/tools#deploying-a-kubernetes-cluster-using-the-makefile--ci-tools) for a Equinix Metal host.
 - If you already have IP addresses for your provider, and you want to manually install a K8s cluster, you can use k8s-infra to do this within your cnf-testbed repo clone.
 
 ```
 cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git
 ```
 
-- Now follow the [K8s-infra quick start](https://github.com/crosscloudci/k8s-infra/blob/master/README.md#quick-start) for instructions on how to install.
+- Now follow the [k8s-infra quick start](https://github.com/crosscloudci/k8s-infra/blob/master/README.md#quick-start) for instructions on how to install.
 
 </p>
 </details>
@@ -129,13 +129,13 @@ This should build a cnf-conformance binary in the root directory of the git repo
 
 Now that you have cnf-conformance installed, we need to prepare the suite.
 
-First make sure your k8s cluster is accessible (part of the [minimum pre-requisites](#Minimum-Requirements)). You can run the following to verify the cluster: 
+First make sure your K8s cluster is accessible (part of the [minimum pre-requisites](#Minimum-Requirements)). You can run the following to verify the cluster: 
 
 ```
 kubectl cluster-info
 ```
 
-And it should print a running kubernetes master in the output. Common kubectl errors and issues might relate to your KUBECONFIG variable. You can export to your k8s config by doing the following:
+And it should print a running kubernetes master in the output. Common kubectl errors and issues might relate to your KUBECONFIG variable. You can export to your K8s config by doing the following:
 
 ```
 export KUBECONFIG=path/to/mycluster.config
