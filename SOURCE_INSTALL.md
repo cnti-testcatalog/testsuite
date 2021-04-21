@@ -1,4 +1,4 @@
-Installing the CNF Conformance Test Suite from Source
+Installing the CNF Test Suite from Source
 ---
 ### Overview
 This INSTALL guide will detail the minimum requirements needed for cnf-conformance to install from source.
@@ -23,14 +23,14 @@ This INSTALL guide will detail the minimum requirements needed for cnf-conforman
 ##### Optional Requirement
 * **docker** (for building from crystal alpine image)
 
-#### Details on supported k8s clusters and installation:
+#### Details on supported K8s clusters and installation:
 <details><summary>Click here to drop down details</summary>
 
 <p>
 
-##### Supported k8s Clusters
+##### Supported K8s Clusters
 - [Access](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/) to a working [Certified K8s](https://cncf.io/ck) cluster via [KUBECONFIG environment variable](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/#set-the-kubeconfig-environment-variable). (See [K8s Getting started guide](https://kubernetes.io/docs/setup/) for options)
--  Follow the optional instructions below if you don't already have a k8s cluster setup
+-  Follow the optional instructions below if you don't already have a K8s cluster setup
 
 ##### Kind
 
@@ -126,7 +126,7 @@ source test.sh
 
 <details><summary>Other Information on Crystal Builds</summary>
 <p>
-The CNF Conformance Test Suite is modeled after make, or if you're familiar with Ruby, [rake](https://github.com/ruby/rake). Conformance tests are created via tasks using the Crystal library, [SAM.cr](https://github.com/imdrasil/sam.cr).
+The CNF Test Suite is modeled after make, or if you're familiar with Ruby, [rake](https://github.com/ruby/rake). Tests are created via tasks using the Crystal library, [SAM.cr](https://github.com/imdrasil/sam.cr).
 
 To run the automated test suite within the source clone:
 
@@ -171,7 +171,7 @@ To use CoreDNS as an example CNF. Download the conformance configuration to test
   crystal src/cnf-conformance.cr cnf_setup cnf-config=./cnf-  conformance.yml
   ```
 
-There are other examples in the [examples cnfs](https://github.com/cncf/cnf-conformance/tree/main/example-cnfs) folder if you would like to test others.
+There are other examples in the [example cnfs](https://github.com/cncf/cnf-conformance/tree/main/example-cnfs) folder if you would like to test others.
 
 #### NOTE: CNF **must** have a [helm chart](https://helm.sh/)
 
