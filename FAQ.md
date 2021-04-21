@@ -5,7 +5,7 @@ CNF Test Suite Frequently Asked Questions
 <details> <summary>What is the CNF Test Suite?</summary>
 <p>
 
- - The CNF Conformance program enables interoperability of Cloud native Network Functions (CNFs) from multiple vendors running on top of Kubernetes. The CNF Test Suite's goal is to provide an open source test suite to demonstrate conformance and implementation of best practices for both open and closed source Cloud native Network Functions.
+ - The CNF Conformance program enables interoperability of Cloud native Network Functions (CNFs) from multiple vendors running on top of Kubernetes. The CNF Test Suite's goal is to provide an open source test suite to demonstrate conformance and implementation of best practices for both open and closed source Cloud Native Network Functions.
 
 </p>
 </details>
