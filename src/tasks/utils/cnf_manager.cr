@@ -546,7 +546,9 @@ module CNFManager
 
     LOGGING.info "elapsed_time.seconds: #{elapsed_time.seconds}"
 
-    if helm_install && helm_install[:output].to_s.size > 0 # && helm_pull.to_s.size > 0
+    LOGGING.info "helm_install: #{helm_install}"
+    LOGGING.info "helm_install[:output].to_s: #{helm_install[:output].to_s}"
+    if helm_install && helm_install[:error].to_s.size == 0 # && helm_pull.to_s.size > 0
       stdout_success "Successfully setup #{release_name}"
     end
 
@@ -589,6 +591,7 @@ end
     config = parsed_config_file(ensure_cnf_conformance_yml_path(config_file))
 
     VERBOSE_LOGGING.info "cleanup config: #{config.inspect}" if verbose
+    KubectlClient::Delete.file("#{destination_cnf_dir}/configmap_test.yml")
     release_name = "#{config.get("release_name").as_s?}"
     manifest_directory = destination_cnf_dir + "/" + "#{config["manifest_directory"]? && config["manifest_directory"].as_s?}"
 
@@ -623,7 +626,6 @@ end
         end
       end
     end
-    KubectlClient::Delete.file("#{destination_cnf_dir}/configmap_test.yml")
     ret
   end
 
