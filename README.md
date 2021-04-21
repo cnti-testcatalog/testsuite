@@ -7,6 +7,26 @@ The CNF Conformance test suite is a tool that makes it possible to validate telc
 
 This test suite initiative works closely with the [CNF WG](cnf-wg/README.md) which determines requirements for the CNF Conformance program.
 
+## Installation and Usage
+To get the CNF Test Suite up and running, see the [Installation Guide](INSTALL.md). 
+
+#### To give it a try immediately you can use these quick install steps
+Prereqs: kubernetes cluster, wget, curl, helm 3.1.1 or greater on your system already.
+
+1. Install the latest test suite binary:  `source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/main/curl_install.sh)`
+2. Run `setup` to prepare the cnf-conformance suite: `cnf-conformance setup`
+3. Pull down an example CNF configuration to try: `curl -o cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/main/example-cnfs/coredns/cnf-conformance.yml`
+4. Initialize the test suite for using the CNF: `cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml`
+5. Run all of application/workload tests: `cnf-conformance workload`
+
+
+#### More Usage docs
+
+Check out the [usage documentation](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md) for more info about invoking commands and logging.
+
+
+## Cloud Native Categories
+
 The CNF Conformance Test Suite will inspect CNFs for the following characteristics: 
 - **Compatibility** - CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements.
 - **Statelessness** - The CNF's state should be stored in a custom resource definition or a separate database (e.g. etcd) rather than requiring local storage. The CNF should also be resilient to node failure.
@@ -49,23 +69,6 @@ The test framework and tests (using the upstream tools) are written in the human
 
 Setup of vanilla upstream K8s on [Equinix Metal](https://metal.equinix.com/) is done with the [CNF Testbed](https://github.com/cncf/cnf-testbed/) platform tool chain, which includes [k8s-infra](https://github.com/crosscloudci/k8s-infra), [Kubespray](https://kubespray.io/). To add support for other providers, please submit a [Pull Request](https://github.com/cncf/cnf-testbed/pulls) to the [CNF Testbed](https://github.com/cncf/cnf-testbed/) repo.
 
-
-## Installation
-To get the CNF Test Suite up and running, see the [Installation Guide](INSTALL.md). 
-
-#### To give it a try immediately you can use these quick install steps
-Prereqs: kubernetes cluster, wget, curl, helm 3.1.1 or greater on your system already.
-
-1. Install the latest test suite binary:  `source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/main/curl_install.sh)`
-2. Run `setup` to prepare the cnf-conformance suite: `cnf-conformance setup`
-3. Pull down an example CNF configuration to try: `curl -o cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/main/example-cnfs/coredns/cnf-conformance.yml`
-4. Initialize the test suite for using the CNF: `cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml`
-5. Run all of application/workload tests: `cnf-conformance workload`
-
-
-## Usage
-
-Check out the [usage documentation](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md) for more info about invoking commands and logging.
 
 ## Code of Conduct
 
