@@ -21,7 +21,7 @@ describe "Microservice" do
   it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"]  do
     begin
       LOGGING.info `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample_coredns`
-      response_s = `./cnf-conformance reasonable_startup_time destructive`
+      response_s = `./cnf-conformance reasonable_startup_time verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: CNF had a reasonable startup time/ =~ response_s).should_not be_nil
@@ -34,7 +34,7 @@ describe "Microservice" do
   it "'reasonable_startup_time' should fail if the cnf doesn't has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"] do
     `./cnf-conformance cnf_setup cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-conformance.yml force=true`
     begin
-      response_s = `./cnf-conformance reasonable_startup_time  destructive verbose`
+      response_s = `./cnf-conformance reasonable_startup_time verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/FAILED: CNF had a startup time of/ =~ response_s).should_not be_nil
