@@ -14,7 +14,7 @@ This INSTALL guide will detail the minimum requirements needed for cnf-conforman
 This will detail the required minimum requirements needed in order to support cnf-conformance.
 
 #### Minimum Requirements
-* **kubernetes cluster** *(Working K8s cluster, see [supported K8s and installation details](#Details-on-supported-k8s-clusters-and-installation) on installation.*
+* **Kubernetes cluster** *(Working K8s cluster, see [supported K8s and installation details](#Details-on-supported-k8s-clusters-and-installation) on installation.*
 * **kubectl** *(run commands against k8 clusters, see [installing kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for more details.*
 * **curl**
 * **helm 3.1.1** *or newer* *(cnf-conformance installs if not found locally)*
