@@ -115,7 +115,7 @@ CNF Test Suite Frequently Asked Questions
 </p>
 </details>
 
-<details> <summary>Why is the CNF Test Suite written in crystal and not in other languages like Go?</summary>
+<details> <summary>Why is the CNF Test Suite written in Crystal and not in other languages like Go?</summary>
 <p>
 
  - The short answer is Crystal fit the criteria we looked at in a language at the time which needed to run external programs/test suites and internal tests - [Taylor Carpenter](https://app.slack.com/client/T08PSQ7BQ/G019HM3K54H/user_profile/U7HCKCW90) via https://slack.cncf.io/ 
