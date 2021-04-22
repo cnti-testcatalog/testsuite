@@ -495,13 +495,6 @@ module CNFManager
     helm = CNFSingleton.helm
     LOGGING.info "helm path: #{CNFSingleton.helm}"
 
-    # TODO get installation data for reasonable startup time
-    # TODO separate all installation code into other functions
-    # TODO timer function that accepts a block, pass installation function
-    # TODO save to an [preferrably immutable] config map 
-    # TODO retrieve config map data in reasonable start time test and display it
-    # TODO when uninstalling, remove config map
-    # TODO if the config map exists on install, complain, delete then overwrite?
     helm_install = {status: "", output: IO::Memory.new, error: IO::Memory.new}
     elapsed_time = Time.measure do
       case install_method[0]
@@ -513,19 +506,13 @@ module CNFManager
           Helm.helm_repo_add(helm_repo_name, helm_repo_url)
         end
         VERBOSE_LOGGING.info "deploying with chart repository" if verbose
-        # LOGGING.info "helm command: #{helm} install #{release_name} #{helm_chart}"
-        Helm.install("#{release_name} #{helm_chart}")
-        # helm_install = `#{helm} install #{release_name} #{helm_chart}`
-        # VERBOSE_LOGGING.info helm_install if verbose
+        helm_intall = Helm.install("#{release_name} #{helm_chart}")
         export_published_chart(config, cli_args)
       when :helm_directory
         VERBOSE_LOGGING.info "deploying with helm directory" if verbose
         #TODO Add helm options into cnf-conformance yml
         #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
-        # LOGGING.info("#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}")
-        # helm_install = `#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}`
         helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory}")
-        # VERBOSE_LOGGING.info helm_install if verbose
       else
         raise "Deployment method not found"
       end
@@ -538,7 +525,6 @@ module CNFManager
       resource_names.each do | resource |
         case resource[:kind].as_s.downcase
         when "replicaset", "deployment", "statefulset", "pod", "daemonset"
-          # wait_for_install(resource_name, wait_count)
           KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
         end
       end
@@ -548,17 +534,23 @@ module CNFManager
 
     LOGGING.info "helm_install: #{helm_install}"
     LOGGING.info "helm_install[:output].to_s: #{helm_install[:output].to_s}"
+    helm_used = false
     if helm_install && helm_install[:error].to_s.size == 0 # && helm_pull.to_s.size > 0
+      helm_used = true
       stdout_success "Successfully setup #{release_name}"
     end
 
+
     if version_less_than(KubectlClient.server_version, "1.19.0")
-      k8s_ver = true
+      k8s_ver = false
+    else
+      k8s_ver = true 
     end
 
     # TODO save to an [preferrably immutable] config map 
+    #TODO if helm_install then set helm_deploy = true in template
     LOGGING.info "save config"
-    elapsed_time_template = Crinja.render(configmap_temp, { "release_name" => "cnf-testsuite-#{release_name}-startup-information", "elapsed_time" => "#{elapsed_time.seconds}", "k8s_ver" => "#{k8s_ver}"})
+    elapsed_time_template = Crinja.render(configmap_temp, { "helm_install" => helm_used, "release_name" => "cnf-testsuite-#{release_name}-startup-information", "elapsed_time" => "#{elapsed_time.seconds}", "k8s_ver" => "#{k8s_ver}"})
     #TODO find a way to kubectlapply directly without a map
     LOGGING.debug "elapsed_time_template : #{elapsed_time_template}"
     `rm #{destination_cnf_dir}/configmap_test.yml`
@@ -581,6 +573,7 @@ def self.configmap_temp
   {% endif %}
   data:
     startup_time: '{{ elapsed_time }}'
+    helm_used: '{{ helm_used }}'
   TEMPLATE
 end
 
