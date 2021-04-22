@@ -507,6 +507,7 @@ crystal src/cnf-conformance.cr performance
 ```
 ./cnf-conformance  k8s_conformance
 ```
+### Hardware and Scheduling Platform Tests
 ####  :heavy_check_mark: Run All platform harware and scheduling tests 
 ```
 ./cnf-conformance  platform:hardware_and_scheduling
@@ -515,17 +516,17 @@ crystal src/cnf-conformance.cr performance
 ```
 ./cnf-conformance platform:oci_compliant
 ```
-#### Proof of Concepts for Platform Tests
-##### :bulb: (PoC) Run All platform resilience tests 
-```
-./cnf-conformance platform:resilience poc
-```
+### Observability Platform Tests
 ##### :bulb: (PoC) Run All platform observability tests 
 ```
 ./cnf-conformance platform:observability poc
 ```
+### Resilience Platform Tests
+##### :bulb: (PoC) Run All platform resilience tests 
+```
+./cnf-conformance platform:resilience poc
+```
 ##### :x: :bulb: (PoC) Run node failure test. WARNING this is a destructive test and will reboot your *host* node!
-
 ##### Do not run this unless you have completely separate cluster, e.g. development or test cluster.
 ```
 ./cnf-conformance platform:node_failure poc destructive
