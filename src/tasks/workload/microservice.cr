@@ -15,11 +15,8 @@ end
 
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
 task "reasonable_startup_time" do |_, args|
-  unless check_destructive(args)
-    upsert_skipped_task("reasonable_startup_time", "✖️  SKIPPED: skipping reasonable_startup_time: not in destructive mode")
-    next
-  end
-  LOGGING.info "Running reasonable_startup_time in destructive mode!"
+  
+  LOGGING.info "Running reasonable_startup_time test"
   CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "reasonable_startup_time" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config.cnf_config}"
