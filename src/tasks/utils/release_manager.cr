@@ -8,7 +8,7 @@ module ReleaseManager
   module GithubReleaseManager
     def self.github_releases : Array(JSON::Any)
       existing_releases = Halite.basic_auth(user: ENV["GITHUB_USER"], pass: ENV["GITHUB_TOKEN"]).
-        get("https://api.github.com/repos/cncf/cnf-conformance/releases", 
+        get("https://api.github.com/repos/cncf/cnf-testsuite/releases", 
             headers: {Accept: "application/vnd.github.v3+json"})
       JSON.parse(existing_releases.body).as_a
     end 
@@ -102,7 +102,7 @@ Artifact info:
 
 TEMPLATE
 
-      release_url = "https://api.github.com/repos/cncf/cnf-conformance/releases"
+      release_url = "https://api.github.com/repos/cncf/cnf-testsuite/releases"
       unless found_release
         # /repos/:owner/:repo/releases
           # post(release_url, headers: {Accept: "application/vnd.github.v3+json"}, json: { "tag_name" => upsert_version, "draft" => draft, "prerelease" => prerelease, "name" => "#{upsert_version} #{Time.local.to_s("%B, %d %Y")}", "body" => notes_template }) found_release = JSON.parse(found_resp.body)
@@ -173,7 +173,7 @@ TEMPLATE
       if found_release
         puts "this is found_release id #{found_release["id"]}"
         resp = Halite.basic_auth(user: ENV["GITHUB_USER"], pass: ENV["GITHUB_TOKEN"]).
-          delete("https://api.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}")
+          delete("https://api.github.com/repos/cncf/cnf-testsuite/releases/#{found_release["id"]}")
         resp_code = resp.status_code
         LOGGING.info "resp_code: #{resp_code}"
       else 
@@ -226,7 +226,7 @@ TEMPLATE
     results.strip("\n")
   end
 
-  def self.remote_main_branch_hash(owner_repo="cncf/cnf-conformance")
+  def self.remote_main_branch_hash(owner_repo="cncf/cnf-testsuite")
     results =  `git ls-remote https://github.com/#{owner_repo}.git main | awk '{ print $1}' | cut -c1-7`.strip
     LOGGING.info "remote_main_branch_hash: #{results}"
     results.strip("\n")
@@ -237,12 +237,12 @@ TEMPLATE
       # TODO Add test that checks for uploaded corrupted binary.
       # POST :server/repos/:owner/:repo/releases/:release_id/assets{?name,label}
       # asset_resp = Halite.basic_auth(user: ENV["GITHUB_USER"], pass: ENV["GITHUB_TOKEN"]).
-      #   post("https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{found_release["id"]}/assets?name=#{cnf_tarball_name}",
+      #   post("https://uploads.github.com/repos/cncf/cnf-testsuite/releases/#{found_release["id"]}/assets?name=#{cnf_tarball_name}",
       #        headers: {
       #           "Content-Type" => "application/gzip",
       #           "Content-Length" => File.size("#{cnf_tarball_name}").to_s
       #   }, raw: "#{File.open("#{cnf_tarball_name}")}")A
-    asset_resp = `curl --http1.1 -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{asset_name})" --data-binary @#{asset_name} "https://uploads.github.com/repos/cncf/cnf-conformance/releases/#{release_id}/assets?name=$(basename #{asset_name})"`
+    asset_resp = `curl --http1.1 -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{asset_name})" --data-binary @#{asset_name} "https://uploads.github.com/repos/cncf/cnf-testsuite/releases/#{release_id}/assets?name=$(basename #{asset_name})"`
     LOGGING.info "asset_resp: #{asset_resp}"
     asset = JSON.parse(asset_resp.strip)
     LOGGING.info "asset: #{asset}"
@@ -271,14 +271,14 @@ TEMPLATE
   end
 
   def self.latest_release
-    resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} --silent "https://api.github.com/repos/cncf/cnf-conformance/releases/latest"`
+    resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} --silent "https://api.github.com/repos/cncf/cnf-testsuite/releases/latest"`
     LOGGING.info "latest_release: #{resp}"
     parsed_resp = JSON.parse(resp)
     parsed_resp["tag_name"]?.not_nil!.to_s
   end
 
   def self.latest_snapshot
-    resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} --silent "https://api.github.com/repos/cncf/cnf-conformance/releases"`
+    resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} --silent "https://api.github.com/repos/cncf/cnf-testsuite/releases"`
     LOGGING.info "latest_release: #{resp}"
     parsed_resp = JSON.parse(resp)
     prerelease = parsed_resp.as_a.select{ | x | x["prerelease"]==true && !("#{x["published_at"]?}".empty?) }
@@ -302,7 +302,7 @@ TEMPLATE
 
   def self.issue_title(issue_number)
     pure_issue = issue_number.gsub("#", "")
-    resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} "https://api.github.com/repos/cncf/cnf-conformance/issues/#{pure_issue}"`
+    resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} "https://api.github.com/repos/cncf/cnf-testsuite/issues/#{pure_issue}"`
     # LOGGING.info "issue_text: #{resp}"
     parsed_resp = JSON.parse(resp)
     parsed_resp["title"]?.not_nil!.to_s
