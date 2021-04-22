@@ -18,7 +18,7 @@ if [ "$1" = "cleanup" ]; then
     if [ -z ${SHELL_UNSUPPORTED+x} ]; then
         rm "$SHELL_DOT_DIR"cnf-conformance
     fi
-    rm -rf ~/.cnf-conformance
+    rm -rf ~/.cnf-testsuite
     exit 0
 fi
 
@@ -30,11 +30,11 @@ get_latest_release() {
 }
 
 # Install CNF-Conformance
-LATEST_RELEASE=$(get_latest_release cncf/cnf-conformance)
-mkdir -p ~/.cnf-conformance
-curl -L https://github.com/cncf/cnf-conformance/releases/download/$LATEST_RELEASE/cnf-conformance-$LATEST_RELEASE.tar.gz -o ~/.cnf-conformance/cnf-conformance.tar.gz
-tar -C ~/.cnf-conformance -xvf ~/.cnf-conformance/cnf-conformance.tar.gz
-rm ~/.cnf-conformance/cnf-conformance.tar.gz
+LATEST_RELEASE=$(get_latest_release cncf/cnf-testsuite)
+mkdir -p ~/.cnf-testsuite
+curl -L https://github.com/cncf/cnf-testsuite/releases/download/$LATEST_RELEASE/cnf-conformance-$LATEST_RELEASE.tar.gz -o ~/.cnf-testsuite/cnf-conformance.tar.gz
+tar -C ~/.cnf-testsuite -xvf ~/.cnf-testsuite/cnf-conformance.tar.gz
+rm ~/.cnf-testsuite/cnf-conformance.tar.gz
 
 if [ -z ${SHELL_UNSUPPORTED+x} ]; then
 
@@ -46,24 +46,24 @@ if [ -z ${SHELL_UNSUPPORTED+x} ]; then
     fi
 
     mkdir -p $SHELL_DOT_DIR
-    echo 'export PATH=$HOME/.cnf-conformance:$PATH' > ${SHELL_DOT_DIR}cnf-conformance
+    echo 'export PATH=$HOME/.cnf-testsuite:$PATH' > ${SHELL_DOT_DIR}cnf-testsuite
 fi
 
 
 if [ -z ${SHELL_UNSUPPORTED+x} ]; then
 
     if (return 0 2>/dev/null); then
-        export PATH=$HOME/.cnf-conformance:$PATH
-        echo "The cnf-conformance 'path' has been written to ${SHELL_DOT_DIR}cnf-conformance"
-        echo "cnf-conformance has been successfully installed to: ~/.cnf-conformance"
+        export PATH=$HOME/.cnf-testsuite:$PATH
+        echo "The cnf-testsuite 'path' has been written to ${SHELL_DOT_DIR}cnf-testsuite"
+        echo "cnf-testsuite has been successfully installed to: ~/.cnf-testsuite"
     else
-        echo "The cnf-conformance 'path' has been written to ${SHELL_DOT_DIR}cnf-conformance"
-        echo "cnf-conformance has been successfully installed to: ~/.cnf-conformance"
-        echo "To use cnf-conformance please restart you terminal session to load the new 'path'"
-        echo "Or you can manually run 'export PATH=\$HOME/.cnf-conformance:\$PATH' in your current session"
+        echo "The cnf-testsuite 'path' has been written to ${SHELL_DOT_DIR}cnf-testsuite"
+        echo "cnf-testsuite has been successfully installed to: ~/.cnf-testsuite"
+        echo "To use the cnf-testsuite please restart you terminal session to load the new 'path'"
+        echo "Or you can manually run 'export PATH=\$HOME/.cnf-testsuite:\$PATH' in your current session"
     fi
 else
     echo "Because an unsupported shell was detected you will need to manually set you path using something like:"
-    echo "'export PATH=\$HOME/.cnf-conformance:\$PATH'"
+    echo "'export PATH=\$HOME/.cnf-testsuite:\$PATH'"
 fi
 
