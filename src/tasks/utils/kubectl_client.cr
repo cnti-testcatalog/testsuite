@@ -248,6 +248,22 @@ module KubectlClient
       end
     end
 
+    def self.configmap(name) : JSON::Any
+      LOGGING.info "KubectlClient.configmap command: kubectl get configmap #{name} -o json"
+      status = Process.run("kubectl get configmap #{name} -o json",
+                           shell: true,
+                           output: output = IO::Memory.new,
+                           error: stderr = IO::Memory.new)
+      LOGGING.debug "KubectlClient.configmap output: #{output.to_s}"
+      LOGGING.info "KubectlClient.configmap stderr: #{stderr.to_s}"
+
+      if output.to_s && !output.to_s.empty?
+        JSON.parse(output.to_s)
+      else
+        JSON.parse(%({}))
+      end
+    end
+
     def self.wait_for_install(deployment_name, wait_count : Int32 = 180, namespace="default")
       resource_wait_for_install("deployment", deployment_name, wait_count, namespace)
     end

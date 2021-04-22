@@ -1,8 +1,10 @@
 # coding: utf-8
 require "totem"
 require "colorize"
+require "crinja"
 require "./types/cnf_conformance_yml_type.cr"
 require "./helm.cr"
+require "./git_client.cr"
 require "uuid"
 require "./points.cr"
 require "./task.cr"
@@ -458,7 +460,6 @@ module CNFManager
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
 
-    #TODO add helm arguments to the cnf-conformance yml
     VERBOSE_LOGGING.info "sample_setup" if verbose
     LOGGING.info("config_file #{config_file}")
 
@@ -480,72 +481,109 @@ module CNFManager
     helm_chart_path = config.cnf_config[:helm_chart_path]
     LOGGING.debug "helm_directory: #{helm_directory}"
 
-    #TODO move to sandbox module
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
 
     VERBOSE_LOGGING.info "destination_cnf_dir: #{destination_cnf_dir}" if verbose
     LOGGING.debug "mkdir_p destination_cnf_dir: #{destination_cnf_dir}"
     FileUtils.mkdir_p(destination_cnf_dir)
 
-    # TODO enable recloning/fetching etc
-    # TODO pass in block
-    # TODO move to git module
-    git_clone = `git clone #{git_clone_url} #{destination_cnf_dir}/#{release_name}`  if git_clone_url.empty? == false
-    VERBOSE_LOGGING.info git_clone if verbose
+    # git_clone = `git clone #{git_clone_url} #{destination_cnf_dir}/#{release_name}`  if git_clone_url.empty? == false
+    GitClient.clone("#{git_clone_url} #{destination_cnf_dir}/#{release_name}")  if git_clone_url.empty? == false
 
     sandbox_setup(config, cli_args)
 
     helm = CNFSingleton.helm
     LOGGING.info "helm path: #{CNFSingleton.helm}"
 
-    case install_method[0]
-    when :manifest_directory
-      VERBOSE_LOGGING.info "deploying by manifest file" if verbose
-      #kubectl apply -f ./sample-cnfs/k8s-non-helm/manifests
-      # TODO move to kubectlclient
-      # LOGGING.info("kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}")
-      # manifest_install = `kubectl apply -f #{destination_cnf_dir}/#{manifest_directory}`
-      # VERBOSE_LOGGING.info manifest_install if verbose
-      KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
-
-    when :helm_chart
-      if !helm_repo_name.empty? || !helm_repo_url.empty?
-        Helm.helm_repo_add(helm_repo_name, helm_repo_url)
+    # TODO get installation data for reasonable startup time
+    # TODO separate all installation code into other functions
+    # TODO timer function that accepts a block, pass installation function
+    # TODO save to an [preferrably immutable] config map 
+    # TODO retrieve config map data in reasonable start time test and display it
+    # TODO when uninstalling, remove config map
+    # TODO if the config map exists on install, complain, delete then overwrite?
+    helm_install = {status: "", output: IO::Memory.new, error: IO::Memory.new}
+    elapsed_time = Time.measure do
+      case install_method[0]
+      when :manifest_directory
+        VERBOSE_LOGGING.info "deploying by manifest file" if verbose
+        KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
+      when :helm_chart
+        if !helm_repo_name.empty? || !helm_repo_url.empty?
+          Helm.helm_repo_add(helm_repo_name, helm_repo_url)
+        end
+        VERBOSE_LOGGING.info "deploying with chart repository" if verbose
+        # LOGGING.info "helm command: #{helm} install #{release_name} #{helm_chart}"
+        Helm.install("#{release_name} #{helm_chart}")
+        # helm_install = `#{helm} install #{release_name} #{helm_chart}`
+        # VERBOSE_LOGGING.info helm_install if verbose
+        export_published_chart(config, cli_args)
+      when :helm_directory
+        VERBOSE_LOGGING.info "deploying with helm directory" if verbose
+        #TODO Add helm options into cnf-conformance yml
+        #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
+        # LOGGING.info("#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}")
+        # helm_install = `#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}`
+        helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory}")
+        # VERBOSE_LOGGING.info helm_install if verbose
+      else
+        raise "Deployment method not found"
       end
-      VERBOSE_LOGGING.info "deploying with chart repository" if verbose
-      LOGGING.info "helm command: #{helm} install #{release_name} #{helm_chart}"
-      #TODO move to Helm module
-      helm_install = `#{helm} install #{release_name} #{helm_chart}`
-      VERBOSE_LOGGING.info helm_install if verbose
-      export_published_chart(config, cli_args)
-    when :helm_directory
-      VERBOSE_LOGGING.info "deploying with helm directory" if verbose
-      #TODO Add helm options into cnf-conformance yml
-      #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
-      LOGGING.info("#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}")
-      #TODO move to helm module
-      helm_install = `#{helm} install #{release_name} #{destination_cnf_dir}/#{helm_directory}`
-      VERBOSE_LOGGING.info helm_install if verbose
-    else
-      raise "Deployment method not found"
-    end
 
-    resource_ymls = cnf_workload_resources(nil, config) do |resource|
-      resource
-    end
-    resource_names = Helm.workload_resource_kind_names(resource_ymls)
-    #TODO move to kubectlclient and make resource_install_and_wait_for_all function
-    resource_names.each do | resource |
-      case resource[:kind].as_s.downcase
-      when "replicaset", "deployment", "statefulset", "pod", "daemonset"
-        # wait_for_install(resource_name, wait_count)
-        KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
+      resource_ymls = cnf_workload_resources(nil, config) do |resource|
+        resource
+      end
+      resource_names = Helm.workload_resource_kind_names(resource_ymls)
+      #TODO move to kubectlclient and make resource_install_and_wait_for_all function
+      resource_names.each do | resource |
+        case resource[:kind].as_s.downcase
+        when "replicaset", "deployment", "statefulset", "pod", "daemonset"
+          # wait_for_install(resource_name, wait_count)
+          KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
+        end
       end
     end
-    if helm_install.to_s.size > 0 # && helm_pull.to_s.size > 0
+
+    LOGGING.info "elapsed_time.seconds: #{elapsed_time.seconds}"
+
+    LOGGING.info "helm_install: #{helm_install}"
+    LOGGING.info "helm_install[:output].to_s: #{helm_install[:output].to_s}"
+    if helm_install && helm_install[:error].to_s.size == 0 # && helm_pull.to_s.size > 0
       stdout_success "Successfully setup #{release_name}"
     end
+
+    if version_less_than(KubectlClient.server_version, "1.19.0")
+      k8s_ver = true
+    end
+
+    # TODO save to an [preferrably immutable] config map 
+    LOGGING.info "save config"
+    elapsed_time_template = Crinja.render(configmap_temp, { "release_name" => "cnf-testsuite-#{release_name}-startup-information", "elapsed_time" => "#{elapsed_time.seconds}", "k8s_ver" => "#{k8s_ver}"})
+    #TODO find a way to kubectlapply directly without a map
+    LOGGING.debug "elapsed_time_template : #{elapsed_time_template}"
+    `rm #{destination_cnf_dir}/configmap_test.yml`
+    write_template= `echo "#{elapsed_time_template}" > "#{destination_cnf_dir}/configmap_test.yml"`
+    # TODO if the config map exists on install, complain, delete then overwrite?
+    KubectlClient::Delete.file("#{destination_cnf_dir}/configmap_test.yml")
+    #TODO call kubectl apply on file
+    KubectlClient::Apply.file("#{destination_cnf_dir}/configmap_test.yml")
+    # TODO when uninstalling, remove config map
   end
+
+def self.configmap_temp
+  <<-TEMPLATE
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: '{{ release_name }}'
+  {% if k8s_ver %}
+  immutable: true
+  {% endif %}
+  data:
+    startup_time: '{{ elapsed_time }}'
+  TEMPLATE
+end
+
 
   def self.sample_cleanup(config_file, force=false, installed_from_manifest=false, verbose=true)
     LOGGING.info "sample_cleanup"
@@ -553,6 +591,7 @@ module CNFManager
     config = parsed_config_file(ensure_cnf_conformance_yml_path(config_file))
 
     VERBOSE_LOGGING.info "cleanup config: #{config.inspect}" if verbose
+    KubectlClient::Delete.file("#{destination_cnf_dir}/configmap_test.yml")
     release_name = "#{config.get("release_name").as_s?}"
     manifest_directory = destination_cnf_dir + "/" + "#{config["manifest_directory"]? && config["manifest_directory"].as_s?}"
 
