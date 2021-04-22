@@ -24,9 +24,8 @@ def increase_decrease_capacity_failure_msg(target_replicas, emoji)
 <<-TEMPLATE
 ✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji}
 
-To addresss this issue please follow this link here
+To address this issue please see the USAGE.md documentation
 
-https://github.com/cncf/cnf-conformance/blob/main/USAGE.md#heavy_check_mark-to-test-the-increasing-and-decreasing-of-capacity
 TEMPLATE
 end
 
