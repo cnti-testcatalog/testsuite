@@ -13,6 +13,7 @@ module CNFManager
         Passed
         Failed
         Skipped
+        NA
       end
 
       @@file : String
@@ -74,6 +75,7 @@ module CNFManager
       end
     end
 
+    # Returns what the potential points should be (for a points type) in order to assign those points to a task
     def self.task_points(task, status : CNFManager::Points::Results::ResultStatus = CNFManager::Points::Results::ResultStatus::Passed)
       case status
       when CNFManager::Points::Results::ResultStatus::Passed
@@ -90,11 +92,22 @@ module CNFManager
           points =points_yml.find {|x| x["name"] == "default_scoring"}
           resp = points[field_name].as_i if points
         end
+      when CNFManager::Points::Results::ResultStatus::NA
+        field_name = "na"
+        points =points_yml.find {|x| x["name"] == task}
+        LOGGING.warn "****Warning**** task #{task} not found in points.yml".colorize(:yellow) unless points
+        if points && points[field_name]?
+            resp = points[field_name].as_i if points
+        else
+          points =points_yml.find {|x| x["name"] == "default_scoring"}
+          resp = points[field_name].as_i if points
+        end
       end
       LOGGING.info "task_points: task: #{task} is worth: #{resp} points"
       resp
     end
 
+    # Returns what the potential points should be (for a points type of true or false) in order to assign those points to a task
     def self.task_points(task, passed=true)
       if passed
         field_name = "pass"
@@ -111,6 +124,8 @@ module CNFManager
       end
     end
 
+    # Gets the total assigned points for a tag (or all total points) from the results file
+    # Usesful for calculation categories total
     def self.total_points(tag=nil)
       if tag
         tasks = tasks_by_tag(tag)
@@ -134,6 +149,21 @@ module CNFManager
       total
     end
 
+    def self.na_assigned?(task)
+      yaml = File.open("#{Results.file}") do |file|
+        YAML.parse(file)
+      end
+      assigned = yaml["items"].as_a.find do |i|
+        LOGGING.debug "total_points: #{task}, #{i["name"].as_s} = #{i["points"].as_i} status = #{i["status"]}"
+        if i["name"].as_s? && i["name"].as_s == task && i["status"].as_s? && i["status"] == NA 
+          true
+        end
+      end
+      LOGGING.info "assigned: #{assigned}"
+      assigned 
+    end
+
+    # Calculates the total potential points
     def self.total_max_points(tag=nil)
       LOGGING.debug "total_max_points tag: #{tag}"
       if tag
@@ -144,11 +174,17 @@ module CNFManager
         LOGGING.debug "all_task_test_names tasks: #{tasks}"
       end
       max = tasks.reduce(0) do |acc, x|
-        points = task_points(x)
-        if points
-          acc + points
-        else
+        #TODO remove, from the potential points, the actually assigned points that are assigned to 'na' in the results.yml
+        if na_assigned?(x)
+          LOGGING.info "na_assigned for #{x}"
           acc
+        else
+          points = task_points(x)
+          if points
+            acc + points
+          else
+            acc
+          end
         end
       end
       LOGGING.info "total_max_points: #{tag} = #{max}"

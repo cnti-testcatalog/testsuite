@@ -4,6 +4,7 @@
   pass: 5
   fail: -1 
   skipped: 0 
+  na: 0 
 
 - name: reasonable_image_size
   tags: microservice, dynamic, workload

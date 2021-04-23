@@ -8,6 +8,7 @@ BASE_CONFIG = "./config.yml"
 PASSED = "passed"
 FAILED = "failed"
 SKIPPED = "skipped"
+NA = "na"
 DEFAULT_POINTSFILENAME = "points_v1.yml"
 PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
 IGNORED_SECRET_TYPES = ["kubernetes.io/service-account-token", "kubernetes.io/dockercfg", "kubernetes.io/dockerconfigjson", "helm.sh/release.v1"]

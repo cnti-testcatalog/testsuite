@@ -237,6 +237,7 @@ module CNFManager
     end
   end
 
+  #TODO move to helm module
   def self.helm_template_header(helm_chart_or_directory, template_file="/tmp/temp_template.yml")
     LOGGING.info "helm_template_header"
     helm = CNFSingleton.helm
@@ -250,6 +251,7 @@ module CNFManager
     parsed_template_header = YAML.parse(template_header)
   end
 
+  #TODO move to helm module
   def self.helm_chart_template_release_name(helm_chart_or_directory, template_file="/tmp/temp_template.yml")
     LOGGING.info "helm_chart_template_release_name"
     hth = helm_template_header(helm_chart_or_directory, template_file)
@@ -288,6 +290,7 @@ module CNFManager
   end
 
 
+  # TODO move to sandbox module
   def self.cnf_destination_dir(config_file)
     LOGGING.info("cnf_destination_dir config_file: #{config_file}")
     if path_has_yml?(config_file)

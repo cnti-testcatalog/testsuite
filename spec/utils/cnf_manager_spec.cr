@@ -92,6 +92,17 @@ describe "SampleUtils" do
     (CNFManager::Points.total_points).should eq(5)
   end
 
+  it "'CNFManager::Points.total_max_points' should not include na in the total potential points", tags: ["points"] do
+    CNFManager::Points.clean_results_yml
+      upsert_passed_task("liveness", "✔️  PASSED: CNF had a reasonable startup time ")
+    resp1 = CNFManager::Points.total_max_points
+      upsert_na_task("readiness", "✔️  NA")
+    resp2 = CNFManager::Points.total_max_points
+   
+    LOGGING.info "readiness points: #{CNFManager::Points.task_points("readiness").not_nil!.to_i}"
+    (resp2).should eq((resp1 - CNFManager::Points.task_points("readiness").not_nil!.to_i))
+  end
+
   it "'CNFManager::Points.tasks_by_tag' should return the tasks assigned to a tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
     (CNFManager::Points.tasks_by_tag("configuration_lifecycle")).should eq(["ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "rollback", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap"])
