@@ -30,6 +30,12 @@ If applicable, add screenshots to help explain your problem.
  - Architecture [e.g. x86, arm]
  - Browser [e.g. chrome, safari]
 
+**How will this be tested? aka Acceptance Criteria (optional)**
+
+(optional: unncesasray for things like spelling errors and such)
+
+Once this issue is address how will the fix be verified?
+
 **Additional context**
 Add any other context about the problem here.
 
