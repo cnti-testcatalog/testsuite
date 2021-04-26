@@ -4,23 +4,23 @@ require "colorize"
 
 describe "Scalability" do
   before_all do
-    `./cnf-conformance setup`
+    `./cnf-testsuite setup`
     $?.success?.should be_true
   end
 
   after_all do
-    `./cnf-conformance samples_cleanup`
+    `./cnf-testsuite samples_cleanup`
     $?.success?.should be_true
   end
 
 it "'scalability' should run all of the scalability tests", tags: "[scalability]"  do
-    `./cnf-conformance samples_cleanup`
-    response_s = `./cnf-conformance setup`
+    `./cnf-testsuite samples_cleanup`
+    response_s = `./cnf-testsuite setup`
     LOGGING.info response_s
-    # `./cnf-conformance sample_coredns_with_wait_setup`
-    LOGGING.info `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose`
+    # `./cnf-testsuite sample_coredns_with_wait_setup`
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose`
     $?.success?.should be_true
-    response_s = `./cnf-conformance scalability`
+    response_s = `./cnf-testsuite scalability`
     LOGGING.info response_s
     $?.success?.should be_true
     (/PASSED: Replicas increased to 3/ =~ response_s).should_not be_nil

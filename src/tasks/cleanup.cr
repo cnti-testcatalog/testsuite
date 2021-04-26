@@ -16,15 +16,15 @@ task "samples_cleanup", ["sample_coredns_cleanup", "cleanup_sample_coredns", "ba
     force = false
   end
   #TODO use all_cnfs_task_runner to clean up all cnfs in the cnfs folder that have a cnf-conformance yml
-  `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf`
-  `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-deploy-repo`
-  `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-repo`
-  `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-bad_helm_coredns-cnf`
-  `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-coredns-cnf-bad-chart`
-  `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample_coredns_chart_directory`
+  `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf`
+  `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-deploy-repo`
+  `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-repo`
+  `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-bad_helm_coredns-cnf`
+  `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-coredns-cnf-bad-chart`
+  `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns_chart_directory`
   # get rid of lingering coredns pods
   if force
-  `./cnf-conformance cnf_cleanup cnf-path=sample-cnfs/sample-coredns-cnf force=true`
+  `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-coredns-cnf force=true`
   end
 end
 

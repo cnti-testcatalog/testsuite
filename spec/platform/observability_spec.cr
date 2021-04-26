@@ -58,7 +58,7 @@ describe "Observability" do
   end
 
   it "'kube_state_metrics' should return some json", tags: ["platform:kube_state_metrics"] do
-      response_s = `./cnf-conformance platform:kube_state_metrics poc`
+      response_s = `./cnf-testsuite platform:kube_state_metrics poc`
       LOGGING.info response_s
       (/(PASSED){1}.*(Your platform is using the){1}.*(release for kube state metrics){1}/ =~ response_s).should_not be_nil
   end
@@ -72,19 +72,19 @@ describe "Observability" do
         sleep 1
         pod_ready_timeout = pod_ready_timeout - 1
       end
-      response_s = `./cnf-conformance platform:node_exporter poc`
+      response_s = `./cnf-testsuite platform:node_exporter poc`
       LOGGING.info response_s
       (/(PASSED){1}.*(Your platform is using the){1}.*(release for the node exporter){1}/ =~ response_s).should_not be_nil
   end
 
   it "'prometheus_adapter' should detect the named release of the installed prometheus_adapter", tags: ["platform:prometheus_adapter"] do
-      response_s = `./cnf-conformance platform:prometheus_adapter poc`
+      response_s = `./cnf-testsuite platform:prometheus_adapter poc`
       LOGGING.info response_s
       (/(PASSED){1}.*(Your platform is using the){1}.*(release for the prometheus adapter){1}/ =~ response_s).should_not be_nil
   end
 
   it "'metrics_server' should detect the named release of the installed metrics_server", tags: ["platform:metrics_server"] do
-      response_s = `./cnf-conformance platform:metrics_server poc`
+      response_s = `./cnf-testsuite platform:metrics_server poc`
       LOGGING.info response_s
       (/(PASSED){1}.*(Your platform is using the){1}.*(release for the metrics server){1}/ =~ response_s).should_not be_nil
   end

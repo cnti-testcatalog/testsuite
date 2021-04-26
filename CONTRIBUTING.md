@@ -36,13 +36,13 @@ NOTE: To help with debugging, you can enable higher logging level output via the
 
 ```
 # cmd line
-./cnf-conformance -l debug test
+./cnf-testsuite -l debug test
 
 # make sure to use -- if running from source
 crystal src/cnf-conformance.cr -- -l debug test 
 
 # env var
-LOGLEVEL=DEBUG ./cnf-conformance test
+LOGLEVEL=DEBUG ./cnf-testsuite test
 ```
 
 Also setting the verbose option for many tasks will add extra output to help with debugging

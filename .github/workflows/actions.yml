@@ -196,12 +196,12 @@ jobs:
       run: |
         docker pull conformance/crystal:0.35.1
         docker run --rm -v $PWD:/workspace -w /workspace conformance/crystal:0.35.1-llvm10-grep shards install
-        docker run --rm -v $PWD:/workspace -w /workspace conformance/crystal:0.35.1-llvm10-grep crystal build --warnings none src/cnf-conformance.cr --release --static --link-flags '-lxml2 -llzma'
+        docker run --rm -v $PWD:/workspace -w /workspace conformance/crystal:0.35.1-llvm10-grep crystal build --warnings none src/cnf-testsuite.cr --release --static --link-flags '-lxml2 -llzma'
     - name: upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: release
-        path: cnf-conformance
+        path: cnf-testsuite
 
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)
@@ -230,11 +230,11 @@ jobs:
     - name: Run Test Suite without source(config_lifecycle)
       run: |
         helm repo add stable https://cncf.gitlab.io/stable
-        chmod +x ./cnf-conformance
-        ./cnf-conformance setup
+        chmod +x ./cnf-testsuite
+        ./cnf-testsuite setup
         wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-conformance.yml
-        ./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
-        LOG_LEVEL=info ./cnf-conformance all ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose
+        ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
+        LOG_LEVEL=info ./cnf-testsuite all ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose
 
   test_binary_microservice:
     name: Test Binary Without Source(microservice)
@@ -263,11 +263,11 @@ jobs:
     - name: Run Test Suite without source(microservice)
       run: |
         helm repo add stable https://cncf.gitlab.io/stable
-        chmod +x ./cnf-conformance
-        ./cnf-conformance setup
+        chmod +x ./cnf-testsuite
+        ./cnf-testsuite setup
         wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-conformance.yml
-        ./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
-        LOG_LEVEL=info ./cnf-conformance all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~install_script_helm ~helm_chart_valid ~helm_chart_published ~rollback ~secrets_used ~immutable_configmap verbose
+        ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
+        LOG_LEVEL=info ./cnf-testsuite all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~install_script_helm ~helm_chart_valid ~helm_chart_published ~rollback ~secrets_used ~immutable_configmap verbose
 
   test_binary_all:
     name: Test Binary Without Source(all)
@@ -296,11 +296,11 @@ jobs:
     - name: Run Test Suite without source(all)
       run: |
         helm repo add stable https://cncf.gitlab.io/stable
-        chmod +x ./cnf-conformance
-        ./cnf-conformance setup
+        chmod +x ./cnf-testsuite
+        ./cnf-testsuite setup
         wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-conformance.yml
-        ./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
-        LOG_LEVEL=info ./cnf-conformance all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size verbose
+        ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
+        LOG_LEVEL=info ./cnf-testsuite all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size verbose
 
   release:
     name: Publish Release
@@ -318,7 +318,7 @@ jobs:
     - uses: mxschmitt/action-tmate@v3
       if: needs.debug_output.outputs.release-debug == 'true'
     - name: Make release executable
-      run: chmod +x ./cnf-conformance
+      run: chmod +x ./cnf-testsuite
     - name: Publish Release
       env:
         GITHUB_USER: ${{ secrets.GH_USER }}
@@ -327,5 +327,5 @@ jobs:
         if [ -z "${GITHUB_USER+x}" ] || [ -z "${GITHUB_TOKEN+x}" ]; then
           exit 0
         else
-          ./cnf-conformance upsert_release
+          ./cnf-testsuite upsert_release
         fi

@@ -8,10 +8,10 @@ require "sam"
 
 describe "Utils" do
   before_each do
-    `./cnf-conformance results_yml_cleanup`
+    `./cnf-testsuite results_yml_cleanup`
   end
   after_each do
-    `./cnf-conformance results_yml_cleanup`
+    `./cnf-testsuite results_yml_cleanup`
   end
 
   it "'toggle' should return a boolean for a toggle in the config.yml", tags: ["args"] do
@@ -90,7 +90,7 @@ describe "Utils" do
 
   it "'single_task_runner' should put a 1 in the results file if it has an exception", tags: ["task_runner"]  do
     CNFManager::Points.clean_results_yml
-    args = Sam::Args.new(["cnf-config=./cnf-conformance.yml"])
+    args = Sam::Args.new(["cnf-config=./cnf-testsuite.yml"])
     task_response = CNFManager::Task.single_task_runner(args) do
       cdir = FileUtils.pwd()
       response = String::Builder.new
@@ -124,8 +124,8 @@ describe "Utils" do
   it "'all_cnfs_task_runner' should run a test against all cnfs in the cnfs directory if there is not cnf-config argument passed to it", tags: ["task_runner"]  do
     my_args = Sam::Args.new
     # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample-generic-cnf", args: my_args)
-      LOGGING.info `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample-generic-cnf`
-      LOGGING.info `./cnf-conformance cnf_setup cnf-path=sample-cnfs/sample_privileged_cnf`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample-generic-cnf`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_privileged_cnf`
     # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: my_args )
     task_response = CNFManager::Task.all_cnfs_task_runner(my_args) do |args, config|
       LOGGING.info("all_cnfs_task_runner spec args #{args.inspect}")
@@ -202,7 +202,7 @@ describe "Utils" do
   it "'logger' command line logger level setting via config.yml", tags: ["logger"]  do
     # NOTE: the config.yml file is in the root of the repo directory. 
     # as written this test depends on they key loglevel being set to 'info' in that config.yml
-    response_s = `./cnf-conformance test`
+    response_s = `./cnf-testsuite test`
     $?.success?.should be_true
     (/DEBUG -- cnf-conformance: debug test/ =~ response_s).should be_nil
     (/INFO -- cnf-conformance: info test/ =~ response_s).should_not be_nil
@@ -212,7 +212,7 @@ describe "Utils" do
 
   it "'logger' command line logger level setting works", tags: ["logger"]  do
     # Note: implicitly tests the override of config.yml if it exist in repo root
-    response_s = `./cnf-conformance -l debug test`
+    response_s = `./cnf-testsuite -l debug test`
     LOGGING.info response_s
     $?.success?.should be_true
     (/DEBUG -- cnf-conformance: debug test/ =~ response_s).should_not be_nil
@@ -220,20 +220,20 @@ describe "Utils" do
 
   it "'logger' LOGLEVEL NO underscore environment variable level setting works", tags: ["logger"]  do
     # Note: implicitly tests the override of config.yml if it exist in repo root
-    response_s = `unset LOG_LEVEL; LOGLEVEL=DEBUG ./cnf-conformance test`
+    response_s = `unset LOG_LEVEL; LOGLEVEL=DEBUG ./cnf-testsuite test`
     $?.success?.should be_true
     (/DEBUG -- cnf-conformance: debug test/ =~ response_s).should_not be_nil
   end
 
   it "'logger' LOG_LEVEL WITH underscore environment variable level setting works", tags: ["logger"]  do
     # Note: implicitly tests the override of config.yml if it exist in repo root
-    response_s = `LOG_LEVEL=DEBUG ./cnf-conformance test`
+    response_s = `LOG_LEVEL=DEBUG ./cnf-testsuite test`
     $?.success?.should be_true
     (/DEBUG -- cnf-conformance: debug test/ =~ response_s).should_not be_nil
   end
 
   it "'logger' command line level setting overrides environment variable", tags: ["logger"]  do
-    response_s = `LOGLEVEL=DEBUG ./cnf-conformance -l error test`
+    response_s = `LOGLEVEL=DEBUG ./cnf-testsuite -l error test`
     $?.success?.should be_true
     (/DEBUG -- cnf-conformance: debug test/ =~ response_s).should be_nil
     (/INFO -- cnf-conformance: info test/ =~ response_s).should be_nil
@@ -243,13 +243,13 @@ describe "Utils" do
 
   it "'logger' defaults to error when level set is missplled", tags: ["logger"]  do
     # Note: implicitly tests the override of config.yml if it exist in repo root
-    response_s = `unset LOG_LEVEL; LOGLEVEL=DEGUB ./cnf-conformance test`
+    response_s = `unset LOG_LEVEL; LOGLEVEL=DEGUB ./cnf-testsuite test`
     $?.success?.should be_true
     (/ERROR -- cnf-conformance: Invalid logging level set. defaulting to ERROR/ =~ response_s).should_not be_nil
   end
 
   it "'logger' or verbose output should be shown when verbose flag is set", tags: ["logger"] do
-    response_s = `./cnf-conformance helm_deploy destructive verbose`
+    response_s = `./cnf-testsuite helm_deploy destructive verbose`
     LOGGING.info response_s
     puts response_s
     $?.success?.should be_true

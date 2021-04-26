@@ -81,7 +81,7 @@ We can assume you have access to a working kubernetes cluster. We recommend only
   ```
 - Change directory into the source:
   ```
-  cd cnf-conformance
+  cd cnf-testsuite
   ```
 - Now we need to run shards to pull down requirements needed to build and compile cnf-conformance:
   ```
@@ -89,9 +89,9 @@ We can assume you have access to a working kubernetes cluster. We recommend only
   ```
 - Now build a cnf-conformance binary (this method will have runtime dependencies but should not pose any issues):
   ```
-  crystal build src/cnf-conformance.cr
+  crystal build src/cnf-testsuite.cr
   ```
-  This should create an executable `cnf-conformance` binary in your source checkout.
+  This should create an executable `cnf-testsuite` binary in your source checkout.
   
 <details><summary>(Optional) Build cnf-conformance using Docker  Alpine Image</summary>
 <p>
@@ -104,7 +104,7 @@ We use the official crystal alpine docker image for builds; seen in [actions.yml
 
 ```
 docker pull crystallang/crystal:0.35.1-alpine
-docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"
+docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build src/cnf-testsuite.cr --release --static --link-flags "-lxml2 -llzma"
 ```
 </p>
 </details>
@@ -118,7 +118,7 @@ https://kubernetes.io/docs/tasks/tools/install-kubectl/#enable-kubectl-autocompl
 You will need to have cnf-conformance executable in your current PATH for this to work properly.
 
 ```
-./cnf-conformance completion -l error > test.sh
+./cnf-testsuite completion -l error > test.sh
 source test.sh
 ```
 </p>
@@ -136,15 +136,15 @@ crystal spec
 </p></details>
 
 ### Setup
-Now that we have a `cnf-conformance` binary, we can run `setup` to ensure it has all the pre-requisites needed in order to successfully run tests and setup required cnfs/ directory and other files required for cnf-conformance.
+Now that we have a `cnf-testsuite` binary, we can run `setup` to ensure it has all the pre-requisites needed in order to successfully run tests and setup required cnfs/ directory and other files required for cnf-conformance.
 
 - Run the following to setup cnf-conformance:
   ```
-  ./cnf-conformance setup
+  ./cnf-testsuite setup
   ```
 - If you have crystal installed, you can also run by:
   ```
-  crystal src/cnf-conformance.cr setup
+  crystal src/cnf-testsuite.cr setup
   ```
 This should display output of all the pre-requisites (and install helm if not found on the system you intend to run from). Any missing requirements will need to be satisfied before proceeding or could result in errors, etc.
 
@@ -163,12 +163,12 @@ To use CoreDNS as an example CNF. Download the conformance configuration to test
 - Prepare the test suite to use the CNF by running:
   ```
   # via built binary
-  ./cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
+  ./cnf-testsuite cnf_setup cnf-config=./cnf-conformance.yml
   ```
   Or
   ```
   # via crystal
-  crystal src/cnf-conformance.cr cnf_setup cnf-config=./cnf-  conformance.yml
+  crystal src/cnf-testsuite.cr cnf_setup cnf-config=./cnf-conformance.yml
   ```
 
 There are other examples in the [example cnfs](https://github.com/cncf/cnf-testsuite/tree/main/example-cnfs) folder if you would like to test others.
@@ -178,7 +178,7 @@ There are other examples in the [example cnfs](https://github.com/cncf/cnf-tests
 - To pass all current tests
 - To support auto deployment of the CNF from the ([cnf-conformance.yml](https://github.com/cncf/cnf-testsuite/blob/main/CNF_CONFORMANCE_YML_USAGE.md)) configuration file.
 
-### Running cnf-conformance for the first time
+### Running cnf-testsuite for the first time
 
 #### Running Tests
 
@@ -186,43 +186,43 @@ If you want to run all tests for CoreDNS Example CNF, do the following (this is 
 _For complete usage, see the [USAGE.md](USAGE.md) doc._
 
 ```
-./cnf-conformance all
+./cnf-testsuite all
 ```
 
 The following will run only workload tests:
 ```
-./cnf-conformance workload 
+./cnf-testsuite workload 
 ```
 
 The following would run only the platform tests:
 ```
-./cnf-conformance platform 
+./cnf-testsuite platform 
 ```
-You can also run via `crystal` by replacing the `./cnf-conformance` with `crystal spec src/cnf-conformance.cr` and then the argument.
+You can also run via `crystal` by replacing the `./cnf-testsuite` with `crystal spec src/cnf-testsuite.cr` and then the argument.
 
 #### More Example Usage (also see the [complete usage documentation](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md))
 
 ```
 # These assume you've already run the cnf_setup pointing at a cnf-conformance.yml config above. You can always specify your config at the end of each command as well, eg:
-./cnf-conformance all cnf-config=<path to your config yml>/cnf-conformance.yml
+./cnf-testsuite all cnf-config=<path to your config yml>/cnf-conformance.yml
 
 # Runs all ga tests (generally available workload and platform tests)
-./cnf-conformance all
+./cnf-testsuite all
 
 # Runs all alpha, beta and ga tests
-./cnf-conformance all alpha
+./cnf-testsuite all alpha
 
 # Runs all beta and ga tests
-./cnf-conformance all beta
+./cnf-testsuite all beta
 
 # Run all wip, alpha, beta, and ga tests
-./cnf-conformance all wip
+./cnf-testsuite all wip
 
 # Run all tests in the configureation lifecycle category
-./cnf-conformance configuration_lifecycle
+./cnf-testsuite configuration_lifecycle
 
 # Run all tests in the installability
-./cnf-conformance installability
+./cnf-testsuite installability
 ```
 
 #### Checking Results
@@ -238,7 +238,7 @@ For more details on points, see our [POINTS.md](./POINTS.md) documentation.
 
 Run the following to cleanup the specific cnf-conformance test:
 ```
-./cnf-conformance cnf_cleanup cnf-config=./cnf-conformance.yml
+./cnf-testsuite cnf_cleanup cnf-config=./cnf-conformance.yml
 ```
 You can also run `cleanall` and cnf-conformance will attempt to cleanup everything.
 

@@ -24,7 +24,7 @@ module ReleaseManager
       LOGGING.info "upsert_version: #{upsert_version}"
       # cnf_bin_path = "cnf-conformance"
       # cnf_bin_asset_name = "#{cnf_bin_path}"
-      cnf_bin_asset_name = "cnf-conformance"
+      cnf_bin_asset_name = "cnf-testsuite"
 
       if ReleaseManager.remote_main_branch_hash == ReleaseManager.current_hash
         upsert_version = upsert_version.sub("HEAD", "main")
@@ -55,14 +55,14 @@ module ReleaseManager
       # Build a static binary so it will be portable on other machines in non test
       unless ENV["CRYSTAL_ENV"]? == "TEST"
         # Rely on the docker ci to create the static binary
-        # rm_resp = `rm ./cnf-conformance`
+        # rm_resp = `rm ./cnf-testsuite`
         # LOGGING.info "rm_resp: #{rm_resp}"
         # LOGGING.info "building static binary"
         # build_resp = `crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"`
         # LOGGING.info "build_resp: #{build_resp}"
         # the name of the binary asset must be unique across all releases in github for project
         # TODO if upsert version == test then make unique
-        cnf_tarball_name = "cnf-conformance-#{upsert_version}.tar.gz"
+        cnf_tarball_name = "cnf-testsuite-#{upsert_version}.tar.gz"
         cnf_tarball = `tar -czvf #{cnf_tarball_name} ./#{cnf_bin_asset_name}`
         LOGGING.info "cnf_tarball: #{cnf_tarball}"
         # cnf_bin_asset_name = "#{cnf_bin_path}-static" # change upload name for static builds

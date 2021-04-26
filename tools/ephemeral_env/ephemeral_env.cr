@@ -195,16 +195,16 @@ elsif ARGV[0]? && ARGV[0] == "command"
   if ENV["CRYSTAL_DEV_ENV"]?
     puts "Using Environment: #{ENV["CRYSTAL_DEV_ENV"]}"
     # ./ephemeral_env crystal spec
-    # ./ephemeral_env ./cnf-conformance all 
+    # ./ephemeral_env ./cnf-testsuite all 
     # ./ephemeral_env crystal src/cnf-conformance.cr all 
     # crystal ephemeral.cr crystal spec
-    # crystal ephemeral.cr ./cnf-conformance all
+    # crystal ephemeral.cr ./cnf-testsuite all
     # crystal ephemeral.cr crystal src/cnf-conformance.cr all
     # cyrstal spec
     # cyrstal src/cnf-conformance.cr all
-    # cyrstal ./cnf-conformance all
+    # cyrstal ./cnf-testsuite all
      if binary == true
-       system "docker exec -ti #{ENV["CRYSTAL_DEV_ENV"]} ./cnf-conformance #{execute_command}"
+       system "docker exec -ti #{ENV["CRYSTAL_DEV_ENV"]} ./cnf-testsuite #{execute_command}"
        exit $?.exit_code
      else
       system "docker exec -ti #{ENV["CRYSTAL_DEV_ENV"]} crystal #{execute_command}"
