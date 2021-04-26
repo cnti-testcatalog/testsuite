@@ -7,7 +7,7 @@ require "sam"
 
 describe "CurlInstall" do
   after_all do
-    LOGGING.info "Curl install tests finished.  Building ./cnf-conformance again".colorize(:green)
+    LOGGING.info "Curl install tests finished.  Building ./cnf-testsuite again".colorize(:green)
     `crystal build src/cnf-conformance.cr`
     if $?.success?
       LOGGING.info "Build Success!".colorize(:green)

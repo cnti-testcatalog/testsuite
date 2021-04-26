@@ -7,27 +7,27 @@ require "sam"
 
 describe "SampleUtils" do
   before_all do
-    `./cnf-conformance helm_local_install`
+    `./cnf-testsuite helm_local_install`
     $?.success?.should be_true
-    `./cnf-conformance cleanup`
+    `./cnf-testsuite cleanup`
     $?.success?.should be_true
   end
 
    # after_all do
-      # LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose wait_count=0`
+      # LOGGING.debug `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose wait_count=0`
    #   $?.success?.should be_true
    # end
 
   after_each do
-    `./cnf-conformance cleanup`
+    `./cnf-testsuite cleanup`
     $?.success?.should be_true
   end
 
   it "'cnf_setup' should pass with a minimal cnf-conformance.yml", tags: ["cnf-setup"] do
-    LOGGING.info `./cnf-conformance cnf_setup cnf-path=./sample-cnfs/sample-minimal-cnf/ wait_count=0`
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-minimal-cnf/ wait_count=0`
     $?.success?.should be_true
   ensure
-    `./cnf-conformance cnf_cleanup cnf-path=./sample-cnfs/sample-minimal-cnf/ force=true`
+    `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-minimal-cnf/ force=true`
   end
 
   it "'points_yml' should parse and return the points yaml file", tags: ["points"]  do
@@ -315,7 +315,7 @@ describe "SampleUtils" do
   end
 
   it "'CNFManager.validate_cnf_conformance_yml' (command) should pass, when a cnf has a valid config file yml", tags: ["validate_config"]  do
-    response_s = `./cnf-conformance validate_config cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
+    response_s = `./cnf-testsuite validate_config cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
     $?.success?.should be_true
     (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
   end
@@ -338,7 +338,7 @@ describe "SampleUtils" do
 
 
   it "'CNFManager.validate_cnf_conformance_yml' (command) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["validate_config"]  do
-    response_s = `./cnf-conformance validate_config cnf-config=spec/fixtures/cnf-conformance-unmapped-keys-and-subkeys.yml`
+    response_s = `./cnf-testsuite validate_config cnf-config=spec/fixtures/cnf-conformance-unmapped-keys-and-subkeys.yml`
     $?.success?.should be_true
     LOGGING.debug "validate_config resp: #{response_s}"
     (/WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator/ =~ response_s).should_not be_nil
@@ -364,7 +364,7 @@ describe "SampleUtils" do
   end
 
   it "'CNFManager.validate_cnf_conformance_yml' (command) should fail when an invalid cnf config file yml is used", tags: ["validate_config"]  do
-    response_s = `./cnf-conformance validate_config cnf-config=spec/fixtures/cnf-conformance-invalid-and-unmapped-keys.yml`
+    response_s = `./cnf-testsuite validate_config cnf-config=spec/fixtures/cnf-conformance-invalid-and-unmapped-keys.yml`
     $?.success?.should be_true
 
     (/ERROR: cnf_conformance.yml field validation error/ =~ response_s).should_not be_nil
@@ -377,7 +377,7 @@ describe "SampleUtils" do
     dir_list = get_dirs - [".", ".."]
     dir_list.each do |dir|
       conformance_yml = "sample-cnfs/#{dir}/cnf-conformance.yml"
-      response_s = `./cnf-conformance validate_config cnf-config=#{conformance_yml}`
+      response_s = `./cnf-testsuite validate_config cnf-config=#{conformance_yml}`
       if (/FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
         LOGGING.info "\n #{conformance_yml}: #{response_s}"
       end
@@ -391,7 +391,7 @@ describe "SampleUtils" do
     dir_list = get_dirs - [".", ".."]
     dir_list.each do |dir|
       conformance_yml = "example-cnfs/#{dir}/cnf-conformance.yml"
-      response_s = `./cnf-conformance validate_config cnf-config=#{conformance_yml}`
+      response_s = `./cnf-testsuite validate_config cnf-config=#{conformance_yml}`
       if (/FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
         LOGGING.info "\n #{conformance_yml}: #{response_s}"
       end

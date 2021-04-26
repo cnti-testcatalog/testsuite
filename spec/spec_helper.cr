@@ -5,7 +5,7 @@ require "../src/cnf_conformance"
 ENV["CRYSTAL_ENV"] = "TEST" 
 
 
-LOGGING.info "Building ./cnf-conformance".colorize(:green)
+LOGGING.info "Building ./cnf-testsuite".colorize(:green)
 `crystal build --warnings none src/cnf-conformance.cr`
 if $?.success?
   LOGGING.info "Build Success!".colorize(:green)

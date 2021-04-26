@@ -10,7 +10,7 @@ describe "KubectlClient" do
   # end
 
   it "'Kubectl::Get.wait_for_install' should wait for a cnf to be installed", tags: ["kubectl-install"]  do
-    LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose wait_count=0`
+    LOGGING.debug `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose wait_count=0`
 
     $?.success?.should be_true
 
@@ -28,17 +28,17 @@ describe "KubectlClient" do
   end
 
   it "'Kubectl::Get.resource_wait_for_uninstall' should wait for a cnf to be installed", tags: ["kubectl-install"]  do
-    LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-statefulset-cnf/cnf-conformance.yml verbose wait_count=0`
+    LOGGING.debug `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-statefulset-cnf/cnf-conformance.yml verbose wait_count=0`
 
     $?.success?.should be_true
 
-    LOGGING.debug `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample-statefulset-cnf/cnf-conformance.yml`
+    LOGGING.debug `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-statefulset-cnf/cnf-conformance.yml`
     resp = KubectlClient::Get.resource_wait_for_uninstall("deployment", "my-release-wordpress")
     (resp).should be_true
   end
 
   it "'#KubectlClient.pods_for_resource' should return the pods for a resource", tags: ["kubectl-nodes"]  do
-    LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-statefulset-cnf/cnf-conformance.yml verbose wait_count=0`
+    LOGGING.debug `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-statefulset-cnf/cnf-conformance.yml verbose wait_count=0`
     json = KubectlClient::Get.pods_for_resource("deployment", "my-release-wordpress")
     #(json["items"].size).should be > 0
   end
@@ -77,49 +77,49 @@ describe "KubectlClient" do
   end
 
   it "'#KubectlClient.containers' should return all containers defined in a deployment", tags: ["kubectl-pods"]  do
-    LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-conformance.yml wait_count=0` 
+    LOGGING.debug `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-conformance.yml wait_count=0` 
     resp = KubectlClient::Get.deployment_containers("nginx-webapp")
     (resp.size).should be > 0
   ensure
-    LOGGING.debug `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-conformance.yml deploy_with_chart=false` 
+    LOGGING.debug `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-conformance.yml deploy_with_chart=false` 
   end
 
   it "'#KubectlClient.pod_exists?' should true if a pod exists", tags: ["kubectl-pods"]  do
-    LOGGING.debug `./cnf-conformance cnf_setup cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml` 
+    LOGGING.debug `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml` 
     resp = KubectlClient::Get.pod_exists?("coredns")
     (resp).should be_true 
   ensure
-    LOGGING.debug `./cnf-conformance cnf_cleanup cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml` 
+    LOGGING.debug `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-generic-cnf/cnf-conformance.yml` 
   end
  
   it "'#KubectlClient.pod_status' should return a status of false if the pod is not installed (failed to install) and other pods exist", tags: ["kubectl-pods"]  do
     cnf="./sample-cnfs/sample-coredns-cnf"
-    LOGGING.info `./cnf-conformance cnf_setup cnf-path=#{cnf}`
-    LOGGING.info `./cnf-conformance uninstall_dockerd`
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
+    LOGGING.info `./cnf-testsuite uninstall_dockerd`
     dockerd_tempname_helper
-    LOGGING.info `./cnf-conformance install_dockerd`
+    LOGGING.info `./cnf-testsuite install_dockerd`
 
     resp = KubectlClient::Get.pod_status(pod_name_prefix: "dockerd").split(",")[2] # true/false
     LOGGING.info resp 
     (resp && !resp.empty? && resp == "true").should be_false
   ensure
-    LOGGING.info `./cnf-conformance cnf_cleanup cnf-path=#{cnf}`
+    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
     dockerd_name_helper
-    LOGGING.info `./cnf-conformance install_dockerd`
+    LOGGING.info `./cnf-testsuite install_dockerd`
   end
 
   it "'#KubectlClient.pod_status' should return a status of true if the pod is installed and other pods exist", tags: ["kubectl-pods"]  do
     cnf="./sample-cnfs/sample-coredns-cnf"
-    LOGGING.info `./cnf-conformance cnf_setup cnf-path=#{cnf}`
-    LOGGING.info `./cnf-conformance install_dockerd`
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
+    LOGGING.info `./cnf-testsuite install_dockerd`
 
     resp = KubectlClient::Get.pod_status(pod_name_prefix: "dockerd").split(",")[2] # true/false
     LOGGING.info resp 
     (resp && !resp.empty? && resp == "true").should be_true
   ensure
-    LOGGING.info `./cnf-conformance cnf_cleanup cnf-path=#{cnf}`
+    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
     dockerd_name_helper
-    LOGGING.info `./cnf-conformance install_dockerd`
+    LOGGING.info `./cnf-testsuite install_dockerd`
   end
 end
 

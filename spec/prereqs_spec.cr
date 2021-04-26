@@ -7,7 +7,7 @@ require "sam"
 
 describe "Prereq" do
   it "'prereq' should check the system for prerequisites", tags: ["points"]  do
-    response_s = `./cnf-conformance prereqs verbose`
+    response_s = `./cnf-testsuite prereqs verbose`
     LOGGING.info response_s
     $?.success?.should be_true
     (/helm found/ =~ response_s).should_not be_nil
