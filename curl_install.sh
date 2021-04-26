@@ -32,9 +32,9 @@ get_latest_release() {
 # Install CNF-Conformance
 LATEST_RELEASE=$(get_latest_release cncf/cnf-testsuite)
 mkdir -p ~/.cnf-testsuite
-curl -L https://github.com/cncf/cnf-testsuite/releases/download/$LATEST_RELEASE/cnf-conformance-$LATEST_RELEASE.tar.gz -o ~/.cnf-testsuite/cnf-conformance.tar.gz
-tar -C ~/.cnf-testsuite -xvf ~/.cnf-testsuite/cnf-conformance.tar.gz
-rm ~/.cnf-testsuite/cnf-conformance.tar.gz
+curl -L https://github.com/cncf/cnf-testsuite/releases/download/$LATEST_RELEASE/cnf-testsuite-$LATEST_RELEASE.tar.gz -o ~/.cnf-testsuite/cnf-testsuite.tar.gz
+tar -C ~/.cnf-testsuite -xvf ~/.cnf-testsuite/cnf-testsuite.tar.gz
+rm ~/.cnf-testsuite/cnf-testsuite.tar.gz
 
 if [ -z ${SHELL_UNSUPPORTED+x} ]; then
 
