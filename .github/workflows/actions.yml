@@ -233,7 +233,7 @@ jobs:
         chmod +x ./cnf-testsuite
         ./cnf-testsuite setup
         wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-conformance.yml
-        ./cnf-testsuite cnf_setup cnf-config=./cnf-conformance.yml
+        ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
         LOG_LEVEL=info ./cnf-testsuite all ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose
 
   test_binary_microservice:
@@ -266,7 +266,7 @@ jobs:
         chmod +x ./cnf-testsuite
         ./cnf-testsuite setup
         wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-conformance.yml
-        ./cnf-testsuite cnf_setup cnf-config=./cnf-conformance.yml
+        ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
         LOG_LEVEL=info ./cnf-testsuite all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~install_script_helm ~helm_chart_valid ~helm_chart_published ~rollback ~secrets_used ~immutable_configmap verbose
 
   test_binary_all:
@@ -299,7 +299,7 @@ jobs:
         chmod +x ./cnf-testsuite
         ./cnf-testsuite setup
         wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-conformance.yml
-        ./cnf-testsuite cnf_setup cnf-config=./cnf-conformance.yml
+        ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
         LOG_LEVEL=info ./cnf-testsuite all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size verbose
 
   release:

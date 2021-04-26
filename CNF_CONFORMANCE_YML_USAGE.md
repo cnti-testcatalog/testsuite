@@ -251,23 +251,23 @@ This assumes you have already followed [INSTALL](INSTALL.md) and or [SOURCE-INST
 
   * Run the cleanup tasks to remove prerequisites (useful for starting fresh if you've already run the suite previously)
   ```
-  ./cnf-conformance cleanup
+  ./cnf-testsuite cleanup
   ```
  
  * Run the setup tasks to install any prerequisites (useful for setting up sample cnfs and doesn't hurt to run multiple times)
 
   ```
-  ./cnf-conformance setup
+  ./cnf-testsuite setup
   ```
   
  * Setup and configure your CNF by installing your CNF into the cnfs directory, download the helm charts, and download the source code:
   ```
-  ./cnf-conformance cnf_setup cnf-config=<path to your cnf config file>
+  ./cnf-testsuite cnf_setup cnf-config=<path to your cnf config file>
   ```
   
   * To remove your CNF from the cnfs directory and cluster
   ```
-  ./cnf-conformance cnf_cleanup cnf-config=<path to your cnf config file>
+  ./cnf-testsuite cnf_cleanup cnf-config=<path to your cnf config file>
   ```
 
 ### Using a Private Registry

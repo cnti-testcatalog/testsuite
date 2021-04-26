@@ -55,7 +55,7 @@ module ReleaseManager
       # Build a static binary so it will be portable on other machines in non test
       unless ENV["CRYSTAL_ENV"]? == "TEST"
         # Rely on the docker ci to create the static binary
-        # rm_resp = `rm ./cnf-conformance`
+        # rm_resp = `rm ./cnf-testsuite`
         # LOGGING.info "rm_resp: #{rm_resp}"
         # LOGGING.info "building static binary"
         # build_resp = `crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"`

@@ -99,7 +99,7 @@ end
 
 # Sam.help
 begin
-  puts `./cnf-conformance help` if ARGV.empty?
+  puts `./cnf-testsuite help` if ARGV.empty?
   # See issue #426 for exit code requirement
   Sam.process_tasks(ARGV.clone) 
   yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
