@@ -8,12 +8,12 @@ require "sam"
 describe "CurlInstall" do
   after_all do
     LOGGING.info "Curl install tests finished.  Building ./cnf-testsuite again".colorize(:green)
-    `crystal build src/cnf-conformance.cr`
+    `crystal build src/cnf-testsuite.cr`
     if $?.success?
       LOGGING.info "Build Success!".colorize(:green)
     else
       LOGGING.info "crystal build failed!".colorize(:red)
-      raise "crystal build failed in spec_helper"
+      raise "crystal build failed! curl_install_spec.cr"
     end
   end
   it "'source curl_install.sh' should download a cnf-conformance binary", tags: ["curl"]  do
