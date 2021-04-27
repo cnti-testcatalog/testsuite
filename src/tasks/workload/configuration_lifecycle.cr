@@ -39,7 +39,7 @@ task "ip_addresses" do |_, args|
       parsed_resp = response.to_s
       if parsed_resp.size > 0
         puts "HARD CODED IP ADDRESSES".colorize(:red)
-        puts parsed_resp 
+        puts parsed_resp
         resp = upsert_failed_task("ip_addresses","✖️  FAILED: IP addresses found")
       else
         resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
@@ -318,8 +318,8 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
       VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if check_verbose(args)
     end
 
-    ip_search = File.read_lines("#{destination_cnf_dir}/helm_chart.yml").take_while{|x| x.match(/NOTES:/) == nil}.reduce([] of String) do |acc, x| 
-      (x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/) && 
+    ip_search = File.read_lines("#{destination_cnf_dir}/helm_chart.yml").take_while{|x| x.match(/NOTES:/) == nil}.reduce([] of String) do |acc, x|
+      (x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/) &&
        x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/).try &.[0] != "0.0.0.0") ? acc << x : acc
     end
 
@@ -367,7 +367,7 @@ task "secrets_used" do |_, args|
             end
           end
           # If any secret volume exists, and it is not mounted by a
-          # container, issue a warning 
+          # container, issue a warning
           unless container_secret_mounted
             puts "Warning: secret volume #{secret_volume["name"]} not mounted".colorize(:yellow)
           end
@@ -403,13 +403,13 @@ task "secrets_used" do |_, args|
                 VERBOSE_LOGGING.info "container: #{c_name} found secret reference: #{s_name}" if check_verbose(args)
               end
               found
-            end 
+            end
           end
         end
       end
 
-      # Always pass if any workload resource in a cnf uses a (non-exempt) secret. 
-      # If the  workload resource does not use a (non-exempt) secret, always skip.  
+      # Always pass if any workload resource in a cnf uses a (non-exempt) secret.
+      # If the  workload resource does not use a (non-exempt) secret, always skip.
 
       test_passed = false
       if secret_keyref_found_and_not_ignored || volume_test_passed
@@ -454,7 +454,7 @@ task "immutable_configmap" do |_, args|
     # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
 
     # feature test to see if immutable_configmaps are enabled
-    # https://github.com/cncf/cnf-conformance/issues/508#issuecomment-758438413
+    # https://github.com/cncf/cnf-testsuite/issues/508#issuecomment-758438413
 
     test_config_map_filename = "#{destination_cnf_dir}/test_config_map.yml";
 
@@ -585,7 +585,7 @@ def secrets_used_skipped_msg(emoji)
 <<-TEMPLATE
 SKIPPED: Secrets not used #{emoji}
 
-To address this issue please see the USAGE.md documentation 
+To address this issue please see the USAGE.md documentation
 
 TEMPLATE
 end

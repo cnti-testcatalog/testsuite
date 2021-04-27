@@ -1,11 +1,11 @@
-CNF Test Suite Frequently Asked Questions 
----
+## CNF Test Suite Frequently Asked Questions
 
 ### General
+
 <details> <summary>What is the CNF Test Suite?</summary>
 <p>
 
- - The CNF Conformance program enables interoperability of Cloud native Network Functions (CNFs) from multiple vendors running on top of Kubernetes. The CNF Test Suite's goal is to provide an open source test suite to demonstrate conformance and implementation of best practices for both open and closed source Cloud Native Network Functions.
+- The CNF Conformance program enables interoperability of Cloud native Network Functions (CNFs) from multiple vendors running on top of Kubernetes. The CNF Test Suite's goal is to provide an open source test suite to demonstrate conformance and implementation of best practices for both open and closed source Cloud Native Network Functions.
 
 </p>
 </details>
@@ -13,7 +13,7 @@ CNF Test Suite Frequently Asked Questions
 <details> <summary>Can I contribute to the CNF Test Suite?</summary>
 <p>
 
- - Yes. You can start by reading the [CNF Test Suite Contributing Guidelines](https://github.com/cncf/cnf-conformance/blob/main/CONTRIBUTING.md).
+- Yes. You can start by reading the [CNF Test Suite Contributing Guidelines](https://github.com/cncf/cnf-testsuite/blob/main/CONTRIBUTING.md).
 
 </p>
 </details>
@@ -21,7 +21,7 @@ CNF Test Suite Frequently Asked Questions
 <details> <summary>Does the CNF Test Suite community meet?</summary>
 <p>
 
- - Yes. The CNF Test Suite team meets once a week on Thursdays at 14:15-15:00 UTC. You can find more info about the meeting [here.](https://github.com/cncf/cnf-conformance/blob/main/CONTRIBUTING.md#community-meeting)
+- Yes. The CNF Test Suite team meets once a week on Thursdays at 14:15-15:00 UTC. You can find more info about the meeting [here.](https://github.com/cncf/cnf-testsuite/blob/main/CONTRIBUTING.md#community-meeting)
 
 </p>
 </details>
@@ -29,7 +29,7 @@ CNF Test Suite Frequently Asked Questions
 <details> <summary>Does CNF Test Suite have a slack channel?</summary>
 <p>
 
- - Yes. We have two channels on [https://slack.cncf.io/](https://slack.cncf.io/), cnf-testsuite and cnf-testsuite-dev.
+- Yes. We have two channels on [https://slack.cncf.io/](https://slack.cncf.io/), cnf-testsuite and cnf-testsuite-dev.
 
 </p>
 </details>
@@ -37,7 +37,7 @@ CNF Test Suite Frequently Asked Questions
 <details> <summary>What platforms are supported by the CNF Test Suite?</summary>
 <p>
 
- - The CNF Test Suite runs on most major Linux distributions and WSL (Windows Subsystem for Linux). 
+- The CNF Test Suite runs on most major Linux distributions and WSL (Windows Subsystem for Linux).
 
 </p>
 </details>
@@ -45,7 +45,7 @@ CNF Test Suite Frequently Asked Questions
 <details> <summary>If I found a bug or I think it's a bug, how do I report it?</summary>
 <p>
 
- - If you would like to report a bug, please create a [new issue](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=bug&template=bug-report.md&title=%5BBUG%5D) (using the **Bug Report** Template).
+- If you would like to report a bug, please create a [new issue](https://github.com/cncf/cnf-testsuite/issues/new?assignees=&labels=bug&template=bug-report.md&title=%5BBUG%5D) (using the **Bug Report** Template).
 
 </p>
 </details>
@@ -53,7 +53,7 @@ CNF Test Suite Frequently Asked Questions
 <details> <summary>How do I request a new feature?</summary>
 <p>
 
- - If you would like to request an enhancement, please create a [new issue](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=enhancement&template=feature-request.md&title=%5BFeature%5D) (using the **Feature Request** Template).
+- If you would like to request an enhancement, please create a [new issue](https://github.com/cncf/cnf-testsuite/issues/new?assignees=&labels=enhancement&template=feature-request.md&title=%5BFeature%5D) (using the **Feature Request** Template).
 
 </p>
 </details>
@@ -61,16 +61,17 @@ CNF Test Suite Frequently Asked Questions
 <details> <summary>Can I request a new workload or platform test for the CNF Test Suite?</summary>
 <p>
 
- - Yes. If you would like to request a new workload test, please create a [new issue](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=workload&template=new-workload-test.md&title=%5BWorkload%5D) (using the **New Workload Test** Template) or create a [new issue](https://github.com/cncf/cnf-conformance/issues/new?assignees=&labels=platform&template=new-platform-test.md&title=%5BPlatform%5D) (using the **New Platform Test** Template).
+- Yes. If you would like to request a new workload test, please create a [new issue](https://github.com/cncf/cnf-testsuite/issues/new?assignees=&labels=workload&template=new-workload-test.md&title=%5BWorkload%5D) (using the **New Workload Test** Template) or create a [new issue](https://github.com/cncf/cnf-testsuite/issues/new?assignees=&labels=platform&template=new-platform-test.md&title=%5BPlatform%5D) (using the **New Platform Test** Template).
 
 </p>
 </details>
 
 ### Technical and Usage
+
 <details> <summary>Can I run the CNF Test Suite without a Kubernetes cluster?</summary>
 <p>
 
- - In simple terms, no. You need some type of Kubernetes (K8s) cluster whether it's bare metal, kind, Docker and so on to run the CNF Test Suite against your CNF.
+- In simple terms, no. You need some type of Kubernetes (K8s) cluster whether it's bare metal, kind, Docker and so on to run the CNF Test Suite against your CNF.
 
 </p>
 </details>
@@ -78,7 +79,7 @@ CNF Test Suite Frequently Asked Questions
 <details> <summary>Does the CNF Test Suite have any pre-requisites or other requirements to run?</summary>
 <p>
 
- - Yes. There are a few requirements for the CNF Test Suite. You can read about the requirements in the [INSTALL Guide](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md#prerequisites).
+- Yes. There are a few requirements for the CNF Test Suite. You can read about the requirements in the [INSTALL Guide](https://github.com/cncf/cnf-testsuite/blob/main/INSTALL.md#prerequisites).
 
 </p>
 </details>
@@ -86,7 +87,7 @@ CNF Test Suite Frequently Asked Questions
 <details> <summary>How are points assigned for tests?</summary>
 <p>
 
- - Points are different for each test and workload but in general terms, pass defaults to 5 and fail is a -1. See [points.yml](https://github.com/cncf/cnf-conformance/blob/main/embedded_files/points.yml) for more details on the different points for default scoring.
+- Points are different for each test and workload but in general terms, pass defaults to 5 and fail is a -1. See [points.yml](https://github.com/cncf/cnf-testsuite/blob/main/embedded_files/points.yml) for more details on the different points for default scoring.
 
 </p>
 </details>
@@ -94,7 +95,7 @@ CNF Test Suite Frequently Asked Questions
 <details> <summary>Does the CNF Test Suite support or run on other architectures besides amd64?</summary>
 <p>
 
- - Not currently at this time.
+- Not currently at this time.
 
 </p>
 </details>
@@ -102,7 +103,7 @@ CNF Test Suite Frequently Asked Questions
 <details> <summary>Can I run the CNF Test Suite on clusters currently in use?</summary>
 <p>
 
- - Yes but it's not recommended. There is a destructive option that will test your nodes with reboots and recovery. We recommend that tests are run in an environment that is not currently used by others, typically in a test or dev environment setting.
+- Yes but it's not recommended. There is a destructive option that will test your nodes with reboots and recovery. We recommend that tests are run in an environment that is not currently used by others, typically in a test or dev environment setting.
 
 </p>
 </details>
@@ -110,7 +111,7 @@ CNF Test Suite Frequently Asked Questions
 <details> <summary>I ran several tests and missed the output of the results, are these lost or can I view past test results?</summary>
 <p>
 
- - All test results are stored in the results/ directory of where you installed the CNF Test Suite in yaml format.
+- All test results are stored in the results/ directory of where you installed the CNF Test Suite in yaml format.
 
 </p>
 </details>
@@ -118,23 +119,23 @@ CNF Test Suite Frequently Asked Questions
 <details> <summary>Why is the CNF Test Suite written in Crystal and not in other languages like Go?</summary>
 <p>
 
- - The short answer is [Crystal](https://crystal-lang.org) fit the criteria we looked at in a language at the time which needed to run external programs/test suites and internal tests - [Taylor Carpenter](https://app.slack.com/client/T08PSQ7BQ/G019HM3K54H/user_profile/U7HCKCW90) via https://slack.cncf.io/ 
- - Usability for Humans - Crystal, puts readablility for humans as a priority, which is why its syntax heavily inspired by Ruby.
- - Type checking system to help humans catch their errors earlier
- - Compiled language for portability, reduced size, and performance
- - Metaprogramming through Crystal's powerful macro system
- - Concurrency throughy green threads, called fiberes, which communicate over channels like Go lang and Clojure
- - Dependency management for libraries and applications via the [crystal manager Shards](https://github.com/crystal-lang/shards)
+- The short answer is [Crystal](https://crystal-lang.org) fit the criteria we looked at in a language at the time which needed to run external programs/test suites and internal tests - [Taylor Carpenter](https://app.slack.com/client/T08PSQ7BQ/G019HM3K54H/user_profile/U7HCKCW90) via https://slack.cncf.io/
+- Usability for Humans - Crystal, puts readablility for humans as a priority, which is why its syntax heavily inspired by Ruby.
+- Type checking system to help humans catch their errors earlier
+- Compiled language for portability, reduced size, and performance
+- Metaprogramming through Crystal's powerful macro system
+- Concurrency throughy green threads, called fiberes, which communicate over channels like Go lang and Clojure
+- Dependency management for libraries and applications via the [crystal manager Shards](https://github.com/crystal-lang/shards)
 
 </p>
 </details>
 
-
 ### Troubleshooting
+
 <details> <summary>Running cnf-conformance says "No found config" or similiar type errors?</summary>
 <p>
 
- - This may indicate that you are not pointing to a valid cnf-conformance.yml config file for your CNF. You may want to read or review the [INSTALL](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md) instructions or the [USAGE Documentation](https://github.com/cncf/cnf-conformance/blob/main/USAGE.md). 
+- This may indicate that you are not pointing to a valid cnf-conformance.yml config file for your CNF. You may want to read or review the [INSTALL](https://github.com/cncf/cnf-testsuite/blob/main/INSTALL.md) instructions or the [USAGE Documentation](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md).
 
 </p>
 </details>

@@ -1,36 +1,43 @@
-Installing the CNF Test Suite from Source
----
+## Installing the CNF Test Suite from Source
+
 ### Overview
+
 This INSTALL guide will detail the minimum requirements needed for cnf-conformance to install from source.
 
 ### Table of Contents
-* [**Pre-Requisites**](#Pre-Requisites)
-* [**Installation**](#Installation)
-* [**Setup**](#Setup)
-* [**Configuration**](#Configuration)
-* [**Running cnf-conformance for the first time**](#Running-cnf-conformance-for-the-first-time)
+
+- [**Pre-Requisites**](#Pre-Requisites)
+- [**Installation**](#Installation)
+- [**Setup**](#Setup)
+- [**Configuration**](#Configuration)
+- [**Running cnf-conformance for the first time**](#Running-cnf-conformance-for-the-first-time)
 
 ### Pre-Requisites
 
 #### Requirements
-* **kubernetes cluster** *(Working k8s cluster, see [supported k8s and installation details](#Details-on-supported-k8s-clusters-and-installation) on installation.*
-* **kubectl** *(run commands against k8 clusters, see [installing kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for more details.*
-* **curl**
-* **helm 3.1.1** *or newer* *(cnf-conformance installs if not found locally)*
-* **git** *(used to check out code from github)*
-* **crystal-lang** version 0.35.1 *(to compile the source and build the binary, see [crystal installation](https://crystal-lang.org/install/)) for more information.*
-* **shards** ([dependency manager](https://github.com/crystal-lang/shards) for crystal-lang)
+
+- **kubernetes cluster** _(Working k8s cluster, see [supported k8s and installation details](#Details-on-supported-k8s-clusters-and-installation) on installation._
+- **kubectl** _(run commands against k8 clusters, see [installing kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for more details._
+- **curl**
+- **helm 3.1.1** _or newer_ _(cnf-conformance installs if not found locally)_
+- **git** _(used to check out code from github)_
+- **crystal-lang** version 0.35.1 _(to compile the source and build the binary, see [crystal installation](https://crystal-lang.org/install/)) for more information._
+- **shards** ([dependency manager](https://github.com/crystal-lang/shards) for crystal-lang)
+
 ##### Optional Requirement
-* **docker** (for building from crystal alpine image)
+
+- **docker** (for building from crystal alpine image)
 
 #### Details on supported K8s clusters and installation:
+
 <details><summary>Click here to drop down details</summary>
 
 <p>
 
 ##### Supported K8s Clusters
+
 - [Access](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/) to a working [Certified K8s](https://cncf.io/ck) cluster via [KUBECONFIG environment variable](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/#set-the-kubeconfig-environment-variable). (See [K8s Getting started guide](https://kubernetes.io/docs/setup/) for options)
--  Follow the optional instructions below if you don't already have a K8s cluster setup
+- Follow the optional instructions below if you don't already have a K8s cluster setup
 
 ##### Kind
 
@@ -56,9 +63,8 @@ cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git
 </p>
 </details>
 
-
-
 ### Installation
+
 We can assume you have access to a working kubernetes cluster. We recommend only running the cnf-conformance suite on dev or test clusters.
 
 - Verify your KUBECONFIG points to your correct k8s cluster:
@@ -92,13 +98,13 @@ We can assume you have access to a working kubernetes cluster. We recommend only
   crystal build src/cnf-testsuite.cr
   ```
   This should create an executable `cnf-testsuite` binary in your source checkout.
-  
+
 <details><summary>(Optional) Build cnf-conformance using Docker  Alpine Image</summary>
 <p>
 
 We use the official crystal alpine docker image for builds; seen in [actions.yml](.github/workflows/actions.yml)
 
-*This build method is static and DOES NOT have any runtime dependencies.*
+_This build method is static and DOES NOT have any runtime dependencies._
 
 - To build using docker crystal alpine image (great if you don't have crystal installed)
 
@@ -106,6 +112,7 @@ We use the official crystal alpine docker image for builds; seen in [actions.yml
 docker pull crystallang/crystal:0.35.1-alpine
 docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:0.35.1-alpine crystal build src/cnf-testsuite.cr --release --static --link-flags "-lxml2 -llzma"
 ```
+
 </p>
 </details>
 
@@ -121,6 +128,7 @@ You will need to have cnf-conformance executable in your current PATH for this t
 ./cnf-testsuite completion -l error > test.sh
 source test.sh
 ```
+
 </p>
 </details>
 
@@ -133,9 +141,11 @@ To run the automated test suite within the source clone:
 ```
 crystal spec
 ```
+
 </p></details>
 
 ### Setup
+
 Now that we have a `cnf-testsuite` binary, we can run `setup` to ensure it has all the pre-requisites needed in order to successfully run tests and setup required cnfs/ directory and other files required for cnf-conformance.
 
 - Run the following to setup cnf-conformance:
@@ -146,11 +156,11 @@ Now that we have a `cnf-testsuite` binary, we can run `setup` to ensure it has a
   ```
   crystal src/cnf-testsuite.cr setup
   ```
-This should display output of all the pre-requisites (and install helm if not found on the system you intend to run from). Any missing requirements will need to be satisfied before proceeding or could result in errors, etc.
+  This should display output of all the pre-requisites (and install helm if not found on the system you intend to run from). Any missing requirements will need to be satisfied before proceeding or could result in errors, etc.
 
 ### Configuration
-Now that cnf-conformance is installed and setup, we can now run CNF workloads and tests. We recommend installing and running a sample CNF to ensure cnf-conformance is operational and set expectations of the output.
 
+Now that cnf-conformance is installed and setup, we can now run CNF workloads and tests. We recommend installing and running a sample CNF to ensure cnf-conformance is operational and set expectations of the output.
 
 #### Configuring an example CNF
 
@@ -190,14 +200,17 @@ _For complete usage, see the [USAGE.md](USAGE.md) doc._
 ```
 
 The following will run only workload tests:
+
 ```
-./cnf-testsuite workload 
+./cnf-testsuite workload
 ```
 
 The following would run only the platform tests:
+
 ```
-./cnf-testsuite platform 
+./cnf-testsuite platform
 ```
+
 You can also run via `crystal` by replacing the `./cnf-testsuite` with `crystal spec src/cnf-testsuite.cr` and then the argument.
 
 #### More Example Usage (also see the [complete usage documentation](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md))
@@ -228,6 +241,7 @@ You can also run via `crystal` by replacing the `./cnf-testsuite` with `crystal 
 #### Checking Results
 
 In the console where the test suite runs:
+
 - PASSED or FAILED will be displayed for the tests
 
 A test log file, eg. `cnf-conformance-results-20201216.txt`, will be created which lists PASS or FAIL for every test based on the date.
@@ -237,15 +251,18 @@ For more details on points, see our [POINTS.md](./POINTS.md) documentation.
 #### Cleaning Up
 
 Run the following to cleanup the specific cnf-conformance test:
+
 ```
 ./cnf-testsuite cnf_cleanup cnf-config=./cnf-conformance.yml
 ```
+
 You can also run `cleanall` and cnf-conformance will attempt to cleanup everything.
 
 _NOTE: Cleanup does not handle manually deployed CNFs_
 
 ### Ready to Bring Your Own CNF?
+
 You can check out our [CNF_CONFORMANCE_YML_USAGE.md](https://github.com/cncf/cnf-testsuite/blob/main/CNF_CONFORMANCE_YML_USAGE.md) document on what is required to bring or use your own CNF.
 
-- Follow the [INSTALL](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md) or [SOURCE-INSTALL](https://github.com/cncf/cnf-conformance/blob/main/SOURCE-INSTALL.md) to build the binary.
+- Follow the [INSTALL](https://github.com/cncf/cnf-testsuite/blob/main/INSTALL.md) or [SOURCE-INSTALL](https://github.com/cncf/cnf-testsuite/blob/main/SOURCE-INSTALL.md) to build the binary.
 - Now head over to [CNF_CONFORMANCE_YML_USAGE.md](https://github.com/cncf/cnf-testsuite/blob/main/CNF_CONFORMANCE_YML_USAGE.md) for more detailed steps.

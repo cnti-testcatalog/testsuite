@@ -3,8 +3,7 @@ name: Bug Report
 about: Create a report to help us improve
 title: "[BUG]"
 labels: bug
-assignees: ''
-
+assignees: ""
 ---
 
 **Describe the bug**
@@ -12,6 +11,7 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
+
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
@@ -24,11 +24,12 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Device (please complete the following information):**
- - OS [e.g. Linux, iOS, Windows, Android]
- - Distro [e.g. Ubuntu]
- - Version [e.g. 18.04]
- - Architecture [e.g. x86, arm]
- - Browser [e.g. chrome, safari]
+
+- OS [e.g. Linux, iOS, Windows, Android]
+- Distro [e.g. Ubuntu]
+- Version [e.g. 18.04]
+- Architecture [e.g. x86, arm]
+- Browser [e.g. chrome, safari]
 
 **How will this be tested? aka Acceptance Criteria (optional)**
 
@@ -48,7 +49,7 @@ NOTE: you can enable higher logging level output via the command line or env var
 ./cnf-testsuite -l debug test
 
 # make sure to use -- if running from source
-crystal src/cnf-conformance.cr -- -l debug test 
+crystal src/cnf-conformance.cr -- -l debug test
 
 # env var
 LOGLEVEL=DEBUG ./cnf-testsuite test
@@ -60,4 +61,4 @@ Also setting the verbose option for many tasks will add extra output to help wit
 crystal src/cnf-conformance.cr test_name verbose
 ```
 
-Check [usage documentation](https://github.com/cncf/cnf-conformance/blob/master/USAGE.md) for more info about invoking commands and loggin
+Check [usage documentation](https://github.com/cncf/cnf-testsuite/blob/master/USAGE.md) for more info about invoking commands and loggin
