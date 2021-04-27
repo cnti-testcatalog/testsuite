@@ -1,4 +1,5 @@
 #!/bin/bash
+set -o errexit
 
 if [[ "$SHELL" == *"bash"* ]]; then
     echo "Shell Type: Bash"
