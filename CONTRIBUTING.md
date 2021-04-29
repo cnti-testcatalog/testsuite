@@ -92,7 +92,7 @@ Once you have implemented the feature or bug fix in your branch, you will open a
 
 In order to open a pull request (PR) it is required to be up to date with the latest changes upstream. If other commits are pushed upstream before your PR is merged, you will also need to rebase again before it will be merged.
 
-Using the automated [pull request template](https://github.com/cncf/cnf-testsuite/blob/main/.github/PULL_REQUEST_TEMPLATE.md), please note a description of the changes, the type of change, the issue(s) related to the PR, how the changes have been tested and if updates are needed in the documentation.
+Using the automated [pull request template](.github/PULL_REQUEST_TEMPLATE.md), please note a description of the changes, the type of change, the issue(s) related to the PR, how the changes have been tested and if updates are needed in the documentation.
 
 For general advice on how to submit a pull request, please see [Creating a pull request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request).
 
