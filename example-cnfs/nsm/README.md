@@ -4,7 +4,7 @@ Network Service Mesh (NSM) is a novel approach solving complicated L2/L3 use cas
 
 # Prerequistes
 
-Follow [Pre-req steps](https://github.com/cncf/cnf-testsuite/blob/main/INSTALL.md#pre-requisites), including
+Follow [Pre-req steps](../../INSTALL.md#pre-requisites), including
 
 - Set the KUBECONFIG environment to point to the remote K8s cluster
 - Downloading the binary cnf-conformance release

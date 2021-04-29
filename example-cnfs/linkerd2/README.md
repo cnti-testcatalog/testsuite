@@ -4,7 +4,7 @@ Linkerd is a service mesh, designed to give platform-wide observability, reliabi
 
 ## Pre-req:
 
-Follow [Pre-req steps](https://github.com/cncf/cnf-testsuite/blob/main/INSTALL.md#pre-requisites), including
+Follow [Pre-req steps](../../INSTALL.md#pre-requisites), including
 Set the KUBECONFIG environment to point to the remote K8s cluster
 
 ### Automated Envoy installation
