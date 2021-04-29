@@ -11,18 +11,22 @@ The configuration to apply is described declaratively and submitted to NSM agent
 More information about cloud-native tools and network functions provided by PANTHEON.tech can be found on our website cdnf.io.
 
 # Prerequistes
-Follow [Pre-req steps](https://github.com/cncf/cnf-conformance/blob/main/INSTALL.md#prerequisites), including
+
+Follow [Pre-req steps](../../INSTALL.md#pre-requisites), including
+
 - Set the KUBECONFIG environment to point to the remote K8s cluster
 - Downloading the binary cnf-conformance release
 
 ### Automated CNF installation
 
 Initialize the conformance suite
+
 ```
 crystal src/cnf-conformance.cr setup
 ```
 
 Configure and deploy nsm and nsm-nat as the target CNF
+
 ```
 crystal src/cnf-conformance.cr cnf_setup cnf-config=./example-cnfs/nsm/cnf-conformance.yml deploy_with_chart=false
 
@@ -30,6 +34,7 @@ crystal src/cnf-conformance.cr cnf_setup cnf-config=./example-cnfs/pantheon-nsm-
 ```
 
 Run the all the tests
+
 ```
 crystal src/cnf-conformance.cr all
 ```
@@ -37,7 +42,8 @@ crystal src/cnf-conformance.cr all
 Check the results file
 
 Cleanup the cnf test setup (including undeployment of nsm-nat)
+
 ```
 crystal src/cnf-conformance.cr cnf_cleanup cnf-config=./example-cnfs/pantheon-nsm-nat/cnf-conformance.yml
-crystal src/cnf-conformance.cr cnf_cleanup cnf-config=./example-cnfs/nsm/cnf-conformance.yml 
+crystal src/cnf-conformance.cr cnf_cleanup cnf-config=./example-cnfs/nsm/cnf-conformance.yml
 ```

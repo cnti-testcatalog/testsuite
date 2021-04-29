@@ -52,15 +52,15 @@ end
 task "version" do |_, args|
   LOGGING.info "VERSION: #{CnfConformance::VERSION}"
   puts "CNF Conformance version: #{CnfConformance::VERSION}".colorize(:green)
-end 
+end
 
 task "upsert_release" do |_, args|
   LOGGING.info "upserting release on: #{CnfConformance::VERSION}"
   release, asset = ReleaseManager::GithubReleaseManager.upsert_release
   if release
-    puts "Created a release for: #{CnfConformance::VERSION}".colorize(:green) 
+    puts "Created a release for: #{CnfConformance::VERSION}".colorize(:green)
   else
-    puts "Not creating a release for: #{CnfConformance::VERSION}".colorize(:red) 
+    puts "Not creating a release for: #{CnfConformance::VERSION}".colorize(:red)
   end
 end
 
@@ -82,7 +82,7 @@ end
 # https://www.thegeekstuff.com/2013/12/bash-completion-complete/
 # https://kubernetes.io/docs/tasks/tools/install-kubectl/#enable-kubectl-autocompletion
 # https://stackoverflow.com/questions/43794270/disable-or-unset-specific-bash-completion
-desc "Install Shell Completion: check https://github.com/cncf/cnf-conformance/blob/main/USAGE.md for usage"
+desc "Install Shell Completion: check https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md for usage"
 task "completion" do |_|
 
 # assumes bash completion feel free to make a pr for zsh and check an arg for it
@@ -101,7 +101,7 @@ end
 begin
   puts `#{PROGRAM_NAME} help` if ARGV.empty?
   # See issue #426 for exit code requirement
-  Sam.process_tasks(ARGV.clone) 
+  Sam.process_tasks(ARGV.clone)
   yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
     YAML.parse(file)
   end
