@@ -1,6 +1,6 @@
 # Conformance Test Categories
 
-The CNF Conformance program validates interoperability of CNF **workloads** supplied by multiple different vendors orchestrated by Kubernetes **platforms** that are supplied by multiple different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices. For more detailed CLI documentation see the [usage document.](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md)
+The CNF Conformance program validates interoperability of CNF **workloads** supplied by multiple different vendors orchestrated by Kubernetes **platforms** that are supplied by multiple different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices. For more detailed CLI documentation see the [usage document.](USAGE.md)
 
 ## Compatability Tests
 
@@ -60,7 +60,7 @@ The CNF Conformance program validates interoperability of CNF **workloads** supp
 - Test large scale autoscaling with load test tools like [CNF Testbed](https://github.com/cncf/cnf-testbed)
 - Test if the CNF control layer responds to retries for failed communication (e.g. using [Pumba](https://github.com/alexei-led/pumba) or [Blockade](https://github.com/worstcase/blockade) for network chaos and [Envoy](https://github.com/envoyproxy/envoy) for retries)
 
-(see [scalability test usage documentation](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md#scaling-tests))
+(see [scalability test usage documentation](USAGE.md#scaling-tests))
 
 ## Configuration and Lifecycle Tests
 
