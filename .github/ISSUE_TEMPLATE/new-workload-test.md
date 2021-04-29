@@ -16,7 +16,7 @@ assignees: ""
 
 **Test Category**
 
-- ADD CATEGORY_NAME (e.g. Statelessness, Security, etc from [README](README.md#cnf-conformance))
+- ADD CATEGORY_NAME (e.g. Statelessness, Security, etc from [README](https://github.com/cncf/cnf-testsuite/blob/main/README.md#cnf-conformance))
 
 **Type of test (static or runtime)**
 
@@ -52,10 +52,10 @@ assignees: ""
 
 **Documentation tasks:**
 
-- [ ] Update [Test Categories md](TEST-CATEGORIES.md) if needed
-- [ ] Update [Pseudo Code md](PSEUDO-CODE.md) if needed
-- [ ] Update [USAGE md](USAGE.md) if needed
-- [ ] Update [installation instructions](https://github.com/cncf/cnf-testsuite/#installation) if needed
+- [ ] Update [Test Categories md](https://github.com/cncf/cnf-testsuite/blob/main/TEST-CATEGORIES.md) if needed
+- [ ] Update [Pseudo Code md](https://github.com/cncf/cnf-testsuite/blob/main/PSEUDO-CODE.md) if needed
+- [ ] Update [USAGE md](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md) if needed
+- [ ] Update [installation instructions](https://github.com/cncf/cnf-testsuite/blob/main/install.md) if needed
 
 ### QA tasks
 

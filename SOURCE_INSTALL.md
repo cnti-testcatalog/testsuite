@@ -264,5 +264,5 @@ _NOTE: Cleanup does not handle manually deployed CNFs_
 
 You can check out our [CNF_CONFORMANCE_YML_USAGE.md](https://github.com/cncf/cnf-testsuite/blob/main/CNF_CONFORMANCE_YML_USAGE.md) document on what is required to bring or use your own CNF.
 
-- Follow the [INSTALL](https://github.com/cncf/cnf-testsuite/blob/main/INSTALL.md) or [SOURCE-INSTALL](https://github.com/cncf/cnf-testsuite/blob/main/SOURCE-INSTALL.md) to build the binary.
+- Follow the [INSTALL](INSTALL.md) or [SOURCE-INSTALL](SOURCE-INSTALL.md) to build the binary.
 - Now head over to [CNF_CONFORMANCE_YML_USAGE.md](https://github.com/cncf/cnf-testsuite/blob/main/CNF_CONFORMANCE_YML_USAGE.md) for more detailed steps.

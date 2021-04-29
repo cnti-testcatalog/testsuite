@@ -8,12 +8,12 @@ The CNF Test Suite is [Apache 2.0 licensed](LICENSE) and accepts contributions v
 
 Support channels include:
 
-- [Issues](https://github.com/cncf/cnf-testsuite/issues)
+- [Issues](issues)
 - Slack:
   - [#cnf-conformance-dev](https://cloud-native.slack.com/archives/C014TNCEX8R)
   - [#cnf-conformance](https://cloud-native.slack.com/archives/CV69TQW7Q)
 
-Before starting work on a major feature, please reach out to us via [GitHub Issues](https://github.com/cncf/cnf-testsuite/issues) or Slack. We will make sure no one else is already working on it and ask you to open a [GitHub issue](https://github.com/cncf/cnf-testsuite//issues/new/choose).
+Before starting work on a major feature, please reach out to us via [GitHub Issues](issues) or Slack. We will make sure no one else is already working on it and ask you to open a [GitHub issue](issues/new/choose).
 
 - Small patches and bug fixes don't need prior communication.
 
@@ -21,8 +21,8 @@ Before starting work on a major feature, please reach out to us via [GitHub Issu
 
 Issues are used as the primary method for tracking items in the CNF Test Suite initiative. Please self-assign an issue to yourself when you start to work on it so we don't duplicate work :)
 
-- [Issues](https://github.com/cncf/cnf-testsuite//issues)
-  - [Good first issues](https://github.com/cncf/cnf-testsuite/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+- [Issues](/issues)
+  - [Good first issues](issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 ### Issue Templates
 
@@ -63,7 +63,7 @@ To suggest a new CNF, please create a GitHub issue using the [New Example CNF te
 
 To install the CNF Test Suite and run a CNF, follow instructions at:
 
-- [CNF Developer Install and Usage Guide](https://github.com/cncf/cnf-testsuite/blob/main/INSTALL.md#cnf-developer-install-and-usage-guide)
+- [CNF Developer Install and Usage Guide](SOURCE_INSTALL.md)
 
 ## Coding Style:
 

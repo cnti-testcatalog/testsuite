@@ -13,7 +13,7 @@
 <details> <summary>Can I contribute to the CNF Test Suite?</summary>
 <p>
 
-- Yes. You can start by reading the [CNF Test Suite Contributing Guidelines](https://github.com/cncf/cnf-testsuite/blob/main/CONTRIBUTING.md).
+- Yes. You can start by reading the [CNF Test Suite Contributing Guidelines](CONTRIBUTING.md).
 
 </p>
 </details>
@@ -21,7 +21,7 @@
 <details> <summary>Does the CNF Test Suite community meet?</summary>
 <p>
 
-- Yes. The CNF Test Suite team meets once a week on Thursdays at 14:15-15:00 UTC. You can find more info about the meeting [here.](https://github.com/cncf/cnf-testsuite/blob/main/CONTRIBUTING.md#community-meeting)
+- Yes. The CNF Test Suite team meets once a week on Thursdays at 14:15-15:00 UTC. You can find more info about the meeting [here.](CONTRIBUTING.md#community-meeting)
 
 </p>
 </details>
@@ -79,7 +79,7 @@
 <details> <summary>Does the CNF Test Suite have any pre-requisites or other requirements to run?</summary>
 <p>
 
-- Yes. There are a few requirements for the CNF Test Suite. You can read about the requirements in the [INSTALL Guide](https://github.com/cncf/cnf-testsuite/blob/main/INSTALL.md#prerequisites).
+- Yes. There are a few requirements for the CNF Test Suite. You can read about the requirements in the [INSTALL Guide](INSTALL.md#prerequisites).
 
 </p>
 </details>
@@ -135,7 +135,7 @@
 <details> <summary>Running cnf-conformance says "No found config" or similiar type errors?</summary>
 <p>
 
-- This may indicate that you are not pointing to a valid cnf-conformance.yml config file for your CNF. You may want to read or review the [INSTALL](https://github.com/cncf/cnf-testsuite/blob/main/INSTALL.md) instructions or the [USAGE Documentation](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md).
+- This may indicate that you are not pointing to a valid cnf-conformance.yml config file for your CNF. You may want to read or review the [INSTALL](INSTALL.md) instructions or the [USAGE Documentation](USAGE.md).
 
 </p>
 </details>

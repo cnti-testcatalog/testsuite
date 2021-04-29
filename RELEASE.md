@@ -64,7 +64,7 @@ _Note: this covers both workload (ie. application) and platform tests_
 _Note: this covers both workload (ie. application) and platform tests_
 
 **[Manually create builds]**
-based on [INSTALL.md#optional-build-binary](https://github.com/cncf/cnf-testsuite/blob/main/INSTALL.md#optional-build-binary) and [Minimal instructions to run the tests from source (as of 2020-06-23)](https://hackmd.io/hcHoJEKaRWuyf_fZ7ITxLw)
+based on [SOURCE_INSTALL.md#optional-build-binary](SOURCE_INSTALL.md#installation) and [Minimal instructions to run the tests from source (as of 2020-06-23)](https://hackmd.io/hcHoJEKaRWuyf_fZ7ITxLw)
 
 - Download source: `git clone https://github.com/cncf/cnf-testsuite.git`
 - `cd cnf-testsuite`

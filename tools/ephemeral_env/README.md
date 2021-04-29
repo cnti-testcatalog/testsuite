@@ -6,7 +6,7 @@ The enviroment is designed to be seamless and invisible to the developer. It tak
 
 ## Quickstart
 
-Prereqs: https://github.com/cncf/cnf-testsuite/blob/master/KIND-INSTALL.md
+Prereqs: https://github.com/cncf/cnf-testsuite/blob/main/KIND-INSTALL.md
 
 1. Obtain the ephemeral binary
 
