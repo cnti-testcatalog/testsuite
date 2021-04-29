@@ -22,7 +22,7 @@ Before starting work on a major feature, please reach out to us via [GitHub Issu
 Issues are used as the primary method for tracking items in the CNF Test Suite initiative. Please self-assign an issue to yourself when you start to work on it so we don't duplicate work :)
 
 - [Issues](/issues)
-  - [Good first issues](issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+  - [Good first issues](../../issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 ### Issue Templates
 
