@@ -17,13 +17,13 @@ docker build -t curl_install_tester_docker_setup --target base .
 
 docker run --rm -it curl_install_tester_docker_setup 
 
-source <(curl https://raw.githubusercontent.com/cncf/cnf-conformance/master/curl_install.sh)
+source <(curl https://raw.githubusercontent.com/cncf/cnf-testsuite/main/curl_install.sh)
 
 cd # to make sure you are in home dir
 
 ./cnf-testsuite setup
 
-wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-conformance/release-v0.7-beta1/example-cnfs/coredns/cnf-conformance.yml
+wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-conformance.yml
 
 ./cnf-testsutie cnf_setup cnf-config=./cnf-conformance.yml
 ```

@@ -14,19 +14,19 @@ Follow [Pre-req steps](../../INSTALL.md#pre-requisites), including
 Initialize the conformance suite
 
 ```
-crystal src/cnf-conformance.cr setup
+crystal src/cnf-testsuite.cr setup
 ```
 
 Configure and deploy NSM as the target CNF
 
 ```
-crystal src/cnf-conformance.cr cnf_setup cnf-config=./example-cnfs/nsm/cnf-conformance.yml deploy_with_chart=false
+crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/nsm/cnf-conformance.yml deploy_with_chart=false
 ```
 
 Run the all the tests
 
 ```
-crystal src/cnf-conformance.cr all
+crystal src/cnf-testsuite.cr all
 ```
 
 Check the results file
@@ -34,5 +34,5 @@ Check the results file
 Cleanup the cnf test setup (including undeployment of NSM)
 
 ```
-crystal src/cnf-conformance.cr cnf_cleanup cnf-config=./example-cnfs/nsm/cnf-conformance.yml
+crystal src/cnf-testsuite.cr cnf_cleanup cnf-config=./example-cnfs/nsm/cnf-conformance.yml
 ```

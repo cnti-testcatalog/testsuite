@@ -147,7 +147,7 @@ Also setting the verbose option for many tasks will add extra output to help wit
 
 #### Running The Linter in Developer Mode
 
-See https://github.com/crystal-ameba/ameba for more details. Follow the [INSTALL](INSTALL.md) guide starting at the [Source Install](INSTALL.md#source-install) for more details running cnf-conformance in developer mode.
+See https://github.com/crystal-ameba/ameba for more details. Follow the [INSTALL](INSTALL.md) guide starting at the [Source Install](INSTALL.md#source-install) for more details running cnf-testsuite in developer mode.
 
 ```
 shards install # only for first install

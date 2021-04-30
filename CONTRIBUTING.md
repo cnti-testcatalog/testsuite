@@ -10,7 +10,7 @@ Support channels include:
 
 - [Issues](issues)
 - Slack:
-  - [#cnf-conformance-dev](https://cloud-native.slack.com/archives/C014TNCEX8R)
+  - [#cnf-testsuite-dev](https://cloud-native.slack.com/archives/C014TNCEX8R)
   - [#cnf-conformance](https://cloud-native.slack.com/archives/CV69TQW7Q)
 
 Before starting work on a major feature, please reach out to us via [GitHub Issues](../../issues) or Slack. We will make sure no one else is already working on it and ask you to open a [GitHub issue](issues/new/choose).
@@ -39,7 +39,7 @@ NOTE: To help with debugging, you can enable higher logging level output via the
 ./cnf-testsuite -l debug test
 
 # make sure to use -- if running from source
-crystal src/cnf-conformance.cr -- -l debug test
+crystal src/cnf-testsuite.cr -- -l debug test
 
 # env var
 LOGLEVEL=DEBUG ./cnf-testsuite test
@@ -48,7 +48,7 @@ LOGLEVEL=DEBUG ./cnf-testsuite test
 Also setting the verbose option for many tasks will add extra output to help with debugging
 
 ```
-crystal src/cnf-conformance.cr test_name verbose
+crystal src/cnf-testsuite.cr test_name verbose
 ```
 
 Check [usage documentation](USAGE.md) for more info about invoking commands and loggin
@@ -88,7 +88,7 @@ Outline of what a contributor's workflow looks like:
 
 ## Submitting a PR:
 
-Once you have implemented the feature or bug fix in your branch, you will open a PR to the upstream cnf-conformance repo. Before opening the PR ensure you rebased on the latest upstream, have added spec tests, if needed, all spec tests are passing.
+Once you have implemented the feature or bug fix in your branch, you will open a PR to the upstream cnf-testsuite repo. Before opening the PR ensure you rebased on the latest upstream, have added spec tests, if needed, all spec tests are passing.
 
 In order to open a pull request (PR) it is required to be up to date with the latest changes upstream. If other commits are pushed upstream before your PR is merged, you will also need to rebase again before it will be merged.
 
@@ -100,19 +100,19 @@ For general advice on how to submit a pull request, please see [Creating a pull 
 
 **Problem:** Pull requests from forks do not have the permissions to run through the github actions CI, so they will fail
 
-**Solution:** Pull down the source from the fork and branch, then push up the source to the original cnf-conformance repo.
+**Solution:** Pull down the source from the fork and branch, then push up the source to the original cnf-testsuite repo.
 
 1. Make a directory based on the forked user's name in the the pull request.
    `mkdir <contributor-username>`
    `cd <contributer-username>`
 2. Clone the fork.
-   `git clone git@github.com:<contributor-username>/cnf-conformance.git`
-   `cd cnf-conformance`
-3. Add the original cnf-conformance repo.
-   `git remote add cncf git@github.com:cncf/cnf-conformance.git`
+   `git clone git@github.com:<contributor-username>/cnf-testsuite.git`
+   `cd cnf-testsuite`
+3. Add the original cnf-testsuite repo.
+   `git remote add cncf git@github.com:cncf/cnf-testsuite.git`
 4. Checkout the pull request's branch.
    `git checkout <pull-request's-branch-name>`
-5. Push the branch to the original cnf-conformance repo.
+5. Push the branch to the original cnf-testsuite repo.
    `git push <pull-request's-branch-name>`
 6. Observe results of the github actions.
 7. (optional) Accept the original pull request if the review and tests pass.

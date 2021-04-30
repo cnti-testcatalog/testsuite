@@ -15,29 +15,29 @@ Set the KUBECONFIG environment to point to the remote K8s cluster
 Run cnf-conformance setup
 
 ```
-crystal src/cnf-conformance.cr setup
+crystal src/cnf-testsuite.cr setup
 ```
 
 Add the published helm chart:
 
 ```
-crystal src/cnf-conformance.cr helm_repo_add  cnf-config=example-cnfs/envoy/cnf-conformance.yml
+crystal src/cnf-testsuite.cr helm_repo_add  cnf-config=example-cnfs/envoy/cnf-conformance.yml
 ```
 
 Install Envoy
 
 ```
-crystal src/cnf-conformance.cr cnf_setup cnf-path=example-cnfs/envoy
+crystal src/cnf-testsuite.cr cnf_setup cnf-path=example-cnfs/envoy
 ```
 
 Run the conformance suite:
 
 ```
-crystal src/cnf-conformance.cr all
+crystal src/cnf-testsuite.cr all
 ```
 
 Envoy cleanup
 
 ```
-crystal src/cnf-conformance.cr cnf_cleanup cnf-path=example-cnfs/envoy
+crystal src/cnf-testsuite.cr cnf_cleanup cnf-path=example-cnfs/envoy
 ```

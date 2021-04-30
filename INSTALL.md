@@ -1,23 +1,23 @@
 Installing the CNF Test Suite
 ---
 ### Overview
-This INSTALL guide will detail the minimum requirements needed for cnf-conformance while then providing installation with configuration steps to run the cnf-conformance binary from both a binary installation and source installation method.
+This INSTALL guide will detail the minimum requirements needed for cnf-testsuite while then providing installation with configuration steps to run the cnf-testsuite binary from both a binary installation and source installation method.
 
 ### Table of Contents
 * [**Pre-Requisites**](#Pre-Requisites)
 * [**Installation**](#Installation)
 * [**Preparation**](#Preparation)
 * [**Configuration**](#Configuration)
-* [**Running cnf-conformance for the first time**](#Running-cnf-conformance-for-the-first-time)
+* [**Running cnf-testsuite for the first time**](#Running-cnf-testsuite-for-the-first-time)
 
 ### Pre-Requisites
-This will detail the required minimum requirements needed in order to support cnf-conformance.
+This will detail the required minimum requirements needed in order to support cnf-testsuite.
 
 #### Minimum Requirements
 * **Kubernetes cluster** *(Working K8s cluster, see [supported K8s and installation details](#Details-on-supported-k8s-clusters-and-installation) on installation.*
 * **kubectl** *(run commands against K8s clusters, see [installing kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for more details.*
 * **curl**
-* **helm 3.1.1** *or newer* *(cnf-conformance installs if not found locally)*
+* **helm 3.1.1** *or newer* *(cnf-testsuite installs if not found locally)*
 
 #### Requirements for source installation
 *Everything detailed in the [minimum requirements](https://hackmd.io/6h7NXdHnR4qUYgnnQPy5UA#Required) and the following:*
@@ -70,7 +70,7 @@ cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git
 
 ### Installation
 
-We support the following methods of installing the cnf-conformance suite:
+We support the following methods of installing the cnf-testsuite:
 
 - [Curl installation](#Curl-Binary-Installation) (via latest binary release)
 - [Latest Binary](https://github.com/cncf/cnf-testsuite/releases/latest) (manual download)
@@ -99,8 +99,8 @@ curl https://raw.githubusercontent.com/cncf/cnf-testsuite/main/curl_install.sh |
 ```
 wget https://github.com/cncf/cnf-testsuite/releases/download/latest/latest.tar.gz
 tar xzf latest.tar.gz
-cd cnf-conformance
-chmod +x cnf-conformance
+cd cnf-testsuite
+chmod +x cnf-testsuite
 export OLDPATH=$PATH; export PATH=$PATH:$(pwd)
 ```
 </p>
@@ -113,21 +113,21 @@ This is a brief summary for source installations and [does have requirements](#R
 <details><summary> Click here for brief source install details</summary>
 <p>
 
-Follow these steps to checkout the source from github and compile a cnf-conformance binary:
+Follow these steps to checkout the source from github and compile a cnf-testsuite binary:
 
 ```
 git clone https://github.com/cncf/cnf-testsuite.git
 cd cnf-testsuite/
 shards install
-crystal build src/cnf-conformance.cr
+crystal build src/cnf-testsuite.cr
 ```
-This should build a cnf-conformance binary in the root directory of the git repo clone.
+This should build a cnf-testsuite binary in the root directory of the git repo clone.
 </p>
 </details>
 
 ### Preparation
 
-Now that you have cnf-conformance installed, we need to prepare the suite.
+Now that you have cnf-testsuite installed, we need to prepare the suite.
 
 First make sure your K8s cluster is accessible (part of the [minimum pre-requisites](#Minimum-Requirements)). You can run the following to verify the cluster: 
 
@@ -141,12 +141,12 @@ And it should print a running kubernetes master in the output. Common kubectl er
 export KUBECONFIG=path/to/mycluster.config
 ```
 
-*Note: We recommend running cnf-conformance on a non-production cluster.*
+*Note: We recommend running cnf-testsuite on a non-production cluster.*
 
-The next step for cnf-conformance is to run the `setup` which prepares the cnf-conformance suite. This runs pre-reqs to verify you have everything needed in order to run the suite, simply run the following:
+The next step is to run the `setup` which prepares the cnf-testsuite. This runs pre-reqs to verify you have everything needed in order to run the suite, simply run the following:
 
 ```
-cnf-conformance setup
+cnf-testsuite setup
 ```
 
 The test suite by default will pull docker images from https://docker.io. You can set your own username and password with local environment variables by doing the following:
@@ -159,7 +159,7 @@ export DOCKERHUB_PASSWORD=<PASSWORD>
 Please refer to the [CNF_CONFORMANCE_YML_USAGE.md](CNF_CONFORMANCE_YML_USAGE.md#Using-a-Private-Registry) for details on using a private registry.
 
 
-<details><summary>Install Tab Completion for cnf-conformance (Optional)</summary>
+<details><summary>Install Tab Completion for cnf-testsuite (Optional)</summary>
 
 Check out our (experimental) support for tab completion!
 
@@ -167,13 +167,13 @@ NOTE: also compatible with the installation styles from kubectl completion insta
 https://kubernetes.io/docs/tasks/tools/install-kubectl/#enable-kubectl-autocompletion
 
 ```
-cnf-conformance completion -l error > test.sh
+cnf-testsuite completion -l error > test.sh
 source test.sh
 ```
 </details>
 
 ### Configuration
-Now cnf-conformance is setup, we're ready to configure it to point at a CNF to test.
+Now cnf-testsuite is setup, we're ready to configure it to point at a CNF to test.
 
 #### Using an Example CNF
 
@@ -182,9 +182,9 @@ Now cnf-conformance is setup, we're ready to configure it to point at a CNF to t
 ```
 wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-conformance.yml
 ```
-- The wget gets a working config file, now tell cnf-conformance to use it by doing the following:
+- The wget gets a working config file, now tell cnf-testsuite to use it by doing the following:
 ```
-cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
+cnf-testsuite cnf_setup cnf-config=./cnf-conformance.yml
 ```
 
 - There are other examples in the [examples-cnfs](https://github.com/cncf/cnf-testsuite/tree/master/example-cnfs) directory that can be used for testing as well.
@@ -196,10 +196,10 @@ If you've brought your own CNF to test, review the [CNF_CONFORMANCE_YML_USAGE.md
 If you've followed the [CNF_CONFORMANCE_YML_USAGE.md](CNF_CONFORMANCE_YML_USAGE.md) guide and have your cnf-conformance.yml ready, you can run the same command we ran for the example CNF to set it up:
 
 ```
-cnf-conformance cnf_setup cnf-config=./cnf-conformance.yml
+cnf-testsuite cnf_setup cnf-config=./cnf-conformance.yml
 ```
 
-### Running cnf-conformance for the first time
+### Running cnf-testsuite for the first time
 
 #### Running Tests
 
@@ -207,17 +207,17 @@ If you want to run all tests, do the following (this is assuming your `cnf_setup
 _For complete usage, see the [USAGE.md](USAGE.md) doc._
 
 ```
-cnf-conformance all
+cnf-testsuite all
 ```
 
 The following will run only workload tests:
 ```
-cnf-conformance workload 
+cnf-testsuite workload 
 ```
 
 The following would run only the platform tests:
 ```
-cnf-conformance platform 
+cnf-testsuite platform 
 ```
 
 #### Checking Results
@@ -231,10 +231,10 @@ For more details on points, see our [POINTS.md](./POINTS.md) documentation.
 
 #### Cleaning Up
 
-Run the following to cleanup the specific cnf-conformance test (this is assuming you installed the cnf-conformance.yml in your present working directory):
+Run the following to cleanup the specific cnf-testsuite test (this is assuming you installed the cnf-conformance.yml in your present working directory):
 ```
-cnf-conformance cnf_cleanup cnf-config=./cnf-conformance.yml
+cnf-testsuite cnf_cleanup cnf-config=./cnf-conformance.yml
 ```
-You can also run `cleanall` and cnf-conformance will attempt to cleanup everything.
+You can also run `cleanall` and cnf-testsuite will attempt to cleanup everything.
 
 _NOTE: Cleanup does not handle manually deployed CNFs_

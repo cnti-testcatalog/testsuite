@@ -132,7 +132,7 @@
 
 ### Troubleshooting
 
-<details> <summary>Running cnf-conformance says "No found config" or similiar type errors?</summary>
+<details> <summary>Running cnf-testsuite says "No found config" or similiar type errors?</summary>
 <p>
 
 - This may indicate that you are not pointing to a valid cnf-conformance.yml config file for your CNF. You may want to read or review the [INSTALL](INSTALL.md) instructions or the [USAGE Documentation](USAGE.md).

@@ -30,7 +30,7 @@ This information is also required for running various tests e.g. The 'container_
 
 ### Overview of all cnf-conformance.yml
 
-The following is a basic example cnf-conformance.yml file that can be found in the cnf-conformance respository: [cnf-conformance.example.yml](https://github.com/cncf/cnf-testsuite/blob/develop/cnf-conformance.example.yml)
+The following is a basic example cnf-conformance.yml file that can be found in the cnf-testsuite respository: [cnf-conformance.example.yml](https://github.com/cncf/cnf-testsuite/blob/develop/cnf-conformance.example.yml)
 
 ```yaml=
 ---

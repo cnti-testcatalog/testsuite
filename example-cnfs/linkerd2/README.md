@@ -12,23 +12,23 @@ Set the KUBECONFIG environment to point to the remote K8s cluster
 Run cnf-conformance setup
 
 ```
-crystal src/cnf-conformance.cr setup
+crystal src/cnf-testsuite.cr setup
 ```
 
 Install linkerd
 
 ```
-crystal src/cnf-conformance.cr cnf_setup cnf-path=example-cnfs/linkerd
+crystal src/cnf-testsuite.cr cnf_setup cnf-path=example-cnfs/linkerd
 ```
 
 Run the conformance suite:
 
 ```
-crystal src/cnf-conformance.cr all
+crystal src/cnf-testsuite.cr all
 ```
 
 linkerd cleanup
 
 ```
-crystal src/cnf-conformance.cr cnf_cleanup cnf-path=example-cnfs/linkerd
+crystal src/cnf-testsuite.cr cnf_cleanup cnf-path=example-cnfs/linkerd
 ```

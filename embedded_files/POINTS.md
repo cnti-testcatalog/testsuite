@@ -1,7 +1,7 @@
 CNF-CONFORMANCE Points Usage
 ---
 ### Overview
-This will detail the points scored for cnf-conformance suite.
+This will detail the points scored for cnf-testsuite.
 
 ### Table of Contents
 

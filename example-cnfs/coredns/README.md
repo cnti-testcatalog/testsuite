@@ -18,19 +18,19 @@ Follow [Pre-req steps](../../INSTALL.md#pre-requisites), including
 Initialize the conformance suite
 
 ```
-crystal src/cnf-conformance.cr setup
+crystal src/cnf-testsuite.cr setup
 ```
 
 Configure and deploy CoreDNS as the target CNF
 
 ```
-crystal src/cnf-conformance.cr cnf_setup cnf-path=example-cnfs/coredns
+crystal src/cnf-testsuite.cr cnf_setup cnf-path=example-cnfs/coredns
 ```
 
 Run the all the tests
 
 ```
-crystal src/cnf-conformance.cr all
+crystal src/cnf-testsuite.cr all
 ```
 
 Check the results file
@@ -38,5 +38,5 @@ Check the results file
 Cleanup the cnf test setup (including undeployment of CoreDNS)
 
 ```
-crystal src/cnf-conformance.cr cnf_cleanup cnf-path=example-cnfs/coredns
+crystal src/cnf-testsuite.cr cnf_cleanup cnf-path=example-cnfs/coredns
 ```
