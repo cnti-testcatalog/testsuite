@@ -18,20 +18,20 @@ Description:
 ### Automated installation
 Run cnf-conformance setup 
 ```
-export KUBECONFIG=$(pwd)/<YourKubeConf> ; crystal src/cnf-conformance.cr setup
+export KUBECONFIG=$(pwd)/<YourKubeConf> ; crystal src/cnf-testsuite.cr setup
 ```
 
 Setup and deploy  service chain
 ```
-export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-conformance.cr example_cnf_setup example-cnf-path=example-cnfs/vpp-3c2n-csp-use-case
+export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr example_cnf_setup example-cnf-path=example-cnfs/vpp-3c2n-csp-use-case
 ```
 
 ### Testing
-Run the conformance suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-conformance.cr all`
+Run the conformance suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`
 
 ### Automated cleanup
 ```
-export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-conformance.cr example_cnf_cleanup example-cnf-path=example-cnfs/vpp-3c2n-csp-use-case
+export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr example_cnf_cleanup example-cnf-path=example-cnfs/vpp-3c2n-csp-use-case
 ```
 
 ### Manual installation
@@ -41,7 +41,7 @@ export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-conformance.cr example_cnf
 1. Copy the cnf-conformance.yml into the cnfs/vpp-3c2n-csp-use-case directory
 1. Deploy the service chain using helm: `helm install vpp-3c2n-csp-use-case cnfs/csp`
 1. Wait for the installation to finish (all pods are ready)
-1. Run the conformance suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-conformance.cr all`
+1. Run the conformance suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`
 
 
   

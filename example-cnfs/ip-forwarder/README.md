@@ -20,20 +20,20 @@ To run this example CNF, note the following requirements:
 ### Automated installation
 Run cnf-conformance setup 
 ```
-export KUBECONFIG=$(pwd)/<YourKubeConf> ; crystal src/cnf-conformance.cr setup
+export KUBECONFIG=$(pwd)/<YourKubeConf> ; crystal src/cnf-testsuite.cr setup
 ```
 
 Setup and deploy  service chain
 ```
-export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-conformance.cr cnf_setup cnf-path=example-cnfs/ip-forwarder deploy_with_chart=false
+export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr cnf_setup cnf-path=example-cnfs/ip-forwarder deploy_with_chart=false
 ```
 
 ### Testing
-Run the conformance suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-conformance.cr all`
+Run the conformance suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`
 
 ### Automated cleanup
 ```
-export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-conformance.cr cnf_cleanup cnf-path=example-cnfs/ip-forwarder
+export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr cnf_cleanup cnf-path=example-cnfs/ip-forwarder
 ```
 
 ### Manual installation
@@ -43,7 +43,7 @@ export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-conformance.cr cnf_cleanup
 1. Copy the cnf-conformance.yml into the cnfs/ip-forwarder directory
 1. Deploy the CNF using helm: `helm install cnfs/ip-forwarder/vpp`
 1. Wait for the installation to finish (all pods are ready)
-1. Run the conformance suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-conformance.cr all`
+1. Run the conformance suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`
 
 
   
