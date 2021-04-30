@@ -181,12 +181,12 @@ To use CoreDNS as an example CNF. Download the conformance configuration to test
   crystal src/cnf-testsuite.cr cnf_setup cnf-config=./cnf-conformance.yml
   ```
 
-There are other examples in the [example cnfs](https://github.com/cncf/cnf-testsuite/tree/main/example-cnfs) folder if you would like to test others.
+There are other examples in the [example cnfs](example-cnfs) folder if you would like to test others.
 
 #### NOTE: CNF **must** have a [helm chart](https://helm.sh/)
 
 - To pass all current tests
-- To support auto deployment of the CNF from the ([cnf-conformance.yml](https://github.com/cncf/cnf-testsuite/blob/main/CNF_CONFORMANCE_YML_USAGE.md)) configuration file.
+- To support auto deployment of the CNF from the ([cnf-conformance.yml](CNF_CONFORMANCE_YML_USAGE.md)) configuration file.
 
 ### Running cnf-testsuite for the first time
 

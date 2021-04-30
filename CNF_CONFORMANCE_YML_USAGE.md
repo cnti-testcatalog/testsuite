@@ -4,7 +4,7 @@
 
 The cnf-conformance.yml is used by the CNF Test Suite to locate a deployed CNF on an existing K8s cluster. If the CNF is not found, it will attempt to deploy the CNF itself according to it's helm chart configuration.
 
-This information is also required for running various tests e.g. The 'container_names' are used for finding the name of the CNF containers in the K8s cluster and is then used to run tests like [increase_capacity](https://github.com/cncf/cnf-testsuite/blob/main/src/tasks/scalability.cr#L20) and [decrease_capacity](https://github.com/cncf/cnf-testsuite/blob/main/src/tasks/scalability.cr#L42)
+This information is also required for running various tests e.g. The 'container_names' are used for finding the name of the CNF containers in the K8s cluster and is then used to run tests like [increase_capacity](src/tasks/workload/scalability.cr#L20) and [decrease_capacity](src/tasks/workload/scalability.cr#L42)
 
 ### Table of Contents
 
@@ -201,7 +201,7 @@ This value is used to test the upgradeability of each container image. The image
 
 - Create a Conformance configuration file called `cnf-conformance.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`)
   - See example config (See [latest example in repo](https://github.com/cncf/cnf-testsuite/blob/main/cnf-conformance.example.yml)):
-    - Optionally, copy the example configuration file, [`cnf-conformance-example.yml`](https://github.com/cncf/cnf-testsuite/blob/main/cnf-conformance.example.yml), and modify appropriately
+    - Optionally, copy the example configuration file, [`cnf-conformance-example.yml`](cnf-conformance.example.yml), and modify appropriately
 - (Optional) Setup your CNF for testing and deploy it to the cluster by running `cnf-conformance cnf_setup cnf-config=path_to_your/cnf_folder`
   - _NOTE: if you do not want to automatically deploy the using the helm chart defined in the configuration then you MUST pass `deploy_with_chart=false` to the `cnf_setup` command._
   - _NOTE: you can pass the path to your cnf-conformance.yml to the 'all' command which will install the CNF for you (see below)_
@@ -210,7 +210,7 @@ A configuration file called `cnf-conformance.yml` needs to be created for each C
 
 You can start by copying an example cnf-conformance.yml or copy and paste the below to get started and then filling our the appropriate values:
 
-The [`cnf-conformance.yml`](https://github.com/cncf/cnf-testsuite/blob/main/cnf-conformance.example.yml) file can be used (included in source code or below):
+The [`cnf-conformance.yml`](cnf-conformance.example.yml) file can be used (included in source code or below):
 
 ```yaml=
 ---
