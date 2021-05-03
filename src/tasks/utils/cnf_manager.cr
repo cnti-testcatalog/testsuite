@@ -12,6 +12,184 @@ require "./config.cr"
 
 module CNFManager
 
+
+  # def self.install_type_from_path(config_src)
+  # end
+
+    # TODO if directory 
+    # TODO   look and see if the helm_path a manifest directory or helm directory (does it have a chart.yml file)
+    # TODO     if chart.yml, then its a helm directory
+    # TODO else 
+    # TODO   go out and look and see if the helm_path actually is a repository or not
+    # TODO alternate go out and look and see if the helm_path actually is a directory or not
+    #{:method => :helm_chart}
+    #{:method => :helm_directory}
+    #{:method => :manifest_directory}
+  def self.install_method_by_config_src(config_src : String)
+    helm_chart_file = "#{config_src}/#{CHART_YAML}"
+    LOGGING.debug "potential helm_chart_file: #{helm_chart_file}"
+    
+    if !Dir.exists?(config_src) 
+      :helm_chart
+    elsif File.exists?(helm_chart_file)
+      :helm_directory
+    elsif KubectlClient::Apply.validate(config_src)
+      :manifest_directory
+    else
+      puts "Error: #{config_src} is neither a helm_chart, helm_directory, or manifest_directory.".colorize(:red)
+      exit 1
+    end
+  end
+
+  # def self.cnf_installation_method(config, helm_path=true)
+  #   LOGGING.info "cnf_installation_method"
+  #   LOGGING.info "cnf_installation_method config: #{config}"
+  #   LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
+  #
+  # end
+
+  def self.export_manifest(config_src)
+
+    generate_initial_conformance_yml()
+    #TODO get the yml file path from the -o cli arg
+    generate_and_set_release_name("./cnf-conformance.yml")
+    config = CNFManager.parsed_config_file("./cnf-conformance.yml")
+    release_name = optional_key_as_string(config, "release_name")
+    if install_method_by_config_src(config_src) == :manifest_directory
+      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( config_src))
+    else
+      #TODO new generate_manifest function that accepts config_src
+      #TODO generate a release name before calling this
+      Helm.generate_manifest_from_templates(release_name,
+                                            config_src,
+                                            "/tmp")
+      template_ymls = Helm::Manifest.parse_manifest_as_ymls("/tmp")
+    end
+    resource_ymls = Helm.all_workload_resources(template_ymls)
+    #TODO return resource_ymls
+		# resource_resp = resource_ymls.map do | resource |
+    #   resp = yield resource
+    #   LOGGING.debug "cnf_workload_resource yield resp: #{resp}"
+    #   resp
+    # end
+    ###############
+    resource_ymls
+  end
+
+  #TODO determine install type (helm/helm directory/manifest) of the cnf
+  #TODO get the exported (helm/helm directory/manifest) files of the cnf
+  #TODO loop through and pull out container names and versions
+  #TODO get versions of images from dockerhub *skipped candidate
+  #TODO export cnf-conformance.yml ...
+  #TODO export helm_chart/helm_directory_manifest) tag
+  #TODO export container_names hash tag
+  # name: 
+  # rolling_update_test_tag: 
+  # rolling_downgrade_test_tag: 
+  # rolling_version_change_test_tag: 
+  # rollback_from_tag: 
+  #TODO (optional) export previous versions (alternate) export a placeholder in place of the previous tag/version
+  def self.generate_config(config_src)
+    # generate 
+
+    #  ./cnf-conformance generate_config helm_chart=coredns
+    # ./cnf-conformance generate_config helm_directory=./sample_cnfs/coredns
+    # ./cnf-conformance generate_config manifest=./sample_cnfs/manifests
+    # ./cnf-conformance generate_config helm_chart=./sample_cnfs/manifests -o ./mycnfdirectory
+
+    # TODO go out and look and see if the helm_path actually is a repository or not
+    # TODO alternate go out and look and see if the helm_path actually is a directory or not
+    # TODO if directory look and see if the helm_path a manifest directory or helm directory (does it have a chart.yml file)
+    # ./cnf-conformance generate_config config-src=<./sample_cnfs/manifests ./sample_cnfs/helm_directory or coredns>
+
+    # Fetch container names:
+    Sam::Args.new(["generate-config=helm_chart_or_directory"])
+
+    Sam::Args.new(["helm_chart=stable/coredns"])
+    Sam::Args.new(["helm_directory=sample_cnfs/coredns"])
+    Sam::Args.new(["manifest_directory=manifests"])
+
+    resource_ymls = CNFManager.export_manifest(config_src)
+    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+    # CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+		resource_resp = resource_names.map do | resource |
+				containers = KubectlClient::Get.resource_containers(resource[:kind].as_s, resource[:name].as_s)
+      # resp = yield resource
+        # LOGGING.debug "cnf_workload_resource yield resp: #{resp}"
+        #TODO export release name to cnf_conformance.yml
+        # name: 
+        # rolling_update_test_tag: 
+        # rolling_downgrade_test_tag: 
+        # rolling_version_change_test_tag: 
+        # rollback_from_tag: 
+        #TODO loop through containers
+        container_name = containers.as_a[0].as_h["name"].as_s
+        LOGGING.info "container_name: #{container_name}"
+      # resp
+    end
+
+    #TODO Create method of calling CNFManager.workload_resource without a cnf-conformance.yml (Only helm_chart, helm_directory and manifest directory are known)
+    #TODO determine install type (helm/helm directory/manifest) of the cnf
+    #TODO get the exported (helm/helm directory/manifest) files of the cnf
+    #TODO loop through and pull out container names and versions
+    #TODO get versions of images from dockerhub *skipped candidate
+    #TODO export cnf-conformance.yml ...
+    #TODO export helm_chart/helm_directory_manifest) tag
+    #TODO export container_names hash tag
+    #TODO export release name to cnf_conformance.yml
+    # name: 
+    # rolling_update_test_tag: 
+    # rolling_downgrade_test_tag: 
+    # rolling_version_change_test_tag: 
+    # rollback_from_tag: 
+  end
+
+  # TODO: figure out recursively check for unmapped json and warn on that
+  # https://github.com/Nicolab/crystal-validator#check
+  def self.validate_cnf_conformance_yml(config)
+    ccyt_validator = nil
+    valid = true
+
+    begin
+      ccyt_validator = CnfConformanceYmlType.from_json(config.settings.to_json)
+    rescue ex
+      valid = false
+      LOGGING.error "✖ ERROR: cnf_conformance.yml field validation error.".colorize(:red)
+      LOGGING.error " please check info in the the field name near the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
+      LOGGING.error ex.message
+      ex.backtrace.each do |x|
+        LOGGING.error x
+      end
+    end
+
+    unmapped_keys_warning_msg = "WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator".colorize(:yellow)
+    unmapped_subkeys_warning_msg = "WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_conformance.yml".colorize(:yellow)
+
+
+    if ccyt_validator && !ccyt_validator.try &.json_unmapped.empty?
+      warning_output = [unmapped_keys_warning_msg] of String | Colorize::Object(String)
+      warning_output.push(ccyt_validator.try &.json_unmapped.to_s)
+      if warning_output.size > 1
+        LOGGING.warn warning_output.join("\n")
+      end
+    end
+
+    #TODO Differentiate between unmapped subkeys or unset top level key.
+    if ccyt_validator && !ccyt_validator.try &.helm_repository.try &.json_unmapped.empty?
+      root = {} of String => (Hash(String, JSON::Any) | Nil)
+      root["helm_repository"] = ccyt_validator.try &.helm_repository.try &.json_unmapped
+
+      warning_output = [unmapped_subkeys_warning_msg] of String | Colorize::Object(String)
+      warning_output.push(root.to_s)
+      if warning_output.size > 1
+        LOGGING.warn warning_output.join("\n")
+      end
+    end
+
+    { valid, warning_output }
+  end
+
+
   # Applies a block to each cnf resource
   #
   # `CNFManager.cnf_workload_resources(args, config) {|cnf_config, resource| #your code}
@@ -24,6 +202,9 @@ module CNFManager
     helm_chart_path = config.cnf_config[:helm_chart_path]
     manifest_file_path = config.cnf_config[:manifest_file_path]
     test_passed = true
+
+    ##################
+    # TODO extract exporting of manifest yml into separate function 
     if release_name.empty? # no helm chart
       template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
     else
@@ -33,11 +214,17 @@ module CNFManager
       template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
     end
     resource_ymls = Helm.all_workload_resources(template_ymls)
+    # TODO call export manifest and get the resource ymls
 		resource_resp = resource_ymls.map do | resource |
       resp = yield resource
       LOGGING.debug "cnf_workload_resource yield resp: #{resp}"
       resp
     end
+    ###############
+
+
+
+
     resource_resp
   end
 
@@ -157,6 +344,7 @@ module CNFManager
     return config
   end
 
+  # if passed a directory, adds cnf-conformance.yml to the string
   def self.ensure_cnf_conformance_yml_path(path : String)
     LOGGING.info("ensure_cnf_conformance_yml_path")
     if path_has_yml?(path)
@@ -212,19 +400,36 @@ module CNFManager
     end
   end
 
+
   #Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
-  def self.cnf_installation_method(config)
+  def self.cnf_installation_method(config, config_src=false)
     LOGGING.info "cnf_installation_method"
     LOGGING.info "cnf_installation_method config: #{config}"
-    LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
-    helm_chart = optional_key_as_string(config, "helm_chart")
-    helm_directory = optional_key_as_string(config, "helm_directory")
-    manifest_directory = optional_key_as_string(config, "manifest_directory")
+    # if config_src
+    #   #TODO switch to helm_path key for determining installation type
+    #   helm_chart = ""
+    #   helm_directory = ""
+    #   manifest_directory = ""
+    #   case install_method_by_config_src(config)
+    #   when :helm_chart
+    #     helm_chart = config
+    #   when :helm_directory
+    #     helm_directory = config
+    #   when :manifest_directory
+    #     manifest_directory = config
+    #   end
+    # else
+      LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
+      helm_chart = optional_key_as_string(config, "helm_chart")
+      helm_directory = optional_key_as_string(config, "helm_directory")
+      manifest_directory = optional_key_as_string(config, "manifest_directory")
+    # end
 
     unless CNFManager.exclusive_install_method_tags?(config)
       puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-conformance.yml!".colorize(:red)
       exit 1
     end
+
     if !helm_chart.empty?
       {:helm_chart, helm_chart}
     elsif !helm_directory.empty?
@@ -259,16 +464,44 @@ module CNFManager
     hth["NAME"]
   end
 
+  # Please indent this.
+def self.conformance_yml_template
+  <<-TEMPLATE
+  {{ install_method }}
+  TEMPLATE
+end
+
+  def self.generate_initial_conformance_yml(config_yml_path="./cnf-conformance.yml")
+    if !File.exists?(config_yml_path)
+      #TODO if yml file does not exist, create it
+      conformance_yml_template_resp = Crinja.render(conformance_yml_template,{"install_method" => "install_method"})
+      write_template= `echo "#{conformance_yml_template_resp}" > "#{config_yml_path}"`
+    else
+      LOGGING.error "#{config_yml_path} already exists"
+    end
+  end
+
   def self.generate_and_set_release_name(config_yml_path)
     LOGGING.info "generate_and_set_release_name"
+    #TODO accept config_src optionally instead of just config_yml_path
+    #TODO if in command line mode, don't use config_yml_path as an existing yml  
+
+    #Add /conformance.yml to the string if it doesn't exist
     yml_file = CNFManager.ensure_cnf_conformance_yml_path(config_yml_path)
     yml_path = CNFManager.ensure_cnf_conformance_dir(config_yml_path)
+
     config = CNFManager.parsed_config_file(yml_file)
 
     predefined_release_name = optional_key_as_string(config, "release_name")
     LOGGING.debug "predefined_release_name: #{predefined_release_name}"
     if predefined_release_name.empty?
-      install_method = self.cnf_installation_method(config)
+      # if !config_src.empty?
+      #   resp = install_method_by_config_src(yml_file)
+      #   install_method = {resp, config}
+      # else
+        # install_method = self.cnf_installation_method(config, config_src)
+        install_method = self.cnf_installation_method(config)
+      # end
       LOGGING.debug "install_method: #{install_method}"
       case install_method[0]
       when :helm_chart
@@ -639,49 +872,5 @@ end
   #   unmapped_stuff
   # end
 
-  # TODO: figure out recursively check for unmapped json and warn on that
-  # https://github.com/Nicolab/crystal-validator#check
-  def self.validate_cnf_conformance_yml(config)
-    ccyt_validator = nil
-    valid = true
-
-    begin
-      ccyt_validator = CnfConformanceYmlType.from_json(config.settings.to_json)
-    rescue ex
-      valid = false
-      LOGGING.error "✖ ERROR: cnf_conformance.yml field validation error.".colorize(:red)
-      LOGGING.error " please check info in the the field name near the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
-      LOGGING.error ex.message
-      ex.backtrace.each do |x|
-        LOGGING.error x
-      end
-    end
-
-    unmapped_keys_warning_msg = "WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator".colorize(:yellow)
-    unmapped_subkeys_warning_msg = "WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_conformance.yml".colorize(:yellow)
-
-
-    if ccyt_validator && !ccyt_validator.try &.json_unmapped.empty?
-      warning_output = [unmapped_keys_warning_msg] of String | Colorize::Object(String)
-      warning_output.push(ccyt_validator.try &.json_unmapped.to_s)
-      if warning_output.size > 1
-        LOGGING.warn warning_output.join("\n")
-      end
-    end
-
-    #TODO Differentiate between unmapped subkeys or unset top level key.
-    if ccyt_validator && !ccyt_validator.try &.helm_repository.try &.json_unmapped.empty?
-      root = {} of String => (Hash(String, JSON::Any) | Nil)
-      root["helm_repository"] = ccyt_validator.try &.helm_repository.try &.json_unmapped
-
-      warning_output = [unmapped_subkeys_warning_msg] of String | Colorize::Object(String)
-      warning_output.push(root.to_s)
-      if warning_output.size > 1
-        LOGGING.warn warning_output.join("\n")
-      end
-    end
-
-    { valid, warning_output }
-  end
 
 end

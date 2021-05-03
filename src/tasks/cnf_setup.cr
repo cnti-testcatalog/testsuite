@@ -43,6 +43,18 @@ task "CNFManager.helm_repo_add" do |_, args|
 
 end
 
+task "CNFManager.generate_config" do |_, args|
+  VERBOSE_LOGGING.info "CNFManager.generate_config" if check_verbose(args)
+  VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
+  if args.named["config-src"]? 
+    config_src = args.named["config-src"].as(String)
+    CNFManager.generate_config(config_src)
+  else
+    CNFManager.helm_repo_add
+  end
+
+end
+
 #TODO force all cleanups to use generic cleanup
 task "sample_coredns_cleanup" do |_, args|
   CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-coredns-cnf", verbose: true)

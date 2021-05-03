@@ -128,6 +128,7 @@ end
 LOGGING = LogginGenerator.new
 VERBOSE_LOGGING = VerboseLogginGenerator.new
 
+
 def check_verbose(args)
   ((args.raw.includes? "verbose") || (args.raw.includes? "v"))
 end
