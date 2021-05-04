@@ -48,12 +48,11 @@ module CNFManager
   #
   # end
 
-  def self.export_manifest(config_src)
+  def self.export_manifest(config_src, output_file="./cnf-conformance.yml")
 
-    generate_initial_conformance_yml()
-    #TODO get the yml file path from the -o cli arg
-    generate_and_set_release_name("./cnf-conformance.yml")
-    config = CNFManager.parsed_config_file("./cnf-conformance.yml")
+    generate_initial_conformance_yml(config_src, output_file)
+    generate_and_set_release_name(output_file)
+    config = CNFManager.parsed_config_file(output_file)
     release_name = optional_key_as_string(config, "release_name")
     if install_method_by_config_src(config_src) == :manifest_directory
       template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( config_src))
@@ -61,9 +60,8 @@ module CNFManager
       #TODO new generate_manifest function that accepts config_src
       #TODO generate a release name before calling this
       Helm.generate_manifest_from_templates(release_name,
-                                            config_src,
-                                            "/tmp")
-      template_ymls = Helm::Manifest.parse_manifest_as_ymls("/tmp")
+                                            config_src)
+      template_ymls = Helm::Manifest.parse_manifest_as_ymls()
     end
     resource_ymls = Helm.all_workload_resources(template_ymls)
     #TODO return resource_ymls
@@ -89,7 +87,7 @@ module CNFManager
   # rolling_version_change_test_tag: 
   # rollback_from_tag: 
   #TODO (optional) export previous versions (alternate) export a placeholder in place of the previous tag/version
-  def self.generate_config(config_src)
+  def self.generate_config(config_src, output_file="./cnf-conformance.yml")
     # generate 
 
     #  ./cnf-conformance generate_config helm_chart=coredns
@@ -103,28 +101,52 @@ module CNFManager
     # ./cnf-conformance generate_config config-src=<./sample_cnfs/manifests ./sample_cnfs/helm_directory or coredns>
 
     # Fetch container names:
-    Sam::Args.new(["generate-config=helm_chart_or_directory"])
+    # Sam::Args.new(["generate-config=helm_chart_or_directory"])
+    #
+    # Sam::Args.new(["helm_chart=stable/coredns"])
+    # Sam::Args.new(["helm_directory=sample_cnfs/coredns"])
+    # Sam::Args.new(["manifest_directory=manifests"])
 
-    Sam::Args.new(["helm_chart=stable/coredns"])
-    Sam::Args.new(["helm_directory=sample_cnfs/coredns"])
-    Sam::Args.new(["manifest_directory=manifests"])
-
-    resource_ymls = CNFManager.export_manifest(config_src)
-    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+    resource_ymls = CNFManager.export_manifest(config_src, output_file)
+    # resource_names = Helm.workload_resource_kind_names(resource_ymls)
     # CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-		resource_resp = resource_names.map do | resource |
-				containers = KubectlClient::Get.resource_containers(resource[:kind].as_s, resource[:name].as_s)
+		# resource_resp = resource_names.map do | resource |
+		resource_resp = resource_ymls.map do | resource |
+      LOGGING.info "gen config resource: #{resource}"
+      unless resource["kind"].as_s.downcase == "service" ## services have no containers
+				# containers = KubectlClient::Get.resource_containers(resource[:kind].as_s, resource[:name].as_s)
+        containers = Helm::Manifest.manifest_containers(resource)
       # resp = yield resource
         # LOGGING.debug "cnf_workload_resource yield resp: #{resp}"
         #TODO export release name to cnf_conformance.yml
         # name: 
         # rolling_update_test_tag: 
-        # rolling_downgrade_test_tag: 
-        # rolling_version_change_test_tag: 
-        # rollback_from_tag: 
-        #TODO loop through containers
-        container_name = containers.as_a[0].as_h["name"].as_s
-        LOGGING.info "container_name: #{container_name}"
+# container_names: 
+#   - name: coredns 
+#     rolling_update_test_tag: "1.8.0"
+#     rolling_downgrade_test_tag: 1.6.7
+#     rolling_version_change_test_tag: 1.8.0
+#     rollback_from_tag: 1.8.0 
+  
+        LOGGING.info "containers: #{containers}"
+        container_name = containers.as_a[0].as_h["name"].as_s if containers
+        if containers
+          container_names = containers.as_a.map { |container|
+            LOGGING.debug "container: #{container}"
+
+# don't mess with the indentation here
+  container_names_template = <<-TEMPLATE
+
+   - name: #{container.as_h["name"].as_s} 
+     rolling_update_test_tag: "#{container.as_h["image"].as_s.rpartition(":")[2]?}"
+     rolling_downgrade_test_tag: #{container.as_h["image"].as_s.rpartition(":")[2]?}
+     rolling_version_change_test_tag: #{container.as_h["image"].as_s.rpartition(":")[2]?}
+     rollback_from_tag: #{container.as_h["image"].as_s.rpartition(":")[2]?} 
+  TEMPLATE
+          }.join("")
+          update_yml(output_file, "container_names", container_names)
+        end
+      end
       # resp
     end
 
@@ -144,6 +166,32 @@ module CNFManager
     # rollback_from_tag: 
   end
 
+  # Please don't indent this.
+def self.conformance_yml_template
+  <<-TEMPLATE
+  release_name:
+  {{ install_key }} 
+  TEMPLATE
+end
+
+  def self.generate_initial_conformance_yml(config_src, config_yml_path="./cnf-conformance.yml")
+    if !File.exists?(config_yml_path)
+      case install_method_by_config_src(config_src) 
+      when :helm_chart
+        conformance_yml_template_resp = Crinja.render(conformance_yml_template, { "install_key" => "helm_chart: #{config_src}"})
+      when :helm_directory
+        conformance_yml_template_resp = Crinja.render(conformance_yml_template, { "install_key" => "helm_directory: #{config_src}"})
+      when :manifest_directory
+        conformance_yml_template_resp = Crinja.render(conformance_yml_template, { "install_key" => "manifest_directory: #{config_src}"})
+      else
+        puts "Error: #{config_src} is neither a helm_chart, helm_directory, or manifest_directory.".colorize(:red)
+        exit 1
+      end
+      write_template= `echo "#{conformance_yml_template_resp}" > "#{config_yml_path}"`
+    else
+      LOGGING.error "#{config_yml_path} already exists"
+    end
+  end
   # TODO: figure out recursively check for unmapped json and warn on that
   # https://github.com/Nicolab/crystal-validator#check
   def self.validate_cnf_conformance_yml(config)
@@ -464,29 +512,10 @@ module CNFManager
     hth["NAME"]
   end
 
-  # Please indent this.
-def self.conformance_yml_template
-  <<-TEMPLATE
-  {{ install_method }}
-  TEMPLATE
-end
-
-  def self.generate_initial_conformance_yml(config_yml_path="./cnf-conformance.yml")
-    if !File.exists?(config_yml_path)
-      #TODO if yml file does not exist, create it
-      conformance_yml_template_resp = Crinja.render(conformance_yml_template,{"install_method" => "install_method"})
-      write_template= `echo "#{conformance_yml_template_resp}" > "#{config_yml_path}"`
-    else
-      LOGGING.error "#{config_yml_path} already exists"
-    end
-  end
 
   def self.generate_and_set_release_name(config_yml_path)
     LOGGING.info "generate_and_set_release_name"
-    #TODO accept config_src optionally instead of just config_yml_path
-    #TODO if in command line mode, don't use config_yml_path as an existing yml  
 
-    #Add /conformance.yml to the string if it doesn't exist
     yml_file = CNFManager.ensure_cnf_conformance_yml_path(config_yml_path)
     yml_path = CNFManager.ensure_cnf_conformance_dir(config_yml_path)
 
@@ -495,13 +524,7 @@ end
     predefined_release_name = optional_key_as_string(config, "release_name")
     LOGGING.debug "predefined_release_name: #{predefined_release_name}"
     if predefined_release_name.empty?
-      # if !config_src.empty?
-      #   resp = install_method_by_config_src(yml_file)
-      #   install_method = {resp, config}
-      # else
-        # install_method = self.cnf_installation_method(config, config_src)
-        install_method = self.cnf_installation_method(config)
-      # end
+      install_method = self.cnf_installation_method(config)
       LOGGING.debug "install_method: #{install_method}"
       case install_method[0]
       when :helm_chart

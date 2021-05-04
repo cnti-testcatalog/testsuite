@@ -43,14 +43,18 @@ task "CNFManager.helm_repo_add" do |_, args|
 
 end
 
-task "CNFManager.generate_config" do |_, args|
+task "generate_config" do |_, args|
   VERBOSE_LOGGING.info "CNFManager.generate_config" if check_verbose(args)
   VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
   if args.named["config-src"]? 
     config_src = args.named["config-src"].as(String)
-    CNFManager.generate_config(config_src)
-  else
-    CNFManager.helm_repo_add
+    output_file = args.named["output-file"].as(String) if args.named["output-file"]?
+    output_file = args.named["of"].as(String) if args.named["of"]?
+    if output_file && !output_file.empty?
+      CNFManager.generate_config(config_src, output_file)
+    else
+      CNFManager.generate_config(config_src)
+    end
   end
 
 end
