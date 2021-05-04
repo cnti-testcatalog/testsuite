@@ -114,34 +114,26 @@ module CNFManager
 		resource_resp = resource_ymls.map do | resource |
       LOGGING.info "gen config resource: #{resource}"
       unless resource["kind"].as_s.downcase == "service" ## services have no containers
-				# containers = KubectlClient::Get.resource_containers(resource[:kind].as_s, resource[:name].as_s)
         containers = Helm::Manifest.manifest_containers(resource)
-      # resp = yield resource
-        # LOGGING.debug "cnf_workload_resource yield resp: #{resp}"
-        #TODO export release name to cnf_conformance.yml
-        # name: 
-        # rolling_update_test_tag: 
-# container_names: 
-#   - name: coredns 
-#     rolling_update_test_tag: "1.8.0"
-#     rolling_downgrade_test_tag: 1.6.7
-#     rolling_version_change_test_tag: 1.8.0
-#     rollback_from_tag: 1.8.0 
   
         LOGGING.info "containers: #{containers}"
         container_name = containers.as_a[0].as_h["name"].as_s if containers
         if containers
           container_names = containers.as_a.map { |container|
             LOGGING.debug "container: #{container}"
-
+            if container.as_h["image"].as_s.split(":").size > 1
+              rolling_update_test_tag = container.as_h["image"].as_s.split(":")[1]
+            else
+              rolling_update_test_tag = ""
+            end
 # don't mess with the indentation here
   container_names_template = <<-TEMPLATE
 
    - name: #{container.as_h["name"].as_s} 
-     rolling_update_test_tag: "#{container.as_h["image"].as_s.rpartition(":")[2]?}"
-     rolling_downgrade_test_tag: #{container.as_h["image"].as_s.rpartition(":")[2]?}
-     rolling_version_change_test_tag: #{container.as_h["image"].as_s.rpartition(":")[2]?}
-     rollback_from_tag: #{container.as_h["image"].as_s.rpartition(":")[2]?} 
+     rolling_update_test_tag: #{rolling_update_test_tag}
+     rolling_downgrade_test_tag: #{rolling_update_test_tag}
+     rolling_version_change_test_tag: #{rolling_update_test_tag}
+     rollback_from_tag: #{rolling_update_test_tag} 
   TEMPLATE
           }.join("")
           update_yml(output_file, "container_names", container_names)
