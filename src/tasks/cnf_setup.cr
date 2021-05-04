@@ -51,9 +51,9 @@ task "generate_config" do |_, args|
     output_file = args.named["output-file"].as(String) if args.named["output-file"]?
     output_file = args.named["of"].as(String) if args.named["of"]?
     if output_file && !output_file.empty?
-      CNFManager.generate_config(config_src, output_file)
+      CNFManager::GenerateConfig.generate_config(config_src, output_file)
     else
-      CNFManager.generate_config(config_src)
+      CNFManager::GenerateConfig.generate_config(config_src)
     end
   end
 

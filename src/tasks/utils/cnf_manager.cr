@@ -9,181 +9,11 @@ require "uuid"
 require "./points.cr"
 require "./task.cr"
 require "./config.cr"
+require "./generate_config.cr"
 
 module CNFManager
 
 
-  # def self.install_type_from_path(config_src)
-  # end
-
-    # TODO if directory 
-    # TODO   look and see if the helm_path a manifest directory or helm directory (does it have a chart.yml file)
-    # TODO     if chart.yml, then its a helm directory
-    # TODO else 
-    # TODO   go out and look and see if the helm_path actually is a repository or not
-    # TODO alternate go out and look and see if the helm_path actually is a directory or not
-    #{:method => :helm_chart}
-    #{:method => :helm_directory}
-    #{:method => :manifest_directory}
-  def self.install_method_by_config_src(config_src : String)
-    helm_chart_file = "#{config_src}/#{CHART_YAML}"
-    LOGGING.debug "potential helm_chart_file: #{helm_chart_file}"
-    
-    if !Dir.exists?(config_src) 
-      :helm_chart
-    elsif File.exists?(helm_chart_file)
-      :helm_directory
-    elsif KubectlClient::Apply.validate(config_src)
-      :manifest_directory
-    else
-      puts "Error: #{config_src} is neither a helm_chart, helm_directory, or manifest_directory.".colorize(:red)
-      exit 1
-    end
-  end
-
-  # def self.cnf_installation_method(config, helm_path=true)
-  #   LOGGING.info "cnf_installation_method"
-  #   LOGGING.info "cnf_installation_method config: #{config}"
-  #   LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
-  #
-  # end
-
-  def self.export_manifest(config_src, output_file="./cnf-conformance.yml")
-
-    generate_initial_conformance_yml(config_src, output_file)
-    generate_and_set_release_name(output_file)
-    config = CNFManager.parsed_config_file(output_file)
-    release_name = optional_key_as_string(config, "release_name")
-    if install_method_by_config_src(config_src) == :manifest_directory
-      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( config_src))
-    else
-      #TODO new generate_manifest function that accepts config_src
-      #TODO generate a release name before calling this
-      Helm.generate_manifest_from_templates(release_name,
-                                            config_src)
-      template_ymls = Helm::Manifest.parse_manifest_as_ymls()
-    end
-    resource_ymls = Helm.all_workload_resources(template_ymls)
-    #TODO return resource_ymls
-		# resource_resp = resource_ymls.map do | resource |
-    #   resp = yield resource
-    #   LOGGING.debug "cnf_workload_resource yield resp: #{resp}"
-    #   resp
-    # end
-    ###############
-    resource_ymls
-  end
-
-  #TODO determine install type (helm/helm directory/manifest) of the cnf
-  #TODO get the exported (helm/helm directory/manifest) files of the cnf
-  #TODO loop through and pull out container names and versions
-  #TODO get versions of images from dockerhub *skipped candidate
-  #TODO export cnf-conformance.yml ...
-  #TODO export helm_chart/helm_directory_manifest) tag
-  #TODO export container_names hash tag
-  # name: 
-  # rolling_update_test_tag: 
-  # rolling_downgrade_test_tag: 
-  # rolling_version_change_test_tag: 
-  # rollback_from_tag: 
-  #TODO (optional) export previous versions (alternate) export a placeholder in place of the previous tag/version
-  def self.generate_config(config_src, output_file="./cnf-conformance.yml")
-    # generate 
-
-    #  ./cnf-conformance generate_config helm_chart=coredns
-    # ./cnf-conformance generate_config helm_directory=./sample_cnfs/coredns
-    # ./cnf-conformance generate_config manifest=./sample_cnfs/manifests
-    # ./cnf-conformance generate_config helm_chart=./sample_cnfs/manifests -o ./mycnfdirectory
-
-    # TODO go out and look and see if the helm_path actually is a repository or not
-    # TODO alternate go out and look and see if the helm_path actually is a directory or not
-    # TODO if directory look and see if the helm_path a manifest directory or helm directory (does it have a chart.yml file)
-    # ./cnf-conformance generate_config config-src=<./sample_cnfs/manifests ./sample_cnfs/helm_directory or coredns>
-
-    # Fetch container names:
-    # Sam::Args.new(["generate-config=helm_chart_or_directory"])
-    #
-    # Sam::Args.new(["helm_chart=stable/coredns"])
-    # Sam::Args.new(["helm_directory=sample_cnfs/coredns"])
-    # Sam::Args.new(["manifest_directory=manifests"])
-
-    resource_ymls = CNFManager.export_manifest(config_src, output_file)
-    # resource_names = Helm.workload_resource_kind_names(resource_ymls)
-    # CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-		# resource_resp = resource_names.map do | resource |
-		resource_resp = resource_ymls.map do | resource |
-      LOGGING.info "gen config resource: #{resource}"
-      unless resource["kind"].as_s.downcase == "service" ## services have no containers
-        containers = Helm::Manifest.manifest_containers(resource)
-  
-        LOGGING.info "containers: #{containers}"
-        container_name = containers.as_a[0].as_h["name"].as_s if containers
-        if containers
-          container_names = containers.as_a.map { |container|
-            LOGGING.debug "container: #{container}"
-            if container.as_h["image"].as_s.split(":").size > 1
-              rolling_update_test_tag = container.as_h["image"].as_s.split(":")[1]
-            else
-              rolling_update_test_tag = ""
-            end
-# don't mess with the indentation here
-  container_names_template = <<-TEMPLATE
-
-   - name: #{container.as_h["name"].as_s} 
-     rolling_update_test_tag: #{rolling_update_test_tag}
-     rolling_downgrade_test_tag: #{rolling_update_test_tag}
-     rolling_version_change_test_tag: #{rolling_update_test_tag}
-     rollback_from_tag: #{rolling_update_test_tag} 
-  TEMPLATE
-          }.join("")
-          update_yml(output_file, "container_names", container_names)
-        end
-      end
-      # resp
-    end
-
-    #TODO Create method of calling CNFManager.workload_resource without a cnf-conformance.yml (Only helm_chart, helm_directory and manifest directory are known)
-    #TODO determine install type (helm/helm directory/manifest) of the cnf
-    #TODO get the exported (helm/helm directory/manifest) files of the cnf
-    #TODO loop through and pull out container names and versions
-    #TODO get versions of images from dockerhub *skipped candidate
-    #TODO export cnf-conformance.yml ...
-    #TODO export helm_chart/helm_directory_manifest) tag
-    #TODO export container_names hash tag
-    #TODO export release name to cnf_conformance.yml
-    # name: 
-    # rolling_update_test_tag: 
-    # rolling_downgrade_test_tag: 
-    # rolling_version_change_test_tag: 
-    # rollback_from_tag: 
-  end
-
-  # Please don't indent this.
-def self.conformance_yml_template
-  <<-TEMPLATE
-  release_name:
-  {{ install_key }} 
-  TEMPLATE
-end
-
-  def self.generate_initial_conformance_yml(config_src, config_yml_path="./cnf-conformance.yml")
-    if !File.exists?(config_yml_path)
-      case install_method_by_config_src(config_src) 
-      when :helm_chart
-        conformance_yml_template_resp = Crinja.render(conformance_yml_template, { "install_key" => "helm_chart: #{config_src}"})
-      when :helm_directory
-        conformance_yml_template_resp = Crinja.render(conformance_yml_template, { "install_key" => "helm_directory: #{config_src}"})
-      when :manifest_directory
-        conformance_yml_template_resp = Crinja.render(conformance_yml_template, { "install_key" => "manifest_directory: #{config_src}"})
-      else
-        puts "Error: #{config_src} is neither a helm_chart, helm_directory, or manifest_directory.".colorize(:red)
-        exit 1
-      end
-      write_template= `echo "#{conformance_yml_template_resp}" > "#{config_yml_path}"`
-    else
-      LOGGING.error "#{config_yml_path} already exists"
-    end
-  end
   # TODO: figure out recursively check for unmapped json and warn on that
   # https://github.com/Nicolab/crystal-validator#check
   def self.validate_cnf_conformance_yml(config)
@@ -445,25 +275,10 @@ end
   def self.cnf_installation_method(config, config_src=false)
     LOGGING.info "cnf_installation_method"
     LOGGING.info "cnf_installation_method config: #{config}"
-    # if config_src
-    #   #TODO switch to helm_path key for determining installation type
-    #   helm_chart = ""
-    #   helm_directory = ""
-    #   manifest_directory = ""
-    #   case install_method_by_config_src(config)
-    #   when :helm_chart
-    #     helm_chart = config
-    #   when :helm_directory
-    #     helm_directory = config
-    #   when :manifest_directory
-    #     manifest_directory = config
-    #   end
-    # else
       LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
       helm_chart = optional_key_as_string(config, "helm_chart")
       helm_directory = optional_key_as_string(config, "helm_directory")
       manifest_directory = optional_key_as_string(config, "manifest_directory")
-    # end
 
     unless CNFManager.exclusive_install_method_tags?(config)
       puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-conformance.yml!".colorize(:red)
