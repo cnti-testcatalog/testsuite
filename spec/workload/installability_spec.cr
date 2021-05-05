@@ -9,7 +9,7 @@ describe CnfConformance do
   end
 
   it "'install_script_helm' should fail if install script does not have helm", tags: ["helm"]  do
-    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf-source/cnf-conformance.yml verbose wait_count=0`
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf-source/cnf-testsuite.yml verbose wait_count=0`
     $?.success?.should be_true
     response_s =  `./cnf-testsuite install_script_helm`
     LOGGING.info response_s
@@ -36,7 +36,7 @@ describe CnfConformance do
   end
 
   it "'helm_chart_valid' should pass on a good helm chart", tags: ["helm"]  do
-    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose wait_count=0`
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose wait_count=0`
     $?.success?.should be_true
     response_s = `./cnf-testsuite helm_chart_valid verbose`
     LOGGING.info response_s
@@ -50,7 +50,7 @@ describe CnfConformance do
     begin
       `./cnf-testsuite sample_coredns_cleanup force=true`
       $?.success?.should be_true
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-bad_helm_coredns-cnf/cnf-conformance.yml verbose wait_count=0`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-bad_helm_coredns-cnf/cnf-testsuite.yml verbose wait_count=0`
       $?.success?.should be_true
       response_s = `./cnf-testsuite helm_chart_valid`
       LOGGING.info response_s
@@ -58,7 +58,7 @@ describe CnfConformance do
       (/Lint Failed/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite bad_helm_cnf_cleanup force=true`
-      `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose wait_count=0`
+      `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose wait_count=0`
     end
   end
 

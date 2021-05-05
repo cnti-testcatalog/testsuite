@@ -9,7 +9,7 @@ Set the KUBECONFIG environment to point to the remote K8s cluster
 
 ### Automated Envoy installation
 
-Run cnf-conformance setup
+Run cnf-testsuite setup
 
 ```
 crystal src/cnf-testsuite.cr setup

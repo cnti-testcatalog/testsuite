@@ -86,7 +86,7 @@ desc "Install Shell Completion: check https://github.com/cncf/cnf-testsuite/blob
 task "completion" do |_|
 
 # assumes bash completion feel free to make a pr for zsh and check an arg for it
-bin_name = "cnf-conformance"
+bin_name = "cnf-testsuite"
 
 completion_template = <<-TEMPLATE
 # to remove

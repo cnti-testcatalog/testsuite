@@ -22,7 +22,7 @@ module ReleaseManager
       LOGGING.info "version: #{version}"
       upsert_version = (version || CnfConformance::VERSION)
       LOGGING.info "upsert_version: #{upsert_version}"
-      # cnf_bin_path = "cnf-conformance"
+      # cnf_bin_path = "cnf-testsuite"
       # cnf_bin_asset_name = "#{cnf_bin_path}"
       cnf_bin_asset_name = "cnf-testsuite"
 
@@ -58,7 +58,7 @@ module ReleaseManager
         # rm_resp = `rm ./cnf-testsuite`
         # LOGGING.info "rm_resp: #{rm_resp}"
         # LOGGING.info "building static binary"
-        # build_resp = `crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"`
+        # build_resp = `crystal build src/cnf-testsuite.cr --release --static --link-flags "-lxml2 -llzma"`
         # LOGGING.info "build_resp: #{build_resp}"
         # the name of the binary asset must be unique across all releases in github for project
         # TODO if upsert version == test then make unique
@@ -141,7 +141,7 @@ TEMPLATE
       #
       # left this code just in case or in case we want to upload other stuff
       #
-      ## source_tarball_name = "cnf-conformance-#{upsert_version}"
+      ## source_tarball_name = "cnf-testsuite-#{upsert_version}"
       ## `git archive -o #{source_tarball_name} --format=tar.gz $(git rev-parse --abbrev-ref HEAD)`
       ## `git archive -o #{source_tarball_name} --format=zip $(git rev-parse --abbrev-ref HEAD)`
 

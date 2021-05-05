@@ -57,7 +57,7 @@ module CNFManager
 
     def self.create_final_results_yml_name
       FileUtils.mkdir_p("results") unless Dir.exists?("results")
-      "results/cnf-conformance-results-" + Time.local.to_s("%Y%m%d-%H%M%S-%L") + ".yml"
+      "results/cnf-testsuite-results-" + Time.local.to_s("%Y%m%d-%H%M%S-%L") + ".yml"
     end
 
     def self.clean_results_yml(verbose=false)
@@ -325,7 +325,7 @@ END
 
     def self.final_cnf_results_yml
       LOGGING.info "final_cnf_results_yml"
-      results_file = `find ./results/* -name "cnf-conformance-results-*.yml"`.split("\n")[-2].gsub("./", "")
+      results_file = `find ./results/* -name "cnf-testsuite-results-*.yml"`.split("\n")[-2].gsub("./", "")
       if results_file.empty?
         raise "No cnf_conformance-results-*.yml found! Did you run the all task?"
       end

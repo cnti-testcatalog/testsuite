@@ -14,14 +14,14 @@ describe "Resilience Network Chaos" do
 
   it "'chaos_network_loss' A 'Good' CNF should not crash when network loss occurs", tags: ["chaos_network_loss"]  do
     begin
-      `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
+      `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
       response_s = `./cnf-testsuite chaos_network_loss verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: Replicas available match desired count after network chaos test/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
+      `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
     end
   end

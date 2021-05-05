@@ -23,9 +23,9 @@ cd # to make sure you are in home dir
 
 ./cnf-testsuite setup
 
-wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-conformance.yml
+wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
 
-./cnf-testsutie cnf_setup cnf-config=./cnf-conformance.yml
+./cnf-testsutie cnf_setup cnf-config=./cnf-testsuite.yml
 ```
 
 

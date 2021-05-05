@@ -5,18 +5,18 @@ require "file_utils"
 # There are two environments, inside of docker and outside of docker
 # Outside of docker
 #  -- You don't need crystal installed
-#  -- You do need the cnf-conformance source (git clone)?
-#    -- The container mounts the cnf-conformance directory
+#  -- You do need the cnf-testsuite source (git clone)?
+#    -- The container mounts the cnf-testsuite directory
 #  -- You do need the ephemeral_env binary
 #    -- pull down from a release
 #    -- binary could be checked in??
 # Inside of docker
 #   -- crystal needs to be installed
-#   -- There are two binaries, ephemeral_env and cnf-conformance
+#   -- There are two binaries, ephemeral_env and cnf-testsuite
 # Are we in a ephemeral_env binary?  Can we tell this from the arguments?
 #  -- if we are in a ephemeral_env binary, use the binary version of the alias command
 #  -- otherwise use the crystal version
-# Is there a cnf-conformance binary? We dont call cnf-conformance binary directly
+# Is there a cnf-testsuite binary? We dont call cnf-testsuite binary directly
 if ARGV[0]? && ARGV[0] == "setup"
 
   bin_path = ""
@@ -46,12 +46,12 @@ if ARGV[0]? && ARGV[0] == "setup"
   end
   if ! bin_path.empty?
     File.write("#{crystal_alias}", "alias crystal='#{bin_path} command alias $@'")
-    File.write("#{cnf_conformance_alias}", "alias cnf-conformance='#{bin_path} command alias binary $@'")
-    puts "A Crystal alias has been created under #{crystal_alias} & #{cnf_conformance_alias} \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n alias crystal='crystal #{bin_path} command alias $@' \n alias cnf-conformance='crystal #{bin_path} command alias binary $@'"
+    File.write("#{cnf_conformance_alias}", "alias cnf-testsuite='#{bin_path} command alias binary $@'")
+    puts "A Crystal alias has been created under #{crystal_alias} & #{cnf_conformance_alias} \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n alias crystal='crystal #{bin_path} command alias $@' \n alias cnf-testsuite='crystal #{bin_path} command alias binary $@'"
   elsif ! crystal_path.empty? && ! source_path.empty?
     File.write("#{crystal_alias}", "alias crystal='#{crystal_path} #{source_path} command alias -- $@'")
-    File.write("#{cnf_conformance_alias}", "alias cnf-conformance='#{crystal_path} #{source_path} command alias binary -- $@'")
-    puts "Crystal aliases has been created under #{crystal_alias} & #{cnf_conformance_alias} \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n alias crystal='#{crystal_path} #{source_path} command alias -- $@' \n alias cnf-conformance='#{crystal_path} #{source_path} command alias binary -- $@'"
+    File.write("#{cnf_conformance_alias}", "alias cnf-testsuite='#{crystal_path} #{source_path} command alias binary -- $@'")
+    puts "Crystal aliases has been created under #{crystal_alias} & #{cnf_conformance_alias} \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n alias crystal='#{crystal_path} #{source_path} command alias -- $@' \n alias cnf-testsuite='#{crystal_path} #{source_path} command alias binary -- $@'"
   else 
     puts "Missing Arguments: [--binary] or [--crystal --source]"
   end
@@ -123,7 +123,7 @@ elsif ARGV[0]? && ARGV[0] == "create_env"
     puts "Required argument missing [-n, --name]"
   else
     puts "Creating ENV For: \n Name: #{env_name} \n Kubeconfig: #{kubeconfig}"
-    `docker run --name #{env_name} --network host -d -e GITHUB_USER=$GITHUB_USER -e GITHUB_TOKEN=$GITHUB_TOKEN -e DOCKERHUB_USERNAME=$DOCKERHUB_USERNAME -e DOCKERHUB_PASSWORD=$DOCKERHUB_PASSWORD -v $(pwd):/cnf-conformance -v #{kubeconfig}:/root/.kube/config -ti cnf-test /bin/sleep infinity`
+    `docker run --name #{env_name} --network host -d -e GITHUB_USER=$GITHUB_USER -e GITHUB_TOKEN=$GITHUB_TOKEN -e DOCKERHUB_USERNAME=$DOCKERHUB_USERNAME -e DOCKERHUB_PASSWORD=$DOCKERHUB_PASSWORD -v $(pwd):/cnf-testsuite -v #{kubeconfig}:/root/.kube/config -ti cnf-test /bin/sleep infinity`
     puts `docker ps -f name=#{env_name}`
   end
 
@@ -196,12 +196,12 @@ elsif ARGV[0]? && ARGV[0] == "command"
     puts "Using Environment: #{ENV["CRYSTAL_DEV_ENV"]}"
     # ./ephemeral_env crystal spec
     # ./ephemeral_env ./cnf-testsuite all 
-    # ./ephemeral_env crystal src/cnf-conformance.cr all 
+    # ./ephemeral_env crystal src/cnf-testsuite.cr all 
     # crystal ephemeral.cr crystal spec
     # crystal ephemeral.cr ./cnf-testsuite all
-    # crystal ephemeral.cr crystal src/cnf-conformance.cr all
+    # crystal ephemeral.cr crystal src/cnf-testsuite.cr all
     # cyrstal spec
-    # cyrstal src/cnf-conformance.cr all
+    # cyrstal src/cnf-testsuite.cr all
     # cyrstal ./cnf-testsuite all
      if binary == true
        system "docker exec -ti #{ENV["CRYSTAL_DEV_ENV"]} ./cnf-testsuite #{execute_command}"

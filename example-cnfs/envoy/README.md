@@ -12,7 +12,7 @@ Set the KUBECONFIG environment to point to the remote K8s cluster
 
 ### Automated Envoy installation
 
-Run cnf-conformance setup
+Run cnf-testsuite setup
 
 ```
 crystal src/cnf-testsuite.cr setup
@@ -21,7 +21,7 @@ crystal src/cnf-testsuite.cr setup
 Add the published helm chart:
 
 ```
-crystal src/cnf-testsuite.cr helm_repo_add  cnf-config=example-cnfs/envoy/cnf-conformance.yml
+crystal src/cnf-testsuite.cr helm_repo_add  cnf-config=example-cnfs/envoy/cnf-testsuite.yml
 ```
 
 Install Envoy

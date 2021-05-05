@@ -12,10 +12,10 @@
 /tools/sonobuoy
 /tools/cluster-api
 admin.conf
-cnf-conformance
+cnf-testsuite
 results.yml
-cnf-conformance-results*
-cnf-conformance.env
+cnf-testsuite-results*
+cnf-testsuite.env
 *.tar
 *.tar*
 reasonable_startup_orig.yml

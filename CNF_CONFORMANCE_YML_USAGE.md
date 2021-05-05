@@ -1,23 +1,23 @@
-# Test Suite Configuration Usage: cnf-conformance.yml
+# Test Suite Configuration Usage: cnf-testsuite.yml
 
 
-#### cnf-conformance.yml Generator Quick Start
+#### cnf-testsuite.yml Generator Quick Start
 Prereqs: You must have kubernetes cluster, curl, and helm 3.1.1 or greater on your system already.
 
-- Generate a cnf-conformance.yml based on a helm chart:  `./cnf-testsuite generate_config config-src=stable/coredns output-file=./cnf-conformance-test.yml`
-- Generate a cnf-conformance.yml based on a helm directory:  `./cnf-testsuite generate_config config-src=<your-helm-directory> output-file=./cnf-conformance-test.yml`
-- Generate a cnf-conformance.yml based on a directory of manifest files:  `./cnf-testsuite generate_config config-src=<your-manifest-directory> output-file=./cnf-conformance-test.yml`
-- Inspect the cnf-conformance.yml file for accuracy
+- Generate a cnf-testsuite.yml based on a helm chart:  `./cnf-testsuite generate_config config-src=stable/coredns output-file=./cnf-testsuite-test.yml`
+- Generate a cnf-testsuite.yml based on a helm directory:  `./cnf-testsuite generate_config config-src=<your-helm-directory> output-file=./cnf-testsuite-test.yml`
+- Generate a cnf-testsuite.yml based on a directory of manifest files:  `./cnf-testsuite generate_config config-src=<your-manifest-directory> output-file=./cnf-testsuite-test.yml`
+- Inspect the cnf-testsuite.yml file for accuracy
 
-### What is the cnf-conformance.yml and why is it required?:
+### What is the cnf-testsuite.yml and why is it required?:
 
-The cnf-conformance.yml is used by the CNF Test Suite to locate a deployed CNF on an existing K8s cluster. If the CNF is not found, it will attempt to deploy the CNF itself according to it's helm chart configuration.
+The cnf-testsuite.yml is used by the CNF Test Suite to locate a deployed CNF on an existing K8s cluster. If the CNF is not found, it will attempt to deploy the CNF itself according to it's helm chart configuration.
 
 This information is also required for running various tests e.g. The 'container_names' are used for finding the name of the CNF containers in the K8s cluster and is then used to run tests like [increase_capacity](src/tasks/workload/scalability.cr#L20) and [decrease_capacity](src/tasks/workload/scalability.cr#L42)
 
 ### Table of Contents
 
-- [Overview](#Overview-of-all-cnf-conformance.yml)
+- [Overview](#Overview-of-all-cnf-testsuite.yml)
 - [Keys and Values](#Keys-and-Values)
   - [helm_directory](#helm_directory)
   - [git_clone_url](#git_clone_url)
@@ -32,14 +32,14 @@ This information is also required for running various tests e.g. The 'container_
   - [helm_chart_container_name](#helm_chart_container_name)
   - [allowlist_helm_chart_container_names](#allowlist_helm_chart_container_names)
   - [container_names](#container_names)
-- [Creating Your Own cnf-conformance.yml](#creating-your-own-cnf-conformanceyml)
+- [Creating Your Own cnf-testsuite.yml](#creating-your-own-cnf-testsuiteyml)
 - [Setup and Configuration](#Setup-and-Configuration)
 - [Quick Setup and Config Reference Steps](#Quick-Setup-and-Config-Reference-Steps)
 - [Using a Private Registry](#Using-a-Private-Registry)
 
-### Overview of all cnf-conformance.yml
+### Overview of all cnf-testsuite.yml
 
-The following is a basic example cnf-conformance.yml file that can be found in the cnf-testsuite respository: [cnf-conformance.example.yml](https://github.com/cncf/cnf-testsuite/blob/develop/cnf-conformance.example.yml)
+The following is a basic example cnf-testsuite.yml file that can be found in the cnf-testsuite respository: [cnf-testsuite.example.yml](https://github.com/cncf/cnf-testsuite/blob/develop/cnf-testsuite.example.yml)
 
 ```yaml=
 ---
@@ -63,13 +63,13 @@ container_names: #[LIST_OF_CONTAINERS_NAMES_AND_VERSION_UPGRADE_TAGS]
 
 #### helm_directory
 
-This is the path to the helm chart directory (relative to the location of the cnf-conformance.yml). This or [helm_chart](#helm_chart) must be set, but only one **(mutually exclusive)**.
+This is the path to the helm chart directory (relative to the location of the cnf-testsuite.yml). This or [helm_chart](#helm_chart) must be set, but only one **(mutually exclusive)**.
 
 Used for doing static tests on the helm chart code e.g. searching for Hardcoded IPs.
 
 An example of a helm chart source directory can be found [here](https://github.com/helm/charts/tree/master/stable/coredns).
 
-The PATH is also relative to the location of the cnf-conformance.yml. So if the cnf-conformance.yml in the directory `cnfs/coredns/cnf-conformance.yml` and helm_directory is set to `helm_directory: coredns` the test suite would expect to find the chart under [`cnfs/coredns/coredns`](https://github.com/helm/charts/tree/master/stable/coredns)
+The PATH is also relative to the location of the cnf-testsuite.yml. So if the cnf-testsuite.yml in the directory `cnfs/coredns/cnf-testsuite.yml` and helm_directory is set to `helm_directory: coredns` the test suite would expect to find the chart under [`cnfs/coredns/coredns`](https://github.com/helm/charts/tree/master/stable/coredns)
 
 Example Setting:
 
@@ -91,7 +91,7 @@ _Note: The install of the CNF from a helm chart will always test the helm chart 
 
 This is the location of additional scripts used to install the CNF being tested. (Optional)
 
-Path to a script used for installing the CNF (relative to the location of the cnf-conformance.yml). This is used by the CNF-Conformance suite to install the CNF if a wrapper around helm is used or helm isn't used at all. If left blank, the CNF will be installed using the helm_chart value.
+Path to a script used for installing the CNF (relative to the location of the cnf-testsuite.yml). This is used by the CNF-Conformance suite to install the CNF if a wrapper around helm is used or helm isn't used at all. If left blank, the CNF will be installed using the helm_chart value.
 
 Example setting:
 
@@ -206,20 +206,20 @@ container_names: #[LIST_OF_CONTAINERS_NAMES_AND_VERSION_UPGRADE_TAGS]
 
 This value is used to test the upgradeability of each container image. The image tag version should be a minor version that will be used in conjunction with the kubnetes rollout feature.
 
-### Creating Your Own cnf-conformance.yml
+### Creating Your Own cnf-testsuite.yml
 
-- Create a Conformance configuration file called `cnf-conformance.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`)
-  - See example config (See [latest example in repo](https://github.com/cncf/cnf-testsuite/blob/main/cnf-conformance.example.yml)):
-    - Optionally, copy the example configuration file, [`cnf-conformance-example.yml`](cnf-conformance.example.yml), and modify appropriately
-- (Optional) Setup your CNF for testing and deploy it to the cluster by running `cnf-conformance cnf_setup cnf-config=path_to_your/cnf_folder`
+- Create a Conformance configuration file called `cnf-testsuite.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-testsuite.yml`)
+  - See example config (See [latest example in repo](https://github.com/cncf/cnf-testsuite/blob/main/cnf-testsuite.example.yml)):
+    - Optionally, copy the example configuration file, [`cnf-testsuite-example.yml`](cnf-testsuite.example.yml), and modify appropriately
+- (Optional) Setup your CNF for testing and deploy it to the cluster by running `cnf-testsuite cnf_setup cnf-config=path_to_your/cnf_folder`
   - _NOTE: if you do not want to automatically deploy the using the helm chart defined in the configuration then you MUST pass `deploy_with_chart=false` to the `cnf_setup` command._
-  - _NOTE: you can pass the path to your cnf-conformance.yml to the 'all' command which will install the CNF for you (see below)_
+  - _NOTE: you can pass the path to your cnf-testsuite.yml to the 'all' command which will install the CNF for you (see below)_
 
-A configuration file called `cnf-conformance.yml` needs to be created for each CNF you want to test (eg. `cnfs/my_ipsec_cnf/cnf-conformance.yml`).
+A configuration file called `cnf-testsuite.yml` needs to be created for each CNF you want to test (eg. `cnfs/my_ipsec_cnf/cnf-testsuite.yml`).
 
-You can start by copying an example cnf-conformance.yml or copy and paste the below to get started and then filling our the appropriate values:
+You can start by copying an example cnf-testsuite.yml or copy and paste the below to get started and then filling our the appropriate values:
 
-The [`cnf-conformance.yml`](cnf-conformance.example.yml) file can be used (included in source code or below):
+The [`cnf-testsuite.yml`](cnf-testsuite.example.yml) file can be used (included in source code or below):
 
 ```yaml=
 ---
@@ -235,7 +235,7 @@ container_names:
   rolling_update_test_tag: <image-tag-version2>
 ```
 
-Below is a fully working example CoreDNS cnf-conformance.yml that tests CoreDNS by installing via helm from a helm repository as a reference:
+Below is a fully working example CoreDNS cnf-testsuite.yml that tests CoreDNS by installing via helm from a helm repository as a reference:
 
 ```yaml=
 ---
@@ -265,7 +265,7 @@ container_names:
 
 ### Setup and Configuration
 
-Now that you have your own CNF with a cnf-conformance.yml, you should be now be able to setup and run the suite against it.
+Now that you have your own CNF with a cnf-testsuite.yml, you should be now be able to setup and run the suite against it.
 
 #### Quick Setup and Config Reference Steps
 
@@ -299,7 +299,7 @@ This assumes you have already followed [INSTALL](INSTALL.md) and or [SOURCE-INST
 
 To setup and use a private registry if you are not pulling images from a public repository like Docker Hub, this is the current method to specify a private registry with username and password to pull down images used for the test suite.
 
-You can pass this information directly in the `cnf-conformance.yml` under the `release_name` setting:
+You can pass this information directly in the `cnf-testsuite.yml` under the `release_name` setting:
 
 Example usage:
 

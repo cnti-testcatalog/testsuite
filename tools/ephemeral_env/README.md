@@ -1,8 +1,8 @@
 ## Ephemeral Development Environment
 
-The Ephemeral Developement Environment is a developer environment that allows the user to contribute to the cnf-conformance project without having crystall lang installed on the developer's host machine. The enviroment consists of a docker container which has the correct version of crystal lang for cnf-conformance development installed.
+The Ephemeral Developement Environment is a developer environment that allows the user to contribute to the cnf-testsuite project without having crystall lang installed on the developer's host machine. The enviroment consists of a docker container which has the correct version of crystal lang for cnf-testsuite development installed.
 
-The enviroment is designed to be seamless and invisible to the developer. It takes the regular crystal commands and passes them into the docker environment. It also has intelligent integration with the cnf-conformance binary.
+The enviroment is designed to be seamless and invisible to the developer. It takes the regular crystal commands and passes them into the docker environment. It also has intelligent integration with the cnf-testsuite binary.
 
 ## Quickstart
 
@@ -17,10 +17,10 @@ Prereqs: [Kind Install](../../KIND-INSTALL.md)
 crystal build tools/ephemeral_env/ephemeral_env.cr
 ```
 
-- OPTIONAL: build the cnf-conformance binary with static build (to avoid shared object file errors)
+- OPTIONAL: build the cnf-testsuite binary with static build (to avoid shared object file errors)
 
 ```
-crystal build src/cnf-conformance.cr --release --static --link-flags "-lxml2 -llzma"
+crystal build src/cnf-testsuite.cr --release --static --link-flags "-lxml2 -llzma"
 ```
 
 2. Setup the environment based on your binary
@@ -40,14 +40,14 @@ crystal tools/ephemeral_env/ephemeral_env.cr -- setup -c /usr/bin/crystal --sour
 
 ```
  alias crystal='/usr/bin/crystal tools/ephemeral_env/ephemeral_env.cr command alias -- $@'
- alias cnf-conformance='/usr/bin/crystal tools/ephemeral_env/ephemeral_env.cr command alias binary -- $@'
+ alias cnf-testsuite='/usr/bin/crystal tools/ephemeral_env/ephemeral_env.cr command alias binary -- $@'
 ```
 
 - OPTIONAL: to restart the setup process, unalias first
 
 ```
 unalias crystal
-unalias cnf-conformance
+unalias cnf-testsuite
 ```
 
 4.  List the enviroments
@@ -71,8 +71,8 @@ export CRYSTAL_DEV_ENV=<ENVNAMEFROMSTEP4ORSTEP5>
 7. OPTIONAL: Install a sample cnf and run a series of tests
 
 ```
-crystal src/cnf-conformance.cr sample_coredns_setup
-crystal src/cnf-conformance.cr installability verbose
+crystal src/cnf-testsuite.cr sample_coredns_setup
+crystal src/cnf-testsuite.cr installability verbose
 ```
 
 ## Extended Usage

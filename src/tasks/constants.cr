@@ -2,7 +2,7 @@ require "./utils/system_information/helm.cr"
 require "./utils/embedded_file_manager.cr"
 
 CNF_DIR = "cnfs"
-CONFIG_FILE = "cnf-conformance.yml"
+CONFIG_FILE = "cnf-testsuite.yml"
 TOOLS_DIR = "tools"
 BASE_CONFIG = "./config.yml"
 PASSED = "passed"

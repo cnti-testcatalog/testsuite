@@ -31,8 +31,8 @@ helm install coredns stable/coredns
 ```
 helm pull stable/coredns
 ```
-### Example cnf-conformance config file for sample-core-dns-cnf
-In ./cnfs/sample-core-dns-cnf/cnf-conformance.yml
+### Example cnf-testsuite config file for sample-core-dns-cnf
+In ./cnfs/sample-core-dns-cnf/cnf-testsuite.yml
 ```
 ---
 container_names: [coredns-coredns] 

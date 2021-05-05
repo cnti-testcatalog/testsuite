@@ -15,7 +15,7 @@ task "samples_cleanup", ["sample_coredns_cleanup", "cleanup_sample_coredns", "ba
   else
     force = false
   end
-  #TODO use all_cnfs_task_runner to clean up all cnfs in the cnfs folder that have a cnf-conformance yml
+  #TODO use all_cnfs_task_runner to clean up all cnfs in the cnfs folder that have a cnf-testsuite yml
   `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf`
   `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-deploy-repo`
   `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-repo`

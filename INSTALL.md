@@ -180,11 +180,11 @@ Now cnf-testsuite is setup, we're ready to configure it to point at a CNF to tes
 - If you want to use an example CNF, you can download our CoreDNS example CNF by doing the following:
 
 ```
-wget -O cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-conformance.yml
+wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
 ```
 - The wget gets a working config file, now tell cnf-testsuite to use it by doing the following:
 ```
-cnf-testsuite cnf_setup cnf-config=./cnf-conformance.yml
+cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
 ```
 
 - There are other examples in the [examples-cnfs](https://github.com/cncf/cnf-testsuite/tree/master/example-cnfs) directory that can be used for testing as well.
@@ -193,10 +193,10 @@ cnf-testsuite cnf_setup cnf-config=./cnf-conformance.yml
 
 If you've brought your own CNF to test, review the [CNF_CONFORMANCE_YML_USAGE.md](CNF_CONFORMANCE_YML_USAGE.md) document on formatting and other requirements.
 
-If you've followed the [CNF_CONFORMANCE_YML_USAGE.md](CNF_CONFORMANCE_YML_USAGE.md) guide and have your cnf-conformance.yml ready, you can run the same command we ran for the example CNF to set it up:
+If you've followed the [CNF_CONFORMANCE_YML_USAGE.md](CNF_CONFORMANCE_YML_USAGE.md) guide and have your cnf-testsuite.yml ready, you can run the same command we ran for the example CNF to set it up:
 
 ```
-cnf-testsuite cnf_setup cnf-config=./cnf-conformance.yml
+cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
 ```
 
 ### Running cnf-testsuite for the first time
@@ -225,15 +225,15 @@ cnf-testsuite platform
 In the console where the test suite runs:
 - PASSED or FAILED will be displayed for the tests
 
-A test log file, eg. `cnf-conformance-results-20201216.txt`, will be created which lists PASS or FAIL for every test based on the date.
+A test log file, eg. `cnf-testsuite-results-20201216.txt`, will be created which lists PASS or FAIL for every test based on the date.
 
 For more details on points, see our [POINTS.md](./POINTS.md) documentation.
 
 #### Cleaning Up
 
-Run the following to cleanup the specific cnf-testsuite test (this is assuming you installed the cnf-conformance.yml in your present working directory):
+Run the following to cleanup the specific cnf-testsuite test (this is assuming you installed the cnf-testsuite.yml in your present working directory):
 ```
-cnf-testsuite cnf_cleanup cnf-config=./cnf-conformance.yml
+cnf-testsuite cnf_cleanup cnf-config=./cnf-testsuite.yml
 ```
 You can also run `cleanall` and cnf-testsuite will attempt to cleanup everything.
 
