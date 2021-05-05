@@ -1,5 +1,14 @@
 # Test Suite Configuration Usage: cnf-conformance.yml
 
+
+#### cnf-conformance.yml Generator Quick Start
+Prereqs: You must have kubernetes cluster, curl, and helm 3.1.1 or greater on your system already.
+
+- Generate a cnf-conformance.yml based on a helm chart:  `./cnf-testsuite generate_config config-src=stable/coredns output-file=./cnf-conformance-test.yml`
+- Generate a cnf-conformance.yml based on a helm directory:  `./cnf-testsuite generate_config config-src=<your-helm-directory> output-file=./cnf-conformance-test.yml`
+- Generate a cnf-conformance.yml based on a directory of manifest files:  `./cnf-testsuite generate_config config-src=<your-manifest-directory> output-file=./cnf-conformance-test.yml`
+- Inspect the cnf-conformance.yml file for accuracy
+
 ### What is the cnf-conformance.yml and why is it required?:
 
 The cnf-conformance.yml is used by the CNF Test Suite to locate a deployed CNF on an existing K8s cluster. If the CNF is not found, it will attempt to deploy the CNF itself according to it's helm chart configuration.
