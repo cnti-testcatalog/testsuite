@@ -49,7 +49,7 @@ NOTE: you can enable higher logging level output via the command line or env var
 ./cnf-testsuite -l debug test
 
 # make sure to use -- if running from source
-crystal src/cnf-conformance.cr -- -l debug test
+crystal src/cnf-testsuite.cr -- -l debug test
 
 # env var
 LOGLEVEL=DEBUG ./cnf-testsuite test
@@ -58,7 +58,7 @@ LOGLEVEL=DEBUG ./cnf-testsuite test
 Also setting the verbose option for many tasks will add extra output to help with debugging
 
 ```
-crystal src/cnf-conformance.cr test_name verbose
+crystal src/cnf-testsuite.cr test_name verbose
 ```
 
 Check [usage documentation](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md) for more info about invoking commands and logging

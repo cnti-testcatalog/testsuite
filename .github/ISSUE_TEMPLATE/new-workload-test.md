@@ -16,7 +16,7 @@ assignees: ""
 
 **Test Category**
 
-- ADD CATEGORY_NAME (e.g. Statelessness, Security, etc from [README](https://github.com/cncf/cnf-testsuite/blob/main/README.md#cnf-conformance))
+- ADD CATEGORY_NAME (e.g. Statelessness, Security, etc from [README](https://github.com/cncf/cnf-testsuite/blob/main/README.md#cnf-testsuite))
 
 **Type of test (static or runtime)**
 
