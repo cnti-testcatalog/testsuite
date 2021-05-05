@@ -60,7 +60,7 @@ task "liveness" do |_, args|
     VERBOSE_LOGGING.info "liveness" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     resp = ""
-    emoji_probe="🧫"
+    emoji_probe="⎈🧫"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
       begin
@@ -91,7 +91,7 @@ task "readiness" do |_, args|
     VERBOSE_LOGGING.info "readiness" if check_verbose(args)
     # Parse the cnf-conformance.yml
     resp = ""
-    emoji_probe="🧫"
+    emoji_probe="⎈🧫"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
       begin
