@@ -2,7 +2,7 @@
 
 
 #### cnf-conformance.yml Generator Quick Start
-Prereqs: kubernetes cluster, curl, helm 3.1.1 or greater on your system already.
+Prereqs: You must have kubernetes cluster, curl, and helm 3.1.1 or greater on your system already.
 
 - Generate a cnf-conformance.yml based on a helm chart:  `./cnf-testsuite generate_config config-src=stable/coredns output-file=./cnf-conformance-test.yml`
 - Generate a cnf-conformance.yml based on a helm directory:  `./cnf-testsuite generate_config config-src=<your-helm-directory> output-file=./cnf-conformance-test.yml`
