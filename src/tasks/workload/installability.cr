@@ -23,6 +23,7 @@ task "helm_deploy" do |_, args|
   if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
     CNFManager::Task.task_runner(args) do |args, config|
       
+      emoji_helm_deploy="⎈🚀"
       helm_chart = config.cnf_config[:helm_chart]
       helm_directory = config.cnf_config[:helm_directory]
       release_name = config.cnf_config[:release_name]
@@ -32,9 +33,9 @@ task "helm_deploy" do |_, args|
       helm_used = configmap["data"].as_h["helm_used"].as_s
 
       if helm_used == "true" 
-        upsert_passed_task("helm_deploy", "✔️  PASSED: Helm deploy successful")
+        upsert_passed_task("helm_deploy", "✔️  PASSED: Helm deploy successful #{emoji_helm_deploy}")
       else
-        upsert_failed_task("helm_deploy", "✖️  FAILED: Helm deploy failed")
+        upsert_failed_task("helm_deploy", "✖️  FAILED: Helm deploy failed #{emoji_helm_deploy}")
       end
     end
   else
@@ -46,7 +47,8 @@ desc "Does the install script use helm?"
 task "install_script_helm" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-
+    
+    emoji_helm_script="⎈📦"
     found = 0
     # destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
     # install_script = config.get("install_script").as_s?
@@ -65,9 +67,9 @@ task "install_script_helm" do |_, args|
         found = 1
       end
       if found < 1
-        upsert_failed_task("install_script_helm", "✖️  FAILED: Helm not found in supplied install script")
+        upsert_failed_task("install_script_helm", "✖️  FAILED: Helm not found in supplied install script #{emoji_helm_script}")
       else
-        upsert_passed_task("install_script_helm", "✔️  PASSED: Helm found in supplied install script")
+        upsert_passed_task("install_script_helm", "✔️  PASSED: Helm found in supplied install script #{emoji_helm_script}")
       end
     else
       upsert_passed_task("install_script_helm", "✔️  PASSED (by default): No install script provided")
@@ -85,7 +87,7 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
     # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
     # helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_chart = config.cnf_config[:helm_chart]
-
+    emoji_published_helm_chart="⎈📦🌐"
     current_dir = FileUtils.pwd
     helm = CNFSingleton.helm
     VERBOSE_LOGGING.debug helm if check_verbose(args)
@@ -96,15 +98,15 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
         LOGGING.info "helm search command: #{helm} search repo #{helm_chart}"
         VERBOSE_LOGGING.debug "#{helm_search}" if check_verbose(args)
         unless helm_search =~ /No results found/
-          upsert_passed_task("helm_chart_published", "✔️  PASSED: Published Helm Chart Found")
+          upsert_passed_task("helm_chart_published", "✔️  PASSED: Published Helm Chart Found #{emoji_published_helm_chart}")
         else
-          upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found")
+          upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found #{emoji_published_helm_chart}")
         end
       else
-        upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found")
+        upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found #{emoji_published_helm_chart}")
       end
     else
-      upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found")
+      upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found #{emoji_published_helm_chart}")
     end
   end
 end
@@ -135,6 +137,7 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     current_dir = FileUtils.pwd
     VERBOSE_LOGGING.debug current_dir if check_verbose(args)
     helm = CNFSingleton.helm
+    emoji_helm_lint="⎈📝☑️"
 
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
 
@@ -142,9 +145,9 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     VERBOSE_LOGGING.debug "helm_lint: #{helm_lint}" if check_verbose(args)
 
     if $?.success?
-      upsert_passed_task("helm_chart_valid", "✔️  PASSED: Helm Chart #{working_chart_directory} Lint Passed")
+      upsert_passed_task("helm_chart_valid", "✔️  PASSED: Helm Chart #{working_chart_directory} Lint Passed #{emoji_helm_lint}")
     else
-      upsert_failed_task("helm_chart_valid", "✖️  FAILED: Helm Chart #{working_chart_directory} Lint Failed")
+      upsert_failed_task("helm_chart_valid", "✖️  FAILED: Helm Chart #{working_chart_directory} Lint Failed #{emoji_helm_lint}")
     end
   end
 end
