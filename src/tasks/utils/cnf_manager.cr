@@ -9,8 +9,56 @@ require "uuid"
 require "./points.cr"
 require "./task.cr"
 require "./config.cr"
+require "./generate_config.cr"
 
 module CNFManager
+
+
+  # TODO: figure out recursively check for unmapped json and warn on that
+  # https://github.com/Nicolab/crystal-validator#check
+  def self.validate_cnf_conformance_yml(config)
+    ccyt_validator = nil
+    valid = true
+
+    begin
+      ccyt_validator = CnfConformanceYmlType.from_json(config.settings.to_json)
+    rescue ex
+      valid = false
+      LOGGING.error "✖ ERROR: cnf_conformance.yml field validation error.".colorize(:red)
+      LOGGING.error " please check info in the the field name near the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
+      LOGGING.error ex.message
+      ex.backtrace.each do |x|
+        LOGGING.error x
+      end
+    end
+
+    unmapped_keys_warning_msg = "WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator".colorize(:yellow)
+    unmapped_subkeys_warning_msg = "WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_conformance.yml".colorize(:yellow)
+
+
+    if ccyt_validator && !ccyt_validator.try &.json_unmapped.empty?
+      warning_output = [unmapped_keys_warning_msg] of String | Colorize::Object(String)
+      warning_output.push(ccyt_validator.try &.json_unmapped.to_s)
+      if warning_output.size > 1
+        LOGGING.warn warning_output.join("\n")
+      end
+    end
+
+    #TODO Differentiate between unmapped subkeys or unset top level key.
+    if ccyt_validator && !ccyt_validator.try &.helm_repository.try &.json_unmapped.empty?
+      root = {} of String => (Hash(String, JSON::Any) | Nil)
+      root["helm_repository"] = ccyt_validator.try &.helm_repository.try &.json_unmapped
+
+      warning_output = [unmapped_subkeys_warning_msg] of String | Colorize::Object(String)
+      warning_output.push(root.to_s)
+      if warning_output.size > 1
+        LOGGING.warn warning_output.join("\n")
+      end
+    end
+
+    { valid, warning_output }
+  end
+
 
   # Applies a block to each cnf resource
   #
@@ -24,6 +72,9 @@ module CNFManager
     helm_chart_path = config.cnf_config[:helm_chart_path]
     manifest_file_path = config.cnf_config[:manifest_file_path]
     test_passed = true
+
+    ##################
+    # TODO extract exporting of manifest yml into separate function 
     if release_name.empty? # no helm chart
       template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
     else
@@ -33,11 +84,17 @@ module CNFManager
       template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
     end
     resource_ymls = Helm.all_workload_resources(template_ymls)
+    # TODO call export manifest and get the resource ymls
 		resource_resp = resource_ymls.map do | resource |
       resp = yield resource
       LOGGING.debug "cnf_workload_resource yield resp: #{resp}"
       resp
     end
+    ###############
+
+
+
+
     resource_resp
   end
 
@@ -157,6 +214,7 @@ module CNFManager
     return config
   end
 
+  # if passed a directory, adds cnf-conformance.yml to the string
   def self.ensure_cnf_conformance_yml_path(path : String)
     LOGGING.info("ensure_cnf_conformance_yml_path")
     if path_has_yml?(path)
@@ -212,19 +270,21 @@ module CNFManager
     end
   end
 
+
   #Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
-  def self.cnf_installation_method(config)
+  def self.cnf_installation_method(config, config_src=false)
     LOGGING.info "cnf_installation_method"
     LOGGING.info "cnf_installation_method config: #{config}"
-    LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
-    helm_chart = optional_key_as_string(config, "helm_chart")
-    helm_directory = optional_key_as_string(config, "helm_directory")
-    manifest_directory = optional_key_as_string(config, "manifest_directory")
+      LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
+      helm_chart = optional_key_as_string(config, "helm_chart")
+      helm_directory = optional_key_as_string(config, "helm_directory")
+      manifest_directory = optional_key_as_string(config, "manifest_directory")
 
     unless CNFManager.exclusive_install_method_tags?(config)
       puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-conformance.yml!".colorize(:red)
       exit 1
     end
+
     if !helm_chart.empty?
       {:helm_chart, helm_chart}
     elsif !helm_directory.empty?
@@ -259,10 +319,13 @@ module CNFManager
     hth["NAME"]
   end
 
+
   def self.generate_and_set_release_name(config_yml_path)
     LOGGING.info "generate_and_set_release_name"
+
     yml_file = CNFManager.ensure_cnf_conformance_yml_path(config_yml_path)
     yml_path = CNFManager.ensure_cnf_conformance_dir(config_yml_path)
+
     config = CNFManager.parsed_config_file(yml_file)
 
     predefined_release_name = optional_key_as_string(config, "release_name")
@@ -639,49 +702,5 @@ end
   #   unmapped_stuff
   # end
 
-  # TODO: figure out recursively check for unmapped json and warn on that
-  # https://github.com/Nicolab/crystal-validator#check
-  def self.validate_cnf_conformance_yml(config)
-    ccyt_validator = nil
-    valid = true
-
-    begin
-      ccyt_validator = CnfConformanceYmlType.from_json(config.settings.to_json)
-    rescue ex
-      valid = false
-      LOGGING.error "✖ ERROR: cnf_conformance.yml field validation error.".colorize(:red)
-      LOGGING.error " please check info in the the field name near the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
-      LOGGING.error ex.message
-      ex.backtrace.each do |x|
-        LOGGING.error x
-      end
-    end
-
-    unmapped_keys_warning_msg = "WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator".colorize(:yellow)
-    unmapped_subkeys_warning_msg = "WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_conformance.yml".colorize(:yellow)
-
-
-    if ccyt_validator && !ccyt_validator.try &.json_unmapped.empty?
-      warning_output = [unmapped_keys_warning_msg] of String | Colorize::Object(String)
-      warning_output.push(ccyt_validator.try &.json_unmapped.to_s)
-      if warning_output.size > 1
-        LOGGING.warn warning_output.join("\n")
-      end
-    end
-
-    #TODO Differentiate between unmapped subkeys or unset top level key.
-    if ccyt_validator && !ccyt_validator.try &.helm_repository.try &.json_unmapped.empty?
-      root = {} of String => (Hash(String, JSON::Any) | Nil)
-      root["helm_repository"] = ccyt_validator.try &.helm_repository.try &.json_unmapped
-
-      warning_output = [unmapped_subkeys_warning_msg] of String | Colorize::Object(String)
-      warning_output.push(root.to_s)
-      if warning_output.size > 1
-        LOGGING.warn warning_output.join("\n")
-      end
-    end
-
-    { valid, warning_output }
-  end
 
 end

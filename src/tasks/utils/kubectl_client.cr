@@ -108,6 +108,16 @@ module KubectlClient
       # {status: status, output: output, error: stderr}
       apply_status = $?.success?
     end
+    def self.validate(file_name) : Bool
+      LOGGING.info "apply file: #{file_name}"
+      status = Process.run("kubectl apply --validate=true --dry-run=client -f #{file_name}",
+                           shell: true,
+                           output: output = IO::Memory.new,
+                           error: stderr = IO::Memory.new)
+      LOGGING.info "KubectlClient.apply output: #{output.to_s}"
+      LOGGING.info "KubectlClient.apply stderr: #{stderr.to_s}"
+      apply_status = $?.success?
+    end
   end
   module Delete
     def self.file(file_name)

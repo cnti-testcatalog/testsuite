@@ -11,7 +11,8 @@ module Helm
 
   # Utilities for manifest files that are not templates or have been converted already
   module Manifest
-    def self.parse_manifest_as_ymls(template_file_name)
+    def self.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
+      LOGGING.info "parse_manifest_as_ymls template_file_name: #{template_file_name}"
       templates = File.read(template_file_name)
       split_template = templates.split("---")
       ymls = split_template.map { | template |
@@ -45,6 +46,10 @@ module Helm
         [] of String
       end
     end
+    def self.manifest_containers(manifest_yml)
+      LOGGING.debug "manifest_containers: #{manifest_yml}"
+      manifest_yml.dig?("spec", "template", "spec", "containers")
+    end
   end
 
 
@@ -54,6 +59,8 @@ module Helm
     LOGGING.debug "generate_manifest_from_templates"
     helm = CNFSingleton.helm
     LOGGING.info "Helm::generate_manifest_from_templates command: #{helm} template #{release_name} #{helm_chart} > #{output_file}"
+    #TODO use Process here
+    # Helm template works with either a chart or a directory
     template_resp = `#{helm} template #{release_name} #{helm_chart} > #{output_file}`
     LOGGING.info "template_resp: #{template_resp}"
     [$?.success?, output_file]
