@@ -50,17 +50,17 @@ task "ensure_cnf_installed" do |_, args|
 end
 
 task "version" do |_, args|
-  LOGGING.info "VERSION: #{CnfConformance::VERSION}"
-  puts "CNF Conformance version: #{CnfConformance::VERSION}".colorize(:green)
+  LOGGING.info "VERSION: #{CnfTestSuite::VERSION}"
+  puts "CNF Conformance version: #{CnfTestSuite::VERSION}".colorize(:green)
 end
 
 task "upsert_release" do |_, args|
-  LOGGING.info "upserting release on: #{CnfConformance::VERSION}"
+  LOGGING.info "upserting release on: #{CnfTestSuite::VERSION}"
   release, asset = ReleaseManager::GithubReleaseManager.upsert_release
   if release
-    puts "Created a release for: #{CnfConformance::VERSION}".colorize(:green)
+    puts "Created a release for: #{CnfTestSuite::VERSION}".colorize(:green)
   else
-    puts "Not creating a release for: #{CnfConformance::VERSION}".colorize(:red)
+    puts "Not creating a release for: #{CnfTestSuite::VERSION}".colorize(:red)
   end
 end
 

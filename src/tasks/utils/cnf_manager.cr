@@ -21,11 +21,11 @@ module CNFManager
     valid = true
 
     begin
-      ccyt_validator = CnfConformanceYmlType.from_json(config.settings.to_json)
+      ccyt_validator = CnfTestSuiteYmlType.from_json(config.settings.to_json)
     rescue ex
       valid = false
       LOGGING.error "✖ ERROR: cnf_conformance.yml field validation error.".colorize(:red)
-      LOGGING.error " please check info in the the field name near the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
+      LOGGING.error " please check info in the the field name near the text 'CnfTestSuiteYmlType#' in the error below".colorize(:red)
       LOGGING.error ex.message
       ex.backtrace.each do |x|
         LOGGING.error x

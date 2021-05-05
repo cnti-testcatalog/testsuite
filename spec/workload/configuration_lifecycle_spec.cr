@@ -2,7 +2,7 @@ require "../spec_helper"
 require "../../src/tasks/utils/kubectl_client.cr"
 require "colorize"
 
-describe CnfConformance do
+describe CnfTestSuite do
   before_all do
     LOGGING.debug `pwd`
     LOGGING.debug `echo $KUBECONFIG`

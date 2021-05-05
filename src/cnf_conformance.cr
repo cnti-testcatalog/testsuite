@@ -1,4 +1,4 @@
 require "./tasks/utils/utils.cr"
-module CnfConformance
+module CnfTestSuite
   ReleaseManager::CompileTimeVersionGenerater.tagged_version
 end

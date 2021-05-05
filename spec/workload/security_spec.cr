@@ -2,7 +2,7 @@ require "../spec_helper"
 require "colorize"
 require "../../src/tasks/utils/utils.cr"
 
-describe CnfConformance do
+describe CnfTestSuite do
   before_all do
     # LOGGING.debug `pwd` 
     # LOGGING.debug `echo $KUBECONFIG`

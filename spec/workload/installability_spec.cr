@@ -1,7 +1,7 @@
 require "../spec_helper"
 require "colorize"
 
-describe CnfConformance do
+describe CnfTestSuite do
   before_all do
     `./cnf-testsuite samples_cleanup`
     $?.success?.should be_true

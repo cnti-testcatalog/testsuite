@@ -12,7 +12,7 @@ require "json"
 # and generate new types
 
 # https://crystal-lang.org/api/0.34.0/JSON/Serializable.html
-class CnfConformanceYmlType
+class CnfTestSuiteYmlType
   include JSON::Serializable
   include JSON::Serializable::Unmapped
 

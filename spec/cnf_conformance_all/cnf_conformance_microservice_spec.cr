@@ -2,7 +2,7 @@ require "../spec_helper"
 require "../../src/tasks/utils/utils.cr"
 require "colorize"
 
-describe CnfConformance do
+describe CnfTestSuite do
   before_all do
     `./cnf-testsuite setup`
     $?.success?.should be_true
