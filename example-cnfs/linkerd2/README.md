@@ -21,7 +21,7 @@ Install linkerd
 crystal src/cnf-testsuite.cr cnf_setup cnf-path=example-cnfs/linkerd
 ```
 
-Run the conformance suite:
+Run the test suite:
 
 ```
 crystal src/cnf-testsuite.cr all

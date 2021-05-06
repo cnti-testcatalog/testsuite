@@ -1,4 +1,4 @@
-CNF-CONFORMANCE Points Usage
+CNF-TESTSUITE Points Usage
 ---
 ### Overview
 This will detail the points scored for cnf-testsuite.

@@ -156,7 +156,7 @@ export DOCKERHUB_USERNAME=<USERNAME>
 export DOCKERHUB_PASSWORD=<PASSWORD>
 ```
 
-Please refer to the [CNF_CONFORMANCE_YML_USAGE.md](CNF_CONFORMANCE_YML_USAGE.md#Using-a-Private-Registry) for details on using a private registry.
+Please refer to the [CNF_TESTSUITE_YML_USAGE.md](CNF_TESTSUITE_YML_USAGE.md#Using-a-Private-Registry) for details on using a private registry.
 
 
 <details><summary>Install Tab Completion for cnf-testsuite (Optional)</summary>
@@ -191,9 +191,9 @@ cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
 
 #### Bring Your Own CNF
 
-If you've brought your own CNF to test, review the [CNF_CONFORMANCE_YML_USAGE.md](CNF_CONFORMANCE_YML_USAGE.md) document on formatting and other requirements.
+If you've brought your own CNF to test, review the [CNF_TESTSUITE_YML_USAGE.md](CNF_TESTSUITE_YML_USAGE.md) document on formatting and other requirements.
 
-If you've followed the [CNF_CONFORMANCE_YML_USAGE.md](CNF_CONFORMANCE_YML_USAGE.md) guide and have your cnf-testsuite.yml ready, you can run the same command we ran for the example CNF to set it up:
+If you've followed the [CNF_TESTSUITE_YML_USAGE.md](CNF_TESTSUITE_YML_USAGE.md) guide and have your cnf-testsuite.yml ready, you can run the same command we ran for the example CNF to set it up:
 
 ```
 cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml

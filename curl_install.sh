@@ -30,7 +30,7 @@ get_latest_release() {
         sed -E 's/.*"([^"]+)".*/\1/'                                    # Pluck JSON value
 }
 
-# Install CNF-Conformance
+# Install CNF-TestSuite
 LATEST_RELEASE=$(get_latest_release cncf/cnf-testsuite)
 mkdir -p ~/.cnf-testsuite
 curl -L https://github.com/cncf/cnf-testsuite/releases/download/$LATEST_RELEASE/cnf-testsuite-$LATEST_RELEASE.tar.gz -o ~/.cnf-testsuite/cnf-testsuite.tar.gz

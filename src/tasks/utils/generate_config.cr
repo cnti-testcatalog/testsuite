@@ -1,6 +1,6 @@
 require "totem"
 require "colorize"
-require "./types/cnf_conformance_yml_type.cr"
+require "./types/cnf_testsuite_yml_type.cr"
 require "./helm.cr"
 require "uuid"
 require "./points.cr"

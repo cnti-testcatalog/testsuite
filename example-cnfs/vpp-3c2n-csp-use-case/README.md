@@ -27,7 +27,7 @@ export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr example_cnf_s
 ```
 
 ### Testing
-Run the conformance suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`
+Run the test suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`
 
 ### Automated cleanup
 ```
@@ -41,7 +41,5 @@ export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr example_cnf_c
 1. Copy the cnf-testsuite.yml into the cnfs/vpp-3c2n-csp-use-case directory
 1. Deploy the service chain using helm: `helm install vpp-3c2n-csp-use-case cnfs/csp`
 1. Wait for the installation to finish (all pods are ready)
-1. Run the conformance suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`
-
-
+1. Run the test suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`
   

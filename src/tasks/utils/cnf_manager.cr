@@ -2,7 +2,7 @@
 require "totem"
 require "colorize"
 require "crinja"
-require "./types/cnf_conformance_yml_type.cr"
+require "./types/cnf_testsuite_yml_type.cr"
 require "./helm.cr"
 require "./git_client.cr"
 require "uuid"
@@ -16,7 +16,7 @@ module CNFManager
 
   # TODO: figure out recursively check for unmapped json and warn on that
   # https://github.com/Nicolab/crystal-validator#check
-  def self.validate_cnf_conformance_yml(config)
+  def self.validate_cnf_testsuite_yml(config)
     ccyt_validator = nil
     valid = true
 
@@ -215,8 +215,8 @@ module CNFManager
   end
 
   # if passed a directory, adds cnf-testsuite.yml to the string
-  def self.ensure_cnf_conformance_yml_path(path : String)
-    LOGGING.info("ensure_cnf_conformance_yml_path")
+  def self.ensure_cnf_testsuite_yml_path(path : String)
+    LOGGING.info("ensure_cnf_testsuite_yml_path")
     if path_has_yml?(path)
       yml = path
     else
@@ -225,7 +225,7 @@ module CNFManager
   end
 
   def self.ensure_cnf_conformance_dir(path)
-    LOGGING.info("ensure_cnf_conformance_yml_dir")
+    LOGGING.info("ensure_cnf_testsuite_yml_dir")
     if path_has_yml?(path)
       dir = File.dirname(path)
     else
@@ -323,7 +323,7 @@ module CNFManager
   def self.generate_and_set_release_name(config_yml_path)
     LOGGING.info "generate_and_set_release_name"
 
-    yml_file = CNFManager.ensure_cnf_conformance_yml_path(config_yml_path)
+    yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
     yml_path = CNFManager.ensure_cnf_conformance_dir(config_yml_path)
 
     config = CNFManager.parsed_config_file(yml_file)
@@ -382,9 +382,9 @@ module CNFManager
     LOGGING.info "helm_repo_add repo_name: #{helm_repo_name} repo_url: #{helm_repo_url} args: #{args.inspect}"
     ret = false
     if helm_repo_name == nil || helm_repo_url == nil
-      # config = get_parsed_cnf_conformance_yml(args)
-      # config = parsed_config_file(ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+      # config = get_parsed_cnf_testsuite_yml(args)
+      # config = parsed_config_file(ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
+      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
       LOGGING.info "helm path: #{CNFSingleton.helm}"
       helm = CNFSingleton.helm
       # helm_repo_name = config.get("helm_repository.name").as_s?
@@ -472,8 +472,8 @@ module CNFManager
       raise "Copy of #{destination_chart_directory[:chart_directory]} to #{destination_cnf_dir} failed!" unless $?.success?
     end
     LOGGING.info "copy cnf-testsuite.yml file"
-    LOGGING.info("cp -a #{ensure_cnf_conformance_yml_path(config_file)} #{destination_cnf_dir}")
-    yml_cp = `cp -a #{ensure_cnf_conformance_yml_path(config_file)} #{destination_cnf_dir}`
+    LOGGING.info("cp -a #{ensure_cnf_testsuite_yml_path(config_file)} #{destination_cnf_dir}")
+    yml_cp = `cp -a #{ensure_cnf_testsuite_yml_path(config_file)} #{destination_cnf_dir}`
     destination_chart_directory
   end
 
@@ -522,14 +522,14 @@ module CNFManager
     config_file = cli_args[:config_file]
     wait_count = cli_args[:wait_count]
     verbose = cli_args[:verbose]
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
 
     VERBOSE_LOGGING.info "sample_setup" if verbose
     LOGGING.info("config_file #{config_file}")
 
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
     LOGGING.debug "config in sample_setup: #{config.cnf_config}"
 
     release_name = config.cnf_config[:release_name]
@@ -647,7 +647,7 @@ end
   def self.sample_cleanup(config_file, force=false, installed_from_manifest=false, verbose=true)
     LOGGING.info "sample_cleanup"
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
-    config = parsed_config_file(ensure_cnf_conformance_yml_path(config_file))
+    config = parsed_config_file(ensure_cnf_testsuite_yml_path(config_file))
 
     VERBOSE_LOGGING.info "cleanup config: #{config.inspect}" if verbose
     KubectlClient::Delete.file("#{destination_cnf_dir}/configmap_test.yml")

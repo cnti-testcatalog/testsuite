@@ -186,7 +186,7 @@ There are other examples in the [example cnfs](example-cnfs) folder if you would
 #### NOTE: CNF **must** have a [helm chart](https://helm.sh/)
 
 - To pass all current tests
-- To support auto deployment of the CNF from the ([cnf-testsuite.yml](CNF_CONFORMANCE_YML_USAGE.md)) configuration file.
+- To support auto deployment of the CNF from the ([cnf-testsuite.yml](CNF_TESTSUITE_YML_USAGE.md)) configuration file.
 
 ### Running cnf-testsuite for the first time
 
@@ -262,7 +262,7 @@ _NOTE: Cleanup does not handle manually deployed CNFs_
 
 ### Ready to Bring Your Own CNF?
 
-You can check out our [CNF_CONFORMANCE_YML_USAGE.md](https://github.com/cncf/cnf-testsuite/blob/main/CNF_CONFORMANCE_YML_USAGE.md) document on what is required to bring or use your own CNF.
+You can check out our [CNF_TESTSUITE_YML_USAGE.md](https://github.com/cncf/cnf-testsuite/blob/main/CNF_TESTSUITE_YML_USAGE.md) document on what is required to bring or use your own CNF.
 
 - Follow the [INSTALL](INSTALL.md) or [SOURCE-INSTALL](SOURCE-INSTALL.md) to build the binary.
-- Now head over to [CNF_CONFORMANCE_YML_USAGE.md](https://github.com/cncf/cnf-testsuite/blob/main/CNF_CONFORMANCE_YML_USAGE.md) for more detailed steps.
+- Now head over to [CNF_TESTSUITE_YML_USAGE.md](https://github.com/cncf/cnf-testsuite/blob/main/CNF_TESTSUITE_YML_USAGE.md) for more detailed steps.

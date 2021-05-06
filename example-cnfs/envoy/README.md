@@ -30,7 +30,7 @@ Install Envoy
 crystal src/cnf-testsuite.cr cnf_setup cnf-path=example-cnfs/envoy
 ```
 
-Run the conformance suite:
+Run the test suite:
 
 ```
 crystal src/cnf-testsuite.cr all

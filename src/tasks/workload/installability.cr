@@ -46,7 +46,7 @@ end
 desc "Does the install script use helm?"
 task "install_script_helm" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
     
     emoji_helm_script="⎈📦"
     found = 0
@@ -83,8 +83,8 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
     VERBOSE_LOGGING.debug "helm_chart_published args.raw: #{args.raw}" if check_verbose(args)
     VERBOSE_LOGGING.debug "helm_chart_published args.named: #{args.named}" if check_verbose(args)
 
-    # config = cnf_conformance_yml
-    # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    # config = cnf_testsuite_yml
+    # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
     # helm_chart = "#{config.get("helm_chart").as_s?}"
     helm_chart = config.cnf_config[:helm_chart]
     emoji_published_helm_chart="⎈📦🌐"
@@ -119,7 +119,7 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
 
     response = String::Builder.new
 
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
     # helm_directory = config.get("helm_directory").as_s
     helm_directory = optional_key_as_string(config, "helm_directory")
     if helm_directory.empty?
@@ -153,8 +153,8 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
 end
 
 task "validate_config" do |_, args|
-  yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
-  valid, warning_output = CNFManager.validate_cnf_conformance_yml(yml)
+  yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
+  valid, warning_output = CNFManager.validate_cnf_testsuite_yml(yml)
   emoji_config="📋"
   if valid
     stdout_success "✔️ PASSED: CNF configuration validated #{emoji_config}"
