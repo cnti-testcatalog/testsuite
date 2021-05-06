@@ -1,6 +1,6 @@
 require "totem"
 require "colorize"
-require "./types/cnf_conformance_yml_type.cr"
+require "./types/cnf_testsuite_yml_type.cr"
 require "./helm.cr"
 require "uuid"
 require "./points.cr"
@@ -36,7 +36,7 @@ module CNFManager
 
     def self.parse_config_yml(config_yml_path : String) : CNFManager::Config
       LOGGING.debug "parse_config_yml config_yml_path: #{config_yml_path}"
-      yml_file = CNFManager.ensure_cnf_conformance_yml_path(config_yml_path)
+      yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
       #TODO modify the destination conformance yml instead of the source conformance yml 
       # (especially in the case of the release manager).  Then reread the destination config
       # TODO for cleanup, read source, then find destination and use release name from destination config

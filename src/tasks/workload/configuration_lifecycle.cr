@@ -137,19 +137,19 @@ rolling_version_change_test_names.each do |tn|
 
       task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
         test_passed = true
-        valid_cnf_conformance_yml = true
+        valid_cnf_testsuite_yml = true
         LOGGING.debug "#{tn} container: #{container}"
         LOGGING.debug "container_names: #{container_names}"
         config_container = container_names.find{|x| x["name"]==container.as_h["name"]} if container_names
         LOGGING.debug "config_container: #{config_container}"
         unless config_container && config_container["#{tn}_test_tag"]? && !config_container["#{tn}_test_tag"].empty?
           puts "Please add the container name #{container.as_h["name"]} and a corresponding #{tn}_test_tag into your cnf-testsuite.yml under container names".colorize(:red)
-          valid_cnf_conformance_yml = false
+          valid_cnf_testsuite_yml = false
         end
 
-        VERBOSE_LOGGING.debug "#{tn}: #{container} valid_cnf_conformance_yml=#{valid_cnf_conformance_yml}" if check_verbose(args)
+        VERBOSE_LOGGING.debug "#{tn}: #{container} valid_cnf_testsuite_yml=#{valid_cnf_testsuite_yml}" if check_verbose(args)
         VERBOSE_LOGGING.debug "#{tn}: #{container} config_container=#{config_container}" if check_verbose(args)
-        if valid_cnf_conformance_yml && config_container
+        if valid_cnf_testsuite_yml && config_container
           resp = KubectlClient::Set.image(resource["name"],
                                           container.as_h["name"],
                                           # split out image name from version tag

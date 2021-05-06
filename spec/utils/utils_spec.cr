@@ -71,7 +71,7 @@ describe "Utils" do
     cli_hash = CNFManager.sample_setup_cli_args(args, false)
     CNFManager.sample_setup(cli_hash) if cli_hash["config_file"]
     task_response = CNFManager::Task.single_task_runner(args) do
-      config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+      config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
       helm_chart_container_name = config.get("helm_chart_container_name").as_s
       privileged_response = `kubectl get pods --all-namespaces -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
       privileged_list = privileged_response.to_s.split(" ").uniq
@@ -94,7 +94,7 @@ describe "Utils" do
     task_response = CNFManager::Task.single_task_runner(args) do
       cdir = FileUtils.pwd()
       response = String::Builder.new
-      config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+      config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
       helm_directory = "#{config.get("helm_directory").as_s?}" 
       if File.directory?(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory)
         Dir.cd(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)) + helm_directory)
@@ -175,13 +175,13 @@ describe "Utils" do
     # config_file = "sample-cnfs/sample-generic-cnf"
     # CNFManager.sample_setup_args(sample_dir: config_file, args: my_args)
     # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: my_args )
-    cnfmng_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    cnfmng_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
     release_name = cnfmng_config.cnf_config[:release_name]
     installed_args = Sam::Args.new(["cnf-config=./cnfs/#{release_name}/cnf-testsuite.yml"])
     task_response = CNFManager::Task.task_runner(installed_args) do |args|
       LOGGING.info("task_runner spec args #{args.inspect}")
-      # config = cnf_conformance_yml(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
-      config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+      # config = cnf_testsuite_yml(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+      config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
       helm_chart_container_name = config.get("helm_chart_container_name").as_s
       privileged_response = `kubectl get pods --all-namespaces -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
       privileged_list = privileged_response.to_s.split(" ").uniq

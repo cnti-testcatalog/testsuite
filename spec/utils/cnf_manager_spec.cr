@@ -151,7 +151,7 @@ describe "SampleUtils" do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml", "verbose", "wait_count=180"])
     cli_hash = CNFManager.sample_setup_cli_args(args)
     CNFManager.sample_setup(cli_hash)
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(cli_hash[:config_file]))    
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(cli_hash[:config_file]))    
     release_name = config.cnf_config[:release_name]
 
     (Dir.exists? "cnfs/#{release_name}").should be_true
@@ -169,7 +169,7 @@ describe "SampleUtils" do
     # args = Sam::Args.new
     # CNFManager.sample_setup(config_file: config_file, release_name: "", deployment_name: "coredns-coredns", helm_chart: "stable/coredns", helm_directory: "", git_clone_url: "https://github.com/coredns/coredns.git", wait_count: 0, verbose: true)
     # check if directory exists
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
     release_name = config.cnf_config[:release_name]
 
     (Dir.exists? "cnfs/#{release_name}").should be_true
@@ -187,7 +187,7 @@ describe "SampleUtils" do
     # args = Sam::Args.new
     # CNFManager.sample_setup_args(sample_dir: config_file, args: args, verbose: true, wait_count: 0 )
     # check if directory exists
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
     release_name = config.cnf_config[:release_name]
     (Dir.exists? "cnfs/#{release_name}").should be_true
     (File.exists?("cnfs/#{release_name}/cnf-testsuite.yml")).should be_true
@@ -204,7 +204,7 @@ describe "SampleUtils" do
     # args = Sam::Args.new
     # CNFManager.sample_setup_args(sample_dir: config_file, args: args, verbose: true, wait_count: 0 )
     # check if directory exists
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
     release_name = config.cnf_config[:release_name]
     (Dir.exists? "sample-cnfs/sample-generic-cnf").should be_true
     (File.exists?("cnfs/#{release_name}/cnf-testsuite.yml")).should be_true
@@ -233,7 +233,7 @@ describe "SampleUtils" do
     CNFManager.sample_setup(cli_hash)
     # args = Sam::Args.new
     # CNFManager.sample_setup_args(sample_dir: config_file, deploy_with_chart: false, args: args, verbose: true, wait_count: 0 )
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
     release_name = config.cnf_config[:release_name]
     (Dir.exists? "cnfs/#{release_name}").should be_true
     # should not clone
@@ -252,7 +252,7 @@ describe "SampleUtils" do
     # args = Sam::Args.new
     # config_file = "sample-cnfs/k8s-non-helm"
     # CNFManager.sample_setup_args(sample_dir: config_file, deploy_with_chart: false, args: args, verbose: true, install_from_manifest: true, wait_count: 0 )
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
     release_name = config.cnf_config[:release_name]
     (Dir.exists? "cnfs/#{release_name}").should be_true
     (Dir.exists? "cnfs/#{release_name}/manifests").should be_true
@@ -281,7 +281,7 @@ describe "SampleUtils" do
     cli_hash = CNFManager.sample_setup_cli_args(args)
     CNFManager.sample_setup(cli_hash)
     # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: args, verbose: true )
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_conformance_yml_path(config_file))    
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
     release_name = config.cnf_config[:release_name]
     CNFManager.cnf_config_list()[0].should contain("#{release_name}/#{CONFIG_FILE}")
   end
@@ -301,34 +301,34 @@ describe "SampleUtils" do
     CNFManager.helm_repo_add("invalid", "invalid").should eq(false)
   end
 
-  it "'CNFManager.validate_cnf_conformance_yml' (function) should pass, when a cnf has a valid config file yml", tags: ["validate_config"]  do
+  it "'CNFManager.validate_cnf_testsuite_yml' (function) should pass, when a cnf has a valid config file yml", tags: ["validate_config"]  do
     args = Sam::Args.new(["cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml"])
 
-    yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
     LOGGING.info yml.inspect
     ("#{yml.get("release_name").as_s?}").should eq("coredns")
 
-    valid, command_output = CNFManager.validate_cnf_conformance_yml(yml)
+    valid, command_output = CNFManager.validate_cnf_testsuite_yml(yml)
 
     (valid).should eq(true)
     (command_output).should eq (nil)
   end
 
-  it "'CNFManager.validate_cnf_conformance_yml' (command) should pass, when a cnf has a valid config file yml", tags: ["validate_config"]  do
+  it "'CNFManager.validate_cnf_testsuite_yml' (command) should pass, when a cnf has a valid config file yml", tags: ["validate_config"]  do
     response_s = `./cnf-testsuite validate_config cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
     $?.success?.should be_true
     (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
   end
 
 
-  it "'CNFManager.validate_cnf_conformance_yml' (function) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["validate_config"]  do
+  it "'CNFManager.validate_cnf_testsuite_yml' (function) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["validate_config"]  do
     args = Sam::Args.new(["cnf-config=./spec/fixtures/cnf-testsuite-unmapped-keys-and-subkeys.yml"])
 
-    yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
     LOGGING.info yml.inspect
     ("#{yml.get("release_name").as_s?}").should eq("coredns")
 
-    status, warning_output = CNFManager.validate_cnf_conformance_yml(yml)
+    status, warning_output = CNFManager.validate_cnf_testsuite_yml(yml)
 
     LOGGING.warn "WARNING: #{warning_output}"
 
@@ -337,7 +337,7 @@ describe "SampleUtils" do
   end
 
 
-  it "'CNFManager.validate_cnf_conformance_yml' (command) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["validate_config"]  do
+  it "'CNFManager.validate_cnf_testsuite_yml' (command) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["validate_config"]  do
     response_s = `./cnf-testsuite validate_config cnf-config=spec/fixtures/cnf-testsuite-unmapped-keys-and-subkeys.yml`
     $?.success?.should be_true
     LOGGING.debug "validate_config resp: #{response_s}"
@@ -347,23 +347,23 @@ describe "SampleUtils" do
   end
 
 
-  it "'CNFManager.validate_cnf_conformance_yml' (function) should fail when an invalid cnf config file yml is used", tags: ["validate_config"]  do
+  it "'CNFManager.validate_cnf_testsuite_yml' (function) should fail when an invalid cnf config file yml is used", tags: ["validate_config"]  do
     args = Sam::Args.new(["cnf-config=spec/fixtures/cnf-testsuite-invalid-and-unmapped-keys.yml"])
 
 
-    yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_conformance_yml_path(args.named["cnf-config"].as(String)))
+    yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
     LOGGING.info yml.inspect
     # config = CNFManager::Config.parse_config_yml(args.named["cnf-config"].as(String))    
     # release_name = config.cnf_config[:release_name]
     # ("#{yml.get("release_name").as_s?}").should eq(release_name)
 
-    status, warning_output = CNFManager.validate_cnf_conformance_yml(yml)
+    status, warning_output = CNFManager.validate_cnf_testsuite_yml(yml)
 
     (status).should eq(false)
     (warning_output).should eq(nil)
   end
 
-  it "'CNFManager.validate_cnf_conformance_yml' (command) should fail when an invalid cnf config file yml is used", tags: ["validate_config"]  do
+  it "'CNFManager.validate_cnf_testsuite_yml' (command) should fail when an invalid cnf config file yml is used", tags: ["validate_config"]  do
     response_s = `./cnf-testsuite validate_config cnf-config=spec/fixtures/cnf-testsuite-invalid-and-unmapped-keys.yml`
     $?.success?.should be_true
 
@@ -371,7 +371,7 @@ describe "SampleUtils" do
     (/FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s).should_not be_nil
   end
 
-  it "'CNFManager.validate_cnf_conformance_yml' (command) should pass, for all sample-cnfs", tags: ["validate_config"]  do
+  it "'CNFManager.validate_cnf_testsuite_yml' (command) should pass, for all sample-cnfs", tags: ["validate_config"]  do
 
     get_dirs = Dir.entries("sample-cnfs")
     dir_list = get_dirs - [".", ".."]
@@ -385,7 +385,7 @@ describe "SampleUtils" do
     end
   end
 
-  it "'CNFManager.validate_cnf_conformance_yml' (command) should pass, for all example-cnfs", tags: ["validate_config"]  do
+  it "'CNFManager.validate_cnf_testsuite_yml' (command) should pass, for all example-cnfs", tags: ["validate_config"]  do
 
     get_dirs = Dir.entries("example-cnfs")
     dir_list = get_dirs - [".", ".."]

@@ -5,7 +5,7 @@ require "json"
 # in a script or using icr
 # 
 # require "./src/tasks/utils/cnf_manager.cr"
-# config = cnf_conformance_yml
+# config = cnf_testsuite_yml
 # config.settings.to_json
 # 
 # now take that json here https://app.quicktype.io/?share=Tfokny8vUaAeJ7XDOTSo
