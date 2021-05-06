@@ -11,7 +11,7 @@ require "semantic_version"
 
 def log_formatter
   Log::Formatter.new do |entry, io|
-    progname = "cnf-conformance"
+    progname = "cnf-testsuite"
     label = entry.severity.none? ? "ANY" : entry.severity.to_s.upcase
     msg = entry.source.empty? ? "#{progname}: #{entry.message}" : "#{progname}-#{entry.source}: #{entry.message}"
     io << label[0] << ", [" << entry.timestamp << " #" << Process.pid << "] "
@@ -25,8 +25,8 @@ end
 
 begin
   OptionParser.parse do |parser|
-    parser.banner = "Usage: cnf-conformance [arguments]"
-    parser.on("-l LEVEL", "--loglevel=LEVEL", "Specifies the logging level for cnf-conformance suite") do |level|
+    parser.banner = "Usage: cnf-testsuite [arguments]"
+    parser.on("-l LEVEL", "--loglevel=LEVEL", "Specifies the logging level for cnf-testsuite suite") do |level|
       LogLevel.command_line_loglevel = level
     end
     parser.on("-h", "--help", "Show this help") { puts parser }
@@ -181,7 +181,7 @@ def check_feature_level(args)
   end
 end
 
-# cncf/cnf-conformance/issues/106
+# cncf/cnf-testsuite/issues/106
 # Requesting beta tests to run will both beta and ga flagged tests
 # Requesting alpha tests will run alpha, beta, and ga flagged tests
 # Requesting wip tests will run wip, poc, alpha, beta, and ga flagged tests

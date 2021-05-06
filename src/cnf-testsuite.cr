@@ -5,7 +5,7 @@ require "./tasks/utils/release_manager.cr"
 require "./cnf_conformance.cr"
 
 
-desc "The CNF Conformance program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
+desc "The CNF Test Suite program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
 task "all", ["workload", "platform"] do  |_, args|
   VERBOSE_LOGGING.info "all" if check_verbose(args)
 
@@ -17,13 +17,13 @@ task "all", ["workload", "platform"] do  |_, args|
   end
 
   if CNFManager::Points.failed_required_tasks.size > 0
-    stdout_failure "Conformance Suite failed!"
+    stdout_failure "Test Suite failed!"
     stdout_failure "Failed required tasks: #{CNFManager::Points.failed_required_tasks.inspect}"
   end
   stdout_info "CNFManager::Points::Results.have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
 end
 
-desc "The CNF Conformance program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
+desc "The CNF Test Suite program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
 task "workload", ["automatic_cnf_install", "ensure_cnf_installed", "configuration_file_setup", "compatibility","statelessness", "security", "scalability", "configuration_lifecycle", "observability", "installability", "hardware_and_scheduling", "microservice", "resilience"] do  |_, args|
   VERBOSE_LOGGING.info "workload" if check_verbose(args)
 
@@ -35,7 +35,7 @@ task "workload", ["automatic_cnf_install", "ensure_cnf_installed", "configuratio
   end
 
   if CNFManager::Points.failed_required_tasks.size > 0
-    stdout_failure "Conformance Suite failed!"
+    stdout_failure "Test Suite failed!"
     stdout_failure "Failed required tasks: #{CNFManager::Points.failed_required_tasks.inspect}"
   end
   stdout_info "CNFManager::Points::Results.have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
@@ -50,17 +50,17 @@ task "ensure_cnf_installed" do |_, args|
 end
 
 task "version" do |_, args|
-  LOGGING.info "VERSION: #{CnfConformance::VERSION}"
-  puts "CNF Conformance version: #{CnfConformance::VERSION}".colorize(:green)
+  LOGGING.info "VERSION: #{CnfTestSuite::VERSION}"
+  puts "CNF TestSuite version: #{CnfTestSuite::VERSION}".colorize(:green)
 end
 
 task "upsert_release" do |_, args|
-  LOGGING.info "upserting release on: #{CnfConformance::VERSION}"
+  LOGGING.info "upserting release on: #{CnfTestSuite::VERSION}"
   release, asset = ReleaseManager::GithubReleaseManager.upsert_release
   if release
-    puts "Created a release for: #{CnfConformance::VERSION}".colorize(:green)
+    puts "Created a release for: #{CnfTestSuite::VERSION}".colorize(:green)
   else
-    puts "Not creating a release for: #{CnfConformance::VERSION}".colorize(:red)
+    puts "Not creating a release for: #{CnfTestSuite::VERSION}".colorize(:red)
   end
 end
 
@@ -86,7 +86,7 @@ desc "Install Shell Completion: check https://github.com/cncf/cnf-testsuite/blob
 task "completion" do |_|
 
 # assumes bash completion feel free to make a pr for zsh and check an arg for it
-bin_name = "cnf-conformance"
+bin_name = "cnf-testsuite"
 
 completion_template = <<-TEMPLATE
 # to remove

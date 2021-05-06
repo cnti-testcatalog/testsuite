@@ -6,7 +6,7 @@
 
 The CNF Test Suite is a tool that makes it possible to validate telco applications, aka Cloud Native Network Functions (CNFs), and the underlying Telecom platforms adherence to Cloud native principles and best practices.
 
-This Test Suite initiative works closely with the [CNF WG](cnf-wg/README.md) which determines requirements for the CNF Conformance program.
+This Test Suite initiative works closely with the [CNF WG](cnf-wg/README.md) which determines requirements for the CNF Test Suite program.
 
 ## Installation and Usage
 
@@ -18,8 +18,8 @@ Prereqs: kubernetes cluster, wget, curl, helm 3.1.1 or greater on your system al
 
 1. Install the latest test suite binary: `source <(curl https://raw.githubusercontent.com/cncf/cnf-testsuite/main/curl_install.sh)`
 2. Run `setup` to prepare the cnf-testsuite: `cnf-testsuite setup`
-3. Pull down an example CNF configuration to try: `curl -o cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-conformance.yml`
-4. Initialize the test suite for using the CNF: `cnf-testsuite cnf_setup cnf-config=./cnf-conformance.yml`
+3. Pull down an example CNF configuration to try: `curl -o cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml`
+4. Initialize the test suite for using the CNF: `cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml`
 5. Run all of application/workload tests: `cnf-testsuite workload`
 
 #### More Usage docs

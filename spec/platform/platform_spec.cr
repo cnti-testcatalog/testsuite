@@ -9,7 +9,7 @@ describe "Platform" do
     $?.success?.should be_true
     LOGGING.info `./cnf-testsuite setup`
     $?.success?.should be_true
-    # LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-conformance.yml verbose`
+    # LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose`
     # $?.success?.should be_true
   end
   it "'platform:*' should not error out when no cnf is installed", tags: ["platform"] do

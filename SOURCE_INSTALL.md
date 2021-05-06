@@ -168,17 +168,17 @@ To use CoreDNS as an example CNF. Download the conformance configuration to test
 
 - Make sure you are in your cnf-testsuite/ source repo checkout directory and do the following:
   ```
-  curl -o cnf-conformance.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-conformance.yml
+  curl -o cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
   ```
 - Prepare the test suite to use the CNF by running:
   ```
   # via built binary
-  ./cnf-testsuite cnf_setup cnf-config=./cnf-conformance.yml
+  ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
   ```
   Or
   ```
   # via crystal
-  crystal src/cnf-testsuite.cr cnf_setup cnf-config=./cnf-conformance.yml
+  crystal src/cnf-testsuite.cr cnf_setup cnf-config=./cnf-testsuite.yml
   ```
 
 There are other examples in the [example cnfs](example-cnfs) folder if you would like to test others.
@@ -186,7 +186,7 @@ There are other examples in the [example cnfs](example-cnfs) folder if you would
 #### NOTE: CNF **must** have a [helm chart](https://helm.sh/)
 
 - To pass all current tests
-- To support auto deployment of the CNF from the ([cnf-conformance.yml](CNF_CONFORMANCE_YML_USAGE.md)) configuration file.
+- To support auto deployment of the CNF from the ([cnf-testsuite.yml](CNF_CONFORMANCE_YML_USAGE.md)) configuration file.
 
 ### Running cnf-testsuite for the first time
 
@@ -216,8 +216,8 @@ You can also run via `crystal` by replacing the `./cnf-testsuite` with `crystal 
 #### More Example Usage (also see the [complete usage documentation](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md))
 
 ```
-# These assume you've already run the cnf_setup pointing at a cnf-conformance.yml config above. You can always specify your config at the end of each command as well, eg:
-./cnf-testsuite all cnf-config=<path to your config yml>/cnf-conformance.yml
+# These assume you've already run the cnf_setup pointing at a cnf-testsuite.yml config above. You can always specify your config at the end of each command as well, eg:
+./cnf-testsuite all cnf-config=<path to your config yml>/cnf-testsuite.yml
 
 # Runs all ga tests (generally available workload and platform tests)
 ./cnf-testsuite all
@@ -244,7 +244,7 @@ In the console where the test suite runs:
 
 - PASSED or FAILED will be displayed for the tests
 
-A test log file, eg. `cnf-conformance-results-20201216.txt`, will be created which lists PASS or FAIL for every test based on the date.
+A test log file, eg. `cnf-testsuite-results-20201216.txt`, will be created which lists PASS or FAIL for every test based on the date.
 
 For more details on points, see our [POINTS.md](./POINTS.md) documentation.
 
@@ -253,7 +253,7 @@ For more details on points, see our [POINTS.md](./POINTS.md) documentation.
 Run the following to cleanup the specific cnf-testsuite test:
 
 ```
-./cnf-testsuite cnf_cleanup cnf-config=./cnf-conformance.yml
+./cnf-testsuite cnf_cleanup cnf-config=./cnf-testsuite.yml
 ```
 
 You can also run `cleanall` and cnf-testsuite will attempt to cleanup everything.

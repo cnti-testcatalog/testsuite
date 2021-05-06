@@ -16,7 +16,7 @@ Description:
 ### Install helm version 3
 
 ### Automated installation
-Run cnf-conformance setup 
+Run cnf-testsuite setup 
 ```
 export KUBECONFIG=$(pwd)/<YourKubeConf> ; crystal src/cnf-testsuite.cr setup
 ```
@@ -38,7 +38,7 @@ export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr example_cnf_c
 1. Install helm version 3
 1. Make the cnfs/vpp-3c2n-csp-use-case diretory 
 1. If you are testing the cnf source, clone the source into the cnfs/vpp-3c2n-csp-use-case directory
-1. Copy the cnf-conformance.yml into the cnfs/vpp-3c2n-csp-use-case directory
+1. Copy the cnf-testsuite.yml into the cnfs/vpp-3c2n-csp-use-case directory
 1. Deploy the service chain using helm: `helm install vpp-3c2n-csp-use-case cnfs/csp`
 1. Wait for the installation to finish (all pods are ready)
 1. Run the conformance suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`

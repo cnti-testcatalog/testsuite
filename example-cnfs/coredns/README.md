@@ -11,7 +11,7 @@ CoreDNS can listen for DNS requests coming in over UDP/TCP, TLS (RFC 7858), also
 Follow [Pre-req steps](../../INSTALL.md#pre-requisites), including
 
 - Set the KUBECONFIG environment to point to the remote K8s cluster
-- Downloading the binary cnf-conformance release
+- Downloading the binary cnf-testsuite release
 
 ### Automated CNF installation
 

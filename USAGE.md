@@ -57,29 +57,29 @@ This is the command to build the binary executable if in developer mode or using
 crystal build src/cnf-testsuite.cr
 ```
 
-#### Validating a cnf-conformance.yml file:
+#### Validating a cnf-testsuite.yml file:
 
 ```
-./cnf-testsuite validate_config cnf-config=[PATH_TO]/cnf-conformance.yml
+./cnf-testsuite validate_config cnf-config=[PATH_TO]/cnf-testsuite.yml
 ```
 
 #### Running all of the platform and workload tests:
 
 ```
-./cnf-testsuite all cnf-config=<path_to_your_config_file>/cnf-conformance.yml
+./cnf-testsuite all cnf-config=<path_to_your_config_file>/cnf-testsuite.yml
 ```
 
 #### Running all of the tests (including proofs of concepts)
 
 ```
-./cnf-testsuite all poc cnf-config=<path_to_your_config_file>/cnf-conformance.yml
+./cnf-testsuite all poc cnf-config=<path_to_your_config_file>/cnf-testsuite.yml
 ```
 
 #### Running all of the workload tests
 
 ```
 crystal src/cnf-testsuite.cr workload
-cnf-config=<path_to_your_config_file>/cnf-conformance.yml
+cnf-config=<path_to_your_config_file>/cnf-testsuite.yml
 ```
 
 #### Running all of the platform or workload tests independently:
@@ -135,7 +135,7 @@ LOGLEVEL=DEBUG ./cnf-testsuite test
 
 1. CLI or Command line flag
 2. Environment variable
-3. CNF-Conformance [Config file](config.yml)
+3. CNF-Testsuite [Config file](config.yml)
 
 ##### Verbose Option
 
@@ -309,7 +309,7 @@ crystal src/cnf-testsuite.cr protected_access
 ./cnf-testsuite sample_coredns_setup helm_chart=<helm chart name>
 ```
 
-Or optionally modify the your cnf's cnf-conformance.yml file to include the helm_chart name, e.g.
+Or optionally modify the your cnf's cnf-testsuite.yml file to include the helm_chart name, e.g.
 
 ```
 helm_chart: stable/coredns
@@ -321,7 +321,7 @@ To run the capacity test:
 ./cnf-testsuite increase_decrease_capacity deployment_name=coredns-coredns
 ```
 
-Or optionally modify the your cnf's cnf-conformance.yml file to include the deployment name, e.g.
+Or optionally modify the your cnf's cnf-testsuite.yml file to include the deployment name, e.g.
 
 ```
 deployment_name: coredns/coredns
@@ -541,7 +541,7 @@ crystal src/cnf-testsuite.cr openmetric_compatible
 
 #### :heavy_check_mark: Test if the Helm deploys
 
-Use a cnf-conformance.yml to manually call helm_deploy, e.g.:
+Use a cnf-testsuite.yml to manually call helm_deploy, e.g.:
 Copy your CNF into the `cnfs` directory:
 
 ```
@@ -551,7 +551,7 @@ cp -rf <your-cnf-directory> cnfs/<your-cnf-directory>
 Now run the test:
 
 ```
-./cnf-testsuite helm_deploy destructive cnfs/<your-cnf-directory>/cnf-conformance.yml
+./cnf-testsuite helm_deploy destructive cnfs/<your-cnf-directory>/cnf-testsuite.yml
 ```
 
 #### :heavy_check_mark: Test if the install script uses [Helm v3](https://github.com/helm/)

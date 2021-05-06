@@ -16,7 +16,7 @@ describe "CurlInstall" do
       raise "crystal build failed! curl_install_spec.cr"
     end
   end
-  it "'source curl_install.sh' should download a cnf-conformance binary", tags: ["curl"]  do
+  it "'source curl_install.sh' should download a cnf-testsuite binary", tags: ["curl"]  do
     response_s = `/bin/bash -c "source ./curl_install.sh"`
     LOGGING.info response_s
     $?.success?.should be_true

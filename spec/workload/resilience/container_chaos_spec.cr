@@ -14,14 +14,14 @@ describe "Resilience Container Chaos" do
 
   it "'chaos_container_kill' A 'Good' CNF should recover when its container is killed", tags: ["chaos_container_kill"]  do
     begin
-      `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
+      `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
       response_s = `./cnf-testsuite chaos_container_kill verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: Replicas available match desired count after container kill test/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-conformance.yml`
+      `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
     end
   end

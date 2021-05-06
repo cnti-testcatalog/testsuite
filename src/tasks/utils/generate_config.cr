@@ -24,7 +24,7 @@ module CNFManager
       end
     end
 
-    def self.export_manifest(config_src, output_file="./cnf-conformance.yml")
+    def self.export_manifest(config_src, output_file="./cnf-testsuite.yml")
 
       generate_initial_conformance_yml(config_src, output_file)
       CNFManager.generate_and_set_release_name(output_file)
@@ -41,7 +41,7 @@ module CNFManager
       resource_ymls
     end
 
-    def self.generate_config(config_src, output_file="./cnf-conformance.yml")
+    def self.generate_config(config_src, output_file="./cnf-testsuite.yml")
       resource_ymls = CNFManager::GenerateConfig.export_manifest(config_src, output_file)
       resource_resp = resource_ymls.map do | resource |
         LOGGING.info "gen config resource: #{resource}"
@@ -83,7 +83,7 @@ module CNFManager
       TEMPLATE
     end
 
-    def self.generate_initial_conformance_yml(config_src, config_yml_path="./cnf-conformance.yml")
+    def self.generate_initial_conformance_yml(config_src, config_yml_path="./cnf-testsuite.yml")
       if !File.exists?(config_yml_path)
         case install_method_by_config_src(config_src) 
         when :helm_chart

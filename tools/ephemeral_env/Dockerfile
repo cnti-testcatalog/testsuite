@@ -14,4 +14,4 @@ RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$KUBECTL/
 RUN mv ./kubectl /usr/local/bin/kubectl
 RUN chmod +x /usr/local/bin/kubectl
 
-WORKDIR /cnf-conformance
+WORKDIR /cnf-testsuite

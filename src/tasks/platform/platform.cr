@@ -11,7 +11,7 @@ task "platform", ["helm_local_install", "k8s_conformance", "platform:observabili
   end
 
   if CNFManager::Points.failed_required_tasks.size > 0
-    stdout_failure "Conformance Suite failed!"
+    stdout_failure "Test Suite failed!"
     stdout_failure "Failed required tasks: #{CNFManager::Points.failed_required_tasks.inspect}"
   end
   stdout_info "CNFManager::Points::Results.have been saved to #{CNFManager::Points::Results.file}".colorize(:green)

@@ -1,12 +1,12 @@
 ### EXAMPLE-CNFs
 
-This is a preliminary list of CNF samples for each layer in the [OSI model](https://www.osi-model.com/presentation-layer/) which we plan to test in the CNF Conformance Test Suite. CNFs can be thought of as functionality occupying one or more of the following network layers:
+This is a preliminary list of CNF samples for each layer in the [OSI model](https://www.osi-model.com/presentation-layer/) which we plan to test in the CNF Test Suite. CNFs can be thought of as functionality occupying one or more of the following network layers:
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/OSI_Model_v1.svg/440px-OSI_Model_v1.svg.png" width="25%" height="25%"><img src="https://cnf-test-suite.s3-us-west-2.amazonaws.com/inet-protocol.png" width="25%" height="25%">
 
 **Goals:**
 
-- Find a CNF which can be used as a sample in the CNF Conformance suite for testing on each layer in the [osi-model](https://www.osi-model.com/presentation-layer/).
+- Find a CNF which can be used as a sample in the CNF Test suite for testing on each layer in the [osi-model](https://www.osi-model.com/presentation-layer/).
   - Ideally it will be a different CNF for each layer, but this is not a hard requirement.
 - Provide a summary of the CNFs for each layer
 - Provide a description of what each CNF is and what it does for each layer.

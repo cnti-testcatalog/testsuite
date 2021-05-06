@@ -1,4 +1,4 @@
-# CNF Conformance Core Maintainers
+# CNF Test Suite Core Maintainers
 
 | Maintainers | GitHub ID | Affiliation |
 | --------------- | --------- | ----------- |

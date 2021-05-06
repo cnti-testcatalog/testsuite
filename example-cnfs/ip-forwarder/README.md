@@ -18,7 +18,7 @@ To run this example CNF, note the following requirements:
 ### Install helm version 3
 
 ### Automated installation
-Run cnf-conformance setup 
+Run cnf-testsuite setup 
 ```
 export KUBECONFIG=$(pwd)/<YourKubeConf> ; crystal src/cnf-testsuite.cr setup
 ```
@@ -40,7 +40,7 @@ export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr cnf_cleanup c
 1. Install helm version 3
 1. Make the cnfs/ip-forwarder diretory 
 1. If you are testing the cnf source, clone the source into the cnfs/ip-forwarder directory
-1. Copy the cnf-conformance.yml into the cnfs/ip-forwarder directory
+1. Copy the cnf-testsuite.yml into the cnfs/ip-forwarder directory
 1. Deploy the CNF using helm: `helm install cnfs/ip-forwarder/vpp`
 1. Wait for the installation to finish (all pods are ready)
 1. Run the conformance suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`

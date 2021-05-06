@@ -1,8 +1,8 @@
 # Set up Sample CoreDNS CNF
 
-This CoreDNS sample uses a modified Helm chart supporting a private Docker Hub registry. The access credentials are passed to the helm command line through the cnf-conformance.yml key [release_name](sample-cnfs/sample_coredns_protected/cnf-conformance.yml#L5).
+This CoreDNS sample uses a modified Helm chart supporting a private Docker Hub registry. The access credentials are passed to the helm command line through the cnf-testsuite.yml key [release_name](sample-cnfs/sample_coredns_protected/cnf-testsuite.yml#L5).
 
-You need to set the environment options listed in the [cnf-conformance.yml](cnf-conformance.yml).
+You need to set the environment options listed in the [cnf-testsuite.yml](cnf-testsuite.yml).
 
 # Prerequistes
 
@@ -47,9 +47,9 @@ helm install coredns stable/coredns
 helm pull stable/coredns
 ```
 
-### Example cnf-conformance config file for sample-core-dns-cnf
+### Example cnf-testsuite config file for sample-core-dns-cnf
 
-In ./cnfs/sample-core-dns-cnf/cnf-conformance.yml
+In ./cnfs/sample-core-dns-cnf/cnf-testsuite.yml
 
 ```
 ---

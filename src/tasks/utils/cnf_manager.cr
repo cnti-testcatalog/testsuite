@@ -21,11 +21,11 @@ module CNFManager
     valid = true
 
     begin
-      ccyt_validator = CnfConformanceYmlType.from_json(config.settings.to_json)
+      ccyt_validator = CnfTestSuiteYmlType.from_json(config.settings.to_json)
     rescue ex
       valid = false
       LOGGING.error "✖ ERROR: cnf_conformance.yml field validation error.".colorize(:red)
-      LOGGING.error " please check info in the the field name near the text 'CnfConformanceYmlType#' in the error below".colorize(:red)
+      LOGGING.error " please check info in the the field name near the text 'CnfTestSuiteYmlType#' in the error below".colorize(:red)
       LOGGING.error ex.message
       ex.backtrace.each do |x|
         LOGGING.error x
@@ -188,7 +188,7 @@ module CNFManager
 
   def self.sample_conformance_yml(sample_dir)
     LOGGING.info "sample_conformance_yml sample_dir: #{sample_dir}"
-    cnf_conformance = `find #{sample_dir}/* -name "cnf-conformance.yml"`.split("\n")[0]
+    cnf_conformance = `find #{sample_dir}/* -name "cnf-testsuite.yml"`.split("\n")[0]
     if cnf_conformance.empty?
       raise "No cnf_conformance.yml found in #{sample_dir}!"
     end
@@ -214,13 +214,13 @@ module CNFManager
     return config
   end
 
-  # if passed a directory, adds cnf-conformance.yml to the string
+  # if passed a directory, adds cnf-testsuite.yml to the string
   def self.ensure_cnf_conformance_yml_path(path : String)
     LOGGING.info("ensure_cnf_conformance_yml_path")
     if path_has_yml?(path)
       yml = path
     else
-      yml = path + "/cnf-conformance.yml"
+      yml = path + "/cnf-testsuite.yml"
     end
   end
 
@@ -281,7 +281,7 @@ module CNFManager
       manifest_directory = optional_key_as_string(config, "manifest_directory")
 
     unless CNFManager.exclusive_install_method_tags?(config)
-      puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-conformance.yml!".colorize(:red)
+      puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-testsuite.yml!".colorize(:red)
       exit 1
     end
 
@@ -359,7 +359,7 @@ module CNFManager
     if path_has_yml?(config_file)
       yml = config_file
     else
-      yml = config_file + "/cnf-conformance.yml"
+      yml = config_file + "/cnf-testsuite.yml"
     end
     config = parsed_config_file(yml)
     LOGGING.debug "cnf_destination_dir parsed_config_file config: #{config}"
@@ -428,7 +428,7 @@ module CNFManager
   end
 
   # Create a unique directory for the cnf that is to be installed under ./cnfs
-  # Only copy the cnf's cnf-conformance.yml and it's helm_directory or manifest directory (if it exists)
+  # Only copy the cnf's cnf-testsuite.yml and it's helm_directory or manifest directory (if it exists)
   # Use manifest directory if helm directory empty
   def self.sandbox_setup(config, cli_args)
     LOGGING.info "sandbox_setup"
@@ -471,7 +471,7 @@ module CNFManager
       VERBOSE_LOGGING.info yml_cp if verbose
       raise "Copy of #{destination_chart_directory[:chart_directory]} to #{destination_cnf_dir} failed!" unless $?.success?
     end
-    LOGGING.info "copy cnf-conformance.yml file"
+    LOGGING.info "copy cnf-testsuite.yml file"
     LOGGING.info("cp -a #{ensure_cnf_conformance_yml_path(config_file)} #{destination_cnf_dir}")
     yml_cp = `cp -a #{ensure_cnf_conformance_yml_path(config_file)} #{destination_cnf_dir}`
     destination_chart_directory
@@ -576,7 +576,7 @@ module CNFManager
         export_published_chart(config, cli_args)
       when :helm_directory
         VERBOSE_LOGGING.info "deploying with helm directory" if verbose
-        #TODO Add helm options into cnf-conformance yml
+        #TODO Add helm options into cnf-testsuite yml
         #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
         helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory}")
       else

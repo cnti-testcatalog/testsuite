@@ -89,7 +89,7 @@ task "readiness" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     LOGGING.debug "cnf_config: #{config}"
     VERBOSE_LOGGING.info "readiness" if check_verbose(args)
-    # Parse the cnf-conformance.yml
+    # Parse the cnf-testsuite.yml
     resp = ""
     emoji_probe="⎈🧫"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
@@ -126,7 +126,7 @@ rolling_version_change_test_names.each do |tn|
       LOGGING.debug "container_names: #{container_names}"
       update_applied = true
       unless container_names
-        puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red)
+        puts "Please add a container names set of entries into your cnf-testsuite.yml".colorize(:red)
         update_applied = false
       end
 
@@ -143,7 +143,7 @@ rolling_version_change_test_names.each do |tn|
         config_container = container_names.find{|x| x["name"]==container.as_h["name"]} if container_names
         LOGGING.debug "config_container: #{config_container}"
         unless config_container && config_container["#{tn}_test_tag"]? && !config_container["#{tn}_test_tag"].empty?
-          puts "Please add the container name #{container.as_h["name"]} and a corresponding #{tn}_test_tag into your cnf-conformance.yml under container names".colorize(:red)
+          puts "Please add the container name #{container.as_h["name"]} and a corresponding #{tn}_test_tag into your cnf-testsuite.yml under container names".colorize(:red)
           valid_cnf_conformance_yml = false
         end
 
@@ -196,7 +196,7 @@ task "rollback" do |_, args|
     version_change_applied = true
 
     unless container_names
-      puts "Please add a container names set of entries into your cnf-conformance.yml".colorize(:red)
+      puts "Please add a container names set of entries into your cnf-testsuite.yml".colorize(:red)
       update_applied = false
     end
 
@@ -218,7 +218,7 @@ task "rollback" do |_, args|
         version_change_applied = true
         config_container = container_names.find{|x| x["name"] == container_name } if container_names
         unless config_container && config_container["rollback_from_tag"]? && !config_container["rollback_from_tag"].empty?
-          puts "Please add the container name #{container.as_h["name"]} and a corresponding rollback_from_tag into your cnf-conformance.yml under container names".colorize(:red)
+          puts "Please add the container name #{container.as_h["name"]} and a corresponding rollback_from_tag into your cnf-testsuite.yml under container names".colorize(:red)
           version_change_applied = false
         end
         if version_change_applied && config_container
@@ -340,7 +340,7 @@ task "secrets_used" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     LOGGING.debug "cnf_config: #{config}"
     VERBOSE_LOGGING.info "secrets_used" if check_verbose(args)
-    # Parse the cnf-conformance.yml
+    # Parse the cnf-testsuite.yml
     resp = ""
     emoji_probe="🧫"
     task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|

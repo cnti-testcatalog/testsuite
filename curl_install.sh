@@ -17,7 +17,7 @@ fi
 
 if [ "$1" = "cleanup" ]; then 
     if [ -z ${SHELL_UNSUPPORTED+x} ]; then
-        rm "$SHELL_DOT_DIR"cnf-conformance
+        rm "$SHELL_DOT_DIR"cnf-testsuite
     fi
     rm -rf ~/.cnf-testsuite
     exit 0
