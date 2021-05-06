@@ -29,7 +29,7 @@ export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr cnf_setup cnf
 ```
 
 ### Testing
-Run the conformance suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`
+Run the test suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`
 
 ### Automated cleanup
 ```
@@ -43,7 +43,7 @@ export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr cnf_cleanup c
 1. Copy the cnf-testsuite.yml into the cnfs/ip-forwarder directory
 1. Deploy the CNF using helm: `helm install cnfs/ip-forwarder/vpp`
 1. Wait for the installation to finish (all pods are ready)
-1. Run the conformance suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`
+1. Run the test suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`
 
 
   
