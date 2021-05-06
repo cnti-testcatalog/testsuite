@@ -1,4 +1,4 @@
-# CNF Conformance Test Psuedo code
+# CNF TestSuite Psuedo code
 
 ## Compatibility Tests
 

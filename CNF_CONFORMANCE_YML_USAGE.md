@@ -91,7 +91,7 @@ _Note: The install of the CNF from a helm chart will always test the helm chart 
 
 This is the location of additional scripts used to install the CNF being tested. (Optional)
 
-Path to a script used for installing the CNF (relative to the location of the cnf-testsuite.yml). This is used by the CNF-Conformance suite to install the CNF if a wrapper around helm is used or helm isn't used at all. If left blank, the CNF will be installed using the helm_chart value.
+Path to a script used for installing the CNF (relative to the location of the cnf-testsuite.yml). This is used by the CNF-Testsuite to install the CNF if a wrapper around helm is used or helm isn't used at all. If left blank, the CNF will be installed using the helm_chart value.
 
 Example setting:
 
@@ -109,7 +109,7 @@ Example setting (with no parameters):
 
 `release_name: privileged-coredns`
 
-This is used by the CNF-Conformance suite to interact with the Helm release / installation of the CNF being tested and find meta-data about the CNF.
+This is used by the CNF-Testsuite to interact with the Helm release / installation of the CNF being tested and find meta-data about the CNF.
 
 For example, the [rolling_update](https://github.com/cncf/cnf-testsuite/blob/96cee8cefc9a71e62e971f8f4abad56e5db59866/src/tasks/configuration_lifecycle.cr#L156) test uses the helm release_name to fetch the docker image name and tag of the CNF so it can preform a rolling update. [See: rolling_update test](https://github.com/cncf/cnf-testsuite/blob/96cee8cefc9a71e62e971f8f4abad56e5db59866/src/tasks/configuration_lifecycle.cr#L179)
 

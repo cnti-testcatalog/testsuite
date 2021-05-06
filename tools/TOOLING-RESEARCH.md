@@ -1,4 +1,4 @@
-# [WIP] CNF Conformance Tooling Research Notes
+# [WIP] CNF Test Suite Tooling Research Notes
 
 # Tooling options for Privileged Pods test.
 

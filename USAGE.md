@@ -135,7 +135,7 @@ LOGLEVEL=DEBUG ./cnf-testsuite test
 
 1. CLI or Command line flag
 2. Environment variable
-3. CNF-Conformance [Config file](config.yml)
+3. CNF-Testsuite [Config file](config.yml)
 
 ##### Verbose Option
 

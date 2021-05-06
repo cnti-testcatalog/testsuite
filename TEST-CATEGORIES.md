@@ -1,10 +1,10 @@
-# Conformance Test Categories
+# Testsuite Categories
 
-The CNF Conformance program validates interoperability of CNF **workloads** supplied by multiple different vendors orchestrated by Kubernetes **platforms** that are supplied by multiple different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices. For more detailed CLI documentation see the [usage document.](USAGE.md)
+The CNF Test Suite program validates interoperability of CNF **workloads** supplied by multiple different vendors orchestrated by Kubernetes **platforms** that are supplied by multiple different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices. For more detailed CLI documentation see the [usage document.](USAGE.md)
 
 ## Compatability Tests
 
-#### CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements. The CNF Conformance Suite validates this:
+#### CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements. The CNF Test Suite validates this:
 
 #### On platforms:
 
@@ -29,7 +29,7 @@ The CNF Conformance program validates interoperability of CNF **workloads** supp
 
 ## Security Tests
 
-#### CNF containers should be isolated from one another and the host. The CNF Conformance suite uses tools like [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Falco](https://github.com/falcosecurity/falco), [Sysdig Inspect](https://github.com/draios/sysdig-inspect) and [gVisor](https://github.com/google/gvisor):
+#### CNF containers should be isolated from one another and the host. The CNF Test suite uses tools like [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Falco](https://github.com/falcosecurity/falco), [Sysdig Inspect](https://github.com/draios/sysdig-inspect) and [gVisor](https://github.com/google/gvisor):
 
 #### On platforms:
 
@@ -42,7 +42,7 @@ The CNF Conformance program validates interoperability of CNF **workloads** supp
 
 ## Microservice Tests
 
-#### The CNF should be developed and delivered as a microservice. The CNF Conformance suite tests to determine the organizational structure and rate of change of the CNF being tested. Once these are known we can detemine whether or not the CNF is a microservice. See: [Microservice-Principles](https://networking.cloud-native-principles.org/cloud-native-microservice-principles):
+#### The CNF should be developed and delivered as a microservice. The CNF Test suite tests to determine the organizational structure and rate of change of the CNF being tested. Once these are known we can detemine whether or not the CNF is a microservice. See: [Microservice-Principles](https://networking.cloud-native-principles.org/cloud-native-microservice-principles):
 
 #### On workloads:
 
@@ -64,7 +64,7 @@ The CNF Conformance program validates interoperability of CNF **workloads** supp
 
 ## Configuration and Lifecycle Tests
 
-#### Configuration and lifecycle should be managed in a declarative manner, using [ConfigMaps](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/), [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/), or other [declarative interfaces](https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects/#understanding-kubernetes-objects). The Conformance suite checks this by:
+#### Configuration and lifecycle should be managed in a declarative manner, using [ConfigMaps](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/), [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/), or other [declarative interfaces](https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects/#understanding-kubernetes-objects). The Test suite checks this by:
 
 #### On workloads:
 
@@ -81,7 +81,7 @@ The CNF Conformance program validates interoperability of CNF **workloads** supp
 
 ## Observability Tests
 
-#### In order to maintain, debug, and have insight into a protected environment, its infrastructure elements must have the property of being observable. This means these elements must externalize their internal states in some way that lends itself to metrics, tracing, and logging. The Conformance suite checks this:
+#### In order to maintain, debug, and have insight into a protected environment, its infrastructure elements must have the property of being observable. This means these elements must externalize their internal states in some way that lends itself to metrics, tracing, and logging. The Test suite checks this:
 
 #### On workloads:
 
@@ -99,7 +99,7 @@ The CNF Conformance program validates interoperability of CNF **workloads** supp
 
 ## Installable and Upgradeable Tests
 
-#### The CNF Conformance suite will check for usage of standard, in-band deployment tools such as Helm (version 3) charts. The Conformance suite checks this:
+#### The CNF Test suite will check for usage of standard, in-band deployment tools such as Helm (version 3) charts. The Test suite checks this:
 
 #### On workloads:
 
@@ -110,7 +110,7 @@ The CNF Conformance program validates interoperability of CNF **workloads** supp
 
 ## Hardware Resources and Scheduling Tests
 
-#### The CNF container should access all hardware and schedule to specific worker nodes by using a device plugin. The CNF Conformance suite checks this:
+#### The CNF container should access all hardware and schedule to specific worker nodes by using a device plugin. The CNF Test suite checks this:
 
 #### On platforms:
 

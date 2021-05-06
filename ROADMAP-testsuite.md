@@ -1,6 +1,6 @@
 ## Test Suite Roadmap
 
-This document defines a high level roadmap for the "CNF Conformance" Test Suite.
+This document defines a high level roadmap for the "CNF" Test Suite.
 
 The following is a selection of some of the major features the Test Suite team plans to explore. This roadmap will continue to be updated as priorities evolve.
 
@@ -28,6 +28,6 @@ To get a more complete overview of planned features and current work see the [pr
 
 ### Rename and rebrand test suite
 
-- Rename the "CNF Conformance" test suite
+- Rename the "CNF" test suite
 - Create a logo for the test suite
 - Build a landing page for the test suite

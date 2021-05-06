@@ -6,7 +6,7 @@
 
 The CNF Test Suite is a tool that makes it possible to validate telco applications, aka Cloud Native Network Functions (CNFs), and the underlying Telecom platforms adherence to Cloud native principles and best practices.
 
-This Test Suite initiative works closely with the [CNF WG](cnf-wg/README.md) which determines requirements for the CNF Conformance program.
+This Test Suite initiative works closely with the [CNF WG](cnf-wg/README.md) which determines requirements for the CNF Test Suite program.
 
 ## Installation and Usage
 
