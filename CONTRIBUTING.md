@@ -11,7 +11,7 @@ Support channels include:
 - [Issues](issues)
 - Slack:
   - [#cnf-testsuite-dev](https://cloud-native.slack.com/archives/C014TNCEX8R)
-  - [#cnf-testsuite](https://cloud-native.slack.com/archives/CV69TQW7Q)
+  - [#cnf-conformance](https://cloud-native.slack.com/archives/CV69TQW7Q)
 
 Before starting work on a major feature, please reach out to us via [GitHub Issues](../../issues) or Slack. We will make sure no one else is already working on it and ask you to open a [GitHub issue](issues/new/choose).
 
