@@ -28,6 +28,6 @@ To get a more complete overview of planned features and current work see the [pr
 
 ### Rename and rebrand test suite
 
-- Rename the "CNF" test suite
+- Rename the CNF test suite :heavy_check_mark: 
 - Create a logo for the test suite
 - Build a landing page for the test suite
