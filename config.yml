@@ -15,5 +15,5 @@ toggles:
 # kind) will be changed, rebooted, chaos tested, etc
   - name: destructive 
     toggle_on: false
-loglevel: info
+loglevel: error
 
