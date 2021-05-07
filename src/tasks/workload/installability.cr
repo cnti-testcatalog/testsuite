@@ -50,7 +50,7 @@ task "install_script_helm" do |_, args|
     
     emoji_helm_script="⎈📦"
     found = 0
-    # destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    # destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)))
     # install_script = config.get("install_script").as_s?
     install_script = config.cnf_config[:install_script]
     LOGGING.info "install_script: #{install_script}"
@@ -139,7 +139,7 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     helm = CNFSingleton.helm
     emoji_helm_lint="⎈📝☑️"
 
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)))
 
     helm_lint = `#{helm} lint #{destination_cnf_dir}/#{working_chart_directory}`
     VERBOSE_LOGGING.debug "helm_lint: #{helm_lint}" if check_verbose(args)

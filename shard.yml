@@ -1,4 +1,4 @@
-name: cnf_conformance
+name: cnf_testsuite
 version: 0.1.0
 
 authors:
@@ -7,8 +7,8 @@ authors:
   - Denver Williams <denver@debian.nz>
 
 targets:
-  cnf_conformance:
-    main: src/cnf_conformance.cr
+  cnf_testsuite:
+    main: src/cnf_testsuite.cr
 
 crystal: 0.35.1
 

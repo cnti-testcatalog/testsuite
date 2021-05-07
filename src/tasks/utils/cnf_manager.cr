@@ -155,9 +155,9 @@ module CNFManager
   def self.cnf_installed?
     LOGGING.info("cnf_config_list")
     LOGGING.info("find: find #{CNF_DIR}/* -name #{CONFIG_FILE}")
-    cnf_conformance = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
-    LOGGING.info("find response: #{cnf_conformance}")
-    if cnf_conformance.size == 0 
+    cnf_testsuite = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
+    LOGGING.info("find response: #{cnf_testsuite}")
+    if cnf_testsuite.size == 0 
       false
     else 
       true
@@ -167,12 +167,12 @@ module CNFManager
   def self.cnf_config_list(silent=false)
     LOGGING.info("cnf_config_list")
     LOGGING.info("find: find #{CNF_DIR}/* -name #{CONFIG_FILE}")
-    cnf_conformance = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
-    LOGGING.info("find response: #{cnf_conformance}")
-    if cnf_conformance.size == 0 && !silent
+    cnf_testsuite = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
+    LOGGING.info("find response: #{cnf_testsuite}")
+    if cnf_testsuite.size == 0 && !silent
       raise "No cnf_testsuite.yml found! Did you run the setup task?"
     end
-    cnf_conformance
+    cnf_testsuite
   end
 
   def self.destination_cnfs_exist?
@@ -189,10 +189,10 @@ module CNFManager
   def self.sample_testsuite_yml(sample_dir)
     LOGGING.info "sample_testsuite_yml sample_dir: #{sample_dir}"
     cnf_testsuite = `find #{sample_dir}/* -name "cnf-testsuite.yml"`.split("\n")[0]
-    if cnf_conformance.empty?
+    if cnf_testsuite.empty?
       raise "No cnf_testsuite.yml found in #{sample_dir}!"
     end
-    Totem.from_file "./#{cnf_conformance}"
+    Totem.from_file "./#{cnf_testsuite}"
   end
 
   def self.path_has_yml?(config_path)
@@ -224,7 +224,7 @@ module CNFManager
     end
   end
 
-  def self.ensure_cnf_conformance_dir(path)
+  def self.ensure_cnf_testsuite_dir(path)
     LOGGING.info("ensure_cnf_testsuite_yml_dir")
     if path_has_yml?(path)
       dir = File.dirname(path)
