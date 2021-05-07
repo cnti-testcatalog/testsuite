@@ -42,16 +42,16 @@ if ARGV[0]? && ARGV[0] == "setup"
       FileUtils.mkdir("#{home}/.bash.d")
     end
     crystal_alias = "#{home}/.bash.d/crystal.alias"
-    cnf_conformance_alias = "#{home}/.bash.d/cnf_conformance.alias"
+    cnf_testsuite_alias = "#{home}/.bash.d/cnf_testsuite.alias"
   end
   if ! bin_path.empty?
     File.write("#{crystal_alias}", "alias crystal='#{bin_path} command alias $@'")
-    File.write("#{cnf_conformance_alias}", "alias cnf-testsuite='#{bin_path} command alias binary $@'")
-    puts "A Crystal alias has been created under #{crystal_alias} & #{cnf_conformance_alias} \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n alias crystal='crystal #{bin_path} command alias $@' \n alias cnf-testsuite='crystal #{bin_path} command alias binary $@'"
+    File.write("#{cnf_testsuite_alias}", "alias cnf-testsuite='#{bin_path} command alias binary $@'")
+    puts "A Crystal alias has been created under #{crystal_alias} & #{cnf_testsuite_alias} \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n alias crystal='crystal #{bin_path} command alias $@' \n alias cnf-testsuite='crystal #{bin_path} command alias binary $@'"
   elsif ! crystal_path.empty? && ! source_path.empty?
     File.write("#{crystal_alias}", "alias crystal='#{crystal_path} #{source_path} command alias -- $@'")
-    File.write("#{cnf_conformance_alias}", "alias cnf-testsuite='#{crystal_path} #{source_path} command alias binary -- $@'")
-    puts "Crystal aliases has been created under #{crystal_alias} & #{cnf_conformance_alias} \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n alias crystal='#{crystal_path} #{source_path} command alias -- $@' \n alias cnf-testsuite='#{crystal_path} #{source_path} command alias binary -- $@'"
+    File.write("#{cnf_testsuite_alias}", "alias cnf-testsuite='#{crystal_path} #{source_path} command alias binary -- $@'")
+    puts "Crystal aliases has been created under #{crystal_alias} & #{cnf_testsuite_alias} \n But you will need to restart your terminal session for it to apply, or in your current session you can manually run: \n alias crystal='#{crystal_path} #{source_path} command alias -- $@' \n alias cnf-testsuite='#{crystal_path} #{source_path} command alias binary -- $@'"
   else 
     puts "Missing Arguments: [--binary] or [--crystal --source]"
   end
@@ -82,8 +82,8 @@ elsif ARGV[0]? && ARGV[0] == "cleanup"
       if File.exists?("#{Path.home}/.bash.d/crystal.alias")
         FileUtils.rm("#{Path.home}/.bash.d/crystal.alias")
       end
-      if File.exists?("#{Path.home}/.bash.d/cnf_conformance.alias")
-        FileUtils.rm("#{Path.home}/.bash.d/cnf_conformance.alias")
+      if File.exists?("#{Path.home}/.bash.d/cnf_testsuite.alias")
+        FileUtils.rm("#{Path.home}/.bash.d/cnf_testsuite.alias")
       end
     end
 
