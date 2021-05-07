@@ -37,7 +37,7 @@ module CNFManager
     def self.parse_config_yml(config_yml_path : String) : CNFManager::Config
       LOGGING.debug "parse_config_yml config_yml_path: #{config_yml_path}"
       yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
-      #TODO modify the destination conformance yml instead of the source conformance yml 
+      #TODO modify the destination testsuite yml instead of the source testsuite yml 
       # (especially in the case of the release manager).  Then reread the destination config
       # TODO for cleanup, read source, then find destination and use release name from destination config
       # TODO alternatively use a CRD to save the release name
@@ -49,7 +49,7 @@ module CNFManager
 
       destination_cnf_dir = CNFManager.cnf_destination_dir(yml_file)
 
-      yml_file_path = CNFManager.ensure_cnf_conformance_dir(config_yml_path)
+      yml_file_path = CNFManager.ensure_cnf_testsuite_dir(config_yml_path)
       source_cnf_file = yml_file
       source_cnf_dir = yml_file_path
       manifest_directory = optional_key_as_string(config, "manifest_directory")

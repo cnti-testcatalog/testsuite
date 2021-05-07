@@ -164,7 +164,7 @@ Now that cnf-testsuite is installed and setup, we can now run CNF workloads and 
 
 #### Configuring an example CNF
 
-To use CoreDNS as an example CNF. Download the conformance configuration to test CoreDNS:
+To use CoreDNS as an example CNF. Download the testsuite configuration to test CoreDNS:
 
 - Make sure you are in your cnf-testsuite/ source repo checkout directory and do the following:
   ```

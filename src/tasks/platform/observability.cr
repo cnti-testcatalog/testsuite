@@ -5,7 +5,7 @@ require "../utils/utils.cr"
 require "retriable"
 
 namespace "platform" do
-  desc "The CNF conformance suite checks to see if the Platform has Observability support."
+  desc "The CNF test suite checks to see if the Platform has Observability support."
   task "observability", ["kube_state_metrics", "node_exporter", "prometheus_adapter", "metrics_server"] do |t, args|
     VERBOSE_LOGGING.info "observability" if check_verbose(args)
     VERBOSE_LOGGING.debug "observability args.raw: #{args.raw}" if check_verbose(args)

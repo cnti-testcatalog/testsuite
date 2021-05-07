@@ -26,7 +26,7 @@ module CNFManager
 
     def self.export_manifest(config_src, output_file="./cnf-testsuite.yml")
 
-      generate_initial_conformance_yml(config_src, output_file)
+      generate_initial_testsuite_yml(config_src, output_file)
       CNFManager.generate_and_set_release_name(output_file)
       config = CNFManager.parsed_config_file(output_file)
       release_name = optional_key_as_string(config, "release_name")
@@ -76,27 +76,27 @@ module CNFManager
     end
 
     # Please don't indent this.
-    def self.conformance_yml_template
+    def self.testsuite_yml_template
       <<-TEMPLATE
       release_name:
       {{ install_key }} 
       TEMPLATE
     end
 
-    def self.generate_initial_conformance_yml(config_src, config_yml_path="./cnf-testsuite.yml")
+    def self.generate_initial_testsuite_yml(config_src, config_yml_path="./cnf-testsuite.yml")
       if !File.exists?(config_yml_path)
         case install_method_by_config_src(config_src) 
         when :helm_chart
-          conformance_yml_template_resp = Crinja.render(conformance_yml_template, { "install_key" => "helm_chart: #{config_src}"})
+          testsuite_yml_template_resp = Crinja.render(testsuite_yml_template, { "install_key" => "helm_chart: #{config_src}"})
         when :helm_directory
-          conformance_yml_template_resp = Crinja.render(conformance_yml_template, { "install_key" => "helm_directory: #{config_src}"})
+          testsuite_yml_template_resp = Crinja.render(testsuite_yml_template, { "install_key" => "helm_directory: #{config_src}"})
         when :manifest_directory
-          conformance_yml_template_resp = Crinja.render(conformance_yml_template, { "install_key" => "manifest_directory: #{config_src}"})
+          testsuite_yml_template_resp = Crinja.render(testsuite_yml_template, { "install_key" => "manifest_directory: #{config_src}"})
         else
           puts "Error: #{config_src} is neither a helm_chart, helm_directory, or manifest_directory.".colorize(:red)
           exit 1
         end
-        write_template= `echo "#{conformance_yml_template_resp}" > "#{config_yml_path}"`
+        write_template= `echo "#{testsuite_yml_template_resp}" > "#{config_yml_path}"`
       else
         LOGGING.error "#{config_yml_path} already exists"
       end

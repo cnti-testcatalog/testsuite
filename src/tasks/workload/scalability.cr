@@ -5,7 +5,7 @@ require "colorize"
 require "totem"
 require "../utils/utils.cr"
 
-desc "The CNF conformance suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
+desc "The CNF test suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
 task "scalability", ["increase_decrease_capacity"] do |t, args|
   VERBOSE_LOGGING.info "scalability" if check_verbose(args)
   VERBOSE_LOGGING.debug "scaling args.raw: #{args.raw}" if check_verbose(args)

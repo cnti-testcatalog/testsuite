@@ -32,7 +32,7 @@ describe CnfTestSuite do
     response_s = `./cnf-testsuite helm_deploy destructive`
     LOGGING.info response_s
     $?.success?.should be_true
-    (/No cnf_conformance.yml found! Did you run the setup task/ =~ response_s).should_not be_nil
+    (/No cnf_testsuite.yml found! Did you run the setup task/ =~ response_s).should_not be_nil
   end
 
   it "'helm_chart_valid' should pass on a good helm chart", tags: ["helm"]  do

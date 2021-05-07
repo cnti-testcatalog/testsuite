@@ -4,7 +4,7 @@ require "colorize"
 require "crinja"
 require "../utils/utils.cr"
 
-desc "The CNF conformance suite checks to see if the CNFs are resilient to failures."
+desc "The CNF test suite checks to see if the CNFs are resilient to failures."
 #task "resilience", ["chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill" ] do |t, args|
  task "resilience", ["pod_network_latency", "chaos_cpu_hog", "chaos_container_kill", "disk_fill"] do |t, args|
   VERBOSE_LOGGING.info "resilience" if check_verbose(args)
