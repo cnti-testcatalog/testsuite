@@ -6,6 +6,11 @@ require "sam"
 
 describe "TarClient" do
 
+  before_all do
+    unless Dir.exists?("./tmp")
+      LOGGING.info `mkdir ./tmp`
+    end
+  end
   it "'.tar' should tar a source file or directory", tags: ["tar-install"]  do
     `rm ./tmp/test.tar`
     TarClient.tar("./tmp/test.tar", "./spec/fixtures", "cnf-testsuite.yml")
