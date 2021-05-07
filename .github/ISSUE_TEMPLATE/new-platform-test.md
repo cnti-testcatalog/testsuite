@@ -1,6 +1,6 @@
 ---
 name: New Platform Test
-about: Creating a new platform conformance test
+about: Creating a new platform testsuite test
 title: "[Platform]"
 labels: platform
 assignees: ""

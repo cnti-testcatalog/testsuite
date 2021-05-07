@@ -1,6 +1,6 @@
 ---
 name: New Workload Test
-about: Creating a new workload conformance test
+about: Creating a new workload testsuite test
 title: "[Workload]"
 labels: workload
 assignees: ""
