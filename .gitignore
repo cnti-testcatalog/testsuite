@@ -16,6 +16,7 @@ cnf-testsuite
 results.yml
 cnf-testsuite-results*
 cnf-testsuite.env
+cnf-conformance.env
 *.tar
 *.tar*
 reasonable_startup_orig.yml
