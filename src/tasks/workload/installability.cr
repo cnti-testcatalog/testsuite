@@ -39,7 +39,7 @@ task "helm_deploy" do |_, args|
       end
     end
   else
-    upsert_failed_task("helm_deploy", "✖️  FAILED: No cnf_conformance.yml found! Did you run the setup task?")
+    upsert_failed_task("helm_deploy", "✖️  FAILED: No cnf_testsuite.yml found! Did you run the setup task?")
   end
 end
 

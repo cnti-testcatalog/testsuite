@@ -327,7 +327,7 @@ END
       LOGGING.info "final_cnf_results_yml"
       results_file = `find ./results/* -name "cnf-testsuite-results-*.yml"`.split("\n")[-2].gsub("./", "")
       if results_file.empty?
-        raise "No cnf_conformance-results-*.yml found! Did you run the all task?"
+        raise "No cnf_testsuite-results-*.yml found! Did you run the all task?"
       end
       results_file
     end

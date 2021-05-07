@@ -341,8 +341,8 @@ describe "SampleUtils" do
     response_s = `./cnf-testsuite validate_config cnf-config=spec/fixtures/cnf-testsuite-unmapped-keys-and-subkeys.yml`
     $?.success?.should be_true
     LOGGING.debug "validate_config resp: #{response_s}"
-    (/WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator/ =~ response_s).should_not be_nil
-    (/WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_conformance.yml/ =~ response_s).should_not be_nil
+    (/WARNING: Unmapped cnf_testsuite.yml keys. Please add them to the validator/ =~ response_s).should_not be_nil
+    (/WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_testsuite.yml/ =~ response_s).should_not be_nil
     (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
   end
 
@@ -367,7 +367,7 @@ describe "SampleUtils" do
     response_s = `./cnf-testsuite validate_config cnf-config=spec/fixtures/cnf-testsuite-invalid-and-unmapped-keys.yml`
     $?.success?.should be_true
 
-    (/ERROR: cnf_conformance.yml field validation error/ =~ response_s).should_not be_nil
+    (/ERROR: cnf_testsuite.yml field validation error/ =~ response_s).should_not be_nil
     (/FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s).should_not be_nil
   end
 
@@ -376,10 +376,10 @@ describe "SampleUtils" do
     get_dirs = Dir.entries("sample-cnfs")
     dir_list = get_dirs - [".", ".."]
     dir_list.each do |dir|
-      conformance_yml = "sample-cnfs/#{dir}/cnf-testsuite.yml"
-      response_s = `./cnf-testsuite validate_config cnf-config=#{conformance_yml}`
+      testsuite_yml = "sample-cnfs/#{dir}/cnf-testsuite.yml"
+      response_s = `./cnf-testsuite validate_config cnf-config=#{testsuite_yml}`
       if (/FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
-        LOGGING.info "\n #{conformance_yml}: #{response_s}"
+        LOGGING.info "\n #{testsuite_yml}: #{response_s}"
       end
       (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
     end
@@ -390,10 +390,10 @@ describe "SampleUtils" do
     get_dirs = Dir.entries("example-cnfs")
     dir_list = get_dirs - [".", ".."]
     dir_list.each do |dir|
-      conformance_yml = "example-cnfs/#{dir}/cnf-testsuite.yml"
-      response_s = `./cnf-testsuite validate_config cnf-config=#{conformance_yml}`
+      testsuite_yml = "example-cnfs/#{dir}/cnf-testsuite.yml"
+      response_s = `./cnf-testsuite validate_config cnf-config=#{testsuite_yml}`
       if (/FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
-        LOGGING.info "\n #{conformance_yml}: #{response_s}"
+        LOGGING.info "\n #{testsuite_yml}: #{response_s}"
       end
       (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
     end
