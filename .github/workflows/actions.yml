@@ -73,9 +73,9 @@ jobs:
       run: |
         JSON="{\"include\":["
         TEST_ARRAY=$(grep -roP --no-filename 'tags: \K(\[|")(.*)(\]|")' spec/ | tr -d '[],' | tr -s '\n' ' ' | xargs -n1 | sort -u | xargs)
-        TEST_ARRAY=("${TEST_ARRAY[@]/conformance-config-lifecycle/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/conformance-microservice/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/conformance-all/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-config-lifecycle/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-microservice/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-all/}")
         
         TEST_LIST=$(for i in ${TEST_ARRAY[@]}
         do
