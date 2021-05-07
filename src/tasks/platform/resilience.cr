@@ -4,7 +4,7 @@ require "colorize"
 require "../utils/utils.cr"
 
 namespace "platform" do
-  desc "The CNF conformance suite checks to see if the CNFs are resilient to failures."
+  desc "The CNF test suite checks to see if the CNFs are resilient to failures."
   task "resilience", ["worker_reboot_recovery"] do |t, args|
     VERBOSE_LOGGING.info "resilience" if check_verbose(args)
     VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
