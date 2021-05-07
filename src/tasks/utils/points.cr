@@ -315,7 +315,7 @@ module CNFManager
     def self.template_results_yml
   #TODO add tags for category summaries
   YAML.parse <<-END
-name: cnf conformance
+name: cnf testsuite
 status:
 points:
 exit_code: 0

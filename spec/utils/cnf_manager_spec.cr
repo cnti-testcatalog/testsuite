@@ -138,7 +138,7 @@ describe "SampleUtils" do
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end
-    (yaml["name"]).should eq("cnf conformance")
+    (yaml["name"]).should eq("cnf testsuite")
     (yaml["exit_code"]).should eq(0) 
   end
 
