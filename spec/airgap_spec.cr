@@ -7,9 +7,13 @@ require "sam"
 
 describe "AirGap" do
 
+  before_each do
+    `./cnf-testsuite cleanup`
+    $?.success?.should be_true
     unless Dir.exists?("./tmp")
       LOGGING.info `mkdir ./tmp`
     end
+  end
 
   it "'airgapped' task should accept a tarball", tags: ["airgap"] do
 

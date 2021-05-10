@@ -12,7 +12,7 @@ describe "AirGap" do
 
   it "'airgapped' should accept a tarball", tags: ["airgap"] do
 
-    AirGap.air_gapped("./tmp/airgapped.tar.gz")
+    AirGap.generate("./tmp/airgapped.tar.gz")
     (File.exists?("./tmp/airgapped.tar.gz")).should be_true
   ensure
     `rm ./tmp/airgapped.tar.gz`

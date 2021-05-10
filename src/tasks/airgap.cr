@@ -9,13 +9,13 @@ task "airgapped",  do  |_, args|
   #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
   #./cnf-testsuite offline of=~/airgapped.tar.gz
   #./cnf-testsuite offline output-file=~/mydir/airgapped.tar.gz
-    output_file = args.named["output-file"].as(String) if args.named["output-file"]?
+  output_file = args.named["output-file"].as(String) if args.named["output-file"]?
     output_file = args.named["of"].as(String) if args.named["of"]?
-    if output_file && !output_file.empty?
-      AirGap.air_gapped(output_file)
-    else
-      AirGap.air_gapped()
-    end
+  if output_file && !output_file.empty?
+      AirGap.generate(output_file)
+  else
+    AirGap.generate()
+  end
   stdout_success "Airgap setup complete"
 end
 
