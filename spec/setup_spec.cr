@@ -9,6 +9,9 @@ describe "Setup" do
   before_each do
     `./cnf-testsuite cleanup`
     $?.success?.should be_true
+    unless Dir.exists?("./tmp")
+      LOGGING.info `mkdir ./tmp`
+    end
   end
 
   after_each do
@@ -16,7 +19,22 @@ describe "Setup" do
     $?.success?.should be_true
   end
 
+
+
+  it "'setup' task should accept a tarball", tags: ["airgap"] do
+
+    #./cnf-testsuite setup offline=./airgapped.tar.gz
+    LOGGING.info `./cnf-testsuite airgapped output-file=./tmp/airgapped.tar.gz`
+    LOGGING.info `./cnf-testsuite setup offline=./tmp/airgapped.tar.gz`
+    (File.exists?("./tmp/cnf-testsuite.yml")).should be_true
+  ensure
+    `rm ./tmp/airgapped.tar.gz`
+    `rm ./tmp/cnf-testsuite.yml`
+  end
+
+
   it "'setup' should completely setup the cnf testsuite environment before installing cnfs", tags: ["setup"]  do
+
     response_s = `./cnf-testsuite setup`
     LOGGING.info response_s
     $?.success?.should be_true
