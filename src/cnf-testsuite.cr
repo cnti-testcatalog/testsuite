@@ -2,7 +2,7 @@ require "sam"
 require "./tasks/**"
 require "./tasks/utils/utils.cr"
 require "./tasks/utils/release_manager.cr"
-require "./cnf_conformance.cr"
+require "./cnf_testsuite.cr"
 
 
 desc "The CNF Test Suite program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."

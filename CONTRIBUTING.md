@@ -1,6 +1,6 @@
 ## Contributing Guidelines
 
-Welcome! We gladly accept contributions on new conformance tests, example CNFs, updates to documentation, enhancements, bug reports and more.
+Welcome! We gladly accept contributions on new tests, example CNFs, updates to documentation, enhancements, bug reports and more.
 
 The CNF Test Suite is [Apache 2.0 licensed](LICENSE) and accepts contributions via GitHub pull requests. Please read the following guidelines carefully to make it easier to get your contribution accepted.
 

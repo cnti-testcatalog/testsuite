@@ -8,7 +8,7 @@ require "../utils/docker_client.cr"
 require "halite"
 require "totem"
 
-desc "The CNF conformance suite checks to see if CNFs follows microservice principles"
+desc "The CNF test suite checks to see if CNFs follows microservice principles"
 task "microservice", ["reasonable_image_size", "reasonable_startup_time"] do |_, args|
   stdout_score("microservice")
 end

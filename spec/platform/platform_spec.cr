@@ -17,7 +17,7 @@ describe "Platform" do
     response_s = `./cnf-testsuite platform:oci_compliant`
     LOGGING.info response_s
     puts response_s
-    (/No cnf_conformance.yml found/ =~ response_s).should be_nil
+    (/No cnf_testsuite.yml found/ =~ response_s).should be_nil
   end
   it "'platform' should not run prerequisites that are prefixed with a ~", tags: ["platform"] do
     response_s = `./cnf-testsuite cleanup`

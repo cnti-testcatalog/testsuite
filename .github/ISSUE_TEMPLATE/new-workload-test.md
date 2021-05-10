@@ -1,6 +1,6 @@
 ---
 name: New Workload Test
-about: Creating a new workload conformance test
+about: Creating a new workload testsuite test
 title: "[Workload]"
 labels: workload
 assignees: ""
@@ -34,7 +34,7 @@ assignees: ""
 
 - [ ]
 
-**Upstream tool set up tasks: (conformance suite + upstream tools)**
+**Upstream tool set up tasks: (test suite + upstream tools)**
 
 - [ ]
 

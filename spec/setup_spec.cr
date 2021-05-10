@@ -20,6 +20,7 @@ describe "Setup" do
   end
 
 
+
   it "'setup' task should accept a tarball", tags: ["airgap"] do
 
     #./cnf-testsuite setup offline=./airgapped.tar.gz
@@ -31,7 +32,9 @@ describe "Setup" do
     `rm ./tmp/cnf-testsuite.yml`
   end
 
-  it "'setup' should completely setup the cnf conformance environment before installing cnfs", tags: ["setup"]  do
+
+  it "'setup' should completely setup the cnf testsuite environment before installing cnfs", tags: ["setup"]  do
+
     response_s = `./cnf-testsuite setup`
     LOGGING.info response_s
     $?.success?.should be_true

@@ -208,7 +208,7 @@ This value is used to test the upgradeability of each container image. The image
 
 ### Creating Your Own cnf-testsuite.yml
 
-- Create a Conformance configuration file called `cnf-testsuite.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-testsuite.yml`)
+- Create a testsuite configuration file called `cnf-testsuite.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-testsuite.yml`)
   - See example config (See [latest example in repo](https://github.com/cncf/cnf-testsuite/blob/main/cnf-testsuite.example.yml)):
     - Optionally, copy the example configuration file, [`cnf-testsuite-example.yml`](cnf-testsuite.example.yml), and modify appropriately
 - (Optional) Setup your CNF for testing and deploy it to the cluster by running `cnf-testsuite cnf_setup cnf-config=path_to_your/cnf_folder`

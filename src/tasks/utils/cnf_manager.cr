@@ -24,7 +24,7 @@ module CNFManager
       ccyt_validator = CnfTestSuiteYmlType.from_json(config.settings.to_json)
     rescue ex
       valid = false
-      LOGGING.error "✖ ERROR: cnf_conformance.yml field validation error.".colorize(:red)
+      LOGGING.error "✖ ERROR: cnf_testsuite.yml field validation error.".colorize(:red)
       LOGGING.error " please check info in the the field name near the text 'CnfTestSuiteYmlType#' in the error below".colorize(:red)
       LOGGING.error ex.message
       ex.backtrace.each do |x|
@@ -32,8 +32,8 @@ module CNFManager
       end
     end
 
-    unmapped_keys_warning_msg = "WARNING: Unmapped cnf_conformance.yml keys. Please add them to the validator".colorize(:yellow)
-    unmapped_subkeys_warning_msg = "WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_conformance.yml".colorize(:yellow)
+    unmapped_keys_warning_msg = "WARNING: Unmapped cnf_testsuite.yml keys. Please add them to the validator".colorize(:yellow)
+    unmapped_subkeys_warning_msg = "WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_testsuite.yml".colorize(:yellow)
 
 
     if ccyt_validator && !ccyt_validator.try &.json_unmapped.empty?
@@ -155,9 +155,9 @@ module CNFManager
   def self.cnf_installed?
     LOGGING.info("cnf_config_list")
     LOGGING.info("find: find #{CNF_DIR}/* -name #{CONFIG_FILE}")
-    cnf_conformance = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
-    LOGGING.info("find response: #{cnf_conformance}")
-    if cnf_conformance.size == 0 
+    cnf_testsuite = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
+    LOGGING.info("find response: #{cnf_testsuite}")
+    if cnf_testsuite.size == 0 
       false
     else 
       true
@@ -167,12 +167,12 @@ module CNFManager
   def self.cnf_config_list(silent=false)
     LOGGING.info("cnf_config_list")
     LOGGING.info("find: find #{CNF_DIR}/* -name #{CONFIG_FILE}")
-    cnf_conformance = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
-    LOGGING.info("find response: #{cnf_conformance}")
-    if cnf_conformance.size == 0 && !silent
-      raise "No cnf_conformance.yml found! Did you run the setup task?"
+    cnf_testsuite = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
+    LOGGING.info("find response: #{cnf_testsuite}")
+    if cnf_testsuite.size == 0 && !silent
+      raise "No cnf_testsuite.yml found! Did you run the setup task?"
     end
-    cnf_conformance
+    cnf_testsuite
   end
 
   def self.destination_cnfs_exist?
@@ -181,18 +181,18 @@ module CNFManager
 
   def self.parsed_config_file(path)
     if path.empty?
-      raise "No cnf_conformance.yml found in #{path}!"
+      raise "No cnf_testsuite.yml found in #{path}!"
     end
     Totem.from_file "#{path}"
   end
 
-  def self.sample_conformance_yml(sample_dir)
-    LOGGING.info "sample_conformance_yml sample_dir: #{sample_dir}"
-    cnf_conformance = `find #{sample_dir}/* -name "cnf-testsuite.yml"`.split("\n")[0]
-    if cnf_conformance.empty?
-      raise "No cnf_conformance.yml found in #{sample_dir}!"
+  def self.sample_testsuite_yml(sample_dir)
+    LOGGING.info "sample_testsuite_yml sample_dir: #{sample_dir}"
+    cnf_testsuite = `find #{sample_dir}/* -name "cnf-testsuite.yml"`.split("\n")[0]
+    if cnf_testsuite.empty?
+      raise "No cnf_testsuite.yml found in #{sample_dir}!"
     end
-    Totem.from_file "./#{cnf_conformance}"
+    Totem.from_file "./#{cnf_testsuite}"
   end
 
   def self.path_has_yml?(config_path)
@@ -206,10 +206,10 @@ module CNFManager
   def self.config_from_path_or_dir(cnf_path_or_dir)
     if path_has_yml?(cnf_path_or_dir)
       config_file = File.dirname(cnf_path_or_dir)
-      config = sample_conformance_yml(config_file)
+      config = sample_testsuite_yml(config_file)
     else
       config_file = cnf_path_or_dir
-      config = sample_conformance_yml(config_file)
+      config = sample_testsuite_yml(config_file)
     end
     return config
   end
@@ -224,7 +224,7 @@ module CNFManager
     end
   end
 
-  def self.ensure_cnf_conformance_dir(path)
+  def self.ensure_cnf_testsuite_dir(path)
     LOGGING.info("ensure_cnf_testsuite_yml_dir")
     if path_has_yml?(path)
       dir = File.dirname(path)
@@ -324,7 +324,7 @@ module CNFManager
     LOGGING.info "generate_and_set_release_name"
 
     yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
-    yml_path = CNFManager.ensure_cnf_conformance_dir(config_yml_path)
+    yml_path = CNFManager.ensure_cnf_testsuite_dir(config_yml_path)
 
     config = CNFManager.parsed_config_file(yml_file)
 

@@ -15,7 +15,7 @@ Follow [Pre-req steps](../../INSTALL.md#pre-requisites), including
 
 ### Automated CNF installation
 
-Initialize the conformance suite
+Initialize the test suite
 
 ```
 crystal src/cnf-testsuite.cr setup

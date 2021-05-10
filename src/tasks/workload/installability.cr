@@ -5,7 +5,7 @@ require "colorize"
 require "totem"
 require "../utils/utils.cr"
 
-desc "The CNF conformance suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
+desc "The CNF test suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
 task "installability", ["install_script_helm", "helm_chart_valid", "helm_chart_published", "helm_deploy"] do |_, args|
   stdout_score("installability")
 end
@@ -39,7 +39,7 @@ task "helm_deploy" do |_, args|
       end
     end
   else
-    upsert_failed_task("helm_deploy", "✖️  FAILED: No cnf_conformance.yml found! Did you run the setup task?")
+    upsert_failed_task("helm_deploy", "✖️  FAILED: No cnf_testsuite.yml found! Did you run the setup task?")
   end
 end
 
@@ -50,7 +50,7 @@ task "install_script_helm" do |_, args|
     
     emoji_helm_script="⎈📦"
     found = 0
-    # destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    # destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)))
     # install_script = config.get("install_script").as_s?
     install_script = config.cnf_config[:install_script]
     LOGGING.info "install_script: #{install_script}"
@@ -139,7 +139,7 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     helm = CNFSingleton.helm
     emoji_helm_lint="⎈📝☑️"
 
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_conformance_dir(args.named["cnf-config"].as(String)))
+    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)))
 
     helm_lint = `#{helm} lint #{destination_cnf_dir}/#{working_chart_directory}`
     VERBOSE_LOGGING.debug "helm_lint: #{helm_lint}" if check_verbose(args)

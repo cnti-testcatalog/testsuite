@@ -1,6 +1,6 @@
 ---
 name: New Platform Test
-about: Creating a new platform conformance test
+about: Creating a new platform testsuite test
 title: "[Platform]"
 labels: platform
 assignees: ""
@@ -30,7 +30,7 @@ assignees: ""
 
 - [ ]
 
-**Upstream tool set up tasks: (conformance suite + upstream tools)**
+**Upstream tool set up tasks: (test suite + upstream tools)**
 
 - [ ]
 
