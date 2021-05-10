@@ -1,18 +1,19 @@
 # coding: utf-8
 require "totem"
 require "colorize"
-require "crinja"
-require "./types/cnf_testsuite_yml_type.cr"
-require "./helm.cr"
-require "./git_client.cr"
-require "uuid"
-require "./points.cr"
-require "./task.cr"
-require "./config.cr"
-require "./generate_config.cr"
+require "./tar.cr"
 
 module AirGap
   #./cnf-testsuite setup --offline=./airgapped.tar.gz
+  #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
+  #./cnf-testsuite offline -o ~/airgapped.tar.gz
+  #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
+  def self.air_gapped(output_file : String = "airgapped.tar.gz")
+    #TODO find real images 
+    #TODO tar real images 
+    s1 = "./spec/fixtures/cnf-testsuite.yml"
+    TarClient.tar(output_file, Path[s1].parent, s1.split("/")[-1])
+  end
   
 end
 
