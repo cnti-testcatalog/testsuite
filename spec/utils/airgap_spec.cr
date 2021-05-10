@@ -8,11 +8,7 @@ require "sam"
 describe "AirGap" do
 
   it "'airgapped' should accept a tarball", tags: ["airgap"] do
-    # TODO select a example file to tar 
-    # TODO  call tar function
-    # TODO cleanup tar 
 
-    # LOGGING.info `./cnf-testsuite airgapped -o ~/airgapped.tar.gz`
     AirGap.air_gapped("./tmp/airgapped.tar.gz")
     (File.exists?("./tmp/airgapped.tar.gz")).should be_true
   ensure

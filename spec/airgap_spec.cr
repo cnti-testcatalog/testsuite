@@ -7,10 +7,7 @@ require "sam"
 
 describe "AirGap" do
 
-  it "'airgapped' should accept a tarball", tags: ["airgap"] do
-    # TODO select a example file to tar 
-    # TODO  call tar function
-    # TODO cleanup tar 
+  it "'airgapped' task should accept a tarball", tags: ["airgap"] do
 
     LOGGING.info `./cnf-testsuite airgapped output-file=./tmp/airgapped.tar.gz`
     (File.exists?("./tmp/airgapped.tar.gz")).should be_true
