@@ -7,6 +7,10 @@ require "sam"
 
 describe "AirGap" do
 
+    unless Dir.exists?("./tmp")
+      LOGGING.info `mkdir ./tmp`
+    end
+
   it "'airgapped' task should accept a tarball", tags: ["airgap"] do
 
     LOGGING.info `./cnf-testsuite airgapped output-file=./tmp/airgapped.tar.gz`

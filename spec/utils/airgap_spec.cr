@@ -6,6 +6,9 @@ require "file_utils"
 require "sam"
 
 describe "AirGap" do
+    unless Dir.exists?("./tmp")
+      LOGGING.info `mkdir ./tmp`
+    end
 
   it "'airgapped' should accept a tarball", tags: ["airgap"] do
 
