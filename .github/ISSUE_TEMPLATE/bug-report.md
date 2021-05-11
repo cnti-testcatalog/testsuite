@@ -33,7 +33,7 @@ If applicable, add screenshots to help explain your problem.
 
 **How will this be tested? aka Acceptance Criteria (optional)**
 
-(optional: unncesasray for things like spelling errors and such)
+(optional: unnecessary for things like spelling errors and such)
 
 Once this issue is address how will the fix be verified?
 
