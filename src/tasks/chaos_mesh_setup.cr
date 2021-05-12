@@ -27,6 +27,7 @@ task "install_chaosmesh" do |_, args|
     LOGGING.info "KubectlClient.apply stderr: #{stderr.to_s}"
     checkout_tag = `cd #{current_dir}/#{TOOLS_DIR}/chaos_mesh && git checkout tags/#{CHAOS_MESH_VERSION} > /dev/null 2>&1 && cd -`
   end
+  #TODO use helm wrapper
   install_chaos_mesh = `#{helm} install chaos-mesh #{current_dir}/#{TOOLS_DIR}/chaos_mesh/helm/chaos-mesh --set chaosDaemon.runtime=containerd --set chaosDaemon.socketPath=/run/containerd/containerd.sock > /dev/null 2>&1`
   File.write("chaos_network_loss.yml", CHAOS_NETWORK_LOSS)
   File.write("chaos_cpu_hog.yml", CHAOS_CPU_HOG)

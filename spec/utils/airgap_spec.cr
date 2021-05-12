@@ -10,7 +10,7 @@ describe "AirGap" do
       LOGGING.info `mkdir ./tmp`
     end
 
-  it "'airgapped' should accept a tarball", tags: ["airgap"] do
+  it "'generate' should generate a tarball", tags: ["airgap"] do
 
     AirGap.generate("./tmp/airgapped.tar.gz")
     (File.exists?("./tmp/airgapped.tar.gz")).should be_true

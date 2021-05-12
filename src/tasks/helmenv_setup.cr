@@ -27,6 +27,7 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
         helm = CNFSingleton.helm
         VERBOSE_LOGGING.debug helm if check_verbose(args)
         VERBOSE_LOGGING.debug `#{helm} version` if check_verbose(args)
+        #TODO what is this for?
         stable_repo = `#{helm} repo add stable https://cncf.gitlab.io/stable`
         VERBOSE_LOGGING.debug stable_repo if check_verbose(args)
 

@@ -19,7 +19,7 @@ module AirGap
     #TODO untar real images to their appropriate directories
     #TODO  the second parameter will be determined based on
     # the image file that was tarred
-    TarClient.untar(output_file, "./tmp")
+    TarClient.untar(output_file, "/tmp")
   end
   
 end
