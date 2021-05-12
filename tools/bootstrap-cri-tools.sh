@@ -35,3 +35,15 @@ spec:
 EOF
 
 kubectl create -f cri-tools-manifest.yml
+
+NODE_ARRAY=$(kubectl get nodes -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ " "}}{{end}}{{end}}')
+
+echo "Nodes: ${NODE_ARRAY[@]}"
+
+for node in ${NODE_ARRAY[@]}
+do
+    until [[ $(kubectl get pods --field-selector spec.nodeName=$node -l name=cri-tools -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
+        echo "Waiting for pod"
+        sleep 1
+    done
+done
