@@ -21,15 +21,15 @@ describe "Setup" do
 
 
 
-  it "'setup' task should accept a tarball", tags: ["airgap"] do
+  it "'setup' task should accept a tarball and put files in the /tmp directory", tags: ["airgap"] do
 
     #./cnf-testsuite setup offline=./airgapped.tar.gz
     LOGGING.info `./cnf-testsuite airgapped output-file=./tmp/airgapped.tar.gz`
     LOGGING.info `./cnf-testsuite setup offline=./tmp/airgapped.tar.gz`
-    (File.exists?("./tmp/cnf-testsuite.yml")).should be_true
+    (File.exists?("/tmp/cnf-testsuite.yml")).should be_true
   ensure
     `rm ./tmp/airgapped.tar.gz`
-    `rm ./tmp/cnf-testsuite.yml`
+    `rm /tmp/cnf-testsuite.yml`
   end
 
 
