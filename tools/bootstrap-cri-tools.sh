@@ -18,9 +18,9 @@ tar_func () {
 
 if [ "$1" == "registry" ]; then
 
-    docker build -t ${1} ./cri-tools/ 
+    docker build -t ${2} ./cri-tools/ 
     
-    docker push ${1}
+    docker push ${2}
 
     #TODO Add support for docker credentials.
 
@@ -40,7 +40,7 @@ spec:
     spec:
       containers:
         - name: cri-tools
-          image: ${1}
+          image: ${2}
           command: ["/bin/sh"]
           args: ["-c", "sleep infinity"]
           volumeMounts:

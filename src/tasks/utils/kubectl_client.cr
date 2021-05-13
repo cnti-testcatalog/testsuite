@@ -171,6 +171,48 @@ module KubectlClient
       JSON.parse(resp)
     end
 
+    def self.pods(all_namespaces=true) : JSON::Any
+      option = all_namespaces ? "--all-namespaces" : ""
+      resp = `kubectl get pods #{option} -o json`
+      LOGGING.debug "kubectl get pods: #{resp}"
+      JSON.parse(resp)
+    end
+   
+    def self.schedulable_nodes : JSON::Any
+      # resp = `kubectl get nodes -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
+      # LOGGING.debug "kubectl get nodes: #{resp}"
+      # resp.split("\n")
+      LOGGING.info "KubectlClient.pods_by_node command: kubectl get nodes -o json"
+      status = Process.run("kubectl get nodes -o json",
+                           shell: true,
+                           output: output = IO::Memory.new,
+                           error: stderr = IO::Memory.new)
+      LOGGING.debug "KubectlClient.get nodes output: #{output.to_s}"
+      LOGGING.info "KubectlClient.get nodes stderr: #{stderr.to_s}"
+
+      if output.to_s && !output.to_s.empty?
+        JSON.parse(output.to_s)
+      else
+        JSON.parse(%({}))
+      end
+    end
+
+    def self.pods_by_node(nodes_json) : JSON::Any
+      LOGGING.info "KubectlClient.pods_by_node command: kubectl get configmap #{name} -o json"
+      status = Process.run("kubectl get pods #{name} -o json",
+                           shell: true,
+                           output: output = IO::Memory.new,
+                           error: stderr = IO::Memory.new)
+      LOGGING.debug "KubectlClient.configmap output: #{output.to_s}"
+      LOGGING.info "KubectlClient.configmap stderr: #{stderr.to_s}"
+
+      if output.to_s && !output.to_s.empty?
+        JSON.parse(output.to_s)
+      else
+        JSON.parse(%({}))
+      end
+    end
+
     def self.deployment(deployment_name) : JSON::Any
       resp = `kubectl get deployment #{deployment_name} -o json`
       LOGGING.debug "kubectl get deployment: #{resp}"
@@ -600,12 +642,6 @@ module KubectlClient
       end
       LOGGING.info "runtimes: #{runtimes}"
       runtimes.uniq
-    end
-    def self.pods(all_namespaces=true) : JSON::Any
-      option = all_namespaces ? "--all-namespaces" : ""
-      resp = `kubectl get pods #{option} -o json`
-      LOGGING.debug "kubectl get pods: #{resp}"
-      JSON.parse(resp)
     end
 
     # *pod_exists* returns true if a pod containing *pod_name* exists, regardless of status.
