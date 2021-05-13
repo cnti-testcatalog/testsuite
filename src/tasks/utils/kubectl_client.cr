@@ -178,7 +178,7 @@ module KubectlClient
       JSON.parse(resp)
     end
    
-    def self.schedulable_nodes : JSON::Any
+    def self.schedulable_nodes_list : Array(JSON::Any)
       # resp = `kubectl get nodes -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
       # LOGGING.debug "kubectl get nodes: #{resp}"
       # resp.split("\n")
@@ -190,10 +190,27 @@ module KubectlClient
       LOGGING.debug "KubectlClient.get nodes output: #{output.to_s}"
       LOGGING.info "KubectlClient.get nodes stderr: #{stderr.to_s}"
 
+      #TODO dig on spec !taints == noschedule
       if output.to_s && !output.to_s.empty?
-        JSON.parse(output.to_s)
+        nodes = JSON.parse(output.to_s)
+        items = nodes["items"].as_a.map do |x|
+          # begin
+          taints = x.dig?("spec", "taints")
+          LOGGING.debug "taints: #{taints}"
+          if (taints && taints.dig?("effect") == "NoSchedule")
+            nil
+          else
+            x
+          end
+          # rescue ex
+          #   LOGGING.info ex.message
+          #   nil
+          # end
+        end.compact
+        LOGGING.debug "schedulable_nodes_list items : #{items}"
+        items
       else
-        JSON.parse(%({}))
+        [JSON.parse(%({}))]
       end
     end
 

@@ -35,8 +35,9 @@ describe "KubectlClient" do
   it "'#KubectlClient.schedulable_nodes' should return all schedulable worker nodes", tags: ["kubectl-nodes"]  do
     retry_limit = 50
     retries = 1
-    nodes = JSON.parse(%({}))
-    until (nodes != JSON.parse(%({}))) || retries > retry_limit
+    empty_json_any = JSON.parse(%({}))
+    nodes = [empty_json_any]
+    until (nodes != [empty_json_any]) || retries > retry_limit
       LOGGING.info "schedulable_node retry: #{retries}"
       sleep 1.0
       nodes = KubectlClient::Get.schedulable_nodes_list
@@ -45,7 +46,7 @@ describe "KubectlClient" do
     LOGGING.info "schedulable_node node: #{nodes}"
     (nodes).should_not be_nil
     if nodes
-      (nodes["items"].size).should be > 0
+      (nodes.size).should be > 0
     else
       true.should be_false
     end
