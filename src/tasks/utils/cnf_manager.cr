@@ -619,7 +619,6 @@ module CNFManager
     elapsed_time_template = Crinja.render(configmap_temp, { "helm_install" => helm_used, "release_name" => "cnf-testsuite-#{release_name}-startup-information", "elapsed_time" => "#{elapsed_time.seconds}", "k8s_ver" => "#{k8s_ver}"})
     #TODO find a way to kubectlapply directly without a map
     LOGGING.debug "elapsed_time_template : #{elapsed_time_template}"
-    `rm #{destination_cnf_dir}/configmap_test.yml`
     write_template= `echo "#{elapsed_time_template}" > "#{destination_cnf_dir}/configmap_test.yml"`
     # TODO if the config map exists on install, complain, delete then overwrite?
     KubectlClient::Delete.file("#{destination_cnf_dir}/configmap_test.yml")
