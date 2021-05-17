@@ -26,6 +26,6 @@ describe "CurlInstall" do
     response_s = `./curl_install.sh`
     LOGGING.info response_s
     $?.success?.should be_true
-    (/To use the cnf-testsuite please restart you terminal session to load the new 'path'/ =~ response_s).should_not be_nil
+    (/To use the cnf-testsuite please restart you terminal session to load the new PATH/ =~ response_s).should_not be_nil
   end
 end
