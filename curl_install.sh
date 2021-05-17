@@ -51,14 +51,14 @@ if [ -z ${SHELL_UNSUPPORTED+x} ]; then
 
     if (return 0 2>/dev/null); then
         export PATH=$HOME/.cnf-testsuite:$PATH
-        echo "cnf-testsuite has been successfully installed to: ~/.cnf-testsuite and added to your PATH"
+        echo "cnf-testsuite has been successfully installed to ~/.cnf-testsuite and added to your PATH"
     else
         echo "cnf-testsuite has been successfully installed to: ~/.cnf-testsuite"
-        echo "To use the cnf-testsuite please restart you terminal session to load the new 'path'"
+        echo "To use the cnf-testsuite please restart you terminal session to load the new PATH"
         echo "Or you can manually run 'export PATH=\$HOME/.cnf-testsuite:\$PATH' in your current session"
     fi
 else
-    echo "Because an unsupported shell was detected you will need to manually set you path, eg.:"
+    echo "Because an unsupported shell was detected you will need to manually set you PATH, eg.:"
     echo "'export PATH=\$HOME/.cnf-testsuite:\$PATH'"
 fi
 
