@@ -33,7 +33,42 @@ describe "KubectlClient" do
   #TODO Kubectl::Pods.cp(pods_json, tarred_image)
   #TODO Kubectl::Pods.exec(pods_json, command)
 
-  it "'#KubectlClient.schedulable_nodes' should return all schedulable worker nodes", tags: ["kubectl-nodes"]  do
+  it "'#KubectlClient.pods_by_node' should return all pods on a specific node", tags: ["kubectl-nodes"]  do
+    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+    (pods).should_not be_nil
+    if pods && pods[0] != Nil
+      (pods.size).should be > 0
+      first_node = pods[0]
+      if first_node
+        (first_node.dig("kind")).should eq "Pod"
+      else 
+        true.should be_false
+      end
+    else
+      true.should be_false
+    end
+  end
+
+  it "'#KubectlClient.pods_by_label' should return all pods on a specific node", tags: ["kubectl-nodes"]  do
+    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+    (pods).should_not be_nil
+    pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+    (pods).should_not be_nil
+    if pods && pods[0] != Nil
+      (pods.size).should be > 0
+      first_node = pods[0]
+      if first_node
+        (first_node.dig("kind")).should eq "Pod"
+      else 
+        true.should be_false
+      end
+    else
+      true.should be_false
+    end
+  end
+
+
+  it "'#KubectlClient.schedulable_nodes_list' should return all schedulable worker nodes", tags: ["kubectl-nodes"]  do
     retry_limit = 50
     retries = 1
     empty_json_any = JSON.parse(%({}))
@@ -46,8 +81,14 @@ describe "KubectlClient" do
     end
     LOGGING.info "schedulable_node node: #{nodes}"
     (nodes).should_not be_nil
-    if nodes
+    if nodes && nodes[0] != Nil
       (nodes.size).should be > 0
+      first_node =  nodes[0]
+      if first_node
+        (first_node.dig("kind")).should eq "Node"
+      else 
+        true.should be_false
+      end
     else
       true.should be_false
     end

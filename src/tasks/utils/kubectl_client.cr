@@ -229,68 +229,70 @@ module KubectlClient
       end
     end
 
-    def self.schedulable_nodes_list  
-      KubectlClient::Get.resource_map(KubectlClient::Get.nodes) do |item, metadata|
-        taints = item.dig?("spec", "taints")
-        LOGGING.debug "taints: #{taints}"
-        if (taints && taints.dig?("effect") == "NoSchedule")
-          nil
-        else
-          JSON.parse(%({:node => #{item}, :name => #{item.dig?("metadata", "name")}}))
+    def self.resource_select(k8s_manifest, &block)
+      if nodes["items"]?
+        items = nodes["items"].as_a.select do |item|
+          if nodes["metadata"]?
+            metadata = nodes["metadata"]
+          else
+            metadata = JSON.parse(%({}))
+          end
+          yield item, metadata
         end
+        LOGGING.debug "resource_map items : #{items}"
+        items
+      else
+         [] of JSON::Any
       end
     end
 
-    # def self.schedulable_nodes_list : Array(JSON::Any)
-    #   # resp = `kubectl get nodes -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
-    #   # LOGGING.debug "kubectl get nodes: #{resp}"
-    #   # resp.split("\n")
-    #   LOGGING.info "KubectlClient.pods_by_node command: kubectl get nodes -o json"
-    #   status = Process.run("kubectl get nodes -o json",
-    #                        shell: true,
-    #                        output: output = IO::Memory.new,
-    #                        error: stderr = IO::Memory.new)
-    #   LOGGING.debug "KubectlClient.get nodes output: #{output.to_s}"
-    #   LOGGING.info "KubectlClient.get nodes stderr: #{stderr.to_s}"
-    #
-    #   #TODO dig on spec !taints == noschedule
-    #   if output.to_s && !output.to_s.empty?
-    #     nodes = JSON.parse(output.to_s)
-    #     items = nodes["items"].as_a.map do |x|
-    #       # begin
-    #       taints = x.dig?("spec", "taints")
-    #       LOGGING.debug "taints: #{taints}"
-    #       if (taints && taints.dig?("effect") == "NoSchedule")
-    #         nil
-    #       else
-    #         x
-    #       end
-    #       # rescue ex
-    #       #   LOGGING.info ex.message
-    #       #   nil
-    #       # end
-    #     end.compact
-    #     LOGGING.debug "schedulable_nodes_list items : #{items}"
-    #     items
-    #   else
-    #     [JSON.parse(%({}))]
-    #   end
-    # end
-
-    def self.pods_by_node(nodes_json) : JSON::Any
-      LOGGING.info "KubectlClient.pods_by_node command: kubectl get configmap #{name} -o json"
-      status = Process.run("kubectl get pods #{name} -o json",
-                           shell: true,
-                           output: output = IO::Memory.new,
-                           error: stderr = IO::Memory.new)
-      LOGGING.debug "KubectlClient.configmap output: #{output.to_s}"
-      LOGGING.info "KubectlClient.configmap stderr: #{stderr.to_s}"
-
-      if output.to_s && !output.to_s.empty?
-        JSON.parse(output.to_s)
-      else
-        JSON.parse(%({}))
+    def self.schedulable_nodes_list : Array(JSON::Any)   
+      nodes = KubectlClient::Get.resource_select(KubectlClient::Get.nodes) do |item, metadata|
+        taints = item.dig?("spec", "taints")
+        LOGGING.debug "taints: #{taints}"
+        if (taints && taints.as_a.find{ |x| x.dig?("effect") == "NoSchedule" })
+          # EMPTY_JSON 
+          false 
+        else
+          # item
+          true
+        end
       end
+      LOGGING.debug "nodes: #{nodes}"
+      nodes
+    end
+
+    def self.pods_by_nodes(nodes_json : Array(JSON::Any))
+      LOGGING.info "pods_by_node"
+      nodes_json.map { |item|
+        LOGGING.info "items labels: #{item.dig?("metadata", "labels")}"
+        node_name = item.dig?("metadata", "labels", "kubernetes.io/hostname")
+        LOGGING.debug "NodeName: #{node_name}"
+        pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod| 
+          if pod.dig?("spec", "nodeName") == "#{node_name}"
+            LOGGING.info "pod: #{pod}"
+            pod_name = pod.dig?("metadata", "name")
+            LOGGING.debug "PodName: #{pod_name}"
+            true
+          else
+            LOGGING.debug "No Match"
+            false
+          end
+        end
+      }.flatten
+    end
+
+    def self.pods_by_label(pods_json : Array(JSON::Any), label_key, label_value)
+      LOGGING.info "pods_by_label"
+      pods_json.select do |pod|
+        if pod.dig?("metadata", "labels", label_key) == label_value
+          LOGGING.debug "pod: #{pod}"
+          true
+        else
+          LOGGING.debug "No Match"
+          false
+        end
+      end 
     end
 
     def self.deployment(deployment_name) : JSON::Any
