@@ -17,13 +17,13 @@ describe "BootstrapK8s" do
   #TODO use testimage.tar in fixtures as parameter
     
    
-  it "'publish_tarball' should publish a tarball", tags: ["airgap"] do
+#  it "'publish_tarball' should publish a tarball", tags: ["airgap"] do
 
-    BootstrapK8s.publish_tarball("./tmp/airgapped.tar.gz")
-    (File.exists?("./tmp/airgapped.tar.gz")).should be_true
-  ensure
-    `rm ./tmp/airgapped.tar.gz`
-  end
+#   AirGap.publish_tarball(tarball_name)
+#   (File.exists?("./tmp/airgapped.tar.gz")).should be_true
+#  ensure
+#    `rm ./tmp/airgapped.tar.gz`
+#  end
 
 end
 

@@ -38,5 +38,22 @@ module AirGap
     end
   end
 
+  def self.bootstrap_cluster(method)
+    #TODO Add function to search all running pods for any that have both the tar & sh command available, or just sh as a secondary. 
+
+    #TODO Function to install a generic pod to the cluster using a passed image id.
+
+    #TODO Function to mount the tar binary from the host file system & add to path. * Only needed if using sh only secondary.
+
+    #TODO Function to install needed cri & ctr tools using kubectl cp.
+  end
+
+
+
+
+
+
+
+
 end
 
