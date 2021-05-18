@@ -13,6 +13,7 @@ module KubectlClient
 
   # https://www.capitalone.com/tech/cloud/container-runtime/
   OCI_RUNTIME_REGEX = /containerd|docker|runc|railcar|crun|rkt|gviso|nabla|runv|clearcontainers|kata|cri-o/i
+
   def self.exec(command)
     LOGGING.info "KubectlClient.exec command: #{command}"
     status = Process.run("kubectl exec #{command}",

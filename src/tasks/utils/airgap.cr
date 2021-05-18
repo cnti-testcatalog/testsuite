@@ -21,6 +21,22 @@ module AirGap
     # the image file that was tarred
     TarClient.untar(output_file, "./tmp")
   end
-  
+
+  def self.publish_tarball(tarball)
+    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+    (pods).should_not be_nil
+    pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+    pods.map do |pod| 
+      pod_name = pod.dig?("metadata", "name")
+      KubectlClient.cp("#{tarball} #{pod_name}:/tmp/#{tarball.split("/")[-1]}")
+    end
+    pods.map do |pod| 
+      pod_name = pod.dig?("metadata", "name")
+      resp = KubectlClient.exec("-ti #{pod_name} -- ctr -n=k8s.io image import /tmp/#{tarball.split("/")[-1]}")
+      LOGGING.debug "Resp: #{resp}"
+      resp
+    end
+  end
+
 end
 
