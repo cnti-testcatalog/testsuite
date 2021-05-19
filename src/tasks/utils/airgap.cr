@@ -5,6 +5,8 @@ require "./tar.cr"
 require "./kubectl_client.cr"
 
 module AirGap
+  CRI_VERSION="v1.17.0"
+  CTR_VERSION="1.5.0"
   #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
   #./cnf-testsuite offline -o ~/airgapped.tar.gz
   #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
@@ -53,6 +55,8 @@ module AirGap
     # TODO get the image id of the shell
     # TODO Make an embedded file for deploying the cri-tool 
     # TODO download cri tools
+    # TODO if tar exists
+    # TODO if tar doest not exist, install tar
     # TODO install cri-tool
     # TODO Function to install needed cri & ctr tools using kubectl cp.
     # TODO make sure cri tools are installed (wait for them)
@@ -62,6 +66,24 @@ module AirGap
     # TODO add tar binary to prereqs/documentation
     # TODO Function to mount the tar binary from the host file system & add to path. * Only needed if using sh only secondary.
 
+  end
+
+  #TODO put curl back in the prereqs
+  def self.download_cri_tools
+    `curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/#{CRI_VERSION}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz --output crictl-#{CRI_VERSION}-linux-amd64.tar.gz`
+    `curl -L https://github.com/containerd/containerd/releases/download/v#{CTR_VERSION}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz --output containerd-#{CTR_VERSION}-linux-amd64.tar.gz`
+  end
+
+  def self.untar_cri_tools
+    TarClient.untar("crictl-#{CRI_VERSION}-linux-amd64.tar.gz", "/tmp")
+    TarClient.untar("containerd-#{CTR_VERSION}-linux-amd64.tar.gz", "/tmp")
+  end
+
+  def self.install_cri_tools(cri_tool_pods)
+    cri_tool_pods.map do |pod|
+      KubectlClient.cp("/tmp/crictl #{pod.dig?("metadata", "name")}:/usr/local/bin/crictl")
+      KubectlClient.cp("/tmp/bin/ctr #{pod.dig?("metadata", "name")}:/usr/local/bin/ctr")
+    end
   end
 
   def self.check_sh(pod_name)

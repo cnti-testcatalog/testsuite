@@ -48,6 +48,18 @@ describe "AirGap" do
     (resp[0].dig?("kind")).should eq "Pod"
   end
 
+  it "'#AirGap.download_cri_tools' should download the cri tools", tags: ["kubectl-nodes"]  do
+    resp = AirGap.download_cri_tools()
+    (File.exists?("crictl-#{AirGap::CRI_VERSION}-linux-amd64.tar.gz")).should be_true
+    (File.exists?("containerd-#{AirGap::CTR_VERSION}-linux-amd64.tar.gz")).should be_true
+  end
+
+  it "'#AirGap.untar_cri_tools' should untar the cri tools", tags: ["kubectl-nodes"]  do
+    resp = AirGap.untar_cri_tools()
+    (File.exists?("/tmp/crictl")).should be_true
+    (File.exists?("/tmp/bin/ctr")).should be_true
+  end
+
 
 end
 
