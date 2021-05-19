@@ -16,9 +16,9 @@ describe "BootstrapK8s" do
   # previous line gets the 'cri-tools' image by building it from ./cri-tools/Dockerfile then it tags it wit the name conformance/cri-tools:latest
   #TODO use testimage.tar in fixtures as parameter
     
-  it "'pods_with_tar' should return all pods with the tar binary available", tags: ["airgap"] do
-    AirGap.pods_with_tar
-  end
+  # it "'pods_with_tar' should return all pods with the tar binary available", tags: ["airgap"] do
+  #   AirGap.pods_with_tar
+  # end
 
    
 #  it "'publish_tarball' should publish a tarball", tags: ["airgap"] do
