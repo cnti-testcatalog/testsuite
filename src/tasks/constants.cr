@@ -13,6 +13,7 @@ CHART_YAML = "Chart.yaml"
 DEFAULT_POINTSFILENAME = "points_v1.yml"
 PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
 IGNORED_SECRET_TYPES = ["kubernetes.io/service-account-token", "kubernetes.io/dockercfg", "kubernetes.io/dockerconfigjson", "helm.sh/release.v1"]
+EMPTY_JSON = JSON.parse(%({}))
 
 #Embedded global text variables
 EmbeddedFileManager.node_failure_values

@@ -17,8 +17,8 @@ results.yml
 cnf-testsuite-results*
 cnf-testsuite.env
 cnf-conformance.env
+cnf-testsuite*.tar*
 *.tar
-*.tar*
 reasonable_startup_orig.yml
 reasonable_startup_test.yml
 cri_tools.yml
@@ -35,6 +35,6 @@ chaos_network_loss.yml
 chaos_cpu_hog.yml
 chaos_container_kill.yml
 /.idea/
-*.sh
 *.log
 points.yml
+/tools/cri-tools-manifest.yml

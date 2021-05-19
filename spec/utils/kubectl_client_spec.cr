@@ -9,6 +9,183 @@ describe "KubectlClient" do
   # after_all do
   # end
 
+  #TODO reference for bootstrapping calls
+  # NODE_ARRAY=$(kubectl get nodes -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ " "}}{{end}}{{end}}')
+  #
+  # echo "Nodes: ${NODE_ARRAY[@]}"
+  #
+  # for node in ${NODE_ARRAY[@]}
+  # do
+  #     name=$(kubectl get pods --field-selector spec.nodeName=$node -l name=cri-tools -o jsonpath='{range .items[*]}{.metadata.name}')
+  #     kubectl cp ${1} $name:/tmp/${1}
+  #     kubectl exec -ti $name -- ctr -n=k8s.io image import /tmp/${1}
+  # done
+
+  #TODO make chainable predicates that allow for bootstraping calls
+  # schedulable_nodes() : nodes_json
+  #  -> pods_by_node(nodes_json) : pods_json
+  #  -> pods_by_label(pods_json, "name=cri-tools") : pods_json
+  #  -> cp(pods_json, tarred_image) : pods_json
+  #  -> exec(pods_json, command) : pods_json
+
+  #TODO Kubectl::Pods.pods_by_node(nodes_json) : pods_json
+  #TODO Kubectl::Pods.pods_by_label(pods_json, "name=cri-tools")
+  #TODO Kubectl::Pods.cp(pods_json, tarred_image)
+  #TODO Kubectl::Pods.exec(pods_json, command)
+
+  it "'#KubectlClient.pods_by_node' should return all pods on a specific node", tags: ["kubectl-nodes"]  do
+    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+    (pods).should_not be_nil
+    if pods && pods[0] != Nil
+      (pods.size).should be > 0
+      first_node = pods[0]
+      if first_node
+        (first_node.dig("kind")).should eq "Pod"
+      else 
+        true.should be_false
+      end
+    else
+      true.should be_false
+    end
+  end
+
+  it "'#KubectlClient.pods_by_label' should return all pods on a specific node", tags: ["kubectl-nodes"]  do
+    bootstrap = `cd ./tools ; ./bootstrap-cri-tools.sh registry conformance/cri-tools:latest ; cd -`
+    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+    (pods).should_not be_nil
+    pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+    (pods).should_not be_nil
+    if pods && pods[0]? != Nil
+      (pods.size).should be > 0
+      first_node = pods[0]
+      if first_node
+        (first_node.dig("kind")).should eq "Pod"
+      else 
+        true.should be_false
+      end
+    else
+      true.should be_false
+    end
+  end
+
+
+  it "'#KubectlClient.schedulable_nodes_list' should return all schedulable worker nodes", tags: ["kubectl-nodes"]  do
+    retry_limit = 50
+    retries = 1
+    empty_json_any = JSON.parse(%({}))
+    nodes = [empty_json_any]
+    until (nodes != [empty_json_any]) || retries > retry_limit
+      LOGGING.info "schedulable_node retry: #{retries}"
+      sleep 1.0
+      nodes = KubectlClient::Get.schedulable_nodes_list
+      retries = retries + 1
+    end
+    LOGGING.info "schedulable_node node: #{nodes}"
+    (nodes).should_not be_nil
+    if nodes && nodes[0] != Nil
+      (nodes.size).should be > 0
+      first_node =  nodes[0]
+      if first_node
+        (first_node.dig("kind")).should eq "Node"
+      else 
+        true.should be_false
+      end
+    else
+      true.should be_false
+    end
+  end
+
+  # ruby magic above here
+  # pod_k8s_manifest = K8sManifestHelper.new(pods_json)
+  # pods = pod_k8s_manifest.map do |x|
+  #   taints = x.dig?("spec", "taints")
+  #   LOGGING.debug "taints: #{taints}"
+  #   if (taints && taints.dig?("effect") == "NoSchedule")
+  #     nil
+  #   else
+  #     x
+  #   end
+  # end
+
+
+
+  # pods_json = Get.resource_map(k8s_manifest) do |x|
+  #   taints = x.dig?("spec", "taints")
+  #   LOGGING.debug "taints: #{taints}"
+  #   if (taints && taints.dig?("effect") == "NoSchedule")
+  #     nil
+  #   else
+  #     x
+  #   end
+  # end
+
+  # get a list of nodes (e.g. that are schedulable) and assign it to an array
+  # get all the pods
+  # pods_json = Get.resource_map(all_pods_k8s_manifest) do |item, metadata|
+  #   if (node_names.find {|node_name| item.dig?("spec", "nodeName") == node_name}  ) &&
+  #        item.dig?("spec", "name") == 'cri_tools'
+  #     {:pod => x, :name => item.dig?("metadata", "name"))
+  #   end
+  # end
+
+  # schedulable_nodes() : nodes_json
+  #  -> pods_by_node(nodes_json) : pods_json
+  #  -> pods_by_label(pods_json, "name=cri-tools") : pods_json
+  #  -> cp(pods_json, tarred_image) : pods_json
+  #  -> exec(pods_json, command) : pods_json
+  # get a list of nodes (e.g. that are schedulable) and assign it to an array
+  # get every pod that is assigned to any node in the nodes array
+  # pods_by_filtered_node_manifest = `kubectl get pods -o {if eq .metadata.name <nodes_array or loop>??`}}
+  #
+  # pods_json = Get.resource_map(pods_by_filtered_node_manifest) do |item, metadata|
+  #   if item.dig?("spec", "name") == 'cri_tools'
+  #     {:pod => x, :name => taints.dig?("metadata", "name"))
+  #   end
+  # end
+
+  # pods_json = Get.resource_select(k8s_manifest : JSON::Any) do |x|
+  #   taints = x.dig?("spec", "taints")
+  #   !((taints && taints.dig?("effect") == "NoSchedule"))
+  # end
+
+  # pods_json = Get.resource_select(kind : String) do |x|
+  #   taints = x.dig?("spec", "taints")
+  #   !((taints && taints.dig?("effect") == "NoSchedule"))
+  # end
+
+  # pods_json = Get.resource_select(k8s_manifest : JSON::Any) do |metadata, item|
+  #   taints = item.dig?("spec", "taints")
+  #   !((taints && taints.dig?("effect") == "NoSchedule"))
+  # end
+
+  it "'#KubectlClient.resource_map' should a subset of manifest resource json", tags: ["kubectl-nodes"]  do
+    retry_limit = 50
+    retries = 1
+    empty_json_any = JSON.parse(%({}))
+    filtered_nodes = [empty_json_any]
+    until (filtered_nodes != [empty_json_any]) || retries > retry_limit
+      LOGGING.info "resource_map retry: #{retries}"
+      sleep 1.0
+      filtered_nodes = KubectlClient::Get.resource_map(KubectlClient::Get.nodes) do |item, metadata|
+        taints = item.dig?("spec", "taints")
+        LOGGING.debug "taints: #{taints}"
+        if (taints && taints.dig?("effect") == "NoSchedule")
+          nil
+        else
+          {:node => item, :name => item.dig?("metadata", "name")}
+        end
+      end
+      retries = retries + 1
+    end
+    LOGGING.info "spec: resource_map node: #{filtered_nodes}"
+    (filtered_nodes).should_not be_nil
+    if filtered_nodes
+      (filtered_nodes.size).should be > 0
+    else
+      true.should be_false
+    end
+  end
+
   it "'Kubectl::Get.wait_for_install' should wait for a cnf to be installed", tags: ["kubectl-install"]  do
     LOGGING.debug `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose wait_count=0`
 

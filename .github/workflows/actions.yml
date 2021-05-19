@@ -155,7 +155,11 @@ jobs:
         restore-keys: |
           lib-
     - name: Setup CNF-Conformance
+      env:
+        PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
+        docker login -u $PROTECTED_DOCKERHUB_USERNAME -p $PROTECTED_DOCKERHUB_PASSWORD
         helm repo add stable https://cncf.gitlab.io/stable
         git fetch --all --tags --force
         shards install  

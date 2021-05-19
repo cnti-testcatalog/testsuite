@@ -13,6 +13,7 @@ module KubectlClient
 
   # https://www.capitalone.com/tech/cloud/container-runtime/
   OCI_RUNTIME_REGEX = /containerd|docker|runc|railcar|crun|rkt|gviso|nabla|runv|clearcontainers|kata|cri-o/i
+
   def self.exec(command)
     LOGGING.info "KubectlClient.exec command: #{command}"
     status = Process.run("kubectl exec #{command}",
@@ -169,6 +170,130 @@ module KubectlClient
       resp = `kubectl get nodes -o json`
       LOGGING.debug "kubectl get nodes: #{resp}"
       JSON.parse(resp)
+    end
+
+    def self.pods(all_namespaces=true) : JSON::Any
+      option = all_namespaces ? "--all-namespaces" : ""
+      resp = `kubectl get pods #{option} -o json`
+      LOGGING.debug "kubectl get pods: #{resp}"
+      JSON.parse(resp)
+    end
+  # def self.cnf_workload_resources(args, config, &block)
+  #   destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+  #   yml_file_path = config.cnf_config[:yml_file_path]
+  #   helm_directory = config.cnf_config[:helm_directory]
+  #   manifest_directory = config.cnf_config[:manifest_directory]
+  #   release_name = config.cnf_config[:release_name]
+  #   helm_chart_path = config.cnf_config[:helm_chart_path]
+  #   manifest_file_path = config.cnf_config[:manifest_file_path]
+  #   test_passed = true
+  #
+  #   ##################
+  #   # TODO extract exporting of manifest yml into separate function 
+  #   if release_name.empty? # no helm chart
+  #     template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
+  #   else
+  #     Helm.generate_manifest_from_templates(release_name,
+  #                                           helm_chart_path,
+  #                                           manifest_file_path)
+  #     template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
+  #   end
+  #   resource_ymls = Helm.all_workload_resources(template_ymls)
+  #   # TODO call export manifest and get the resource ymls
+	# 	resource_resp = resource_ymls.map do | resource |
+  #     resp = yield resource
+  #     LOGGING.debug "cnf_workload_resource yield resp: #{resp}"
+  #     resp
+  #   end
+  #   ###############
+  #
+  #
+  #
+  #
+  #   resource_resp
+  # end
+   
+    def self.resource_map(k8s_manifest, &block)
+      if nodes["items"]?
+        items = nodes["items"].as_a.map do |item|
+          if nodes["metadata"]?
+            metadata = nodes["metadata"]
+          else
+            metadata = JSON.parse(%({}))
+          end
+          yield item, metadata
+        end
+        LOGGING.debug "resource_map items : #{items}"
+        items
+      else
+        [JSON.parse(%({}))]
+      end
+    end
+
+    def self.resource_select(k8s_manifest, &block)
+      if nodes["items"]?
+        items = nodes["items"].as_a.select do |item|
+          if nodes["metadata"]?
+            metadata = nodes["metadata"]
+          else
+            metadata = JSON.parse(%({}))
+          end
+          yield item, metadata
+        end
+        LOGGING.debug "resource_map items : #{items}"
+        items
+      else
+         [] of JSON::Any
+      end
+    end
+
+    def self.schedulable_nodes_list : Array(JSON::Any)   
+      nodes = KubectlClient::Get.resource_select(KubectlClient::Get.nodes) do |item, metadata|
+        taints = item.dig?("spec", "taints")
+        LOGGING.debug "taints: #{taints}"
+        if (taints && taints.as_a.find{ |x| x.dig?("effect") == "NoSchedule" })
+          # EMPTY_JSON 
+          false 
+        else
+          # item
+          true
+        end
+      end
+      LOGGING.debug "nodes: #{nodes}"
+      nodes
+    end
+
+    def self.pods_by_nodes(nodes_json : Array(JSON::Any))
+      LOGGING.info "pods_by_node"
+      nodes_json.map { |item|
+        LOGGING.info "items labels: #{item.dig?("metadata", "labels")}"
+        node_name = item.dig?("metadata", "labels", "kubernetes.io/hostname")
+        LOGGING.debug "NodeName: #{node_name}"
+        pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod| 
+          if pod.dig?("spec", "nodeName") == "#{node_name}"
+            LOGGING.info "pod: #{pod}"
+            pod_name = pod.dig?("metadata", "name")
+            LOGGING.debug "PodName: #{pod_name}"
+            true
+          else
+            LOGGING.debug "No Match"
+            false
+          end
+        end
+      }.flatten
+    end
+
+    def self.pods_by_label(pods_json : Array(JSON::Any), label_key, label_value)
+      LOGGING.info "pods_by_label"
+      pods_json.select do |pod|
+        if pod.dig?("metadata", "labels", label_key) == label_value
+          LOGGING.debug "pod: #{pod}"
+          true
+        else
+          LOGGING.debug "No Match"
+          false
+        end
+      end 
     end
 
     def self.deployment(deployment_name) : JSON::Any
@@ -600,12 +725,6 @@ module KubectlClient
       end
       LOGGING.info "runtimes: #{runtimes}"
       runtimes.uniq
-    end
-    def self.pods(all_namespaces=true) : JSON::Any
-      option = all_namespaces ? "--all-namespaces" : ""
-      resp = `kubectl get pods #{option} -o json`
-      LOGGING.debug "kubectl get pods: #{resp}"
-      JSON.parse(resp)
     end
 
     # *pod_exists* returns true if a pod containing *pod_name* exists, regardless of status.
