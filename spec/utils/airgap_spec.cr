@@ -20,7 +20,7 @@ describe "AirGap" do
   end
 
   it "'#AirGap.publish_tarball' should execute publish a tarball to a bootstrapped cluster", tags: ["kubectl-nodes"]  do
-
+    bootstrap = `cd ./tools ; ./bootstrap-cri-tools.sh registry conformance/cri-tools:latest ; cd -`
     tarball_name = "./spec/fixtures/testimage.tar.gz"
     resp = AirGap.publish_tarball(tarball_name)
     resp[0][:output].to_s.match(/unpacking docker.io\/testimage\/testimage:test/).should_not be_nil

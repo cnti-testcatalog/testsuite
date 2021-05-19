@@ -2,6 +2,7 @@
 require "totem"
 require "colorize"
 require "./tar.cr"
+require "./kubectl_client.cr"
 
 module AirGap
   #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
@@ -47,6 +48,18 @@ module AirGap
 
     #TODO Function to install needed cri & ctr tools using kubectl cp.
   end
+
+  def self.pods_with_tar()
+    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list).as_a.select do |pod|
+      pod_name = pod.dig?("metadata", "name")
+      if KubectlClient.exec("-ti #{pod_name} -- cat /bin/tar > /dev/null") || KubectlClient.exec("-ti #{pod_name} -- cat /usr/bin/tar > /dev/null") || KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/tar > /dev/null")
+        LOGGING.debug "Tar Pod: #{pod_name}"
+        true
+      else
+        false
+      end
+  end
+end
 
 
 
