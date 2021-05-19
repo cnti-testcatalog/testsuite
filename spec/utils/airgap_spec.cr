@@ -67,6 +67,12 @@ describe "AirGap" do
     (resp[0]).should_not be_nil
   end
 
+  it "'#AirGap.install_cri_pod' should install the cri pod in the cluster", tags: ["kubectl-nodes"]  do
+      pods = AirGap.pods_with_tar()
+      image = AirGap.pod_images(pods)
+      resp = AirGap.install_cri_pod(image)
+  end
+
   # it "'#AirGap.install_cri_tools' should install the cri tools in the cluster", tags: ["kubectl-nodes"]  do
   #   pods = AirGap.pods_with_tar()
   #   resp = AirGap.install_cri_tools(pods)

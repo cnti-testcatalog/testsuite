@@ -1,6 +1,7 @@
 # coding: utf-8
 require "totem"
 require "colorize"
+require "crinja"
 require "./tar.cr"
 require "./kubectl_client.cr"
 
@@ -40,6 +41,7 @@ module AirGap
       resp
     end
   end
+
 
 
 
@@ -110,6 +112,56 @@ module AirGap
 
     bin_tar[:status].success? || usr_bin_tar.[:status].success? || usr_local_bin_tar[:status].success?
   end
+
+  def self.install_cri_pod(image)
+    template = Crinja.render(cri_tools_template, { "image" => image})
+    write = `echo "#{template}" > "cri-tools-manifest.yml"`
+  end
+
+def self.cri_tools_template 
+  <<-TEMPLATE
+  apiVersion: apps/v1
+  kind: DaemonSet
+  metadata:
+      name: cri-tools
+  spec:
+    selector:
+      matchLabels:
+        name: cri-tools
+    template:
+      metadata:
+        labels:
+          name: cri-tools
+      spec:
+        containers:
+          - name: cri-tools
+            image: '{{ image }}'
+            command: ["/bin/sh"]
+            args: ["-c", "sleep infinity"]
+            volumeMounts:
+            - mountPath: /run/containerd/containerd.sock
+              name: containerd-volume
+            - mountPath: /tmp/usr/bin
+              name: usrbin
+            - mountPath: /tmp/usr/local/bin
+              name: local
+            - mountPath: /tmp/bin
+              name: bin
+        volumes:
+        - name: containerd-volume
+          hostPath:
+            path: /var/run/containerd/containerd.sock
+        - name: usrbin
+          hostPath:
+            path: /usr/bin/
+        - name: local
+          hostPath:
+            path: /usr/local/bin/
+        - name: bin
+          hostPath:
+            path: /bin/
+  TEMPLATE
+end
 
   def self.pods_with_tar() : KubectlClient::K8sManifestList
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list).select do |pod|
