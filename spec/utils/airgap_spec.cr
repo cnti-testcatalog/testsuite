@@ -60,6 +60,22 @@ describe "AirGap" do
     (File.exists?("/tmp/bin/ctr")).should be_true
   end
 
+  it "'#AirGap.pod_images' should retrieve all of the images for the pods with shells", tags: ["kubectl-nodes"]  do
+    pods = AirGap.pods_with_tar()
+    resp = AirGap.pod_images(pods)
+    # (resp[0]).should eq "conformance/cri-tools:latest"
+    (resp[0]).should_not be_nil
+  end
+
+  # it "'#AirGap.install_cri_tools' should install the cri tools in the cluster", tags: ["kubectl-nodes"]  do
+  #   pods = AirGap.pods_with_tar()
+  #   resp = AirGap.install_cri_tools(pods)
+  #   sh = KubectlClient.exec("-ti #{resp[0].dig?("metadata", "name")} -- cat /usr/local/bin/crictl > /dev/null")  
+  #   sh[:status].success?
+  #   sh = KubectlClient.exec("-ti #{resp[0].dig?("metadata", "name")} -- cat /usr/local/bin/ctr > /dev/null")  
+  #   sh[:status].success?
+  # end
+
 
 end
 

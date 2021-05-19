@@ -44,6 +44,9 @@ module AirGap
 
 
   def self.bootstrap_cluster(method)
+    resp = AirGap.pods_with_tar()
+    resp = AirGap.download_cri_tools()
+    resp = AirGap.untar_cri_tools()
 
 
 
@@ -77,6 +80,15 @@ module AirGap
   def self.untar_cri_tools
     TarClient.untar("crictl-#{CRI_VERSION}-linux-amd64.tar.gz", "/tmp")
     TarClient.untar("containerd-#{CTR_VERSION}-linux-amd64.tar.gz", "/tmp")
+  end
+
+  def self.pod_images(pods)
+    pods.map do |pod|
+      containers = pod.dig("spec","containers").as_a
+      #TODO make this work with multiple containers
+      # Gets first image for every pod
+      image = containers[0]? && containers[0].dig("image")
+    end
   end
 
   def self.install_cri_tools(cri_tool_pods)
