@@ -39,34 +39,55 @@ module AirGap
     end
   end
 
+
+
   def self.bootstrap_cluster(method)
-    #TODO Add function to search all running pods for any that have both the tar & sh command available, or just sh as a secondary. 
+
+
+
+    # TODO OPTIONAL if registry
+    # TODO if copy ..
+    # TODO Add function to search all running pods for any that have both the tar & sh command available, or just sh as a secondary. 
+    # TODO get all the pods for all namespaces
+    # TODO determine if pod has a shell
+    # TODO get the image id of the shell
+    # TODO Make an embedded file for deploying the cri-tool 
+    # TODO download cri tools
+    # TODO install cri-tool
+    # TODO Function to install needed cri & ctr tools using kubectl cp.
+    # TODO make sure cri tools are installed (wait for them)
 
     #TODO Function to install a generic pod to the cluster using a passed image id.
 
-    #TODO Function to mount the tar binary from the host file system & add to path. * Only needed if using sh only secondary.
+    # TODO add tar binary to prereqs/documentation
+    # TODO Function to mount the tar binary from the host file system & add to path. * Only needed if using sh only secondary.
 
-    #TODO Function to install needed cri & ctr tools using kubectl cp.
   end
 
-  def self.pods_with_tar()
-    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list).as_a.select do |pod|
+  def self.check_sh(pod_name)
+    sh = KubectlClient.exec("-ti #{pod_name} -- cat /bin/sh > /dev/null")  
+    sh[:status].success?
+  end
+
+  def self.check_tar(pod_name)
+    bin_tar = KubectlClient.exec("-ti #{pod_name} -- cat /bin/tar > /dev/null")  
+    usr_bin_tar =  KubectlClient.exec("-ti #{pod_name} -- cat /usr/bin/tar > /dev/null")
+    usr_local_bin_tar = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/tar > /dev/null")
+
+    bin_tar[:status].success? || usr_bin_tar.[:status].success? || usr_local_bin_tar[:status].success?
+  end
+
+  def self.pods_with_tar() : KubectlClient::K8sManifestList
+    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list).select do |pod|
       pod_name = pod.dig?("metadata", "name")
-      if KubectlClient.exec("-ti #{pod_name} -- cat /bin/tar > /dev/null") || KubectlClient.exec("-ti #{pod_name} -- cat /usr/bin/tar > /dev/null") || KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/tar > /dev/null")
-        LOGGING.debug "Tar Pod: #{pod_name}"
+      if check_sh(pod_name) && check_tar(pod_name)
+        LOGGING.debug "Found tar and sh Pod: #{pod_name}"
         true
       else
         false
       end
+    end
   end
-end
-
-
-
-
-
-
-
 
 end
 

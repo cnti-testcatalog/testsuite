@@ -26,6 +26,23 @@ describe "AirGap" do
     resp[0][:output].to_s.match(/unpacking docker.io\/testimage\/testimage:test/).should_not be_nil
   end
 
+  it "'#AirGap.check_tar' should determine if a pod has the tar binary on it", tags: ["kubectl-nodes"]  do
+    pods = KubectlClient::Get.pods
+    resp = AirGap.check_tar(pods.dig?("metadata", "name"))
+    resp.should be_false
+  end
+
+  it "'#AirGap.check_sh' should determine if a pod has a shell on it", tags: ["kubectl-nodes"]  do
+    pods = KubectlClient::Get.pods
+    resp = AirGap.check_sh(pods.dig?("metadata", "name"))
+    resp.should be_false
+  end
+
+  it "'#AirGap.pods_with_tar' should determine if there are any pods with a shell and tar on them", tags: ["kubectl-nodes"]  do
+    resp = AirGap.pods_with_tar()
+    (resp[0].dig?("kind")).should eq "Pod"
+  end
+
 
 end
 
