@@ -89,5 +89,17 @@ module AirGap
     end
   end
 
+  def self.pods_with_sh() : KubectlClient::K8sManifestList
+    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list).select do |pod|
+      pod_name = pod.dig?("metadata", "name")
+      if check_sh(pod_name) 
+        LOGGING.debug "Found sh Pod: #{pod_name}"
+        true
+      else
+        false
+      end
+    end
+  end
+
 end
 

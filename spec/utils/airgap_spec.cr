@@ -43,6 +43,11 @@ describe "AirGap" do
     (resp[0].dig?("kind")).should eq "Pod"
   end
 
+  it "'#AirGap.pods_with_sh' should determine if there are any pods with a shell on them", tags: ["kubectl-nodes"]  do
+    resp = AirGap.pods_with_sh()
+    (resp[0].dig?("kind")).should eq "Pod"
+  end
+
 
 end
 
