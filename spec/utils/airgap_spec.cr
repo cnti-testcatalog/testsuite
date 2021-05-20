@@ -31,6 +31,14 @@ describe "AirGap" do
     resp = AirGap.check_tar(pods.dig?("metadata", "name"))
     resp.should be_false
   end
+  
+  it "'#AirGap.check_tar' should determine if the host has the tar binary on it", tags: ["kubectl-nodes"]  do
+    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+    pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+    resp = AirGap.check_tar(pods[0].dig?("metadata", "name"), pod=false)
+    LOGGING.debug "Path to tar on the host filesystem: #{resp}"
+    resp.should_not be_nil 
+  end
 
   it "'#AirGap.check_sh' should determine if a pod has a shell on it", tags: ["kubectl-nodes"]  do
     pods = KubectlClient::Get.pods
@@ -39,7 +47,11 @@ describe "AirGap" do
   end
 
   it "'#AirGap.pods_with_tar' should determine if there are any pods with a shell and tar on them", tags: ["kubectl-nodes"]  do
+    #TODO Should install cri-tools or container with tar before running spec.
     resp = AirGap.pods_with_tar()
+    if resp[0].dig?("metadata", "name")
+      LOGGING.debug "Pods With Tar Found #{resp[0].dig?("metadata", "name")}"
+    end
     (resp[0].dig?("kind")).should eq "Pod"
   end
 

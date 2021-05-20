@@ -32,6 +32,16 @@ module AirGap
   #   # TODO add tar binary to prereqs/documentation
   def self.bootstrap_cluster
     pods = AirGap.pods_with_tar()
+    unless pods[0].dig?("metadata", "name")
+      pods = AirGap.pods_with_sh()
+      image = AirGap.pod_images(pods)
+      resp = AirGap.create_pod_by_image(image, "cri-tools")
+      pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+      pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+      tar_path = AirGap.check_tar(pod=false, pods[0].dig?("metadata", "name")) 
+      #TODO Copy Binary to PATH
+    end
+    #TODO Exit with error if image return an empty array. 
     image = AirGap.pod_images(pods)
     resp = AirGap.create_pod_by_image(image, "cri-tools")
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
@@ -105,12 +115,21 @@ module AirGap
     sh[:status].success?
   end
 
-  def self.check_tar(pod_name)
-    bin_tar = KubectlClient.exec("-ti #{pod_name} -- cat /bin/tar > /dev/null")  
-    usr_bin_tar =  KubectlClient.exec("-ti #{pod_name} -- cat /usr/bin/tar > /dev/null")
-    usr_local_bin_tar = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/tar > /dev/null")
-
-    bin_tar[:status].success? || usr_bin_tar.[:status].success? || usr_local_bin_tar[:status].success?
+  def self.check_tar(pod_name, pod=true)
+    if pod
+      bin_tar = KubectlClient.exec("-ti #{pod_name} -- cat /bin/tar > /dev/null")  
+      usr_bin_tar =  KubectlClient.exec("-ti #{pod_name} -- cat /usr/bin/tar > /dev/null")
+      usr_local_bin_tar = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/tar > /dev/null")
+    else
+      bin_tar = KubectlClient.exec("-ti #{pod_name} -- cat /tmp/bin/tar > /dev/null")  
+      usr_bin_tar =  KubectlClient.exec("-ti #{pod_name} -- cat /tmp/usr/bin/tar > /dev/null")
+      usr_local_bin_tar = KubectlClient.exec("-ti #{pod_name} -- cat /tmp/usr/local/bin/tar > /dev/null")
+    end
+    if pod
+      (bin_tar[:status].success? && "/bin/tar") || (usr_bin_tar.[:status].success? && "/usr/bin/tar") || (usr_local_bin_tar[:status].success? && "/usr/local/bin/tar")
+    else
+      (bin_tar[:status].success? && "/tmp/bin/tar") || (usr_bin_tar.[:status].success? && "/tmp/usr/bin/tar") || (usr_local_bin_tar[:status].success? && "/tmp/usr/local/bin/tar")
+    end
   end
 
 
