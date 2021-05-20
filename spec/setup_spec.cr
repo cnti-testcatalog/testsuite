@@ -1,6 +1,7 @@
 require "./spec_helper"
 require "colorize"
 require "../src/tasks/utils/utils.cr"
+require "../src/tasks/utils/kubectl_client.cr"
 require "../src/tasks/utils/system_information/helm.cr"
 require "file_utils"
 require "sam"
@@ -27,8 +28,21 @@ describe "Setup" do
     LOGGING.info `./cnf-testsuite airgapped output-file=./tmp/airgapped.tar.gz`
     LOGGING.info `./cnf-testsuite setup offline=./tmp/airgapped.tar.gz`
     (File.exists?("/tmp/cnf-testsuite.yml")).should be_true
+    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+    pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+    # Get the generated name of the cri-tools per node
+    pods.map do |pod| 
+      pod_name = pod.dig?("metadata", "name")
+      sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/crictl > /dev/null")  
+      sh[:status].success?
+      sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/ctr > /dev/null")  
+      sh[:status].success?
+    end
+
   ensure
     `rm ./tmp/airgapped.tar.gz`
+    `rm ./tmp/cnf-testsuite.yml`
+    `rm /tmp/airgapped.tar.gz`
     `rm /tmp/cnf-testsuite.yml`
   end
 

@@ -4,6 +4,8 @@ require "./cnf_manager.cr"
 require "halite"
 
 module KubectlClient
+  alias K8sManifest = JSON::Any
+  alias K8sManifestList = Array(JSON::Any)
   WORKLOAD_RESOURCES = {deployment: "Deployment",
                         service: "Service",
                         pod: "Pod",
@@ -156,6 +158,7 @@ module KubectlClient
       $?.success?
     end
   end
+  #TODO move this out into its own file
   module Get
     def self.privileged_containers(namespace="--all-namespaces")
       privileged_response = `kubectl get pods #{namespace} -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
@@ -172,7 +175,7 @@ module KubectlClient
       JSON.parse(resp)
     end
 
-    def self.pods(all_namespaces=true) : JSON::Any
+    def self.pods(all_namespaces=true) : K8sManifest 
       option = all_namespaces ? "--all-namespaces" : ""
       resp = `kubectl get pods #{option} -o json`
       LOGGING.debug "kubectl get pods: #{resp}"
