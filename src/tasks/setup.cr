@@ -12,7 +12,11 @@ end
 
 task "offline" do |_, args|
   #./cnf-testsuite setup --offline=./airgapped.tar.gz
+  #./cnf-testsuite setup --input-file=./airgapped.tar.gz
+  #./cnf-testsuite setup --if=./airgapped.tar.gz
   output_file = args.named["offline"].as(String) if args.named["offline"]?
+  output_file = args.named["input-file"].as(String) if args.named["input-file"]?
+  output_file = args.named["if"].as(String) if args.named["if"]?
   if output_file && !output_file.empty?
       AirGap.extract(output_file)
       AirGap.install_test_suite_tools(output_file)
