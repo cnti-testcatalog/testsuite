@@ -38,4 +38,6 @@ chaos_container_kill.yml
 *.log
 points.yml
 /tools/cri-tools-manifest.yml
-./cri-tools-manifest.yml
+cri-tools-manifest.yml
+containerd-*-linux-amd64.tar.gz
+crictl-*-linux-amd64.tar.gz
