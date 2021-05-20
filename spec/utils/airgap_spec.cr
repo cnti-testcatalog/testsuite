@@ -74,13 +74,10 @@ describe "AirGap" do
       (resp).should be_true
   end
 
-  it "'#AirGap.install_test_suite' should install the cri tools in the cluster", tags: ["kubectl-nodes"]  do
-    pods = AirGap.pods_with_tar()
-    image = AirGap.pod_images(pods)
-    resp = AirGap.create_pod_by_image(image, "cri-tools")
+  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster", tags: ["kubectl-nodes"]  do
+    AirGap.bootstrap_cluster()
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
-    AirGap.install_cri_binaries(pods)
     # Get the generated name of the cri-tools per node
     pods.map do |pod| 
       pod_name = pod.dig?("metadata", "name")
@@ -91,6 +88,10 @@ describe "AirGap" do
     end
   end
 
+  it "'#AirGap.install_test_suite_tools' should install the cri tools in the cluster", tags: ["kubectl-nodes"]  do
+    resp = AirGap.install_test_suite_tools
+    resp[0][:output].to_s.match(/unpacking docker.io\/testimage\/testimage:test/).should_not be_nil
+  end
 
 end
 

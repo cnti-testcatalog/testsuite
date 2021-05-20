@@ -8,27 +8,39 @@ require "./kubectl_client.cr"
 module AirGap
   CRI_VERSION="v1.17.0"
   CTR_VERSION="1.5.0"
-  #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
-  #./cnf-testsuite offline -o ~/airgapped.tar.gz
-  #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
-  def self.generate(output_file : String = "./airgapped.tar.gz")
-    #TODO find real images 
-    #TODO tar real images 
-    s1 = "./spec/fixtures/cnf-testsuite.yml"
-    TarClient.tar(output_file, Path[s1].parent, s1.split("/")[-1])
+
+  #TODO make chainable predicates that allow for bootstraping calls
+  # schedulable_nodes() : nodes_json
+  #  -> pods_by_node(nodes_json) : pods_json
+  #  -> pods_by_label(pods_json, "name=cri-tools") : pods_json
+  #  -> cp(pods_json, tarred_image) : pods_json
+  #  -> exec(pods_json, command) : pods_json
+
+  #TODO Kubectl::Pods.pods_by_node(nodes_json) : pods_json
+  #TODO Kubectl::Pods.pods_by_label(pods_json, "name=cri-tools")
+  #TODO Kubectl::Pods.cp(pods_json, tarred_image)
+  #TODO Kubectl::Pods.exec(pods_json, command)
+
+
+  def self.install_test_suite_tools(tarball_name="./airgapped.tar.gz")
+    AirGap.bootstrap_cluster()
+    tarball_name = "./spec/fixtures/testimage.tar.gz"
+    # TODO loop through all tarballs install the airgap tarball
+    AirGap.publish_tarball(tarball_name)
   end
 
-  #./cnf-testsuite setup --offline=./airgapped.tar.gz
-  def self.extract(output_file : String = "./airgapped.tar.gz")
-    #TODO untar real images to their appropriate directories
-    #TODO  the second parameter will be determined based on
-    # the image file that was tarred
-    TarClient.untar(output_file, "./tmp")
+  #   # TODO add tar binary to prereqs/documentation
+  def self.bootstrap_cluster
+    pods = AirGap.pods_with_tar()
+    image = AirGap.pod_images(pods)
+    resp = AirGap.create_pod_by_image(image, "cri-tools")
+    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+    pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+    AirGap.install_cri_binaries(pods)
   end
 
   def self.publish_tarball(tarball)
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-    (pods).should_not be_nil
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
     pods.map do |pod| 
       pod_name = pod.dig?("metadata", "name")
@@ -42,33 +54,24 @@ module AirGap
     end
   end
 
-  def self.bootstrap_cluster(method)
-    resp = AirGap.pods_with_tar()
-    resp = AirGap.download_cri_tools()
-    resp = AirGap.untar_cri_tools()
-
-
-
-    # TODO OPTIONAL if registry
-    # TODO if copy ..
-    # TODO Add function to search all running pods for any that have both the tar & sh command available, or just sh as a secondary. 
-    # TODO get all the pods for all namespaces
-    # TODO determine if pod has a shell
-    # TODO get the image id of the shell
-    # TODO Make an embedded file for deploying the cri-tool 
-    # TODO download cri tools
-    # TODO if tar exists
-    # TODO if tar does not exist, install tar
-    # TODO install cri-tool image
-    # TODO Function to install needed cri & ctr tools using kubectl cp.
-    # TODO make sure cri tools are installed (wait for them)
-
-    #TODO Function to install a generic pod to the cluster using a passed image id.
-
-    # TODO add tar binary to prereqs/documentation
-    # TODO Function to mount the tar binary from the host file system & add to path. * Only needed if using sh only secondary.
-
+  #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
+  #./cnf-testsuite offline -o ~/airgapped.tar.gz
+  #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
+  def self.generate(output_file : String = "./airgapped.tar.gz")
+    #TODO find real images 
+    #TODO tar real images 
+    s1 = "./spec/fixtures/cnf-testsuite.yml"
+    TarClient.tar(output_file, Path[s1].parent, s1.split("/")[-1])
   end
+
+  #./cnf-testsuite setup --offline=./airgapped.tar.gz
+  def self.extract(output_file : String = "./airgapped.tar.gz", output_dir="/tmp")
+    #TODO untar real images to their appropriate directories
+    #TODO  the second parameter will be determined based on
+    # the image file that was tarred
+    TarClient.untar(output_file, output_dir)
+  end
+
 
   #TODO put curl back in the prereqs
   def self.download_cri_tools
@@ -116,6 +119,7 @@ module AirGap
   #  ... or
   #  2. an image (cri-tools) that we have installed into the local docker registry using docker push
   # TODO make this work with runtimes other than containerd
+  # TODO make a tool that cleans up the cri images
   def self.create_pod_by_image(image, name="cri-tools")
     template = Crinja.render(cri_tools_template, { "image" => image, "name" => name})
     write = `echo "#{template}" > "#{name}-manifest.yml"`

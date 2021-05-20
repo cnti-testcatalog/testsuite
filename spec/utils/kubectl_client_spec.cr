@@ -9,29 +9,6 @@ describe "KubectlClient" do
   # after_all do
   # end
 
-  #TODO reference for bootstrapping calls
-  # NODE_ARRAY=$(kubectl get nodes -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ " "}}{{end}}{{end}}')
-  #
-  # echo "Nodes: ${NODE_ARRAY[@]}"
-  #
-  # for node in ${NODE_ARRAY[@]}
-  # do
-  #     name=$(kubectl get pods --field-selector spec.nodeName=$node -l name=cri-tools -o jsonpath='{range .items[*]}{.metadata.name}')
-  #     kubectl cp ${1} $name:/tmp/${1}
-  #     kubectl exec -ti $name -- ctr -n=k8s.io image import /tmp/${1}
-  # done
-
-  #TODO make chainable predicates that allow for bootstraping calls
-  # schedulable_nodes() : nodes_json
-  #  -> pods_by_node(nodes_json) : pods_json
-  #  -> pods_by_label(pods_json, "name=cri-tools") : pods_json
-  #  -> cp(pods_json, tarred_image) : pods_json
-  #  -> exec(pods_json, command) : pods_json
-
-  #TODO Kubectl::Pods.pods_by_node(nodes_json) : pods_json
-  #TODO Kubectl::Pods.pods_by_label(pods_json, "name=cri-tools")
-  #TODO Kubectl::Pods.cp(pods_json, tarred_image)
-  #TODO Kubectl::Pods.exec(pods_json, command)
 
   it "'#KubectlClient.pods_by_node' should return all pods on a specific node", tags: ["kubectl-nodes"]  do
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
@@ -94,69 +71,6 @@ describe "KubectlClient" do
       true.should be_false
     end
   end
-
-  # ruby magic above here
-  # pod_k8s_manifest = K8sManifestHelper.new(pods_json)
-  # pods = pod_k8s_manifest.map do |x|
-  #   taints = x.dig?("spec", "taints")
-  #   LOGGING.debug "taints: #{taints}"
-  #   if (taints && taints.dig?("effect") == "NoSchedule")
-  #     nil
-  #   else
-  #     x
-  #   end
-  # end
-
-
-
-  # pods_json = Get.resource_map(k8s_manifest) do |x|
-  #   taints = x.dig?("spec", "taints")
-  #   LOGGING.debug "taints: #{taints}"
-  #   if (taints && taints.dig?("effect") == "NoSchedule")
-  #     nil
-  #   else
-  #     x
-  #   end
-  # end
-
-  # get a list of nodes (e.g. that are schedulable) and assign it to an array
-  # get all the pods
-  # pods_json = Get.resource_map(all_pods_k8s_manifest) do |item, metadata|
-  #   if (node_names.find {|node_name| item.dig?("spec", "nodeName") == node_name}  ) &&
-  #        item.dig?("spec", "name") == 'cri_tools'
-  #     {:pod => x, :name => item.dig?("metadata", "name"))
-  #   end
-  # end
-
-  # schedulable_nodes() : nodes_json
-  #  -> pods_by_node(nodes_json) : pods_json
-  #  -> pods_by_label(pods_json, "name=cri-tools") : pods_json
-  #  -> cp(pods_json, tarred_image) : pods_json
-  #  -> exec(pods_json, command) : pods_json
-  # get a list of nodes (e.g. that are schedulable) and assign it to an array
-  # get every pod that is assigned to any node in the nodes array
-  # pods_by_filtered_node_manifest = `kubectl get pods -o {if eq .metadata.name <nodes_array or loop>??`}}
-  #
-  # pods_json = Get.resource_map(pods_by_filtered_node_manifest) do |item, metadata|
-  #   if item.dig?("spec", "name") == 'cri_tools'
-  #     {:pod => x, :name => taints.dig?("metadata", "name"))
-  #   end
-  # end
-
-  # pods_json = Get.resource_select(k8s_manifest : JSON::Any) do |x|
-  #   taints = x.dig?("spec", "taints")
-  #   !((taints && taints.dig?("effect") == "NoSchedule"))
-  # end
-
-  # pods_json = Get.resource_select(kind : String) do |x|
-  #   taints = x.dig?("spec", "taints")
-  #   !((taints && taints.dig?("effect") == "NoSchedule"))
-  # end
-
-  # pods_json = Get.resource_select(k8s_manifest : JSON::Any) do |metadata, item|
-  #   taints = item.dig?("spec", "taints")
-  #   !((taints && taints.dig?("effect") == "NoSchedule"))
-  # end
 
   it "'#KubectlClient.resource_map' should a subset of manifest resource json", tags: ["kubectl-nodes"]  do
     retry_limit = 50

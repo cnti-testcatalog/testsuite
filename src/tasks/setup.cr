@@ -15,6 +15,7 @@ task "offline" do |_, args|
   output_file = args.named["offline"].as(String) if args.named["offline"]?
   if output_file && !output_file.empty?
       AirGap.extract(output_file)
+      AirGap.install_test_suite_tools(output_file)
   end
 end
 
