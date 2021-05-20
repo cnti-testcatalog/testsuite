@@ -158,6 +158,7 @@ module KubectlClient
       $?.success?
     end
   end
+  #TODO move this out into its own file
   module Get
     def self.privileged_containers(namespace="--all-namespaces")
       privileged_response = `kubectl get pods #{namespace} -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`

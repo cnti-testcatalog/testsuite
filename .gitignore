@@ -38,3 +38,4 @@ chaos_container_kill.yml
 *.log
 points.yml
 /tools/cri-tools-manifest.yml
+./cri-tools-manifest.yml

@@ -42,9 +42,6 @@ module AirGap
     end
   end
 
-
-
-
   def self.bootstrap_cluster(method)
     resp = AirGap.pods_with_tar()
     resp = AirGap.download_cri_tools()
@@ -61,8 +58,8 @@ module AirGap
     # TODO Make an embedded file for deploying the cri-tool 
     # TODO download cri tools
     # TODO if tar exists
-    # TODO if tar doest not exist, install tar
-    # TODO install cri-tool
+    # TODO if tar does not exist, install tar
+    # TODO install cri-tool image
     # TODO Function to install needed cri & ctr tools using kubectl cp.
     # TODO make sure cri tools are installed (wait for them)
 
@@ -93,7 +90,7 @@ module AirGap
     end
   end
 
-  def self.install_cri_tools(cri_tool_pods)
+  def self.install_cri_binaries(cri_tool_pods)
     cri_tool_pods.map do |pod|
       KubectlClient.cp("/tmp/crictl #{pod.dig?("metadata", "name")}:/usr/local/bin/crictl")
       KubectlClient.cp("/tmp/bin/ctr #{pod.dig?("metadata", "name")}:/usr/local/bin/ctr")
@@ -113,28 +110,37 @@ module AirGap
     bin_tar[:status].success? || usr_bin_tar.[:status].success? || usr_local_bin_tar[:status].success?
   end
 
-  def self.install_cri_pod(image)
-    template = Crinja.render(cri_tools_template, { "image" => image})
-    write = `echo "#{template}" > "cri-tools-manifest.yml"`
+
+  # Makes a copy of an image that is already available on the cluster either as:
+  #  1. an image, with shell access, that we have determined to already exist
+  #  ... or
+  #  2. an image (cri-tools) that we have installed into the local docker registry using docker push
+  # TODO make this work with runtimes other than containerd
+  def self.create_pod_by_image(image, name="cri-tools")
+    template = Crinja.render(cri_tools_template, { "image" => image, "name" => name})
+    write = `echo "#{template}" > "#{name}-manifest.yml"`
+    KubectlClient::Apply.file("#{name}-manifest.yml")
+    KubectlClient::Get.resource_wait_for_install("DaemonSet", name)
   end
 
+  # Make an image all all of the nodes that has tar access
 def self.cri_tools_template 
   <<-TEMPLATE
   apiVersion: apps/v1
   kind: DaemonSet
   metadata:
-      name: cri-tools
+      name: {{ name }}
   spec:
     selector:
       matchLabels:
-        name: cri-tools
+        name: {{ name }}
     template:
       metadata:
         labels:
-          name: cri-tools
+          name: {{ name }}
       spec:
         containers:
-          - name: cri-tools
+          - name: {{ name }}
             image: '{{ image }}'
             command: ["/bin/sh"]
             args: ["-c", "sleep infinity"]

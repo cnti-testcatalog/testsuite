@@ -67,20 +67,29 @@ describe "AirGap" do
     (resp[0]).should_not be_nil
   end
 
-  it "'#AirGap.install_cri_pod' should install the cri pod in the cluster", tags: ["kubectl-nodes"]  do
+  it "'#AirGap.create_pod_by_image' should install the cri pod in the cluster", tags: ["kubectl-nodes"]  do
       pods = AirGap.pods_with_tar()
       image = AirGap.pod_images(pods)
-      resp = AirGap.install_cri_pod(image)
+      resp = AirGap.create_pod_by_image(image)
+      (resp).should be_true
   end
 
-  # it "'#AirGap.install_cri_tools' should install the cri tools in the cluster", tags: ["kubectl-nodes"]  do
-  #   pods = AirGap.pods_with_tar()
-  #   resp = AirGap.install_cri_tools(pods)
-  #   sh = KubectlClient.exec("-ti #{resp[0].dig?("metadata", "name")} -- cat /usr/local/bin/crictl > /dev/null")  
-  #   sh[:status].success?
-  #   sh = KubectlClient.exec("-ti #{resp[0].dig?("metadata", "name")} -- cat /usr/local/bin/ctr > /dev/null")  
-  #   sh[:status].success?
-  # end
+  it "'#AirGap.install_test_suite' should install the cri tools in the cluster", tags: ["kubectl-nodes"]  do
+    pods = AirGap.pods_with_tar()
+    image = AirGap.pod_images(pods)
+    resp = AirGap.create_pod_by_image(image, "cri-tools")
+    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+    pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+    AirGap.install_cri_binaries(pods)
+    # Get the generated name of the cri-tools per node
+    pods.map do |pod| 
+      pod_name = pod.dig?("metadata", "name")
+      sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/crictl > /dev/null")  
+      sh[:status].success?
+      sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/ctr > /dev/null")  
+      sh[:status].success?
+    end
+  end
 
 
 end
