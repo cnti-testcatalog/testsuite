@@ -111,6 +111,8 @@ module AirGap
   end
 
   def self.install_cri_binaries(cri_tool_pods)
+    AirGap.download_cri_tools()
+    AirGap.untar_cri_tools()
     cri_tool_pods.map do |pod|
       KubectlClient.cp("/tmp/crictl #{pod.dig?("metadata", "name")}:/usr/local/bin/crictl")
       KubectlClient.cp("/tmp/bin/ctr #{pod.dig?("metadata", "name")}:/usr/local/bin/ctr")
