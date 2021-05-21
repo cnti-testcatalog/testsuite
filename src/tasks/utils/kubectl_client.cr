@@ -123,6 +123,15 @@ module KubectlClient
     end
   end
   module Delete
+    def self.command(command)
+      status = Process.run("kubectl delete #{command}",
+                           shell: true,
+                           output: output = IO::Memory.new,
+                           error: stderr = IO::Memory.new)
+      LOGGING.info "KubectlClient.delete output: #{output.to_s}"
+      LOGGING.info "KubectlClient.delete stderr: #{stderr.to_s}"
+      {status: status, output: output, error: stderr}
+    end
     def self.file(file_name)
       status = Process.run("kubectl delete -f #{file_name}",
                            shell: true,

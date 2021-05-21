@@ -20,7 +20,7 @@ describe "AirGap" do
   end
 
   it "'#AirGap.publish_tarball' should execute publish a tarball to a bootstrapped cluster", tags: ["kubectl-nodes"]  do
-    bootstrap = `cd ./tools ; ./bootstrap-cri-tools.sh registry conformance/cri-tools:latest ; cd -`
+    AirGap.bootstrap_cluster()
     tarball_name = "./spec/fixtures/testimage.tar.gz"
     resp = AirGap.publish_tarball(tarball_name)
     resp[0][:output].to_s.match(/unpacking docker.io\/testimage\/testimage:test/).should_not be_nil
@@ -86,18 +86,54 @@ describe "AirGap" do
       (resp).should be_true
   end
 
-  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster", tags: ["kubectl-nodes"]  do
+  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that has an image with tar avaliable on the node.", tags: ["kubectl-nodes"]  do
+    pods = AirGap.pods_with_tar()
+    if pods.empty?
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml deploy_with_chart=false`
+      $?.success?.should be_true
+    end
     AirGap.bootstrap_cluster()
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
     # Get the generated name of the cri-tools per node
     pods.map do |pod| 
       pod_name = pod.dig?("metadata", "name")
+      containers = pod.dig("spec","containers").as_a
+      image = containers[0]? && containers[0].dig("image")
+      LOGGING.info "CRI Pod Image: #{image}"
       sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/crictl > /dev/null")  
       sh[:status].success?
       sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/ctr > /dev/null")  
       sh[:status].success?
     end
+  ensure
+    KubectlClient::Delete.command("daemonset cri-tools")
+    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml deploy_with_chart=false`
+  end
+
+
+  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that does not have tar in the images", tags: ["kubectl-nodes"]  do
+
+    # TODO Delete all cri-tools images
+    KubectlClient::Delete.command("daemonset cri-tools")
+    pods = AirGap.pods_with_tar()
+    # Skip the test if tar and sh is available outside of the cri tools 
+    if !pods.empty?
+      KubectlClient::Get
+      AirGap.bootstrap_cluster()
+      pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+      pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+      # Get the generated name of the cri-tools per node
+      pods.map do |pod| 
+        pod_name = pod.dig?("metadata", "name")
+        sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/crictl > /dev/null")  
+        sh[:status].success?
+        sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/ctr > /dev/null")  
+        sh[:status].success?
+      end
+    end
+  ensure
+    KubectlClient::Delete.command("daemonset cri-tools")
   end
 
   it "'#AirGap.install_test_suite_tools' should install the cri tools in the cluster", tags: ["kubectl-nodes"]  do
