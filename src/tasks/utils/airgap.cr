@@ -32,10 +32,27 @@ module AirGap
   #   # TODO add tar binary to prereqs/documentation
   def self.bootstrap_cluster
     pods = AirGap.pods_with_tar()
-    image = AirGap.pod_images(pods)
-    resp = AirGap.create_pod_by_image(image, "cri-tools")
+    tar_pod_name =  pods[0].dig?("metadata", "name") if pods[0]?
+    unless tar_pod_name 
+      pods = AirGap.pods_with_sh()
+      no_tar = true
+    end
+    #TODO Ensure images found are available on all schedulable nodes on the cluster.
+    images = AirGap.pod_images(pods)
+    if images.empty?
+      raise "No images with Tar or Shell found. Please deploy a Pod with Tar or Shell to your cluster."
+    end
+    resp = AirGap.create_pod_by_image(images[0], "cri-tools")
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+
+    cri_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
+    if no_tar
+      tar_path = AirGap.check_tar(cri_tools_pod_name, pod=false)
+      pods.map do |pod| 
+        KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- cp #{tar_path} /usr/local/bin/")
+      end
+    end
     AirGap.install_cri_binaries(pods)
   end
 
@@ -94,23 +111,35 @@ module AirGap
   end
 
   def self.install_cri_binaries(cri_tool_pods)
+    AirGap.download_cri_tools()
+    AirGap.untar_cri_tools()
     cri_tool_pods.map do |pod|
       KubectlClient.cp("/tmp/crictl #{pod.dig?("metadata", "name")}:/usr/local/bin/crictl")
       KubectlClient.cp("/tmp/bin/ctr #{pod.dig?("metadata", "name")}:/usr/local/bin/ctr")
     end
   end
 
-  def self.check_sh(pod_name)
-    sh = KubectlClient.exec("-ti #{pod_name} -- cat /bin/sh > /dev/null")  
+  def self.check_sh(pod_name, namespace="default")
+    # --namespace=${POD[1]}
+    sh = KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /bin/sh > /dev/null")  
     sh[:status].success?
   end
 
-  def self.check_tar(pod_name)
-    bin_tar = KubectlClient.exec("-ti #{pod_name} -- cat /bin/tar > /dev/null")  
-    usr_bin_tar =  KubectlClient.exec("-ti #{pod_name} -- cat /usr/bin/tar > /dev/null")
-    usr_local_bin_tar = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/tar > /dev/null")
-
-    bin_tar[:status].success? || usr_bin_tar.[:status].success? || usr_local_bin_tar[:status].success?
+  def self.check_tar(pod_name, pod=true, namespace="default")
+    if pod
+      bin_tar = KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /bin/tar > /dev/null")  
+      usr_bin_tar =  KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /usr/bin/tar > /dev/null")
+      usr_local_bin_tar = KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /usr/local/bin/tar > /dev/null")
+    else
+      bin_tar = KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /tmp/bin/tar > /dev/null")  
+      usr_bin_tar =  KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /tmp/usr/bin/tar > /dev/null")
+      usr_local_bin_tar = KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /tmp/usr/local/bin/tar > /dev/null")
+    end
+    if pod
+      (bin_tar[:status].success? && "/bin/tar") || (usr_bin_tar.[:status].success? && "/usr/bin/tar") || (usr_local_bin_tar[:status].success? && "/usr/local/bin/tar")
+    else
+      (bin_tar[:status].success? && "/tmp/bin/tar") || (usr_bin_tar.[:status].success? && "/tmp/usr/bin/tar") || (usr_local_bin_tar[:status].success? && "/tmp/usr/local/bin/tar")
+    end
   end
 
 
@@ -176,7 +205,8 @@ end
   def self.pods_with_tar() : KubectlClient::K8sManifestList
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list).select do |pod|
       pod_name = pod.dig?("metadata", "name")
-      if check_sh(pod_name) && check_tar(pod_name)
+      namespace = pod.dig?("metadata", "namespace")
+      if check_sh(pod_name, namespace) && check_tar(pod_name, namespace)
         LOGGING.debug "Found tar and sh Pod: #{pod_name}"
         true
       else
@@ -188,7 +218,8 @@ end
   def self.pods_with_sh() : KubectlClient::K8sManifestList
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list).select do |pod|
       pod_name = pod.dig?("metadata", "name")
-      if check_sh(pod_name) 
+      namespace = pod.dig?("metadata", "namespace")
+      if check_sh(pod_name, namespace) 
         LOGGING.debug "Found sh Pod: #{pod_name}"
         true
       else

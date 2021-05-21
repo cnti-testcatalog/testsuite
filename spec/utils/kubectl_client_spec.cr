@@ -27,7 +27,7 @@ describe "KubectlClient" do
   end
 
   it "'#KubectlClient.pods_by_label' should return all pods on a specific node", tags: ["kubectl-nodes"]  do
-    bootstrap = `cd ./tools ; ./bootstrap-cri-tools.sh registry conformance/cri-tools:latest ; cd -`
+    AirGap.bootstrap_cluster()
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     (pods).should_not be_nil
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
