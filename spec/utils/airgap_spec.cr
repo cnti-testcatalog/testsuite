@@ -146,7 +146,9 @@ describe "AirGap" do
 
   it "'#AirGap.install_test_suite_tools' should install the cri tools in the cluster", tags: ["kubectl-nodes"]  do
     resp = AirGap.install_test_suite_tools
-    resp[0][:output].to_s.match(/unpacking docker.io\/testimage\/testimage:test/).should_not be_nil
+    LOGGING.info "#{resp.find{|x| puts x[0][:output].to_s}}"
+    resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/bitnami\/kubectl:latest/)}.should_not be_nil
+    resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/pingcap\/chaos-mesh:v0.8.0/)}.should_not be_nil
   end
 
 end

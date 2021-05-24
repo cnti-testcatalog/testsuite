@@ -72,9 +72,25 @@ module AirGap
 
   def self.install_test_suite_tools(tarball_name="./airgapped.tar.gz")
     AirGap.bootstrap_cluster()
-    tarball_name = "./spec/fixtures/testimage.tar.gz"
-    # TODO loop through all tarballs install the airgap tarball
-    AirGap.publish_tarball(tarball_name)
+    # tarball_name = "./spec/fixtures/testimage.tar.gz"
+    if ENV["CRYSTAL_ENV"]? == "TEST"
+      install_list = [{input_file: "/tmp/kubectl.tar"}, 
+                      {input_file: "/tmp/chaos-mesh.tar"}]
+    else
+      install_list = [{input_file: "/tmp/kubectl.tar"}, 
+                      {input_file: "/tmp/chaos-mesh.tar"}, 
+                      {input_file: "/tmp/chaos-daemon.tar"}, 
+                      {input_file: "/tmp/chaos-dashboard.tar"}, 
+                      {input_file: "/tmp/chaos-kernel.tar"}, 
+                      {input_file: "/tmp/sonobuoy.tar"}, 
+                      {input_file: "/tmp/sonobuoy-logs.tar"}, 
+                      {input_file: "/tmp/litmus-operator.tar"}, 
+                      {input_file: "/tmp/litmus-runner.tar"}, 
+                      {input_file: "/tmp/prometheus.tar"}]
+    end
+    resp = install_list.map {|x| AirGap.publish_tarball(x[:input_file])}
+    LOGGING.debug "resp: #{resp}"
+    resp
   end
 
   #   # TODO add tar binary to prereqs/documentation
