@@ -3,6 +3,7 @@ require "totem"
 require "colorize"
 require "crinja"
 require "./tar.cr"
+require "./docker_client.cr"
 require "./kubectl_client.cr"
 
 module AirGap
@@ -20,6 +21,46 @@ module AirGap
   #TODO Kubectl::Pods.pods_by_label(pods_json, "name=cri-tools")
   #TODO Kubectl::Pods.cp(pods_json, tarred_image)
   #TODO Kubectl::Pods.exec(pods_json, command)
+
+  #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
+  #./cnf-testsuite offline -o ~/airgapped.tar.gz
+  #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
+  def self.generate(output_file : String = "./airgapped.tar.gz")
+    [{input_file: "/tmp/kubectl.tar", 
+      image: "bitnami/kubectl:latest"},
+    {input_file: "/tmp/chaos-mesh.tar", 
+     image: "pingcap/chaos-mesh:v0.8.0"},
+    {input_file: "/tmp/chaos-daemon.tar", 
+     image: "pingcap/chaos-daemon:v0.8.0"},
+    {input_file: "/tmp/chaos-dashboard.tar", 
+     image: "pingcap/chaos-dashboard:v0.8.0"},
+    {input_file: "/tmp/chaos-kernel.tar", 
+     image: "pingcap/chaos-kernel:v0.8.0"},
+    {input_file: "/tmp/prometheus.tar", 
+     image: "prom/prometheus:v2.15.2"}].map do |x|
+      DockerClient.pull(x[:image])
+      DockerClient.save(x[:image], x[:input_file])
+      TarClient.append(output_file, Path[x[:input_file]].parent, x[:input_file].split("/")[-1])
+
+    end
+    # TODO image: pingcap/chaos-kernel:v0.8.0
+    # TODO Tar litmus images
+    # TODO Tar cluster api images 
+    # TODO Tar sonobuoy images
+    # TarClient.tar(output_file, Path[s1].parent, s1.split("/")[-1])
+  end
+
+  #./cnf-testsuite setup --offline=./airgapped.tar.gz
+  def self.extract(output_file : String = "./airgapped.tar.gz", output_dir="/tmp")
+    #TODO untar real images to their appropriate directories
+    #TODO  the second parameter will be determined based on
+    # the image file that was tarred
+    # TODO Tar chaos mesh 
+    # TODO Tar litmus images
+    # TODO Tar cluster api images 
+    # TODO Tar sonobuoy images
+    TarClient.untar(output_file, output_dir)
+  end
 
 
   def self.install_test_suite_tools(tarball_name="./airgapped.tar.gz")
@@ -71,23 +112,6 @@ module AirGap
     end
   end
 
-  #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
-  #./cnf-testsuite offline -o ~/airgapped.tar.gz
-  #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
-  def self.generate(output_file : String = "./airgapped.tar.gz")
-    #TODO find real images 
-    #TODO tar real images 
-    s1 = "./spec/fixtures/cnf-testsuite.yml"
-    TarClient.tar(output_file, Path[s1].parent, s1.split("/")[-1])
-  end
-
-  #./cnf-testsuite setup --offline=./airgapped.tar.gz
-  def self.extract(output_file : String = "./airgapped.tar.gz", output_dir="/tmp")
-    #TODO untar real images to their appropriate directories
-    #TODO  the second parameter will be determined based on
-    # the image file that was tarred
-    TarClient.untar(output_file, output_dir)
-  end
 
 
   #TODO put curl back in the prereqs

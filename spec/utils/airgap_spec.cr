@@ -15,6 +15,14 @@ describe "AirGap" do
 
     AirGap.generate("./tmp/airgapped.tar.gz")
     (File.exists?("./tmp/airgapped.tar.gz")).should be_true
+    file_list = `tar -tvf ./tmp/airgapped.tar.gz`
+    LOGGING.info "file_list: #{file_list}"
+    (file_list).match(/kubectl.tar/).should_not be_nil
+    (file_list).match(/chaos-mesh.tar/).should_not be_nil
+    (file_list).match(/chaos-daemon.tar/).should_not be_nil
+    (file_list).match(/chaos-dashboard.tar/).should_not be_nil
+    (file_list).match(/chaos-kernel.tar/).should_not be_nil
+    (file_list).match(/prometheus.tar/).should_not be_nil
   ensure
     `rm ./tmp/airgapped.tar.gz`
   end

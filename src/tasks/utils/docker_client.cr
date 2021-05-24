@@ -4,6 +4,26 @@ require "./cnf_manager.cr"
 require "halite"
 
 module DockerClient
+  def self.pull(image)
+    LOGGING.info "Docker.pull command: #{image}"
+    status = Process.run("docker pull #{image}",
+                         shell: true,
+                         output: output = IO::Memory.new,
+                         error: stderr = IO::Memory.new)
+    LOGGING.info "Docker.pull output: #{output.to_s}"
+    LOGGING.info "Docker.pull stderr: #{stderr.to_s}"
+    {status: status, output: output, error: stderr}
+  end
+  def self.save(image, output_file)
+    LOGGING.info "Docker.save command: docker save #{image} -o #{output_file}"
+    status = Process.run("docker save #{image} -o #{output_file}",
+                         shell: true,
+                         output: output = IO::Memory.new,
+                         error: stderr = IO::Memory.new)
+    LOGGING.info "Docker.save output: #{output.to_s}"
+    LOGGING.info "Docker.save stderr: #{stderr.to_s}"
+    {status: status, output: output, error: stderr}
+  end
   ##############################################
   # All docker images can have one, two, three, or more segments. The docker images that have 
   # multiple segments are separated by a slash.
