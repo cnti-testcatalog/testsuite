@@ -36,6 +36,14 @@ module AirGap
      image: "pingcap/chaos-dashboard:v0.8.0"},
     {input_file: "/tmp/chaos-kernel.tar", 
      image: "pingcap/chaos-kernel:v0.8.0"},
+    {input_file: "/tmp/sonobuoy.tar", 
+     image: "docker.io/sonobuoy/sonobuoy:v0.19.0"},
+    {input_file: "/tmp/sonobuoy-logs.tar", 
+     image: "docker.io/sonobuoy/systemd-logs:v0.3"},
+    {input_file: "/tmp/litmus-operator.tar", 
+     image: "litmuschaos/chaos-operator:1.13.2"},
+    {input_file: "/tmp/litmus-runner.tar", 
+     image: "litmuschaos/chaos-runner:1.13.2"},
     {input_file: "/tmp/prometheus.tar", 
      image: "prom/prometheus:v2.15.2"}].map do |x|
       DockerClient.pull(x[:image])
@@ -47,7 +55,6 @@ module AirGap
     # TODO Tar litmus images
     # TODO Tar cluster api images 
     # TODO Tar sonobuoy images
-    # TarClient.tar(output_file, Path[s1].parent, s1.split("/")[-1])
   end
 
   #./cnf-testsuite setup --offline=./airgapped.tar.gz

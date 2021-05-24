@@ -41,3 +41,4 @@ points.yml
 cri-tools-manifest.yml
 containerd-*-linux-amd64.tar.gz
 crictl-*-linux-amd64.tar.gz
+tools/LICENSE
