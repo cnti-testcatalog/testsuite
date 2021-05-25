@@ -27,20 +27,20 @@ describe "AirGap" do
     `rm ./tmp/airgapped.tar.gz`
   end
 
-  it "'#AirGap.publish_tarball' should execute publish a tarball to a bootstrapped cluster", tags: ["kubectl-nodes"]  do
+  it "'#AirGap.publish_tarball' should execute publish a tarball to a bootstrapped cluster", tags: ["airgap"]  do
     AirGap.bootstrap_cluster()
     tarball_name = "./spec/fixtures/testimage.tar.gz"
     resp = AirGap.publish_tarball(tarball_name)
     resp[0][:output].to_s.match(/unpacking docker.io\/testimage\/testimage:test/).should_not be_nil
   end
 
-  it "'#AirGap.check_tar' should determine if a pod has the tar binary on it", tags: ["kubectl-nodes"]  do
+  it "'#AirGap.check_tar' should determine if a pod has the tar binary on it", tags: ["airgap"]  do
     pods = KubectlClient::Get.pods
     resp = AirGap.check_tar(pods.dig?("metadata", "name"))
     resp.should be_false
   end
   
-  it "'#AirGap.check_tar' should determine if the host has the tar binary on it", tags: ["kubectl-nodes"]  do
+  it "'#AirGap.check_tar' should determine if the host has the tar binary on it", tags: ["airgap"]  do
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
     resp = AirGap.check_tar(pods[0].dig?("metadata", "name"), pod=false)
@@ -48,13 +48,13 @@ describe "AirGap" do
     resp.should_not be_nil 
   end
 
-  it "'#AirGap.check_sh' should determine if a pod has a shell on it", tags: ["kubectl-nodes"]  do
+  it "'#AirGap.check_sh' should determine if a pod has a shell on it", tags: ["airgap"]  do
     pods = KubectlClient::Get.pods
     resp = AirGap.check_sh(pods.dig?("metadata", "name"))
     resp.should be_false
   end
 
-  it "'#AirGap.pods_with_tar' should determine if there are any pods with a shell and tar on them", tags: ["kubectl-nodes"]  do
+  it "'#AirGap.pods_with_tar' should determine if there are any pods with a shell and tar on them", tags: ["airgap"]  do
     #TODO Should install cri-tools or container with tar before running spec.
     resp = AirGap.pods_with_tar()
     if resp[0].dig?("metadata", "name")
@@ -63,38 +63,38 @@ describe "AirGap" do
     (resp[0].dig?("kind")).should eq "Pod"
   end
 
-  it "'#AirGap.pods_with_sh' should determine if there are any pods with a shell on them", tags: ["kubectl-nodes"]  do
+  it "'#AirGap.pods_with_sh' should determine if there are any pods with a shell on them", tags: ["airgap"]  do
     resp = AirGap.pods_with_sh()
     (resp[0].dig?("kind")).should eq "Pod"
   end
 
-  it "'#AirGap.download_cri_tools' should download the cri tools", tags: ["kubectl-nodes"]  do
+  it "'#AirGap.download_cri_tools' should download the cri tools", tags: ["airgap"]  do
     resp = AirGap.download_cri_tools()
     (File.exists?("crictl-#{AirGap::CRI_VERSION}-linux-amd64.tar.gz")).should be_true
     (File.exists?("containerd-#{AirGap::CTR_VERSION}-linux-amd64.tar.gz")).should be_true
   end
 
-  it "'#AirGap.untar_cri_tools' should untar the cri tools", tags: ["kubectl-nodes"]  do
+  it "'#AirGap.untar_cri_tools' should untar the cri tools", tags: ["airgap"]  do
     resp = AirGap.untar_cri_tools()
     (File.exists?("/tmp/crictl")).should be_true
     (File.exists?("/tmp/bin/ctr")).should be_true
   end
 
-  it "'#AirGap.pod_images' should retrieve all of the images for the pods with shells", tags: ["kubectl-nodes"]  do
+  it "'#AirGap.pod_images' should retrieve all of the images for the pods with shells", tags: ["airgap"]  do
     pods = AirGap.pods_with_tar()
     resp = AirGap.pod_images(pods)
     # (resp[0]).should eq "conformance/cri-tools:latest"
     (resp[0]).should_not be_nil
   end
 
-  it "'#AirGap.create_pod_by_image' should install the cri pod in the cluster", tags: ["kubectl-nodes"]  do
+  it "'#AirGap.create_pod_by_image' should install the cri pod in the cluster", tags: ["airgap"]  do
       pods = AirGap.pods_with_tar()
       image = AirGap.pod_images(pods)
       resp = AirGap.create_pod_by_image(image)
       (resp).should be_true
   end
 
-  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that has an image with tar avaliable on the node.", tags: ["kubectl-nodes"]  do
+  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that has an image with tar avaliable on the node.", tags: ["airgap"]  do
     pods = AirGap.pods_with_tar()
     if pods.empty?
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml deploy_with_chart=false`
@@ -120,7 +120,7 @@ describe "AirGap" do
   end
 
 
-  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that does not have tar in the images", tags: ["kubectl-nodes"]  do
+  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that does not have tar in the images", tags: ["airgap"]  do
 
     # TODO Delete all cri-tools images
     KubectlClient::Delete.command("daemonset cri-tools")
@@ -144,11 +144,37 @@ describe "AirGap" do
     KubectlClient::Delete.command("daemonset cri-tools")
   end
 
-  it "'#AirGap.install_test_suite_tools' should install the cri tools in the cluster", tags: ["kubectl-nodes"]  do
+  it "'#AirGap.install_test_suite_tools' should install the cri tools in the cluster", tags: ["airgap"]  do
     resp = AirGap.install_test_suite_tools
     LOGGING.info "#{resp.find{|x| puts x[0][:output].to_s}}"
     resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/bitnami\/kubectl:latest/)}.should_not be_nil
     resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/pingcap\/chaos-mesh:v0.8.0/)}.should_not be_nil
+    #
+    # retry_limit = 50
+    # retries = 1
+    # empty_json_any = JSON.parse(%({}))
+    # # nodes = [empty_json_any]
+    # resp = Nil
+    # # until (nodes != [empty_json_any]) || retries > retry_limit
+    # until (resp != Nil) || retries > retry_limit
+    #   LOGGING.info "schedulable_node retry: #{retries}"
+    #   sleep 1.0
+    #   nodes = KubectlClient::Get.schedulable_nodes_list
+    #   retries = retries + 1
+    # end
+    # LOGGING.info "schedulable_node node: #{nodes}"
+    # (nodes).should_not be_nil
+    # if nodes && nodes[0] != Nil
+    #   (nodes.size).should be > 0
+    #   first_node =  nodes[0]
+    #   if first_node
+    #     (first_node.dig("kind")).should eq "Node"
+    #   else 
+    #     true.should be_false
+    #   end
+    # else
+    #   true.should be_false
+    # end
   end
 
 end
