@@ -120,7 +120,7 @@ describe "AirGap" do
   end
 
 
-  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that does not have tar in the images", tags: ["airgap"]  do
+  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that does not have tar in the images", tags: ["airgap_bootstrap"]  do
 
     # TODO Delete all cri-tools images
     KubectlClient::Delete.command("daemonset cri-tools")
@@ -144,7 +144,7 @@ describe "AirGap" do
     KubectlClient::Delete.command("daemonset cri-tools")
   end
 
-  it "'#AirGap.install_test_suite_tools' should install the cri tools in the cluster", tags: ["airgap"]  do
+  it "'#AirGap.install_test_suite_tools' should install the cri tools in the cluster", tags: ["airgap_install_tools"]  do
     resp = AirGap.install_test_suite_tools
     LOGGING.info "#{resp.find{|x| puts x[0][:output].to_s}}"
     resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/bitnami\/kubectl:latest/)}.should_not be_nil
