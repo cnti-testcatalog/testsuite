@@ -28,4 +28,14 @@ describe "TarClient" do
     `rm ./tmp/test.tar`
     `rm ./tmp/cnf-testsuite.yml`
   end
+
+  it "'.tar_helm_repo' should create a tar file from a helm repository", tags: ["tar-install"]  do
+    TarClient.tar_helm_repo("stable/coredns", "/tmp/airgapped.tar")
+    (File.exists?("/tmp/airgapped.tar")).should be_true
+    resp = `tar -tvf /tmp/airgapped.tar`
+    LOGGING.info "Tar Filelist: #{resp}"
+    (/repositories\/stable_coredns/).should_not be_nil
+  ensure
+    `rm /tmp/airgapped.tar`
+  end
 end

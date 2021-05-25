@@ -39,4 +39,14 @@ module TarClient
     LOGGING.info "TarClient.untar stderr: #{stderr.to_s}"
     {status: status, output: output, error: stderr}
   end
+
+  def self.tar_helm_repo(repo, output_file : String = "./airgapped.tar.gz")
+    repo_dir = repo.gsub("/", "_")
+    repo_path = "repositories/#{repo_dir}" 
+    `rm -rf /tmp/#{repo_path} > /dev/null 2>&1`
+    FileUtils.mkdir_p("/tmp/#{repo_path}")
+    Helm.fetch("#{repo} -d /tmp/#{repo_path}")
+    helm_chart = Dir.entries("/tmp/#{repo_path}").first
+    TarClient.append(output_file, "/tmp", "#{repo_path}")
+  end
 end
