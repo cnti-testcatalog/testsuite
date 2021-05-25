@@ -145,6 +145,7 @@ describe "AirGap" do
   end
 
   it "'#AirGap.install_test_suite_tools' should install the cri tools in the cluster", tags: ["airgap_install_tools"]  do
+    AirGap.generate("./airgapped.tar.gz")
     resp = AirGap.install_test_suite_tools
     LOGGING.info "#{resp.find{|x| puts x[0][:output].to_s}}"
     resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/bitnami\/kubectl:latest/)}.should_not be_nil
