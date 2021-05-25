@@ -260,7 +260,7 @@ module KubectlClient
     end
 
     def self.schedulable_nodes_list : Array(JSON::Any)   
-      retry_limit = 10
+      retry_limit = 50
       retries = 1
       empty_json_any = [] of JSON::Any
       nodes = empty_json_any
