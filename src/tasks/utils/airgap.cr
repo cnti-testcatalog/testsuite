@@ -51,21 +51,10 @@ module AirGap
       TarClient.append(output_file, Path[x[:input_file]].parent, x[:input_file].split("/")[-1])
 
     end
-    # TODO image: pingcap/chaos-kernel:v0.8.0
-    # TODO Tar litmus images
-    # TODO Tar cluster api images 
-    # TODO Tar sonobuoy images
   end
 
   #./cnf-testsuite setup --offline=./airgapped.tar.gz
   def self.extract(output_file : String = "./airgapped.tar.gz", output_dir="/tmp")
-    #TODO untar real images to their appropriate directories
-    #TODO  the second parameter will be determined based on
-    # the image file that was tarred
-    # TODO Tar chaos mesh 
-    # TODO Tar litmus images
-    # TODO Tar cluster api images 
-    # TODO Tar sonobuoy images
     TarClient.untar(output_file, output_dir)
   end
 

@@ -120,7 +120,7 @@ describe "AirGap" do
   end
 
 
-  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that does not have tar in the images", tags: ["airgap_bootstrap"]  do
+  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that does not have tar in the images", tags: ["kubectl-utils"]  do
 
     # TODO Delete all cri-tools images
     KubectlClient::Delete.command("daemonset cri-tools")
@@ -144,39 +144,13 @@ describe "AirGap" do
     KubectlClient::Delete.command("daemonset cri-tools")
   end
 
-  it "'#AirGap.install_test_suite_tools' should install the cri tools in the cluster", tags: ["airgap_install_tools"]  do
+  it "'#AirGap.install_test_suite_tools' should install the cri tools in the cluster", tags: ["kubectl-utils"]  do
     AirGap.generate("./airgapped.tar.gz")
     resp = AirGap.install_test_suite_tools
     LOGGING.info "#{resp.find{|x| puts x[0][:output].to_s}}"
     resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/bitnami\/kubectl:latest/)}.should_not be_nil
     resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/pingcap\/chaos-mesh:v0.8.0/)}.should_not be_nil
 
-    # retry_limit = 50
-    # retries = 1
-    # empty_json_any = JSON.parse(%({}))
-    # # nodes = [empty_json_any]
-    # resp = Nil
-    # # until (nodes != [empty_json_any]) || retries > retry_limit
-    # until (resp != Nil) || retries > retry_limit
-    #   LOGGING.info "schedulable_node retry: #{retries}"
-    #   sleep 1.0
-    #   # nodes = KubectlClient::Get.schedulable_nodes_list
-    #   resp = AirGap.install_test_suite_tools
-    #   retries = retries + 1
-    # end
-    # LOGGING.info "schedulable_node node: #{nodes}"
-    # (nodes).should_not be_nil
-    # if nodes && nodes[0] != Nil
-    #   (nodes.size).should be > 0
-    #   first_node =  nodes[0]
-    #   if first_node
-    #     (first_node.dig("kind")).should eq "Node"
-    #   else 
-    #     true.should be_false
-    #   end
-    # else
-    #   true.should be_false
-    # end
   ensure
     `rm /tmp/kubectl.tar`
     `rm /tmp/chaos-mesh.tar`
