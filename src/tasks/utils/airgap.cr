@@ -72,7 +72,6 @@ module AirGap
 
   def self.install_test_suite_tools(tarball_name="./airgapped.tar.gz")
     AirGap.bootstrap_cluster()
-    # tarball_name = "./spec/fixtures/testimage.tar.gz"
     if ENV["CRYSTAL_ENV"]? == "TEST"
       install_list = [{input_file: "/tmp/kubectl.tar"}, 
                       {input_file: "/tmp/chaos-mesh.tar"}]

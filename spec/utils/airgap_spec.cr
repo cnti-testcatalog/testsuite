@@ -176,6 +176,17 @@ describe "AirGap" do
     # else
     #   true.should be_false
     # end
+  ensure
+    `rm /tmp/kubectl.tar`
+    `rm /tmp/chaos-mesh.tar`
+    `rm /tmp/chaos-daemon.tar`
+    `rm /tmp/chaos-dashboard.tar`
+    `rm /tmp/chaos-kernel.tar`
+    `rm /tmp/sonobuoy.tar`
+    `rm /tmp/sonobuoy-logs.tar`
+    `rm /tmp/litmus-operator.tar`
+    `rm /tmp/litmus-runner.tar`
+    `rm /tmp/prometheus.tar`
   end
 
 end
