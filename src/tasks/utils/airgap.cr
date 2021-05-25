@@ -3,6 +3,7 @@ require "totem"
 require "colorize"
 require "crinja"
 require "./tar.cr"
+require "./docker_client.cr"
 require "./kubectl_client.cr"
 
 module AirGap
@@ -21,12 +22,63 @@ module AirGap
   #TODO Kubectl::Pods.cp(pods_json, tarred_image)
   #TODO Kubectl::Pods.exec(pods_json, command)
 
+  #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
+  #./cnf-testsuite offline -o ~/airgapped.tar.gz
+  #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
+  def self.generate(output_file : String = "./airgapped.tar.gz")
+    [{input_file: "/tmp/kubectl.tar", 
+      image: "bitnami/kubectl:latest"},
+    {input_file: "/tmp/chaos-mesh.tar", 
+     image: "pingcap/chaos-mesh:v0.8.0"},
+    {input_file: "/tmp/chaos-daemon.tar", 
+     image: "pingcap/chaos-daemon:v0.8.0"},
+    {input_file: "/tmp/chaos-dashboard.tar", 
+     image: "pingcap/chaos-dashboard:v0.8.0"},
+    {input_file: "/tmp/chaos-kernel.tar", 
+     image: "pingcap/chaos-kernel:v0.8.0"},
+    {input_file: "/tmp/sonobuoy.tar", 
+     image: "docker.io/sonobuoy/sonobuoy:v0.19.0"},
+    {input_file: "/tmp/sonobuoy-logs.tar", 
+     image: "docker.io/sonobuoy/systemd-logs:v0.3"},
+    {input_file: "/tmp/litmus-operator.tar", 
+     image: "litmuschaos/chaos-operator:1.13.2"},
+    {input_file: "/tmp/litmus-runner.tar", 
+     image: "litmuschaos/chaos-runner:1.13.2"},
+    {input_file: "/tmp/prometheus.tar", 
+     image: "prom/prometheus:v2.15.2"}].map do |x|
+      DockerClient.pull(x[:image])
+      DockerClient.save(x[:image], x[:input_file])
+      TarClient.append(output_file, Path[x[:input_file]].parent, x[:input_file].split("/")[-1])
+
+    end
+  end
+
+  #./cnf-testsuite setup --offline=./airgapped.tar.gz
+  def self.extract(output_file : String = "./airgapped.tar.gz", output_dir="/tmp")
+    TarClient.untar(output_file, output_dir)
+  end
+
 
   def self.install_test_suite_tools(tarball_name="./airgapped.tar.gz")
     AirGap.bootstrap_cluster()
-    tarball_name = "./spec/fixtures/testimage.tar.gz"
-    # TODO loop through all tarballs install the airgap tarball
-    AirGap.publish_tarball(tarball_name)
+    if ENV["CRYSTAL_ENV"]? == "TEST"
+      install_list = [{input_file: "/tmp/kubectl.tar"}, 
+                      {input_file: "/tmp/chaos-mesh.tar"}]
+    else
+      install_list = [{input_file: "/tmp/kubectl.tar"}, 
+                      {input_file: "/tmp/chaos-mesh.tar"}, 
+                      {input_file: "/tmp/chaos-daemon.tar"}, 
+                      {input_file: "/tmp/chaos-dashboard.tar"}, 
+                      {input_file: "/tmp/chaos-kernel.tar"}, 
+                      {input_file: "/tmp/sonobuoy.tar"}, 
+                      {input_file: "/tmp/sonobuoy-logs.tar"}, 
+                      {input_file: "/tmp/litmus-operator.tar"}, 
+                      {input_file: "/tmp/litmus-runner.tar"}, 
+                      {input_file: "/tmp/prometheus.tar"}]
+    end
+    resp = install_list.map {|x| AirGap.publish_tarball(x[:input_file])}
+    LOGGING.debug "resp: #{resp}"
+    resp
   end
 
   #   # TODO add tar binary to prereqs/documentation
@@ -71,23 +123,6 @@ module AirGap
     end
   end
 
-  #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
-  #./cnf-testsuite offline -o ~/airgapped.tar.gz
-  #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
-  def self.generate(output_file : String = "./airgapped.tar.gz")
-    #TODO find real images 
-    #TODO tar real images 
-    s1 = "./spec/fixtures/cnf-testsuite.yml"
-    TarClient.tar(output_file, Path[s1].parent, s1.split("/")[-1])
-  end
-
-  #./cnf-testsuite setup --offline=./airgapped.tar.gz
-  def self.extract(output_file : String = "./airgapped.tar.gz", output_dir="/tmp")
-    #TODO untar real images to their appropriate directories
-    #TODO  the second parameter will be determined based on
-    # the image file that was tarred
-    TarClient.untar(output_file, output_dir)
-  end
 
 
   #TODO put curl back in the prereqs

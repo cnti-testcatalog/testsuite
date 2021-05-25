@@ -5,9 +5,21 @@ require "halite"
 
 module TarClient
   def self.tar(tarball_name, working_directory, source_file_or_directory, options="")
+    #working_directory: directory to cd into before running the tar command
     LOGGING.info "TarClient.tar command: tar #{options} -czvf #{tarball_name} -C #{working_directory} #{source_file_or_directory}"
     # tar -czvf #{cnf_tarball_name} ./#{cnf_bin_asset_name}
     status = Process.run("tar #{options} -czvf #{tarball_name} -C #{working_directory} #{source_file_or_directory}",
+                         shell: true,
+                         output: output = IO::Memory.new,
+                         error: stderr = IO::Memory.new)
+    LOGGING.info "TarClient.tar output: #{output.to_s}"
+    LOGGING.info "TarClient.tar stderr: #{stderr.to_s}"
+    {status: status, output: output, error: stderr}
+  end
+  def self.append(tarball_name, working_directory, source_file_or_directory, options="")
+    #working_directory: directory to cd into before running the tar command
+    LOGGING.info "TarClient.tar (append) command: tar #{options} -rf #{tarball_name} -C #{working_directory} #{source_file_or_directory}"
+    status = Process.run("tar #{options} -rf #{tarball_name} -C #{working_directory} #{source_file_or_directory}",
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)

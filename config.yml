@@ -9,7 +9,7 @@ toggles:
   - name: beta
     toggle_on: false
   - name: poc 
-    toggle_on: false 
+    toggle_on: false
 # Don't change this to true unless you know what you are doing
 # I.E. your cluster and host (your dev box if you are using
 # kind) will be changed, rebooted, chaos tested, etc
