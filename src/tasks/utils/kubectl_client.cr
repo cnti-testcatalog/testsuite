@@ -260,16 +260,26 @@ module KubectlClient
     end
 
     def self.schedulable_nodes_list : Array(JSON::Any)   
-      nodes = KubectlClient::Get.resource_select(KubectlClient::Get.nodes) do |item, metadata|
-        taints = item.dig?("spec", "taints")
-        LOGGING.debug "taints: #{taints}"
-        if (taints && taints.as_a.find{ |x| x.dig?("effect") == "NoSchedule" })
-          # EMPTY_JSON 
-          false 
-        else
-          # item
-          true
+      retry_limit = 10
+      retries = 1
+      empty_json_any = [] of JSON::Any
+      nodes = empty_json_any
+      # Get.nodes seems to have failures sometimes
+      until (nodes != empty_json_any) || retries > retry_limit
+        nodes = KubectlClient::Get.resource_select(KubectlClient::Get.nodes) do |item, metadata|
+          taints = item.dig?("spec", "taints")
+          LOGGING.debug "taints: #{taints}"
+          if (taints && taints.as_a.find{ |x| x.dig?("effect") == "NoSchedule" })
+            # EMPTY_JSON 
+            false 
+          else
+            # item
+            true
+          end
         end
+      end
+      if nodes == empty_json_any
+        LOGGING.error "nodes empty: #{nodes}"
       end
       LOGGING.debug "nodes: #{nodes}"
       nodes

@@ -149,7 +149,7 @@ describe "AirGap" do
     LOGGING.info "#{resp.find{|x| puts x[0][:output].to_s}}"
     resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/bitnami\/kubectl:latest/)}.should_not be_nil
     resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/pingcap\/chaos-mesh:v0.8.0/)}.should_not be_nil
-    #
+
     # retry_limit = 50
     # retries = 1
     # empty_json_any = JSON.parse(%({}))
@@ -159,7 +159,8 @@ describe "AirGap" do
     # until (resp != Nil) || retries > retry_limit
     #   LOGGING.info "schedulable_node retry: #{retries}"
     #   sleep 1.0
-    #   nodes = KubectlClient::Get.schedulable_nodes_list
+    #   # nodes = KubectlClient::Get.schedulable_nodes_list
+    #   resp = AirGap.install_test_suite_tools
     #   retries = retries + 1
     # end
     # LOGGING.info "schedulable_node node: #{nodes}"
