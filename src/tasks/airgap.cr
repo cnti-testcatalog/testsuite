@@ -19,8 +19,14 @@ task "airgapped",  do  |_, args|
   stdout_success "Airgap setup complete"
 end
 
-task "configuration_file_setup" do |_, args|
-  VERBOSE_LOGGING.info "configuration_file_setup" if check_verbose(args)
-  CNFManager::Points.create_points_yml
+desc "Extracts an airgapped tarball"
+task "extract",  do  |_, args|
+  input_file = args.named["input-file"].as(String) if args.named["input-file"]?
+    input_file = args.named["if"].as(String) if args.named["of"]?
+  if input_file && !input_file.empty?
+      AirGap.extract(input_file)
+  else
+    AirGap.extract()
+  end
 end
 

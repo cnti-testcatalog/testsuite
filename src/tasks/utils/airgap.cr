@@ -26,6 +26,7 @@ module AirGap
   #./cnf-testsuite offline -o ~/airgapped.tar.gz
   #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
   def self.generate(output_file : String = "./airgapped.tar.gz")
+    `rm #{output_file}`
     [{input_file: "/tmp/kubectl.tar", 
       image: "bitnami/kubectl:latest"},
     {input_file: "/tmp/chaos-mesh.tar", 
@@ -49,6 +50,7 @@ module AirGap
       DockerClient.pull(x[:image])
       DockerClient.save(x[:image], x[:input_file])
       TarClient.append(output_file, Path[x[:input_file]].parent, x[:input_file].split("/")[-1])
+      TarClient.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
 
     end
   end

@@ -6,9 +6,12 @@ require "./utils/utils.cr"
 
 desc "Install LitmusChaos"
 task "install_litmus" do |_, args|
-    # litmus_install = `kubectl apply -f https://litmuschaos.github.io/litmus/litmus-operator-v1.11.0.yaml`
+  if args.named["offline"]?
+    LOGGING.info "install litmus offline mode"
+    KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v1.13.2.yaml")
+  else
     KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml")
-    # puts "#{litmus_install}" if check_verbose(args)
+  end
 end
 
 module LitmusManager
