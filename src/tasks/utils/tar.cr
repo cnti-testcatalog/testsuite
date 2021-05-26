@@ -49,4 +49,14 @@ module TarClient
     helm_chart = Dir.entries("/tmp/#{repo_path}").first
     TarClient.append(output_file, "/tmp", "#{repo_path}")
   end
+  
+#   def self.tar_manifest(url, output_file : String = "./airgapped.tar.gz")
+#     manifest_name = url.split("/").last
+#     Halite.get("#{url}) do |response| 
+#        File.open(manifest_name, "w") do |file| 
+#        IO.copy(response.body_io, file)
+# end
+# end
+
+
 end
