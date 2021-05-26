@@ -10,25 +10,22 @@ desc "Install Chaos Mesh"
 task "install_chaosmesh" do |_, args|
   VERBOSE_LOGGING.info "install_chaosmesh" if check_verbose(args)
   current_dir = FileUtils.pwd 
-  #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
     helm = CNFSingleton.helm
-  # crd_install = `kubectl apply -f https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml`
-    KubectlClient::Apply.file("https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml")
-  # VERBOSE_LOGGING.info "#{crd_install}" if check_verbose(args)
-  unless Dir.exists?("#{current_dir}/#{TOOLS_DIR}/chaos_mesh")
-    # TODO use a tagged version
-    # fetch_chaos_mesh = `git clone https://github.com/chaos-mesh/chaos-mesh.git #{current_dir}/#{TOOLS_DIR}/chaos_mesh > /dev/null 2>&1`
-    status = Process.run("git clone https://github.com/chaos-mesh/chaos-mesh.git #{current_dir}/#{TOOLS_DIR}/chaos_mesh  > /dev/null 2>&1",
-                         shell: true,
-                         input: input = Process::Redirect::Close,
-                         output: output = Process::Redirect::Close,
-                         error: stderr = Process::Redirect::Close)
-    LOGGING.info "KubectlClient.apply output: #{output.to_s}"
-    LOGGING.info "KubectlClient.apply stderr: #{stderr.to_s}"
-    checkout_tag = `cd #{current_dir}/#{TOOLS_DIR}/chaos_mesh && git checkout tags/#{CHAOS_MESH_VERSION} > /dev/null 2>&1 && cd -`
-  end
-  #TODO use helm wrapper
-  install_chaos_mesh = `#{helm} install chaos-mesh #{current_dir}/#{TOOLS_DIR}/chaos_mesh/helm/chaos-mesh --set chaosDaemon.runtime=containerd --set chaosDaemon.socketPath=/run/containerd/containerd.sock > /dev/null 2>&1`
+    # KubectlClient::Apply.file("https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml")
+    `helm repo add chaos-mesh https://charts.chaos-mesh.org`
+    `helm install my-chaos-mesh chaos-mesh/chaos-mesh --version 0.5.1`
+  # unless Dir.exists?("#{current_dir}/#{TOOLS_DIR}/chaos_mesh")
+  #   status = Process.run("git clone https://github.com/chaos-mesh/chaos-mesh.git #{current_dir}/#{TOOLS_DIR}/chaos_mesh  > /dev/null 2>&1",
+  #                        shell: true,
+  #                        input: input = Process::Redirect::Close,
+  #                        output: output = Process::Redirect::Close,
+  #                        error: stderr = Process::Redirect::Close)
+  #   LOGGING.info "KubectlClient.apply output: #{output.to_s}"
+  #   LOGGING.info "KubectlClient.apply stderr: #{stderr.to_s}"
+  #   checkout_tag = `cd #{current_dir}/#{TOOLS_DIR}/chaos_mesh && git checkout tags/#{CHAOS_MESH_VERSION} > /dev/null 2>&1 && cd -`
+  # end
+  # #TODO use helm wrapper
+  # install_chaos_mesh = `#{helm} install chaos-mesh #{current_dir}/#{TOOLS_DIR}/chaos_mesh/helm/chaos-mesh --set chaosDaemon.runtime=containerd --set chaosDaemon.socketPath=/run/containerd/containerd.sock > /dev/null 2>&1`
   File.write("chaos_network_loss.yml", CHAOS_NETWORK_LOSS)
   File.write("chaos_cpu_hog.yml", CHAOS_CPU_HOG)
   File.write("chaos_container_kill.yml", CHAOS_CONTAINER_KILL)

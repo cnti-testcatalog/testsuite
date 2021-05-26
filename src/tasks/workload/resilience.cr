@@ -256,7 +256,7 @@ end
 
 def network_chaos_template
   <<-TEMPLATE
-  apiVersion: pingcap.com/v1alpha1
+  apiVersion: chaos-mesh.org/v1alpha1
   kind: NetworkChaos
   metadata:
     name: network-loss
@@ -280,7 +280,7 @@ end
 
 def cpu_chaos_template
   <<-TEMPLATE
-  apiVersion: pingcap.com/v1alpha1
+  apiVersion: chaos-mesh.org/v1alpha1
   kind: StressChaos
   metadata:
     name: burn-cpu
@@ -305,7 +305,7 @@ end
 
 def chaos_template_container_kill
   <<-TEMPLATE
-  apiVersion: pingcap.com/v1alpha1
+  apiVersion: chaos-mesh.org/v1alpha1
   kind: PodChaos
   metadata:
     name: container-kill
