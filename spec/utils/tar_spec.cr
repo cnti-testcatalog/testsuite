@@ -38,4 +38,15 @@ describe "TarClient" do
   ensure
     `rm /tmp/airgapped.tar`
   end
+
+  it "'.tar_manifest' should create a tar file from a manifest", tags: ["tar-install"]  do
+    # KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml")
+    TarClient.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", "/tmp/airgapped.tar")
+    (File.exists?("/tmp/airgapped.tar")).should be_true
+    resp = `tar -tvf /tmp/airgapped.tar`
+    LOGGING.info "Tar Filelist: #{resp}"
+    (/litmus-operator-v1.13.2.yaml/).should_not be_nil
+  ensure
+    `rm /tmp/airgapped.tar`
+  end
 end

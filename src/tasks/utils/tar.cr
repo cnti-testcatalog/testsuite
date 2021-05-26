@@ -48,15 +48,25 @@ module TarClient
     Helm.fetch("#{repo} -d /tmp/#{repo_path}")
     helm_chart = Dir.entries("/tmp/#{repo_path}").first
     TarClient.append(output_file, "/tmp", "#{repo_path}")
+  ensure
+    `rm -rf /tmp/#{repo_path} > /dev/null 2>&1`
   end
   
-#   def self.tar_manifest(url, output_file : String = "./airgapped.tar.gz")
-#     manifest_name = url.split("/").last
-#     Halite.get("#{url}) do |response| 
-#        File.open(manifest_name, "w") do |file| 
-#        IO.copy(response.body_io, file)
-# end
-# end
-
-
+  def self.tar_manifest(url, output_file : String = "./airgapped.tar.gz")
+    manifest_path = "manifests/" 
+    `rm -rf /tmp/#{manifest_path} > /dev/null 2>&1`
+    FileUtils.mkdir_p("/tmp/" + manifest_path)
+    manifest_name = url.split("/").last
+    manifest_full_path = manifest_path + url.split("/").last
+    LOGGING.info "manifest_name: #{manifest_name}"
+    LOGGING.info "manifest_full_path: #{manifest_full_path}"
+    Halite.get("#{url}") do |response| 
+       File.open("/tmp/" + manifest_full_path, "w") do |file| 
+         IO.copy(response.body_io, file)
+       end
+    end
+    TarClient.append(output_file, "/tmp", manifest_full_path)
+  ensure
+    `rm -rf /tmp/#{manifest_path} > /dev/null 2>&1`
+  end
 end
