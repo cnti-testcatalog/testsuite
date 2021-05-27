@@ -25,7 +25,7 @@ Here are some ideas for how you can be more involved and participate in the comm
 * Submit a pull request to fix an issue.
 * Report a bug.
 * Share a bundle that you made and how it went.
-* Come chat with us in [Slack][slack].
+* Come chat with us in [Slack][https://cloud-native.slack.com/archives/C014TNCEX8R].
 
 They must follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
