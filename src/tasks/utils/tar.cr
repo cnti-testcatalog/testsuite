@@ -58,11 +58,11 @@ module TarClient
     `rm -rf /tmp/#{repo_path} > /dev/null 2>&1`
   end
   
-  def self.tar_manifest(url, output_file : String = "./airgapped.tar.gz")
+  def self.tar_manifest(url, output_file : String = "./airgapped.tar.gz", prefix="")
     manifest_path = "manifests/" 
     `rm -rf /tmp/#{manifest_path} > /dev/null 2>&1`
     FileUtils.mkdir_p("/tmp/" + manifest_path)
-    manifest_name = url.split("/").last
+    manifest_name = prefix + url.split("/").last 
     manifest_full_path = manifest_path + url.split("/").last
     LOGGING.info "manifest_name: #{manifest_name}"
     LOGGING.info "manifest_full_path: #{manifest_full_path}"

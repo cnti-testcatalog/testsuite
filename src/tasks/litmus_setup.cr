@@ -59,7 +59,7 @@ module LitmusManager
       verdict = verdict_response.to_s
       wait_count = wait_count + 1
     end
-end
+  end
 
   ## check_chaos_verdict will check the verdict of chaosexperiment
   def self.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
