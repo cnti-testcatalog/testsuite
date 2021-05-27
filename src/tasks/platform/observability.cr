@@ -20,6 +20,11 @@ namespace "platform" do
       puts "SKIPPED: Kube State Metrics".colorize(:yellow)
       next
     end
+    if args.named["offline"]?
+        LOGGING.info "skipping kube_state_metrics: in offline mode"
+      puts "SKIPPED: Kube State Metrics".colorize(:yellow)
+      next
+    end
     LOGGING.info "Running POC: kube_state_metrics"
     Retriable.retry do
       task_response = CNFManager::Task.task_runner(args) do |args|
@@ -60,6 +65,11 @@ namespace "platform" do
   task "node_exporter" do |_, args|
     unless check_poc(args)
       LOGGING.info "skipping node_exporter: not in poc mode"
+      puts "SKIPPED: Node Exporter".colorize(:yellow)
+      next
+    end
+    if args.named["offline"]?
+        LOGGING.info "skipping node_exporter: in offline mode"
       puts "SKIPPED: Node Exporter".colorize(:yellow)
       next
     end
@@ -177,6 +187,11 @@ end
       puts "SKIPPED: Prometheus Adapter".colorize(:yellow)
       next
     end
+    if args.named["offline"]?
+        LOGGING.info "skipping prometheus_adapter: in offline mode"
+      puts "SKIPPED: Prometheus Adapter".colorize(:yellow)
+      next
+    end
     LOGGING.info "Running POC: prometheus_adapter"
     Retriable.retry do
       task_response = CNFManager::Task.task_runner(args) do |args|
@@ -214,6 +229,11 @@ end
   task "metrics_server" do |_, args|
     unless check_poc(args)
       LOGGING.info "skipping metrics_server: not in poc mode"
+      puts "SKIPPED: Metrics Server".colorize(:yellow)
+      next
+    end
+    if args.named["offline"]?
+        LOGGING.info "skipping metrics_server: in offline mode"
       puts "SKIPPED: Metrics Server".colorize(:yellow)
       next
     end
