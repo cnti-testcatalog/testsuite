@@ -75,7 +75,7 @@ We support the following methods of installing the cnf-testsuite:
 - [Curl installation](#Curl-Binary-Installation) (via latest binary release)
 - [Latest Binary](https://github.com/cncf/cnf-testsuite/releases/latest) (manual download)
 - From [**Source**](#Source-Install) on github.
-- [Air Gapped](#Offline-Mode)
+- [Air Gapped](#Air-Gapped)
 
 
 #### Curl Binary Installation
@@ -126,7 +126,7 @@ This should build a cnf-testsuite binary in the root directory of the git repo c
 </p>
 </details>
 
-#### Air Gapped 
+#### Air-Gapped 
 
 The CNF-TestSuite has the ability to install in an airgapped environment.  A tarball with upstream tools can be created from a source installation, or downloaded from the binaries of the release. 
 
@@ -149,6 +149,7 @@ This should create a bootstrapped cluster with the upstream tools necessary for 
 
 </p>
 </details>
+
 ### Preparation
 
 Now that you have cnf-testsuite installed, we need to prepare the suite.
