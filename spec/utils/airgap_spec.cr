@@ -23,6 +23,7 @@ describe "AirGap" do
     (file_list).match(/chaos-dashboard.tar/).should_not be_nil
     (file_list).match(/chaos-kernel.tar/).should_not be_nil
     (file_list).match(/prometheus.tar/).should_not be_nil
+    (file_list).match(/litmus-operator/).should_not be_nil
   ensure
     `rm ./tmp/airgapped.tar.gz`
   end
@@ -149,7 +150,7 @@ describe "AirGap" do
     resp = AirGap.install_test_suite_tools
     LOGGING.info "#{resp.find{|x| puts x[0][:output].to_s}}"
     resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/bitnami\/kubectl:latest/)}.should_not be_nil
-    resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/pingcap\/chaos-mesh:v0.8.0/)}.should_not be_nil
+    resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/pingcap\/chaos-mesh:v1.2.1/)}.should_not be_nil
 
   ensure
     `rm /tmp/kubectl.tar`

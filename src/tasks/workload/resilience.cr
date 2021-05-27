@@ -5,7 +5,6 @@ require "crinja"
 require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if the CNFs are resilient to failures."
-#task "resilience", ["chaos_network_loss", "chaos_cpu_hog", "chaos_container_kill" ] do |t, args|
  task "resilience", ["pod_network_latency", "chaos_cpu_hog", "chaos_container_kill", "disk_fill"] do |t, args|
   VERBOSE_LOGGING.info "resilience" if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
@@ -181,8 +180,14 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         test_passed = false
       end
       if test_passed
-        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml")
-        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml")
+        if args.named["offline"]?
+            LOGGING.info "install resilience offline mode"
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/rbac.yaml")
+        else
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml")
+        end
         # annotate = `kubectl annotate --overwrite deploy/#{resource["name"]} litmuschaos.io/chaos="true"`
         KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
@@ -224,8 +229,14 @@ task "disk_fill", ["install_litmus"] do |_, args|
         test_passed = false
       end
       if test_passed
-        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/experiment.yaml")
-        KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml")
+        if args.named["offline"]?
+            LOGGING.info "install resilience offline mode"
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-rbac.yaml")
+        else
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml")
+        end
         # annotate = `kubectl annotate --overwrite deploy/#{resource["name"]} litmuschaos.io/chaos="true"`
         KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
@@ -256,7 +267,7 @@ end
 
 def network_chaos_template
   <<-TEMPLATE
-  apiVersion: pingcap.com/v1alpha1
+  apiVersion: chaos-mesh.org/v1alpha1
   kind: NetworkChaos
   metadata:
     name: network-loss
@@ -280,7 +291,7 @@ end
 
 def cpu_chaos_template
   <<-TEMPLATE
-  apiVersion: pingcap.com/v1alpha1
+  apiVersion: chaos-mesh.org/v1alpha1
   kind: StressChaos
   metadata:
     name: burn-cpu
@@ -305,7 +316,7 @@ end
 
 def chaos_template_container_kill
   <<-TEMPLATE
-  apiVersion: pingcap.com/v1alpha1
+  apiVersion: chaos-mesh.org/v1alpha1
   kind: PodChaos
   metadata:
     name: container-kill
