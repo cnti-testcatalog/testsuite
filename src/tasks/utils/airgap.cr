@@ -30,13 +30,15 @@ module AirGap
     [{input_file: "/tmp/kubectl.tar", 
       image: "bitnami/kubectl:latest"},
     {input_file: "/tmp/chaos-mesh.tar", 
-     image: "pingcap/chaos-mesh:v0.8.0"},
+     image: "pingcap/chaos-mesh:v1.2.1"},
     {input_file: "/tmp/chaos-daemon.tar", 
-     image: "pingcap/chaos-daemon:v0.8.0"},
+     image: "pingcap/chaos-daemon:v1.2.1"},
     {input_file: "/tmp/chaos-dashboard.tar", 
-     image: "pingcap/chaos-dashboard:v0.8.0"},
+     image: "pingcap/chaos-dashboard:v1.2.1"},
     {input_file: "/tmp/chaos-kernel.tar", 
-     image: "pingcap/chaos-kernel:v0.8.0"},
+     image: "pingcap/chaos-kernel:v1.2.1"},
+    {input_file: "/tmp/pingcap-coredns.tar", 
+     image: "pingcap/coredns:v0.2.0"},
     {input_file: "/tmp/sonobuoy.tar", 
      image: "docker.io/sonobuoy/sonobuoy:v0.19.0"},
     {input_file: "/tmp/sonobuoy-logs.tar", 
@@ -46,11 +48,12 @@ module AirGap
     {input_file: "/tmp/litmus-runner.tar", 
      image: "litmuschaos/chaos-runner:1.13.2"},
     {input_file: "/tmp/prometheus.tar", 
-     image: "prom/prometheus:v2.15.2"}].map do |x|
+     image: "prom/prometheus:v2.18.1"}].map do |x|
       DockerClient.pull(x[:image])
       DockerClient.save(x[:image], x[:input_file])
       TarClient.append(output_file, Path[x[:input_file]].parent, x[:input_file].split("/")[-1])
       TarClient.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
+      TarClient.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
 
     end
   end
@@ -72,6 +75,7 @@ module AirGap
                       {input_file: "/tmp/chaos-daemon.tar"}, 
                       {input_file: "/tmp/chaos-dashboard.tar"}, 
                       {input_file: "/tmp/chaos-kernel.tar"}, 
+                      {input_file: "/tmp/pingcap-coredns.tar"}, 
                       {input_file: "/tmp/sonobuoy.tar"}, 
                       {input_file: "/tmp/sonobuoy-logs.tar"}, 
                       {input_file: "/tmp/litmus-operator.tar"}, 

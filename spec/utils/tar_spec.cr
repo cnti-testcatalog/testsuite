@@ -39,6 +39,16 @@ describe "TarClient" do
     `rm /tmp/airgapped.tar`
   end
 
+  it "'.tar_helm_repo' should create a tar file from a helm repository that has options", tags: ["tar-install"]  do
+    TarClient.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", "/tmp/airgapped.tar")
+    (File.exists?("/tmp/airgapped.tar")).should be_true
+    resp = `tar -tvf /tmp/airgapped.tar`
+    LOGGING.info "Tar Filelist: #{resp}"
+    (/repositories\/chaos-mesh_chaos-mesh/).should_not be_nil
+  ensure
+    `rm /tmp/airgapped.tar`
+  end
+
   it "'.tar_manifest' should create a tar file from a manifest", tags: ["tar-install"]  do
     # KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml")
     TarClient.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", "/tmp/airgapped.tar")

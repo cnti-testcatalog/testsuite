@@ -3,8 +3,10 @@ require "file_utils"
 require "colorize"
 require "totem"
 require "./utils/utils.cr"
+require "./utils/tar.cr"
 
 CHAOS_MESH_VERSION = "v0.8.0"
+CHAOS_MESH_OFFLINE_DIR = "#{TarClient::TAR_REPOSITORY_DIR}/chaos-mesh_chaos-mesh"
 
 desc "Install Chaos Mesh"
 task "install_chaosmesh" do |_, args|
@@ -12,8 +14,18 @@ task "install_chaosmesh" do |_, args|
   current_dir = FileUtils.pwd 
     helm = CNFSingleton.helm
     # KubectlClient::Apply.file("https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml")
-    `helm repo add chaos-mesh https://charts.chaos-mesh.org`
-    `helm install my-chaos-mesh chaos-mesh/chaos-mesh --version 0.5.1`
+
+    if args.named["offline"]?
+      LOGGING.info "install chaos mesh offline mode"
+      helm_chart = Dir.entries(CHAOS_MESH_OFFLINE_DIR).first
+      Helm.install("my-chaos-mesh #{CHAOS_MESH_OFFLINE_DIR}/#{helm_chart} --version 0.5.1")
+
+    else
+      # `helm repo add chaos-mesh https://charts.chaos-mesh.org`
+      # `helm install my-chaos-mesh chaos-mesh/chaos-mesh --version 0.5.1`
+      Helm.helm_repo_add("chaos-mesh","https://charts.chaos-mesh.org")
+      Helm.install("my-chaos-mesh chaos-mesh/chaos-mesh --version 0.5.1")
+    end
   # unless Dir.exists?("#{current_dir}/#{TOOLS_DIR}/chaos_mesh")
   #   status = Process.run("git clone https://github.com/chaos-mesh/chaos-mesh.git #{current_dir}/#{TOOLS_DIR}/chaos_mesh  > /dev/null 2>&1",
   #                        shell: true,
@@ -40,9 +52,9 @@ task "uninstall_chaosmesh" do |_, args|
   current_dir = FileUtils.pwd
     helm = CNFSingleton.helm
   # crd_delete = `kubectl delete -f https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml`
-    KubectlClient::Delete.file("https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml")
-  FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/chaos_mesh")
-  delete_chaos_mesh = `#{helm} delete chaos-mesh > /dev/null 2>&1` 
+  #   KubectlClient::Delete.file("https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml")
+  # FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/chaos_mesh")
+  delete_chaos_mesh = `#{helm} delete my-chaos-mesh > /dev/null 2>&1` 
 end
 
 module ChaosMeshSetup
