@@ -75,6 +75,7 @@ We support the following methods of installing the cnf-testsuite:
 - [Curl installation](#Curl-Binary-Installation) (via latest binary release)
 - [Latest Binary](https://github.com/cncf/cnf-testsuite/releases/latest) (manual download)
 - From [**Source**](#Source-Install) on github.
+- [Air Gapped](#Air-Gapped)
 
 
 #### Curl Binary Installation
@@ -122,6 +123,29 @@ shards install
 crystal build src/cnf-testsuite.cr
 ```
 This should build a cnf-testsuite binary in the root directory of the git repo clone.
+</p>
+</details>
+
+#### Air-Gapped 
+
+The CNF-TestSuite has the ability to install in an air-gapped environment.  A tarball with upstream tools can be created from a source installation, or downloaded from the binaries of the release. 
+
+<details><summary> Click here for brief air-gap install details</summary>
+<p>
+
+Prerequite: Follow the source install instructions to create a working binary which will generate the air-gapped tarball.
+
+Follow these steps to create an air-gap tarball and to bootstrap the cluster with the tarball:
+
+```
+./cnf-testsuite airgapped output-file=./tmp/airgapped.tar.gz
+./cnf-testsuite setup offline=./tmp/airgapped.tar.gz
+
+# To run the set suite in air-gapped mode
+./cnf-testsuite workload offline=true
+```
+This should create a bootstrapped cluster with the upstream tools necessary for the cnf-testsuite.
+
 </p>
 </details>
 
