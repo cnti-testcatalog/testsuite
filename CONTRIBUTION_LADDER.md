@@ -26,7 +26,7 @@ Here are some ideas for how you can be more involved and participate in the comm
 * Report a bug.
 * Come chat with us in [Slack][https://cloud-native.slack.com/archives/C014TNCEX8R].
 
-You must follow our [Code of Conduct](code-of-conduct.md).
+Community members must follow our [Code of Conduct](code-of-conduct.md).
 
 
 ## Contributor
