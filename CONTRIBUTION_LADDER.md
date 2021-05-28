@@ -50,7 +50,7 @@ To become a contributor, the maintainers of the project would like to see you:
 * Open issues with bugs, enhancement ideas, and questions.
 
 Contributors and maintainers will do their best to watch for community members
-who may make good contributors. But don’t be shy, if you feel that this is you,
+who make good contributors. But don’t be shy, if you feel that this is you,
 please reach out to one or more of the contributors or [maintainers](MAINTAINERS.md).
 
 
