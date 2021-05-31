@@ -45,7 +45,6 @@ describe "Setup" do
       sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/ctr > /dev/null")  
       sh[:status].success?
     end
-
   ensure
     `rm ./tmp/airgapped.tar.gz`
     `rm ./tmp/cnf-testsuite.yml`
