@@ -37,7 +37,7 @@
 <details> <summary>What platforms are supported by the CNF Test Suite?</summary>
 <p>
 
-- The CNF Test Suite runs on most major Linux distributions and WSL (Windows Subsystem for Linux).
+- The CNF Test Suite runs on most major Linux distributions, Mac OS X (source install only) and WSL (Windows Subsystem for Linux).
 
 </p>
 </details>

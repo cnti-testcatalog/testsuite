@@ -65,7 +65,7 @@ cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git
 
 ### Installation
 
-We can assume you have access to a working kubernetes cluster. We recommend only running the cnf-testsuite on dev or test clusters.
+We can assume you have access to a working kubernetes cluster. We recommend only running the cnf-testsuite on dev or test clusters. The source install steps have been verified on most Linux distributions (Ubuntu, Debian and CentOS), Mac OS X and WSL as long as crystal-lang v0.35.1 is installed.
 
 - Verify your KUBECONFIG points to your correct k8s cluster:
   ```
@@ -79,8 +79,8 @@ We can assume you have access to a working kubernetes cluster. We recommend only
   ```
   kubectl cluster-info
   ```
-- You'll need cystal-lang v0.35.1 or higher installed. You can follow their [install instructions](https://crystal-lang.org/install/) for their many different methods.
-- cnf-testsuite needs helm-3.1.1 or greater. You can install helm by checking their [installation methods](https://helm.sh/docs/helm/helm_install/) but you can also skip this as cnf-testsuite will install if it's not found.
+- You'll need cystal-lang v0.35.1 installed with [shards](https://github.com/crystal-lang/shards). You can follow their [install instructions](https://crystal-lang.org/install/) for their different install methods.
+- cnf-testsuite needs helm-3.1.1 or greater but is optional as the prerequisite checks will install if not found. You can install helm by checking their [installation methods](https://helm.sh/docs/helm/helm_install/).
 - Checkout the source code with git:
   ```
   git clone git@github.com:cncf/cnf-testsuite.git
