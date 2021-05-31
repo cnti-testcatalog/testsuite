@@ -206,6 +206,25 @@ jobs:
       with:
         name: release
         path: cnf-testsuite
+        
+  test_in_airgapped_env:
+    name: Test Binary In An Airgapped Env.
+    needs: [build, debug_output, skip]
+    runs-on: ubuntu-latest
+    if: needs.skip.outputs.skip == 'false'
+    steps: 
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: release
+    - uses: mxschmitt/action-tmate@v3
+      if: needs.debug_output.outputs.release-debug == 'true'
+    - name: Create Cluster & Run Tests.
+      run: |
+        docker pull conformance/node:v1.21.1
+        docker save conformance/node:v1.21.1 -o node.tar
+        docker run --network none --privileged -v $(pwd)/node.tar:/node.tar -v $(pwd)/cnf-testsuite:/cnf-testsuite -ti conformance/offline:v0.11.1 /cnf-testsuite version
+
 
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)

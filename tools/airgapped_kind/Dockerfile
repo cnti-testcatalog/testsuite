@@ -1,4 +1,3 @@
-#FROM jieyu/dind-buster:v0.1.8
 FROM docker:20.10.6-dind
 
 ARG KUBECTL_VERSION="v1.21.1"
