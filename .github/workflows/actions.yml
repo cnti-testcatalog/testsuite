@@ -223,8 +223,7 @@ jobs:
       run: |
         docker pull conformance/node:v1.21.1
         docker save conformance/node:v1.21.1 -o node.tar
-        docker run --network none --privileged -v $(pwd)/node.tar:/node.tar -v $(pwd)/cnf-testsuite:/cnf-testsuite -ti conformance/offline:v0.11.1 /cnf-testsuite version
-
+        docker run --network none --privileged -v $(pwd)/node.tar:/node.tar -v $(pwd)/cnf-testsuite:/cnf-testsuite -t conformance/offline:v0.11.1 /cnf-testsuite version
 
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)
