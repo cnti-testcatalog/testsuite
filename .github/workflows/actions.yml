@@ -225,8 +225,9 @@ jobs:
         docker save conformance/node:v1.21.1 -o node.tar
         chmod +x ./cnf-testsuite
         ./cnf-testsuite airgapped output-file=/tmp/airgapped.tar.gz
-        docker run --network none --privileged -v $(pwd)/node.tar:/node.tar -v $(pwd)/cnf-testsuite:/cnf-testsuite -v /tmp/airgapped.tar.gz:/tmp/airgapped.tar.gz -t conformance/offline:v0.11.1 "/cnf-testsuite setup" 
+        docker run --network none --privileged -v $(pwd)/node.tar:/node.tar -v $(pwd)/cnf-testsuite:/cnf-testsuite -v /tmp/airgapped.tar.gz:/tmp/airgapped.tar.gz -t conformance/offline:v0.11.1 "/cnf-testsuite version" 
         # docker run --network none --privileged -v $(pwd)/node.tar:/node.tar -v $(pwd)/cnf-testsuite:/cnf-testsuite -v /tmp/airgapped.tar.gz:/tmp/airgapped.tar.gz -t conformance/offline:v0.11.1 /cnf-testsuite setup offline=/tmp/airgapped.tar.gz && /cnf-testsuite install_litmus && kubectl get deployment chaos-operatoouer-ce --namespace litmus
+
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)
     needs: [build, debug_output, skip]
