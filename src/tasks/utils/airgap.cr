@@ -27,6 +27,7 @@ module AirGap
   #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
   def self.generate(output_file : String = "./airgapped.tar.gz")
     `rm #{output_file}`
+    AirGap.download_cri_tools
     [{input_file: "/tmp/kubectl.tar", 
       image: "bitnami/kubectl:latest"},
     {input_file: "/tmp/chaos-mesh.tar", 
@@ -52,14 +53,17 @@ module AirGap
       DockerClient.pull(x[:image])
       DockerClient.save(x[:image], x[:input_file])
       TarClient.append(output_file, Path[x[:input_file]].parent, x[:input_file].split("/")[-1])
-      TarClient.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
-      TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml", output_file)
-      TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml", output_file)
-      TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/experiment.yaml", output_file, "disk-fill-")
-      TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml", output_file, "disk-fill-")
-      TarClient.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
-
     end
+    TarClient.append(output_file, ".", "crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
+    TarClient.append(output_file, ".", "containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
+    TarClient.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
+    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml", output_file)
+    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml", output_file)
+    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml", output_file)
+    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml", output_file)
+    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/experiment.yaml", output_file, "disk-fill-")
+    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml", output_file, "disk-fill-")
+    TarClient.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
   end
 
   #./cnf-testsuite setup --offline=./airgapped.tar.gz
@@ -135,15 +139,16 @@ module AirGap
 
 
 
-  #TODO put curl back in the prereqs
+  #TODO put these in the airgap tarball
   def self.download_cri_tools
+    LOGGING.info "download_cri_tools"
     `curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/#{CRI_VERSION}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz --output crictl-#{CRI_VERSION}-linux-amd64.tar.gz`
     `curl -L https://github.com/containerd/containerd/releases/download/v#{CTR_VERSION}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz --output containerd-#{CTR_VERSION}-linux-amd64.tar.gz`
   end
 
   def self.untar_cri_tools
-    TarClient.untar("crictl-#{CRI_VERSION}-linux-amd64.tar.gz", "/tmp")
-    TarClient.untar("containerd-#{CTR_VERSION}-linux-amd64.tar.gz", "/tmp")
+    TarClient.untar("/tmp/crictl-#{CRI_VERSION}-linux-amd64.tar.gz", "/tmp")
+    TarClient.untar("/tmp/containerd-#{CTR_VERSION}-linux-amd64.tar.gz", "/tmp")
   end
 
   def self.pod_images(pods)
@@ -156,7 +161,7 @@ module AirGap
   end
 
   def self.install_cri_binaries(cri_tool_pods)
-    AirGap.download_cri_tools()
+    # AirGap.download_cri_tools()
     AirGap.untar_cri_tools()
     cri_tool_pods.map do |pod|
       KubectlClient.cp("/tmp/crictl #{pod.dig?("metadata", "name")}:/usr/local/bin/crictl")
