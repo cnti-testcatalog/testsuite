@@ -75,8 +75,8 @@ describe "AirGap" do
 
   it "'#AirGap.download_cri_tools' should download the cri tools", tags: ["kubectl-runtime"]  do
     resp = AirGap.download_cri_tools()
-    (File.exists?("crictl-#{AirGap::CRI_VERSION}-linux-amd64.tar.gz")).should be_true
-    (File.exists?("containerd-#{AirGap::CTR_VERSION}-linux-amd64.tar.gz")).should be_true
+    (File.exists?("/tmp/crictl-#{AirGap::CRI_VERSION}-linux-amd64.tar.gz")).should be_true
+    (File.exists?("/tmp/containerd-#{AirGap::CTR_VERSION}-linux-amd64.tar.gz")).should be_true
   end
 
   it "'#AirGap.untar_cri_tools' should untar the cri tools", tags: ["kubectl-runtime"]  do

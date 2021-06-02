@@ -226,8 +226,7 @@ jobs:
         docker rmi -f conformance/node:v1.21.1
         chmod +x ./cnf-testsuite
         ./cnf-testsuite airgapped output-file=/tmp/airgapped.tar.gz
-        ls -al /tmp
-        docker run --network none --privileged -v $(pwd)/node.tar.gz:/node.tar -v $(pwd)/cnf-testsuite:/cnf-testsuite -v /tmp/airgapped.tar.gz:/tmp/airgapped.tar.gz -t conformance/offline:v0.11.1 /bin/bash -c "/cnf-testsuite setup offline=/tmp/airgapped.tar.gz || true; ls -la /tmp; ls -la /tmp/download/; cnf-testsuite install_litmus; kubectl get deployment chaos-operatoouer-ce --namespace litmus"
+        docker run --network none --privileged -v $(pwd)/node.tar.gz:/node.tar -v $(pwd)/cnf-testsuite:/cnf-testsuite -v /tmp/airgapped.tar.gz:/airgapped/airgapped.tar.gz -t conformance/offline:v0.11.1 /bin/bash -c "/cnf-testsuite setup offline=/airgapped/airgapped.tar.gz || true; ls -la /airgapped; ls -la /airgapped/download/; cnf-testsuite install_litmus; kubectl get deployment chaos-operatoouer-ce --namespace litmus"
 
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)

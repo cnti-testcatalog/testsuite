@@ -54,8 +54,8 @@ module AirGap
       DockerClient.save(x[:image], x[:input_file])
       TarClient.append(output_file, Path[x[:input_file]].parent, x[:input_file].split("/")[-1])
     end
-    TarClient.append(output_file, ".", "crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
-    TarClient.append(output_file, ".", "containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
+    TarClient.append(output_file, "/tmp", "crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
+    TarClient.append(output_file, "/tmp", "containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
     TarClient.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
     TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml", output_file)
     TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml", output_file)
@@ -142,8 +142,8 @@ module AirGap
   #TODO put these in the airgap tarball
   def self.download_cri_tools
     LOGGING.info "download_cri_tools"
-    `curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/#{CRI_VERSION}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz --output crictl-#{CRI_VERSION}-linux-amd64.tar.gz`
-    `curl -L https://github.com/containerd/containerd/releases/download/v#{CTR_VERSION}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz --output containerd-#{CTR_VERSION}-linux-amd64.tar.gz`
+    `curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/#{CRI_VERSION}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz --output /tmp/crictl-#{CRI_VERSION}-linux-amd64.tar.gz`
+    `curl -L https://github.com/containerd/containerd/releases/download/v#{CTR_VERSION}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz --output /tmp/containerd-#{CTR_VERSION}-linux-amd64.tar.gz`
   end
 
   def self.untar_cri_tools
