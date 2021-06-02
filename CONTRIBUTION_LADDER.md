@@ -2,6 +2,7 @@
 
 ---
 * [Community Member](#community-member)
+* [Community Participant](#community-participant)
 * [Contributor](#contributor)
   * [How to become a contributor](#how-to-become-a-contributor)
 * [Maintainer](#maintainer)
@@ -10,14 +11,23 @@
   * [How to become an admin](#admin)
 ---
 
-Our ladder defines the roles and responsibilities on this project and how to
-participate with the goal of moving from a user to a maintainer. You will need
-to gain people's trust, demonstrate your competence and understanding, and meet
-the requirements of the role.
+Hello! We are excited that you want to learn how to get involved with the CNF Test Suite! This contributor ladder outlines the different contributor roles within the project, along with the responsibilities and privileges that come with them. Community members generally start at the first levels of the "ladder" and advance up it as their involvement in the project grows. Our project members are happy to help you advance along the contributor ladder.
+
+Each of the contributor roles below is organized into lists of three types of things. "Responsibilities" are things that contributor is expected to do. "Requirements" are qualifications a person needs to meet to be in that role, and "Privileges" are things contributors on that level are entitled to.
+
+You will need to gain people's trust, demonstrate your competence and understanding, and meet the requirements of the role.
 
 ## Community Member
 
 Everyone is a community member! 😄 You've read this far so you are already ahead. 💯
+
+How you can learn more?
+
+* Read the [install guide](INSTALL.md), [usage guide](USAGE.md), [FAQ](FAQ.md), and other documentation.
+* Request a live demonstration and introduction of the test suite
+* Come chat with us in [Slack](https://cloud-native.slack.com/archives/C014TNCEX8R).
+
+## Community Participant
 
 Here are some ideas for how you can be more involved and participate in the community:
 
