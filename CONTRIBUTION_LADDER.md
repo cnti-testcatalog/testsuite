@@ -29,15 +29,18 @@ How you can learn more?
 
 ## Community Participant
 
-Here are some ideas for how you can be more involved and participate in the community:
+A Community Participant engages with the project and its community, contributing their time, thoughts, etc. Community participants are usually users who have stopped being anonymous and started being active in project discussions.
 
-* Comment on an issue that you’re interested in.
-* Submit a pull request to fix an issue.
-* Report a bug.
-* Come chat with us in [Slack][https://cloud-native.slack.com/archives/C014TNCEX8R].
+Responsibilities:
+- Follow our [Code of Conduct](code-of-conduct.md)
 
-Community members must follow our [Code of Conduct](code-of-conduct.md).
+How you can be more involved and participate in the community:
 
+* Participating in community discussions
+* Helping other users
+* Commenting on issues
+* Trying out new releases
+* Attending [community meetings](https://github.com/cncf/cnf-testsuite#communication-and-community-meetings) and events
 
 ## Contributor
 
