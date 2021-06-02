@@ -25,7 +25,7 @@ task "install_sonobuoy" do |_, args|
     # os="linux"
     if args.named["offline"]?
         LOGGING.info "install sonobuoy offline mode"
-      `tar -xzf /tmp/airgap/sonobuoy.tar.gz -C #{current_dir}/#{TOOLS_DIR}/sonobuoy/ && \
+      `tar -xzf #{TAR_DOWNLOAD_DIR}/sonobuoy.tar.gz -C #{current_dir}/#{TOOLS_DIR}/sonobuoy/ && \
        chmod +x #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy`
       sonobuoy = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy"
       VERBOSE_LOGGING.debug sonobuoy if check_verbose(args)
