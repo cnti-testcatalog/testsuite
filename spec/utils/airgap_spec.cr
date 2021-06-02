@@ -32,6 +32,7 @@ describe "AirGap" do
   end
 
   it "'#AirGap.publish_tarball' should execute publish a tarball to a bootstrapped cluster", tags: ["kubectl-runtime"]  do
+    AirGap.download_cri_tools
     AirGap.bootstrap_cluster()
     tarball_name = "./spec/fixtures/testimage.tar.gz"
     resp = AirGap.publish_tarball(tarball_name)
@@ -79,6 +80,7 @@ describe "AirGap" do
   end
 
   it "'#AirGap.untar_cri_tools' should untar the cri tools", tags: ["kubectl-runtime"]  do
+    AirGap.download_cri_tools
     resp = AirGap.untar_cri_tools()
     (File.exists?("/tmp/crictl")).should be_true
     (File.exists?("/tmp/bin/ctr")).should be_true
