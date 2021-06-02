@@ -62,30 +62,8 @@ module AirGap
     TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/experiment.yaml", output_file, "disk-fill-")
     TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml", output_file, "disk-fill-")
     url = "https://github.com/vmware-tanzu/sonobuoy/releases/download/v#{SONOBUOY_K8S_VERSION}/sonobuoy_#{SONOBUOY_K8S_VERSION}_#{SONOBUOY_OS}_amd64.tar.gz"
-    AirGap.tar_file_by_url(url, output_file, "sonobuoy.tar.gz")
+    TarClient.tar_file_by_url(url, output_file, "sonobuoy.tar.gz")
     TarClient.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
-  end
-
-  def self.tar_file_by_url(url, append_file : String = "./airgapped.tar.gz", output_file="")
-    airgap_path = "airgap/" 
-    `rm -rf /tmp/#{airgap_path} > /dev/null 2>&1`
-    FileUtils.mkdir_p("/tmp/" + airgap_path)
-    if output_file.empty?
-      airgap_name = url.split("/").last 
-    else
-      airgap_name = output_file
-    end
-    airgap_full_path = airgap_path + url.split("/").last
-    LOGGING.info "airgap_name: #{airgap_name}"
-    LOGGING.info "airgap_full_path: #{airgap_full_path}"
-    Halite.get("#{url}") do |response| 
-       File.open("/tmp/" + airgap_full_path, "w") do |file| 
-         IO.copy(response.body_io, file)
-       end
-    end
-    TarClient.append(append_file, "/tmp", airgap_full_path)
-  ensure
-    `rm -rf /tmp/#{airgap_path} > /dev/null 2>&1`
   end
 
   #./cnf-testsuite setup --offline=./airgapped.tar.gz

@@ -23,7 +23,10 @@ describe "AirGap" do
     (file_list).match(/chaos-dashboard.tar/).should_not be_nil
     (file_list).match(/chaos-kernel.tar/).should_not be_nil
     (file_list).match(/prometheus.tar/).should_not be_nil
+    (file_list).match(/rbac.yaml/).should_not be_nil
+    (file_list).match(/disk-fill-rbac.yaml/).should_not be_nil
     (file_list).match(/litmus-operator/).should_not be_nil
+    (file_list).match(/sonobuoy.tar.gz/).should_not be_nil
   ensure
     `rm ./tmp/airgapped.tar.gz`
   end

@@ -63,7 +63,8 @@ module TarClient
     `rm -rf /tmp/#{manifest_path} > /dev/null 2>&1`
     FileUtils.mkdir_p("/tmp/" + manifest_path)
     manifest_name = prefix + url.split("/").last 
-    manifest_full_path = manifest_path + url.split("/").last
+    # manifest_full_path = manifest_path + url.split("/").last
+    manifest_full_path = manifest_path + manifest_name 
     LOGGING.info "manifest_name: #{manifest_name}"
     LOGGING.info "manifest_full_path: #{manifest_full_path}"
     Halite.get("#{url}") do |response| 
@@ -75,4 +76,27 @@ module TarClient
   ensure
     `rm -rf /tmp/#{manifest_path} > /dev/null 2>&1`
   end
+
+  def self.tar_file_by_url(url, append_file : String = "./downloadped.tar.gz", output_file="")
+    download_path = "download/" 
+    `rm -rf /tmp/#{download_path} > /dev/null 2>&1`
+    FileUtils.mkdir_p("/tmp/" + download_path)
+    if output_file.empty?
+      download_name = url.split("/").last 
+    else
+      download_name = output_file
+    end
+    download_full_path = download_path + download_name
+    LOGGING.info "download_name: #{download_name}"
+    LOGGING.info "download_full_path: #{download_full_path}"
+    Halite.get("#{url}") do |response| 
+       File.open("/tmp/" + download_full_path, "w") do |file| 
+         IO.copy(response.body_io, file)
+       end
+    end
+    TarClient.append(append_file, "/tmp", download_full_path)
+  ensure
+    `rm -rf /tmp/#{download_path} > /dev/null 2>&1`
+  end
+
 end
