@@ -210,7 +210,7 @@ jobs:
   test_in_airgapped_env:
     name: Test Binary In An Airgapped Env.
     needs: [build, debug_output, skip]
-    runs-on: ubuntu-latest
+    runs-on: [default]
     if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Download artifact
