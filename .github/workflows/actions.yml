@@ -185,8 +185,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Debug
-      uses: mxschmitt/action-tmate@v3
+    # - name: Debug
+    #   uses: mxschmitt/action-tmate@v3
       # if: needs.debug_output.outputs.build-debug == 'true'
     - name: Cache crystal shards
       uses: actions/cache@v2
