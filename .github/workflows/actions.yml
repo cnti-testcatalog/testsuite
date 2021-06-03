@@ -185,7 +185,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    # - uses: mxschmitt/action-tmate@v3
+    - name: Debug
+      uses: mxschmitt/action-tmate@v3
       # if: needs.debug_output.outputs.build-debug == 'true'
     - name: Cache crystal shards
       uses: actions/cache@v2
@@ -210,7 +211,8 @@ jobs:
   test_in_airgapped_env:
     name: Test Binary In An Airgapped Env.
     needs: [build, debug_output, skip]
-    runs-on: [default]
+    # runs-on: [default]
+    runs-on: ubuntu-latest
     if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Download artifact
