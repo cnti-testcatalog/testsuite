@@ -34,14 +34,6 @@
 </p>
 </details>
 
-<details> <summary>What platforms are supported by the CNF Test Suite?</summary>
-<p>
-
-- The CNF Test Suite runs on most major Linux distributions, Mac OS X (source install only) and WSL (Windows Subsystem for Linux).
-
-</p>
-</details>
-
 <details> <summary>If I found a bug or I think it's a bug, how do I report it?</summary>
 <p>
 
@@ -92,10 +84,18 @@
 </p>
 </details>
 
+<details> <summary>What platforms are supported by the CNF Test Suite?</summary>
+<p>
+
+- The CNF Test Suite runs on most major Linux distributions, Mac OS X (Intel + source install only) and WSL (Windows Subsystem for Linux).
+
+</p>
+</details>
+
 <details> <summary>Does the CNF Test Suite support or run on other architectures besides amd64?</summary>
 <p>
 
-- Not currently at this time.
+- Currently only amd64 (Intel) is supported.
 
 </p>
 </details>
