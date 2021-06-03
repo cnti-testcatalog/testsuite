@@ -181,6 +181,7 @@ jobs:
     runs-on: ubuntu-latest
     # if: needs.skip.outputs.skip == 'false'
     steps: 
+    - uses: mxschmitt/action-tmate@v3
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -217,7 +218,7 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: release
-    - uses: mxschmitt/action-tmate@v3
+    # - uses: mxschmitt/action-tmate@v3
     #   if: needs.debug_output.outputs.release-debug == 'true'
     - name: Create Cluster & Run Tests.
       run: |
