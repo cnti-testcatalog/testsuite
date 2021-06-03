@@ -99,7 +99,9 @@ module AirGap
   def self.bootstrap_cluster
     pods = AirGap.pods_with_tar()
     tar_pod_name =  pods[0].dig?("metadata", "name") if pods[0]?
+    LOGGING.info "TAR POD NAME: #{tar_pod_name}"
     unless tar_pod_name 
+      LOGGING.info "NO TAR POD, CHECKING FOR PODS WITH SHELL"
       pods = AirGap.pods_with_sh()
       no_tar = true
     end
@@ -114,6 +116,7 @@ module AirGap
 
     cri_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
     if no_tar
+      LOGGING.info "NO TAR POD, COPYING TAR FROM HOST"
       tar_path = AirGap.check_tar(cri_tools_pod_name, pod=false)
       pods.map do |pod| 
         KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- cp #{tar_path} /usr/local/bin/")
