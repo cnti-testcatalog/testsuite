@@ -221,6 +221,7 @@ jobs:
     #   if: needs.debug_output.outputs.release-debug == 'true'
     - name: Create Cluster & Run Tests.
       run: |
+        sudo rm -rf /usr/share/dotnet
         docker pull conformance/node:v1.21.1
         docker save conformance/node:v1.21.1 | gzip > node.tar.gz
         docker rmi -f conformance/node:v1.21.1
