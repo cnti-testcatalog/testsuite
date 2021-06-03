@@ -98,6 +98,7 @@ module AirGap
   #   # TODO add tar binary to prereqs/documentation
   def self.bootstrap_cluster
     pods = AirGap.pods_with_tar()
+    LOGGING.info "TAR POD: #{pods}"
     tar_pod_name =  pods[0].dig?("metadata", "name") if pods[0]?
     LOGGING.info "TAR POD NAME: #{tar_pod_name}"
     unless tar_pod_name 
@@ -120,6 +121,8 @@ module AirGap
       tar_path = AirGap.check_tar(cri_tools_pod_name, pod=false)
       pods.map do |pod| 
         KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- cp #{tar_path} /usr/local/bin/")
+        KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- /usr/local/bin/tar --version")
+        raise "No images with Tar or Shell found. Please deploy a Pod with Tar or Shell to your cluster." if ! $?.success?
       end
     end
     AirGap.install_cri_binaries(pods)
