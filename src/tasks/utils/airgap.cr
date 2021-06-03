@@ -71,6 +71,16 @@ module AirGap
     TarClient.untar(output_file, output_dir)
   end
 
+  def self.image_pull_policy(file, output_file="")
+    input_content = File.read(file) 
+    output_content = input_content.gsub("imagePullPolicy: Always", "imagePullPolicy: Never")
+
+    if output_file.empty?
+      input_content = File.write(file, output_content) 
+    else
+      input_content = File.write(output_file, output_content) 
+    end
+  end
 
   def self.install_test_suite_tools(tarball_name="./airgapped.tar.gz")
     AirGap.bootstrap_cluster()

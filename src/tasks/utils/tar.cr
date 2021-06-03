@@ -52,6 +52,7 @@ module TarClient
     `rm -rf /tmp/#{repo_path} > /dev/null 2>&1`
     FileUtils.mkdir_p("/tmp/#{repo_path}")
     Helm.fetch("#{command} -d /tmp/#{repo_path}")
+    #TODO open the tarball and change the manifests to use image_pull_policy
     helm_chart = Dir.entries("/tmp/#{repo_path}").first
     TarClient.append(output_file, "/tmp", "#{repo_path}")
   ensure
@@ -68,6 +69,7 @@ module TarClient
     LOGGING.info "manifest_name: #{manifest_name}"
     LOGGING.info "manifest_full_path: #{manifest_full_path}"
     Halite.get("#{url}") do |response| 
+      #TODO response.body_io to use image_pull_policy
        File.open("/tmp/" + manifest_full_path, "w") do |file| 
          IO.copy(response.body_io, file)
        end

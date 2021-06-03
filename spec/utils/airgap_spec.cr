@@ -11,6 +11,17 @@ describe "AirGap" do
       LOGGING.info `mkdir ./tmp`
     end
 
+  it "'image_pull_policy' should change all imagepull policy references to never", tags: ["kubectl-runtime"] do
+
+    AirGap.image_pull_policy("./spec/fixtures/litmus-operator-v1.13.2.yaml", "./tmp/imagetest.yml")
+    (File.exists?("./tmp/imagetest.yml")).should be_true
+    resp = File.read("./tmp/imagetest.yml") 
+    (resp).match(/imagePullPolicy: Always/).should be_nil
+    (resp).match(/imagePullPolicy: Never/).should_not be_nil
+  ensure
+    `rm ./tmp/imagetest.yml`
+  end
+   
   it "'generate' should generate a tarball", tags: ["kubectl-runtime"] do
 
     AirGap.generate("./tmp/airgapped.tar.gz")
