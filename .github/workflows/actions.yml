@@ -181,7 +181,6 @@ jobs:
     runs-on: ubuntu-latest
     # if: needs.skip.outputs.skip == 'false'
     steps: 
-    - uses: mxschmitt/action-tmate@v3
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -223,6 +222,9 @@ jobs:
     - name: Create Cluster & Run Tests.
       run: |
         sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /opt/hostedtoolcache/
+        sudo rm -rf /mnt/swapfile
         docker pull conformance/node:v1.21.1
         docker save conformance/node:v1.21.1 | gzip > node.tar.gz
         docker rmi -f conformance/node:v1.21.1
