@@ -217,7 +217,7 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: release
-    # - uses: mxschmitt/action-tmate@v3
+    - uses: mxschmitt/action-tmate@v3
     #   if: needs.debug_output.outputs.release-debug == 'true'
     - name: Create Cluster & Run Tests.
       run: |
