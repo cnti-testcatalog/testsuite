@@ -224,7 +224,6 @@ jobs:
         sudo rm -rf /usr/share/dotnet
         sudo rm -rf /usr/local/lib/android
         sudo rm -rf /opt/hostedtoolcache/
-        sudo rm -rf /mnt/swapfile
         docker pull conformance/node:v1.21.1
         docker save conformance/node:v1.21.1 | gzip > node.tar.gz
         docker rmi -f conformance/node:v1.21.1
