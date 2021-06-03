@@ -42,6 +42,15 @@
 </p>
 </details>
 
+
+<details> <summary>Does the CNF Test Suite support or run on other architectures besides amd64?</summary>
+<p>
+
+- Not currently at this time.
+
+</p>
+</details>
+
 <details> <summary>If I found a bug or I think it's a bug, how do I report it?</summary>
 <p>
 
@@ -88,14 +97,6 @@
 <p>
 
 - Points are different for each test and workload but in general terms, pass defaults to 5 and fail is a -1. See [points.yml](https://github.com/cncf/cnf-testsuite/blob/main/embedded_files/points.yml) for more details on the different points for default scoring.
-
-</p>
-</details>
-
-<details> <summary>Does the CNF Test Suite support or run on other architectures besides amd64?</summary>
-<p>
-
-- Not currently at this time.
 
 </p>
 </details>
