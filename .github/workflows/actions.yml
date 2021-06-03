@@ -215,6 +215,10 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.skip.outputs.skip == 'false'
     steps: 
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: Download artifact
       uses: actions/download-artifact@v2
       with:
@@ -231,7 +235,7 @@ jobs:
         docker rmi -f conformance/node:v1.21.1
         chmod +x ./cnf-testsuite
         ./cnf-testsuite airgapped output-file=/tmp/airgapped.tar.gz
-        docker run --network none --privileged -v $(pwd)/node.tar.gz:/node.tar -v $(pwd)/cnf-testsuite:/cnf-testsuite -v /tmp/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /tmpdata:/tmp -t conformance/offline:v0.11.1 /bin/bash -c "df -h; /cnf-testsuite -l info setup offline=/airgapped/airgapped.tar.gz; /cnf-testsuite -l info install_litmus offline=true ; kubectl get deployment chaos-operator-ce --namespace litmus"
+        docker run --network none --privileged -v $(pwd)/node.tar.gz:/node.tar -v $(pwd)/cnf-testsuite:/cnf-testsuite -v /tmp/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/.github/workflows/check_litmus.sh:/litmus.sh -v /tmpdata:/tmp -t conformance/offline:v0.11.1 /bin/bash -c "/cnf-testsuite -l info setup offline=/airgapped/airgapped.tar.gz; /cnf-testsuite -l info install_litmus offline=true; kubectl get deployment chaos-operator-ce --namespace litmus; /litmus.sh"
 
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)
