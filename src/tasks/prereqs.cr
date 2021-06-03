@@ -11,20 +11,31 @@ require "./utils/system_information/clusterctl.cr"
 
 task "prereqs" do  |_, args|
   verbose = check_verbose(args)
+  if args.named["offline"]?
 
-  if (helm_installation.includes?("helm found") &&
-      !Helm.helm_gives_k8s_warning?(true)) &
-      # wget_installation.includes?("wget found") &
-      # curl_installation.includes?("curl found") &
-      kubectl_installation.includes?("kubectl found") &
-      git_installation.includes?("git found")
-  
+    if (helm_installation.includes?("helm found") &&
+        !Helm.helm_gives_k8s_warning?(true)) &
+      kubectl_installation.includes?("kubectl found")
+
       verbose = check_verbose(args)
-      # clusterctl_installation(verbose).includes?("clusterctl found") && # not necessary for end users at this time
 
       stdout_success "All prerequisites found."
+    else
+      stdout_failure "Setup failed. Some prerequisites are missing. Please install all of the prerequisites before continuing."
+      exit 1
+    end
+
   else
-    stdout_failure "Setup failed. Some prerequisites are missing. Please install all of the prerequisites before continuing."
-    exit 1
+    if (helm_installation.includes?("helm found") &&
+        !Helm.helm_gives_k8s_warning?(true)) &
+      kubectl_installation.includes?("kubectl found") &
+      git_installation.includes?("git found")
+
+      verbose = check_verbose(args)
+      stdout_success "All prerequisites found."
+    else
+      stdout_failure "Setup failed. Some prerequisites are missing. Please install all of the prerequisites before continuing."
+      exit 1
+    end
   end
 end

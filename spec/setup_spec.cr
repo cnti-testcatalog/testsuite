@@ -35,6 +35,7 @@ describe "Setup" do
     (file_list).match(/chaos-dashboard.tar/).should_not be_nil
     (file_list).match(/chaos-kernel.tar/).should_not be_nil
     (file_list).match(/prometheus.tar/).should_not be_nil
+    (file_list).match(/download\/sonobuoy.tar.gz/).should_not be_nil
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
     # Get the generated name of the cri-tools per node
@@ -45,7 +46,6 @@ describe "Setup" do
       sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/ctr > /dev/null")  
       sh[:status].success?
     end
-
   ensure
     `rm ./tmp/airgapped.tar.gz`
     `rm ./tmp/cnf-testsuite.yml`

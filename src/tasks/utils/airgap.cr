@@ -27,6 +27,7 @@ module AirGap
   #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
   def self.generate(output_file : String = "./airgapped.tar.gz")
     `rm #{output_file}`
+    AirGap.download_cri_tools
     [{input_file: "/tmp/kubectl.tar", 
       image: "bitnami/kubectl:latest"},
     {input_file: "/tmp/chaos-mesh.tar", 
@@ -52,14 +53,17 @@ module AirGap
       DockerClient.pull(x[:image])
       DockerClient.save(x[:image], x[:input_file])
       TarClient.append(output_file, Path[x[:input_file]].parent, x[:input_file].split("/")[-1])
-      TarClient.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
-      TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml", output_file)
-      TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml", output_file)
-      TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/experiment.yaml", output_file, "disk-fill-")
-      TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml", output_file, "disk-fill-")
-      TarClient.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
-
     end
+    TarClient.append(output_file, "/tmp", "crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
+    TarClient.append(output_file, "/tmp", "containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
+    TarClient.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
+    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml", output_file)
+    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml", output_file)
+    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/experiment.yaml", output_file, "disk-fill-")
+    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml", output_file, "disk-fill-")
+    url = "https://github.com/vmware-tanzu/sonobuoy/releases/download/v#{SONOBUOY_K8S_VERSION}/sonobuoy_#{SONOBUOY_K8S_VERSION}_#{SONOBUOY_OS}_amd64.tar.gz"
+    TarClient.tar_file_by_url(url, output_file, "sonobuoy.tar.gz")
+    TarClient.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
   end
 
   #./cnf-testsuite setup --offline=./airgapped.tar.gz
@@ -67,6 +71,16 @@ module AirGap
     TarClient.untar(output_file, output_dir)
   end
 
+  def self.image_pull_policy(file, output_file="")
+    input_content = File.read(file) 
+    output_content = input_content.gsub("imagePullPolicy: Always", "imagePullPolicy: Never")
+
+    if output_file.empty?
+      input_content = File.write(file, output_content) 
+    else
+      input_content = File.write(output_file, output_content) 
+    end
+  end
 
   def self.install_test_suite_tools(tarball_name="./airgapped.tar.gz")
     AirGap.bootstrap_cluster()
@@ -94,8 +108,11 @@ module AirGap
   #   # TODO add tar binary to prereqs/documentation
   def self.bootstrap_cluster
     pods = AirGap.pods_with_tar()
+    LOGGING.info "TAR POD: #{pods}"
     tar_pod_name =  pods[0].dig?("metadata", "name") if pods[0]?
+    LOGGING.info "TAR POD NAME: #{tar_pod_name}"
     unless tar_pod_name 
+      LOGGING.info "NO TAR POD, CHECKING FOR PODS WITH SHELL"
       pods = AirGap.pods_with_sh()
       no_tar = true
     end
@@ -110,9 +127,14 @@ module AirGap
 
     cri_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
     if no_tar
-      tar_path = AirGap.check_tar(cri_tools_pod_name, pod=false)
+      LOGGING.info "NO TAR POD, COPYING TAR FROM HOST"
+      tar_path = AirGap.check_tar(cri_tools_pod_name, namespace="default", pod=false)
       pods.map do |pod| 
         KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- cp #{tar_path} /usr/local/bin/")
+        status = KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- /usr/local/bin/tar --version")
+        unless status[:status].success?
+          raise "No images with Tar or Shell found. Please deploy a Pod with Tar or Shell to your cluster."
+        end
       end
     end
     AirGap.install_cri_binaries(pods)
@@ -135,15 +157,16 @@ module AirGap
 
 
 
-  #TODO put curl back in the prereqs
+  #TODO put these in the airgap tarball
   def self.download_cri_tools
-    `curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/#{CRI_VERSION}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz --output crictl-#{CRI_VERSION}-linux-amd64.tar.gz`
-    `curl -L https://github.com/containerd/containerd/releases/download/v#{CTR_VERSION}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz --output containerd-#{CTR_VERSION}-linux-amd64.tar.gz`
+    LOGGING.info "download_cri_tools"
+    `curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/#{CRI_VERSION}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz --output /tmp/crictl-#{CRI_VERSION}-linux-amd64.tar.gz`
+    `curl -L https://github.com/containerd/containerd/releases/download/v#{CTR_VERSION}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz --output /tmp/containerd-#{CTR_VERSION}-linux-amd64.tar.gz`
   end
 
   def self.untar_cri_tools
-    TarClient.untar("crictl-#{CRI_VERSION}-linux-amd64.tar.gz", "/tmp")
-    TarClient.untar("containerd-#{CTR_VERSION}-linux-amd64.tar.gz", "/tmp")
+    TarClient.untar("/tmp/crictl-#{CRI_VERSION}-linux-amd64.tar.gz", "/tmp")
+    TarClient.untar("/tmp/containerd-#{CTR_VERSION}-linux-amd64.tar.gz", "/tmp")
   end
 
   def self.pod_images(pods)
@@ -156,7 +179,7 @@ module AirGap
   end
 
   def self.install_cri_binaries(cri_tool_pods)
-    AirGap.download_cri_tools()
+    # AirGap.download_cri_tools()
     AirGap.untar_cri_tools()
     cri_tool_pods.map do |pod|
       KubectlClient.cp("/tmp/crictl #{pod.dig?("metadata", "name")}:/usr/local/bin/crictl")
@@ -170,7 +193,7 @@ module AirGap
     sh[:status].success?
   end
 
-  def self.check_tar(pod_name, pod=true, namespace="default")
+  def self.check_tar(pod_name, namespace="default", pod=true)
     if pod
       bin_tar = KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /bin/tar > /dev/null")  
       usr_bin_tar =  KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /usr/bin/tar > /dev/null")
@@ -251,7 +274,7 @@ end
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list).select do |pod|
       pod_name = pod.dig?("metadata", "name")
       namespace = pod.dig?("metadata", "namespace")
-      if check_sh(pod_name, namespace) && check_tar(pod_name, namespace)
+      if check_sh(pod_name, namespace) && check_tar(pod_name, namespace, pod=true)
         LOGGING.debug "Found tar and sh Pod: #{pod_name}"
         true
       else

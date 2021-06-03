@@ -11,6 +11,17 @@ describe "AirGap" do
       LOGGING.info `mkdir ./tmp`
     end
 
+  it "'image_pull_policy' should change all imagepull policy references to never", tags: ["kubectl-runtime"] do
+
+    AirGap.image_pull_policy("./spec/fixtures/litmus-operator-v1.13.2.yaml", "./tmp/imagetest.yml")
+    (File.exists?("./tmp/imagetest.yml")).should be_true
+    resp = File.read("./tmp/imagetest.yml") 
+    (resp).match(/imagePullPolicy: Always/).should be_nil
+    (resp).match(/imagePullPolicy: Never/).should_not be_nil
+  ensure
+    `rm ./tmp/imagetest.yml`
+  end
+   
   it "'generate' should generate a tarball", tags: ["kubectl-runtime"] do
 
     AirGap.generate("./tmp/airgapped.tar.gz")
@@ -23,12 +34,16 @@ describe "AirGap" do
     (file_list).match(/chaos-dashboard.tar/).should_not be_nil
     (file_list).match(/chaos-kernel.tar/).should_not be_nil
     (file_list).match(/prometheus.tar/).should_not be_nil
+    (file_list).match(/rbac.yaml/).should_not be_nil
+    (file_list).match(/disk-fill-rbac.yaml/).should_not be_nil
     (file_list).match(/litmus-operator/).should_not be_nil
+    (file_list).match(/download\/sonobuoy.tar.gz/).should_not be_nil
   ensure
     `rm ./tmp/airgapped.tar.gz`
   end
 
   it "'#AirGap.publish_tarball' should execute publish a tarball to a bootstrapped cluster", tags: ["kubectl-runtime"]  do
+    AirGap.download_cri_tools
     AirGap.bootstrap_cluster()
     tarball_name = "./spec/fixtures/testimage.tar.gz"
     resp = AirGap.publish_tarball(tarball_name)
@@ -71,11 +86,12 @@ describe "AirGap" do
 
   it "'#AirGap.download_cri_tools' should download the cri tools", tags: ["kubectl-runtime"]  do
     resp = AirGap.download_cri_tools()
-    (File.exists?("crictl-#{AirGap::CRI_VERSION}-linux-amd64.tar.gz")).should be_true
-    (File.exists?("containerd-#{AirGap::CTR_VERSION}-linux-amd64.tar.gz")).should be_true
+    (File.exists?("/tmp/crictl-#{AirGap::CRI_VERSION}-linux-amd64.tar.gz")).should be_true
+    (File.exists?("/tmp/containerd-#{AirGap::CTR_VERSION}-linux-amd64.tar.gz")).should be_true
   end
 
   it "'#AirGap.untar_cri_tools' should untar the cri tools", tags: ["kubectl-runtime"]  do
+    AirGap.download_cri_tools
     resp = AirGap.untar_cri_tools()
     (File.exists?("/tmp/crictl")).should be_true
     (File.exists?("/tmp/bin/ctr")).should be_true
