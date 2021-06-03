@@ -118,7 +118,7 @@ module AirGap
     cri_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
     if no_tar
       LOGGING.info "NO TAR POD, COPYING TAR FROM HOST"
-      tar_path = AirGap.check_tar(cri_tools_pod_name, pod=false)
+      tar_path = AirGap.check_tar(cri_tools_pod_name, namespace="default", pod=false)
       pods.map do |pod| 
         KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- cp #{tar_path} /usr/local/bin/")
         status = KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- /usr/local/bin/tar --version")
@@ -183,7 +183,7 @@ module AirGap
     sh[:status].success?
   end
 
-  def self.check_tar(pod_name, pod=true, namespace="default")
+  def self.check_tar(pod_name, namespace="default", pod=true)
     if pod
       bin_tar = KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /bin/tar > /dev/null")  
       usr_bin_tar =  KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /usr/bin/tar > /dev/null")
@@ -264,7 +264,7 @@ end
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list).select do |pod|
       pod_name = pod.dig?("metadata", "name")
       namespace = pod.dig?("metadata", "namespace")
-      if check_sh(pod_name, namespace) && check_tar(pod_name, namespace)
+      if check_sh(pod_name, namespace) && check_tar(pod_name, namespace, pod=true)
         LOGGING.debug "Found tar and sh Pod: #{pod_name}"
         true
       else
