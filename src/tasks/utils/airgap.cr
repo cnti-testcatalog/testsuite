@@ -121,8 +121,10 @@ module AirGap
       tar_path = AirGap.check_tar(cri_tools_pod_name, pod=false)
       pods.map do |pod| 
         KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- cp #{tar_path} /usr/local/bin/")
-        KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- /usr/local/bin/tar --version")
-        raise "No images with Tar or Shell found. Please deploy a Pod with Tar or Shell to your cluster." if ! $?.success?
+        status = KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- /usr/local/bin/tar --version")
+        unless status[:status].success?
+          raise "No images with Tar or Shell found. Please deploy a Pod with Tar or Shell to your cluster."
+        end
       end
     end
     AirGap.install_cri_binaries(pods)
