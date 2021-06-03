@@ -67,6 +67,8 @@ cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git
 
 We can assume you have access to a working kubernetes cluster. We recommend only running the cnf-testsuite on dev or test clusters. The source install steps have been verified on most Linux distributions (Ubuntu, Debian and CentOS), Mac OS X and WSL as long as crystal-lang v0.35.1 is installed.
 
+_NOTE: Currently Mac OS X users will need to ensure helm 3.1.1 or greater is installed locally._
+
 - Verify your KUBECONFIG points to your correct k8s cluster:
   ```
   echo $KUBECONFIG
