@@ -226,16 +226,16 @@ jobs:
     # - uses: mxschmitt/action-tmate@v3
     #   if: needs.debug_output.outputs.release-debug == 'true'
     - name: Create Cluster & Run Tests.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         sudo rm -rf /usr/share/dotnet
         sudo rm -rf /usr/local/lib/android
         sudo rm -rf /opt/hostedtoolcache/
-        docker pull conformance/node:v1.21.1
-        docker save conformance/node:v1.21.1 | gzip > node.tar.gz
-        docker rmi -f conformance/node:v1.21.1
         chmod +x ./cnf-testsuite
-        ./cnf-testsuite airgapped output-file=/tmp/airgapped.tar.gz
-        docker run --network none --privileged -v $(pwd)/node.tar.gz:/node.tar -v $(pwd)/cnf-testsuite:/cnf-testsuite -v /tmp/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/.github/workflows/check_litmus.sh:/litmus.sh -v /tmpdata:/tmp -t conformance/offline:v0.11.1 /bin/bash -c "/cnf-testsuite -l info setup offline=/airgapped/airgapped.tar.gz; /cnf-testsuite -l info install_litmus offline=true; kubectl get deployment chaos-operator-ce --namespace litmus; /litmus.sh"
+        wget --auth-no-challenge --header='Accept:application/octet-stream' https://$GITHUB_TOKEN:@api.github.com/repos/cncf/cnf-testsuite/releases/assets/38092818 -O airgapped.tar.gz
+        gunzip airgapped.tar.gz
+        docker run --network none --privileged -v $(pwd)/cnf-testsuite:/cnf-testsuite -v $(pwd)/airgapped.tar:/airgapped/airgapped.tar -v $(pwd)/.github/workflows/check_litmus.sh:/litmus.sh -v /tmpdata:/tmp -t conformance/offline:v0.11.1 /bin/bash -c "/cnf-testsuite -l info setup offline=/airgapped/airgapped.tar; /cnf-testsuite -l info install_litmus offline=true; kubectl get deployment chaos-operator-ce --namespace litmus; /litmus.sh"
 
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)
