@@ -8,6 +8,7 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
   VERBOSE_LOGGING.info "cnf_setup" if check_verbose(args)
   VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
   cli_hash = CNFManager.sample_setup_cli_args(args)
+  #TODO accept an offline mode parameter
   CNFManager.sample_setup(cli_hash)
 end
 

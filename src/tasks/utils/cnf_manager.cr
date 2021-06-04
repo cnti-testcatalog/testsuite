@@ -518,6 +518,7 @@ module CNFManager
 
   #sample_setup({config_file: cnf_path, wait_count: wait_count})
   def self.sample_setup(cli_args)
+    #TODO accept offline mode
     LOGGING.info "sample_setup cli_args: #{cli_args}"
     config_file = cli_args[:config_file]
     wait_count = cli_args[:wait_count]
@@ -553,7 +554,6 @@ module CNFManager
     LOGGING.debug "mkdir_p destination_cnf_dir: #{destination_cnf_dir}"
     FileUtils.mkdir_p(destination_cnf_dir)
 
-    # git_clone = `git clone #{git_clone_url} #{destination_cnf_dir}/#{release_name}`  if git_clone_url.empty? == false
     GitClient.clone("#{git_clone_url} #{destination_cnf_dir}/#{release_name}")  if git_clone_url.empty? == false
 
     sandbox_setup(config, cli_args)
@@ -563,6 +563,10 @@ module CNFManager
 
     helm_install = {status: "", output: IO::Memory.new, error: IO::Memory.new}
     elapsed_time = Time.measure do
+      #TODO offline mode for helm charts
+      #TODO offline mode for helm directory
+      #TODO offline mode for manifests
+      #Get image from somewhere (cnf_yml)
       case install_method[0]
       when :manifest_directory
         VERBOSE_LOGGING.info "deploying by manifest file" if verbose

@@ -24,6 +24,36 @@ module CNFManager
       end
     end
 
+    #TODO get list of image:tags from helm chart/helm directory/manifest file
+    def self.images_from_config_src(config_src)
+      #return container image name/tag
+      ret_containers = [] of NamedTuple(image_name: String, tag: String) 
+      resource_ymls = CNFManager::GenerateConfig.export_manifest(config_src)
+      resource_resp = resource_ymls.map do | resource |
+        LOGGING.info "gen config resource: #{resource}"
+        unless resource["kind"].as_s.downcase == "service" ## services have no containers
+          containers = Helm::Manifest.manifest_containers(resource)
+
+          LOGGING.info "containers: #{containers}"
+          container_name = containers.as_a[0].as_h["name"].as_s if containers
+          if containers
+            container_names = containers.as_a.map do |container|
+              LOGGING.debug "container: #{container}"
+              image_name = container.as_h["image"].as_s.split(":")[0]
+              if container.as_h["image"].as_s.split(":").size > 1
+                tag = container.as_h["image"].as_s.split(":")[1]
+              else
+                tag = ""
+              end
+              ret_containers << {image_name: image_name, tag: tag}
+              LOGGING.debug "ret_containers: #{ret_containers}"
+            end
+          end
+        end
+      end
+      ret_containers
+    end
+
     def self.export_manifest(config_src, output_file="./cnf-testsuite.yml")
 
       generate_initial_testsuite_yml(config_src, output_file)

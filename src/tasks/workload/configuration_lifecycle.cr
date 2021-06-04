@@ -216,6 +216,7 @@ task "rollback" do |_, args|
         #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
 
         version_change_applied = true
+        # compare cnf_testsuite.yml container list with the current container name
         config_container = container_names.find{|x| x["name"] == container_name } if container_names
         unless config_container && config_container["rollback_from_tag"]? && !config_container["rollback_from_tag"].empty?
           puts "Please add the container name #{container.as_h["name"]} and a corresponding rollback_from_tag into your cnf-testsuite.yml under container names".colorize(:red)
@@ -231,6 +232,7 @@ task "rollback" do |_, args|
           end
 
           VERBOSE_LOGGING.debug "rollback: update deployment: #{deployment_name}, container: #{container_name}, image: #{image_name}, tag: #{rollback_from_tag}" if check_verbose(args)
+          # set a temporary image/tag, so that we can rollback to the current (original) tag later
           version_change_applied = KubectlClient::Set.image(deployment_name,
                                                             container_name,
                                                             image_name,

@@ -43,3 +43,4 @@ containerd-*-linux-amd64.tar.gz
 crictl-*-linux-amd64.tar.gz
 tools/LICENSE
 airgapped.tar.gz
+cnf-testsuite.yml
