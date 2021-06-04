@@ -211,8 +211,8 @@ jobs:
   test_in_airgapped_env:
     name: Test Binary In An Airgapped Env.
     needs: [build, debug_output, skip]
-    # runs-on: [default]
-    runs-on: ubuntu-latest
+    runs-on: [default]
+    # runs-on: ubuntu-latest
     if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
@@ -232,10 +232,14 @@ jobs:
         sudo rm -rf /usr/share/dotnet
         sudo rm -rf /usr/local/lib/android
         sudo rm -rf /opt/hostedtoolcache/
+        sudo rm -rf /shared/*
+        mv .github/workflows/check_litmus.sh /shared
         chmod +x ./cnf-testsuite
+        mv ./cnf-testsuite /shared
         wget --auth-no-challenge --header='Accept:application/octet-stream' https://$GITHUB_TOKEN:@api.github.com/repos/cncf/cnf-testsuite/releases/assets/38092818 -O airgapped.tar.gz
         gunzip airgapped.tar.gz
-        docker run --network none --privileged -v $(pwd)/cnf-testsuite:/cnf-testsuite -v $(pwd)/airgapped.tar:/airgapped/airgapped.tar -v $(pwd)/.github/workflows/check_litmus.sh:/litmus.sh -v /tmpdata:/tmp -t conformance/offline:v0.11.1 /bin/bash -c "/cnf-testsuite -l info setup offline=/airgapped/airgapped.tar; /cnf-testsuite -l info install_litmus offline=true; kubectl get deployment chaos-operator-ce --namespace litmus; /litmus.sh"
+        mv airgapped.tar /shared
+        docker run --network none --privileged -v /root/shared/cnf-testsuite:/cnf-testsuite -v /root/shared/airgapped.tar:/airgapped/airgapped.tar -v /root/shared/check_litmus.sh:/litmus.sh -v /tmpdata:/tmp -t conformance/offline:v0.11.1 /bin/bash -c "/cnf-testsuite -l info setup offline=/airgapped/airgapped.tar; /cnf-testsuite -l info install_litmus offline=true; kubectl get deployment chaos-operator-ce --namespace litmus; /litmus.sh"
 
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)
