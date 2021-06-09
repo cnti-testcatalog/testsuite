@@ -71,7 +71,8 @@ module TarClient
     LOGGING.debug "ls /tmp/repositories:" + `ls -al /tmp/repositories`
     LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
     #TODO get name of tarball that was fetched into /tmp/repo_path
-    tar_files = TarClient.find(tar_dir, "*.tgz*")
+    tgz_files = TarClient.find(tar_dir, "*.tgz*")
+    tar_files = TarClient.find(tar_dir, "*.tar*") + tgz_files
     LOGGING.info "tar_files: #{tar_files}"
     #TODO untar that helm tarball
     tar_name = tar_files[0]

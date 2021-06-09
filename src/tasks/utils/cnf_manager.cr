@@ -439,7 +439,13 @@ module CNFManager
     else
       wait_count = 180
     end
-    {config_file: cnf_path, wait_count: wait_count, verbose: check_verbose(args)}
+    output_file = args.named["offline"].as(String) if args.named["offline"]?
+    output_file = args.named["input-file"].as(String) if args.named["input-file"]?
+    output_file = args.named["if"].as(String) if args.named["if"]?
+    airgapped=false
+    airgapped=true if args.raw.includes?("airgapped")
+
+    {config_file: cnf_path, wait_count: wait_count, verbose: check_verbose(args), output_file: output_file, airgapped: airgapped}
   end
 
   # Create a unique directory for the cnf that is to be installed under ./cnfs
@@ -538,7 +544,9 @@ module CNFManager
     config_file = cli_args[:config_file]
     wait_count = cli_args[:wait_count]
     verbose = cli_args[:verbose]
+    airgapped = cli_args[:airgapped]
     config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
+    #todo if in airgapped mode, set helm_chart in config to be the tarball path
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
 
