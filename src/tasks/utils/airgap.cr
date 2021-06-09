@@ -57,17 +57,15 @@ module AirGap
     end
   end
 
-  #TODO extract cnf tarball
-  def self.extract
-  end
-
-  #TODO install cnf tarball contents in airgap mode
-  #TODO check for cnf-testsuite file, error out if doesn't exist
-  #TODO use cnf-testsuite file to find out which install method will be used
-  #TODO install all helm charts and helm directories using helm directory install method
-  #TODO install manifests using install manifest method
   # LOGGING.info `./cnf-testsuite cnf_setup offline=./tmp/cnf.tar.gz cnf-config=example-cnfs/coredns/cnf-testsuite.yml`
+  # LOGGING.info `./cnf-testsuite cnf_setup input_file=./tmp/cnf.tar.gz cnf-config=example-cnfs/coredns/cnf-testsuite.yml`
   def self.cnf_setup
+    # TODO Extract to the /tmp/images directory
+    #TODO cache the images into the nodes 
+    #TODO check for cnf-testsuite file, error out if doesn't exist
+    #TODO use cnf-testsuite file to find out which install method will be used
+    #TODO install all helm charts and helm directories using helm directory install method
+    #TODO install manifests using install manifest method
   end
 
   #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
@@ -119,7 +117,7 @@ module AirGap
     TarClient.untar(output_file, output_dir)
   end
 
-  def self.install_test_suite_tools(tarball_name="./airgapped.tar.gz")
+  def self.cache_images(tarball_name="./airgapped.tar.gz")
     AirGap.bootstrap_cluster()
     if ENV["CRYSTAL_ENV"]? == "TEST"
       # install_list = [{input_file: "/tmp/image/kubectl.tar"}, 

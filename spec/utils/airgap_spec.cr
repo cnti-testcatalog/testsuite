@@ -86,8 +86,8 @@ describe "AirGap" do
 
   it "'#AirGap.download_cri_tools' should download the cri tools", tags: ["kubectl-runtime"]  do
     resp = AirGap.download_cri_tools()
-    (File.exists?("/tmp/crictl-#{AirGap::CRI_VERSION}-linux-amd64.tar.gz")).should be_true
-    (File.exists?("/tmp/containerd-#{AirGap::CTR_VERSION}-linux-amd64.tar.gz")).should be_true
+    (File.exists?("/tmp/images/crictl-#{AirGap::CRI_VERSION}-linux-amd64.tar.gz")).should be_true
+    (File.exists?("/tmp/images/containerd-#{AirGap::CTR_VERSION}-linux-amd64.tar.gz")).should be_true
   end
 
   it "'#AirGap.untar_cri_tools' should untar the cri tools", tags: ["kubectl-runtime"]  do
@@ -161,9 +161,9 @@ describe "AirGap" do
     KubectlClient::Delete.command("daemonset cri-tools")
   end
 
-  it "'#AirGap.install_test_suite_tools' should install the cri tools in the cluster", tags: ["kubectl-utils"]  do
+  it "'#AirGap.cache_images' should install the cri tools in the cluster", tags: ["kubectl-utils"]  do
     AirGap.generate("./airgapped.tar.gz")
-    resp = AirGap.install_test_suite_tools
+    resp = AirGap.cache_images
     LOGGING.info "#{resp.find{|x| puts x[0][:output].to_s}}"
     resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/bitnami\/kubectl:latest/)}.should_not be_nil
     resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/pingcap\/chaos-mesh:v1.2.1/)}.should_not be_nil
