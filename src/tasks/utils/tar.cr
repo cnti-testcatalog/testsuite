@@ -55,27 +55,77 @@ module TarClient
     found_files
   end
 
-  #TODO move helm utilities into helm-tar utilty file or into helm file
-  def self.tar_helm_repo(command, output_file : String = "./airgapped.tar.gz")
-    # TODO get the chart name out of the command
+  def self.helm_tar_dir(config_src)
+    LOGGING.debug "helm_tar_dir ls /tmp/repositories:" + `ls -al /tmp/repositories`
     # chaos-mesh/chaos-mesh --version 0.5.1
-    repo = command.split(" ")[0]
+    repo = config_src.split(" ")[0]
     repo_dir = repo.gsub("/", "_")
     chart_name = repo.split("/")[-1]
     repo_path = "repositories/#{repo_dir}" 
-    `rm -rf /tmp/#{repo_path} > /dev/null 2>&1`
     tar_dir = "/tmp/#{repo_path}"
+    LOGGING.info "helm_tar_dir: #{tar_dir}"
+    tar_dir
+  end
+
+  def self.helm_tar_name(config_src)
+    LOGGING.debug "helm_tar_name ls /tmp/repositories:" + `ls -al /tmp/repositories`
+    tar_dir = helm_tar_dir(config_src)
+    tgz_files = TarClient.find(tar_dir, "*.tgz*")
+    tar_files = TarClient.find(tar_dir, "*.tar*") + tgz_files
+    tar_name = tar_files[0]
+    LOGGING.info "tar_name: #{tar_name}"
+    tar_name
+  end
+
+  def self.tar_info_by_config_src(config_src)
+    LOGGING.debug "tar_info_by_config_src ls /tmp/repositories:" + `ls -al /tmp/repositories`
+    # chaos-mesh/chaos-mesh --version 0.5.1
+    repo = config_src.split(" ")[0]
+    repo_dir = repo.gsub("/", "_")
+    chart_name = repo.split("/")[-1]
+    repo_path = "repositories/#{repo_dir}" 
+    tar_dir = "/tmp/#{repo_path}"
+    tar_info = {repo: repo, repo_dir: repo_dir, chart_name: chart_name,
+     repo_path: repo_path, tar_dir: tar_dir, tar_name: helm_tar_name(config_src)}
+    LOGGING.info "tar_info: #{tar_info}"
+    tar_info
+  end
+
+  #TODO move helm utilities into helm-tar utilty file or into helm file
+  def self.tar_helm_repo(command, output_file : String = "./airgapped.tar.gz")
+    LOGGING.info "tar_helm_repo command: #{command} output_file: #{output_file}"
+    # get the chart name out of the command
+    # chaos-mesh/chaos-mesh --version 0.5.1
+    #
+    tar_dir = helm_tar_dir(command)
     FileUtils.mkdir_p(tar_dir)
-    LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
     Helm.fetch("#{command} -d #{tar_dir}")
+    LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
+    info = tar_info_by_config_src(command)
+    repo = info[:repo]
+    repo_dir = info[:repo_dir]
+    chart_name = info[:chart_name]
+    repo_path = info[:repo_path]
+    tar_dir = info[:tar_dir]
+    tar_name = info[:tar_name]
+
+    # repo = command.split(" ")[0]
+    # repo_dir = repo.gsub("/", "_")
+    # chart_name = repo.split("/")[-1]
+    # repo_path = "repositories/#{repo_dir}" 
+    # `rm -rf /tmp/#{repo_path} > /dev/null 2>&1`
+    # tar_dir = "/tmp/#{repo_path}"
+    # FileUtils.mkdir_p(tar_dir)
+    # LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
+    # Helm.fetch("#{command} -d #{tar_dir}")
     LOGGING.debug "ls /tmp/repositories:" + `ls -al /tmp/repositories`
     LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
     #TODO get name of tarball that was fetched into /tmp/repo_path
-    tgz_files = TarClient.find(tar_dir, "*.tgz*")
-    tar_files = TarClient.find(tar_dir, "*.tar*") + tgz_files
-    LOGGING.info "tar_files: #{tar_files}"
+    # tgz_files = TarClient.find(tar_dir, "*.tgz*")
+    # tar_files = TarClient.find(tar_dir, "*.tar*") + tgz_files
+    # LOGGING.info "tar_files: #{tar_files}"
     #TODO untar that helm tarball
-    tar_name = tar_files[0]
+    # tar_name = tar_files[0]
     TarClient.untar(tar_name, tar_dir)
     #TODO remove tar_name
     `rm #{tar_name}`

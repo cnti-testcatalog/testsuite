@@ -180,7 +180,7 @@ module CNFManager
   end
 
   def self.parsed_config_file(path)
-    if path.empty?
+    if path && path.empty?
       raise "No cnf_testsuite.yml found in #{path}!"
     end
     Totem.from_file "#{path}"
@@ -290,10 +290,10 @@ module CNFManager
   def self.cnf_installation_method(config)
     LOGGING.info "cnf_installation_method"
     LOGGING.info "cnf_installation_method config: #{config}"
-      LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
-      helm_chart = optional_key_as_string(config, "helm_chart")
-      helm_directory = optional_key_as_string(config, "helm_directory")
-      manifest_directory = optional_key_as_string(config, "manifest_directory")
+    LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
+    helm_chart = optional_key_as_string(config, "helm_chart")
+    helm_directory = optional_key_as_string(config, "helm_directory")
+    manifest_directory = optional_key_as_string(config, "manifest_directory")
 
     unless CNFManager.exclusive_install_method_tags?(config)
       puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-testsuite.yml!".colorize(:red)
@@ -439,13 +439,18 @@ module CNFManager
     else
       wait_count = 180
     end
-    output_file = args.named["offline"].as(String) if args.named["offline"]?
-    output_file = args.named["input-file"].as(String) if args.named["input-file"]?
-    output_file = args.named["if"].as(String) if args.named["if"]?
+    output_file = args.named["airgapped"].as(String) if args.named["airgapped"]?
+    output_file = args.named["output-file"].as(String) if args.named["output-file"]?
+    output_file = args.named["of"].as(String) if args.named["if"]?
+    input_file = args.named["offline"].as(String) if args.named["offline"]?
+    input_file = args.named["input-file"].as(String) if args.named["input-file"]?
+    input_file = args.named["if"].as(String) if args.named["if"]?
     airgapped=false
     airgapped=true if args.raw.includes?("airgapped")
 
-    {config_file: cnf_path, wait_count: wait_count, verbose: check_verbose(args), output_file: output_file, airgapped: airgapped}
+    cli_args = {config_file: cnf_path, extended_config_file: yml_file, wait_count: wait_count, verbose: check_verbose(args), output_file: output_file, input_file: input_file}
+    LOGGING.debug "cli_args: #{cli_args}"
+    cli_args
   end
 
   # Create a unique directory for the cnf that is to be installed under ./cnfs
@@ -544,17 +549,15 @@ module CNFManager
     config_file = cli_args[:config_file]
     wait_count = cli_args[:wait_count]
     verbose = cli_args[:verbose]
-    airgapped = cli_args[:airgapped]
+    input_file = cli_args[:input_file]
     config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
-    #todo if in airgapped mode, set helm_chart in config to be the tarball path
+    LOGGING.debug "config in sample_setup: #{config.cnf_config}"
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
 
     VERBOSE_LOGGING.info "sample_setup" if verbose
     LOGGING.info("config_file #{config_file}")
-
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
-    LOGGING.debug "config in sample_setup: #{config.cnf_config}"
+    # config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
 
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
@@ -567,7 +570,13 @@ module CNFManager
     LOGGING.info "helm_repo_name: #{helm_repo_name}"
     LOGGING.info "helm_repo_url: #{helm_repo_url}"
 
-    helm_chart = config.cnf_config[:helm_chart]
+    #todo if in airgapped mode, set helm_chart in config to be the tarball path
+    if input_file && !input_file.empty?
+      tar_info = TarClient.tar_info_by_config_src(config.cnf_config[:helm_chart])
+      helm_chart = tar_info[:tar_name]
+    else
+      helm_chart = config.cnf_config[:helm_chart]
+    end
     helm_chart_path = config.cnf_config[:helm_chart_path]
     LOGGING.debug "helm_directory: #{helm_directory}"
 

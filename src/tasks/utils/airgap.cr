@@ -27,23 +27,29 @@ module AirGap
   #TODO generate a tarball for a helm directory
   #TODO generate a tarball for a manifest directory
   #TODO append the tarballs to the airgapped tarball (or another tarball)
-  #  LOGGING.info `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped output-file=./tmp/airgapped.tar.gz`
-  def self.generate_cnf_setup(cnf_config_file, output_file)
+  #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped output-file=./tmp/airgapped.tar.gz
+  #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml output-file=./tmp/airgapped.tar.gz
+  #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=./tmp/airgapped.tar.gz
+  def self.generate_cnf_setup(config_file, output_file)
+    LOGGING.info "generate_cnf_setup cnf_config_file: #{config_file}"
     FileUtils.mkdir_p("/tmp/images")
-    install_method = CNFManager.cnf_installation_method(cnf_config_file)
+    config = CNFManager.parsed_config_file(config_file)
+    install_method = CNFManager.cnf_installation_method(config)
     case install_method[0]
     when :helm_chart
-      LOGGING.debug "helm_chart install method: #{install_method[1]}"
+      LOGGING.debug "helm_chart : #{install_method[1]}"
       TarClient.tar_helm_repo(install_method[1], output_file)
       #TODO get images from helm chart
       #TODO tarball the images
       images = CNFManager::GenerateConfig.images_from_config_src(install_method[1]) 
 
       images.map  do |i|
-        input_file = "/tmp/images/#{i[:image_name]}_#{i[:tag]}.tar"
+        input_file = "/tmp/images/#{i[:image_name].split("/")[-1]}_#{i[:tag]}.tar"
+        LOGGING.info "input_file: #{input_file}"
         image = "#{i[:image_name]}:#{i[:tag]}"
         DockerClient.pull(image)
         DockerClient.save(image, input_file)
+        # FileUtils.mkdir_p("/tmp/images/#{Path[input_file].parent}")
         TarClient.append(output_file, Path[input_file].parent, input_file.split("/")[-1])
       end
       # when :helm_directory
@@ -57,8 +63,8 @@ module AirGap
     end
   end
 
-  # LOGGING.info `./cnf-testsuite cnf_setup offline=./tmp/cnf.tar.gz cnf-config=example-cnfs/coredns/cnf-testsuite.yml`
-  # LOGGING.info `./cnf-testsuite cnf_setup input_file=./tmp/cnf.tar.gz cnf-config=example-cnfs/coredns/cnf-testsuite.yml`
+  # LOGGING.info ./cnf-testsuite cnf_setup offline=./tmp/cnf.tar.gz cnf-config=example-cnfs/coredns/cnf-testsuite.yml
+  # LOGGING.info ./cnf-testsuite cnf_setup input_file=./tmp/cnf.tar.gz cnf-config=example-cnfs/coredns/cnf-testsuite.yml
   def self.cnf_setup
     # TODO Extract to the /tmp/images directory
     #TODO cache the images into the nodes 

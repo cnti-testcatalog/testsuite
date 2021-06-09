@@ -11,7 +11,18 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
   cli_hash = CNFManager.sample_setup_cli_args(args)
   #TODO accept an offline mode parameter
   #TODO determine if helm chart, if so, install using helm install <tarball>
-  CNFManager.sample_setup(cli_hash)
+  output_file = cli_hash[:output_file]
+  input_file =  cli_hash[:input_file]
+  if output_file && !output_file.empty?
+    LOGGING.info "cnf tarball generation mode"
+    tar_info = AirGap.generate_cnf_setup(cli_hash[:extended_config_file], output_file)
+  elsif input_file && !input_file.empty?
+    AirGap.extract(input_file)
+    # AirGap.cache_images(input_file)
+    CNFManager.sample_setup(cli_hash)
+  else
+    CNFManager.sample_setup(cli_hash)
+  end
 end
 
 # task "offline" do |_, args|

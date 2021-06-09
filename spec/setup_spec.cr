@@ -115,6 +115,24 @@ describe "Setup" do
   ensure
     `rm ./cnf-testsuite-test.yml`
   end
+  it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf in airgapped mode", tags: ["setup"]  do
+    begin
+      response_s = `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=./tmp/airgapped.tar.gz`
+      LOGGING.info response_s
+      response_s = `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml input-file=./tmp/airgapped.tar.gz`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/Successfully setup coredns/ =~ response_s).should_not be_nil
+    ensure
+      `rm ./tmp/airgapped.tar.gz/`
+      `rm /tmp/images/coredns_1.7.1.tar`
+
+      response_s = `./cnf-testsuite cnf_cleanup cnf-config=example-cnfs/coredns/cnf-testsuite.yml`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/Successfully cleaned up/ =~ response_s).should_not be_nil
+    end
+  end
 
   it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf with a cnf-testsuite.yml", tags: ["setup"]  do
     begin
