@@ -40,6 +40,7 @@ describe "TarClient" do
   end
 
   it "'.tar_helm_repo' should create a tar file from a helm repository that has options", tags: ["tar-install"]  do
+    Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
     TarClient.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", "/tmp/airgapped.tar")
     (File.exists?("/tmp/airgapped.tar")).should be_true
     resp = `tar -tvf /tmp/airgapped.tar`
