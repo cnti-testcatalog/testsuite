@@ -24,7 +24,8 @@ describe "SampleUtils" do
   end
 
   it "'images_from_config_src' should return a list of containers for a cnf", tags: ["cnf-setup"]  do
-    (CNFManager::GenerateConfig.images_from_config_src("stable/coredns").find {|x| x[:image_name] =="coredns/coredns"}).should be_truthy 
+    (CNFManager::GenerateConfig.images_from_config_src("stable/coredns").find {|x| x[:image_name] =="coredns/coredns" && 
+                                                                               x[:container_name] =="coredns"}).should be_truthy 
   end
 
   it "'cnf_setup' should pass with a minimal cnf-testsuite.yml", tags: ["cnf-setup"] do

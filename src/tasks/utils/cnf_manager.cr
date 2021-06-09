@@ -270,9 +270,24 @@ module CNFManager
     end
   end
 
+  def self.install_method_by_config_src(config_src : String)
+    helm_chart_file = "#{config_src}/#{CHART_YAML}"
+    LOGGING.debug "potential helm_chart_file: #{helm_chart_file}"
+
+    if !Dir.exists?(config_src) 
+      :helm_chart
+    elsif File.exists?(helm_chart_file)
+      :helm_directory
+    elsif KubectlClient::Apply.validate(config_src)
+      :manifest_directory
+    else
+      puts "Error: #{config_src} is neither a helm_chart, helm_directory, or manifest_directory.".colorize(:red)
+      exit 1
+    end
+  end
 
   #Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
-  def self.cnf_installation_method(config, config_src=false)
+  def self.cnf_installation_method(config)
     LOGGING.info "cnf_installation_method"
     LOGGING.info "cnf_installation_method config: #{config}"
       LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"

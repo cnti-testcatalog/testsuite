@@ -2,6 +2,7 @@ require "totem"
 require "colorize"
 require "./cnf_manager.cr"
 require "halite"
+require "./airgap_utils.cr"
 
 module TarClient
   TAR_REPOSITORY_DIR = "/tmp/repositories"
@@ -43,22 +44,63 @@ module TarClient
     {status: status, output: output, error: stderr}
   end
 
+  def self.find(directory, wildcard="*.tar*", maxdepth="1", silent=true)
+    LOGGING.debug("tar_file_name")
+    LOGGING.debug("find: find #{directory} -maxdepth #{maxdepth} -name \"#{wildcard}\"")
+    found_files = `find #{directory} -maxdepth #{maxdepth} -name "#{wildcard}"`.split("\n").select{|x| x.empty? == false}
+    LOGGING.debug("find response: #{found_files}")
+    if found_files.size == 0 && !silent
+      raise "No files found!"
+    end
+    found_files
+  end
+
+  #TODO move helm utilities into helm-tar utilty file or into helm file
   def self.tar_helm_repo(command, output_file : String = "./airgapped.tar.gz")
     # TODO get the chart name out of the command
     # chaos-mesh/chaos-mesh --version 0.5.1
     repo = command.split(" ")[0]
     repo_dir = repo.gsub("/", "_")
+    chart_name = repo.split("/")[-1]
     repo_path = "repositories/#{repo_dir}" 
     `rm -rf /tmp/#{repo_path} > /dev/null 2>&1`
-    FileUtils.mkdir_p("/tmp/#{repo_path}")
-    Helm.fetch("#{command} -d /tmp/#{repo_path}")
-    #TODO open the tarball and change the manifests to use image_pull_policy
+    tar_dir = "/tmp/#{repo_path}"
+    FileUtils.mkdir_p(tar_dir)
+    LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
+    Helm.fetch("#{command} -d #{tar_dir}")
+    LOGGING.debug "ls /tmp/repositories:" + `ls -al /tmp/repositories`
+    LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
+    #TODO get name of tarball that was fetched into /tmp/repo_path
+    tar_files = TarClient.find(tar_dir, "*.tgz*")
+    LOGGING.info "tar_files: #{tar_files}"
+    #TODO untar that helm tarball
+    tar_name = tar_files[0]
+    TarClient.untar(tar_name, tar_dir)
+    #TODO remove tar_name
+    `rm #{tar_name}`
+    LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
+    template_files = TarClient.find(tar_dir, "*.yaml*", "100")
+    LOGGING.debug "template_files: #{template_files}"
+    # resp = yield template_files
+    # AirGapUtils.image_pull_policy(template_files[0])
+    template_files.map{|x| AirGapUtils.image_pull_policy(x)}
+    # TODO look for yml as well
+    # TODO handle recursive/dependend helm charts
+    # TODO function for looping through all yml files in a directory
+    # TODO open the current file if it is a yml file and change the manifest to use image_pull_policy
     helm_chart = Dir.entries("/tmp/#{repo_path}").first
+    raise "Critical Error" if tar_dir.empty? || tar_dir == '/'
+    TarClient.append(tar_name, tar_dir, chart_name)
+    #TODO rm client that checks path for /
+    `rm -rf #{tar_dir}/#{chart_name}`
     TarClient.append(output_file, "/tmp", "#{repo_path}")
   ensure
     `rm -rf /tmp/#{repo_path} > /dev/null 2>&1`
   end
   
+  #TODO create tar_helm_directory
+  #TODO create tar_manifest_directory
+  #TODO change to tar_manifest_by_url
   def self.tar_manifest(url, output_file : String = "./airgapped.tar.gz", prefix="")
     manifest_path = "manifests/" 
     `rm -rf /tmp/#{manifest_path} > /dev/null 2>&1`
@@ -79,7 +121,7 @@ module TarClient
     `rm -rf /tmp/#{manifest_path} > /dev/null 2>&1`
   end
 
-  def self.tar_file_by_url(url, append_file : String = "./downloadped.tar.gz", output_file="")
+  def self.tar_file_by_url(url, append_file : String = "./downloaded.tar.gz", output_file="")
     download_path = "download/" 
     `rm -rf /tmp/#{download_path} > /dev/null 2>&1`
     FileUtils.mkdir_p("/tmp/" + download_path)

@@ -13,13 +13,13 @@ describe "AirGap" do
 
   it "'image_pull_policy' should change all imagepull policy references to never", tags: ["kubectl-runtime"] do
 
-    AirGap.image_pull_policy("./spec/fixtures/litmus-operator-v1.13.2.yaml", "./tmp/imagetest.yml")
+    AirGapUtils.image_pull_policy("./spec/fixtures/litmus-operator-v1.13.2.yaml", "./tmp/imagetest.yml")
     (File.exists?("./tmp/imagetest.yml")).should be_true
     resp = File.read("./tmp/imagetest.yml") 
     (resp).match(/imagePullPolicy: Always/).should be_nil
     (resp).match(/imagePullPolicy: Never/).should_not be_nil
   ensure
-    `rm ./tmp/imagetest.yml`
+    # `rm ./tmp/imagetest.yml`
   end
    
   it "'generate' should generate a tarball", tags: ["kubectl-runtime"] do
@@ -169,16 +169,16 @@ describe "AirGap" do
     resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/pingcap\/chaos-mesh:v1.2.1/)}.should_not be_nil
 
   ensure
-    `rm /tmp/kubectl.tar`
-    `rm /tmp/chaos-mesh.tar`
-    `rm /tmp/chaos-daemon.tar`
-    `rm /tmp/chaos-dashboard.tar`
-    `rm /tmp/chaos-kernel.tar`
-    `rm /tmp/sonobuoy.tar`
-    `rm /tmp/sonobuoy-logs.tar`
-    `rm /tmp/litmus-operator.tar`
-    `rm /tmp/litmus-runner.tar`
-    `rm /tmp/prometheus.tar`
+    `rm /tmp/images/kubectl.tar`
+    `rm /tmp/images/chaos-mesh.tar`
+    `rm /tmp/images/chaos-daemon.tar`
+    `rm /tmp/images/chaos-dashboard.tar`
+    `rm /tmp/images/chaos-kernel.tar`
+    `rm /tmp/images/sonobuoy.tar`
+    `rm /tmp/images/sonobuoy-logs.tar`
+    `rm /tmp/images/litmus-operator.tar`
+    `rm /tmp/images/litmus-runner.tar`
+    `rm /tmp/images/prometheus.tar`
   end
 
 end
