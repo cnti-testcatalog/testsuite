@@ -109,6 +109,7 @@ module AirGap
     TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml", output_file, "disk-fill-")
     url = "https://github.com/vmware-tanzu/sonobuoy/releases/download/v#{SONOBUOY_K8S_VERSION}/sonobuoy_#{SONOBUOY_K8S_VERSION}_#{SONOBUOY_OS}_amd64.tar.gz"
     TarClient.tar_file_by_url(url, output_file, "sonobuoy.tar.gz")
+    Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
     TarClient.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
   end
 

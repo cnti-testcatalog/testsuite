@@ -24,6 +24,7 @@ describe "AirGap" do
    
   it "'generate' should generate a tarball", tags: ["kubectl-runtime"] do
 
+    Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
     AirGap.generate("./tmp/airgapped.tar.gz")
     (File.exists?("./tmp/airgapped.tar.gz")).should be_true
     file_list = `tar -tvf ./tmp/airgapped.tar.gz`
@@ -162,6 +163,7 @@ describe "AirGap" do
   end
 
   it "'#AirGap.cache_images' should install the cri tools in the cluster", tags: ["kubectl-utils"]  do
+    Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
     AirGap.generate("./airgapped.tar.gz")
     resp = AirGap.cache_images
     LOGGING.info "#{resp.find{|x| puts x[0][:output].to_s}}"
