@@ -1,6 +1,7 @@
 require "./spec_helper"
 require "colorize"
 require "../src/tasks/utils/utils.cr"
+require "../src/tasks/utils/airgap.cr"
 require "../src/tasks/utils/kubectl_client.cr"
 require "../src/tasks/utils/system_information/helm.cr"
 require "file_utils"
@@ -117,6 +118,8 @@ describe "Setup" do
   end
   it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf in airgapped mode", tags: ["setup"]  do
     begin
+      AirGap.tmp_cleanup
+      `rm ./tmp/airgapped.tar.gz` if File.exists?("./tmp/airgapped.tar.gz")
       response_s = `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=./tmp/airgapped.tar.gz`
       LOGGING.info response_s
       response_s = `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml input-file=./tmp/airgapped.tar.gz`
@@ -125,7 +128,7 @@ describe "Setup" do
       (/Successfully setup coredns/ =~ response_s).should_not be_nil
     ensure
       `rm ./tmp/airgapped.tar.gz/`
-      `rm /tmp/images/coredns_1.7.1.tar`
+      AirGap.tmp_cleanup
 
       response_s = `./cnf-testsuite cnf_cleanup cnf-config=example-cnfs/coredns/cnf-testsuite.yml`
       LOGGING.info response_s

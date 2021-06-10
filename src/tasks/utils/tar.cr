@@ -7,10 +7,16 @@ require "./airgap_utils.cr"
 module TarClient
   TAR_REPOSITORY_DIR = "/tmp/repositories"
   TAR_MANIFEST_DIR = "/tmp/manifests"
+  TAR_DOWNLOAD_DIR = "/tmp/download"
+  TAR_IMAGES_DIR = "/tmp/images"
 
   def self.tar(tarball_name, working_directory, source_file_or_directory, options="")
-    #working_directory: directory to cd into before running the tar command
     LOGGING.info "TarClient.tar command: tar #{options} -czvf #{tarball_name} -C #{working_directory} #{source_file_or_directory}"
+    LOGGING.info "cding into #{working_directory} and tarring #{source_file_or_directory} into #{tarball_name}"
+    LOGGING.info "#{tarball_name} exists?: #{File.exists?(tarball_name)}" 
+    if File.exists?(tarball_name)
+      LOGGING.info "#{tarball_name} contents (before tar): #{`tar -tvf #{tarball_name}`}"
+    end
     # tar -czvf #{cnf_tarball_name} ./#{cnf_bin_asset_name}
     status = Process.run("tar #{options} -czvf #{tarball_name} -C #{working_directory} #{source_file_or_directory}",
                          shell: true,
@@ -18,17 +24,25 @@ module TarClient
                          error: stderr = IO::Memory.new)
     LOGGING.info "TarClient.tar output: #{output.to_s}"
     LOGGING.info "TarClient.tar stderr: #{stderr.to_s}"
+    LOGGING.info "#{tarball_name} contents (after tar): #{`tar -tvf #{tarball_name}`}"
     {status: status, output: output, error: stderr}
   end
   def self.append(tarball_name, working_directory, source_file_or_directory, options="")
     #working_directory: directory to cd into before running the tar command
     LOGGING.info "TarClient.tar (append) command: tar #{options} -rf #{tarball_name} -C #{working_directory} #{source_file_or_directory}"
+    LOGGING.info "cding into #{working_directory} and tarring #{source_file_or_directory} into #{tarball_name}"
+    LOGGING.info "#{tarball_name} exists?: #{File.exists?(tarball_name)}" 
+    if File.exists?(tarball_name)
+      LOGGING.info "#{tarball_name} contents (before tar): #{`tar -tvf #{tarball_name}`}"
+    end
+
     status = Process.run("tar #{options} -rf #{tarball_name} -C #{working_directory} #{source_file_or_directory}",
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
     LOGGING.info "TarClient.tar output: #{output.to_s}"
     LOGGING.info "TarClient.tar stderr: #{stderr.to_s}"
+    LOGGING.info "#{tarball_name} contents (after tar): #{`tar -tvf #{tarball_name}`}"
     {status: status, output: output, error: stderr}
   end
   def self.untar(tarball_name, destination_directory, options="")
@@ -141,7 +155,8 @@ module TarClient
     # TODO open the current file if it is a yml file and change the manifest to use image_pull_policy
     helm_chart = Dir.entries("/tmp/#{repo_path}").first
     raise "Critical Error" if tar_dir.empty? || tar_dir == '/'
-    TarClient.append(tar_name, tar_dir, chart_name)
+    # TarClient.append(tar_name, tar_dir, chart_name, "-z")
+    TarClient.tar(tar_name, tar_dir, chart_name)
     #TODO rm client that checks path for /
     `rm -rf #{tar_dir}/#{chart_name}`
     TarClient.append(output_file, "/tmp", "#{repo_path}")

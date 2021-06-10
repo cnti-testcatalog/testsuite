@@ -29,6 +29,7 @@ module CNFManager
 
     #TODO get list of image:tags from helm chart/helm directory/manifest file
     def self.images_from_config_src(config_src)
+      LOGGING.info "images_from_config_src"
       #return container image name/tag
       ret_containers = [] of NamedTuple(container_name: String, image_name: String, tag: String) 
       resource_ymls = CNFManager::GenerateConfig.export_manifest(config_src)
