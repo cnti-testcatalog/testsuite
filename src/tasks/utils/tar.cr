@@ -72,6 +72,7 @@ module TarClient
   end
 
   def self.helm_tar_dir(config_src)
+    FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
     LOGGING.debug "helm_tar_dir ls /tmp/repositories:" + `ls -al /tmp/repositories`
     # chaos-mesh/chaos-mesh --version 0.5.1
     repo = config_src.split(" ")[0]
@@ -84,6 +85,7 @@ module TarClient
   end
 
   def self.helm_tar_name(config_src)
+    FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
     LOGGING.debug "helm_tar_name ls /tmp/repositories:" + `ls -al /tmp/repositories`
     tar_dir = helm_tar_dir(config_src)
     tgz_files = TarClient.find(tar_dir, "*.tgz*")
@@ -94,6 +96,7 @@ module TarClient
   end
 
   def self.tar_info_by_config_src(config_src)
+    FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
     LOGGING.debug "tar_info_by_config_src ls /tmp/repositories:" + `ls -al /tmp/repositories`
     # chaos-mesh/chaos-mesh --version 0.5.1
     repo = config_src.split(" ")[0]
