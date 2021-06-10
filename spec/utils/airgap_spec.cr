@@ -87,15 +87,15 @@ describe "AirGap" do
 
   it "'#AirGap.download_cri_tools' should download the cri tools", tags: ["kubectl-runtime"]  do
     resp = AirGap.download_cri_tools()
-    (File.exists?("/tmp/images/crictl-#{AirGap::CRI_VERSION}-linux-amd64.tar.gz")).should be_true
-    (File.exists?("/tmp/images/containerd-#{AirGap::CTR_VERSION}-linux-amd64.tar.gz")).should be_true
+    (File.exists?("#{TarClient::TAR_BIN_DIR}/crictl-#{AirGap::CRI_VERSION}-linux-amd64.tar.gz")).should be_true
+    (File.exists?("#{TarClient::TAR_BIN_DIR}/containerd-#{AirGap::CTR_VERSION}-linux-amd64.tar.gz")).should be_true
   end
 
   it "'#AirGap.untar_cri_tools' should untar the cri tools", tags: ["kubectl-runtime"]  do
     AirGap.download_cri_tools
     resp = AirGap.untar_cri_tools()
-    (File.exists?("/tmp/crictl")).should be_true
-    (File.exists?("/tmp/bin/ctr")).should be_true
+    (File.exists?("#{TarClient::TAR_BIN_DIR}/crictl")).should be_true
+    (File.exists?("#{TarClient::TAR_BIN_DIR}/ctr")).should be_true
   end
 
   it "'#AirGap.pod_images' should retrieve all of the images for the pods with shells", tags: ["kubectl-runtime"]  do

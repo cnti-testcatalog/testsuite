@@ -153,6 +153,7 @@ module AirGap
     #                   {input_file: "/tmp/prometheus.tar"}]
     end
     # resp = install_list.map {|x| AirGap.publish_tarball(x[:input_file])}
+    LOGGING.info "publishing: #{image_files}"
     resp = image_files.map {|x| AirGap.publish_tarball(x)}
     LOGGING.debug "resp: #{resp}"
     resp
@@ -212,7 +213,7 @@ module AirGap
 
   #TODO put these in the airgap tarball
   def self.download_cri_tools
-    FileUtils.mkdir_p("#{TarClient::TAR_IMAGES_DIR}")
+    FileUtils.mkdir_p("#{TarClient::TAR_BIN_DIR}")
     LOGGING.info "download_cri_tools"
     `curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/#{CRI_VERSION}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz --output #{TarClient::TAR_BIN_DIR}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz`
     `curl -L https://github.com/containerd/containerd/releases/download/v#{CTR_VERSION}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz --output #{TarClient::TAR_BIN_DIR}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz`
