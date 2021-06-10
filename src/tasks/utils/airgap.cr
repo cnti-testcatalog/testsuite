@@ -110,8 +110,8 @@ module AirGap
       # TarClient.append(output_file, Path[x[:input_file]].parent, x[:input_file].split("/")[-1])
     end
     #TODO test if these should be in the /tmp/bin directory
-    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
-    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
+    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
+    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
     TarClient.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
     TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml", output_file)
     TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml", output_file)
