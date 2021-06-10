@@ -24,6 +24,8 @@ describe "AirGap" do
    
   it "'generate' should generate a tarball", tags: ["kubectl-runtime"] do
 
+    `rm ./tmp/airgapped.tar.gz`
+    AirGap.tmp_cleanup
     Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
     AirGap.generate("./tmp/airgapped.tar.gz")
     (File.exists?("./tmp/airgapped.tar.gz")).should be_true
@@ -40,6 +42,7 @@ describe "AirGap" do
     (file_list).match(/litmus-operator/).should_not be_nil
     (file_list).match(/download\/sonobuoy.tar.gz/).should_not be_nil
   ensure
+    AirGap.tmp_cleanup
     `rm ./tmp/airgapped.tar.gz`
   end
 

@@ -80,6 +80,7 @@ module AirGap
   #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
   def self.generate(output_file : String = "./airgapped.tar.gz")
     `rm #{output_file}`
+    FileUtils.mkdir_p("#{TarClient::TAR_IMAGES_DIR}")
     AirGap.download_cri_tools
     [{input_file: "#{TarClient::TAR_IMAGES_DIR}/kubectl.tar", 
       image: "bitnami/kubectl:latest"},
@@ -105,11 +106,12 @@ module AirGap
      image: "prom/prometheus:v2.18.1"}].map do |x|
       DockerClient.pull(x[:image])
       DockerClient.save(x[:image], x[:input_file])
-      TarClient.append(output_file, Path[x[:input_file]].parent, x[:input_file].split("/")[-1])
+      TarClient.append(output_file, TarClient::TAR_TMP_BASE, "images/" + x[:input_file].split("/")[-1])
+      # TarClient.append(output_file, Path[x[:input_file]].parent, x[:input_file].split("/")[-1])
     end
     #TODO test if these should be in the /tmp/bin directory
-    TarClient.append(output_file, "/tmp", "crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
-    TarClient.append(output_file, "/tmp", "containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
+    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
+    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
     TarClient.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
     TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml", output_file)
     TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml", output_file)
