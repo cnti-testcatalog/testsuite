@@ -214,13 +214,13 @@ module AirGap
   def self.download_cri_tools
     FileUtils.mkdir_p("#{TarClient::TAR_IMAGES_DIR}")
     LOGGING.info "download_cri_tools"
-    `curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/#{CRI_VERSION}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz --output #{TarClient::TAR_IMAGES_DIR}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz`
-    `curl -L https://github.com/containerd/containerd/releases/download/v#{CTR_VERSION}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz --output #{TarClient::TAR_IMAGES_DIR}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz`
+    `curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/#{CRI_VERSION}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz --output #{TarClient::TAR_BIN_DIR}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz`
+    `curl -L https://github.com/containerd/containerd/releases/download/v#{CTR_VERSION}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz --output #{TarClient::TAR_BIN_DIR}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz`
   end
 
   def self.untar_cri_tools
-    TarClient.untar("#{TarClient::TAR_IMAGES_DIR}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz", "/tmp")
-    TarClient.untar("#{TarClient::TAR_IMAGES_DIR}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz", "/tmp")
+    TarClient.untar("#{TarClient::TAR_BIN_DIR}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz", TarClient::TAR_BIN_DIR)
+    TarClient.untar("#{TarClient::TAR_BIN_DIR}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz", TarClient::TAR_TMP_BASE)
   end
 
   def self.pod_images(pods)
@@ -236,8 +236,8 @@ module AirGap
     # AirGap.download_cri_tools()
     AirGap.untar_cri_tools()
     cri_tool_pods.map do |pod|
-      KubectlClient.cp("/tmp/crictl #{pod.dig?("metadata", "name")}:/usr/local/bin/crictl")
-      KubectlClient.cp("/tmp/bin/ctr #{pod.dig?("metadata", "name")}:/usr/local/bin/ctr")
+      KubectlClient.cp("#{TarClient::TAR_BIN_DIR}/crictl #{pod.dig?("metadata", "name")}:/usr/local/bin/crictl")
+      KubectlClient.cp("#{TarClient::TAR_BIN_DIR}/ctr #{pod.dig?("metadata", "name")}:/usr/local/bin/ctr")
     end
   end
 

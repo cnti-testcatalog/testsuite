@@ -9,6 +9,8 @@ module TarClient
   TAR_MANIFEST_DIR = "/tmp/manifests"
   TAR_DOWNLOAD_DIR = "/tmp/download"
   TAR_IMAGES_DIR = "/tmp/images"
+  TAR_BIN_DIR = "/tmp/bin"
+  TAR_TMP_BASE = "/tmp"
 
   def self.tar(tarball_name, working_directory, source_file_or_directory, options="")
     LOGGING.info "TarClient.tar command: tar #{options} -czvf #{tarball_name} -C #{working_directory} #{source_file_or_directory}"
