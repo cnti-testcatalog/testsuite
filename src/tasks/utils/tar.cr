@@ -90,7 +90,8 @@ module TarClient
     tar_dir = helm_tar_dir(config_src)
     tgz_files = TarClient.find(tar_dir, "*.tgz*")
     tar_files = TarClient.find(tar_dir, "*.tar*") + tgz_files
-    tar_name = tar_files[0]
+    tar_name = ""
+    tar_name = tar_files[0] if !tar_files.empty?
     LOGGING.info "tar_name: #{tar_name}"
     tar_name
   end
