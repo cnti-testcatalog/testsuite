@@ -14,7 +14,7 @@ module CNFManager
       LOGGING.info "export_manifest"
       LOGGING.info "airgapped: #{airgapped}"
       generate_initial_testsuite_yml(config_src, output_file)
-      CNFManager.generate_and_set_release_name(output_file, airgapped)
+      CNFManager.generate_and_set_release_name(output_file, airgapped: airgapped)
       config = CNFManager.parsed_config_file(output_file)
       release_name = optional_key_as_string(config, "release_name")
       if CNFManager.install_method_by_config_src(config_src) == :manifest_directory
@@ -34,7 +34,7 @@ module CNFManager
       LOGGING.info "airgapped: #{airgapped}"
       #return container image name/tag
       ret_containers = [] of NamedTuple(container_name: String, image_name: String, tag: String) 
-      resource_ymls = CNFManager::GenerateConfig.export_manifest(config_src, airgapped)
+      resource_ymls = CNFManager::GenerateConfig.export_manifest(config_src, airgapped: airgapped)
       resource_resp = resource_ymls.map do | resource |
         LOGGING.info "gen config resource: #{resource}"
         unless resource["kind"].as_s.downcase == "service" ## services have no containers
