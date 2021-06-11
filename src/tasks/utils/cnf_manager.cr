@@ -358,10 +358,10 @@ module CNFManager
       case install_method[0]
       when :helm_chart
         LOGGING.debug "helm_chart install method: #{install_method[1]}"
-        release_name = helm_chart_template_release_name(install_method[1], airgapped)
+        release_name = helm_chart_template_release_name(install_method[1], airgapped: airgapped)
       when :helm_directory
         LOGGING.debug "helm_directory install method: #{yml_path}/#{install_method[1]}"
-        release_name = helm_chart_template_release_name("#{yml_path}/#{install_method[1]}", airgapped)
+        release_name = helm_chart_template_release_name("#{yml_path}/#{install_method[1]}", airgapped: airgapped)
       when :manifest_directory
         LOGGING.debug "manifest_directory install method"
         release_name = UUID.random.to_s
