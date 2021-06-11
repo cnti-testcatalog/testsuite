@@ -148,7 +148,7 @@ module TarClient
     # tar_name = tar_files[0]
     TarClient.untar(tar_name, tar_dir)
     #TODO remove tar_name
-    `rm #{tar_name}`
+    `rm #{tar_name}` if File.exists?(tar_name)
     LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
     template_files = TarClient.find(tar_dir, "*.yaml*", "100")
     LOGGING.debug "template_files: #{template_files}"
