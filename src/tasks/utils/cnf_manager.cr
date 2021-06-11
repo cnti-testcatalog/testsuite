@@ -555,7 +555,11 @@ module CNFManager
     wait_count = cli_args[:wait_count]
     verbose = cli_args[:verbose]
     input_file = cli_args[:input_file]
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
+    if input_file && !input_file.empty?
+      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file),true) 
+    else
+      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
+    end
     LOGGING.debug "config in sample_setup: #{config.cnf_config}"
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
