@@ -39,11 +39,11 @@ module AirGap
     when :helm_chart
       LOGGING.debug "helm_chart : #{install_method[1]}"
       TarClient.tar_helm_repo(install_method[1], output_file)
-      LOGGING.info "generate_cnf_setup tar_helm_repo complete}"
+      LOGGING.info "generate_cnf_setup tar_helm_repo complete"
       #TODO get images from helm chart
       #TODO tarball the images
-      LOGGING.info "generate_cnf_setup images_from_config_src}"
-      images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], airgapped: true) 
+      LOGGING.info "generate_cnf_setup images_from_config_src"
+      images = CNFManager::GenerateConfig.images_from_config_src(install_method[1]) 
 
       images.map  do |i|
         input_file = "#{TarClient::TAR_IMAGES_DIR}/#{i[:image_name].split("/")[-1]}_#{i[:tag]}.tar"
@@ -128,6 +128,7 @@ module AirGap
 
   #./cnf-testsuite setup --offline=./airgapped.tar.gz
   def self.extract(output_file : String = "./airgapped.tar.gz", output_dir="/tmp")
+    LOGGING.info "extract"
     TarClient.untar(output_file, output_dir)
   end
 
