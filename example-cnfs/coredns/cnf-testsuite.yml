@@ -2,11 +2,9 @@
 git_clone_url: 
 helm_chart: stable/coredns
 release_name: coredns
-deployment_name: coredns-coredns 
-deployment_label: k8s-app
-service_name: coredns-coredns
-application_deployment_names: [coredns]
-helm_chart_container_name: coredns
+helm_repository:
+  name: stable 
+  repo_url: https://cncf.gitlab.io/stable
 container_names: 
   - name: coredns 
     rolling_update_test_tag: "1.8.0"
