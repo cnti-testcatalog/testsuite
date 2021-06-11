@@ -336,6 +336,7 @@ module CNFManager
   #TODO move to helm module
   def self.helm_chart_template_release_name(helm_chart_or_directory, template_file="/tmp/temp_template.yml", airgapped=false)
     LOGGING.info "helm_chart_template_release_name"
+    LOGGING.info  "airgapped mode: #{airgapped}"
     hth = helm_template_header(helm_chart_or_directory, template_file, airgapped)
     LOGGING.debug "helm template: #{hth}"
     hth["NAME"]
@@ -344,6 +345,7 @@ module CNFManager
 
   def self.generate_and_set_release_name(config_yml_path, airgapped=false)
     LOGGING.info "generate_and_set_release_name"
+    LOGGING.info  "airgapped mode: #{airgapped}"
 
     yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
     yml_path = CNFManager.ensure_cnf_testsuite_dir(config_yml_path)
