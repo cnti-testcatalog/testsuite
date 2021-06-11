@@ -318,9 +318,11 @@ module CNFManager
     helm = CNFSingleton.helm
     # generate helm chart release name
     # use --dry-run to generate yml file
+    LOGGING.info  "airgapped mode: #{airgapped}"
     if airgapped
       # todo make tar info work with a directory
       info = TarClient.tar_info_by_config_src(helm_chart_or_directory)
+      LOGGING.info  "airgapped mode info: #{info}"
       helm_chart_or_directory = info[:tar_name]
     end
     LOGGING.info("#{helm} install --dry-run --generate-name #{helm_chart_or_directory} > #{template_file}")
@@ -334,7 +336,7 @@ module CNFManager
   #TODO move to helm module
   def self.helm_chart_template_release_name(helm_chart_or_directory, template_file="/tmp/temp_template.yml", airgapped=false)
     LOGGING.info "helm_chart_template_release_name"
-    hth = helm_template_header(helm_chart_or_directory, template_file)
+    hth = helm_template_header(helm_chart_or_directory, template_file, airgapped)
     LOGGING.debug "helm template: #{hth}"
     hth["NAME"]
   end
@@ -356,10 +358,10 @@ module CNFManager
       case install_method[0]
       when :helm_chart
         LOGGING.debug "helm_chart install method: #{install_method[1]}"
-        release_name = helm_chart_template_release_name(install_method[1])
+        release_name = helm_chart_template_release_name(install_method[1], airgapped)
       when :helm_directory
         LOGGING.debug "helm_directory install method: #{yml_path}/#{install_method[1]}"
-        release_name = helm_chart_template_release_name("#{yml_path}/#{install_method[1]}")
+        release_name = helm_chart_template_release_name("#{yml_path}/#{install_method[1]}", airgapped)
       when :manifest_directory
         LOGGING.debug "manifest_directory install method"
         release_name = UUID.random.to_s
