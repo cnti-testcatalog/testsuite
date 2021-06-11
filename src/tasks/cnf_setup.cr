@@ -17,10 +17,12 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
     LOGGING.info "cnf tarball generation mode"
     tar_info = AirGap.generate_cnf_setup(cli_hash[:extended_config_file], output_file)
   elsif input_file && !input_file.empty?
+    LOGGING.info "cnf setup airgapped mode"
     AirGap.extract(input_file)
     # AirGap.cache_images(input_file)
     CNFManager.sample_setup(cli_hash)
   else
+    LOGGING.info "cnf setup online mode"
     CNFManager.sample_setup(cli_hash)
   end
 end
