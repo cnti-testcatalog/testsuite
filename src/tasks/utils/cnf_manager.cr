@@ -343,9 +343,10 @@ module CNFManager
   end
 
 
-  def self.generate_and_set_release_name(config_yml_path, airgapped=false)
+  def self.generate_and_set_release_name(config_yml_path, airgapped=false, generate_tar_mode=false)
     LOGGING.info "generate_and_set_release_name"
     LOGGING.info  "airgapped mode: #{airgapped}"
+    return if generate_tar_mode
 
     yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
     yml_path = CNFManager.ensure_cnf_testsuite_dir(config_yml_path)

@@ -14,17 +14,17 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
   output_file = cli_hash[:output_file]
   input_file =  cli_hash[:input_file]
   if output_file && !output_file.empty?
-    LOGGING.info "cnf tarball generation mode"
+    puts "cnf tarball generation mode".colorize(:green)
     tar_info = AirGap.generate_cnf_setup(cli_hash[:extended_config_file], output_file)
     puts "cnf tarball generation mode complete".colorize(:green)
   elsif input_file && !input_file.empty?
-    LOGGING.info "cnf setup airgapped mode"
+    puts "cnf setup airgapped mode".colorize(:green)
     AirGap.extract(input_file)
     # AirGap.cache_images(input_file)
     CNFManager.sample_setup(cli_hash)
     puts "cnf setup airgapped mode complete".colorize(:green)
   else
-    LOGGING.info "cnf setup online mode"
+    puts "cnf setup online mode".colorize(:green)
     CNFManager.sample_setup(cli_hash)
     puts "cnf setup online mode complete".colorize(:green)
   end
@@ -82,6 +82,7 @@ task "generate_config" do |_, args|
     config_src = args.named["config-src"].as(String)
     output_file = args.named["output-file"].as(String) if args.named["output-file"]?
     output_file = args.named["of"].as(String) if args.named["of"]?
+    #TODO make this work in airgapped mode
     if output_file && !output_file.empty?
       CNFManager::GenerateConfig.generate_config(config_src, output_file)
     else
