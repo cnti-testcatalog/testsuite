@@ -39,9 +39,11 @@ module AirGap
     when :helm_chart
       LOGGING.debug "helm_chart : #{install_method[1]}"
       TarClient.tar_helm_repo(install_method[1], output_file)
+      LOGGING.info "generate_cnf_setup tar_helm_repo complete}"
       #TODO get images from helm chart
       #TODO tarball the images
-      images = CNFManager::GenerateConfig.images_from_config_src(install_method[1]) 
+      LOGGING.info "generate_cnf_setup images_from_config_src}"
+      images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], true) 
 
       images.map  do |i|
         input_file = "#{TarClient::TAR_IMAGES_DIR}/#{i[:image_name].split("/")[-1]}_#{i[:tag]}.tar"
@@ -52,6 +54,7 @@ module AirGap
         # FileUtils.mkdir_p("#{TarClient::TAR_IMAGES_DIR}/#{Path[input_file].parent}")
         # TarClient.append(output_file, Path[input_file].parent, "/images/" + input_file.split("/")[-1])
         TarClient.append(output_file, "/tmp", "images/" + input_file.split("/")[-1])
+        LOGGING.info "#{output_file} in generate_cnf_setup complete"
       end
       # when :helm_directory
       #   LOGGING.debug "helm_directory install method: #{yml_path}/#{install_method[1]}"

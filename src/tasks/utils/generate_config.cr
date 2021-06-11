@@ -11,7 +11,8 @@ module CNFManager
 
 
     def self.export_manifest(config_src, output_file="./cnf-testsuite.yml", airgapped=false)
-
+      LOGGING.info "export_manifest"
+      LOGGING.info "airgapped: #{airgapped}"
       generate_initial_testsuite_yml(config_src, output_file)
       CNFManager.generate_and_set_release_name(output_file, airgapped)
       config = CNFManager.parsed_config_file(output_file)
@@ -28,11 +29,12 @@ module CNFManager
     end
 
     #TODO get list of image:tags from helm chart/helm directory/manifest file
-    def self.images_from_config_src(config_src)
+    def self.images_from_config_src(config_src, airgapped=false)
       LOGGING.info "images_from_config_src"
+      LOGGING.info "airgapped: #{airgapped}"
       #return container image name/tag
       ret_containers = [] of NamedTuple(container_name: String, image_name: String, tag: String) 
-      resource_ymls = CNFManager::GenerateConfig.export_manifest(config_src)
+      resource_ymls = CNFManager::GenerateConfig.export_manifest(config_src, airgapped)
       resource_resp = resource_ymls.map do | resource |
         LOGGING.info "gen config resource: #{resource}"
         unless resource["kind"].as_s.downcase == "service" ## services have no containers
