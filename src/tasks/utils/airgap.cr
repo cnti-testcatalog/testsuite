@@ -43,7 +43,7 @@ module AirGap
       #TODO get images from helm chart
       #TODO tarball the images
       LOGGING.info "generate_cnf_setup images_from_config_src"
-      images = CNFManager::GenerateConfig.images_from_config_src(install_method[1]) 
+      images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], generate_tar_mode: true) 
 
       images.map  do |i|
         input_file = "#{TarClient::TAR_IMAGES_DIR}/#{i[:image_name].split("/")[-1]}_#{i[:tag]}.tar"

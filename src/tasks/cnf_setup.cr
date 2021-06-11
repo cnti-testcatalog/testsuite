@@ -84,8 +84,10 @@ task "generate_config" do |_, args|
     output_file = args.named["of"].as(String) if args.named["of"]?
     #TODO make this work in airgapped mode
     if output_file && !output_file.empty?
+      LOGGING.info "generating config with an output file"
       CNFManager::GenerateConfig.generate_config(config_src, output_file)
     else
+      LOGGING.info "generating config without an output file"
       CNFManager::GenerateConfig.generate_config(config_src)
     end
   end

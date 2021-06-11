@@ -65,8 +65,8 @@ module CNFManager
       ret_containers
     end
 
-    def self.generate_config(config_src, output_file="./cnf-testsuite.yml", airgapped=false, generate_tar_mode=false)
-      resource_ymls = CNFManager::GenerateConfig.export_manifest(config_src, airgapped: airgapped, generate_tar_mode: generate_tar_mode)
+    def self.generate_config(config_src, output_file="./cnf-testsuite.yml")
+      resource_ymls = CNFManager::GenerateConfig.export_manifest(config_src, output_file)
       resource_resp = resource_ymls.map do | resource |
         LOGGING.info "gen config resource: #{resource}"
         unless resource["kind"].as_s.downcase == "service" ## services have no containers
