@@ -9,8 +9,9 @@ require "./task.cr"
 module CNFManager 
 
   class Config
-    def initialize(cnf_config)
+    def initialize(cnf_config, airgapped=false)
       @cnf_config = cnf_config 
+      @airgapped = airgapped
     end
     property cnf_config : NamedTuple(destination_cnf_dir: String,
                                      source_cnf_file: String,
@@ -34,7 +35,7 @@ module CNFManager
                                      container_names: Array(Hash(String, String )) | Nil,
                                      white_list_container_names: Array(String)) 
 
-    def self.parse_config_yml(config_yml_path : String) : CNFManager::Config
+    def self.parse_config_yml(config_yml_path : String, airgapped=false) : CNFManager::Config
       LOGGING.debug "parse_config_yml config_yml_path: #{config_yml_path}"
       yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
       #TODO modify the destination testsuite yml instead of the source testsuite yml 

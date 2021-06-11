@@ -10,10 +10,10 @@ module CNFManager
   module GenerateConfig
 
 
-    def self.export_manifest(config_src, output_file="./cnf-testsuite.yml")
+    def self.export_manifest(config_src, output_file="./cnf-testsuite.yml", airgapped=false)
 
       generate_initial_testsuite_yml(config_src, output_file)
-      CNFManager.generate_and_set_release_name(output_file)
+      CNFManager.generate_and_set_release_name(output_file, airgapped)
       config = CNFManager.parsed_config_file(output_file)
       release_name = optional_key_as_string(config, "release_name")
       if CNFManager.install_method_by_config_src(config_src) == :manifest_directory

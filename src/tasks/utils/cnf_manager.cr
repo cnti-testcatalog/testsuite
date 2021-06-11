@@ -313,11 +313,16 @@ module CNFManager
   end
 
   #TODO move to helm module
-  def self.helm_template_header(helm_chart_or_directory, template_file="/tmp/temp_template.yml")
+  def self.helm_template_header(helm_chart_or_directory, template_file="/tmp/temp_template.yml", airgapped=false)
     LOGGING.info "helm_template_header"
     helm = CNFSingleton.helm
     # generate helm chart release name
     # use --dry-run to generate yml file
+    if airgapped
+      # todo make tar info work with a directory
+      info = TarClient.tar_info_by_config_src(helm_chart_or_directory)
+      helm_chart_or_directory = info[:tar_name]
+    end
     LOGGING.info("#{helm} install --dry-run --generate-name #{helm_chart_or_directory} > #{template_file}")
     helm_install = `#{helm} install --dry-run --generate-name #{helm_chart_or_directory} > #{template_file}`
     raw_template = File.read(template_file)
@@ -327,7 +332,7 @@ module CNFManager
   end
 
   #TODO move to helm module
-  def self.helm_chart_template_release_name(helm_chart_or_directory, template_file="/tmp/temp_template.yml")
+  def self.helm_chart_template_release_name(helm_chart_or_directory, template_file="/tmp/temp_template.yml", airgapped=false)
     LOGGING.info "helm_chart_template_release_name"
     hth = helm_template_header(helm_chart_or_directory, template_file)
     LOGGING.debug "helm template: #{hth}"
@@ -335,7 +340,7 @@ module CNFManager
   end
 
 
-  def self.generate_and_set_release_name(config_yml_path)
+  def self.generate_and_set_release_name(config_yml_path, airgapped=false)
     LOGGING.info "generate_and_set_release_name"
 
     yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
