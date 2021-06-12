@@ -212,11 +212,7 @@ jobs:
     name: Test Binary In An Airgapped Env.
     needs: [build, debug_output, skip]
     runs-on: [default]
-<<<<<<< HEAD
     #runs-on: ubuntu-latest
-=======
-    # runs-on: ubuntu-latest
->>>>>>> 512501e4366ac89e76664382e6503856378caee0
     if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
