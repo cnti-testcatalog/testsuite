@@ -20,3 +20,4 @@ EXPOSE 30001
 
 RUN mv /usr/local/bin/dockerd-entrypoint.sh /entrypoint-original.sh
 COPY entrypoint-wrapper.sh /usr/local/bin/dockerd-entrypoint.sh
+COPY kind_node/node.tar.gz /node.tar.gz

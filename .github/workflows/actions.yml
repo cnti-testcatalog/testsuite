@@ -212,7 +212,11 @@ jobs:
     name: Test Binary In An Airgapped Env.
     needs: [build, debug_output, skip]
     runs-on: [default]
+<<<<<<< HEAD
     #runs-on: ubuntu-latest
+=======
+    # runs-on: ubuntu-latest
+>>>>>>> 512501e4366ac89e76664382e6503856378caee0
     if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
@@ -226,19 +230,22 @@ jobs:
     # - uses: mxschmitt/action-tmate@v3
     #   if: needs.debug_output.outputs.release-debug == 'true'
     - name: Create Cluster & Run Tests.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
-        sudo rm -rf /usr/share/dotnet
-        sudo rm -rf /usr/local/lib/android
-        sudo rm -rf /opt/hostedtoolcache/
-        docker pull conformance/node:v1.21.1
-        docker save conformance/node:v1.21.1 | gzip > node.tar.gz
-        docker rmi -f conformance/node:v1.21.1
-        chmod +x ./cnf-testsuite
-        helm repo add stable https://cncf.gitlab.io/stable
+        sudo rm -rf /shared/*
+        # Create Airgapped Tar
         ./cnf-testsuite setup 
-        ./cnf-testsuite airgapped output-file=/tmp/airgapped.tar.gz
-        LOG_LEVEL=debug ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
-        docker run --network none --privileged -v $(pwd)/node.tar.gz:/node.tar -v $(pwd)/cnf-testsuite:/cnf-testsuite -v /tmp/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/.github/workflows/check_litmus.sh:/litmus.sh -v /tmpdata:/tmp -v $(pwd)/example-cnfs/coredns/cnf-testsuite.yml:/cnf-testsuite.yml -t conformance/offline:v0.11.1 /bin/bash -c "/cnf-testsuite -l info setup offline=/airgapped/airgapped.tar.gz; /cnf-testsuite -l info install_litmus offline=true; kubectl get deployment chaos-operator-ce --namespace litmus; /litmus.sh;  LOG_LEVEL=debug /cnf-testsuite cnf_setup cnf-config=/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz; LOG_LEVEL=debug /cnf-testsuite all ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose"
+        helm repo add stable https://cncf.gitlab.io/stable
+        ./cnf-testsuite airgapped output-file=/shared/airgapped.tar.gz
+        LOG_LEVEL=debug ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=/shared/airgapped.tar.gz
+        #DOTO Use pre-created airgapped.tar.gz
+        # wget --auth-no-challenge --header='Accept:application/octet-stream' https://$GITHUB_TOKEN:@api.github.com/repos/cncf/cnf-testsuite/releases/assets/38092818 -O airgapped.tar.gz
+        # gunzip airgapped.tar.gz
+        mv .github/workflows/check_litmus.sh /shared
+        chmod +x ./cnf-testsuite
+        mv ./cnf-testsuite /shared
+        docker run --network none --privileged -v /root/shared/cnf-testsuite:/cnf-testsuite -v /root/shared/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /root/shared/check_litmus.sh:/litmus.sh -v /tmpdata:/tmp -t conformance/offline:v0.11.1 /bin/bash -c "/cnf-testsuite -l info setup offline=/airgapped/airgapped.tar.gz; /cnf-testsuite -l info install_litmus offline=true; kubectl get deployment chaos-operator-ce --namespace litmus; /litmus.sh;  LOG_LEVEL=debug /cnf-testsuite cnf_setup cnf-config=/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz; LOG_LEVEL=debug /cnf-testsuite all ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose"
 
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)
