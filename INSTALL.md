@@ -222,6 +222,16 @@ If you've followed the [CNF_TESTSUITE_YML_USAGE.md](CNF_TESTSUITE_YML_USAGE.md) 
 ```
 cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
 ```
+#### Installing a CNF in Airgapped mode 
+
+To create a tarball of a cnf that can be copied into the airgapped environment:
+```
+cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml output-file=/tmp/mycnf.tar
+```
+To install a cnf from a tarball into the airgapped environment:
+```
+cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml input-file=/tmp/mycnf.tar
+```
 
 ### Running cnf-testsuite for the first time
 
