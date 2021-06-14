@@ -15,7 +15,6 @@ DEFAULT_POINTSFILENAME = "points_v1.yml"
 PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
 SONOBUOY_K8S_VERSION = "0.19.0"
 SONOBUOY_OS = "linux"
-TAR_DOWNLOAD_DIR = "/tmp/download"
 IGNORED_SECRET_TYPES = ["kubernetes.io/service-account-token", "kubernetes.io/dockercfg", "kubernetes.io/dockerconfigjson", "helm.sh/release.v1"]
 EMPTY_JSON = JSON.parse(%({}))
 

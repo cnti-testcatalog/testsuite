@@ -180,7 +180,7 @@ module CNFManager
   end
 
   def self.parsed_config_file(path)
-    if path.empty?
+    if path && path.empty?
       raise "No cnf_testsuite.yml found in #{path}!"
     end
     Totem.from_file "#{path}"
@@ -270,15 +270,30 @@ module CNFManager
     end
   end
 
+  def self.install_method_by_config_src(config_src : String)
+    helm_chart_file = "#{config_src}/#{CHART_YAML}"
+    LOGGING.debug "potential helm_chart_file: #{helm_chart_file}"
+
+    if !Dir.exists?(config_src) 
+      :helm_chart
+    elsif File.exists?(helm_chart_file)
+      :helm_directory
+    elsif KubectlClient::Apply.validate(config_src)
+      :manifest_directory
+    else
+      puts "Error: #{config_src} is neither a helm_chart, helm_directory, or manifest_directory.".colorize(:red)
+      exit 1
+    end
+  end
 
   #Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
-  def self.cnf_installation_method(config, config_src=false)
+  def self.cnf_installation_method(config)
     LOGGING.info "cnf_installation_method"
     LOGGING.info "cnf_installation_method config: #{config}"
-      LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
-      helm_chart = optional_key_as_string(config, "helm_chart")
-      helm_directory = optional_key_as_string(config, "helm_directory")
-      manifest_directory = optional_key_as_string(config, "manifest_directory")
+    LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
+    helm_chart = optional_key_as_string(config, "helm_chart")
+    helm_directory = optional_key_as_string(config, "helm_directory")
+    manifest_directory = optional_key_as_string(config, "manifest_directory")
 
     unless CNFManager.exclusive_install_method_tags?(config)
       puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-testsuite.yml!".colorize(:red)
@@ -298,11 +313,18 @@ module CNFManager
   end
 
   #TODO move to helm module
-  def self.helm_template_header(helm_chart_or_directory, template_file="/tmp/temp_template.yml")
+  def self.helm_template_header(helm_chart_or_directory, template_file="/tmp/temp_template.yml", airgapped=false)
     LOGGING.info "helm_template_header"
     helm = CNFSingleton.helm
     # generate helm chart release name
     # use --dry-run to generate yml file
+    LOGGING.info  "airgapped mode: #{airgapped}"
+    if airgapped
+      # todo make tar info work with a directory
+      info = TarClient.tar_info_by_config_src(helm_chart_or_directory)
+      LOGGING.info  "airgapped mode info: #{info}"
+      helm_chart_or_directory = info[:tar_name]
+    end
     LOGGING.info("#{helm} install --dry-run --generate-name #{helm_chart_or_directory} > #{template_file}")
     helm_install = `#{helm} install --dry-run --generate-name #{helm_chart_or_directory} > #{template_file}`
     raw_template = File.read(template_file)
@@ -312,16 +334,19 @@ module CNFManager
   end
 
   #TODO move to helm module
-  def self.helm_chart_template_release_name(helm_chart_or_directory, template_file="/tmp/temp_template.yml")
+  def self.helm_chart_template_release_name(helm_chart_or_directory, template_file="/tmp/temp_template.yml", airgapped=false)
     LOGGING.info "helm_chart_template_release_name"
-    hth = helm_template_header(helm_chart_or_directory, template_file)
+    LOGGING.info  "airgapped mode: #{airgapped}"
+    hth = helm_template_header(helm_chart_or_directory, template_file, airgapped)
     LOGGING.debug "helm template: #{hth}"
     hth["NAME"]
   end
 
 
-  def self.generate_and_set_release_name(config_yml_path)
+  def self.generate_and_set_release_name(config_yml_path, airgapped=false, generate_tar_mode=false)
     LOGGING.info "generate_and_set_release_name"
+    LOGGING.info  "airgapped mode: #{airgapped}"
+    return if generate_tar_mode
 
     yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
     yml_path = CNFManager.ensure_cnf_testsuite_dir(config_yml_path)
@@ -336,10 +361,10 @@ module CNFManager
       case install_method[0]
       when :helm_chart
         LOGGING.debug "helm_chart install method: #{install_method[1]}"
-        release_name = helm_chart_template_release_name(install_method[1])
+        release_name = helm_chart_template_release_name(install_method[1], airgapped: airgapped)
       when :helm_directory
         LOGGING.debug "helm_directory install method: #{yml_path}/#{install_method[1]}"
-        release_name = helm_chart_template_release_name("#{yml_path}/#{install_method[1]}")
+        release_name = helm_chart_template_release_name("#{yml_path}/#{install_method[1]}", airgapped: airgapped)
       when :manifest_directory
         LOGGING.debug "manifest_directory install method"
         release_name = UUID.random.to_s
@@ -424,7 +449,18 @@ module CNFManager
     else
       wait_count = 180
     end
-    {config_file: cnf_path, wait_count: wait_count, verbose: check_verbose(args)}
+    output_file = args.named["airgapped"].as(String) if args.named["airgapped"]?
+    output_file = args.named["output-file"].as(String) if args.named["output-file"]?
+    output_file = args.named["of"].as(String) if args.named["if"]?
+    input_file = args.named["offline"].as(String) if args.named["offline"]?
+    input_file = args.named["input-file"].as(String) if args.named["input-file"]?
+    input_file = args.named["if"].as(String) if args.named["if"]?
+    airgapped=false
+    airgapped=true if args.raw.includes?("airgapped")
+
+    cli_args = {config_file: cnf_path, extended_config_file: yml_file, wait_count: wait_count, verbose: check_verbose(args), output_file: output_file, input_file: input_file}
+    LOGGING.debug "cli_args: #{cli_args}"
+    cli_args
   end
 
   # Create a unique directory for the cnf that is to be installed under ./cnfs
@@ -518,19 +554,24 @@ module CNFManager
 
   #sample_setup({config_file: cnf_path, wait_count: wait_count})
   def self.sample_setup(cli_args)
+    #TODO accept offline mode
     LOGGING.info "sample_setup cli_args: #{cli_args}"
     config_file = cli_args[:config_file]
     wait_count = cli_args[:wait_count]
     verbose = cli_args[:verbose]
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
+    input_file = cli_args[:input_file]
+    if input_file && !input_file.empty?
+      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file),true) 
+    else
+      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
+    end
+    LOGGING.debug "config in sample_setup: #{config.cnf_config}"
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
 
     VERBOSE_LOGGING.info "sample_setup" if verbose
     LOGGING.info("config_file #{config_file}")
-
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
-    LOGGING.debug "config in sample_setup: #{config.cnf_config}"
+    # config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
 
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
@@ -543,7 +584,13 @@ module CNFManager
     LOGGING.info "helm_repo_name: #{helm_repo_name}"
     LOGGING.info "helm_repo_url: #{helm_repo_url}"
 
-    helm_chart = config.cnf_config[:helm_chart]
+    #todo if in airgapped mode, set helm_chart in config to be the tarball path
+    if input_file && !input_file.empty?
+      tar_info = TarClient.tar_info_by_config_src(config.cnf_config[:helm_chart])
+      helm_chart = tar_info[:tar_name]
+    else
+      helm_chart = config.cnf_config[:helm_chart]
+    end
     helm_chart_path = config.cnf_config[:helm_chart_path]
     LOGGING.debug "helm_directory: #{helm_directory}"
 
@@ -553,7 +600,6 @@ module CNFManager
     LOGGING.debug "mkdir_p destination_cnf_dir: #{destination_cnf_dir}"
     FileUtils.mkdir_p(destination_cnf_dir)
 
-    # git_clone = `git clone #{git_clone_url} #{destination_cnf_dir}/#{release_name}`  if git_clone_url.empty? == false
     GitClient.clone("#{git_clone_url} #{destination_cnf_dir}/#{release_name}")  if git_clone_url.empty? == false
 
     sandbox_setup(config, cli_args)
@@ -563,6 +609,10 @@ module CNFManager
 
     helm_install = {status: "", output: IO::Memory.new, error: IO::Memory.new}
     elapsed_time = Time.measure do
+      #TODO offline mode for helm charts
+      #TODO offline mode for helm directory
+      #TODO offline mode for manifests
+      #Get image from somewhere (cnf_yml)
       case install_method[0]
       when :manifest_directory
         VERBOSE_LOGGING.info "deploying by manifest file" if verbose

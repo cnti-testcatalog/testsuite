@@ -13,17 +13,20 @@ describe "AirGap" do
 
   it "'image_pull_policy' should change all imagepull policy references to never", tags: ["kubectl-runtime"] do
 
-    AirGap.image_pull_policy("./spec/fixtures/litmus-operator-v1.13.2.yaml", "./tmp/imagetest.yml")
+    AirGapUtils.image_pull_policy("./spec/fixtures/litmus-operator-v1.13.2.yaml", "./tmp/imagetest.yml")
     (File.exists?("./tmp/imagetest.yml")).should be_true
     resp = File.read("./tmp/imagetest.yml") 
     (resp).match(/imagePullPolicy: Always/).should be_nil
     (resp).match(/imagePullPolicy: Never/).should_not be_nil
   ensure
-    `rm ./tmp/imagetest.yml`
+    # `rm ./tmp/imagetest.yml`
   end
    
   it "'generate' should generate a tarball", tags: ["kubectl-runtime"] do
 
+    `rm ./tmp/airgapped.tar.gz`
+    AirGap.tmp_cleanup
+    Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
     AirGap.generate("./tmp/airgapped.tar.gz")
     (File.exists?("./tmp/airgapped.tar.gz")).should be_true
     file_list = `tar -tvf ./tmp/airgapped.tar.gz`
@@ -39,6 +42,7 @@ describe "AirGap" do
     (file_list).match(/litmus-operator/).should_not be_nil
     (file_list).match(/download\/sonobuoy.tar.gz/).should_not be_nil
   ensure
+    AirGap.tmp_cleanup
     `rm ./tmp/airgapped.tar.gz`
   end
 
@@ -86,15 +90,15 @@ describe "AirGap" do
 
   it "'#AirGap.download_cri_tools' should download the cri tools", tags: ["kubectl-runtime"]  do
     resp = AirGap.download_cri_tools()
-    (File.exists?("/tmp/crictl-#{AirGap::CRI_VERSION}-linux-amd64.tar.gz")).should be_true
-    (File.exists?("/tmp/containerd-#{AirGap::CTR_VERSION}-linux-amd64.tar.gz")).should be_true
+    (File.exists?("#{TarClient::TAR_BIN_DIR}/crictl-#{AirGap::CRI_VERSION}-linux-amd64.tar.gz")).should be_true
+    (File.exists?("#{TarClient::TAR_BIN_DIR}/containerd-#{AirGap::CTR_VERSION}-linux-amd64.tar.gz")).should be_true
   end
 
   it "'#AirGap.untar_cri_tools' should untar the cri tools", tags: ["kubectl-runtime"]  do
     AirGap.download_cri_tools
     resp = AirGap.untar_cri_tools()
-    (File.exists?("/tmp/crictl")).should be_true
-    (File.exists?("/tmp/bin/ctr")).should be_true
+    (File.exists?("#{TarClient::TAR_BIN_DIR}/crictl")).should be_true
+    (File.exists?("#{TarClient::TAR_BIN_DIR}/ctr")).should be_true
   end
 
   it "'#AirGap.pod_images' should retrieve all of the images for the pods with shells", tags: ["kubectl-runtime"]  do
@@ -161,24 +165,25 @@ describe "AirGap" do
     KubectlClient::Delete.command("daemonset cri-tools")
   end
 
-  it "'#AirGap.install_test_suite_tools' should install the cri tools in the cluster", tags: ["kubectl-utils"]  do
+  it "'#AirGap.cache_images' should install the cri tools in the cluster", tags: ["kubectl-utils"]  do
+    Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
     AirGap.generate("./airgapped.tar.gz")
-    resp = AirGap.install_test_suite_tools
+    resp = AirGap.cache_images
     LOGGING.info "#{resp.find{|x| puts x[0][:output].to_s}}"
     resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/bitnami\/kubectl:latest/)}.should_not be_nil
     resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/pingcap\/chaos-mesh:v1.2.1/)}.should_not be_nil
 
   ensure
-    `rm /tmp/kubectl.tar`
-    `rm /tmp/chaos-mesh.tar`
-    `rm /tmp/chaos-daemon.tar`
-    `rm /tmp/chaos-dashboard.tar`
-    `rm /tmp/chaos-kernel.tar`
-    `rm /tmp/sonobuoy.tar`
-    `rm /tmp/sonobuoy-logs.tar`
-    `rm /tmp/litmus-operator.tar`
-    `rm /tmp/litmus-runner.tar`
-    `rm /tmp/prometheus.tar`
+    `rm /tmp/images/kubectl.tar`
+    `rm /tmp/images/chaos-mesh.tar`
+    `rm /tmp/images/chaos-daemon.tar`
+    `rm /tmp/images/chaos-dashboard.tar`
+    `rm /tmp/images/chaos-kernel.tar`
+    `rm /tmp/images/sonobuoy.tar`
+    `rm /tmp/images/sonobuoy-logs.tar`
+    `rm /tmp/images/litmus-operator.tar`
+    `rm /tmp/images/litmus-runner.tar`
+    `rm /tmp/images/prometheus.tar`
   end
 
 end

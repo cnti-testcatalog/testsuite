@@ -8,7 +8,7 @@ desc "Install LitmusChaos"
 task "install_litmus" do |_, args|
   if args.named["offline"]?
     LOGGING.info "install litmus offline mode"
-    AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v1.13.2.yaml")
+    AirGapUtils.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v1.13.2.yaml")
     KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v1.13.2.yaml")
   else
     KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml")

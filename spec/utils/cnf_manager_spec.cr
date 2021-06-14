@@ -23,6 +23,11 @@ describe "SampleUtils" do
     $?.success?.should be_true
   end
 
+  it "'images_from_config_src' should return a list of containers for a cnf", tags: ["cnf-setup"]  do
+    (CNFManager::GenerateConfig.images_from_config_src("stable/coredns").find {|x| x[:image_name] =="coredns/coredns" && 
+                                                                               x[:container_name] =="coredns"}).should be_truthy 
+  end
+
   it "'cnf_setup' should pass with a minimal cnf-testsuite.yml", tags: ["cnf-setup"] do
     LOGGING.info `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-minimal-cnf/ wait_count=0`
     $?.success?.should be_true

@@ -239,27 +239,31 @@ Below is a fully working example CoreDNS cnf-testsuite.yml that tests CoreDNS by
 
 ```yaml=
 ---
-helm_directory:
+# Either helm_chart, helm_directory, or manifest_directory is mandatory
 # helm_directory: helm_chart
+# manifest_directory: manifests
+helm_chart: stable/coredns
 git_clone_url:
 install_script:
-release_name: coredns
-deployment_name: coredns-coredns
-deployment_label: k8s-app
-application_deployment_names: [coredns-coredns]
-docker_repository: coredns/coredns
+# Optional
+release_name: coredns 
+# Optional, if you haven't configured it manually
 helm_repository:
   name: stable
   repo_url: https://cncf.gitlab.io/stable
-helm_chart: stable/coredns
-helm_chart_container_name: coredns
+# Optional
 allowlist_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy, kube-multus]
 
 container_names:
+# image name e.g. "coredns" in coredns:1.8.0
   - name: coredns
-    rolling_update_test_tag: "1.8.0"
+# test forward compatibility
+    rolling_update_test_tag: 1.8.0
+# temporary test backwards compatibility
     rolling_downgrade_test_tag: 1.6.7
+# will be deprecated
     rolling_version_change_test_tag: latest
+# temporary tag, used to rollback to the original tag
     rollback_from_tag: latest
 ```
 
