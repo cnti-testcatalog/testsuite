@@ -311,9 +311,9 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
 
     create_namespace = `kubectl create namespace hardcoded-ip-test`
     unless helm_chart.empty?
-      if airgapped
+      if args.named["offline"]?
         # todo make tar info work with a directory
-        info = TarClient.tar_info_by_config_src(helm_chart_or_directory)
+        info = TarClient.tar_info_by_config_src(helm_chart)
         LOGGING.info  "hardcoded_ip_addresses_in_k8s_runtime_configuration airgapped mode info: #{info}"
         helm_chart = info[:tar_name]
       end
@@ -340,7 +340,8 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
       upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  FAILED: Hard-coded IP addresses found in the runtime K8s configuration")
     end
     delete_namespace = `kubectl delete namespace hardcoded-ip-test --force --grace-period 0 2>&1 >/dev/null`
-
+  rescue
+    upsert_skipped_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  SKIPPED: unknown exception")
   end
 end
 
