@@ -144,8 +144,10 @@ jobs:
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
             endpoint = ["http://localhost:5000"]
         EOF
-        kind create cluster --config=/tmp/cluster.yml
+        export CLUSTER=$(uuidgen)
+        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml
         kubectl get nodes 
+
     - name: Cache crystal shards
       uses: actions/cache@v2
       env:
@@ -175,7 +177,8 @@ jobs:
         PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
         LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
-
+        kind delete cluster --name $CLUSTER
+        
   build:
     name: Build Release
     # needs: [skip, debug_output]
