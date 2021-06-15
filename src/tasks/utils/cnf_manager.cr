@@ -364,6 +364,8 @@ module CNFManager
         release_name = helm_chart_template_release_name(install_method[1], airgapped: airgapped)
       when :helm_directory
         LOGGING.debug "helm_directory install method: #{yml_path}/#{install_method[1]}"
+        # todo if in airgapped mode, use path for airgapped repositories
+        # todo if in airgapped mode, get the release name
         release_name = helm_chart_template_release_name("#{yml_path}/#{install_method[1]}", airgapped: airgapped)
       when :manifest_directory
         LOGGING.debug "manifest_directory install method"

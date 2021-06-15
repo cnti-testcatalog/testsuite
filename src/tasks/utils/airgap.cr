@@ -7,6 +7,7 @@ require "./docker_client.cr"
 require "./kubectl_client.cr"
 require "./airgap_utils.cr"
 
+# todo put in a separate library. it shold go under ./tools for now
 module AirGap
   CRI_VERSION="v1.17.0"
   CTR_VERSION="1.5.0"

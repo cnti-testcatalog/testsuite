@@ -1,9 +1,12 @@
 require "totem"
 require "colorize"
+# todo remove depedency
 require "./cnf_manager.cr"
 require "halite"
+# todo remove depedency
 require "./airgap_utils.cr"
 
+# todo put in a separate library. it shold go under ./tools for now
 module TarClient
   TAR_REPOSITORY_DIR = "/tmp/repositories"
   TAR_MANIFEST_DIR = "/tmp/manifests"
