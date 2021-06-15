@@ -288,7 +288,7 @@ jobs:
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)
     needs: [build, debug_output, skip]
-    runs-on: ubuntu-latest
+    runs-on: [default]
     if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Download artifact
@@ -321,7 +321,7 @@ jobs:
   test_binary_microservice:
     name: Test Binary Without Source(microservice)
     needs: [build, debug_output, skip]
-    runs-on: ubuntu-latest
+    runs-on: [default]
     if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Download artifact
@@ -354,7 +354,7 @@ jobs:
   test_binary_all:
     name: Test Binary Without Source(all)
     needs: [build, debug_output, skip]
-    runs-on: ubuntu-latest
+    runs-on: [default]
     if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Download artifact
