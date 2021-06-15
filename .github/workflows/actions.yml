@@ -146,6 +146,7 @@ jobs:
         EOF
         export CLUSTER=$(uuidgen)
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
+        export KUBECONFIG=$(pwd)/$CLUSTER.conf
         kubectl get nodes 
     - name: Cache crystal shards
       uses: actions/cache@v2
