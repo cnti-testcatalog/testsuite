@@ -136,17 +136,6 @@ jobs:
         && sudo rm -rf /var/lib/apt/lists/*
     - name: Create Kind Cluster 
       run: |
-        cat << EOF > /tmp/cluster.yml
-        kind: Cluster
-        apiVersion: kind.x-k8s.io/v1alpha4
-        containerdConfigPatches:
-        - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-            endpoint = ["http://localhost:5000"]
-        EOF
-        export CLUSTER=$(uuidgen)
-        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml
-        kubectl get nodes 
 
     - name: Cache crystal shards
       uses: actions/cache@v2
@@ -162,11 +151,7 @@ jobs:
         PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
-        docker login -u $PROTECTED_DOCKERHUB_USERNAME -p $PROTECTED_DOCKERHUB_PASSWORD
-        helm repo add stable https://cncf.gitlab.io/stable
-        git fetch --all --tags --force
-        shards install  
-    - name: Run Crystal Spec
+    - name: Create Cluster & Run Crystal Spec
       env:
         GITHUB_USER: ${{ secrets.GH_USER }}
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -176,8 +161,24 @@ jobs:
         PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
+        #Create Cluster
+        cat << EOF > /tmp/cluster.yml
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        containerdConfigPatches:
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
+            endpoint = ["http://localhost:5000"]
+        EOF
+        kind create cluster --name ${{ matrix.spec }} --config=/tmp/cluster.yml
+        # Setup Testsuite
+        docker login -u $PROTECTED_DOCKERHUB_USERNAME -p $PROTECTED_DOCKERHUB_PASSWORD
+        helm repo add stable https://cncf.gitlab.io/stable
+        git fetch --all --tags --force
+        shards install  
+        # Run Spec
         LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
-        kind delete cluster --name $CLUSTER
+        kind delete cluster --name ${{ matrix.spec }}
         
   build:
     name: Build Release
