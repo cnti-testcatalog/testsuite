@@ -321,7 +321,7 @@ module CNFManager
     LOGGING.info  "airgapped mode: #{airgapped}"
     if airgapped
       # todo make tar info work with a directory
-      info = TarClient.tar_info_by_config_src(helm_chart_or_directory)
+      info = AirGap.tar_info_by_config_src(helm_chart_or_directory)
       LOGGING.info  "airgapped mode info: #{info}"
       helm_chart_or_directory = info[:tar_name]
     end
@@ -591,7 +591,7 @@ module CNFManager
 
     #todo if in airgapped mode, set helm_chart in config to be the tarball path
     if input_file && !input_file.empty?
-      tar_info = TarClient.tar_info_by_config_src(config.cnf_config[:helm_chart])
+      tar_info = AirGap.tar_info_by_config_src(config.cnf_config[:helm_chart])
       helm_chart = tar_info[:tar_name]
     else
       helm_chart = config.cnf_config[:helm_chart]

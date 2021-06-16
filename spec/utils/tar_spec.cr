@@ -39,6 +39,7 @@ describe "TarClient" do
       LOGGING.debug "template_files: #{template_files}"
       template_files.map{|x| AirGapUtils.image_pull_policy(x)}
     end
+
     TarClient.untar("./tmp/test.tar", "./tmp")
     (File.exists?("./tmp/litmus-operator-v1.13.2.yaml")).should be_true
     input_content = File.read("./tmp/litmus-operator-v1.13.2.yaml") 

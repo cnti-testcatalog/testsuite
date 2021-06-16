@@ -11,6 +11,7 @@ require "./airgap_utils.cr"
 module AirGap
   CRI_VERSION="v1.17.0"
   CTR_VERSION="1.5.0"
+  TAR_REPOSITORY_DIR = "/tmp/repositories"
 
   #TODO make chainable predicates that allow for bootstraping calls
   # schedulable_nodes() : nodes_json
@@ -55,7 +56,7 @@ module AirGap
     case install_method[0]
     when :helm_chart
       LOGGING.debug "helm_chart : #{install_method[1]}"
-      TarClient.tar_helm_repo(install_method[1], output_file)
+      AirGap.tar_helm_repo(install_method[1], output_file)
       LOGGING.info "generate_cnf_setup tar_helm_repo complete"
       when :helm_directory
         LOGGING.debug "helm_directory install method: #{config_file}/#{install_method[1]}"
@@ -67,6 +68,121 @@ module AirGap
     else
       raise "Install method should be either helm_chart, helm_directory, or manifest_directory"
     end
+  end
+
+  # todo tar_name_by_helm_chart << airgap sandbox specific, put in airgap module
+  def self.tar_name_by_helm_chart
+  end
+
+  def self.helm_tar_dir(config_src)
+    FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
+    LOGGING.debug "helm_tar_dir ls /tmp/repositories:" + `ls -al /tmp/repositories`
+    # chaos-mesh/chaos-mesh --version 0.5.1
+    repo = config_src.split(" ")[0]
+    repo_dir = repo.gsub("/", "_")
+    chart_name = repo.split("/")[-1]
+    repo_path = "repositories/#{repo_dir}" 
+    tar_dir = "/tmp/#{repo_path}"
+    LOGGING.info "helm_tar_dir: #{tar_dir}"
+    tar_dir
+  end
+
+  def self.helm_tar_name(config_src)
+    FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
+    LOGGING.debug "helm_tar_name ls /tmp/repositories:" + `ls -al /tmp/repositories`
+    tar_dir = helm_tar_dir(config_src)
+    tgz_files = TarClient.find(tar_dir, "*.tgz*")
+    tar_files = TarClient.find(tar_dir, "*.tar*") + tgz_files
+    tar_name = ""
+    tar_name = tar_files[0] if !tar_files.empty?
+    LOGGING.info "tar_name: #{tar_name}"
+    tar_name
+  end
+
+  def self.tar_info_by_config_src(config_src)
+    FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
+    LOGGING.debug "tar_info_by_config_src ls /tmp/repositories:" + `ls -al /tmp/repositories`
+    # chaos-mesh/chaos-mesh --version 0.5.1
+    repo = config_src.split(" ")[0]
+    repo_dir = repo.gsub("/", "_")
+    chart_name = repo.split("/")[-1]
+    repo_path = "repositories/#{repo_dir}" 
+    tar_dir = "/tmp/#{repo_path}"
+    tar_info = {repo: repo, repo_dir: repo_dir, chart_name: chart_name,
+     repo_path: repo_path, tar_dir: tar_dir, tar_name: helm_tar_name(config_src)}
+    LOGGING.info "tar_info: #{tar_info}"
+    tar_info
+  end
+
+  # todo airgap_helm_chart << prepare a helm_chart tar file for deploment into an airgapped enviroment, put in airgap module
+  # todo airgap_helm_directory << prepare a helm directory for deploment into an airgapped enviroment, put in airgap module
+  # todo airgap_manifest_directory << prepare a manifest directory for deploment into an airgapped enviroment, put in airgap module
+  #TODO move helm utilities into helm-tar utilty file or into helm file
+  def self.tar_helm_repo(command, output_file : String = "./airgapped.tar.gz")
+    LOGGING.info "tar_helm_repo command: #{command} output_file: #{output_file}"
+    # get the chart name out of the command
+    # chaos-mesh/chaos-mesh --version 0.5.1
+    #
+    tar_dir = helm_tar_dir(command)
+    FileUtils.mkdir_p(tar_dir)
+    Helm.fetch("#{command} -d #{tar_dir}")
+    LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
+    info = tar_info_by_config_src(command)
+    repo = info[:repo]
+    repo_dir = info[:repo_dir]
+    chart_name = info[:chart_name]
+    repo_path = info[:repo_path]
+    tar_dir = info[:tar_dir]
+    tar_name = info[:tar_name]
+
+    LOGGING.debug "ls /tmp/repositories:" + `ls -al /tmp/repositories`
+    LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
+    TarClient.untar(tar_name, tar_dir)
+    `rm #{tar_name}` if File.exists?(tar_name)
+    LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
+    # todo separate out into function that takes a directory name
+    # todo call this in the cnf setup install when in offline mode
+    template_files = TarClient.find(tar_dir, "*.yaml*", "100")
+    LOGGING.debug "template_files: #{template_files}"
+    # resp = yield template_files
+    # AirGapUtils.image_pull_policy(template_files[0])
+    template_files.map{|x| AirGapUtils.image_pull_policy(x)}
+    # TODO look for yml as well
+    # TODO handle recursive/dependend helm charts
+    # TODO function for looping through all yml files in a directory
+    # TODO open the current file if it is a yml file and change the manifest to use image_pull_policy
+    helm_chart = Dir.entries("/tmp/#{repo_path}").first
+    raise "Critical Error" if tar_dir.empty? || tar_dir == '/'
+    # TarClient.append(tar_name, tar_dir, chart_name, "-z")
+    TarClient.tar(tar_name, tar_dir, chart_name)
+    #TODO rm client that checks path for /
+    `rm -rf #{tar_dir}/#{chart_name}`
+    TarClient.append(output_file, "/tmp", "#{repo_path}")
+  ensure
+    `rm -rf /tmp/#{repo_path} > /dev/null 2>&1`
+  end
+  
+  #TODO create tar_helm_directory
+  #TODO create tar_manifest_directory
+  #TODO change to tar_manifest_by_url
+  def self.tar_manifest(url, output_file : String = "./airgapped.tar.gz", prefix="")
+    manifest_path = "manifests/" 
+    `rm -rf /tmp/#{manifest_path} > /dev/null 2>&1`
+    FileUtils.mkdir_p("/tmp/" + manifest_path)
+    manifest_name = prefix + url.split("/").last 
+    # manifest_full_path = manifest_path + url.split("/").last
+    manifest_full_path = manifest_path + manifest_name 
+    LOGGING.info "manifest_name: #{manifest_name}"
+    LOGGING.info "manifest_full_path: #{manifest_full_path}"
+    Halite.get("#{url}") do |response| 
+      #TODO response.body_io to use image_pull_policy
+       File.open("/tmp/" + manifest_full_path, "w") do |file| 
+         IO.copy(response.body_io, file)
+       end
+    end
+    TarClient.append(output_file, "/tmp", manifest_full_path)
+  ensure
+    `rm -rf /tmp/#{manifest_path} > /dev/null 2>&1`
   end
 
   # LOGGING.info ./cnf-testsuite cnf_setup offline=./tmp/cnf.tar.gz cnf-config=example-cnfs/coredns/cnf-testsuite.yml
@@ -117,15 +233,15 @@ module AirGap
     #TODO test if these should be in the /tmp/bin directory
     TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
     TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
-    TarClient.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
-    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml", output_file)
-    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml", output_file)
-    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/experiment.yaml", output_file, "disk-fill-")
-    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml", output_file, "disk-fill-")
+    AirGap.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
+    AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml", output_file)
+    AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml", output_file)
+    AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/experiment.yaml", output_file, "disk-fill-")
+    AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml", output_file, "disk-fill-")
     url = "https://github.com/vmware-tanzu/sonobuoy/releases/download/v#{SONOBUOY_K8S_VERSION}/sonobuoy_#{SONOBUOY_K8S_VERSION}_#{SONOBUOY_OS}_amd64.tar.gz"
     TarClient.tar_file_by_url(url, output_file, "sonobuoy.tar.gz")
     Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
-    TarClient.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
+    AirGap.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
   end
 
   #./cnf-testsuite setup --offline=./airgapped.tar.gz
