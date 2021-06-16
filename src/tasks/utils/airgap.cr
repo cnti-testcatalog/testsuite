@@ -70,10 +70,6 @@ module AirGap
     end
   end
 
-  # todo tar_name_by_helm_chart << airgap sandbox specific, put in airgap module
-  def self.tar_name_by_helm_chart
-  end
-
   def self.helm_tar_dir(config_src)
     FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
     LOGGING.debug "helm_tar_dir ls /tmp/repositories:" + `ls -al /tmp/repositories`
@@ -87,9 +83,9 @@ module AirGap
     tar_dir
   end
 
-  def self.helm_tar_name(config_src)
+  def self.tar_name_by_helm_chart(config_src)
     FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
-    LOGGING.debug "helm_tar_name ls /tmp/repositories:" + `ls -al /tmp/repositories`
+    LOGGING.debug "tar_name_by_helm_chart ls /tmp/repositories:" + `ls -al /tmp/repositories`
     tar_dir = helm_tar_dir(config_src)
     tgz_files = TarClient.find(tar_dir, "*.tgz*")
     tar_files = TarClient.find(tar_dir, "*.tar*") + tgz_files
@@ -109,14 +105,14 @@ module AirGap
     repo_path = "repositories/#{repo_dir}" 
     tar_dir = "/tmp/#{repo_path}"
     tar_info = {repo: repo, repo_dir: repo_dir, chart_name: chart_name,
-     repo_path: repo_path, tar_dir: tar_dir, tar_name: helm_tar_name(config_src)}
+     repo_path: repo_path, tar_dir: tar_dir, tar_name: tar_name_by_helm_chart(config_src)}
     LOGGING.info "tar_info: #{tar_info}"
     tar_info
   end
 
-  # todo airgap_helm_chart << prepare a helm_chart tar file for deploment into an airgapped enviroment, put in airgap module
-  # todo airgap_helm_directory << prepare a helm directory for deploment into an airgapped enviroment, put in airgap module
-  # todo airgap_manifest_directory << prepare a manifest directory for deploment into an airgapped enviroment, put in airgap module
+  # todo airgap_helm_chart << prepare a helm_chart tar file for deployment into an airgapped environment, put in airgap module
+  # todo airgap_helm_directory << prepare a helm directory for deployment into an airgapped environment, put in airgap module
+  # todo airgap_manifest_directory << prepare a manifest directory for deployment into an airgapped environment, put in airgap module
   #TODO move helm utilities into helm-tar utilty file or into helm file
   def self.tar_helm_repo(command, output_file : String = "./airgapped.tar.gz")
     LOGGING.info "tar_helm_repo command: #{command} output_file: #{output_file}"
@@ -135,28 +131,33 @@ module AirGap
     tar_dir = info[:tar_dir]
     tar_name = info[:tar_name]
 
-    LOGGING.debug "ls /tmp/repositories:" + `ls -al /tmp/repositories`
-    LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
-    TarClient.untar(tar_name, tar_dir)
-    `rm #{tar_name}` if File.exists?(tar_name)
-    LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
-    # todo separate out into function that takes a directory name
-    # todo call this in the cnf setup install when in offline mode
-    template_files = TarClient.find(tar_dir, "*.yaml*", "100")
-    LOGGING.debug "template_files: #{template_files}"
-    # resp = yield template_files
-    # AirGapUtils.image_pull_policy(template_files[0])
-    template_files.map{|x| AirGapUtils.image_pull_policy(x)}
-    # TODO look for yml as well
-    # TODO handle recursive/dependend helm charts
-    # TODO function for looping through all yml files in a directory
-    # TODO open the current file if it is a yml file and change the manifest to use image_pull_policy
-    helm_chart = Dir.entries("/tmp/#{repo_path}").first
-    raise "Critical Error" if tar_dir.empty? || tar_dir == '/'
-    # TarClient.append(tar_name, tar_dir, chart_name, "-z")
-    TarClient.tar(tar_name, tar_dir, chart_name)
-    #TODO rm client that checks path for /
-    `rm -rf #{tar_dir}/#{chart_name}`
+    # LOGGING.debug "ls /tmp/repositories:" + `ls -al /tmp/repositories`
+    # LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
+    # TarClient.untar(tar_name, tar_dir)
+    # `rm #{tar_name}` if File.exists?(tar_name)
+    # LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
+    # # todo separate out into function that takes a directory name
+    # # todo call this in the cnf setup install when in offline mode
+    # template_files = TarClient.find(tar_dir, "*.yaml*", "100")
+    # LOGGING.debug "template_files: #{template_files}"
+    # # resp = yield template_files
+    # # AirGapUtils.image_pull_policy(template_files[0])
+    # template_files.map{|x| AirGapUtils.image_pull_policy(x)}
+    # # TODO look for yml as well
+    # # TODO handle recursive/dependend helm charts
+    # # TODO function for looping through all yml files in a directory
+    # # TODO open the current file if it is a yml file and change the manifest to use image_pull_policy
+    # helm_chart = Dir.entries("/tmp/#{repo_path}").first
+    # raise "Critical Error" if tar_dir.empty? || tar_dir == '/'
+    # # TarClient.append(tar_name, tar_dir, chart_name, "-z")
+    # TarClient.tar(tar_name, tar_dir, chart_name)
+    # #TODO rm client that checks path for /
+    # `rm -rf #{tar_dir}/#{chart_name}`
+
+    TarClient.modify_tar!(tar_name) do |directory| 
+      template_files = TarClient.find(directory, "*.yaml*", "100")
+      template_files.map{|x| AirGapUtils.image_pull_policy(x)}
+    end
     TarClient.append(output_file, "/tmp", "#{repo_path}")
   ensure
     `rm -rf /tmp/#{repo_path} > /dev/null 2>&1`
