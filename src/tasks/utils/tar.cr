@@ -14,6 +14,7 @@ module TarClient
   TAR_IMAGES_DIR = "/tmp/images"
   TAR_BIN_DIR = "/tmp/bin"
   TAR_TMP_BASE = "/tmp"
+  TAR_MODIFY_DIR = "/tmp/modify_tar"
 
   def self.tar(tarball_name, working_directory, source_file_or_directory, options="")
     LOGGING.info "TarClient.tar command: tar #{options} -czvf #{tarball_name} -C #{working_directory} #{source_file_or_directory}"
@@ -63,6 +64,7 @@ module TarClient
     {status: status, output: output, error: stderr}
   end
 
+  # todo find wrapper
   def self.find(directory, wildcard="*.tar*", maxdepth="1", silent=true)
     LOGGING.debug("tar_file_name")
     LOGGING.debug("find: find #{directory} -maxdepth #{maxdepth} -name \"#{wildcard}\"")
@@ -114,6 +116,22 @@ module TarClient
     tar_info
   end
 
+  def self.modify_tar!(tar_file)
+    raise "Critical Error" if tar_file.empty? || tar_file == '/'
+    tar_name = tar_file.split("/")[-1]
+    FileUtils.mkdir_p(TAR_MODIFY_DIR)
+    TarClient.untar(tar_file, TAR_MODIFY_DIR)
+    yield TAR_MODIFY_DIR
+    `rm #{tar_file}`
+    file_list = `ls #{TAR_MODIFY_DIR}`.gsub("\n", " ") 
+    TarClient.tar(tar_file, TAR_MODIFY_DIR, file_list)
+    `rm -rf #{TAR_MODIFY_DIR}`
+  end
+  # todo modify_tar! << untars file, yields to block, retars, keep in tar module
+  # todo tar_name_by_helm_chart << airgapp sandbox specific, put in airgap module
+  # todo airgap_helm_chart << prepare a helm_chart tar file for deploment into an airgapped enviroment, put in airgap module
+  # todo airgap_helm_directory << prepare a helm directory for deploment into an airgapped enviroment, put in airgap module
+  # todo airgap_manifest_directory << prepare a manifest directory for deploment into an airgapped enviroment, put in airgap module
   #TODO move helm utilities into helm-tar utilty file or into helm file
   def self.tar_helm_repo(command, output_file : String = "./airgapped.tar.gz")
     LOGGING.info "tar_helm_repo command: #{command} output_file: #{output_file}"
@@ -132,27 +150,13 @@ module TarClient
     tar_dir = info[:tar_dir]
     tar_name = info[:tar_name]
 
-    # repo = command.split(" ")[0]
-    # repo_dir = repo.gsub("/", "_")
-    # chart_name = repo.split("/")[-1]
-    # repo_path = "repositories/#{repo_dir}" 
-    # `rm -rf /tmp/#{repo_path} > /dev/null 2>&1`
-    # tar_dir = "/tmp/#{repo_path}"
-    # FileUtils.mkdir_p(tar_dir)
-    # LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
-    # Helm.fetch("#{command} -d #{tar_dir}")
     LOGGING.debug "ls /tmp/repositories:" + `ls -al /tmp/repositories`
     LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
-    #TODO get name of tarball that was fetched into /tmp/repo_path
-    # tgz_files = TarClient.find(tar_dir, "*.tgz*")
-    # tar_files = TarClient.find(tar_dir, "*.tar*") + tgz_files
-    # LOGGING.info "tar_files: #{tar_files}"
-    #TODO untar that helm tarball
-    # tar_name = tar_files[0]
     TarClient.untar(tar_name, tar_dir)
-    #TODO remove tar_name
     `rm #{tar_name}` if File.exists?(tar_name)
     LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
+    # todo separate out into function that takes a directory name
+    # todo call this in the cnf setup install when in offline mode
     template_files = TarClient.find(tar_dir, "*.yaml*", "100")
     LOGGING.debug "template_files: #{template_files}"
     # resp = yield template_files

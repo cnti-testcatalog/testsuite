@@ -29,6 +29,25 @@ describe "TarClient" do
     `rm ./tmp/cnf-testsuite.yml`
   end
 
+  it "'.modify_tar!' should untar file, yield to block, retar", tags: ["tar-install"]  do
+    `rm ./tmp/test.tar`
+    input_content = File.read("./spec/fixtures/litmus-operator-v1.13.2.yaml") 
+    (input_content =~ /imagePullPolicy: Never/).should be_nil
+    TarClient.tar("./tmp/test.tar", "./spec/fixtures", "litmus-operator-v1.13.2.yaml")
+    TarClient.modify_tar!("./tmp/test.tar") do |directory| 
+      template_files = TarClient.find(directory, "*.yaml*", "100")
+      LOGGING.debug "template_files: #{template_files}"
+      template_files.map{|x| AirGapUtils.image_pull_policy(x)}
+    end
+    TarClient.untar("./tmp/test.tar", "./tmp")
+    (File.exists?("./tmp/litmus-operator-v1.13.2.yaml")).should be_true
+    input_content = File.read("./tmp/litmus-operator-v1.13.2.yaml") 
+    (input_content =~ /imagePullPolicy: Never/).should_not be_nil
+  ensure
+    `rm ./tmp/test.tar`
+    `rm ./tmp/litmus-operator-v1.13.2.yaml`
+  end
+
   it "'.tar_helm_repo' should create a tar file from a helm repository", tags: ["tar-install"]  do
     TarClient.tar_helm_repo("stable/coredns", "/tmp/airgapped.tar")
     (File.exists?("/tmp/airgapped.tar")).should be_true

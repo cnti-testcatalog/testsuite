@@ -224,7 +224,7 @@ module CNFManager
     end
   end
 
-  def self.ensure_cnf_testsuite_dir(path)
+  def self.ensure_cnf_testsuite_dir(path : String)
     LOGGING.info("ensure_cnf_testsuite_yml_dir")
     if path_has_yml?(path)
       dir = File.dirname(path)
@@ -366,6 +366,7 @@ module CNFManager
         LOGGING.debug "helm_directory install method: #{yml_path}/#{install_method[1]}"
         # todo if in airgapped mode, use path for airgapped repositories
         # todo if in airgapped mode, get the release name
+        # todo get the release name by looking through everything under /tmp/repositories
         release_name = helm_chart_template_release_name("#{yml_path}/#{install_method[1]}", airgapped: airgapped)
       when :manifest_directory
         LOGGING.debug "manifest_directory install method"
@@ -433,6 +434,8 @@ module CNFManager
   def self.sample_setup_cli_args(args, noisy=true)
     VERBOSE_LOGGING.info "sample_setup_cli_args" if check_verbose(args)
     VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
+    yml_file = ""
+    cnf_path = ""
     if args.named.keys.includes? "cnf-config"
       yml_file = args.named["cnf-config"].as(String)
       cnf_path = File.dirname(yml_file)
