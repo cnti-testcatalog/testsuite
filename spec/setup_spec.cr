@@ -148,7 +148,7 @@ describe "Setup" do
       $?.success?.should be_true
       (/Successfully setup coredns/ =~ response_s).should_not be_nil
     ensure
-      `rm ./tmp/airgapped.tar.gz/`
+      `rm ./tmp/airgapped.tar.gz` if File.exists?("./tmp/airgapped.tar.gz")
       AirGap.tmp_cleanup
 
       response_s = `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_coredns/cnf-testsuite.yml`
@@ -158,26 +158,26 @@ describe "Setup" do
     end
   end
 
-  # it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf manifest directory in airgapped mode", tags: ["setup"]  do
-  #   begin
-  #     AirGap.tmp_cleanup
-  #     `rm ./tmp/airgapped.tar.gz` if File.exists?("./tmp/airgapped.tar.gz")
-  #     response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml airgapped=./tmp/airgapped.tar.gz`
-  #     LOGGING.info response_s
-  #     response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml input-file=./tmp/airgapped.tar.gz`
-  #     LOGGING.info response_s
-  #     $?.success?.should be_true
-  #     (/Successfully setup coredns/ =~ response_s).should_not be_nil
-  #   ensure
-  #     `rm ./tmp/airgapped.tar.gz/`
-  #     AirGap.tmp_cleanup
-  #
-  #     response_s = `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml`
-  #     LOGGING.info response_s
-  #     $?.success?.should be_true
-  #     (/Successfully cleaned up/ =~ response_s).should_not be_nil
-  #   end
-  # end
+  it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf manifest directory in airgapped mode", tags: ["setup"]  do
+    begin
+      AirGap.tmp_cleanup
+      `rm ./tmp/airgapped.tar.gz` if File.exists?("./tmp/airgapped.tar.gz")
+      response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml airgapped=./tmp/airgapped.tar.gz`
+      LOGGING.info response_s
+      response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml input-file=./tmp/airgapped.tar.gz`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/Successfully setup coredns/ =~ response_s).should_not be_nil
+    ensure
+      `rm ./tmp/airgapped.tar.gz` if File.exists?("./tmp/airgapped.tar.gz")
+      AirGap.tmp_cleanup
+
+      response_s = `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/Successfully cleaned up/ =~ response_s).should_not be_nil
+    end
+  end
 
   it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf with a cnf-testsuite.yml", tags: ["setup"]  do
     begin

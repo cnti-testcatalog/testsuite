@@ -37,8 +37,6 @@ module AirGap
     FileUtils.mkdir_p("#{TarClient::TAR_IMAGES_DIR}")
     config = CNFManager.parsed_config_file(config_file)
     install_method = CNFManager.cnf_installation_method(config)
-    #TODO get images from helm chart
-    #TODO tarball the images
     LOGGING.info "generate_cnf_setup images_from_config_src"
     images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], generate_tar_mode: true) 
 
@@ -48,8 +46,6 @@ module AirGap
       image = "#{i[:image_name]}:#{i[:tag]}"
       DockerClient.pull(image)
       DockerClient.save(image, input_file)
-      # FileUtils.mkdir_p("#{TarClient::TAR_IMAGES_DIR}/#{Path[input_file].parent}")
-      # TarClient.append(output_file, Path[input_file].parent, "/images/" + input_file.split("/")[-1])
       TarClient.append(output_file, "/tmp", "images/" + input_file.split("/")[-1])
       LOGGING.info "#{output_file} in generate_cnf_setup complete"
     end
@@ -58,15 +54,6 @@ module AirGap
       LOGGING.debug "helm_chart : #{install_method[1]}"
       AirGap.tar_helm_repo(install_method[1], output_file)
       LOGGING.info "generate_cnf_setup tar_helm_repo complete"
-      when :helm_directory
-        LOGGING.debug "helm_directory install method: #{config_file}/#{install_method[1]}"
-        yml_path = CNFManager.ensure_cnf_testsuite_dir(config_file)
-        release_name = CNFManager.helm_chart_template_release_name("#{yml_path}/#{install_method[1]}")
-      when :manifest_directory
-        LOGGING.debug "manifest_directory install method"
-        release_name = UUID.random.to_s
-    else
-      raise "Install method should be either helm_chart, helm_directory, or manifest_directory"
     end
   end
 

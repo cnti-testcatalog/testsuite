@@ -589,13 +589,6 @@ module CNFManager
     LOGGING.info "helm_repo_name: #{helm_repo_name}"
     LOGGING.info "helm_repo_url: #{helm_repo_url}"
 
-    #todo if in airgapped mode, set helm_chart in config to be the tarball path
-    if input_file && !input_file.empty?
-      tar_info = AirGap.tar_info_by_config_src(config.cnf_config[:helm_chart])
-      helm_chart = tar_info[:tar_name]
-    else
-      helm_chart = config.cnf_config[:helm_chart]
-    end
     helm_chart_path = config.cnf_config[:helm_chart_path]
     LOGGING.debug "helm_directory: #{helm_directory}"
 
@@ -614,15 +607,32 @@ module CNFManager
 
     helm_install = {status: "", output: IO::Memory.new, error: IO::Memory.new}
     elapsed_time = Time.measure do
-      #TODO offline mode for helm charts
-      #TODO offline mode for helm directory
-      #TODO offline mode for manifests
-      #Get image from somewhere (cnf_yml)
       case install_method[0]
       when :manifest_directory
+        # todo airgap_manifest_directory << prepare a manifest directory for deployment into an airgapped environment, put in airgap module
+        if input_file && !input_file.empty?
+          yaml_template_files = TarClient.find("#{destination_cnf_dir}/#{manifest_directory}", 
+                                               "*.yaml*", "100")
+          yml_template_files = TarClient.find("#{destination_cnf_dir}/#{manifest_directory}", 
+                                               "*.yml*", "100")
+          template_files = yaml_template_files + yml_template_files
+          template_files.map{|x| AirGapUtils.image_pull_policy(x)}
+        end
         VERBOSE_LOGGING.info "deploying by manifest file" if verbose
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
       when :helm_chart
+        if input_file && !input_file.empty?
+          tar_info = AirGap.tar_info_by_config_src(config.cnf_config[:helm_chart])
+          # prepare a helm_chart tar file for deployment into an airgapped environment, put in airgap module
+          TarClient.modify_tar!(tar_info[:tar_name]) do |directory| 
+            template_files = TarClient.find(directory, "*.yaml*", "100")
+            template_files.map{|x| AirGapUtils.image_pull_policy(x)}
+          end
+          # if in airgapped mode, set helm_chart in config to be the tarball path
+          helm_chart = tar_info[:tar_name]
+        else
+          helm_chart = config.cnf_config[:helm_chart]
+        end
         if !helm_repo_name.empty? || !helm_repo_url.empty?
           Helm.helm_repo_add(helm_repo_name, helm_repo_url)
         end
@@ -631,6 +641,12 @@ module CNFManager
         export_published_chart(config, cli_args)
       when :helm_directory
         VERBOSE_LOGGING.info "deploying with helm directory" if verbose
+        # prepare a helm directory for deployment into an airgapped environment, put in airgap module
+        if input_file && !input_file.empty?
+          template_files = TarClient.find("#{destination_cnf_dir}/#{helm_directory}", 
+                                          "*.yaml*", "100")
+          template_files.map{|x| AirGapUtils.image_pull_policy(x)}
+        end
         #TODO Add helm options into cnf-testsuite yml
         #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
         helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory}")
