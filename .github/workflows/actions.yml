@@ -170,7 +170,7 @@ jobs:
   build:
     name: Build Release
     # needs: [skip, debug_output]
-    runs-on: [default]
+    runs-on: ubuntu-latest
     # if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
