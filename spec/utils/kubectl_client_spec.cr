@@ -167,7 +167,7 @@ describe "KubectlClient" do
     end
   end
 
-  it "'#KubectlClient.containers' should return all containers defined in a deployment", tags: ["kubectl-pods"]  do
+  it "'#KubectlClient.containers' should return all containers defined in a deployment", tags: ["kubectl-deployment"]  do
     LOGGING.debug `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-testsuite.yml wait_count=0` 
     resp = KubectlClient::Get.deployment_containers("nginx-webapp")
     (resp.size).should be > 0
@@ -183,7 +183,7 @@ describe "KubectlClient" do
     LOGGING.debug `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml` 
   end
  
-  it "'#KubectlClient.pod_status' should return a status of false if the pod is not installed (failed to install) and other pods exist", tags: ["kubectl-pods"]  do
+  it "'#KubectlClient.pod_status' should return a status of false if the pod is not installed (failed to install) and other pods exist", tags: ["kubectl-status"]  do
     cnf="./sample-cnfs/sample-coredns-cnf"
     LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
     LOGGING.info `./cnf-testsuite uninstall_dockerd`
@@ -199,7 +199,7 @@ describe "KubectlClient" do
     LOGGING.info `./cnf-testsuite install_dockerd`
   end
 
-  it "'#KubectlClient.pod_status' should return a status of true if the pod is installed and other pods exist", tags: ["kubectl-pods"]  do
+  it "'#KubectlClient.pod_status' should return a status of true if the pod is installed and other pods exist", tags: ["kubectl-status"]  do
     cnf="./sample-cnfs/sample-coredns-cnf"
     LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
     LOGGING.info `./cnf-testsuite install_dockerd`
