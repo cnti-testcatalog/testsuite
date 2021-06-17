@@ -59,7 +59,7 @@ describe "Microservice" do
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
   end
 
-  it "'reasonable_image_size' should fail if image is larger than 5gb", tags: ["reasonable_image_size"] do
+  it "'reasonable_image_size' should fail if image is larger than 5gb", tags: ["reasonable_image_size_large"] do
     `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_envoy_slow_startup wait_count=0`
     response_s = `./cnf-testsuite reasonable_image_size verbose`
     LOGGING.info response_s
