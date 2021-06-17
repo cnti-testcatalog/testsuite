@@ -498,6 +498,8 @@ module CNFManager
     # if the helm directory already exists, copy helm_directory contents into cnfs/<cnf-name>/<helm-directory-of-the-same-name>
 
     destination_chart_directory = {creation_type: :created, chart_directory: ""}
+    ls_al = `ls -alR #{destination_chart_directory[:chart_directory]}`
+    LOGGING.debug "ls -alR #{destination_chart_directory[:chart_directory]}: #{ls_al}"
     if !manifest_or_helm_directory.empty? && manifest_or_helm_directory =~ /exported_chart/
       LOGGING.info "Ensuring exported helm directory is created"
       LOGGING.debug "mkdir_p destination_cnf_dir/exported_chart: #{manifest_or_helm_directory}"
@@ -510,7 +512,7 @@ module CNFManager
       destination_chart_directory = {creation_type: :copied,
                                      chart_directory: "#{manifest_or_helm_directory}"}
       yml_cp = `cp -a #{destination_chart_directory[:chart_directory]} #{destination_cnf_dir}`
-      LOGGING.info "Copy of #{destination_chart_directory[:chart_directory]} to #{destination_cnf_dir}"
+      LOGGING.info "cp -a #{destination_chart_directory[:chart_directory]} #{destination_cnf_dir}"
       VERBOSE_LOGGING.info yml_cp if verbose
       raise "Copy of #{destination_chart_directory[:chart_directory]} to #{destination_cnf_dir} failed!" unless $?.success?
     end
