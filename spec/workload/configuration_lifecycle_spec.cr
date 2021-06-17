@@ -95,7 +95,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'rolling_update' should pass if using local registry and a port", tags: ["rolling_update"]  do
+  it "'rolling_update' should pass if using local registry and a port", tags: ["rolling_update_local"]  do
     begin
       install_registry = `kubectl create -f #{TOOLS_DIR}/registry/manifest.yml`
       install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
@@ -316,7 +316,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'secrets_used' should pass when secrets are provided as volumes and used by a container", tags: ["secrets_used"] do
+  it "'secrets_used' should pass when secrets are provided as volumes and used by a container", tags: ["secrets_used_pass"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_secret_volume/cnf-testsuite.yml verbose `
       $?.success?.should be_true
@@ -329,7 +329,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'secrets_used' should fail when secrets are provided as volumes and not mounted by a container", tags: ["secrets_used"] do
+  it "'secrets_used' should fail when secrets are provided as volumes and not mounted by a container", tags: ["secrets_used_fail"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_unmounted_secret_volume/cnf-testsuite.yml verbose wait_count=0 `
       $?.success?.should be_true
@@ -342,7 +342,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'secrets_used' should pass when secrets are provided as environment variables and used by a container", tags: ["secrets_used"] do
+  it "'secrets_used' should pass when secrets are provided as environment variables and used by a container", tags: ["secrets_used_pass"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_secret_env/cnf-testsuite.yml verbose `
       $?.success?.should be_true
@@ -355,7 +355,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'secrets_used' should skip when secrets are not referenced as environment variables by a container", tags: ["secrets_used"] do
+  it "'secrets_used' should skip when secrets are not referenced as environment variables by a container", tags: ["secrets_used_skip"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_secret_env_no_ref/cnf-testsuite.yml verbose `
       $?.success?.should be_true
@@ -368,7 +368,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'secrets_used' should pass when no secret volumes are mounted or no container secrets are provided (secrets ignored)`", tags: ["secrets_used"] do
+  it "'secrets_used' should pass when no secret volumes are mounted or no container secrets are provided (secrets ignored)`", tags: ["secrets_used_pass"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose wait_count=0 `
       $?.success?.should be_true

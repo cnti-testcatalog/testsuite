@@ -23,7 +23,7 @@ describe "Setup" do
 
 
 
-  it "'setup' task should accept a tarball and put files in the /tmp directory", tags: ["airgap"] do
+  it "'setup' task should accept a tarball and put files in the /tmp directory", tags: ["airgap-setup"] do
 
     #./cnf-testsuite setup offline=./airgapped.tar.gz
     LOGGING.info `./cnf-testsuite airgapped output-file=./tmp/airgapped.tar.gz`
@@ -63,7 +63,7 @@ describe "Setup" do
     (/Setup complete/ =~ response_s).should_not be_nil
   end
 
-  it "'generate_config' should generate a cnf-testsuite.yml for a helm chart", tags: ["setup"]  do
+  it "'generate_config' should generate a cnf-testsuite.yml for a helm chart", tags: ["setup-generate"]  do
     response_s = `./cnf-testsuite generate_config config-src=stable/coredns output-file=./cnf-testsuite-test.yml`
     LOGGING.info response_s
     $?.success?.should be_true
@@ -83,7 +83,7 @@ describe "Setup" do
     `rm ./cnf-testsuite-test.yml`
   end
 
-  it "'generate_config' should generate a cnf-testsuite.yml for a helm directory", tags: ["setup"]  do
+  it "'generate_config' should generate a cnf-testsuite.yml for a helm directory", tags: ["setup-generate"]  do
     response_s = `./cnf-testsuite generate_config config-src=sample-cnfs/k8s-sidecar-container-pattern/chart output-file=./cnf-testsuite-test.yml`
     LOGGING.info response_s
     $?.success?.should be_true
@@ -100,7 +100,7 @@ describe "Setup" do
     `rm ./cnf-testsuite-test.yml`
   end
 
-  it "'generate_config' should generate a cnf-testsuite.yml for a manifest directory", tags: ["setup"]  do
+  it "'generate_config' should generate a cnf-testsuite.yml for a manifest directory", tags: ["setup-generate"]  do
     response_s = `./cnf-testsuite generate_config config-src=sample-cnfs/k8s-non-helm/manifests output-file=./cnf-testsuite-test.yml`
     LOGGING.info response_s
     $?.success?.should be_true
