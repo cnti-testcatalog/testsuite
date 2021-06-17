@@ -116,7 +116,7 @@ describe "Setup" do
   ensure
     `rm ./cnf-testsuite-test.yml`
   end
-  it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf in airgapped mode", tags: ["setup"]  do
+  it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf in airgapped mode", tags: ["airgap-cleanup"]  do
     begin
       AirGap.tmp_cleanup
       `rm ./tmp/airgapped.tar.gz` if File.exists?("./tmp/airgapped.tar.gz")

@@ -69,7 +69,7 @@ describe "Microservice" do
     `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup force=true`
   end
 
-  it "'reasonable_image_size' should skip if dockerd does not install", tags: ["reasonable_image_size"] do
+  it "'reasonable_image_size' should skip if dockerd does not install", tags: ["reasonable_image_size_skip"] do
     cnf="./sample-cnfs/sample-coredns-cnf"
     LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
     LOGGING.info `./cnf-testsuite uninstall_dockerd`
