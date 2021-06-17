@@ -32,10 +32,12 @@ module AirGap
   #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped output-file=./tmp/airgapped.tar.gz
   #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml output-file=./tmp/airgapped.tar.gz
   #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=./tmp/airgapped.tar.gz
-  def self.generate_cnf_setup(config_file : String, output_file)
+  def self.generate_cnf_setup(config_file : String, output_file, cli_args)
     LOGGING.info "generate_cnf_setup cnf_config_file: #{config_file}"
     FileUtils.mkdir_p("#{TarClient::TAR_IMAGES_DIR}")
     config = CNFManager.parsed_config_file(config_file)
+    sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file),true) 
+    CNFManager.sandbox_setup(sandbox_config, cli_args)
     install_method = CNFManager.cnf_installation_method(config)
     LOGGING.info "generate_cnf_setup images_from_config_src"
     images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], generate_tar_mode: true) 
