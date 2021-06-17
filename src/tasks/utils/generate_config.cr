@@ -22,6 +22,7 @@ module CNFManager
       if CNFManager.install_method_by_config_src(config_src) == :manifest_directory
         template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( config_src))
       else
+        # todo if success false, raise error
         Helm.generate_manifest_from_templates(release_name,
                                               config_src)
         template_ymls = Helm::Manifest.parse_manifest_as_ymls()

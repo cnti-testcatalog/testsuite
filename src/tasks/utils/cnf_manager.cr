@@ -505,10 +505,10 @@ module CNFManager
     elsif !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory)
       # if !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory)
       LOGGING.info "Ensuring helm directory is copied"
-      LOGGING.info("cp -a #{manifest_or_helm_directory} #{destination_cnf_dir}")
       destination_chart_directory = {creation_type: :copied,
                                      chart_directory: "#{manifest_or_helm_directory}"}
       yml_cp = `cp -a #{destination_chart_directory[:chart_directory]} #{destination_cnf_dir}`
+      LOGGING.info "Copy of #{destination_chart_directory[:chart_directory]} to #{destination_cnf_dir}"
       VERBOSE_LOGGING.info yml_cp if verbose
       raise "Copy of #{destination_chart_directory[:chart_directory]} to #{destination_cnf_dir} failed!" unless $?.success?
     end
