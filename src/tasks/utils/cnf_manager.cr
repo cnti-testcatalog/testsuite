@@ -287,15 +287,15 @@ module CNFManager
   end
 
   #Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
-  def self.cnf_installation_method(config)
+  def self.cnf_installation_method(config, release_name="")
     LOGGING.info "cnf_installation_method"
     LOGGING.info "cnf_installation_method config: #{config}"
     LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
     helm_chart = optional_key_as_string(config, "helm_chart")
     helm_directory = optional_key_as_string(config, "helm_directory")
     manifest_directory = optional_key_as_string(config, "manifest_directory")
-    full_helm_directory = Path[CNF_DIR + "/" + helm_directory].expand.to_s
-    full_manifest_directory = Path[CNF_DIR + "/" + manifest_directory].expand.to_s
+    full_helm_directory = Path[CNF_DIR + "/" + release_name + "/" + helm_directory].expand.to_s
+    full_manifest_directory = Path[CNF_DIR + "/" + release_name + "/" + manifest_directory].expand.to_s
 
     unless CNFManager.exclusive_install_method_tags?(config)
       puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-testsuite.yml!".colorize(:red)

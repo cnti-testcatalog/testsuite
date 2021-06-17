@@ -38,7 +38,8 @@ module AirGap
     config = CNFManager.parsed_config_file(config_file)
     sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file),true) 
     CNFManager.sandbox_setup(sandbox_config, cli_args)
-    install_method = CNFManager.cnf_installation_method(config)
+    # todo refactor installation method to accept full paths 
+    install_method = CNFManager.cnf_installation_method(config, sandbox_config.cnf_config[:release_name])
     LOGGING.info "generate_cnf_setup images_from_config_src"
     images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], generate_tar_mode: true) 
 
