@@ -75,6 +75,7 @@ module CNFManager
         working_chart_directory = helm_directory
       end
       helm_chart_path = destination_cnf_dir + "/" + working_chart_directory 
+      helm_chart_path = Path[helm_chart_path].expand.to_s
       manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
       white_list_container_names = optional_key_as_string(config, "allowlist_helm_chart_container_names")
       if config["allowlist_helm_chart_container_names"]?

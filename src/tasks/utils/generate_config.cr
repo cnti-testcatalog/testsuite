@@ -31,7 +31,8 @@ module CNFManager
       resource_ymls
     end
 
-    #TODO get list of image:tags from helm chart/helm directory/manifest file
+    #get list of image:tags from helm chart/helm directory/manifest file
+    #note: config_src must be an absolute path if a directory, todo: make this more resilient
     def self.images_from_config_src(config_src, airgapped=false, generate_tar_mode=false)
       LOGGING.info "images_from_config_src"
       LOGGING.info "airgapped: #{airgapped}"

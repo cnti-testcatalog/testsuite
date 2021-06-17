@@ -294,6 +294,8 @@ module CNFManager
     helm_chart = optional_key_as_string(config, "helm_chart")
     helm_directory = optional_key_as_string(config, "helm_directory")
     manifest_directory = optional_key_as_string(config, "manifest_directory")
+    full_helm_directory = Path[CNF_DIR + "/" + helm_directory].expand.to_s
+    full_manifest_directory = Path[CNF_DIR + "/" + manifest_directory].expand.to_s
 
     unless CNFManager.exclusive_install_method_tags?(config)
       puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-testsuite.yml!".colorize(:red)
@@ -302,10 +304,10 @@ module CNFManager
 
     if !helm_chart.empty?
       {:helm_chart, helm_chart}
-    elsif !helm_directory.empty?
-      {:helm_directory, helm_directory}
-    elsif !manifest_directory.empty?
-      {:manifest_directory, manifest_directory}
+    elsif !full_helm_directory.empty?
+      {:helm_directory, full_helm_directory}
+    elsif !full_manifest_directory.empty?
+      {:manifest_directory, full_manifest_directory}
     else
       puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory.".colorize(:red)
       exit 1
