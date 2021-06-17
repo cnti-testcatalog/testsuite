@@ -1,5 +1,18 @@
 FROM myoung34/github-runner:latest 
 
+ARG CRYSTAL_VERSION=0.35.1
+ARG CRYSTAL_URL=https://github.com/crystal-lang/crystal/releases/download
+
+RUN wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga && \
+    apt install -y --no-install-recommends \
+    git \
+    libssl-dev \
+    libxml2-dev \
+    libyaml-dev \
+    libgmp-dev \
+    libz-dev \
+    ./crystal.deb && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
