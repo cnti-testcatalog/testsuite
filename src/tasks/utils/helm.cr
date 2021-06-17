@@ -62,6 +62,7 @@ module Helm
     #TODO use Process here
     # Helm template works with either a chart or a directory
     ls_al = `ls -alR #{helm_chart}`
+    ls_al = `ls -alR cnfs`
     LOGGING.debug "generate_manifest_from_templates ls -alR #{helm_chart}: #{ls_al}" 
     template_resp = `#{helm} template #{release_name} #{helm_chart} > #{output_file}`
     input_content = File.read(output_file) 
