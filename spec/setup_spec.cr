@@ -167,15 +167,15 @@ describe "Setup" do
       response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml input-file=./tmp/airgapped.tar.gz`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/Successfully setup coredns/ =~ response_s).should_not be_nil
+      (/Successfully setup nginx-webapp/ =~ response_s).should_not be_nil
     ensure
       `rm ./tmp/airgapped.tar.gz` if File.exists?("./tmp/airgapped.tar.gz")
       AirGap.tmp_cleanup
 
-      response_s = `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml`
+      response_s = `LOG_LEVEL=debug ./cnf-testsuite cnf_cleanup installed-from-manifest=true cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml`
       LOGGING.info response_s
-      $?.success?.should be_true
       (/Successfully cleaned up/ =~ response_s).should_not be_nil
+      $?.success?.should be_true
     end
   end
 

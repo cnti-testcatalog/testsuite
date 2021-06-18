@@ -273,6 +273,7 @@ module CNFManager
   end
 
   def self.install_method_by_config_src(config_src : String)
+    LOGGING.info "install_method_by_config_src"
     helm_chart_file = "#{config_src}/#{CHART_YAML}"
     LOGGING.debug "potential helm_chart_file: #{helm_chart_file}"
 
@@ -296,8 +297,25 @@ module CNFManager
     helm_chart = optional_key_as_string(config, "helm_chart")
     helm_directory = optional_key_as_string(config, "helm_directory")
     manifest_directory = optional_key_as_string(config, "manifest_directory")
-    full_helm_directory = Path[CNF_DIR + "/" + release_name + "/" + helm_directory].expand.to_s
-    full_manifest_directory = Path[CNF_DIR + "/" + release_name + "/" + manifest_directory].expand.to_s
+    full_helm_directory = ""
+    full_manifest_directory = ""
+    LOGGING.info "release_name: #{release_name}"
+    LOGGING.info "helm_directory: #{helm_directory}"
+    LOGGING.info "manifest_directory: #{manifest_directory}"
+    if Dir.exists?(helm_directory) 
+      LOGGING.info "Change helm_directory relative path into full path"
+      full_helm_directory = Path[helm_directory].expand.to_s
+    elsif Dir.exists?(manifest_directory)
+      LOGGING.info "Change manifest_directory relative path into full path"
+      full_manifest_directory = Path[manifest_directory].expand.to_s
+    else
+      LOGGING.info "Building helm_directory and manifest_directory full paths"
+      full_helm_directory = Path[CNF_DIR + "/" + release_name + "/" + helm_directory].expand.to_s
+      full_manifest_directory = Path[CNF_DIR + "/" + release_name + "/" + manifest_directory].expand.to_s
+    end
+
+    LOGGING.info "full_helm_directory: #{full_helm_directory}"
+    LOGGING.info "full_manifest_directory: #{full_manifest_directory}"
 
     unless CNFManager.exclusive_install_method_tags?(config)
       puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-testsuite.yml!".colorize(:red)
@@ -317,8 +335,9 @@ module CNFManager
   end
 
   #TODO move to helm module
-  def self.helm_template_header(helm_chart_or_directory, template_file="/tmp/temp_template.yml", airgapped=false)
+  def self.helm_template_header(helm_chart_or_directory : String, template_file="/tmp/temp_template.yml", airgapped=false)
     LOGGING.info "helm_template_header"
+    LOGGING.info "helm_template_header helm_chart_or_directory: #{helm_chart_or_directory}"
     helm = CNFSingleton.helm
     # generate helm chart release name
     # use --dry-run to generate yml file
@@ -329,26 +348,32 @@ module CNFManager
       LOGGING.info  "airgapped mode info: #{info}"
       helm_chart_or_directory = info[:tar_name]
     end
-    LOGGING.info("#{helm} install --dry-run --generate-name #{helm_chart_or_directory} > #{template_file}")
-    helm_install = `#{helm} install --dry-run --generate-name #{helm_chart_or_directory} > #{template_file}`
+    # LOGGING.info("#{helm} install --dry-run --generate-name #{helm_chart_or_directory} > #{template_file}")
+    # helm_install = `#{helm} install --dry-run --generate-name #{helm_chart_or_directory} > #{template_file}`
+    Helm.install("--dry-run --generate-name #{helm_chart_or_directory} > #{template_file}")
     raw_template = File.read(template_file)
+    LOGGING.debug "raw_template: #{raw_template}"
     split_template = raw_template.split("---")
     template_header = split_template[0]
     parsed_template_header = YAML.parse(template_header)
+    LOGGING.debug "parsed_template_header: #{parsed_template_header}"
+    parsed_template_header
   end
 
   #TODO move to helm module
-  def self.helm_chart_template_release_name(helm_chart_or_directory, template_file="/tmp/temp_template.yml", airgapped=false)
+  def self.helm_chart_template_release_name(helm_chart_or_directory : String, template_file="/tmp/temp_template.yml", airgapped=false)
     LOGGING.info "helm_chart_template_release_name"
     LOGGING.info  "airgapped mode: #{airgapped}"
+    LOGGING.info "helm_chart_template_release_name helm_chart_or_directory: #{helm_chart_or_directory}"
     hth = helm_template_header(helm_chart_or_directory, template_file, airgapped)
-    LOGGING.debug "helm template: #{hth}"
+    LOGGING.info "helm template (should not be a full path): #{hth}"
     hth["NAME"]
   end
 
 
   def self.generate_and_set_release_name(config_yml_path, airgapped=false, generate_tar_mode=false)
     LOGGING.info "generate_and_set_release_name"
+    LOGGING.info "generate_and_set_release_name config_yml_path: #{config_yml_path}"
     LOGGING.info  "airgapped mode: #{airgapped}"
     return if generate_tar_mode
 
@@ -364,14 +389,16 @@ module CNFManager
       LOGGING.debug "install_method: #{install_method}"
       case install_method[0]
       when :helm_chart
-        LOGGING.debug "helm_chart install method: #{install_method[1]}"
+        LOGGING.info "generate_and_set_release_name install method: #{install_method[0]} data: #{install_method[1]}"
+        LOGGING.info "generate_and_set_release_name helm_chart_or_directory: #{install_method[1]}"
         release_name = helm_chart_template_release_name(install_method[1], airgapped: airgapped)
       when :helm_directory
-        LOGGING.debug "helm_directory install method: #{yml_path}/#{install_method[1]}"
+        LOGGING.info "helm_directory install method: #{yml_path}/#{install_method[1]}"
         # todo if in airgapped mode, use path for airgapped repositories
         # todo if in airgapped mode, get the release name
         # todo get the release name by looking through everything under /tmp/repositories
-        release_name = helm_chart_template_release_name("#{yml_path}/#{install_method[1]}", airgapped: airgapped)
+        LOGGING.info "generate_and_set_release_name helm_chart_or_directory: #{install_method[1]}"
+        release_name = helm_chart_template_release_name("#{install_method[1]}", airgapped: airgapped)
       when :manifest_directory
         LOGGING.debug "manifest_directory install method"
         release_name = UUID.random.to_s
@@ -493,18 +520,20 @@ module CNFManager
     case install_method[0]
     when :manifest_directory
       LOGGING.info "preparing manifest_directory sandbox"
+      FileUtils.mkdir_p(destination_cnf_dir)
       source_directory = config_source_dir(config_file) + "/" + manifest_directory
-      LOGGING.info "cp -r #{source_directory} #{destination_cnf_dir}"
-      yml_cp = `cp -r #{source_directory} #{destination_cnf_dir}`
+      LOGGING.info "cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}"
+      yml_cp = `cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}`
     when :helm_directory
+      FileUtils.mkdir_p(destination_cnf_dir)
       LOGGING.info "preparing helm_directory sandbox"
       source_directory = config_source_dir(config_file) + "/" + helm_directory
-      LOGGING.info "cp -r #{source_directory} #{destination_cnf_dir}"
-      yml_cp = `cp -r #{source_directory} #{destination_cnf_dir}`
+      LOGGING.info "cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}"
+      yml_cp = `cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}`
     when :helm_chart
       LOGGING.info "preparing helm chart sandbox"
       source_directory = ""
-      FileUtils.mkdir_p(destination_cnf_dir + "/exported_chart")
+      FileUtils.mkdir_p(Path[destination_cnf_dir].expand.to_s + "/exported_chart")
     end
     ls_al = `ls -alR #{destination_cnf_dir}`
     LOGGING.info "ls -alR #{destination_cnf_dir}: #{ls_al}"
@@ -748,6 +777,7 @@ end
 
   def self.sample_cleanup(config_file, force=false, installed_from_manifest=false, verbose=true)
     LOGGING.info "sample_cleanup"
+    LOGGING.info "sample_cleanup installed_from_manifest: #{installed_from_manifest}"
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
     config = parsed_config_file(ensure_cnf_testsuite_yml_path(config_file))
 
@@ -761,6 +791,7 @@ end
     dir_exists = File.directory?(destination_cnf_dir)
     ret = true
     LOGGING.info("destination_cnf_dir: #{destination_cnf_dir}")
+    # todo use install_from_config_src to determine installation method
     if dir_exists || force == true
       if installed_from_manifest
         # LOGGING.info "kubectl delete command: kubectl delete -f #{manifest_directory}"
