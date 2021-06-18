@@ -4,7 +4,7 @@ require "colorize"
 module Find 
   def self.find(directory, wildcard="*.tar*", maxdepth="1", silent=true)
     LOGGING.info "find command: find #{directory} -maxdepth #{maxdepth} -name #{wildcard}"
-    status = Process.run("find #{directory} -maxdepth #{maxdepth} -name #{wildcard}",
+    status = Process.run("find #{directory} -maxdepth #{maxdepth} -name \"#{wildcard}\"",
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
