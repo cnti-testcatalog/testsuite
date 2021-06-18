@@ -5,7 +5,7 @@ ARG KIND_VERSION="v0.11.1"
 ARG HELM_VERSION="v3.1.1"
 
 RUN apk update && \
-    apk add curl bash && \
+    apk add curl bash findutils && \
     curl -Lso /usr/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
     chmod +x /usr/bin/kubectl && \
     curl -Lso /usr/bin/kind "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64" && \

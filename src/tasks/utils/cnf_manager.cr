@@ -507,7 +507,7 @@ module CNFManager
       FileUtils.mkdir_p(destination_cnf_dir + "/exported_chart")
     end
     ls_al = `ls -alR #{destination_cnf_dir}`
-    LOGGING.debug "ls -alR #{destination_cnf_dir}: #{ls_al}"
+    LOGGING.info "ls -alR #{destination_cnf_dir}: #{ls_al}"
 
     # if install_method[0] == :manifest_directory
     #   manifest_or_helm_directory = config_source_dir(config_file) + "/" + manifest_directory
