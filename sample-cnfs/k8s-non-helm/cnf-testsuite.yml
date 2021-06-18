@@ -3,15 +3,11 @@ manifest_directory: manifests
 git_clone_url: 
 install_script: 
 release_name: nginx-webapp
-deployment_name: nginx-webapp  
-deployment_label: app 
-service_name: 
 application_deployment_names: [nginx-webapp]
 docker_repository: 
 helm_repository:
   name:
   repo_url:
-helm_chart_container_name:
 container_names: 
   - name: sidecar-container1 
     rolling_update_test_tag: "1.32.0"

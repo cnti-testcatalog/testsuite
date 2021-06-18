@@ -9,6 +9,8 @@ require "uuid"
 require "./points.cr"
 require "./task.cr"
 require "./config.cr"
+require "./airgap_utils.cr"
+require "./tar.cr"
 require "./generate_config.cr"
 
 module CNFManager
@@ -304,9 +306,9 @@ module CNFManager
 
     if !helm_chart.empty?
       {:helm_chart, helm_chart}
-    elsif !full_helm_directory.empty?
+    elsif !helm_directory.empty?
       {:helm_directory, full_helm_directory}
-    elsif !full_manifest_directory.empty?
+    elsif !manifest_directory.empty?
       {:manifest_directory, full_manifest_directory}
     else
       puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory.".colorize(:red)
@@ -323,7 +325,7 @@ module CNFManager
     LOGGING.info  "airgapped mode: #{airgapped}"
     if airgapped
       # todo make tar info work with a directory
-      info = AirGap.tar_info_by_config_src(helm_chart_or_directory)
+      info = AirGapUtils.tar_info_by_config_src(helm_chart_or_directory)
       LOGGING.info  "airgapped mode info: #{info}"
       helm_chart_or_directory = info[:tar_name]
     end
@@ -485,41 +487,67 @@ module CNFManager
     helm_chart_path = config.cnf_config[:helm_chart_path]
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
 
-    if install_method[0] == :manifest_directory
-      manifest_or_helm_directory = config_source_dir(config_file) + "/" + manifest_directory
-    elsif !helm_directory.empty?
-      manifest_or_helm_directory = config_source_dir(config_file) + "/" + helm_directory
-    else
-      # this is not going to exist
-      manifest_or_helm_directory = helm_chart_path #./cnfs/<cnf-release-name>/exported_chart
-    end
 
-    LOGGING.info("File.directory?(#{manifest_or_helm_directory}) #{File.directory?(manifest_or_helm_directory)}")
+    # todo manifest_or_helm_directory should either be the source helm/manifest files or the destination
+    # directory that they will be copied to/generated into, but *not both*
+    case install_method[0]
+    when :manifest_directory
+      LOGGING.info "preparing manifest_directory sandbox"
+      source_directory = config_source_dir(config_file) + "/" + manifest_directory
+      LOGGING.info "cp -r #{source_directory} #{destination_cnf_dir}"
+      yml_cp = `cp -r #{source_directory} #{destination_cnf_dir}`
+    when :helm_directory
+      LOGGING.info "preparing helm_directory sandbox"
+      source_directory = config_source_dir(config_file) + "/" + helm_directory
+      LOGGING.info "cp -r #{source_directory} #{destination_cnf_dir}"
+      yml_cp = `cp -r #{source_directory} #{destination_cnf_dir}`
+    when :helm_chart
+      LOGGING.info "preparing helm chart sandbox"
+      source_directory = ""
+      FileUtils.mkdir_p(destination_cnf_dir + "/exported_chart")
+    end
+    ls_al = `ls -alR #{destination_cnf_dir}`
+    LOGGING.debug "ls -alR #{destination_cnf_dir}: #{ls_al}"
+
+    # if install_method[0] == :manifest_directory
+    #   manifest_or_helm_directory = config_source_dir(config_file) + "/" + manifest_directory
+    # elsif !helm_directory.empty?
+    #   manifest_or_helm_directory = config_source_dir(config_file) + "/" + helm_directory
+    # else
+    #   # this is not going to exist
+    #   manifest_or_helm_directory = helm_chart_path #./cnfs/<cnf-release-name>/exported_chart
+    # end
+
+    # LOGGING.info("File.directory?(#{manifest_or_helm_directory}) #{File.directory?(manifest_or_helm_directory)}")
     # if the helm directory already exists, copy helm_directory contents into cnfs/<cnf-name>/<helm-directory-of-the-same-name>
 
-    destination_chart_directory = {creation_type: :created, chart_directory: ""}
-    ls_al = `ls -alR #{destination_chart_directory[:chart_directory]}`
-    LOGGING.debug "ls -alR #{destination_chart_directory[:chart_directory]}: #{ls_al}"
-    if !manifest_or_helm_directory.empty? && manifest_or_helm_directory =~ /exported_chart/
-      LOGGING.info "Ensuring exported helm directory is created"
-      LOGGING.debug "mkdir_p destination_cnf_dir/exported_chart: #{manifest_or_helm_directory}"
-      destination_chart_directory = {creation_type: :created,
-                                     chart_directory: "#{manifest_or_helm_directory}"}
-      FileUtils.mkdir_p(destination_chart_directory[:chart_directory])
-    elsif !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory)
-      # if !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory)
-      LOGGING.info "Ensuring helm directory is copied"
-      destination_chart_directory = {creation_type: :copied,
-                                     chart_directory: "#{manifest_or_helm_directory}"}
-      yml_cp = `cp -a #{destination_chart_directory[:chart_directory]} #{destination_cnf_dir}`
-      LOGGING.info "cp -a #{destination_chart_directory[:chart_directory]} #{destination_cnf_dir}"
-      VERBOSE_LOGGING.info yml_cp if verbose
-      raise "Copy of #{destination_chart_directory[:chart_directory]} to #{destination_cnf_dir} failed!" unless $?.success?
-    end
-    LOGGING.info "copy cnf-testsuite.yml file"
+    # todo if helm chart (not helm directory or manifest directory) create exported_chart directory 
+    # todo if helm/manifest directory then copy directory into cnfs/release name directory
+    # destination_chart_directory = {creation_type: :created, chart_directory: ""}
+    # ls_al = `ls -alR #{destination_chart_directory[:chart_directory]}`
+    # LOGGING.debug "ls -alR #{destination_chart_directory[:chart_directory]}: #{ls_al}"
+    # if !manifest_or_helm_directory.empty? && manifest_or_helm_directory =~ /exported_chart/
+    #   LOGGING.info "Ensuring exported helm/manifest directory is created"
+    #   LOGGING.debug "mkdir_p destination_cnf_dir/exported_chart: #{manifest_or_helm_directory}"
+    #   destination_chart_directory = {creation_type: :created,
+    #                                  chart_directory: "#{manifest_or_helm_directory}"}
+    #   FileUtils.mkdir_p(destination_chart_directory[:chart_directory])
+    #   LOGGING.info "cp -a #{destination_chart_directory[:manifest_directory]} #{destination_directory}"
+    #   yml_cp = `cp -a #{destination_chart_directory[:manifest_directory]} #{destination_directory}`
+    # elsif !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory)
+    #   # if !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory)
+    #   LOGGING.info "Ensuring helm directory is copied"
+    #   destination_chart_directory = {creation_type: :copied,
+    #                                  chart_directory: "#{manifest_or_helm_directory}"}
+    #   yml_cp = `cp -a #{destination_chart_directory[:chart_directory]} #{destination_cnf_dir}`
+    #   LOGGING.info "cp -a #{destination_chart_directory[:chart_directory]} #{destination_cnf_dir}"
+    #   VERBOSE_LOGGING.info yml_cp if verbose
+    #   raise "Copy of #{destination_chart_directory[:chart_directory]} to #{destination_cnf_dir} failed!" unless $?.success?
+    # end
+    # LOGGING.info "copy cnf-testsuite.yml file"
     LOGGING.info("cp -a #{ensure_cnf_testsuite_yml_path(config_file)} #{destination_cnf_dir}")
     yml_cp = `cp -a #{ensure_cnf_testsuite_yml_path(config_file)} #{destination_cnf_dir}`
-    destination_chart_directory
+    # destination_chart_directory
   end
 
   # Retrieve the helm chart source
@@ -615,9 +643,9 @@ module CNFManager
       when :manifest_directory
         # todo airgap_manifest_directory << prepare a manifest directory for deployment into an airgapped environment, put in airgap module
         if input_file && !input_file.empty?
-          yaml_template_files = TarClient.find("#{destination_cnf_dir}/#{manifest_directory}", 
+          yaml_template_files = Find.find("#{destination_cnf_dir}/#{manifest_directory}", 
                                                "*.yaml*", "100")
-          yml_template_files = TarClient.find("#{destination_cnf_dir}/#{manifest_directory}", 
+          yml_template_files = Find.find("#{destination_cnf_dir}/#{manifest_directory}", 
                                                "*.yml*", "100")
           template_files = yaml_template_files + yml_template_files
           template_files.map{|x| AirGapUtils.image_pull_policy(x)}
@@ -626,7 +654,7 @@ module CNFManager
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
       when :helm_chart
         if input_file && !input_file.empty?
-          tar_info = AirGap.tar_info_by_config_src(config.cnf_config[:helm_chart])
+          tar_info = AirGapUtils.tar_info_by_config_src(config.cnf_config[:helm_chart])
           # prepare a helm_chart tar file for deployment into an airgapped environment, put in airgap module
           TarClient.modify_tar!(tar_info[:tar_name]) do |directory| 
             template_files = TarClient.find(directory, "*.yaml*", "100")

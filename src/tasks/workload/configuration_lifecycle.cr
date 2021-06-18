@@ -312,18 +312,13 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     create_namespace = `kubectl create namespace hardcoded-ip-test`
     unless helm_chart.empty?
       if args.named["offline"]?
-        # todo make tar info work with a directory
-        info = AirGap.tar_info_by_config_src(helm_chart)
+        info = AirGapUtils.tar_info_by_config_src(helm_chart)
         LOGGING.info  "hardcoded_ip_addresses_in_k8s_runtime_configuration airgapped mode info: #{info}"
         helm_chart = info[:tar_name]
       end
       helm_install = Helm.install("--namespace hardcoded-ip-test hardcoded-ip-test #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml")
-      # helm_install = `#{helm} install --namespace hardcoded-ip-test hardcoded-ip-test #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
-      # VERBOSE_LOGGING.info "helm_chart: #{helm_chart}" if check_verbose(args)
     else
-      #TODO test this in airgapped mode
       helm_install = Helm.install("--namespace hardcoded-ip-test hardcoded-ip-test #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml")
-      # helm_install = `#{helm} install --namespace hardcoded-ip-test hardcoded-ip-test #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml`
       VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if check_verbose(args)
     end
 

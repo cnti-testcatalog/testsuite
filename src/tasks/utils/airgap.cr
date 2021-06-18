@@ -11,7 +11,6 @@ require "./airgap_utils.cr"
 module AirGap
   CRI_VERSION="v1.17.0"
   CTR_VERSION="1.5.0"
-  TAR_REPOSITORY_DIR = "/tmp/repositories"
 
   #TODO make chainable predicates that allow for bootstraping calls
   # schedulable_nodes() : nodes_json
@@ -61,45 +60,7 @@ module AirGap
     end
   end
 
-  def self.helm_tar_dir(config_src)
-    FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
-    LOGGING.debug "helm_tar_dir ls /tmp/repositories:" + `ls -al /tmp/repositories`
-    # chaos-mesh/chaos-mesh --version 0.5.1
-    repo = config_src.split(" ")[0]
-    repo_dir = repo.gsub("/", "_")
-    chart_name = repo.split("/")[-1]
-    repo_path = "repositories/#{repo_dir}" 
-    tar_dir = "/tmp/#{repo_path}"
-    LOGGING.info "helm_tar_dir: #{tar_dir}"
-    tar_dir
-  end
 
-  def self.tar_name_by_helm_chart(config_src)
-    FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
-    LOGGING.debug "tar_name_by_helm_chart ls /tmp/repositories:" + `ls -al /tmp/repositories`
-    tar_dir = helm_tar_dir(config_src)
-    tgz_files = TarClient.find(tar_dir, "*.tgz*")
-    tar_files = TarClient.find(tar_dir, "*.tar*") + tgz_files
-    tar_name = ""
-    tar_name = tar_files[0] if !tar_files.empty?
-    LOGGING.info "tar_name: #{tar_name}"
-    tar_name
-  end
-
-  def self.tar_info_by_config_src(config_src)
-    FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
-    LOGGING.debug "tar_info_by_config_src ls /tmp/repositories:" + `ls -al /tmp/repositories`
-    # chaos-mesh/chaos-mesh --version 0.5.1
-    repo = config_src.split(" ")[0]
-    repo_dir = repo.gsub("/", "_")
-    chart_name = repo.split("/")[-1]
-    repo_path = "repositories/#{repo_dir}" 
-    tar_dir = "/tmp/#{repo_path}"
-    tar_info = {repo: repo, repo_dir: repo_dir, chart_name: chart_name,
-     repo_path: repo_path, tar_dir: tar_dir, tar_name: tar_name_by_helm_chart(config_src)}
-    LOGGING.info "tar_info: #{tar_info}"
-    tar_info
-  end
 
   # todo airgap_helm_chart << prepare a helm_chart tar file for deployment into an airgapped environment, put in airgap module
   # todo airgap_helm_directory << prepare a helm directory for deployment into an airgapped environment, put in airgap module
@@ -110,11 +71,11 @@ module AirGap
     # get the chart name out of the command
     # chaos-mesh/chaos-mesh --version 0.5.1
     #
-    tar_dir = helm_tar_dir(command)
+    tar_dir = AirGapUtils.helm_tar_dir(command)
     FileUtils.mkdir_p(tar_dir)
     Helm.fetch("#{command} -d #{tar_dir}")
     LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
-    info = tar_info_by_config_src(command)
+    info = AirGapUtils.tar_info_by_config_src(command)
     repo = info[:repo]
     repo_dir = info[:repo_dir]
     chart_name = info[:chart_name]
