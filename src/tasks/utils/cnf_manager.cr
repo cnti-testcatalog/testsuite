@@ -375,6 +375,7 @@ module CNFManager
     LOGGING.info "generate_and_set_release_name"
     LOGGING.info "generate_and_set_release_name config_yml_path: #{config_yml_path}"
     LOGGING.info  "airgapped mode: #{airgapped}"
+    LOGGING.info  "generate_tar_mode: #{generate_tar_mode}"
     return if generate_tar_mode
 
     yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
