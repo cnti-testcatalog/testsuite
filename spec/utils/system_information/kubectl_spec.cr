@@ -24,4 +24,22 @@ describe "Kubectl" do
   it "'kubectl_installations()' should return the information about the kubectl installation", tags: ["kubectl-utils"]  do
     (kubectl_installation(true)).should contain("kubectl found")
   end
+
+  it "'acceptable_kubectl_version?()' should return true if client is within 3 minor versions of server version'" do
+    kubectl_response = <<-KUBECTL_OUTPUT
+      Client Version: version.Info{Major:"1", Minor:"18", GitVersion:"v1.21.0", GitCommit:"cb303e613a121a29364f75cc67d3d580833a7479", GitTreeState:"clean", BuildDate:"2021-04-08T16:31:21Z", GoVersion:"go1.16.1", Compiler:"gc", Platform:"linux/amd64"}
+      Server Version: version.Info{Major:"1", Minor:"20", GitVersion:"v1.20.2", GitCommit:"faecb196815e248d3ecfb03c680a4507229c2a56", GitTreeState:"clean", BuildDate:"2021-01-21T01:11:42Z", GoVersion:"go1.15.5", Compiler:"gc", Platform:"linux/amd64"}
+    KUBECTL_OUTPUT
+
+    acceptable_kubectl_version?(kubectl_response).should eq(true)
+  end
+
+  it "'acceptable_kubectl_version?()' should return false if client is not within 3 minor versions of server version'" do
+    kubectl_response = <<-KUBECTL_OUTPUT
+      Client Version: version.Info{Major:"1", Minor:"16", GitVersion:"v1.21.0", GitCommit:"cb303e613a121a29364f75cc67d3d580833a7479", GitTreeState:"clean", BuildDate:"2021-04-08T16:31:21Z", GoVersion:"go1.16.1", Compiler:"gc", Platform:"linux/amd64"}
+      Server Version: version.Info{Major:"1", Minor:"20", GitVersion:"v1.20.2", GitCommit:"faecb196815e248d3ecfb03c680a4507229c2a56", GitTreeState:"clean", BuildDate:"2021-01-21T01:11:42Z", GoVersion:"go1.15.5", Compiler:"gc", Platform:"linux/amd64"}
+    KUBECTL_OUTPUT
+
+    acceptable_kubectl_version?(kubectl_response).should eq(false)
+  end
 end

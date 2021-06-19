@@ -8,11 +8,20 @@ def kubectl_installation(verbose=false)
   gkubectl = kubectl_global_response
   VERBOSE_LOGGING.info gkubectl if verbose
   
-  global_kubectl_version = kubectl_version(gkubectl, verbose)
+  global_kubectl_version = kubectl_version(gkubectl, "client", verbose)
    
   if !global_kubectl_version.empty?
     gmsg = "Global kubectl found. Version: #{global_kubectl_version}"
     stdout_success gmsg
+
+    if acceptable_kubectl_version?(gkubectl, verbose)
+      version_msg = "Global kubectl client is not more than 3 minor versions behind server version"
+      stdout_success version_msg
+      gmsg = "#{gmsg} #{version_msg}"
+    else
+      stdout_failure "Global kubectl client is more than 3 minor versions behind server version"
+    end
+
   else
     stdout_warning gmsg
   end
@@ -20,11 +29,19 @@ def kubectl_installation(verbose=false)
   lkubectl = kubectl_local_response
   VERBOSE_LOGGING.info lkubectl if verbose
   
-  local_kubectl_version = kubectl_version(lkubectl, verbose)
+  local_kubectl_version = kubectl_version(lkubectl, "client", verbose)
    
   if !local_kubectl_version.empty?
     lmsg = "Local kubectl found. Version: #{local_kubectl_version}"
     stdout_success lmsg
+
+    if acceptable_kubectl_version?(lkubectl, verbose)
+      version_msg = "Local kubectl client is not more than 3 minor versions behind server version"
+      lmsg = "#{lmsg} #{version_msg}"
+    else
+      stdout_failure "Local kubectl client is more than 3 minor versions behind server version"
+    end
+
   else
     stdout_warning lmsg
   end
@@ -78,13 +95,31 @@ def kubectl_local_response(verbose=false)
   kubectl_response.to_s
 end
 
-# TODO create a kubernetes version checker (vs kubectl client checker)
-
-def kubectl_version(kubectl_response, verbose=false)
-  # example
-  # Client Version: version.Info{Major:"1", Minor:"15", GitVersion:"v1.15.3", GitCommit:"2d3c76f9091b6bec110a5e63777c332469e0cba2", GitTreeState:"clean", BuildDate:"2019-08-19T11:13:54Z", GoVersion:"go1.12.9", Compiler:"gc", Platform:"linux/amd64"} 
-  resp = kubectl_response.match /Client Version: version.Info{(Major:"(([0-9]{1,3})"\, )Minor:"([0-9]{1,3}[+]?)")/
+# Extracts Kubernetes client version or server version
+#
+# ```
+# version = kubectl_version(kubectl_response, "client")
+# version # => "1.12"
+#
+# version = kubectl_version(kubectl_response, "server")
+# version # => "1.12"
+# ```
+#
+# For reference, below are example client and server version strings from "kubectl version" output
+#
+# ```
+# Client Version: version.Info{Major:"1", Minor:"21", GitVersion:"v1.21.0", GitCommit:"cb303e613a121a29364f75cc67d3d580833a7479", GitTreeState:"clean", BuildDate:"2021-04-08T16:31:21Z", GoVersion:"go1.16.1", Compiler:"gc", Platform:"linux/amd64"}
+# Server Version: version.Info{Major:"1", Minor:"20", GitVersion:"v1.20.2", GitCommit:"faecb196815e248d3ecfb03c680a4507229c2a56", GitTreeState:"clean", BuildDate:"2021-01-21T01:11:42Z", GoVersion:"go1.15.5", Compiler:"gc", Platform:"linux/amd64"}
+# ```
+#
+# TODO Function could be updated to rely on the JSON output of "kubectl version -o json" instead of regex parsing
+#
+# Returns the version as a string (Example: 1.12, 1.20, etc)
+def kubectl_version(kubectl_response, version_for="client", verbose=false)
+  # version_for can be "client" or "server"
+  resp = kubectl_response.match /#{version_for.capitalize} Version: version.Info{(Major:"(([0-9]{1,3})"\, )Minor:"([0-9]{1,3}[+]?)")/
   VERBOSE_LOGGING.info resp if verbose
+
   if resp
     "#{resp && resp.not_nil![3]}.#{resp && resp.not_nil![4]}"
   else
@@ -92,4 +127,15 @@ def kubectl_version(kubectl_response, verbose=false)
   end
 end
 
+# Check if client version is not 3 minor versions behind server version
+def acceptable_kubectl_version?(kubectl_response, verbose=false)
+  client_version = kubectl_version(kubectl_response, "client", verbose).split(".")
+  server_version = kubectl_version(kubectl_response, "server", verbose).split(".")
 
+  # This check ensures major versions are same
+  return false if server_version[0].to_i != client_version[0].to_i
+
+  # This checks for minor versions
+  return false if (server_version[1].to_i - client_version[1].to_i) > 3
+  return true
+end
