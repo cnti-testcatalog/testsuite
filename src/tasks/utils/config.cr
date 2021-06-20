@@ -37,6 +37,8 @@ module CNFManager
 
     def self.parse_config_yml(config_yml_path : String, airgapped=false, generate_tar_mode=false) : CNFManager::Config
       LOGGING.debug "parse_config_yml config_yml_path: #{config_yml_path}"
+      LOGGING.info "airgapped: #{airgapped}"
+      LOGGING.info "generate_tar_mode: #{generate_tar_mode}"
       yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
       #TODO modify the destination testsuite yml instead of the source testsuite yml 
       # (especially in the case of the release manager).  Then reread the destination config

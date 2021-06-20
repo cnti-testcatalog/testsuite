@@ -275,7 +275,9 @@ module CNFManager
   def self.install_method_by_config_src(config_src : String)
     LOGGING.info "install_method_by_config_src"
     helm_chart_file = "#{config_src}/#{CHART_YAML}"
-    LOGGING.debug "potential helm_chart_file: #{helm_chart_file}"
+    LOGGING.debug "looking for potential helm_chart_file: #{helm_chart_file}"
+    ls_al = `ls -alR config_src #{config_src}`
+    ls_al = `ls -alR helm_chart_file #{helm_chart_file}`
 
     if !Dir.exists?(config_src) 
       :helm_chart

@@ -13,6 +13,7 @@ module CNFManager
     def self.export_manifest(config_src, output_file="./cnf-testsuite.yml", airgapped=false, generate_tar_mode=false)
       LOGGING.info "export_manifest"
       LOGGING.info "airgapped: #{airgapped}"
+      LOGGING.info "generate_tar_mode: #{generate_tar_mode}"
       generate_initial_testsuite_yml(config_src, output_file)
       CNFManager.generate_and_set_release_name(output_file, 
                                                airgapped: airgapped, 
@@ -36,6 +37,7 @@ module CNFManager
     def self.images_from_config_src(config_src, airgapped=false, generate_tar_mode=false)
       LOGGING.info "images_from_config_src"
       LOGGING.info "airgapped: #{airgapped}"
+      LOGGING.info "generate_tar_mode: #{generate_tar_mode}"
       #return container image name/tag
       ret_containers = [] of NamedTuple(container_name: String, image_name: String, tag: String) 
       resource_ymls = CNFManager::GenerateConfig.export_manifest(config_src, airgapped: airgapped, generate_tar_mode: generate_tar_mode)
