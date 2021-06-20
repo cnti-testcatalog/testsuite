@@ -35,7 +35,7 @@ module CNFManager
                                      container_names: Array(Hash(String, String )) | Nil,
                                      white_list_container_names: Array(String)) 
 
-    def self.parse_config_yml(config_yml_path : String, airgapped=false) : CNFManager::Config
+    def self.parse_config_yml(config_yml_path : String, airgapped=false, generate_tar_mode=false) : CNFManager::Config
       LOGGING.debug "parse_config_yml config_yml_path: #{config_yml_path}"
       yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
       #TODO modify the destination testsuite yml instead of the source testsuite yml 
@@ -46,7 +46,7 @@ module CNFManager
 
       install_method = CNFManager.cnf_installation_method(config)
 
-      CNFManager.generate_and_set_release_name(config_yml_path)
+      CNFManager.generate_and_set_release_name(config_yml_path, airgapped, generate_tar_mode)
 
       destination_cnf_dir = CNFManager.cnf_destination_dir(yml_file)
 

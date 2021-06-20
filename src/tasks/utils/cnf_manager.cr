@@ -627,8 +627,12 @@ module CNFManager
     wait_count = cli_args[:wait_count]
     verbose = cli_args[:verbose]
     input_file = cli_args[:input_file]
+    output_file = cli_args[:output_file]
     if input_file && !input_file.empty?
-      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file),true) 
+      # todo add generate and set tar as well
+      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: true) 
+    elsif output_file && !output_file.empty?
+      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), generate_tar_mode: true) 
     else
       config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
     end
