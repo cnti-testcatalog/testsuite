@@ -286,7 +286,8 @@ module CNFManager
     elsif File.exists?(helm_chart_file)
       LOGGING.info "install_method_by_config_src helm_directory selected"
       :helm_directory
-    elsif generate_tar_mode && KubectlClient::Apply.validate(config_src) # just because we are in generate tar mode doesn't mean we have a K8s cluster
+    # elsif generate_tar_mode && KubectlClient::Apply.validate(config_src) # just because we are in generate tar mode doesn't mean we have a K8s cluster
+    elsif Dir.exists?(config_src) 
       LOGGING.info "install_method_by_config_src manifest_directory selected"
       :manifest_directory
     else
