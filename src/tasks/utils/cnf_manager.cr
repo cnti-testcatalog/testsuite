@@ -274,8 +274,9 @@ module CNFManager
 
   def self.install_method_by_config_src(config_src : String)
     LOGGING.info "install_method_by_config_src"
+    LOGGING.info "config_src: #{config_src}"
     helm_chart_file = "#{config_src}/#{CHART_YAML}"
-    LOGGING.debug "looking for potential helm_chart_file: #{helm_chart_file}"
+    LOGGING.info "looking for potential helm_chart_file: #{helm_chart_file}"
     ls_al = `ls -alR config_src #{config_src}`
     ls_al = `ls -alR helm_chart_file #{helm_chart_file}`
 
@@ -316,8 +317,8 @@ module CNFManager
       full_manifest_directory = Path[CNF_DIR + "/" + release_name + "/" + manifest_directory].expand.to_s
     end
 
-    LOGGING.info "full_helm_directory: #{full_helm_directory}"
-    LOGGING.info "full_manifest_directory: #{full_manifest_directory}"
+    LOGGING.info "full_helm_directory: #{full_helm_directory} exists? #{Dir.exists?(full_helm_directory)}"
+    LOGGING.info "full_manifest_directory: #{full_manifest_directory} exists? #{Dir.exists?(full_manifest_directory)}"
 
     unless CNFManager.exclusive_install_method_tags?(config)
       puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-testsuite.yml!".colorize(:red)
@@ -327,8 +328,10 @@ module CNFManager
     if !helm_chart.empty?
       {:helm_chart, helm_chart}
     elsif !helm_directory.empty?
+      LOGGING.info "helm_directory not empty, using: #{full_helm_directory}"
       {:helm_directory, full_helm_directory}
     elsif !manifest_directory.empty?
+      LOGGING.info "manifest_directory not empty, using: #{full_manifest_directory}"
       {:manifest_directory, full_manifest_directory}
     else
       puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory.".colorize(:red)
