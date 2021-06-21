@@ -272,11 +272,11 @@ module CNFManager
     end
   end
 
-  def self.install_method_by_config_src(config_src : String)
+  def self.install_method_by_config_src(config_src : String, airgapped=false, generate_tar_mode=false)
     LOGGING.info "install_method_by_config_src"
     LOGGING.info "config_src: #{config_src}"
     helm_chart_file = "#{config_src}/#{CHART_YAML}"
-    LOGGING.info "looking for potential helm_chart_file: #{helm_chart_file}"
+    LOGGING.info "looking for potential helm_chart_file: #{helm_chart_file}: file exists?: #{File.exists?(helm_chart_file)}"
     ls_al = `ls -alR config_src #{config_src}`
     ls_al = `ls -alR helm_chart_file #{helm_chart_file}`
 
@@ -284,7 +284,7 @@ module CNFManager
       :helm_chart
     elsif File.exists?(helm_chart_file)
       :helm_directory
-    elsif KubectlClient::Apply.validate(config_src)
+    elsif generate_tar_mode && KubectlClient::Apply.validate(config_src) # just because we are in generate tar mode doesn't mean we have a K8s cluster
       :manifest_directory
     else
       puts "Error: #{config_src} is neither a helm_chart, helm_directory, or manifest_directory.".colorize(:red)
@@ -293,13 +293,14 @@ module CNFManager
   end
 
   #Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
-  def self.cnf_installation_method(config, release_name="")
+  def self.cnf_installation_method(config)
     LOGGING.info "cnf_installation_method"
     LOGGING.info "cnf_installation_method config: #{config}"
     LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
     helm_chart = optional_key_as_string(config, "helm_chart")
     helm_directory = optional_key_as_string(config, "helm_directory")
     manifest_directory = optional_key_as_string(config, "manifest_directory")
+    release_name = optional_key_as_string(config, "release_name")
     full_helm_directory = ""
     full_manifest_directory = ""
     LOGGING.info "release_name: #{release_name}"

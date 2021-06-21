@@ -39,7 +39,7 @@ module AirGap
     LOGGING.info "generate sandbox args: sandbox_config: #{sandbox_config}, cli_args: #{cli_args}"
     CNFManager.sandbox_setup(sandbox_config, cli_args)
     # todo refactor installation method to accept full paths 
-    install_method = CNFManager.cnf_installation_method(config, sandbox_config.cnf_config[:release_name])
+    install_method = CNFManager.cnf_installation_method(config)
     LOGGING.info "generate_cnf_setup images_from_config_src"
     images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], generate_tar_mode: true) 
 

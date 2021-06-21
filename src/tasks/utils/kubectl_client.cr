@@ -114,7 +114,8 @@ module KubectlClient
       apply_status = $?.success?
     end
     def self.validate(file_name) : Bool
-      LOGGING.info "apply file: #{file_name}"
+      # this hits the server btw (so you need a valid K8s cluster)
+      LOGGING.info "apply (validate) file: #{file_name}"
       status = Process.run("kubectl apply --validate=true --dry-run=client -f #{file_name}",
                            shell: true,
                            output: output = IO::Memory.new,

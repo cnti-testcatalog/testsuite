@@ -44,11 +44,10 @@ module CNFManager
       # (especially in the case of the release manager).  Then reread the destination config
       # TODO for cleanup, read source, then find destination and use release name from destination config
       # TODO alternatively use a CRD to save the release name
-      config = CNFManager.parsed_config_file(yml_file)
-
-      install_method = CNFManager.cnf_installation_method(config)
 
       CNFManager.generate_and_set_release_name(config_yml_path, airgapped, generate_tar_mode)
+      config = CNFManager.parsed_config_file(yml_file)
+      install_method = CNFManager.cnf_installation_method(config)
 
       destination_cnf_dir = CNFManager.cnf_destination_dir(yml_file)
 
