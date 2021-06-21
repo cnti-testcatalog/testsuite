@@ -281,10 +281,13 @@ module CNFManager
     ls_al = `ls -alR helm_chart_file #{helm_chart_file}`
 
     if !Dir.exists?(config_src) 
+      LOGGING.info "install_method_by_config_src helm_chart selected"
       :helm_chart
     elsif File.exists?(helm_chart_file)
+      LOGGING.info "install_method_by_config_src helm_directory selected"
       :helm_directory
     elsif generate_tar_mode && KubectlClient::Apply.validate(config_src) # just because we are in generate tar mode doesn't mean we have a K8s cluster
+      LOGGING.info "install_method_by_config_src manifest_directory selected"
       :manifest_directory
     else
       puts "Error: #{config_src} is neither a helm_chart, helm_directory, or manifest_directory.".colorize(:red)
