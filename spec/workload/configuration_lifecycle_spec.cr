@@ -316,7 +316,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'secrets_used' should pass when secrets are provided as volumes and used by a container", tags: ["secrets_used_pass"] do
+  it "'secrets_used' should pass when secrets are provided as volumes and used by a container", tags: ["secrets"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_secret_volume/cnf-testsuite.yml verbose `
       $?.success?.should be_true
@@ -329,7 +329,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'secrets_used' should fail when secrets are provided as volumes and not mounted by a container", tags: ["secrets_used_fail"] do
+  it "'secrets_used' should fail when secrets are provided as volumes and not mounted by a container", tags: ["secrets"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_unmounted_secret_volume/cnf-testsuite.yml verbose wait_count=0 `
       $?.success?.should be_true
@@ -342,7 +342,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'secrets_used' should pass when secrets are provided as environment variables and used by a container", tags: ["secrets_used_pass"] do
+  it "'secrets_used' should pass when secrets are provided as environment variables and used by a container", tags: ["secrets"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_secret_env/cnf-testsuite.yml verbose `
       $?.success?.should be_true
@@ -355,9 +355,9 @@ describe CnfTestSuite do
     end
   end
 
-  it "'secrets_used' should skip when secrets are not referenced as environment variables by a container", tags: ["secrets_used_skip"] do
+  it "'secrets_used' should skip when secrets are not referenced as environment variables by a container", tags: ["secrets"] do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_secret_env_no_ref/cnf-testsuite.yml verbose `
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_secret_env_no_ref/cnf-testsuite.yml wait_count=2 verbose`
       $?.success?.should be_true
       response_s = `./cnf-testsuite secrets_used verbose`
       LOGGING.info response_s
@@ -368,7 +368,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'secrets_used' should pass when no secret volumes are mounted or no container secrets are provided (secrets ignored)`", tags: ["secrets_used_pass"] do
+  it "'secrets_used' should pass when no secret volumes are mounted or no container secrets are provided (secrets ignored)`", tags: ["secrets"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose wait_count=0 `
       $?.success?.should be_true
