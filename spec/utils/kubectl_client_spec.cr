@@ -175,7 +175,7 @@ describe "KubectlClient" do
     LOGGING.debug `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-testsuite.yml deploy_with_chart=false` 
   end
 
-  it "'#KubectlClient.pod_exists?' should true if a pod exists", tags: ["kubectl-pods"]  do
+  it "'#KubectlClient.pod_exists?' should true if a pod exists", tags: ["kubectl-status"]  do
     LOGGING.debug `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml` 
     resp = KubectlClient::Get.pod_exists?("coredns")
     (resp).should be_true 
@@ -183,23 +183,19 @@ describe "KubectlClient" do
     LOGGING.debug `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml` 
   end
  
-  it "'#KubectlClient.pod_status' should return a status of false if the pod is not installed (failed to install) and other pods exist", tags: ["kubectl-false"]  do
+  it "'#KubectlClient.pod_status' should return a status of false if the pod is not installed (failed to install) and other pods exist", tags: ["kubectl-status"]  do
     cnf="./sample-cnfs/sample-coredns-cnf"
     LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
     LOGGING.info `./cnf-testsuite uninstall_dockerd`
-    dockerd_tempname_helper
-    LOGGING.info `./cnf-testsuite install_dockerd`
 
     resp = KubectlClient::Get.pod_status(pod_name_prefix: "dockerd").split(",")[2] # true/false
     LOGGING.info resp 
     (resp && !resp.empty? && resp == "true").should be_false
   ensure
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
-    dockerd_name_helper
-    LOGGING.info `./cnf-testsuite install_dockerd`
   end
 
-  it "'#KubectlClient.pod_status' should return a status of true if the pod is installed and other pods exist", tags: ["kubectl-true"]  do
+  it "'#KubectlClient.pod_status' should return a status of true if the pod is installed and other pods exist", tags: ["kubectl-status"]  do
     cnf="./sample-cnfs/sample-coredns-cnf"
     LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
     LOGGING.info `./cnf-testsuite install_dockerd`
@@ -209,8 +205,6 @@ describe "KubectlClient" do
     (resp && !resp.empty? && resp == "true").should be_true
   ensure
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
-    dockerd_name_helper
-    LOGGING.info `./cnf-testsuite install_dockerd`
   end
 end
 
