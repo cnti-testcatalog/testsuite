@@ -59,7 +59,7 @@ describe "Microservice" do
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
   end
 
-  it "'reasonable_image_size' should fail if image is larger than 5gb", tags: ["reasonable_image_size_large"] do
+  it "'reasonable_image_size' should fail if image is larger than 5gb", tags: ["reasonable_image_size"] do
     `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_envoy_slow_startup wait_count=0`
     response_s = `./cnf-testsuite reasonable_image_size verbose`
     LOGGING.info response_s
@@ -69,7 +69,7 @@ describe "Microservice" do
     `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup force=true`
   end
 
-  it "'reasonable_image_size' should skip if dockerd does not install", tags: ["reasonable_image_size_skip"] do
+  it "'reasonable_image_size' should skip if dockerd does not install", tags: ["reasonable_image_size"] do
     cnf="./sample-cnfs/sample-coredns-cnf"
     LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
     LOGGING.info `./cnf-testsuite uninstall_dockerd`
@@ -83,7 +83,6 @@ describe "Microservice" do
     LOGGING.info "reasonable_image_size skipped ensure"
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
     dockerd_name_helper
-    LOGGING.info `./cnf-testsuite install_dockerd`
   end
 
 
