@@ -176,6 +176,8 @@ module AirGap
      image: "litmuschaos/chaos-operator:1.13.2"},
     {input_file: "#{TarClient::TAR_IMAGES_DIR}/litmus-runner.tar", 
      image: "litmuschaos/chaos-runner:1.13.2"},
+    {input_file: "#{TarClient::TAR_IMAGES_DIR}/go-runner.tar", 
+     image: "litmuschaos/go-runner:1.13.2"},
     {input_file: "#{TarClient::TAR_IMAGES_DIR}/prometheus.tar", 
      image: "prom/prometheus:v2.18.1"}].map do |x|
       DockerClient.pull(x[:image])
