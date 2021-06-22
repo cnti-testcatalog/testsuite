@@ -164,6 +164,14 @@ jobs:
         git fetch --all --tags --force
         shards install  
     - name: Debug
+      env:
+        GITHUB_USER: ${{ secrets.GH_USER }}
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        PROTECTED_DOCKERHUB_EMAIL: ${{ secrets.PROTECTED_DOCKERHUB_EMAIL }}
+        PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       uses: mxschmitt/action-tmate@v3
     - name: Run Crystal Spec
       env:
@@ -175,8 +183,7 @@ jobs:
         PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
-        #  LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
-        LOG_LEVEL=info crystal spec --warnings none --tag platform:node_exporter -v
+        LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
 
   build:
     name: Build Release
