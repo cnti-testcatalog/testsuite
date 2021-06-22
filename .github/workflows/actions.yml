@@ -163,16 +163,6 @@ jobs:
         helm repo add stable https://cncf.gitlab.io/stable
         git fetch --all --tags --force
         shards install  
-    - name: Debug
-      env:
-        GITHUB_USER: ${{ secrets.GH_USER }}
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-        PROTECTED_DOCKERHUB_EMAIL: ${{ secrets.PROTECTED_DOCKERHUB_EMAIL }}
-        PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-      uses: mxschmitt/action-tmate@v3
     - name: Run Crystal Spec
       env:
         GITHUB_USER: ${{ secrets.GH_USER }}
