@@ -163,6 +163,8 @@ jobs:
         helm repo add stable https://cncf.gitlab.io/stable
         git fetch --all --tags --force
         shards install  
+    - name: Debug
+      uses: mxschmitt/action-tmate@v3
     - name: Run Crystal Spec
       env:
         GITHUB_USER: ${{ secrets.GH_USER }}
@@ -173,7 +175,8 @@ jobs:
         PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
-        LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
+        #  LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
+        LOG_LEVEL=info crystal spec --warnings none --tag platform:node_exporter -v
 
   build:
     name: Build Release
