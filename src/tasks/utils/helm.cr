@@ -178,6 +178,18 @@ module Helm
     {status: status, output: output, error: stderr}
   end
 
+  def self.pull(cli)
+    helm = CNFSingleton.helm
+    LOGGING.info "helm command: #{helm} pull #{cli}"
+    status = Process.run("#{helm} pull #{cli}",
+                         shell: true,
+                         output: output = IO::Memory.new,
+                         error: stderr = IO::Memory.new)
+    LOGGING.info "Helm.install output: #{output.to_s}"
+    LOGGING.info "Helm.install stderr: #{stderr.to_s}"
+    {status: status, output: output, error: stderr}
+  end
+
   def self.fetch(cli)
     helm = CNFSingleton.helm
     LOGGING.info "helm command: #{helm} fetch #{cli}"

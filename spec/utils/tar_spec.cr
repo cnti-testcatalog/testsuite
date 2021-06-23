@@ -1,6 +1,7 @@
 require "../spec_helper"
 require "../../src/tasks/utils/utils.cr"
 require "../../src/tasks/utils/tar.cr"
+require "../../src/tasks/utils/find.cr"
 require "file_utils"
 require "sam"
 
@@ -35,7 +36,7 @@ describe "TarClient" do
     (input_content =~ /imagePullPolicy: Never/).should be_nil
     TarClient.tar("./tmp/test.tar", "./spec/fixtures", "litmus-operator-v1.13.2.yaml")
     TarClient.modify_tar!("./tmp/test.tar") do |directory| 
-      template_files = TarClient.find(directory, "*.yaml*", "100")
+      template_files = Find.find(directory, "*.yaml*", "100")
       LOGGING.debug "template_files: #{template_files}"
       template_files.map{|x| AirGapUtils.image_pull_policy(x)}
     end
