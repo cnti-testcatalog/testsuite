@@ -626,11 +626,13 @@ module CNFManager
       config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
       tgz_name = "#{Helm.chart_name(helm_chart)}-*.tgz"
     end
-
     LOGGING.info "tgz_name: #{tgz_name}"
 
-    helm_info = Helm.pull(helm_chart)
-    raise "Helm pull error" unless helm_info[:status].success? 
+    unless input_file && !input_file.empty?
+      helm_info = Helm.pull(helm_chart) 
+      put "Helm pull error".colorize(:red)
+      raise "Helm pull error" unless helm_info[:status].success? 
+    end
 
     # helm_pull = `#{helm} pull #{helm_chart}`
     # VERBOSE_LOGGING.info helm_pull if verbose
