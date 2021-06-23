@@ -81,7 +81,7 @@ describe CnfTestSuite do
       # LOGGING.info `#{CNFSingleton.helm} repo remove stable`
       # LOGGING.info "search command: #{`helm search repo stable/coredns`}"
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample-bad-helm-repo wait_count=0`
-      $?.success?.should be_true
+      $?.success?.should be_false
       LOGGING.info "search command: #{`helm search repo stable/coredns`}"
       response_s = `./cnf-testsuite helm_chart_published verbose`
       LOGGING.info response_s
