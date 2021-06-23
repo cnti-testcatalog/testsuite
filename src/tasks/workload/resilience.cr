@@ -231,6 +231,7 @@ task "disk_fill", ["install_litmus"] do |_, args|
       if test_passed
         if args.named["offline"]?
             LOGGING.info "install resilience offline mode"
+          AirGapUtils.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/disk-fill-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-rbac.yaml")
         else

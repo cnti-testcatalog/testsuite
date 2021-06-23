@@ -13,6 +13,7 @@ module CNFManager
     def self.export_manifest(config_src, output_file="./cnf-testsuite.yml", airgapped=false, generate_tar_mode=false)
       LOGGING.info "export_manifest"
       LOGGING.info "airgapped: #{airgapped}"
+      LOGGING.info "generate_tar_mode: #{generate_tar_mode}"
       generate_initial_testsuite_yml(config_src, output_file)
       CNFManager.generate_and_set_release_name(output_file, 
                                                airgapped: airgapped, 
@@ -22,6 +23,7 @@ module CNFManager
       if CNFManager.install_method_by_config_src(config_src) == :manifest_directory
         template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( config_src))
       else
+        # todo if success false, raise error
         Helm.generate_manifest_from_templates(release_name,
                                               config_src)
         template_ymls = Helm::Manifest.parse_manifest_as_ymls()
@@ -30,10 +32,12 @@ module CNFManager
       resource_ymls
     end
 
-    #TODO get list of image:tags from helm chart/helm directory/manifest file
+    #get list of image:tags from helm chart/helm directory/manifest file
+    #note: config_src must be an absolute path if a directory, todo: make this more resilient
     def self.images_from_config_src(config_src, airgapped=false, generate_tar_mode=false)
       LOGGING.info "images_from_config_src"
       LOGGING.info "airgapped: #{airgapped}"
+      LOGGING.info "generate_tar_mode: #{generate_tar_mode}"
       #return container image name/tag
       ret_containers = [] of NamedTuple(container_name: String, image_name: String, tag: String) 
       resource_ymls = CNFManager::GenerateConfig.export_manifest(config_src, airgapped: airgapped, generate_tar_mode: generate_tar_mode)
