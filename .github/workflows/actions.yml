@@ -129,6 +129,7 @@ jobs:
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
             endpoint = ["http://localhost:5000"]
         EOF
+        docker rm $(docker ps -a -q)
         export CLUSTER=$(uuidgen)
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
@@ -292,6 +293,7 @@ jobs:
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
             endpoint = ["http://localhost:5000"]
         EOF
+        docker rm $(docker ps -a -q)
         export CLUSTER=$(uuidgen)
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
@@ -331,6 +333,7 @@ jobs:
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
             endpoint = ["http://localhost:5000"]
         EOF
+        docker rm $(docker ps -a -q)
         export CLUSTER=$(uuidgen)
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
@@ -370,6 +373,7 @@ jobs:
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
             endpoint = ["http://localhost:5000"]
         EOF
+        docker rm $(docker ps -a -q)
         export CLUSTER=$(uuidgen)
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
