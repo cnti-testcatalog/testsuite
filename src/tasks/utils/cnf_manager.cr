@@ -630,7 +630,7 @@ module CNFManager
 
     unless input_file && !input_file.empty?
       helm_info = Helm.pull(helm_chart) 
-      put "Helm pull error".colorize(:red)
+      puts "Helm pull error".colorize(:red)
       raise "Helm pull error" unless helm_info[:status].success? 
     end
 
