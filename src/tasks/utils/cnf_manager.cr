@@ -590,43 +590,74 @@ module CNFManager
     # destination_chart_directory
   end
 
-  # Retrieve the helm chart source
+  # Retrieve the helm chart source: only works with helm chart
+  # installs (not helm directory or manifest directories)
   def self.export_published_chart(config, cli_args)
+    LOGGING.info "exported_chart cli_args: #{cli_args}"
     verbose = cli_args[:verbose]
     config_file = config.cnf_config[:source_cnf_dir]
     helm_directory = config.cnf_config[:helm_directory]
     helm_chart = config.cnf_config[:helm_chart]
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
 
-    current_dir = FileUtils.pwd
-    VERBOSE_LOGGING.info current_dir if verbose
+    # current_dir = FileUtils.pwd
+    # VERBOSE_LOGGING.info current_dir if verbose
 
-    helm = CNFSingleton.helm
-    LOGGING.info "helm path: #{CNFSingleton.helm}"
-
-    LOGGING.debug "mkdir_p destination_cnf_dir/helm_directory: #{destination_cnf_dir}/#{helm_directory}"
+    # helm = CNFSingleton.helm
+    # LOGGING.info "helm path: #{CNFSingleton.helm}"
+    #
+    # LOGGING.debug "mkdir_p destination_cnf_dir/helm_directory: #{destination_cnf_dir}/#{helm_directory}"
     #TODO don't think we need to make this here
     FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}")
-    LOGGING.debug "helm command pull: #{helm} pull #{helm_chart}"
+    # LOGGING.debug "helm command pull: #{helm} pull #{helm_chart}"
     #TODO move to helm module
-    helm_pull = `#{helm} pull #{helm_chart}`
-    VERBOSE_LOGGING.info helm_pull if verbose
+
+    input_file = cli_args[:input_file]
+    output_file = cli_args[:output_file]
+    if input_file && !input_file.empty?
+      # todo add generate and set tar as well
+      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: true) 
+      tar_info = AirGapUtils.tar_info_by_config_src(helm_chart)
+      tgz_name = tar_info[:tar_name]
+    elsif output_file && !output_file.empty?
+      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), generate_tar_mode: true) 
+      tgz_name = "#{Helm.chart_name(helm_chart)}-*.tgz"
+    else
+      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
+      tgz_name = "#{Helm.chart_name(helm_chart)}-*.tgz"
+    end
+
+    LOGGING.info "tgz_name: #{tgz_name}"
+
+    helm_info = Helm.pull(helm_chart)
+    raise "Helm pull error" unless helm_info[:status].success? 
+
+    # helm_pull = `#{helm} pull #{helm_chart}`
+    # VERBOSE_LOGGING.info helm_pull if verbose
     # TODO helm_chart should be helm_chart_repo
     # TODO make this into a tar chart function
-    VERBOSE_LOGGING.info "mv #{Helm.chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart" if verbose
-    core_mv = `mv #{Helm.chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart`
-    VERBOSE_LOGGING.info core_mv if verbose
 
-    VERBOSE_LOGGING.info "cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}-*.tgz" if verbose
-    tar = `cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}-*.tgz`
-    VERBOSE_LOGGING.info tar if verbose
+    TarClient.untar(tgz_name,  "#{destination_cnf_dir}/exported_chart")
+    # VERBOSE_LOGGING.info "mv #{Helm.chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart" if verbose
+    # core_mv = `mv #{Helm.chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart`
+    # VERBOSE_LOGGING.info core_mv if verbose
+
+    # VERBOSE_LOGGING.info "cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}-*.tgz" if verbose
+    # tar = `cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}-*.tgz`
+    # VERBOSE_LOGGING.info tar if verbose
 
     VERBOSE_LOGGING.info "mv #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart" if verbose
+    ls_al = `ls -alR #{destination_cnf_dir}`
+    LOGGING.info "ls -alR (before move) destination_cnf_dir: #{ls_al}"
     move_chart = `mv #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart`
-    VERBOSE_LOGGING.info move_chart if verbose
-  ensure
-    cd = `cd #{current_dir}`
-    VERBOSE_LOGGING.info cd if verbose
+
+    ls_al = `ls -alR #{destination_cnf_dir}`
+    LOGGING.info "ls -alR (after move) destination_cnf_dir: #{ls_al}"
+
+    # VERBOSE_LOGGING.info move_chart if verbose
+  # ensure
+  #   cd = `cd #{current_dir}`
+  #   VERBOSE_LOGGING.info cd if verbose
   end
 
   #sample_setup({config_file: cnf_path, wait_count: wait_count})
@@ -701,7 +732,7 @@ module CNFManager
           tar_info = AirGapUtils.tar_info_by_config_src(config.cnf_config[:helm_chart])
           # prepare a helm_chart tar file for deployment into an airgapped environment, put in airgap module
           TarClient.modify_tar!(tar_info[:tar_name]) do |directory| 
-            template_files = TarClient.find(directory, "*.yaml*", "100")
+            template_files = Find.find(directory, "*.yaml*", "100")
             template_files.map{|x| AirGapUtils.image_pull_policy(x)}
           end
           # if in airgapped mode, set helm_chart in config to be the tarball path
@@ -719,7 +750,7 @@ module CNFManager
         VERBOSE_LOGGING.info "deploying with helm directory" if verbose
         # prepare a helm directory for deployment into an airgapped environment, put in airgap module
         if input_file && !input_file.empty?
-          template_files = TarClient.find("#{destination_cnf_dir}/#{helm_directory}", 
+          template_files = Find.find("#{destination_cnf_dir}/#{helm_directory}", 
                                           "*.yaml*", "100")
           template_files.map{|x| AirGapUtils.image_pull_policy(x)}
         end

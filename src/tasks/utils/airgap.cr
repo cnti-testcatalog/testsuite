@@ -107,7 +107,7 @@ module AirGap
     # `rm -rf #{tar_dir}/#{chart_name}`
 
     TarClient.modify_tar!(tar_name) do |directory| 
-      template_files = TarClient.find(directory, "*.yaml*", "100")
+      template_files = Find.find(directory, "*.yaml*", "100")
       template_files.map{|x| AirGapUtils.image_pull_policy(x)}
     end
     TarClient.append(output_file, "/tmp", "#{repo_path}")
@@ -215,8 +215,8 @@ module AirGap
                       "#{TarClient::TAR_IMAGES_DIR}/chaos-mesh.tar"]
     else
       #TODO function that loops through all of the tar files that are image files
-      tar_image_files = TarClient.find("#{TarClient::TAR_IMAGES_DIR}", "*.tar*")
-      image_files = tar_image_files + TarClient.find("#{TarClient::TAR_IMAGES_DIR}", "*.tgz*")
+      tar_image_files = Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tar*")
+      image_files = tar_image_files + Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tgz*")
       #TODO function that loops through all of the tar files that are image files
       #TODO any tar file that is in /tmp is an image file
       #TODO optional any tar file that is in #{TAR_IMAGES_DIR} is an image file
