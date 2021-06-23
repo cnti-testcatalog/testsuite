@@ -151,11 +151,6 @@ jobs:
         helm repo add stable https://cncf.gitlab.io/stable
         git fetch --all --tags --force
         shards install  
-        wget -O /tmp/kustomize.tar.gz "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.1.3/kustomize_v4.1.3_linux_amd64.tar.gz"
-        tar -xvf /tmp/kustomize.tar.gz -C /tmp
-        chmod +x /tmp/kustomize
-        mv /tmp/kustomize /usr/local/bin/
-        ln -s /usr/bin/python3 /usr/bin/python
     - name: Run Crystal Spec
       env:
         GITHUB_USER: ${{ secrets.GH_USER }}
@@ -379,11 +374,18 @@ jobs:
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         kubectl get nodes 
+        pwd 
+        ls -la
+        echo $KUBECONFIG
     - name: Run Test Suite without source(all)
       run: |
         export KUBECONFIG_FILE=$(ls *.conf) 
         export KUBECONFIG=$(pwd)/$KUBECONFIG_FILE
         export CLUSTER_NAME="${KUBECONFIG_FILE%.*}"
+        pwd 
+        ls -la 
+        echo $KUBECONFIG_FILE
+        echo $KUBECONFIG
         helm repo add stable https://cncf.gitlab.io/stable
         chmod +x ./cnf-testsuite
         ./cnf-testsuite setup
