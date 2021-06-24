@@ -11,7 +11,7 @@ require "./airgap_utils.cr"
 module AirGap
   CRI_VERSION="v1.17.0"
   CTR_VERSION="1.5.0"
-  TAR_BOOTSTRAP_IMAGES_DIR = "/tmp/boostrap_images"
+  TAR_BOOTSTRAP_IMAGES_DIR = "/tmp/bootstrap_images"
 
   #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped output-file=./tmp/airgapped.tar.gz
   #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml output-file=./tmp/airgapped.tar.gz
@@ -148,6 +148,8 @@ module AirGap
     if ENV["CRYSTAL_ENV"]? == "TEST"
       image_files = ["#{TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
                       "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-mesh.tar"]
+      tar_image_files = Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tar*")
+      image_files = tar_image_files + Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tgz*")
     else
       if cnf_setup
         tar_image_files = Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tar*")
