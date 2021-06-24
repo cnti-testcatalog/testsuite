@@ -310,6 +310,8 @@ jobs:
         ./cnf-testsuite airgapped output-file=/shared/airgapped.tar.gz
         LOG_LEVEL=debug ./cnf-testsuite cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml airgapped=/shared/airgapped.tar.gz
         ls -la /tmp
+        echo "Debug temp images dir"
+        ls -la /tmp/images
         #DOTO Use pre-created airgapped.tar.gz
         cp -r sample-cnfs/k8s-non-helm /shared
         mv ./cnf-testsuite /shared
