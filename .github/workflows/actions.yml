@@ -302,6 +302,7 @@ jobs:
       run: |
         sudo rm -rf /shared/*
         sudo rm -rf /tmp/*
+        sudo rm -rf /tmpdata/*
         # Create Airgapped Tar
         chmod +x ./cnf-testsuite
         ./cnf-testsuite setup 
@@ -312,6 +313,10 @@ jobs:
         ls -la /tmp
         echo "Debug temp images dir"
         ls -la /tmp/images
+        echo "Debug tmpdata images dir"
+        ls -la /tmpdata/images
+        echo "Tar -tvf"
+        tar -tvf /shared/airgapped.tar.gz
         #DOTO Use pre-created airgapped.tar.gz
         cp -r sample-cnfs/k8s-non-helm /shared
         mv ./cnf-testsuite /shared
