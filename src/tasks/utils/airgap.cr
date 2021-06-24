@@ -149,7 +149,7 @@ module AirGap
       image_files = ["#{TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
                       "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-mesh.tar"]
       tar_image_files = Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tar*")
-      image_files = tar_image_files + Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tgz*")
+      image_files = image_files + tar_image_files + Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tgz*")
     else
       if cnf_setup
         tar_image_files = Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tar*")
