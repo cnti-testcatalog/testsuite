@@ -9,8 +9,6 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
   VERBOSE_LOGGING.info "cnf_setup" if check_verbose(args)
   VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
   cli_hash = CNFManager.sample_setup_cli_args(args)
-  #TODO accept an offline mode parameter
-  #TODO determine if helm chart, if so, install using helm install <tarball>
   output_file = cli_hash[:output_file]
   input_file =  cli_hash[:input_file]
   if output_file && !output_file.empty?
@@ -20,7 +18,7 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
   elsif input_file && !input_file.empty?
     puts "cnf setup airgapped mode".colorize(:green)
     AirGap.extract(input_file)
-    AirGap.cache_images(input_file)
+    AirGap.cache_images(input_file, cnf_setup: true)
     CNFManager.sample_setup(cli_hash)
     puts "cnf setup airgapped mode complete".colorize(:green)
   else
@@ -29,19 +27,6 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
     puts "cnf setup online mode complete".colorize(:green)
   end
 end
-
-# task "offline" do |_, args|
-#   #./cnf-testsuite setup --offline=./airgapped.tar.gz
-#   #./cnf-testsuite setup --input-file=./airgapped.tar.gz
-#   #./cnf-testsuite setup --if=./airgapped.tar.gz
-#   output_file = args.named["offline"].as(String) if args.named["offline"]?
-#   output_file = args.named["input-file"].as(String) if args.named["input-file"]?
-#   output_file = args.named["if"].as(String) if args.named["if"]?
-#   if output_file && !output_file.empty?
-#       AirGap.extract(output_file)
-#       AirGap.cache_images(output_file)
-#   end
-# end
 
 task "cnf_cleanup" do |_, args|
   VERBOSE_LOGGING.info "cnf_cleanup" if check_verbose(args)

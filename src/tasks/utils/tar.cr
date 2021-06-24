@@ -1,10 +1,6 @@
 require "totem"
 require "colorize"
-# todo remove depedency
-require "./cnf_manager.cr"
 require "halite"
-# todo remove depedency
-require "./airgap_utils.cr"
 
 # todo put in a separate library. it shold go under ./tools for now
 module TarClient
@@ -64,17 +60,6 @@ module TarClient
     {status: status, output: output, error: stderr}
   end
 
-  # # todo find wrapper
-  # def self.find(directory, wildcard="*.tar*", maxdepth="1", silent=true)
-  #   LOGGING.debug("tar_file_name")
-  #   LOGGING.debug("find: find #{directory} -maxdepth #{maxdepth} -name \"#{wildcard}\"")
-  #   found_files = `find #{directory} -maxdepth #{maxdepth} -name "#{wildcard}"`.split("\n").select{|x| x.empty? == false}
-  #   LOGGING.debug("find response: #{found_files}")
-  #   if found_files.size == 0 && !silent
-  #     raise "No files found!"
-  #   end
-  #   found_files
-  # end
 
   #
   # modify_tar! << untars file, yields to block, retars, keep in tar module
