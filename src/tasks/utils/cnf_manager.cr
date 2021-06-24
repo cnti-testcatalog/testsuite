@@ -75,8 +75,6 @@ module CNFManager
     manifest_file_path = config.cnf_config[:manifest_file_path]
     test_passed = true
 
-    ##################
-    # TODO extract exporting of manifest yml into separate function 
     if release_name.empty? # no helm chart
       template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
     else
@@ -86,16 +84,11 @@ module CNFManager
       template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
     end
     resource_ymls = Helm.all_workload_resources(template_ymls)
-    # TODO call export manifest and get the resource ymls
 		resource_resp = resource_ymls.map do | resource |
       resp = yield resource
       LOGGING.debug "cnf_workload_resource yield resp: #{resp}"
       resp
     end
-    ###############
-
-
-
 
     resource_resp
   end
@@ -549,45 +542,8 @@ module CNFManager
     ls_al = `ls -alR #{destination_cnf_dir}`
     LOGGING.info "ls -alR #{destination_cnf_dir}: #{ls_al}"
 
-    # if install_method[0] == :manifest_directory
-    #   manifest_or_helm_directory = config_source_dir(config_file) + "/" + manifest_directory
-    # elsif !helm_directory.empty?
-    #   manifest_or_helm_directory = config_source_dir(config_file) + "/" + helm_directory
-    # else
-    #   # this is not going to exist
-    #   manifest_or_helm_directory = helm_chart_path #./cnfs/<cnf-release-name>/exported_chart
-    # end
-
-    # LOGGING.info("File.directory?(#{manifest_or_helm_directory}) #{File.directory?(manifest_or_helm_directory)}")
-    # if the helm directory already exists, copy helm_directory contents into cnfs/<cnf-name>/<helm-directory-of-the-same-name>
-
-    # todo if helm chart (not helm directory or manifest directory) create exported_chart directory 
-    # todo if helm/manifest directory then copy directory into cnfs/release name directory
-    # destination_chart_directory = {creation_type: :created, chart_directory: ""}
-    # ls_al = `ls -alR #{destination_chart_directory[:chart_directory]}`
-    # LOGGING.debug "ls -alR #{destination_chart_directory[:chart_directory]}: #{ls_al}"
-    # if !manifest_or_helm_directory.empty? && manifest_or_helm_directory =~ /exported_chart/
-    #   LOGGING.info "Ensuring exported helm/manifest directory is created"
-    #   LOGGING.debug "mkdir_p destination_cnf_dir/exported_chart: #{manifest_or_helm_directory}"
-    #   destination_chart_directory = {creation_type: :created,
-    #                                  chart_directory: "#{manifest_or_helm_directory}"}
-    #   FileUtils.mkdir_p(destination_chart_directory[:chart_directory])
-    #   LOGGING.info "cp -a #{destination_chart_directory[:manifest_directory]} #{destination_directory}"
-    #   yml_cp = `cp -a #{destination_chart_directory[:manifest_directory]} #{destination_directory}`
-    # elsif !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory)
-    #   # if !manifest_or_helm_directory.empty? && File.directory?(manifest_or_helm_directory)
-    #   LOGGING.info "Ensuring helm directory is copied"
-    #   destination_chart_directory = {creation_type: :copied,
-    #                                  chart_directory: "#{manifest_or_helm_directory}"}
-    #   yml_cp = `cp -a #{destination_chart_directory[:chart_directory]} #{destination_cnf_dir}`
-    #   LOGGING.info "cp -a #{destination_chart_directory[:chart_directory]} #{destination_cnf_dir}"
-    #   VERBOSE_LOGGING.info yml_cp if verbose
-    #   raise "Copy of #{destination_chart_directory[:chart_directory]} to #{destination_cnf_dir} failed!" unless $?.success?
-    # end
-    # LOGGING.info "copy cnf-testsuite.yml file"
     LOGGING.info("cp -a #{ensure_cnf_testsuite_yml_path(config_file)} #{destination_cnf_dir}")
     yml_cp = `cp -a #{ensure_cnf_testsuite_yml_path(config_file)} #{destination_cnf_dir}`
-    # destination_chart_directory
   end
 
   # Retrieve the helm chart source: only works with helm chart
@@ -600,17 +556,8 @@ module CNFManager
     helm_chart = config.cnf_config[:helm_chart]
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
 
-    # current_dir = FileUtils.pwd
-    # VERBOSE_LOGGING.info current_dir if verbose
-
-    # helm = CNFSingleton.helm
-    # LOGGING.info "helm path: #{CNFSingleton.helm}"
-    #
-    # LOGGING.debug "mkdir_p destination_cnf_dir/helm_directory: #{destination_cnf_dir}/#{helm_directory}"
     #TODO don't think we need to make this here
     FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}")
-    # LOGGING.debug "helm command pull: #{helm} pull #{helm_chart}"
-    #TODO move to helm module
 
     input_file = cli_args[:input_file]
     output_file = cli_args[:output_file]
@@ -634,19 +581,7 @@ module CNFManager
       raise "Helm pull error" unless helm_info[:status].success? 
     end
 
-    # helm_pull = `#{helm} pull #{helm_chart}`
-    # VERBOSE_LOGGING.info helm_pull if verbose
-    # TODO helm_chart should be helm_chart_repo
-    # TODO make this into a tar chart function
-
     TarClient.untar(tgz_name,  "#{destination_cnf_dir}/exported_chart")
-    # VERBOSE_LOGGING.info "mv #{Helm.chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart" if verbose
-    # core_mv = `mv #{Helm.chart_name(helm_chart)}-*.tgz #{destination_cnf_dir}/exported_chart`
-    # VERBOSE_LOGGING.info core_mv if verbose
-
-    # VERBOSE_LOGGING.info "cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}-*.tgz" if verbose
-    # tar = `cd #{destination_cnf_dir}/exported_chart; tar -xvf #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}-*.tgz`
-    # VERBOSE_LOGGING.info tar if verbose
 
     VERBOSE_LOGGING.info "mv #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart" if verbose
     ls_al = `ls -alR #{destination_cnf_dir}`
@@ -656,10 +591,6 @@ module CNFManager
     ls_al = `ls -alR #{destination_cnf_dir}`
     LOGGING.info "ls -alR (after move) destination_cnf_dir: #{ls_al}"
 
-    # VERBOSE_LOGGING.info move_chart if verbose
-  # ensure
-  #   cd = `cd #{current_dir}`
-  #   VERBOSE_LOGGING.info cd if verbose
   end
 
   #sample_setup({config_file: cnf_path, wait_count: wait_count})
@@ -868,20 +799,5 @@ end
     end
     ret
   end
-
-  # TODO: figure out how to check this recursively
-  #
-  # def self.recursive_json_unmapped(hashy_thing): JSON::Any
-  #   unmapped_stuff = hashy_thing.json_unmapped
-
-  #   Hash(String, String).from_json(hashy_thing.to_json).each_key do |key|
-  #     if hashy_thing.call(key).responds_to?(:json_unmapped)
-  #       return unmapped_stuff[key] = recursive_json_unmapped(hashy_thing[key])
-  #     end
-  #   end
-
-  #   unmapped_stuff
-  # end
-
 
 end
