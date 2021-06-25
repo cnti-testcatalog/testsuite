@@ -232,7 +232,7 @@ jobs:
         # gunzip airgapped.tar.gz
         mv .github/workflows/check_litmus.sh /shared/$DIR
         mv ./cnf-testsuite /shared/$DIR
-        docker run --network none --privileged -v /root/shared/$DIR/cnf-testsuite:/cnf-testsuite -v /root/shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /root/shared/$DIR/check_litmus.sh:/litmus.sh -v /root/shared/$DIR/tmpdata:/tmp -t conformance/offline:v0.11.1 /bin/bash -c "/cnf-testsuite -l info setup offline=/airgapped/airgapped.tar.gz; /cnf-testsuite -l info install_litmus offline=true; kubectl get deployment chaos-operator-ce --namespace litmus; /litmus.sh"
+        docker run --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/check_litmus.sh:/litmus.sh -v /shared/$DIR/tmpdata:/tmp -t conformance/offline:v0.11.1 /bin/bash -c "/cnf-testsuite -l info setup offline=/airgapped/airgapped.tar.gz; /cnf-testsuite -l info install_litmus offline=true; kubectl get deployment chaos-operator-ce --namespace litmus; /litmus.sh"
         sudo rm -rf /shared/$DIR
         
   cnf_setup_airgapped_env:
