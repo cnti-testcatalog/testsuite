@@ -161,12 +161,13 @@ jobs:
         PROTECTED_DOCKERHUB_EMAIL: ${{ secrets.PROTECTED_DOCKERHUB_EMAIL }}
         PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-      run: |
-        export KUBECONFIG_FILE=$(ls *.conf) 
-        export KUBECONFIG=$(pwd)/$KUBECONFIG_FILE
-        export CLUSTER_NAME="${KUBECONFIG_FILE%.*}"
-        LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
-        kind delete cluster --name $CLUSTER_NAME
+      uses: mxschmitt/action-tmate@v3
+      # run: |
+      #   export KUBECONFIG_FILE=$(ls *.conf) 
+      #   export KUBECONFIG=$(pwd)/$KUBECONFIG_FILE
+      #   export CLUSTER_NAME="${KUBECONFIG_FILE%.*}"
+      #   LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
+      #   kind delete cluster --name $CLUSTER_NAME
         
   build:
     name: Build Release
