@@ -64,6 +64,7 @@ describe "Setup" do
   end
 
   it "'generate_config' should generate a cnf-testsuite.yml for a helm chart", tags: ["setup-generate"]  do
+    LOGGING.info `./cnf-testsuite setup`
     response_s = `./cnf-testsuite generate_config config-src=stable/coredns output-file=./cnf-testsuite-test.yml`
     LOGGING.info response_s
     $?.success?.should be_true
@@ -84,6 +85,7 @@ describe "Setup" do
   end
 
   it "'generate_config' should generate a cnf-testsuite.yml for a helm directory", tags: ["setup-generate"]  do
+    LOGGING.info `./cnf-testsuite setup`
     response_s = `./cnf-testsuite generate_config config-src=sample-cnfs/k8s-sidecar-container-pattern/chart output-file=./cnf-testsuite-test.yml`
     LOGGING.info response_s
     $?.success?.should be_true
@@ -101,6 +103,7 @@ describe "Setup" do
   end
 
   it "'generate_config' should generate a cnf-testsuite.yml for a manifest directory", tags: ["setup-generate"]  do
+    LOGGING.info `./cnf-testsuite setup`
     response_s = `./cnf-testsuite generate_config config-src=sample-cnfs/k8s-non-helm/manifests output-file=./cnf-testsuite-test.yml`
     LOGGING.info response_s
     $?.success?.should be_true
