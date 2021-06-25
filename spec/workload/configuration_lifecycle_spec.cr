@@ -95,33 +95,6 @@ describe CnfTestSuite do
     end
   end
 
-  it "'rolling_update' should pass if using local registry and a port", tags: ["rolling_update_local"]  do
-    begin
-      install_registry = `kubectl create -f #{TOOLS_DIR}/registry/manifest.yml`
-      install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
-      KubectlClient::Get.resource_wait_for_install("Pod", "registry")
-      KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
-      KubectlClient.exec("dockerd -ti -- docker pull coredns/coredns:1.6.7")
-      KubectlClient.exec("dockerd -ti -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7")
-      KubectlClient.exec("dockerd -ti -- docker push registry:5000/coredns:1.6.7")
-      KubectlClient.exec("dockerd -ti -- docker pull coredns/coredns:1.8.0")
-      KubectlClient.exec("dockerd -ti -- docker tag coredns/coredns:1.8.0 registry:5000/coredns:1.8.0")
-      KubectlClient.exec("dockerd -ti -- docker push registry:5000/coredns:1.8.0")
-
-      cnf="./sample-cnfs/sample_local_registry"
-
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
-      response_s = `./cnf-testsuite rolling_update verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/Passed/ =~ response_s).should_not be_nil
-    ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
-    delete_registry = `kubectl delete -f #{TOOLS_DIR}/registry/manifest.yml`
-    delete_dockerd = `kubectl delete -f #{TOOLS_DIR}/dockerd/manifest.yml`
-    end
-  end
-
   it "'rolling_downgrade' should pass when valid version is given", tags: ["rolling_downgrade"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose wait_count=0`
@@ -156,33 +129,6 @@ describe CnfTestSuite do
     end
   end
 
-  it "'rolling_downgrade' should pass if using local registry and a port", tags: ["rolling_downgrade"]  do
-    begin
-      install_registry = `kubectl create -f #{TOOLS_DIR}/registry/manifest.yml`
-      install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
-      KubectlClient::Get.resource_wait_for_install("Pod", "registry")
-      KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
-      KubectlClient.exec("dockerd -ti -- docker pull coredns/coredns:1.6.7")
-      KubectlClient.exec("dockerd -ti -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7")
-      KubectlClient.exec("dockerd -ti -- docker push registry:5000/coredns:1.6.7")
-      KubectlClient.exec("dockerd -ti -- docker pull coredns/coredns:1.8.0")
-      KubectlClient.exec("dockerd -ti -- docker tag coredns/coredns:1.8.0 registry:5000/coredns:1.8.0")
-      KubectlClient.exec("dockerd -ti -- docker push registry:5000/coredns:1.8.0")
-
-      cnf="./sample-cnfs/sample_local_registry"
-
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
-      response_s = `./cnf-testsuite rolling_update verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/Passed/ =~ response_s).should_not be_nil
-    ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
-      delete_registry = `kubectl delete -f #{TOOLS_DIR}/registry/manifest.yml`
-      delete_dockerd = `kubectl delete -f #{TOOLS_DIR}/dockerd/manifest.yml`
-    end
-  end
-
   it "'rolling_version_change' should pass when valid version is given", tags: ["rolling_version_change"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose wait_count=0`
@@ -206,33 +152,6 @@ describe CnfTestSuite do
       (/Failed/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns_invalid_version/cnf-testsuite.yml deploy_with_chart=false`
-    end
-  end
-
-  it "'rolling_version_change' should pass if using local registry and a port", tags: ["rolling_version_change"]  do
-    begin
-      install_registry = `kubectl create -f #{TOOLS_DIR}/registry/manifest.yml`
-      install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
-      KubectlClient::Get.resource_wait_for_install("Pod", "registry")
-      KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
-      KubectlClient.exec("dockerd -ti -- docker pull coredns/coredns:1.6.7")
-      KubectlClient.exec("dockerd -ti -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7")
-      KubectlClient.exec("dockerd -ti -- docker push registry:5000/coredns:1.6.7")
-      KubectlClient.exec("dockerd -ti -- docker pull coredns/coredns:1.8.0")
-      KubectlClient.exec("dockerd -ti -- docker tag coredns/coredns:1.8.0 registry:5000/coredns:1.8.0")
-      KubectlClient.exec("dockerd -ti -- docker push registry:5000/coredns:1.8.0")
-
-      cnf="./sample-cnfs/sample_local_registry"
-
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
-      response_s = `./cnf-testsuite rolling_version_change verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/Passed/ =~ response_s).should_not be_nil
-    ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
-      delete_registry = `kubectl delete -f #{TOOLS_DIR}/registry/manifest.yml`
-      delete_dockerd = `kubectl delete -f #{TOOLS_DIR}/dockerd/manifest.yml`
     end
   end
 
