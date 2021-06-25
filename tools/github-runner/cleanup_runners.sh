@@ -20,4 +20,6 @@ for node in "${RUNNERS[@]}"; do
     ssh root@$node sudo systemctl stop docker
     ssh root@$node sudo rm -rf /var/lib/docker/*
     ssh root@$node sudo systemctl start docker
+    ssh root@$node sudo rm -rf /tmp/*
+    ssh root@$node sudo rm -rf /shared/
 done
