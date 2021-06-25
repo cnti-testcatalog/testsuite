@@ -36,6 +36,7 @@ describe "Statelessness" do
       $?.success?.should be_true
     end
   end
+
   it "'no_local_volume_configuration' should fail if local storage configuration found", tags: ["no_local_volume_configuration"]  do
     begin
       # update the helm parameter with a schedulable node for the pv chart
@@ -52,9 +53,10 @@ describe "Statelessness" do
       $?.success?.should be_true
     end
   end
+
   it "'no_local_volume_configuration' should pass if local storage configuration is not found", tags: ["no_local_volume_configuration"]  do
     begin
-      `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml wait_count=0 verbose`
+      `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose`
       $?.success?.should be_true
       response_s = `./cnf-testsuite no_local_volume_configuration verbose`
       LOGGING.info "Status:  #{response_s}"
