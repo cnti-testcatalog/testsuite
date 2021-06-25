@@ -130,10 +130,9 @@ jobs:
             endpoint = ["http://localhost:5000"]
         EOF
         export CLUSTER=$(uuidgen)
-        cat /tmp/cluster.yml
+        echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
-        cat $(pwd)/$CLUSTER.conf
         kubectl get nodes 
     - name: Cache crystal shards
       uses: actions/cache@v2
@@ -162,13 +161,13 @@ jobs:
         PROTECTED_DOCKERHUB_EMAIL: ${{ secrets.PROTECTED_DOCKERHUB_EMAIL }}
         PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-      run: |
-        export KUBECONFIG_FILE=$(ls *.conf) 
-        export KUBECONFIG=$(pwd)/$KUBECONFIG_FILE
-        export CLUSTER_NAME="${KUBECONFIG_FILE%.*}"
-        cat $KUBECONFIG
-        LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
-        kind delete cluster --name $CLUSTER_NAME
+      uses: mxschmitt/action-tmate@v3
+      # run: |
+      #   export KUBECONFIG_FILE=$(ls *.conf) 
+      #   export KUBECONFIG=$(pwd)/$KUBECONFIG_FILE
+      #   export CLUSTER_NAME="${KUBECONFIG_FILE%.*}"
+      #   LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
+      #   kind delete cluster --name $CLUSTER_NAME
         
   build:
     name: Build Release
