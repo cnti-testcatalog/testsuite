@@ -35,18 +35,19 @@ module CNFManager
                                      container_names: Array(Hash(String, String )) | Nil,
                                      white_list_container_names: Array(String)) 
 
-    def self.parse_config_yml(config_yml_path : String, airgapped=false) : CNFManager::Config
+    def self.parse_config_yml(config_yml_path : String, airgapped=false, generate_tar_mode=false) : CNFManager::Config
       LOGGING.debug "parse_config_yml config_yml_path: #{config_yml_path}"
+      LOGGING.info "airgapped: #{airgapped}"
+      LOGGING.info "generate_tar_mode: #{generate_tar_mode}"
       yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
       #TODO modify the destination testsuite yml instead of the source testsuite yml 
       # (especially in the case of the release manager).  Then reread the destination config
       # TODO for cleanup, read source, then find destination and use release name from destination config
       # TODO alternatively use a CRD to save the release name
+
+      CNFManager.generate_and_set_release_name(config_yml_path, airgapped, generate_tar_mode)
       config = CNFManager.parsed_config_file(yml_file)
-
       install_method = CNFManager.cnf_installation_method(config)
-
-      CNFManager.generate_and_set_release_name(config_yml_path)
 
       destination_cnf_dir = CNFManager.cnf_destination_dir(yml_file)
 
@@ -75,6 +76,7 @@ module CNFManager
         working_chart_directory = helm_directory
       end
       helm_chart_path = destination_cnf_dir + "/" + working_chart_directory 
+      helm_chart_path = Path[helm_chart_path].expand.to_s
       manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
       white_list_container_names = optional_key_as_string(config, "allowlist_helm_chart_container_names")
       if config["allowlist_helm_chart_container_names"]?

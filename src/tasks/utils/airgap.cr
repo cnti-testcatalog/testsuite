@@ -7,75 +7,84 @@ require "./docker_client.cr"
 require "./kubectl_client.cr"
 require "./airgap_utils.cr"
 
+# todo put in a separate library. it shold go under ./tools for now
 module AirGap
   CRI_VERSION="v1.17.0"
   CTR_VERSION="1.5.0"
+  TAR_BOOTSTRAP_IMAGES_DIR = "/tmp/bootstrap_images"
 
-  #TODO make chainable predicates that allow for bootstraping calls
-  # schedulable_nodes() : nodes_json
-  #  -> pods_by_node(nodes_json) : pods_json
-  #  -> pods_by_label(pods_json, "name=cri-tools") : pods_json
-  #  -> cp(pods_json, tarred_image) : pods_json
-  #  -> exec(pods_json, command) : pods_json
-
-  #TODO Kubectl::Pods.pods_by_node(nodes_json) : pods_json
-  #TODO Kubectl::Pods.pods_by_label(pods_json, "name=cri-tools")
-  #TODO Kubectl::Pods.cp(pods_json, tarred_image)
-  #TODO Kubectl::Pods.exec(pods_json, command)
-
-  #TODO generate a helm tarball for a helm chart install
-  #TODO generate a tarball for a helm directory
-  #TODO generate a tarball for a manifest directory
-  #TODO append the tarballs to the airgapped tarball (or another tarball)
   #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped output-file=./tmp/airgapped.tar.gz
   #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml output-file=./tmp/airgapped.tar.gz
   #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=./tmp/airgapped.tar.gz
-  def self.generate_cnf_setup(config_file, output_file)
+  def self.generate_cnf_setup(config_file : String, output_file, cli_args)
     LOGGING.info "generate_cnf_setup cnf_config_file: #{config_file}"
     FileUtils.mkdir_p("#{TarClient::TAR_IMAGES_DIR}")
     config = CNFManager.parsed_config_file(config_file)
+    sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: false, generate_tar_mode: true) 
+    LOGGING.info "generate sandbox args: sandbox_config: #{sandbox_config}, cli_args: #{cli_args}"
+    CNFManager.sandbox_setup(sandbox_config, cli_args)
     install_method = CNFManager.cnf_installation_method(config)
+    LOGGING.info "generate_cnf_setup images_from_config_src"
+    images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], generate_tar_mode: true) 
+
+    images.map  do |i|
+      input_file = "#{TarClient::TAR_IMAGES_DIR}/#{i[:image_name].split("/")[-1]}_#{i[:tag]}.tar"
+      LOGGING.info "input_file: #{input_file}"
+      image = "#{i[:image_name]}:#{i[:tag]}"
+      DockerClient.pull(image)
+      DockerClient.save(image, input_file)
+      TarClient.append(output_file, "/tmp", "images/" + input_file.split("/")[-1])
+      LOGGING.info "#{output_file} in generate_cnf_setup complete"
+    end
     case install_method[0]
     when :helm_chart
       LOGGING.debug "helm_chart : #{install_method[1]}"
-      TarClient.tar_helm_repo(install_method[1], output_file)
+      AirGap.tar_helm_repo(install_method[1], output_file)
       LOGGING.info "generate_cnf_setup tar_helm_repo complete"
-      #TODO get images from helm chart
-      #TODO tarball the images
-      LOGGING.info "generate_cnf_setup images_from_config_src"
-      images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], generate_tar_mode: true) 
-
-      images.map  do |i|
-        input_file = "#{TarClient::TAR_IMAGES_DIR}/#{i[:image_name].split("/")[-1]}_#{i[:tag]}.tar"
-        LOGGING.info "input_file: #{input_file}"
-        image = "#{i[:image_name]}:#{i[:tag]}"
-        DockerClient.pull(image)
-        DockerClient.save(image, input_file)
-        # FileUtils.mkdir_p("#{TarClient::TAR_IMAGES_DIR}/#{Path[input_file].parent}")
-        # TarClient.append(output_file, Path[input_file].parent, "/images/" + input_file.split("/")[-1])
-        TarClient.append(output_file, "/tmp", "images/" + input_file.split("/")[-1])
-        LOGGING.info "#{output_file} in generate_cnf_setup complete"
-      end
-      # when :helm_directory
-      #   LOGGING.debug "helm_directory install method: #{yml_path}/#{install_method[1]}"
-      #   release_name = helm_chart_template_release_name("#{yml_path}/#{install_method[1]}")
-      # when :manifest_directory
-      #   LOGGING.debug "manifest_directory install method"
-      #   release_name = UUID.random.to_s
-    else
-      raise "Install method should be either helm_chart, helm_directory, or manifest_directory"
     end
   end
 
-  # LOGGING.info ./cnf-testsuite cnf_setup offline=./tmp/cnf.tar.gz cnf-config=example-cnfs/coredns/cnf-testsuite.yml
-  # LOGGING.info ./cnf-testsuite cnf_setup input_file=./tmp/cnf.tar.gz cnf-config=example-cnfs/coredns/cnf-testsuite.yml
-  def self.cnf_setup
-    # TODO Extract to the #{TAR_IMAGES_DIR} directory
-    #TODO cache the images into the nodes 
-    #TODO check for cnf-testsuite file, error out if doesn't exist
-    #TODO use cnf-testsuite file to find out which install method will be used
-    #TODO install all helm charts and helm directories using helm directory install method
-    #TODO install manifests using install manifest method
+
+
+  def self.tar_helm_repo(command, output_file : String = "./airgapped.tar.gz")
+    LOGGING.info "tar_helm_repo command: #{command} output_file: #{output_file}"
+    tar_dir = AirGapUtils.helm_tar_dir(command)
+    FileUtils.mkdir_p(tar_dir)
+    Helm.fetch("#{command} -d #{tar_dir}")
+    LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
+    info = AirGapUtils.tar_info_by_config_src(command)
+    repo = info[:repo]
+    repo_dir = info[:repo_dir]
+    chart_name = info[:chart_name]
+    repo_path = info[:repo_path]
+    tar_dir = info[:tar_dir]
+    tar_name = info[:tar_name]
+
+    TarClient.modify_tar!(tar_name) do |directory| 
+      template_files = Find.find(directory, "*.yaml*", "100")
+      template_files.map{|x| AirGapUtils.image_pull_policy(x)}
+    end
+    TarClient.append(output_file, "/tmp", "#{repo_path}")
+  ensure
+    `rm -rf /tmp/#{repo_path} > /dev/null 2>&1`
+  end
+  
+  def self.tar_manifest(url, output_file : String = "./airgapped.tar.gz", prefix="")
+    manifest_path = "manifests/" 
+    `rm -rf /tmp/#{manifest_path} > /dev/null 2>&1`
+    FileUtils.mkdir_p("/tmp/" + manifest_path)
+    manifest_name = prefix + url.split("/").last 
+    manifest_full_path = manifest_path + manifest_name 
+    LOGGING.info "manifest_name: #{manifest_name}"
+    LOGGING.info "manifest_full_path: #{manifest_full_path}"
+    Halite.get("#{url}") do |response| 
+       File.open("/tmp/" + manifest_full_path, "w") do |file| 
+         IO.copy(response.body_io, file)
+       end
+    end
+    TarClient.append(output_file, "/tmp", manifest_full_path)
+  ensure
+    `rm -rf /tmp/#{manifest_path} > /dev/null 2>&1`
   end
 
   #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
@@ -83,47 +92,49 @@ module AirGap
   #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
   def self.generate(output_file : String = "./airgapped.tar.gz")
     `rm #{output_file}`
-    FileUtils.mkdir_p("#{TarClient::TAR_IMAGES_DIR}")
+    FileUtils.mkdir_p("#{TAR_BOOTSTRAP_IMAGES_DIR}")
     AirGap.download_cri_tools
-    [{input_file: "#{TarClient::TAR_IMAGES_DIR}/kubectl.tar", 
+    [{input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
       image: "bitnami/kubectl:latest"},
-    {input_file: "#{TarClient::TAR_IMAGES_DIR}/chaos-mesh.tar", 
+    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-mesh.tar", 
      image: "pingcap/chaos-mesh:v1.2.1"},
-    {input_file: "#{TarClient::TAR_IMAGES_DIR}/chaos-daemon.tar", 
+    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-daemon.tar", 
      image: "pingcap/chaos-daemon:v1.2.1"},
-    {input_file: "#{TarClient::TAR_IMAGES_DIR}/chaos-dashboard.tar", 
+    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-dashboard.tar", 
      image: "pingcap/chaos-dashboard:v1.2.1"},
-    {input_file: "#{TarClient::TAR_IMAGES_DIR}/chaos-kernel.tar", 
+    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-kernel.tar", 
      image: "pingcap/chaos-kernel:v1.2.1"},
-    {input_file: "#{TarClient::TAR_IMAGES_DIR}/pingcap-coredns.tar", 
+    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/pingcap-coredns.tar", 
      image: "pingcap/coredns:v0.2.0"},
-    {input_file: "#{TarClient::TAR_IMAGES_DIR}/sonobuoy.tar", 
+    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/sonobuoy.tar", 
      image: "docker.io/sonobuoy/sonobuoy:v0.19.0"},
-    {input_file: "#{TarClient::TAR_IMAGES_DIR}/sonobuoy-logs.tar", 
+    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/sonobuoy-logs.tar", 
      image: "docker.io/sonobuoy/systemd-logs:v0.3"},
-    {input_file: "#{TarClient::TAR_IMAGES_DIR}/litmus-operator.tar", 
+    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/litmus-operator.tar", 
      image: "litmuschaos/chaos-operator:1.13.2"},
-    {input_file: "#{TarClient::TAR_IMAGES_DIR}/litmus-runner.tar", 
+    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/litmus-runner.tar", 
      image: "litmuschaos/chaos-runner:1.13.2"},
-    {input_file: "#{TarClient::TAR_IMAGES_DIR}/prometheus.tar", 
+    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/go-runner.tar", 
+     image: "litmuschaos/go-runner:1.13.2"},
+    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/prometheus.tar", 
      image: "prom/prometheus:v2.18.1"}].map do |x|
       DockerClient.pull(x[:image])
       DockerClient.save(x[:image], x[:input_file])
-      TarClient.append(output_file, TarClient::TAR_TMP_BASE, "images/" + x[:input_file].split("/")[-1])
-      # TarClient.append(output_file, Path[x[:input_file]].parent, x[:input_file].split("/")[-1])
+      TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bootstrap_images/" + x[:input_file].split("/")[-1])
     end
     #TODO test if these should be in the /tmp/bin directory
     TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
     TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
-    TarClient.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
-    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml", output_file)
-    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml", output_file)
-    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/experiment.yaml", output_file, "disk-fill-")
-    TarClient.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml", output_file, "disk-fill-")
+    AirGap.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
+    AirGap.tar_manifest("https://raw.githubusercontent.com/litmuschaos/chaos-operator/master/deploy/chaos_crds.yaml", output_file)
+    AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml", output_file)
+    AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml", output_file)
+    AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/experiment.yaml", output_file, "disk-fill-")
+    AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml", output_file, "disk-fill-")
     url = "https://github.com/vmware-tanzu/sonobuoy/releases/download/v#{SONOBUOY_K8S_VERSION}/sonobuoy_#{SONOBUOY_K8S_VERSION}_#{SONOBUOY_OS}_amd64.tar.gz"
     TarClient.tar_file_by_url(url, output_file, "sonobuoy.tar.gz")
     Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
-    TarClient.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
+    AirGap.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
   end
 
   #./cnf-testsuite setup --offline=./airgapped.tar.gz
@@ -132,33 +143,22 @@ module AirGap
     TarClient.untar(output_file, output_dir)
   end
 
-  def self.cache_images(tarball_name="./airgapped.tar.gz")
+  def self.cache_images(tarball_name="./airgapped.tar.gz", cnf_setup=false)
     AirGap.bootstrap_cluster()
     if ENV["CRYSTAL_ENV"]? == "TEST"
-      # install_list = [{input_file: "/tmp/image/kubectl.tar"}, 
-      #                 {input_file: "/tmp/image/chaos-mesh.tar"}]
-      image_files = ["#{TarClient::TAR_IMAGES_DIR}/kubectl.tar", 
-                      "#{TarClient::TAR_IMAGES_DIR}/chaos-mesh.tar"]
+      image_files = ["#{TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
+                      "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-mesh.tar"]
+      tar_image_files = Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tar*")
+      image_files = image_files + tar_image_files + Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tgz*")
     else
-      #TODO function that loops through all of the tar files that are image files
-      tar_image_files = TarClient.find("#{TarClient::TAR_IMAGES_DIR}", "*.tar*")
-      image_files = tar_image_files + TarClient.find("#{TarClient::TAR_IMAGES_DIR}", "*.tgz*")
-      #TODO function that loops through all of the tar files that are image files
-      #TODO any tar file that is in /tmp is an image file
-      #TODO optional any tar file that is in #{TAR_IMAGES_DIR} is an image file
-    #   install_list = [{input_file: "/tmp/kubectl.tar"}, 
-    #                   {input_file: "/tmp/chaos-mesh.tar"}, 
-    #                   {input_file: "/tmp/chaos-daemon.tar"}, 
-    #                   {input_file: "/tmp/chaos-dashboard.tar"}, 
-    #                   {input_file: "/tmp/chaos-kernel.tar"}, 
-    #                   {input_file: "/tmp/pingcap-coredns.tar"}, 
-    #                   {input_file: "/tmp/sonobuoy.tar"}, 
-    #                   {input_file: "/tmp/sonobuoy-logs.tar"}, 
-    #                   {input_file: "/tmp/litmus-operator.tar"}, 
-    #                   {input_file: "/tmp/litmus-runner.tar"}, 
-    #                   {input_file: "/tmp/prometheus.tar"}]
+      if cnf_setup
+        tar_image_files = Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tar*")
+        image_files = tar_image_files + Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tgz*")
+      else
+        tar_image_files = Find.find("#{TAR_BOOTSTRAP_IMAGES_DIR}", "*.tar*")
+        image_files = tar_image_files + Find.find("#{TAR_BOOTSTRAP_IMAGES_DIR}", "*.tgz*")
+      end
     end
-    # resp = install_list.map {|x| AirGap.publish_tarball(x[:input_file])}
     LOGGING.info "publishing: #{image_files}"
     resp = image_files.map {|x| AirGap.publish_tarball(x)}
     LOGGING.debug "resp: #{resp}"

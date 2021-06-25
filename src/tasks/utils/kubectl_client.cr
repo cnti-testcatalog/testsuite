@@ -1,8 +1,10 @@
 require "totem"
 require "colorize"
+# todo remove dependency
 require "./cnf_manager.cr"
 require "halite"
 
+# todo put in a separate library. it shold go under ./tools for now
 module KubectlClient
   alias K8sManifest = JSON::Any
   alias K8sManifestList = Array(JSON::Any)
@@ -112,7 +114,8 @@ module KubectlClient
       apply_status = $?.success?
     end
     def self.validate(file_name) : Bool
-      LOGGING.info "apply file: #{file_name}"
+      # this hits the server btw (so you need a valid K8s cluster)
+      LOGGING.info "apply (validate) file: #{file_name}"
       status = Process.run("kubectl apply --validate=true --dry-run=client -f #{file_name}",
                            shell: true,
                            output: output = IO::Memory.new,

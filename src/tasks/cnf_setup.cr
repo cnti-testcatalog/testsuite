@@ -9,18 +9,16 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
   VERBOSE_LOGGING.info "cnf_setup" if check_verbose(args)
   VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
   cli_hash = CNFManager.sample_setup_cli_args(args)
-  #TODO accept an offline mode parameter
-  #TODO determine if helm chart, if so, install using helm install <tarball>
   output_file = cli_hash[:output_file]
   input_file =  cli_hash[:input_file]
   if output_file && !output_file.empty?
     puts "cnf tarball generation mode".colorize(:green)
-    tar_info = AirGap.generate_cnf_setup(cli_hash[:extended_config_file], output_file)
+    tar_info = AirGap.generate_cnf_setup(cli_hash[:extended_config_file], output_file, cli_hash)
     puts "cnf tarball generation mode complete".colorize(:green)
   elsif input_file && !input_file.empty?
     puts "cnf setup airgapped mode".colorize(:green)
     AirGap.extract(input_file)
-    AirGap.cache_images(input_file)
+    AirGap.cache_images(input_file, cnf_setup: true)
     CNFManager.sample_setup(cli_hash)
     puts "cnf setup airgapped mode complete".colorize(:green)
   else
@@ -30,22 +28,10 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
   end
 end
 
-# task "offline" do |_, args|
-#   #./cnf-testsuite setup --offline=./airgapped.tar.gz
-#   #./cnf-testsuite setup --input-file=./airgapped.tar.gz
-#   #./cnf-testsuite setup --if=./airgapped.tar.gz
-#   output_file = args.named["offline"].as(String) if args.named["offline"]?
-#   output_file = args.named["input-file"].as(String) if args.named["input-file"]?
-#   output_file = args.named["if"].as(String) if args.named["if"]?
-#   if output_file && !output_file.empty?
-#       AirGap.extract(output_file)
-#       AirGap.cache_images(output_file)
-#   end
-# end
-
 task "cnf_cleanup" do |_, args|
   VERBOSE_LOGGING.info "cnf_cleanup" if check_verbose(args)
   VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
+  LOGGING.debug "args = #{args.inspect}"
   if args.named.keys.includes? "cnf-config"
     yml_file = args.named["cnf-config"].as(String)
     cnf = File.dirname(yml_file)
@@ -61,7 +47,12 @@ task "cnf_cleanup" do |_, args|
   else
     force = false
   end
-  CNFManager.sample_cleanup(config_file: cnf, force: force, verbose: check_verbose(args))
+  if args.named["installed-from-manifest"]? && args.named["installed-from-manifest"] == "true"
+    installed_from_manifest = true
+  else
+    installed_from_manifest = false
+  end
+  CNFManager.sample_cleanup(config_file: cnf, force: force, installed_from_manifest: installed_from_manifest, verbose: check_verbose(args))
 end
 
 task "CNFManager.helm_repo_add" do |_, args|

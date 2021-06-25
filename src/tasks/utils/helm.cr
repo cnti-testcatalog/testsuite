@@ -61,7 +61,12 @@ module Helm
     LOGGING.info "Helm::generate_manifest_from_templates command: #{helm} template #{release_name} #{helm_chart} > #{output_file}"
     #TODO use Process here
     # Helm template works with either a chart or a directory
+    ls_al = `ls -alR #{helm_chart}`
+    ls_al = `ls -alR cnfs`
+    LOGGING.debug "generate_manifest_from_templates ls -alR #{helm_chart}: #{ls_al}" 
     template_resp = `#{helm} template #{release_name} #{helm_chart} > #{output_file}`
+    input_content = File.read(output_file) 
+    LOGGING.debug "generate_manifest_from_templates output_file: #{output_file}"
     LOGGING.info "template_resp: #{template_resp}"
     [$?.success?, output_file]
   end
@@ -165,6 +170,18 @@ module Helm
     helm = CNFSingleton.helm
     LOGGING.info "helm command: #{helm} install #{cli}"
     status = Process.run("#{helm} install #{cli}",
+                         shell: true,
+                         output: output = IO::Memory.new,
+                         error: stderr = IO::Memory.new)
+    LOGGING.info "Helm.install output: #{output.to_s}"
+    LOGGING.info "Helm.install stderr: #{stderr.to_s}"
+    {status: status, output: output, error: stderr}
+  end
+
+  def self.pull(cli)
+    helm = CNFSingleton.helm
+    LOGGING.info "helm command: #{helm} pull #{cli}"
+    status = Process.run("#{helm} pull #{cli}",
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
