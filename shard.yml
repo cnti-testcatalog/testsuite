@@ -10,33 +10,40 @@ targets:
   cnf_testsuite:
     main: src/cnf_testsuite.cr
 
-crystal: 0.35.1
+crystal: '>= 0.35.1'
 
 dependencies:
   sam:
-    github: vulk/sam.cr
-    commit: c243db2
+    # github: vulk/sam.cr
+    # commit: c243db2
+    # Temporarily using HashNuke/sam.cr for Crystal upgrade
+    github: HashNuke/sam.cr
+    branch: "v1-upgrade"
   totem:
     github: icyleaf/totem
-    version: 0.6.0
+    version: ~> 0.7.0
   halite:
     github: icyleaf/halite
-    commit: ba22d2aa96bbb99702145839df8be516b4ceca90 # master as of 7-29-2020
-  icr:
-    github: crystal-community/icr
-    branch: master
+    version: ~> 0.12.0
+  
+  # Commenting this out to allow Crystal 1.0 upgrade
+  #icr:
+  #  github: crystal-community/icr
+  #  branch: master
+
   commander:
     github: mrrooijen/commander
-    version: ~> 0.3.5
+    version: ~> 0.4.0
   crinja:
     github: straight-shoota/crinja
-    commit: 849bd8a3c9600256ef797db66315dd757a1686a0 # master as of 7-29-2020
+    version: ~> 0.7.0
   retriable:
-    github: Sija/retriable.cr
+    github: HashNuke/retriable.cr # Temporary fork of Sija/retriable.cr until PR #11 is accepted
+    branch: v1-upgrade
 
 development_dependencies:
   ameba:
     github: crystal-ameba/ameba
-    version: ~> 0.12.0
+    version: ~> 0.14.3
 
 license: MIT
