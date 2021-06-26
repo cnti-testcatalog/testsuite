@@ -17,13 +17,9 @@ task "prereqs" do  |_, args|
   # Should be true if kubectl is found
   kubectl_existance = kubectl_checks_output.includes?("kubectl found")
 
-  # Should be true if kubectl version is not more then 3 versions behind
-  kubectl_version_validation = kubectl_checks_output.includes?("kubectl client is not more than 3 minor versions behind")
-
   checks = [
     helm_condition,
-    kubectl_existance,
-    kubectl_version_validation
+    kubectl_existance
   ]
 
   # git installation is optional for offline mode
