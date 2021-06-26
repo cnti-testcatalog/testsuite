@@ -20,9 +20,9 @@ def kubectl_installation(verbose=false)
       stdout_success version_msg
       gmsg = "#{gmsg} #{version_msg}"
     elsif version_test.nil?
-      stdout_failure "Global kubectl client version could not be checked for compatibility with server. (Running in airgapped mode?)"
+      stdout_warning "Global kubectl client version could not be checked for compatibility with server. (Running in airgapped mode?)"
     else
-      stdout_failure "Global kubectl client is more than 3 minor versions behind server version"
+      stdout_warning "Global kubectl client is more than 3 minor versions behind server version"
     end
 
   else
@@ -43,9 +43,9 @@ def kubectl_installation(verbose=false)
       version_msg = "Local kubectl client is not more than 3 minor versions behind server version"
       lmsg = "#{lmsg} #{version_msg}"
     elsif version_test.nil?
-      stdout_failure "Local kubectl client version could not be checked for compatibility with server. (Running in airgapped mode?)"
+      stdout_warning "Local kubectl client version could not be checked for compatibility with server. (Running in airgapped mode?)"
     else
-      stdout_failure "Local kubectl client is more than 3 minor versions behind server version"
+      stdout_warning "Local kubectl client is more than 3 minor versions behind server version"
     end
 
   else
@@ -85,10 +85,10 @@ def kubectl_installation(verbose=false)
   "#{lmsg} #{gmsg}"
 end 
 
-def kubectl_global_response(verbose=false)
-  kubectl_response = `kubectl version`
+def kubectl_global_response(verbose = false)
+  status = Process.run("kubectl version", shell: true, output: kubectl_response = IO::Memory.new, error: stderr = IO::Memory.new)
   VERBOSE_LOGGING.info kubectl_response if verbose
-  kubectl_response 
+  kubectl_response.to_s
 end
 
 def kubectl_local_response(verbose=false)
@@ -136,12 +136,14 @@ end
 # Check if client version is not 3 minor versions behind server version
 def acceptable_kubectl_version?(kubectl_response, verbose = false)
   client_version = kubectl_version(kubectl_response, "client", verbose).split(".")
-  server_version = kubectl_version(kubectl_response, "server", verbose).split(".")
+  server_version = kubectl_version(kubectl_response, "server", verbose)
 
   # Return nil to indicate comparison was not possible due to missing server version.
   if server_version == ""
     return nil
   end
+
+  server_version = server_version.split(".")
 
   # This check ensures major versions are same
   return false if server_version[0].to_i != client_version[0].to_i
