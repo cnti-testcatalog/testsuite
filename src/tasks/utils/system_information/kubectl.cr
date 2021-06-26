@@ -14,10 +14,13 @@ def kubectl_installation(verbose=false)
     gmsg = "Global kubectl found. Version: #{global_kubectl_version}"
     stdout_success gmsg
 
-    if acceptable_kubectl_version?(gkubectl, verbose)
+    version_test = acceptable_kubectl_version?(gkubectl, verbose)
+    if version_test
       version_msg = "Global kubectl client is not more than 3 minor versions behind server version"
       stdout_success version_msg
       gmsg = "#{gmsg} #{version_msg}"
+    elsif version_test.nil?
+      stdout_failure "Global kubectl client version could not be checked for compatibility with server. (Running in airgapped mode?)"
     else
       stdout_failure "Global kubectl client is more than 3 minor versions behind server version"
     end
@@ -35,9 +38,12 @@ def kubectl_installation(verbose=false)
     lmsg = "Local kubectl found. Version: #{local_kubectl_version}"
     stdout_success lmsg
 
-    if acceptable_kubectl_version?(lkubectl, verbose)
+    version_test = acceptable_kubectl_version?(lkubectl, verbose)
+    if version_test
       version_msg = "Local kubectl client is not more than 3 minor versions behind server version"
       lmsg = "#{lmsg} #{version_msg}"
+    elsif version_test.nil?
+      stdout_failure "Local kubectl client version could not be checked for compatibility with server. (Running in airgapped mode?)"
     else
       stdout_failure "Local kubectl client is more than 3 minor versions behind server version"
     end
@@ -128,9 +134,14 @@ def kubectl_version(kubectl_response, version_for="client", verbose=false)
 end
 
 # Check if client version is not 3 minor versions behind server version
-def acceptable_kubectl_version?(kubectl_response, verbose=false)
+def acceptable_kubectl_version?(kubectl_response, verbose = false)
   client_version = kubectl_version(kubectl_response, "client", verbose).split(".")
   server_version = kubectl_version(kubectl_response, "server", verbose).split(".")
+
+  # Return nil to indicate comparison was not possible due to missing server version.
+  if server_version == ""
+    return nil
+  end
 
   # This check ensures major versions are same
   return false if server_version[0].to_i != client_version[0].to_i
