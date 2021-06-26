@@ -486,8 +486,7 @@ module CNFManager
     yml_file = ""
     cnf_path = ""
     if args.named.keys.includes? "cnf-config"
-      yml_file = args.named["cnf-config"].as(String)
-      cnf_path = File.dirname(yml_file)
+      cnf_path = args.named["cnf-config"].as(String)
     elsif args.named.keys.includes? "cnf-path"
       cnf_path = args.named["cnf-path"].as(String)
     elsif noisy
