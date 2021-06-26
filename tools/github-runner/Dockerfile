@@ -1,9 +1,10 @@
 FROM myoung34/github-runner:latest 
 
-ARG CRYSTAL_VERSION=0.35.1
+ARG CRYSTAL_VERSION=1.0.0
 ARG CRYSTAL_URL=https://github.com/crystal-lang/crystal/releases/download
 
 RUN wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga && \
+    apt update && \
     apt install -y --no-install-recommends \
     git \
     libssl-dev \

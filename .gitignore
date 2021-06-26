@@ -11,6 +11,7 @@
 /tools/helm
 /tools/sonobuoy
 /tools/cluster-api
+/tools/airgapped_kind/kind_node/node.tar.gz
 admin.conf
 cnf-testsuite
 results.yml
