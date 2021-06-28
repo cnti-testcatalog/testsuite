@@ -25,8 +25,26 @@ module AirGap
     CNFManager.sandbox_setup(sandbox_config, cli_args)
     install_method = CNFManager.cnf_installation_method(config)
     LOGGING.info "generate_cnf_setup images_from_config_src"
+
     images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], generate_tar_mode: true) 
 
+    container_names = sandbox_config.cnf_config[:container_names]
+    #todo get image name (org name and image name) from config src
+    if container_names
+      config_images = [] of NamedTuple(image_name: String, tag: String)
+      container_names.map do |c|
+        LOGGING.info "container_names c: #{c}"
+        config_images << {image_name: images[0][:image_name], tag: c["rolling_update_test_tag"]}
+        config_images << {image_name: images[0][:image_name], tag: c["rolling_downgrade_test_tag"]}
+        config_images << {image_name: images[0][:image_name], tag: c["rolling_version_change_test_tag"]}
+        config_images << {image_name: images[0][:image_name], tag: c["rollback_from_tag"]}
+      end
+    else
+      config_images = [] of NamedTuple(image_name: String, tag: String)
+    end
+    LOGGING.info "config_images: #{config_images}"
+
+    images = images + config_images
     images.map  do |i|
       input_file = "#{TarClient::TAR_IMAGES_DIR}/#{i[:image_name].split("/")[-1]}_#{i[:tag]}.tar"
       LOGGING.info "input_file: #{input_file}"
