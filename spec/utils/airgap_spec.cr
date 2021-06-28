@@ -7,43 +7,16 @@ require "file_utils"
 require "sam"
 
 describe "AirGap" do
-    unless Dir.exists?("./tmp")
-      LOGGING.info `mkdir ./tmp`
-    end
 
   it "'image_pull_policy' should change all imagepull policy references to never", tags: ["airgap"] do
 
-    AirGapUtils.image_pull_policy("./spec/fixtures/litmus-operator-v1.13.2.yaml", "./tmp/imagetest.yml")
-    (File.exists?("./tmp/imagetest.yml")).should be_true
-    resp = File.read("./tmp/imagetest.yml") 
+    AirGapUtils.image_pull_policy("./spec/fixtures/litmus-operator-v1.13.2.yaml", "/tmp/imagetest.yml")
+    (File.exists?("/tmp/imagetest.yml")).should be_true
+    resp = File.read("/tmp/imagetest.yml") 
     (resp).match(/imagePullPolicy: Always/).should be_nil
     (resp).match(/imagePullPolicy: Never/).should_not be_nil
   ensure
-    # `rm ./tmp/imagetest.yml`
-  end
-   
-  it "'generate' should generate a tarball", tags: ["airgap"] do
-
-    `rm ./tmp/airgapped.tar.gz`
-    AirGap.tmp_cleanup
-    Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
-    AirGap.generate("./tmp/airgapped.tar.gz")
-    (File.exists?("./tmp/airgapped.tar.gz")).should be_true
-    file_list = `tar -tvf ./tmp/airgapped.tar.gz`
-    LOGGING.info "file_list: #{file_list}"
-    (file_list).match(/kubectl.tar/).should_not be_nil
-    (file_list).match(/chaos-mesh.tar/).should_not be_nil
-    (file_list).match(/chaos-daemon.tar/).should_not be_nil
-    (file_list).match(/chaos-dashboard.tar/).should_not be_nil
-    (file_list).match(/chaos-kernel.tar/).should_not be_nil
-    (file_list).match(/prometheus.tar/).should_not be_nil
-    (file_list).match(/rbac.yaml/).should_not be_nil
-    (file_list).match(/disk-fill-rbac.yaml/).should_not be_nil
-    (file_list).match(/litmus-operator/).should_not be_nil
-    (file_list).match(/download\/sonobuoy.tar.gz/).should_not be_nil
-  ensure
-    AirGap.tmp_cleanup
-    `rm ./tmp/airgapped.tar.gz`
+    `rm ./tmp/imagetest.yml`
   end
 
   it "'#AirGap.publish_tarball' should execute publish a tarball to a bootstrapped cluster", tags: ["airgap"]  do
@@ -52,6 +25,38 @@ describe "AirGap" do
     tarball_name = "./spec/fixtures/testimage.tar.gz"
     resp = AirGap.publish_tarball(tarball_name)
     resp[0][:output].to_s.match(/unpacking docker.io\/testimage\/testimage:test/).should_not be_nil
+  end
+
+  it "'.tar_helm_repo' should create a tar file from a helm repository that has options", tags: ["airgap"]  do
+    Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
+    AirGap.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", "/tmp/airgapped.tar")
+    (File.exists?("/tmp/airgapped.tar")).should be_true
+    resp = `tar -tvf /tmp/airgapped.tar`
+    LOGGING.info "Tar Filelist: #{resp}"
+    (/repositories\/chaos-mesh_chaos-mesh/).should_not be_nil
+  ensure
+    `rm /tmp/airgapped.tar`
+  end
+
+  it "'.tar_helm_repo' should create a tar file from a helm repository", tags: ["airgap"]  do
+    AirGap.tar_helm_repo("stable/coredns", "/tmp/airgapped.tar")
+    (File.exists?("/tmp/airgapped.tar")).should be_true
+    resp = `tar -tvf /tmp/airgapped.tar`
+    LOGGING.info "Tar Filelist: #{resp}"
+    (/repositories\/stable_coredns/).should_not be_nil
+  ensure
+    `rm /tmp/airgapped.tar`
+  end
+
+  it "'.tar_manifest' should create a tar file from a manifest", tags: ["airgap"]  do
+    # KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml")
+    AirGap.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", "/tmp/airgapped.tar")
+    (File.exists?("/tmp/airgapped.tar")).should be_true
+    resp = `tar -tvf /tmp/airgapped.tar`
+    LOGGING.info "Tar Filelist: #{resp}"
+    (/litmus-operator-v1.13.2.yaml/).should_not be_nil
+  ensure
+    `rm /tmp/airgapped.tar`
   end
 
   it "'#AirGap.check_tar' should determine if a pod has the tar binary on it", tags: ["airgap"]  do
@@ -88,6 +93,13 @@ describe "AirGap" do
     (resp[0].dig?("kind")).should eq "Pod"
   end
 
+  it "'#AirGap.pod_images' should retrieve all of the images for the pods with tar", tags: ["airgap"]  do
+    pods = AirGap.pods_with_tar()
+    resp = AirGap.pod_images(pods)
+    (resp[0]).should_not be_nil
+  end
+
+
   it "'#AirGap.download_cri_tools' should download the cri tools", tags: ["airgap-tools"]  do
     resp = AirGap.download_cri_tools()
     (File.exists?("#{TarClient::TAR_BIN_DIR}/crictl-#{AirGap::CRI_VERSION}-linux-amd64.tar.gz")).should be_true
@@ -101,21 +113,14 @@ describe "AirGap" do
     (File.exists?("#{TarClient::TAR_BIN_DIR}/ctr")).should be_true
   end
 
-  it "'#AirGap.pod_images' should retrieve all of the images for the pods with shells", tags: ["airgap-cri"]  do
-    pods = AirGap.pods_with_tar()
-    resp = AirGap.pod_images(pods)
-    # (resp[0]).should eq "conformance/cri-tools:latest"
-    (resp[0]).should_not be_nil
-  end
-
-  it "'#AirGap.create_pod_by_image' should install the cri pod in the cluster", tags: ["airgap-cri"]  do
+  it "'#AirGap.create_pod_by_image' should install the cri pod in the cluster", tags: ["airgap-tools"]  do
       pods = AirGap.pods_with_tar()
       image = AirGap.pod_images(pods)
       resp = AirGap.create_pod_by_image(image)
       (resp).should be_true
   end
 
-  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that has an image with tar avaliable on the node.", tags: ["airgap-cri"]  do
+  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that has an image with tar avaliable on the node.", tags: ["airgap-tools"]  do
     pods = AirGap.pods_with_tar()
     if pods.empty?
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml deploy_with_chart=false`
@@ -164,60 +169,6 @@ describe "AirGap" do
   ensure
     KubectlClient::Delete.command("daemonset cri-tools")
   end
-
-  it "'#AirGap.cache_images' should install the cri tools in the cluster", tags: ["airgap-tools"]  do
-    Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
-    AirGap.generate("./airgapped.tar.gz")
-    resp = AirGap.cache_images
-    LOGGING.info "#{resp.find{|x| puts x[0][:output].to_s}}"
-    resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/bitnami\/kubectl:latest/)}.should_not be_nil
-    resp.find{|x|x[0][:output].to_s.match(/unpacking docker.io\/pingcap\/chaos-mesh:v1.2.1/)}.should_not be_nil
-
-  ensure
-    `rm /tmp/images/kubectl.tar`
-    `rm /tmp/images/chaos-mesh.tar`
-    `rm /tmp/images/chaos-daemon.tar`
-    `rm /tmp/images/chaos-dashboard.tar`
-    `rm /tmp/images/chaos-kernel.tar`
-    `rm /tmp/images/sonobuoy.tar`
-    `rm /tmp/images/sonobuoy-logs.tar`
-    `rm /tmp/images/litmus-operator.tar`
-    `rm /tmp/images/litmus-runner.tar`
-    `rm /tmp/images/prometheus.tar`
-  end
-
-  it "'.tar_helm_repo' should create a tar file from a helm repository", tags: ["tar-install"]  do
-    AirGap.tar_helm_repo("stable/coredns", "/tmp/airgapped.tar")
-    (File.exists?("/tmp/airgapped.tar")).should be_true
-    resp = `tar -tvf /tmp/airgapped.tar`
-    LOGGING.info "Tar Filelist: #{resp}"
-    (/repositories\/stable_coredns/).should_not be_nil
-  ensure
-    `rm /tmp/airgapped.tar`
-  end
-
-  it "'.tar_helm_repo' should create a tar file from a helm repository that has options", tags: ["tar-install"]  do
-    Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
-    AirGap.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", "/tmp/airgapped.tar")
-    (File.exists?("/tmp/airgapped.tar")).should be_true
-    resp = `tar -tvf /tmp/airgapped.tar`
-    LOGGING.info "Tar Filelist: #{resp}"
-    (/repositories\/chaos-mesh_chaos-mesh/).should_not be_nil
-  ensure
-    `rm /tmp/airgapped.tar`
-  end
-
-  it "'.tar_manifest' should create a tar file from a manifest", tags: ["tar-install"]  do
-    # KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml")
-    AirGap.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", "/tmp/airgapped.tar")
-    (File.exists?("/tmp/airgapped.tar")).should be_true
-    resp = `tar -tvf /tmp/airgapped.tar`
-    LOGGING.info "Tar Filelist: #{resp}"
-    (/litmus-operator-v1.13.2.yaml/).should_not be_nil
-  ensure
-    `rm /tmp/airgapped.tar`
-  end
-
 end
 
 

@@ -379,6 +379,5 @@ end
     `rm -rf /tmp/sonobuoy-logs.tar`
     `rm -rf /tmp/sonobuoy.tar`
   end
-
 end
 
