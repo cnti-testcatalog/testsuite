@@ -114,16 +114,26 @@ describe "AirGap" do
   end
 
   it "'#AirGap.create_pod_by_image' should install the cri pod in the cluster", tags: ["airgap-tools"]  do
+    pods = AirGap.pods_with_tar()
+    if pods.empty?
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml`
+      $?.success?.should be_true
       pods = AirGap.pods_with_tar()
-      image = AirGap.pod_images(pods)
-      resp = AirGap.create_pod_by_image(image)
-      (resp).should be_true
+    end
+    images_with_tar = AirGap.pod_images(pods)
+    image = images_with_tar[0]
+    LOGGING.info "Image with TAR: #{image}"
+    resp = AirGap.create_pod_by_image(image)
+    (resp).should be_true
+  ensure
+    KubectlClient::Delete.command("daemonset cri-tools")
+    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml wait_count=0`
   end
 
   it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that has an image with tar avaliable on the node.", tags: ["airgap-tools"]  do
     pods = AirGap.pods_with_tar()
     if pods.empty?
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml deploy_with_chart=false`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml`
       $?.success?.should be_true
     end
     AirGap.bootstrap_cluster()
@@ -142,18 +152,15 @@ describe "AirGap" do
     end
   ensure
     KubectlClient::Delete.command("daemonset cri-tools")
-    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml deploy_with_chart=false`
+    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml wait_count=0`
   end
 
 
   it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that does not have tar in the images", tags: ["airgap-tools"]  do
-
-    # TODO Delete all cri-tools images
     KubectlClient::Delete.command("daemonset cri-tools")
     pods = AirGap.pods_with_tar()
-    # Skip the test if tar and sh is available outside of the cri tools 
-    if !pods.empty?
-      KubectlClient::Get
+    # Skip the test if tar is available outside of the cri tools 
+    if pods.empty?
       AirGap.bootstrap_cluster()
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
       pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
