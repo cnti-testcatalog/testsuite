@@ -205,7 +205,7 @@ jobs:
     name: Test Setup Command In An Airgapped Env.
     # needs: [build, debug_output, skip]
     runs-on: [default]
-    if: needs.skip.outputs.skip == 'false'
+    # if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -246,7 +246,7 @@ jobs:
     name: Test helm chart In An Airgapped Env.
     # needs: [build, debug_output, skip]
     runs-on: [default]
-    if: needs.skip.outputs.skip == 'false'
+    # if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -289,7 +289,7 @@ jobs:
     # needs: [build, debug_output, skip]
     runs-on: [default]
     #runs-on: ubuntu-latest
-    if: needs.skip.outputs.skip == 'false'
+    # if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -332,7 +332,7 @@ jobs:
     name: Test manifest directory In An Airgapped Env.
     # needs: [build, debug_output, skip]
     runs-on: [default]
-    if: needs.skip.outputs.skip == 'false'
+    # if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
