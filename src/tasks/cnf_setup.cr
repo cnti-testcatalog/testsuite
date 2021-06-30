@@ -47,6 +47,7 @@ task "cnf_cleanup" do |_, args|
   else
     force = false
   end
+  # todo make cnf_cleanup deduce if the installation was a manifest installation
   if args.named["installed-from-manifest"]? && args.named["installed-from-manifest"] == "true"
     installed_from_manifest = true
   else

@@ -172,6 +172,7 @@ describe "Setup" do
       LOGGING.info response_s
       $?.success?.should be_true
       (/Successfully setup nginx-webapp/ =~ response_s).should_not be_nil
+      (/exported_chart\" not found/ =~ response_s).should be_nil
     ensure
       `rm ./tmp/airgapped.tar.gz` if File.exists?("./tmp/airgapped.tar.gz")
       AirGap.tmp_cleanup

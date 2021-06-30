@@ -20,7 +20,9 @@ module CNFManager
                                                generate_tar_mode: generate_tar_mode)
       config = CNFManager.parsed_config_file(output_file)
       release_name = optional_key_as_string(config, "release_name")
-      if CNFManager.install_method_by_config_src(config_src) == :manifest_directory
+      install_method = CNFManager.install_method_by_config_src(config_src)
+      LOGGING.info "install_method: #{install_method}"
+      if install_method == :manifest_directory
         template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( config_src))
       else
         # todo if success false, raise error

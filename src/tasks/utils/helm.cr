@@ -59,16 +59,21 @@ module Helm
     LOGGING.debug "generate_manifest_from_templates"
     helm = CNFSingleton.helm
     LOGGING.info "Helm::generate_manifest_from_templates command: #{helm} template #{release_name} #{helm_chart} > #{output_file}"
-    #TODO use Process here
     # Helm template works with either a chart or a directory
     ls_al = `ls -alR #{helm_chart}`
+    LOGGING.info "(before generate) ls -alR #{helm_chart}: #{ls_al}"
     ls_al = `ls -alR cnfs`
+    LOGGING.info "(before generate) ls -alR cnfs: #{ls_al}"
     LOGGING.debug "generate_manifest_from_templates ls -alR #{helm_chart}: #{ls_al}" 
-    template_resp = `#{helm} template #{release_name} #{helm_chart} > #{output_file}`
-    input_content = File.read(output_file) 
+    # template_resp = `#{helm} template #{release_name} #{helm_chart} > #{output_file}`
+    resp = Helm.template(release_name, helm_chart, output_file)
+    ls_al = `ls -alR #{helm_chart}`
+    LOGGING.info "(after generate) ls -alR #{helm_chart}: #{ls_al}"
+    ls_al = `ls -alR cnfs`
+    LOGGING.info "(after generate) ls -alR cnfs: #{ls_al}"
+    # input_content = File.read(output_file) 
     LOGGING.debug "generate_manifest_from_templates output_file: #{output_file}"
-    LOGGING.info "template_resp: #{template_resp}"
-    [$?.success?, output_file]
+    [resp[:status].success?, output_file]
   end
 
   def self.workload_resource_by_kind(ymls : Array(YAML::Any), kind)
@@ -164,6 +169,18 @@ module Helm
 
   def self.chart_name(helm_chart_repo)
     helm_chart_repo.split("/").last
+  end
+
+  def self.template(release_name, helm_chart_or_directory, output_file="cnfs/temp_template.yml")
+    helm = CNFSingleton.helm
+    LOGGING.info "helm command: #{helm} template #{release_name} #{helm_chart_or_directory} > #{output_file}"
+    status = Process.run("#{helm} template #{release_name} #{helm_chart_or_directory} > #{output_file}",
+                         shell: true,
+                         output: output = IO::Memory.new,
+                         error: stderr = IO::Memory.new)
+    LOGGING.info "Helm.template output: #{output.to_s}"
+    LOGGING.info "Helm.template stderr: #{stderr.to_s}"
+    {status: status, output: output, error: stderr}
   end
 
   def self.install(cli)
