@@ -310,6 +310,8 @@ jobs:
           lib-
     # - uses: mxschmitt/action-tmate@v3
     #   if: needs.debug_output.outputs.release-debug == 'true'
+    #
+    - uses: mxschmitt/action-tmate@v3
     - name: Create Cluster & Run Tests.
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -351,7 +353,6 @@ jobs:
         key: lib-${{ hashFiles('**/shard.lock') }}
         restore-keys: |
           lib-
-    - uses: mxschmitt/action-tmate@v3
     #   if: needs.debug_output.outputs.release-debug == 'true'
     - name: Create Cluster & Run Tests.
       env:
