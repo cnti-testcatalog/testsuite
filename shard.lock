@@ -21,8 +21,8 @@ shards:
     version: 0.3.0
 
   retriable:
-    git: https://github.com/hashnuke/retriable.cr.git
-    version: 0.2.3+git.commit.dd287efa15adfa14eaa56df0979c55636e351db3
+    git: https://github.com/sija/retriable.cr.git
+    version: 0.2.4
 
   sam:
     git: https://github.com/hashnuke/sam.cr.git

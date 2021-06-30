@@ -38,8 +38,8 @@ dependencies:
     github: straight-shoota/crinja
     version: ~> 0.7.0
   retriable:
-    github: HashNuke/retriable.cr # Temporary fork of Sija/retriable.cr until PR #11 is accepted
-    branch: v1-upgrade
+    github: Sija/retriable.cr
+    version: ~> 0.2.4
 
 development_dependencies:
   ameba:
