@@ -379,6 +379,7 @@ end
     LOGGING.info "cleaning up /tmp directories, binaries, and tar files"
     `rm -rf /tmp/repositories`
     `rm -rf /tmp/images`
+    `rm -rf /tmp/bootstrap_images`
     `rm -rf /tmp/download`
     `rm -rf /tmp/manifests`
     `rm -rf /tmp/bin`
