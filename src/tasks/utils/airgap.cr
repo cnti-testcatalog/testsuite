@@ -59,6 +59,10 @@ module AirGap
       LOGGING.debug "helm_chart : #{install_method[1]}"
       AirGap.tar_helm_repo(install_method[1], output_file)
       LOGGING.info "generate_cnf_setup tar_helm_repo complete"
+    # when :manifest_directory
+    #   LOGGING.debug "manifest_directory : #{install_method[1]}"
+    #   template_files = Find.find(directory, "*.yaml*", "100")
+    #   template_files.map{|x| AirGapUtils.image_pull_policy(x)}
     end
   end
 
