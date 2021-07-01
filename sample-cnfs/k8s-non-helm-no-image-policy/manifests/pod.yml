@@ -4,7 +4,7 @@ metadata:
   name: sidecar-container-demo
 spec:
   containers:
-  - image: busybox:1.33.1
+  - image: busybox
     command: ["/bin/sh"]
     args: ["-c", "while true; do echo echo $(date -u) 'Hi I am from Sidecar container' >> /var/log/index.html; sleep 5;done"]
     name: sidecar-container
@@ -12,7 +12,7 @@ spec:
     volumeMounts:
     - name: var-logs
       mountPath: /var/log
-  - image: nginx:1.21.0
+  - image: nginx
     name: main-container
     resources: {}
     ports:

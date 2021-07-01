@@ -9,7 +9,7 @@ The CNF Test Suite is [Apache 2.0 licensed](LICENSE) and accepts contributions v
 Support channels include:
 
 - [Issues](issues)
-- Slack:
+- CNCF Slack (request invite to join [slack.cncf.io](slack.cncf.io))
   - [#cnf-testsuite-dev](https://cloud-native.slack.com/archives/C014TNCEX8R)
   - [#cnf-conformance](https://cloud-native.slack.com/archives/CV69TQW7Q)
 

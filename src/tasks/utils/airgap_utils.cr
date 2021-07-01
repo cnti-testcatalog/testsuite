@@ -21,7 +21,7 @@ module AirGapUtils
     end
     #
     #TODO find out why this doesn't work
-    # LOGGING.debug "input_content: #{input_content}"
+    # LOGGING.debug "after conversion: #{File.read(file)}"
   end
 
   def self.tar_name_by_helm_chart(config_src : String)

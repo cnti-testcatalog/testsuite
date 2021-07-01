@@ -75,13 +75,19 @@ module CNFManager
     manifest_file_path = config.cnf_config[:manifest_file_path]
     test_passed = true
 
-    if release_name.empty? # no helm chart
-      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
-    else
+    install_method = self.cnf_installation_method(config)
+    LOGGING.debug "install_method: #{install_method}"
+    template_ymls = [] of YAML::Any
+    case install_method[0]
+    when :helm_chart, :helm_directory
       Helm.generate_manifest_from_templates(release_name,
                                             helm_chart_path,
                                             manifest_file_path)
       template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
+    when :manifest_directory
+    # if release_name.empty? # no helm chart
+      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
+    # else
     end
     resource_ymls = Helm.all_workload_resources(template_ymls)
 		resource_resp = resource_ymls.map do | resource |
@@ -289,8 +295,16 @@ module CNFManager
     end
   end
 
+  def self.cnf_installation_method(config : CNFManager::Config)
+    LOGGING.info "cnf_installation_method config : CNFManager::Config"
+    LOGGING.info "config_cnf_config: #{config.cnf_config}"
+    yml_file_path = config.cnf_config[:source_cnf_file]
+    parsed_config_file = CNFManager.parsed_config_file(yml_file_path)
+    cnf_installation_method(parsed_config_file)
+  end
+
   #Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
-  def self.cnf_installation_method(config)
+  def self.cnf_installation_method(config : Totem::Config)
     LOGGING.info "cnf_installation_method"
     LOGGING.info "cnf_installation_method config: #{config}"
     LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
@@ -539,8 +553,8 @@ module CNFManager
       source_directory = ""
       FileUtils.mkdir_p(Path[destination_cnf_dir].expand.to_s + "/exported_chart")
     end
-    ls_al = `ls -alR #{destination_cnf_dir}`
-    LOGGING.info "ls -alR #{destination_cnf_dir}: #{ls_al}"
+    LOGGING.info "ls -alR #{destination_cnf_dir}:"
+    LOGGING.info = `ls -alR #{destination_cnf_dir}`
 
     LOGGING.info("cp -a #{ensure_cnf_testsuite_yml_path(config_file)} #{destination_cnf_dir}")
     yml_cp = `cp -a #{ensure_cnf_testsuite_yml_path(config_file)} #{destination_cnf_dir}`
@@ -584,12 +598,12 @@ module CNFManager
     TarClient.untar(tgz_name,  "#{destination_cnf_dir}/exported_chart")
 
     VERBOSE_LOGGING.info "mv #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart" if verbose
-    ls_al = `ls -alR #{destination_cnf_dir}`
-    LOGGING.info "ls -alR (before move) destination_cnf_dir: #{ls_al}"
+    LOGGING.info "ls -alR (before move) destination_cnf_dir:"
+    LOGGING.info  `ls -alR #{destination_cnf_dir}`
     move_chart = `mv #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart`
 
-    ls_al = `ls -alR #{destination_cnf_dir}`
-    LOGGING.info "ls -alR (after move) destination_cnf_dir: #{ls_al}"
+    LOGGING.info "ls -alR (after move) destination_cnf_dir:"
+    LOGGING.info `ls -alR #{destination_cnf_dir}`
 
   end
 
@@ -656,6 +670,7 @@ module CNFManager
           yml_template_files = Find.find("#{destination_cnf_dir}/#{manifest_directory}", 
                                                "*.yml*", "100")
           template_files = yaml_template_files + yml_template_files
+          LOGGING.info "(before kubectl apply) calling image_pull_policy on #{template_files}"
           template_files.map{|x| AirGapUtils.image_pull_policy(x)}
         end
         VERBOSE_LOGGING.info "deploying by manifest file" if verbose
@@ -758,12 +773,14 @@ end
     LOGGING.info "sample_cleanup"
     LOGGING.info "sample_cleanup installed_from_manifest: #{installed_from_manifest}"
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
+    LOGGING.info "destination_cnf_dir: #{destination_cnf_dir}"
     config = parsed_config_file(ensure_cnf_testsuite_yml_path(config_file))
 
     VERBOSE_LOGGING.info "cleanup config: #{config.inspect}" if verbose
     KubectlClient::Delete.file("#{destination_cnf_dir}/configmap_test.yml")
     release_name = "#{config.get("release_name").as_s?}"
     manifest_directory = destination_cnf_dir + "/" + "#{config["manifest_directory"]? && config["manifest_directory"].as_s?}"
+    LOGGING.info "manifest_directory: #{manifest_directory}"
 
     LOGGING.info "helm path: #{CNFSingleton.helm}"
     helm = CNFSingleton.helm

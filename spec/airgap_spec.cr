@@ -32,6 +32,16 @@ describe "AirGap" do
     response_s = `./cnf-testsuite -l info setup offline=/tmp/airgapped.tar.gz`
     $?.success?.should be_true
     LOGGING.info response_s
+    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+    pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+    # Get the generated name of the cri-tools per node
+    pods.map do |pod| 
+      pod_name = pod.dig?("metadata", "name")
+      sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/crictl > /dev/null")  
+      sh[:status].success?
+      sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/ctr > /dev/null")  
+      sh[:status].success?
+    end
     (/All prerequisites found./ =~ response_s).should_not be_nil
     (/Setup complete/ =~ response_s).should_not be_nil
   end
@@ -40,9 +50,13 @@ describe "AirGap" do
     begin
       response_s = `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz`
       LOGGING.info response_s
+      file_list = `tar -tvf ./tmp/airgapped.tar.gz`
+      LOGGING.info "file_list: #{file_list}"
+      (file_list).match(/coredns_1.8.0.tar/).should_not be_nil
+      (file_list).match(/coredns_1.6.7.tar/).should_not be_nil
       response_s = `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml input-file=/tmp/airgapped.tar.gz`
-      LOGGING.info response_s
       $?.success?.should be_true
+      LOGGING.info response_s
       (/Successfully setup coredns/ =~ response_s).should_not be_nil
     ensure
       response_s = `./cnf-testsuite cnf_cleanup cnf-config=example-cnfs/coredns/cnf-testsuite.yml wait_count=0`
@@ -76,6 +90,7 @@ describe "AirGap" do
       $?.success?.should be_true
       LOGGING.info response_s
       (/Successfully setup nginx-webapp/ =~ response_s).should_not be_nil
+      (/exported_chart\" not found/ =~ response_s).should be_nil
     ensure
       response_s = `LOG_LEVEL=debug ./cnf-testsuite cnf_cleanup installed-from-manifest=true cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml wait_count=0`
       $?.success?.should be_true

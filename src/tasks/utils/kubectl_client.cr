@@ -190,7 +190,7 @@ module KubectlClient
     def self.pods(all_namespaces=true) : K8sManifest 
       option = all_namespaces ? "--all-namespaces" : ""
       resp = `kubectl get pods #{option} -o json`
-      LOGGING.debug "kubectl get pods: #{resp}"
+      # LOGGING.debug "kubectl get pods: #{resp}"
       JSON.parse(resp)
     end
   # def self.cnf_workload_resources(args, config, &block)
@@ -296,12 +296,12 @@ module KubectlClient
         LOGGING.debug "NodeName: #{node_name}"
         pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod| 
           if pod.dig?("spec", "nodeName") == "#{node_name}"
-            LOGGING.info "pod: #{pod}"
+            LOGGING.debug "pod: #{pod}"
             pod_name = pod.dig?("metadata", "name")
             LOGGING.debug "PodName: #{pod_name}"
             true
           else
-            LOGGING.debug "No Match"
+            LOGGING.debug "spec node_name: No Match: #{node_name}"
             false
           end
         end
@@ -315,7 +315,7 @@ module KubectlClient
           LOGGING.debug "pod: #{pod}"
           true
         else
-          LOGGING.debug "No Match"
+          LOGGING.debug "metadata labels: No Match #{label_value}"
           false
         end
       end 
@@ -484,7 +484,7 @@ module KubectlClient
           desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
         end
         LOGGING.debug "desired_replicas: #{desired_replicas}"
-        LOGGING.debug "pod_read: #{pod_ready}"
+        LOGGING.debug "pod_ready: #{pod_ready}"
         LOGGING.info(all_kind)
         second_count = second_count + 1
       end
@@ -669,6 +669,9 @@ module KubectlClient
       status = "#{pod_name_prefix},NotFound,false"
       if pod != "not found"
         status = `kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}'`
+        LOGGING.debug "pod_status status before parse: #{status}"
+        status = status.gsub(" ", ",") # handle mutiple containers
+        LOGGING.debug "pod_status status after parse: #{status}"
       else
         LOGGING.info "pod: #{pod_name_prefix} is NOT found"
       end
