@@ -246,12 +246,6 @@ jobs:
     name: Test helm chart In An Airgapped Env.
     # needs: [build, debug_output, skip]
     runs-on: [default]
-<<<<<<< HEAD
-    # if: needs.skip.outputs.skip == 'false'
-=======
-    # runs-on: ubuntu-latest
-    if: needs.skip.outputs.skip == 'false'
->>>>>>> 1b95ce83f08621b6f67fef0e2b4943200c9f0fa4
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -293,13 +287,6 @@ jobs:
     name: Test helm directory In An Airgapped Env.
     # needs: [build, debug_output, skip]
     runs-on: [default]
-<<<<<<< HEAD
-    #runs-on: ubuntu-latest
-    # if: needs.skip.outputs.skip == 'false'
-=======
-    # runs-on: ubuntu-latest
-    if: needs.skip.outputs.skip == 'false'
->>>>>>> 1b95ce83f08621b6f67fef0e2b4943200c9f0fa4
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
