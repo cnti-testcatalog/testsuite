@@ -212,7 +212,7 @@ jobs:
     name: Test helm chart In An Airgapped Env.
     needs: [build, debug_output, skip]
     runs-on: [default]
-    #runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
     if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
@@ -249,7 +249,7 @@ jobs:
     name: Test helm directory In An Airgapped Env.
     needs: [build, debug_output, skip]
     runs-on: [default]
-    #runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
     if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
@@ -284,7 +284,7 @@ jobs:
     name: Test manifest directory In An Airgapped Env.
     needs: [build, debug_output, skip]
     runs-on: [default]
-    #runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
     if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
