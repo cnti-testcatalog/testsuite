@@ -26,18 +26,30 @@ module AirGap
     install_method = CNFManager.cnf_installation_method(config)
     LOGGING.info "generate_cnf_setup images_from_config_src"
 
+    LOGGING.info "Download CRI Tools"
+    AirGap.download_cri_tools
+
+    LOGGING.info "Add CRI Tools to Airgapped Tar: #{output_file}"
+    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
+    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
+
     images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], generate_tar_mode: true) 
 
     container_names = sandbox_config.cnf_config[:container_names]
     #todo get image name (org name and image name) from config src
+
     if container_names
       config_images = [] of NamedTuple(image_name: String, tag: String)
       container_names.map do |c|
         LOGGING.info "container_names c: #{c}"
-        config_images << {image_name: images[0][:image_name], tag: c["rolling_update_test_tag"]}
-        config_images << {image_name: images[0][:image_name], tag: c["rolling_downgrade_test_tag"]}
-        config_images << {image_name: images[0][:image_name], tag: c["rolling_version_change_test_tag"]}
-        config_images << {image_name: images[0][:image_name], tag: c["rollback_from_tag"]}
+        # todo get image name for container name
+        image = images.find{|x| x[:container_name]==c["name"]}
+        if image
+          config_images << {image_name: image[:image_name], tag: c["rolling_update_test_tag"]}
+          config_images << {image_name: image[:image_name], tag: c["rolling_downgrade_test_tag"]}
+          config_images << {image_name: image[:image_name], tag: c["rolling_version_change_test_tag"]}
+          config_images << {image_name: image[:image_name], tag: c["rollback_from_tag"]}
+        end
       end
     else
       config_images = [] of NamedTuple(image_name: String, tag: String)
@@ -59,6 +71,10 @@ module AirGap
       LOGGING.debug "helm_chart : #{install_method[1]}"
       AirGap.tar_helm_repo(install_method[1], output_file)
       LOGGING.info "generate_cnf_setup tar_helm_repo complete"
+    # when :manifest_directory
+    #   LOGGING.debug "manifest_directory : #{install_method[1]}"
+    #   template_files = Find.find(directory, "*.yaml*", "100")
+    #   template_files.map{|x| AirGapUtils.image_pull_policy(x)}
     end
   end
 
@@ -162,6 +178,7 @@ module AirGap
   end
 
   def self.cache_images(tarball_name="./airgapped.tar.gz", cnf_setup=false)
+    LOGGING.info "cache_images"
     AirGap.bootstrap_cluster()
     if ENV["CRYSTAL_ENV"]? == "TEST"
       image_files = ["#{TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 

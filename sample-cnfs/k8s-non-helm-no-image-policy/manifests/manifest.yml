@@ -18,7 +18,7 @@ spec:
         app: nginx-webapp
     spec:
       containers:
-      - image: busybox:1.33.1
+      - image: busybox
         command: ["/bin/sh"]
         args: ["-c", "while true; do echo echo $(date -u) 'Hi I am from Sidecar container 1' >> /var/log/index.html; sleep 5;done"]
         name: sidecar-container1
@@ -26,7 +26,7 @@ spec:
         volumeMounts:
           - name: var-logs
             mountPath: /var/log
-      - image: busybox:1.33.1
+      - image: busybox
         command: ["/bin/sh"]
         args: ["-c", "while true; do echo echo $(date -u) 'Hi I am from Sidecar container 2' >> /var/log/index.html; sleep 5;done"]
         name: sidecar-container2
@@ -34,7 +34,7 @@ spec:
         volumeMounts:
           - name: var-logs
             mountPath: /var/log
-      - image: nginx:1.21.0
+      - image: nginx
         name: main-container
         resources: {}
         ports:

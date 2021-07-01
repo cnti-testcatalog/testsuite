@@ -670,6 +670,7 @@ module CNFManager
           yml_template_files = Find.find("#{destination_cnf_dir}/#{manifest_directory}", 
                                                "*.yml*", "100")
           template_files = yaml_template_files + yml_template_files
+          LOGGING.info "(before kubectl apply) calling image_pull_policy on #{template_files}"
           template_files.map{|x| AirGapUtils.image_pull_policy(x)}
         end
         VERBOSE_LOGGING.info "deploying by manifest file" if verbose
