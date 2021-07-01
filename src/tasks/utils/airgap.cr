@@ -30,14 +30,19 @@ module AirGap
 
     container_names = sandbox_config.cnf_config[:container_names]
     #todo get image name (org name and image name) from config src
+
     if container_names
       config_images = [] of NamedTuple(image_name: String, tag: String)
       container_names.map do |c|
         LOGGING.info "container_names c: #{c}"
-        config_images << {image_name: images[0][:image_name], tag: c["rolling_update_test_tag"]}
-        config_images << {image_name: images[0][:image_name], tag: c["rolling_downgrade_test_tag"]}
-        config_images << {image_name: images[0][:image_name], tag: c["rolling_version_change_test_tag"]}
-        config_images << {image_name: images[0][:image_name], tag: c["rollback_from_tag"]}
+        # todo get image name for container name
+        image = images.find{|x| x[:container_name]==c["name"]}
+        if image
+          config_images << {image_name: image[:image_name], tag: c["rolling_update_test_tag"]}
+          config_images << {image_name: image[:image_name], tag: c["rolling_downgrade_test_tag"]}
+          config_images << {image_name: image[:image_name], tag: c["rolling_version_change_test_tag"]}
+          config_images << {image_name: image[:image_name], tag: c["rollback_from_tag"]}
+        end
       end
     else
       config_images = [] of NamedTuple(image_name: String, tag: String)
