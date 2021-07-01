@@ -26,6 +26,13 @@ module AirGap
     install_method = CNFManager.cnf_installation_method(config)
     LOGGING.info "generate_cnf_setup images_from_config_src"
 
+    LOGGING.info "Download CRI Tools"
+    AirGap.download_cri_tools
+
+    LOGGING.info "Add CRI Tools to Airgapped Tar: #{output_file}"
+    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
+    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
+
     images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], generate_tar_mode: true) 
 
     container_names = sandbox_config.cnf_config[:container_names]
@@ -171,6 +178,7 @@ module AirGap
   end
 
   def self.cache_images(tarball_name="./airgapped.tar.gz", cnf_setup=false)
+    LOGGING.info "cache_images"
     AirGap.bootstrap_cluster()
     if ENV["CRYSTAL_ENV"]? == "TEST"
       image_files = ["#{TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
