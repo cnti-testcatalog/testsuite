@@ -50,7 +50,7 @@ describe "AirGap" do
     begin
       response_s = `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz`
       LOGGING.info response_s
-      file_list = `tar -tvf ./tmp/airgapped.tar.gz`
+      file_list = `tar -tvf /tmp/airgapped.tar.gz`
       LOGGING.info "file_list: #{file_list}"
       (file_list).match(/coredns_1.8.0.tar/).should_not be_nil
       (file_list).match(/coredns_1.6.7.tar/).should_not be_nil
