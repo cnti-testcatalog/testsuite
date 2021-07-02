@@ -382,6 +382,7 @@ jobs:
         shards install
         crystal src/cnf-testsuite.cr setup 
         helm repo add stable https://cncf.gitlab.io/stable
+        rm /tmp/airgapped.tar.gz
         if ! [ -f "/tmp/airgapped.tar.gz" ]; then 
               crystal src/cnf-testsuite.cr airgapped output-file=/tmp/airgapped.tar.gz
               LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
