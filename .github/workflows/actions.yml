@@ -108,12 +108,10 @@ jobs:
   spec:
     name: Crystal Specs
     needs: [tests]
-    # runs-on: ubuntu-latest
     runs-on: [default]
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.tests.outputs.matrix)}}
-    if: needs.skip.outputs.skip == 'false'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
