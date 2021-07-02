@@ -370,7 +370,6 @@ jobs:
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)
     runs-on: [default]
-    if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
