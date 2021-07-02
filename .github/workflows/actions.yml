@@ -1,64 +1,64 @@
 name: Crystal Specs
 on: [push, pull_request]
 jobs:
-  debug_status:
-    name: Debug Status
-    runs-on: [default]
-    env:
-      skip_debug: ${{secrets.SKIP_DEBUG}}
-      release_debug: ${{secrets.RELEASE_DEBUG}}
-      build_debug: ${{secrets.BUILD_DEBUG}}
-    steps:
-    - name: Create Debug Files
-      run: |
-        touch skip_debug
-        touch release_debug
-        touch build_debug
-        if [[ "$skip_debug" == 'true' ]]; then
-           echo 'true' > skip_debug
-        fi
-        if [[ "$release_debug" == 'true' ]]; then
-           echo 'true' > release_debug
-        fi
-        if [[ "$build_debug" == 'true' ]]; then
-           echo 'true' > build_debug
-        fi
-    - name: upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: debug_status
-        path: |
-          skip_debug
-          release_debug
-          build_debug
-  debug_output:
-    name: Debug Outputs
-    needs: [debug_status]
-    runs-on: [default]
-    outputs:
-      skip-debug: ${{ steps.skip-debug.outputs.debug }}
-      release-debug: ${{ steps.release-debug.outputs.debug }}
-      build-debug: ${{ steps.build-debug.outputs.debug }}
-    steps:
-    - name: Download artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: debug_status
-    - id: skip-debug
-      run: |
-        if grep -q 'true' "./skip_debug"; then 
-          echo "::set-output name=debug::true"
-        fi
-    - id: release-debug
-      run: |
-        if grep -q 'true' "./release_debug"; then 
-          echo "::set-output name=debug::true"
-        fi
-    - id: build-debug
-      run: |
-        if grep -q 'true' "./build_debug"; then 
-          echo "::set-output name=debug::true"
-        fi
+  # debug_status:
+  #   name: Debug Status
+  #   runs-on: [default]
+  #   env:
+  #     skip_debug: ${{secrets.SKIP_DEBUG}}
+  #     release_debug: ${{secrets.RELEASE_DEBUG}}
+  #     build_debug: ${{secrets.BUILD_DEBUG}}
+  #   steps:
+  #   - name: Create Debug Files
+  #     run: |
+  #       touch skip_debug
+  #       touch release_debug
+  #       touch build_debug
+  #       if [[ "$skip_debug" == 'true' ]]; then
+  #          echo 'true' > skip_debug
+  #       fi
+  #       if [[ "$release_debug" == 'true' ]]; then
+  #          echo 'true' > release_debug
+  #       fi
+  #       if [[ "$build_debug" == 'true' ]]; then
+  #          echo 'true' > build_debug
+  #       fi
+    # - name: upload artifact
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: debug_status
+    #     path: |
+    #       skip_debug
+    #       release_debug
+    #       build_debug
+  # debug_output:
+  #   name: Debug Outputs
+  #   needs: [debug_status]
+  #   runs-on: [default]
+  #   outputs:
+  #     skip-debug: ${{ steps.skip-debug.outputs.debug }}
+  #     release-debug: ${{ steps.release-debug.outputs.debug }}
+  #     build-debug: ${{ steps.build-debug.outputs.debug }}
+  #   steps:
+  #   - name: Download artifact
+  #     uses: actions/download-artifact@v2
+  #     with:
+  #       name: debug_status
+  #   - id: skip-debug
+  #     run: |
+  #       if grep -q 'true' "./skip_debug"; then 
+  #         echo "::set-output name=debug::true"
+  #       fi
+  #   - id: release-debug
+  #     run: |
+  #       if grep -q 'true' "./release_debug"; then 
+  #         echo "::set-output name=debug::true"
+  #       fi
+  #   - id: build-debug
+  #     run: |
+  #       if grep -q 'true' "./build_debug"; then 
+  #         echo "::set-output name=debug::true"
+  #       fi
   tests:
     name: Fetch Matrix Tests
     runs-on: [default]
@@ -88,26 +88,26 @@ jobs:
         echo "TESTS: $JSON"
         echo "::set-output name=matrix::$JSON"
 
-  skip:
-    name: Skip Build
-    runs-on: [default]
-    needs: [debug_output]
-    outputs:
-      skip: ${{ steps.skip.outputs.skip }}
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - uses: mxschmitt/action-tmate@v3
-      if: needs.debug_output.outputs.skip-debug == 'true'
-    - id: skip
-      run: |
-        echo "::set-output name=skip::$(.github/workflows/skip.sh)"
+  # skip:
+  #   name: Skip Build
+  #   runs-on: [default]
+  #   needs: [debug_output]
+  #   outputs:
+  #     skip: ${{ steps.skip.outputs.skip }}
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
+  #   - uses: mxschmitt/action-tmate@v3
+  #     if: needs.debug_output.outputs.skip-debug == 'true'
+  #   - id: skip
+  #     run: |
+  #       echo "::set-output name=skip::$(.github/workflows/skip.sh)"
 
   spec:
     name: Crystal Specs
-    needs: [tests, skip]
+    needs: [tests]
     # runs-on: ubuntu-latest
     runs-on: [default]
     strategy:
@@ -170,7 +170,6 @@ jobs:
         
   build:
     name: Build Release
-    # needs: [skip, debug_output]
     runs-on: ubuntu-latest
     # if: needs.skip.outputs.skip == 'false'
     steps: 
@@ -203,9 +202,7 @@ jobs:
         
   setup_airgapped_env:
     name: Test Setup Command In An Airgapped Env.
-    # needs: [build, debug_output, skip]
     runs-on: [default]
-    # if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -244,7 +241,6 @@ jobs:
         
   test_helm_chart_in_airgapped_env:
     name: Test helm chart In An Airgapped Env.
-    # needs: [build, debug_output, skip]
     runs-on: [default]
     steps: 
     - name: Checkout code
@@ -297,17 +293,12 @@ jobs:
 
   test_helm_directory_in_airgapped_env:
     name: Test helm directory In An Airgapped Env.
-    # needs: [build, debug_output, skip]
     runs-on: [default]
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    # - name: Download artifact
-    #   uses: actions/download-artifact@v2
-    #   with:
-    #     name: release
     - name: Cache crystal shards
       uses: actions/cache@v2
       env:
@@ -317,9 +308,6 @@ jobs:
         key: lib-${{ hashFiles('**/shard.lock') }}
         restore-keys: |
           lib-
-    # - uses: mxschmitt/action-tmate@v3
-    #   if: needs.debug_output.outputs.release-debug == 'true'
-    #
     - name: Create Cluster & Run Tests.
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -340,17 +328,12 @@ jobs:
 
   test_manifest_directory_in_airgapped_env:
     name: Test manifest directory In An Airgapped Env.
-    # needs: [build, debug_output, skip]
     runs-on: [default]
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    # - name: Download artifact
-    #   uses: actions/download-artifact@v2
-    #   with:
-    #     name: release
     - name: Cache crystal shards
       uses: actions/cache@v2
       env:
@@ -360,7 +343,6 @@ jobs:
         key: lib-${{ hashFiles('**/shard.lock') }}
         restore-keys: |
           lib-
-    #   if: needs.debug_output.outputs.release-debug == 'true'
     - name: Create Cluster & Run Tests.
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -534,7 +516,7 @@ jobs:
 
   release:
     name: Publish Release
-    needs: [spec, build, debug_output]
+    needs: [spec, build]
     runs-on: ubuntu-latest
     steps: 
     - name: Checkout code
@@ -545,8 +527,8 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: release
-    - uses: mxschmitt/action-tmate@v3
-      if: needs.debug_output.outputs.release-debug == 'true'
+    # - uses: mxschmitt/action-tmate@v3
+    #   if: needs.debug_output.outputs.release-debug == 'true'
     - name: Make release executable
       run: chmod +x ./cnf-testsuite
     - name: Publish Release
