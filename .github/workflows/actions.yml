@@ -376,13 +376,12 @@ jobs:
         cache-name: cache-airgapped-tar
       with:
         path: /tmp/airgapped.tar.gz
-        key: airgapped-$GITHUB_JOB-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr') }}
+        key: airgapped-$GITHUB_JOB-new-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr') }}
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         shards install
         crystal src/cnf-testsuite.cr setup 
         helm repo add stable https://cncf.gitlab.io/stable
-        rm /tmp/airgapped.tar.gz
         if ! [ -f "/tmp/airgapped.tar.gz" ]; then 
               crystal src/cnf-testsuite.cr airgapped output-file=/tmp/airgapped.tar.gz
               LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
