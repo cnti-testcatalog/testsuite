@@ -418,18 +418,25 @@ jobs:
 
   test_binary_microservice:
     name: Test Binary Without Source(microservice)
-    needs: [build, debug_output, skip]
     runs-on: [default]
-    if: needs.skip.outputs.skip == 'false'
     steps: 
-    - name: Download artifact
-      uses: actions/download-artifact@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
       with:
-        name: release
-    - uses: mxschmitt/action-tmate@v3
-      if: needs.debug_output.outputs.release-debug == 'true'
-    - name: Create Kind Cluster 
+        fetch-depth: 0
+    - name: Cache crystal shards
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-crystal-shards
+      with:
+        path: ./lib
+        key: lib-${{ hashFiles('**/shard.lock') }}
+        restore-keys: |
+          lib-
+    - name: Build cnf-testsuite & Create Kind Cluster 
       run: |
+        shards install
+        crystal build src/cnf-testsuite.cr --warnings none &
         cat << EOF > /tmp/cluster.yml
         kind: Cluster
         apiVersion: kind.x-k8s.io/v1alpha4
@@ -448,7 +455,9 @@ jobs:
         export KUBECONFIG=$(ls /tmp/*.conf) 
         export CLUSTER_NAME="$(basename ${KUBECONFIG%.*})"
         helm repo add stable https://cncf.gitlab.io/stable
-        chmod +x ./cnf-testsuite
+        mkdir /shared/$DIR
+        mv cnf-testsuite /shared/$DIR 
+        cd /shared/$DIR
         ./cnf-testsuite setup
         wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
         ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
@@ -457,18 +466,25 @@ jobs:
 
   test_binary_all:
     name: Test Binary Without Source(all)
-    needs: [build, debug_output, skip]
     runs-on: [default]
-    if: needs.skip.outputs.skip == 'false'
     steps: 
-    - name: Download artifact
-      uses: actions/download-artifact@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
       with:
-        name: release
-    - uses: mxschmitt/action-tmate@v3
-      if: needs.debug_output.outputs.release-debug == 'true'
-    - name: Create Kind Cluster 
+        fetch-depth: 0
+    - name: Cache crystal shards
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-crystal-shards
+      with:
+        path: ./lib
+        key: lib-${{ hashFiles('**/shard.lock') }}
+        restore-keys: |
+          lib-
+    - name: Build cnf-testsuite & Create Kind Cluster 
       run: |
+        shards install
+        crystal build src/cnf-testsuite.cr --warnings none &
         cat << EOF > /tmp/cluster.yml
         kind: Cluster
         apiVersion: kind.x-k8s.io/v1alpha4
@@ -492,7 +508,10 @@ jobs:
         echo $KUBECONFIG
         echo $CLUSTER_NAME
         helm repo add stable https://cncf.gitlab.io/stable
-        chmod +x ./cnf-testsuite
+        mkdir /shared/$DIR
+        mv cnf-testsuite /shared/$DIR 
+        cd /shared/$DIR
+        ./cnf-testsuite setup
         ./cnf-testsuite setup
         wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
         ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
