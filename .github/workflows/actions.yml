@@ -401,14 +401,14 @@ jobs:
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
         export KUBECONFIG=/tmp/$CLUSTER.conf
         kubectl get nodes 
-        export DIR=$(uuidgen)
-        mkdir /shared/$DIR
-        mv cnf-testsuite /shared/$DIR 
     - name: Run Test Suite without source(config_lifecycle)
       run: |
         export KUBECONFIG=$(ls /tmp/*.conf) 
         export CLUSTER_NAME="$(basename ${KUBECONFIG%.*})"
         helm repo add stable https://cncf.gitlab.io/stable
+        export DIR=$(uuidgen)
+        mkdir /shared/$DIR
+        mv cnf-testsuite /shared/$DIR 
         cd /shared/$DIR
         ./cnf-testsuite setup
         wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
