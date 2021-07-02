@@ -455,6 +455,7 @@ jobs:
         export KUBECONFIG=$(ls /tmp/*.conf) 
         export CLUSTER_NAME="$(basename ${KUBECONFIG%.*})"
         helm repo add stable https://cncf.gitlab.io/stable
+        export DIR=$(uuidgen)
         mkdir /shared/$DIR
         mv cnf-testsuite /shared/$DIR 
         cd /shared/$DIR
@@ -508,6 +509,7 @@ jobs:
         echo $KUBECONFIG
         echo $CLUSTER_NAME
         helm repo add stable https://cncf.gitlab.io/stable
+        export DIR=$(uuidgen)
         mkdir /shared/$DIR
         mv cnf-testsuite /shared/$DIR 
         cd /shared/$DIR
