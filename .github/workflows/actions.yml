@@ -164,7 +164,14 @@ jobs:
         export KUBECONFIG=$(pwd)/$KUBECONFIG_FILE
         export CLUSTER_NAME="${KUBECONFIG_FILE%.*}"
         LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
+    - name: Delete Cluster
+      if: ${{ always() }}
+      run: |
+        export KUBECONFIG_FILE=$(ls *.conf) 
+        export KUBECONFIG=$(pwd)/$KUBECONFIG_FILE
+        export CLUSTER_NAME="${KUBECONFIG_FILE%.*}"
         kind delete cluster --name $CLUSTER_NAME
+        sudo rm -rf /tmp/*
         
   build:
     name: Build Release
@@ -239,14 +246,23 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         export DIR=$(uuidgen) 
+        echo "export DIR=$DIR" > dir.env
         mkdir /shared/$DIR
         #DOTO Use pre-created airgapped.tar.gz
         # wget --auth-no-challenge --header='Accept:application/octet-stream' https://$GITHUB_TOKEN:@api.github.com/repos/cncf/cnf-testsuite/releases/assets/38092818 -O airgapped.tar.gz
         # gunzip airgapped.tar.gz
         cp -a $(pwd) /shared/$DIR/cnf-testsuite
         cp /tmp/airgapped.tar.gz /shared/$DIR/
-        docker run --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t conformance/offline:latest /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz; LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true; kubectl get deployment chaos-operator-ce --namespace litmus; ./.github/workflows/check_litmus.sh"
+        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t conformance/offline:latest /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz; LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true; kubectl get deployment chaos-operator-ce --namespace litmus; ./.github/workflows/check_litmus.sh"
+    - name: Delete Cluster
+      if: ${{ always() }}
+      run: |
+        source dir.env
+        docker rm -f $DIR
         sudo rm -rf /shared/$DIR
+        sudo rm -rf /tmp/*
+
+
         
   test_helm_chart_in_airgapped_env:
     name: Test helm chart In An Airgapped Env.
@@ -299,14 +315,22 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         export DIR=$(uuidgen)
+        echo "export DIR=$DIR" > dir.env
         mkdir /shared/$DIR
         # Create Airgapped Tar
         #DOTO Use pre-created airgapped.tar.gz
         # wget --auth-no-challenge --header='Accept:application/octet-stream' https://$GITHUB_TOKEN:@api.github.com/repos/cncf/cnf-testsuite/releases/assets/38092818 -O airgapped.tar.gz
         cp -a $(pwd) /shared/$DIR/cnf-testsuite
         cp /tmp/airgapped.tar.gz /shared/$DIR/
-        docker run --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t conformance/offline:latest /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz; LOG_LEVEL=info crystal src/cnf-testsuite.cr all offline=true ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~disk_fill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose"
+        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t conformance/offline:latest /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz; LOG_LEVEL=info crystal src/cnf-testsuite.cr all offline=true ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~disk_fill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose"
+    - name: Delete Cluster
+      if: ${{ always() }}
+      run: |
+        source dir.env
+        docker rm -f $DIR
         sudo rm -rf /shared/$DIR
+        sudo rm -rf /tmp/*
+
 
   test_helm_directory_in_airgapped_env:
     name: Test helm directory In An Airgapped Env.
@@ -359,12 +383,20 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         export DIR=$(uuidgen)
+        echo "export DIR=$DIR" > dir.env
         mkdir /shared/$DIR
         #DOTO Use pre-created airgapped.tar.gz
         cp -a $(pwd) /shared/$DIR/cnf-testsuite
         cp /tmp/airgapped.tar.gz /shared/$DIR/
-        docker run --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t conformance/offline:latest /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz; LOG_LEVEL=info crystal src/cnf-testsuite.cr all offline=true ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~disk_fill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose"
+        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t conformance/offline:latest /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz; LOG_LEVEL=info crystal src/cnf-testsuite.cr all offline=true ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~disk_fill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose"
+    - name: Delete Cluster
+      if: ${{ always() }}
+      run: |
+        source dir.env
+        docker rm -f $DIR
         sudo rm -rf /shared/$DIR
+        sudo rm -rf /tmp/*
+
 
   test_manifest_directory_in_airgapped_env:
     name: Test manifest directory In An Airgapped Env.
@@ -417,13 +449,20 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         export DIR=$(uuidgen)
+        echo "export DIR=$DIR" > dir.env
         mkdir /shared/$DIR
          #Create Airgapped Tar
         #DOTO Use pre-created airgapped.tar.gz
         cp -a $(pwd) /shared/$DIR/cnf-testsuite
         cp /tmp/airgapped.tar.gz /shared/$DIR/
-        docker run --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t conformance/offline:latest /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./sample-cnfs/k8s-non-helm/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz; LOG_LEVEL=info crystal src/cnf-testsuite.cr all offline=true ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~disk_fill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose"
+        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t conformance/offline:latest /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./sample-cnfs/k8s-non-helm/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz; LOG_LEVEL=info crystal src/cnf-testsuite.cr all offline=true ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~disk_fill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose"
+    - name: Delete Cluster
+      if: ${{ always() }}
+      run: |
+        source dir.env
+        docker rm -f $DIR
         sudo rm -rf /shared/$DIR
+        sudo rm -rf /tmp/*
 
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)
