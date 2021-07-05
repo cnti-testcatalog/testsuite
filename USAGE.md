@@ -647,6 +647,11 @@ crystal src/cnf-testsuite.cr performance
 ./cnf-testsuite disk_fill
 ```
 
+#### :heavy_check_mark: Test if the CNF crashes when pod delete occurs 
+```
+./cnf-conformance pod_delete
+```
+
 ---
 
 ### Platform Tests
