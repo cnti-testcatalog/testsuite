@@ -27,9 +27,11 @@ dependencies:
     version: ~> 0.12.0
   
   # Commenting this out to allow Crystal 1.0 upgrade
-  #icr:
-  #  github: crystal-community/icr
-  #  branch: master
+  icr:
+    github: HashNuke/icr
+    branch: crystal-v1
+    # github: crystal-community/icr
+    # branch: master
 
   commander:
     github: mrrooijen/commander
