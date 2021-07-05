@@ -286,6 +286,14 @@ jobs:
         else
               echo "Cached airgapped.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
         fi
+        echo "Checking for CoreDNS"
+        tar -C /tmp/ -xvf /tmp/airgapped.tar.gz
+        if [ -f "/tmp/images/coredns_1.6.7.tar" ]; then
+           echo "CoreDNS found, CNF Setup Ran."
+        else
+           echo "CoreDNS not found, Re-Running CNF Setup."
+           LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=sample-cnfs/sample_coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
+        fi
     - name: Create Cluster & Run Tests.
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -384,7 +392,7 @@ jobs:
         cache-name: cache-airgapped-tar
       with:
         path: /tmp/airgapped.tar.gz
-        key: airgapped-$GITHUB_JOB-new-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr') }}
+        key: airgapped-$GITHUB_JOB-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr') }}
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         shards install
@@ -395,6 +403,14 @@ jobs:
               LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
         else
               echo "Cached airgapped.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
+        fi
+        echo "Checking for Nginx"
+        tar -C /tmp/ -xvf /tmp/airgapped.tar.gz
+        if [ -f "/tmp/images/nginx_1.21.0.tar" ]; then
+           echo "Nginx found, CNF Setup Ran."
+        else
+           echo "Nginx not found, Re-Running CNF Setup."
+           LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
         fi
     - name: Create Cluster & Run Tests.
       env:
