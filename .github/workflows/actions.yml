@@ -341,7 +341,7 @@ jobs:
         echo "Checking for CoreDNS"
         tar -C /tmp/ -xvf /tmp/airgapped.tar.gz
         if [ -f "/tmp/images/coredns_1.6.7.tar" ]; then
-           echo "CoreDNS found, CNF Setup Ran.
+           echo "CoreDNS found, CNF Setup Ran."
         else
            echo "CoreDNS not found, Re-Running CNF Setup."
            LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=sample-cnfs/sample_coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
