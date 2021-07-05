@@ -338,6 +338,8 @@ jobs:
         else
               echo "Cached airgapped.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
         fi
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Create Cluster & Run Tests.
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
