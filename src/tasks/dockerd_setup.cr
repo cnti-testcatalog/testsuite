@@ -9,7 +9,9 @@ desc "The dockerd tool is used to run docker commands against the cluster."
 task "install_dockerd" do |_, args|
   VERBOSE_LOGGING.info "install_dockerd" if check_verbose(args)
   resp = KubectlClient::Apply.file(dockerd_filename)
-  status = check_dockerd(180)
+  if resp
+    status = check_dockerd(180)
+  end
   unless status
     LOGGING.error "Dockerd_Install failed.".colorize(:red)
   end
