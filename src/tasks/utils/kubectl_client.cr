@@ -296,12 +296,12 @@ module KubectlClient
         LOGGING.debug "NodeName: #{node_name}"
         pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod| 
           if pod.dig?("spec", "nodeName") == "#{node_name}"
-            LOGGING.info "pod: #{pod}"
+            LOGGING.debug "pod: #{pod}"
             pod_name = pod.dig?("metadata", "name")
             LOGGING.debug "PodName: #{pod_name}"
             true
           else
-            LOGGING.debug "No Match"
+            LOGGING.debug "spec node_name: No Match: #{node_name}"
             false
           end
         end
@@ -315,7 +315,7 @@ module KubectlClient
           LOGGING.debug "pod: #{pod}"
           true
         else
-          LOGGING.debug "No Match"
+          LOGGING.debug "metadata labels: No Match #{label_value}"
           false
         end
       end 

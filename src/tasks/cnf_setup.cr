@@ -18,7 +18,9 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
   elsif input_file && !input_file.empty?
     puts "cnf setup airgapped mode".colorize(:green)
     AirGap.extract(input_file)
+    puts "cnf setup caching images on nodes (airgapped mode)".colorize(:green)
     AirGap.cache_images(input_file, cnf_setup: true)
+    puts "cnf setup finished caching images on nodes (airgapped mode)".colorize(:green)
     CNFManager.sample_setup(cli_hash)
     puts "cnf setup airgapped mode complete".colorize(:green)
   else
