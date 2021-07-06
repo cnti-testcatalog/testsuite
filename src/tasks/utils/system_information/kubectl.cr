@@ -16,7 +16,7 @@ def kubectl_installation(verbose=false)
 
     version_test = acceptable_kubectl_version?(gkubectl, verbose)
     if version_test
-      version_msg = "Global kubectl client is not more than 3 minor versions behind server version"
+      # version_msg = "Global kubectl client is not more than 3 minor versions behind server version"
       stdout_success version_msg
       gmsg = "#{gmsg} #{version_msg}"
     elsif version_test.nil?
@@ -40,7 +40,7 @@ def kubectl_installation(verbose=false)
 
     version_test = acceptable_kubectl_version?(lkubectl, verbose)
     if version_test
-      version_msg = "Local kubectl client is not more than 3 minor versions behind server version"
+      # version_msg = "Local kubectl client is not more than 3 minor versions behind server version"
       lmsg = "#{lmsg} #{version_msg}"
     elsif version_test.nil?
       stdout_warning "Local kubectl client version could not be checked for compatibility with server. (Running in airgapped mode?)"
@@ -149,6 +149,6 @@ def acceptable_kubectl_version?(kubectl_response, verbose = false)
   return false if server_version[0].to_i != client_version[0].to_i
 
   # This checks for minor versions
-  return false if (server_version[1].to_i - client_version[1].to_i) > 3
+  return false if ((server_version[1].to_i - client_version[1].to_i) > 3 || (client_version[1].to_i - server_version[1].to_i) > 3)
   return true
 end
