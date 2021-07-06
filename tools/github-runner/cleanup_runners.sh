@@ -17,9 +17,9 @@ for node in "${RUNNERS[@]}"; do
     for runner in  "${RUNNER_CONTAINERS[@]}"; do
         ssh root@$node docker exec $runner "/actions-runner/bin/Runner.Listener remove --token $TOKEN"
     done
-    ssh root@$node sudo systemctl stop docker
-    ssh root@$node sudo rm -rf /var/lib/docker/*
-    ssh root@$node sudo systemctl start docker
-    ssh root@$node sudo rm -rf /tmp/*
-    ssh root@$node sudo rm -rf /shared/
+    ssh root@$node "systemctl stop docker"
+    ssh root@$node "rm -rf /var/lib/docker/*"
+    ssh root@$node "systemctl start docker"
+    ssh root@$node "rm -rf /tmp/*"
+    ssh root@$node "rm -rf /shared/"
 done

@@ -13,6 +13,12 @@ describe "Private Registry: Image" do
     install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
     KubectlClient::Get.resource_wait_for_install("Pod", "registry")
     KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
+    if ENV["DOCKERHUB_USERNAME"]? && ENV["DOCKERHUB_PASSWORD"]?
+        LOGGING.info KubectlClient.exec("dockerd -ti -- docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD")
+       else
+         puts "DOCKERHUB_USERNAME & DOCKERHUB_PASSWORD Must be set."
+         exit 1
+    end
     KubectlClient.exec("dockerd -ti -- docker pull coredns/coredns:1.6.7")
     KubectlClient.exec("dockerd -ti -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7")
     KubectlClient.exec("dockerd -ti -- docker push registry:5000/coredns:1.6.7")
