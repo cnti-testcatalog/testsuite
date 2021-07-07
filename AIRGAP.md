@@ -20,7 +20,7 @@ The following install instructions will create a tarball of all the necessary cn
 
 #### Quick install steps for CNF install (optional)
 
-1. This requires internet access, which pulls down necessary components the CNF requires:
+1. This requires internet access, which pulls down necessary components the CNF requires. This also assumes your airgapped k8s has already been bootstrapped (previous quick install steps):
 
 `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml output-file=/tmp/cnf.tar.gz`
 
@@ -30,7 +30,7 @@ The following install instructions will create a tarball of all the necessary cn
 
 #### Detailed explanation of the air-gap process
 
-**Step 1:** The air-gap process starts out with tarballing the bootstrap tools, upstream testing tools, and CNFs.  It does this by:
+**Step 1:** The air-gap process starts out tarballing the bootstrap tools, upstream testing tools, and CNFs.  It does this by:
 * Tarballing any cnf-testsuite internal tools
 * Tarballing the upstream projects' docker images
 
@@ -40,11 +40,11 @@ When installing the upstream projects and/or the cnfs, there are three styles of
     * Helm charts must be downloaded into a tarball so that they can be executed without accessing a remote helm repository.  
         * The air-gap process needs to inspect the helm chart tarball and then extract the referenced docker images into docker image tarballs.  
     * **Helm directories**
-        * The air-gap process needs to inspect the helm chart directory yaml files and then extract the referenced docker images into docker image tarballs.
+        * The air-gap process needs to inspect the helm chart directory yaml files and extract the referenced docker images into docker image tarballs.
     * **Manifest directories**
         * As in the helm directory process, a manifest directory must have all of the docker images that are referenced in its yaml files tarballed into valid docker image tarballs.
 
-**Step 2:** The tarball that was created in step 1 needs to be **copied to the air-gapped environment and untarred**.  The cnf-testsuite executable will need to be copied into the air-gapped environment as well as well has any cnf-testsuite.yml config files, and any other files needed for the managing a specific CNF.
+**Step 2:** The tarball that was created in step 1 needs to be **copied to the air-gapped environment and untarred**.  The cnf-testsuite executable will need to be copied into the air-gapped environment as well as the cnf-testsuite.yml config files, and any other files needed for the managing a specific CNF.
 
 **Step 3:** **The bootstrapping process** first manually installs the cnf-testsuite bootstrapping tells on to each node.  It does this by installing the "cri-tools" onto each node which will be used later to cache images on each node.  This process finds an image that already exists on each node and then instantiates that image as new container with the name of "cri-tools".  It then copies the cri and ctl binaries onto the new container which resides on every node.
 
