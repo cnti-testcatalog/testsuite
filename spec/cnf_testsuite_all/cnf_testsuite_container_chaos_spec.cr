@@ -13,9 +13,9 @@ describe "CNF Test Suite all Container Chaos" do
   #   $?.success?.should be_true
   # end
 
-  # it "'all ~platform ~compatibilty ~statelessness ~security ~scalability ~configuration_lifecycle ~observability ~installability ~hardware_and_scheduling ~microservice ~chaos_network_loss' should run the chaos tests" do
+  # it "'all ~platform ~compatibilty ~state ~security ~scalability ~configuration_lifecycle ~observability ~installability ~hardware_and_scheduling ~microservice ~chaos_network_loss' should run the chaos tests" do
   #   `./cnf-testsuite samples_cleanup`
-  #   response_s = `./cnf-testsuite all ~platform ~compatibilty ~statelessness ~security ~scalability ~configuration_lifecycle ~observability ~installability ~hardware_and_scheduling ~microservice ~chaos_network_loss cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-testsuite.yml deploy_with_chart=false verbose`
+  #   response_s = `./cnf-testsuite all ~platform ~compatibilty ~state ~security ~scalability ~configuration_lifecycle ~observability ~installability ~hardware_and_scheduling ~microservice ~chaos_network_loss cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-testsuite.yml deploy_with_chart=false verbose`
   #   LOGGING.info response_s
   #   (/Final workload score:/ =~ response_s).should_not be_nil
   #   (/Final score:/ =~ response_s).should_not be_nil

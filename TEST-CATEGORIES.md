@@ -18,7 +18,7 @@ The CNF Test Suite program validates interoperability of CNF **workloads** suppl
   - Checks beta endpoint usage
   - Checks generally available (GA) endpoint usage
 
-## Statelessness Tests
+## State Tests
 
 #### The CNF test suite checks if state is stored in a [custom resource definition](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) or a separate database (e.g. [etcd](https://github.com/etcd-io/etcd)) rather than requiring local storage. It also checks to see if state is resilient to node failure:
 

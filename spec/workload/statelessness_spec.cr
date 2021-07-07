@@ -6,7 +6,7 @@ require "../../src/tasks/utils/system_information/helm.cr"
 require "file_utils"
 require "sam"
 
-describe "Statelessness" do
+describe "State" do
   before_all do
     `./cnf-testsuite configuration_file_setup`
   end
