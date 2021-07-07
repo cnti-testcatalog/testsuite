@@ -173,7 +173,7 @@ jobs:
         TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
         ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
         TOKEN=$(curl --user "$DOCKERHUB_USERNAME:$DOCKERHUB_PASSWORD" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
-        AUTH_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Authenticated Rate Limit Exceeded)
+        AUTH_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Authenticated Rate Limit Exceeded")
         echo "RUNNER RATE LIMIT: $ANONYMOUS_RUNNER_RATE_LIMIT"
         echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
         echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
