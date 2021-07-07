@@ -9,17 +9,20 @@ require "./utils/system_information/kubectl.cr"
 require "./utils/system_information/git.cr"
 require "./utils/system_information/clusterctl.cr"
 
-task "prereqs" do  |_, args|
+task "prereqs" do |_, args|
+  offline_mode = false
+  offline_mode = true if args.named["offline"]?
+
   verbose = check_verbose(args)
   helm_condition = helm_installation(verbose).includes?("helm found") && !Helm.helm_gives_k8s_warning?(true)
-  kubectl_checks_output = kubectl_installation(verbose)
+  kubectl_checks_output = kubectl_installation(verbose, offline_mode)
 
   # Should be true if kubectl is found
   kubectl_existance = kubectl_checks_output.includes?("kubectl found")
 
   checks = [
     helm_condition,
-    kubectl_existance
+    kubectl_existance,
   ]
 
   # git installation is optional for offline mode
