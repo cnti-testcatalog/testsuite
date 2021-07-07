@@ -24,7 +24,7 @@ def kubectl_installation(verbose = false, offline_mode = false)
     elsif version_test.nil? && offline_mode == true
       stdout_warning "Global kubectl client version could not be checked for compatibility with server. Running in offline mode"
     else
-      stdout_warning "Global kubectl client is more than 3 minor versions behind server version"
+      stdout_warning "Global kubectl client is more than 1 minor version ahead/behind server version"
     end
   else
     stdout_warning gmsg
@@ -48,7 +48,7 @@ def kubectl_installation(verbose = false, offline_mode = false)
     elsif version_test.nil? && offline_mode == true
       stdout_warning "Local kubectl client version could not be checked for compatibility with server. Running in offline mode"
     else
-      stdout_warning "Local kubectl client is more than 3 minor versions behind server version"
+      stdout_warning "Local kubectl client is more than 1 minor version ahead/behind server version"
     end
   else
     stdout_warning lmsg
