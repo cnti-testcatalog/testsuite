@@ -21,7 +21,7 @@ kind create cluster --name kind-$USER --config kind-cluster-config.yaml
 kubectl apply -f https://raw.githubusercontent.com/cncf/apisnoop/master/deployment/k8s/raiinbow.yaml
 ```
 
-## Statelessness Tests
+## State Tests
 
 ####  To test if the CNF responds properly [when being restarted](//https://github.com/litmuschaos/litmus)
 ```

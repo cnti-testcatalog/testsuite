@@ -16,7 +16,7 @@ assignees: ""
 
 **Test Category**
 
-- ADD CATEGORY_NAME (e.g. Statelessness, Security, etc from [README](https://github.com/cncf/cnf-testsuite/blob/main/README.md#cnf-testsuite))
+- ADD CATEGORY_NAME (e.g. State, Security, etc from [README](https://github.com/cncf/cnf-testsuite/blob/main/README.md#cnf-testsuite))
 
 **Proof of Concept** (if available)
 
