@@ -163,6 +163,20 @@ jobs:
       run: |
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        kubectl create -f tools/cri-tools/manifest.yml
+        until [[ $(kubectl get pods -l name=cri-tools -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
+            echo "Waiting for CRI-TOOLS"
+            sleep 1
+        done
+        CRI_TOOLS_POD=$(kubectl get pods -l name=cri-tools -o jsonpath='{range .items[*]}{.metadata.name}')
+        CLUSTER_RATE_LIMIT=$(kubectl exec -ti cri-tools-48p9s -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining)
+        TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+        ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining)
+        TOKEN=$(curl --user "$DOCKERHUB_USERNAME:$DOCKERHUB_PASSWORD" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+        AUTH_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining)
+        echo "RUNNER RATE LIMIT: $ANONYMOUS_RUNNER_RATE_LIMIT"
+        echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
+        echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
         LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
     - name: Delete Cluster
       if: ${{ always() }}
