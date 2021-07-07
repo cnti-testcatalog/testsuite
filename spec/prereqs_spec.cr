@@ -14,7 +14,7 @@ describe "Prereq" do
     # (/wget found/ =~ response_s).should_not be_nil
     # (/curl found/ =~ response_s).should_not be_nil
     (/kubectl found/ =~ response_s).should_not be_nil
-    (/minor versions/ =~ response_s).should_not be_nil
+    # (/minor versions/ =~ response_s).should_not be_nil
     (/git found/ =~ response_s).should_not be_nil
   end
 
@@ -26,7 +26,7 @@ describe "Prereq" do
     # (/wget found/ =~ response_s).should_not be_nil
     # (/curl found/ =~ response_s).should_not be_nil
     (/kubectl found/ =~ response_s).should_not be_nil
-    (/minor versions/ =~ response_s).should_not be_nil
+    # (/minor versions/ =~ response_s).should_not be_nil
     (/git found/ =~ response_s).should be_nil
   end
 end
