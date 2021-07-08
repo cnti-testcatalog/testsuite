@@ -186,7 +186,7 @@ jobs:
         source cluster.env
         kind delete cluster --name $CLUSTER
         sudo rm -rf /tmp/*
-        docker system prune -f --volumes
+        docker system prune -f --volumes || true
         
   build:
     name: Build Release
@@ -276,7 +276,7 @@ jobs:
         docker rm -f $DIR
         sudo rm -rf /shared/$DIR
         sudo rm -rf /tmp/*
-        docker system prune -f --volumes
+        docker system prune -f --volumes || true
 
 
         
@@ -346,7 +346,7 @@ jobs:
         docker rm -f $DIR
         sudo rm -rf /shared/$DIR
         sudo rm -rf /tmp/*
-        docker system prune -f --volumes
+        docker system prune -f --volumes || true
 
 
   test_helm_directory_in_airgapped_env:
@@ -413,7 +413,7 @@ jobs:
         docker rm -f $DIR
         sudo rm -rf /shared/$DIR
         sudo rm -rf /tmp/*
-        docker system prune -f --volumes
+        docker system prune -f --volumes || true
 
 
   test_manifest_directory_in_airgapped_env:
@@ -481,7 +481,7 @@ jobs:
         docker rm -f $DIR
         sudo rm -rf /shared/$DIR
         sudo rm -rf /tmp/*
-        docker system prune -f --volumes
+        docker system prune -f --volumes || true
 
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)
@@ -536,7 +536,7 @@ jobs:
         source cluster.env
         sudo rm -rf /tmp/*
         kind delete cluster --name $CLUSTER
-        docker system prune -f --volumes
+        docker system prune -f --volumes || true
 
   test_binary_microservice:
     name: Test Binary Without Source(microservice)
@@ -587,7 +587,7 @@ jobs:
         source cluster.env
         sudo rm -rf /tmp/*
         kind delete cluster --name $CLUSTER
-        docker system prune -f --volumes
+        docker system prune -f --volumes || true
 
   test_binary_all:
     name: Test Binary Without Source(all)
@@ -639,7 +639,7 @@ jobs:
         source cluster.env
         sudo rm -rf /tmp/*
         kind delete cluster --name $CLUSTER
-        docker system prune -f --volumes
+        docker system prune -f --volumes || true
 
   release:
     name: Publish Release
