@@ -37,7 +37,7 @@ The following install instructions will create a tarball of all the necessary cn
 When installing the upstream projects and/or the cnfs, there are three styles of installation into K8s that have to be managed:
 
 * **Helm charts**
-    * Helm charts must be downloaded into a tarball so that they can be executed without accessing a remote helm repository.  
+    * **Helm charts** must be downloaded into a tarball so that they can be executed without accessing a remote helm repository.  
         * The air-gap process needs to inspect the helm chart tarball and then extract the referenced docker images into docker image tarballs.  
     * **Helm directories**
         * The air-gap process needs to inspect the helm chart directory yaml files and extract the referenced docker images into docker image tarballs.
