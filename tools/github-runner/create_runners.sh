@@ -30,7 +30,7 @@ for node in "${!RUNNERS[@]}"; do
     done
     ssh root@${RUNNERS[$node]} "docker network rm kind"
     ssh root@${RUNNERS[$node]} docker network create --driver bridge --subnet=${VIPS[$node]} --opt "com.docker.network.bridge.name"="kindbridge" --opt "com.docker.network.bridge.enable_ip_masquerade"="false" kind
-    ssh root@${RUNNERS[$node]} "sudo apt update && sudo apt install -y bridge-utils"
-    ssh root@${RUNNERS[$node]} "sudo brctl addif kindbridge bond0"
+    # ssh root@${RUNNERS[$node]} "sudo apt update && sudo apt install -y bridge-utils"
+    # ssh root@${RUNNERS[$node]} "sudo brctl addif kindbridge bond0"
 done
 
