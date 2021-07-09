@@ -130,6 +130,8 @@ This should build a cnf-testsuite binary in the root directory of the git repo c
 
 The CNF-TestSuite has the ability to install in an air-gapped environment.  A tarball with upstream tools can be created from a source installation, or downloaded from the binaries of the release. 
 
+You can read more about the air-gap process by reading the [AIRGAP detailed documentation](AIRGAP.md).
+
 <details><summary> Click here for brief air-gap install details</summary>
 <p>
 
