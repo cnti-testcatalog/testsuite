@@ -170,8 +170,7 @@ jobs:
             sleep 1
         done
         CRI_TOOLS_POD=$(kubectl get pods -l name=cri-tools -o jsonpath='{range .items[*]}{.metadata.name}')
-        CLUSTER_RATE_LIMIT=$(kubectl exec -ti $CRI_TOOLS_POD -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
-        kubectl exec -ti $CRI_TOOLS_POD -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME && sleep 1000000"
+        CLUSTER_RATE_LIMIT=$(kubectl exec -ti $CRI_TOOLS_POD -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || sleep 100000000)
         TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
         ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
         TOKEN=$(curl --user "$DOCKERHUB_USERNAME:$DOCKERHUB_PASSWORD" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
