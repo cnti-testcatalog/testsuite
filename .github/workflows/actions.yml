@@ -151,6 +151,7 @@ jobs:
         helm repo add stable https://cncf.gitlab.io/stable
         git fetch --all --tags --force
         shards install  
+        echo "RUNNER: $RUNNER_NAME"
     - name: Run Crystal Spec
       env:
         GITHUB_USER: ${{ secrets.GH_USER }}
@@ -163,6 +164,20 @@ jobs:
       run: |
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        kubectl create -f tools/cri-tools/manifest.yml
+        until [[ $(kubectl get pods -l name=cri-tools -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
+            echo "Waiting for CRI-TOOLS"
+            sleep 1
+        done
+        CRI_TOOLS_POD=$(kubectl get pods -l name=cri-tools -o jsonpath='{range .items[*]}{.metadata.name}')
+        CLUSTER_RATE_LIMIT=$(kubectl exec -ti $CRI_TOOLS_POD -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || true)
+        TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token || true)
+        ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
+        TOKEN=$(curl --user "$DOCKERHUB_USERNAME:$DOCKERHUB_PASSWORD" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+        AUTH_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Authenticated Rate Limit Exceeded")
+        echo "RUNNER RATE LIMIT: $ANONYMOUS_RUNNER_RATE_LIMIT"
+        echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
+        echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
         LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
     - name: Delete Cluster
       if: ${{ always() }}
@@ -170,6 +185,8 @@ jobs:
         source cluster.env
         kind delete cluster --name $CLUSTER
         sudo rm -rf /tmp/*
+        docker container prune -f || true
+        docker volume prune -f || true
         
   build:
     name: Build Release
@@ -259,6 +276,8 @@ jobs:
         docker rm -f $DIR
         sudo rm -rf /shared/$DIR
         sudo rm -rf /tmp/*
+        docker container prune -f || true
+        docker volume prune -f || true
 
 
         
@@ -328,6 +347,8 @@ jobs:
         docker rm -f $DIR
         sudo rm -rf /shared/$DIR
         sudo rm -rf /tmp/*
+        docker container prune -f || true
+        docker volume prune -f || true
 
 
   test_helm_directory_in_airgapped_env:
@@ -394,6 +415,8 @@ jobs:
         docker rm -f $DIR
         sudo rm -rf /shared/$DIR
         sudo rm -rf /tmp/*
+        docker container prune -f || true
+        docker volume prune -f || true
 
 
   test_manifest_directory_in_airgapped_env:
@@ -461,6 +484,8 @@ jobs:
         docker rm -f $DIR
         sudo rm -rf /shared/$DIR
         sudo rm -rf /tmp/*
+        docker container prune -f || true
+        docker volume prune -f || true
 
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)
@@ -515,7 +540,8 @@ jobs:
         source cluster.env
         sudo rm -rf /tmp/*
         kind delete cluster --name $CLUSTER
-
+        docker container prune -f || true
+        docker volume prune -f || true
 
   test_binary_microservice:
     name: Test Binary Without Source(microservice)
@@ -566,6 +592,8 @@ jobs:
         source cluster.env
         sudo rm -rf /tmp/*
         kind delete cluster --name $CLUSTER
+        docker container prune -f || true
+        docker volume prune -f || true
 
   test_binary_all:
     name: Test Binary Without Source(all)
@@ -617,6 +645,8 @@ jobs:
         source cluster.env
         sudo rm -rf /tmp/*
         kind delete cluster --name $CLUSTER
+        docker container prune -f || true
+        docker volume prune -f || true
 
   release:
     name: Publish Release
