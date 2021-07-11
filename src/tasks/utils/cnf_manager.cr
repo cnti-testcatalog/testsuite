@@ -483,7 +483,6 @@ module CNFManager
   def self.sample_setup_cli_args(args, noisy=true)
     VERBOSE_LOGGING.info "sample_setup_cli_args" if check_verbose(args)
     VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
-    yml_file = ""
     cnf_path = ""
     if args.named.keys.includes? "cnf-config"
       cnf_path = args.named["cnf-config"].as(String)
@@ -511,7 +510,7 @@ module CNFManager
     airgapped=false
     airgapped=true if args.raw.includes?("airgapped")
 
-    cli_args = {config_file: cnf_path, extended_config_file: yml_file, wait_count: wait_count, verbose: check_verbose(args), output_file: output_file, input_file: input_file}
+    cli_args = {config_file: cnf_path, wait_count: wait_count, verbose: check_verbose(args), output_file: output_file, input_file: input_file}
     LOGGING.debug "cli_args: #{cli_args}"
     cli_args
   end
