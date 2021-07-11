@@ -35,8 +35,7 @@ task "cnf_cleanup" do |_, args|
   VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
   LOGGING.debug "args = #{args.inspect}"
   if args.named.keys.includes? "cnf-config"
-    yml_file = args.named["cnf-config"].as(String)
-    cnf = File.dirname(yml_file)
+    cnf = args.named["cnf-config"].as(String)
   elsif args.named.keys.includes? "cnf-path"
     cnf = args.named["cnf-path"].as(String)
   else
