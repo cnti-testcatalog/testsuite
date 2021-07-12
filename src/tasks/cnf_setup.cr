@@ -13,7 +13,7 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
   input_file =  cli_hash[:input_file]
   if output_file && !output_file.empty?
     puts "cnf tarball generation mode".colorize(:green)
-    tar_info = AirGap.generate_cnf_setup(cli_hash[:extended_config_file], output_file, cli_hash)
+    tar_info = AirGap.generate_cnf_setup(cli_hash[:config_file], output_file, cli_hash)
     puts "cnf tarball generation mode complete".colorize(:green)
   elsif input_file && !input_file.empty?
     puts "cnf setup airgapped mode".colorize(:green)
@@ -35,8 +35,7 @@ task "cnf_cleanup" do |_, args|
   VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
   LOGGING.debug "args = #{args.inspect}"
   if args.named.keys.includes? "cnf-config"
-    yml_file = args.named["cnf-config"].as(String)
-    cnf = File.dirname(yml_file)
+    cnf = args.named["cnf-config"].as(String)
   elsif args.named.keys.includes? "cnf-path"
     cnf = args.named["cnf-path"].as(String)
   else

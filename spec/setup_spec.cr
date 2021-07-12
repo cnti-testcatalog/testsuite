@@ -79,14 +79,27 @@ describe "Setup" do
     `rm ./cnf-testsuite-test.yml`
   end
 
-  it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf with a cnf-testsuite.yml", tags: ["setup"]  do
+  it "'cnf_setup/cnf_cleanup' should install/cleanup with cnf-path arg as alias for cnf-config", tags: ["setup"] do
+    begin
+      response_s = `./cnf-testsuite cnf_setup cnf-path=example-cnfs/coredns/cnf-testsuite.yml`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/Successfully setup coredns/ =~ response_s).should_not be_nil
+    ensure
+      response_s = `./cnf-testsuite cnf_cleanup cnf-path=example-cnfs/coredns/cnf-testsuite.yml`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/Successfully cleaned up/ =~ response_s).should_not be_nil
+    end
+  end
+
+  it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf with a cnf-testsuite.yml", tags: ["setup"] do
     begin
       response_s = `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Successfully setup coredns/ =~ response_s).should_not be_nil
     ensure
-
       response_s = `./cnf-testsuite cnf_cleanup cnf-config=example-cnfs/coredns/cnf-testsuite.yml`
       LOGGING.info response_s
       $?.success?.should be_true

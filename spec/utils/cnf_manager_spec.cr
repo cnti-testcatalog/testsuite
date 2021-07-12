@@ -35,6 +35,13 @@ describe "SampleUtils" do
     `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-minimal-cnf/ force=true`
   end
 
+  it "'cnf_setup' should support cnf-config as an alias for cnf-path", tags: ["cnf-setup"] do
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-minimal-cnf/ wait_count=0`
+    $?.success?.should be_true
+  ensure
+    `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-minimal-cnf/ force=true`
+  end
+
   it "'points_yml' should parse and return the points yaml file", tags: ["points"]  do
     (CNFManager::Points.points_yml.find {|x| x["name"] =="liveness"}).should be_truthy 
   end
