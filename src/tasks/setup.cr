@@ -19,9 +19,6 @@ task "offline" do |_, args|
   input_file = args.named["if"].as(String) if args.named["if"]?
   if input_file && !input_file.empty?
       AirGap.extract(input_file)
-      if AirGapUtils.image_pull_policy_config_file?(input_file)
-        puts "Some installation manifests do not have image pull policy defined.  Airgap mode may not work.".colorize(:yellow)
-      end
       AirGap.cache_images(input_file)
   end
 end
