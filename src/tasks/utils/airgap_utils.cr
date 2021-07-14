@@ -64,7 +64,7 @@ module AirGapUtils
         found_all = false
       end 
     end
-    LOGGING.info "found: #{found}"
+    LOGGING.info "found_all: #{found_all}"
     found_all
   end
 
