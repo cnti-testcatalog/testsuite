@@ -56,16 +56,16 @@ module AirGapUtils
       Helm::Manifest.manifest_containers(y)
     }.flatten
     LOGGING.debug "containers : #{containers}"
-    found = true 
+    found_all = true 
     containers.map do |x|
       ipp = x.dig?("imagePullPolicy") if x
       LOGGING.debug "ipp: #{ipp}"
       unless ipp
-        found = false
+        found_all = false
       end 
     end
     LOGGING.info "found: #{found}"
-    found 
+    found_all
   end
 
 

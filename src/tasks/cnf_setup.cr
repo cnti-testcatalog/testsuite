@@ -20,7 +20,7 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
     puts "cnf setup airgapped mode".colorize(:green)
     AirGap.extract(input_file)
     puts "cnf setup caching images on nodes (airgapped mode)".colorize(:green)
-    if config_file && AirGapUtils.image_pull_policy_config_file?(config_file)
+    if config_file && !AirGapUtils.image_pull_policy_config_file?(config_file)
       puts "Some containers within the installation manifests do not have an image pull policy defined.  Airgap mode may not work.".colorize(:red)
       exit 1
     end
