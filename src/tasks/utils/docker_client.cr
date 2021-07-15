@@ -68,7 +68,7 @@ module DockerClient
   # # => {"org_image" => "coredns/corends:latest", "org" => "coredns", 
   # # "image" => "coredns:latest", "registry" => "mydockerregistry.io:8080", "tag" => "latest"}
   # ```
-  def self.parse_image(fqdn_image_text)
+  def self.parse_image(fqdn_image_text : String)
     resp = {"registry" => "", 
             "org_image" => "",
             "org" => "", 
@@ -88,7 +88,7 @@ module DockerClient
       #  a) If there are three or more segments, all segments (the middle 
       # segments) from the first and before the last are org names
       if size > 2
-        resp["org"] = fqdn_image_text.split("/")[1..-2]
+        resp["org"] = fqdn_image_text.split("/")[1..-2].join("/")
       elsif size = 2
         resp["org"] = first_segment
       else
@@ -105,7 +105,7 @@ module DockerClient
         #  b) If there are three or more segments, all segments (the middle 
         # segments) after the first and before the last are org names
       elsif size > 2
-        resp["org"] = fqdn_image_text.split("/")[0..-2]
+        resp["org"] = fqdn_image_text.split("/")[0..-2].join("/")
       end
     end
     resp["org_image"] = "#{resp["org"].empty? ? "" : resp["org"] + "/"}#{last_segment}"
@@ -117,9 +117,9 @@ module DockerClient
     if size == 1 
         resp["registry"] = "docker.io"
     end
-    resp["image_name"] = last_segment.image.split(":")[0]? 
-    if last_segment.image.split(":")[1]?
-        resp["tag"] = last_segment.image.split(":")[1]? 
+    resp["image_name"] = last_segment.split(":")[0]? || ""
+    if last_segment.split(":")[1]?
+        resp["tag"] = last_segment.split(":")[1]? || ""
     else
         resp["tag"] = "latest"
     end

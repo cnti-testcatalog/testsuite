@@ -53,14 +53,23 @@ module AirGapUtils
   def self.container_image_pull_policy?(yml : Array(YAML::Any))
     LOGGING.info "container_image_pull_policy"
     containers  = yml.map { |y|
-      Helm::Manifest.manifest_containers(y)
-    }.flatten
+      mc = Helm::Manifest.manifest_containers(y)
+      mc.as_a? if mc
+    }.flatten.compact
     LOGGING.debug "containers : #{containers}"
     found_all = true 
-    containers.map do |x|
-      ipp = x.dig?("imagePullPolicy") if x
+    containers.flatten.map do |x|
+      LOGGING.debug "container x: #{x}"
+      ipp = x.dig?("imagePullPolicy")
+      image = x.dig?("image")
       LOGGING.debug "ipp: #{ipp}"
-      unless ipp
+      LOGGING.debug "image: #{image.as_s}" if image
+      parsed_image = DockerClient.parse_image(image.as_s) if image
+      LOGGING.debug "parsed_image: #{parsed_image}"
+      # if there is no image pull policy, any image that does not have a tag will
+      # force a call out to the default image registry
+      if ipp == nil && (parsed_image && parsed_image["tag"] == "latest")
+        LOGGING.info "ipp or tag not found with ipp: #{ipp} and parsed_image: #{parsed_image}"
         found_all = false
       end 
     end
