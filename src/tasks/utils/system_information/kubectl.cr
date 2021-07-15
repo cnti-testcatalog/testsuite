@@ -130,8 +130,8 @@ end
 
 # Check if client version is not 3 minor versions behind server version
 def acceptable_kubectl_version?(kubectl_response, verbose = false)
-  client_version = kubectl_version(kubectl_response, "client", verbose).split(".")
-  server_version = kubectl_version(kubectl_response, "server", verbose)
+  client_version = kubectl_version(kubectl_response, "client", verbose).gsub("+", "").split(".")
+  server_version = kubectl_version(kubectl_response, "server", verbose).gsub("+", "")
 
   # Return nil to indicate comparison was not possible due to missing server version.
   if server_version == ""
