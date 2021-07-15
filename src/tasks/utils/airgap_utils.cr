@@ -8,28 +8,6 @@ require "./find.cr"
 module AirGapUtils
   TAR_REPOSITORY_DIR = "/tmp/repositories"
 
-  #  doesnt work 1) todo loop through all directories and subdirectories
-  #  doesnt work todo loop through all files in a directory
-  #  doesnt work todo template_files = Find.find(directory, "*.yaml*", "100") 
-  #  doesnt work todo template_files = Find.find(directory, "*.yml*", "100") 
-  #  doesnt work todo parse file if has yaml and yml extension
-  #  doesnt work    template_files.map do |x| 
-  #  doesnt work todo Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
-  #  doesnt work    end
-  #  doesnt work or
-  
-  # 1a) todo (if helm/helmdirectory) export a template file of the cnf (helm/helm directory/manifest)
-  # todo helm template(release_name, helm_chart_or_directory, output_file="cnfs/temp_template.yml") 
-  # todo Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
-  # todo (if manifest directory)
-  # todo  Helm::Manifest..manifest_file_list(manifest_directory, silent=false)
-  # todo  Helm::Manifest..manifest_ymls_from_file_list(manifest_file_list)
-  #
-  # 2) todo get the containers array from yml file or workload resource
-  # todo Helm::Manifest.manifest_containers(manifest_yml)
-  # todo if imagepullpolicy exists true; else false
-  # todo if all directories/all workload resources are true then no warning; else warning
-
   def self.image_pull_policy_config_file?(config_file)
     LOGGING.info "image_pull_policy_config_src"
     config = CNFManager.parsed_config_file(config_file)
