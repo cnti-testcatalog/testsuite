@@ -181,6 +181,7 @@ module CNFManager
   end
 
   def self.parsed_config_file(path)
+    LOGGING.info "parsed_config_file: #{path}"
     if path && path.empty?
       raise "No cnf_testsuite.yml found in #{path}!"
     end

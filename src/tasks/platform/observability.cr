@@ -144,8 +144,9 @@ namespace "platform" do
                   headers: {Accept: "application/vnd.docker.distribution.manifest.v2+json"})
             image_id = resp.body
 
-            parsed_image = JSON.parse(image_id)
+            LOGGING.info "Image ID #{image_id}"
 
+            parsed_image = JSON.parse(image_id)
             LOGGING.info "parsed_image config digest #{parsed_image["config"]["digest"]}"
             if parsed_image["config"]["digest"]?
                 acc << {"name" => tag, "digest"=> parsed_image["config"]["digest"].as_s}

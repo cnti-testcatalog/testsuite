@@ -8,6 +8,54 @@ require "./find.cr"
 module AirGapUtils
   TAR_REPOSITORY_DIR = "/tmp/repositories"
 
+  def self.image_pull_policy_config_file?(config_file)
+    LOGGING.info "image_pull_policy_config_src"
+    config = CNFManager.parsed_config_file(config_file)
+    sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: true, generate_tar_mode: false) 
+    release_name = sandbox_config.cnf_config[:release_name]
+    install_method = CNFManager.cnf_installation_method(config)
+    yml = [] of Array(YAML::Any)
+    case install_method[0] 
+    when :manifest_directory
+      file_list = Helm::Manifest.manifest_file_list(install_method[1], silent=false)
+      yml = Helm::Manifest.manifest_ymls_from_file_list(file_list)
+    when :helm_chart, :helm_directory
+      Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
+      yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
+    else
+      raise "config source error: #{install_method}"
+    end
+    container_image_pull_policy?(yml)
+  end
+
+  def self.container_image_pull_policy?(yml : Array(YAML::Any))
+    LOGGING.info "container_image_pull_policy"
+    containers  = yml.map { |y|
+      mc = Helm::Manifest.manifest_containers(y)
+      mc.as_a? if mc
+    }.flatten.compact
+    LOGGING.debug "containers : #{containers}"
+    found_all = true 
+    containers.flatten.map do |x|
+      LOGGING.debug "container x: #{x}"
+      ipp = x.dig?("imagePullPolicy")
+      image = x.dig?("image")
+      LOGGING.debug "ipp: #{ipp}"
+      LOGGING.debug "image: #{image.as_s}" if image
+      parsed_image = DockerClient.parse_image(image.as_s) if image
+      LOGGING.debug "parsed_image: #{parsed_image}"
+      # if there is no image pull policy, any image that does not have a tag will
+      # force a call out to the default image registry
+      if ipp == nil && (parsed_image && parsed_image["tag"] == "latest")
+        LOGGING.info "ipp or tag not found with ipp: #{ipp} and parsed_image: #{parsed_image}"
+        found_all = false
+      end 
+    end
+    LOGGING.info "found_all: #{found_all}"
+    found_all
+  end
+
+
   def self.image_pull_policy(file, output_file="")
     input_content = File.read(file) 
     output_content = input_content.gsub(/(.*imagePullPolicy:)(.*)/,"\\1 Never")

@@ -10,6 +10,7 @@ module Helm
   POD="Pod"
 
   # Utilities for manifest files that are not templates or have been converted already
+  # todo move into own file
   module Manifest
     def self.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
       LOGGING.info "parse_manifest_as_ymls template_file_name: #{template_file_name}"
@@ -57,6 +58,7 @@ module Helm
   # Helm uses manifest files that can be jinja templates
   def self.generate_manifest_from_templates(release_name, helm_chart, output_file="cnfs/temp_template.yml")
     LOGGING.debug "generate_manifest_from_templates"
+    # todo remove my guilt 
     helm = CNFSingleton.helm
     LOGGING.info "Helm::generate_manifest_from_templates command: #{helm} template #{release_name} #{helm_chart} > #{output_file}"
     # Helm template works with either a chart or a directory

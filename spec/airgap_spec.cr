@@ -87,6 +87,7 @@ describe "AirGap" do
       response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz`
       LOGGING.info response_s
       response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml input-file=/tmp/airgapped.tar.gz`
+      LOGGING.info response_s
       $?.success?.should be_true
       LOGGING.info response_s
       (/Successfully setup nginx-webapp/ =~ response_s).should_not be_nil
