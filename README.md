@@ -69,6 +69,8 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
   - Meetings on the 1st Mondays of the month
   - Meeting minutes are [here](https://docs.google.com/document/d/1yhtI7aiwpdAiRBKyUX6mOJDHAbjOog2mI4Ur2k27D7s/edit)
 
+- Request an Intro to the CNF Test Suite [here](https://calendly.com/cnftestsuite)
+
 ## Implementation overview
 
 The CNF Test Suite leverages upstream tools such as [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Helm linter](https://github.com/helm/chart-testing), and [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) for testing CNFs. The upstream tool installation, configuration, and versioning has been made repeatable.
