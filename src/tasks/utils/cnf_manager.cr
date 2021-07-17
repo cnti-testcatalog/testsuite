@@ -732,25 +732,29 @@ module CNFManager
       stdout_success "Successfully setup #{release_name}"
     end
 
-
+    # Immutable config maps are only supported in Kubernetes 1.19+
+    immutable_configmap = true
     if version_less_than(KubectlClient.server_version, "1.19.0")
-      k8s_ver = false
-    else
-      k8s_ver = true 
+      immutable_configmap = false
     end
 
-    # TODO save to an [preferrably immutable] config map 
     #TODO if helm_install then set helm_deploy = true in template
     LOGGING.info "save config"
-    elapsed_time_template = Crinja.render(configmap_temp, { "helm_install" => helm_used, "release_name" => "cnf-testsuite-#{release_name}-startup-information", "elapsed_time" => "#{elapsed_time.seconds}", "k8s_ver" => "#{k8s_ver}"})
+    elapsed_time_template = Crinja.render(configmap_temp, { "helm_install" => helm_used, "release_name" => "cnf-testsuite-#{release_name}-startup-information", "elapsed_time" => "#{elapsed_time.seconds}", "immutable" => immutable_configmap})
     #TODO find a way to kubectlapply directly without a map
-    LOGGING.debug "elapsed_time_template : #{elapsed_time_template}"
-    write_template= `echo "#{elapsed_time_template}" > "#{destination_cnf_dir}/configmap_test.yml"`
+    Log.debug { "elapsed_time_template : #{elapsed_time_template}" }
+    write_template = File.write("#{destination_cnf_dir}/configmap_test.yml", elapsed_time_template)
     # TODO if the config map exists on install, complain, delete then overwrite?
     KubectlClient::Delete.file("#{destination_cnf_dir}/configmap_test.yml")
     #TODO call kubectl apply on file
     KubectlClient::Apply.file("#{destination_cnf_dir}/configmap_test.yml")
     # TODO when uninstalling, remove config map
+
+  rescue e : Helm::CannotReuseReleaseNameError
+    # Since the release has already been setup:
+    # * Do not wait for resources to be ready
+    # * Do not measure elapsed time to add ConfigMap
+    stdout_warning "Release name #{release_name} has already been setup"
   end
 
 def self.configmap_temp
@@ -759,7 +763,7 @@ def self.configmap_temp
   kind: ConfigMap
   metadata:
     name: '{{ release_name }}'
-  {% if k8s_ver %}
+  {% if immutable %}
   immutable: true
   {% endif %}
   data:
