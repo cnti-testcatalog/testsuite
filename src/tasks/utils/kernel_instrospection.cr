@@ -1,5 +1,5 @@
 require "colorize"
-require "kubectl_client"
+require "./kubectl_client.cr"
 
 module ParseKernelInstrospection 
   # todo ls /proc
