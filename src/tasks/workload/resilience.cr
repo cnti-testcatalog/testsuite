@@ -173,10 +173,11 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
     #TODO tests should fail if cnf not installed
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+      LOGGING.info "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}"
+      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0 && resource["kind"] == "Deployment"
         test_passed = true
       else
-        puts "No resource label found for pod_network_latency test for resource: #{resource["name"]}".colorize(:red)
+        puts "Resource is not a Deployment or no resource label was found for resource: #{resource["name"]}".colorize(:red)
         test_passed = false
       end
       if test_passed
@@ -188,7 +189,6 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.6?file=charts/generic/pod-network-latency/experiment.yaml")
           KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.6?file=charts/generic/pod-network-latency/rbac.yaml")
         end
-        # annotate = `kubectl annotate --overwrite deploy/#{resource["name"]} litmuschaos.io/chaos="true"`
         KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-network-latency"
@@ -203,15 +203,14 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         # puts "#{run_chaos}" if check_verbose(args)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
         LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
+        test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
       end
-      test_passed=LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
     end
     if task_response
       resp = upsert_passed_task("pod_network_latency","✔️  PASSED: pod_network_latency chaos test passed 🗡️💀♻️")
     else
       resp = upsert_failed_task("pod_network_latency","✖️  FAILED: pod_network_latency chaos test failed 🗡️💀♻️")
     end
-    resp
   end
 end
 
