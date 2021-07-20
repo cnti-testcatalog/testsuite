@@ -9,8 +9,8 @@ describe "KernelInstrospection" do
 
 
   it "'#status_by_proc' should return all statuses for all containers in a pod", tags: ["kernel-introspection"]  do
-    AirGap.bootstrap_cluster()
-    # KubectlClient::Apply("./tools/cri-tools/manifest.yml")
+    # AirGap.bootstrap_cluster()
+    KubectlClient::Apply.file("./tools/cri-tools/manifest.yml")
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     (pods).should_not be_nil
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
