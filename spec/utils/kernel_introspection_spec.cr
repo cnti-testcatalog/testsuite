@@ -20,7 +20,7 @@ describe "KernelInstrospection" do
       (pods.size).should be > 0
       first_node = pods[0]
       if first_node
-        statuses = KernelIntrospection::K8s.status_by_proc(first_node.dig("metadata", "name"), "cri-tools-two")
+        statuses = KernelIntrospection::K8s.status_by_proc(first_node.dig("metadata", "name"), "cri-tools")
         LOGGING.info "statuses: #{statuses}"
         (statuses).should_not be_nil
         (statuses[0]["Pid"]).should eq "1"
