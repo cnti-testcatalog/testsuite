@@ -79,6 +79,7 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
 
 **Crystal in the Cloud: A cloud native journey at Crystal 1.0 Conference**
 - [Recording](https://youtu.be/n8g60VglyUw)
+- [Slides](https://github.com/cncf/cnf-testsuite/files/6785788/Crystal.1.0.Crystal.in.the.Cloud_.CNF.Test.Suite.pdf) (PDF)
 
 
 ## Implementation overview
