@@ -75,6 +75,7 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
 
 **CNF Test Suite Demo**
 - [Recording](https://drive.google.com/file/d/1SBHE5Dqx6Sa-m83WODbCEbbdiB2_l_U2/view?usp=sharing)
+- [Slides](https://github.com/cncf/cnf-testsuite/files/6857515/SHARED-COMMON.CNF.Test.Suite.Demo.and.CNF.initiatives.overview.2021-06-29.pdf) (PDF)
 
 **Crystal in the Cloud: A cloud native journey at Crystal 1.0 Conference**
 - [Recording](https://youtu.be/n8g60VglyUw)
