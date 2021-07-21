@@ -18,7 +18,7 @@ To get a more complete overview of planned features and current work see the [pr
 
 ### Enhance the functionality of the test suite framework
 
-- Add support for air gapped environments
+- Add support for [air gapped](https://github.com/cncf/cnf-testsuite/labels/air-gapped) environments
 - Add best practice suggestions to test results
 - Split libraries out into different repositories under a single organization
 
@@ -27,7 +27,7 @@ To get a more complete overview of planned features and current work see the [pr
 - Document a Governance structure for maintainers
 - Document a Contributor Ladder for maintainer levels
 - Publish a "Getting Started with the CNF Test Suite" blog post
-- Create "Office Hours" and "good first issues" to help beginners
+- Create "Office Hours" and [good first issues](https://github.com/cncf/cnf-testsuite/labels/good%20first%20issue) to help beginners
 - Engage CNCF-hosted projects and propose test ideas using their software
 - Enlist help from other communities
     - Crystal Lang
@@ -36,7 +36,7 @@ To get a more complete overview of planned features and current work see the [pr
 
 ### Onboard end users
 
-- Create "ADOPTERS.md" file to list users of the CNF Test Suite 
+- Create ADOPTERS.md file to list users of the CNF Test Suite 
 - Set up [Calendly](https://calendly.com/cnftestsuite) to schedule presentations
 - Offer presentations, demonstrations and assistance on the CNF Test Suite to Service Providers and CNF Developers
     - To request a presentation, please open an [issue](https://github.com/cncf/cnf-testsuite/issues/new) or schedule via [Calendly](https://calendly.com/cnftestsuite)
