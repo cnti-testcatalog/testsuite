@@ -8,8 +8,17 @@ module KernelIntrospection
 
   def self.parse_status(status_output)
     LOGGING.info "parse_status status_output: #{status_output}"
-    status_output.split("\n").reduce(Hash(String, String).new) do |acc,x| 
-      acc.merge({(x.match(/(.*):(.*)/).try &.[1]) => "#{x.match(/(.*):(.*)/).try &.[2]}".strip})
+    status = status_output.split("\n").reduce(Hash(String, String).new) do |acc,x| 
+      if (x.match(/(.*):(.*)/).try &.[1])
+        acc.merge({(x.match(/(.*):(.*)/).try &.[1]) => "#{x.match(/(.*):(.*)/).try &.[2]}".strip})
+      else
+        acc
+      end
+    end
+    if status == Hash(String, String).new
+      nil
+    else
+      status 
     end
   end
 
@@ -37,9 +46,9 @@ module KernelIntrospection
     end
 
     def self.status_by_proc(pod_name, container_name)
-      proc(pod_name, container_name).map do |pid|
+      proc(pod_name, container_name).map { |pid|
         status(pod_name, container_name, pid)
-      end
+      }.compact 
 
     end
   end

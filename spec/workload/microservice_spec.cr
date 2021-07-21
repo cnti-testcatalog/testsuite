@@ -9,6 +9,19 @@ require "sam"
 
 describe "Microservice" do
 
+  it "'single_process_type' should pass if the containers in the cnf have only one process type", tags: ["reasonable_startup_time"]  do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
+      response_s = `./cnf-testsuite single_process_type verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Only one process type used/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns`
+      $?.success?.should be_true
+    end
+  end
+
   it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`

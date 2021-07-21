@@ -276,6 +276,35 @@ module KubectlClient
       }.flatten
     end
 
+    def self.pods_by_resource(resource)
+      LOGGING.info "pods_by_resource"
+      LOGGING.debug "pods_by_resource resource: #{resource}"
+      # resource_selector = resource.dig?("spec", "selector", "matchLabels", "name")
+      # LOGGING.info "resource_selector: #{resource_selector}"
+      
+      pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+      name = resource["name"]? || resource["generateName"]?
+      labels = KubectlClient::Get.resource_spec_labels(resource["kind"], name).as_h
+      KubectlClient::Get.pods_by_labels(pods, labels)
+    end
+
+    def self.pods_by_labels(pods_json : Array(JSON::Any), labels : Hash(String, JSON::Any))
+      LOGGING.info "pods_by_label labels: #{labels}"
+      pods_json.select do |pod|
+        match = true
+        labels.map do |key, value|
+          if pod.dig?("metadata", "labels", key) == value
+            # LOGGING.debug "pod: #{pod}"
+            match = true
+          else
+            LOGGING.debug "metadata labels: No Match #{value}"
+            match = false
+          end
+        end
+        match
+      end 
+    end
+
     def self.pods_by_label(pods_json : Array(JSON::Any), label_key, label_value)
       LOGGING.info "pods_by_label"
       pods_json.select do |pod|
