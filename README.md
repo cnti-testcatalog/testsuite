@@ -77,7 +77,6 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
 - [Recording](https://drive.google.com/file/d/1SBHE5Dqx6Sa-m83WODbCEbbdiB2_l_U2/view?usp=sharing)
 
 **Crystal in the Cloud: A cloud native journey at Crystal 1.0 Conference
-**
 - [Recording](https://youtu.be/n8g60VglyUw)
 
 
