@@ -1,5 +1,6 @@
 require "../spec_helper"
 require "../../src/tasks/utils/utils.cr"
+require "../../src/tasks/utils/airgap.cr"
 require "../../src/tasks/dockerd_setup.cr"
 require "../../src/tasks/utils/kubectl_client.cr"
 require "file_utils"

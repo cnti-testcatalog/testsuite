@@ -245,6 +245,7 @@ task "disk_fill", ["install_litmus"] do |_, args|
         test_name = "#{resource["name"]}-#{Random.rand(99)}" 
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
+        # todo change to use all labels instead of first label
         template = Crinja.render(chaos_template_disk_fill, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name})
         chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
         puts "#{chaos_config}" if check_verbose(args)

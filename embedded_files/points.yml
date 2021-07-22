@@ -10,6 +10,8 @@
   tags: microservice, dynamic, workload
 - name: reasonable_startup_time 
   tags: microservice, dynamic, workload
+- name: single_process_type 
+  tags: microservice, dynamic, workload
 
 #- name: cni_spec 
 #  tags: compatibility, dynamic

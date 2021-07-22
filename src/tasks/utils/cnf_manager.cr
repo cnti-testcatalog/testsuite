@@ -118,6 +118,7 @@ module CNFManager
       LOGGING.error "no resource names found"
       initialized = false
     end
+    # todo check to see if following 'resource' variable is conflicting with above resource variable
 		resource_names.each do | resource |
 			VERBOSE_LOGGING.debug resource.inspect if check_verbose(args)
 			volumes = KubectlClient::Get.resource_volumes(resource[:kind].as_s, resource[:name].as_s)

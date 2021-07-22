@@ -9,7 +9,7 @@ require "halite"
 require "totem"
 
 desc "The CNF test suite checks to see if CNFs follows microservice principles"
-task "microservice", ["reasonable_image_size", "reasonable_startup_time"] do |_, args|
+task "microservice", ["reasonable_image_size", "reasonable_startup_time", "single_process_type"] do |_, args|
   stdout_score("microservice")
 end
 
@@ -51,12 +51,6 @@ task "reasonable_startup_time" do |_, args|
       upsert_failed_task("reasonable_startup_time", "✖️  FAILED: CNF had a startup time of #{startup_time} seconds #{emoji_slow}")
     end
 
-   # ensure
-   #  LOGGING.debug "Reasonable startup cleanup"
-   #  delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
-   #  # rollback_non_namespaced = `kubectl apply -f #{yml_file_path}/reasonable_startup_orig.yml`
-   #  KubectlClient::Apply.file("#{yml_file_path}/reasonable_startup_orig.yml")
-    # KubectlClient::Get.wait_for_install(deployment_name, wait_count=180)
   end
 end
 
@@ -117,14 +111,6 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
         # TODO strip out secret from under auths, save in array
         # TODO make a new auths array, assign previous array into auths array
         # TODO save auths array to a file
-        # dockerhub_image_tags = DockerClient::Get.image_tags(local_image_tag[:image])
-        # if dockerhub_image_tags && dockerhub_image_tags.status_code == 200
-        #   image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, local_image_tag[:tag])
-        #   micro_size = image_by_tag && image_by_tag["full_size"]
-        # else
-        #   puts "Failed to find resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} on dockerhub".colorize(:yellow)
-        #   test_passed=false
-        # end
         LOGGING.info "compressed_size: #{fqdn_image} = '#{compressed_size.to_s}'"
         max_size = 5_000_000_000
         if ENV["CRYSTAL_ENV"]? == "TEST"
@@ -156,8 +142,55 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
     else
       upsert_failed_task("reasonable_image_size", "✖️  FAILED: Image size too large #{emoji_big} #{emoji_image_size}")
     end
-  # ensure
-  #   delete_dockerd = `kubectl delete -f #{TOOLS_DIR}/dockerd/manifest.yml`
+  end
+end
+
+desc "Do the containers in a pod have only one process type?"
+task "single_process_type" do |_, args|
+  CNFManager::Task.task_runner(args) do |args,config|
+    VERBOSE_LOGGING.info "single_process_type" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      test_passed = true
+      kind = resource["kind"].as_s.downcase
+      case kind 
+      when  "deployment","statefulset","pod","replicaset", "daemonset"
+        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
+        pods = KubectlClient::Get.pods_by_resource(resource_yaml)
+       
+        containers = KubectlClient::Get.resource_containers(kind, resource[:name]) 
+        pods.map do |pod|
+          pod_name = pod.dig("metadata", "name")
+          containers.as_a.map do |container|
+            container_name = container.dig("name")
+            previous_process_type = "initial_name"
+            statuses = KernelIntrospection::K8s.status_by_proc(pod_name, container_name)
+            statuses.map do |status|
+              LOGGING.debug "status: #{status}"
+              LOGGING.info "status name: #{status["cmdline"]}"
+              LOGGING.info "previous status name: #{previous_process_type}"
+              # Fail if more than one process type
+              if status["Name"] != previous_process_type && 
+                  previous_process_type != "initial_name"
+                puts "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{previous_process_type}, #{status["cmdline"]})".colorize(:red)
+                test_passed=false
+              end
+              previous_process_type = status["cmdline"]
+            end
+          end
+        end
+        test_passed
+      end
+    end
+    emoji_image_size="⚖️👀"
+    emoji_small="🐜"
+    emoji_big="🦖"
+
+    if task_response
+      upsert_passed_task("single_process_type", "✔️  PASSED: Only one process type used #{emoji_small} #{emoji_image_size}")
+    else
+      upsert_failed_task("single_process_type", "✖️  FAILED: More than one process type used #{emoji_big} #{emoji_image_size}")
+    end
   end
 end
 

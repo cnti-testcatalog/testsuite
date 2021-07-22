@@ -193,41 +193,8 @@ module KubectlClient
       # LOGGING.debug "kubectl get pods: #{resp}"
       JSON.parse(resp)
     end
-  # def self.cnf_workload_resources(args, config, &block)
-  #   destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-  #   yml_file_path = config.cnf_config[:yml_file_path]
-  #   helm_directory = config.cnf_config[:helm_directory]
-  #   manifest_directory = config.cnf_config[:manifest_directory]
-  #   release_name = config.cnf_config[:release_name]
-  #   helm_chart_path = config.cnf_config[:helm_chart_path]
-  #   manifest_file_path = config.cnf_config[:manifest_file_path]
-  #   test_passed = true
-  #
-  #   ##################
-  #   # TODO extract exporting of manifest yml into separate function 
-  #   if release_name.empty? # no helm chart
-  #     template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
-  #   else
-  #     Helm.generate_manifest_from_templates(release_name,
-  #                                           helm_chart_path,
-  #                                           manifest_file_path)
-  #     template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
-  #   end
-  #   resource_ymls = Helm.all_workload_resources(template_ymls)
-  #   # TODO call export manifest and get the resource ymls
-	# 	resource_resp = resource_ymls.map do | resource |
-  #     resp = yield resource
-  #     LOGGING.debug "cnf_workload_resource yield resp: #{resp}"
-  #     resp
-  #   end
-  #   ###############
-  #
-  #
-  #
-  #
-  #   resource_resp
-  # end
    
+    # todo put this in a manifest module
     def self.resource_map(k8s_manifest, &block)
       if nodes["items"]?
         items = nodes["items"].as_a.map do |item|
@@ -245,6 +212,7 @@ module KubectlClient
       end
     end
 
+    # todo put this in a manifest module
     def self.resource_select(k8s_manifest, &block)
       if nodes["items"]?
         items = nodes["items"].as_a.select do |item|
@@ -306,6 +274,44 @@ module KubectlClient
           end
         end
       }.flatten
+    end
+
+    def self.pods_by_resource(resource) : K8sManifestList
+      LOGGING.info "pods_by_resource"
+      LOGGING.debug "pods_by_resource resource: #{resource}"
+      # resource_selector = resource.dig?("spec", "selector", "matchLabels", "name")
+      # LOGGING.info "resource_selector: #{resource_selector}"
+      
+      pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+      # pods = KubectlClient::Get.pods
+      LOGGING.info "resource kind: #{resource["kind"]}"
+      name = resource["metadata"]["name"]? 
+      LOGGING.info "pods_by_resource name: #{name}"
+      if name
+        labels = KubectlClient::Get.resource_spec_labels(resource["kind"], name).as_h
+        LOGGING.info "pods_by_resource labels: #{labels}"
+        KubectlClient::Get.pods_by_labels(pods, labels)
+      else
+        LOGGING.info "pods_by_resource name is nil"
+        [] of JSON::Any
+      end
+    end
+
+    def self.pods_by_labels(pods_json : Array(JSON::Any), labels : Hash(String, JSON::Any))
+      LOGGING.info "pods_by_label labels: #{labels}"
+      pods_json.select do |pod|
+        match = true
+        labels.map do |key, value|
+          if pod.dig?("metadata", "labels", key) == value
+            # LOGGING.debug "pod: #{pod}"
+            match = true
+          else
+            LOGGING.debug "metadata labels: No Match #{value}"
+            match = false
+          end
+        end
+        match
+      end 
     end
 
     def self.pods_by_label(pods_json : Array(JSON::Any), label_key, label_value)

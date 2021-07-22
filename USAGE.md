@@ -290,6 +290,12 @@ crystal src/cnf-testsuite.cr protected_access
 ./cnf-testsuite reasonable_startup_time destructive
 ```
 
+#### :heavy_check_mark: To check if the CNF has multiple process types within one container
+
+```
+./cnf-testsuite single_process_type
+```
+
 ---
 
 ### Scalability Tests
