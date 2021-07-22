@@ -370,8 +370,12 @@ module KubectlClient
 
     def self.resource_containers(kind, resource_name) : JSON::Any
       LOGGING.debug "kubectl get resource containers kind: #{kind} resource_name: #{resource_name}"
-      unless kind.downcase == "service" ## services have no containers
+      case kind.downcase
+      when "pod"
+        resp = resource(kind, resource_name).dig?("spec", "containers")
+      when  "deployment","statefulset","replicaset", "daemonset"
         resp = resource(kind, resource_name).dig?("spec", "template", "spec", "containers")
+        # unless kind.downcase == "service" ## services have no containers
       end
       LOGGING.info "kubectl get resource containers: #{resp}"
       if resp && resp.as_a.size > 0
