@@ -18,15 +18,15 @@ shards:
 
   icr:
     git: https://github.com/hashnuke/icr.git
-    version: 0.8.0+git.commit.2254b56e1226de5a188892fe7eae3b27bdd53488
+    version: 0.8.0+git.commit.3cdb0bafeae112d45d55c63f94c8a006256780b1
 
   popcorn:
     git: https://github.com/icyleaf/popcorn.git
     version: 0.3.0
 
   readline:
-    git: https://github.com/hashnuke/crystal-readline.git
-    version: 0.1.0+git.commit.f32122f843ecd06e4c6ced3d6922167f82d48dfc
+    git: https://github.com/crystal-lang/crystal-readline.git
+    version: 0.1.0+git.commit.59183141b981bc36003bc818cfe7837f06989e31
 
   retriable:
     git: https://github.com/sija/retriable.cr.git
