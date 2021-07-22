@@ -35,6 +35,19 @@ describe "Microservice" do
     end
   end
 
+  it "'single_process_type' should fail if the containers in the cnf have more than one process type and in a pod", tags: ["reasonable_startup_time"]  do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample-multiple-processes`
+      response_s = `./cnf-testsuite single_process_type verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: More than one process type used/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-multiple-processes`
+      $?.success?.should be_true
+    end
+  end
+
   it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
