@@ -9,7 +9,7 @@ require "sam"
 
 describe "Microservice" do
 
-  it "'single_process_type' should pass if the containers in the cnf have only one process type", tags: ["reasonable_startup_time"]  do
+  it "'single_process_type' should pass if the containers in the cnf have only one process type", tags: ["process_check"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
       response_s = `./cnf-testsuite single_process_type verbose`
@@ -22,7 +22,7 @@ describe "Microservice" do
     end
   end
 
-  it "'single_process_type' should fail if the containers in the cnf have more than one process type", tags: ["reasonable_startup_time"]  do
+  it "'single_process_type' should fail if the containers in the cnf have more than one process type", tags: ["process_check"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/k8s-multiple-processes`
       response_s = `./cnf-testsuite single_process_type verbose`
@@ -35,7 +35,7 @@ describe "Microservice" do
     end
   end
 
-  it "'single_process_type' should fail if the containers in the cnf have more than one process type and in a pod", tags: ["reasonable_startup_time"]  do
+  it "'single_process_type' should fail if the containers in the cnf have more than one process type and in a pod", tags: ["process_check"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample-multiple-processes`
       response_s = `./cnf-testsuite single_process_type verbose`

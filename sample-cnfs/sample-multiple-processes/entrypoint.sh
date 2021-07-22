@@ -1,0 +1,6 @@
+#!/bin/bash
+
+dockerd &
+
+coredns
+
