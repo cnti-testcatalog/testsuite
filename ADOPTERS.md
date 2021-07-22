@@ -6,7 +6,7 @@ If your company is using the CNF Test Suite in some way, please create a Pull Re
 
 Adopters list (alphabetical)
 ---
--
+- [MATRIXX](http://www.matrixx.com) - MATRIXX is using the CNF Test Suite to evaluate components of our Digital Commerce Platform for cloud native principles and best practices. 
 -
 -
 
