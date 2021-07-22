@@ -20,7 +20,7 @@ spec:
       containers:
       - image: busybox
         command: ["/bin/sh"]
-        args: ["-c", "sleep infinity &; sleep 10000 &; sleep 20000 &; sleep 30000"]
+        args: ["-c", "sleep infinity & sleep 10000 & sleep 20000 & sleep 30000"]
         name: sidecar-container1
         resources: {}
         volumeMounts:
@@ -28,7 +28,7 @@ spec:
             mountPath: /var/log
       - image: busybox
         command: ["/bin/sh"]
-        args: ["-c", "sleep infinity &; sleep 10000 &; sleep 20000 &; sleep 30000"]
+        args: ["-c", "sleep infinity & sleep 10000 & sleep 20000 & sleep 30000"]
         name: sidecar-container2
         resources: {}
         volumeMounts:

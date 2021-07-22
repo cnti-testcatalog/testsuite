@@ -276,16 +276,25 @@ module KubectlClient
       }.flatten
     end
 
-    def self.pods_by_resource(resource)
+    def self.pods_by_resource(resource) : K8sManifestList
       LOGGING.info "pods_by_resource"
       LOGGING.debug "pods_by_resource resource: #{resource}"
       # resource_selector = resource.dig?("spec", "selector", "matchLabels", "name")
       # LOGGING.info "resource_selector: #{resource_selector}"
       
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-      name = resource["name"]? || resource["generateName"]?
-      labels = KubectlClient::Get.resource_spec_labels(resource["kind"], name).as_h
-      KubectlClient::Get.pods_by_labels(pods, labels)
+      # pods = KubectlClient::Get.pods
+      LOGGING.info "resource kind: #{resource["kind"]}"
+      name = resource["metadata"]["name"]? 
+      LOGGING.info "pods_by_resource name: #{name}"
+      if name
+        labels = KubectlClient::Get.resource_spec_labels(resource["kind"], name).as_h
+        LOGGING.info "pods_by_resource labels: #{labels}"
+        KubectlClient::Get.pods_by_labels(pods, labels)
+      else
+        LOGGING.info "pods_by_resource name is nil"
+        [] of JSON::Any
+      end
     end
 
     def self.pods_by_labels(pods_json : Array(JSON::Any), labels : Hash(String, JSON::Any))

@@ -40,6 +40,11 @@ module KernelIntrospection
       KernelIntrospection.parse_proc(resp[:output].to_s)
     end
 
+    def self.cmdline(pod_name, container_name, pid)
+      resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- cat /proc/#{pid}/cmdline")
+      resp[:output].to_s.strip
+    end
+
     def self.status(pod_name, container_name, pid)
       resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- cat /proc/#{pid}/status")
       KernelIntrospection.parse_status(resp[:output].to_s)
@@ -47,7 +52,8 @@ module KernelIntrospection
 
     def self.status_by_proc(pod_name, container_name)
       proc(pod_name, container_name).map { |pid|
-        status(pod_name, container_name, pid)
+        stat_cmdline = status(pod_name, container_name, pid)
+        stat_cmdline.merge({"cmdline" => cmdline(pod_name, container_name, pid)}) if stat_cmdline
       }.compact 
 
     end

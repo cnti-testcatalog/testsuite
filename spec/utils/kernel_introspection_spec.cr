@@ -24,6 +24,7 @@ describe "KernelInstrospection" do
         LOGGING.info "statuses: #{statuses}"
         (statuses).should_not be_nil
         (statuses[0]["Pid"]).should eq "1"
+        (statuses[0]["cmdline"]).should eq "/bin/sh\u0000-c\u0000sleep infinity\u0000"
       else 
         true.should be_false
       end

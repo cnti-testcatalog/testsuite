@@ -148,7 +148,7 @@ end
 desc "Do the containers in a pod have only one process type?"
 task "single_process_type" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
-    VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
+    VERBOSE_LOGGING.info "single_process_type" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
@@ -167,14 +167,15 @@ task "single_process_type" do |_, args|
             statuses = KernelIntrospection::K8s.status_by_proc(pod_name, container_name)
             statuses.map do |status|
               LOGGING.debug "status: #{status}"
-              LOGGING.debug "status name: #{status["Name"]}"
+              LOGGING.info "status name: #{status["cmdline"]}"
+              LOGGING.info "previous status name: #{previous_process_type}"
               # Fail if more than one process type
               if status["Name"] != previous_process_type && 
                   previous_process_type != "initial_name"
-                puts "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{previous_process_type}, #{status["Name"]})".colorize(:red)
+                puts "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{previous_process_type}, #{status["cmdline"]})".colorize(:red)
                 test_passed=false
               end
-              previous_process_type = status["Name"]
+              previous_process_type = status["cmdline"]
             end
           end
         end
