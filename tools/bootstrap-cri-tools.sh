@@ -134,6 +134,7 @@ EOF
     for node in ${NODE_ARRAY[@]}
     do
         until [[ $(kubectl get pods --field-selector spec.nodeName=$node -l name=cri-tools -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
+
             echo "Waiting for pod"
             sleep 1
         done
