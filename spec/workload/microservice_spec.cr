@@ -64,7 +64,7 @@ describe "Microservice" do
       LOGGING.info "Memory logs" 
       LOGGING.info "#{KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=memory --memory-block-size=1M --memory-total-size=100G --num-threads=1 run")}"
       LOGGING.info "Disk logs"
-      LOGGING.info "#{KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench fileio prepare ; sysbench fileio --file-test-mode=rndrw run")}"
+      LOGGING.info "#{KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- /bin/bash -c 'sysbench fileio prepare && sysbench fileio --file-test-mode=rndrw run'")}"
       
       (/PASSED: CNF had a reasonable startup time/ =~ response_s).should_not be_nil
     ensure
