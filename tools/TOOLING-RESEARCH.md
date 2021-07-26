@@ -2,7 +2,6 @@
 
 # Tooling options for Privileged Pods test.
 
-
 ## OPA
 
 OPA is a policy tool and the test concept would be to apply a policy that blocks / rejects the deployments of Pods with privlidged mode, and attempt to install the CNF we're testing to see if it can be installed. If the Pods requires privlidged mode OPA will reject the deployment and the test will return an exit code. However, this test case is not ideal because it would require us to re-deploy the CNF just to 'check' if the Pod is running in Privileged mode. 
