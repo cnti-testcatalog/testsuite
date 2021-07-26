@@ -59,7 +59,13 @@ describe "Microservice" do
       pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
       LOGGING.info "CRI Pod: #{pods[0]}"
       KubectlClient::Get.resource_wait_for_install("DaemonSet", "cri-tools")
+      LOGGING.info "CPU Logs"
       LOGGING.info "#{KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=cpu --num-threads=4 --cpu-max-prime=9999 run")}"
+      LOGGING.info "Memory logs" 
+      LOGGING.info "#{KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=memory --memory-block-size=1M --memory-total-size=100G --num-threads=1 run")}"
+      LOGGING.info "Disk logs"
+      LOGGING.info "#{KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench fileio prepare ; sysbench fileio --file-test-mode=rndrw run")}"
+      
       (/PASSED: CNF had a reasonable startup time/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns`
