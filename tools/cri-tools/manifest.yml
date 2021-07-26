@@ -23,4 +23,3 @@ spec:
       - name: containerd-volume
         hostPath:
           path: /var/run/containerd/containerd.sock
-
