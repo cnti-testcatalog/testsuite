@@ -37,6 +37,49 @@ task "reasonable_startup_time" do |_, args|
 
     emoji_fast="🚀"
     emoji_slow="🐢"
+    # todo depedency for cri tools
+    # sysbench base fast machine (disk), time in ms 0.16
+    # sysbench base slow machine (disk), time in ms 6.55
+    # percentage 0.16 is 2.44% of 6.55
+    # How much more is 6.55 than 0.16? (0.16 - 6.55) / 0.16 * 100 = 3993.75%
+    # startup time fast machine: 21 seconds
+    # startup slow machine: 34 seconds
+    # how much more is 34 seconds than 21 seconds? (21 - 34) / 21 * 100 = 61.90%
+    # app seconds set 1: 21, set 2: 34
+    # disk miliseconds set 1: .16 set 2: 6.55
+    # get the mean of app seconds (x)
+    #   (sum all: 55, count number of sets: 2, divide sum by count: 27.5)
+    # get the mean of disk milliseconds (y)
+    #   (sum all: 6.71, count number of sets: 2, divide sum by count: 3.35)
+    # Subtract the mean of x from every x value (call them "a")
+    # set 1: 6.5 
+    # set 2: -6.5 
+    # and subtract the mean of y from every y value (call them "b")
+    # set 1: 3.19
+    # set 2: -3.2
+    # calculate: ab, a2 and b2 for every value
+    # set 1: 20.735, 42.25, 42.25
+    # set 2: 20.8, 10.17, 10.24
+    # Sum up ab, sum up a2 and sum up b2
+    # 41.535, 52.42, 52.49
+    # Divide the sum of ab by the square root of [(sum of a2) × (sum of b2)]
+    # (sum of a2) × (sum of b2) = 2751.5258
+    # square root of 2751.5258 = 52.4549
+    # divide sum of ab by sqrt = 41.535 / 52.4549 = .7918
+    # example
+    # sysbench returns a 5.55 disk millisecond result
+    # disk millisecond has a pearson correlation of .79 to app seconds
+    # 
+    # regression = ŷ = bX + a
+    # b = 2.02641
+    # a = 20.72663
+
+    # todo get the disk milisecond speed
+    # apply regression prediction
+    # adjust seconds by speed
+
+
+  
     startup_time_limit = 30
     # if ENV["CRYSTAL_ENV"]? == "TEST"
     #   startup_time_limit = 35 
