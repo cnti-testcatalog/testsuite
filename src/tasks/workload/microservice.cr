@@ -37,7 +37,7 @@ task "reasonable_startup_time", ["install_cri_tools"] do |_, args|
 
     emoji_fast="🚀"
     emoji_slow="🐢"
-    # todo depedency for cri tools
+    # Correlation for a slow box vs a fast box 
     # sysbench base fast machine (disk), time in ms 0.16
     # sysbench base slow machine (disk), time in ms 6.55
     # percentage 0.16 is 2.44% of 6.55
@@ -70,17 +70,18 @@ task "reasonable_startup_time", ["install_cri_tools"] do |_, args|
     # sysbench returns a 5.55 disk millisecond result
     # disk millisecond has a pearson correlation of .79 to app seconds
     # 
+    # Regression for predication based on slow and fast box disk times
     # regression = ŷ = bX + a
     # b = 2.02641
     # a = 20.72663
 
-    # todo get the disk milisecond speed
-    # apply regression prediction
-    # adjust seconds by speed
-
-
-  
-    startup_time_limit = 30
+    resp = K8sInstrumentation.disk_speed
+    if resp["95th percentile"]?
+        disk_speed = resp["95th percentile"].to_f
+      startup_time_limit = ((2.02641 * disk_speed) + 20.72663).round.to_i
+    else
+      startup_time_limit = 30
+    end
     # if ENV["CRYSTAL_ENV"]? == "TEST"
     #   startup_time_limit = 35 
     #   LOGGING.info "startup_time_limit TEST mode: #{startup_time_limit}"

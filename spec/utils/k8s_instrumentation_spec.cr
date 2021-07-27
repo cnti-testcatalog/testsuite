@@ -12,6 +12,7 @@ describe "K8sInstrumentation" do
     LOGGING.info `./cnf-testsuite install_cri_tools`
     resp = K8sInstrumentation.disk_speed
     (resp["95th percentile"]).should_not be_nil
+    (resp["95th percentile"].to_f).should_not be_nil
   end
 
 

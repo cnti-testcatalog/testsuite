@@ -19,7 +19,7 @@ module K8sInstrumentation
         acc
       end
     end
-    LOGGING.info "parsed_output: #{parsed_output}"
+    LOGGING.debug "parsed_output: #{parsed_output}"
     parsed_output
   end
 end
