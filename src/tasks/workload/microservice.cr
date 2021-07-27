@@ -14,7 +14,7 @@ task "microservice", ["reasonable_image_size", "reasonable_startup_time", "singl
 end
 
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
-task "reasonable_startup_time" do |_, args|
+task "reasonable_startup_time", ["install_cri_tools"] do |_, args|
   
   LOGGING.info "Running reasonable_startup_time test"
   CNFManager::Task.task_runner(args) do |args, config|
