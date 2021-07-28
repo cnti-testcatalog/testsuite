@@ -78,7 +78,7 @@ task "reasonable_startup_time", ["install_cri_tools"] do |_, args|
     resp = K8sInstrumentation.disk_speed
     if resp["95th percentile"]?
         disk_speed = resp["95th percentile"].to_f
-      startup_time_limit = ((2.02641 * disk_speed) + 20.72663).round.to_i
+      startup_time_limit = ((0.2807 * disk_speed) + 22.36955).round.to_i
     else
       startup_time_limit = 30
     end
