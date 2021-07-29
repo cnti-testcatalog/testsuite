@@ -643,19 +643,53 @@ crystal src/cnf-testsuite.cr performance
 
 #### :heavy_check_mark: Test if the CNF crashes when network latency occurs
 
+<details> <summary>Details for litmus pod network latency experiment</summary>
+<p>
+
+<b>Pod Network Latency:</b> As we know network latency can have a significant impact on the overall performance of the application the network outages can cause a range of failures for applications that can severely impact user/customers with downtime. This chaos experiment allows you to see the impact of latency traffic to your application using the traffic control (tc) process with netem rules to add egress delays and test how your service behaves when you are unable to reach one of your dependencies, internal or external.
+
+[This experiment](https://docs.litmuschaos.io/docs/pod-network-latency/) causes network degradation without the pod being marked unhealthy/unworthy of traffic by kube-proxy (unless you have a liveness probe of sorts that measures latency and restarts/crashes the container). The idea of this experiment is to simulate issues within your pod network OR microservice communication across services in different availability zones/regions etc. 
+
+Mitigation (in this case keep the timeout i.e., access latency low) could be via some middleware that can switch traffic based on some SLOs m parameters. If such an arrangement is not available the next best thing would be to verify if such degradation is highlighted via notification/alerts etc, so the admin/SRE has the opportunity to investigate and fix things. Another utility of the test would be to see the extent of impact caused to the end-user OR the last point in the app stack on account of degradation in access to a downstream/dependent microservice. Whether it is acceptable OR breaks the system to an unacceptable degree. The experiment provides DESTINATION_IPS or DESTINATION_HOSTS so that you can control the chaos against specific services within or outside the cluster.
+
+The applications may stall or get corrupted while they wait endlessly for a packet. The experiment limits the impact (blast radius) to only the traffic you want to test by specifying IP addresses or application information. This experiment will help to improve the resilience of your services over time.
+
+</p>
+</details>
+
 ```
 ./cnf-testsuite pod_network_latency
 ```
 
 #### :heavy_check_mark: Test if the CNF crashes when disk fill occurs
 
+<details> <summary> Details for litmus disk fill experiment</summary>
+<p>
+
+<b>Disk-Fill(Stress-Chaos):</b> Disk Pressure is another very common and frequent scenario we find in Kubernetes applications that can result in the eviction of the application replica and impact its delivery. Such scenarios can still occur despite whatever availability aids K8s provides. These problems are generally referred to as "Noisy Neighbour"  problems.
+
+Stressing the disk with continuous and heavy IO for example can cause degradation in reads written by other microservices that use this shared disk for example modern storage solutions for Kubernetes to use the concept of storage pools out of which virtual volumes/devices are carved out.  Another issue is the amount of scratch space eaten up on a node which leads to the lack of space for newer containers to get scheduled (Kubernetes too gives up by applying an "eviction" taint like "disk-pressure") and causes a wholesale movement of all pods to other nodes. Similarly with CPU chaos, by injecting a rogue process into a target container, we starve the main microservice process (typically PID 1) of the resources allocated to it (where limits are defined) causing slowness in application traffic or in other cases unrestrained use can cause the node to exhaust resources leading to the eviction of all pods. So this category of chaos experiment helps to build the immunity on the application undergoing any such stress scenario.
+</p>
+</details>
+
 ```
 ./cnf-testsuite disk_fill
 ```
 
 #### :heavy_check_mark: Test if the CNF crashes when pod delete occurs 
+
+<details> <summary>Details for litmus pod delete experiment</summary> 
+<p>
+
+<b>Pod Delete:</b> In a distributed system like Kubernetes, likely, your application replicas may not be sufficient to manage the traffic (indicated by SLIs) when some of the replicas are unavailable due to any failure (can be system or application) the application needs to meet the SLO(service level objectives) for this, we need to make sure that the applications have a minimum number of available replicas. One of the common application failures is when the pressure on other replicas increases then to how the horizontal pod autoscaler scales based on observed resource utilization and also how much PV mount takes time upon rescheduling. The other important aspects to test are the MTTR for the application replica, re-elections of leader or follower like in Kafka application the selection of broker leader,  validating minimum quorum to run the application for example in applications like percona, resync/redistribution of data.
+
+[This experiment](https://docs.litmuschaos.io/docs/pod-delete/) helps to simulate such a scenario with forced/graceful pod failure on specific or random replicas of an application resource and checks the deployment sanity (replica availability & uninterrupted service) and recovery workflow of the application.
+
+</p>
+</details>
+
 ```
-./cnf-conformance pod_delete
+./cnf-testsuite pod_delete
 ```
 
 ---
