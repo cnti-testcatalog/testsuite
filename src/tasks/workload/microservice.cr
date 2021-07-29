@@ -91,7 +91,7 @@ task "reasonable_startup_time", ["install_cri_tools"] do |_, args|
     LOGGING.info "startup_time_limit: #{startup_time_limit}"
     LOGGING.info "startup_time: #{startup_time.to_i}"
 
-    if startup_time.to_i < startup_time_limit
+    if startup_time.to_i <= startup_time_limit
       upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time #{emoji_fast}")
     else
       upsert_failed_task("reasonable_startup_time", "✖️  FAILED: CNF had a startup time of #{startup_time} seconds #{emoji_slow}")
