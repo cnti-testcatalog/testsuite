@@ -311,6 +311,53 @@ task "pod_delete", ["install_litmus"] do |_, args|
   end
 end
 
+desc "Does the CNF crash when pod-io-stress occurs"
+task "pod_io_stress", ["install_litmus"] do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "pod_io_stress" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+        test_passed = true
+      else
+        puts "No resource label found for pod_io_stress test for resource: #{resource["name"]}".colorize(:red)
+        test_passed = false
+      end
+      if test_passed
+        if args.named["offline"]?
+            LOGGING.info "install resilience offline mode"
+          AirGapUtils.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-io-stress-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-io-stress-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-io-stress-rbac.yaml")
+        else
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-io-stress/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-io-stress/rbac.yaml")
+        end
+
+        chaos_experiment_name = "pod-io-stress"
+        total_chaos_duration = "120"
+        target_pod_name = ""
+        test_name = "#{resource["name"]}-#{Random.rand(99)}" 
+        chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
+
+        template = Crinja.render(chaos_template_pod_io_stress, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name,"target_pod_name" => target_pod_name,"total_chaos_duration" => total_chaos_duration})
+        chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
+        puts "#{chaos_config}" if check_verbose(args)
+        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
+      end
+      test_passed=LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+    end
+    if task_response
+      resp = upsert_passed_task("pod_io_stress","✔️  PASSED: pod_io_stress chaos test passed 🗡️💀♻️")
+    else
+      resp = upsert_failed_task("pod_io_stress","✖️  FAILED: pod_io_stress chaos test failed 🗡️💀♻️")
+    end
+    resp
+  end
+end
+
 
 def network_chaos_template
   <<-TEMPLATE
@@ -503,3 +550,45 @@ def chaos_template_pod_network_latency
 
     TEMPLATE
     end
+
+
+def chaos_template_pod_io_stress
+  <<-TEMPLATE
+    apiVersion: litmuschaos.io/v1alpha1
+    kind: ChaosEngine
+    metadata:
+      name: {{ test_name }}
+      namespace: default
+    spec:
+      engineState: 'active'
+      appinfo:
+        appns: 'default'
+        applabel: '{{ deployment_label}}={{ deployment_label_value }}'
+        appkind: 'deployment'
+      chaosServiceAccount: {{ chaos_experiment_name }}-sa
+      experiments:
+        - name: {{ chaos_experiment_name }}
+          spec:
+            components:
+              env:
+                # set chaos duration (in sec) as desired
+                - name: TOTAL_CHAOS_DURATION
+                  value: '{{ total_chaos_duration }}'
+                  
+                ## specify the size as percentage of free space on the file system
+                - name: FILESYSTEM_UTILIZATION_PERCENTAGE
+                  value: '50'
+
+                - name: TARGET_PODS
+                  value: '{{ target_pod_name }}'                  
+    
+                 ## provide the cluster runtime
+                - name: CONTAINER_RUNTIME
+                  value: 'containerd'   
+    
+                # provide the socket file path
+                - name: SOCKET_PATH
+                  value: '/run/containerd/containerd.sock'
+
+  TEMPLATE
+end

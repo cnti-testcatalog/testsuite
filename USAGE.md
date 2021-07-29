@@ -658,6 +658,12 @@ crystal src/cnf-testsuite.cr performance
 ./cnf-conformance pod_delete
 ```
 
+#### :heavy_check_mark: Test if the CNF crashes when pod io stress occurs
+
+```
+./cnf-testsuite pod_io_stress
+```
+
 ---
 
 ### Platform Tests
