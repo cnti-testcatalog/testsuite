@@ -23,8 +23,9 @@ describe "KernelInstrospection" do
         statuses = KernelIntrospection::K8s.status_by_proc(first_node.dig("metadata", "name"), "cri-tools")
         LOGGING.info "statuses: #{statuses}"
         (statuses).should_not be_nil
-        (statuses[0]["Pid"]).should eq "1"
-        (statuses[0]["cmdline"]).should eq "sleep\u0000infinity\u0000"
+        # (statuses[0]["Pid"]).should eq "1"
+        # (statuses[0]["cmdline"]).should eq "sleep\u0000infinity\u0000"
+        (statuses.find{|x| x["Pid"]=="1" && x["cmdline"]=="sleep\u0000infinity\u0000"} ).should_not be_nil
       else 
         true.should be_false
       end
