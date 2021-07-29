@@ -13,6 +13,8 @@ task "microservice", ["reasonable_image_size", "reasonable_startup_time", "singl
   stdout_score("microservice")
 end
 
+REASONABLE_STARTUP_BUFFER = 1.0
+
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
 task "reasonable_startup_time", ["install_cri_tools"] do |_, args|
   
@@ -78,7 +80,7 @@ task "reasonable_startup_time", ["install_cri_tools"] do |_, args|
     resp = K8sInstrumentation.disk_speed
     if resp["95th percentile"]?
         disk_speed = resp["95th percentile"].to_f
-      startup_time_limit = ((0.2807 * disk_speed) + 22.36955).round.to_i
+      startup_time_limit = ((0.30593 * disk_speed) + 21.9162 + REASONABLE_STARTUP_BUFFER).round.to_i
     else
       startup_time_limit = 30
     end
