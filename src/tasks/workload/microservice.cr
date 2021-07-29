@@ -150,6 +150,7 @@ task "single_process_type" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
     VERBOSE_LOGGING.info "single_process_type" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
+    fail_msgs = [] of String
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
       kind = resource["kind"].as_s.downcase
@@ -172,7 +173,11 @@ task "single_process_type" do |_, args|
               # Fail if more than one process type
               if status["Name"] != previous_process_type && 
                   previous_process_type != "initial_name"
-                puts "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{previous_process_type}, #{status["cmdline"]})".colorize(:red)
+                fail_msg = "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{statuses.map{|x|x["cmdline"]?}.compact.uniq.join(", ")})"
+                unless fail_msgs.find{|x| x== fail_msg}
+                  puts fail_msg.colorize(:red)
+                  fail_msgs << fail_msg
+                end
                 test_passed=false
               end
               previous_process_type = status["cmdline"]
