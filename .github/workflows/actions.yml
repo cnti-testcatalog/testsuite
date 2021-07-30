@@ -5,14 +5,10 @@ on:
     paths:
       - '*'
       - '!**.md'
-    tags:
-      - '*'
   pull_request:
     paths:
       - '*'
       - '!**.md'
-    tags:
-      - '*'
 jobs:
   # debug_status:
   #   name: Debug Status
