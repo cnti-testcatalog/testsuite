@@ -186,8 +186,8 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/rbac.yaml")
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.6?file=charts/generic/pod-network-latency/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.6?file=charts/generic/pod-network-latency/rbac.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-network-latency/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-network-latency/rbac.yaml")
         end
         KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
@@ -234,8 +234,8 @@ task "disk_fill", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-rbac.yaml")
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.6?file=charts/generic/disk-fill/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.6?file=charts/generic/disk-fill/rbac.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/disk-fill/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/disk-fill/rbac.yaml")
         end
         # annotate = `kubectl annotate --overwrite deploy/#{resource["name"]} litmuschaos.io/chaos="true"`
         KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
@@ -283,8 +283,8 @@ task "pod_delete", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-delete-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-delete-rbac.yaml")
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.6?file=charts/generic/pod-delete/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.6?file=charts/generic/pod-delete/rbac.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-delete/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-delete/rbac.yaml")
         end
         KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
@@ -306,6 +306,53 @@ task "pod_delete", ["install_litmus"] do |_, args|
       resp = upsert_passed_task("pod_delete","✔️  PASSED: pod_delete chaos test passed 🗡️💀♻️")
     else
       resp = upsert_failed_task("pod_delete","✖️  FAILED: pod_delete chaos test failed 🗡️💀♻️")
+    end
+    resp
+  end
+end
+
+desc "Does the CNF crash when pod-memory-hog occurs"
+task "pod_memory_hog", ["install_litmus"] do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "pod_memory_hog" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+        test_passed = true
+      else
+        puts "No resource label found for pod_memory_hog test for resource: #{resource["name"]}".colorize(:red)
+        test_passed = false
+      end
+      if test_passed
+        if args.named["offline"]?
+            LOGGING.info "install resilience offline mode"
+          AirGapUtils.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-memory-hog-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-memory-hog-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-memory-hog-rbac.yaml")
+        else
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-memory-hog/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-memory-hog/rbac.yaml")
+        end
+
+        chaos_experiment_name = "pod-memory-hog"
+        total_chaos_duration = "60"
+        target_pod_name = ""
+        test_name = "#{resource["name"]}-#{Random.rand(99)}" 
+        chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
+
+        template = Crinja.render(chaos_template_pod_memory_hog, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name,"target_pod_name" => target_pod_name,"total_chaos_duration" => total_chaos_duration})
+        chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
+        puts "#{chaos_config}" if check_verbose(args)
+        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
+      end
+      test_passed=LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+    end
+    if task_response
+      resp = upsert_passed_task("pod_memory_hog","✔️  PASSED: pod_memory_hog chaos test passed 🗡️💀♻️")
+    else
+      resp = upsert_failed_task("pod_memory_hog","✖️  FAILED: pod_memory_hog chaos test failed 🗡️💀♻️")
     end
     resp
   end
@@ -428,78 +475,124 @@ def chaos_template_pod_network_latency
                 value: '/run/containerd/containerd.sock'
 
   TEMPLATE
-  end
+end
 
-  def chaos_template_disk_fill
-    <<-TEMPLATE
-    apiVersion: litmuschaos.io/v1alpha1
-    kind: ChaosEngine
-    metadata:
-      name: {{ test_name }}
-      namespace: default
-    spec:
-      annotationCheck: 'true'
-      engineState: 'active'
-      auxiliaryAppInfo: ''
-      appinfo:
-        appns: 'default'
-        applabel: '{{ deployment_label}}={{ deployment_label_value }}'
-        appkind: 'deployment'
-      chaosServiceAccount: {{ chaos_experiment_name }}-sa
-      jobCleanUpPolicy: 'delete'
-      experiments:
-        - name: {{ chaos_experiment_name }}
-          spec:
-            components:
-              env:
-                # specify the fill percentage according to the disk pressure required
-                - name: EPHEMERAL_STORAGE_MEBIBYTES
-                  value: '500'
-                  
-                - name: TARGET_CONTAINER
-                  value: '' 
+def chaos_template_disk_fill
+  <<-TEMPLATE
+  apiVersion: litmuschaos.io/v1alpha1
+  kind: ChaosEngine
+  metadata:
+    name: {{ test_name }}
+    namespace: default
+  spec:
+    annotationCheck: 'true'
+    engineState: 'active'
+    auxiliaryAppInfo: ''
+    appinfo:
+      appns: 'default'
+      applabel: '{{ deployment_label}}={{ deployment_label_value }}'
+      appkind: 'deployment'
+    chaosServiceAccount: {{ chaos_experiment_name }}-sa
+    jobCleanUpPolicy: 'delete'
+    experiments:
+      - name: {{ chaos_experiment_name }}
+        spec:
+          components:
+            env:
+              # specify the fill percentage according to the disk pressure required
+              - name: EPHEMERAL_STORAGE_MEBIBYTES
+                value: '500'
+                
+              - name: TARGET_CONTAINER
+                value: '' 
 
-                - name: FILL_PERCENTAGE
-                  value: ''
+              - name: FILL_PERCENTAGE
+                value: ''
 
-                - name: CONTAINER_PATH
-                  value: '/var/lib/containerd/io.containerd.grpc.v1.cri/containers/'
-                              
-    TEMPLATE
-    end
+              - name: CONTAINER_PATH
+                value: '/var/lib/containerd/io.containerd.grpc.v1.cri/containers/'
+                            
+  TEMPLATE
+end
 
-  def chaos_template_pod_delete
-    <<-TEMPLATE
-    apiVersion: litmuschaos.io/v1alpha1
-    kind: ChaosEngine
-    metadata:
-      name: {{ test_name }}
-      namespace: default
-    spec:
-      engineState: 'active'
-      appinfo:
-        appns: 'default'
-        applabel: '{{ deployment_label}}={{ deployment_label_value }}'
-        appkind: 'deployment'
-      chaosServiceAccount: {{ chaos_experiment_name }}-sa
-      jobCleanUpPolicy: 'delete'
-      experiments:
-        - name: {{ chaos_experiment_name }}
-          spec:
-            components:
-              env:
-                # specify the fill percentage according to the disk pressure required
-                - name: TOTAL_CHAOS_DURATION
-                  value: '{{ total_chaos_duration }}'
-                  
-                - name: CHAOS_INTERVAL
-                  value: '10'
-                  
-                - name: TARGET_PODS
-                  value: '{{ target_pod_name }}'
+def chaos_template_pod_delete
+  <<-TEMPLATE
+  apiVersion: litmuschaos.io/v1alpha1
+  kind: ChaosEngine
+  metadata:
+    name: {{ test_name }}
+    namespace: default
+  spec:
+    engineState: 'active'
+    appinfo:
+      appns: 'default'
+      applabel: '{{ deployment_label}}={{ deployment_label_value }}'
+      appkind: 'deployment'
+    chaosServiceAccount: {{ chaos_experiment_name }}-sa
+    jobCleanUpPolicy: 'delete'
+    experiments:
+      - name: {{ chaos_experiment_name }}
+        spec:
+          components:
+            env:
+              # specify the fill percentage according to the disk pressure required
+              - name: TOTAL_CHAOS_DURATION
+                value: '{{ total_chaos_duration }}'
+                
+              - name: CHAOS_INTERVAL
+                value: '10'
+                
+              - name: TARGET_PODS
+                value: '{{ target_pod_name }}'
 
-                - name: FORCE
-                  value: 'false'
+              - name: FORCE
+                value: 'false'
 
-    TEMPLATE
-    end
+  TEMPLATE
+end
+
+def chaos_template_pod_memory_hog
+  <<-TEMPLATE
+  apiVersion: litmuschaos.io/v1alpha1
+  kind: ChaosEngine
+  metadata:
+    name: {{ test_name }}
+    namespace: default
+  spec:
+    appinfo:
+      appns: 'default'
+      applabel: '{{ deployment_label}}={{ deployment_label_value }}'
+      appkind: 'deployment'
+    # It can be delete/retain
+    jobCleanUpPolicy: 'delete'   
+    # It can be active/stop
+    engineState: 'active'    
+    chaosServiceAccount: {{ chaos_experiment_name }}-sa
+    experiments:
+      - name: {{ chaos_experiment_name }}
+        spec:
+          components:
+            env:
+              # Enter the amount of memory in megabytes to be consumed by the application pod
+              - name: MEMORY_CONSUMPTION
+                value: '500'
+  
+              - name: TOTAL_CHAOS_DURATION
+                value: '{{ total_chaos_duration }}'
+
+              - name: TARGET_PODS
+                value: '{{ target_pod_name }}'             
+
+              # provide the name of container runtime
+              # it supports docker, containerd, crio
+              # default to docker
+              - name: CONTAINER_RUNTIME
+                value: 'containerd'
+
+              # provide the socket file path
+              # applicable only for containerd and crio runtime
+              - name: SOCKET_PATH
+                value: '/run/containerd/containerd.sock'
+                          
+  TEMPLATE
+end
