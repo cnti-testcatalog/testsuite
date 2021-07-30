@@ -13,7 +13,7 @@ task "microservice", ["reasonable_image_size", "reasonable_startup_time", "singl
   stdout_score("microservice")
 end
 
-REASONABLE_STARTUP_BUFFER = 1.0
+REASONABLE_STARTUP_BUFFER = 10.0
 
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
 task "reasonable_startup_time", ["install_cri_tools"] do |_, args|
