@@ -1,5 +1,18 @@
 name: Crystal Specs
-on: [push, pull_request]
+# on: [push, pull_request]
+on:
+  push:
+    paths:
+      - '*'
+      - '!**.md'
+    tags:
+      - '*'
+  pull_request:
+    paths:
+      - '*'
+      - '!**.md'
+    tags:
+      - '*'
 jobs:
   # debug_status:
   #   name: Debug Status
