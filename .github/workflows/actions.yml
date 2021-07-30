@@ -1,5 +1,13 @@
 name: Crystal Specs
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - '**'
+      - '!**.md'
+  pull_request:
+    paths:
+      - '**'
+      - '!**.md'
 jobs:
   # debug_status:
   #   name: Debug Status
@@ -88,23 +96,6 @@ jobs:
         echo "TESTS: $JSON"
         echo "::set-output name=matrix::$JSON"
 
-  # skip:
-  #   name: Skip Build
-  #   runs-on: [default]
-  #   needs: [debug_output]
-  #   outputs:
-  #     skip: ${{ steps.skip.outputs.skip }}
-  #   steps:
-  #   - name: Checkout code
-  #     uses: actions/checkout@v2
-  #     with:
-  #       fetch-depth: 0
-  #   - uses: mxschmitt/action-tmate@v3
-  #     if: needs.debug_output.outputs.skip-debug == 'true'
-  #   - id: skip
-  #     run: |
-  #       echo "::set-output name=skip::$(.github/workflows/skip.sh)"
-
   spec:
     name: Crystal Specs
     needs: [tests]
@@ -191,7 +182,6 @@ jobs:
   build:
     name: Build Release
     runs-on: ubuntu-latest
-    # if: needs.skip.outputs.skip == 'false'
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
