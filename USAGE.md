@@ -699,6 +699,12 @@ Stressing the disk with continuous and heavy IO for example can cause degradatio
 ./cnf-testsuite pod_memory_hog
 ```
 
+#### :heavy_check_mark: Test if the CNF crashes when pod io stress occurs
+
+```
+./cnf-testsuite pod_io_stress
+```
+
 ---
 
 ### Platform Tests
