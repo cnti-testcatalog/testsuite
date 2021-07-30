@@ -90,4 +90,3 @@ Audit Rule:
   priority: WARNING
   tags: [container, cis]
 ```
-
