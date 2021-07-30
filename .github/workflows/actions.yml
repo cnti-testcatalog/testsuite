@@ -3,11 +3,11 @@ name: Crystal Specs
 on:
   push:
     paths:
-      - '*'
+      - '**'
       - '!**.md'
   pull_request:
     paths:
-      - '*'
+      - '**'
       - '!**.md'
 jobs:
   # debug_status:
