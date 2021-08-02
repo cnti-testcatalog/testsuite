@@ -183,8 +183,7 @@ jobs:
     name: Build Release
     runs-on: ubuntu-latest
     env:
-      CRYSTAL_IMAGE: "hashnuke/crystal-custom:1.0.0-alpine-r4"
-    # if: needs.skip.outputs.skip == 'false'
+      CRYSTAL_IMAGE: "conformance/crystal:1.0.0-alpine-r1"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -217,7 +216,7 @@ jobs:
     name: Test Setup Command In An Airgapped Env.
     runs-on: [v1.0.0]
     env:
-      OFFLINE_IMAGE: "hashnuke/conformance-offline:crystal-v1-r3"
+      OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -280,7 +279,7 @@ jobs:
     name: Test helm chart In An Airgapped Env.
     runs-on: [v1.0.0]
     env:
-      OFFLINE_IMAGE: "hashnuke/conformance-offline:crystal-v1-r3"
+      OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -352,7 +351,7 @@ jobs:
     name: Test helm directory In An Airgapped Env.
     runs-on: [v1.0.0]
     env:
-      OFFLINE_IMAGE: "hashnuke/conformance-offline:crystal-v1-r3"
+      OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -422,7 +421,7 @@ jobs:
     name: Test manifest directory In An Airgapped Env.
     runs-on: [v1.0.0]
     env:
-      OFFLINE_IMAGE: "hashnuke/conformance-offline:crystal-v1-r3"
+      OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2

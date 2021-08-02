@@ -1,4 +1,4 @@
-FROM hashnuke/crystal-custom:1.0.0-alpine-r1
+FROM conformance/crystal:1.0.0-alpine-r1
 
 RUN apk add --no-cache \
     ca-certificates \
