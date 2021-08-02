@@ -1,5 +1,8 @@
 /docs/
 /lib/
+/utils/tar/lib/
+/utils/tar/bin/
+/utils/tar/tmp/
 /bin/
 /.shards/
 *.dwarf

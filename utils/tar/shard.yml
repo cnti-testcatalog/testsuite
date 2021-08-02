@@ -1,4 +1,4 @@
-name: cnf_testsuite
+name: tar
 version: 0.1.0
 
 authors:
@@ -7,8 +7,8 @@ authors:
   - Denver Williams <denver@debian.nz>
 
 targets:
-  cnf_testsuite:
-    main: src/cnf_testsuite.cr
+  tar:
+    main: tar.cr
 
 crystal: 0.35.1
 
@@ -22,20 +22,6 @@ dependencies:
   halite:
     github: icyleaf/halite
     commit: ba22d2aa96bbb99702145839df8be516b4ceca90 # master as of 7-29-2020
-  icr:
-    github: crystal-community/icr
-    branch: master
-  commander:
-    github: mrrooijen/commander
-    version: ~> 0.3.5
-  crinja:
-    github: straight-shoota/crinja
-    commit: 849bd8a3c9600256ef797db66315dd757a1686a0 # master as of 7-29-2020
-  retriable:
-    github: Sija/retriable.cr
-  tar:
-    path: utils/tar
-
 
 development_dependencies:
   ameba:
