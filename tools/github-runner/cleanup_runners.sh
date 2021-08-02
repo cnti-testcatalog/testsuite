@@ -22,4 +22,5 @@ for node in "${RUNNERS[@]}"; do
     ssh root@$node "systemctl start docker"
     ssh root@$node "rm -rf /tmp/*"
     ssh root@$node "rm -rf /shared/"
+    ssh root@$node "rm -rf /runner-tmp/"
 done

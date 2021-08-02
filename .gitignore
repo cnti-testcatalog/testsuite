@@ -46,3 +46,5 @@ tools/LICENSE
 airgapped.tar.gz
 airgaptest.tar.gz
 /cnf-testsuite.yml
+/*.tgz
+
