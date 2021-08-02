@@ -258,6 +258,7 @@ jobs:
         # gunzip airgapped.tar.gz
         cp -a $(pwd) /shared/$DIR/cnf-testsuite
         cp /tmp/airgapped.tar.gz /shared/$DIR/
+        ls -alR /shared/$DIR/cnf-testsuite
         docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t conformance/offline:latest /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz; LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true; kubectl get deployment chaos-operator-ce --namespace litmus; ./.github/workflows/check_litmus.sh"
     - name: Delete Cluster
       if: ${{ always() }}
