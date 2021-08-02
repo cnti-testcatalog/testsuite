@@ -13,8 +13,10 @@ task "microservice", ["reasonable_image_size", "reasonable_startup_time", "singl
   stdout_score("microservice")
 end
 
+REASONABLE_STARTUP_BUFFER = 10.0
+
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
-task "reasonable_startup_time" do |_, args|
+task "reasonable_startup_time", ["install_cri_tools"] do |_, args|
   
   LOGGING.info "Running reasonable_startup_time test"
   CNFManager::Task.task_runner(args) do |args, config|
@@ -37,7 +39,51 @@ task "reasonable_startup_time" do |_, args|
 
     emoji_fast="🚀"
     emoji_slow="🐢"
-    startup_time_limit = 30
+    # Correlation for a slow box vs a fast box 
+    # sysbench base fast machine (disk), time in ms 0.16
+    # sysbench base slow machine (disk), time in ms 6.55
+    # percentage 0.16 is 2.44% of 6.55
+    # How much more is 6.55 than 0.16? (0.16 - 6.55) / 0.16 * 100 = 3993.75%
+    # startup time fast machine: 21 seconds
+    # startup slow machine: 34 seconds
+    # how much more is 34 seconds than 21 seconds? (21 - 34) / 21 * 100 = 61.90%
+    # app seconds set 1: 21, set 2: 34
+    # disk miliseconds set 1: .16 set 2: 6.55
+    # get the mean of app seconds (x)
+    #   (sum all: 55, count number of sets: 2, divide sum by count: 27.5)
+    # get the mean of disk milliseconds (y)
+    #   (sum all: 6.71, count number of sets: 2, divide sum by count: 3.35)
+    # Subtract the mean of x from every x value (call them "a")
+    # set 1: 6.5 
+    # set 2: -6.5 
+    # and subtract the mean of y from every y value (call them "b")
+    # set 1: 3.19
+    # set 2: -3.2
+    # calculate: ab, a2 and b2 for every value
+    # set 1: 20.735, 42.25, 42.25
+    # set 2: 20.8, 10.17, 10.24
+    # Sum up ab, sum up a2 and sum up b2
+    # 41.535, 52.42, 52.49
+    # Divide the sum of ab by the square root of [(sum of a2) × (sum of b2)]
+    # (sum of a2) × (sum of b2) = 2751.5258
+    # square root of 2751.5258 = 52.4549
+    # divide sum of ab by sqrt = 41.535 / 52.4549 = .7918
+    # example
+    # sysbench returns a 5.55 disk millisecond result
+    # disk millisecond has a pearson correlation of .79 to app seconds
+    # 
+    # Regression for predication based on slow and fast box disk times
+    # regression = ŷ = bX + a
+    # b = 2.02641
+    # a = 20.72663
+
+    resp = K8sInstrumentation.disk_speed
+    if resp["95th percentile"]?
+        disk_speed = resp["95th percentile"].to_f
+      startup_time_limit = ((0.30593 * disk_speed) + 21.9162 + REASONABLE_STARTUP_BUFFER).round.to_i
+    else
+      startup_time_limit = 30
+    end
     # if ENV["CRYSTAL_ENV"]? == "TEST"
     #   startup_time_limit = 35 
     #   LOGGING.info "startup_time_limit TEST mode: #{startup_time_limit}"
@@ -45,7 +91,7 @@ task "reasonable_startup_time" do |_, args|
     LOGGING.info "startup_time_limit: #{startup_time_limit}"
     LOGGING.info "startup_time: #{startup_time.to_i}"
 
-    if startup_time.to_i < startup_time_limit
+    if startup_time.to_i <= startup_time_limit
       upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time #{emoji_fast}")
     else
       upsert_failed_task("reasonable_startup_time", "✖️  FAILED: CNF had a startup time of #{startup_time} seconds #{emoji_slow}")
@@ -150,6 +196,7 @@ task "single_process_type" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
     VERBOSE_LOGGING.info "single_process_type" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
+    fail_msgs = [] of String
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
       kind = resource["kind"].as_s.downcase
@@ -172,7 +219,11 @@ task "single_process_type" do |_, args|
               # Fail if more than one process type
               if status["Name"] != previous_process_type && 
                   previous_process_type != "initial_name"
-                puts "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{previous_process_type}, #{status["cmdline"]})".colorize(:red)
+                fail_msg = "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{statuses.map{|x|x["cmdline"]?}.compact.uniq.join(", ")})"
+                unless fail_msgs.find{|x| x== fail_msg}
+                  puts fail_msg.colorize(:red)
+                  fail_msgs << fail_msg
+                end
                 test_passed=false
               end
               previous_process_type = status["cmdline"]
