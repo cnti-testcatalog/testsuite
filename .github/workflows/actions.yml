@@ -99,7 +99,7 @@ jobs:
   spec:
     name: Crystal Specs
     needs: [tests]
-    runs-on: [default]
+    runs-on: [v1.0.0]
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.tests.outputs.matrix)}}
@@ -183,8 +183,7 @@ jobs:
     name: Build Release
     runs-on: ubuntu-latest
     env:
-      CRYSTAL_IMAGE: "conformance/crystal:0.35.1-llvm10-grep"
-    # if: needs.skip.outputs.skip == 'false'
+      CRYSTAL_IMAGE: "conformance/crystal:1.0.0-alpine-r1"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -215,9 +214,9 @@ jobs:
         
   setup_airgapped_env:
     name: Test Setup Command In An Airgapped Env.
-    runs-on: [default]
+    runs-on: [v1.0.0]
     env:
-      OFFLINE_IMAGE: "conformance/offline:latest"
+      OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -255,7 +254,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
-        export DIR=$(uuidgen) 
+        export DIR=$(uuidgen)
         echo "export DIR=$DIR" > dir.env
         mkdir /shared/$DIR
         #DOTO Use pre-created airgapped.tar.gz
@@ -278,9 +277,9 @@ jobs:
         
   test_helm_chart_in_airgapped_env:
     name: Test helm chart In An Airgapped Env.
-    runs-on: [default]
+    runs-on: [v1.0.0]
     env:
-      OFFLINE_IMAGE: "conformance/offline:latest"
+      OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -350,9 +349,9 @@ jobs:
 
   test_helm_directory_in_airgapped_env:
     name: Test helm directory In An Airgapped Env.
-    runs-on: [default]
+    runs-on: [v1.0.0]
     env:
-      OFFLINE_IMAGE: "conformance/offline:latest"
+      OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -420,9 +419,9 @@ jobs:
 
   test_manifest_directory_in_airgapped_env:
     name: Test manifest directory In An Airgapped Env.
-    runs-on: [default]
+    runs-on: [v1.0.0]
     env:
-      OFFLINE_IMAGE: "conformance/offline:latest"
+      OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -490,7 +489,7 @@ jobs:
 
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)
-    runs-on: [default]
+    runs-on: [v1.0.0]
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -546,7 +545,7 @@ jobs:
 
   test_binary_microservice:
     name: Test Binary Without Source(microservice)
-    runs-on: [default]
+    runs-on: [v1.0.0]
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -598,7 +597,7 @@ jobs:
 
   test_binary_all:
     name: Test Binary Without Source(all)
-    runs-on: [default]
+    runs-on: [v1.0.0]
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
