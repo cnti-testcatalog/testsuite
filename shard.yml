@@ -14,11 +14,8 @@ crystal: '>= 0.35.1'
 
 dependencies:
   sam:
-    # github: vulk/sam.cr
-    # commit: c243db2
-    # Temporarily using HashNuke/sam.cr for Crystal upgrade
-    github: HashNuke/sam.cr
-    branch: "v1-upgrade"
+    github: vulk/sam.cr
+    commit: 4e3b271d31d7
   totem:
     github: icyleaf/totem
     version: ~> 0.7.0
@@ -26,7 +23,6 @@ dependencies:
     github: icyleaf/halite
     version: ~> 0.12.0
   
-  # Commenting this out to allow Crystal 1.0 upgrade
   icr:
     github: crystal-community/icr
     branch: master

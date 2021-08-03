@@ -33,8 +33,8 @@ shards:
     version: 0.2.4
 
   sam:
-    git: https://github.com/hashnuke/sam.cr.git
-    version: 0.4.0+git.commit.864b594442a2988de645471a26bd410b67223d24
+    git: https://github.com/vulk/sam.cr.git
+    version: 0.4.0+git.commit.4e3b271d31d7fd3c3ca2b0c1ff4943b86dc27021
 
   totem:
     git: https://github.com/icyleaf/totem.git
