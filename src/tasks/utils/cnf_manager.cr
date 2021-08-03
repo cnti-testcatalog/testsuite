@@ -10,6 +10,7 @@ require "./points.cr"
 require "./task.cr"
 require "./config.cr"
 require "./airgap_utils.cr"
+require "./image_prepull.cr"
 require "./tar.cr"
 require "./generate_config.cr"
 
@@ -674,6 +675,9 @@ module CNFManager
           template_files.map{|x| AirGapUtils.image_pull_policy(x)}
         end
         VERBOSE_LOGGING.info "deploying by manifest file" if verbose
+        file_list = Helm::Manifest.manifest_file_list(install_method[1], silent=false)
+        yml = Helm::Manifest.manifest_ymls_from_file_list(file_list)
+        image_pull(yml)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
       when :helm_chart
         if input_file && !input_file.empty?
@@ -692,6 +696,9 @@ module CNFManager
           Helm.helm_repo_add(helm_repo_name, helm_repo_url)
         end
         VERBOSE_LOGGING.info "deploying with chart repository" if verbose
+        Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
+        yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
+        image_pull(yml)
         helm_intall = Helm.install("#{release_name} #{helm_chart}")
         export_published_chart(config, cli_args)
       when :helm_directory
@@ -704,6 +711,9 @@ module CNFManager
         end
         #TODO Add helm options into cnf-testsuite yml
         #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
+        Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
+        yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
+        image_pull(yml)
         helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory}")
       else
         raise "Deployment method not found"
