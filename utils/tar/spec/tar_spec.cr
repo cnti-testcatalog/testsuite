@@ -1,10 +1,7 @@
 require "./spec_helper.cr"
-# require "../../src/tasks/utils/utils.cr"
-# require "../../src/tasks/utils/tar.cr"
 require "../tar.cr"
 require "../../find/find.cr"
 require "file_utils"
-require "sam"
 
 describe "TarClient" do
 

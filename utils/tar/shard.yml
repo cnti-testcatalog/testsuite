@@ -10,22 +10,6 @@ targets:
   tar:
     main: tar.cr
 
-crystal: 0.35.1
-
-dependencies:
-  sam:
-    github: vulk/sam.cr
-    commit: c243db2
-  totem:
-    github: icyleaf/totem
-    version: 0.6.0
-  halite:
-    github: icyleaf/halite
-    commit: ba22d2aa96bbb99702145839df8be516b4ceca90 # master as of 7-29-2020
-
-development_dependencies:
-  ameba:
-    github: crystal-ameba/ameba
-    version: ~> 0.12.0
+crystal: '>= 0.35.1'
 
 license: MIT

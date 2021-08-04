@@ -1,5 +1,5 @@
-require "totem"
 require "colorize"
+require "log"
 
 module Find 
   def self.find(directory, wildcard="*.tar*", maxdepth="1", silent=true)

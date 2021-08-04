@@ -1,6 +1,5 @@
-require "totem"
 require "colorize"
-require "halite"
+require "log"
 
 # todo put in a separate library. it shold go under ./tools for now
 module TarClient
