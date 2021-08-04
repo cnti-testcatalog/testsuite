@@ -14,6 +14,7 @@
 /tools/helm
 /tools/sonobuoy
 /tools/cluster-api
+/tools/airgapped_kind/kind_node/node.tar.gz
 admin.conf
 cnf-testsuite
 results.yml
@@ -31,7 +32,7 @@ linux-amd64/
 reasonable_startup_orig_gobal.yml
 reasonable_startup_orig_local.yml
 sam.cr
-test.file 
+github.env
 tools/k8s-infra/
 tmp/
 chaos_network_loss.yml

@@ -1,6 +1,6 @@
 require "totem"
 require "colorize"
-require "logger"
+require "log"
 require "halite"
 
 module EmbeddedFileManager 

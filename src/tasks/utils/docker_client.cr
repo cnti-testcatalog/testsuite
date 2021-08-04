@@ -74,7 +74,8 @@ module DockerClient
             "org" => "", 
             "image_and_tag" => "", 
             "image_name" => "", 
-            "tag" => ""}
+            "tag" => "",
+           "complete_fqdn" => ""}
     size = fqdn_image_text.split("/").size 
     first_segment = fqdn_image_text.split("/")[0]
     last_segment = fqdn_image_text.split("/")[-1]
@@ -83,6 +84,7 @@ module DockerClient
     # fully qualified domain name.
     #	2) If the first segment has colon in it : everything after the colon 
     # is a port number
+    # todo write a test for 88-111
     if (first_segment =~ /\./ || first_segment =~ /:/)
       resp["registry"] = first_segment 
       #  a) If there are three or more segments, all segments (the middle 
@@ -108,7 +110,7 @@ module DockerClient
         resp["org"] = fqdn_image_text.split("/")[0..-2].join("/")
       end
     end
-    resp["org_image"] = "#{resp["org"].empty? ? "" : resp["org"] + "/"}#{last_segment}"
+    # resp["org_image"] = "#{resp["org"].empty? ? "" : resp["org"] + "/"}#{last_segment}"
     # 4.a) If there is only one segment, docker.io is used for the 
     # registry.  If there is no : in the image text, `latest` is used as the tag 
     # 4.b) Everything in the one segment (or the last segment if there are 
@@ -117,6 +119,14 @@ module DockerClient
     if size == 1 
         resp["registry"] = "docker.io"
     end
+    if resp["registry"].empty?
+      resp["org_image"] = fqdn_image_text
+      resp["complete_fqdn"] = resp["org_image"]
+    else
+      resp["org_image"] = fqdn_image_text
+      resp["complete_fqdn"] = resp["registry"] + "/" + resp["org_image"]
+    end
+
     resp["image_name"] = last_segment.split(":")[0]? || ""
     if last_segment.split(":")[1]?
         resp["tag"] = last_segment.split(":")[1]? || ""
