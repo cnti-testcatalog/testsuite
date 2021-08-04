@@ -36,6 +36,8 @@ dependencies:
   retriable:
     github: Sija/retriable.cr
     version: ~> 0.2.4
+  tar:
+    path: utils/tar
 
 development_dependencies:
   ameba:

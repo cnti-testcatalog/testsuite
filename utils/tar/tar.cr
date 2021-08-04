@@ -1,6 +1,5 @@
-require "totem"
 require "colorize"
-require "halite"
+require "log"
 
 # todo put in a separate library. it shold go under ./tools for now
 module TarClient
@@ -99,4 +98,26 @@ module TarClient
     `rm -rf /tmp/#{download_path} > /dev/null 2>&1`
   end
 
+  LOGGING = LogginGenerator.new
+  class LogginGenerator
+    macro method_missing(call)
+      if {{ call.name.stringify }} == "debug"
+        Log.debug {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "info"
+        Log.info {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "warn"
+        Log.warn {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "error"
+        Log.error {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "fatal"
+        Log.fatal {{{call.args[0]}}}
+      end
+    end
+  end
+
 end
+

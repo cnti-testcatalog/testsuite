@@ -36,6 +36,10 @@ shards:
     git: https://github.com/vulk/sam.cr.git
     version: 0.4.0+git.commit.4e3b271d31d7fd3c3ca2b0c1ff4943b86dc27021
 
+  tar:
+    path: utils/tar
+    version: 0.1.0
+
   totem:
     git: https://github.com/icyleaf/totem.git
     version: 0.7.0

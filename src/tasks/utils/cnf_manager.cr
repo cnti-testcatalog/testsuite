@@ -10,8 +10,8 @@ require "./points.cr"
 require "./task.cr"
 require "./config.cr"
 require "./airgap_utils.cr"
+require "tar"
 require "./image_prepull.cr"
-require "./tar.cr"
 require "./generate_config.cr"
 
 module CNFManager

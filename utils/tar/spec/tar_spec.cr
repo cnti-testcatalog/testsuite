@@ -1,15 +1,13 @@
-require "../spec_helper"
-require "../../src/tasks/utils/utils.cr"
-require "../../src/tasks/utils/tar.cr"
-require "../../src/tasks/utils/find.cr"
+require "./spec_helper.cr"
+require "../tar.cr"
+require "../../find/find.cr"
 require "file_utils"
-require "sam"
 
 describe "TarClient" do
 
   before_all do
     unless Dir.exists?("./tmp")
-      LOGGING.info `mkdir ./tmp`
+      TarClient::LOGGING.info `mkdir ./tmp`
     end
   end
   it "'.tar' should tar a source file or directory", tags: ["tar-install"]  do
@@ -37,8 +35,13 @@ describe "TarClient" do
     TarClient.tar("./tmp/test.tar", "./spec/fixtures", "litmus-operator-v1.13.2.yaml")
     TarClient.modify_tar!("./tmp/test.tar") do |directory| 
       template_files = Find.find(directory, "*.yaml*", "100")
-      LOGGING.debug "template_files: #{template_files}"
-      template_files.map{|x| AirGapUtils.image_pull_policy(x)}
+      TarClient::LOGGING.debug "template_files: #{template_files}"
+      template_files.map do |x| 
+        input_content = File.read(x) 
+        output_content = input_content.gsub(/(.*imagePullPolicy:)(.*)/,"\\1 Never")
+
+        input_content = File.write(x, output_content) 
+      end
     end
 
     TarClient.untar("./tmp/test.tar", "./tmp")
