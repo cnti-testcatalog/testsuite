@@ -2,7 +2,7 @@ require "totem"
 require "colorize"
 # todo remove dependency
 # require "./cnf_manager.cr"
-require "halite"
+# require "halite"
 
 # todo put in a separate library. it shold go under ./tools for now
 module KubectlClient
@@ -593,24 +593,25 @@ module KubectlClient
     end
 
 
-    #TODO make a function that gives all the pods for a resource
-    def self.pods_for_resource(kind : String, resource_name)
-      LOGGING.info "kind: #{kind}"
-      LOGGING.info "resource_name: #{resource_name}"
-      #TODO use get pods and use json
-      # all_pods = `kubectl get pods #{field_selector} -o json'`
-      all_pods = KubectlClient::Get.pods
-      LOGGING.info("all_pods: #{all_pods}")
-      # all_pod_names = all_pods[0].split(" ")
-      # time_stamps = all_pods[1].split(" ")
-      # pods_times = all_pod_names.map_with_index do |name, i|
-      #   {:name => name, :time => time_stamps[i]}
-      # end
-      # LOGGING.info("pods_times: #{pods_times}")
-      #
-      # latest_pod_time = pods_times.reduce({:name => "not found", :time => "not_found"}) do | acc, i |
-
-    end
+    # #TODO make a function that gives all the pods for a resource
+    # def self.pods_for_resource(kind : String, resource_name)
+    #   LOGGING.info "kind: #{kind}"
+    #   LOGGING.info "resource_name: #{resource_name}"
+    #   #TODO use get pods and use json
+    #   # all_pods = `kubectl get pods #{field_selector} -o json'`
+    #   all_pods = KubectlClient::Get.pods
+    #   LOGGING.info("all_pods: #{all_pods}")
+    #   # all_pod_names = all_pods[0].split(" ")
+    #   # time_stamps = all_pods[1].split(" ")
+    #   # pods_times = all_pod_names.map_with_index do |name, i|
+    #   #   {:name => name, :time => time_stamps[i]}
+    #   # end
+    #   # LOGGING.info("pods_times: #{pods_times}")
+    #   #
+    #   # latest_pod_time = pods_times.reduce({:name => "not found", :time => "not_found"}) do | acc, i |
+    #   all_pods
+    #
+    # end
 
     #TODO create a function for waiting for the complete uninstall of a resource 
     # that has pods
@@ -800,6 +801,27 @@ module KubectlClient
       end
       LOGGING.debug "pod container image ids: #{imageids}"
       imageids
+    end
+  end
+
+  LOGGING = LogginGenerator.new
+  class LogginGenerator
+    macro method_missing(call)
+      if {{ call.name.stringify }} == "debug"
+        Log.debug {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "info"
+        Log.info {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "warn"
+        Log.warn {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "error"
+        Log.error {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "fatal"
+        Log.fatal {{{call.args[0]}}}
+      end
     end
   end
 end

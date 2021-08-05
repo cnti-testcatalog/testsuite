@@ -1,4 +1,4 @@
-require "./kubectl_client.cr"
+require "kubectl_client"
 # require "./airgap_utils.cr"
 
 def self.image_pull(yml)

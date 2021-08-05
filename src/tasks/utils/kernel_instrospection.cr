@@ -1,5 +1,5 @@
 require "colorize"
-require "./kubectl_client.cr"
+require "kubectl_client"
 
 module KernelIntrospection
   def self.parse_proc(ps_output)

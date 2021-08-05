@@ -2,6 +2,8 @@ require "file_utils"
 require "colorize"
 require "totem"
 
+# todo collection in modules similar to ohai:
+# https://github.com/chef/ohai
 def clusterctl_installation(verbose=false)
   gmsg = "No Global clusterctl version found"
   lmsg = "No Local clusterctl version found"
