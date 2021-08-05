@@ -21,16 +21,6 @@
 | --------------- | --------- | ----------- |
 | Michael S. Pedersen | [michaelspedersen](https://github.com/michaelspedersen) | [TietoEVRY](https://www.tietoevry.com/) / [Intel](https://intel.com/) |
 
-# Community Participant
-| Name | GitHub ID | Affiliation |
-| --------------- | --------- | ----------- |
-| tbd | tbd | tbd |
-
-# Community Member
-| Name | GitHub ID | Affiliation |
-| --------------- | --------- | ----------- |
-| tbd | tbd | tbd |
-
 # Emeritus Maintainer
 | Name | GitHub ID | Affiliation |
 | --------------- | --------- | ----------- |
