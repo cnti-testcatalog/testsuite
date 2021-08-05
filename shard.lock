@@ -12,6 +12,10 @@ shards:
     git: https://github.com/straight-shoota/crinja.git
     version: 0.7.0
 
+  docker_client:
+    path: utils/docker_client
+    version: 0.1.0
+
   halite:
     git: https://github.com/icyleaf/halite.git
     version: 0.12.0
@@ -26,7 +30,7 @@ shards:
 
   readline:
     git: https://github.com/crystal-lang/crystal-readline.git
-    version: 0.1.0+git.commit.59183141b981bc36003bc818cfe7837f06989e31
+    version: 0.1.1+git.commit.27a06e3b2a7bdb8e2d97252420eb8829be976e5b
 
   retriable:
     git: https://github.com/sija/retriable.cr.git
