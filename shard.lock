@@ -24,6 +24,10 @@ shards:
     git: https://github.com/crystal-community/icr.git
     version: 0.8.0+git.commit.0537fc21636fc1de467fa7108d80387eeba06893
 
+  kubectl_client:
+    path: utils/kubectl_client
+    version: 0.1.0
+
   popcorn:
     git: https://github.com/icyleaf/popcorn.git
     version: 0.3.0

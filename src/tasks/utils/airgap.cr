@@ -6,7 +6,7 @@ require "crinja"
 require "tar"
 # require "./docker_client.cr"
 require "docker_client"
-require "./kubectl_client.cr"
+require "kubectl_client"
 require "./airgap_utils.cr"
 
 # todo put in a separate library. it shold go under ./tools for now
