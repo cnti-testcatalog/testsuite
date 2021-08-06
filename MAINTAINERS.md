@@ -20,6 +20,7 @@
 | Name | GitHub ID | Affiliation |
 | --------------- | --------- | ----------- |
 | Michael S. Pedersen | [michaelspedersen](https://github.com/michaelspedersen) | [TietoEVRY](https://www.tietoevry.com/) / [Intel](https://intel.com/) |
+| Udit Gaurav    | [uditgaurav](https://github.com/uditgaurav) | [LitmusChaos](https://litmuschaos.io/) |
 
 ### Emeritus Maintainer
 | Name | GitHub ID | Affiliation |
