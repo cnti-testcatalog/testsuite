@@ -1,5 +1,5 @@
 require "../spec_helper"
-require "../../src/tasks/utils/kubectl_client.cr"
+require "kubectl_client"
 require "colorize"
 
 describe CnfTestSuite do
