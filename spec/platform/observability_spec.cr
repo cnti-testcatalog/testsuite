@@ -8,7 +8,7 @@ describe "Observability" do
   it "'kube_state_metrics' should return some json", tags: ["platform:observability"] do
 
       LOGGING.info "Installing kube_state_metrics" 
-      helm = CNFSingleton.helm
+      helm = BinarySingleton.helm
       resp = `#{helm} install kube-state-metrics stable/kube-state-metrics`
       LOGGING.info resp
       KubectlClient::Get.wait_for_install("kube-state-metrics")
@@ -25,7 +25,7 @@ describe "Observability" do
   it "'node_exporter' should detect the named release of the installed node_exporter", tags: ["platform:observability"] do
 
 		  LOGGING.info "Installing prometheus-node-exporter" 
-      helm = CNFSingleton.helm
+      helm = BinarySingleton.helm
 		  resp = `#{helm} install node-exporter stable/prometheus-node-exporter`
 		  LOGGING.info resp
 
@@ -49,7 +49,7 @@ describe "Observability" do
   it "'prometheus_adapter' should detect the named release of the installed prometheus_adapter", tags: ["platform:observability"] do
 
 	    LOGGING.info "Installing prometheus-adapter" 
-      helm = CNFSingleton.helm
+      helm = BinarySingleton.helm
 		  resp = `#{helm} install prometheus-adapter stable/prometheus-adapter`
 		  LOGGING.info resp
 		  KubectlClient::Get.wait_for_install("prometheus-adapter")

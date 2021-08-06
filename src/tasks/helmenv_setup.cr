@@ -10,7 +10,7 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
   VERBOSE_LOGGING.info "helm_local_install" if check_verbose(args)
   # check if helm is installed
   # if proper version of helm installed, don't install
-  unless global_helm_installed?
+  unless SystemInfo::Helm.global_helm_installed?
     current_dir = FileUtils.pwd 
     VERBOSE_LOGGING.debug current_dir if check_verbose(args)
     unless Dir.exists?("#{current_dir}/#{TOOLS_DIR}/helm")
@@ -24,7 +24,7 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
         end
         tar = `cd #{current_dir}/#{TOOLS_DIR}/helm; tar -xvf #{current_dir}/#{TOOLS_DIR}/helm/helm-v3.1.1-linux-amd64.tar.gz`
         VERBOSE_LOGGING.debug tar if check_verbose(args)
-        helm = CNFSingleton.helm
+        helm = BinarySingleton.helm
         VERBOSE_LOGGING.debug helm if check_verbose(args)
         VERBOSE_LOGGING.debug `#{helm} version` if check_verbose(args)
         #TODO what is this for?
@@ -38,7 +38,7 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
       end
     end
   end
-  # `#{CNFSingleton.helm} repo add stable https://cncf.gitlab.io/stable`
+  # `#{BinarySingleton.helm} repo add stable https://cncf.gitlab.io/stable`
 end
 
 desc "Cleans up helm 3.1.1"

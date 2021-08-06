@@ -13,7 +13,7 @@ desc "Install Chaos Mesh"
 task "install_chaosmesh" do |_, args|
   VERBOSE_LOGGING.info "install_chaosmesh" if check_verbose(args)
   current_dir = FileUtils.pwd 
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
     # KubectlClient::Apply.file("https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml")
 
     if args.named["offline"]?
@@ -51,7 +51,7 @@ desc "Uninstall Chaos Mesh"
 task "uninstall_chaosmesh" do |_, args|
   VERBOSE_LOGGING.info "uninstall_chaosmesh" if check_verbose(args)
   current_dir = FileUtils.pwd
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
   # crd_delete = `kubectl delete -f https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml`
   #   KubectlClient::Delete.file("https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml")
   # FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/chaos_mesh")

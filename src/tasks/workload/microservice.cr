@@ -31,7 +31,7 @@ task "reasonable_startup_time", ["install_cri_tools"] do |_, args|
     install_method = config.cnf_config[:install_method]
 
     current_dir = FileUtils.pwd
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
     VERBOSE_LOGGING.info helm if check_verbose(args)
 
     configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
