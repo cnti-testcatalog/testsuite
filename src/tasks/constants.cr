@@ -28,14 +28,14 @@ EmbeddedFileManager.chaos_container_kill
 EmbeddedFileManager.points_yml
 EmbeddedFileManager.points_yml_write_file
 
-CNFSingleton = CNFGlobals.new
-class CNFGlobals
-  CNF_DIR = "cnfs"
-  @helm: String?
-  # Get helm directory
-  def helm
-    @helm ||= global_helm_installed? ? "helm" : Helm.local_helm_path
-  end
-end
+# BinarySingleton = CNFGlobals.new
+# class CNFGlobals
+#   CNF_DIR = "cnfs"
+#   @helm: String?
+#   # Get helm directory
+#   def helm
+#     @helm ||= global_helm_installed? ? "helm" : Helm.local_helm_path
+#   end
+# end
 
 

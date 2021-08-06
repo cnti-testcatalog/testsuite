@@ -42,6 +42,8 @@ dependencies:
     path: utils/docker_client
   kubectl_client:
     path: utils/kubectl_client
+  helm:
+    path: utils/helm
 
 development_dependencies:
   ameba:

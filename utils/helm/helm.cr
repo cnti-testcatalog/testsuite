@@ -1,6 +1,36 @@
-require "totem"
 require "colorize"
-require "halite"
+
+BinarySingleton = BinaryReference.new
+class BinaryReference 
+  # CNF_DIR = "cnfs"
+  @helm: String?
+
+  def global_helm_installed?
+    ghelm = helm_global_response
+    global_helm_version = helm_v3_version(ghelm)
+    if (global_helm_version)
+      true
+    else
+      false
+    end
+  end
+
+  def helm_global_response(verbose=false)
+    helm_response = `helm version 2>/dev/null`
+    helm_response
+  end
+
+  def helm_v3_version(helm_response)
+    # version.BuildInfo{Version:"v3.1.1", GitCommit:"afe70585407b420d0097d07b21c47dc511525ac8", GitTreeState:"clean", GoVersion:"go1.13.8"}
+    helm_v3 = helm_response.match /BuildInfo{Version:\"(v([0-9]{1,3}[\.]){1,2}[0-9]{1,3}).+"/
+    helm_v3 && helm_v3.not_nil![1]
+  end
+
+  # Get helm directory
+  def helm
+    @helm ||= global_helm_installed? ? "helm" : raise "Global install of Helm not found"
+  end
+end
 
 module Helm
 
@@ -51,6 +81,26 @@ module Helm
       LOGGING.debug "manifest_containers: #{manifest_yml}"
       manifest_yml.dig?("spec", "template", "spec", "containers")
     end
+    LOGGING = LogginGenerator.new
+    class LogginGenerator
+      macro method_missing(call)
+        if {{ call.name.stringify }} == "debug"
+          Log.debug {{{call.args[0]}}}
+        end
+        if {{ call.name.stringify }} == "info"
+          Log.info {{{call.args[0]}}}
+        end
+        if {{ call.name.stringify }} == "warn"
+          Log.warn {{{call.args[0]}}}
+        end
+        if {{ call.name.stringify }} == "error"
+          Log.error {{{call.args[0]}}}
+        end
+        if {{ call.name.stringify }} == "fatal"
+          Log.fatal {{{call.args[0]}}}
+        end
+      end
+    end
   end
 
 
@@ -59,7 +109,7 @@ module Helm
   def self.generate_manifest_from_templates(release_name, helm_chart, output_file="cnfs/temp_template.yml")
     LOGGING.debug "generate_manifest_from_templates"
     # todo remove my guilt 
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
     LOGGING.info "Helm::generate_manifest_from_templates command: #{helm} template #{release_name} #{helm_chart} > #{output_file}"
     # Helm template works with either a chart or a directory
     ls_al = `ls -alR #{helm_chart}`
@@ -117,7 +167,7 @@ module Helm
   end
 
   def self.helm_repo_add(helm_repo_name, helm_repo_url)
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
     LOGGING.info "helm_repo_add: helm repo add command: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
     stdout = IO::Memory.new
     stderror = IO::Memory.new
@@ -141,7 +191,7 @@ module Helm
   end
 
   def self.helm_gives_k8s_warning?(verbose=false)
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
     stdout = IO::Memory.new
     stderror = IO::Memory.new
     begin
@@ -174,7 +224,7 @@ module Helm
   end
 
   def self.template(release_name, helm_chart_or_directory, output_file="cnfs/temp_template.yml")
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
     LOGGING.info "helm command: #{helm} template #{release_name} #{helm_chart_or_directory} > #{output_file}"
     status = Process.run("#{helm} template #{release_name} #{helm_chart_or_directory} > #{output_file}",
                          shell: true,
@@ -186,7 +236,7 @@ module Helm
   end
 
   def self.install(cli)
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
     LOGGING.info "helm command: #{helm} install #{cli}"
     status = Process.run("#{helm} install #{cli}",
                          shell: true,
@@ -198,7 +248,7 @@ module Helm
   end
 
   def self.pull(cli)
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
     LOGGING.info "helm command: #{helm} pull #{cli}"
     status = Process.run("#{helm} pull #{cli}",
                          shell: true,
@@ -210,7 +260,7 @@ module Helm
   end
 
   def self.fetch(cli)
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
     LOGGING.info "helm command: #{helm} fetch #{cli}"
     status = Process.run("#{helm} fetch #{cli}",
                          shell: true,
@@ -219,5 +269,26 @@ module Helm
     LOGGING.info "Helm.fetch output: #{output.to_s}"
     LOGGING.info "Helm.fetch stderr: #{stderr.to_s}"
     {status: status, output: output, error: stderr}
+  end
+
+  LOGGING = LogginGenerator.new
+  class LogginGenerator
+    macro method_missing(call)
+      if {{ call.name.stringify }} == "debug"
+        Log.debug {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "info"
+        Log.info {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "warn"
+        Log.warn {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "error"
+        Log.error {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "fatal"
+        Log.fatal {{{call.args[0]}}}
+      end
+    end
   end
 end

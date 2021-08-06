@@ -3,7 +3,7 @@ require "totem"
 require "colorize"
 require "crinja"
 require "./types/cnf_testsuite_yml_type.cr"
-require "./helm.cr"
+require "helm"
 require "./git_client.cr"
 require "uuid"
 require "./points.cr"
@@ -358,7 +358,7 @@ module CNFManager
   def self.helm_template_header(helm_chart_or_directory : String, template_file="/tmp/temp_template.yml", airgapped=false)
     LOGGING.info "helm_template_header"
     LOGGING.info "helm_template_header helm_chart_or_directory: #{helm_chart_or_directory}"
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
     # generate helm chart release name
     # use --dry-run to generate yml file
     LOGGING.info  "airgapped mode: #{airgapped}"
@@ -465,8 +465,8 @@ module CNFManager
       # config = get_parsed_cnf_testsuite_yml(args)
       # config = parsed_config_file(ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
       config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
-      LOGGING.info "helm path: #{CNFSingleton.helm}"
-      helm = CNFSingleton.helm
+      LOGGING.info "helm path: #{BinarySingleton.helm}"
+      helm = BinarySingleton.helm
       # helm_repo_name = config.get("helm_repository.name").as_s?
       helm_repository = config.cnf_config[:helm_repository]
       helm_repo_name = "#{helm_repository && helm_repository["name"]}"
@@ -657,8 +657,8 @@ module CNFManager
 
     sandbox_setup(config, cli_args)
 
-    helm = CNFSingleton.helm
-    LOGGING.info "helm path: #{CNFSingleton.helm}"
+    helm = BinarySingleton.helm
+    LOGGING.info "helm path: #{BinarySingleton.helm}"
 
     helm_install = {status: "", output: IO::Memory.new, error: IO::Memory.new}
     elapsed_time = Time.measure do
@@ -792,8 +792,8 @@ end
     manifest_directory = destination_cnf_dir + "/" + "#{config["manifest_directory"]? && config["manifest_directory"].as_s?}"
     LOGGING.info "manifest_directory: #{manifest_directory}"
 
-    LOGGING.info "helm path: #{CNFSingleton.helm}"
-    helm = CNFSingleton.helm
+    LOGGING.info "helm path: #{BinarySingleton.helm}"
+    helm = BinarySingleton.helm
     dir_exists = File.directory?(destination_cnf_dir)
     ret = true
     LOGGING.info("destination_cnf_dir: #{destination_cnf_dir}")
