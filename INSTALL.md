@@ -22,7 +22,7 @@ This will detail the required minimum requirements needed in order to support cn
 #### Requirements for source installation
 *Everything detailed in the [minimum requirements](https://hackmd.io/6h7NXdHnR4qUYgnnQPy5UA#Required) and the following:*
 * **git** *(used to check out code from github)*
-* **crystal-lang** version 0.35.1 *(to compile the source and build the binary, see [crystal installation](https://crystal-lang.org/install/))*
+* **crystal-lang** version 1.0.0 *(to compile the source and build the binary, see [crystal installation](https://crystal-lang.org/install/))*
 * **shards** ([dependency manager](https://github.com/crystal-lang/shards) for crystal-lang)
 
 
