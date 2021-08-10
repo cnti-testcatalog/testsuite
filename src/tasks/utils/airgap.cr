@@ -8,6 +8,7 @@ require "tar"
 require "docker_client"
 require "kubectl_client"
 require "./airgap_utils.cr"
+require "file_utils"
 
 # todo put in a separate library. it shold go under ./tools for now
 module AirGap
@@ -100,12 +101,12 @@ module AirGap
     end
     TarClient.append(output_file, "/tmp", "#{repo_path}")
   ensure
-    `rm -rf /tmp/#{repo_path} > /dev/null 2>&1`
+    FileUtils.rm_rf("/tmp/#{repo_path}")
   end
   
   def self.tar_manifest(url, output_file : String = "./airgapped.tar.gz", prefix="")
     manifest_path = "manifests/" 
-    `rm -rf /tmp/#{manifest_path} > /dev/null 2>&1`
+    FileUtils.rm_rf("/tmp/#{manifest_path}")
     FileUtils.mkdir_p("/tmp/" + manifest_path)
     manifest_name = prefix + url.split("/").last 
     manifest_full_path = manifest_path + manifest_name 
@@ -118,14 +119,14 @@ module AirGap
     end
     TarClient.append(output_file, "/tmp", manifest_full_path)
   ensure
-    `rm -rf /tmp/#{manifest_path} > /dev/null 2>&1`
+    FileUtils.rm_rf("/tmp/#{manifest_path}")
   end
 
   #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
   #./cnf-testsuite offline -o ~/airgapped.tar.gz
   #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
   def self.generate(output_file : String = "./airgapped.tar.gz")
-    `rm #{output_file}`
+    FileUtils.rm_rf(output_file)
     FileUtils.mkdir_p("#{TAR_BOOTSTRAP_IMAGES_DIR}")
     AirGap.download_cri_tools
     [{input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
@@ -394,25 +395,28 @@ end
 
   def self.tmp_cleanup
     Log.info { "cleaning up /tmp directories, binaries, and tar files" }
-    `rm -rf /tmp/repositories`
-    `rm -rf /tmp/images`
-    `rm -rf /tmp/bootstrap_images`
-    `rm -rf /tmp/download`
-    `rm -rf /tmp/manifests`
-    `rm -rf /tmp/bin`
-    `rm -rf /tmp/airgapped.tar.gz`
-    `rm -rf /tmp/chaos-daemon.tar`
-    `rm -rf /tmp/chaos-dashboard.tar`
-    `rm -rf /tmp/chaos-daemon.tar`
-    `rm -rf /tmp/chaos-mesh.tar`
-    `rm -rf /tmp/coredns_1.7.1.tar`
-    `rm -rf /tmp/crictl`
-    `rm -rf /tmp/kubectl.tar`
-    `rm -rf /tmp/litmus-operator.tar`
-    `rm -rf /tmp/litmus-runner.tar`
-    `rm -rf /tmp/pingcap-coredns.tar`
-    `rm -rf /tmp/prometheus.tar`
-    `rm -rf /tmp/sonobuoy-logs.tar`
-    `rm -rf /tmp/sonobuoy.tar`
+    paths = [
+      "/tmp/repositories",
+      "/tmp/images",
+      "/tmp/bootstrap_images",
+      "/tmp/download",
+      "/tmp/manifests",
+      "/tmp/bin",
+      "/tmp/airgapped.tar.gz",
+      "/tmp/chaos-daemon.tar",
+      "/tmp/chaos-dashboard.tar",
+      "/tmp/chaos-daemon.tar",
+      "/tmp/chaos-mesh.tar",
+      "/tmp/coredns_1.7.1.tar",
+      "/tmp/crictl",
+      "/tmp/kubectl.tar",
+      "/tmp/litmus-operator.tar",
+      "/tmp/litmus-runner.tar",
+      "/tmp/pingcap-coredns.tar",
+      "/tmp/prometheus.tar",
+      "/tmp/sonobuoy-logs.tar",
+      "/tmp/sonobuoy.tar"
+    ]
+    FileUtils.rm_rf(paths)
   end
 end
