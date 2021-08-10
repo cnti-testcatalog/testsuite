@@ -99,7 +99,7 @@ namespace "platform" do
 
       ensure
         Log.info { "node_failure cleanup" }
-        delete_reboot_daemon = `kubectl delete -f reboot_daemon_pod.yml`
+        delete_reboot_daemon = KubectlClient::Delete.file("reboot_daemon_pod.yml")
         delete_coredns = `#{helm} delete node-failure`
         File.delete("reboot_daemon_pod.yml")
         File.delete("node_failure_values.yml")
