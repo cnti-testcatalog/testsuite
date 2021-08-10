@@ -43,8 +43,7 @@ end
 
 desc "Cleans up helm 3.1.1"
 task "helm_local_cleanup"do |_, args|
-  VERBOSE_LOGGING.info "helm_local_cleanup" if check_verbose(args)
+  Log.for("verbose").info { "helm_local_cleanup" } if check_verbose(args)
   current_dir = FileUtils.pwd 
-  rm = `rm -rf #{current_dir}/#{TOOLS_DIR}/helm`
-  VERBOSE_LOGGING.debug rm if check_verbose(args)
+  FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/helm")
 end
