@@ -17,7 +17,7 @@ module CNFManager
                                      source_cnf_file: String,
                                      source_cnf_dir: String,
                                      yml_file_path: String,
-                                     install_method: Tuple(Symbol, String),
+                                     install_method: Tuple(Helm::InstallMethod, String),
                                      manifest_directory: String,
                                      helm_directory: String, 
                                      helm_chart_path: String, 
@@ -126,6 +126,26 @@ module CNFManager
                                container_names: container_names,
                                white_list_container_names: white_list_container_names })
 
+    end
+    def self.install_method_by_config_file(config_file) : Helm::InstallMethod
+      LOGGING.info "install_data_by_config_file"
+      config = CNFManager.parsed_config_file(config_file)
+      sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: true, generate_tar_mode: false) 
+      install_method = CNFManager.cnf_installation_method(config)
+      install_method[0]
+    end
+    def self.config_src_by_config_file(config_file) : String
+      LOGGING.info "install_data_by_config_file"
+      config = CNFManager.parsed_config_file(config_file)
+      sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: true, generate_tar_mode: false) 
+      install_method = CNFManager.cnf_installation_method(config)
+      install_method[1]
+    end
+    def self.release_name_by_config_file(config_file) : String
+      LOGGING.info "release_name_by_config_file"
+      config = CNFManager.parsed_config_file(config_file)
+      sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: true, generate_tar_mode: false) 
+      release_name = sandbox_config.cnf_config[:release_name]
     end
   end
 end

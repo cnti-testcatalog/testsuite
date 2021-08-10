@@ -10,7 +10,8 @@ PASSED = "passed"
 FAILED = "failed"
 SKIPPED = "skipped"
 NA = "na"
-CHART_YAML = "Chart.yaml"
+# todo move to helm module
+# CHART_YAML = "Chart.yaml"
 DEFAULT_POINTSFILENAME = "points_v1.yml"
 PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
 SONOBUOY_K8S_VERSION = "0.19.0"

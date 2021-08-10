@@ -80,12 +80,12 @@ module CNFManager
     LOGGING.debug "install_method: #{install_method}"
     template_ymls = [] of YAML::Any
     case install_method[0]
-    when :helm_chart, :helm_directory
+    when Helm::InstallMethod::HelmChart, Helm::InstallMethod::HelmDirectory
       Helm.generate_manifest_from_templates(release_name,
                                             helm_chart_path,
                                             manifest_file_path)
       template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
-    when :manifest_directory
+    when Helm::InstallMethod::ManifestDirectory
     # if release_name.empty? # no helm chart
       template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
     # else
@@ -274,31 +274,32 @@ module CNFManager
     end
   end
 
+  # todo move this to the helm module and use the helm enumeration
   def self.install_method_by_config_src(config_src : String, airgapped=false, generate_tar_mode=false)
     LOGGING.info "install_method_by_config_src"
     LOGGING.info "config_src: #{config_src}"
-    helm_chart_file = "#{config_src}/#{CHART_YAML}"
+    helm_chart_file = "#{config_src}/#{Helm::CHART_YAML}"
     LOGGING.info "looking for potential helm_chart_file: #{helm_chart_file}: file exists?: #{File.exists?(helm_chart_file)}"
     ls_al = `ls -alR config_src #{config_src}`
     ls_al = `ls -alR helm_chart_file #{helm_chart_file}`
 
     if !Dir.exists?(config_src) 
       LOGGING.info "install_method_by_config_src helm_chart selected"
-      :helm_chart
+      Helm::InstallMethod::HelmChart
     elsif File.exists?(helm_chart_file)
       LOGGING.info "install_method_by_config_src helm_directory selected"
-      :helm_directory
+      Helm::InstallMethod::HelmDirectory
     # elsif generate_tar_mode && KubectlClient::Apply.validate(config_src) # just because we are in generate tar mode doesn't mean we have a K8s cluster
     elsif Dir.exists?(config_src) 
       LOGGING.info "install_method_by_config_src manifest_directory selected"
-      :manifest_directory
+      Helm::InstallMethod::ManifestDirectory
     else
       puts "Error: #{config_src} is neither a helm_chart, helm_directory, or manifest_directory.".colorize(:red)
       exit 1
     end
   end
 
-  def self.cnf_installation_method(config : CNFManager::Config)
+  def self.cnf_installation_method(config : CNFManager::Config) : Tuple(Helm::InstallMethod, String)
     LOGGING.info "cnf_installation_method config : CNFManager::Config"
     LOGGING.info "config_cnf_config: #{config.cnf_config}"
     yml_file_path = config.cnf_config[:source_cnf_file]
@@ -307,7 +308,7 @@ module CNFManager
   end
 
   #Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
-  def self.cnf_installation_method(config : Totem::Config)
+  def self.cnf_installation_method(config : Totem::Config) : Tuple(Helm::InstallMethod, String)
     LOGGING.info "cnf_installation_method"
     LOGGING.info "cnf_installation_method config: #{config}"
     LOGGING.info "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}"
@@ -341,13 +342,13 @@ module CNFManager
     end
 
     if !helm_chart.empty?
-      {:helm_chart, helm_chart}
+      {Helm::InstallMethod::HelmChart, helm_chart}
     elsif !helm_directory.empty?
       LOGGING.info "helm_directory not empty, using: #{full_helm_directory}"
-      {:helm_directory, full_helm_directory}
+      {Helm::InstallMethod::HelmDirectory, full_helm_directory}
     elsif !manifest_directory.empty?
       LOGGING.info "manifest_directory not empty, using: #{full_manifest_directory}"
-      {:manifest_directory, full_manifest_directory}
+      {Helm::InstallMethod::ManifestDirectory, full_manifest_directory}
     else
       puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory.".colorize(:red)
       exit 1
@@ -409,18 +410,18 @@ module CNFManager
       install_method = self.cnf_installation_method(config)
       LOGGING.debug "install_method: #{install_method}"
       case install_method[0]
-      when :helm_chart
+      when Helm::InstallMethod::HelmChart
         LOGGING.info "generate_and_set_release_name install method: #{install_method[0]} data: #{install_method[1]}"
         LOGGING.info "generate_and_set_release_name helm_chart_or_directory: #{install_method[1]}"
         release_name = helm_chart_template_release_name(install_method[1], airgapped: airgapped)
-      when :helm_directory
+      when Helm::InstallMethod::HelmDirectory
         LOGGING.info "helm_directory install method: #{yml_path}/#{install_method[1]}"
         # todo if in airgapped mode, use path for airgapped repositories
         # todo if in airgapped mode, get the release name
         # todo get the release name by looking through everything under /tmp/repositories
         LOGGING.info "generate_and_set_release_name helm_chart_or_directory: #{install_method[1]}"
         release_name = helm_chart_template_release_name("#{install_method[1]}", airgapped: airgapped)
-      when :manifest_directory
+      when Helm::InstallMethod::ManifestDirectory
         LOGGING.debug "manifest_directory install method"
         release_name = UUID.random.to_s
       else
@@ -537,19 +538,19 @@ module CNFManager
     # todo manifest_or_helm_directory should either be the source helm/manifest files or the destination
     # directory that they will be copied to/generated into, but *not both*
     case install_method[0]
-    when :manifest_directory
+    when Helm::InstallMethod::ManifestDirectory
       LOGGING.info "preparing manifest_directory sandbox"
       FileUtils.mkdir_p(destination_cnf_dir)
       source_directory = config_source_dir(config_file) + "/" + manifest_directory
       LOGGING.info "cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}"
       yml_cp = `cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}`
-    when :helm_directory
+    when Helm::InstallMethod::HelmDirectory
       FileUtils.mkdir_p(destination_cnf_dir)
       LOGGING.info "preparing helm_directory sandbox"
       source_directory = config_source_dir(config_file) + "/" + helm_directory
       LOGGING.info "cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}"
       yml_cp = `cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}`
-    when :helm_chart
+    when Helm::InstallMethod::HelmChart
       LOGGING.info "preparing helm chart sandbox"
       source_directory = ""
       FileUtils.mkdir_p(Path[destination_cnf_dir].expand.to_s + "/exported_chart")
@@ -663,7 +664,7 @@ module CNFManager
     helm_install = {status: "", output: IO::Memory.new, error: IO::Memory.new}
     elapsed_time = Time.measure do
       case install_method[0]
-      when :manifest_directory
+      when Helm::InstallMethod::ManifestDirectory
         # todo airgap_manifest_directory << prepare a manifest directory for deployment into an airgapped environment, put in airgap module
         if input_file && !input_file.empty?
           yaml_template_files = Find.find("#{destination_cnf_dir}/#{manifest_directory}", 
@@ -679,7 +680,7 @@ module CNFManager
         yml = Helm::Manifest.manifest_ymls_from_file_list(file_list)
         image_pull(yml)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
-      when :helm_chart
+      when Helm::InstallMethod::HelmChart
         if input_file && !input_file.empty?
           tar_info = AirGapUtils.tar_info_by_config_src(config.cnf_config[:helm_chart])
           # prepare a helm_chart tar file for deployment into an airgapped environment, put in airgap module
@@ -701,7 +702,7 @@ module CNFManager
         image_pull(yml)
         helm_intall = Helm.install("#{release_name} #{helm_chart}")
         export_published_chart(config, cli_args)
-      when :helm_directory
+      when Helm::InstallMethod::HelmDirectory
         VERBOSE_LOGGING.info "deploying with helm directory" if verbose
         # prepare a helm directory for deployment into an airgapped environment, put in airgap module
         if input_file && !input_file.empty?

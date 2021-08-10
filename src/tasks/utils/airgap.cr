@@ -21,6 +21,7 @@ module AirGap
   def self.generate_cnf_setup(config_file : String, output_file, cli_args)
     LOGGING.info "generate_cnf_setup cnf_config_file: #{config_file}"
     FileUtils.mkdir_p("#{TarClient::TAR_IMAGES_DIR}")
+    # todo create a way to call setup code for directories (cnf manager code)
     config = CNFManager.parsed_config_file(config_file)
     sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: false, generate_tar_mode: true) 
     LOGGING.info "generate sandbox args: sandbox_config: #{sandbox_config}, cli_args: #{cli_args}"
@@ -37,6 +38,8 @@ module AirGap
 
     images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], generate_tar_mode: true) 
 
+
+    # todo function that takes sandbox containers and extracts images (config images)
     container_names = sandbox_config.cnf_config[:container_names]
     #todo get image name (org name and image name) from config src
 
@@ -58,6 +61,7 @@ module AirGap
     end
     LOGGING.info "config_images: #{config_images}"
 
+    # todo function that accepts image names and tars them
     images = images + config_images
     images.map  do |i|
       input_file = "#{TarClient::TAR_IMAGES_DIR}/#{i[:image_name].split("/")[-1]}_#{i[:tag]}.tar"
@@ -68,12 +72,14 @@ module AirGap
       TarClient.append(output_file, "/tmp", "images/" + input_file.split("/")[-1])
       LOGGING.info "#{output_file} in generate_cnf_setup complete"
     end
+    # todo hardcode install method for helm charts until helm directories / manifest 
+    #  directories are supported
     case install_method[0]
-    when :helm_chart
+    when Helm::InstallMethod::HelmChart
       LOGGING.debug "helm_chart : #{install_method[1]}"
       AirGap.tar_helm_repo(install_method[1], output_file)
       LOGGING.info "generate_cnf_setup tar_helm_repo complete"
-    # when :manifest_directory
+    # when Helm::InstallMethod::ManifestDirectory
     #   LOGGING.debug "manifest_directory : #{install_method[1]}"
     #   template_files = Find.find(directory, "*.yaml*", "100")
     #   template_files.map{|x| AirGapUtils.image_pull_policy(x)}
@@ -158,7 +164,7 @@ module AirGap
       DockerClient.save(x[:image], x[:input_file])
       TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bootstrap_images/" + x[:input_file].split("/")[-1])
     end
-    #TODO test if these should be in the /tmp/bin directory
+    # todo keep crictl and containerd tar files, move to the rest to cnf-test-suite specific bootstrap
     TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
     TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
     AirGap.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
@@ -183,6 +189,7 @@ module AirGap
     LOGGING.info "cache_images"
     AirGap.bootstrap_cluster()
     if ENV["CRYSTAL_ENV"]? == "TEST"
+      # todo change chaos-mesh tar to something more generic
       image_files = ["#{TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
                       "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-mesh.tar"]
       tar_image_files = Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tar*")
@@ -252,9 +259,6 @@ module AirGap
     end
   end
 
-
-
-  #TODO put these in the airgap tarball
   def self.download_cri_tools
     FileUtils.mkdir_p("#{TarClient::TAR_BIN_DIR}")
     LOGGING.info "download_cri_tools"
@@ -268,6 +272,8 @@ module AirGap
   end
 
   def self.pod_images(pods)
+    # todo change into a reduce, loop through all containers and append image 
+    #  into final array of images
     pods.map do |pod|
       containers = pod.dig("spec","containers").as_a
       #TODO make this work with multiple containers
@@ -394,6 +400,8 @@ end
     end
   end
 
+  # todo separate cnf-test-suite cleanup from airgap generic cleanup
+  # todo force process.run instead of backtick
   def self.tmp_cleanup
     LOGGING.info "cleaning up /tmp directories, binaries, and tar files"
     `rm -rf /tmp/repositories`

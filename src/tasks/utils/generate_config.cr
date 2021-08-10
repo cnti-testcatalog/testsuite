@@ -22,7 +22,7 @@ module CNFManager
       release_name = optional_key_as_string(config, "release_name")
       install_method = CNFManager.install_method_by_config_src(config_src)
       LOGGING.info "install_method: #{install_method}"
-      if install_method == :manifest_directory
+      if install_method == Helm::InstallMethod::ManifestDirectory
         template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( config_src))
       else
         # todo if success false, raise error
@@ -116,11 +116,11 @@ module CNFManager
     def self.generate_initial_testsuite_yml(config_src, config_yml_path="./cnf-testsuite.yml")
       if !File.exists?(config_yml_path)
         case CNFManager.install_method_by_config_src(config_src) 
-        when :helm_chart
+        when Helm::InstallMethod::HelmChart
           testsuite_yml_template_resp = Crinja.render(testsuite_yml_template, { "install_key" => "helm_chart: #{config_src}"})
-        when :helm_directory
+        when Helm::InstallMethod::HelmDirectory
           testsuite_yml_template_resp = Crinja.render(testsuite_yml_template, { "install_key" => "helm_directory: #{config_src}"})
-        when :manifest_directory
+        when Helm::InstallMethod::ManifestDirectory
           testsuite_yml_template_resp = Crinja.render(testsuite_yml_template, { "install_key" => "manifest_directory: #{config_src}"})
         else
           puts "Error: #{config_src} is neither a helm_chart, helm_directory, or manifest_directory.".colorize(:red)

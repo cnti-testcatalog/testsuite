@@ -8,19 +8,15 @@ require "./find.cr"
 module AirGapUtils
   TAR_REPOSITORY_DIR = "/tmp/repositories"
 
-  def self.image_pull_policy_config_file?(config_file)
-    LOGGING.info "image_pull_policy_config_src"
-    config = CNFManager.parsed_config_file(config_file)
-    sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: true, generate_tar_mode: false) 
-    release_name = sandbox_config.cnf_config[:release_name]
-    install_method = CNFManager.cnf_installation_method(config)
+  def self.image_pull_policy_config_file?(install_method, config_src, release_name)
+    LOGGING.info "image_pull_policy_config_file"
     yml = [] of Array(YAML::Any)
-    case install_method[0] 
-    when :manifest_directory
-      file_list = Helm::Manifest.manifest_file_list(install_method[1], silent=false)
+    case install_method
+    when Helm::InstallMethod::ManifestDirectory
+      file_list = Helm::Manifest.manifest_file_list(config_src, silent=false)
       yml = Helm::Manifest.manifest_ymls_from_file_list(file_list)
-    when :helm_chart, :helm_directory
-      Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
+    when Helm::InstallMethod::HelmChart, Helm::InstallMethod::HelmDirectory
+      Helm.template(release_name, config_src, output_file="cnfs/temp_template.yml") 
       yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
     else
       raise "config source error: #{install_method}"

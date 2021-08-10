@@ -38,6 +38,44 @@ module Helm
   DEPLOYMENT="Deployment"
   SERVICE="Service"
   POD="Pod"
+  CHART_YAML = "Chart.yaml"
+
+  enum InstallParams
+    InstallMethod
+    ConfigSrc
+    ReleaseName
+  end
+   
+  enum InstallMethod
+    HelmChart
+    HelmDirectory
+    ManifestDirectory 
+    Invalid
+  end
+
+
+  def self.install_method_by_config_src(install_method : InstallMethod, config_src : String) : InstallMethod
+    LOGGING.info "helm install_method_by_config_src"
+    LOGGING.info "config_src: #{config_src}"
+    helm_chart_file = "#{config_src}/#{Helm::CHART_YAML}"
+    LOGGING.info "looking for potential helm_chart_file: #{helm_chart_file}: file exists?: #{File.exists?(helm_chart_file)}"
+    # todo use process run
+    ls_al = `ls -alR config_src #{config_src}`
+    ls_al = `ls -alR helm_chart_file #{helm_chart_file}`
+
+    if !Dir.exists?(config_src) 
+      LOGGING.info "install_method_by_config_src helm_chart selected"
+      InstallMethod::HelmChart
+    elsif File.exists?(helm_chart_file)
+      LOGGING.info "install_method_by_config_src helm_directory selected"
+      InstallMethod::HelmDirectory
+    elsif Dir.exists?(config_src) 
+      LOGGING.info "install_method_by_config_src manifest_directory selected"
+      InstallMethod::ManifestDirectory
+    else
+      InstallMethod::Invalid
+    end
+  end
 
   # Utilities for manifest files that are not templates or have been converted already
   # todo move into own file
