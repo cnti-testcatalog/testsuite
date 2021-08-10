@@ -112,7 +112,7 @@ _This build method is static and DOES NOT have any runtime dependencies._
 
 ```
 docker pull crystallang/crystal:1.0.0-alpine-build
-_Note: $PWD is your cnf-testsuite source directory in the following commands_
+ ## Note: $PWD is your cnf-testsuite source directory in the following commands 
 docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:1.0.0-alpine-build shards install
 docker run --rm -it -v $PWD:/workspace -w /workspace crystallang/crystal:1.0.0-alpine-build crystal build src/cnf-testsuite.cr --release --static --link-flags "-lxml2 -llzma"
 ```
