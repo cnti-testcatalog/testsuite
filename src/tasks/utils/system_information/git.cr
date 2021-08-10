@@ -6,7 +6,7 @@ def git_installation(verbose=false)
   gmsg = "No Global git version found"
   lmsg = "No Local git version found"
   ggit = git_global_response
-  VERBOSE_LOGGING.info ggit if verbose
+  Log.for("verbose").info { ggit } if verbose
   
   global_git_version = git_version(ggit, verbose)
    
@@ -18,7 +18,7 @@ def git_installation(verbose=false)
   end
 
   lgit = git_local_response
-  VERBOSE_LOGGING.info lgit if verbose
+  Log.for("verbose").info { lgit } if verbose
   
   local_git_version = git_version(lgit, verbose)
    
@@ -54,18 +54,17 @@ def git_installation(verbose=false)
 end 
 
 def git_global_response(verbose=false)
-  git_response = `git version`
-  VERBOSE_LOGGING.info git_response if verbose
-  git_response 
+  status = Process.run("git version", shell: true, output: git_response = IO::Memory.new, error: stderr = IO::Memory.new)
+  Log.for("verbose").info { git_response } if verbose
+  git_response
 end
 
 def git_local_response(verbose=false)
   current_dir = FileUtils.pwd 
-  VERBOSE_LOGGING.info current_dir if verbose 
+  Log.for("verbose").info { current_dir } if verbose
   git = "#{current_dir}/#{TOOLS_DIR}/git/linux-amd64/git"
-  # git_response = `#{git} version`
   status = Process.run("#{git} version", shell: true, output: git_response = IO::Memory.new, error: stderr = IO::Memory.new)
-  VERBOSE_LOGGING.info git_response.to_s if verbose
+  Log.for("verbose").info { git_response.to_s } if verbose
   git_response.to_s
 end
 
@@ -73,7 +72,7 @@ def git_version(git_response, verbose=false)
   # example
   # git version 1.9.1 
   resp = git_response.match /git version (([0-9]{1,3}[\.]){1,2}[0-9]{1,3})/
-  VERBOSE_LOGGING.info resp if verbose
+  Log.for("verbose").info { resp } if verbose
   if resp
     "#{resp && resp.not_nil![1]}"
   else
