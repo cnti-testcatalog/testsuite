@@ -56,7 +56,7 @@ end
 def git_global_response(verbose=false)
   status = Process.run("git version", shell: true, output: git_response = IO::Memory.new, error: stderr = IO::Memory.new)
   Log.for("verbose").info { git_response } if verbose
-  git_response
+  git_response.to_s
 end
 
 def git_local_response(verbose=false)
