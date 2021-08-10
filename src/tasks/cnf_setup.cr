@@ -5,8 +5,8 @@ require "totem"
 require "./utils/utils.cr"
 
 task "cnf_setup", ["helm_local_install"] do |_, args|
-  Log.info { "cnf_setup" } if check_verbose(args)
-  Log.debug { "args = #{args.inspect}" } if check_verbose(args)
+  Log.for("verbose").info { "cnf_setup" } if check_verbose(args)
+  Log.for("verbose").debug { "args = #{args.inspect}" } if check_verbose(args)
   cli_hash = CNFManager.sample_setup_cli_args(args)
   output_file = cli_hash[:output_file]
   input_file =  cli_hash[:input_file]
@@ -35,8 +35,8 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
 end
 
 task "cnf_cleanup" do |_, args|
-  Log.info { "cnf_cleanup" } if check_verbose(args)
-  Log.debug { "args = #{args.inspect}" } if check_verbose(args)
+  Log.for("verbose").info { "cnf_cleanup" } if check_verbose(args)
+  Log.for("verbose").debug { "args = #{args.inspect}" } if check_verbose(args)
   if args.named.keys.includes? "cnf-config"
     cnf = args.named["cnf-config"].as(String)
   elsif args.named.keys.includes? "cnf-path"
@@ -61,8 +61,8 @@ task "cnf_cleanup" do |_, args|
 end
 
 task "CNFManager.helm_repo_add" do |_, args|
-  Log.info { "CNFManager.helm_repo_add" } if check_verbose(args)
-  Log.debug { "args = #{args.inspect}" } if check_verbose(args)
+  Log.for("verbose").info { "CNFManager.helm_repo_add" } if check_verbose(args)
+  Log.for("verbose").debug { "args = #{args.inspect}" } if check_verbose(args)
   if args.named["cnf-config"]? || args.named["yml-file"]?
     CNFManager.helm_repo_add(args: args)
   else
@@ -72,8 +72,8 @@ task "CNFManager.helm_repo_add" do |_, args|
 end
 
 task "generate_config" do |_, args|
-  Log.info { "CNFManager.generate_config" } if check_verbose(args)
-  Log.debug { "args = #{args.inspect}" } if check_verbose(args)
+  Log.for("verbose").info { "CNFManager.generate_config" } if check_verbose(args)
+  Log.for("verbose").debug { "args = #{args.inspect}" } if check_verbose(args)
   if args.named["config-src"]? 
     config_src = args.named["config-src"].as(String)
     output_file = args.named["output-file"].as(String) if args.named["output-file"]?

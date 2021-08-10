@@ -11,7 +11,7 @@ CHAOS_MESH_OFFLINE_DIR = "#{TarClient::TAR_REPOSITORY_DIR}/chaos-mesh_chaos-mesh
 
 desc "Install Chaos Mesh"
 task "install_chaosmesh" do |_, args|
-  Log.info { "install_chaosmesh" } if check_verbose(args)
+  Log.for("verbose").info { "install_chaosmesh" } if check_verbose(args)
   current_dir = FileUtils.pwd 
     helm = BinarySingleton.helm
     # KubectlClient::Apply.file("https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml")
@@ -38,7 +38,7 @@ end
 
 desc "Uninstall Chaos Mesh"
 task "uninstall_chaosmesh" do |_, args|
-  Log.info { "uninstall_chaosmesh" } if check_verbose(args)
+  Log.for("verbose").info { "uninstall_chaosmesh" } if check_verbose(args)
   current_dir = FileUtils.pwd
   helm = BinarySingleton.helm
   cmd = "#{helm} delete my-chaos-mesh > /dev/null 2>&1"
