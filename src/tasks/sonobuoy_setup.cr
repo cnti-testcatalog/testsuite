@@ -51,12 +51,16 @@ task "install_sonobuoy" do |_, args|
 end
 
 desc "Cleans up Sonobuoy"
-task "sonobuoy_cleanup"do |_, args|
+task "sonobuoy_cleanup" do |_, args|
   current_dir = FileUtils.pwd 
   sonobuoy = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy"
-  delete = `#{sonobuoy} delete --wait`
-  VERBOSE_LOGGING.info delete if check_verbose(args)
-  rm = `rm -rf #{current_dir}/#{TOOLS_DIR}/sonobuoy`
-  VERBOSE_LOGGING.info rm if check_verbose(args)
+  status = Process.run(
+    "#{sonobuoy} delete --wait 2>&1",
+    shell: true,
+    output: stdout = IO::Memory.new,
+    error: stderr = IO::Memory.new
+  )
+  Log.for("verbose").info { stdout } if check_verbose(args)
+  FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/sonobuoy")
 end
 
