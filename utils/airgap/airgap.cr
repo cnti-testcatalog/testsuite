@@ -18,72 +18,6 @@ module AirGap
   TAR_BOOTSTRAP_IMAGES_DIR = "/tmp/bootstrap_images"
   TAR_REPOSITORY_DIR = "/tmp/repositories"
 
-  #  ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped output-file=./tmp/airgapped.tar.gz
-  #  ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml output-file=./tmp/airgapped.tar.gz
-  #  ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=./tmp/airgapped.tar.gz
-  def self.generate_cnf_setup(config_file : String, output_file, cli_args)
-    Log.info { "generate_cnf_setup cnf_config_file: #{config_file}" }
-    FileUtils.mkdir_p("#{TarClient::TAR_IMAGES_DIR}")
-    config = CNFManager.parsed_config_file(config_file)
-    sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: false, generate_tar_mode: true) 
-    Log.info { "generate sandbox args: sandbox_config: #{sandbox_config}, cli_args: #{cli_args}" }
-    CNFManager.sandbox_setup(sandbox_config, cli_args)
-    install_method = CNFManager.cnf_installation_method(config)
-    Log.info { "generate_cnf_setup images_from_config_src" }
-
-    Log.info { "Download CRI Tools" }
-    AirGap.download_cri_tools
-
-    Log.info { "Add CRI Tools to Airgapped Tar: #{output_file}" }
-    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
-    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
-
-    images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], generate_tar_mode: true) 
-
-    container_names = sandbox_config.cnf_config[:container_names]
-    #todo get image name (org name and image name) from config src
-
-    if container_names
-      config_images = [] of NamedTuple(image_name: String, tag: String)
-      container_names.map do |c|
-        Log.info { "container_names c: #{c}" }
-        # todo get image name for container name
-        image = images.find{|x| x[:container_name]==c["name"]}
-        if image
-          config_images << {image_name: image[:image_name], tag: c["rolling_update_test_tag"]}
-          config_images << {image_name: image[:image_name], tag: c["rolling_downgrade_test_tag"]}
-          config_images << {image_name: image[:image_name], tag: c["rolling_version_change_test_tag"]}
-          config_images << {image_name: image[:image_name], tag: c["rollback_from_tag"]}
-        end
-      end
-    else
-      config_images = [] of NamedTuple(image_name: String, tag: String)
-    end
-    Log.info { "config_images: #{config_images}" }
-
-    images = images + config_images
-    images.map  do |i|
-      input_file = "#{TarClient::TAR_IMAGES_DIR}/#{i[:image_name].split("/")[-1]}_#{i[:tag]}.tar"
-      Log.info { "input_file: #{input_file}" }
-      image = "#{i[:image_name]}:#{i[:tag]}"
-      DockerClient.pull(image)
-      DockerClient.save(image, input_file)
-      TarClient.append(output_file, "/tmp", "images/" + input_file.split("/")[-1])
-      Log.info { "#{output_file} in generate_cnf_setup complete" }
-    end
-    case install_method[0]
-    when :helm_chart
-      Log.debug { "helm_chart : #{install_method[1]}" }
-      AirGap.tar_helm_repo(install_method[1], output_file)
-      Log.info { "generate_cnf_setup tar_helm_repo complete" }
-    # when :manifest_directory
-    #   Log.debug { "manifest_directory : #{install_method[1]}"
-    #   template_files = Find.find(directory, "*.yaml*", "100")
-    #   template_files.map{|x| AirGapUtils.image_pull_policy(x)}
-    end
-  end
->>>>>>> 243703b4102509e3637e1ee6c3f7c61201bdf096:src/tasks/utils/airgap.cr
-
   def self.tar_helm_repo(command, output_file : String = "./airgapped.tar.gz")
     Log.info { "tar_helm_repo command: #{command} output_file: #{output_file}" }
     tar_dir = AirGapUtils.helm_tar_dir(command)
@@ -129,7 +63,7 @@ module AirGap
   #./cnf-testsuite offline -o ~/airgapped.tar.gz
   #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
   def self.generate(output_file : String = "./airgapped.tar.gz", append=false)
-    FileUtils.rm_rf(output_file) unless appen d
+    FileUtils.rm_rf(output_file) unless append
     FileUtils.mkdir_p("#{TAR_BOOTSTRAP_IMAGES_DIR}")
     AirGap.download_cri_tools
     TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
