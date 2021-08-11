@@ -8,7 +8,7 @@ require "find"
 # require "./docker_client.cr"
 require "docker_client"
 require "kubectl_client"
-require "./airgap_utils.cr"
+# require "./airgap_utils.cr"
 require "file_utils"
 
 # todo put in a separate library. it shold go under ./tools for now
@@ -20,11 +20,11 @@ module AirGap
 
   def self.tar_helm_repo(command, output_file : String = "./airgapped.tar.gz")
     Log.info { "tar_helm_repo command: #{command} output_file: #{output_file}" }
-    tar_dir = AirGapUtils.helm_tar_dir(command)
+    tar_dir = AirGap.helm_tar_dir(command)
     FileUtils.mkdir_p(tar_dir)
     Helm.fetch("#{command} -d #{tar_dir}")
     Log.debug { "ls #{tar_dir}:" + `ls -al #{tar_dir}` }
-    info = AirGapUtils.tar_info_by_config_src(command)
+    info = AirGap.tar_info_by_config_src(command)
     repo = info[:repo]
     repo_dir = info[:repo_dir]
     chart_name = info[:chart_name]
@@ -34,7 +34,7 @@ module AirGap
 
     TarClient.modify_tar!(tar_name) do |directory| 
       template_files = Find.find(directory, "*.yaml*", "100")
-      template_files.map{|x| AirGapUtils.image_pull_policy(x)}
+      template_files.map{|x| AirGap.image_pull_policy(x)}
     end
     TarClient.append(output_file, "/tmp", "#{repo_path}")
   ensure

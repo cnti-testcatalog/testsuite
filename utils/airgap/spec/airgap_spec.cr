@@ -1,106 +1,179 @@
 require "./spec_helper"
 require "colorize"
-# require "../src/tasks/utils/utils.cr"
+require "kubectl_client"
 require "file_utils"
-require "sam"
 
 describe "AirGap" do
 
-  before_all do
+  it "'image_pull_policy' should change all imagepull policy references to never", tags: ["airgap"] do
+
+    AirGap.image_pull_policy("./spec/fixtures/litmus-operator-v1.13.2.yaml", "/tmp/imagetest.yml")
+    (File.exists?("/tmp/imagetest.yml")).should be_true
+    resp = File.read("/tmp/imagetest.yml") 
+    (resp).match(/imagePullPolicy: Always/).should be_nil
+    (resp).match(/imagePullPolicy: Never/).should_not be_nil
+  ensure
+    `rm ./tmp/imagetest.yml`
+  end
+
+  it "'#AirGap.publish_tarball' should execute publish a tarball to a bootstrapped cluster", tags: ["airgap"]  do
+    AirGap.download_cri_tools
+    AirGap.bootstrap_cluster()
+    tarball_name = "./spec/fixtures/testimage.tar.gz"
+    resp = AirGap.publish_tarball(tarball_name)
+    resp[0][:output].to_s.match(/unpacking docker.io\/testimage\/testimage:test/).should_not be_nil
+  end
+
+  it "'.tar_helm_repo' should create a tar file from a helm repository that has options", tags: ["airgap"]  do
     Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
-    AirGap::LOGGING.info `./cnf-testsuite airgapped output-file=/tmp/airgapped.tar.gz` unless File.exists?("/tmp/airgapped.tar.gz")
-    (File.exists?("/tmp/airgapped.tar.gz")).should be_true
+    AirGap.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", "/tmp/airgapped.tar")
+    (File.exists?("/tmp/airgapped.tar")).should be_true
+    resp = `tar -tvf /tmp/airgapped.tar`
+    AirGap::LOGGING.info "Tar Filelist: #{resp}"
+    (/repositories\/chaos-mesh_chaos-mesh/).should_not be_nil
+  ensure
+    `rm /tmp/airgapped.tar`
   end
 
-  it "'setup' task should create an airgapped tarball with the necessary files", tags: ["airgap-setup"] do
-    file_list = `tar -tvf /tmp/airgapped.tar.gz`
-    AirGap::LOGGING.info "file_list: #{file_list}"
-    (file_list).match(/kubectl.tar/).should_not be_nil
-    (file_list).match(/chaos-mesh.tar/).should_not be_nil
-    (file_list).match(/chaos-daemon.tar/).should_not be_nil
-    (file_list).match(/chaos-dashboard.tar/).should_not be_nil
-    (file_list).match(/chaos-kernel.tar/).should_not be_nil
-    (file_list).match(/prometheus.tar/).should_not be_nil
-    (file_list).match(/rbac.yaml/).should_not be_nil
-    (file_list).match(/disk-fill-rbac.yaml/).should_not be_nil
-    (file_list).match(/litmus-operator/).should_not be_nil
-    (file_list).match(/download\/sonobuoy.tar.gz/).should_not be_nil
+  it "'.tar_helm_repo' should create a tar file from a helm repository", tags: ["airgap"]  do
+    AirGap.tar_helm_repo("stable/coredns", "/tmp/airgapped.tar")
+    (File.exists?("/tmp/airgapped.tar")).should be_true
+    resp = `tar -tvf /tmp/airgapped.tar`
+    AirGap::LOGGING.info "Tar Filelist: #{resp}"
+    (/repositories\/stable_coredns/).should_not be_nil
+  ensure
+    `rm /tmp/airgapped.tar`
   end
 
-  it "'setup' task should install the necessary cri tools in the cluster", tags: ["airgap-setup"] do
-    response_s = `./cnf-testsuite -l info setup offline=/tmp/airgapped.tar.gz`
-    $?.success?.should be_true
-    AirGap::LOGGING.info response_s
+  it "'.tar_manifest' should create a tar file from a manifest", tags: ["airgap"]  do
+    # KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml")
+    AirGap.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", "/tmp/airgapped.tar")
+    (File.exists?("/tmp/airgapped.tar")).should be_true
+    resp = `tar -tvf /tmp/airgapped.tar`
+    AirGap::LOGGING.info "Tar Filelist: #{resp}"
+    (/litmus-operator-v1.13.2.yaml/).should_not be_nil
+  ensure
+    `rm /tmp/airgapped.tar`
+  end
+
+  it "'#AirGap.check_tar' should determine if a pod has the tar binary on it", tags: ["airgap"]  do
+    pods = KubectlClient::Get.pods
+    resp = AirGap.check_tar(pods.dig?("metadata", "name"))
+    resp.should be_false
+  end
+  
+  it "'#AirGap.check_tar' should determine if the host has the tar binary on it", tags: ["airgap"]  do
+    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+    pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+    resp = AirGap.check_tar(pods[0].dig?("metadata", "name"), pod=false)
+    AirGap::LOGGING.debug "Path to tar on the host filesystem: #{resp}"
+    resp.should_not be_nil 
+  end
+
+  it "'#AirGap.check_sh' should determine if a pod has a shell on it", tags: ["airgap"]  do
+    pods = KubectlClient::Get.pods
+    resp = AirGap.check_sh(pods.dig?("metadata", "name"))
+    resp.should be_false
+  end
+
+  it "'#AirGap.pods_with_tar' should determine if there are any pods with a shell and tar on them", tags: ["airgap"]  do
+    #TODO Should install cri-tools or container with tar before running spec.
+    resp = AirGap.pods_with_tar()
+    if resp[0].dig?("metadata", "name")
+      AirGap::LOGGING.debug "Pods With Tar Found #{resp[0].dig?("metadata", "name")}"
+    end
+    (resp[0].dig?("kind")).should eq "Pod"
+  end
+
+  it "'#AirGap.pods_with_sh' should determine if there are any pods with a shell on them", tags: ["airgap"]  do
+    resp = AirGap.pods_with_sh()
+    (resp[0].dig?("kind")).should eq "Pod"
+  end
+
+  it "'#AirGap.pod_images' should retrieve all of the images for the pods with tar", tags: ["airgap"]  do
+    pods = AirGap.pods_with_tar()
+    resp = AirGap.pod_images(pods)
+    (resp[0]).should_not be_nil
+  end
+
+
+  it "'#AirGap.download_cri_tools' should download the cri tools", tags: ["airgap-tools"]  do
+    resp = AirGap.download_cri_tools()
+    (File.exists?("#{TarClient::TAR_BIN_DIR}/crictl-#{AirGap::CRI_VERSION}-linux-amd64.tar.gz")).should be_true
+    (File.exists?("#{TarClient::TAR_BIN_DIR}/containerd-#{AirGap::CTR_VERSION}-linux-amd64.tar.gz")).should be_true
+  end
+
+  it "'#AirGap.untar_cri_tools' should untar the cri tools", tags: ["airgap-tools"]  do
+    AirGap.download_cri_tools
+    resp = AirGap.untar_cri_tools()
+    (File.exists?("#{TarClient::TAR_BIN_DIR}/crictl")).should be_true
+    (File.exists?("#{TarClient::TAR_BIN_DIR}/ctr")).should be_true
+  end
+
+  it "'#AirGap.create_pod_by_image' should install the cri pod in the cluster", tags: ["airgap-tools"]  do
+    pods = AirGap.pods_with_tar()
+    if pods.empty?
+      AirGap::LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml`
+      $?.success?.should be_true
+      pods = AirGap.pods_with_tar()
+    end
+    images_with_tar = AirGap.pod_images(pods)
+    image = images_with_tar[0]
+    AirGap::LOGGING.info "Image with TAR: #{image}"
+    resp = AirGap.create_pod_by_image(image)
+    (resp).should be_true
+  ensure
+    KubectlClient::Delete.command("daemonset cri-tools")
+    AirGap::LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml wait_count=0`
+  end
+
+  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that has an image with tar avaliable on the node.", tags: ["airgap-tools"]  do
+    pods = AirGap.pods_with_tar()
+    if pods.empty?
+      AirGap::LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml`
+      $?.success?.should be_true
+    end
+    AirGap.bootstrap_cluster()
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
     # Get the generated name of the cri-tools per node
     pods.map do |pod| 
       pod_name = pod.dig?("metadata", "name")
+      containers = pod.dig("spec","containers").as_a
+      image = containers[0]? && containers[0].dig("image")
+      AirGap::LOGGING.info "CRI Pod Image: #{image}"
       sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/crictl > /dev/null")  
       sh[:status].success?
       sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/ctr > /dev/null")  
       sh[:status].success?
     end
-    (/All prerequisites found./ =~ response_s).should_not be_nil
-    (/Setup complete/ =~ response_s).should_not be_nil
+  ensure
+    KubectlClient::Delete.command("daemonset cri-tools")
+    AirGap::LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml wait_count=0`
   end
 
-  it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf helm chart in airgapped mode", tags: ["airgap-repo"]  do
-    begin
-      response_s = `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz`
-      AirGap::LOGGING.info response_s
-      file_list = `tar -tvf /tmp/airgapped.tar.gz`
-      AirGap::LOGGING.info "file_list: #{file_list}"
-      (file_list).match(/coredns_1.8.0.tar/).should_not be_nil
-      (file_list).match(/coredns_1.6.7.tar/).should_not be_nil
-      response_s = `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml input-file=/tmp/airgapped.tar.gz`
-      $?.success?.should be_true
-      AirGap::LOGGING.info response_s
-      (/Successfully setup coredns/ =~ response_s).should_not be_nil
-    ensure
-      response_s = `./cnf-testsuite cnf_cleanup cnf-config=example-cnfs/coredns/cnf-testsuite.yml wait_count=0`
-      $?.success?.should be_true
-      AirGap::LOGGING.info response_s
-      (/Successfully cleaned up/ =~ response_s).should_not be_nil
+
+  it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that does not have tar in the images", tags: ["airgap-tools"]  do
+    KubectlClient::Delete.command("daemonset cri-tools")
+    pods = AirGap.pods_with_tar()
+    # Skip the test if tar is available outside of the cri tools 
+    if pods.empty?
+      AirGap.bootstrap_cluster()
+      pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+      pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+      # Get the generated name of the cri-tools per node
+      pods.map do |pod| 
+        pod_name = pod.dig?("metadata", "name")
+        sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/crictl > /dev/null")  
+        sh[:status].success?
+        sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/ctr > /dev/null")  
+        sh[:status].success?
+      end
     end
-  end
-
-  it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf helm directory in airgapped mode", tags: ["airgap-directory"]  do
-    begin
-      response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz`
-      AirGap::LOGGING.info response_s
-      response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_coredns/cnf-testsuite.yml input-file=/tmp/airgapped.tar.gz`
-      AirGap::LOGGING.info response_s
-      $?.success?.should be_true
-      (/Successfully setup coredns/ =~ response_s).should_not be_nil
-    ensure
-      response_s = `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_coredns/cnf-testsuite.yml wait_count=0`
-      $?.success?.should be_true
-      AirGap::LOGGING.info response_s
-      (/Successfully cleaned up/ =~ response_s).should_not be_nil
-    end
-  end
-
-  it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf manifest directory in airgapped mode", tags: ["airgap-manifest"]  do
-    begin
-      response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz`
-      AirGap::LOGGING.info response_s
-      response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml input-file=/tmp/airgapped.tar.gz`
-      AirGap::LOGGING.info response_s
-      $?.success?.should be_true
-      AirGap::LOGGING.info response_s
-      (/Successfully setup nginx-webapp/ =~ response_s).should_not be_nil
-      (/exported_chart\" not found/ =~ response_s).should be_nil
-    ensure
-      response_s = `LOG_LEVEL=debug ./cnf-testsuite cnf_cleanup installed-from-manifest=true cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml wait_count=0`
-      $?.success?.should be_true
-      AirGap::LOGGING.info response_s
-      (/Successfully cleaned up/ =~ response_s).should_not be_nil
-    end
-  end
-
-  after_all do
-    AirGap.tmp_cleanup
-    (File.exists?("/tmp/airgapped.tar.gz")).should_not be_true
+  ensure
+    KubectlClient::Delete.command("daemonset cri-tools")
   end
 end
+
+
+

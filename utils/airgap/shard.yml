@@ -15,12 +15,20 @@ dependencies:
   halite:
     github: icyleaf/halite
     version: ~> 0.12.0
+  totem:
+    github: icyleaf/totem
+    version: ~> 0.7.0
+  crinja:
+    github: straight-shoota/crinja
+    version: ~> 0.7.0
   tar:
     path: utils/tar
   helm:
     path: utils/helm
   kubectl_client:
     path: utils/kubectl_client
+  docker_client:
+    path: utils/docker_client
   find:
     path: utils/find
 

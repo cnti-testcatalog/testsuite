@@ -905,30 +905,30 @@ end
     #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
     def self.generate(output_file : String = "./airgapped.tar.gz")
       `rm #{output_file}`
-      FileUtils.mkdir_p("#{TAR_BOOTSTRAP_IMAGES_DIR}")
-      [{input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
+      FileUtils.mkdir_p("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
+      [{input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
         image: "bitnami/kubectl:latest"},
-      {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-mesh.tar", 
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/chaos-mesh.tar", 
        image: "pingcap/chaos-mesh:v1.2.1"},
-      {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-daemon.tar", 
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/chaos-daemon.tar", 
        image: "pingcap/chaos-daemon:v1.2.1"},
-      {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-dashboard.tar", 
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/chaos-dashboard.tar", 
        image: "pingcap/chaos-dashboard:v1.2.1"},
-      {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-kernel.tar", 
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/chaos-kernel.tar", 
        image: "pingcap/chaos-kernel:v1.2.1"},
-      {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/pingcap-coredns.tar", 
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/pingcap-coredns.tar", 
        image: "pingcap/coredns:v0.2.0"},
-      {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/sonobuoy.tar", 
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/sonobuoy.tar", 
        image: "docker.io/sonobuoy/sonobuoy:v0.19.0"},
-      {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/sonobuoy-logs.tar", 
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/sonobuoy-logs.tar", 
        image: "docker.io/sonobuoy/systemd-logs:v0.3"},
-      {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/litmus-operator.tar", 
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/litmus-operator.tar", 
        image: "litmuschaos/chaos-operator:1.13.2"},
-      {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/litmus-runner.tar", 
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/litmus-runner.tar", 
        image: "litmuschaos/chaos-runner:1.13.2"},
-      {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/go-runner.tar", 
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/go-runner.tar", 
        image: "litmuschaos/go-runner:1.13.2"},
-      {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/prometheus.tar", 
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/prometheus.tar", 
        image: "prom/prometheus:v2.18.1"}].map do |x|
         DockerClient.pull(x[:image])
         DockerClient.save(x[:image], x[:input_file])

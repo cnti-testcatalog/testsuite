@@ -13,9 +13,9 @@ task "airgapped",  do  |_, args|
     output_file = args.named["of"].as(String) if args.named["of"]?
   if output_file && !output_file.empty?
     # todo check if file exists
-    AirGap.generate(output_file)
+    CNFManager::CNFAirGap.generate(output_file)
   else
-    AirGap.generate()
+    CNFManager::CNFAirGap.generate()
   end
   stdout_success "Airgap setup complete"
 end
