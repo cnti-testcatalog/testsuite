@@ -9,6 +9,7 @@ require "find"
 require "docker_client"
 require "kubectl_client"
 require "./airgap_utils.cr"
+require "file_utils"
 
 # todo put in a separate library. it shold go under ./tools for now
 module AirGap
@@ -17,12 +18,78 @@ module AirGap
   TAR_BOOTSTRAP_IMAGES_DIR = "/tmp/bootstrap_images"
   TAR_REPOSITORY_DIR = "/tmp/repositories"
 
+  #  ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped output-file=./tmp/airgapped.tar.gz
+  #  ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml output-file=./tmp/airgapped.tar.gz
+  #  ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=./tmp/airgapped.tar.gz
+  def self.generate_cnf_setup(config_file : String, output_file, cli_args)
+    Log.info { "generate_cnf_setup cnf_config_file: #{config_file}" }
+    FileUtils.mkdir_p("#{TarClient::TAR_IMAGES_DIR}")
+    config = CNFManager.parsed_config_file(config_file)
+    sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: false, generate_tar_mode: true) 
+    Log.info { "generate sandbox args: sandbox_config: #{sandbox_config}, cli_args: #{cli_args}" }
+    CNFManager.sandbox_setup(sandbox_config, cli_args)
+    install_method = CNFManager.cnf_installation_method(config)
+    Log.info { "generate_cnf_setup images_from_config_src" }
+
+    Log.info { "Download CRI Tools" }
+    AirGap.download_cri_tools
+
+    Log.info { "Add CRI Tools to Airgapped Tar: #{output_file}" }
+    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
+    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
+
+    images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], generate_tar_mode: true) 
+
+    container_names = sandbox_config.cnf_config[:container_names]
+    #todo get image name (org name and image name) from config src
+
+    if container_names
+      config_images = [] of NamedTuple(image_name: String, tag: String)
+      container_names.map do |c|
+        Log.info { "container_names c: #{c}" }
+        # todo get image name for container name
+        image = images.find{|x| x[:container_name]==c["name"]}
+        if image
+          config_images << {image_name: image[:image_name], tag: c["rolling_update_test_tag"]}
+          config_images << {image_name: image[:image_name], tag: c["rolling_downgrade_test_tag"]}
+          config_images << {image_name: image[:image_name], tag: c["rolling_version_change_test_tag"]}
+          config_images << {image_name: image[:image_name], tag: c["rollback_from_tag"]}
+        end
+      end
+    else
+      config_images = [] of NamedTuple(image_name: String, tag: String)
+    end
+    Log.info { "config_images: #{config_images}" }
+
+    images = images + config_images
+    images.map  do |i|
+      input_file = "#{TarClient::TAR_IMAGES_DIR}/#{i[:image_name].split("/")[-1]}_#{i[:tag]}.tar"
+      Log.info { "input_file: #{input_file}" }
+      image = "#{i[:image_name]}:#{i[:tag]}"
+      DockerClient.pull(image)
+      DockerClient.save(image, input_file)
+      TarClient.append(output_file, "/tmp", "images/" + input_file.split("/")[-1])
+      Log.info { "#{output_file} in generate_cnf_setup complete" }
+    end
+    case install_method[0]
+    when :helm_chart
+      Log.debug { "helm_chart : #{install_method[1]}" }
+      AirGap.tar_helm_repo(install_method[1], output_file)
+      Log.info { "generate_cnf_setup tar_helm_repo complete" }
+    # when :manifest_directory
+    #   Log.debug { "manifest_directory : #{install_method[1]}"
+    #   template_files = Find.find(directory, "*.yaml*", "100")
+    #   template_files.map{|x| AirGapUtils.image_pull_policy(x)}
+    end
+  end
+>>>>>>> 243703b4102509e3637e1ee6c3f7c61201bdf096:src/tasks/utils/airgap.cr
+
   def self.tar_helm_repo(command, output_file : String = "./airgapped.tar.gz")
-    LOGGING.info "tar_helm_repo command: #{command} output_file: #{output_file}"
+    Log.info { "tar_helm_repo command: #{command} output_file: #{output_file}" }
     tar_dir = AirGapUtils.helm_tar_dir(command)
     FileUtils.mkdir_p(tar_dir)
     Helm.fetch("#{command} -d #{tar_dir}")
-    LOGGING.debug "ls #{tar_dir}:" + `ls -al #{tar_dir}`
+    Log.debug { "ls #{tar_dir}:" + `ls -al #{tar_dir}` }
     info = AirGapUtils.tar_info_by_config_src(command)
     repo = info[:repo]
     repo_dir = info[:repo_dir]
@@ -37,17 +104,17 @@ module AirGap
     end
     TarClient.append(output_file, "/tmp", "#{repo_path}")
   ensure
-    `rm -rf /tmp/#{repo_path} > /dev/null 2>&1`
+    FileUtils.rm_rf("/tmp/#{repo_path}")
   end
   
   def self.tar_manifest(url, output_file : String = "./airgapped.tar.gz", prefix="")
     manifest_path = "manifests/" 
-    `rm -rf /tmp/#{manifest_path} > /dev/null 2>&1`
+    FileUtils.rm_rf("/tmp/#{manifest_path}")
     FileUtils.mkdir_p("/tmp/" + manifest_path)
     manifest_name = prefix + url.split("/").last 
     manifest_full_path = manifest_path + manifest_name 
-    LOGGING.info "manifest_name: #{manifest_name}"
-    LOGGING.info "manifest_full_path: #{manifest_full_path}"
+    Log.info { "manifest_name: #{manifest_name}" }
+    Log.info { "manifest_full_path: #{manifest_full_path}" }
     Halite.get("#{url}") do |response| 
        File.open("/tmp/" + manifest_full_path, "w") do |file| 
          IO.copy(response.body_io, file)
@@ -55,14 +122,14 @@ module AirGap
     end
     TarClient.append(output_file, "/tmp", manifest_full_path)
   ensure
-    `rm -rf /tmp/#{manifest_path} > /dev/null 2>&1`
+    FileUtils.rm_rf("/tmp/#{manifest_path}")
   end
 
   #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
   #./cnf-testsuite offline -o ~/airgapped.tar.gz
   #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
   def self.generate(output_file : String = "./airgapped.tar.gz", append=false)
-    `rm #{output_file}` unless append
+    FileUtils.rm_rf(output_file) unless appen d
     FileUtils.mkdir_p("#{TAR_BOOTSTRAP_IMAGES_DIR}")
     AirGap.download_cri_tools
     TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
@@ -71,12 +138,12 @@ module AirGap
 
   #./cnf-testsuite setup --offline=./airgapped.tar.gz
   def self.extract(output_file : String = "./airgapped.tar.gz", output_dir="/tmp")
-    LOGGING.info "extract"
+    Log.info { "extract" }
     TarClient.untar(output_file, output_dir)
   end
 
   def self.cache_images(tarball_name="./airgapped.tar.gz", cnf_setup=false)
-    LOGGING.info "cache_images"
+    Log.info { "cache_images" }
     AirGap.bootstrap_cluster()
     if ENV["CRYSTAL_ENV"]? == "TEST"
       # todo change chaos-mesh tar to something more generic
@@ -93,20 +160,20 @@ module AirGap
         image_files = tar_image_files + Find.find("#{TAR_BOOTSTRAP_IMAGES_DIR}", "*.tgz*")
       end
     end
-    LOGGING.info "publishing: #{image_files}"
+    Log.info { "publishing: #{image_files}" }
     resp = image_files.map {|x| AirGap.publish_tarball(x)}
-    LOGGING.debug "resp: #{resp}"
+    Log.debug { "resp: #{resp}" }
     resp
   end
 
   #   # TODO add tar binary to prereqs/documentation
   def self.bootstrap_cluster
     pods = AirGap.pods_with_tar()
-    LOGGING.info "TAR POD: #{pods}"
+    Log.info { "TAR POD: #{pods}" }
     tar_pod_name =  pods[0].dig?("metadata", "name") if pods[0]?
-    LOGGING.info "TAR POD NAME: #{tar_pod_name}"
+    Log.info { "TAR POD NAME: #{tar_pod_name}" }
     unless tar_pod_name 
-      LOGGING.info "NO TAR POD, CHECKING FOR PODS WITH SHELL"
+      Log.info { "NO TAR POD, CHECKING FOR PODS WITH SHELL" }
       pods = AirGap.pods_with_sh()
       no_tar = true
     end
@@ -121,7 +188,7 @@ module AirGap
 
     cri_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
     if no_tar
-      LOGGING.info "NO TAR POD, COPYING TAR FROM HOST"
+      Log.info { "NO TAR POD, COPYING TAR FROM HOST" }
       tar_path = AirGap.check_tar(cri_tools_pod_name, namespace="default", pod=false)
       pods.map do |pod| 
         KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- cp #{tar_path} /usr/local/bin/")
@@ -144,14 +211,14 @@ module AirGap
     pods.map do |pod| 
       pod_name = pod.dig?("metadata", "name")
       resp = KubectlClient.exec("-ti #{pod_name} -- ctr -n=k8s.io image import /tmp/#{tarball.split("/")[-1]}")
-      LOGGING.debug "Resp: #{resp}"
+      Log.debug { "Resp: #{resp}" }
       resp
     end
   end
 
   def self.download_cri_tools
     FileUtils.mkdir_p("#{TarClient::TAR_BIN_DIR}")
-    LOGGING.info "download_cri_tools"
+    Log.info { "download_cri_tools" }
     `curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/#{CRI_VERSION}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz --output #{TarClient::TAR_BIN_DIR}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz`
     `curl -L https://github.com/containerd/containerd/releases/download/v#{CTR_VERSION}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz --output #{TarClient::TAR_BIN_DIR}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz`
   end
@@ -269,7 +336,7 @@ end
       pod_name = pod.dig?("metadata", "name")
       namespace = pod.dig?("metadata", "namespace")
       if check_sh(pod_name, namespace) && check_tar(pod_name, namespace, pod=true)
-        LOGGING.debug "Found tar and sh Pod: #{pod_name}"
+        Log.debug { "Found tar and sh Pod: #{pod_name}" }
         true
       else
         false
@@ -282,7 +349,7 @@ end
       pod_name = pod.dig?("metadata", "name")
       namespace = pod.dig?("metadata", "namespace")
       if check_sh(pod_name, namespace) 
-        LOGGING.debug "Found sh Pod: #{pod_name}"
+        Log.debug { "Found sh Pod: #{pod_name}" }
         true
       else
         false
@@ -394,27 +461,30 @@ end
   # todo separate cnf-test-suite cleanup from airgap generic cleanup
   # todo force process.run instead of backtick
   def self.tmp_cleanup
-    LOGGING.info "cleaning up /tmp directories, binaries, and tar files"
-    `rm -rf /tmp/repositories`
-    `rm -rf /tmp/images`
-    `rm -rf /tmp/bootstrap_images`
-    `rm -rf /tmp/download`
-    `rm -rf /tmp/manifests`
-    `rm -rf /tmp/bin`
-    `rm -rf /tmp/airgapped.tar.gz`
-    `rm -rf /tmp/chaos-daemon.tar`
-    `rm -rf /tmp/chaos-dashboard.tar`
-    `rm -rf /tmp/chaos-daemon.tar`
-    `rm -rf /tmp/chaos-mesh.tar`
-    `rm -rf /tmp/coredns_1.7.1.tar`
-    `rm -rf /tmp/crictl`
-    `rm -rf /tmp/kubectl.tar`
-    `rm -rf /tmp/litmus-operator.tar`
-    `rm -rf /tmp/litmus-runner.tar`
-    `rm -rf /tmp/pingcap-coredns.tar`
-    `rm -rf /tmp/prometheus.tar`
-    `rm -rf /tmp/sonobuoy-logs.tar`
-    `rm -rf /tmp/sonobuoy.tar`
+    Log.info { "cleaning up /tmp directories, binaries, and tar files" }
+    paths = [
+      "/tmp/repositories",
+      "/tmp/images",
+      "/tmp/bootstrap_images",
+      "/tmp/download",
+      "/tmp/manifests",
+      "/tmp/bin",
+      "/tmp/airgapped.tar.gz",
+      "/tmp/chaos-daemon.tar",
+      "/tmp/chaos-dashboard.tar",
+      "/tmp/chaos-daemon.tar",
+      "/tmp/chaos-mesh.tar",
+      "/tmp/coredns_1.7.1.tar",
+      "/tmp/crictl",
+      "/tmp/kubectl.tar",
+      "/tmp/litmus-operator.tar",
+      "/tmp/litmus-runner.tar",
+      "/tmp/pingcap-coredns.tar",
+      "/tmp/prometheus.tar",
+      "/tmp/sonobuoy-logs.tar",
+      "/tmp/sonobuoy.tar"
+    ]
+    FileUtils.rm_rf(paths)
   end
 
   LOGGING = LogginGenerator.new
@@ -438,4 +508,3 @@ end
     end
   end
 end
-

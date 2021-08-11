@@ -4,10 +4,9 @@ require "colorize"
 require "totem"
 require "./utils/utils.cr"
 
-#  LOGGING.info `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped output-file=./tmp/airgapped.tar.gz`
 task "cnf_setup", ["helm_local_install"] do |_, args|
-  VERBOSE_LOGGING.info "cnf_setup" if check_verbose(args)
-  VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
+  Log.for("verbose").info { "cnf_setup" } if check_verbose(args)
+  Log.for("verbose").debug { "args = #{args.inspect}" } if check_verbose(args)
   cli_hash = CNFManager.sample_setup_cli_args(args)
   output_file = cli_hash[:output_file]
   input_file =  cli_hash[:input_file]
@@ -39,9 +38,8 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
 end
 
 task "cnf_cleanup" do |_, args|
-  VERBOSE_LOGGING.info "cnf_cleanup" if check_verbose(args)
-  VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
-  LOGGING.debug "args = #{args.inspect}"
+  Log.for("verbose").info { "cnf_cleanup" } if check_verbose(args)
+  Log.for("verbose").debug { "args = #{args.inspect}" } if check_verbose(args)
   if args.named.keys.includes? "cnf-config"
     cnf = args.named["cnf-config"].as(String)
   elsif args.named.keys.includes? "cnf-path"
@@ -50,7 +48,7 @@ task "cnf_cleanup" do |_, args|
     stdout_failure "Error: You must supply either cnf-config or cnf-path"
     exit 1
 	end
-  VERBOSE_LOGGING.debug "cnf_cleanup cnf: #{cnf}" if check_verbose(args)
+  Log.debug { "cnf_cleanup cnf: #{cnf}" } if check_verbose(args)
   if args.named["force"]? && args.named["force"] == "true"
     force = true 
   else
@@ -66,8 +64,8 @@ task "cnf_cleanup" do |_, args|
 end
 
 task "CNFManager.helm_repo_add" do |_, args|
-  VERBOSE_LOGGING.info "CNFManager.helm_repo_add" if check_verbose(args)
-  VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
+  Log.for("verbose").info { "CNFManager.helm_repo_add" } if check_verbose(args)
+  Log.for("verbose").debug { "args = #{args.inspect}" } if check_verbose(args)
   if args.named["cnf-config"]? || args.named["yml-file"]?
     CNFManager.helm_repo_add(args: args)
   else
@@ -77,18 +75,18 @@ task "CNFManager.helm_repo_add" do |_, args|
 end
 
 task "generate_config" do |_, args|
-  VERBOSE_LOGGING.info "CNFManager.generate_config" if check_verbose(args)
-  VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
+  Log.for("verbose").info { "CNFManager.generate_config" } if check_verbose(args)
+  Log.for("verbose").debug { "args = #{args.inspect}" } if check_verbose(args)
   if args.named["config-src"]? 
     config_src = args.named["config-src"].as(String)
     output_file = args.named["output-file"].as(String) if args.named["output-file"]?
     output_file = args.named["of"].as(String) if args.named["of"]?
     #TODO make this work in airgapped mode
     if output_file && !output_file.empty?
-      LOGGING.info "generating config with an output file"
+      Log.info { "generating config with an output file" }
       CNFManager::GenerateConfig.generate_config(config_src, output_file)
     else
-      LOGGING.info "generating config without an output file"
+      Log.info { "generating config without an output file" }
       CNFManager::GenerateConfig.generate_config(config_src)
     end
   end
