@@ -1,10 +1,5 @@
 # coding: utf-8
-require "../find/find.cr"
-# To avoid circular dependencies:
-# airgap uses airgaputils
-# airgap uses tar
-# tar uses airgaputils
-# airgaputils uses find
+require "find"
 module AirGapUtils
   TAR_REPOSITORY_DIR = "/tmp/repositories"
 

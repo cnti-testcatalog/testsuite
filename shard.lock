@@ -20,6 +20,10 @@ shards:
     path: utils/docker_client
     version: 0.1.0
 
+  find:
+    path: utils/find
+    version: 0.1.0
+
   halite:
     git: https://github.com/icyleaf/halite.git
     version: 0.12.0
