@@ -1,5 +1,5 @@
 require "kubectl_client"
-# require "./airgap_utils.cr"
+require "airgap"
 
 def self.image_pull(yml)
   containers  = yml.map { |y|

@@ -1,0 +1,25 @@
+name: airgap
+version: 0.1.0
+
+authors:
+  - W. Watson <Watson@vulk.coop>
+  - Denver Williams <denver@debian.nz>
+
+targets:
+  kubectl_client:
+    main: airgap.cr
+
+crystal: '>= 1.0.0'
+
+dependencies:
+  halite:
+    github: icyleaf/halite
+    version: ~> 0.12.0
+  tar:
+    path: utils/tar
+  helm:
+    path: utils/helm
+  kubectl_client:
+    path: utils/kubectl_client
+
+license: MIT

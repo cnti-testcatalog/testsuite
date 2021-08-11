@@ -14,79 +14,7 @@ module AirGap
   CRI_VERSION="v1.17.0"
   CTR_VERSION="1.5.0"
   TAR_BOOTSTRAP_IMAGES_DIR = "/tmp/bootstrap_images"
-
-  #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped output-file=./tmp/airgapped.tar.gz
-  #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml output-file=./tmp/airgapped.tar.gz
-  #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=./tmp/airgapped.tar.gz
-  def self.generate_cnf_setup(config_file : String, output_file, cli_args)
-    LOGGING.info "generate_cnf_setup cnf_config_file: #{config_file}"
-    FileUtils.mkdir_p("#{TarClient::TAR_IMAGES_DIR}")
-    # todo create a way to call setup code for directories (cnf manager code)
-    config = CNFManager.parsed_config_file(config_file)
-    sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: false, generate_tar_mode: true) 
-    LOGGING.info "generate sandbox args: sandbox_config: #{sandbox_config}, cli_args: #{cli_args}"
-    CNFManager.sandbox_setup(sandbox_config, cli_args)
-    install_method = CNFManager.cnf_installation_method(config)
-    LOGGING.info "generate_cnf_setup images_from_config_src"
-
-    LOGGING.info "Download CRI Tools"
-    AirGap.download_cri_tools
-
-    LOGGING.info "Add CRI Tools to Airgapped Tar: #{output_file}"
-    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
-    TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
-
-    images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], generate_tar_mode: true) 
-
-
-    # todo function that takes sandbox containers and extracts images (config images)
-    container_names = sandbox_config.cnf_config[:container_names]
-    #todo get image name (org name and image name) from config src
-
-    if container_names
-      config_images = [] of NamedTuple(image_name: String, tag: String)
-      container_names.map do |c|
-        LOGGING.info "container_names c: #{c}"
-        # todo get image name for container name
-        image = images.find{|x| x[:container_name]==c["name"]}
-        if image
-          config_images << {image_name: image[:image_name], tag: c["rolling_update_test_tag"]}
-          config_images << {image_name: image[:image_name], tag: c["rolling_downgrade_test_tag"]}
-          config_images << {image_name: image[:image_name], tag: c["rolling_version_change_test_tag"]}
-          config_images << {image_name: image[:image_name], tag: c["rollback_from_tag"]}
-        end
-      end
-    else
-      config_images = [] of NamedTuple(image_name: String, tag: String)
-    end
-    LOGGING.info "config_images: #{config_images}"
-
-    # todo function that accepts image names and tars them
-    images = images + config_images
-    images.map  do |i|
-      input_file = "#{TarClient::TAR_IMAGES_DIR}/#{i[:image_name].split("/")[-1]}_#{i[:tag]}.tar"
-      LOGGING.info "input_file: #{input_file}"
-      image = "#{i[:image_name]}:#{i[:tag]}"
-      DockerClient.pull(image)
-      DockerClient.save(image, input_file)
-      TarClient.append(output_file, "/tmp", "images/" + input_file.split("/")[-1])
-      LOGGING.info "#{output_file} in generate_cnf_setup complete"
-    end
-    # todo hardcode install method for helm charts until helm directories / manifest 
-    #  directories are supported
-    case install_method[0]
-    when Helm::InstallMethod::HelmChart
-      LOGGING.debug "helm_chart : #{install_method[1]}"
-      AirGap.tar_helm_repo(install_method[1], output_file)
-      LOGGING.info "generate_cnf_setup tar_helm_repo complete"
-    # when Helm::InstallMethod::ManifestDirectory
-    #   LOGGING.debug "manifest_directory : #{install_method[1]}"
-    #   template_files = Find.find(directory, "*.yaml*", "100")
-    #   template_files.map{|x| AirGapUtils.image_pull_policy(x)}
-    end
-  end
-
-
+  TAR_REPOSITORY_DIR = "/tmp/repositories"
 
   def self.tar_helm_repo(command, output_file : String = "./airgapped.tar.gz")
     LOGGING.info "tar_helm_repo command: #{command} output_file: #{output_file}"
@@ -132,51 +60,12 @@ module AirGap
   #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
   #./cnf-testsuite offline -o ~/airgapped.tar.gz
   #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
-  def self.generate(output_file : String = "./airgapped.tar.gz")
-    `rm #{output_file}`
+  def self.generate(output_file : String = "./airgapped.tar.gz", append=false)
+    `rm #{output_file}` unless append
     FileUtils.mkdir_p("#{TAR_BOOTSTRAP_IMAGES_DIR}")
     AirGap.download_cri_tools
-    [{input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
-      image: "bitnami/kubectl:latest"},
-    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-mesh.tar", 
-     image: "pingcap/chaos-mesh:v1.2.1"},
-    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-daemon.tar", 
-     image: "pingcap/chaos-daemon:v1.2.1"},
-    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-dashboard.tar", 
-     image: "pingcap/chaos-dashboard:v1.2.1"},
-    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-kernel.tar", 
-     image: "pingcap/chaos-kernel:v1.2.1"},
-    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/pingcap-coredns.tar", 
-     image: "pingcap/coredns:v0.2.0"},
-    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/sonobuoy.tar", 
-     image: "docker.io/sonobuoy/sonobuoy:v0.19.0"},
-    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/sonobuoy-logs.tar", 
-     image: "docker.io/sonobuoy/systemd-logs:v0.3"},
-    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/litmus-operator.tar", 
-     image: "litmuschaos/chaos-operator:1.13.2"},
-    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/litmus-runner.tar", 
-     image: "litmuschaos/chaos-runner:1.13.2"},
-    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/go-runner.tar", 
-     image: "litmuschaos/go-runner:1.13.2"},
-    {input_file: "#{TAR_BOOTSTRAP_IMAGES_DIR}/prometheus.tar", 
-     image: "prom/prometheus:v2.18.1"}].map do |x|
-      DockerClient.pull(x[:image])
-      DockerClient.save(x[:image], x[:input_file])
-      TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bootstrap_images/" + x[:input_file].split("/")[-1])
-    end
-    # todo keep crictl and containerd tar files, move to the rest to cnf-test-suite specific bootstrap
     TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/crictl-#{CRI_VERSION}-linux-amd64.tar.gz")
     TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/containerd-#{CTR_VERSION}-linux-amd64.tar.gz")
-    AirGap.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
-    AirGap.tar_manifest("https://raw.githubusercontent.com/litmuschaos/chaos-operator/master/deploy/chaos_crds.yaml", output_file)
-    AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml", output_file)
-    AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml", output_file)
-    AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/experiment.yaml", output_file, "disk-fill-")
-    AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/disk-fill/rbac.yaml", output_file, "disk-fill-")
-    url = "https://github.com/vmware-tanzu/sonobuoy/releases/download/v#{SONOBUOY_K8S_VERSION}/sonobuoy_#{SONOBUOY_K8S_VERSION}_#{SONOBUOY_OS}_amd64.tar.gz"
-    TarClient.tar_file_by_url(url, output_file, "sonobuoy.tar.gz")
-    Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
-    AirGap.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
   end
 
   #./cnf-testsuite setup --offline=./airgapped.tar.gz
@@ -400,6 +289,107 @@ end
     end
   end
 
+
+  def self.image_pull_policy_config_file?(install_method, config_src, release_name)
+    LOGGING.info "image_pull_policy_config_file"
+    yml = [] of Array(YAML::Any)
+    case install_method
+    when Helm::InstallMethod::ManifestDirectory
+      file_list = Helm::Manifest.manifest_file_list(config_src, silent=false)
+      yml = Helm::Manifest.manifest_ymls_from_file_list(file_list)
+    when Helm::InstallMethod::HelmChart, Helm::InstallMethod::HelmDirectory
+      Helm.template(release_name, config_src, output_file="cnfs/temp_template.yml") 
+      yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
+    else
+      raise "config source error: #{install_method}"
+    end
+    container_image_pull_policy?(yml)
+  end
+
+  def self.container_image_pull_policy?(yml : Array(YAML::Any))
+    LOGGING.info "container_image_pull_policy"
+    containers  = yml.map { |y|
+      mc = Helm::Manifest.manifest_containers(y)
+      mc.as_a? if mc
+    }.flatten.compact
+    LOGGING.debug "containers : #{containers}"
+    found_all = true 
+    containers.flatten.map do |x|
+      LOGGING.debug "container x: #{x}"
+      ipp = x.dig?("imagePullPolicy")
+      image = x.dig?("image")
+      LOGGING.debug "ipp: #{ipp}"
+      LOGGING.debug "image: #{image.as_s}" if image
+      parsed_image = DockerClient.parse_image(image.as_s) if image
+      LOGGING.debug "parsed_image: #{parsed_image}"
+      # if there is no image pull policy, any image that does not have a tag will
+      # force a call out to the default image registry
+      if ipp == nil && (parsed_image && parsed_image["tag"] == "latest")
+        LOGGING.info "ipp or tag not found with ipp: #{ipp} and parsed_image: #{parsed_image}"
+        found_all = false
+      end 
+    end
+    LOGGING.info "found_all: #{found_all}"
+    found_all
+  end
+
+
+  def self.image_pull_policy(file, output_file="")
+    input_content = File.read(file) 
+    output_content = input_content.gsub(/(.*imagePullPolicy:)(.*)/,"\\1 Never")
+
+    # LOGGING.debug "pull policy found?: #{input_content =~ /(.*imagePullPolicy:)(.*)/}"
+    # LOGGING.debug "output_content: #{output_content}"
+    if output_file.empty?
+      input_content = File.write(file, output_content) 
+    else
+      input_content = File.write(output_file, output_content) 
+    end
+    #
+    #TODO find out why this doesn't work
+    # LOGGING.debug "after conversion: #{File.read(file)}"
+  end
+
+  def self.tar_name_by_helm_chart(config_src : String)
+    FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
+    LOGGING.debug "tar_name_by_helm_chart ls /tmp/repositories:" + `ls -al /tmp/repositories`
+    tar_dir = helm_tar_dir(config_src)
+    tgz_files = Find.find(tar_dir, "*.tgz*")
+    tar_files = Find.find(tar_dir, "*.tar*") + tgz_files
+    tar_name = ""
+    tar_name = tar_files[0] if !tar_files.empty?
+    LOGGING.info "tar_name: #{tar_name}"
+    tar_name
+  end
+
+  def self.tar_info_by_config_src(config_src : String)
+    FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
+    LOGGING.debug "tar_info_by_config_src ls /tmp/repositories:" + `ls -al /tmp/repositories`
+    # chaos-mesh/chaos-mesh --version 0.5.1
+    repo = config_src.split(" ")[0]
+    repo_dir = repo.gsub("/", "_")
+    chart_name = repo.split("/")[-1]
+    repo_path = "repositories/#{repo_dir}" 
+    tar_dir = "/tmp/#{repo_path}"
+    tar_info = {repo: repo, repo_dir: repo_dir, chart_name: chart_name,
+     repo_path: repo_path, tar_dir: tar_dir, tar_name: tar_name_by_helm_chart(config_src)}
+    LOGGING.info "tar_info: #{tar_info}"
+    tar_info
+  end
+
+  def self.helm_tar_dir(config_src : String)
+    FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
+    LOGGING.debug "helm_tar_dir ls /tmp/repositories:" + `ls -al /tmp/repositories`
+    # chaos-mesh/chaos-mesh --version 0.5.1
+    repo = config_src.split(" ")[0]
+    repo_dir = repo.gsub("/", "_")
+    chart_name = repo.split("/")[-1]
+    repo_path = "repositories/#{repo_dir}" 
+    tar_dir = "/tmp/#{repo_path}"
+    LOGGING.info "helm_tar_dir: #{tar_dir}"
+    tar_dir
+  end
+
   # todo separate cnf-test-suite cleanup from airgap generic cleanup
   # todo force process.run instead of backtick
   def self.tmp_cleanup
@@ -424,6 +414,27 @@ end
     `rm -rf /tmp/prometheus.tar`
     `rm -rf /tmp/sonobuoy-logs.tar`
     `rm -rf /tmp/sonobuoy.tar`
+  end
+
+  LOGGING = LogginGenerator.new
+  class LogginGenerator
+    macro method_missing(call)
+      if {{ call.name.stringify }} == "debug"
+        Log.debug {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "info"
+        Log.info {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "warn"
+        Log.warn {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "error"
+        Log.error {{{call.args[0]}}}
+      end
+      if {{ call.name.stringify }} == "fatal"
+        Log.fatal {{{call.args[0]}}}
+      end
+    end
   end
 end
 

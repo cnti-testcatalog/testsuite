@@ -230,7 +230,7 @@ task "disk_fill", ["install_litmus"] do |_, args|
       if test_passed
         if args.named["offline"]?
             LOGGING.info "install resilience offline mode"
-          AirGapUtils.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/disk-fill-experiment.yaml")
+          AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/disk-fill-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-rbac.yaml")
         else
@@ -279,7 +279,7 @@ task "pod_delete", ["install_litmus"] do |_, args|
       if test_passed
         if args.named["offline"]?
             LOGGING.info "install resilience offline mode"
-          AirGapUtils.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-delete-experiment.yaml")
+          AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-delete-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-delete-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-delete-rbac.yaml")
         else
@@ -327,7 +327,7 @@ task "pod_memory_hog", ["install_litmus"] do |_, args|
       if test_passed
         if args.named["offline"]?
             LOGGING.info "install resilience offline mode"
-          AirGapUtils.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-memory-hog-experiment.yaml")
+          AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-memory-hog-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-memory-hog-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-memory-hog-rbac.yaml")
         else
@@ -374,7 +374,7 @@ task "pod_io_stress", ["install_litmus"] do |_, args|
       if test_passed
         if args.named["offline"]?
             LOGGING.info "install resilience offline mode"
-          AirGapUtils.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-io-stress-experiment.yaml")
+          AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-io-stress-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-io-stress-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-io-stress-rbac.yaml")
         else

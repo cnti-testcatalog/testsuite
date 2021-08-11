@@ -12,7 +12,8 @@ task "airgapped",  do  |_, args|
   output_file = args.named["output-file"].as(String) if args.named["output-file"]?
     output_file = args.named["of"].as(String) if args.named["of"]?
   if output_file && !output_file.empty?
-      AirGap.generate(output_file)
+    # todo check if file exists
+    AirGap.generate(output_file)
   else
     AirGap.generate()
   end

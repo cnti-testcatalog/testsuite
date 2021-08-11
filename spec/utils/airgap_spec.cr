@@ -10,7 +10,7 @@ describe "AirGap" do
 
   it "'image_pull_policy' should change all imagepull policy references to never", tags: ["airgap"] do
 
-    AirGapUtils.image_pull_policy("./spec/fixtures/litmus-operator-v1.13.2.yaml", "/tmp/imagetest.yml")
+    AirGap.image_pull_policy("./spec/fixtures/litmus-operator-v1.13.2.yaml", "/tmp/imagetest.yml")
     (File.exists?("/tmp/imagetest.yml")).should be_true
     resp = File.read("/tmp/imagetest.yml") 
     (resp).match(/imagePullPolicy: Always/).should be_nil

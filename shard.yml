@@ -44,6 +44,8 @@ dependencies:
     path: utils/kubectl_client
   helm:
     path: utils/helm
+  airgap:
+    path: utils/airgap
 
 development_dependencies:
   ameba:
