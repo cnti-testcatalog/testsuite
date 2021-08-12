@@ -904,6 +904,7 @@ end
     #./cnf-testsuite offline -o ~/airgapped.tar.gz
     #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
     def self.generate(output_file : String = "./airgapped.tar.gz")
+      LOGGING.info "cnf_manager generate"
       `rm #{output_file}`
       FileUtils.mkdir_p("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
       [{input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
@@ -935,7 +936,8 @@ end
         TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bootstrap_images/" + x[:input_file].split("/")[-1])
       end
       # todo keep crictl and containerd tar files, move to the rest to cnf-test-suite specific bootstrap
-      AirGap.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", output_file)
+      # AirGap.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.8.yaml", output_file)
+      AirGap.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.4.yaml", output_file)
       AirGap.tar_manifest("https://raw.githubusercontent.com/litmuschaos/chaos-operator/master/deploy/chaos_crds.yaml", output_file)
       AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/experiment.yaml", output_file)
       AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/1.13.2?file=charts/generic/pod-network-latency/rbac.yaml", output_file)
