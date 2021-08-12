@@ -924,11 +924,11 @@ end
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/sonobuoy-logs.tar", 
        image: "docker.io/sonobuoy/systemd-logs:v0.3"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/litmus-operator.tar", 
-       image: "litmuschaos/chaos-operator:1.13.2"},
+       image: "litmuschaos/chaos-operator:1.13.8"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/litmus-runner.tar", 
-       image: "litmuschaos/chaos-runner:1.13.2"},
+       image: "litmuschaos/chaos-runner:1.13.8"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/go-runner.tar", 
-       image: "litmuschaos/go-runner:1.13.2"},
+       image: "litmuschaos/go-runner:1.13.8"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/prometheus.tar", 
        image: "prom/prometheus:v2.18.1"}].map do |x|
         DockerClient.pull(x[:image])
