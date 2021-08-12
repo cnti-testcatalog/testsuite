@@ -312,7 +312,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     create_namespace = `kubectl create namespace hardcoded-ip-test`
     unless helm_chart.empty?
       if args.named["offline"]?
-        info = AirGapUtils.tar_info_by_config_src(helm_chart)
+        info = AirGap.tar_info_by_config_src(helm_chart)
         LOGGING.info  "hardcoded_ip_addresses_in_k8s_runtime_configuration airgapped mode info: #{info}"
         helm_chart = info[:tar_name]
       end

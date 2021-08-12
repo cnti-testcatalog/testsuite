@@ -13,13 +13,16 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
   config_file =  cli_hash[:config_file]
   if output_file && !output_file.empty?
     puts "cnf tarball generation mode".colorize(:green)
-    tar_info = AirGap.generate_cnf_setup(cli_hash[:config_file], output_file, cli_hash)
+    tar_info = CNFManager::CNFAirGap.generate_cnf_setup(cli_hash[:config_file], output_file, cli_hash)
     puts "cnf tarball generation mode complete".colorize(:green)
   elsif input_file && !input_file.empty?
     puts "cnf setup airgapped mode".colorize(:green)
     AirGap.extract(input_file)
     puts "cnf setup caching images on nodes (airgapped mode)".colorize(:green)
-    if config_file && !AirGapUtils.image_pull_policy_config_file?(config_file)
+    install_method = CNFManager::Config.install_method_by_config_file(config_file)
+    config_src = CNFManager::Config.config_src_by_config_file(config_file)
+    release_name = CNFManager::Config.release_name_by_config_file(config_file)
+    if config_file && !AirGap.image_pull_policy_config_file?(install_method, config_src, release_name)
       puts "Some containers within the installation manifests do not have an image pull policy defined.  Airgap mode will not work until this is fixed.".colorize(:red)
       exit 1
     end

@@ -1,5 +1,5 @@
 require "../spec_helper"
-require "../../src/tasks/utils/airgap.cr"
+require "airgap"
 require "kubectl_client"
 require "../../src/tasks/utils/kernel_instrospection.cr"
 require "file_utils"

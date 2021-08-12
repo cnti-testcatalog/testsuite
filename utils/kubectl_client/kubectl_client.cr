@@ -1,7 +1,5 @@
 require "totem"
 require "colorize"
-# todo remove dependency
-# require "./cnf_manager.cr"
 # require "halite"
 
 # todo put in a separate library. it shold go under ./tools for now
