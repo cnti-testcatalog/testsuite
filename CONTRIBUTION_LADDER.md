@@ -44,7 +44,7 @@ How you can be more involved and participate in the community:
 
 ## Contributor
 
-[Contributors][contributors] have the following capabilities:
+[Contributors][https://github.com/cncf/cnf-testsuite/blob/main/MAINTAINERS.md#contributors] have the following capabilities:
 
 * Have issues and pull requests assigned to you
 * Apply labels, milestones and projects
@@ -69,7 +69,7 @@ please reach out to one or more of the contributors or [maintainers](MAINTAINERS
 
 ## Maintainer
 
-[Maintainers][maintainers] are members with extra capabilities:
+[Maintainers][https://github.com/cncf/cnf-testsuite/blob/main/MAINTAINERS.md#maintainers] are members with extra capabilities:
 
 * Be a [Code Owner](.github/CODEOWNERS) and have reviews automatically requested.
 * Review pull requests.
@@ -98,7 +98,7 @@ the maintainers.
 
 ## Admin
 
-[Admins][admins] are maintainers with extra responsibilities:
+[Admins][MAINTAINERS.md#admin] are maintainers with extra responsibilities:
 
 
 * Manage repositories
