@@ -9,64 +9,6 @@ on:
       - '**'
       - '!**.md'
 jobs:
-  # debug_status:
-  #   name: Debug Status
-  #   runs-on: [default]
-  #   env:
-  #     skip_debug: ${{secrets.SKIP_DEBUG}}
-  #     release_debug: ${{secrets.RELEASE_DEBUG}}
-  #     build_debug: ${{secrets.BUILD_DEBUG}}
-  #   steps:
-  #   - name: Create Debug Files
-  #     run: |
-  #       touch skip_debug
-  #       touch release_debug
-  #       touch build_debug
-  #       if [[ "$skip_debug" == 'true' ]]; then
-  #          echo 'true' > skip_debug
-  #       fi
-  #       if [[ "$release_debug" == 'true' ]]; then
-  #          echo 'true' > release_debug
-  #       fi
-  #       if [[ "$build_debug" == 'true' ]]; then
-  #          echo 'true' > build_debug
-  #       fi
-    # - name: upload artifact
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: debug_status
-    #     path: |
-    #       skip_debug
-    #       release_debug
-    #       build_debug
-  # debug_output:
-  #   name: Debug Outputs
-  #   needs: [debug_status]
-  #   runs-on: [default]
-  #   outputs:
-  #     skip-debug: ${{ steps.skip-debug.outputs.debug }}
-  #     release-debug: ${{ steps.release-debug.outputs.debug }}
-  #     build-debug: ${{ steps.build-debug.outputs.debug }}
-  #   steps:
-  #   - name: Download artifact
-  #     uses: actions/download-artifact@v2
-  #     with:
-  #       name: debug_status
-  #   - id: skip-debug
-  #     run: |
-  #       if grep -q 'true' "./skip_debug"; then 
-  #         echo "::set-output name=debug::true"
-  #       fi
-  #   - id: release-debug
-  #     run: |
-  #       if grep -q 'true' "./release_debug"; then 
-  #         echo "::set-output name=debug::true"
-  #       fi
-  #   - id: build-debug
-  #     run: |
-  #       if grep -q 'true' "./build_debug"; then 
-  #         echo "::set-output name=debug::true"
-  #       fi
   tests:
     name: Fetch Matrix Tests
     runs-on: [default]
@@ -261,8 +203,7 @@ jobs:
         cp -a $(pwd) /shared/$DIR/cnf-testsuite
         cp /tmp/airgapped.tar.gz /shared/$DIR/
         docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
-        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz"
-        #; LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true; kubectl get deployment chaos-operator-ce --namespace litmus; ./.github/workflows/check_litmus.sh"
+        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz ; LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true; kubectl get deployment chaos-operator-ce --namespace litmus; ./.github/workflows/check_litmus.sh"
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
