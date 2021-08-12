@@ -1,0 +1,23 @@
+---
+helm_directory: chart
+git_clone_url: 
+install_script: 
+release_name: sidecar-container-demo
+deployment_name: nginx-webapp 
+deployment_label: app 
+service_name: 
+application_deployment_names: [nginx-webapp]
+docker_repository: coredns/coredns
+helm_repository:
+  name: stable 
+  repo_url: https://cncf.gitlab.io/stable
+helm_chart_container_name: busybox 
+rolling_update_test_tag: 1.6.7
+container_names: 
+  - name: sidecar-container1 
+    rolling_update_test_tag: "1.32.0"
+  - name: sidecar-container2
+    rolling_update_test_tag: "1.32.0"
+  - name: main-container
+    rolling_update_test_tag: "1.16.0"
+allowlist_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]

@@ -89,7 +89,7 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
     helm_chart = config.cnf_config[:helm_chart]
     emoji_published_helm_chart="⎈📦🌐"
     current_dir = FileUtils.pwd
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
     VERBOSE_LOGGING.debug helm if check_verbose(args)
 
     if CNFManager.helm_repo_add(args: args)
@@ -136,7 +136,7 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
 
     current_dir = FileUtils.pwd
     VERBOSE_LOGGING.debug current_dir if check_verbose(args)
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
     emoji_helm_lint="⎈📝☑️"
 
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)))

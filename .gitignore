@@ -1,5 +1,8 @@
 /docs/
 /lib/
+/utils/tar/lib/
+/utils/tar/bin/
+/utils/tar/tmp/
 /bin/
 /.shards/
 *.dwarf
@@ -11,6 +14,7 @@
 /tools/helm
 /tools/sonobuoy
 /tools/cluster-api
+/tools/airgapped_kind/kind_node/node.tar.gz
 admin.conf
 cnf-testsuite
 results.yml
@@ -28,7 +32,7 @@ linux-amd64/
 reasonable_startup_orig_gobal.yml
 reasonable_startup_orig_local.yml
 sam.cr
-test.file 
+github.env
 tools/k8s-infra/
 tmp/
 chaos_network_loss.yml
@@ -42,3 +46,8 @@ cri-tools-manifest.yml
 containerd-*-linux-amd64.tar.gz
 crictl-*-linux-amd64.tar.gz
 tools/LICENSE
+airgapped.tar.gz
+airgaptest.tar.gz
+/cnf-testsuite.yml
+/*.tgz
+

@@ -2,7 +2,7 @@
 require "../spec_helper"
 require "colorize"
 require "../../src/tasks/utils/utils.cr"
-require "../../src/tasks/utils/kubectl_client.cr"
+require "kubectl_client"
 require "file_utils"
 require "sam"
 
@@ -270,7 +270,7 @@ describe "Utils" do
 
   it "spec directory should have tags for all of the specs", tags: ["spec-tags"]  do
     response = String::Builder.new
-    Process.run("grep -r -I -P '^ *it(?!.*tags(.*\"))' ./spec", shell: true) do |proc|
+    Process.run("grep -r -I -P '^ *it \"(?!.*tags(.*\"))' ./spec", shell: true) do |proc|
       while line = proc.output.gets
         response << line
         LOGGING.info "#{line}"

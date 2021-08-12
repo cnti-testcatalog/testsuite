@@ -1,0 +1,16 @@
+---
+manifest_directory: manifests 
+git_clone_url: 
+install_script: 
+release_name: multi-proc
+docker_repository: 
+helm_repository:
+  name:
+  repo_url:
+container_names: 
+  - name: multiple-processes 
+    rolling_update_test_tag: "1.32.0"
+    rolling_downgrade_test_tag: 1.32.0
+    rolling_version_change_test_tag: 1.32.0
+    rollback_from_tag: 1.32.0
+allowlist_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]

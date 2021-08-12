@@ -10,6 +10,8 @@
   tags: microservice, dynamic, workload
 - name: reasonable_startup_time 
   tags: microservice, dynamic, workload
+- name: single_process_type 
+  tags: microservice, dynamic, workload
 
 #- name: cni_spec 
 #  tags: compatibility, dynamic
@@ -21,9 +23,9 @@
 #  tags: compatibility, dynamic
 
 #- name: reset_cnf 
-#  tags: statelessness, dynamic, configuration_lifecycle
+#  tags: state, dynamic, configuration_lifecycle
 #- name: check_reaped 
-#  tags: statelessness, dynamic, configuration_lifecycle
+#  tags: state, dynamic, configuration_lifecycle
 
 - name: privileged 
   tags: security, dynamic, workload
@@ -115,9 +117,9 @@
   tags: resilience, dynamic, workload
 
 - name: volume_hostpath_not_found
-  tags: statelessness, dynamic, workload
+  tags: state, dynamic, workload
 - name: no_local_volume_configuration 
-  tags: statelessness, dynamic, workload
+  tags: state, dynamic, workload
 #- name: hardware_and_scheduling
 #  tags: hardware, dynamic, workload
 #- name: static_accessing_hardware 

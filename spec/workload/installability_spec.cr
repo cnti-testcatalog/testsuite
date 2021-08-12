@@ -78,17 +78,17 @@ describe CnfTestSuite do
   it "'helm_chart_published' should fail on a bad helm chart repo", tags: ["helm_chart_published"] do
     begin
       LOGGING.info "search command: #{`helm search repo stable/coredns`}"
-      # LOGGING.info `#{CNFSingleton.helm} repo remove stable`
+      # LOGGING.info `#{BinarySingleton.helm} repo remove stable`
       # LOGGING.info "search command: #{`helm search repo stable/coredns`}"
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample-bad-helm-repo wait_count=0`
-      $?.success?.should be_true
+      $?.success?.should be_false
       LOGGING.info "search command: #{`helm search repo stable/coredns`}"
       response_s = `./cnf-testsuite helm_chart_published verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/FAILED: Published Helm Chart Not Found/ =~ response_s).should_not be_nil
     ensure
-      `#{CNFSingleton.helm} repo remove badrepo`
+      `#{BinarySingleton.helm} repo remove badrepo`
       `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-repo`
     end
   end

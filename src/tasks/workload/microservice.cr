@@ -4,17 +4,20 @@ require "file_utils"
 require "colorize"
 require "totem"
 require "../utils/utils.cr"
-require "../utils/docker_client.cr"
+# require "../utils/docker_client.cr"
+require "docker_client"
 require "halite"
 require "totem"
 
 desc "The CNF test suite checks to see if CNFs follows microservice principles"
-task "microservice", ["reasonable_image_size", "reasonable_startup_time"] do |_, args|
+task "microservice", ["reasonable_image_size", "reasonable_startup_time", "single_process_type"] do |_, args|
   stdout_score("microservice")
 end
 
+REASONABLE_STARTUP_BUFFER = 10.0
+
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
-task "reasonable_startup_time" do |_, args|
+task "reasonable_startup_time", ["install_cri_tools"] do |_, args|
   
   LOGGING.info "Running reasonable_startup_time test"
   CNFManager::Task.task_runner(args) do |args, config|
@@ -28,7 +31,7 @@ task "reasonable_startup_time" do |_, args|
     install_method = config.cnf_config[:install_method]
 
     current_dir = FileUtils.pwd
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
     VERBOSE_LOGGING.info helm if check_verbose(args)
 
     configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
@@ -37,26 +40,64 @@ task "reasonable_startup_time" do |_, args|
 
     emoji_fast="🚀"
     emoji_slow="🐢"
-    startup_time_limit = 30
-    if ENV["CRYSTAL_ENV"]? == "TEST"
-      startup_time_limit = 37 
-      LOGGING.info "startup_time_limit TEST mode: #{startup_time_limit}"
-    end
-    LOGGING.info "startup_time_limit: #{startup_time_limit}"
+    # Correlation for a slow box vs a fast box 
+    # sysbench base fast machine (disk), time in ms 0.16
+    # sysbench base slow machine (disk), time in ms 6.55
+    # percentage 0.16 is 2.44% of 6.55
+    # How much more is 6.55 than 0.16? (0.16 - 6.55) / 0.16 * 100 = 3993.75%
+    # startup time fast machine: 21 seconds
+    # startup slow machine: 34 seconds
+    # how much more is 34 seconds than 21 seconds? (21 - 34) / 21 * 100 = 61.90%
+    # app seconds set 1: 21, set 2: 34
+    # disk miliseconds set 1: .16 set 2: 6.55
+    # get the mean of app seconds (x)
+    #   (sum all: 55, count number of sets: 2, divide sum by count: 27.5)
+    # get the mean of disk milliseconds (y)
+    #   (sum all: 6.71, count number of sets: 2, divide sum by count: 3.35)
+    # Subtract the mean of x from every x value (call them "a")
+    # set 1: 6.5 
+    # set 2: -6.5 
+    # and subtract the mean of y from every y value (call them "b")
+    # set 1: 3.19
+    # set 2: -3.2
+    # calculate: ab, a2 and b2 for every value
+    # set 1: 20.735, 42.25, 42.25
+    # set 2: 20.8, 10.17, 10.24
+    # Sum up ab, sum up a2 and sum up b2
+    # 41.535, 52.42, 52.49
+    # Divide the sum of ab by the square root of [(sum of a2) × (sum of b2)]
+    # (sum of a2) × (sum of b2) = 2751.5258
+    # square root of 2751.5258 = 52.4549
+    # divide sum of ab by sqrt = 41.535 / 52.4549 = .7918
+    # example
+    # sysbench returns a 5.55 disk millisecond result
+    # disk millisecond has a pearson correlation of .79 to app seconds
+    # 
+    # Regression for predication based on slow and fast box disk times
+    # regression = ŷ = bX + a
+    # b = 2.02641
+    # a = 20.72663
 
-    # if is_kubectl_applied && is_kubectl_deployed && elapsed_time.seconds < startup_time_limit
-    if startup_time.to_i < startup_time_limit
+    resp = K8sInstrumentation.disk_speed
+    if resp["95th percentile"]?
+        disk_speed = resp["95th percentile"].to_f
+      startup_time_limit = ((0.30593 * disk_speed) + 21.9162 + REASONABLE_STARTUP_BUFFER).round.to_i
+    else
+      startup_time_limit = 30
+    end
+    # if ENV["CRYSTAL_ENV"]? == "TEST"
+    #   startup_time_limit = 35 
+    #   LOGGING.info "startup_time_limit TEST mode: #{startup_time_limit}"
+    # end
+    LOGGING.info "startup_time_limit: #{startup_time_limit}"
+    LOGGING.info "startup_time: #{startup_time.to_i}"
+
+    if startup_time.to_i <= startup_time_limit
       upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time #{emoji_fast}")
     else
       upsert_failed_task("reasonable_startup_time", "✖️  FAILED: CNF had a startup time of #{startup_time} seconds #{emoji_slow}")
     end
 
-   # ensure
-   #  LOGGING.debug "Reasonable startup cleanup"
-   #  delete_namespace = `kubectl delete namespace startup-test --force --grace-period 0 2>&1 >/dev/null`
-   #  # rollback_non_namespaced = `kubectl apply -f #{yml_file_path}/reasonable_startup_orig.yml`
-   #  KubectlClient::Apply.file("#{yml_file_path}/reasonable_startup_orig.yml")
-    # KubectlClient::Get.wait_for_install(deployment_name, wait_count=180)
   end
 end
 
@@ -117,14 +158,6 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
         # TODO strip out secret from under auths, save in array
         # TODO make a new auths array, assign previous array into auths array
         # TODO save auths array to a file
-        # dockerhub_image_tags = DockerClient::Get.image_tags(local_image_tag[:image])
-        # if dockerhub_image_tags && dockerhub_image_tags.status_code == 200
-        #   image_by_tag = DockerClient::Get.image_by_tag(dockerhub_image_tags, local_image_tag[:tag])
-        #   micro_size = image_by_tag && image_by_tag["full_size"]
-        # else
-        #   puts "Failed to find resource: #{resource} and container: #{local_image_tag[:image]}:#{local_image_tag[:tag]} on dockerhub".colorize(:yellow)
-        #   test_passed=false
-        # end
         LOGGING.info "compressed_size: #{fqdn_image} = '#{compressed_size.to_s}'"
         max_size = 5_000_000_000
         if ENV["CRYSTAL_ENV"]? == "TEST"
@@ -156,8 +189,60 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
     else
       upsert_failed_task("reasonable_image_size", "✖️  FAILED: Image size too large #{emoji_big} #{emoji_image_size}")
     end
-  # ensure
-  #   delete_dockerd = `kubectl delete -f #{TOOLS_DIR}/dockerd/manifest.yml`
+  end
+end
+
+desc "Do the containers in a pod have only one process type?"
+task "single_process_type" do |_, args|
+  CNFManager::Task.task_runner(args) do |args,config|
+    VERBOSE_LOGGING.info "single_process_type" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    fail_msgs = [] of String
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      test_passed = true
+      kind = resource["kind"].as_s.downcase
+      case kind 
+      when  "deployment","statefulset","pod","replicaset", "daemonset"
+        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
+        pods = KubectlClient::Get.pods_by_resource(resource_yaml)
+       
+        containers = KubectlClient::Get.resource_containers(kind, resource[:name]) 
+        pods.map do |pod|
+          pod_name = pod.dig("metadata", "name")
+          containers.as_a.map do |container|
+            container_name = container.dig("name")
+            previous_process_type = "initial_name"
+            statuses = KernelIntrospection::K8s.status_by_proc(pod_name, container_name)
+            statuses.map do |status|
+              LOGGING.debug "status: #{status}"
+              LOGGING.info "status name: #{status["cmdline"]}"
+              LOGGING.info "previous status name: #{previous_process_type}"
+              # Fail if more than one process type
+              if status["Name"] != previous_process_type && 
+                  previous_process_type != "initial_name"
+                fail_msg = "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{statuses.map{|x|x["cmdline"]?}.compact.uniq.join(", ")})"
+                unless fail_msgs.find{|x| x== fail_msg}
+                  puts fail_msg.colorize(:red)
+                  fail_msgs << fail_msg
+                end
+                test_passed=false
+              end
+              previous_process_type = status["cmdline"]
+            end
+          end
+        end
+        test_passed
+      end
+    end
+    emoji_image_size="⚖️👀"
+    emoji_small="🐜"
+    emoji_big="🦖"
+
+    if task_response
+      upsert_passed_task("single_process_type", "✔️  PASSED: Only one process type used #{emoji_small} #{emoji_image_size}")
+    else
+      upsert_failed_task("single_process_type", "✖️  FAILED: More than one process type used #{emoji_big} #{emoji_image_size}")
+    end
   end
 end
 

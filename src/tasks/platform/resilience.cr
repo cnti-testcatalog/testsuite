@@ -6,23 +6,23 @@ require "../utils/utils.cr"
 namespace "platform" do
   desc "The CNF test suite checks to see if the CNFs are resilient to failures."
   task "resilience", ["worker_reboot_recovery"] do |t, args|
-    VERBOSE_LOGGING.info "resilience" if check_verbose(args)
-    VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
-    VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
+    Log.for("verbose").info { "resilience" } if check_verbose(args)
+    Log.for("verbose").debug { "resilience args.raw: #{args.raw}" } if check_verbose(args)
+    Log.for("verbose").debug { "resilience args.named: #{args.named}" } if check_verbose(args)
     stdout_score("platform:resilience")
   end
 
   desc "Does the Platform recover the node and reschedule pods when a worker node fails"
   task "worker_reboot_recovery" do |_, args|
     unless check_destructive(args)
-      LOGGING.info "skipping node_failure: not in destructive mode"
+      Log.info { "skipping node_failure: not in destructive mode" }
       puts "SKIPPED: Node Failure".colorize(:yellow)
       next
     end
-    LOGGING.info "Running POC in destructive mode!"
+    Log.info { "Running POC in destructive mode!" }
     task_response = CNFManager::Task.task_runner(args) do |args|
       current_dir = FileUtils.pwd
-      helm = CNFSingleton.helm
+      helm = BinarySingleton.helm
 
       #Select the first node that isn't a master and is also schedulable
       worker_nodes = `kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
@@ -98,8 +98,8 @@ namespace "platform" do
 
 
       ensure
-        LOGGING.info "node_failure cleanup"
-        delete_reboot_daemon = `kubectl delete -f reboot_daemon_pod.yml`
+        Log.info { "node_failure cleanup" }
+        delete_reboot_daemon = KubectlClient::Delete.file("reboot_daemon_pod.yml")
         delete_coredns = `#{helm} delete node-failure`
         File.delete("reboot_daemon_pod.yml")
         File.delete("node_failure_values.yml")

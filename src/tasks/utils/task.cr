@@ -1,7 +1,7 @@
 require "totem"
 require "colorize"
 require "./types/cnf_testsuite_yml_type.cr"
-require "./helm.cr"
+require "helm"
 require "uuid"
 require "./points.cr"
 
@@ -42,7 +42,7 @@ module CNFManager
                                             source_cnf_file: "",
                                             source_cnf_dir: "",
                                             yml_file_path: "",
-                                            install_method: {:helm_chart, ""},
+                                            install_method: {Helm::InstallMethod::HelmChart, ""},
                                             manifest_directory: "",
                                             helm_directory: "", 
                                             helm_chart_path: "", 

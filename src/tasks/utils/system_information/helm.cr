@@ -53,7 +53,7 @@ def helm_local_response(verbose=false)
   current_dir = FileUtils.pwd
   VERBOSE_LOGGING.info current_dir if verbose
   #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
   # helm_response = `#{helm} version`
   status = Process.run("#{helm} version", shell: true, output: helm_response = IO::Memory.new, error: stderr = IO::Memory.new)
   VERBOSE_LOGGING.info helm_response.to_s if verbose
@@ -79,7 +79,7 @@ def helm_v3_version(helm_response)
   # example
   # version.BuildInfo{Version:"v3.1.1", GitCommit:"afe70585407b420d0097d07b21c47dc511525ac8", GitTreeState:"clean", GoVersion:"go1.13.8"}
   helm_v3 = helm_response.match /BuildInfo{Version:\"(v([0-9]{1,3}[\.]){1,2}[0-9]{1,3}).+"/
-  LOGGING.debug "helm_v3?: #{helm_v3}"
+  Log.debug { "helm_v3?: #{helm_v3}" }
   helm_v3 && helm_v3.not_nil![1]
 end
 
@@ -88,15 +88,6 @@ end
 #TODO If version of helm not 3 or greater, act as if helm is not installed
 #TODO If version of helm is 3, return helm installed
 
-def global_helm_installed?
-  ghelm = helm_global_response
-  global_helm_version = helm_v3_version(ghelm)
-  if (global_helm_version)
-    true
-  else
-    false
-  end
-end
 
 def local_helm_installed?
   lhelm = helm_local_response
@@ -105,5 +96,17 @@ def local_helm_installed?
     true
   else
     false
+  end
+end
+
+module SystemInfo::Helm
+  def self.global_helm_installed?
+    ghelm = helm_global_response
+    global_helm_version = helm_v3_version(ghelm)
+    if (global_helm_version)
+      true
+    else
+      false
+    end
   end
 end

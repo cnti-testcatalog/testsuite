@@ -20,6 +20,11 @@ namespace "platform" do
       puts "SKIPPED: Kube State Metrics".colorize(:yellow)
       next
     end
+    if args.named["offline"]?
+        LOGGING.info "skipping kube_state_metrics: in offline mode"
+      puts "SKIPPED: Kube State Metrics".colorize(:yellow)
+      next
+    end
     LOGGING.info "Running POC: kube_state_metrics"
     Retriable.retry do
       task_response = CNFManager::Task.task_runner(args) do |args|
@@ -63,6 +68,11 @@ namespace "platform" do
       puts "SKIPPED: Node Exporter".colorize(:yellow)
       next
     end
+    if args.named["offline"]?
+        LOGGING.info "skipping node_exporter: in offline mode"
+      puts "SKIPPED: Node Exporter".colorize(:yellow)
+      next
+    end
     LOGGING.info "Running POC: node_exporter"
     Retriable.retry do
       task_response = CNFManager::Task.task_runner(args) do |args|
@@ -72,20 +82,20 @@ namespace "platform" do
         #worker_node = worker_nodes.split("\n")[0]
 
         # Install and find CRI Tools name
-        File.write("cri_tools.yml", CRI_TOOLS)
+        # File.write("cri_tools.yml", CRI_TOOLS)
         #TODO use kubectlclient
-        install_cri_tools = `kubectl create -f cri_tools.yml`
-        pod_ready = ""
-        pod_ready_timeout = 45
-        until (pod_ready == "true" || pod_ready_timeout == 0)
-          pod_ready = KubectlClient::Get.pod_status("cri-tools").split(",")[2]
-          puts "Pod Ready Status: #{pod_ready}"
-          sleep 1
-          pod_ready_timeout = pod_ready_timeout - 1
-        end
-        cri_tools_pod = KubectlClient::Get.pod_status("cri-tools").split(",")[0]
-        #, "--field-selector spec.nodeName=#{worker_node}")
-        LOGGING.debug "cri_tools_pod: #{cri_tools_pod}"
+        # install_cri_tools = `kubectl create -f cri_tools.yml`
+        # pod_ready = ""
+        # pod_ready_timeout = 45
+        # until (pod_ready == "true" || pod_ready_timeout == 0)
+        #   pod_ready = KubectlClient::Get.pod_status("cri-tools").split(",")[2]
+        #   puts "Pod Ready Status: #{pod_ready}"
+        #   sleep 1
+        #   pod_ready_timeout = pod_ready_timeout - 1
+        # end
+        # cri_tools_pod = KubectlClient::Get.pod_status("cri-tools").split(",")[0]
+        # #, "--field-selector spec.nodeName=#{worker_node}")
+        # LOGGING.debug "cri_tools_pod: #{cri_tools_pod}"
 
         # Fetch id sha256 sums for all repo_digests https://github.com/docker/distribution/issues/1662
         repo_digest_list = KubectlClient::Get.all_container_repo_digests
@@ -93,8 +103,10 @@ namespace "platform" do
         id_sha256_list = repo_digest_list.reduce([] of String) do |acc, repo_digest|
           LOGGING.info "repo_digest: #{repo_digest}"
           #TODO use kubectlclient
-          cricti = `kubectl exec -ti #{cri_tools_pod} -- crictl inspecti #{repo_digest}`
-          LOGGING.info "cricti: #{cricti}"
+          # cricti = `kubectl exec -ti #{CRIToolsSetup.cri_tools_pod} -- crictl inspecti #{repo_digest}`
+          # LOGGING.info "cricti: #{cricti}"
+          resp = KubectlClient.exec("#{CRIToolsSetup.cri_tools_pod} -- crictl inspecti #{repo_digest}")
+          cricti = resp[:output].to_s
           begin
             parsed_json = JSON.parse(cricti)
             acc << parsed_json["status"]["id"].as_s
@@ -134,8 +146,9 @@ namespace "platform" do
                   headers: {Accept: "application/vnd.docker.distribution.manifest.v2+json"})
             image_id = resp.body
 
-            parsed_image = JSON.parse(image_id)
+            LOGGING.info "Image ID #{image_id}"
 
+            parsed_image = JSON.parse(image_id)
             LOGGING.info "parsed_image config digest #{parsed_image["config"]["digest"]}"
             if parsed_image["config"]["digest"]?
                 acc << {"name" => tag, "digest"=> parsed_image["config"]["digest"].as_s}
@@ -177,6 +190,11 @@ end
       puts "SKIPPED: Prometheus Adapter".colorize(:yellow)
       next
     end
+    if args.named["offline"]?
+        LOGGING.info "skipping prometheus_adapter: in offline mode"
+      puts "SKIPPED: Prometheus Adapter".colorize(:yellow)
+      next
+    end
     LOGGING.info "Running POC: prometheus_adapter"
     Retriable.retry do
       task_response = CNFManager::Task.task_runner(args) do |args|
@@ -214,6 +232,11 @@ end
   task "metrics_server" do |_, args|
     unless check_poc(args)
       LOGGING.info "skipping metrics_server: not in poc mode"
+      puts "SKIPPED: Metrics Server".colorize(:yellow)
+      next
+    end
+    if args.named["offline"]?
+        LOGGING.info "skipping metrics_server: in offline mode"
       puts "SKIPPED: Metrics Server".colorize(:yellow)
       next
     end

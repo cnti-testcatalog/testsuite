@@ -31,7 +31,7 @@ Check out the [usage documentation](USAGE.md) for more info about invoking comma
 The CNF Test Suite will inspect CNFs for the following characteristics:
 
 - **Compatibility** - CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements.
-- **Statelessness** - The CNF's state should be stored in a custom resource definition or a separate database (e.g. etcd) rather than requiring local storage. The CNF should also be resilient to node failure.
+- **State** - The CNF's state should be stored in a custom resource definition or a separate database (e.g. etcd) rather than requiring local storage. The CNF should also be resilient to node failure.
 - **Security** - CNF containers should be isolated from one another and the host.
 - **Microservice** - The CNF should be developed and delivered as a microservice.
 - **Scalability** - CNFs should support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines).
@@ -68,6 +68,19 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
 - Join the monthly [Telecom User Group meetings](https://github.com/cncf/telecom-user-group#meeting-time)
   - Meetings on the 1st Mondays of the month
   - Meeting minutes are [here](https://docs.google.com/document/d/1yhtI7aiwpdAiRBKyUX6mOJDHAbjOog2mI4Ur2k27D7s/edit)
+
+- Request an Intro to the CNF Test Suite [here](https://calendly.com/cnftestsuite)
+
+## Presentations
+
+**CNF Test Suite Demo**
+- [Recording](https://drive.google.com/file/d/1SBHE5Dqx6Sa-m83WODbCEbbdiB2_l_U2/view?usp=sharing)
+- [Slides](https://github.com/cncf/cnf-testsuite/files/6857515/SHARED-COMMON.CNF.Test.Suite.Demo.and.CNF.initiatives.overview.2021-06-29.pdf) (PDF)
+
+**Crystal in the Cloud: A cloud native journey at Crystal 1.0 Conference**
+- [Recording](https://youtu.be/n8g60VglyUw)
+- [Slides](https://github.com/cncf/cnf-testsuite/files/6785788/Crystal.1.0.Crystal.in.the.Cloud_.CNF.Test.Suite.pdf) (PDF)
+
 
 ## Implementation overview
 

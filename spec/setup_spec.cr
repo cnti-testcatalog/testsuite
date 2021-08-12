@@ -1,58 +1,18 @@
 require "./spec_helper"
 require "colorize"
 require "../src/tasks/utils/utils.cr"
-require "../src/tasks/utils/kubectl_client.cr"
+require "airgap"
+require "kubectl_client"
 require "../src/tasks/utils/system_information/helm.cr"
 require "file_utils"
 require "sam"
 
 describe "Setup" do
-  before_each do
-    `./cnf-testsuite cleanup`
-    $?.success?.should be_true
-    unless Dir.exists?("./tmp")
-      LOGGING.info `mkdir ./tmp`
-    end
-  end
 
   after_each do
     `./cnf-testsuite cleanup`
     $?.success?.should be_true
   end
-
-
-
-  it "'setup' task should accept a tarball and put files in the /tmp directory", tags: ["airgap"] do
-
-    #./cnf-testsuite setup offline=./airgapped.tar.gz
-    LOGGING.info `./cnf-testsuite airgapped output-file=./tmp/airgapped.tar.gz`
-    LOGGING.info `./cnf-testsuite setup offline=./tmp/airgapped.tar.gz`
-    file_list = `tar -tvf ./tmp/airgapped.tar.gz`
-    LOGGING.info "file_list: #{file_list}"
-    (file_list).match(/kubectl.tar/).should_not be_nil
-    (file_list).match(/chaos-mesh.tar/).should_not be_nil
-    (file_list).match(/chaos-daemon.tar/).should_not be_nil
-    (file_list).match(/chaos-dashboard.tar/).should_not be_nil
-    (file_list).match(/chaos-kernel.tar/).should_not be_nil
-    (file_list).match(/prometheus.tar/).should_not be_nil
-    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-    pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
-    # Get the generated name of the cri-tools per node
-    pods.map do |pod| 
-      pod_name = pod.dig?("metadata", "name")
-      sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/crictl > /dev/null")  
-      sh[:status].success?
-      sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/ctr > /dev/null")  
-      sh[:status].success?
-    end
-
-  ensure
-    `rm ./tmp/airgapped.tar.gz`
-    `rm ./tmp/cnf-testsuite.yml`
-    `rm /tmp/airgapped.tar.gz`
-    `rm /tmp/cnf-testsuite.yml`
-  end
-
 
   it "'setup' should completely setup the cnf testsuite environment before installing cnfs", tags: ["setup"]  do
 
@@ -62,7 +22,8 @@ describe "Setup" do
     (/Setup complete/ =~ response_s).should_not be_nil
   end
 
-  it "'generate_config' should generate a cnf-testsuite.yml for a helm chart", tags: ["setup"]  do
+  it "'generate_config' should generate a cnf-testsuite.yml for a helm chart", tags: ["setup-generate"]  do
+    LOGGING.info `./cnf-testsuite setup`
     response_s = `./cnf-testsuite generate_config config-src=stable/coredns output-file=./cnf-testsuite-test.yml`
     LOGGING.info response_s
     $?.success?.should be_true
@@ -82,7 +43,8 @@ describe "Setup" do
     `rm ./cnf-testsuite-test.yml`
   end
 
-  it "'generate_config' should generate a cnf-testsuite.yml for a helm directory", tags: ["setup"]  do
+  it "'generate_config' should generate a cnf-testsuite.yml for a helm directory", tags: ["setup-generate"]  do
+    LOGGING.info `./cnf-testsuite setup`
     response_s = `./cnf-testsuite generate_config config-src=sample-cnfs/k8s-sidecar-container-pattern/chart output-file=./cnf-testsuite-test.yml`
     LOGGING.info response_s
     $?.success?.should be_true
@@ -99,7 +61,8 @@ describe "Setup" do
     `rm ./cnf-testsuite-test.yml`
   end
 
-  it "'generate_config' should generate a cnf-testsuite.yml for a manifest directory", tags: ["setup"]  do
+  it "'generate_config' should generate a cnf-testsuite.yml for a manifest directory", tags: ["setup-generate"]  do
+    LOGGING.info `./cnf-testsuite setup`
     response_s = `./cnf-testsuite generate_config config-src=sample-cnfs/k8s-non-helm/manifests output-file=./cnf-testsuite-test.yml`
     LOGGING.info response_s
     $?.success?.should be_true
@@ -116,20 +79,34 @@ describe "Setup" do
     `rm ./cnf-testsuite-test.yml`
   end
 
-  it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf with a cnf-testsuite.yml", tags: ["setup"]  do
+  it "'cnf_setup/cnf_cleanup' should install/cleanup with cnf-path arg as alias for cnf-config", tags: ["setup"] do
+    begin
+      response_s = `./cnf-testsuite cnf_setup cnf-path=example-cnfs/coredns/cnf-testsuite.yml`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/Successfully setup coredns/ =~ response_s).should_not be_nil
+    ensure
+      response_s = `./cnf-testsuite cnf_cleanup cnf-path=example-cnfs/coredns/cnf-testsuite.yml`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/Successfully cleaned up/ =~ response_s).should_not be_nil
+    end
+  end
+
+  it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf with a cnf-testsuite.yml", tags: ["setup"] do
     begin
       response_s = `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Successfully setup coredns/ =~ response_s).should_not be_nil
     ensure
-
       response_s = `./cnf-testsuite cnf_cleanup cnf-config=example-cnfs/coredns/cnf-testsuite.yml`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Successfully cleaned up/ =~ response_s).should_not be_nil
     end
   end
+
   it "'cnf_setup/cnf_cleanup' should work with cnf-testsuite.yml that has no directory associated with it", tags: ["setup"] do
     begin
       #TODO force cnfs/<name> to be deployment name and not the directory name
@@ -144,6 +121,5 @@ describe "Setup" do
       $?.success?.should be_true
       (/Successfully cleaned up/ =~ response_s).should_not be_nil
     end
-
   end
 end

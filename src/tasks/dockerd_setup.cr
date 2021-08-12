@@ -7,19 +7,21 @@ require "./utils/utils.cr"
 
 desc "The dockerd tool is used to run docker commands against the cluster."
 task "install_dockerd" do |_, args|
-  VERBOSE_LOGGING.info "install_dockerd" if check_verbose(args)
+  Log.for("verbose").info { "install_dockerd" } if check_verbose(args)
   resp = KubectlClient::Apply.file(dockerd_filename)
-  status = check_dockerd(180)
-  unless status
-    LOGGING.error "Dockerd_Install failed.".colorize(:red)
+  if resp
+    status = check_dockerd(180)
   end
-  LOGGING.info "Dockerd_Install status: #{status}"
+  unless status
+    Log.error { "Dockerd_Install failed.".colorize(:red) }
+  end
+  Log.info { "Dockerd_Install status: #{status}" }
   status
 end
 
 desc "Uninstall dockerd"
 task "uninstall_dockerd" do |_, args|
-  LOGGING.info "uninstall_dockerd" 
+  Log.info { "uninstall_dockerd" }
   KubectlClient::Delete.file(dockerd_filename)
 end
 
@@ -32,35 +34,31 @@ def dockerd_tempname
 end
 
 def dockerd_tempname_helper
-  LOGGING.info "dockerd_tempname_helper"
-  LOGGING.info "before ls #{TOOLS_DIR}"
-  LOGGING.info `ls #{TOOLS_DIR}`
-  LOGGING.info "ls #{TOOLS_DIR}/dockerd"
-  LOGGING.info `ls #{TOOLS_DIR}/dockerd`
-  `mv #{dockerd_filename} #{dockerd_tempname}`
-  LOGGING.info "after ls #{TOOLS_DIR}"
-  LOGGING.info `ls #{TOOLS_DIR}`
-  LOGGING.info "ls #{TOOLS_DIR}/dockerd"
-  LOGGING.info `ls #{TOOLS_DIR}/dockerd`
+  Log.info { "dockerd_tempname_helper" }
+  Log.info { "Contents of #{TOOLS_DIR} before moving dockerd manifest to tempfile" }
+  Log.info { "ls #{TOOLS_DIR}: #{Dir.children(TOOLS_DIR)}" }
+  Log.info { "ls #{TOOLS_DIR}/dockerd: #{Dir.children("#{TOOLS_DIR}/dockerd")}" }
+  FileUtils.mv(dockerd_filename, dockerd_tempname)
+  Log.info { "Contents of #{TOOLS_DIR} after moving dockerd manifest to tempfile" }
+  Log.info { "ls #{TOOLS_DIR}: #{Dir.children(TOOLS_DIR)}" }
+  Log.info { "ls #{TOOLS_DIR}/dockerd: #{Dir.children("#{TOOLS_DIR}/dockerd")}" }
 end
 
 def dockerd_name_helper
-  LOGGING.info "dockerd_name_helper"
-  LOGGING.info "before ls #{TOOLS_DIR}"
-  LOGGING.info `ls #{TOOLS_DIR}`
-  LOGGING.info "ls #{TOOLS_DIR}/dockerd"
-  LOGGING.info `ls #{TOOLS_DIR}/dockerd`
-  `mv #{dockerd_tempname} #{dockerd_filename}`
-  LOGGING.info "after ls #{TOOLS_DIR}"
-  LOGGING.info `ls #{TOOLS_DIR}`
-  LOGGING.info "ls #{TOOLS_DIR}/dockerd"
-  LOGGING.info `ls #{TOOLS_DIR}/dockerd`
+  Log.info { "dockerd_name_helper" }
+  Log.info { "Contents of #{TOOLS_DIR} before moving dockerd manifest from tempfile to it's place" }
+  Log.info { "ls #{TOOLS_DIR}: #{Dir.children(TOOLS_DIR)}" }
+  Log.info { "ls #{TOOLS_DIR}/dockerd: #{Dir.children("#{TOOLS_DIR}/dockerd")}" }
+  FileUtils.mv(dockerd_tempname, dockerd_filename)
+  Log.info { "Contents of #{TOOLS_DIR} after moving dockerd manifest from tempfile to it's place" }
+  Log.info { "ls #{TOOLS_DIR}: #{Dir.children(TOOLS_DIR)}" }
+  Log.info { "ls #{TOOLS_DIR}/dockerd: #{Dir.children("#{TOOLS_DIR}/dockerd")}" }
 end
 
 ### Checks to see if dockerd is already installed.  Alternatively
 ### can be used to wait for dockerd is installed by passing a higher wait_count)
 def check_dockerd(wait_count = 1) 
-  LOGGING.info "check_dockerd"
+  Log.info { "check_dockerd" }
   KubectlClient::Get.resource_wait_for_install("Pod", "dockerd", wait_count: wait_count)
   # pod_ready = ""
   # pod_ready_timeout = 25 
