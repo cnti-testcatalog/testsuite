@@ -101,11 +101,11 @@ the maintainers.
 [Admins][admins] are maintainers with extra responsibilities:
 
 
-* Manage cnf-testsuite repositories
-* Manage cnf-testsuite teams
-* Manage cnf-testsuite CODEOWNERS file
+* Manage repositories
+* Manage CODEOWNERS file
+* Manage GitHub Actions infra (eg. runners)
+* Manage teams
 
-[admins]: TBD <!-- https://github.com/orgs/getporter/teams/admins -->
 
 ### How to become an admin
 
