@@ -598,12 +598,19 @@ module CNFManager
     TarClient.untar(tgz_name,  "#{destination_cnf_dir}/exported_chart")
 
     Log.for("verbose").info { "mv #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart" } if verbose
-    Log.info { "ls -alR (before move) destination_cnf_dir:" }
-    Log.info {  `ls -alR #{destination_cnf_dir}` }
+    Log.for("verbose").debug {
+      stdout = IO::Memory.new
+      Process.run("ls -alR #{destination_cnf_dir}", shell: true, output: stdout, error: stdout)
+      "Contents of destination_cnf_dir #{destination_cnf_dir} before move: \n#{stdout}"
+    }
+
     move_chart = `mv #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart`
 
-    Log.info { "ls -alR (after move) destination_cnf_dir:" }
-    Log.info { `ls -alR #{destination_cnf_dir}` }
+    Log.for("verbose").debug {
+      stdout = IO::Memory.new
+      Process.run("ls -alR #{destination_cnf_dir}", shell: true, output: stdout, error: stdout)
+      "Contents of destination_cnf_dir #{destination_cnf_dir} after move: \n#{stdout}"
+    }
   end
 
   #sample_setup({config_file: cnf_path, wait_count: wait_count})
@@ -827,25 +834,24 @@ end
     #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml output-file=./tmp/airgapped.tar.gz
     #  LOGGING.info ./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=./tmp/airgapped.tar.gz
     def self.generate_cnf_setup(config_file : String, output_file, cli_args)
-      LOGGING.info "generate_cnf_setup cnf_config_file: #{config_file}"
+      Log.info { "generate_cnf_setup cnf_config_file: #{config_file}" }
       FileUtils.mkdir_p("#{TarClient::TAR_IMAGES_DIR}")
       # todo create a way to call setup code for directories (cnf manager code)
       config = CNFManager.parsed_config_file(config_file)
       sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: false, generate_tar_mode: true) 
-      LOGGING.info "generate sandbox args: sandbox_config: #{sandbox_config}, cli_args: #{cli_args}"
+      Log.info { "generate sandbox args: sandbox_config: #{sandbox_config}, cli_args: #{cli_args}" }
       CNFManager.sandbox_setup(sandbox_config, cli_args)
       install_method = CNFManager.cnf_installation_method(config)
-      LOGGING.info "generate_cnf_setup images_from_config_src"
+      Log.info { "generate_cnf_setup images_from_config_src" }
 
-      LOGGING.info "Download CRI Tools"
+      Log.info { "Download CRI Tools" }
       AirGap.download_cri_tools
 
-      LOGGING.info "Add CRI Tools to Airgapped Tar: #{output_file}"
+      Log.info { "Add CRI Tools to Airgapped Tar: #{output_file}" }
       TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/crictl-#{AirGap::CRI_VERSION}-linux-amd64.tar.gz")
       TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bin/containerd-#{AirGap::CTR_VERSION}-linux-amd64.tar.gz")
 
       images = CNFManager::GenerateConfig.images_from_config_src(install_method[1], generate_tar_mode: true) 
-
 
       # todo function that takes sandbox containers and extracts images (config images)
       container_names = sandbox_config.cnf_config[:container_names]
@@ -854,7 +860,7 @@ end
       if container_names
         config_images = [] of NamedTuple(image_name: String, tag: String)
         container_names.map do |c|
-          LOGGING.info "container_names c: #{c}"
+          Log.info { "container_names c: #{c}" }
           # todo get image name for container name
           image = images.find{|x| x[:container_name]==c["name"]}
           if image
@@ -867,26 +873,26 @@ end
       else
         config_images = [] of NamedTuple(image_name: String, tag: String)
       end
-      LOGGING.info "config_images: #{config_images}"
+      Log.info { "config_images: #{config_images}" }
 
       # todo function that accepts image names and tars them
       images = images + config_images
       images.map  do |i|
         input_file = "#{TarClient::TAR_IMAGES_DIR}/#{i[:image_name].split("/")[-1]}_#{i[:tag]}.tar"
-        LOGGING.info "input_file: #{input_file}"
+        Log.info { "input_file: #{input_file}" }
         image = "#{i[:image_name]}:#{i[:tag]}"
         DockerClient.pull(image)
         DockerClient.save(image, input_file)
         TarClient.append(output_file, "/tmp", "images/" + input_file.split("/")[-1])
-        LOGGING.info "#{output_file} in generate_cnf_setup complete"
+        Log.info { "#{output_file} in generate_cnf_setup complete" }
       end
       # todo hardcode install method for helm charts until helm directories / manifest 
       #  directories are supported
       case install_method[0]
       when Helm::InstallMethod::HelmChart
-        LOGGING.debug "helm_chart : #{install_method[1]}"
+        Log.debug { "helm_chart : #{install_method[1]}" }
         AirGap.tar_helm_repo(install_method[1], output_file)
-        LOGGING.info "generate_cnf_setup tar_helm_repo complete"
+        Log.info { "generate_cnf_setup tar_helm_repo complete" }
         # when Helm::InstallMethod::ManifestDirectory
         #   LOGGING.debug "manifest_directory : #{install_method[1]}"
         #   template_files = Find.find(directory, "*.yaml*", "100")
@@ -899,7 +905,7 @@ end
     #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
     def self.generate(output_file : String = "./airgapped.tar.gz")
       LOGGING.info "cnf_manager generate"
-      `rm #{output_file}`
+      File.rm_rf(output_file)
       FileUtils.mkdir_p("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
       [{input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
         image: "bitnami/kubectl:latest"},
