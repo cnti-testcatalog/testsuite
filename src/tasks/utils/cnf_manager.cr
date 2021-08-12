@@ -65,7 +65,9 @@ module CNFManager
 
   # Applies a block to each cnf resource
   #
-  # `CNFManager.cnf_workload_resources(args, config) {|cnf_config, resource| #your code}
+  # ```
+  # CNFManager.cnf_workload_resources(args, config) {|cnf_config, resource| #your code}
+  # ```
   def self.cnf_workload_resources(args, config, &block)
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     yml_file_path = config.cnf_config[:yml_file_path]
@@ -363,8 +365,6 @@ module CNFManager
       Log.info { "airgapped mode info: #{info}" }
       helm_chart_or_directory = info[:tar_name]
     end
-    # Log.info {("#{helm} install --dry-run --generate-name #{helm_chart_or_directory} > #{template_file}")
-    # helm_install = `#{helm} install --dry-run --generate-name #{helm_chart_or_directory} > #{template_file}`
     Helm.install("--dry-run --generate-name #{helm_chart_or_directory} > #{template_file}")
     raw_template = File.read(template_file)
     Log.debug { "raw_template: #{raw_template}" }
@@ -537,13 +537,13 @@ module CNFManager
       FileUtils.mkdir_p(destination_cnf_dir)
       source_directory = config_source_dir(config_file) + "/" + manifest_directory
       Log.info { "cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}" }
-      yml_cp = `cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}`
+      FileUtils.cp(Path[source_directory].expand.to_s, destination_cnf_dir)
     when Helm::InstallMethod::HelmDirectory
       FileUtils.mkdir_p(destination_cnf_dir)
       Log.info { "preparing helm_directory sandbox" }
       source_directory = config_source_dir(config_file) + "/" + helm_directory
       Log.info { "cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}" }
-      yml_cp = `cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}`
+      FileUtils.cp(Path[source_directory].expand.to_s, destination_cnf_dir)
     when Helm::InstallMethod::HelmChart
       Log.info { "preparing helm chart sandbox" }
       source_directory = ""
@@ -605,7 +605,7 @@ module CNFManager
       "Contents of destination_cnf_dir #{destination_cnf_dir} before move: \n#{stdout}"
     }
 
-    move_chart = `mv #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart`
+    FileUtils.mv("#{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/*", "#{destination_cnf_dir}/exported_chart")
 
     Log.for("verbose").debug {
       stdout = IO::Memory.new
@@ -760,7 +760,7 @@ module CNFManager
     elapsed_time_template = Crinja.render(configmap_temp, { "helm_install" => helm_used, "release_name" => "cnf-testsuite-#{release_name}-startup-information", "elapsed_time" => "#{elapsed_time.seconds}", "k8s_ver" => "#{k8s_ver}"})
     #TODO find a way to kubectlapply directly without a map
     Log.debug { "elapsed_time_template : #{elapsed_time_template}" }
-    write_template= `echo "#{elapsed_time_template}" > "#{destination_cnf_dir}/configmap_test.yml"`
+    File.write("#{destination_cnf_dir}/configmap_test.yml", "#{elapsed_time_template}")
     # TODO if the config map exists on install, complain, delete then overwrite?
     KubectlClient::Delete.file("#{destination_cnf_dir}/configmap_test.yml")
     #TODO call kubectl apply on file
@@ -805,9 +805,6 @@ end
     # todo use install_from_config_src to determine installation method
     if dir_exists || force == true
       if installed_from_manifest
-        # Log.info { "kubectl delete command: kubectl delete -f #{manifest_directory}"
-        # kubectl_delete = `kubectl delete -f #{manifest_directory}`
-        # ret = $?.success?
         ret = KubectlClient::Delete.file("#{manifest_directory}")
         # Log.for("verbose").info { kubectl_delete } if verbose
         # TODO put more safety around this
@@ -905,8 +902,8 @@ end
     #./cnf-testsuite offline -o ~/airgapped.tar.gz
     #./cnf-testsuite offline -o ~/mydir/airgapped.tar.gz
     def self.generate(output_file : String = "./airgapped.tar.gz")
-      LOGGING.info "cnf_manager generate"
-      File.rm_rf(output_file)
+      Log.info { "cnf_manager generate" }
+      FileUtils.rm_rf(output_file)
       FileUtils.mkdir_p("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
       [{input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
         image: "bitnami/kubectl:latest"},
