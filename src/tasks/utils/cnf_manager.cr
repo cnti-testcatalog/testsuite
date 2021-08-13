@@ -527,7 +527,6 @@ module CNFManager
     helm_chart_path = config.cnf_config[:helm_chart_path]
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
 
-
     # todo manifest_or_helm_directory should either be the source helm/manifest files or the destination
     # directory that they will be copied to/generated into, but *not both*
     case install_method[0]
@@ -536,13 +535,25 @@ module CNFManager
       FileUtils.mkdir_p(destination_cnf_dir)
       source_directory = config_source_dir(config_file) + "/" + manifest_directory
       Log.info { "cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}" }
-      FileUtils.cp(Path[source_directory].expand.to_s, destination_cnf_dir)
+
+      src_path = Path[source_directory].expand.to_s
+      begin
+        FileUtils.cp_r(src_path, destination_cnf_dir)
+      rescue File::AlreadyExistsError
+        Log.info { "manifest sandbox dir already exists at #{destination_cnf_dir}/#{File.basename(src_path)}" }
+      end
     when Helm::InstallMethod::HelmDirectory
       FileUtils.mkdir_p(destination_cnf_dir)
       Log.info { "preparing helm_directory sandbox" }
       source_directory = config_source_dir(config_file) + "/" + helm_directory
       Log.info { "cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}" }
-      FileUtils.cp(Path[source_directory].expand.to_s, destination_cnf_dir)
+
+      src_path = Path[source_directory].expand.to_s
+      begin
+        FileUtils.cp_r(src_path, destination_cnf_dir)
+      rescue File::AlreadyExistsError
+        Log.info { "helm sandbox dir already exists at #{destination_cnf_dir}/#{File.basename(src_path)}" }
+      end
     when Helm::InstallMethod::HelmChart
       Log.info { "preparing helm chart sandbox" }
       source_directory = ""
