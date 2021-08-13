@@ -604,7 +604,10 @@ module CNFManager
       "Contents of destination_cnf_dir #{destination_cnf_dir} before move: \n#{stdout}"
     }
 
-    FileUtils.mv("#{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/*", "#{destination_cnf_dir}/exported_chart")
+    FileUtils.mv(
+      Dir.glob("#{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/*"),
+      "#{destination_cnf_dir}/exported_chart"
+    )
 
     Log.for("verbose").debug {
       stdout = IO::Memory.new
