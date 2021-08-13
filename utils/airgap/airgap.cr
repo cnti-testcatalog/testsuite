@@ -338,7 +338,7 @@ end
 
   def self.image_pull_policy(file, output_file="")
     input_content = File.read(file) 
-    output_content = input_content.gsub(/(.*imagePullPolicy:)(.*)/,"\\1 Never")
+    output_content = input_content.gsub(/(.*imagePullPolicy:)(.*.)/,"\\1 Never")
 
     # LOGGING.debug "pull policy found?: #{input_content =~ /(.*imagePullPolicy:)(.*)/}"
     # LOGGING.debug "output_content: #{output_content}"
