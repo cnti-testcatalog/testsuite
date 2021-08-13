@@ -548,12 +548,14 @@ module CNFManager
       source_directory = config_source_dir(config_file) + "/" + helm_directory
       Log.info { "cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}" }
 
+      Log.error { "307-debug-helm-dir-copy" }
       src_path = Path[source_directory].expand.to_s
-      begin
-        FileUtils.cp_r(src_path, destination_cnf_dir)
-      rescue File::AlreadyExistsError
-        Log.info { "helm sandbox dir already exists at #{destination_cnf_dir}/#{File.basename(src_path)}" }
-      end
+      yml_cp = `cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}`
+      # begin
+      #   FileUtils.cp_r(src_path, destination_cnf_dir)
+      # rescue File::AlreadyExistsError
+      #   Log.info { "helm sandbox dir already exists at #{destination_cnf_dir}/#{File.basename(src_path)}" }
+      # end
     when Helm::InstallMethod::HelmChart
       Log.info { "preparing helm chart sandbox" }
       source_directory = ""
