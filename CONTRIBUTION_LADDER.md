@@ -24,7 +24,7 @@ Everyone is a community member! 😄 You've read this far so you are already ahe
 How you can learn more?
 
 * Read the [install guide](INSTALL.md), [usage guide](USAGE.md), [FAQ](FAQ.md), and other documentation.
-* Request a live demonstration and introduction of the test suite
+* Request a live demonstration and introduction of the test suite ([book a time on Calendly](https://calendly.com/cnftestsuite))
 * Come chat with us in [Slack](https://cloud-native.slack.com/archives/C014TNCEX8R) or start a [discussion](https://github.com/cncf/cnf-testsuite/discussions).
 
 ## Community Participant
