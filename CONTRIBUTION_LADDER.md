@@ -23,9 +23,9 @@ Everyone is a community member! 😄 You've read this far so you are already ahe
 
 How you can learn more?
 
-* Read the [install guide](INSTALL.md), [usage guide](USAGE.md), [FAQ](FAQ.md), and other documentation.
+* Read the [install guide](INSTALL.md), [usage guide](USAGE.md), [FAQ](FAQ.md), and other documentation
 * Request a live demonstration and introduction of the test suite ([book a time on Calendly](https://calendly.com/cnftestsuite))
-* Come chat with us in [Slack](https://cloud-native.slack.com/archives/C014TNCEX8R) or start a [discussion](https://github.com/cncf/cnf-testsuite/discussions).
+* Come chat with us in [Slack](https://cloud-native.slack.com/archives/C014TNCEX8R) or start a [discussion](https://github.com/cncf/cnf-testsuite/discussions)
 
 ## Community Participant
 
@@ -51,16 +51,16 @@ How you can be more involved and participate in the community:
 * [Mark issues as duplicates](https://help.github.com/en/articles/about-duplicate-issues-and-pull-requests)
 * Close and assign issues and pull requests
 
-Contributors will agree to and follow this Contributing Guide.
+We ask that Contributors agree to and follow this [Contributing Guide](CONTRIBUTING.md).
 
 ### How to become a contributor
 
 To become a contributor, the maintainers of the project would like to see you:
 
-* Comment on issues with your experiences and opinions.
-* Add your comments and reviews on pull requests.
-* Contribute pull requests.
-* Open issues with bugs, enhancement ideas, and questions.
+* Comment on issues with your experiences and opinions
+* Add your comments and reviews on pull requests
+* Contribute pull requests
+* Open issues with bugs, enhancement ideas, and questions
 
 Contributors and maintainers will do their best to watch for community members
 who make good contributors. But don’t be shy, if you feel that this is you,
@@ -71,19 +71,19 @@ please reach out to one or more of the contributors or [maintainers](MAINTAINERS
 
 [Maintainers][https://github.com/cncf/cnf-testsuite/blob/main/MAINTAINERS.md#maintainers] are members with extra capabilities:
 
-* Be a [Code Owner](.github/CODEOWNERS) and have reviews automatically requested.
-* Review pull requests.
-* Merge pull requests.
+* Be a [Code Owner](.github/CODEOWNERS) and have reviews automatically requested
+* Review pull requests
+* Merge pull requests
 
 Maintainers also have additional responsibilities beyond just merging code:
 
-* Help foster a safe and welcoming environment for all project participants.
-  This will include understanding and enforcing our [Code of Conduct](code-of-conduct.md).
+* Help foster a safe and welcoming environment for all project participants
+  This will include understanding and enforcing our [Code of Conduct](code-of-conduct.md)
 * Organize and promote pull request reviews, e.g. prompting community members,
-  contributors, and other maintainers to review.
-* Triage issues, e.g. adding labels, promoting discussions, finalizing decisions.
+  contributors, and other maintainers to review
+* Triage issues, e.g. adding labels, promoting discussions, finalizing decisions
 * Help organize our development meetings, e.g. schedule, organize and
-  execute agenda.
+  execute agenda
 
 We ask that Maintainers agree to and follow the [Reviewing Guide](REVIEWING.md).
 
@@ -113,3 +113,7 @@ It isn't expected that all maintainers will need or want to move up to admin. If
 you are a maintainer, and find yourself often asking an admin to do certain
 tasks for you and you would like to help out with administrative tasks, please
 reach out to one or more of the admins.
+
+
+## Emeritus Maintainers
+Former maintainers are recognized with an honorary Emeritus Maintainer status, and have their names permanently listed in the [maintainer file](MAINTAINERS.md) as a form of gratitude for their contributions.
