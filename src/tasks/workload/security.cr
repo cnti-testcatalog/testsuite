@@ -10,6 +10,45 @@ task "security", ["privileged"] do |_, args|
   stdout_score("security")
 end
 
+desc "Check if any containers are running in as roo "
+task "non_root_user" do |_, args|
+CNFManager::Task.task_runner(args) do |args,config|
+    VERBOSE_LOGGING.info "non_root_user" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    fail_msgs = [] of String
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      test_passed = true
+      kind = resource["kind"].as_s.downcase
+      case kind 
+      when  "deployment","statefulset","pod","replicaset", "daemonset"
+        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
+        pods = KubectlClient::Get.pods_by_resource(resource_yaml)
+        pods.map do |pod|
+          pod_name = pod.dig("metadata", "name")
+          if Falco.find_root_pod(pod_name)
+            fail_msg = "resource: #{resource} and pod #{pod_name} uses a root user"
+            unless fail_msgs.find{|x| x== fail_msg}
+              puts fail_msg.colorize(:red)
+              fail_msgs << fail_msg
+            end
+            test_passed=false
+          end
+        end
+        test_passed
+      end
+    end
+    emoji_no_root="🚫√"
+    emoji_root="√"
+
+    if task_response
+      upsert_passed_task("non_root_user", "✔️  PASSED: Root user not found #{emoji_no_root}")
+    else
+      upsert_failed_task("non_root_user", "✖️  FAILED: Root user found #{emoji_root}")
+    end
+  end
+
+end
+
 desc "Check if any containers are running in privileged mode"
 task "privileged" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|

@@ -9,16 +9,17 @@ FALCO_OFFLINE_DIR = "#{TarClient::TAR_REPOSITORY_DIR}/falcosecurity_falco"
 desc "Install Falco"
 task "install_falco" do |_, args|
   helm = BinarySingleton.helm
+  # todo create embedded file macro for falco_rule
   if args.named["offline"]?
       Log.info { "install falco offline mode" }
     helm_chart = Dir.entries(FALCO_OFFLINE_DIR).first
-    Helm.install("falco --set ebpf.enabled=true #{FALCO_OFFLINE_DIR}/#{helm_chart}")
+    Helm.install("falco --set ebpf.enabled=true -f falco_rule.yaml #{FALCO_OFFLINE_DIR}/#{helm_chart}")
     KubectlClient::Get.resource_wait_for_install("Daemonset", "falco") 
 
   else
     Helm.helm_repo_add("falcosecurity","https://falcosecurity.github.io/charts")
     # needs ebpf parameter for precompiled module 
-    Helm.install("falco --set ebpf.enabled=true falcosecurity/falco")
+    Helm.install("falco --set ebpf.enabled=true falco -f falco_rule.yaml falcosecurity/falco")
     KubectlClient::Get.resource_wait_for_install("Daemonset", "falco") 
   end
 end

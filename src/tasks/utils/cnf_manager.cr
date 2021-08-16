@@ -11,6 +11,7 @@ require "./task.cr"
 require "./config.cr"
 require "airgap"
 require "tar"
+# todo put this in a module or in the 
 require "./image_prepull.cr"
 require "./generate_config.cr"
 
