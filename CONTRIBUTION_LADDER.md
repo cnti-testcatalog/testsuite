@@ -85,7 +85,6 @@ Maintainers also have additional responsibilities beyond just merging code:
 * Help organize our development meetings, e.g. schedule, organize and
   execute agenda
 
-We ask that Maintainers agree to and follow the [Reviewing Guide](REVIEWING.md).
 
 
 ### How to become a maintainer
