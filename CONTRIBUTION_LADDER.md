@@ -25,7 +25,7 @@ How you can learn more?
 
 * Read the [install guide](INSTALL.md), [usage guide](USAGE.md), [FAQ](FAQ.md), and other documentation.
 * Request a live demonstration and introduction of the test suite
-* Come chat with us in [Slack](https://cloud-native.slack.com/archives/C014TNCEX8R).
+* Come chat with us in [Slack](https://cloud-native.slack.com/archives/C014TNCEX8R) or start a [discussion](https://github.com/cncf/cnf-testsuite/discussions).
 
 ## Community Participant
 
