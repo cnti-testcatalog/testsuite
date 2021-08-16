@@ -51,7 +51,7 @@ How you can be more involved and participate in the community:
 * [Mark issues as duplicates](https://help.github.com/en/articles/about-duplicate-issues-and-pull-requests)
 * Close and assign issues and pull requests
 
-Contributors must agree to and follow this Contributing Guide.
+Contributors will agree to and follow this Contributing Guide.
 
 ### How to become a contributor
 
