@@ -10,7 +10,7 @@ task "security", ["privileged"] do |_, args|
   stdout_score("security")
 end
 
-desc "Check if any containers are running in as roo "
+desc "Check if any containers are running in as root"
 task "non_root_user", ["install_falco"] do |_, args|
 CNFManager::Task.task_runner(args) do |args,config|
     VERBOSE_LOGGING.info "non_root_user" if check_verbose(args)
