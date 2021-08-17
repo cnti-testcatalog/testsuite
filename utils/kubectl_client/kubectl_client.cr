@@ -16,8 +16,8 @@ module KubectlClient
   # https://www.capitalone.com/tech/cloud/container-runtime/
   OCI_RUNTIME_REGEX = /containerd|docker|runc|railcar|crun|rkt|gviso|nabla|runv|clearcontainers|kata|cri-o/i
 
-  def self.logs(pod_name)
-    status = Process.run("kubectl logs #{pod_name}",
+  def self.logs(pod_name, container_name="")
+    status = Process.run("kubectl logs #{pod_name} #{container_name}",
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
@@ -284,19 +284,19 @@ module KubectlClient
       }.flatten
     end
 
-    def self.pods_by_resource(resource) : K8sManifestList
+    def self.pods_by_resource(resource_yml) : K8sManifestList
       LOGGING.info "pods_by_resource"
-      LOGGING.debug "pods_by_resource resource: #{resource}"
-      # resource_selector = resource.dig?("spec", "selector", "matchLabels", "name")
-      # LOGGING.info "resource_selector: #{resource_selector}"
+      LOGGING.debug "pods_by_resource resource: #{resource_yml}"
+      return [resource_yml] if resource_yml["kind"].as_s.downcase == "pod"
+      LOGGING.info "resource kind: #{resource_yml["kind"]}"
       
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
       # pods = KubectlClient::Get.pods
-      LOGGING.info "resource kind: #{resource["kind"]}"
-      name = resource["metadata"]["name"]? 
+      LOGGING.info "resource kind: #{resource_yml["kind"]}"
+      name = resource_yml["metadata"]["name"]? 
       LOGGING.info "pods_by_resource name: #{name}"
       if name
-        labels = KubectlClient::Get.resource_spec_labels(resource["kind"], name).as_h
+        labels = KubectlClient::Get.resource_spec_labels(resource_yml["kind"], name).as_h
         LOGGING.info "pods_by_resource labels: #{labels}"
         KubectlClient::Get.pods_by_labels(pods, labels)
       else
@@ -308,7 +308,11 @@ module KubectlClient
     def self.pods_by_labels(pods_json : Array(JSON::Any), labels : Hash(String, JSON::Any))
       LOGGING.info "pods_by_label labels: #{labels}"
       pods_json.select do |pod|
-        match = true
+        if labels == Hash(String, JSON::Any).new
+          match = false
+        else
+          match = true
+        end
         labels.map do |key, value|
           if pod.dig?("metadata", "labels", key) == value
             # LOGGING.debug "pod: #{pod}"

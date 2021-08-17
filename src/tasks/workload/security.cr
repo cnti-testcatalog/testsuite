@@ -11,7 +11,7 @@ task "security", ["privileged"] do |_, args|
 end
 
 desc "Check if any containers are running in as roo "
-task "non_root_user" do |_, args|
+task "non_root_user", ["install_falco"] do |_, args|
 CNFManager::Task.task_runner(args) do |args,config|
     VERBOSE_LOGGING.info "non_root_user" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
@@ -23,16 +23,21 @@ CNFManager::Task.task_runner(args) do |args,config|
       when  "deployment","statefulset","pod","replicaset", "daemonset"
         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
         pods = KubectlClient::Get.pods_by_resource(resource_yaml)
+        # containers = KubectlClient::Get.resource_containers(kind, resource[:name]) 
         pods.map do |pod|
-          pod_name = pod.dig("metadata", "name")
-          if Falco.find_root_pod(pod_name)
-            fail_msg = "resource: #{resource} and pod #{pod_name} uses a root user"
-            unless fail_msgs.find{|x| x== fail_msg}
-              puts fail_msg.colorize(:red)
-              fail_msgs << fail_msg
+          # containers.as_a.map do |container|
+          #   container_name = container.dig("name")
+            pod_name = pod.dig("metadata", "name")
+            # if Falco.find_root_pod(pod_name, container_name)
+            if Falco.find_root_pod(pod_name)
+              fail_msg = "resource: #{resource} and pod #{pod_name} uses a root user"
+              unless fail_msgs.find{|x| x== fail_msg}
+                puts fail_msg.colorize(:red)
+                fail_msgs << fail_msg
+              end
+              test_passed=false
             end
-            test_passed=false
-          end
+          # end
         end
         test_passed
       end

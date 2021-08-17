@@ -9,30 +9,35 @@ describe CnfTestSuite do
     `./cnf-testsuite samples_cleanup`
     $?.success?.should be_true
     `./cnf-testsuite configuration_file_setup`
+    LOGGING.debug `./cnf-testsuite uninstall_falco`
+    LOGGING.debug `./cnf-testsuite install_falco`
+    `./cnf-testsuite configuration_file_setup`
     # `./cnf-testsuite setup`
     # $?.success?.should be_true
   end
   it "'non_root_user' should pass with a non-root cnf", tags: ["security"]  do
     begin
-      LOGGING.debug `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_nonroot/cnf-testsuite.yml`
+      LOGGING.debug `./cnf-testsuite uninstall_falco`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_nonroot/cnf-testsuite.yml`
       response_s = `./cnf-testsuite non_root_user verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/Root user not found/ =~ response_s).should be_nil
+      (/Root user not found/ =~ response_s).should_not be_nil
     ensure
-      LOGGING.debug `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_nonroot/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_nonroot/cnf-testsuite.yml manifest=true`
     end
   end
 
   it "'non_root_user' should fail with a root cnf", tags: ["security"]  do
     begin
-      LOGGING.debug `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml`
+      LOGGING.debug `./cnf-testsuite uninstall_falco`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml`
       response_s = `./cnf-testsuite non_root_user verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/Root user found/ =~ response_s).should be_nil
+      (/Root user found/ =~ response_s).should_not be_nil
     ensure
-      LOGGING.debug `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml manifest=true`
     end
   end
 
