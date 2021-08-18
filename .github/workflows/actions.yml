@@ -143,6 +143,9 @@ jobs:
         git fetch --all --tags --force
         shards install  
         echo "RUNNER: $RUNNER_NAME"
+    - name: Debug
+      uses: mxschmitt/action-tmate@v3
+      if: needs.debug_output.outputs.build-debug == 'true'
     - name: Run Crystal Spec
       env:
         GITHUB_USER: ${{ secrets.GH_USER }}
@@ -189,9 +192,6 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    # - name: Debug
-    #   uses: mxschmitt/action-tmate@v3
-      # if: needs.debug_output.outputs.build-debug == 'true'
     - name: Cache crystal shards
       uses: actions/cache@v2
       env:
