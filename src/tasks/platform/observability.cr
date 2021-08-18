@@ -7,25 +7,25 @@ require "retriable"
 namespace "platform" do
   desc "The CNF test suite checks to see if the Platform has Observability support."
   task "observability", ["kube_state_metrics", "node_exporter", "prometheus_adapter", "metrics_server"] do |t, args|
-    VERBOSE_LOGGING.info "observability" if check_verbose(args)
-    VERBOSE_LOGGING.debug "observability args.raw: #{args.raw}" if check_verbose(args)
-    VERBOSE_LOGGING.debug "observability args.named: #{args.named}" if check_verbose(args)
+    Log.for("verbose").info { "observability" } if check_verbose(args)
+    Log.for("verbose").debug { "observability args.raw: #{args.raw}" } if check_verbose(args)
+    Log.for("verbose").debug { "observability args.named: #{args.named}" } if check_verbose(args)
     stdout_score("platform:observability")
   end
 
   desc "Does the Platform have Kube State Metrics installed"
   task "kube_state_metrics" do |_, args|
     unless check_poc(args)
-      LOGGING.info "skipping kube_state_metrics: not in poc mode"
+      Log.info { "skipping kube_state_metrics: not in poc mode" }
       puts "SKIPPED: Kube State Metrics".colorize(:yellow)
       next
     end
     if args.named["offline"]?
-        LOGGING.info "skipping kube_state_metrics: in offline mode"
+      Log.info { "skipping kube_state_metrics: in offline mode" }
       puts "SKIPPED: Kube State Metrics".colorize(:yellow)
       next
     end
-    LOGGING.info "Running POC: kube_state_metrics"
+    Log.info { "Running POC: kube_state_metrics" }
     Retriable.retry do
       task_response = CNFManager::Task.task_runner(args) do |args|
         current_dir = FileUtils.pwd
@@ -37,11 +37,11 @@ namespace "platform" do
 
         # Get the sha hash for the kube-state-metrics container
         sha_list = named_sha_list(state_metric_releases)
-        LOGGING.debug "sha_list: #{sha_list}"
+        Log.debug { "sha_list: #{sha_list}" }
 
         # find hash for image
         imageids = KubectlClient::Get.all_container_repo_digests
-        LOGGING.debug "imageids: #{imageids}"
+        Log.debug { "imageids: #{imageids}" }
         found = false
         release_name = ""
         sha_list.each do |x|
@@ -64,16 +64,16 @@ namespace "platform" do
   desc "Does the Platform have a Node Exporter installed"
   task "node_exporter" do |_, args|
     unless check_poc(args)
-      LOGGING.info "skipping node_exporter: not in poc mode"
+      Log.info { "skipping node_exporter: not in poc mode" }
       puts "SKIPPED: Node Exporter".colorize(:yellow)
       next
     end
     if args.named["offline"]?
-        LOGGING.info "skipping node_exporter: in offline mode"
+      Log.info { "skipping node_exporter: in offline mode" }
       puts "SKIPPED: Node Exporter".colorize(:yellow)
       next
     end
-    LOGGING.info "Running POC: node_exporter"
+    Log.info { "Running POC: node_exporter" }
     Retriable.retry do
       task_response = CNFManager::Task.task_runner(args) do |args|
 
@@ -99,9 +99,9 @@ namespace "platform" do
 
         # Fetch id sha256 sums for all repo_digests https://github.com/docker/distribution/issues/1662
         repo_digest_list = KubectlClient::Get.all_container_repo_digests
-        LOGGING.info "container_repo_digests: #{repo_digest_list}"
+        Log.info { "container_repo_digests: #{repo_digest_list}" }
         id_sha256_list = repo_digest_list.reduce([] of String) do |acc, repo_digest|
-          LOGGING.info "repo_digest: #{repo_digest}"
+          Log.info { "repo_digest: #{repo_digest}" }
           #TODO use kubectlclient
           # cricti = `kubectl exec -ti #{CRIToolsSetup.cri_tools_pod} -- crictl inspecti #{repo_digest}`
           # LOGGING.info "cricti: #{cricti}"
@@ -111,11 +111,11 @@ namespace "platform" do
             parsed_json = JSON.parse(cricti)
             acc << parsed_json["status"]["id"].as_s
           rescue
-            LOGGING.error "cricti not valid json: #{cricti}"
+            Log.error { "cricti not valid json: #{cricti}" }
             acc
           end
         end
-        LOGGING.debug "id_sha256_list: #{id_sha256_list}"
+        Log.debug { "id_sha256_list: #{id_sha256_list}" }
 
 
         # Fetch image id sha256sums available for all upstream node-exporter releases
@@ -123,7 +123,7 @@ namespace "platform" do
         resp = Halite.get("https://registry.hub.docker.com/v2/repositories/prom/node-exporter/tags?page_size=1024")
         node_exporter_releases = resp.body
         tag_list = named_sha_list(node_exporter_releases)
-        LOGGING.info "tag_list: #{tag_list}"
+        Log.info { "tag_list: #{tag_list}" }
         if ENV["DOCKERHUB_USERNAME"]? && ENV["DOCKERHUB_PASSWORD"]?
             target_ns_repo = "prom/node-exporter"
           params = "service=registry.docker.io&scope=repository:#{target_ns_repo}:pull"
@@ -131,13 +131,13 @@ namespace "platform" do
           resp = Halite.basic_auth(user: ENV["DOCKERHUB_USERNAME"], pass: ENV["DOCKERHUB_PASSWORD"]).
             get("https://auth.docker.io/token?#{params}")
           token = resp.body
-          LOGGING.debug "token: #{token}"
+          Log.debug { "token: #{token}" }
           if token =~ /incorrect username/
-            LOGGING.error "error: #{token}"
+            Log.error { "error: #{token}" }
           end
           parsed_token = JSON.parse(token)
           release_id_list = tag_list.reduce([] of Hash(String, String)) do |acc, tag|
-            LOGGING.info "tag: #{tag}"
+            Log.info { "tag: #{tag}" }
             tag = tag["name"]
 
             # image_id = `curl --header "Accept: application/vnd.docker.distribution.manifest.v2+json" "https://registry-1.docker.io/v2/#{target_ns_repo}/manifests/#{tag}" -H "Authorization:Bearer #{parsed_token["token"].as_s}"`
@@ -146,10 +146,10 @@ namespace "platform" do
                   headers: {Accept: "application/vnd.docker.distribution.manifest.v2+json"})
             image_id = resp.body
 
-            LOGGING.info "Image ID #{image_id}"
+            Log.info { "Image ID #{image_id}" }
 
             parsed_image = JSON.parse(image_id)
-            LOGGING.info "parsed_image config digest #{parsed_image["config"]["digest"]}"
+            Log.info { "parsed_image config digest #{parsed_image["config"]["digest"]}" }
             if parsed_image["config"]["digest"]?
                 acc << {"name" => tag, "digest"=> parsed_image["config"]["digest"].as_s}
             else
@@ -160,7 +160,7 @@ namespace "platform" do
           puts "DOCKERHUB_USERNAME & DOCKERHUB_PASSWORD Must be set."
           exit 1
         end
-        LOGGING.info "Release id sha256sum list: #{release_id_list}"
+        Log.info { "Release id sha256sum list: #{release_id_list}" }
 
         found = false
         release_name = ""
@@ -186,16 +186,16 @@ end
   desc "Does the Platform have the prometheus adapter installed"
   task "prometheus_adapter" do |_, args|
     unless check_poc(args)
-      LOGGING.info "skipping prometheus_adapter: not in poc mode"
+      Log.info { "skipping prometheus_adapter: not in poc mode" }
       puts "SKIPPED: Prometheus Adapter".colorize(:yellow)
       next
     end
     if args.named["offline"]?
-        LOGGING.info "skipping prometheus_adapter: in offline mode"
+      Log.info { "skipping prometheus_adapter: in offline mode" }
       puts "SKIPPED: Prometheus Adapter".colorize(:yellow)
       next
     end
-    LOGGING.info "Running POC: prometheus_adapter"
+    Log.info { "Running POC: prometheus_adapter" }
     Retriable.retry do
       task_response = CNFManager::Task.task_runner(args) do |args|
         # Fetch image id sha256sums available for all upstream prometheus_adapter releases
@@ -203,11 +203,11 @@ end
         resp = Halite.get("https://registry.hub.docker.com/v2/repositories/directxman12/k8s-prometheus-adapter-amd64/tags?page_size=1024")
         prometheus_adapter_releases = resp.body
         sha_list = named_sha_list(prometheus_adapter_releases)
-        LOGGING.debug "sha_list: #{sha_list}"
+        Log.debug { "sha_list: #{sha_list}" }
 
         # find hash for image
         imageids = KubectlClient::Get.all_container_repo_digests
-        LOGGING.debug "imageids: #{imageids}"
+        Log.debug { "imageids: #{imageids}" }
         found = false
         release_name = ""
         sha_list.each do |x|
@@ -231,16 +231,16 @@ end
   desc "Does the Platform have the K8s Metrics Server installed"
   task "metrics_server" do |_, args|
     unless check_poc(args)
-      LOGGING.info "skipping metrics_server: not in poc mode"
+      Log.info { "skipping metrics_server: not in poc mode" }
       puts "SKIPPED: Metrics Server".colorize(:yellow)
       next
     end
     if args.named["offline"]?
-        LOGGING.info "skipping metrics_server: in offline mode"
+      Log.info { "skipping metrics_server: in offline mode" }
       puts "SKIPPED: Metrics Server".colorize(:yellow)
       next
     end
-    LOGGING.info "Running POC: metrics_server"
+    Log.info { "Running POC: metrics_server" }
     Retriable.retry do
       task_response = CNFManager::Task.task_runner(args) do |args|
 
@@ -250,7 +250,7 @@ end
 
         # Install and find CRI Tools name
         File.write("cri_tools.yml", CRI_TOOLS)
-        install_cri_tools = `kubectl create -f cri_tools.yml`
+        install_cri_tools = KubectlClient::Apply.file("cri_tools.yml")
         pod_ready = ""
         pod_ready_timeout = 45
         until (pod_ready == "true" || pod_ready_timeout == 0)
@@ -261,32 +261,29 @@ end
         end
         cri_tools_pod = KubectlClient::Get.pod_status("cri-tools").split(",")[0]
         #, "--field-selector spec.nodeName=#{worker_node}")
-        LOGGING.debug "cri_tools_pod: #{cri_tools_pod}"
+        Log.debug { "cri_tools_pod: #{cri_tools_pod}" }
 
         # Fetch id sha256 sums for all repo_digests https://github.com/docker/distribution/issues/1662
         repo_digest_list = KubectlClient::Get.all_container_repo_digests
-        LOGGING.info "container_repo_digests: #{repo_digest_list}"
+        Log.info { "container_repo_digests: #{repo_digest_list}" }
         id_sha256_list = repo_digest_list.reduce([] of String) do |acc, repo_digest|
-          LOGGING.debug "repo_digest: #{repo_digest}"
-          cricti = `kubectl exec -ti #{cri_tools_pod} -- crictl inspecti #{repo_digest}`
-          LOGGING.debug "cricti: #{cricti}"
+          Log.debug { "repo_digest: #{repo_digest}" }
+          cricti = KubectlClient.exec("-ti #{cri_tools_pod} -- crictl inspecti #{repo_digest}")
           begin
-            parsed_json = JSON.parse(cricti)
+            parsed_json = JSON.parse(cricti[:output])
             acc << parsed_json["status"]["id"].as_s
           rescue
-            LOGGING.error "cricti not valid json: #{cricti}"
+            Log.error { "cricti not valid json: #{cricti[:output]}" }
             acc
           end
         end
-        LOGGING.info "id_sha256_list: #{id_sha256_list}"
-
+        Log.info { "id_sha256_list: #{id_sha256_list}" }
 
         # Fetch image id sha256sums available for all upstream node-exporter releases
-        # metrics_server_releases = `curl -L -s 'https://registry.hub.docker.com/v2/repositories/bitnami/metrics-server/tags?page=1'`
         resp = Halite.get("https://registry.hub.docker.com/v2/repositories/bitnami/metrics-server/tags?page=1")
         metrics_server_releases = resp.body
         tag_list = named_sha_list(metrics_server_releases)
-        LOGGING.info "tag_list: #{tag_list}"
+        Log.info { "tag_list: #{tag_list}" }
         if ENV["DOCKERHUB_USERNAME"]? && ENV["DOCKERHUB_PASSWORD"]?
             target_ns_repo = "bitnami/metrics-server"
           params = "service=registry.docker.io&scope=repository:#{target_ns_repo}:pull"
@@ -295,11 +292,11 @@ end
             get("https://auth.docker.io/token?#{params}")
           token = resp.body
           if token =~ /incorrect username/
-            LOGGING.error "error: #{token}"
+            Log.error { "error: #{token}" }
           end
           parsed_token = JSON.parse(token)
           release_id_list = tag_list.reduce([] of Hash(String, String)) do |acc, tag|
-            LOGGING.debug "tag: #{tag}"
+            Log.debug { "tag: #{tag}" }
             tag = tag["name"]
 
             # image_id = `curl --header "Accept: application/vnd.docker.distribution.manifest.v2+json" "https://registry-1.docker.io/v2/#{target_ns_repo}/manifests/#{tag}" -H "Authorization:Bearer #{parsed_token["token"].as_s}"`
@@ -309,7 +306,7 @@ end
             image_id = resp.body
             parsed_image = JSON.parse(image_id)
 
-            LOGGING.debug "parsed_image config digest #{parsed_image["config"]["digest"]}"
+            Log.debug { "parsed_image config digest #{parsed_image["config"]["digest"]}" }
             if parsed_image["config"]["digest"]?
                 acc << {"name" => tag, "digest"=> parsed_image["config"]["digest"].as_s}
             else
@@ -320,7 +317,7 @@ end
           puts "DOCKERHUB_USERNAME & DOCKERHUB_PASSWORD Must be set."
           exit 1
         end
-        LOGGING.info "Release id sha256sum list: #{release_id_list}"
+        Log.info { "Release id sha256sum list: #{release_id_list}" }
 
         found = false
         release_name = ""
@@ -344,9 +341,9 @@ end
 
 
 def named_sha_list(resp_json)
-  LOGGING.debug "sha_list resp_json: #{resp_json}"
+  Log.debug { "sha_list resp_json: #{resp_json}" }
   parsed_json = JSON.parse(resp_json)
-  LOGGING.debug "sha list parsed json: #{parsed_json}"
+  Log.debug { "sha list parsed json: #{parsed_json}" }
   #if tags then this is a quay repository, otherwise assume docker hub repository
   if parsed_json["tags"]?
     parsed_json["tags"].not_nil!.as_a.reduce([] of Hash(String, String)) do |acc, i|
@@ -356,11 +353,11 @@ def named_sha_list(resp_json)
     parsed_json["results"].not_nil!.as_a.reduce([] of Hash(String, String)) do |acc, i|
       # always use amd64
       amd64image = i["images"].as_a.find{|x| x["architecture"].as_s == "amd64"}
-      LOGGING.debug "amd64image: #{amd64image}"
+      Log.debug { "amd64image: #{amd64image}" }
       if amd64image && amd64image["digest"]?
         acc << {"name" => i["name"].not_nil!.as_s, "manifest_digest" => amd64image["digest"].not_nil!.as_s}
       else
-        LOGGING.error "amd64 image not found in #{i["images"]}"
+        Log.error { "amd64 image not found in #{i["images"]}" }
         acc
       end
     end
