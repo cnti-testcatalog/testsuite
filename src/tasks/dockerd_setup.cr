@@ -8,8 +8,8 @@ require "./utils/utils.cr"
 desc "The dockerd tool is used to run docker commands against the cluster."
 task "install_dockerd" do |_, args|
   Log.for("verbose").info { "install_dockerd" } if check_verbose(args)
-  resp = KubectlClient::Apply.file(dockerd_filename)
-  if resp
+  result = KubectlClient::Apply.file(dockerd_filename)
+  if result[:status].success?
     status = check_dockerd(180)
   end
   unless status

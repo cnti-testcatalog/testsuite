@@ -35,7 +35,7 @@ namespace "platform" do
 
 
       File.write("reboot_daemon_pod.yml", REBOOT_DAEMON)
-      install_reboot_daemon = KubectlClient::Apply.file("reboot_daemon_pod.yml")
+      KubectlClient::Apply.file("reboot_daemon_pod.yml")
       KubectlClient::Get.wait_for_install("node-failure-coredns")
 
       pod_ready = ""

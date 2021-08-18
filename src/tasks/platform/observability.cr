@@ -250,7 +250,7 @@ end
 
         # Install and find CRI Tools name
         File.write("cri_tools.yml", CRI_TOOLS)
-        install_cri_tools = KubectlClient::Apply.file("cri_tools.yml")
+        KubectlClient::Apply.file("cri_tools.yml")
         pod_ready = ""
         pod_ready_timeout = 45
         until (pod_ready == "true" || pod_ready_timeout == 0)
