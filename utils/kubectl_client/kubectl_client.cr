@@ -432,6 +432,31 @@ module KubectlClient
       resource_wait_for_install("deployment", deployment_name, wait_count, namespace)
     end
 
+    def self.resource_ready?(kind, namespace, resource_name)
+      case kind.downcase
+      when "pod"
+        pod_ready = KubectlClient::Get.pod_status(pod_name_prefix: resource_name, namespace: namespace).split(",")[2]
+        return pod_ready == "true"
+      when "replicaset", "deployment", "statefulset"
+        desired = replica_count(kind, namespace, resource_name, "{.status.replicas}")
+        current = replica_count(kind, namespace, resource_name, "{.status.readyReplicas}")
+        return current == desired
+      when "daemonset"
+        desired = replica_count(kind, namespace, resource_name, "{.status.desiredNumberScheduled}")
+        current = replica_count(kind, namespace, resource_name, "{.status.numberAvailable}")
+        return current == desired
+      else
+        desired = replica_count(kind, namespace, resource_name, "{.status.replicas}")
+        current = replica_count(kind, namespace, resource_name, "{.status.readyReplicas}")
+        return current == desired
+      end
+    end
+
+    def self.replica_count(kind, namespace, resource_name, jsonpath)
+      result = ShellCmd.run("kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='#{jsonpath}'")
+      result[:output].to_i
+    end
+
     def self.resource_wait_for_install(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default")
       # Not all cnfs have #{kind}.  some have only a pod.  need to check if the
       # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod
