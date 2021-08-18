@@ -480,7 +480,8 @@ task "immutable_configmap" do |_, args|
     immutable_configmap_supported = true
     # if the reapply with a change succedes immmutable configmaps is NOT enabled
     # if KubectlClient::Apply.file(test_config_map_filename) == 0
-    if KubectlClient::Apply.file(test_config_map_filename)
+    apply_result = KubectlClient::Apply.file(test_config_map_filename)
+    if apply_result[:status].success?
       LOGGING.info "kubectl apply failed for: #{test_config_map_filename}"
       k8s_ver = KubectlClient.server_version
       if version_less_than(k8s_ver, "1.19.0")
