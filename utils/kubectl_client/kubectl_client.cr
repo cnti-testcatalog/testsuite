@@ -445,7 +445,7 @@ module KubectlClient
     def self.replica_count(kind, namespace, resource_name, jsonpath) : Int32
       cmd = "kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='#{jsonpath}'"
       result = ShellCmd.run(cmd, "KubectlClient::Get.replica_count")
-      Log.error { "replica_count_output: #{result[:output].to_s}"}
+      return 0 if result[:output].empty?
       result[:output].to_i
     end
 
