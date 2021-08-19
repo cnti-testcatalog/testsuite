@@ -432,28 +432,33 @@ module KubectlClient
       resource_wait_for_install("deployment", deployment_name, wait_count, namespace)
     end
 
-    def self.resource_ready?(kind, namespace, resource_name)
+    def self.resource_ready?(kind, namespace, resource_name) : Bool
       case kind.downcase
       when "pod"
         pod_ready = KubectlClient::Get.pod_status(pod_name_prefix: resource_name, namespace: namespace).split(",")[2]
+        Log.info { "pod_ready: #{pod_ready}"}
         return pod_ready == "true"
       when "replicaset", "deployment", "statefulset"
         desired = replica_count(kind, namespace, resource_name, "{.status.replicas}")
         current = replica_count(kind, namespace, resource_name, "{.status.readyReplicas}")
+        Log.info { "current_replicas: #{current}, desired_replicas: #{desired}" }
         return current == desired
       when "daemonset"
         desired = replica_count(kind, namespace, resource_name, "{.status.desiredNumberScheduled}")
         current = replica_count(kind, namespace, resource_name, "{.status.numberAvailable}")
+        Log.info { "current_replicas: #{current}, desired_replicas: #{desired}" }
         return current == desired
       else
         desired = replica_count(kind, namespace, resource_name, "{.status.replicas}")
         current = replica_count(kind, namespace, resource_name, "{.status.readyReplicas}")
+        Log.info { "current_replicas: #{current}, desired_replicas: #{desired}" }
         return current == desired
       end
     end
 
     def self.replica_count(kind, namespace, resource_name, jsonpath)
-      result = ShellCmd.run("kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='#{jsonpath}'")
+      cmd = "kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='#{jsonpath}'"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.replica_count")
       result[:output].to_i
     end
 
@@ -462,72 +467,22 @@ module KubectlClient
       # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod
       Log.info { "resource_wait_for_install kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}" }
       second_count = 0
-      pod_ready : String | Nil
-      current_replicas : String | Nil
-      desired_replicas : String | Nil
-      #TODO use the kubectl client get
+
       all_kind = `kubectl get #{kind} --namespace=#{namespace}`
       Log.debug { "all_kind #{all_kind}}" }
-      # Intialization
-      case kind.downcase
-      when "replicaset", "deployment", "statefulset"
-        #TODO use the kubectl client get
-        #TODO add extra params for kubectl client get
-        desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
-        Log.debug { "desired_replicas #{desired_replicas}" }
-        current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
-        Log.debug { "current_replicas #{current_replicas}" }
-      when "daemonset"
-        desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.desiredNumberScheduled}'`
-        Log.debug { "desired_replicas #{desired_replicas}" }
-        current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.numberAvailable}'`
-        Log.debug { "current_replicas #{current_replicas}" }
-      when "pod"
-        pod_ready = KubectlClient::Get.pod_status(pod_name_prefix: resource_name, namespace: namespace).split(",")[2] # true/false
-      else
-        desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
-        Log.debug { "desired_replicas #{desired_replicas}" }
-        current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
-        Log.debug { "current_replicas #{current_replicas}" }
-      end
 
-        until (pod_ready && !pod_ready.empty? && pod_ready == "true") ||
-            (current_replicas && desired_replicas && !current_replicas.empty? && current_replicas.to_i == desired_replicas.to_i) ||
-            second_count > wait_count
+      # Intialization
+      is_ready = resource_ready?(kind, namespace, resource_name)
+
+      until is_ready || second_count > wait_count
         Log.info { "second_count = #{second_count}" }
         sleep 1
-        Log.debug { "wait command: kubectl get #{kind} --namespace=#{namespace}" }
-        all_kind = `kubectl get #{kind} --namespace=#{namespace}`
-        case kind.downcase
-        when "replicaset", "deployment", "statefulset"
-          current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
-          desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
-        when "daemonset"
-          current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.numberAvailable}'`
-          desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.desiredNumberScheduled}'`
-        when "pod"
-          #TODO remove split and return true /false
-          pod_ready = KubectlClient::Get.pod_status(pod_name_prefix: resource_name, namespace: namespace).split(",")[2] # true/false
-        else
-          current_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.readyReplicas}'`
-          desired_replicas = `kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='{.status.replicas}'`
-        end
-        Log.debug { "desired_replicas: #{desired_replicas}" }
-        Log.debug { "pod_ready: #{pod_ready}" }
-        Log.info { all_kind }
+        is_ready = resource_ready?(kind, namespace, resource_name)
         second_count = second_count + 1
       end
 
-      Log.info { "final pod_ready: #{pod_ready}" }
-      Log.info { "final current_replicas: #{current_replicas}" }
-      if (pod_ready && !pod_ready.empty? && pod_ready == "true") ||
-          (current_replicas && desired_replicas && !current_replicas.empty? && current_replicas.to_i == desired_replicas.to_i)
-        Log.info { "kind/resource #{kind}, #{resource_name} found." }
-        true
-      else
-        Log.info { "kind/resource #{kind}, #{resource_name} not found." }
-        false
-      end
+      Log.info { "is_ready kind/resource #{kind}, #{resource_name}: #{is_ready}" }
+      return is_ready
     end
 
     #TODO add parameter and functionality that checks for individual pods to be successfully terminated
