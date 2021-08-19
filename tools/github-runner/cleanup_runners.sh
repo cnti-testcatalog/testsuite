@@ -7,7 +7,13 @@ RUNNERS=(
     139.178.69.151
     139.178.69.153
     139.178.68.167
-    86.109.1.243)
+    86.109.1.243
+    139.178.68.111
+    139.178.68.103
+    139.178.68.93
+    139.178.68.107
+    136.144.54.249)
+
 
 TOKEN=$(curl  -XPOST -H "authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/cncf/cnf-testsuite/actions/runners/registration-token | jq -r .token)
 
