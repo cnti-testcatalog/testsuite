@@ -23,6 +23,10 @@ RUNNER_COUNT=0
 for node in "${!RUNNERS[@]}"; do
     ssh root@${RUNNERS[$node]} "docker pull conformance/github-runner:latest"
     ssh root@${RUNNERS[$node]} "docker pull conformance/github-runner:v1.0.0"
+    wget https://snapshot.debian.org/archive/debian/20201024T150941Z/pool/main/l/linux/linux-headers-4.19.0-12-common_4.19.152-1_all.deb
+    wget https://snapshot.debian.org/archive/debian/20201024T150941Z/pool/main/l/linux/linux-headers-4.19.0-12-amd64_4.19.152-1_amd64.deb
+    apt-get install -f ./linux-headers-4.19.0-12-common_4.19.152-1_all.deb
+    apt-get install -f ./linux-headers-4.19.0-12-amd64_4.19.152-1_amd64.deb
     RUNNERS_PER_NODE=10
     until [ $RUNNERS_PER_NODE -eq 0 ]; do
         ssh root@${RUNNERS[$node]} "docker run -d --network host --restart always --name github-runner$RUNNER_COUNT -e REPO_URL="https://github.com/cncf/cnf-testsuite" -e RUNNER_NAME="runner$RUNNER_COUNT" -e RUNNER_TOKEN="$TOKEN" -e RUNNER_WORKDIR="/github-runner-cnf-testsuite" -e RUNNER_GROUP="testsuite" -v /var/run/docker.sock:/var/run/docker.sock -v /runner-tmp/runner$RUNNER_COUNT:/tmp -v /shared:/shared conformance/github-runner:latest"
