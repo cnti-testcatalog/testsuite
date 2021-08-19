@@ -173,7 +173,7 @@ module KubectlClient
       resp
     end
 
-    def self.nodes : JSON::Any
+    def self.nodes() : JSON::Any
       # TODO should this be all namespaces?
       cmd = "kubectl get nodes -o json"
       result = ShellCmd.run(cmd, "KubectlClient::Get.nodes")
@@ -702,8 +702,8 @@ module KubectlClient
       # kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'
 
       cmd = "kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template=#{@@schedulable_nodes_template}'"
-      Log.debug { "kubectl get nodes: #{resp}" }
-      resp.split("\n")
+      result = ShellCmd.run(cmd, "KubectlClient::Get.worker_nodes")
+      result[:output].split("\n")
     end
 
     def self.schedulable_nodes : Array(String)
