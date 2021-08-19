@@ -19,12 +19,14 @@ module KubectlClient
   module ShellCmd
     def self.run(cmd, log_prefix)
       Log.info { "#{log_prefix} command: #{cmd}" }
-      status = Process.run(cmd,
-                           shell: true,
-                           output: output = IO::Memory.new,
-                           error: stderr = IO::Memory.new)
-      Log.info { "#{log_prefix} output: #{output.to_s}" }
-      Log.info { "#{log_prefix} stderr: #{stderr.to_s}" }
+      status = Process.run(
+        cmd,
+        shell: true,
+        output: output = IO::Memory.new,
+        error: stderr = IO::Memory.new
+      )
+      Log.debug { "#{log_prefix} output: #{output.to_s}" }
+      Log.debug { "#{log_prefix} stderr: #{stderr.to_s}" }
       {status: status, output: output.to_s, error: stderr.to_s}
     end
   end
@@ -469,14 +471,11 @@ module KubectlClient
       Log.info { "resource_wait_for_install kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}" }
       second_count = 0
 
-      all_kind = `kubectl get #{kind} --namespace=#{namespace}`
-      Log.debug { "all_kind #{all_kind}}" }
-
       # Intialization
       is_ready = resource_ready?(kind, namespace, resource_name)
 
       until is_ready || second_count > wait_count
-        Log.info { "KubectlClient::Get.resource_wait_for_install attempt: #{second_count}" }
+        Log.info { "KubectlClient::Get.resource_wait_for_install attempt: #{second_count}; is_ready: #{is_ready}" }
         sleep 1
         is_ready = resource_ready?(kind, namespace, resource_name)
         second_count = second_count + 1
@@ -495,8 +494,7 @@ module KubectlClient
       second_count = 0
       pod_ready : String | Nil
       #TODO use the kubectl client get
-      all_kind = `kubectl get #{kind} --namespace=#{namespace}`
-      Log.debug { "all_kind #{all_kind}}" }
+      all_kind = ShellCmd.run("kubectl get #{kind} --namespace=#{namespace}", "all_kind")
 
       resource_uninstalled = KubectlClient::Get.resource(kind, resource_name)
       Log.debug { "resource_uninstalled #{resource_uninstalled}" }
