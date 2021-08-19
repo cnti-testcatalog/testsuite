@@ -442,9 +442,10 @@ module KubectlClient
       end
     end
 
-    def self.replica_count(kind, namespace, resource_name, jsonpath)
+    def self.replica_count(kind, namespace, resource_name, jsonpath) : Int32
       cmd = "kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='#{jsonpath}'"
       result = ShellCmd.run(cmd, "KubectlClient::Get.replica_count")
+      Log.error { "replica_count_output: #{result[:output].to_s}"}
       result[:output].to_i
     end
 
@@ -461,7 +462,7 @@ module KubectlClient
       is_ready = resource_ready?(kind, namespace, resource_name)
 
       until is_ready || second_count > wait_count
-        Log.info { "second_count = #{second_count}" }
+        Log.info { "KubectlClient::Get.resource_wait_for_install attempt: #{second_count}" }
         sleep 1
         is_ready = resource_ready?(kind, namespace, resource_name)
         second_count = second_count + 1
