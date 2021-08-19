@@ -6,17 +6,19 @@ require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if the CNFs are resilient to failures."
  task "resilience", ["pod_network_latency", "chaos_cpu_hog", "chaos_container_kill", "disk_fill", "pod_delete", "pod_memory_hog", "pod_io_stress"] do |t, args|
-  VERBOSE_LOGGING.info "resilience" if check_verbose(args)
-  VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
-  VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
+  if check_verbose(args)
+    Log.for("verbose").info {"resilience" }
+    Log.for("verbose").debug { "resilience args.raw: #{args.raw}" }
+    Log.for("verbose").debug { "resilience args.named: #{args.named}" }
+  end
   stdout_score("resilience")
 end
 
 desc "Does the CNF crash when network loss occurs"
 task "chaos_network_loss", ["install_chaosmesh"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "chaos_network_loss" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    Log.for("verbose").info { "chaos_network_loss" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
     emoji_chaos_network_loss="📶☠️"
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
@@ -35,7 +37,7 @@ task "chaos_network_loss", ["install_chaosmesh"] do |_, args|
         run_chaos = KubectlClient::Apply.file("#{destination_cnf_dir}/chaos_network_loss.yml")
         Log.for("verbose").debug { "#{run_chaos[:output]}" } if check_verbose(args)
         if ChaosMeshSetup.wait_for_test("NetworkChaos", "network-loss")
-          LOGGING.info( "Wait Done")
+          Log.info { "Wait Done" }
           unless KubectlClient::Get.resource_desired_is_available?(resource["kind"].as_s, resource["name"].as_s)
             test_passed = false
             puts "Replicas did not return desired count after network chaos test for resource: #{resource["name"]}".colorize(:red)
@@ -63,8 +65,8 @@ end
 desc "Does the CNF crash when CPU usage is high"
 task "chaos_cpu_hog", ["install_chaosmesh"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "chaos_cpu_hog" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    Log.for("verbose").info { "chaos_cpu_hog" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     emoji_chaos_cpu_hog="📦💻🐷📈"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
@@ -108,8 +110,8 @@ end
 desc "Does the CNF recover when its container is killed"
 task "chaos_container_kill", ["install_chaosmesh"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "chaos_container_kill" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    Log.for("verbose").info { "chaos_container_kill" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     emoji_chaos_container_kill="🗡️💀♻️"
     resource_names = [] of Hash(String, String)
@@ -125,7 +127,7 @@ task "chaos_container_kill", ["install_chaosmesh"] do |_, args|
       if test_passed
         # TODO change helm_chart_container_name to container_name
         template = Crinja.render(chaos_template_container_kill, { "labels" => KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h, "helm_chart_container_name" => "#{container.as_h["name"]}" })
-        LOGGING.debug "chaos template: #{template}"
+        Log.debug { "chaos template: #{template}" }
         File.write("#{destination_cnf_dir}/chaos_container_kill.yml", template)
         run_chaos = KubectlClient::Apply.file("#{destination_cnf_dir}/chaos_container_kill.yml")
         Log.for("verbose").debug { "#{run_chaos[:output]}" } if check_verbose(args)
@@ -165,12 +167,12 @@ end
 desc "Does the CNF crash when network latency occurs"
 task "pod_network_latency", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "pod_network_latency" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    Log.for("verbose").info { "pod_network_latency" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
     #TODO tests should fail if cnf not installed
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      LOGGING.info "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}"
+      Log.info { "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}" }
       if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0 && resource["kind"] == "Deployment"
         test_passed = true
       else
@@ -179,7 +181,7 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
       end
       if test_passed
         if args.named["offline"]?
-            LOGGING.info "install resilience offline mode"
+          Log.info { "install resilience offline mode" }
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/rbac.yaml")
         else
@@ -211,8 +213,8 @@ end
 desc "Does the CNF crash when disk fill occurs"
 task "disk_fill", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "disk_fill" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    Log.for("verbose").info { "disk_fill" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
@@ -223,7 +225,7 @@ task "disk_fill", ["install_litmus"] do |_, args|
       end
       if test_passed
         if args.named["offline"]?
-            LOGGING.info "install resilience offline mode"
+          Log.info { "install resilience offline mode" }
           AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/disk-fill-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-rbac.yaml")
@@ -258,8 +260,8 @@ end
 desc "Does the CNF crash when pod-delete occurs"
 task "pod_delete", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "pod_delete" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    Log.for("verbose").info { "pod_delete" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
@@ -270,7 +272,7 @@ task "pod_delete", ["install_litmus"] do |_, args|
       end
       if test_passed
         if args.named["offline"]?
-            LOGGING.info "install resilience offline mode"
+          Log.info { "install resilience offline mode" }
           AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-delete-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-delete-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-delete-rbac.yaml")
@@ -305,8 +307,8 @@ end
 desc "Does the CNF crash when pod-memory-hog occurs"
 task "pod_memory_hog", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "pod_memory_hog" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    Log.for("verbose").info { "pod_memory_hog" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
@@ -317,7 +319,7 @@ task "pod_memory_hog", ["install_litmus"] do |_, args|
       end
       if test_passed
         if args.named["offline"]?
-            LOGGING.info "install resilience offline mode"
+          Log.info { "install resilience offline mode" }
           AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-memory-hog-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-memory-hog-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-memory-hog-rbac.yaml")
@@ -363,7 +365,7 @@ task "pod_io_stress", ["install_litmus"] do |_, args|
       end
       if test_passed
         if args.named["offline"]?
-            LOGGING.info "install resilience offline mode"
+          Log.info { "install resilience offline mode" }
           AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-io-stress-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-io-stress-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-io-stress-rbac.yaml")
