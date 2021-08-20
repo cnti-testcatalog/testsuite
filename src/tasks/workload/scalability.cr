@@ -24,7 +24,8 @@ def increase_decrease_capacity_failure_msg(target_replicas, emoji)
 <<-TEMPLATE
 ✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji}
 
-To address this issue please see the USAGE.md documentation
+Replica failure can be due to insufficent permissions, image pull errors and other issues.
+To learn more on how to remediate, please see our USAGE.md at https://bit.ly/increase_decrease_remediation 
 
 TEMPLATE
 end
