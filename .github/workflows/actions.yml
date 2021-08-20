@@ -85,6 +85,8 @@ jobs:
         git fetch --all --tags --force
         shards install  
         echo "RUNNER: $RUNNER_NAME"
+    - name: Debug
+      uses: mxschmitt/action-tmate@v3
     - name: Run Crystal Spec
       env:
         FALCO_ENV: CI

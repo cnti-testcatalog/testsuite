@@ -17,16 +17,17 @@ CNFManager::Task.task_runner(args) do |args,config|
     LOGGING.debug "cnf_config: #{config}"
     fail_msgs = [] of String
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      test_passed = true
-      kind = resource["kind"].as_s.downcase
-      case kind 
-      when  "deployment","statefulset","pod","replicaset", "daemonset"
-        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
-        pods = KubectlClient::Get.pods_by_resource(resource_yaml)
-        # containers = KubectlClient::Get.resource_containers(kind, resource[:name]) 
-        pods.map do |pod|
-          # containers.as_a.map do |container|
-          #   container_name = container.dig("name")
+      if KubectlClient::Get.resource_wait_for_install("Daemonset", "falco") 
+        test_passed = true
+        kind = resource["kind"].as_s.downcase
+        case kind 
+        when  "deployment","statefulset","pod","replicaset", "daemonset"
+          resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
+          pods = KubectlClient::Get.pods_by_resource(resource_yaml)
+          # containers = KubectlClient::Get.resource_containers(kind, resource[:name]) 
+          pods.map do |pod|
+            # containers.as_a.map do |container|
+            #   container_name = container.dig("name")
             pod_name = pod.dig("metadata", "name")
             # if Falco.find_root_pod(pod_name, container_name)
             if Falco.find_root_pod(pod_name)
@@ -37,13 +38,19 @@ CNFManager::Task.task_runner(args) do |args,config|
               end
               test_passed=false
             end
-          # end
+          end
         end
-        test_passed
+      else
+        test_passed = false
+        node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+        pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
+        falco_pod_name = pods[0].dig("metadata", "name")
+        KubectlClient.logs(falco_pod_name)
       end
+      test_passed
     end
-    emoji_no_root="🚫√"
-    emoji_root="√"
+      emoji_no_root="🚫√"
+      emoji_root="√"
 
     if task_response
       upsert_passed_task("non_root_user", "✔️  PASSED: Root user not found #{emoji_no_root}")
