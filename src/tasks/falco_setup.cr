@@ -10,15 +10,18 @@ desc "Install Falco"
 task "install_falco" do |_, args|
   # helm = BinarySingleton.helm
   File.write("falco_rule.yaml", FALCO_RULES)
+  if ENV["FALCO_ENV"]? == "CI"
+    image_arg = "--set image.repository=conformance/falco"
+  end
   if args.named["offline"]?
       Log.info { "install falco offline mode" }
     helm_chart = Dir.entries(FALCO_OFFLINE_DIR).first
-    Helm.install("falco --set ebpf.enabled=true -f ./falco_rule.yaml #{FALCO_OFFLINE_DIR}/#{helm_chart}")
+    Helm.install("falco --set ebpf.enabled=true $image_arg -f ./falco_rule.yaml #{FALCO_OFFLINE_DIR}/#{helm_chart}")
     KubectlClient::Get.resource_wait_for_install("Daemonset", "falco") 
   else
     Helm.helm_repo_add("falcosecurity","https://falcosecurity.github.io/charts")
     # needs ebpf parameter for precompiled module 
-    Helm.install("falco --set ebpf.enabled=true -f ./falco_rule.yaml falcosecurity/falco")
+    Helm.install("falco --set ebpf.enabled=true $image_arg -f ./falco_rule.yaml falcosecurity/falco")
     KubectlClient::Get.resource_wait_for_install("Daemonset", "falco") 
   end
 end

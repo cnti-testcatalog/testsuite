@@ -87,8 +87,11 @@ jobs:
         echo "RUNNER: $RUNNER_NAME"
     - name: Debug
       uses: mxschmitt/action-tmate@v3
+      env:
+        FALCO_ENV: CI
     - name: Run Crystal Spec
       env:
+        FALCO_ENV: CI
         GITHUB_USER: ${{ secrets.GH_USER }}
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
