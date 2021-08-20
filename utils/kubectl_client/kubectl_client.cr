@@ -535,7 +535,10 @@ module KubectlClient
     end
 
     def self.resource_desired_is_available?(kind : String, resource_name)
-      resp = `kubectl get #{kind} #{resource_name} -o=yaml`
+      cmd = "kubectl get #{kind} #{resource_name} -o=yaml"
+      result = ShellCmd.run(cmd, "resource_desired_is_available?")
+      resp = result[:output]
+
       replicas_applicable = false
       case kind.downcase
       when "deployment", "statefulset", "replicaset"
@@ -599,7 +602,15 @@ module KubectlClient
     #TODO add a spec for this
     def self.pod_status(pod_name_prefix, field_selector="", namespace="default")
       Log.info { "pod_status: #{pod_name_prefix}" }
-      all_pods = `kubectl get pods #{field_selector} -o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}'`.split(",")
+
+      all_pods_cmd = "kubectl get pods #{field_selector} -o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}'"
+      all_pods_result = Process.run(
+        all_pods_cmd,
+        shell: true,
+        output: all_pods_stdout = IO::Memory.new,
+        error: all_pods_stderr = IO::Memory.new
+      )
+      all_pods = all_pods_stdout.to_s.split(",")
 
       Log.info { all_pods }
       all_pod_names = all_pods[0].split(" ")
@@ -652,7 +663,9 @@ module KubectlClient
       # TODO refactor to return container statuses
       status = "#{pod_name_prefix},NotFound,false"
       if pod != "not found"
-        status = `kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}'`
+        cmd = "kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}'"
+        result = ShellCmd.run(cmd, "pod_status")
+        status = result[:output]
         Log.debug { "pod_status status before parse: #{status}" }
         status = status.gsub(" ", ",") # handle mutiple containers
         Log.debug { "pod_status status after parse: #{status}" }
@@ -664,10 +677,9 @@ module KubectlClient
     end
 
     def self.node_status(node_name)
-      all_nodes = `kubectl get nodes -o jsonpath='{.items[*].metadata.name}'`
-      Log.info { all_nodes }
-      status = `kubectl get nodes #{node_name} -o jsonpath='{.status.conditions[?(@.type == "Ready")].status}'`
-      status
+      cmd = "kubectl get nodes #{node_name} -o jsonpath='{.status.conditions[?(@.type == \"Ready\")].status}'"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.node_status")
+      result[:output]
     end
 
     def self.deployment_spec_labels(deployment_name) : JSON::Any
