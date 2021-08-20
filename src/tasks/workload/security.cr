@@ -18,6 +18,7 @@ CNFManager::Task.task_runner(args) do |args,config|
     fail_msgs = [] of String
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       if KubectlClient::Get.resource_wait_for_install("Daemonset", "falco") 
+        LOGGING.info "Falco is Running"
         test_passed = true
         kind = resource["kind"].as_s.downcase
         case kind 
@@ -41,10 +42,12 @@ CNFManager::Task.task_runner(args) do |args,config|
           end
         end
       else
+        LOGGING.info "Falco Failed to Start"
         test_passed = false
         node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
         pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
         falco_pod_name = pods[0].dig("metadata", "name")
+        LOGGING.info "Falco Pod Name: #{falco_pod_name}"
         KubectlClient.logs(falco_pod_name)
       end
       test_passed
