@@ -8,7 +8,7 @@ def clusterctl_installation(verbose=false)
   gmsg = "No Global clusterctl version found"
   lmsg = "No Local clusterctl version found"
   gclusterctl = clusterctl_global_response(verbose)
-  VERBOSE_LOGGING.info gclusterctl if verbose
+  Log.for("verbose").info { gclusterctl } if verbose
   
   global_clusterctl_version = clusterctl_version(gclusterctl, verbose)
    
@@ -20,7 +20,7 @@ def clusterctl_installation(verbose=false)
   end
 
   lclusterctl = clusterctl_local_response(verbose)
-  VERBOSE_LOGGING.info lclusterctl if verbose
+  Log.for("verbose").info { lclusterctl } if verbose
   
   local_clusterctl_version = clusterctl_version(lclusterctl, verbose)
    
@@ -63,18 +63,18 @@ end
 def clusterctl_global_response(verbose=false)
   # i think we can safely ignore  clusterctl version: unable to write version state file: https://github.com/kubernetes-sigs/cluster-api/pull/3575
   clusterctl_response = `clusterctl version`
-  VERBOSE_LOGGING.info clusterctl_response if verbose
+  Log.for("verbose").info { clusterctl_response } if verbose
   clusterctl_response 
 end
 
 def clusterctl_local_response(verbose=false)
   current_dir = FileUtils.pwd 
-  VERBOSE_LOGGING.info current_dir if verbose 
+  Log.for("verbose").info { current_dir } if verbose
   clusterctl = "#{current_dir}/#{TOOLS_DIR}/clusterctl/linux-amd64/clusterctl"
   # clusterctl_response = `#{clusterctl} version`
   status = Process.run("#{clusterctl} version", shell: true, output: clusterctl_response = IO::Memory.new, error: stderr = IO::Memory.new)
 
-  VERBOSE_LOGGING.info clusterctl_response.to_s if verbose
+  Log.for("verbose").info { clusterctl_response.to_s } if verbose
   clusterctl_response.to_s
 end
 
@@ -82,7 +82,7 @@ def clusterctl_version(clusterctl_response, verbose=false)
   # example
   # clusterctl version: &version.Info{Major:"0", Minor:"3", GitVersion:"v0.3.9", GitCommit:"e1f67d8ceb1d5b30ef967035f7a0d1b1ee088b37", GitTreeState:"clean", BuildDate:"2020-09-01T02:44:58Z", GoVersion:"go1.13.14", Compiler:"gc", Platform:"linux/amd64"}
   resp = clusterctl_response.match /clusterctl version: &version.Info{(Major:"(([0-9]{1,3})"\, )Minor:"([0-9]{1,3}[+]?)")/
-  VERBOSE_LOGGING.info resp if verbose
+  Log.for("verbose").info { resp } if verbose
   if resp
     "#{resp && resp.not_nil![3]}.#{resp && resp.not_nil![4]}"
   else
