@@ -53,12 +53,26 @@ module Helm
     Invalid
   end
 
+  module ShellCmd
+    def self.run(cmd, log_prefix)
+      Log.info { "#{log_prefix} command: #{cmd}" }
+      status = Process.run(
+        cmd,
+        shell: true,
+        output: output = IO::Memory.new,
+        error: stderr = IO::Memory.new
+      )
+      Log.debug { "#{log_prefix} output: #{output.to_s}" }
+      Log.debug { "#{log_prefix} stderr: #{stderr.to_s}" }
+      {status: status, output: output.to_s, error: stderr.to_s}
+    end
+  end
 
   def self.install_method_by_config_src(install_method : InstallMethod, config_src : String) : InstallMethod
-    LOGGING.info "helm install_method_by_config_src"
-    LOGGING.info "config_src: #{config_src}"
+    Log.info { "helm install_method_by_config_src" }
+    Log.info { "config_src: #{config_src}" }
     helm_chart_file = "#{config_src}/#{Helm::CHART_YAML}"
-    LOGGING.info "looking for potential helm_chart_file: #{helm_chart_file}: file exists?: #{File.exists?(helm_chart_file)}"
+    Log.info { "looking for potential helm_chart_file: #{helm_chart_file}: file exists?: #{File.exists?(helm_chart_file)}" }
 
     if !Dir.exists?(config_src) 
       Log.info { "install_method_by_config_src helm_chart selected" }
@@ -78,7 +92,7 @@ module Helm
   # todo move into own file
   module Manifest
     def self.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
-      LOGGING.info "parse_manifest_as_ymls template_file_name: #{template_file_name}"
+      Log.info { "parse_manifest_as_ymls template_file_name: #{template_file_name}" }
       templates = File.read(template_file_name)
       split_template = templates.split("---")
       ymls = split_template.map { | template |
@@ -86,7 +100,7 @@ module Helm
         YAML.parse(template)
         # compact seems to have problems with yaml::any
       }.reject{|x|x==nil}
-      LOGGING.debug "read_template ymls: #{ymls}"
+      Log.debug { "read_template ymls: #{ymls}" }
       ymls
     end
 
@@ -124,65 +138,37 @@ module Helm
       Log.debug { "manifest_containers: #{manifest_yml}" }
       manifest_yml.dig?("spec", "template", "spec", "containers")
     end
-
-    LOGGING = LogginGenerator.new
-    class LogginGenerator
-      macro method_missing(call)
-        if {{ call.name.stringify }} == "debug"
-          Log.debug {{{call.args[0]}}}
-        end
-        if {{ call.name.stringify }} == "info"
-          Log.info {{{call.args[0]}}}
-        end
-        if {{ call.name.stringify }} == "warn"
-          Log.warn {{{call.args[0]}}}
-        end
-        if {{ call.name.stringify }} == "error"
-          Log.error {{{call.args[0]}}}
-        end
-        if {{ call.name.stringify }} == "fatal"
-          Log.fatal {{{call.args[0]}}}
-        end
-      end
-    end
   end
-
 
   # Use helm to apply the helm values file to the helm chart templates to create a complete manifest
   # Helm uses manifest files that can be jinja templates
   def self.generate_manifest_from_templates(release_name, helm_chart, output_file="cnfs/temp_template.yml")
-    LOGGING.debug "generate_manifest_from_templates"
+    Log.debug { "generate_manifest_from_templates" }
     # todo remove my guilt 
     helm = BinarySingleton.helm
-    LOGGING.info "Helm::generate_manifest_from_templates command: #{helm} template #{release_name} #{helm_chart} > #{output_file}"
-    # Helm template works with either a chart or a directory
-    ls_al = `ls -alR #{helm_chart}`
-    LOGGING.info "(before generate) ls -alR #{helm_chart}: #{ls_al}"
-    ls_al = `ls -alR cnfs`
-    LOGGING.info "(before generate) ls -alR cnfs: #{ls_al}"
-    LOGGING.debug "generate_manifest_from_templates ls -alR #{helm_chart}: #{ls_al}" 
-    # template_resp = `#{helm} template #{release_name} #{helm_chart} > #{output_file}`
+    Log.info { "Helm::generate_manifest_from_templates command: #{helm} template #{release_name} #{helm_chart} > #{output_file}" }
+
+    ShellCmd.run("ls -alR #{helm_chart}", "before generate")
+    ShellCmd.run("ls -alR cnfs", "before generate")
     resp = Helm.template(release_name, helm_chart, output_file)
-    ls_al = `ls -alR #{helm_chart}`
-    LOGGING.info "(after generate) ls -alR #{helm_chart}: #{ls_al}"
-    ls_al = `ls -alR cnfs`
-    LOGGING.info "(after generate) ls -alR cnfs: #{ls_al}"
-    # input_content = File.read(output_file) 
-    LOGGING.debug "generate_manifest_from_templates output_file: #{output_file}"
+    ShellCmd.run("ls -alR #{helm_chart}", "after generate")
+    ShellCmd.run("ls -alR cnfs", "after generate")
+
+    Log.debug { "generate_manifest_from_templates output_file: #{output_file}" }
     [resp[:status].success?, output_file]
   end
 
   def self.workload_resource_by_kind(ymls : Array(YAML::Any), kind)
-    LOGGING.info "workload_resource_by_kind kind: #{kind}"
-    LOGGING.debug "workload_resource_by_kind ymls: #{ymls}"
+    Log.info { "workload_resource_by_kind kind: #{kind}" }
+    Log.debug { "workload_resource_by_kind ymls: #{ymls}" }
     resources = ymls.select{|x| x["kind"]?==kind}.reject! {|x|
         # reject resources that contain the 'helm.sh/hook: test' annotation
-      LOGGING.debug "x[metadata]?: #{x["metadata"]?}"
-      LOGGING.debug "x[metadata][annotations]?: #{x["metadata"]? && x["metadata"]["annotations"]?}"
+      Log.debug { "x[metadata]?: #{x["metadata"]?}" }
+      Log.debug { "x[metadata][annotations]?: #{x["metadata"]? && x["metadata"]["annotations"]?}" }
       x.dig?("metadata","annotations","helm.sh/hook")
       }
     # end
-    LOGGING.debug "resources: #{resources}"
+    Log.debug { "resources: #{resources}" }
     resources
   end
 
@@ -190,7 +176,7 @@ module Helm
     resources = KubectlClient::WORKLOAD_RESOURCES.map { |k,v|
       Helm.workload_resource_by_kind(yml, v)
     }.flatten
-    LOGGING.debug "all resource: #{resources}"
+    Log.debug { "all resource: #{resources}" }
     resources
   end
 
@@ -198,7 +184,7 @@ module Helm
     resource_names = resources.map do |x|
       x["metadata"]["name"]
     end
-    LOGGING.debug "resource names: #{resource_names}"
+    Log.debug { "resource names: #{resource_names}" }
     resource_names
   end
 
@@ -206,13 +192,13 @@ module Helm
     resource_names = resources.map do |x|
       {kind: x["kind"], name: x["metadata"]["name"]}
     end
-    LOGGING.debug "resource names: #{resource_names}"
+    Log.debug { "resource names: #{resource_names}" }
     resource_names
   end
 
   def self.helm_repo_add(helm_repo_name, helm_repo_url)
     helm = BinarySingleton.helm
-    LOGGING.info "helm_repo_add: helm repo add command: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
+    Log.info { "helm_repo_add: helm repo add command: #{helm} repo add #{helm_repo_name} #{helm_repo_url}" }
     stdout = IO::Memory.new
     stderror = IO::Memory.new
     begin
@@ -220,10 +206,10 @@ module Helm
       status = process.wait
       helm_resp = stdout.to_s
       error = stderror.to_s
-      LOGGING.info "error: #{error}"
-      LOGGING.info "helm_resp (add): #{helm_resp}"
+      Log.info { "error: #{error}" }
+      Log.info { "helm_resp (add): #{helm_resp}" }
     rescue
-      LOGGING.info "helm repo add command critically failed: #{helm} repo add #{helm_repo_name} #{helm_repo_url}"
+      Log.info { "helm repo add command critically failed: #{helm} repo add #{helm_repo_name} #{helm_repo_url}" }
     end
     # Helm version v3.3.3 gave us a surprise
     if helm_resp =~ /has been added|already exists/ || error =~ /has been added|already exists/
@@ -243,8 +229,8 @@ module Helm
       status = process.wait
       helm_resp = stdout.to_s
       error = stderror.to_s
-      LOGGING.info "error: #{error}"
-      LOGGING.info "helm_resp (add): #{helm_resp}"
+      Log.info { "error: #{error}" }
+      Log.info { "helm_resp (add): #{helm_resp}" }
       # Helm version v3.3.3 gave us a surprise
       if (helm_resp + error) =~ /WARNING: Kubernetes configuration file is/
         stdout_failure("For this version of helm you must set your K8s config file permissions to chmod 700") if verbose
@@ -269,25 +255,25 @@ module Helm
 
   def self.template(release_name, helm_chart_or_directory, output_file="cnfs/temp_template.yml")
     helm = BinarySingleton.helm
-    LOGGING.info "helm command: #{helm} template #{release_name} #{helm_chart_or_directory} > #{output_file}"
+    Log.info { "helm command: #{helm} template #{release_name} #{helm_chart_or_directory} > #{output_file}" }
     status = Process.run("#{helm} template #{release_name} #{helm_chart_or_directory} > #{output_file}",
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    LOGGING.info "Helm.template output: #{output.to_s}"
-    LOGGING.info "Helm.template stderr: #{stderr.to_s}"
+    Log.info { "Helm.template output: #{output.to_s}" }
+    Log.info { "Helm.template stderr: #{stderr.to_s}" }
     {status: status, output: output, error: stderr}
   end
 
   def self.install(cli)
     helm = BinarySingleton.helm
-    LOGGING.info "helm command: #{helm} install #{cli}"
+    Log.info { "helm command: #{helm} install #{cli}" }
     status = Process.run("#{helm} install #{cli}",
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    LOGGING.info "Helm.install output: #{output.to_s}"
-    LOGGING.info "Helm.install stderr: #{stderr.to_s}"
+    Log.info { "Helm.install output: #{output.to_s}" }
+    Log.info { "Helm.install stderr: #{stderr.to_s}" }
     {status: status, output: output, error: stderr}
   end
 
@@ -305,46 +291,26 @@ module Helm
 
   def self.pull(cli)
     helm = BinarySingleton.helm
-    LOGGING.info "helm command: #{helm} pull #{cli}"
+    Log.info { "helm command: #{helm} pull #{cli}" }
     status = Process.run("#{helm} pull #{cli}",
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    LOGGING.info "Helm.install output: #{output.to_s}"
-    LOGGING.info "Helm.install stderr: #{stderr.to_s}"
+    Log.info { "Helm.install output: #{output.to_s}" }
+    Log.info { "Helm.install stderr: #{stderr.to_s}" }
     {status: status, output: output, error: stderr}
   end
 
   def self.fetch(cli)
     helm = BinarySingleton.helm
-    LOGGING.info "helm command: #{helm} fetch #{cli}"
+    Log.info { "helm command: #{helm} fetch #{cli}" }
     status = Process.run("#{helm} fetch #{cli}",
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    LOGGING.info "Helm.fetch output: #{output.to_s}"
-    LOGGING.info "Helm.fetch stderr: #{stderr.to_s}"
+    Log.info { "Helm.fetch output: #{output.to_s}" }
+    Log.info { "Helm.fetch stderr: #{stderr.to_s}" }
     {status: status, output: output, error: stderr}
   end
 
-  LOGGING = LogginGenerator.new
-  class LogginGenerator
-    macro method_missing(call)
-      if {{ call.name.stringify }} == "debug"
-        Log.debug {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "info"
-        Log.info {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "warn"
-        Log.warn {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "error"
-        Log.error {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "fatal"
-        Log.fatal {{{call.args[0]}}}
-      end
-    end
-  end
 end
