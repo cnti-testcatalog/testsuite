@@ -25,14 +25,12 @@ namespace "platform" do
       helm = BinarySingleton.helm
 
       #Select the first node that isn't a master and is also schedulable
-      worker_nodes = `kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
+      worker_nodes = KubectlClient::Get.worker_nodes
       worker_node = worker_nodes.split("\n")[0]
-
 
       File.write("node_failure_values.yml", NODE_FAILED_VALUES)
       install_coredns = Helm.install("node-failure -f ./node_failure_values.yml --set nodeSelector.\"kubernetes\\.io/hostname\"=#{worker_node} stable/coredns")
       KubectlClient::Get.wait_for_install("node-failure-coredns")
-
 
       File.write("reboot_daemon_pod.yml", REBOOT_DAEMON)
       KubectlClient::Apply.file("reboot_daemon_pod.yml")
