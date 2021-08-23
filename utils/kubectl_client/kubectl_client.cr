@@ -90,8 +90,15 @@ module KubectlClient
     end
   end
 
+  module Scale
+    def self.command(cli)
+      cmd = "kubectl scale #{cli}"
+      ShellCmd.run(cmd, "KubectlClient::Scale.command")
+    end
+  end
+
   module Annotate
-    def self.run(cli) 
+    def self.run(cli)
       cmd = "kubectl annotate #{cli}"
       ShellCmd.run(cmd, "KubectlClient::Annotate.run")
     end
