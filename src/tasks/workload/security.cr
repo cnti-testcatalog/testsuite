@@ -17,9 +17,9 @@ CNFManager::Task.task_runner(args) do |args,config|
     LOGGING.debug "cnf_config: #{config}"
     fail_msgs = [] of String
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      test_passed = true
       if KubectlClient::Get.resource_wait_for_install("Daemonset", "falco") 
         LOGGING.info "Falco is Running"
-        test_passed = true
         kind = resource["kind"].as_s.downcase
         case kind 
         when  "deployment","statefulset","pod","replicaset", "daemonset"
@@ -50,6 +50,7 @@ CNFManager::Task.task_runner(args) do |args,config|
         LOGGING.info "Falco Pod Name: #{falco_pod_name}"
         KubectlClient.logs(falco_pod_name)
       end
+      LOGGING.info "Pass Response: #{test_passed}"
       test_passed
     end
       emoji_no_root="🚫√"
