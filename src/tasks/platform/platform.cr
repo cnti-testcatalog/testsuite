@@ -81,7 +81,6 @@ task "k8s_conformance" do |_, args|
     end
   ensure
     FileUtils.rm_rf(Dir.glob("*sonobuoy*.tar.gz"))
-    Log.for("verbose").debug { remove_tar } if check_verbose(args)
   end
 end
 
