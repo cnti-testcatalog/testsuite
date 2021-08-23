@@ -30,6 +30,8 @@
 - name: privileged 
   tags: security, dynamic, workload
   required: true
+- name: non_root_user 
+  tags: security, dynamic, workload
 #- name: shells 
 #  tags: security, dynamic
 #- name: protected_access 

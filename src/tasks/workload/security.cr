@@ -6,7 +6,7 @@ require "totem"
 require "../utils/utils.cr"
 
 desc "CNF containers should be isolated from one another and the host.  The CNF Test suite uses tools like Falco, Sysdig Inspect and gVisor"
-task "security", ["privileged"] do |_, args|
+task "security", ["privileged", "non_root_user"] do |_, args|
   stdout_score("security")
 end
 
