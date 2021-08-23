@@ -6,7 +6,7 @@ def wget_installation(verbose=false)
   gmsg = "No Global wget version found"
   lmsg = "No Local wget version found"
   gwget = wget_global_response
-  VERBOSE_LOGGING.info gwget if verbose
+  Log.for("verbose").info { gwget } if verbose
   
   global_wget_version = wget_version(gwget, verbose)
    
@@ -18,7 +18,7 @@ def wget_installation(verbose=false)
   end
 
   lwget = wget_local_response
-  VERBOSE_LOGGING.info lwget if verbose
+  Log.for("verbose").info { lwget } if verbose
   
   local_wget_version = wget_version(lwget, verbose)
    
@@ -39,18 +39,22 @@ def wget_installation(verbose=false)
 end 
 
 def wget_global_response(verbose=false)
-  wget_response = `wget --version`
-  VERBOSE_LOGGING.info wget_response if verbose
-  wget_response 
+  Process.run(
+    "wget --version",
+    shell: true,
+    output: wget_response = IO::Memory.new,
+    error: stderr = IO::Memory.new
+  )
+  Log.for("verbose").info { wget_response.to_s } if verbose
+  wget_response.to_s
 end
 
 def wget_local_response(verbose=false)
-  current_dir = FileUtils.pwd 
-  VERBOSE_LOGGING.info current_dir if verbose 
+  current_dir = FileUtils.pwd
+  Log.for("verbose").info { current_dir } if verbose
   wget = "#{current_dir}/#{TOOLS_DIR}/wget/linux-amd64/wget"
-  # wget_response = `#{wget} --version`
   status = Process.run("#{wget} --version", shell: true, output: wget_response = IO::Memory.new, error: stderr = IO::Memory.new)
-  LOGGING.info wget_response.to_s if verbose
+  Log.info { wget_response.to_s } if verbose
   wget_response.to_s
 end
 
@@ -58,7 +62,7 @@ def wget_version(wget_response, verbose=false)
   # example
   # GNU Wget 1.15 built on linux-gnu.
   resp = wget_response.match /GNU Wget (([0-9]{1,3}[\.]){1,2}[0-9]{1,3})/
-  VERBOSE_LOGGING.info resp if verbose
+  Log.for("verbose").info { resp } if verbose
   "#{resp && resp.not_nil![1]}"
 end
 
