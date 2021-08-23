@@ -8,7 +8,7 @@ require "./points.cr"
 module CNFManager 
 
   module Task
-    def self.task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
+    def self.task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil | Bool)
       LOGGING.info("task_runner args: #{args.inspect}")
       if check_cnf_config(args)
         single_task_runner(args, &block)
@@ -18,7 +18,7 @@ module CNFManager
     end
 
     # TODO give example for calling
-    def self.all_cnfs_task_runner(args, &block : Sam::Args, CNFManager::Config  -> String | Colorize::Object(String) | Nil)
+    def self.all_cnfs_task_runner(args, &block : Sam::Args, CNFManager::Config  -> String | Colorize::Object(String) | Nil | Bool)
 
       # Platforms tests dont have any cnfs
       if CNFManager.cnf_config_list(silent: true).size == 0
@@ -32,7 +32,7 @@ module CNFManager
       end
     end
     # TODO give example for calling
-    def self.single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
+    def self.single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil | Bool)
       LOGGING.debug("single_task_runner args: #{args.inspect}")
       begin
         if args.named["cnf-config"]? # platform tests don't have a cnf-config
