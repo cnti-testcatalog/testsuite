@@ -127,7 +127,7 @@ module KubectlClient
 
     def self.file(file_name)
       cmd = "kubectl delete -f #{file_name}"
-      ShellCmd.run(cmd, "KubectlClient::Delete.command")
+      ShellCmd.run(cmd, "KubectlClient::Delete.file")
     end
   end
 
