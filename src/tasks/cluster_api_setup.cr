@@ -11,7 +11,7 @@ task "cluster_api_setup" do |_, args|
       current_dir = FileUtils.pwd 
       cluster_api_dir =  "#{current_dir}/#{TOOLS_DIR}/cluster-api";
 
-      # `curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl`
+      # curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl
       Halite.follow.get("https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64") do |response| 
         LOGGING.info "clusterctl response: #{response}"
         File.write("clusterctl", response.body_io)
@@ -55,23 +55,22 @@ clusterctl config cluster capd --kubernetes-version v1.17.5 \
 --worker-machine-count=2
 `
 
-      LOGGING.info create_capd_response 
-
-      File.write("capd.yaml", create_capd_response)
-
-      KubectlClient::Get.wait_for_install_by_apply("capd.yaml")
-
-      LOGGING.info `kubectl apply -f capd.yaml`
-      LOGGING.info "cluster api setup complete"
+  Log.info { create_capd_response }
+  File.write("capd.yaml", create_capd_response)
+  KubectlClient::Get.wait_for_install_by_apply("capd.yaml")
+  KubectlClient::Apply.file("capd.yaml")
+  Log.info { "cluster api setup complete" }
 end
 
 desc "Cleanup Cluster API"
 task "cluster_api_cleanup" do |_, args|
   current_dir = FileUtils.pwd 
   cluster_api_dir = "#{current_dir}/#{TOOLS_DIR}/cluster-api"
-  `kubectl delete -f #{cluster_api_dir}/capd.yaml`
-  `clusterctl delete --all --include-crd --include-namespace --config #{cluster_api_dir}/clusterctl.yaml`
-  `rm -rf #{current_dir}/#{TOOLS_DIR}/cluster-api`
+  KubectlClient::Delete.file("#{cluster_api_dir}/capd.yaml")
 
+  cmd = "clusterctl delete --all --include-crd --include-namespace --config #{cluster_api_dir}/clusterctl.yaml"
+  Process.run(cmd, shell: true, output: stdout = IO::Memory.new, error: stderr = IO::Memory.new)
+
+  FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/cluster-api")
 end
 
