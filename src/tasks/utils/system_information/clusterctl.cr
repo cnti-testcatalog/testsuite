@@ -62,16 +62,15 @@ end
 
 def clusterctl_global_response(verbose=false)
   # i think we can safely ignore  clusterctl version: unable to write version state file: https://github.com/kubernetes-sigs/cluster-api/pull/3575
-  clusterctl_response = `clusterctl version`
-  Log.for("verbose").info { clusterctl_response } if verbose
-  clusterctl_response 
+  Process.run("clusterctl version", shell: true, output: stdout = IO::Memory.new, error: stderr = IO::Memory.new)
+  Log.for("verbose").info { stdout.to_s } if verbose
+  stdout.to_s
 end
 
 def clusterctl_local_response(verbose=false)
   current_dir = FileUtils.pwd 
   Log.for("verbose").info { current_dir } if verbose
   clusterctl = "#{current_dir}/#{TOOLS_DIR}/clusterctl/linux-amd64/clusterctl"
-  # clusterctl_response = `#{clusterctl} version`
   status = Process.run("#{clusterctl} version", shell: true, output: clusterctl_response = IO::Memory.new, error: stderr = IO::Memory.new)
 
   Log.for("verbose").info { clusterctl_response.to_s } if verbose
