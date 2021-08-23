@@ -29,7 +29,7 @@ describe "AirGap" do
     AirGap.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", "/tmp/airgapped.tar")
     (File.exists?("/tmp/airgapped.tar")).should be_true
     resp = `tar -tvf /tmp/airgapped.tar`
-    AirGap::LOGGING.info "Tar Filelist: #{resp}"
+    Log.info { "Tar Filelist: #{resp}" }
     (/repositories\/chaos-mesh_chaos-mesh/).should_not be_nil
   ensure
     `rm /tmp/airgapped.tar`
@@ -39,7 +39,7 @@ describe "AirGap" do
     AirGap.tar_helm_repo("stable/coredns", "/tmp/airgapped.tar")
     (File.exists?("/tmp/airgapped.tar")).should be_true
     resp = `tar -tvf /tmp/airgapped.tar`
-    AirGap::LOGGING.info "Tar Filelist: #{resp}"
+    Log.info { "Tar Filelist: #{resp}" }
     (/repositories\/stable_coredns/).should_not be_nil
   ensure
     `rm /tmp/airgapped.tar`
@@ -50,7 +50,7 @@ describe "AirGap" do
     AirGap.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.2.yaml", "/tmp/airgapped.tar")
     (File.exists?("/tmp/airgapped.tar")).should be_true
     resp = `tar -tvf /tmp/airgapped.tar`
-    AirGap::LOGGING.info "Tar Filelist: #{resp}"
+    Log.info { "Tar Filelist: #{resp}" }
     (/litmus-operator-v1.13.2.yaml/).should_not be_nil
   ensure
     `rm /tmp/airgapped.tar`
@@ -66,7 +66,7 @@ describe "AirGap" do
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
     resp = AirGap.check_tar(pods[0].dig?("metadata", "name"), pod=false)
-    AirGap::LOGGING.debug "Path to tar on the host filesystem: #{resp}"
+    Log.debug { "Path to tar on the host filesystem: #{resp}" }
     resp.should_not be_nil 
   end
 
@@ -80,7 +80,7 @@ describe "AirGap" do
     #TODO Should install cri-tools or container with tar before running spec.
     resp = AirGap.pods_with_tar()
     if resp[0].dig?("metadata", "name")
-      AirGap::LOGGING.debug "Pods With Tar Found #{resp[0].dig?("metadata", "name")}"
+      Log.debug { "Pods With Tar Found #{resp[0].dig?("metadata", "name")}" }
     end
     (resp[0].dig?("kind")).should eq "Pod"
   end
@@ -113,24 +113,24 @@ describe "AirGap" do
   it "'#AirGap.create_pod_by_image' should install the cri pod in the cluster", tags: ["airgap-tools"]  do
     pods = AirGap.pods_with_tar()
     if pods.empty?
-      AirGap::LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml`
+      Log.info { `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml` }
       $?.success?.should be_true
       pods = AirGap.pods_with_tar()
     end
     images_with_tar = AirGap.pod_images(pods)
     image = images_with_tar[0]
-    AirGap::LOGGING.info "Image with TAR: #{image}"
+    Log.info { "Image with TAR: #{image}" }
     resp = AirGap.create_pod_by_image(image)
     (resp).should be_true
   ensure
     KubectlClient::Delete.command("daemonset cri-tools")
-    AirGap::LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml wait_count=0`
+    Log.info { `./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml wait_count=0` }
   end
 
   it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that has an image with tar avaliable on the node.", tags: ["airgap-tools"]  do
     pods = AirGap.pods_with_tar()
     if pods.empty?
-      AirGap::LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml`
+      Log.info { `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml` }
       $?.success?.should be_true
     end
     AirGap.bootstrap_cluster()
@@ -141,7 +141,7 @@ describe "AirGap" do
       pod_name = pod.dig?("metadata", "name")
       containers = pod.dig("spec","containers").as_a
       image = containers[0]? && containers[0].dig("image")
-      AirGap::LOGGING.info "CRI Pod Image: #{image}"
+      Log.info { "CRI Pod Image: #{image}" }
       sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/crictl > /dev/null")  
       sh[:status].success?
       sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/ctr > /dev/null")  
@@ -149,7 +149,7 @@ describe "AirGap" do
     end
   ensure
     KubectlClient::Delete.command("daemonset cri-tools")
-    AirGap::LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml wait_count=0`
+    Log.info { `./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml wait_count=0` }
   end
 
 

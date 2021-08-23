@@ -365,7 +365,7 @@ end
     tar_files = Find.find(tar_dir, "*.tar*") + tgz_files
     tar_name = ""
     tar_name = tar_files[0] if !tar_files.empty?
-    LOGGING.info "tar_name: #{tar_name}"
+    Log.info { "tar_name: #{tar_name}" }
     tar_name
   end
 
