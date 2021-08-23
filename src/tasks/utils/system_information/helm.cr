@@ -7,7 +7,7 @@ def helm_installation(verbose=false)
   gmsg = "No Global helm version found"
   lmsg = "No Local helm version found"
   ghelm = helm_global_response
-  VERBOSE_LOGGING.info ghelm if verbose
+  Log.for("verbose").info { ghelm } if verbose
 
   global_helm_version = helm_version(ghelm, verbose)
 
@@ -19,7 +19,7 @@ def helm_installation(verbose=false)
   end
 
   lhelm = helm_local_response
-  VERBOSE_LOGGING.info lhelm if verbose
+  Log.for("verbose").info { lhelm } if verbose
 
   local_helm_version = helm_version(lhelm, verbose)
 
@@ -44,25 +44,25 @@ def helm_installation(verbose=false)
 end
 
 def helm_global_response(verbose=false)
-  helm_response = `helm version 2>/dev/null`
-  VERBOSE_LOGGING.info helm_response if verbose
+  Process.run("helm version", shell: true, output: stdout = IO::Memory.new, error: stderr = IO::Memory.new)
+  helm_response = stdout.to_s
+  Log.for("verbose").info { helm_response } if verbose
   helm_response
 end
 
 def helm_local_response(verbose=false)
   current_dir = FileUtils.pwd
-  VERBOSE_LOGGING.info current_dir if verbose
+  Log.for("verbose").info { current_dir } if verbose
   #helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
-    helm = BinarySingleton.helm
-  # helm_response = `#{helm} version`
+  helm = BinarySingleton.helm
   status = Process.run("#{helm} version", shell: true, output: helm_response = IO::Memory.new, error: stderr = IO::Memory.new)
-  VERBOSE_LOGGING.info helm_response.to_s if verbose
+  Log.for("verbose").info { helm_response.to_s } if verbose
   helm_response.to_s
 end
 
 def helm_version(helm_response, verbose=false)
   resp = "#{helm_v2_version(helm_response) || helm_v3_version(helm_response)}"
-  VERBOSE_LOGGING.info resp if verbose
+  Log.for("verbose").info { resp } if verbose
   resp
 end
 
@@ -71,7 +71,7 @@ def helm_v2_version(helm_response)
   # example
   # Client: &version.Version{SemVer:\"v2.14.3\", GitCommit:\"0e7f3b6637f7af8fcfddb3d2941fcc7cbebb0085\", GitTreeState:\"clean\"}\nServer: &version.Version{SemVer:\"v2.16.1\", GitCommit:\"bbdfe5e7803a12bbdf97e94cd847859890cf4050\", GitTreeState:\"clean\"}
   helm_v2 = helm_response.match /Client: &version.Version{SemVer:\"(v([0-9]{1,3}[\.]){1,2}[0-9]{1,3}).+"/
-  LOGGING.debug "helm_v2?: #{helm_v2}"
+  Log.debug { "helm_v2?: #{helm_v2}" }
   helm_v2 && helm_v2.not_nil![1]
 end
 
