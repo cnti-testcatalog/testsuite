@@ -68,20 +68,28 @@ task "cluster_api_setup" do |_, args|
       Log.info { stdout }
 
       ## TODO: wait here for crds to be created if needed
-create_capd_response =`
-CNI_RESOURCES="$(cat test/e2e/data/cni/kindnet/kindnet.yaml)" \
-DOCKER_POD_CIDRS="192.168.0.0/16" \
-DOCKER_SERVICE_CIDRS="172.17.0.0/16" \
-DOCKER_SERVICE_DOMAIN="cluster.local" \
-clusterctl config cluster capd --kubernetes-version v1.17.5 \
---from https://github.com/kubernetes-sigs/cluster-api/blob/v0.3.9/test/e2e/data/infrastructure-docker/cluster-template.yaml \
---target-namespace default \
---control-plane-machine-count=1 \
---worker-machine-count=2
-`
 
-  Log.info { create_capd_response }
-  File.write("capd.yaml", create_capd_response)
+  Process.run(
+    create_capd_cmd,
+    shell: true,
+    output: create_capd_stdout = IO::Memory.new,
+    error: create_capd_stderr = IO::Memory.new
+  )
+
+  create_capd_response = <<-HEREDOC
+  CNI_RESOURCES="$(cat test/e2e/data/cni/kindnet/kindnet.yaml)" \
+  DOCKER_POD_CIDRS="192.168.0.0/16" \
+  DOCKER_SERVICE_CIDRS="172.17.0.0/16" \
+  DOCKER_SERVICE_DOMAIN="cluster.local" \
+  clusterctl config cluster capd --kubernetes-version v1.17.5 \
+  --from https://github.com/kubernetes-sigs/cluster-api/blob/v0.3.9/test/e2e/data/infrastructure-docker/cluster-template.yaml \
+  --target-namespace default \
+  --control-plane-machine-count=1 \
+  --worker-machine-count=2
+  HEREDOC
+
+  Log.info { create_capd_resp }
+  File.write("capd.yaml", create_capd_resp)
   KubectlClient::Get.wait_for_install_by_apply("capd.yaml")
   KubectlClient::Apply.file("capd.yaml")
   Log.info { "cluster api setup complete" }
