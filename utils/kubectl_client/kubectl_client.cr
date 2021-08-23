@@ -87,6 +87,14 @@ module KubectlClient
     end
   end
 
+  module Create
+    def self.command(cli : String)
+      cmd = "kubectl create #{cli}"
+      result = ShellCmd.run(cmd, "KubectlClient::Create.command")
+      result[:status].success?
+    end
+  end
+
   module Apply
     def self.file(file_name)
       cmd = "kubectl apply -f #{file_name}"

@@ -213,7 +213,6 @@ task "rollback" do |_, args|
         VERBOSE_LOGGING.debug "image_name: #{image_name}" if check_verbose(args)
         VERBOSE_LOGGING.debug "image_tag: #{image_tag}" if check_verbose(args)
         LOGGING.debug "rollback: setting new version"
-        #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
 
         version_change_applied = true
         # compare cnf_testsuite.yml container list with the current container name
@@ -309,7 +308,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     helm = BinarySingleton.helm
     VERBOSE_LOGGING.info "Helm Path: #{helm}" if check_verbose(args)
 
-    create_namespace = `kubectl create namespace hardcoded-ip-test`
+    KubectlClient::Create.command("namespace hardcoded-ip-test")
     unless helm_chart.empty?
       if args.named["offline"]?
         info = AirGap.tar_info_by_config_src(helm_chart)
@@ -334,7 +333,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     else
       upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  FAILED: Hard-coded IP addresses found in the runtime K8s configuration")
     end
-    delete_namespace = `kubectl delete namespace hardcoded-ip-test --force --grace-period 0 2>&1 >/dev/null`
+    KubectlClient::Delete.command("namespace hardcoded-ip-test --force --grace-period 0")
   rescue
     upsert_skipped_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  SKIPPED: unknown exception")
   end
@@ -464,25 +463,22 @@ task "immutable_configmap" do |_, args|
     test_config_map_filename = "#{destination_cnf_dir}/test_config_map.yml";
 
     template = Crinja.render(configmap_template, { "test_url" => "doesnt_matter" })
-    LOGGING.debug "test immutable_configmap template: #{template}"
-    test_config_map_create = `echo "#{template}" > "#{test_config_map_filename}"`
-    VERBOSE_LOGGING.debug "#{test_config_map_create}" if check_verbose(args)
-
+    Log.debug { "test immutable_configmap template: #{template}" }
+    File.write(test_config_map_filename, template)
     KubectlClient::Apply.file(test_config_map_filename)
 
     # now we change then apply again
 
     template = Crinja.render(configmap_template, { "test_url" => "doesnt_matter_again" })
-    LOGGING.debug "test immutable_configmap change template: #{template}"
-    test_config_map_create = `echo "#{template}" > "#{test_config_map_filename}"`
-    VERBOSE_LOGGING.debug "test_config_map_create: #{test_config_map_create}" if check_verbose(args)
+    Log.debug { "test immutable_configmap change template: #{template}" }
+    File.write(test_config_map_filename, template)
 
     immutable_configmap_supported = true
     # if the reapply with a change succedes immmutable configmaps is NOT enabled
     # if KubectlClient::Apply.file(test_config_map_filename) == 0
     apply_result = KubectlClient::Apply.file(test_config_map_filename)
     if apply_result[:status].success?
-      LOGGING.info "kubectl apply failed for: #{test_config_map_filename}"
+      Log.info { "kubectl apply failed for: #{test_config_map_filename}" }
       k8s_ver = KubectlClient.server_version
       if version_less_than(k8s_ver, "1.19.0")
         resp = "✖️  SKIPPED: immmutable configmaps are not supported in this k8s cluster.".colorize(:yellow)
@@ -500,8 +496,8 @@ task "immutable_configmap" do |_, args|
     resp = ""
     emoji_probe="⚖️"
     cnf_manager_workload_resource_task_response = CNFManager.workload_resource_test(args, config, check_containers=false, check_service=true) do |resource, containers, volumes, initialized|
-      LOGGING.info "resource: #{resource}"
-      LOGGING.info "volumes: #{volumes}"
+      Log.info { "resource: #{resource}" }
+      Log.info { "volumes: #{volumes}" }
 
       config_maps_json = KubectlClient::Get.configmaps
 
