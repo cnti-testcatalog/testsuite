@@ -98,20 +98,18 @@ def change_capacity(base_replicas, target_replica_count, args, config, resource 
   initialization_time = base_replicas.to_i * 10
   VERBOSE_LOGGING.info "resource: #{resource["metadata"]["name"]}" if check_verbose(args)
 
-  #TODO make a KubectlClient.scale command
+  scale_cmd = ""
+
   case resource["kind"].as_s.downcase
   when "deployment"
-    LOGGING.debug "kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
-
-    base = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}`
+    scale_cmd = "#{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
   when "statefulset"
-    `kubectl scale statefulsets #{resource["metadata"]["name"]} --replicas=#{base_replicas}`
+    scale_cmd = "statefulsets #{resource["metadata"]["name"]} --replicas=#{base_replicas}"
   else #TODO what else can be scaled?
-    LOGGING.debug "kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
-
-    base = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}`
+    scale_cmd = "#{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
   end
-  VERBOSE_LOGGING.info "base: #{base}" if check_verbose(args) 
+  KubectlClient::Scale.command(scale_cmd)
+
   initialized_count = wait_for_scaling(resource, base_replicas, args)
   if initialized_count != base_replicas
     VERBOSE_LOGGING.info "#{resource["kind"]} initialized to #{initialized_count} and could not be set to #{base_replicas}" if check_verbose(args)
@@ -121,13 +119,13 @@ def change_capacity(base_replicas, target_replica_count, args, config, resource 
 
   case resource["kind"].as_s.downcase
   when "deployment"
-    increase = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}`
+    scale_cmd = "#{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}"
   when "statefulset"
-    `kubectl scale statefulsets #{resource["metadata"]["name"]} --replicas=#{target_replica_count}`
+    scale_cmd = "statefulsets #{resource["metadata"]["name"]} --replicas=#{target_replica_count}"
   else #TODO what else can be scaled?
-    LOGGING.debug "kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
-    base = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}`
+    scale_cmd = "#{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}"
   end
+  KubectlClient::Scale.command(scale_cmd)
 
   current_replicas = wait_for_scaling(resource, target_replica_count, args)
   current_replicas
