@@ -123,7 +123,7 @@ module Helm
           output: find_resp = IO::Memory.new,
           error: find_err = IO::Memory.new
         )
-        manifests = find_resp.split("\n").select{|x| x.empty? == false}
+        manifests = find_resp.to_s.split("\n").select{|x| x.empty? == false}
         Log.info { "find response: #{manifests}" }
         if manifests.size == 0 && !silent
           raise "No manifest ymls found in the #{manifest_directory} directory!"
