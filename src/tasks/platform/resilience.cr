@@ -26,7 +26,7 @@ namespace "platform" do
 
       #Select the first node that isn't a master and is also schedulable
       worker_nodes = KubectlClient::Get.worker_nodes
-      worker_node = worker_nodes.split("\n")[0]
+      worker_node = worker_nodes[0]
 
       File.write("node_failure_values.yml", NODE_FAILED_VALUES)
       install_coredns = Helm.install("node-failure -f ./node_failure_values.yml --set nodeSelector.\"kubernetes\\.io/hostname\"=#{worker_node} stable/coredns")
