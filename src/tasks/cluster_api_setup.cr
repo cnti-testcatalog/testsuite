@@ -69,14 +69,7 @@ task "cluster_api_setup" do |_, args|
 
       ## TODO: wait here for crds to be created if needed
 
-  Process.run(
-    create_capd_cmd,
-    shell: true,
-    output: create_capd_stdout = IO::Memory.new,
-    error: create_capd_stderr = IO::Memory.new
-  )
-
-  create_capd_response = <<-HEREDOC
+  create_capd_cmd = <<-HEREDOC
   CNI_RESOURCES="$(cat test/e2e/data/cni/kindnet/kindnet.yaml)" \
   DOCKER_POD_CIDRS="192.168.0.0/16" \
   DOCKER_SERVICE_CIDRS="172.17.0.0/16" \
@@ -87,6 +80,14 @@ task "cluster_api_setup" do |_, args|
   --control-plane-machine-count=1 \
   --worker-machine-count=2
   HEREDOC
+
+  Process.run(
+    create_capd_cmd,
+    shell: true,
+    output: create_capd_stdout = IO::Memory.new,
+    error: create_capd_stderr = IO::Memory.new
+  )
+  create_capd_resp = create_capd_stdout.to_s
 
   Log.info { create_capd_resp }
   File.write("capd.yaml", create_capd_resp)
