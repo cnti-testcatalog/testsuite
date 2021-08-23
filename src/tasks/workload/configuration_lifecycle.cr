@@ -333,7 +333,8 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     else
       upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  FAILED: Hard-coded IP addresses found in the runtime K8s configuration")
     end
-    KubectlClient::Delete.command("namespace hardcoded-ip-test --force --grace-period 0")
+    result = KubectlClient::Delete.command("namespace hardcoded-ip-test --force --grace-period 0")
+    result[:status].success?
   rescue
     upsert_skipped_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  SKIPPED: unknown exception")
   end
