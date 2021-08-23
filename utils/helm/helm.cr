@@ -59,18 +59,15 @@ module Helm
     LOGGING.info "config_src: #{config_src}"
     helm_chart_file = "#{config_src}/#{Helm::CHART_YAML}"
     LOGGING.info "looking for potential helm_chart_file: #{helm_chart_file}: file exists?: #{File.exists?(helm_chart_file)}"
-    # todo use process run
-    ls_al = `ls -alR config_src #{config_src}`
-    ls_al = `ls -alR helm_chart_file #{helm_chart_file}`
 
     if !Dir.exists?(config_src) 
-      LOGGING.info "install_method_by_config_src helm_chart selected"
+      Log.info { "install_method_by_config_src helm_chart selected" }
       InstallMethod::HelmChart
     elsif File.exists?(helm_chart_file)
-      LOGGING.info "install_method_by_config_src helm_directory selected"
+      Log.info { "install_method_by_config_src helm_directory selected" }
       InstallMethod::HelmDirectory
     elsif Dir.exists?(config_src) 
-      LOGGING.info "install_method_by_config_src manifest_directory selected"
+      Log.info { "install_method_by_config_src manifest_directory selected" }
       InstallMethod::ManifestDirectory
     else
       InstallMethod::Invalid
@@ -101,12 +98,19 @@ module Helm
     end
 
     def self.manifest_file_list(manifest_directory, silent=false)
-      LOGGING.info("manifest_file_list")
-      LOGGING.info "manifest_directory: #{manifest_directory}"
+      Log.info { "manifest_file_list" }
+      Log.info { "manifest_directory: #{manifest_directory}" }
       if manifest_directory && !manifest_directory.empty? && manifest_directory != "/"
-        LOGGING.info("find: find #{manifest_directory}/ -name *.yml -o -name *.yaml")
-        manifests = `find #{manifest_directory}/ -name "*.yml" -o -name "*.yaml"`.split("\n").select{|x| x.empty? == false}
-        LOGGING.info("find response: #{manifests}")
+        cmd = "find #{manifest_directory}/ -name \"*.yml\" -o -name \"*.yaml\""
+        Log.info { cmd }
+        Process.run(
+          cmd,
+          shell: true,
+          output: find_resp = IO::Memory.new,
+          error: find_err = IO::Memory.new
+        )
+        manifests = find_resp.split("\n").select{|x| x.empty? == false}
+        Log.info { "find response: #{manifests}" }
         if manifests.size == 0 && !silent
           raise "No manifest ymls found in the #{manifest_directory} directory!"
         end
@@ -115,10 +119,12 @@ module Helm
         [] of String
       end
     end
+
     def self.manifest_containers(manifest_yml)
-      LOGGING.debug "manifest_containers: #{manifest_yml}"
+      Log.debug { "manifest_containers: #{manifest_yml}" }
       manifest_yml.dig?("spec", "template", "spec", "containers")
     end
+
     LOGGING = LogginGenerator.new
     class LogginGenerator
       macro method_missing(call)
