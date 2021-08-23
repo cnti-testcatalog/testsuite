@@ -40,9 +40,10 @@ module TarClient
     end
 
     cmd = "tar #{options} -czvf #{tarball_name} -C #{working_directory} #{source_file_or_directory}"
-    ShellCmd.run(cmd, "TarClient.tar", log_type="info")
+    result = ShellCmd.run(cmd, "TarClient.tar", log_type="info")
+
     ShellCmd.run("tar -tvf #{tarball_name}", "#{tarball_name} contents after", log_type="info")
-    {status: status, output: output, error: stderr}
+    result
   end
 
   def self.append(tarball_name, working_directory, source_file_or_directory, options="")
