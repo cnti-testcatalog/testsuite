@@ -3,8 +3,10 @@ require "file_utils"
 require "colorize"
 require "totem"
 require "http/client" 
-require "halite" 
+require "halite"
 require "./utils/utils.cr"
+require "json"
+require "yaml"
 
 desc "Install Cluster API for Kind"
 task "cluster_api_setup" do |_, args|
@@ -13,34 +15,57 @@ task "cluster_api_setup" do |_, args|
 
       # curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64 -o clusterctl
       Halite.follow.get("https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.10/clusterctl-linux-amd64") do |response| 
-        LOGGING.info "clusterctl response: #{response}"
+        Log.info { "clusterctl response: #{response}" }
         File.write("clusterctl", response.body_io)
-      end 
-      LOGGING.info `sudo chmod +x ./clusterctl`
-      LOGGING.info `sudo mv ./clusterctl /usr/local/bin/clusterctl`
+      end
+
+      Process.run(
+        "sudo chmod +x ./clusterctl",
+        shell: true,
+        output: stdout = IO::Memory.new,
+        error: stderr = IO::Memory.new
+      )
+      Process.run(
+        "sudo mv ./clusterctl /usr/local/bin/clusterctl",
+        shell: true,
+        output: stdout = IO::Memory.new,
+        error: stderr = IO::Memory.new
+      )
       
       unless Dir.exists?(cluster_api_dir)
-        LOGGING.info `git clone https://github.com/kubernetes-sigs/cluster-api --depth 1 --branch v0.3.10 "#{cluster_api_dir}"`
+        cmd = "git clone https://github.com/kubernetes-sigs/cluster-api --depth 1 --branch v0.3.10 #{cluster_api_dir}"
+        stdout = IO::Memory.new
+        Process.run(cmd, shell: true, output: stdout, error: stdout)
+        Log.for("git clone kubernetes-sigs/cluster-api").info { stdout.to_s }
       end
       FileUtils.cd(cluster_api_dir)
-      File.write("clusterctl-settings.json",
-<<-EOF
-{"providers": ["cluster-api","bootstrap-kubeadm","control-plane-kubeadm", "infrastructure-docker"]}
-EOF
-  )
-      `./cmd/clusterctl/hack/create-local-repository.py`
-      File.write("clusterctl.yaml", 
-<<-EOF
-providers:
-  - name: docker
-    url: #{Path["~"].expand(home: true)}/.cluster-api/dev-repository/infrastructure-docker/v0.3.8/infrastructure-components.yaml
-    type: InfrastructureProvider
-EOF
-  )
+      clusterctl_settings = {
+        "providers": [
+          "cluster-api",
+          "bootstrap-kubeadm",
+          "control-plane-kubeadm",
+          "infrastructure-docker"
+        ]
+      }.to_json
+      File.write("clusterctl-settings.json", clusterctl_settings)
 
+      Process.run("./cmd/clusterctl/hack/create-local-repository.py", shell: true, output: stdout = IO::Memory.new, error: stderr = IO::Memory.new)
 
-      test = `clusterctl init --core cluster-api:v0.3.8  --bootstrap kubeadm:v0.3.8    --control-plane kubeadm:v0.3.8    --infrastructure docker:v0.3.8 --config #{FileUtils.pwd}/clusterctl.yaml`
-      LOGGING.info test
+      clusterctl_config = {
+        providers: [
+          {
+            name: "docker",
+            url: "#{Path["~"].expand(home: true)}/.cluster-api/dev-repository/infrastructure-docker/v0.3.8/infrastructure-components.yaml",
+            type: "InfrastructureProvider"
+          }
+        ]
+      }.to_yaml
+      File.write("clusterctl.yaml", clusterctl_config)
+
+      cluster_init_cmd = "clusterctl init --core cluster-api:v0.3.8  --bootstrap kubeadm:v0.3.8 --control-plane kubeadm:v0.3.8 --infrastructure docker:v0.3.8 --config #{FileUtils.pwd}/clusterctl.yaml"
+      stdout = IO::Memory.new
+      Process.run(cluster_init_cmd, shell: true, output: stdout, error: stdout)
+      Log.info { stdout }
 
       ## TODO: wait here for crds to be created if needed
 create_capd_response =`
