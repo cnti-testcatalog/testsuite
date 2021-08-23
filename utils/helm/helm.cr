@@ -16,8 +16,8 @@ class BinaryReference
   end
 
   def helm_global_response(verbose=false)
-    helm_response = `helm version 2>/dev/null`
-    helm_response
+    Process.run("helm version", shell: true, output: stdout = IO::Memory.new, error: stderr = IO::Memory.new)
+    stdout.to_s
   end
 
   def helm_v3_version(helm_response)
