@@ -163,6 +163,17 @@ module KubectlClient
       resp
     end
 
+    def self.namespaces(cli = "") : JSON::Any
+      cmd = "kubectl get namespaces -o json #{cli}"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.namespaces")
+      response = result[:output]
+
+      if result[:status].success? && !response.empty?
+        return JSON.parse(response)
+      end
+      JSON.parse(%({}))
+    end
+
     def self.nodes() : JSON::Any
       # TODO should this be all namespaces?
       cmd = "kubectl get nodes -o json"
