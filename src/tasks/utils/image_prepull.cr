@@ -1,6 +1,7 @@
 require "kubectl_client"
 require "airgap"
 
+# todo put this in bootstrap utils
 def self.image_pull(yml)
   containers  = yml.map { |y|
     mc = Helm::Manifest.manifest_containers(y)
@@ -19,6 +20,7 @@ def self.image_pull(yml)
   }.compact
   LOGGING.info "Images: #{images}"
 
+  # todo put this in bootstrap utils
   resp = AirGap.create_pod_by_image("conformance/cri-tools:latest", "cri-tools")
 
   images.map do |image| 

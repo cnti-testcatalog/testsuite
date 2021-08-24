@@ -285,6 +285,18 @@ module Helm
     {status: status, output: output, error: stderr}
   end
 
+  def self.delete(release_name)
+    helm = BinarySingleton.helm
+    LOGGING.info "helm command: #{helm} delete #{release_name}"
+    status = Process.run("#{helm} delete #{release_name}",
+                         shell: true,
+                         output: output = IO::Memory.new,
+                         error: stderr = IO::Memory.new)
+    LOGGING.info "Helm.install output: #{output.to_s}"
+    LOGGING.info "Helm.install stderr: #{stderr.to_s}"
+    {status: status, output: output, error: stderr}
+  end
+
   def self.pull(cli)
     helm = BinarySingleton.helm
     LOGGING.info "helm command: #{helm} pull #{cli}"
