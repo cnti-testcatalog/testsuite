@@ -14,6 +14,7 @@ describe "Security" do
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_nonroot/cnf-testsuite.yml manifest=true`
       LOGGING.debug `./cnf-testsuite uninstall_falco`
+      KubectlClient::Get.resource_wait_for_uninstall("DaemonSet", "falco")
     end
   end
 
@@ -27,6 +28,7 @@ describe "Security" do
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml manifest=true`
       LOGGING.debug `./cnf-testsuite uninstall_falco`
+      KubectlClient::Get.resource_wait_for_uninstall("DaemonSet", "falco")
     end
   end
 
