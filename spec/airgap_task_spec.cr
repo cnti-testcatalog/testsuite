@@ -100,7 +100,7 @@ describe "AirGap" do
       (/Successfully setup nginx-webapp/ =~ response_s).should_not be_nil
       (/exported_chart\" not found/ =~ response_s).should be_nil
     ensure
-      response_s = `LOG_LEVEL=debug ./cnf-testsuite cnf_cleanup installed-from-manifest=true cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml wait_count=0`
+      response_s = `LOG_LEVEL=debug ./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml wait_count=0`
       $?.success?.should be_true
       AirGap::LOGGING.info response_s
       (/Successfully cleaned up/ =~ response_s).should_not be_nil
