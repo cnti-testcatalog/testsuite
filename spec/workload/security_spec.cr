@@ -12,8 +12,9 @@ describe "Security" do
       $?.success?.should be_true
       (/Root user not found/ =~ response_s).should_not be_nil
     ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_nonroot/cnf-testsuite.yml manifest=true`
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_nonroot/cnf-testsuite.yml`
       LOGGING.debug `./cnf-testsuite uninstall_falco`
+      KubectlClient::Get.resource_wait_for_uninstall("DaemonSet", "falco")
     end
   end
 
@@ -25,8 +26,9 @@ describe "Security" do
       $?.success?.should be_true
       (/Root user found/ =~ response_s).should_not be_nil
     ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml manifest=true`
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml`
       LOGGING.debug `./cnf-testsuite uninstall_falco`
+      KubectlClient::Get.resource_wait_for_uninstall("DaemonSet", "falco")
     end
   end
 
