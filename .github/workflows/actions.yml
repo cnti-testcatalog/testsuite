@@ -135,7 +135,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tag: ["chaos_container_kill", "chaos_cpu_hog", "pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency"]
+        tag: ["chaos_container_kill", "chaos_cpu_hog", "pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill"]
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
