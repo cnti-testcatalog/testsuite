@@ -325,7 +325,15 @@ END
 
     def self.final_cnf_results_yml
       LOGGING.info "final_cnf_results_yml"
-      results_file = `find ./results/* -name "cnf-testsuite-results-*.yml"`.split("\n")[-2].gsub("./", "")
+      find_cmd = "find ./results/* -name \"cnf-testsuite-results-*.yml\""
+      Process.run(
+        find_cmd,
+        shell: true,
+        output: find_stdout = IO::Memory.new,
+        error: find_stderr = IO::Memory.new
+      )
+
+      results_file = find_stdout.to_s.split("\n")[-2].gsub("./", "")
       if results_file.empty?
         raise "No cnf_testsuite-results-*.yml found! Did you run the all task?"
       end

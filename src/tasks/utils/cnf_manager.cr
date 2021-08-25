@@ -11,7 +11,6 @@ require "./task.cr"
 require "./config.cr"
 require "airgap"
 require "tar"
-# todo put this in a module or in the 
 require "./image_prepull.cr"
 require "./generate_config.cr"
 require "log"
@@ -159,8 +158,16 @@ module CNFManager
 
   def self.cnf_installed?
     Log.info { "cnf_config_list" }
-    Log.info { "find: find #{CNF_DIR}/* -name #{CONFIG_FILE}" }
-    cnf_testsuite = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
+    find_cmd = "find #{CNF_DIR}/* -name '#{CONFIG_FILE}'"
+    Log.info { "find: #{find_cmd}" }
+    Process.run(
+      find_cmd,
+      shell: true,
+      output: find_stdout = IO::Memory.new,
+      error: find_stderr = IO::Memory.new
+    )
+
+    cnf_testsuite = find_stdout.to_s.split("\n").select{ |x| x.empty? == false }
     Log.info { "find response: #{cnf_testsuite}" }
     if cnf_testsuite.size == 0
       false
@@ -171,8 +178,16 @@ module CNFManager
 
   def self.cnf_config_list(silent=false)
     Log.info { "cnf_config_list" }
-    Log.info { "find: find #{CNF_DIR}/* -name #{CONFIG_FILE}" }
-    cnf_testsuite = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
+    find_cmd = "find #{CNF_DIR}/* -name \"#{CONFIG_FILE}\""
+    Log.info { "find: #{find_cmd}" }
+    Process.run(
+      find_cmd,
+      shell: true,
+      output: find_stdout = IO::Memory.new,
+      error: find_stderr = IO::Memory.new
+    )
+
+    cnf_testsuite = find_stdout.to_s.split("\n").select{ |x| x.empty? == false }
     Log.info { "find response: #{cnf_testsuite}" }
     if cnf_testsuite.size == 0 && !silent
       raise "No cnf_testsuite.yml found! Did you run the setup task?"
@@ -194,7 +209,14 @@ module CNFManager
 
   def self.sample_testsuite_yml(sample_dir)
     Log.info { "sample_testsuite_yml sample_dir: #{sample_dir}" }
-    cnf_testsuite = `find #{sample_dir}/* -name "cnf-testsuite.yml"`.split("\n")[0]
+    find_cmd = "find #{sample_dir}/* -name \"cnf-testsuite.yml\""
+    Process.run(
+      find_cmd,
+      shell: true,
+      output: find_stdout = IO::Memory.new,
+      error: find_stderr = IO::Memory.new
+    )
+    cnf_testsuite = find_stdout.to_s.split("\n")[0]
     if cnf_testsuite.empty?
       raise "No cnf_testsuite.yml found in #{sample_dir}!"
     end
@@ -551,7 +573,7 @@ module CNFManager
 
       Log.error { "307-debug-helm-dir-copy" }
       src_path = Path[source_directory].expand.to_s
-      yml_cp = `cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}`
+      FileUtils.cp_r(Path[source_directory].expand.to_s, destination_cnf_dir)
       # begin
       #   FileUtils.cp_r(src_path, destination_cnf_dir)
       # rescue File::AlreadyExistsError
@@ -829,11 +851,9 @@ end
           stdout_success "Successfully cleaned up #{manifest_directory} directory"
         end
       else
-        Log.info { "helm uninstall command: #{helm} uninstall #{release_name.split(" ")[0]}" }
-        #TODO add capability to add helm options for uninstall
-        helm_uninstall = `#{helm} uninstall #{release_name.split(" ")[0]}`
-        ret = $?.success?
-        Log.for("verbose").info { helm_uninstall } if verbose
+        helm_uninstall = Helm.uninstall(release_name.split(" ")[0])
+        ret = helm_uninstall[:status].success?
+        Log.for("verbose").info { helm_uninstall[:output].to_s } if verbose
         FileUtils.rm_rf(destination_cnf_dir)
         if ret
           stdout_success "Successfully cleaned up #{release_name.split(" ")[0]}"
