@@ -98,7 +98,6 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
       unless helm_chart.empty?
         helm_search_cmd = "#{helm} search repo #{helm_chart}"
         Log.info { "helm search command: #{helm_search_cmd}" }
-        Log.for("verbose").debug { "#{helm_search}" } if check_verbose(args)
         Process.run(
           helm_search_cmd,
           shell: true,
@@ -106,6 +105,7 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
           error: helm_search_stderr = IO::Memory.new
         )
         helm_search = helm_search_stdout.to_s
+        Log.for("verbose").debug { "#{helm_search}" } if check_verbose(args)
         unless helm_search =~ /No results found/
           upsert_passed_task("helm_chart_published", "✔️  PASSED: Published Helm Chart Found #{emoji_published_helm_chart}")
         else
@@ -152,7 +152,7 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
 
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)))
 
-    helm_lint = "#{helm} lint #{destination_cnf_dir}/#{working_chart_directory}"
+    helm_lint_cmd = "#{helm} lint #{destination_cnf_dir}/#{working_chart_directory}"
     helm_lint_status = Process.run(
       helm_lint_cmd,
       shell: true,

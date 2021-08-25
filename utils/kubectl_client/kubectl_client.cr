@@ -297,7 +297,7 @@ module KubectlClient
 
     def self.pods_by_resource(resource_yml) : K8sManifestList
       Log.info { "pods_by_resource" }
-      Log.debug { "pods_by_resource resource: #{resource}" }
+      Log.debug { "pods_by_resource resource: #{resource_yml}" }
       return [resource_yml] if resource_yml["kind"].as_s.downcase == "pod"
       Log.info { "resource kind: #{resource_yml["kind"]}" }
       
