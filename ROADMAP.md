@@ -15,6 +15,7 @@ To get a more complete overview of planned features and current work see the [pr
 - Build [resilience tests](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md#resilience-tests) using [LitmusChaos](https://litmuschaos.io/) experiments
 - Create [observability tests](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md#observability-tests) to check for cloud native monitoring
 - Create [state tests](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md#state-tests) to check cloud native data handling
+- Create [security tests](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md#security-tests)
 
 ### Enhance the functionality of the test suite framework
 

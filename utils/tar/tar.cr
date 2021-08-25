@@ -11,54 +11,72 @@ module TarClient
   TAR_TMP_BASE = "/tmp"
   TAR_MODIFY_DIR = "/tmp/modify_tar"
 
-  def self.tar(tarball_name, working_directory, source_file_or_directory, options="")
-    LOGGING.info "TarClient.tar command: tar #{options} -czvf #{tarball_name} -C #{working_directory} #{source_file_or_directory}"
-    LOGGING.info "cding into #{working_directory} and tarring #{source_file_or_directory} into #{tarball_name}"
-    LOGGING.info "#{tarball_name} exists?: #{File.exists?(tarball_name)}" 
-    if File.exists?(tarball_name)
-      LOGGING.info "#{tarball_name} contents (before tar): #{`tar -tvf #{tarball_name}`}"
+  module ShellCmd
+    def self.run(cmd, log_prefix, log_type="debug")
+      Log.info { "#{log_prefix} command: #{cmd}" }
+      status = Process.run(
+        cmd,
+        shell: true,
+        output: output = IO::Memory.new,
+        error: stderr = IO::Memory.new
+      )
+      if log_type == "debug"
+        Log.debug { "#{log_prefix} output: #{output.to_s}" }
+        Log.debug { "#{log_prefix} stderr: #{stderr.to_s}" }
+      else
+        Log.info { "#{log_prefix} output: #{output.to_s}" }
+        Log.info { "#{log_prefix} stderr: #{stderr.to_s}" }
+      end
+      {status: status, output: output.to_s, error: stderr.to_s}
     end
-    # tar -czvf #{cnf_tarball_name} ./#{cnf_bin_asset_name}
-    status = Process.run("tar #{options} -czvf #{tarball_name} -C #{working_directory} #{source_file_or_directory}",
-                         shell: true,
-                         output: output = IO::Memory.new,
-                         error: stderr = IO::Memory.new)
-    LOGGING.info "TarClient.tar output: #{output.to_s}"
-    LOGGING.info "TarClient.tar stderr: #{stderr.to_s}"
-    LOGGING.info "#{tarball_name} contents (after tar): #{`tar -tvf #{tarball_name}`}"
-    {status: status, output: output, error: stderr}
+  end
+
+  def self.tar(tarball_name, working_directory, source_file_or_directory, options="")
+    Log.info { "cding into #{working_directory} and tarring #{source_file_or_directory} into #{tarball_name}" }
+    Log.info { "#{tarball_name} exists?: #{File.exists?(tarball_name)}" }
+    if File.exists?(tarball_name)
+      ShellCmd.run("tar -tvf #{tarball_name}", "#{tarball_name} contents before", log_type="info")
+    end
+
+    cmd = "tar #{options} -czvf #{tarball_name} -C #{working_directory} #{source_file_or_directory}"
+    Log.info { "TarClient.tar command: #{cmd}" }
+    result = ShellCmd.run(cmd, "TarClient.tar", log_type="info")
+
+    ShellCmd.run("tar -tvf #{tarball_name}", "#{tarball_name} contents after", log_type="info")
+    result
   end
 
   def self.append(tarball_name, working_directory, source_file_or_directory, options="")
     #working_directory: directory to cd into before running the tar command
-    LOGGING.info "TarClient.tar (append) command: tar #{options} -rf #{tarball_name} -C #{working_directory} #{source_file_or_directory}"
-    LOGGING.info "cding into #{working_directory} and tarring #{source_file_or_directory} into #{tarball_name}"
-    LOGGING.info "#{tarball_name} exists?: #{File.exists?(tarball_name)}" 
+    Log.info { "cding into #{working_directory} and tarring #{source_file_or_directory} into #{tarball_name}" }
+    Log.info { "#{tarball_name} exists?: #{File.exists?(tarball_name)}" }
     if File.exists?(tarball_name)
-      LOGGING.info "#{tarball_name} contents (before tar): #{`tar -tvf #{tarball_name}`}"
+      Log.info { "#{tarball_name} contents (before tar): #{`tar -tvf #{tarball_name}`}" }
     end
 
-    status = Process.run("tar #{options} -rf #{tarball_name} -C #{working_directory} #{source_file_or_directory}",
+    cmd = "tar #{options} -rf #{tarball_name} -C #{working_directory} #{source_file_or_directory}"
+    Log.info { "TarClient.tar (append) command: #{cmd}" }
+    status = Process.run(cmd,
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    LOGGING.info "TarClient.tar output: #{output.to_s}"
-    LOGGING.info "TarClient.tar stderr: #{stderr.to_s}"
-    LOGGING.info "#{tarball_name} contents (after tar): #{`tar -tvf #{tarball_name}`}"
+    Log.info { "TarClient.tar output: #{output.to_s}" }
+    Log.info { "TarClient.tar stderr: #{stderr.to_s}" }
+    Log.info { "#{tarball_name} contents (after tar): #{`tar -tvf #{tarball_name}`}" }
     {status: status, output: output, error: stderr}
   end
 
   def self.untar(tarball_name, destination_directory, options="")
-    LOGGING.info "TarClient.untar command: tar #{options} -xvf #{tarball_name} -C #{destination_directory}"
-    status = Process.run("tar #{options} -xvf #{tarball_name} -C #{destination_directory}",
+    cmd = "tar #{options} -xvf #{tarball_name} -C #{destination_directory}"
+    Log.info { "TarClient.untar command: #{cmd}" }
+    status = Process.run(cmd,
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    LOGGING.info "TarClient.untar output: #{output.to_s}"
-    LOGGING.info "TarClient.untar stderr: #{stderr.to_s}"
+    Log.info { "TarClient.untar output: #{output.to_s}" }
+    Log.info { "TarClient.untar stderr: #{stderr.to_s}" }
     {status: status, output: output, error: stderr}
   end
-
 
   #
   # modify_tar! << untars file, yields to block, retars, keep in tar module
@@ -69,25 +87,25 @@ module TarClient
     FileUtils.mkdir_p(TAR_MODIFY_DIR)
     TarClient.untar(tar_file, TAR_MODIFY_DIR)
     yield TAR_MODIFY_DIR
-    `rm #{tar_file}`
+    FileUtils.rm_rf(tar_file)
     file_list = `ls #{TAR_MODIFY_DIR}`.gsub("\n", " ") 
     TarClient.tar(tar_file, TAR_MODIFY_DIR, file_list)
-    `rm -rf #{TAR_MODIFY_DIR}`
+    FileUtils.rm_rf(TAR_MODIFY_DIR)
   end
 
 
   def self.tar_file_by_url(url, append_file : String = "./downloaded.tar.gz", output_file="")
     download_path = "download/" 
-    `rm -rf /tmp/#{download_path} > /dev/null 2>&1`
+    FileUtils.rm_rf("/tmp/#{download_path}")
     FileUtils.mkdir_p("/tmp/" + download_path)
     if output_file.empty?
-      download_name = url.split("/").last 
+      download_name = url.split("/").last
     else
       download_name = output_file
     end
     download_full_path = download_path + download_name
-    LOGGING.info "download_name: #{download_name}"
-    LOGGING.info "download_full_path: #{download_full_path}"
+    Log.info { "download_name: #{download_name}" }
+    Log.info { "download_full_path: #{download_full_path}" }
     Halite.get("#{url}") do |response| 
        File.open("/tmp/" + download_full_path, "w") do |file| 
          IO.copy(response.body_io, file)
@@ -95,28 +113,7 @@ module TarClient
     end
     TarClient.append(append_file, "/tmp", download_full_path)
   ensure
-    `rm -rf /tmp/#{download_path} > /dev/null 2>&1`
-  end
-
-  LOGGING = LogginGenerator.new
-  class LogginGenerator
-    macro method_missing(call)
-      if {{ call.name.stringify }} == "debug"
-        Log.debug {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "info"
-        Log.info {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "warn"
-        Log.warn {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "error"
-        Log.error {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "fatal"
-        Log.fatal {{{call.args[0]}}}
-      end
-    end
+    FileUtils.rm_rf("/tmp/#{download_path}")
   end
 
 end
