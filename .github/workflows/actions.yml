@@ -26,14 +26,13 @@ jobs:
         TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-config-lifecycle/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-microservice/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-all/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/disk_fill/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/chaos_container_kill/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/chaos_cpu_hog/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/chaos_network_loss/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/pod_delete/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/pod_io_stress/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/pod_memory_hog/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/pod_network_latency/}")
-        
         TEST_LIST=$(for i in ${TEST_ARRAY[@]}
         do
                  echo "{\"spec\":\"$i\"}," | tr -d '\n'
@@ -136,7 +135,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tag: ["chaos_container_kill", "chaos_cpu_hog", "chaos_network_loss", "pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency"]
+        tag: ["chaos_container_kill", "chaos_cpu_hog", "pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency"]
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -588,7 +587,7 @@ jobs:
         ./cnf-testsuite setup
         wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
         ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
-        LOG_LEVEL=info ./cnf-testsuite all ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose
+        LOG_LEVEL=info ./cnf-testsuite all ~resilience ~reasonable_startup_time ~reasonable_image_size ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
@@ -641,7 +640,7 @@ jobs:
         ./cnf-testsuite setup
         wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
         ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
-        LOG_LEVEL=info ./cnf-testsuite all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~install_script_helm ~helm_chart_valid ~helm_chart_published ~rollback ~secrets_used ~immutable_configmap verbose
+        LOG_LEVEL=info ./cnf-testsuite all ~resilience ~pod_network_latency ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~install_script_helm ~helm_chart_valid ~helm_chart_published ~rollback ~secrets_used ~immutable_configmap verbose
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
@@ -695,7 +694,7 @@ jobs:
         ./cnf-testsuite setup
         wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
         ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
-        LOG_LEVEL=info ./cnf-testsuite all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size verbose
+        LOG_LEVEL=info ./cnf-testsuite all ~resilience ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size verbose
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
