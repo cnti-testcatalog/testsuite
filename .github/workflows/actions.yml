@@ -109,7 +109,10 @@ jobs:
             sleep 1
         done
         LOCAL_PATH_STORAGE_POD=$(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o jsonpath='{range .items[*]}{.metadata.name}')
-        kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- apk add curl jq
+        until [[ $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- apk add curl jq) ]]; do
+            echo "Failed to install packages, retrying"
+            sleep 1
+        done
         CLUSTER_RATE_LIMIT=$(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || true)
         TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token || true)
         ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
@@ -208,7 +211,10 @@ jobs:
             sleep 1
         done
         LOCAL_PATH_STORAGE_POD=$(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o jsonpath='{range .items[*]}{.metadata.name}')
-        kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- apk add curl jq
+        until [[ $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- apk add curl jq) ]]; do
+            echo "Failed to install packages, retrying"
+            sleep 1
+        done
         CLUSTER_RATE_LIMIT=$(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || true)
         TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token || true)
         ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
