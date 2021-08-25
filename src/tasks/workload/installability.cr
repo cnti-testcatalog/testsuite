@@ -13,13 +13,13 @@ end
 desc "Will the CNF install using helm with helm_deploy?"
 task "helm_deploy" do |_, args|
   unless check_destructive(args)
-    LOGGING.info "skipping helm_deploy: not in destructive mode"
+    Log.info { "skipping helm_deploy: not in destructive mode" }
     puts "SKIPPED: Helm Deploy".colorize(:yellow)
     next
   end
-  LOGGING.info "Running helm_deploy in destructive mode!"
-  VERBOSE_LOGGING.info "helm_deploy" if check_verbose(args)
-  LOGGING.info("helm_deploy args: #{args.inspect}")
+  Log.info { "Running helm_deploy in destructive mode!" }
+  Log.for("verbose").info { "helm_deploy" } if check_verbose(args)
+  Log.info { "helm_deploy args: #{args.inspect}" }
   if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
     CNFManager::Task.task_runner(args) do |args, config|
       
@@ -53,10 +53,10 @@ task "install_script_helm" do |_, args|
     # destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)))
     # install_script = config.get("install_script").as_s?
     install_script = config.cnf_config[:install_script]
-    LOGGING.info "install_script: #{install_script}"
+    Log.info { "install_script: #{install_script}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    LOGGING.info "destination_cnf_dir: #{destination_cnf_dir}"
-    VERBOSE_LOGGING.debug destination_cnf_dir if check_verbose(args)
+    Log.info { "destination_cnf_dir: #{destination_cnf_dir}" }
+    Log.for("verbose").debug { destination_cnf_dir } if check_verbose(args)
     if !install_script.empty?
       response = String::Builder.new
       content = File.open("#{destination_cnf_dir}/#{install_script}") do |file|
@@ -79,9 +79,11 @@ end
 
 task "helm_chart_published", ["helm_local_install"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "helm_chart_published" if check_verbose(args)
-    VERBOSE_LOGGING.debug "helm_chart_published args.raw: #{args.raw}" if check_verbose(args)
-    VERBOSE_LOGGING.debug "helm_chart_published args.named: #{args.named}" if check_verbose(args)
+    if check_verbose(args)
+      Log.for("verbose").info { "helm_chart_published" }
+      Log.for("verbose").debug { "helm_chart_published args.raw: #{args.raw}" }
+      Log.for("verbose").debug { "helm_chart_published args.named: #{args.named}" }
+    end
 
     # config = cnf_testsuite_yml
     # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
@@ -90,13 +92,20 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
     emoji_published_helm_chart="⎈📦🌐"
     current_dir = FileUtils.pwd
     helm = BinarySingleton.helm
-    VERBOSE_LOGGING.debug helm if check_verbose(args)
+    Log.for("verbose").debug { helm } if check_verbose(args)
 
     if CNFManager.helm_repo_add(args: args)
       unless helm_chart.empty?
-        helm_search = `#{helm} search repo #{helm_chart}`
-        LOGGING.info "helm search command: #{helm} search repo #{helm_chart}"
-        VERBOSE_LOGGING.debug "#{helm_search}" if check_verbose(args)
+        helm_search_cmd = "#{helm} search repo #{helm_chart}"
+        Log.info { "helm search command: #{helm_search_cmd}" }
+        Log.for("verbose").debug { "#{helm_search}" } if check_verbose(args)
+        Process.run(
+          helm_search_cmd,
+          shell: true,
+          output: helm_search_stdout = IO::Memory.new,
+          error: helm_search_stderr = IO::Memory.new
+        )
+        helm_search = helm_search_stdout.to_s
         unless helm_search =~ /No results found/
           upsert_passed_task("helm_chart_published", "✔️  PASSED: Published Helm Chart Found #{emoji_published_helm_chart}")
         else
@@ -113,9 +122,11 @@ end
 
 task "helm_chart_valid", ["helm_local_install"] do |_, args|
   CNFManager::Task.task_runner(args) do |args|
-    VERBOSE_LOGGING.info "helm_chart_valid" if check_verbose(args)
-    VERBOSE_LOGGING.debug "helm_chart_valid args.raw: #{args.raw}" if check_verbose(args)
-    VERBOSE_LOGGING.debug "helm_chart_valid args.named: #{args.named}" if check_verbose(args)
+    if check_verbose(args)
+      Log.for("verbose").info { "helm_chart_valid" }
+      Log.for("verbose").debug { "helm_chart_valid args.raw: #{args.raw}" }
+      Log.for("verbose").debug { "helm_chart_valid args.named: #{args.named}" }
+    end
 
     response = String::Builder.new
 
@@ -132,19 +143,26 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
       working_chart_directory = args.named["cnf_chart_path"]
     end
 
-    VERBOSE_LOGGING.debug "working_chart_directory: #{working_chart_directory}" if check_verbose(args)
+    Log.for("verbose").debug { "working_chart_directory: #{working_chart_directory}" } if check_verbose(args)
 
     current_dir = FileUtils.pwd
-    VERBOSE_LOGGING.debug current_dir if check_verbose(args)
+    Log.for("verbose").debug { current_dir } if check_verbose(args)
     helm = BinarySingleton.helm
     emoji_helm_lint="⎈📝☑️"
 
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)))
 
-    helm_lint = `#{helm} lint #{destination_cnf_dir}/#{working_chart_directory}`
-    VERBOSE_LOGGING.debug "helm_lint: #{helm_lint}" if check_verbose(args)
+    helm_lint = "#{helm} lint #{destination_cnf_dir}/#{working_chart_directory}"
+    helm_lint_status = Process.run(
+      helm_lint_cmd,
+      shell: true,
+      output: helm_lint_stdout = IO::Memory.new,
+      error: helm_link_stderr = IO::Memory.new
+    )
+    helm_lint = helm_lint_stdout.to_s
+    Log.for("verbose").debug { "helm_lint: #{helm_lint}" } if check_verbose(args)
 
-    if $?.success?
+    if helm_lint_status.success?
       upsert_passed_task("helm_chart_valid", "✔️  PASSED: Helm Chart #{working_chart_directory} Lint Passed #{emoji_helm_lint}")
     else
       upsert_failed_task("helm_chart_valid", "✖️  FAILED: Helm Chart #{working_chart_directory} Lint Failed #{emoji_helm_lint}")

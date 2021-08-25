@@ -90,7 +90,6 @@ def kubectl_local_response(verbose = false)
   current_dir = FileUtils.pwd
   VERBOSE_LOGGING.info current_dir if verbose
   kubectl = "#{current_dir}/#{TOOLS_DIR}/kubectl/linux-amd64/kubectl"
-  # kubectl_response = `#{kubectl} version`
   status = Process.run("#{kubectl} version", shell: true, output: kubectl_response = IO::Memory.new, error: stderr = IO::Memory.new)
   VERBOSE_LOGGING.info kubectl_response.to_s if verbose
   kubectl_response.to_s

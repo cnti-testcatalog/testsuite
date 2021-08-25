@@ -277,6 +277,18 @@ module Helm
     {status: status, output: output, error: stderr}
   end
 
+  def self.uninstall(cli)
+    helm = BinarySingleton.helm
+    Log.info { "helm command: #{helm} uninstall #{cli}" }
+    status = Process.run("#{helm} uninstall #{cli}",
+                         shell: true,
+                         output: output = IO::Memory.new,
+                         error: stderr = IO::Memory.new)
+    Log.info { "Helm.uninstall output: #{output.to_s}" }
+    Log.info { "Helm.uninstall stderr: #{stderr.to_s}" }
+    {status: status, output: output, error: stderr}
+  end
+
   def self.delete(cli)
     helm = BinarySingleton.helm
     Log.info { "helm command: #{helm} delete #{cli}" }
@@ -296,8 +308,8 @@ module Helm
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    Log.info { "Helm.install output: #{output.to_s}" }
-    Log.info { "Helm.install stderr: #{stderr.to_s}" }
+    Log.info { "Helm.pull output: #{output.to_s}" }
+    Log.info { "Helm.pull stderr: #{stderr.to_s}" }
     {status: status, output: output, error: stderr}
   end
 

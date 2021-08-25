@@ -142,15 +142,29 @@ def wait_for_scaling(resource, target_replica_count, args)
   wait_count = wait_count_value.to_i
   second_count = 0
   current_replicas = "0"
-  previous_replicas = `kubectl get #{resource["kind"]} #{resource["metadata"]["name"]} -o=jsonpath='{.status.readyReplicas}'`
+  replicas_cmd = "kubectl get #{resource["kind"]} #{resource["metadata"]["name"]} -o=jsonpath='{.status.readyReplicas}'"
+  Process.run(
+    replicas_cmd,
+    shell: true,
+    output: replicas_stdout = IO::Memory.new,
+    error: replicas_stderr = IO::Memory.new
+  )
+  previous_replicas = replicas_stdout.to_s
   until current_replicas == target_replica_count || second_count > wait_count
-    VERBOSE_LOGGING.debug "secound_count: #{second_count} wait_count: #{wait_count}" if check_verbose(args)
-    VERBOSE_LOGGING.info "current_replicas before get #{resource["kind"]}: #{current_replicas}" if check_verbose(args)
+    Log.for("verbose").debug { "secound_count: #{second_count} wait_count: #{wait_count}" } if check_verbose(args)
+    Log.for("verbose").info { "current_replicas before get #{resource["kind"]}: #{current_replicas}" } if check_verbose(args)
     sleep 1
-    VERBOSE_LOGGING.debug `echo $KUBECONFIG` if check_verbose(args)
-    VERBOSE_LOGGING.info "Get #{resource["kind"]} command: kubectl get #{resource["kind"]} #{resource["metadata"]["name"]} -o=jsonpath='{.status.readyReplicas}'" if check_verbose(args)
-    current_replicas = `kubectl get #{resource["kind"]} #{resource["metadata"]["name"]} -o=jsonpath='{.status.readyReplicas}'`
-    VERBOSE_LOGGING.info "current_replicas after get #{resource["kind"]}: #{current_replicas.inspect}" if check_verbose(args)
+    Log.for("verbose").debug { "$KUBECONFIG = #{ENV.fetch("KUBECONFIG", nil)}" } if check_verbose(args)
+
+    Process.run(
+      replicas_cmd,
+      shell: true,
+      output: replicas_stdout = IO::Memory.new,
+      error: replicas_stderr = IO::Memory.new
+    )
+    current_replicas = replicas_stdout.to_s
+
+    Log.for("verbose").info { "current_replicas after get #{resource["kind"]}: #{current_replicas.inspect}" } if check_verbose(args)
 
     if current_replicas.empty?
       current_replicas = "0"
@@ -162,8 +176,8 @@ def wait_for_scaling(resource, target_replica_count, args)
       previous_replicas = current_replicas
     end
     second_count = second_count + 1 
-    VERBOSE_LOGGING.info "previous_replicas: #{previous_replicas}" if check_verbose(args)
-    VERBOSE_LOGGING.info "current_replicas: #{current_replicas}" if check_verbose(args)
+    Log.for("verbose").info { "previous_replicas: #{previous_replicas}" } if check_verbose(args)
+    Log.for("verbose").info { "current_replicas: #{current_replicas}" } if check_verbose(args)
   end
   current_replicas
 end 

@@ -39,11 +39,11 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
         end
 
         # TODO what is this for?
-        stable_repo = `#{helm} repo add stable https://cncf.gitlab.io/stable`
+        stable_repo = Helm.helm_repo_add("stable", "https://cncf.gitlab.io/stable")
         Log.for("verbose").debug { stable_repo } if check_verbose(args)
 
         # TODO grep for specific version e.g. version.BuildInfo{Version:"v3.1.1", GitCommit:"afe70585407b420d0097d07b21c47dc511525ac8", GitTreeState:"clean", GoVersion:"go1.13.8"}
-end
+      end
     end
   end
   # `#{BinarySingleton.helm} repo add stable https://cncf.gitlab.io/stable`
