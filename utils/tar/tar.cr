@@ -32,7 +32,6 @@ module TarClient
   end
 
   def self.tar(tarball_name, working_directory, source_file_or_directory, options="")
-    Log.info { "TarClient.tar command: tar #{options} -czvf #{tarball_name} -C #{working_directory} #{source_file_or_directory}" }
     Log.info { "cding into #{working_directory} and tarring #{source_file_or_directory} into #{tarball_name}" }
     Log.info { "#{tarball_name} exists?: #{File.exists?(tarball_name)}" }
     if File.exists?(tarball_name)
@@ -40,6 +39,7 @@ module TarClient
     end
 
     cmd = "tar #{options} -czvf #{tarball_name} -C #{working_directory} #{source_file_or_directory}"
+    Log.info { "TarClient.tar command: #{cmd}" }
     result = ShellCmd.run(cmd, "TarClient.tar", log_type="info")
 
     ShellCmd.run("tar -tvf #{tarball_name}", "#{tarball_name} contents after", log_type="info")
@@ -48,14 +48,15 @@ module TarClient
 
   def self.append(tarball_name, working_directory, source_file_or_directory, options="")
     #working_directory: directory to cd into before running the tar command
-    Log.info { "TarClient.tar (append) command: tar #{options} -rf #{tarball_name} -C #{working_directory} #{source_file_or_directory}" }
     Log.info { "cding into #{working_directory} and tarring #{source_file_or_directory} into #{tarball_name}" }
     Log.info { "#{tarball_name} exists?: #{File.exists?(tarball_name)}" }
     if File.exists?(tarball_name)
       Log.info { "#{tarball_name} contents (before tar): #{`tar -tvf #{tarball_name}`}" }
     end
 
-    status = Process.run("tar #{options} -rf #{tarball_name} -C #{working_directory} #{source_file_or_directory}",
+    cmd = "tar #{options} -rf #{tarball_name} -C #{working_directory} #{source_file_or_directory}"
+    Log.info { "TarClient.tar (append) command: #{cmd}" }
+    status = Process.run(cmd,
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
@@ -66,8 +67,9 @@ module TarClient
   end
 
   def self.untar(tarball_name, destination_directory, options="")
-    Log.info { "TarClient.untar command: tar #{options} -xvf #{tarball_name} -C #{destination_directory}" }
-    status = Process.run("tar #{options} -xvf #{tarball_name} -C #{destination_directory}",
+    cmd = "tar #{options} -xvf #{tarball_name} -C #{destination_directory}"
+    Log.info { "TarClient.untar command: #{cmd}" }
+    status = Process.run(cmd,
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
