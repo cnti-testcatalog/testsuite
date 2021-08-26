@@ -50,4 +50,4 @@ airgapped.tar.gz
 airgaptest.tar.gz
 /cnf-testsuite.yml
 /*.tgz
-
+falco_rule.yaml

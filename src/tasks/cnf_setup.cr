@@ -54,8 +54,9 @@ task "cnf_cleanup" do |_, args|
   else
     force = false
   end
-  # todo make cnf_cleanup deduce if the installation was a manifest installation
-  if (args.named["installed-from-manifest"]? && args.named["installed-from-manifest"] == "true") || (args.named["manifest"]? && args.named["manifest"] == "true")
+  config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(cnf))
+  install_method = CNFManager.cnf_installation_method(config)
+  if install_method[0] == Helm::InstallMethod::ManifestDirectory
     installed_from_manifest = true
   else
     installed_from_manifest = false
