@@ -20,6 +20,7 @@ module Falco
       output = resp[:output]
       match = output.to_s.match(/.*root.*\(k8s_pod=#{pod_name}\)/) 
       if match
+        LOGGING.info "Falco Root Pod Data: #{match[0]}"
         matched = true
         # todo continue to inspect all nodes and show which node caused the failer
         break
