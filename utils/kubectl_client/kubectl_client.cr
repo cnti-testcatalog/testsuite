@@ -42,25 +42,15 @@ module KubectlClient
   end
 
   def self.exec(command)
-    LOGGING.info "KubectlClient.exec command: #{command}"
-    status = Process.run("kubectl exec #{command}",
-                         shell: true,
-                         output: output = IO::Memory.new,
-                         error: stderr = IO::Memory.new)
-    LOGGING.info "KubectlClient.exec output: #{output.to_s}"
-    LOGGING.info "KubectlClient.exec stderr: #{stderr.to_s}"
-    {status: status, output: output, error: stderr}
+    cmd = "kubectl exec #{command}"
+    ShellCmd.run(cmd, "KubectlClient.exec")
   end
+
   def self.cp(command)
-    LOGGING.info "KubectlClient.cp command: #{command}"
-    status = Process.run("kubectl cp #{command}",
-                         shell: true,
-                         output: output = IO::Memory.new,
-                         error: stderr = IO::Memory.new)
-    LOGGING.info "KubectlClient.cp output: #{output.to_s}"
-    LOGGING.info "KubectlClient.cp stderr: #{stderr.to_s}"
-    {status: status, output: output, error: stderr}
+    cmd = "kubectl cp #{command}"
+    ShellCmd.run(cmd, "KubectlClient.cp")
   end
+
   def self.server_version()
     LOGGING.debug "KubectlClient.server_version"
     status = Process.run("kubectl version",
