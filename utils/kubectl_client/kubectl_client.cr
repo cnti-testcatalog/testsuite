@@ -97,6 +97,14 @@ module KubectlClient
     end
   end
 
+  module Create
+    def self.command(cli : String)
+      cmd = "kubectl create #{cli}"
+      result = ShellCmd.run(cmd, "KubectlClient::Create.command")
+      result[:status].success?
+    end
+  end
+
   module Apply
     def self.file(file_name)
       cmd = "kubectl apply -f #{file_name}"
@@ -108,6 +116,13 @@ module KubectlClient
       cmd = "kubectl apply --validate=true --dry-run=client -f #{file_name}"
       result = ShellCmd.run(cmd, "KubectlClient::Apply.validate")
       result[:status].success?
+    end
+  end
+
+  module Scale
+    def self.command(cli)
+      cmd = "kubectl scale #{cli}"
+      ShellCmd.run(cmd, "KubectlClient::Scale.command")
     end
   end
 
