@@ -155,6 +155,7 @@ module KubectlClient
 
   #TODO move this out into its own file
   module Get
+
     def self.privileged_containers(namespace="--all-namespaces")
       privileged_response = `kubectl get pods #{namespace} -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
       # TODO parse this as json
@@ -165,16 +166,16 @@ module KubectlClient
 
     def self.nodes : JSON::Any
       # TODO should this be all namespaces?
-      resp = `kubectl get nodes -o json`
-      LOGGING.debug "kubectl get nodes: #{resp}"
-      JSON.parse(resp)
+      cmd = "kubectl get nodes -o json"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.nodes")
+      JSON.parse(result[:output])
     end
 
     def self.pods(all_namespaces=true) : K8sManifest 
       option = all_namespaces ? "--all-namespaces" : ""
-      resp = `kubectl get pods #{option} -o json`
-      # LOGGING.debug "kubectl get pods: #{resp}"
-      JSON.parse(resp)
+      cmd = "kubectl get pods #{option} -o json"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.pods")
+      JSON.parse(result[:output])
     end
    
     # todo put this in a manifest module
