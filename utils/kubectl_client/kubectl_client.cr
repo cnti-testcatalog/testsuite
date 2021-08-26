@@ -91,68 +91,38 @@ module KubectlClient
   end
 
   module Annotate
-    def self.run(cli) 
-      LOGGING.info "annotate cli:  #{cli}"
-      status = Process.run("kubectl annotate #{cli}",
-                           shell: true,
-                           output: output = IO::Memory.new,
-                           error: stderr = IO::Memory.new)
-      LOGGING.info "KubectlClient.Annotate.run output: #{output.to_s}"
-      LOGGING.info "KubectlClient.Annotate.run stderr: #{stderr.to_s}"
-      {status: status, output: output, error: stderr}
+    def self.run(cli)
+      cmd = "kubectl annotate #{cli}"
+      ShellCmd.run(cmd, "KubectlClient::Annotate.run")
     end
   end
 
   module Apply
-    def self.file(file_name) : Bool
-      # LOGGING.info "apply file: #{file_name}"
-      # apply = `kubectl apply -f #{file_name}`
-      # apply_status = $?.success?
-      # LOGGING.debug "kubectl apply resp: #{apply}"
-      # LOGGING.debug "apply? #{apply_status}"
-      # apply_status
-      LOGGING.info "apply file: #{file_name}"
-      status = Process.run("kubectl apply -f #{file_name}",
-                           shell: true,
-                           output: output = IO::Memory.new,
-                           error: stderr = IO::Memory.new)
-      LOGGING.info "KubectlClient.apply output: #{output.to_s}"
-      LOGGING.info "KubectlClient.apply stderr: #{stderr.to_s}"
-      # {status: status, output: output, error: stderr}
-      apply_status = $?.success?
+    def self.file(file_name)
+      cmd = "kubectl apply -f #{file_name}"
+      ShellCmd.run(cmd, "KubectlClient::Apply.file")
     end
+
     def self.validate(file_name) : Bool
       # this hits the server btw (so you need a valid K8s cluster)
-      LOGGING.info "apply (validate) file: #{file_name}"
-      status = Process.run("kubectl apply --validate=true --dry-run=client -f #{file_name}",
-                           shell: true,
-                           output: output = IO::Memory.new,
-                           error: stderr = IO::Memory.new)
-      LOGGING.info "KubectlClient.apply output: #{output.to_s}"
-      LOGGING.info "KubectlClient.apply stderr: #{stderr.to_s}"
-      apply_status = $?.success?
+      cmd = "kubectl apply --validate=true --dry-run=client -f #{file_name}"
+      result = ShellCmd.run(cmd, "KubectlClient::Apply.validate")
+      result[:status].success?
     end
   end
+
   module Delete
     def self.command(command)
-      status = Process.run("kubectl delete #{command}",
-                           shell: true,
-                           output: output = IO::Memory.new,
-                           error: stderr = IO::Memory.new)
-      LOGGING.info "KubectlClient.delete output: #{output.to_s}"
-      LOGGING.info "KubectlClient.delete stderr: #{stderr.to_s}"
-      {status: status, output: output, error: stderr}
+      cmd = "kubectl delete #{command}"
+      ShellCmd.run(cmd, "KubectlClient::Delete.command")
     end
+
     def self.file(file_name)
-      status = Process.run("kubectl delete -f #{file_name}",
-                           shell: true,
-                           output: output = IO::Memory.new,
-                           error: stderr = IO::Memory.new)
-      LOGGING.info "KubectlClient.delete output: #{output.to_s}"
-      LOGGING.info "KubectlClient.delete stderr: #{stderr.to_s}"
-      {status: status, output: output, error: stderr}
+      cmd = "kubectl delete -f #{file_name}"
+      ShellCmd.run(cmd, "KubectlClient::Delete.file")
     end
   end
+
   module Set
     def self.image(deployment_name, container_name, image_name, version_tag=nil)
       #TODO check if image exists in repo? DockerClient::Get.image and image_by_tags
@@ -178,6 +148,7 @@ module KubectlClient
       $?.success?
     end
   end
+
   #TODO move this out into its own file
   module Get
     def self.privileged_containers(namespace="--all-namespaces")
