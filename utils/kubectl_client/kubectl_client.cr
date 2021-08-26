@@ -139,28 +139,17 @@ module KubectlClient
   end
 
   module Set
-    def self.image(deployment_name, container_name, image_name, version_tag=nil)
+    def self.image(deployment_name, container_name, image_name, version_tag=nil) : Bool
+      # use --record when setting image to have history
       #TODO check if image exists in repo? DockerClient::Get.image and image_by_tags
+      cmd = ""
       if version_tag
-        LOGGING.debug "kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record"
-        # use --record to have history
-        # resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record`
-        status = Process.run("kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record",
-                             shell: true,
-                             output: output = IO::Memory.new,
-                             error: stderr = IO::Memory.new)
+        cmd = "kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record"
       else
-        LOGGING.debug "kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record"
-        # resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record`
-        status = Process.run("kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record",
-                             shell: true,
-                             output: output = IO::Memory.new,
-                             error: stderr = IO::Memory.new)
+        cmd = "kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record"
       end
-      LOGGING.info "KubectlClient.set image output: #{output.to_s}"
-      LOGGING.info "KubectlClient.set image stderr: #{stderr.to_s}"
-      # LOGGING.debug "kubectl set image: #{resp}"
-      $?.success?
+      result = ShellCmd.run(cmd, "KubectlClient::Set.image")
+      result[:status].success?
     end
   end
 
