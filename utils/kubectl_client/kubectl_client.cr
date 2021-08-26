@@ -16,6 +16,21 @@ module KubectlClient
   # https://www.capitalone.com/tech/cloud/container-runtime/
   OCI_RUNTIME_REGEX = /containerd|docker|runc|railcar|crun|rkt|gviso|nabla|runv|clearcontainers|kata|cri-o/i
 
+  module ShellCmd
+    def self.run(cmd, log_prefix)
+      Log.info { "#{log_prefix} command: #{cmd}" }
+      status = Process.run(
+        cmd,
+        shell: true,
+        output: output = IO::Memory.new,
+        error: stderr = IO::Memory.new
+      )
+      Log.debug { "#{log_prefix} output: #{output.to_s}" }
+      Log.debug { "#{log_prefix} stderr: #{stderr.to_s}" }
+      {status: status, output: output.to_s, error: stderr.to_s}
+    end
+  end
+
   def self.logs(pod_name, container_name="")
     status = Process.run("kubectl logs #{pod_name} #{container_name}",
                          shell: true,
