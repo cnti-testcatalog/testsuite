@@ -26,7 +26,13 @@ jobs:
         TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-config-lifecycle/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-microservice/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-all/}")
-        
+        TEST_ARRAY=("${TEST_ARRAY[@]/disk_fill/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/chaos_container_kill/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/chaos_cpu_hog/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/pod_delete/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/pod_io_stress/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/pod_memory_hog/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/pod_network_latency/}")
         TEST_LIST=$(for i in ${TEST_ARRAY[@]}
         do
                  echo "{\"spec\":\"$i\"}," | tr -d '\n'
@@ -95,16 +101,20 @@ jobs:
         PROTECTED_DOCKERHUB_EMAIL: ${{ secrets.PROTECTED_DOCKERHUB_EMAIL }}
         PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        PROTECTED_IMAGE_REPO: ${{ secrets.PROTECTED_IMAGE_REPO }}
       run: |
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
-        kubectl create -f tools/cri-tools/manifest.yml
-        until [[ $(kubectl get pods -l name=cri-tools -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
-            echo "Waiting for CRI-TOOLS"
+        until [[ $(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
+            echo "Waiting for local-path-storage"
             sleep 1
         done
-        CRI_TOOLS_POD=$(kubectl get pods -l name=cri-tools -o jsonpath='{range .items[*]}{.metadata.name}')
-        CLUSTER_RATE_LIMIT=$(kubectl exec -ti $CRI_TOOLS_POD -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || true)
+        LOCAL_PATH_STORAGE_POD=$(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o jsonpath='{range .items[*]}{.metadata.name}')
+        until [[ $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- apk add curl jq) ]]; do
+            echo "Failed to install packages, retrying"
+            sleep 1
+        done
+        CLUSTER_RATE_LIMIT=$(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || true)
         TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token || true)
         ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
         TOKEN=$(curl --user "$DOCKERHUB_USERNAME:$DOCKERHUB_PASSWORD" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
@@ -113,6 +123,108 @@ jobs:
         echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
         echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
         LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
+    - name: Delete Cluster
+      if: ${{ always() }}
+      run: |
+        source cluster.env
+        kind delete cluster --name $CLUSTER
+        sudo rm -rf /tmp/*
+        docker container prune -f || true
+        docker volume prune -f || true
+        
+  chaos:
+    name: Chaos Tests
+    needs: [tests]
+    runs-on: [ubuntu-latest]
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ["chaos_container_kill", "chaos_cpu_hog", "pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill"]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Create Kind Cluster 
+      run: |
+        cat << EOF > /tmp/cluster.yml
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        containerdConfigPatches:
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
+            endpoint = ["http://localhost:5000"]
+        EOF
+        export CLUSTER=$(uuidgen)
+        echo "export CLUSTER=$CLUSTER" > cluster.env
+        echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
+        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
+        export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        kubectl get nodes 
+    - name: Cache crystal shards
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-crystal-shards
+      with:
+        path: ./lib
+        key: lib-${{ hashFiles('**/shard.lock') }}
+        restore-keys: |
+          lib-
+    - name: Install Crystal
+      env:
+        CRYSTAL_VERSION: 1.0.0
+        CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download
+      run: |
+        wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga; 
+        sudo apt install -y --no-install-recommends \
+        git \
+        libssl-dev \
+        libxml2-dev \
+        libyaml-dev \
+        libgmp-dev \
+        libz-dev \
+        ./crystal.deb \
+        && sudo rm -rf /var/lib/apt/lists/*
+    - name: Setup CNF-Conformance
+      env:
+        PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+      run: |
+        docker login -u $PROTECTED_DOCKERHUB_USERNAME -p $PROTECTED_DOCKERHUB_PASSWORD
+        helm repo add stable https://cncf.gitlab.io/stable
+        git fetch --all --tags --force
+        shards install  
+        echo "RUNNER: $RUNNER_NAME"
+    - name: Run Crystal Spec
+      env:
+        GITHUB_USER: ${{ secrets.GH_USER }}
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        PROTECTED_DOCKERHUB_EMAIL: ${{ secrets.PROTECTED_DOCKERHUB_EMAIL }}
+        PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+      run: |
+        source cluster.env
+        export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        until [[ $(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
+            echo "Waiting for local-path-storage"
+            sleep 1
+        done
+        LOCAL_PATH_STORAGE_POD=$(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o jsonpath='{range .items[*]}{.metadata.name}')
+        until [[ $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- apk add curl jq) ]]; do
+            echo "Failed to install packages, retrying"
+            sleep 1
+        done
+        CLUSTER_RATE_LIMIT=$(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || true)
+        TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token || true)
+        ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
+        TOKEN=$(curl --user "$DOCKERHUB_USERNAME:$DOCKERHUB_PASSWORD" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+        AUTH_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Authenticated Rate Limit Exceeded")
+        echo "RUNNER RATE LIMIT: $ANONYMOUS_RUNNER_RATE_LIMIT"
+        echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
+        echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
+        LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.tag }} -v
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
@@ -213,7 +325,6 @@ jobs:
         docker container prune -f || true
         docker volume prune -f || true
         docker network prune -f || true
-
 
         
   test_helm_chart_in_airgapped_env:
@@ -483,7 +594,7 @@ jobs:
         ./cnf-testsuite setup
         wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
         ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
-        LOG_LEVEL=info ./cnf-testsuite all ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose
+        LOG_LEVEL=info ./cnf-testsuite all ~resilience ~reasonable_startup_time ~reasonable_image_size ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
@@ -536,7 +647,7 @@ jobs:
         ./cnf-testsuite setup
         wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
         ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
-        LOG_LEVEL=info ./cnf-testsuite all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~install_script_helm ~helm_chart_valid ~helm_chart_published ~rollback ~secrets_used ~immutable_configmap verbose
+        LOG_LEVEL=info ./cnf-testsuite all ~resilience ~pod_network_latency ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~install_script_helm ~helm_chart_valid ~helm_chart_published ~rollback ~secrets_used ~immutable_configmap verbose
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
@@ -590,7 +701,7 @@ jobs:
         ./cnf-testsuite setup
         wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
         ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
-        LOG_LEVEL=info ./cnf-testsuite all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size verbose
+        LOG_LEVEL=info ./cnf-testsuite all ~resilience ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size verbose
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
