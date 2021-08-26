@@ -52,50 +52,44 @@ module KubectlClient
   end
 
   def self.server_version()
-    LOGGING.debug "KubectlClient.server_version"
-    status = Process.run("kubectl version",
-                         shell: true,
-                         output: output = IO::Memory.new,
-                         error: stderr = IO::Memory.new)
-    LOGGING.debug "KubectlClient.server_version output: #{output.to_s}"
-    LOGGING.debug "KubectlClient.server_version stderr: #{stderr.to_s}"
+    Log.debug { "KubectlClient.server_version" }
+    result = ShellCmd.run("kubectl version", "KubectlClient.server_version")
+
     # example
     # Server Version: version.Info{Major:"1", Minor:"18", GitVersion:"v1.18.16", GitCommit:"7a98bb2b7c9112935387825f2fce1b7d40b76236", GitTreeState:"clean", BuildDate:"2021-02-17T11:52:32Z", GoVersion:"go1.13.15", Compiler:"gc", Platform:"linux/amd64"}
-    resp = output.to_s.match /Server Version: version.Info{(Major:"(([0-9]{1,3})"\, )Minor:"([0-9]{1,3}[+]?)")/
-    LOGGING.debug "KubectlClient.server_version match: #{resp}"
+    resp = result[:output].match /Server Version: version.Info{(Major:"(([0-9]{1,3})"\, )Minor:"([0-9]{1,3}[+]?)")/
+    Log.debug { "KubectlClient.server_version match: #{resp}" }
     if resp
       version = "#{resp && resp.not_nil![3]}.#{resp && resp.not_nil![4]}.0"
     else
       version = ""
     end
-    LOGGING.info "KubectlClient.server_version: #{version}"
+    Log.info { "KubectlClient.server_version: #{version}" }
     version
   end
+
   module Rollout
-    def self.status(deployment_name, timeout="30s")
-      #TODO use process command to print both standard out and error
-      rollout = `kubectl rollout status deployment/#{deployment_name} --timeout=#{timeout}`
-      rollout_status = $?.success?
-      LOGGING.debug "#{rollout}"
-      LOGGING.debug "rollout? #{rollout_status}"
-      $?.success?
-    end
-    def self.resource_status(kind, resource_name, timeout="30s")
-      rollout = `kubectl rollout status #{kind}/#{resource_name} --timeout=#{timeout}`
-      rollout_status = $?.success?
-      LOGGING.debug "#{rollout}"
-      LOGGING.debug "rollout? #{rollout_status}"
-      $?.success?
+    def self.status(deployment_name, timeout="30s") : Bool
+      cmd = "kubectl rollout status deployment/#{deployment_name} --timeout=#{timeout}"
+      result = ShellCmd.run(cmd, "KubectlClient::Rollout.status")
+      result[:status].success?
     end
 
-    def self.undo(deployment_name)
-      rollback = `kubectl rollout undo deployment/#{deployment_name}`
-      rollback_status = $?.success?
-      LOGGING.debug "#{rollback}"
-      LOGGING.debug "rollback? #{rollback_status}"
-      $?.success?
+    def self.resource_status(kind, resource_name, timeout="30s") : Bool
+      cmd = "kubectl rollout status #{kind}/#{resource_name} --timeout=#{timeout}"
+      result = ShellCmd.run(cmd, "KubectlClient::Rollout.status")
+      Log.debug { "rollout status: #{result[:status].success?}" }
+      result[:status].success?
+    end
+
+    def self.undo(deployment_name) : Bool
+      cmd = "kubectl rollout undo deployment/#{deployment_name}"
+      result = ShellCmd.run(cmd, "KubectlClient::Rollout.undo")
+      Log.debug { "rollback status: #{result[:status].success?}" }
+      result[:status].success?
     end
   end
+
   module Annotate
     def self.run(cli) 
       LOGGING.info "annotate cli:  #{cli}"
@@ -108,6 +102,7 @@ module KubectlClient
       {status: status, output: output, error: stderr}
     end
   end
+
   module Apply
     def self.file(file_name) : Bool
       # LOGGING.info "apply file: #{file_name}"
