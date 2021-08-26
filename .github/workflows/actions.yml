@@ -101,6 +101,7 @@ jobs:
         PROTECTED_DOCKERHUB_EMAIL: ${{ secrets.PROTECTED_DOCKERHUB_EMAIL }}
         PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        PROTECTED_IMAGE_REPO: ${{ secrets.PROTECTED_IMAGE_REPO }}
       run: |
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
