@@ -21,8 +21,8 @@ module KubectlClient
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    LOGGING.info "KubectlClient.logs output: #{output.to_s}"
-    LOGGING.info "KubectlClient.logs stderr: #{stderr.to_s}"
+    LOGGING.debug "KubectlClient.logs output: #{output.to_s}"
+    LOGGING.debug "KubectlClient.logs stderr: #{stderr.to_s}"
     {status: status, output: output, error: stderr}
   end
 

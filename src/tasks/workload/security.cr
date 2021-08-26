@@ -19,7 +19,8 @@ task "non_root_user", ["install_falco"] do |_, args|
      pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
      falco_pod_name = pods[0].dig("metadata", "name")
      LOGGING.info "Falco Pod Name: #{falco_pod_name}"
-     KubectlClient.logs(falco_pod_name)
+     resp = KubectlClient.logs(falco_pod_name)
+     puts "Falco Logs: #{resp[:output]}"
      next
    end
 
