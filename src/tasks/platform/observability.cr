@@ -82,20 +82,20 @@ namespace "platform" do
         #worker_node = worker_nodes.split("\n")[0]
 
         # Install and find CRI Tools name
-        # File.write("cri_tools.yml", CRI_TOOLS)
+        File.write("cri_tools.yml", CRI_TOOLS)
         #TODO use kubectlclient
-        # install_cri_tools = `kubectl create -f cri_tools.yml`
-        # pod_ready = ""
-        # pod_ready_timeout = 45
-        # until (pod_ready == "true" || pod_ready_timeout == 0)
-        #   pod_ready = KubectlClient::Get.pod_status("cri-tools").split(",")[2]
-        #   puts "Pod Ready Status: #{pod_ready}"
-        #   sleep 1
-        #   pod_ready_timeout = pod_ready_timeout - 1
-        # end
-        # cri_tools_pod = KubectlClient::Get.pod_status("cri-tools").split(",")[0]
-        # #, "--field-selector spec.nodeName=#{worker_node}")
-        # LOGGING.debug "cri_tools_pod: #{cri_tools_pod}"
+        install_cri_tools = `kubectl create -f cri_tools.yml`
+        pod_ready = ""
+        pod_ready_timeout = 45
+        until (pod_ready == "true" || pod_ready_timeout == 0)
+          pod_ready = KubectlClient::Get.pod_status("cri-tools").split(",")[2]
+          puts "Pod Ready Status: #{pod_ready}"
+          sleep 1
+          pod_ready_timeout = pod_ready_timeout - 1
+        end
+        cri_tools_pod = KubectlClient::Get.pod_status("cri-tools").split(",")[0]
+        #, "--field-selector spec.nodeName=#{worker_node}")
+        LOGGING.debug "cri_tools_pod: #{cri_tools_pod}"
 
         # Fetch id sha256 sums for all repo_digests https://github.com/docker/distribution/issues/1662
         repo_digest_list = KubectlClient::Get.all_container_repo_digests
