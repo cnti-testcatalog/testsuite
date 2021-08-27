@@ -126,7 +126,7 @@ module CNFManager
           puts "Error: #{config_src} is neither a helm_chart, helm_directory, or manifest_directory.".colorize(:red)
           exit 1
         end
-        write_template= `echo "#{testsuite_yml_template_resp}" > "#{config_yml_path}"`
+        File.write(config_yml_path, testsuite_yml_template_resp)
       else
         LOGGING.error "#{config_yml_path} already exists"
       end

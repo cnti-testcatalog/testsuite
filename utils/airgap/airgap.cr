@@ -23,7 +23,7 @@ module AirGap
     tar_dir = AirGap.helm_tar_dir(command)
     FileUtils.mkdir_p(tar_dir)
     Helm.fetch("#{command} -d #{tar_dir}")
-    Log.debug { "ls #{tar_dir}:" + `ls -al #{tar_dir}` }
+    Log.debug { "ls #{tar_dir}:" + "#{Dir.children(tar_dir)}" }
     info = AirGap.tar_info_by_config_src(command)
     repo = info[:repo]
     repo_dir = info[:repo_dir]
@@ -153,8 +153,13 @@ module AirGap
   def self.download_cri_tools
     FileUtils.mkdir_p("#{TarClient::TAR_BIN_DIR}")
     Log.info { "download_cri_tools" }
-    `curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/#{CRI_VERSION}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz --output #{TarClient::TAR_BIN_DIR}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz`
-    `curl -L https://github.com/containerd/containerd/releases/download/v#{CTR_VERSION}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz --output #{TarClient::TAR_BIN_DIR}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz`
+    cmd = "curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/#{CRI_VERSION}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz --output #{TarClient::TAR_BIN_DIR}/crictl-#{CRI_VERSION}-linux-amd64.tar.gz"
+    stdout = IO::Memory.new
+    Process.run(cmd, shell: true, output: stdout, error: stdout)
+
+    cmd = "curl -L https://github.com/containerd/containerd/releases/download/v#{CTR_VERSION}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz --output #{TarClient::TAR_BIN_DIR}/containerd-#{CTR_VERSION}-linux-amd64.tar.gz"
+    stdout = IO::Memory.new
+    Process.run(cmd, shell: true, output: stdout, error: stdout)
   end
 
   def self.untar_cri_tools
@@ -214,7 +219,7 @@ module AirGap
   # TODO make a tool that cleans up the cri images
   def self.create_pod_by_image(image, name="cri-tools")
     template = Crinja.render(cri_tools_template, { "image" => image, "name" => name})
-    write = `echo "#{template}" > "#{name}-manifest.yml"`
+    File.write("#{name}-manifest.yml", template)
     KubectlClient::Apply.file("#{name}-manifest.yml")
     KubectlClient::Get.resource_wait_for_install("DaemonSet", name)
   end
@@ -293,7 +298,7 @@ end
 
 
   def self.image_pull_policy_config_file?(install_method, config_src, release_name)
-    LOGGING.info "image_pull_policy_config_file"
+    Log.info { "image_pull_policy_config_file" }
     yml = [] of Array(YAML::Any)
     case install_method
     when Helm::InstallMethod::ManifestDirectory
@@ -309,29 +314,29 @@ end
   end
 
   def self.container_image_pull_policy?(yml : Array(YAML::Any))
-    LOGGING.info "container_image_pull_policy"
+    Log.info { "container_image_pull_policy" }
     containers  = yml.map { |y|
       mc = Helm::Manifest.manifest_containers(y)
       mc.as_a? if mc
     }.flatten.compact
-    LOGGING.debug "containers : #{containers}"
+    Log.debug { "containers : #{containers}" }
     found_all = true 
     containers.flatten.map do |x|
-      LOGGING.debug "container x: #{x}"
+      Log.debug { "container x: #{x}" }
       ipp = x.dig?("imagePullPolicy")
       image = x.dig?("image")
-      LOGGING.debug "ipp: #{ipp}"
-      LOGGING.debug "image: #{image.as_s}" if image
+      Log.debug { "ipp: #{ipp}" }
+      Log.debug { "image: #{image.as_s}" if image }
       parsed_image = DockerClient.parse_image(image.as_s) if image
-      LOGGING.debug "parsed_image: #{parsed_image}"
+      Log.debug { "parsed_image: #{parsed_image}" }
       # if there is no image pull policy, any image that does not have a tag will
       # force a call out to the default image registry
       if ipp == nil && (parsed_image && parsed_image["tag"] == "latest")
-        LOGGING.info "ipp or tag not found with ipp: #{ipp} and parsed_image: #{parsed_image}"
+        Log.info { "ipp or tag not found with ipp: #{ipp} and parsed_image: #{parsed_image}" }
         found_all = false
       end 
     end
-    LOGGING.info "found_all: #{found_all}"
+    Log.info { "found_all: #{found_all}" }
     found_all
   end
 
@@ -354,19 +359,19 @@ end
 
   def self.tar_name_by_helm_chart(config_src : String)
     FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
-    LOGGING.debug "tar_name_by_helm_chart ls /tmp/repositories:" + `ls -al /tmp/repositories`
+    Log.debug { "tar_name_by_helm_chart ls /tmp/repositories:" + "#{Dir.children("/tmp/repositories")}" }
     tar_dir = helm_tar_dir(config_src)
     tgz_files = Find.find(tar_dir, "*.tgz*")
     tar_files = Find.find(tar_dir, "*.tar*") + tgz_files
     tar_name = ""
     tar_name = tar_files[0] if !tar_files.empty?
-    LOGGING.info "tar_name: #{tar_name}"
+    Log.info { "tar_name: #{tar_name}" }
     tar_name
   end
 
   def self.tar_info_by_config_src(config_src : String)
     FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
-    LOGGING.debug "tar_info_by_config_src ls /tmp/repositories:" + `ls -al /tmp/repositories`
+    Log.debug { "tar_info_by_config_src ls /tmp/repositories:" + "#{Dir.children("/tmp/repositories")}" }
     # chaos-mesh/chaos-mesh --version 0.5.1
     repo = config_src.split(" ")[0]
     repo_dir = repo.gsub("/", "_")
@@ -375,20 +380,20 @@ end
     tar_dir = "/tmp/#{repo_path}"
     tar_info = {repo: repo, repo_dir: repo_dir, chart_name: chart_name,
      repo_path: repo_path, tar_dir: tar_dir, tar_name: tar_name_by_helm_chart(config_src)}
-    LOGGING.info "tar_info: #{tar_info}"
+    Log.info { "tar_info: #{tar_info}" }
     tar_info
   end
 
   def self.helm_tar_dir(config_src : String)
     FileUtils.mkdir_p(TAR_REPOSITORY_DIR)
-    LOGGING.debug "helm_tar_dir ls /tmp/repositories:" + `ls -al /tmp/repositories`
+    Log.debug { "helm_tar_dir ls /tmp/repositories:" + "#{Dir.children("/tmp/repositories")}" }
     # chaos-mesh/chaos-mesh --version 0.5.1
     repo = config_src.split(" ")[0]
     repo_dir = repo.gsub("/", "_")
     chart_name = repo.split("/")[-1]
     repo_path = "repositories/#{repo_dir}" 
     tar_dir = "/tmp/#{repo_path}"
-    LOGGING.info "helm_tar_dir: #{tar_dir}"
+    Log.info { "helm_tar_dir: #{tar_dir}" }
     tar_dir
   end
 
@@ -421,24 +426,4 @@ end
     FileUtils.rm_rf(paths)
   end
 
-  LOGGING = LogginGenerator.new
-  class LogginGenerator
-    macro method_missing(call)
-      if {{ call.name.stringify }} == "debug"
-        Log.debug {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "info"
-        Log.info {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "warn"
-        Log.warn {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "error"
-        Log.error {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "fatal"
-        Log.fatal {{{call.args[0]}}}
-      end
-    end
-  end
 end
