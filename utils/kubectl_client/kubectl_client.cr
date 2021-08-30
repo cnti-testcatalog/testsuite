@@ -16,6 +16,21 @@ module KubectlClient
   # https://www.capitalone.com/tech/cloud/container-runtime/
   OCI_RUNTIME_REGEX = /containerd|docker|runc|railcar|crun|rkt|gviso|nabla|runv|clearcontainers|kata|cri-o/i
 
+  module ShellCmd
+    def self.run(cmd, log_prefix)
+      Log.info { "#{log_prefix} command: #{cmd}" }
+      status = Process.run(
+        cmd,
+        shell: true,
+        output: output = IO::Memory.new,
+        error: stderr = IO::Memory.new
+      )
+      Log.debug { "#{log_prefix} output: #{output.to_s}" }
+      Log.debug { "#{log_prefix} stderr: #{stderr.to_s}" }
+      {status: status, output: output.to_s, error: stderr.to_s}
+    end
+  end
+
   def self.logs(pod_name, container_name="")
     status = Process.run("kubectl logs #{pod_name} #{container_name}",
                          shell: true,
@@ -27,179 +42,167 @@ module KubectlClient
   end
 
   def self.exec(command)
-    LOGGING.info "KubectlClient.exec command: #{command}"
-    status = Process.run("kubectl exec #{command}",
-                         shell: true,
-                         output: output = IO::Memory.new,
-                         error: stderr = IO::Memory.new)
-    LOGGING.info "KubectlClient.exec output: #{output.to_s}"
-    LOGGING.info "KubectlClient.exec stderr: #{stderr.to_s}"
-    {status: status, output: output, error: stderr}
+    cmd = "kubectl exec #{command}"
+    ShellCmd.run(cmd, "KubectlClient.exec")
   end
+
   def self.cp(command)
-    LOGGING.info "KubectlClient.cp command: #{command}"
-    status = Process.run("kubectl cp #{command}",
-                         shell: true,
-                         output: output = IO::Memory.new,
-                         error: stderr = IO::Memory.new)
-    LOGGING.info "KubectlClient.cp output: #{output.to_s}"
-    LOGGING.info "KubectlClient.cp stderr: #{stderr.to_s}"
-    {status: status, output: output, error: stderr}
+    cmd = "kubectl cp #{command}"
+    ShellCmd.run(cmd, "KubectlClient.cp")
   end
+
   def self.server_version()
-    LOGGING.debug "KubectlClient.server_version"
-    status = Process.run("kubectl version",
-                         shell: true,
-                         output: output = IO::Memory.new,
-                         error: stderr = IO::Memory.new)
-    LOGGING.debug "KubectlClient.server_version output: #{output.to_s}"
-    LOGGING.debug "KubectlClient.server_version stderr: #{stderr.to_s}"
+    Log.debug { "KubectlClient.server_version" }
+    result = ShellCmd.run("kubectl version", "KubectlClient.server_version")
+
     # example
     # Server Version: version.Info{Major:"1", Minor:"18", GitVersion:"v1.18.16", GitCommit:"7a98bb2b7c9112935387825f2fce1b7d40b76236", GitTreeState:"clean", BuildDate:"2021-02-17T11:52:32Z", GoVersion:"go1.13.15", Compiler:"gc", Platform:"linux/amd64"}
-    resp = output.to_s.match /Server Version: version.Info{(Major:"(([0-9]{1,3})"\, )Minor:"([0-9]{1,3}[+]?)")/
-    LOGGING.debug "KubectlClient.server_version match: #{resp}"
+    resp = result[:output].match /Server Version: version.Info{(Major:"(([0-9]{1,3})"\, )Minor:"([0-9]{1,3}[+]?)")/
+    Log.debug { "KubectlClient.server_version match: #{resp}" }
     if resp
       version = "#{resp && resp.not_nil![3]}.#{resp && resp.not_nil![4]}.0"
     else
       version = ""
     end
-    LOGGING.info "KubectlClient.server_version: #{version}"
+    Log.info { "KubectlClient.server_version: #{version}" }
     version
   end
+
   module Rollout
-    def self.status(deployment_name, timeout="30s")
-      #TODO use process command to print both standard out and error
-      rollout = `kubectl rollout status deployment/#{deployment_name} --timeout=#{timeout}`
-      rollout_status = $?.success?
-      LOGGING.debug "#{rollout}"
-      LOGGING.debug "rollout? #{rollout_status}"
-      $?.success?
-    end
-    def self.resource_status(kind, resource_name, timeout="30s")
-      rollout = `kubectl rollout status #{kind}/#{resource_name} --timeout=#{timeout}`
-      rollout_status = $?.success?
-      LOGGING.debug "#{rollout}"
-      LOGGING.debug "rollout? #{rollout_status}"
-      $?.success?
+    def self.status(deployment_name, timeout="30s") : Bool
+      cmd = "kubectl rollout status deployment/#{deployment_name} --timeout=#{timeout}"
+      result = ShellCmd.run(cmd, "KubectlClient::Rollout.status")
+      result[:status].success?
     end
 
-    def self.undo(deployment_name)
-      rollback = `kubectl rollout undo deployment/#{deployment_name}`
-      rollback_status = $?.success?
-      LOGGING.debug "#{rollback}"
-      LOGGING.debug "rollback? #{rollback_status}"
-      $?.success?
+    def self.resource_status(kind, resource_name, timeout="30s") : Bool
+      cmd = "kubectl rollout status #{kind}/#{resource_name} --timeout=#{timeout}"
+      result = ShellCmd.run(cmd, "KubectlClient::Rollout.status")
+      Log.debug { "rollout status: #{result[:status].success?}" }
+      result[:status].success?
+    end
+
+    def self.undo(deployment_name) : Bool
+      cmd = "kubectl rollout undo deployment/#{deployment_name}"
+      result = ShellCmd.run(cmd, "KubectlClient::Rollout.undo")
+      Log.debug { "rollback status: #{result[:status].success?}" }
+      result[:status].success?
     end
   end
+
   module Annotate
-    def self.run(cli) 
-      LOGGING.info "annotate cli:  #{cli}"
-      status = Process.run("kubectl annotate #{cli}",
-                           shell: true,
-                           output: output = IO::Memory.new,
-                           error: stderr = IO::Memory.new)
-      LOGGING.info "KubectlClient.Annotate.run output: #{output.to_s}"
-      LOGGING.info "KubectlClient.Annotate.run stderr: #{stderr.to_s}"
-      {status: status, output: output, error: stderr}
+    def self.run(cli)
+      cmd = "kubectl annotate #{cli}"
+      ShellCmd.run(cmd, "KubectlClient::Annotate.run")
     end
   end
-  module Apply
-    def self.file(file_name) : Bool
-      # LOGGING.info "apply file: #{file_name}"
-      # apply = `kubectl apply -f #{file_name}`
-      # apply_status = $?.success?
-      # LOGGING.debug "kubectl apply resp: #{apply}"
-      # LOGGING.debug "apply? #{apply_status}"
-      # apply_status
-      LOGGING.info "apply file: #{file_name}"
-      status = Process.run("kubectl apply -f #{file_name}",
-                           shell: true,
-                           output: output = IO::Memory.new,
-                           error: stderr = IO::Memory.new)
-      LOGGING.info "KubectlClient.apply output: #{output.to_s}"
-      LOGGING.info "KubectlClient.apply stderr: #{stderr.to_s}"
-      # {status: status, output: output, error: stderr}
-      apply_status = $?.success?
+
+  module Create
+    def self.command(cli : String)
+      cmd = "kubectl create #{cli}"
+      result = ShellCmd.run(cmd, "KubectlClient::Create.command")
+      result[:status].success?
     end
+  end
+
+  module Apply
+    def self.file(file_name)
+      cmd = "kubectl apply -f #{file_name}"
+      ShellCmd.run(cmd, "KubectlClient::Apply.file")
+    end
+
     def self.validate(file_name) : Bool
       # this hits the server btw (so you need a valid K8s cluster)
-      LOGGING.info "apply (validate) file: #{file_name}"
-      status = Process.run("kubectl apply --validate=true --dry-run=client -f #{file_name}",
-                           shell: true,
-                           output: output = IO::Memory.new,
-                           error: stderr = IO::Memory.new)
-      LOGGING.info "KubectlClient.apply output: #{output.to_s}"
-      LOGGING.info "KubectlClient.apply stderr: #{stderr.to_s}"
-      apply_status = $?.success?
+      cmd = "kubectl apply --validate=true --dry-run=client -f #{file_name}"
+      result = ShellCmd.run(cmd, "KubectlClient::Apply.validate")
+      result[:status].success?
     end
   end
+
+  module Scale
+    def self.command(cli)
+      cmd = "kubectl scale #{cli}"
+      ShellCmd.run(cmd, "KubectlClient::Scale.command")
+    end
+  end
+
   module Delete
     def self.command(command)
-      status = Process.run("kubectl delete #{command}",
-                           shell: true,
-                           output: output = IO::Memory.new,
-                           error: stderr = IO::Memory.new)
-      LOGGING.info "KubectlClient.delete output: #{output.to_s}"
-      LOGGING.info "KubectlClient.delete stderr: #{stderr.to_s}"
-      {status: status, output: output, error: stderr}
+      cmd = "kubectl delete #{command}"
+      ShellCmd.run(cmd, "KubectlClient::Delete.command")
     end
+
     def self.file(file_name)
-      status = Process.run("kubectl delete -f #{file_name}",
-                           shell: true,
-                           output: output = IO::Memory.new,
-                           error: stderr = IO::Memory.new)
-      LOGGING.info "KubectlClient.delete output: #{output.to_s}"
-      LOGGING.info "KubectlClient.delete stderr: #{stderr.to_s}"
-      {status: status, output: output, error: stderr}
+      cmd = "kubectl delete -f #{file_name}"
+      ShellCmd.run(cmd, "KubectlClient::Delete.file")
     end
   end
+
   module Set
-    def self.image(deployment_name, container_name, image_name, version_tag=nil)
+    def self.image(deployment_name, container_name, image_name, version_tag=nil) : Bool
+      # use --record when setting image to have history
       #TODO check if image exists in repo? DockerClient::Get.image and image_by_tags
+      cmd = ""
       if version_tag
-        LOGGING.debug "kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record"
-        # use --record to have history
-        # resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record`
-        status = Process.run("kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record",
-                             shell: true,
-                             output: output = IO::Memory.new,
-                             error: stderr = IO::Memory.new)
+        cmd = "kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record"
       else
-        LOGGING.debug "kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record"
-        # resp  = `kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record`
-        status = Process.run("kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record",
-                             shell: true,
-                             output: output = IO::Memory.new,
-                             error: stderr = IO::Memory.new)
+        cmd = "kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record"
       end
-      LOGGING.info "KubectlClient.set image output: #{output.to_s}"
-      LOGGING.info "KubectlClient.set image stderr: #{stderr.to_s}"
-      # LOGGING.debug "kubectl set image: #{resp}"
-      $?.success?
+      result = ShellCmd.run(cmd, "KubectlClient::Set.image")
+      result[:status].success?
     end
   end
+
   #TODO move this out into its own file
   module Get
+    @@schedulable_nodes_template : String = <<-GOTEMPLATE.strip
+    {{- range .items -}}
+      {{$taints:=""}}
+      {{- range .spec.taints -}}
+        {{- if eq .effect "NoSchedule" -}}
+          {{- $taints = print $taints .key "," -}}
+        {{- end -}}
+      {{- end -}}
+      {{- if not $taints -}}
+        {{- .metadata.name}}
+        {{- "\\n" -}}
+      {{end -}}
+    {{- end -}}
+    GOTEMPLATE
+
     def self.privileged_containers(namespace="--all-namespaces")
-      privileged_response = `kubectl get pods #{namespace} -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
+      cmd = "kubectl get pods #{namespace} -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.privileged_containers")
+
       # TODO parse this as json
-      resp = privileged_response.to_s.split(" ").uniq
-      LOGGING.debug "kubectl get privileged_containers: #{resp}"
+      resp = result[:output].split(" ").uniq
+      Log.debug { "kubectl get privileged_containers: #{resp}" }
       resp
     end
 
-    def self.nodes : JSON::Any
+    def self.namespaces(cli = "") : JSON::Any
+      cmd = "kubectl get namespaces -o json #{cli}"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.namespaces")
+      response = result[:output]
+
+      if result[:status].success? && !response.empty?
+        return JSON.parse(response)
+      end
+      JSON.parse(%({}))
+    end
+
+    def self.nodes() : JSON::Any
       # TODO should this be all namespaces?
-      resp = `kubectl get nodes -o json`
-      LOGGING.debug "kubectl get nodes: #{resp}"
-      JSON.parse(resp)
+      cmd = "kubectl get nodes -o json"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.nodes")
+      JSON.parse(result[:output])
     end
 
     def self.pods(all_namespaces=true) : K8sManifest 
       option = all_namespaces ? "--all-namespaces" : ""
-      resp = `kubectl get pods #{option} -o json`
-      # LOGGING.debug "kubectl get pods: #{resp}"
-      JSON.parse(resp)
+      cmd = "kubectl get pods #{option} -o json"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.pods")
+      JSON.parse(result[:output])
     end
    
     # todo put this in a manifest module
@@ -213,7 +216,7 @@ module KubectlClient
           end
           yield item, metadata
         end
-        LOGGING.debug "resource_map items : #{items}"
+        Log.debug { "resource_map items : #{items}" }
         items
       else
         [JSON.parse(%({}))]
@@ -231,7 +234,7 @@ module KubectlClient
           end
           yield item, metadata
         end
-        LOGGING.debug "resource_map items : #{items}"
+        Log.debug { "resource_map items : #{items}" }
         items
       else
          [] of JSON::Any
@@ -247,7 +250,7 @@ module KubectlClient
       until (nodes != empty_json_any) || retries > retry_limit
         nodes = KubectlClient::Get.resource_select(KubectlClient::Get.nodes) do |item, metadata|
           taints = item.dig?("spec", "taints")
-          LOGGING.debug "taints: #{taints}"
+          Log.debug { "taints: #{taints}" }
           if (taints && taints.as_a.find{ |x| x.dig?("effect") == "NoSchedule" })
             # EMPTY_JSON 
             false 
@@ -258,26 +261,26 @@ module KubectlClient
         end
       end
       if nodes == empty_json_any
-        LOGGING.error "nodes empty: #{nodes}"
+        Log.error { "nodes empty: #{nodes}" }
       end
-      LOGGING.debug "nodes: #{nodes}"
+      Log.debug { "nodes: #{nodes}" }
       nodes
     end
 
     def self.pods_by_nodes(nodes_json : Array(JSON::Any))
-      LOGGING.info "pods_by_node"
+      Log.info { "pods_by_node" }
       nodes_json.map { |item|
-        LOGGING.info "items labels: #{item.dig?("metadata", "labels")}"
+        Log.info { "items labels: #{item.dig?("metadata", "labels")}" }
         node_name = item.dig?("metadata", "labels", "kubernetes.io/hostname")
-        LOGGING.debug "NodeName: #{node_name}"
+        Log.debug { "NodeName: #{node_name}" }
         pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod| 
           if pod.dig?("spec", "nodeName") == "#{node_name}"
-            LOGGING.debug "pod: #{pod}"
+            Log.debug { "pod: #{pod}" }
             pod_name = pod.dig?("metadata", "name")
-            LOGGING.debug "PodName: #{pod_name}"
+            Log.debug { "PodName: #{pod_name}" }
             true
           else
-            LOGGING.debug "spec node_name: No Match: #{node_name}"
+            Log.debug { "spec node_name: No Match: #{node_name}" }
             false
           end
         end
@@ -285,28 +288,27 @@ module KubectlClient
     end
 
     def self.pods_by_resource(resource_yml) : K8sManifestList
-      LOGGING.info "pods_by_resource"
-      LOGGING.debug "pods_by_resource resource: #{resource_yml}"
+      Log.info { "pods_by_resource" }
+      Log.debug { "pods_by_resource resource: #{resource_yml}" }
       return [resource_yml] if resource_yml["kind"].as_s.downcase == "pod"
-      LOGGING.info "resource kind: #{resource_yml["kind"]}"
+      Log.info { "resource kind: #{resource_yml["kind"]}" }
       
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-      # pods = KubectlClient::Get.pods
-      LOGGING.info "resource kind: #{resource_yml["kind"]}"
-      name = resource_yml["metadata"]["name"]? 
-      LOGGING.info "pods_by_resource name: #{name}"
+      Log.info { "resource kind: #{resource_yml["kind"]}" }
+      name = resource_yml["metadata"]["name"]?
+      Log.info { "pods_by_resource name: #{name}" }
       if name
         labels = KubectlClient::Get.resource_spec_labels(resource_yml["kind"], name).as_h
-        LOGGING.info "pods_by_resource labels: #{labels}"
+        Log.info { "pods_by_resource labels: #{labels}" }
         KubectlClient::Get.pods_by_labels(pods, labels)
       else
-        LOGGING.info "pods_by_resource name is nil"
+        Log.info { "pods_by_resource name is nil" }
         [] of JSON::Any
       end
     end
 
     def self.pods_by_labels(pods_json : Array(JSON::Any), labels : Hash(String, JSON::Any))
-      LOGGING.info "pods_by_label labels: #{labels}"
+      Log.info { "pods_by_label labels: #{labels}" }
       pods_json.select do |pod|
         if labels == Hash(String, JSON::Any).new
           match = false
@@ -315,10 +317,9 @@ module KubectlClient
         end
         labels.map do |key, value|
           if pod.dig?("metadata", "labels", key) == value
-            # LOGGING.debug "pod: #{pod}"
             match = true
           else
-            LOGGING.debug "metadata labels: No Match #{value}"
+            Log.debug { "metadata labels: No Match #{value}" }
             match = false
           end
         end
@@ -327,13 +328,13 @@ module KubectlClient
     end
 
     def self.pods_by_label(pods_json : Array(JSON::Any), label_key, label_value)
-      LOGGING.info "pods_by_label"
+      Log.info { "pods_by_label" }
       pods_json.select do |pod|
         if pod.dig?("metadata", "labels", label_key) == label_value
-          LOGGING.debug "pod: #{pod}"
+          Log.debug { "pod: #{pod}" }
           true
         else
-          LOGGING.debug "metadata labels: No Match #{label_value}"
+          Log.debug { "metadata labels: No Match #{label_value}" }
           false
         end
       end 
