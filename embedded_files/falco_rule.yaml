@@ -2,7 +2,7 @@ customRules:
   rules-root.yaml: |-
     - rule: Detect root user running entrypoint
       desc: A shell was used as the entrypoint/exec point into a container with an attached terminal.
-      condition: (container and container_entrypoint and user.name=root)
+      condition: (syscall.type=container and user.name=root)
       output: >
         A container with a root user was started. (k8s_pod=%k8s.pod.name)
       priority: NOTICE
