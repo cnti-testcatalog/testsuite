@@ -275,6 +275,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    - name: Debug   
+      uses: mxschmitt/action-tmate@v3
     - name: Cleanup Tmp DIR
       run: |
         sudo rm -rf /tmp/*
@@ -315,8 +317,6 @@ jobs:
         docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
         #docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh"
         docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && sleep 100000000"
-    - name: Debug
-      uses: mxschmitt/action-tmate@v3
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
