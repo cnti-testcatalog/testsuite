@@ -13,6 +13,7 @@ task "install_litmus" do |_, args|
     KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/chaos_crds.yaml")
   else
     KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v2.0.0.yaml")
+    KubectlClient::Apply.file("https://raw.githubusercontent.com/litmuschaos/chaos-operator/master/deploy/chaos_crds.yaml")
   end
 end
 
