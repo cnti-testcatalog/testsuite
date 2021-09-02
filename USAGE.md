@@ -734,6 +734,12 @@ Sressing the disk with continuous and heavy IO can cause degradation in reads/ w
 
 ---
 
+#### :heavy_check_mark: Test if the CNF crashes when pod network duplication occurs
+
+```
+./cnf-testsuite pod_network_duplication
+```
+
 ### Platform Tests
 
 #### :heavy_check_mark: Run all platform tests
