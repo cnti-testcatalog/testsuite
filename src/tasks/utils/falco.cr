@@ -18,7 +18,7 @@ module Falco
       falco_pod_name = pod.dig("metadata", "name")
       resp = KubectlClient.logs(falco_pod_name)
       output = resp[:output]
-      match = output.to_s.match(/.*root.*\(k8s_pod=#{pod_name}\)/) 
+      match = output.to_s.match(/.*A container with a root proccess was detected.*\(k8s_pod=#{pod_name}\).*/)
       if match
         LOGGING.info "Falco Root Pod Data: #{match[0]}"
         matched = true
