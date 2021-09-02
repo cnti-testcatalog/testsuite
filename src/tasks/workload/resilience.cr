@@ -183,8 +183,9 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
       if test_passed
         if args.named["offline"]?
             LOGGING.info "install resilience offline mode"
-          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/experiment.yaml")
-          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/rbac.yaml")
+          AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/lat-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/lat-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/lat-rbac.yaml")
         else
           KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-latency/experiment.yaml")
           KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-latency/rbac.yaml")
@@ -232,8 +233,9 @@ task "pod_network_corruption", ["install_litmus"] do |_, args|
       if test_passed
         if args.named["offline"]?
             LOGGING.info "install resilience offline mode"
-          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/experiment.yaml")
-          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/rbac.yaml")
+          AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/corr-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/corr-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/corr-rbac.yaml")
         else
           KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-corruption/experiment.yaml")
           KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-corruption/rbac.yaml")
