@@ -262,6 +262,21 @@ jobs:
         key: lib-${{ hashFiles('**/shard.lock') }}
         restore-keys: |
           lib-
+    - name: Install Crystal
+      env:
+        CRYSTAL_VERSION: 1.0.0
+        CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download
+      run: |
+        wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga; 
+        sudo apt install -y --no-install-recommends \
+        git \
+        libssl-dev \
+        libxml2-dev \
+        libyaml-dev \
+        libgmp-dev \
+        libz-dev \
+        ./crystal.deb \
+        && sudo rm -rf /var/lib/apt/lists/*
     - name: Cache airgapped.tar.gz
       uses: actions/cache@v2
       env:
