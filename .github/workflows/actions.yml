@@ -242,11 +242,11 @@ jobs:
     env:
       OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
-    - name: Free up disk space
-      run: |
-        sudo rm -rf /usr/share/dotnet
-        sudo rm -rf /usr/local/lib/android
-        sudo rm -rf /opt/ghc
+    # - name: Free up disk space
+    #   run: |
+    #     sudo rm -rf /usr/share/dotnet
+    #     sudo rm -rf /usr/local/lib/android
+    #     sudo rm -rf /opt/ghc
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -302,6 +302,10 @@ jobs:
            echo "CoreDNS not found, Re-Running CNF Setup."
            LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=sample-cnfs/sample_coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
         fi
+        rm -rf /tmp/bin
+        rm -rf /tmp/images
+        rm -rf /tmp/bootstrap_images
+        rm -rf /tmp/repositories
     - name: Create Cluster & Run Tests.
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
