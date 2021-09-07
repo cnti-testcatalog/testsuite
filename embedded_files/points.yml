@@ -119,10 +119,10 @@
   
 # - name: chaos_network_loss 
 #   tags: resilience, dynamic, workload
-- name: chaos_cpu_hog
-  tags: resilience, dynamic, workload
-- name: chaos_container_kill
-  tags: resilience, dynamic, workload
+# - name: chaos_cpu_hog
+#   tags: resilience, dynamic, workload
+# - name: chaos_container_kill
+#   tags: resilience, dynamic, workload
 
 - name: volume_hostpath_not_found
   tags: state, dynamic, workload
