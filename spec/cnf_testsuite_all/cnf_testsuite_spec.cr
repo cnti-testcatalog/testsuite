@@ -39,8 +39,10 @@ describe CnfTestSuite do
       LOGGING.info response_s
       $?.success?.should be_false
       (/Found.*privileged containers.*coredns/ =~ response_s).should_not be_nil
+      response_s = `./cnf-testsuite privileged strict`
+      $?.success?.should be_false
     ensure
-      `./cnf-testsuite sample_privileged_cnf_non_whitelisted_cleanup`
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml`
     end
   end
 end
