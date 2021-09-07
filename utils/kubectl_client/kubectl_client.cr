@@ -727,21 +727,28 @@ module KubectlClient
     end
 
     def self.worker_nodes : Array(String)
-      resp = `kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
-      LOGGING.debug "kubectl get nodes: #{resp}"
-      resp.split("\n")
+      # Full command:
+      #
+      # kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'
+
+      cmd = "kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template=#{@@schedulable_nodes_template}'"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.worker_nodes")
+      result[:output].split("\n")
     end
+
     def self.schedulable_nodes : Array(String)
       resp = `kubectl get nodes -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
       LOGGING.debug "kubectl get nodes: #{resp}"
       resp.split("\n")
     end
+
     def self.pv : JSON::Any
       # TODO should this be all namespaces?
       resp = `kubectl get pv -o json`
       LOGGING.debug "kubectl get pv: #{resp}"
       JSON.parse(resp)
     end
+
     def self.pv_items_by_claim_name(claim_name)
       items = pv["items"].as_a.map do |x|
         begin
@@ -751,21 +758,23 @@ module KubectlClient
             nil
           end
         rescue ex
-          LOGGING.info ex.message
+          Log.info { ex.message }
           nil
         end
       end.compact
-      LOGGING.debug "pv items : #{items}"
+      Log.debug { "pv items : #{items}" }
       items
     end
+
     def self.container_runtime
       nodes["items"][0]["status"]["nodeInfo"]["containerRuntimeVersion"].as_s
     end
+
     def self.container_runtimes
       runtimes = nodes["items"].as_a.map do |x|
         x["status"]["nodeInfo"]["containerRuntimeVersion"].as_s
       end
-      LOGGING.info "runtimes: #{runtimes}"
+      Log.info { "runtimes: #{runtimes}" }
       runtimes.uniq
     end
 
