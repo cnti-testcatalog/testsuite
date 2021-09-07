@@ -47,7 +47,7 @@ describe "Security" do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml verbose wait_count=0`
       $?.success?.should be_true
-      response_s = `./cnf-testsuite privileged cnf-config=sample-cnfs/sample_privileged_cnf verbose`
+      response_s = `./cnf-testsuite privileged verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Found.*privileged containers.*coredns/ =~ response_s).should_not be_nil
