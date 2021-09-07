@@ -59,7 +59,7 @@ module CNFManager
                                             container_names: [{"name" =>  "", "rolling_update_test_tag" => ""}],
                                             white_list_container_names: [""]} )
         end
-        yield args, config
+        ret = yield args, config
         if args.raw.includes? "strict" 
           if CNFManager::Points.failed_required_tasks.size > 0
             stdout_failure "Test Suite failed in strict mode. Stopping executing."
@@ -68,6 +68,7 @@ module CNFManager
             exit 1
           end
         end
+        ret
       rescue ex
           # platform tests don't have a cnf-config
         # Set exception key/value in results
