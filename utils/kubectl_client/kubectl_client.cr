@@ -744,9 +744,14 @@ module KubectlClient
 
     def self.pv : JSON::Any
       # TODO should this be all namespaces?
-      resp = `kubectl get pv -o json`
-      LOGGING.debug "kubectl get pv: #{resp}"
-      JSON.parse(resp)
+      cmd = "kubectl get pv -o json"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.pv")
+      response = result[:output]
+
+      if result[:status].success? && !response.empty?
+        return JSON.parse(response)
+      end
+      JSON.parse(%({}))
     end
 
     def self.pv_items_by_claim_name(claim_name)
@@ -782,36 +787,38 @@ module KubectlClient
     # If *check_ready* is set to true, *pod_exists* validates that the pod exists and
     # has a ready status of true
     def self.pod_exists?(pod_name, check_ready=false, all_namespaces=false)
-      LOGGING.debug "pod_exists? pod_name: #{pod_name}"
+      Log.debug { "pod_exists? pod_name: #{pod_name}" }
       exists = pods(all_namespaces)["items"].as_a.any? do |x|
         (name_comparison = x["metadata"]["name"].as_s? =~ /#{pod_name}/
         (x["metadata"]["name"].as_s? =~ /#{pod_name}/) ||
           (x["metadata"]["generateName"]? && x["metadata"]["generateName"].as_s? =~ /#{pod_name}/)) &&
         (check_ready && (x["status"]["conditions"].as_a.find{|x| x["type"].as_s? == "Ready"} && x["status"].as_s? == "True") || check_ready==false)
       end
-      LOGGING.debug "pod exists: #{exists}"
+      Log.debug { "pod exists: #{exists}" }
       exists
     end
+
     def self.all_pod_statuses
       statuses = pods["items"].as_a.map do |x|
         x["status"]
       end
-      LOGGING.debug "pod statuses: #{statuses}"
+      Log.debug { "pod statuses: #{statuses}" }
       statuses
     end
+
     def self.all_pod_container_statuses
       statuses = all_pod_statuses.map do |x|
         x["containerStatuses"].as_a
       end
-      # LOGGING.info "pod container statuses: #{statuses}"
       statuses
     end
+
     def self.all_container_repo_digests
       imageids = all_pod_container_statuses.reduce([] of String) do |acc, x|
         # acc << "hi"
         acc | x.map{|i| i["imageID"].as_s}
       end
-      LOGGING.debug "pod container image ids: #{imageids}"
+      Log.debug { "pod container image ids: #{imageids}" }
       imageids
     end
   end
