@@ -141,11 +141,11 @@ jobs:
       matrix:
         tag: ["chaos_container_kill", "chaos_cpu_hog", "pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill"]
     steps:
-    - name: Free up disk space
-      run: |
-        sudo rm -rf /usr/share/dotnet
-        sudo rm -rf /usr/local/lib/android
-        sudo rm -rf /opt/ghc
+    # - name: Free up disk space
+    #   run: |
+    #     sudo rm -rf /usr/share/dotnet
+    #     sudo rm -rf /usr/local/lib/android
+    #     sudo rm -rf /opt/ghc
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -297,8 +297,6 @@ jobs:
            echo "CoreDNS not found, Re-Running CNF Setup."
            LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=sample-cnfs/sample_coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
         fi
-        # mv /tmp/airgapped.tar.gz $(pwd)
-        # sudo rm -rf /tmp/* || true
         sudo rm -rf /tmp/images || true
         sudo rm -rf /tmp/bin || true 
         sudo rm -rf /tmp/bootstrap_images || true
