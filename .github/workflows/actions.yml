@@ -242,14 +242,6 @@ jobs:
     env:
       OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
-    # - name: Maximize build space
-    #   uses: easimon/maximize-build-space@master
-    #   with:
-    #     root-reserve-mb: 512
-    #     swap-size-mb: 1024
-    #     remove-dotnet: 'true'
-    #     remove-android: 'true'
-        # remove-haskell: 'true'
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -283,8 +275,8 @@ jobs:
       env:
         cache-name: cache-airgapped-tar
       with:
-        path: $(pwd)/airgapped.tar.gz
-        key: airgapped-$GITHUB_JOB-rt-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr') }}
+        path: /tmp/airgapped.tar.gz
+        key: airgapped-$GITHUB_JOB-rto-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr') }}
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         shards install
@@ -305,15 +297,15 @@ jobs:
            echo "CoreDNS not found, Re-Running CNF Setup."
            LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=sample-cnfs/sample_coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
         fi
-        mv /tmp/airgapped.tar.gz $(pwd)
-        sudo rm -rf /tmp/* || true
+        # mv /tmp/airgapped.tar.gz $(pwd)
+        # sudo rm -rf /tmp/* || true
     - name: Create Cluster & Run Tests.
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         sed -i "/${{ matrix.tag }}/a \ \ required: true" embedded_files/points.yml
         docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
-        docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh && sed -i \"/${{ matrix.tag }}/a \ \ required: true\" ./points.yml && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr ${{ matrix.tag }} offline=true verbose"
+        docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v /tmp/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh && sed -i \"/${{ matrix.tag }}/a \ \ required: true\" ./points.yml && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr ${{ matrix.tag }} offline=true verbose"
         cat points.yml
 
   build:
