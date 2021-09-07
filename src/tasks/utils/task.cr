@@ -77,9 +77,9 @@ module CNFManager
         ex.backtrace.each do |x|
           LOGGING.error x
         end
+        update_yml("#{CNFManager::Points::Results.file}", "exit_code", "1")
         if args.raw.includes? "strict" 
           LOGGING.info "Strict mode exception.  Stopping executing."
-          update_yml("#{CNFManager::Points::Results.file}", "exit_code", "1")
           exit 1
         end
       end
