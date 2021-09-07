@@ -141,11 +141,6 @@ jobs:
       matrix:
         tag: ["chaos_container_kill", "chaos_cpu_hog", "pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill"]
     steps:
-    # - name: Free up disk space
-    #   run: |
-    #     sudo rm -rf /usr/share/dotnet
-    #     sudo rm -rf /usr/local/lib/android
-    #     sudo rm -rf /opt/ghc
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -295,7 +290,7 @@ jobs:
            echo "CoreDNS found, CNF Setup Ran."
         else
            echo "CoreDNS not found, Re-Running CNF Setup."
-           LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=sample-cnfs/sample_coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
+           LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
         fi
         sudo rm -rf /tmp/images || true
         sudo rm -rf /tmp/bin || true 
@@ -449,7 +444,7 @@ jobs:
            echo "CoreDNS found, CNF Setup Ran."
         else
            echo "CoreDNS not found, Re-Running CNF Setup."
-           LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=sample-cnfs/sample_coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
+           LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
         fi
     - name: Create Cluster & Run Tests.
       env:
