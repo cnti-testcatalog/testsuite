@@ -747,11 +747,7 @@ module KubectlClient
       cmd = "kubectl get pv -o json"
       result = ShellCmd.run(cmd, "KubectlClient::Get.pv")
       response = result[:output]
-
-      if result[:status].success? && !response.empty?
-        return JSON.parse(response)
-      end
-      JSON.parse(%({}))
+      return JSON.parse(response)
     end
 
     def self.pv_items_by_claim_name(claim_name)
