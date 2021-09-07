@@ -242,14 +242,14 @@ jobs:
     env:
       OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
-    - name: Maximize build space
-      uses: easimon/maximize-build-space@master
-      with:
-        root-reserve-mb: 512
-        swap-size-mb: 1024
-        remove-dotnet: 'true'
-        remove-android: 'true'
-        remove-haskell: 'true'
+    # - name: Maximize build space
+    #   uses: easimon/maximize-build-space@master
+    #   with:
+    #     root-reserve-mb: 512
+    #     swap-size-mb: 1024
+    #     remove-dotnet: 'true'
+    #     remove-android: 'true'
+        # remove-haskell: 'true'
     - name: Checkout code
       uses: actions/checkout@v2
       with:
