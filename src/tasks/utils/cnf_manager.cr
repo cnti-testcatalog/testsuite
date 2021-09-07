@@ -908,6 +908,9 @@ end
       LOGGING.info "cnf_manager generate"
       `rm #{output_file}`
       FileUtils.mkdir_p("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
+
+      # todo put all of these setup elements into a configuration file.
+
       [{input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
         image: "bitnami/kubectl:latest"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/chaos-mesh.tar", 
@@ -954,6 +957,7 @@ end
       url = "https://github.com/vmware-tanzu/sonobuoy/releases/download/v#{SONOBUOY_K8S_VERSION}/sonobuoy_#{SONOBUOY_K8S_VERSION}_#{SONOBUOY_OS}_amd64.tar.gz"
       TarClient.tar_file_by_url(url, output_file, "sonobuoy.tar.gz")
       Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
+      # todo create helm chart configuration yaml that includes all chart elements for specs
       AirGap.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
       AirGap.generate(output_file, append=true)
     end
