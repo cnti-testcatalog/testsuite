@@ -276,7 +276,7 @@ jobs:
         cache-name: cache-airgapped-tar
       with:
         path: /tmp/airgapped.tar.gz
-        key: airgapped-$GITHUB_JOB-rto-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr') }}
+        key: airgapped-$GITHUB_JOB-roo-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr') }}
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         shards install
@@ -299,6 +299,10 @@ jobs:
         fi
         # mv /tmp/airgapped.tar.gz $(pwd)
         # sudo rm -rf /tmp/* || true
+        sudo rm -rf /tmp/images || true
+        sudo rm -rf /tmp/bin || true 
+        sudo rm -rf /tmp/bootstrap_images || true
+        sudo rm -rf /tmp/repositories || true
     - name: Create Cluster & Run Tests.
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
