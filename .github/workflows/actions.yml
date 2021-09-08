@@ -271,7 +271,7 @@ jobs:
         cache-name: cache-airgapped-tar
       with:
         path: /tmp/airgapped.tar.gz
-        key: airgapped-$GITHUB_JOB-roo-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr') }}
+        key: airgapped-$GITHUB_JOB-reset122-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr') }}
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         shards install
