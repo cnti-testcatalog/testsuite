@@ -222,7 +222,6 @@ module AirGap
     File.write("#{name}-manifest.yml", template)
     KubectlClient::Apply.file("#{name}-manifest.yml")
     LOGGING.info KubectlClient::Get.resource_wait_for_install("DaemonSet", name)
-    LOGGING.info `kubectl get pods`
   end
 
   # Make an image all all of the nodes that has tar access
@@ -246,6 +245,12 @@ def self.cri_tools_template
             image: '{{ image }}'
             command: ["/bin/sh"]
             args: ["-c", "sleep infinity"]
+            readinessProbe:
+              exec:
+                command:
+                - sleep 5
+              initialDelaySeconds: 5
+              periodSeconds: 5
             volumeMounts:
             - mountPath: /run/containerd/containerd.sock
               name: containerd-volume
