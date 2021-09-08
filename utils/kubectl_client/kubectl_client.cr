@@ -737,9 +737,13 @@ module KubectlClient
     end
 
     def self.schedulable_nodes : Array(String)
-      resp = `kubectl get nodes -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
-      LOGGING.debug "kubectl get nodes: #{resp}"
-      resp.split("\n")
+      # Full command:
+      #
+      # kubectl get nodes -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'
+
+      cmd = "kubectl get nodes -o 'go-template=#{@@schedulable_nodes_template}'"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.schedulable_nodes")
+      result[:output].split("\n")
     end
 
     def self.pv : JSON::Any
@@ -819,24 +823,4 @@ module KubectlClient
     end
   end
 
-  LOGGING = LogginGenerator.new
-  class LogginGenerator
-    macro method_missing(call)
-      if {{ call.name.stringify }} == "debug"
-        Log.debug {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "info"
-        Log.info {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "warn"
-        Log.warn {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "error"
-        Log.error {{{call.args[0]}}}
-      end
-      if {{ call.name.stringify }} == "fatal"
-        Log.fatal {{{call.args[0]}}}
-      end
-    end
-  end
 end
