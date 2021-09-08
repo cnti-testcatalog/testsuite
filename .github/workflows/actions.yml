@@ -296,6 +296,8 @@ jobs:
         sudo rm -rf /tmp/bin || true 
         sudo rm -rf /tmp/bootstrap_images || true
         sudo rm -rf /tmp/repositories || true
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Create Cluster & Run Tests.
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
