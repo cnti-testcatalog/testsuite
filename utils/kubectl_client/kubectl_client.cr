@@ -14,6 +14,7 @@ module KubectlClient
                         daemonset: "DaemonSet"}
 
   # https://www.capitalone.com/tech/cloud/container-runtime/
+  # todo add podman
   OCI_RUNTIME_REGEX = /containerd|docker|runc|railcar|crun|rkt|gviso|nabla|runv|clearcontainers|kata|cri-o/i
 
   module ShellCmd
@@ -26,7 +27,7 @@ module KubectlClient
         error: stderr = IO::Memory.new
       )
       Log.debug { "#{log_prefix} output: #{output.to_s}" }
-      Log.debug { "#{log_prefix} stderr: #{stderr.to_s}" }
+      Log.info { "#{log_prefix} stderr: #{stderr.to_s}" }
       {status: status, output: output.to_s, error: stderr.to_s}
     end
   end
