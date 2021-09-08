@@ -221,7 +221,8 @@ module AirGap
     template = Crinja.render(cri_tools_template, { "image" => image, "name" => name})
     File.write("#{name}-manifest.yml", template)
     KubectlClient::Apply.file("#{name}-manifest.yml")
-    KubectlClient::Get.resource_wait_for_install("DaemonSet", name)
+    LOGGING.info KubectlClient::Get.resource_wait_for_install("DaemonSet", name)
+    LOGGING.info `kubectl get pods`
   end
 
   # Make an image all all of the nodes that has tar access
