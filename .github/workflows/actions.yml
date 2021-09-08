@@ -103,8 +103,6 @@ jobs:
         PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
         PROTECTED_IMAGE_REPO: ${{ secrets.PROTECTED_IMAGE_REPO }}
       run: |
-        echo "export DOCKERHUB_USERNAME=$DOCKERHUB_USERNAME" >> test.file
-        echo "export DOCKERHUB_PASSWORD=$DOCKERHUB_PASSWORD" >> test.file
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         until [[ $(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
@@ -124,9 +122,7 @@ jobs:
         echo "RUNNER RATE LIMIT: $ANONYMOUS_RUNNER_RATE_LIMIT"
         echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
         echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-        # LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
+        LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
