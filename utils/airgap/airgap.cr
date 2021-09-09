@@ -117,8 +117,10 @@ module AirGap
       raise "No images with Tar or Shell found. Please deploy a Pod with Tar or Shell to your cluster."
     end
     resp = AirGap.create_pod_by_image(images[0], "cri-tools")
+
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+    KubectlClient::Get.wait_for_critools
 
     cri_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
     if no_tar
@@ -245,12 +247,6 @@ def self.cri_tools_template
             image: '{{ image }}'
             command: ["/bin/sh"]
             args: ["-c", "sleep infinity"]
-            readinessProbe:
-              exec:
-                command:
-                - sleep 5
-              initialDelaySeconds: 5
-              periodSeconds: 5
             volumeMounts:
             - mountPath: /run/containerd/containerd.sock
               name: containerd-volume

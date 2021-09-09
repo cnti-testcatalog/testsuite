@@ -453,6 +453,28 @@ module KubectlClient
       resource_wait_for_install("deployment", deployment_name, wait_count, namespace)
     end
 
+    def self.wait_for_critools(wait_count : Int32 = 10)
+      pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+      pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+      ready = false
+      timeout = wait_count
+      `touch /tmp/testfile`
+      pods.map do |pod| 
+        until (ready == true || timeout <= 0) 
+          sh = KubectlClient.cp("/tmp/testfile #{pod.dig?("metadata", "name")}:/tmp/test")
+          if sh[:status].success?
+            ready = true
+          end
+          sleep 1
+          timeout = timeout - 1 
+          LOGGING.info "Waitting for CRI-Tools Pod"
+        end
+        if timeout <= 0
+          break
+        end
+      end
+    end
+
     def self.resource_ready?(kind, namespace, resource_name) : Bool
       case kind.downcase
       when "pod"
