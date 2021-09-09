@@ -59,14 +59,28 @@ module CNFManager
                                             container_names: [{"name" =>  "", "rolling_update_test_tag" => ""}],
                                             white_list_container_names: [""]} )
         end
-        yield args, config
+        ret = yield args, config
+        if args.raw.includes? "strict" 
+          if CNFManager::Points.failed_required_tasks.size > 0
+            stdout_failure "Test Suite failed in strict mode. Stopping executing."
+            stdout_failure "Failed required tasks: #{CNFManager::Points.failed_required_tasks.inspect}"
+            update_yml("#{CNFManager::Points::Results.file}", "exit_code", "1")
+            exit 1
+          end
+        end
+        ret
       rescue ex
+          # platform tests don't have a cnf-config
         # Set exception key/value in results
         # file to -1
-        update_yml("#{CNFManager::Points::Results.file}", "exit_code", "1")
         LOGGING.error ex.message
         ex.backtrace.each do |x|
           LOGGING.error x
+        end
+        update_yml("#{CNFManager::Points::Results.file}", "exit_code", "1")
+        if args.raw.includes? "strict" 
+          LOGGING.info "Strict mode exception.  Stopping executing."
+          exit 1
         end
       end
     end

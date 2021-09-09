@@ -117,8 +117,10 @@ module AirGap
       raise "No images with Tar or Shell found. Please deploy a Pod with Tar or Shell to your cluster."
     end
     resp = AirGap.create_pod_by_image(images[0], "cri-tools")
+
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+    KubectlClient::Get.wait_for_critools
 
     cri_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
     if no_tar
@@ -221,7 +223,7 @@ module AirGap
     template = Crinja.render(cri_tools_template, { "image" => image, "name" => name})
     File.write("#{name}-manifest.yml", template)
     KubectlClient::Apply.file("#{name}-manifest.yml")
-    KubectlClient::Get.resource_wait_for_install("DaemonSet", name)
+    LOGGING.info KubectlClient::Get.resource_wait_for_install("DaemonSet", name)
   end
 
   # Make an image all all of the nodes that has tar access
