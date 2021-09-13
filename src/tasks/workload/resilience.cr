@@ -14,53 +14,53 @@ desc "The CNF test suite checks to see if the CNFs are resilient to failures."
   stdout_score("resilience")
 end
 
-desc "Does the CNF crash when network loss occurs"
-task "chaos_network_loss", ["install_chaosmesh"] do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "chaos_network_loss" } if check_verbose(args)
-    Log.debug { "cnf_config: #{config}" }
-    emoji_chaos_network_loss="📶☠️"
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-
-      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? &&
-          KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
-        test_passed = true
-      else
-        puts "No resource label found for container kill test for resource: #{resource}".colorize(:red)
-        test_passed = false
-      end
-
-      if test_passed
-        template = Crinja.render(network_chaos_template, { "labels" => KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h })
-        File.write("#{destination_cnf_dir}/chaos_network_loss.yml", template)
-        run_chaos = KubectlClient::Apply.file("#{destination_cnf_dir}/chaos_network_loss.yml")
-        Log.for("verbose").debug { "#{run_chaos[:output]}" } if check_verbose(args)
-        if ChaosMeshSetup.wait_for_test("NetworkChaos", "network-loss")
-          Log.info { "Wait Done" }
-          unless KubectlClient::Get.resource_desired_is_available?(resource["kind"].as_s, resource["name"].as_s)
-            test_passed = false
-            puts "Replicas did not return desired count after network chaos test for resource: #{resource["name"]}".colorize(:red)
-          end
-        else
-          # TODO Change this to an exception (points = 0)
-          # Add SKIPPED to points.yml and set to points = 0
-          # e.g. upsert_exception_task
-          test_passed = false
-          puts "Chaosmesh failed to finish for resource: #{resource["name"]}".colorize(:red)
-        end
-      end
-      test_passed
-    end
-    if task_response
-      resp = upsert_passed_task("chaos_network_loss","✔️  PASSED: Replicas available match desired count after network chaos test #{emoji_chaos_network_loss}")
-    else
-      resp = upsert_failed_task("chaos_network_loss","✖️  FAILED: Replicas did not return desired count after network chaos test #{emoji_chaos_network_loss}")
-    end
-  ensure
-    KubectlClient::Delete.file("#{destination_cnf_dir}/chaos_network_loss.yml")
-  end
-end
+#desc "Does the CNF crash when network loss occurs"
+#task "chaos_network_loss", ["install_chaosmesh"] do |_, args|
+#  CNFManager::Task.task_runner(args) do |args, config|
+#    Log.for("verbose").info { "chaos_network_loss" } if check_verbose(args)
+#    Log.debug { "cnf_config: #{config}" }
+#    emoji_chaos_network_loss="📶☠️"
+#    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+#    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+#
+#      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? &&
+#          KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+#        test_passed = true
+#      else
+#        puts "No resource label found for container kill test for resource: #{resource}".colorize(:red)
+#        test_passed = false
+#      end
+#
+#      if test_passed
+#        template = Crinja.render(network_chaos_template, { "labels" => KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h })
+#        File.write("#{destination_cnf_dir}/chaos_network_loss.yml", template)
+#        run_chaos = KubectlClient::Apply.file("#{destination_cnf_dir}/chaos_network_loss.yml")
+#        Log.for("verbose").debug { "#{run_chaos[:output]}" } if check_verbose(args)
+#        if ChaosMeshSetup.wait_for_test("NetworkChaos", "network-loss")
+#          Log.info { "Wait Done" }
+#          unless KubectlClient::Get.resource_desired_is_available?(resource["kind"].as_s, resource["name"].as_s)
+#            test_passed = false
+#            puts "Replicas did not return desired count after network chaos test for resource: #{resource["name"]}".colorize(:red)
+#          end
+#        else
+#          # TODO Change this to an exception (points = 0)
+#          # Add SKIPPED to points.yml and set to points = 0
+#          # e.g. upsert_exception_task
+#          test_passed = false
+#          puts "Chaosmesh failed to finish for resource: #{resource["name"]}".colorize(:red)
+#        end
+#      end
+#      test_passed
+#    end
+#    if task_response
+#      resp = upsert_passed_task("chaos_network_loss","✔️  PASSED: Replicas available match desired count after network chaos test #{emoji_chaos_network_loss}")
+#    else
+#      resp = upsert_failed_task("chaos_network_loss","✖️  FAILED: Replicas did not return desired count after network chaos test #{emoji_chaos_network_loss}")
+#    end
+#  ensure
+#    KubectlClient::Delete.file("#{destination_cnf_dir}/chaos_network_loss.yml")
+#  end
+#end
 
 # desc "Does the CNF crash when CPU usage is high"
 # task "chaos_cpu_hog", ["install_chaosmesh"] do |_, args|
@@ -182,8 +182,8 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
       if test_passed
         if args.named["offline"]?
           Log.info { "install resilience offline mode" }
-          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/experiment.yaml")
-          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/rbac.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/lat-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/lat-rbac.yaml")
         else
           KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-network-latency/experiment.yaml")
           KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-network-latency/rbac.yaml")
