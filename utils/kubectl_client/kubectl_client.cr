@@ -14,6 +14,7 @@ module KubectlClient
                         daemonset: "DaemonSet"}
 
   # https://www.capitalone.com/tech/cloud/container-runtime/
+  # todo add podman
   OCI_RUNTIME_REGEX = /containerd|docker|runc|railcar|crun|rkt|gviso|nabla|runv|clearcontainers|kata|cri-o/i
 
   module ShellCmd
@@ -26,7 +27,7 @@ module KubectlClient
         error: stderr = IO::Memory.new
       )
       Log.debug { "#{log_prefix} output: #{output.to_s}" }
-      Log.debug { "#{log_prefix} stderr: #{stderr.to_s}" }
+      Log.info { "#{log_prefix} stderr: #{stderr.to_s}" }
       {status: status, output: output.to_s, error: stderr.to_s}
     end
   end
@@ -450,6 +451,28 @@ module KubectlClient
 
     def self.wait_for_install(deployment_name, wait_count : Int32 = 180, namespace="default")
       resource_wait_for_install("deployment", deployment_name, wait_count, namespace)
+    end
+
+    def self.wait_for_critools(wait_count : Int32 = 10)
+      pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+      pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+      ready = false
+      timeout = wait_count
+      `touch /tmp/testfile`
+      pods.map do |pod| 
+        until (ready == true || timeout <= 0) 
+          sh = KubectlClient.cp("/tmp/testfile #{pod.dig?("metadata", "name")}:/tmp/test")
+          if sh[:status].success?
+            ready = true
+          end
+          sleep 1
+          timeout = timeout - 1 
+          LOGGING.info "Waitting for CRI-Tools Pod"
+        end
+        if timeout <= 0
+          break
+        end
+      end
     end
 
     def self.resource_ready?(kind, namespace, resource_name) : Bool

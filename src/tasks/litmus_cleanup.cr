@@ -15,9 +15,9 @@ task "uninstall_litmus" do |_, args|
     )
     if args.named["offline"]?
       Log.info { "install litmus offline mode" }
-      KubectlClient::Delete.file("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v1.13.8.yaml")
+      KubectlClient::Delete.file("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v2.0.0.yaml")
     else
-      KubectlClient::Delete.file("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.8.yaml")
+      KubectlClient::Delete.file("https://litmuschaos.github.io/litmus/litmus-operator-v2.0.0.yaml")
     end
     Log.info { "#{stdout}" if check_verbose(args) }
     Log.info { "#{stderr}" if check_verbose(args) }
