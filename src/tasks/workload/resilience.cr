@@ -529,27 +529,58 @@ def chaos_template_pod_network_latency
               # If not provided it will take the first container of target pod
               - name: TARGET_CONTAINER
                 value: ''
-
               - name: NETWORK_INTERFACE
                 value: 'eth0'
-
               - name: NETWORK_LATENCY
                 value: '60000'
-
               - name: TOTAL_CHAOS_DURATION
                 value: '{{ total_chaos_duration }}'
-
               # provide the name of container runtime
               # it supports docker, containerd, crio
               # default to docker
               - name: CONTAINER_RUNTIME
                 value: 'containerd'
-
               # provide the socket file path
               # applicable only for containerd and crio runtime
               - name: SOCKET_PATH
                 value: '/run/containerd/containerd.sock'
+  TEMPLATE
+end
 
+def chaos_template_pod_network_corruption
+  <<-TEMPLATE
+  apiVersion: litmuschaos.io/v1alpha1
+  kind: ChaosEngine
+  metadata:
+    name: {{ test_name }}
+    namespace: default
+  spec:
+    jobCleanUpPolicy: 'delete'
+    annotationCheck: 'true'
+    engineState: 'active'
+    appinfo:
+      appns: 'default'
+      applabel: '{{ deployment_label}}={{ deployment_label_value }}'
+      appkind: 'deployment'
+    chaosServiceAccount: {{ chaos_experiment_name }}-sa
+    experiments:
+      - name: {{ chaos_experiment_name }}
+        spec:
+          components:
+            env:
+              # If not provided it will take the first container of target pod
+              - name: TARGET_CONTAINER
+                value: ''
+              - name: NETWORK_INTERFACE
+                value: 'eth0'
+              - name: NETWORK_PACKET_CORRUPTION_PERCENTAGE
+                value: '100' #in PERCENTAGE
+              - name: TOTAL_CHAOS_DURATION
+                value: '{{ total_chaos_duration }}'
+              - name: CONTAINER_RUNTIME
+                value: 'containerd'
+              - name: SOCKET_PATH
+                value: '/run/containerd/containerd.sock'
   TEMPLATE
 end
 
@@ -581,10 +612,8 @@ def chaos_template_disk_fill
                 
               - name: TARGET_CONTAINER
                 value: '' 
-
               - name: FILL_PERCENTAGE
                 value: ''
-
               - name: CONTAINER_PATH
                 value: '/var/lib/containerd/io.containerd.grpc.v1.cri/containers/'
                             
@@ -620,10 +649,8 @@ def chaos_template_pod_delete
                 
               - name: TARGET_PODS
                 value: '{{ target_pod_name }}'
-
               - name: FORCE
                 value: 'false'
-
   TEMPLATE
 end
 
@@ -655,16 +682,13 @@ def chaos_template_pod_memory_hog
   
               - name: TOTAL_CHAOS_DURATION
                 value: '{{ total_chaos_duration }}'
-
               - name: TARGET_PODS
                 value: '{{ target_pod_name }}'             
-
               # provide the name of container runtime
               # it supports docker, containerd, crio
               # default to docker
               - name: CONTAINER_RUNTIME
                 value: 'containerd'
-
               # provide the socket file path
               # applicable only for containerd and crio runtime
               - name: SOCKET_PATH
