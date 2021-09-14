@@ -483,8 +483,12 @@ module KubectlClient
         return pod_ready == "true"
       when "replicaset", "deployment", "statefulset"
         desired = replica_count(kind, namespace, resource_name, "{.status.replicas}")
+        unavailable = replica_count(kind, namespace, resource_name, "{.status.unavailableReplicas}")
         current = replica_count(kind, namespace, resource_name, "{.status.readyReplicas}")
-        Log.info { "current_replicas: #{current}, desired_replicas: #{desired}" }
+        Log.info { "current_replicas: #{current}, desired_replicas: #{desired}, unavailable_replicas: #{unavailable}"  }
+        if desired == 0 && unavailable >= 1
+          return false
+        end
         return current == desired
       when "daemonset"
         desired = replica_count(kind, namespace, resource_name, "{.status.desiredNumberScheduled}")
