@@ -182,6 +182,7 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
       if test_passed
         if args.named["offline"]?
           Log.info { "install resilience offline mode" }
+          AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/lat-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/lat-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/lat-rbac.yaml")
         else
