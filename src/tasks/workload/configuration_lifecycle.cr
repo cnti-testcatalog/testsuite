@@ -332,9 +332,9 @@ task "hostport_not_used" do |_, args|
       test_passed
     end
     if task_response
-      upsert_passed_task("hostport_not_used", "✔️  PASSED: NodePort is not used")
+      upsert_passed_task("hostport_not_used", "✔️  PASSED: HostPort is not used")
     else
-      upsert_failed_task("hostport_not_used", "✖️  FAILED: NodePort is being used")
+      upsert_failed_task("hostport_not_used", "✖️  FAILED: HostPort is being used")
     end
   end
 end
