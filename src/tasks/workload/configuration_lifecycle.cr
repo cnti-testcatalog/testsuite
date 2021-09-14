@@ -299,32 +299,37 @@ end
 
 desc "Does the CNF use HostPort"
 task "hostport_not_used" do |_, args|
-  # TODO: test hostport instead of nodeport
-  # https://github.com/cncf/cnf-testsuite/issues/164#issuecomment-904890977
   CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "hostport_not_used" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     release_name = config.cnf_config[:release_name]
     service_name  = config.cnf_config[:service_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false, check_service: true) do |resource, container, initialized|
       LOGGING.info "hostport_not_used resource: #{resource}"
       test_passed=true
-      if resource["kind"].as_s.downcase == "service"
-        LOGGING.info "resource kind: #{resource}"
-        service = KubectlClient::Get.resource(resource[:kind], resource[:name])
-        LOGGING.debug "service: #{service}"
-        service_type = service.dig?("spec", "type")
-        LOGGING.info "service_type: #{service_type}"
-        VERBOSE_LOGGING.debug service_type if check_verbose(args)
-        if service_type == "NodePort"
-          #TODO make a service selector and display the related resources
-          # that are tied to this service
-          puts "resource service: #{resource} has a NodePort that is being used".colorize(:red)
-          test_passed=false
-        end
-        test_passed
+      LOGGING.info "resource kind: #{resource}"
+      k8s_resource = KubectlClient::Get.resource(resource[:kind], resource[:name])
+      LOGGING.debug "resource: #{k8s_resource}"
+
+      # per examaple https://github.com/cncf/cnf-testsuite/issues/164#issuecomment-904890977
+      containers = k8s_resource.dig?("spec", "containers")
+      LOGGING.debug "service_type: #{containers}"
+
+      containers && containers.as_a.each do |single_container|
+        ports = single_container.dig?("ports")
+
+        ports && ports.as_a.each do |single_port|
+          hostport = single_container.dig?("hostPort")
+          if hostport
+            puts "resource service: #{resource} has a HostPort that is being used".colorize(:red)
+            test_passed=false
+          end
+
+        end 
       end
+      test_passed
     end
     if task_response
       upsert_passed_task("hostport_not_used", "✔️  PASSED: NodePort is not used")
