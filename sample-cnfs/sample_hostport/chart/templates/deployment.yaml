@@ -58,7 +58,8 @@ spec:
               containerPort: 8843
               protocol: TCP
               {{ end }}
-            - name: the-governer-told-me-to-make-this
+            - name: by-gov-decree
+              containerPort: 8080
               hostPort: 8080
           {{- if not .Values.runAsRoot }}
           securityContext:
