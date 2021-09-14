@@ -418,6 +418,12 @@ crystal src/cnf-testsuite.cr external_retry
 ./cnf-testsuite nodeport_not_used
 ```
 
+#### :heavy_check_mark: To test if there are host ports used in the service configuration
+
+```
+./cnf-testsuite hostport_not_used
+```
+
 #### :heavy_check_mark: To test if there are any (non-declarative) hardcoded IP addresses or subnet masks in the K8s runtime configuration
 
 ```

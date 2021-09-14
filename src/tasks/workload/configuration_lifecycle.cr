@@ -9,7 +9,7 @@ require "../utils/utils.cr"
 rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
-task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used", "immutable_configmap"].concat(rolling_version_change_test_names) do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used", "immutable_configmap"].concat(rolling_version_change_test_names) do |_, args|
   stdout_score("configuration_lifecycle")
 end
 
@@ -293,6 +293,43 @@ task "nodeport_not_used" do |_, args|
       upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
     else
       upsert_failed_task("nodeport_not_used", "✖️  FAILED: NodePort is being used")
+    end
+  end
+end
+
+desc "Does the CNF use HostPort"
+task "hostport_not_used" do |_, args|
+  # TODO: test hostport instead of nodeport
+  # https://github.com/cncf/cnf-testsuite/issues/164#issuecomment-904890977
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "hostport_not_used" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    release_name = config.cnf_config[:release_name]
+    service_name  = config.cnf_config[:service_name]
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    task_response = CNFManager.workload_resource_test(args, config, check_containers:false, check_service: true) do |resource, container, initialized|
+      LOGGING.info "hostport_not_used resource: #{resource}"
+      test_passed=true
+      if resource["kind"].as_s.downcase == "service"
+        LOGGING.info "resource kind: #{resource}"
+        service = KubectlClient::Get.resource(resource[:kind], resource[:name])
+        LOGGING.debug "service: #{service}"
+        service_type = service.dig?("spec", "type")
+        LOGGING.info "service_type: #{service_type}"
+        VERBOSE_LOGGING.debug service_type if check_verbose(args)
+        if service_type == "NodePort"
+          #TODO make a service selector and display the related resources
+          # that are tied to this service
+          puts "resource service: #{resource} has a NodePort that is being used".colorize(:red)
+          test_passed=false
+        end
+        test_passed
+      end
+    end
+    if task_response
+      upsert_passed_task("hostport_not_used", "✔️  PASSED: NodePort is not used")
+    else
+      upsert_failed_task("hostport_not_used", "✖️  FAILED: NodePort is being used")
     end
   end
 end
