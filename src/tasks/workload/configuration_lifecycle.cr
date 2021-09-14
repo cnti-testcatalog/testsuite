@@ -314,14 +314,19 @@ task "hostport_not_used" do |_, args|
       LOGGING.debug "resource: #{k8s_resource}"
 
       # per examaple https://github.com/cncf/cnf-testsuite/issues/164#issuecomment-904890977
-      containers = k8s_resource.dig?("spec", "containers")
-      LOGGING.debug "service_type: #{containers}"
+      containers = k8s_resource.dig?("spec", "template", "spec", "containers")
+      LOGGING.debug "containers: #{containers}"
 
       containers && containers.as_a.each do |single_container|
         ports = single_container.dig?("ports")
 
         ports && ports.as_a.each do |single_port|
-          hostport = single_container.dig?("hostPort")
+          LOGGING.debug "single_port: #{single_port}"
+          
+          hostport = single_port.dig?("hostPort")
+
+          LOGGING.debug "DAS hostPort: #{hostport}"
+
           if hostport
             puts "resource service: #{resource} has a HostPort that is being used".colorize(:red)
             test_passed=false
