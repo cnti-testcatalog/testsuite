@@ -207,7 +207,7 @@ jobs:
         ./crystal.deb \
         && sudo rm -rf /var/lib/apt/lists/*
     - name: Setup CNF-Conformance
-      env:
+      #env:
         # PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         # PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
