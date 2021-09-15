@@ -32,10 +32,6 @@ VIPS=(
 RUNNER_COUNT=0
 for node in "${!RUNNERS[@]}"; do
     ssh root@${RUNNERS[$node]} "docker pull conformance/github-runner:v1.0.0"
-#    ssh root@${RUNNERS[$node]} "wget https://snapshot.debian.org/archive/debian/20201024T150941Z/pool/main/l/linux/linux-headers-4.19.0-12-common_4.19.152-1_all.deb"
-#    ssh root@${RUNNERS[$node]} "wget https://snapshot.debian.org/archive/debian/20201024T150941Z/pool/main/l/linux/linux-headers-4.19.0-12-amd64_4.19.152-1_amd64.deb"
-#    ssh root@${RUNNERS[$node]} "apt-get install -f ./linux-headers-4.19.0-12-common_4.19.152-1_all.deb -y"
-#    ssh root@${RUNNERS[$node]} "apt-get install -f ./linux-headers-4.19.0-12-amd64_4.19.152-1_amd64.deb -y"
     RUNNERS_PER_NODE=16
     until [ $RUNNERS_PER_NODE -eq 0 ]; do
         ssh root@${RUNNERS[$node]} "docker run -d --network host --restart always --name github-runner$RUNNER_COUNT -e REPO_URL="https://github.com/cncf/cnf-testsuite" -e RUNNER_NAME="runner$RUNNER_COUNT" -e RUNNER_TOKEN="$TOKEN" -e RUNNER_WORKDIR="/github-runner-cnf-testsuite" -e RUNNER_GROUP="testsuite" -e LABELS="v1.0.0" -v /var/run/docker.sock:/var/run/docker.sock -v /runner-tmp/runner$RUNNER_COUNT:/tmp -v /shared:/shared conformance/github-runner:v1.0.0"
@@ -44,6 +40,7 @@ for node in "${!RUNNERS[@]}"; do
     done
     ssh root@${RUNNERS[$node]} "docker network rm kind"
     ssh root@${RUNNERS[$node]} docker network create --driver bridge --subnet=${VIPS[$node]} --opt "com.docker.network.bridge.name"="kindbridge" --opt "com.docker.network.bridge.enable_ip_masquerade"="false" kind
+    ssh root@${RUNNERS[$node]} sudo chmod 777 /runner-tmp -R
     # ssh root@${RUNNERS[$node]} "sudo apt update && sudo apt install -y bridge-utils"
    # ssh root@${RUNNERS[$node]} "sudo brctl addif kindbridge bond0"
 done
