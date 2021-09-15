@@ -217,7 +217,7 @@ jobs:
         shards install  
         echo "RUNNER: $RUNNER_NAME"
     - name: Run Crystal Spec
-      env:
+      # env:
         # GITHUB_USER: ${{ secrets.GH_USER }}
         # GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         # DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
