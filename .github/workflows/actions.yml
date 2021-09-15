@@ -82,11 +82,7 @@ jobs:
         restore-keys: |
           lib-
     - name: Setup CNF-Conformance
-      # env:
-      #   PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      #   PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
-        # docker login -u $PROTECTED_DOCKERHUB_USERNAME -p $PROTECTED_DOCKERHUB_PASSWORD
         helm repo add stable https://cncf.gitlab.io/stable
         git fetch --all --tags --force
         shards install  
@@ -100,12 +96,6 @@ jobs:
         DOCKERHUB_PASSWORDS: ${{ secrets.DOCKERHUB_PASSWORDS }}
         DOCKERHUB_EMAIL: ${{ secrets.DOCKERHUB_EMAIL }}
         IMAGE_REPO: ${{ secrets.IMAGE_REPO }}
-        # DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        # DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-        # PROTECTED_DOCKERHUB_EMAIL: ${{ secrets.PROTECTED_DOCKERHUB_EMAIL }}
-        # PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        # PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-        # PROTECTED_IMAGE_REPO: ${{ secrets.PROTECTED_IMAGE_REPO }}
       run: |
         USERNAME_ARRAY=($DOCKERHUB_USERNAMES)
         PASSWORD_ARRAY=($DOCKERHUB_PASSWORDS)
@@ -121,6 +111,8 @@ jobs:
         export PROTECTED_DOCKERHUB_PASSWORD=$DOCKERHUB_PASSWORD
         export PROTECTED_DOCKERHUB_EMAIL=${EMAIL_ARRAY[$RANDOMIZER]}
         export PROTECTED_IMAGE_REPO=${IMAGE_ARRAY[$RANDOMIZER]}
+
+        docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
 
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
@@ -207,24 +199,12 @@ jobs:
         ./crystal.deb \
         && sudo rm -rf /var/lib/apt/lists/*
     - name: Setup CNF-Conformance
-      #env:
-        # PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        # PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
-        # docker login -u $PROTECTED_DOCKERHUB_USERNAME -p $PROTECTED_DOCKERHUB_PASSWORD
         helm repo add stable https://cncf.gitlab.io/stable
         git fetch --all --tags --force
         shards install  
         echo "RUNNER: $RUNNER_NAME"
     - name: Run Crystal Spec
-      # env:
-        # GITHUB_USER: ${{ secrets.GH_USER }}
-        # GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        # DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        # DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-        # PROTECTED_DOCKERHUB_EMAIL: ${{ secrets.PROTECTED_DOCKERHUB_EMAIL }}
-        # PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        # PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
