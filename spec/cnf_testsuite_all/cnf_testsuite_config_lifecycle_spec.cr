@@ -21,7 +21,7 @@ describe CnfTestSuite do
     (/PASSED: Helm liveness probe/ =~ response_s).should_not be_nil
     (/Final workload score:/ =~ response_s).should_not be_nil
     (/Final score:/ =~ response_s).should_not be_nil
-    (CNFManager::Points.all_result_test_names(CNFManager::Points.final_cnf_results_yml).sort).should eq(["ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "nodeport_not_used",   "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used", "immutable_configmap"].sort)
+    (CNFManager::Points.all_result_test_names(CNFManager::Points.final_cnf_results_yml).sort).should eq(["ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used", "immutable_configmap"].sort)
     (/^.*\.cr:[0-9].*/ =~ response_s).should be_nil
     $?.success?.should be_true
   end

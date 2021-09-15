@@ -9,7 +9,7 @@ require "../utils/utils.cr"
 rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
-task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used", "immutable_configmap"].concat(rolling_version_change_test_names) do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used", "immutable_configmap"].concat(rolling_version_change_test_names) do |_, args|
   stdout_score("configuration_lifecycle")
 end
 
@@ -293,6 +293,53 @@ task "nodeport_not_used" do |_, args|
       upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
     else
       upsert_failed_task("nodeport_not_used", "✖️  FAILED: NodePort is being used")
+    end
+  end
+end
+
+desc "Does the CNF use HostPort"
+task "hostport_not_used" do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "hostport_not_used" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    release_name = config.cnf_config[:release_name]
+    service_name  = config.cnf_config[:service_name]
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+
+    task_response = CNFManager.workload_resource_test(args, config, check_containers:false, check_service: true) do |resource, container, initialized|
+      LOGGING.info "hostport_not_used resource: #{resource}"
+      test_passed=true
+      LOGGING.info "resource kind: #{resource}"
+      k8s_resource = KubectlClient::Get.resource(resource[:kind], resource[:name])
+      LOGGING.debug "resource: #{k8s_resource}"
+
+      # per examaple https://github.com/cncf/cnf-testsuite/issues/164#issuecomment-904890977
+      containers = k8s_resource.dig?("spec", "template", "spec", "containers")
+      LOGGING.debug "containers: #{containers}"
+
+      containers && containers.as_a.each do |single_container|
+        ports = single_container.dig?("ports")
+
+        ports && ports.as_a.each do |single_port|
+          LOGGING.debug "single_port: #{single_port}"
+          
+          hostport = single_port.dig?("hostPort")
+
+          LOGGING.debug "DAS hostPort: #{hostport}"
+
+          if hostport
+            puts "resource service: #{resource} has a HostPort that is being used".colorize(:red)
+            test_passed=false
+          end
+
+        end 
+      end
+      test_passed
+    end
+    if task_response
+      upsert_passed_task("hostport_not_used", "✔️  PASSED: HostPort is not used")
+    else
+      upsert_failed_task("hostport_not_used", "✖️  FAILED: HostPort is being used")
     end
   end
 end

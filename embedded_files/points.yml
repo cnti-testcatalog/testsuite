@@ -86,6 +86,8 @@
   tags: configuration_lifecycle, dynamic, workload
 - name: nodeport_not_used
   tags: configuration_lifecycle, dynamic, workload
+- name: hostport_not_used
+  tags: configuration_lifecycle, dynamic, workload
 - name: hardcoded_ip_addresses_in_k8s_runtime_configuration
   tags: configuration_lifecycle, dynamic, workload
 - name: secrets_used

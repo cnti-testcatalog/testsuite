@@ -18,7 +18,7 @@ describe CnfTestSuite do
     # the workload resilience tests are run in the chaos specs
     # the ommisions (i.e. ~resilience) are done for performance reasons for the spec suite
     # response_s = `./cnf-testsuite all ~platform ~resilience cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose`
-    response_s = `./cnf-testsuite all ~disk_fill ~pod-delete ~pod_network_latency ~pod_io_stress ~pod_memory_hog ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size "cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml" verbose`
+    response_s = `./cnf-testsuite all ~disk_fill ~pod-delete ~pod_network_latency ~pod_io_stress ~pod_memory_hog ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hostport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size "cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml" verbose`
     LOGGING.info response_s
     (/Lint Passed/ =~ response_s).should_not be_nil
     (/PASSED: Replicas increased to 3/ =~ response_s).should_not be_nil

@@ -196,6 +196,32 @@ describe CnfTestSuite do
     end
   end
 
+  it "'hostport_not_used' should fail when a node port is being used", tags: ["hostport_not_used"] do
+    begin
+      `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_hostport deploy_with_chart=false`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite hostport_not_used verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: HostPort is being used/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_hostport deploy_with_chart=false`
+    end
+  end
+
+  it "'hostport_not_used' should pass when a node port is not being used", tags: ["hostport_not_used"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose wait_count=0`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite hostport_not_used verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: HostPort is not used/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cleanup_sample_coredns`
+    end
+  end
+
   it "'ip_addresses' should pass when no uncommented ip addresses are found in helm chart source", tags: ["ip_addresses"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf-source/cnf-testsuite.yml verbose wait_count=0`
