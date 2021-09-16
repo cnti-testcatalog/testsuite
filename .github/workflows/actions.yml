@@ -152,7 +152,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tag: ["pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill"]
+        tag: ["pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill", "pod_network_corruption", "pod_network_duplication"]
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -234,7 +234,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tag: ["pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill"]
+        tag: ["pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill", "pod_network_corruption", "pod_network_duplication"]
     env:
       OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
