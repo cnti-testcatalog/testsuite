@@ -295,7 +295,6 @@ task "pod_network_duplication", ["install_litmus"] do |_, args|
 
         template = Crinja.render(chaos_template_pod_network_duplication, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name,"total_chaos_duration" => total_chaos_duration})
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
-        LOGGING.info "#{chaos_config}" if check_verbose(args)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
         LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
