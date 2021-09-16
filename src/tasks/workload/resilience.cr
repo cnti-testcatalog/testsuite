@@ -283,8 +283,8 @@ task "pod_network_duplication", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/dup-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/dup-rbac.yaml")
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-network-duplication/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-network-duplication/rbac.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-duplication/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-duplication/rbac.yaml")
         end
         KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
