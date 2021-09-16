@@ -1,3 +1,4 @@
+# coding: utf-8
 require "sam"
 require "file_utils"
 require "colorize"
@@ -47,8 +48,7 @@ module LitmusManager
       emoji_test_failed= "🗡️💀♻️"
       LOGGING.info "experimentStatus #{experimentStatus}"
       if (experimentStatus != "Waiting for Job Creation" && experimentStatus != "Running" && experimentStatus != "Completed")
-        resp = upsert_failed_task("pod-network-latency","✖️  FAILED: #{chaos_experiment_name} chaos test failed #{emoji_test_failed}")
-        resp
+        LOGGING.info "#{test_name}: wait_for_test failed.")
       end
       wait_count = wait_count + 1
     end
