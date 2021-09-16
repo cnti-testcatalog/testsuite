@@ -5,7 +5,7 @@ require "crinja"
 require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if the CNFs are resilient to failures."
- task "resilience", ["pod_network_latency","pod_network_corruption", "disk_fill", "pod_delete", "pod_memory_hog", "pod_io_stress"] do |t, args|
+task "resilience", ["pod_network_latency","pod_network_corruption", "pod_network_duplication", "disk_fill", "pod_delete", "pod_memory_hog", "pod_io_stress"] do |t, args|
   if check_verbose(args)
     Log.for("verbose").info {"resilience" }
     Log.for("verbose").debug { "resilience args.raw: #{args.raw}" }
@@ -257,6 +257,55 @@ task "pod_network_corruption", ["install_litmus"] do |_, args|
       resp = upsert_passed_task("pod_network_corruption","✔️  PASSED: pod_network_corruption chaos test passed 🗡️💀♻️")
     else
       resp = upsert_failed_task("pod_network_corruption","✖️  FAILED: pod_network_corruption chaos test failed 🗡️💀♻️")
+    end
+  end
+end
+
+desc "Does the CNF crash when network duplication occurs"
+task "pod_network_duplication", ["install_litmus"] do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "pod_network_duplication" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    #TODO tests should fail if cnf not installed
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      LOGGING.info "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}"
+      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0 && resource["kind"] == "Deployment"
+        test_passed = true
+      else
+        puts "Resource is not a Deployment or no resource label was found for resource: #{resource["name"]}".colorize(:red)
+        test_passed = false
+      end
+      if test_passed
+        if args.named["offline"]?
+            LOGGING.info "install resilience offline mode"
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/rbac.yaml")
+        else
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-network-duplication/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-network-duplication/rbac.yaml")
+        end
+        KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
+
+        chaos_experiment_name = "pod-network-duplication"
+        total_chaos_duration = "60"
+        test_name = "#{resource["name"]}-#{Random.rand(99)}"
+        chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
+
+        template = Crinja.render(chaos_template_pod_network_duplication, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name,"total_chaos_duration" => total_chaos_duration})
+        chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
+        puts "#{chaos_config}" if check_verbose(args)
+        # run_chaos = `kubectl apply -f "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
+        # puts "#{run_chaos}" if check_verbose(args)
+        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
+        test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+      end
+    end
+    if task_response
+      resp = upsert_passed_task("pod_network_duplication","✔️  PASSED: pod_network_duplication chaos test passed 🗡️💀♻️")
+    else
+      resp = upsert_failed_task("pod_network_duplication","✖️  FAILED: pod_network_duplication chaos test failed 🗡️💀♻️")
     end
   end
 end
@@ -634,6 +683,48 @@ def chaos_template_pod_network_corruption
                 value: '/run/containerd/containerd.sock'
   TEMPLATE
 end
+
+def chaos_template_pod_network_duplication
+  <<-TEMPLATE
+  apiVersion: litmuschaos.io/v1alpha1
+  kind: ChaosEngine
+  metadata:
+    name: {{ test_name }}
+    namespace: default
+  spec:
+    jobCleanUpPolicy: 'delete'
+    annotationCheck: 'true'
+    engineState: 'active'
+    appinfo:
+      appns: 'default'
+      applabel: '{{ deployment_label}}={{ deployment_label_value }}'
+      appkind: 'deployment'
+    chaosServiceAccount: {{ chaos_experiment_name }}-sa
+    experiments:
+      - name: {{ chaos_experiment_name }}
+        spec:
+          components:
+            env:
+              - name: TOTAL_CHAOS_DURATION
+                value: '60' # in seconds
+
+              - name: NETWORK_PACKET_DUPLICATION_PERCENTAGE
+                value: '100'
+    
+              - name: CONTAINER_RUNTIME
+                value: 'containerd'
+
+              # provide the socket file path
+              - name: SOCKET_PATH
+                value: '/run/containerd/containerd.sock'
+                
+              ## percentage of total pods to target
+              - name: PODS_AFFECTED_PERC
+                value: ''
+
+  TEMPLATE
+end
+
 
 def chaos_template_disk_fill
   <<-TEMPLATE
