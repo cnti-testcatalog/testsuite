@@ -935,6 +935,8 @@ end
       AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-latency/rbac.yaml", output_file, prefix: "lat-")
       AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-corruption/experiment.yaml", output_file, prefix: "corr-")
       AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-corruption/rbac.yaml", output_file, prefix:  "corr-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-duplication/experiment.yaml", output_file, prefix: "dup-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-duplication/rbac.yaml", output_file, prefix:  "dup-")
       AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-delete/experiment.yaml", output_file, prefix: "pod-delete-")
       AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-delete/rbac.yaml", output_file, prefix:  "pod-delete-")
       AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-memory-hog/experiment.yaml", output_file, prefix: "pod-memory-hog-")

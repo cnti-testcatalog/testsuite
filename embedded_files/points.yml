@@ -53,6 +53,10 @@
   tags: scalability, dynamic, workload
 - name: pod_network_latency
   tags: scalability, dynamic, workload
+- name: pod_network_corruption
+  tags: scalability, dynamic, workload
+- name: pod_network_duplication
+  tags: scalability, dynamic, workload
 - name: pod_delete
   tags: scalability, dynamic, workload  
 - name: pod_io_stress
