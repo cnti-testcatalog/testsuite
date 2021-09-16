@@ -48,7 +48,7 @@ module LitmusManager
       emoji_test_failed= "🗡️💀♻️"
       LOGGING.info "experimentStatus #{experimentStatus}"
       if (experimentStatus != "Waiting for Job Creation" && experimentStatus != "Running" && experimentStatus != "Completed")
-        LOGGING.info "#{test_name}: wait_for_test failed.")
+        LOGGING.info "#{test_name}: wait_for_test failed."
       end
       wait_count = wait_count + 1
     end
