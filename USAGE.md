@@ -317,7 +317,7 @@ crystal src/cnf-testsuite.cr protected_access
 <details> <summary>Details for increasing and decreasing of capacity</summary>
 <p>
 
-<b>increase_decrease_capacity test:</b> HPA (horizonal pod autoscale) will autoscale replicas to accommodate when there is an increase of CPU, memory or other configurated metrics to prevent disruption by allowing more requests by balancing out the utilisation across all of the pods.
+<b>increase_decrease_capacity test:</b> HPA (horizonal pod autoscale) will autoscale replicas to accommodate when there is an increase of CPU, memory or other configured metrics to prevent disruption by allowing more requests by balancing out the utilisation across all of the pods.
 
 Decreasing replicas works the same as increase but rather scale down the number of replicas when the traffic decreases to the number of pods that can handle the requests.
 
