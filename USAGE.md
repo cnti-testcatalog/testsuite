@@ -314,10 +314,6 @@ crystal src/cnf-testsuite.cr protected_access
 
 #### :heavy_check_mark: To test the [increasing and decreasing of capacity](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
 
-```
-./cnf-testsuite increase_decrease_capacity
-```
-
 <details> <summary>Details for increasing and decreasing of capacity</summary>
 <p>
 
@@ -335,6 +331,10 @@ Also here is some info about [things that could cause failures.](https://kuberne
 
 </p>
 </details>
+
+```
+./cnf-testsuite increase_decrease_capacity
+```
 
 #### :heavy_check_mark: To test if Cluster API is enabled on the platform and manages a node
 
