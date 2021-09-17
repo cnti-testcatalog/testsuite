@@ -314,39 +314,27 @@ crystal src/cnf-testsuite.cr protected_access
 
 #### :heavy_check_mark: To test the [increasing and decreasing of capacity](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
 
-<details> <summary>Optional: To install the sample coredns cnf: to run test </summary>
+<details> <summary>Details for increasing and decreasing of capacity</summary>
 <p>
 
-```
-./cnf-testsuite sample_coredns_setup helm_chart=<helm chart name>
-```
+<b>increase_decrease_capacity test:</b> HPA (horizonal pod autoscale) will autoscale replicas to accommodate when there is an increase of CPU, memory or other configured metrics to prevent disruption by allowing more requests by balancing out the utilisation across all of the pods.
 
-Or optionally modify the your cnf's cnf-testsuite.yml file to include the helm_chart name, e.g.
+Decreasing replicas works the same as increase but rather scale down the number of replicas when the traffic decreases to the number of pods that can handle the requests.
 
-```
-helm_chart: stable/coredns
-```
+You can read more about horizonal pod autoscaling to create replicas [here](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/).
 
-To run the capacity test:
-
-```
-./cnf-testsuite increase_decrease_capacity deployment_name=coredns-coredns
-```
-
-Or optionally modify the your cnf's cnf-testsuite.yml file to include the deployment name, e.g.
-
-```
-deployment_name: coredns/coredns
-```
-
-</p>
-</details>
-
-**Remediation for failing this test:**
+<b>Remediation for failing this test:</b>
 
 Check out the kubectl docs for how to [manually scale your cnf.](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
 
 Also here is some info about [things that could cause failures.](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#failed-deployment)
+
+</p>
+</details>
+
+```
+./cnf-testsuite increase_decrease_capacity
+```
 
 #### :heavy_check_mark: To test if Cluster API is enabled on the platform and manages a node
 
