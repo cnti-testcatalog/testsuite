@@ -8,10 +8,16 @@ desc "Sets up OPA in the K8s Cluster"
 task "install_opa" do |_, args|
   response = String::Builder.new
   Process.run("echo installing opa", shell: true) do |proc|
+`helm repo add gatekeeper https://open-policy-agent.github.io/gatekeeper/charts`
+`helm install --set auditInterval=1 opa-gatekeeper gatekeeper/gatekeeper`
+
     while line = proc.output.gets
       response << line
       VERBOSE_LOGGING.info "#{line}" if check_verbose(args)
     end
   end
+  File.write("enforce-image-tag.yml", ENFORCE_IMAGE_TAG)
+  File.write("constraint_template.yml", CONSTRAINT_TEMPLATE)
+  KubectlClient::Apply.file("enforce-image-tag.yml")
+  KubectlClient::Apply.file("constraint_template.yml")
 end
-
