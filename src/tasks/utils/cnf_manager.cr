@@ -177,10 +177,18 @@ module CNFManager
   end
 
   def self.cnf_config_list(silent=false)
-    LOGGING.info("cnf_config_list")
-    LOGGING.info("find: find #{CNF_DIR}/* -name #{CONFIG_FILE}")
-    cnf_testsuite = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
-    LOGGING.info("find response: #{cnf_testsuite}")
+    Log.info { "cnf_config_list" }
+    find_cmd = "find #{CNF_DIR}/* -name \"#{CONFIG_FILE}\""
+    Log.info { "find: #{find_cmd}" }
+    Process.run(
+      find_cmd,
+      shell: true,
+      output: find_stdout = IO::Memory.new,
+      error: find_stderr = IO::Memory.new
+    )
+
+    cnf_testsuite = find_stdout.to_s.split("\n").select{ |x| x.empty? == false }
+    Log.info { "find response: #{cnf_testsuite}" }
     if cnf_testsuite.size == 0 && !silent
       raise "No cnf_testsuite.yml found! Did you run the setup task?"
     end
