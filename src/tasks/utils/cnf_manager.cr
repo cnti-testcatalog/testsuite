@@ -140,30 +140,38 @@ module CNFManager
 				if check_containers
 					containers.as_a.each do |container|
 						resp = yield resource, container, volumes, initialized
-						LOGGING.debug "yield resp: #{resp}"
+						Log.debug { "yield resp: #{resp}" }
 						# if any response is false, the test fails
 						test_passed = false if resp == false
 					end
 				else
 					resp = yield resource, containers, volumes, initialized
-					LOGGING.debug "yield resp: #{resp}"
+					Log.debug { "yield resp: #{resp}" }
 					# if any response is false, the test fails
 					test_passed = false if resp == false
 				end
       end
 		end
-    LOGGING.debug "workload resource test intialized: #{initialized} test_passed: #{test_passed}"
+    Log.debug { "workload resource test intialized: #{initialized} test_passed: #{test_passed}" }
     initialized && test_passed
   end
 
   def self.cnf_installed?
-    LOGGING.info("cnf_config_list")
-    LOGGING.info("find: find #{CNF_DIR}/* -name #{CONFIG_FILE}")
-    cnf_testsuite = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
-    LOGGING.info("find response: #{cnf_testsuite}")
-    if cnf_testsuite.size == 0 
+    Log.info { "cnf_config_list" }
+    find_cmd = "find #{CNF_DIR}/* -name '#{CONFIG_FILE}'"
+    Log.info { "find: #{find_cmd}" }
+    Process.run(
+      find_cmd,
+      shell: true,
+      output: find_stdout = IO::Memory.new,
+      error: find_stderr = IO::Memory.new
+    )
+
+    cnf_testsuite = find_stdout.to_s.split("\n").select{ |x| x.empty? == false }
+    Log.info { "find response: #{cnf_testsuite}" }
+    if cnf_testsuite.size == 0
       false
-    else 
+    else
       true
     end
   end
