@@ -208,8 +208,15 @@ module CNFManager
   end
 
   def self.sample_testsuite_yml(sample_dir)
-    LOGGING.info "sample_testsuite_yml sample_dir: #{sample_dir}"
-    cnf_testsuite = `find #{sample_dir}/* -name "cnf-testsuite.yml"`.split("\n")[0]
+    Log.info { "sample_testsuite_yml sample_dir: #{sample_dir}" }
+    find_cmd = "find #{sample_dir}/* -name \"cnf-testsuite.yml\""
+    Process.run(
+      find_cmd,
+      shell: true,
+      output: find_stdout = IO::Memory.new,
+      error: find_stderr = IO::Memory.new
+    )
+    cnf_testsuite = find_stdout.to_s.split("\n")[0]
     if cnf_testsuite.empty?
       raise "No cnf_testsuite.yml found in #{sample_dir}!"
     end
