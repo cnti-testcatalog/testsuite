@@ -51,3 +51,5 @@ airgaptest.tar.gz
 /cnf-testsuite.yml
 /*.tgz
 falco_rule.yaml
+/enforce-image-tag.yml
+/constraint_template.yml

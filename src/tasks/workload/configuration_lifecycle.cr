@@ -54,6 +54,57 @@ task "ip_addresses" do |_, args|
   end
 end
 
+desc "Do all cnf images have versioned tags?"
+task "versioned_tag", ["install_opa"] do |_, args|
+  # todo wait for opa
+   # unless KubectlClient::Get.resource_wait_for_install("Daemonset", "falco") 
+   #   LOGGING.info "Falco Failed to Start"
+   #   upsert_skipped_task("non_root_user", "✖️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).")
+   #   node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+   #   pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
+   #   falco_pod_name = pods[0].dig("metadata", "name")
+   #   LOGGING.info "Falco Pod Name: #{falco_pod_name}"
+   #   resp = KubectlClient.logs(falco_pod_name)
+   #   puts "Falco Logs: #{resp[:output]}"
+   #   next
+   # end
+   #
+   CNFManager::Task.task_runner(args) do |args,config|
+     VERBOSE_LOGGING.info "versioned_tag" if check_verbose(args)
+     LOGGING.debug "cnf_config: #{config}"
+     fail_msgs = [] of String
+     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+       test_passed = true
+       kind = resource["kind"].as_s.downcase
+       case kind 
+       when  "deployment","statefulset","pod","replicaset", "daemonset"
+         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
+         pods = KubectlClient::Get.pods_by_resource(resource_yaml)
+         pods.map do |pod|
+           pod_name = pod.dig("metadata", "name")
+           if OPA.find_non_versioned_pod(pod_name)
+             fail_msg = "resource: #{resource} and pod #{pod_name} use a non versioned image."
+             unless fail_msgs.find{|x| x== fail_msg}
+               puts fail_msg.colorize(:red)
+               fail_msgs << fail_msg
+             end
+             test_passed=false
+           end
+         end
+       end
+       test_passed
+     end
+     emoji_versioned_tag="🏷️✔️"
+     emoji_non_versioned_tag="🏷️❌"
+
+     if task_response
+       upsert_passed_task("versioned_tag", "✔️  PASSED: Image uses a versioned tag #{emoji_versioned_tag}")
+     else
+       upsert_failed_task("versioned_tag", "✖️  FAILED: Image does not use a versioned tag #{emoji_non_versioned_tag}")
+     end
+   end
+end
+
 desc "Is there a liveness entry in the helm chart?"
 task "liveness" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|

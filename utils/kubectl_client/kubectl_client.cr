@@ -31,6 +31,16 @@ module KubectlClient
       {status: status, output: output.to_s, error: stderr.to_s}
     end
   end
+  
+  def self.wait(cmd)
+    status = Process.run("kubectl wait #{cmd}",
+                         shell: true,
+                         output: output = IO::Memory.new,
+                         error: stderr = IO::Memory.new)
+    LOGGING.info "KubectlClient.wait output: #{output.to_s}"
+    LOGGING.info "KubectlClient.wait stderr: #{stderr.to_s}"
+    {status: status, output: output, error: stderr}
+  end
 
   def self.logs(pod_name, container_name="")
     status = Process.run("kubectl logs #{pod_name} #{container_name}",
@@ -39,6 +49,17 @@ module KubectlClient
                          error: stderr = IO::Memory.new)
     LOGGING.debug "KubectlClient.logs output: #{output.to_s}"
     LOGGING.debug "KubectlClient.logs stderr: #{stderr.to_s}"
+    {status: status, output: output, error: stderr}
+  end
+
+  def self.describe(kind, resource_name)
+    # kubectl describe requiretags block-latest-tag 
+    status = Process.run("kubectl describe #{kind} #{resource_name}",
+                         shell: true,
+                         output: output = IO::Memory.new,
+                         error: stderr = IO::Memory.new)
+    LOGGING.info "KubectlClient.describe output: #{output.to_s}"
+    LOGGING.info "KubectlClient.describe stderr: #{stderr.to_s}"
     {status: status, output: output, error: stderr}
   end
 

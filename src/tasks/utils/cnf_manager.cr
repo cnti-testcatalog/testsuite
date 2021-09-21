@@ -922,6 +922,10 @@ end
        image: "litmuschaos/chaos-runner:2.0.0"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/go-runner.tar", 
        image: "litmuschaos/go-runner:2.0.0"},
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/gatekeeper.tar", 
+       image: "openpolicyagent/gatekeeper:v3.6.0"},
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/gatekeeper-crds.tar", 
+       image: "openpolicyagent/gatekeeper-crds:v3.6.0"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/prometheus.tar", 
        image: "prom/prometheus:v2.18.1"}].map do |x|
         DockerClient.pull(x[:image])
@@ -950,7 +954,11 @@ end
       Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
       # todo create helm chart configuration yaml that includes all chart elements for specs
       AirGap.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
+      Helm.helm_repo_add("gatekeeper","https://open-policy-agent.github.io/gatekeeper/charts")
+      AirGap.tar_helm_repo("gatekeeper/gatekeeper --version 3.6.0", output_file)
       AirGap.generate(output_file, append=true)
+
+
     end
   end
 

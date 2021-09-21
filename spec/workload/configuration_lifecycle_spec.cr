@@ -17,6 +17,32 @@ describe CnfTestSuite do
   end
 
 
+  it "'versioned_tag' should pass when a cnf has image tags that are all versioned", tags: ["versioned_tag"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `LOG_LEVEL=info ./cnf-testsuite versioned_tag verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Image uses a versioned tag/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+    end
+  end
+
+  it "'versioned_tag' should fail when a cnf has image tags that are not versioned", tags: ["versioned_tag"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `LOG_LEVEL=info ./cnf-testsuite versioned_tag verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Image does not use a versioned tag/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-testsuite.yml`
+    end
+  end
+
   it "'liveness' should pass when livenessProbe is set", tags: ["liveness"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-testsuite.yml deploy_with_chart=false`
