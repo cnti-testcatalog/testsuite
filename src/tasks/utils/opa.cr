@@ -11,7 +11,7 @@ module OPA
     LOGGING.info "OPA.find_non_versioned_pod: #{pod_name}"
     resp = KubectlClient.describe(OPA_KIND_NAME, OPA_VIOLATION_NAME)
     output = resp[:output]
-    match = output.to_s.match(/.*Pod #{pod_name} could not be created because it uses images that are tagged latest or images with no tags.*/)
+    match = output.to_s.match(/.*Pod #{pod_name}, it uses an image tag that is not versioned.*/)
     LOGGING.info "OPA Pod Data: #{match}"
     if match
       true

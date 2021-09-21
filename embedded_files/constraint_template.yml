@@ -15,7 +15,7 @@ spec:
           input.review.kind.kind == "Pod"
           image := input.review.object.spec.containers[_].image
           ensure(image)
-          msg := sprintf("Pod %v could not be created because it uses images that are tagged latest or images with no tags", [input.review.object.metadata.name])
+          msg := sprintf("Violation for Pod %v, it uses an image tag that is not versioned", [input.review.object.metadata.name])
         }
         
         ensure(image) {
