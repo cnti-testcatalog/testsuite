@@ -17,7 +17,7 @@ describe CnfTestSuite do
   end
 
 
-  it "'versioned_tag' should pass when a cnf has image tags that are all versioned", tags: ["liveness"] do
+  it "'versioned_tag' should pass when a cnf has image tags that are all versioned", tags: ["versioned_tag"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -30,7 +30,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'versioned_tag' should fail when a cnf has image tags that are not versioned", tags: ["liveness"] do
+  it "'versioned_tag' should fail when a cnf has image tags that are not versioned", tags: ["versioned_tag"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-testsuite.yml`
       $?.success?.should be_true
