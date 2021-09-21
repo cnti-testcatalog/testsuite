@@ -924,6 +924,8 @@ end
        image: "litmuschaos/go-runner:2.0.0"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/gatekeeper.tar", 
        image: "openpolicyagent/gatekeeper:v3.6.0"},
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/gatekeeper-crds.tar", 
+       image: "openpolicyagent/gatekeeper-crds:v3.6.0"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/prometheus.tar", 
        image: "prom/prometheus:v2.18.1"}].map do |x|
         DockerClient.pull(x[:image])
