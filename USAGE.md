@@ -394,6 +394,12 @@ crystal src/cnf-testsuite.cr external_retry
 ./cnf-testsuite configuration_lifecycle
 ```
 
+#### :heavy_check_mark: To test if there are versioned tags on all images using OPA Gatekeeper
+
+```
+./cnf-testsuite versioned_tag
+```
+
 #### :heavy_check_mark: To test if there is a liveness entry in the Helm chart
 
 ```
