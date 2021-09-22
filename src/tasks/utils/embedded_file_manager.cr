@@ -28,6 +28,12 @@ module EmbeddedFileManager
   macro points_yml 
     POINTSFILE = Base64.decode_string("{{ `cat ./embedded_files/points.yml  | base64`}}")
   end
+  macro enforce_image_tag 
+    ENFORCE_IMAGE_TAG = Base64.decode_string("{{ `cat ./embedded_files/enforce-image-tag.yml  | base64`}}")
+  end
+  macro constraint_template 
+    CONSTRAINT_TEMPLATE = Base64.decode_string("{{ `cat ./embedded_files/constraint_template.yml  | base64`}}")
+  end
   def self.points_yml_write_file
     File.write("points.yml", POINTSFILE)
   end

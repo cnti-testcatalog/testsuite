@@ -27,15 +27,6 @@ end
 desc "Uninstall Falco"
 task "uninstall_falco" do |_, args|
   Log.for("verbose").info { "uninstall_falco" } if check_verbose(args)
-  # current_dir = FileUtils.pwd
-  # helm = BinarySingleton.helm
   Helm.delete("falco")
-  # cmd = "#{helm} delete falco > /dev/null 2>&1"
-  # status = Process.run(
-  #   cmd,
-  #   shell: true,
-  #   output: output = IO::Memory.new,
-  #   error: stderr = IO::Memory.new
-  # )
 end
 
