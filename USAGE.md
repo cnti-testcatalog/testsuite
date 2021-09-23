@@ -745,6 +745,12 @@ Sressing the disk with continuous and heavy IO can cause degradation in reads/ w
 ./cnf-testsuite pod_network_duplication
 ```
 
+#### :heavy_check_mark: Test if the CNF crashes when node drain occurs
+
+```
+./cnf-testsuite node_drain
+```
+
 ### Platform Tests
 
 #### :heavy_check_mark: Run all platform tests

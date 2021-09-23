@@ -1,16 +1,15 @@
 # coding: utf-8
 require "sam"
+require "file_utils"
 require "colorize"
 require "crinja"
 require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if the CNFs are resilient to failures."
-task "resilience", ["pod_network_latency","pod_network_corruption", "pod_network_duplication", "disk_fill", "pod_delete", "pod_memory_hog", "pod_io_stress"] do |t, args|
-  if check_verbose(args)
-    Log.for("verbose").info {"resilience" }
-    Log.for("verbose").debug { "resilience args.raw: #{args.raw}" }
-    Log.for("verbose").debug { "resilience args.named: #{args.named}" }
-  end
+ task "resilience", ["pod_network_latency", "chaos_cpu_hog", "chaos_container_kill", "disk_fill", "pod_delete", "pod_memory_hog", "pod_io_stress","node_drain"] do |t, args|
+  VERBOSE_LOGGING.info "resilience" if check_verbose(args)
+  VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
+  VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
   stdout_score("resilience")
 end
 
@@ -186,8 +185,8 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/lat-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/lat-rbac.yaml")
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-network-latency/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-network-latency/rbac.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.1.0?file=charts/generic/pod-network-latency/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.1.0?file=charts/generic/pod-network-latency/rbac.yaml")
         end
         KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
@@ -328,8 +327,8 @@ task "disk_fill", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-rbac.yaml")
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/disk-fill/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/disk-fill/rbac.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.1.0?file=charts/generic/disk-fill/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.1.0?file=charts/generic/disk-fill/rbac.yaml")
         end
         KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
@@ -374,8 +373,8 @@ task "pod_delete", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-delete-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-delete-rbac.yaml")
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-delete/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-delete/rbac.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.1.0?file=charts/generic/pod-delete/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.1.0?file=charts/generic/pod-delete/rbac.yaml")
         end
         KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
@@ -420,8 +419,8 @@ task "pod_memory_hog", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-memory-hog-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-memory-hog-rbac.yaml")
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-memory-hog/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-memory-hog/rbac.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.1.0?file=charts/generic/pod-memory-hog/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.1.0?file=charts/generic/pod-memory-hog/rbac.yaml")
         end
         KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
@@ -466,8 +465,8 @@ task "pod_io_stress", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-io-stress-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-io-stress-rbac.yaml")
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-io-stress/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/1.13.8?file=charts/generic/pod-io-stress/rbac.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.1.0?file=charts/generic/pod-io-stress/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.1.0?file=charts/generic/pod-io-stress/rbac.yaml")
         end
         KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
@@ -488,6 +487,61 @@ task "pod_io_stress", ["install_litmus"] do |_, args|
       resp = upsert_passed_task("pod_io_stress","✔️  PASSED: pod_io_stress chaos test passed 🗡️💀♻️")
     else
       resp = upsert_failed_task("pod_io_stress","✖️  FAILED: pod_io_stress chaos test failed 🗡️💀♻️")
+    end
+  end
+end
+
+desc "Does the CNF crash when node-drain occurs"
+task "node_drain", ["cordon_target_node", "install_litmus"] do |t, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "node_drain" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      
+      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+        test_passed = true
+      else
+        puts "No resource label found for node_drain test for resource: #{resource["name"]}".colorize(:red)
+        test_passed = false
+      end
+      if test_passed
+        if args.named["offline"]?
+            LOGGING.info "install resilience offline mode"
+          AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-rbac.yaml")
+        else
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.1.0?file=charts/generic/node-drain/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/2.1.0?file=charts/generic/node-drain/rbac.yaml")
+        end
+        KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
+        deployment_label="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}"
+        deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
+  
+        app_nodeName_cmd = "kubectl get pods -l #{ deployment_label}=#{ deployment_label_value } -o=jsonpath='{.items[0].spec.nodeName}'"
+        puts "Getting the operator node name #{app_nodeName_cmd}" if check_verbose(args)
+        status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
+        puts "status_code: #{status_code}" if check_verbose(args)  
+        app_nodeName = appNodeName_response.to_s
+    
+        chaos_experiment_name = "node-drain"
+        total_chaos_duration = "30"
+        test_name = "#{resource["name"]}-#{Random.rand(99)}" 
+        chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
+
+        template = Crinja.render(chaos_template_node_drain, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "test_name" => test_name,"total_chaos_duration" => total_chaos_duration,"app_nodeName" => app_nodeName})
+        chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
+        puts "#{chaos_config}" if check_verbose(args)
+        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
+        test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+      end
+    end
+    if task_response
+      resp = upsert_passed_task("node_drain","✔️  PASSED: node_drain chaos test passed 🗡️💀♻️")
+    else
+      resp = upsert_failed_task("node_drain","✖️  FAILED: node_drain chaos test failed 🗡️💀♻️")
     end
   end
 end
@@ -832,5 +886,36 @@ def chaos_template_pod_memory_hog
               - name: SOCKET_PATH
                 value: '/run/containerd/containerd.sock'
                           
+  TEMPLATE
+end
+
+def chaos_template_node_drain
+  <<-TEMPLATE
+  apiVersion: litmuschaos.io/v1alpha1
+  kind: ChaosEngine
+  metadata:
+    name: {{ test_name }}
+    namespace: default
+  spec:
+    appinfo:
+      appns: 'default'
+      applabel: '{{ deployment_label}}={{ deployment_label_value }}'
+      appkind: 'deployment'
+    # It can be delete/retain
+    jobCleanUpPolicy: 'delete'   
+    # It can be active/stop
+    engineState: 'active'    
+    chaosServiceAccount: {{ chaos_experiment_name }}-sa
+    experiments:
+      - name: {{ chaos_experiment_name }}
+        spec:
+          components:
+            env:
+              - name: TOTAL_CHAOS_DURATION
+                value: '{{ total_chaos_duration }}'
+
+              - name: TARGET_NODE
+                value: '{{ app_nodeName }}'                
+
   TEMPLATE
 end
