@@ -22,7 +22,7 @@ task "install_kubescape" do |_, args|
     stderr = IO::Memory.new
     status = Process.run("chmod +x #{write_file}", shell: true, output: stderr, error: stderr)
     success = status.success?
-    raise "Unable to make #{write_file} executable" if success = false
+    raise "Unable to make #{write_file} executable" if success == false
   end
   #todo kubescape run wrapper
   #kubescape scan framework nsa --exclude-namespaces kube-system,kube-public
