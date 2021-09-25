@@ -564,9 +564,9 @@ module CNFManager
     when Helm::InstallMethod::ManifestDirectory
       Log.info { "preparing manifest_directory sandbox" }
       source_directory = config_source_dir(config_file) + "/" + manifest_directory
-      Log.info { "cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}" }
-
       src_path = Path[source_directory].expand.to_s
+      Log.info { "cp -a #{src_path} #{destination_cnf_dir}" }
+
       begin
         FileUtils.cp_r(src_path, destination_cnf_dir)
       rescue File::AlreadyExistsError
@@ -575,9 +575,9 @@ module CNFManager
     when Helm::InstallMethod::HelmDirectory
       Log.info { "preparing helm_directory sandbox" }
       source_directory = config_source_dir(config_file) + "/" + helm_directory
-      Log.info { "cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}" }
-
       src_path = Path[source_directory].expand.to_s
+      Log.info { "cp -a #{src_path} #{destination_cnf_dir}" }
+
       begin
         FileUtils.cp_r(src_path, destination_cnf_dir)
       rescue File::AlreadyExistsError
@@ -588,7 +588,6 @@ module CNFManager
       end
     when Helm::InstallMethod::HelmChart
       Log.info { "preparing helm chart sandbox" }
-      source_directory = ""
       FileUtils.mkdir_p(Path[destination_cnf_dir].expand.to_s + "/exported_chart")
     end
 
