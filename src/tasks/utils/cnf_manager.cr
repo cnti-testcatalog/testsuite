@@ -550,12 +550,19 @@ module CNFManager
     helm_chart_path = config.cnf_config[:helm_chart_path]
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
 
+    # Create a CNF sandbox dir
+    FileUtils.mkdir_p(destination_cnf_dir)
+
+    # Copy cnf-testsuite.yml file to the cnf sandbox dir
+    copy_cnf_cmd = "cp -a #{ensure_cnf_testsuite_yml_path(config_file)} #{destination_cnf_dir}"
+    Log.info { copy_cnf_cmd }
+    status = Process.run(copy_cnf_cmd, shell: true)
+
     # todo manifest_or_helm_directory should either be the source helm/manifest files or the destination
     # directory that they will be copied to/generated into, but *not both*
     case install_method[0]
     when Helm::InstallMethod::ManifestDirectory
       Log.info { "preparing manifest_directory sandbox" }
-      FileUtils.mkdir_p(destination_cnf_dir)
       source_directory = config_source_dir(config_file) + "/" + manifest_directory
       Log.info { "cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}" }
 
@@ -566,19 +573,19 @@ module CNFManager
         Log.info { "manifest sandbox dir already exists at #{destination_cnf_dir}/#{File.basename(src_path)}" }
       end
     when Helm::InstallMethod::HelmDirectory
-      FileUtils.mkdir_p(destination_cnf_dir)
       Log.info { "preparing helm_directory sandbox" }
       source_directory = config_source_dir(config_file) + "/" + helm_directory
       Log.info { "cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}" }
 
-      Log.error { "307-debug-helm-dir-copy" }
       src_path = Path[source_directory].expand.to_s
-      FileUtils.cp_r(Path[source_directory].expand.to_s, destination_cnf_dir)
-      # begin
-      #   FileUtils.cp_r(src_path, destination_cnf_dir)
-      # rescue File::AlreadyExistsError
-      #   Log.info { "helm sandbox dir already exists at #{destination_cnf_dir}/#{File.basename(src_path)}" }
-      # end
+      begin
+        FileUtils.cp_r(src_path, destination_cnf_dir)
+      rescue File::AlreadyExistsError
+        Log.info { "helm sandbox dir already exists at #{destination_cnf_dir}/#{File.basename(src_path)}" }
+      rescue File::NotFoundError
+        Log.info { "helm directory not found at #{src_path}" }
+        raise HelmDirectoryMissingError.new
+      end
     when Helm::InstallMethod::HelmChart
       Log.info { "preparing helm chart sandbox" }
       source_directory = ""
@@ -590,10 +597,6 @@ module CNFManager
       Process.run("ls -alR #{destination_cnf_dir}", shell: true, output: stdout, error: stdout)
       "Contents of destination_cnf_dir #{destination_cnf_dir}: \n#{stdout}"
     }
-
-    copy_cnf_cmd = "cp -a #{ensure_cnf_testsuite_yml_path(config_file)} #{destination_cnf_dir}"
-    Log.info { copy_cnf_cmd }
-    status = Process.run(copy_cnf_cmd, shell: true)
   end
 
   # Retrieve the helm chart source: only works with helm chart
@@ -1004,6 +1007,9 @@ end
 
 
     end
+  end
+
+  class HelmDirectoryMissingError < Exception
   end
 
 end
