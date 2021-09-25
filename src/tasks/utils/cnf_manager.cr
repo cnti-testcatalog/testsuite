@@ -584,7 +584,7 @@ module CNFManager
         Log.info { "helm sandbox dir already exists at #{destination_cnf_dir}/#{File.basename(src_path)}" }
       rescue File::NotFoundError
         Log.info { "helm directory not found at #{src_path}" }
-        raise HelmDirectoryMissingError.new
+        raise HelmDirectoryMissingError.new(src_path)
       end
     when Helm::InstallMethod::HelmChart
       Log.info { "preparing helm chart sandbox" }
@@ -702,7 +702,11 @@ module CNFManager
 
     GitClient.clone("#{git_clone_url} #{destination_cnf_dir}/#{release_name}")  if git_clone_url.empty? == false
 
-    sandbox_setup(config, cli_args)
+    begin
+      sandbox_setup(config, cli_args)
+    rescue e : HelmDirectoryMissingError
+      stdout_warning "helm directory at #{e.helm_directory} is missing"
+    end
 
     helm = BinarySingleton.helm
     Log.info { "helm path: #{BinarySingleton.helm}" }
@@ -752,8 +756,7 @@ module CNFManager
         Log.for("verbose").info { "deploying with helm directory" } if verbose
         # prepare a helm directory for deployment into an airgapped environment, put in airgap module
         if input_file && !input_file.empty?
-          template_files = Find.find("#{destination_cnf_dir}/#{helm_directory}", 
-                                          "*.yaml*", "100")
+          template_files = Dir.glob(["#{destination_cnf_dir}/#{helm_directory}/*.yaml*"])
           template_files.map{|x| AirGap.image_pull_policy(x)}
         end
         #TODO Add helm options into cnf-testsuite yml
@@ -1010,6 +1013,11 @@ end
   end
 
   class HelmDirectoryMissingError < Exception
+    property helm_directory : String = ""
+
+    def initialize(helm_directory : String)
+      self.helm_directory = helm_directory
+    end
   end
 
 end
