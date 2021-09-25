@@ -40,6 +40,8 @@ dependencies:
     path: utils/tar
   docker_client:
     path: utils/docker_client
+  git_client:
+    path: utils/git_client
   kubectl_client:
     path: utils/kubectl_client
   helm:
