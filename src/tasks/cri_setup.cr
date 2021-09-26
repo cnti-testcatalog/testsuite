@@ -10,7 +10,6 @@ require "./utils/utils.cr"
 desc "Install CNF Test Suite CRI Tools"
 task "install_cri_tools" do |_, args|
   File.write("cri_tools.yml", CRI_TOOLS)
-  # install_cri_tools = `kubectl create -f cri_tools.yml`
   KubectlClient::Apply.file("cri_tools.yml")
   pod_ready = ""
   pod_ready_timeout = 45
