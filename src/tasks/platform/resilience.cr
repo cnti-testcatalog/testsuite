@@ -62,9 +62,9 @@ namespace "platform" do
         until (pod_ready == "false" || node_ready == "False" || node_ready == "Unknown" || node_failure_timeout == 0)
           pod_ready = KubectlClient::Get.pod_status("node-failure").split(",")[2]
           node_ready = KubectlClient::Get.node_status("#{worker_node}")
-          puts "Waiting for Node to go offline"
-          puts "Pod Ready Status: #{pod_ready}"
-          puts "Node Ready Status: #{node_ready}"
+          Log.info { "Waiting for Node to go offline" }
+          Log.info { "Pod Ready Status: #{pod_ready}" }
+          Log.info { "Node Ready Status: #{node_ready}" }
           node_failure_timeout = node_failure_timeout - 1
           if node_failure_timeout == 0
             upsert_failed_task("worker_reboot_recovery", "✖️  FAILED: Node failed to go offline")
@@ -80,9 +80,9 @@ namespace "platform" do
         until (pod_ready == "true" && node_ready == "True" || node_online_timeout == 0)
           pod_ready = KubectlClient::Get.pod_status("node-failure", "").split(",")[2]
           node_ready = KubectlClient::Get.node_status("#{worker_node}")
-          puts "Waiting for Node to come back online"
-          puts "Pod Ready Status: #{pod_ready}"
-          puts "Node Ready Status: #{node_ready}"
+          Log.info { "Waiting for Node to come back online" }
+          Log.info { "Pod Ready Status: #{pod_ready}" }
+          Log.info { "Node Ready Status: #{node_ready}" }
           node_online_timeout = node_online_timeout - 1
           if node_online_timeout == 0
             upsert_failed_task("worker_reboot_recovery", "✖️  FAILED: Node failed to come back online")
