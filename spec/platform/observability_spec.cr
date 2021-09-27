@@ -33,7 +33,7 @@ describe "Observability" do
       pod_ready_timeout = 45
       until (pod_ready == "true" || pod_ready_timeout == 0)
         pod_ready = KubectlClient::Get.pod_status("node-exporter-prometheus").split(",")[2]
-        puts "Pod Ready Status: #{pod_ready}"
+        Log.info { "Pod Ready Status: #{pod_ready}" }
         sleep 1
         pod_ready_timeout = pod_ready_timeout - 1
       end

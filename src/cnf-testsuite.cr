@@ -107,7 +107,7 @@ begin
   yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
     YAML.parse(file)
   end
-  LOGGING.debug "results yaml: #{yaml}"
+  Log.debug { "results yaml: #{yaml}" }
   if (yaml["exit_code"]) == 1
     exit 1
   end
