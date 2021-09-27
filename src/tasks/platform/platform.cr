@@ -121,7 +121,7 @@ task "clusterapi_enabled" do |_, args|
 
     proc_clusterapi_control_planes_json = -> do
       begin
-        JSON.parse(clusterapi_control_planes_output)
+        JSON.parse(clusterapi_control_planes_output.to_s)
       rescue JSON::ParseException
         # resource does-not-exist rescue to empty json
         JSON.parse("{}")
@@ -132,6 +132,7 @@ task "clusterapi_enabled" do |_, args|
     Log.info { "clusterapi_control_planes_json: #{clusterapi_control_planes_json}" }
 
     emoji_control="✨"
+
     if clusterapi_namespaces_json["items"]? && clusterapi_namespaces_json["items"].as_a.size > 0 && clusterapi_control_planes_json["items"]? && clusterapi_control_planes_json["items"].as_a.size > 0
       resp = upsert_passed_task("clusterapi_enabled", "✔️ Cluster API is enabled #{emoji_control}")
     else
