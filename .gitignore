@@ -55,3 +55,4 @@ falco_rule.yaml
 /constraint_template.yml
 /install.sh
 /tools/kubescape
+/kubescape_results.json

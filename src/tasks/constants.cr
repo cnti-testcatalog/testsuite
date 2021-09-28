@@ -19,6 +19,7 @@ KUBESCAPE_VERSION = "1.0.86"
 SONOBUOY_OS = "linux"
 IGNORED_SECRET_TYPES = ["kubernetes.io/service-account-token", "kubernetes.io/dockercfg", "kubernetes.io/dockerconfigjson", "helm.sh/release.v1"]
 EMPTY_JSON = JSON.parse(%({}))
+EMPTY_JSON_ARRAY = JSON.parse(%([]))
 
 #Embedded global text variables
 EmbeddedFileManager.node_failure_values
