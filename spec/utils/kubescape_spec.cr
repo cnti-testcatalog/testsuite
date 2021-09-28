@@ -2,7 +2,9 @@ require "../spec_helper"
 require "../../src/tasks/utils/kubescape.cr"
 
 describe "K8sInstrumentation" do
-
+  before_each do
+    LOGGING.info `./cnf-testsuite install_kubescape`
+  end
 
   it "'#scan and #result_by_test_name' should return the results of a kubescape scan", tags: ["kubescape"]  do
     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
