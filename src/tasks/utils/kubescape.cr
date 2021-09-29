@@ -29,7 +29,7 @@ module Kubescape
     end
   end
 
-  def self.result_by_test_name(results_json, test_name)
+  def self.test_by_test_name(results_json, test_name)
     resp= results_json.as_a.find {|test|test["name"]==test_name}
     if resp
       resp
@@ -38,13 +38,43 @@ module Kubescape
     end
   end
 
-  def self.score_by_test_name(results_json, test_name)
-    test_json = result_by_test_name(results_json, test_name) 
+  def self.score(test_json)
     if test_json && test_json["score"]?
       test_json["score"]
     else
       EMPTY_JSON
     end
+  end
+
+  def self.score_by_test_name(results_json, test_name)
+    test_json = test_by_test_name(results_json, test_name) 
+    score(test_json)
+  end
+
+  def self.description(test_json)
+    if test_json && test_json["description"]?
+      test_json["description"]
+    else
+      EMPTY_JSON
+    end
+  end
+
+  def self.description_by_test_name(results_json, test_name)
+    test_json = test_by_test_name(results_json, test_name) 
+    description(test_json)
+  end
+
+  def self.remediation(test_json)
+    if test_json && test_json["remediation"]?
+      test_json["remediation"]
+    else
+      EMPTY_JSON
+    end
+  end
+
+  def self.remediation_by_test_name(results_json, test_name)
+    test_json = test_by_test_name(results_json, test_name) 
+    remediation(test_json)
   end
 
   def self.alerts_by_test(test_json)
