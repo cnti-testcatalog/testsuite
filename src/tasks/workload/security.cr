@@ -105,9 +105,9 @@ task "privilege_escalation", ["kubescape_scan"] do |_, args|
 
     emoji_security="🔓🔑"
     if Kubescape.test_passed?(test_json) 
-      upsert_passed_task("privilege_escalation", "✔️  PASSED: No containers with escalated privileges #{emoji_security}")
+      upsert_passed_task("privilege_escalation", "✔️  PASSED: No containers that allow privilege escalation were found #{emoji_security}")
     else
-      resp = upsert_failed_task("privilege_escalation", "✖️  FAILED: Found containers: with escalated privileges #{emoji_security}")
+      resp = upsert_failed_task("privilege_escalation", "✖️  FAILED: Found containers that allow privilege escalation #{emoji_security}")
       Kubescape.alerts_by_test(test_json).map{|t| puts "#{t}\n".colorize(:red)}
       puts "\nRemediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
       resp

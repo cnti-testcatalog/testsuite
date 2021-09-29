@@ -69,14 +69,14 @@ describe "Security" do
   end
   it "'privilege_escalation' should fail on a cnf that has escalated privileges", tags: ["security"] do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
       $?.success?.should be_true
       response_s = `./cnf-testsuite privilege_escalation`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: No containers with escalated privileges/ =~ response_s).should be_nil
+      (/PASSED: No containers that allow privilege escalation were found/ =~ response_s).should be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
     end
   end
 end
