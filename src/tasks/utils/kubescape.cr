@@ -46,6 +46,11 @@ module Kubescape
     end
   end
 
+  def self.test_passed?(test_json)
+    score = score(test_json)
+    score.as_i == 100
+  end
+
   def self.score_by_test_name(results_json, test_name)
     test_json = test_by_test_name(results_json, test_name) 
     score(test_json)
@@ -87,7 +92,7 @@ module Kubescape
       Log.info {"test_alert resp: #{resp}"}
       resp
     else
-      EMPTY_JSON
+      EMPTY_JSON_ARRAY.as_a
     end
   end
 

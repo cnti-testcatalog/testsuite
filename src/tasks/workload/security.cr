@@ -95,3 +95,22 @@ task "privileged" do |_, args|
     end
   end
 end
+
+desc "Check if any containers are running in privileged mode"
+task "privilege_escalation", ["kubescape_scan"] do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "privilege_escalation" if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Allow privilege escalation")
+
+    emoji_security="🔓🔑"
+    if Kubescape.test_passed?(test_json) 
+      upsert_passed_task("privilege_escalation", "✔️  PASSED: No containers with escalated privileges #{emoji_security}")
+    else
+      resp = upsert_failed_task("privilege_escalation", "✖️  FAILED: Found containers: with escalated privileges #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "#{t}\n".colorize(:red)}
+      puts "\nRemediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end

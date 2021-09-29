@@ -29,6 +29,11 @@ task "install_kubescape" do |_, args|
   #todo kubescape scrapper
 end
 
+desc "Kubescape Scan"
+task "kubescape_scan", ["install_kubescape"] do |_, args|
+  Kubescape.scan
+end
+
 desc "Uninstall Kubescape"
 task "uninstall_kubescape" do |_, args|
   current_dir = FileUtils.pwd 
