@@ -7,7 +7,7 @@ require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if the CNFs are resilient to failures."
  task "resilience", ["pod_network_latency", "chaos_cpu_hog", "chaos_container_kill", "disk_fill", "pod_delete", "pod_memory_hog", "pod_io_stress","node_drain"] do |t, args|
-  VERBOSE_LOGGING.info "resilience" if check_verbose(args)
+  Log.for("verbose").info {  "resilience" } if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
   stdout_score("resilience")
@@ -213,12 +213,12 @@ end
 desc "Does the CNF crash when network corruption occurs"
 task "pod_network_corruption", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "pod_network_corruption" if check_verbose(args)
+    Log.for("verbose").info {"pod_network_corruption" if check_verbose(args)}
     LOGGING.debug "cnf_config: #{config}"
     #TODO tests should fail if cnf not installed
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      LOGGING.info "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}"
+      Log.info {"Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}"}
       if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0 && resource["kind"] == "Deployment"
         test_passed = true
       else
@@ -227,7 +227,7 @@ task "pod_network_corruption", ["install_litmus"] do |_, args|
       end
       if test_passed
         if args.named["offline"]?
-            LOGGING.info "install resilience offline mode"
+          Log.info {"install resilience offline mode"}
           AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/corr-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/corr-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/corr-rbac.yaml")
@@ -263,12 +263,12 @@ end
 desc "Does the CNF crash when network duplication occurs"
 task "pod_network_duplication", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "pod_network_duplication" if check_verbose(args)
+    Log.for("verbose").info {"pod_network_duplication"} if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     #TODO tests should fail if cnf not installed
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      LOGGING.info "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}"
+      Log.info{ "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}"}
       if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0 && resource["kind"] == "Deployment"
         test_passed = true
       else
@@ -277,7 +277,7 @@ task "pod_network_duplication", ["install_litmus"] do |_, args|
       end
       if test_passed
         if args.named["offline"]?
-          LOGGING.info "install resilience offline mode"
+          Log.info {"install resilience offline mode"}
           AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/dup-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/dup-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/dup-rbac.yaml")
@@ -494,7 +494,7 @@ end
 desc "Does the CNF crash when node-drain occurs"
 task "node_drain", ["cordon_target_node", "install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "node_drain" if check_verbose(args)
+    Log.for("verbose").info {"node_drain"} if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
@@ -507,7 +507,7 @@ task "node_drain", ["cordon_target_node", "install_litmus"] do |t, args|
       end
       if test_passed
         if args.named["offline"]?
-            LOGGING.info "install resilience offline mode"
+          Log.info {"install resilience offline mode"}
           AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-rbac.yaml")
@@ -520,7 +520,7 @@ task "node_drain", ["cordon_target_node", "install_litmus"] do |t, args|
         deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
   
         app_nodeName_cmd = "kubectl get pods -l #{ deployment_label}=#{ deployment_label_value } -o=jsonpath='{.items[0].spec.nodeName}'"
-        puts "Getting the operator node name #{app_nodeName_cmd}" if check_verbose(args)
+        puts "Getting the app node name #{app_nodeName_cmd}" if check_verbose(args)
         status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
         puts "status_code: #{status_code}" if check_verbose(args)  
         app_nodeName = appNodeName_response.to_s
@@ -531,8 +531,7 @@ task "node_drain", ["cordon_target_node", "install_litmus"] do |t, args|
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
         template = Crinja.render(chaos_template_node_drain, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "test_name" => test_name,"total_chaos_duration" => total_chaos_duration,"app_nodeName" => app_nodeName})
-        chaos_config = `echo "#{template}" > "#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml"`
-        puts "#{chaos_config}" if check_verbose(args)
+        File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
         LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)

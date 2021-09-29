@@ -8,7 +8,7 @@ require "./utils/utils.cr"
 desc "Install LitmusChaos"
 task "install_litmus" do |_, args|
   if args.named["offline"]?
-    LOGGING.info "install litmus offline mode"
+    Log.info {"install litmus offline mode"}
     AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v2.1.0.yaml")
     KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v2.1.0.yaml")
     KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/chaos_crds.yaml")
@@ -35,9 +35,9 @@ task "cordon_target_node" do | _,args|
       puts "Getting the operator node name #{app_nodeName_cmd}" if check_verbose(args)
       status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
       puts "status_code: #{status_code}" if check_verbose(args)  
-      app_nodeName = appNodeName_response.to_s
-      cordon = `kubectl cordon #{app_nodeName}`
-      puts "#{cordon}" if check_verbose(args)
+      app_nodeName = appNodeName_response.to_s 
+      status_code = KubectlClient::Cordon.command("#{app_nodeName}")
+      puts "status_code: #{status_code}" if check_verbose(args)  
     end
     if task_response
       resp = upsert_passed_task("cordon_target_node","✔️  PASSED: The target node is cordoned sucessfully 🗡️💀♻️")
@@ -72,12 +72,12 @@ module LitmusManager
       puts "status_code: #{status_code}" if check_verbose(args)
       puts "Checking experiment status  #{experimentStatus_cmd}" if check_verbose(args)
       experimentStatus = experimentStatus_response.to_s
-      LOGGING.info "#{chaos_experiment_name} experiment status: "+experimentStatus
+      Log.info {"#{chaos_experiment_name} experiment status: "+experimentStatus}
 
       emoji_test_failed= "🗡️💀♻️"
-      LOGGING.info "experimentStatus #{experimentStatus}"
+      Log.info { "experimentStatus #{experimentStatus}"}
       if (experimentStatus != "Waiting for Job Creation" && experimentStatus != "Running" && experimentStatus != "Completed")
-        LOGGING.info "#{test_name}: wait_for_test failed."
+        Log.info {"#{test_name}: wait_for_test failed."}
       end
       wait_count = wait_count + 1
     end
@@ -110,7 +110,7 @@ module LitmusManager
     if verdict == "Pass"
       return true
     else
-      LOGGING.info "#{chaos_experiment_name} chaos test failed: #{chaos_result_name}, verdict: #{verdict}"
+      Log.info {"#{chaos_experiment_name} chaos test failed: #{chaos_result_name}, verdict: #{verdict}"}
       puts "#{chaos_experiment_name} chaos test failed #{emoji_test_failed}"
       return false
     end
