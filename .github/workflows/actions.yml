@@ -303,7 +303,9 @@ jobs:
       run: |
         sed -i "/${{ matrix.tag }}/a \ \ required: true" embedded_files/points.yml
         docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
-        docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v /tmp/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr ${{ matrix.tag }} offline=true verbose strict"
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+        # docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v /tmp/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr ${{ matrix.tag }} offline=true verbose strict"
 
   build:
     name: Build Release
