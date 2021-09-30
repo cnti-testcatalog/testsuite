@@ -11,7 +11,7 @@ namespace "platform" do
   end
 
   desc "Is the platform control plane hardened"
-  task "control_plane_hardening" do |_, args|
+  task "control_plane_hardening", ["kubescape_scan"] do |_, args|
     task_response = CNFManager::Task.task_runner(args) do |args|
 
     VERBOSE_LOGGING.info "control_plane_hardening" if check_verbose(args)
