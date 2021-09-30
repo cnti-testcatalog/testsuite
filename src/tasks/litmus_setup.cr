@@ -9,11 +9,11 @@ desc "Install LitmusChaos"
 task "install_litmus" do |_, args|
   if args.named["offline"]?
     Log.info {"install litmus offline mode"}
-    AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v2.1.0.yaml")
-    KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v2.1.0.yaml")
+    AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v#{LitmusManager::Version}.yaml")
+    KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v#{LitmusManager::Version}.yaml")
     KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/chaos_crds.yaml")
   else
-    KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v2.1.0.yaml")
+    KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v#{LitmusManager::Version}.yaml")
     KubectlClient::Apply.file("https://raw.githubusercontent.com/litmuschaos/chaos-operator/master/deploy/chaos_crds.yaml")
   end
 end
@@ -21,7 +21,7 @@ end
 desc "Cordon target node to make it non schedulable"
 task "cordon_target_node" do | _,args|
   CNFManager::Task.task_runner(args) do |args, config|      
-    Log.for("verbose").info { "pod_network_latency" } if check_verbose(args)
+    Log.for("verbose").info { "cordon_target_node" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
     #TODO tests should fail if cnf not installed
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
@@ -48,6 +48,8 @@ task "cordon_target_node" do | _,args|
 end
 
 module LitmusManager
+
+  Version = "2.1.0"
 
   ## wait_for_test will wait for the completion of litmus test
   def self.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
@@ -87,7 +89,7 @@ module LitmusManager
     verdict_cmd = "kubectl get chaosresults.litmuschaos.io #{chaos_result_name} -o jsonpath='{.status.experimentStatus.verdict}'"
     puts "Checking experiment verdict  #{verdict_cmd}" if check_verbose(args)
     ## Check the chaosresult verdict
-    until (status_code == 0 && verdict != "Awaited") || wait_count >= 20
+    until (status_code == 0 && verdict != "Awaited") || wait_count >= 30
       sleep delay
       status_code = Process.run("#{verdict_cmd}", shell: true, output: verdict_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
       puts "status_code: #{status_code}" if check_verbose(args)
