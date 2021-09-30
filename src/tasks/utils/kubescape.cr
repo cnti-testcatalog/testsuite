@@ -48,6 +48,7 @@ module Kubescape
 
   def self.test_passed?(test_json)
     score = score(test_json)
+    Log.info { "score: #{score}" }
     score.as_i == 100
   end
 
