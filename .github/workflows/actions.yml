@@ -52,6 +52,9 @@ jobs:
       fail-fast: false
       matrix: ${{fromJson(needs.tests.outputs.matrix)}}
     steps:
+    - name: Runner Name
+      run: |
+        echo "RUNNER: $RUNNER_NAME"
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -92,7 +95,6 @@ jobs:
         helm repo add stable https://cncf.gitlab.io/stable
         git fetch --all --tags --force
         shards install  
-        echo "RUNNER: $RUNNER_NAME"
     - name: Run Crystal Spec
       env:
         FALCO_ENV: CI
