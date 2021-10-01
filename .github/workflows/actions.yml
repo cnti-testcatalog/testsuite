@@ -11,7 +11,7 @@ on:
 jobs:
   tests:
     name: Fetch Matrix Tests
-    runs-on: [default]
+    runs-on: [ubuntu-latest]
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
