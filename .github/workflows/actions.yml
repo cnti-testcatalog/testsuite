@@ -81,6 +81,8 @@ jobs:
         key: lib-${{ hashFiles('**/shard.lock') }}
         restore-keys: |
           lib-
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Setup CNF-Conformance
       env:
         PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
