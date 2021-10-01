@@ -44,6 +44,11 @@ for node in "${!RUNNERS[@]}"; do
     done
     ssh root@${RUNNERS[$node]} "docker network rm kind"
     ssh root@${RUNNERS[$node]} docker network create --driver bridge --subnet=${VIPS[$node]} --opt "com.docker.network.bridge.name"="kindbridge" --opt "com.docker.network.bridge.enable_ip_masquerade"="false" kind
+    RUNNER_CONTAINERS=( $(ssh root@${RUNNERS[$node]} docker ps --filter "name=github-runner" --format '{{.Names}}' | xargs) )
+    for runner in  "${RUNNER_CONTAINERS[@]}"; do
+        ssh root@${RUNNERS[$node]} docker exec $runner "chmod 777 /tmp"
+    done
+
     # ssh root@${RUNNERS[$node]} "sudo apt update && sudo apt install -y bridge-utils"
    # ssh root@${RUNNERS[$node]} "sudo brctl addif kindbridge bond0"
 done
