@@ -1,15 +1,16 @@
 require "totem"
 require "colorize"
-require "logger"
+require "log"
 require "halite"
 
 module EmbeddedFileManager 
   macro cri_tools
-    # CRI_TOOLS = File.read("./tools/cri-tools/manifest.yml")
     CRI_TOOLS = Base64.decode_string("{{ `cat ./tools/cri-tools/manifest.yml | base64` }}")
   end
+  macro falco_rules
+    FALCO_RULES = Base64.decode_string("{{ `cat ./embedded_files/falco_rule.yaml | base64` }}")
+  end
   macro node_failure_values
-    # NODE_FAILED_VALUES = File.read("./embedded_files/node_failure_values.yml")
     NODE_FAILED_VALUES = Base64.decode_string("{{ `cat ./embedded_files/node_failure_values.yml  | base64`}}")
   end
   macro reboot_daemon
@@ -26,6 +27,12 @@ module EmbeddedFileManager
   end
   macro points_yml 
     POINTSFILE = Base64.decode_string("{{ `cat ./embedded_files/points.yml  | base64`}}")
+  end
+  macro enforce_image_tag 
+    ENFORCE_IMAGE_TAG = Base64.decode_string("{{ `cat ./embedded_files/enforce-image-tag.yml  | base64`}}")
+  end
+  macro constraint_template 
+    CONSTRAINT_TEMPLATE = Base64.decode_string("{{ `cat ./embedded_files/constraint_template.yml  | base64`}}")
   end
   def self.points_yml_write_file
     File.write("points.yml", POINTSFILE)

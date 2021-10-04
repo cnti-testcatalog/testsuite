@@ -13,7 +13,7 @@ describe "Resilience Network Chaos" do
   end
 
   #TODO Fix Chaos Network Loss Test
-  # it "'chaos_network_loss' A 'Good' CNF should not crash when network loss occurs", tags: ["chaos_network_loss"]  do
+  # it "'chaos_network_loss' A 'Good' CNF should not crash when network loss occurs", do
   #   begin
   #     `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
   #     $?.success?.should be_true
@@ -28,7 +28,7 @@ describe "Resilience Network Chaos" do
   # end
 
   #TODO upgrade chaos mesh
-  # it "'chaos_network_loss' A 'Bad' CNF should crash when network loss occurs", tags: ["chaos_network_loss"]  do
+  # it "'chaos_network_loss' A 'Bad' CNF should crash when network loss occurs", do
   #   begin
   #     `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_network_loss deploy_with_chart=false wait_count=60`
   #     $?.success?.should be_true

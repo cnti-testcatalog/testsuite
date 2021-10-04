@@ -38,7 +38,7 @@ end
 
 task "results_yml_cleanup" do |_, args|
   if File.exists?("#{CNFManager::Points::Results.file}")
-    rm = `rm #{CNFManager::Points::Results.file}`
+    rm = File.delete(CNFManager::Points::Results.file)
     VERBOSE_LOGGING.info rm if check_verbose(args)
   end
 end

@@ -1,6 +1,6 @@
 require "../spec_helper"
-require "../../src/tasks/utils/airgap.cr"
-require "../../src/tasks/utils/kubectl_client.cr"
+require "airgap"
+require "kubectl_client"
 require "../../src/tasks/utils/kernel_instrospection.cr"
 require "file_utils"
 require "sam"
@@ -14,6 +14,7 @@ describe "KernelInstrospection" do
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     (pods).should_not be_nil
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+    KubectlClient::Get.resource_wait_for_install("Daemonset", "cri-tools")
     LOGGING.info "pods: #{pods}"
     (pods).should_not be_nil
     if pods && pods[0]? != Nil

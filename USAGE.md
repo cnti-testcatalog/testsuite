@@ -250,6 +250,18 @@ crystal src/cnf-testsuite.cr check_reaped
 ./cnf-testsuite privileged
 ```
 
+ #### :heavy_check_mark: To check if any containers are running as a [root user](https://github.com/cncf/cnf-wg/blob/best-practice-no-root-in-containers/cbpps/0002-no-root-in-containers.md)
+
+```
+./cnf-testsuite privilege_escalation
+```
+
+ #### :heavy_check_mark: To check if any containers allow for [privilege escalation](https://bit.ly/3zUimHR)
+
+```
+./cnf-testsuite privilege_escalation
+```
+
 <details> <summary>Details for Security Tests To Do's</summary>
 <p>
 
@@ -308,39 +320,27 @@ crystal src/cnf-testsuite.cr protected_access
 
 #### :heavy_check_mark: To test the [increasing and decreasing of capacity](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
 
-<details> <summary>Optional: To install the sample coredns cnf: to run test </summary>
+<details> <summary>Details for increasing and decreasing of capacity</summary>
 <p>
 
-```
-./cnf-testsuite sample_coredns_setup helm_chart=<helm chart name>
-```
+<b>increase_decrease_capacity test:</b> HPA (horizonal pod autoscale) will autoscale replicas to accommodate when there is an increase of CPU, memory or other configured metrics to prevent disruption by allowing more requests by balancing out the utilisation across all of the pods.
 
-Or optionally modify the your cnf's cnf-testsuite.yml file to include the helm_chart name, e.g.
+Decreasing replicas works the same as increase but rather scale down the number of replicas when the traffic decreases to the number of pods that can handle the requests.
 
-```
-helm_chart: stable/coredns
-```
+You can read more about horizonal pod autoscaling to create replicas [here](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/).
 
-To run the capacity test:
-
-```
-./cnf-testsuite increase_decrease_capacity deployment_name=coredns-coredns
-```
-
-Or optionally modify the your cnf's cnf-testsuite.yml file to include the deployment name, e.g.
-
-```
-deployment_name: coredns/coredns
-```
-
-</p>
-</details>
-
-**Remediation for failing this test:**
+<b>Remediation for failing this test:</b>
 
 Check out the kubectl docs for how to [manually scale your cnf.](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
 
 Also here is some info about [things that could cause failures.](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#failed-deployment)
+
+</p>
+</details>
+
+```
+./cnf-testsuite increase_decrease_capacity
+```
 
 #### :heavy_check_mark: To test if Cluster API is enabled on the platform and manages a node
 
@@ -388,6 +388,12 @@ crystal src/cnf-testsuite.cr external_retry
 ./cnf-testsuite configuration_lifecycle
 ```
 
+#### :heavy_check_mark: To test if there are versioned tags on all images using OPA Gatekeeper
+
+```
+./cnf-testsuite versioned_tag
+```
+
 #### :heavy_check_mark: To test if there is a liveness entry in the Helm chart
 
 ```
@@ -410,6 +416,12 @@ crystal src/cnf-testsuite.cr external_retry
 
 ```
 ./cnf-testsuite nodeport_not_used
+```
+
+#### :heavy_check_mark: To test if there are host ports used in the service configuration
+
+```
+./cnf-testsuite hostport_not_used
 ```
 
 #### :heavy_check_mark: To test if there are any (non-declarative) hardcoded IP addresses or subnet masks in the K8s runtime configuration
@@ -668,7 +680,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 <b>Disk-Fill(Stress-Chaos):</b> Disk Pressure is another very common and frequent scenario we find in Kubernetes applications that can result in the eviction of the application replica and impact its delivery. Such scenarios can still occur despite whatever availability aids K8s provides. These problems are generally referred to as "Noisy Neighbour" problems.
 
-Stressing the disk with continuous and heavy IO for example can cause degradation in reads written by other microservices that use this shared disk for example modern storage solutions for Kubernetes to use the concept of storage pools out of which virtual volumes/devices are carved out. Another issue is the amount of scratch space eaten up on a node which leads to the lack of space for newer containers to get scheduled (Kubernetes too gives up by applying an "eviction" taint like "disk-pressure") and causes a wholesale movement of all pods to other nodes. Similarly with CPU chaos, by injecting a rogue process into a target container, we starve the main microservice process (typically PID 1) of the resources allocated to it (where limits are defined) causing slowness in application traffic or in other cases unrestrained use can cause the node to exhaust resources leading to the eviction of all pods. So this category of chaos experiment helps to build the immunity on the application undergoing any such stress scenario.
+[Stressing the disk](https://litmuschaos.github.io/litmus/experiments/categories/pods/disk-fill/) with continuous and heavy IO for example can cause degradation in reads written by other microservices that use this shared disk for example modern storage solutions for Kubernetes to use the concept of storage pools out of which virtual volumes/devices are carved out. Another issue is the amount of scratch space eaten up on a node which leads to the lack of space for newer containers to get scheduled (Kubernetes too gives up by applying an "eviction" taint like "disk-pressure") and causes a wholesale movement of all pods to other nodes. Similarly with CPU chaos, by injecting a rogue process into a target container, we starve the main microservice process (typically PID 1) of the resources allocated to it (where limits are defined) causing slowness in application traffic or in other cases unrestrained use can cause the node to exhaust resources leading to the eviction of all pods. So this category of chaos experiment helps to build the immunity on the application undergoing any such stress scenario.
 
 </p>
 </details>
@@ -684,7 +696,7 @@ Stressing the disk with continuous and heavy IO for example can cause degradatio
 
 <b>Pod Delete:</b> In a distributed system like Kubernetes, likely, your application replicas may not be sufficient to manage the traffic (indicated by SLIs) when some of the replicas are unavailable due to any failure (can be system or application) the application needs to meet the SLO(service level objectives) for this, we need to make sure that the applications have a minimum number of available replicas. One of the common application failures is when the pressure on other replicas increases then to how the horizontal pod autoscaler scales based on observed resource utilization and also how much PV mount takes time upon rescheduling. The other important aspects to test are the MTTR for the application replica, re-elections of leader or follower like in Kafka application the selection of broker leader, validating minimum quorum to run the application for example in applications like percona, resync/redistribution of data.
 
-[This experiment](https://docs.litmuschaos.io/docs/pod-delete/) helps to simulate such a scenario with forced/graceful pod failure on specific or random replicas of an application resource and checks the deployment sanity (replica availability & uninterrupted service) and recovery workflow of the application.
+[This experiment](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-delete/) helps to simulate such a scenario with forced/graceful pod failure on specific or random replicas of an application resource and checks the deployment sanity (replica availability & uninterrupted service) and recovery workflow of the application.
 
 </p>
 </details>
@@ -695,17 +707,49 @@ Stressing the disk with continuous and heavy IO for example can cause degradatio
 
 #### :heavy_check_mark: Test if the CNF crashes when pod memory hog occurs
 
+<details> <summary>Details for litmus pod memory hog experiment</summary>
+<p>
+
+Memory usage within containers is subject to various constraints in Kubernetes. If the limits are specified in their spec, exceeding them can cause termination of the container (due to OOMKill of the primary process, often pid 1) - the restart of the container by kubelet, subject to the policy specified. For containers with no limits placed, the memory usage is uninhibited until such time as the Node level OOM Behaviour takes over. In this case, containers on the node can be killed based on their oom_score and the QoS class a given pod belongs to (bestEffort ones are first to be targeted). This eval is extended to all pods running on the node - thereby causing a bigger blast radius. 
+
+The [pod-memory hog](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-memory-hog/) experiment launches a stress process within the target container - which can cause either the primary process in the container to be resource constrained in cases where the limits are enforced OR eat up available system memory on the node in cases where the limits are not specified. 
+
+</p>
+</details>
+
+
 ```
 ./cnf-testsuite pod_memory_hog
 ```
 
 #### :heavy_check_mark: Test if the CNF crashes when pod io stress occurs
 
+<details> <summary>Details for litmus pod io stress experiment</summary>
+<p>
+
+Sressing the disk with continuous and heavy IO can cause degradation in reads/ writes byt other microservices that use this shared disk.  For example modern storage solutions for Kubernetes use the concept of storage pools out of which virtual volumes/devices are carved out.  Another issue is the amount of scratch space eaten up on a node which leads to  the lack of space for newer containers to get scheduled (kubernetes too gives up by applying an "eviction" taint like "disk-pressure") and causes a wholesale movement of all pods to other nodes.
+
+[This experiment](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-io-stress/) is also useful in determining the performance of the storage device used.  
+</p>
+</details>
+
 ```
 ./cnf-testsuite pod_io_stress
 ```
 
+#### :heavy_check_mark: Test if the CNF crashes when pod network corruption occurs
+
+```
+./cnf-testsuite pod_network_corruption
+```
+
 ---
+
+#### :heavy_check_mark: Test if the CNF crashes when pod network duplication occurs
+
+```
+./cnf-testsuite pod_network_duplication
+```
 
 ### Platform Tests
 

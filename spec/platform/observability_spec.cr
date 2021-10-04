@@ -1,14 +1,14 @@
 require "./../spec_helper"
 require "colorize"
 require "./../../src/tasks/utils/utils.cr"
-require "./../../src/tasks/utils/kubectl_client.cr"
+require "kubectl_client"
 
 describe "Observability" do
 
   it "'kube_state_metrics' should return some json", tags: ["platform:observability"] do
 
       LOGGING.info "Installing kube_state_metrics" 
-      helm = CNFSingleton.helm
+      helm = BinarySingleton.helm
       resp = `#{helm} install kube-state-metrics stable/kube-state-metrics`
       LOGGING.info resp
       KubectlClient::Get.wait_for_install("kube-state-metrics")
@@ -25,7 +25,7 @@ describe "Observability" do
   it "'node_exporter' should detect the named release of the installed node_exporter", tags: ["platform:observability"] do
 
 		  LOGGING.info "Installing prometheus-node-exporter" 
-      helm = CNFSingleton.helm
+      helm = BinarySingleton.helm
 		  resp = `#{helm} install node-exporter stable/prometheus-node-exporter`
 		  LOGGING.info resp
 
@@ -33,7 +33,7 @@ describe "Observability" do
       pod_ready_timeout = 45
       until (pod_ready == "true" || pod_ready_timeout == 0)
         pod_ready = KubectlClient::Get.pod_status("node-exporter-prometheus").split(",")[2]
-        puts "Pod Ready Status: #{pod_ready}"
+        Log.info { "Pod Ready Status: #{pod_ready}" }
         sleep 1
         pod_ready_timeout = pod_ready_timeout - 1
       end
@@ -49,7 +49,7 @@ describe "Observability" do
   it "'prometheus_adapter' should detect the named release of the installed prometheus_adapter", tags: ["platform:observability"] do
 
 	    LOGGING.info "Installing prometheus-adapter" 
-      helm = CNFSingleton.helm
+      helm = BinarySingleton.helm
 		  resp = `#{helm} install prometheus-adapter stable/prometheus-adapter`
 		  LOGGING.info resp
 		  KubectlClient::Get.wait_for_install("prometheus-adapter")

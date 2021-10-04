@@ -1,3 +1,4 @@
+# coding: utf-8
 require "sam"
 require "file_utils"
 require "colorize"
@@ -8,11 +9,12 @@ desc "Install LitmusChaos"
 task "install_litmus" do |_, args|
   if args.named["offline"]?
     LOGGING.info "install litmus offline mode"
-    AirGapUtils.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v1.13.8.yaml")
-    KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v1.13.8.yaml")
+    AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v2.0.0.yaml")
+    KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v2.0.0.yaml")
     KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/chaos_crds.yaml")
   else
-    KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v1.13.8.yaml")
+    KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v2.0.0.yaml")
+    KubectlClient::Apply.file("https://raw.githubusercontent.com/litmuschaos/chaos-operator/master/deploy/chaos_crds.yaml")
   end
 end
 
@@ -46,8 +48,7 @@ module LitmusManager
       emoji_test_failed= "🗡️💀♻️"
       LOGGING.info "experimentStatus #{experimentStatus}"
       if (experimentStatus != "Waiting for Job Creation" && experimentStatus != "Running" && experimentStatus != "Completed")
-        resp = upsert_failed_task("pod-network-latency","✖️  FAILED: #{chaos_experiment_name} chaos test failed #{emoji_test_failed}")
-        resp
+        LOGGING.info "#{test_name}: wait_for_test failed."
       end
       wait_count = wait_count + 1
     end

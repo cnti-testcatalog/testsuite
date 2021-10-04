@@ -1,6 +1,6 @@
 require "../spec_helper"
-require "../../src/tasks/utils/airgap.cr"
-require "../../src/tasks/utils/kubectl_client.cr"
+require "airgap"
+require "kubectl_client"
 require "../../src/tasks/utils/k8s_instrumentation.cr"
 require "file_utils"
 require "sam"

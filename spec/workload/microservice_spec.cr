@@ -1,7 +1,7 @@
 require "../spec_helper"
 require "colorize"
 require "../../src/tasks/utils/utils.cr"
-require "../../src/tasks/utils/kubectl_client.cr"
+require "kubectl_client"
 require "../../src/tasks/utils/system_information/helm.cr"
 require "../../src/tasks/dockerd_setup.cr"
 require "file_utils"
@@ -49,10 +49,6 @@ describe "Microservice" do
   end
 
   it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"]  do
-    `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
-    begin
-      response_s = `./cnf-testsuite reasonable_startup_time verbose`
-      LOGGING.info response_s
       LOGGING.info `kubectl apply -f #{TOOLS_DIR}/cri-tools/manifest.yml`
       $?.success?.should be_true
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
@@ -65,6 +61,10 @@ describe "Microservice" do
       LOGGING.info "#{KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=memory --memory-block-size=1M --memory-total-size=100G --num-threads=1 run")}"
       LOGGING.info "Disk logs"
       LOGGING.info "#{KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- /bin/bash -c 'sysbench fileio prepare && sysbench fileio --file-test-mode=rndrw run'")}"
+      `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
+    begin
+      response_s = `./cnf-testsuite reasonable_startup_time verbose`
+      LOGGING.info response_s
       
       (/PASSED: CNF had a reasonable startup time/ =~ response_s).should_not be_nil
     ensure
@@ -75,7 +75,7 @@ describe "Microservice" do
   end
 
   it "'reasonable_startup_time' should fail if the cnf doesn't has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"] do
-    `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-testsuite.yml force=true`
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-testsuite.yml force=true`
     begin
       response_s = `./cnf-testsuite reasonable_startup_time verbose`
       LOGGING.info response_s
@@ -95,8 +95,8 @@ describe "Microservice" do
     end
   end
 
-  it "'reasonable_image_size' should pass if image is smaller than 5gb", tags: ["reasonable_image_size"]  do
-    if ENV["PROTECTED_DOCKERHUB_USERNAME"]? && ENV["PROTECTED_DOCKERHUB_PASSWORD"]? && ENV["PROTECTED_DOCKERHUB_EMAIL"]?
+  it "'reasonable_image_size' should pass if image is smaller than 5gb, when using a protected image", tags: ["reasonable_image_size"]  do
+    if ENV["PROTECTED_DOCKERHUB_USERNAME"]? && ENV["PROTECTED_DOCKERHUB_PASSWORD"]? && ENV["PROTECTED_DOCKERHUB_EMAIL"]? && ENV["PROTECTED_IMAGE_REPO"]
          cnf="./sample-cnfs/sample_coredns_protected"
        else
          cnf="./sample-cnfs/sample-coredns-cnf"

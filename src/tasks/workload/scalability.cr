@@ -24,7 +24,8 @@ def increase_decrease_capacity_failure_msg(target_replicas, emoji)
 <<-TEMPLATE
 ✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji}
 
-To address this issue please see the USAGE.md documentation
+Replica failure can be due to insufficent permissions, image pull errors and other issues.
+Learn more on remediation by viewing our USAGE.md doc at https://bit.ly/capacity_remedy
 
 TEMPLATE
 end
@@ -98,36 +99,37 @@ def change_capacity(base_replicas, target_replica_count, args, config, resource 
   initialization_time = base_replicas.to_i * 10
   VERBOSE_LOGGING.info "resource: #{resource["metadata"]["name"]}" if check_verbose(args)
 
-  #TODO make a KubectlClient.scale command
+  scale_cmd = ""
+
   case resource["kind"].as_s.downcase
   when "deployment"
-    LOGGING.debug "kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
-
-    base = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}`
+    scale_cmd = "#{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
   when "statefulset"
-    `kubectl scale statefulsets #{resource["metadata"]["name"]} --replicas=#{base_replicas}`
+    scale_cmd = "statefulsets #{resource["metadata"]["name"]} --replicas=#{base_replicas}"
   else #TODO what else can be scaled?
-    LOGGING.debug "kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
-
-    base = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}`
+    scale_cmd = "#{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
   end
-  VERBOSE_LOGGING.info "base: #{base}" if check_verbose(args) 
+  KubectlClient::Scale.command(scale_cmd)
+
   initialized_count = wait_for_scaling(resource, base_replicas, args)
-  if initialized_count != base_replicas
-    VERBOSE_LOGGING.info "#{resource["kind"]} initialized to #{initialized_count} and could not be set to #{base_replicas}" if check_verbose(args)
-  else
-    VERBOSE_LOGGING.info "#{resource["kind"]} initialized to #{initialized_count}" if check_verbose(args)
+
+  if check_verbose(args)
+    if initialized_count != base_replicas
+      VERBOSE_LOGGING.info "#{resource["kind"]} initialized to #{initialized_count} and could not be set to #{base_replicas}" 
+    else
+      VERBOSE_LOGGING.info "#{resource["kind"]} initialized to #{initialized_count}"
+    end
   end
 
   case resource["kind"].as_s.downcase
   when "deployment"
-    increase = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}`
+    scale_cmd = "#{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}"
   when "statefulset"
-    `kubectl scale statefulsets #{resource["metadata"]["name"]} --replicas=#{target_replica_count}`
+    scale_cmd = "statefulsets #{resource["metadata"]["name"]} --replicas=#{target_replica_count}"
   else #TODO what else can be scaled?
-    LOGGING.debug "kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
-    base = `kubectl scale #{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}`
+    scale_cmd = "#{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}"
   end
+  KubectlClient::Scale.command(scale_cmd)
 
   current_replicas = wait_for_scaling(resource, target_replica_count, args)
   current_replicas
@@ -143,15 +145,29 @@ def wait_for_scaling(resource, target_replica_count, args)
   wait_count = wait_count_value.to_i
   second_count = 0
   current_replicas = "0"
-  previous_replicas = `kubectl get #{resource["kind"]} #{resource["metadata"]["name"]} -o=jsonpath='{.status.readyReplicas}'`
+  replicas_cmd = "kubectl get #{resource["kind"]} #{resource["metadata"]["name"]} -o=jsonpath='{.status.readyReplicas}'"
+  Process.run(
+    replicas_cmd,
+    shell: true,
+    output: replicas_stdout = IO::Memory.new,
+    error: replicas_stderr = IO::Memory.new
+  )
+  previous_replicas = replicas_stdout.to_s
   until current_replicas == target_replica_count || second_count > wait_count
-    VERBOSE_LOGGING.debug "secound_count: #{second_count} wait_count: #{wait_count}" if check_verbose(args)
-    VERBOSE_LOGGING.info "current_replicas before get #{resource["kind"]}: #{current_replicas}" if check_verbose(args)
+    Log.for("verbose").debug { "secound_count: #{second_count} wait_count: #{wait_count}" } if check_verbose(args)
+    Log.for("verbose").info { "current_replicas before get #{resource["kind"]}: #{current_replicas}" } if check_verbose(args)
     sleep 1
-    VERBOSE_LOGGING.debug `echo $KUBECONFIG` if check_verbose(args)
-    VERBOSE_LOGGING.info "Get #{resource["kind"]} command: kubectl get #{resource["kind"]} #{resource["metadata"]["name"]} -o=jsonpath='{.status.readyReplicas}'" if check_verbose(args)
-    current_replicas = `kubectl get #{resource["kind"]} #{resource["metadata"]["name"]} -o=jsonpath='{.status.readyReplicas}'`
-    VERBOSE_LOGGING.info "current_replicas after get #{resource["kind"]}: #{current_replicas.inspect}" if check_verbose(args)
+    Log.for("verbose").debug { "$KUBECONFIG = #{ENV.fetch("KUBECONFIG", nil)}" } if check_verbose(args)
+
+    Process.run(
+      replicas_cmd,
+      shell: true,
+      output: replicas_stdout = IO::Memory.new,
+      error: replicas_stderr = IO::Memory.new
+    )
+    current_replicas = replicas_stdout.to_s
+
+    Log.for("verbose").info { "current_replicas after get #{resource["kind"]}: #{current_replicas.inspect}" } if check_verbose(args)
 
     if current_replicas.empty?
       current_replicas = "0"
@@ -163,8 +179,8 @@ def wait_for_scaling(resource, target_replica_count, args)
       previous_replicas = current_replicas
     end
     second_count = second_count + 1 
-    VERBOSE_LOGGING.info "previous_replicas: #{previous_replicas}" if check_verbose(args)
-    VERBOSE_LOGGING.info "current_replicas: #{current_replicas}" if check_verbose(args)
+    Log.for("verbose").info { "previous_replicas: #{previous_replicas}" } if check_verbose(args)
+    Log.for("verbose").info { "current_replicas: #{current_replicas}" } if check_verbose(args)
   end
   current_replicas
 end 

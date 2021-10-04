@@ -1,5 +1,5 @@
 require "../spec_helper"
-require "../../src/tasks/utils/kubectl_client.cr"
+require "kubectl_client"
 require "colorize"
 
 describe CnfTestSuite do
@@ -16,6 +16,32 @@ describe CnfTestSuite do
     # $?.success?.should be_true
   end
 
+
+  it "'versioned_tag' should pass when a cnf has image tags that are all versioned", tags: ["versioned_tag"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `LOG_LEVEL=info ./cnf-testsuite versioned_tag verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Image uses a versioned tag/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+    end
+  end
+
+  it "'versioned_tag' should fail when a cnf has image tags that are not versioned", tags: ["versioned_tag"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `LOG_LEVEL=info ./cnf-testsuite versioned_tag verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Image does not use a versioned tag/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-testsuite.yml`
+    end
+  end
 
   it "'liveness' should pass when livenessProbe is set", tags: ["liveness"] do
     begin
@@ -191,6 +217,32 @@ describe CnfTestSuite do
       LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: NodePort is not used/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cleanup_sample_coredns`
+    end
+  end
+
+  it "'hostport_not_used' should fail when a node port is being used", tags: ["hostport_not_used"] do
+    begin
+      `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_hostport deploy_with_chart=false`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite hostport_not_used verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: HostPort is being used/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_hostport deploy_with_chart=false`
+    end
+  end
+
+  it "'hostport_not_used' should pass when a node port is not being used", tags: ["hostport_not_used"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose wait_count=0`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite hostport_not_used verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: HostPort is not used/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cleanup_sample_coredns`
     end

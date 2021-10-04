@@ -30,6 +30,8 @@
 - name: privileged 
   tags: security, dynamic, workload
   required: true
+- name: non_root_user 
+  tags: security, dynamic, workload
 #- name: shells 
 #  tags: security, dynamic
 #- name: protected_access 
@@ -47,12 +49,22 @@
 #  tags: scalability, dynamic, workload
 #- name: large_autoscaling 
 #  tags: scalability, dynamic, workload
-- name: network_chaos 
-  tags: scalability, dynamic, workload
+# - name: network_chaos 
+#   tags: resilience, dynamic, workload
 - name: pod_network_latency
-  tags: scalability, dynamic, workload
+  tags: resilience, dynamic, workload
+- name: pod_network_corruption
+  tags: resilience, dynamic, workload
+- name: pod_network_duplication
+  tags: resilience, dynamic, workload
+- name: pod_delete
+  tags: resilience, dynamic, workload  
+- name: pod_io_stress
+  tags: resilience, dynamic, workload  
+- name: pod_memory_hog
+  tags: resilience, dynamic, workload  
 - name: disk_fill
-  tags: scalability, dynamic, workload  
+  tags: resilience, dynamic, workload  
 #- name: external_retry 
 #  tags: scalability, dynamic, workload
 
@@ -77,6 +89,8 @@
 - name: rollback
   tags: configuration_lifecycle, dynamic, workload
 - name: nodeport_not_used
+  tags: configuration_lifecycle, dynamic, workload
+- name: hostport_not_used
   tags: configuration_lifecycle, dynamic, workload
 - name: hardcoded_ip_addresses_in_k8s_runtime_configuration
   tags: configuration_lifecycle, dynamic, workload
@@ -111,10 +125,10 @@
   
 # - name: chaos_network_loss 
 #   tags: resilience, dynamic, workload
-- name: chaos_cpu_hog
-  tags: resilience, dynamic, workload
-- name: chaos_container_kill
-  tags: resilience, dynamic, workload
+# - name: chaos_cpu_hog
+#   tags: resilience, dynamic, workload
+# - name: chaos_container_kill
+#   tags: resilience, dynamic, workload
 
 - name: volume_hostpath_not_found
   tags: state, dynamic, workload

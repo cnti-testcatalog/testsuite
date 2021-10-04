@@ -1,7 +1,8 @@
+# coding: utf-8
 require "../spec_helper"
 require "colorize"
 require "../../src/tasks/utils/utils.cr"
-require "../../src/tasks/utils/kubectl_client.cr"
+require "kubectl_client"
 require "file_utils"
 require "sam"
 
@@ -117,7 +118,7 @@ describe "SampleUtils" do
 
   it "'CNFManager::Points.tasks_by_tag' should return the tasks assigned to a tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
-    (CNFManager::Points.tasks_by_tag("configuration_lifecycle")).should eq(["ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "rollback", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap"])
+    (CNFManager::Points.tasks_by_tag("configuration_lifecycle")).should eq(["ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "rollback", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap"])
     (CNFManager::Points.tasks_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
@@ -129,7 +130,7 @@ describe "SampleUtils" do
 
   it "'CNFManager::Points.all_task_test_names' should return all tasks names", tags: ["points"] do
     CNFManager::Points.clean_results_yml
-    (CNFManager::Points.all_task_test_names()).should eq(["reasonable_image_size", "reasonable_startup_time", "single_process_type", "privileged", "increase_capacity", "decrease_capacity", "network_chaos", "pod_network_latency", "disk_fill", "ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "rollback", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap" , "helm_deploy", "install_script_helm", "helm_chart_valid", "helm_chart_published", "chaos_cpu_hog", "chaos_container_kill", "volume_hostpath_not_found", "no_local_volume_configuration"])
+    (CNFManager::Points.all_task_test_names()).should eq(["reasonable_image_size", "reasonable_startup_time", "single_process_type", "privileged", "non_root_user", "increase_capacity", "decrease_capacity","pod_network_latency", "pod_network_corruption", "pod_network_duplication", "pod_delete", "pod_io_stress", "pod_memory_hog", "disk_fill", "ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "rollback", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap" , "helm_deploy", "install_script_helm", "helm_chart_valid", "helm_chart_published", "volume_hostpath_not_found", "no_local_volume_configuration"])
   end
 
   it "'CNFManager::Points.all_result_test_names' should return the tasks assigned to a tag", tags: ["points"] do

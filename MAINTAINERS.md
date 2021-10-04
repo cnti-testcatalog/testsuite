@@ -1,7 +1,7 @@
 # CNF Test Suite Contributors
 
 
-# Admin
+## Admin
 | Name | GitHub ID | Company Name |
 | --------------- | --------- | ----------- |
 | Denver Williams | [denverwilliams](https://github.com/denverwilliams) | [Vulk Coop](vulk.coop) |
@@ -9,29 +9,20 @@
 | Taylor Carpenter | [taylor](https://github.com/taylor) | [Vulk Coop](vulk.coop) |
 | W. Watson | [wavell](https://github.com/wavell) | [Vulk Coop](vulk.coop) |
 
-# Maintainer
+## Maintainer
 | Name | GitHub ID | Affiliation |
 | --------------- | --------- | ----------- |
 | Akash Manohar | [hashnuke](https://github.com/hashnuke) | [Vulk Coop](vulk.coop) |
 | Drew Bentley | [agentpoyo](https://github.com/agentpoyo) | [Vulk Coop](vulk.coop) |
 | William Harris | [williscool](https://github.com/williscool) | [Vulk Coop](vulk.coop) |
 
-# Contributor
+## Contributor
 | Name | GitHub ID | Affiliation |
 | --------------- | --------- | ----------- |
 | Michael S. Pedersen | [michaelspedersen](https://github.com/michaelspedersen) | [TietoEVRY](https://www.tietoevry.com/) / [Intel](https://intel.com/) |
+| Udit Gaurav    | [uditgaurav](https://github.com/uditgaurav) | [LitmusChaos](https://litmuschaos.io/) |
 
-# Community Participant
-| Name | GitHub ID | Affiliation |
-| --------------- | --------- | ----------- |
-| tbd | tbd | tbd |
-
-# Community Member
-| Name | GitHub ID | Affiliation |
-| --------------- | --------- | ----------- |
-| tbd | tbd | tbd |
-
-# Emeritus Maintainer
+### Emeritus Maintainer
 | Name | GitHub ID | Affiliation |
 | --------------- | --------- | ----------- |
 | Joshua Darius | [nupejosh](https://github.com/nupejosh) | [Vulk Coop](vulk.coop) |

@@ -9,7 +9,7 @@ require "../utils/utils.cr"
 rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
-task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used", "immutable_configmap"].concat(rolling_version_change_test_names) do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used", "immutable_configmap"].concat(rolling_version_change_test_names) do |_, args|
   stdout_score("configuration_lifecycle")
 end
 
@@ -52,6 +52,57 @@ task "ip_addresses" do |_, args|
       resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
     end
   end
+end
+
+desc "Do all cnf images have versioned tags?"
+task "versioned_tag", ["install_opa"] do |_, args|
+  # todo wait for opa
+   # unless KubectlClient::Get.resource_wait_for_install("Daemonset", "falco") 
+   #   LOGGING.info "Falco Failed to Start"
+   #   upsert_skipped_task("non_root_user", "✖️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).")
+   #   node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+   #   pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
+   #   falco_pod_name = pods[0].dig("metadata", "name")
+   #   LOGGING.info "Falco Pod Name: #{falco_pod_name}"
+   #   resp = KubectlClient.logs(falco_pod_name)
+   #   puts "Falco Logs: #{resp[:output]}"
+   #   next
+   # end
+   #
+   CNFManager::Task.task_runner(args) do |args,config|
+     VERBOSE_LOGGING.info "versioned_tag" if check_verbose(args)
+     LOGGING.debug "cnf_config: #{config}"
+     fail_msgs = [] of String
+     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+       test_passed = true
+       kind = resource["kind"].as_s.downcase
+       case kind 
+       when  "deployment","statefulset","pod","replicaset", "daemonset"
+         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
+         pods = KubectlClient::Get.pods_by_resource(resource_yaml)
+         pods.map do |pod|
+           pod_name = pod.dig("metadata", "name")
+           if OPA.find_non_versioned_pod(pod_name)
+             fail_msg = "resource: #{resource} and pod #{pod_name} use a non versioned image."
+             unless fail_msgs.find{|x| x== fail_msg}
+               puts fail_msg.colorize(:red)
+               fail_msgs << fail_msg
+             end
+             test_passed=false
+           end
+         end
+       end
+       test_passed
+     end
+     emoji_versioned_tag="🏷️✔️"
+     emoji_non_versioned_tag="🏷️❌"
+
+     if task_response
+       upsert_passed_task("versioned_tag", "✔️  PASSED: Image uses a versioned tag #{emoji_versioned_tag}")
+     else
+       upsert_failed_task("versioned_tag", "✖️  FAILED: Image does not use a versioned tag #{emoji_non_versioned_tag}")
+     end
+   end
 end
 
 desc "Is there a liveness entry in the helm chart?"
@@ -297,6 +348,53 @@ task "nodeport_not_used" do |_, args|
   end
 end
 
+desc "Does the CNF use HostPort"
+task "hostport_not_used" do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "hostport_not_used" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    release_name = config.cnf_config[:release_name]
+    service_name  = config.cnf_config[:service_name]
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+
+    task_response = CNFManager.workload_resource_test(args, config, check_containers:false, check_service: true) do |resource, container, initialized|
+      LOGGING.info "hostport_not_used resource: #{resource}"
+      test_passed=true
+      LOGGING.info "resource kind: #{resource}"
+      k8s_resource = KubectlClient::Get.resource(resource[:kind], resource[:name])
+      LOGGING.debug "resource: #{k8s_resource}"
+
+      # per examaple https://github.com/cncf/cnf-testsuite/issues/164#issuecomment-904890977
+      containers = k8s_resource.dig?("spec", "template", "spec", "containers")
+      LOGGING.debug "containers: #{containers}"
+
+      containers && containers.as_a.each do |single_container|
+        ports = single_container.dig?("ports")
+
+        ports && ports.as_a.each do |single_port|
+          LOGGING.debug "single_port: #{single_port}"
+          
+          hostport = single_port.dig?("hostPort")
+
+          LOGGING.debug "DAS hostPort: #{hostport}"
+
+          if hostport
+            puts "resource service: #{resource} has a HostPort that is being used".colorize(:red)
+            test_passed=false
+          end
+
+        end 
+      end
+      test_passed
+    end
+    if task_response
+      upsert_passed_task("hostport_not_used", "✔️  PASSED: HostPort is not used")
+    else
+      upsert_failed_task("hostport_not_used", "✖️  FAILED: HostPort is being used")
+    end
+  end
+end
+
 desc "Does the CNF have hardcoded IPs in the K8s resource configuration"
 task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
   task_response = CNFManager::Task.task_runner(args) do |args, config|
@@ -306,13 +404,13 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     release_name = config.cnf_config[:release_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     current_dir = FileUtils.pwd
-    helm = CNFSingleton.helm
+    helm = BinarySingleton.helm
     VERBOSE_LOGGING.info "Helm Path: #{helm}" if check_verbose(args)
 
-    create_namespace = `kubectl create namespace hardcoded-ip-test`
+    KubectlClient::Create.command("namespace hardcoded-ip-test")
     unless helm_chart.empty?
       if args.named["offline"]?
-        info = AirGapUtils.tar_info_by_config_src(helm_chart)
+        info = AirGap.tar_info_by_config_src(helm_chart)
         LOGGING.info  "hardcoded_ip_addresses_in_k8s_runtime_configuration airgapped mode info: #{info}"
         helm_chart = info[:tar_name]
       end
@@ -334,9 +432,10 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     else
       upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  FAILED: Hard-coded IP addresses found in the runtime K8s configuration")
     end
-    delete_namespace = `kubectl delete namespace hardcoded-ip-test --force --grace-period 0 2>&1 >/dev/null`
   rescue
     upsert_skipped_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  SKIPPED: unknown exception")
+  ensure
+    KubectlClient::Delete.command("namespace hardcoded-ip-test --force --grace-period 0")
   end
 end
 
@@ -464,24 +563,22 @@ task "immutable_configmap" do |_, args|
     test_config_map_filename = "#{destination_cnf_dir}/test_config_map.yml";
 
     template = Crinja.render(configmap_template, { "test_url" => "doesnt_matter" })
-    LOGGING.debug "test immutable_configmap template: #{template}"
-    test_config_map_create = `echo "#{template}" > "#{test_config_map_filename}"`
-    VERBOSE_LOGGING.debug "#{test_config_map_create}" if check_verbose(args)
-
+    Log.debug { "test immutable_configmap template: #{template}" }
+    File.write(test_config_map_filename, template)
     KubectlClient::Apply.file(test_config_map_filename)
 
     # now we change then apply again
 
     template = Crinja.render(configmap_template, { "test_url" => "doesnt_matter_again" })
-    LOGGING.debug "test immutable_configmap change template: #{template}"
-    test_config_map_create = `echo "#{template}" > "#{test_config_map_filename}"`
-    VERBOSE_LOGGING.debug "test_config_map_create: #{test_config_map_create}" if check_verbose(args)
+    Log.debug { "test immutable_configmap change template: #{template}" }
+    File.write(test_config_map_filename, template)
 
     immutable_configmap_supported = true
     # if the reapply with a change succedes immmutable configmaps is NOT enabled
     # if KubectlClient::Apply.file(test_config_map_filename) == 0
-    if KubectlClient::Apply.file(test_config_map_filename)
-      LOGGING.info "kubectl apply failed for: #{test_config_map_filename}"
+    apply_result = KubectlClient::Apply.file(test_config_map_filename)
+    if apply_result[:status].success?
+      Log.info { "kubectl apply failed for: #{test_config_map_filename}" }
       k8s_ver = KubectlClient.server_version
       if version_less_than(k8s_ver, "1.19.0")
         resp = "✖️  SKIPPED: immmutable configmaps are not supported in this k8s cluster.".colorize(:yellow)
@@ -499,8 +596,8 @@ task "immutable_configmap" do |_, args|
     resp = ""
     emoji_probe="⚖️"
     cnf_manager_workload_resource_task_response = CNFManager.workload_resource_test(args, config, check_containers=false, check_service=true) do |resource, containers, volumes, initialized|
-      LOGGING.info "resource: #{resource}"
-      LOGGING.info "volumes: #{volumes}"
+      Log.info { "resource: #{resource}" }
+      Log.info { "volumes: #{volumes}" }
 
       config_maps_json = KubectlClient::Get.configmaps
 

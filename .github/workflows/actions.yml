@@ -9,64 +9,6 @@ on:
       - '**'
       - '!**.md'
 jobs:
-  # debug_status:
-  #   name: Debug Status
-  #   runs-on: [default]
-  #   env:
-  #     skip_debug: ${{secrets.SKIP_DEBUG}}
-  #     release_debug: ${{secrets.RELEASE_DEBUG}}
-  #     build_debug: ${{secrets.BUILD_DEBUG}}
-  #   steps:
-  #   - name: Create Debug Files
-  #     run: |
-  #       touch skip_debug
-  #       touch release_debug
-  #       touch build_debug
-  #       if [[ "$skip_debug" == 'true' ]]; then
-  #          echo 'true' > skip_debug
-  #       fi
-  #       if [[ "$release_debug" == 'true' ]]; then
-  #          echo 'true' > release_debug
-  #       fi
-  #       if [[ "$build_debug" == 'true' ]]; then
-  #          echo 'true' > build_debug
-  #       fi
-    # - name: upload artifact
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: debug_status
-    #     path: |
-    #       skip_debug
-    #       release_debug
-    #       build_debug
-  # debug_output:
-  #   name: Debug Outputs
-  #   needs: [debug_status]
-  #   runs-on: [default]
-  #   outputs:
-  #     skip-debug: ${{ steps.skip-debug.outputs.debug }}
-  #     release-debug: ${{ steps.release-debug.outputs.debug }}
-  #     build-debug: ${{ steps.build-debug.outputs.debug }}
-  #   steps:
-  #   - name: Download artifact
-  #     uses: actions/download-artifact@v2
-  #     with:
-  #       name: debug_status
-  #   - id: skip-debug
-  #     run: |
-  #       if grep -q 'true' "./skip_debug"; then 
-  #         echo "::set-output name=debug::true"
-  #       fi
-  #   - id: release-debug
-  #     run: |
-  #       if grep -q 'true' "./release_debug"; then 
-  #         echo "::set-output name=debug::true"
-  #       fi
-  #   - id: build-debug
-  #     run: |
-  #       if grep -q 'true' "./build_debug"; then 
-  #         echo "::set-output name=debug::true"
-  #       fi
   tests:
     name: Fetch Matrix Tests
     runs-on: [default]
@@ -84,7 +26,13 @@ jobs:
         TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-config-lifecycle/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-microservice/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-all/}")
-        
+        TEST_ARRAY=("${TEST_ARRAY[@]/disk_fill/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/chaos_container_kill/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/chaos_cpu_hog/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/pod_delete/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/pod_io_stress/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/pod_memory_hog/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/pod_network_latency/}")
         TEST_LIST=$(for i in ${TEST_ARRAY[@]}
         do
                  echo "{\"spec\":\"$i\"}," | tr -d '\n'
@@ -99,7 +47,7 @@ jobs:
   spec:
     name: Crystal Specs
     needs: [tests]
-    runs-on: [default]
+    runs-on: [v1.0.0]
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.tests.outputs.matrix)}}
@@ -134,34 +82,50 @@ jobs:
         restore-keys: |
           lib-
     - name: Setup CNF-Conformance
-      env:
-        PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
-        docker login -u $PROTECTED_DOCKERHUB_USERNAME -p $PROTECTED_DOCKERHUB_PASSWORD
         helm repo add stable https://cncf.gitlab.io/stable
         git fetch --all --tags --force
         shards install  
         echo "RUNNER: $RUNNER_NAME"
     - name: Run Crystal Spec
       env:
+        FALCO_ENV: CI
         GITHUB_USER: ${{ secrets.GH_USER }}
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-        PROTECTED_DOCKERHUB_EMAIL: ${{ secrets.PROTECTED_DOCKERHUB_EMAIL }}
-        PROTECTED_DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        PROTECTED_DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        DOCKERHUB_USERNAMES: ${{ secrets.DOCKERHUB_USERNAMES }}
+        DOCKERHUB_PASSWORDS: ${{ secrets.DOCKERHUB_PASSWORDS }}
+        DOCKERHUB_EMAIL: ${{ secrets.DOCKERHUB_EMAIL }}
+        IMAGE_REPO: ${{ secrets.IMAGE_REPO }}
       run: |
+        USERNAME_ARRAY=($DOCKERHUB_USERNAMES)
+        PASSWORD_ARRAY=($DOCKERHUB_PASSWORDS)
+        EMAIL_ARRAY=($DOCKERHUB_EMAIL)
+        IMAGE_ARRAY=($IMAGE_REPO)
+        
+        RANDOMIZER=$(( 0 + $RANDOM % 3 ))
+
+        export DOCKERHUB_USERNAME=${USERNAME_ARRAY[$RANDOMIZER]}
+        export DOCKERHUB_PASSWORD=${PASSWORD_ARRAY[$RANDOMIZER]}
+        
+        export PROTECTED_DOCKERHUB_USERNAME=$DOCKERHUB_USERNAME
+        export PROTECTED_DOCKERHUB_PASSWORD=$DOCKERHUB_PASSWORD
+        export PROTECTED_DOCKERHUB_EMAIL=${EMAIL_ARRAY[$RANDOMIZER]}
+        export PROTECTED_IMAGE_REPO=${IMAGE_ARRAY[$RANDOMIZER]}
+
+        docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
-        kubectl create -f tools/cri-tools/manifest.yml
-        until [[ $(kubectl get pods -l name=cri-tools -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
-            echo "Waiting for CRI-TOOLS"
+        until [[ $(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
+            echo "Waiting for local-path-storage"
             sleep 1
         done
-        CRI_TOOLS_POD=$(kubectl get pods -l name=cri-tools -o jsonpath='{range .items[*]}{.metadata.name}')
-        CLUSTER_RATE_LIMIT=$(kubectl exec -ti $CRI_TOOLS_POD -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || true)
+        LOCAL_PATH_STORAGE_POD=$(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o jsonpath='{range .items[*]}{.metadata.name}')
+        until [[ $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- apk add curl jq) ]]; do
+            echo "Failed to install packages, retrying"
+            sleep 1
+        done
+        CLUSTER_RATE_LIMIT=$(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || true)
         TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token || true)
         ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
         TOKEN=$(curl --user "$DOCKERHUB_USERNAME:$DOCKERHUB_PASSWORD" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
@@ -169,7 +133,9 @@ jobs:
         echo "RUNNER RATE LIMIT: $ANONYMOUS_RUNNER_RATE_LIMIT"
         echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
         echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
+
         LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
+
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
@@ -179,17 +145,176 @@ jobs:
         docker container prune -f || true
         docker volume prune -f || true
         
-  build:
-    name: Build Release
-    runs-on: ubuntu-latest
+  chaos:
+    name: Chaos Tests
+    needs: [tests]
+    runs-on: [ubuntu-latest]
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ["pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill", "pod_network_corruption", "pod_network_duplication"]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Create Kind Cluster 
+      run: |
+        cat << EOF > /tmp/cluster.yml
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        containerdConfigPatches:
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
+            endpoint = ["http://localhost:5000"]
+        EOF
+        export CLUSTER=$(uuidgen)
+        echo "export CLUSTER=$CLUSTER" > cluster.env
+        echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
+        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
+        export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        kubectl get nodes 
+    - name: Cache crystal shards
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-crystal-shards
+      with:
+        path: ./lib
+        key: lib-${{ hashFiles('**/shard.lock') }}
+        restore-keys: |
+          lib-
+    - name: Install Crystal
+      env:
+        CRYSTAL_VERSION: 1.0.0
+        CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download
+      run: |
+        wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga; 
+        sudo apt install -y --no-install-recommends \
+        git \
+        libssl-dev \
+        libxml2-dev \
+        libyaml-dev \
+        libgmp-dev \
+        libz-dev \
+        ./crystal.deb \
+        && sudo rm -rf /var/lib/apt/lists/*
+    - name: Setup CNF-Conformance
+      run: |
+        helm repo add stable https://cncf.gitlab.io/stable
+        git fetch --all --tags --force
+        shards install  
+        echo "RUNNER: $RUNNER_NAME"
+    - name: Run Crystal Spec
+      run: |
+        source cluster.env
+        export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        until [[ $(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
+            echo "Waiting for local-path-storage"
+            sleep 1
+        done
+        LOCAL_PATH_STORAGE_POD=$(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o jsonpath='{range .items[*]}{.metadata.name}')
+        until [[ $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- apk add curl jq) ]]; do
+            echo "Failed to install packages, retrying"
+            sleep 1
+        done
+        CLUSTER_RATE_LIMIT=$(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || true)
+        TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token || true)
+        ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
+        TOKEN=$(curl --user "$DOCKERHUB_USERNAME:$DOCKERHUB_PASSWORD" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+        AUTH_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Authenticated Rate Limit Exceeded")
+        echo "RUNNER RATE LIMIT: $ANONYMOUS_RUNNER_RATE_LIMIT"
+        echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
+        echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
+        LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.tag }} -v
+        
+  chaos-airgapped:
+    name: Chaos Tests Airgapped
+    needs: [tests]
+    runs-on: [ubuntu-latest]
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ["pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill", "pod_network_corruption", "pod_network_duplication"]
+    env:
+      OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    # - name: Debug
-    #   uses: mxschmitt/action-tmate@v3
-      # if: needs.debug_output.outputs.build-debug == 'true'
+    - name: Cache crystal shards
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-crystal-shards
+      with:
+        path: ./lib
+        key: lib-${{ hashFiles('**/shard.lock') }}
+        restore-keys: |
+          lib-
+    - name: Install Crystal
+      env:
+        CRYSTAL_VERSION: 1.0.0
+        CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download
+      run: |
+        wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga; 
+        sudo apt install -y --no-install-recommends \
+        git \
+        libssl-dev \
+        libxml2-dev \
+        libyaml-dev \
+        libgmp-dev \
+        libz-dev \
+        ./crystal.deb \
+        && sudo rm -rf /var/lib/apt/lists/*
+    - name: Cache airgapped.tar.gz
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-airgapped-tar
+      with:
+        path: /tmp/airgapped.tar.gz
+        key: airgapped-$GITHUB_JOB-reset122-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+    - name: Create airgapped.tar.gz if one is not found in cache
+      run: |
+        shards install
+        crystal src/cnf-testsuite.cr setup 
+        helm repo add stable https://cncf.gitlab.io/stable
+        if ! [ -f "/tmp/airgapped.tar.gz" ]; then 
+              echo "Cached airgapped.tar.gz not found, re-creating airgapped.tar.gz"
+              LOG_LEVEL=debug crystal src/cnf-testsuite.cr airgapped output-file=/tmp/airgapped.tar.gz
+              LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
+        else
+              echo "Cached airgapped.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
+        fi
+        echo "Checking for CoreDNS"
+        tar -C /tmp/ -xvf /tmp/airgapped.tar.gz
+        if [ -f "/tmp/images/coredns_1.6.7.tar" ]; then
+           echo "CoreDNS found, CNF Setup Ran."
+        else
+           echo "CoreDNS not found, Re-Running CNF Setup."
+           LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
+        fi
+        sudo rm -rf /tmp/images || true
+        sudo rm -rf /tmp/bin || true 
+        sudo rm -rf /tmp/bootstrap_images || true
+        sudo rm -rf /tmp/repositories || true
+    - name: Create Cluster & Run Tests.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      run: |
+        sed -i "/${{ matrix.tag }}/a \ \ required: true" embedded_files/points.yml
+        docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
+        docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v /tmp/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr ${{ matrix.tag }} offline=true verbose strict"
+
+  build:
+    name: Build Release
+    runs-on: ubuntu-latest
+    env:
+      CRYSTAL_IMAGE: "conformance/crystal:1.0.0-alpine-r1"
+    steps: 
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: Cache crystal shards
       uses: actions/cache@v2
       env:
@@ -201,9 +326,9 @@ jobs:
           lib-
     - name: Build Release
       run: |
-        docker pull conformance/crystal:0.35.1
-        docker run --rm -v $PWD:/workspace -w /workspace conformance/crystal:0.35.1-llvm10-grep shards install
-        docker run --rm -v $PWD:/workspace -w /workspace conformance/crystal:0.35.1-llvm10-grep crystal build --warnings none src/cnf-testsuite.cr --release --static --link-flags '-lxml2 -llzma'
+        docker pull $CRYSTAL_IMAGE
+        docker run --rm -v $PWD:/workspace -w /workspace $CRYSTAL_IMAGE shards install
+        docker run --rm -v $PWD:/workspace -w /workspace $CRYSTAL_IMAGE crystal build --warnings none src/cnf-testsuite.cr --release --static --link-flags '-lxml2 -llzma'
     - name: upload artifact
       uses: actions/upload-artifact@v2
       with:
@@ -212,7 +337,9 @@ jobs:
         
   setup_airgapped_env:
     name: Test Setup Command In An Airgapped Env.
-    runs-on: [default]
+    runs-on: [v1.0.0]
+    env:
+      OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -236,12 +363,13 @@ jobs:
         cache-name: cache-airgapped-tar
       with:
         path: /tmp/airgapped.tar.gz
-        key: airgapped-$GITHUB_JOB-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr') }}
+        key: airgapped-$GITHUB_JOB-reset122-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         shards install
         crystal src/cnf-testsuite.cr setup 
         if ! [ -f "/tmp/airgapped.tar.gz" ]; then 
+              echo "Cached airgapped.tar.gz not found, re-creating airgapped.tar.gz"
               crystal src/cnf-testsuite.cr airgapped output-file=/tmp/airgapped.tar.gz
         else
               echo "Cached airgapped.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
@@ -250,30 +378,31 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
-        export DIR=$(uuidgen) 
+        export DIR=$(uuidgen)
         echo "export DIR=$DIR" > dir.env
         mkdir /shared/$DIR
-        #DOTO Use pre-created airgapped.tar.gz
-        # wget --auth-no-challenge --header='Accept:application/octet-stream' https://$GITHUB_TOKEN:@api.github.com/repos/cncf/cnf-testsuite/releases/assets/38092818 -O airgapped.tar.gz
-        # gunzip airgapped.tar.gz
         cp -a $(pwd) /shared/$DIR/cnf-testsuite
         cp /tmp/airgapped.tar.gz /shared/$DIR/
-        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t conformance/offline:latest /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz; LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true; kubectl get deployment chaos-operator-ce --namespace litmus; ./.github/workflows/check_litmus.sh"
+        docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
+        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh"
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
         source dir.env
         docker rm -f $DIR
+        docker rm -f $DIR-shards
         sudo rm -rf /shared/$DIR
         sudo rm -rf /tmp/*
         docker container prune -f || true
         docker volume prune -f || true
-
+        docker network prune -f || true
 
         
   test_helm_chart_in_airgapped_env:
     name: Test helm chart In An Airgapped Env.
-    runs-on: [default]
+    runs-on: [v1.0.0]
+    env:
+      OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -297,13 +426,14 @@ jobs:
         cache-name: cache-airgapped-tar
       with:
         path: /tmp/airgapped.tar.gz
-        key: airgapped-$GITHUB_JOB-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr') }}
+        key: airgapped-$GITHUB_JOB-reset122-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         shards install
         crystal src/cnf-testsuite.cr setup 
         helm repo add stable https://cncf.gitlab.io/stable
         if ! [ -f "/tmp/airgapped.tar.gz" ]; then 
+              echo "Cached airgapped.tar.gz not found, re-creating airgapped.tar.gz"
               crystal src/cnf-testsuite.cr airgapped output-file=/tmp/airgapped.tar.gz
               LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
         else
@@ -315,7 +445,7 @@ jobs:
            echo "CoreDNS found, CNF Setup Ran."
         else
            echo "CoreDNS not found, Re-Running CNF Setup."
-           LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=sample-cnfs/sample_coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
+           LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
         fi
     - name: Create Cluster & Run Tests.
       env:
@@ -329,21 +459,26 @@ jobs:
         # wget --auth-no-challenge --header='Accept:application/octet-stream' https://$GITHUB_TOKEN:@api.github.com/repos/cncf/cnf-testsuite/releases/assets/38092818 -O airgapped.tar.gz
         cp -a $(pwd) /shared/$DIR/cnf-testsuite
         cp /tmp/airgapped.tar.gz /shared/$DIR/
-        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t conformance/offline:latest /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz; LOG_LEVEL=info crystal src/cnf-testsuite.cr all offline=true ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~disk_fill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose"
+        docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
+        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr workload offline=true ~microservice ~resilience ~volume_hostpath_not_found ~non_root_user ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose"
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
         source dir.env
         docker rm -f $DIR
+        docker rm -f $DIR-shards
         sudo rm -rf /shared/$DIR
         sudo rm -rf /tmp/*
         docker container prune -f || true
         docker volume prune -f || true
+        docker network prune -f || true
 
 
   test_helm_directory_in_airgapped_env:
     name: Test helm directory In An Airgapped Env.
-    runs-on: [default]
+    runs-on: [v1.0.0]
+    env:
+      OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -367,13 +502,14 @@ jobs:
         cache-name: cache-airgapped-tar
       with:
         path: /tmp/airgapped.tar.gz
-        key: airgapped-$GITHUB_JOB-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr') }}
+        key: airgapped-$GITHUB_JOB-reset122-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         shards install
         crystal src/cnf-testsuite.cr setup 
         helm repo add stable https://cncf.gitlab.io/stable
         if ! [ -f "/tmp/airgapped.tar.gz" ]; then 
+              echo "Cached airgapped.tar.gz not found, re-creating airgapped.tar.gz"
               crystal src/cnf-testsuite.cr airgapped output-file=/tmp/airgapped.tar.gz
               LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=sample-cnfs/sample_coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
         else
@@ -397,21 +533,26 @@ jobs:
         #DOTO Use pre-created airgapped.tar.gz
         cp -a $(pwd) /shared/$DIR/cnf-testsuite
         cp /tmp/airgapped.tar.gz /shared/$DIR/
-        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t conformance/offline:latest /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz; LOG_LEVEL=info crystal src/cnf-testsuite.cr all offline=true ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~disk_fill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose"
+        docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
+        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr workload offline=true ~microservice ~resilience ~volume_hostpath_not_found ~non_root_user ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose"
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
         source dir.env
         docker rm -f $DIR
+        docker rm -f $DIR-shards
         sudo rm -rf /shared/$DIR
         sudo rm -rf /tmp/*
         docker container prune -f || true
         docker volume prune -f || true
+        docker network prune -f || true
 
 
   test_manifest_directory_in_airgapped_env:
     name: Test manifest directory In An Airgapped Env.
-    runs-on: [default]
+    runs-on: [v1.0.0]
+    env:
+      OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -435,13 +576,14 @@ jobs:
         cache-name: cache-airgapped-tar
       with:
         path: /tmp/airgapped.tar.gz
-        key: airgapped-$GITHUB_JOB-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr') }}
+        key: airgapped-$GITHUB_JOB-reset122-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         shards install
         crystal src/cnf-testsuite.cr setup 
         helm repo add stable https://cncf.gitlab.io/stable
         if ! [ -f "/tmp/airgapped.tar.gz" ]; then 
+              echo "Cached airgapped.tar.gz not found, re-creating airgapped.tar.gz"
               crystal src/cnf-testsuite.cr airgapped output-file=/tmp/airgapped.tar.gz
               LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
         else
@@ -466,20 +608,23 @@ jobs:
         #DOTO Use pre-created airgapped.tar.gz
         cp -a $(pwd) /shared/$DIR/cnf-testsuite
         cp /tmp/airgapped.tar.gz /shared/$DIR/
-        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t conformance/offline:latest /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./sample-cnfs/k8s-non-helm/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz; LOG_LEVEL=info crystal src/cnf-testsuite.cr all offline=true ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~disk_fill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose"
+        docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
+        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./sample-cnfs/k8s-non-helm/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr workload offline=true ~microservice ~resilience ~volume_hostpath_not_found ~non_root_user ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose"
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
         source dir.env
         docker rm -f $DIR
+        docker rm -f $DIR-shards
         sudo rm -rf /shared/$DIR
         sudo rm -rf /tmp/*
         docker container prune -f || true
         docker volume prune -f || true
+        docker network prune -f || true
 
   test_binary_configuration_lifecycle:
     name: Test Binary Without Source(config_lifecycle)
-    runs-on: [default]
+    runs-on: [v1.0.0]
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -523,7 +668,7 @@ jobs:
         ./cnf-testsuite setup
         wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
         ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
-        LOG_LEVEL=info ./cnf-testsuite all ~reasonable_startup_time ~reasonable_image_size ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose
+        LOG_LEVEL=info ./cnf-testsuite all ~resilience ~reasonable_startup_time ~reasonable_image_size ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
@@ -532,10 +677,11 @@ jobs:
         kind delete cluster --name $CLUSTER
         docker container prune -f || true
         docker volume prune -f || true
+        docker network prune -f || true
 
   test_binary_microservice:
     name: Test Binary Without Source(microservice)
-    runs-on: [default]
+    runs-on: [v1.0.0]
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -575,7 +721,7 @@ jobs:
         ./cnf-testsuite setup
         wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
         ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
-        LOG_LEVEL=info ./cnf-testsuite all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~install_script_helm ~helm_chart_valid ~helm_chart_published ~rollback ~secrets_used ~immutable_configmap verbose
+        LOG_LEVEL=info ./cnf-testsuite all ~resilience ~pod_network_latency ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hostport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~install_script_helm ~helm_chart_valid ~helm_chart_published ~rollback ~secrets_used ~immutable_configmap verbose
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
@@ -584,10 +730,11 @@ jobs:
         kind delete cluster --name $CLUSTER
         docker container prune -f || true
         docker volume prune -f || true
+        docker network prune -f || true
 
   test_binary_all:
     name: Test Binary Without Source(all)
-    runs-on: [default]
+    runs-on: [v1.0.0]
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
@@ -628,7 +775,7 @@ jobs:
         ./cnf-testsuite setup
         wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
         ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
-        LOG_LEVEL=info ./cnf-testsuite all ~pod_network_latency ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size verbose
+        LOG_LEVEL=info ./cnf-testsuite all ~resilience ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hostport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size verbose
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
@@ -637,6 +784,7 @@ jobs:
         kind delete cluster --name $CLUSTER
         docker container prune -f || true
         docker volume prune -f || true
+        docker network prune -f || true
 
   release:
     name: Publish Release
