@@ -79,4 +79,17 @@ describe "Security" do
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
     end
   end
+
+  it "'symlink_file_system' should pass on a cnf that does not allow a symlink attack", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite symlink_file_system`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: No containers that allow a symlink attack/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+    end
+  end
 end

@@ -114,3 +114,22 @@ task "privilege_escalation", ["kubescape_scan"] do |_, args|
     end
   end
 end
+
+desc "Check if an attacker can use symlink for arbitrary host file system access."
+task "symlink_file_system", ["kubescape_scan"] do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "symlink_file_system" if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "CVE-2021-25741 - Using symlink for arbitrary host file system access.")
+
+    emoji_security="🔓🔑"
+    if Kubescape.test_passed?(test_json) 
+      upsert_passed_task("symlink_file_system", "✔️  PASSED: No containers that allow privilege escalation were found #{emoji_security}")
+    else
+      resp = upsert_failed_task("symlink_file_system", "✖️  FAILED: Found containers that allow privilege escalation #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end
