@@ -11,7 +11,7 @@ on:
 jobs:
   tests:
     name: Fetch Matrix Tests
-    runs-on: [default]
+    runs-on: [ubuntu-latest]
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -297,6 +297,8 @@ jobs:
         sudo rm -rf /tmp/bin || true 
         sudo rm -rf /tmp/bootstrap_images || true
         sudo rm -rf /tmp/repositories || true
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/local/lib/android
     - name: Create Cluster & Run Tests.
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
