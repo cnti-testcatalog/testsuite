@@ -253,7 +253,7 @@ crystal src/cnf-testsuite.cr check_reaped
  #### :heavy_check_mark: To check if any containers are running as a [root user](https://github.com/cncf/cnf-wg/blob/best-practice-no-root-in-containers/cbpps/0002-no-root-in-containers.md)
 
 ```
-./cnf-testsuite privilege_escalation
+./cnf-testsuite non_root_user
 ```
 
  #### :heavy_check_mark: To check if any containers allow for [privilege escalation](https://bit.ly/3zUimHR)
