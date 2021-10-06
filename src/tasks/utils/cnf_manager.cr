@@ -727,7 +727,11 @@ module CNFManager
         Log.for("verbose").info { "deploying by manifest file" } if verbose
         file_list = Helm::Manifest.manifest_file_list(install_method[1], silent=false)
         yml = Helm::Manifest.manifest_ymls_from_file_list(file_list)
-        image_pull(yml)
+        if input_file && !input_file.empty?
+          image_pull(yml, "offline=true")
+        else
+          image_pull(yml, "offline=false")
+        end
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
       when Helm::InstallMethod::HelmChart
         if input_file && !input_file.empty?
@@ -748,7 +752,11 @@ module CNFManager
         Log.for("verbose").info { "deploying with chart repository" } if verbose
         Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
         yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
-        image_pull(yml)
+        if input_file && !input_file.empty?
+          image_pull(yml, "offline=true")
+        else
+          image_pull(yml, "offline=false")
+        end
         helm_intall = Helm.install("#{release_name} #{helm_chart}")
         export_published_chart(config, cli_args)
       when Helm::InstallMethod::HelmDirectory
@@ -762,7 +770,11 @@ module CNFManager
         #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
         Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
         yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
-        image_pull(yml)
+        if input_file && !input_file.empty?
+          image_pull(yml, "offline=true")
+        else
+          image_pull(yml, "offline=false")
+        end
         helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory}")
       else
         raise "Deployment method not found"
