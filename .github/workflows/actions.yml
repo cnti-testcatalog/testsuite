@@ -378,7 +378,7 @@ jobs:
               crystal src/cnf-testsuite.cr airgapped output-file=./airgapped.tar.gz
               popd
               docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
-              docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz
+              docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz"
               tar -czvf /tmp/setup_environment.tar.gz /shared/$DIR/cnf-testsuite
               touch $(pwd)/cache
               docker run --name cache-$DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh"
