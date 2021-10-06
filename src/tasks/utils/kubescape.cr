@@ -85,10 +85,12 @@ module Kubescape
   def self.alerts_by_test(test_json)
     if test_json && test_json["ruleReports"]?
       resp = test_json["ruleReports"].as_a.map { |rep|
+      if rep["ruleResponses"]? && rep["ruleResponses"]? != nil  
         rep["ruleResponses"].as_a.map do |res|
           res["alertMessage"]
         end
-      }.flatten 
+      end
+      }.flatten.uniq
       Log.info {"test_alert resp: #{resp}"}
       resp
     else

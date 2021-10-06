@@ -87,7 +87,20 @@ describe "Security" do
       response_s = `./cnf-testsuite symlink_file_system`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: No containers that allow a symlink attack/ =~ response_s).should be_nil
+      (/PASSED: No containers allow a symlink attack/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+    end
+  end
+
+  it "'application_credentials' should fail on a cnf that allows applications credentials in configuration files", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite application_credentials`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Found applications credentials in configuration files/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
     end
