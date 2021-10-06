@@ -359,22 +359,31 @@ jobs:
         key: lib-${{ hashFiles('**/shard.lock') }}
         restore-keys: |
           lib-
-    - name: Cache airgapped.tar.gz
+    - name: Cache Offline Environment
       uses: actions/cache@v2
       env:
-        cache-name: cache-airgapped-tar
+        cache-name: setup_environment_tar
       with:
-        path: /tmp/airgapped.tar.gz
-        key: airgapped-$GITHUB_JOB-reset122-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
-    - name: Create airgapped.tar.gz if one is not found in cache
+        path: /tmp/setup_environment.tar.gz
+        key: setup_environment_tar${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+    - name: Create environment.tar.gz if one is not found in cache
       run: |
-        shards install
-        crystal src/cnf-testsuite.cr setup 
-        if ! [ -f "/tmp/airgapped.tar.gz" ]; then 
-              echo "Cached airgapped.tar.gz not found, re-creating airgapped.tar.gz"
-              crystal src/cnf-testsuite.cr airgapped output-file=/tmp/airgapped.tar.gz
+        if ! [ -f "/tmp/setup_environment.tar.gz" ]; then 
+              shards install
+              export DIR=$(uuidgen)
+              mkdir /shared/$DIR
+              cp -a $(pwd) /shared/$DIR/cnf-testsuite
+              pushd /shared/$DIR/cnf-testsuite
+              crystal src/cnf-testsuite.cr setup 
+              crystal src/cnf-testsuite.cr airgapped output-file=./airgapped.tar.gz
+              popd
+              docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
+              docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz
+              tar -czvf /tmp/setup_environment.tar.gz /shared/$DIR/cnf-testsuite
+              touch $(pwd)/cache
+              docker run --name cache-$DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh"
         else
-              echo "Cached airgapped.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
+              echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
         fi
     - name: Create Cluster & Run Tests.
       env:
