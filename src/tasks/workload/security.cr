@@ -6,7 +6,7 @@ require "totem"
 require "../utils/utils.cr"
 
 desc "CNF containers should be isolated from one another and the host.  The CNF Test suite uses tools like Falco, Sysdig Inspect and gVisor"
-task "security", ["privileged", "non_root_user"] do |_, args|
+task "security", ["privileged", "non_root_user", "symlink_file_system", "privilege_escalation"] do |_, args|
   stdout_score("security")
 end
 
@@ -98,7 +98,8 @@ end
 
 desc "Check if any containers are running in privileged mode"
 task "privilege_escalation", ["kubescape_scan"] do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
+  unless args.named["offline"]?
+      CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "privilege_escalation" if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Allow privilege escalation")
@@ -108,9 +109,52 @@ task "privilege_escalation", ["kubescape_scan"] do |_, args|
       upsert_passed_task("privilege_escalation", "✔️  PASSED: No containers that allow privilege escalation were found #{emoji_security}")
     else
       resp = upsert_failed_task("privilege_escalation", "✖️  FAILED: Found containers that allow privilege escalation #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "#{t}\n".colorize(:red)}
-      puts "\nRemediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
       resp
+    end
+  end
+  end
+end
+
+desc "Check if an attacker can use symlink for arbitrary host file system access."
+task "symlink_file_system", ["kubescape_scan"] do |_, args|
+  unless args.named["offline"]?
+      CNFManager::Task.task_runner(args) do |args, config|
+      VERBOSE_LOGGING.info "symlink_file_system" if check_verbose(args)
+      results_json = Kubescape.parse
+      test_json = Kubescape.test_by_test_name(results_json, "CVE-2021-25741 - Using symlink for arbitrary host file system access.")
+
+      emoji_security="🔓🔑"
+      if Kubescape.test_passed?(test_json) 
+        upsert_passed_task("symlink_file_system", "✔️  PASSED: No containers allow a symlink attack #{emoji_security}")
+      else
+        resp = upsert_failed_task("symlink_file_system", "✖️  FAILED: Found containers that allow a symlink attack #{emoji_security}")
+        Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+        puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+        resp
+      end
+    end
+  end
+end
+
+desc "Check if applications credentials are in configuration files."
+task "application_credentials", ["kubescape_scan"] do |_, args|
+  unless args.named["offline"]?
+      CNFManager::Task.task_runner(args) do |args, config|
+      VERBOSE_LOGGING.info "application_credentials" if check_verbose(args)
+      results_json = Kubescape.parse
+      test_json = Kubescape.test_by_test_name(results_json, "Applications credentials in configuration files")
+
+      emoji_security="🔓🔑"
+      if Kubescape.test_passed?(test_json) 
+        upsert_passed_task("application_credentials", "✔️  PASSED: No applications credentials in configuration files #{emoji_security}")
+      else
+        resp = upsert_failed_task("application_credentials", "✖️  FAILED: Found applications credentials in configuration files #{emoji_security}")
+        Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+        puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+        resp
+      end
     end
   end
 end
