@@ -710,6 +710,10 @@ module CNFManager
     helm = BinarySingleton.helm
     Log.info { "helm path: #{BinarySingleton.helm}" }
 
+    # This is to indicate if the release has already been setup.
+    # Set it to false by default to indicate a new release is being setup
+    fresh_install = true
+
     helm_install = {status: "", output: IO::Memory.new, error: IO::Memory.new}
     elapsed_time = Time.measure do
       case install_method[0]
@@ -749,7 +753,14 @@ module CNFManager
         Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
         yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
         image_pull(yml)
-        helm_intall = Helm.install("#{release_name} #{helm_chart}")
+
+        begin
+          helm_install = Helm.install("#{release_name} #{helm_chart}")
+        rescue e : Helm::CannotReuseReleaseNameError
+          stdout_warning "Release name #{release_name} has already been setup."
+          # Mark that install is not fresh
+          fresh_install = false
+        end
         export_published_chart(config, cli_args)
       when Helm::InstallMethod::HelmDirectory
         Log.for("verbose").info { "deploying with helm directory" } if verbose
@@ -763,7 +774,14 @@ module CNFManager
         Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
         yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
         image_pull(yml)
-        helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory}")
+
+        begin
+          helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory}")
+        rescue e : Helm::CannotReuseReleaseNameError
+          stdout_warning "Release name #{release_name} has already been setup."
+          # Mark that install is not fresh
+          fresh_install = false
+        end
       else
         raise "Deployment method not found"
       end
@@ -782,14 +800,14 @@ module CNFManager
     end
 
     Log.info { "elapsed_time.seconds: #{elapsed_time.seconds}" }
-
-    Log.info { "helm_install: #{helm_install}" }
-    Log.info { "helm_install[:output].to_s: #{helm_install[:output].to_s}" }
     helm_used = false
     if helm_install && helm_install[:error].to_s.size == 0 # && helm_pull.to_s.size > 0
       helm_used = true
       stdout_success "Successfully setup #{release_name}"
     end
+
+    # Not required to write elapsed time configmap if the cnf already exists due to a previous Helm install
+    return true if fresh_install == false
 
     # Immutable config maps are only supported in Kubernetes 1.19+
     immutable_configmap = true
@@ -808,12 +826,6 @@ module CNFManager
     #TODO call kubectl apply on file
     KubectlClient::Apply.file("#{destination_cnf_dir}/configmap_test.yml")
     # TODO when uninstalling, remove config map
-
-  rescue e : Helm::CannotReuseReleaseNameError
-    # Since the release has already been setup:
-    # * Do not wait for resources to be ready
-    # * Do not measure elapsed time to add ConfigMap
-    stdout_warning "Release name #{release_name} has already been setup"
   end
 
 def self.configmap_temp
