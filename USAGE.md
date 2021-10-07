@@ -262,12 +262,17 @@ crystal src/cnf-testsuite.cr check_reaped
 ./cnf-testsuite privilege_escalation
 ```
 
- #### :heavy_check_mark: To check if if an attacker can use a [symlink](https://bit.ly/3zUimHR) for arbitrary host file system access 
+ #### :heavy_check_mark: To check if an attacker can use a [symlink](https://bit.ly/3zUimHR) for arbitrary host file system access 
 
 ```
 ./cnf-testsuite symlink_file_system
 ```
 
+ #### :heavy_check_mark: To check if there ar application credentials in [configuration files](https://bit.ly/3zUimHR) for arbitrary host file system access 
+
+```
+./cnf-testsuite application_credentials
+```
 <details> <summary>Details for Security Tests To Do's</summary>
 <p>
 
