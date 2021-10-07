@@ -381,7 +381,7 @@ jobs:
               docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz"
               tar -czvf /tmp/setup_environment.tar.gz /shared/$DIR/cnf-testsuite
               touch /shared/$DIR/cnf-testsuite/cache
-              docker run --name cache-$DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/tmpdata:/tmp -v /shared/$DIR/cnf-testsuite/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh"
+              docker run --name cache-$DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -v /shared/$DIR/cnf-testsuite/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh"
         else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
         fi
