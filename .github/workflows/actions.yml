@@ -347,8 +347,6 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Setup upterm session
-      uses: lhotari/action-upterm@v1
     - name: Cleanup Tmp DIR
       run: |
         sudo rm -rf /tmp/*
@@ -370,6 +368,7 @@ jobs:
         key: setup_environment_tar${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create environment.tar.gz if one is not found in cache
       run: |
+        echo "RUNNER: $RUNNER_NAME"
         if ! [ -f "/tmp/setup_environment.tar.gz" ]; then 
               shards install
               export DIR=$(uuidgen)
