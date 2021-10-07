@@ -347,6 +347,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Cleanup Tmp DIR
       run: |
         sudo rm -rf /tmp/*
@@ -366,8 +368,6 @@ jobs:
       with:
         path: /tmp/setup_environment.tar.gz
         key: setup_environment_tar${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
     - name: Create environment.tar.gz if one is not found in cache
       run: |
         if ! [ -f "/tmp/setup_environment.tar.gz" ]; then 
