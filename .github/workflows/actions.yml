@@ -350,6 +350,9 @@ jobs:
     - name: Cleanup Tmp DIR
       run: |
         sudo rm -rf /tmp/*
+    - name: Print Runner Name
+      run: |
+        echo "RUNNER: $RUNNER_NAME"
     - name: Cache crystal shards
       uses: actions/cache@v2
       env:
@@ -368,7 +371,6 @@ jobs:
         key: setup_environment_tar${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create environment.tar.gz if one is not found in cache
       run: |
-        echo "RUNNER: $RUNNER_NAME"
         if ! [ -f "/tmp/setup_environment.tar.gz" ]; then 
               shards install
               export DIR=$(uuidgen)
