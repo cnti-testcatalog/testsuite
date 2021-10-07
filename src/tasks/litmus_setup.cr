@@ -20,30 +20,38 @@ end
 
 desc "Cordon target node to make it non schedulable"
 task "cordon_target_node" do | _,args|
-  CNFManager::Task.task_runner(args) do |args, config|      
-    Log.for("verbose").info { "cordon_target_node" } if check_verbose(args)
-    Log.debug { "cnf_config: #{config}" }
-    #TODO tests should fail if cnf not installed
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      Log.info { "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}" }
+  CNFManager::Task.task_runner(args) do |args, config|
+      skipped = false
+      Log.for("verbose").info { "cordon_target_node" } if check_verbose(args)
+      Log.debug { "cnf_config: #{config}" }
+      #TODO tests should fail if cnf not installed
+      destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+      task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+        schedulable_nodes_count=KubectlClient::Get.schedulable_nodes_list
+        if schedulable_nodes_count.size > 1
+      
+          Log.info { "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}" }
+          deployment_label="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}"
+          deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
 
-      deployment_label="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}"
-      deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
-
-      app_nodeName_cmd = "kubectl get pods -l #{ deployment_label}=#{ deployment_label_value } -o=jsonpath='{.items[0].spec.nodeName}'"
-      puts "Getting the operator node name #{app_nodeName_cmd}" if check_verbose(args)
-      status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
-      puts "status_code: #{status_code}" if check_verbose(args)  
-      app_nodeName = appNodeName_response.to_s 
-      status_code = KubectlClient::Cordon.command("#{app_nodeName}")
-      puts "status_code: #{status_code}" if check_verbose(args)  
-    end
-    if task_response
-      resp = upsert_passed_task("cordon_target_node","✔️  PASSED: The target node is cordoned sucessfully 🗡️💀♻️")
-    else
-      resp = upsert_failed_task("cordon_target_node","✖️  FAILED: The target node is unable to cordoned sucessfully 🗡️💀♻️")
-    end
+          app_nodeName_cmd = "kubectl get pods -l #{ deployment_label}=#{ deployment_label_value } -o=jsonpath='{.items[0].spec.nodeName}'"
+          puts "Getting the operator node name #{app_nodeName_cmd}" if check_verbose(args)
+          status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
+          puts "status_code: #{status_code}" if check_verbose(args)  
+          app_nodeName = appNodeName_response.to_s 
+          status_code = KubectlClient::Cordon.command("#{app_nodeName}")
+          puts "status_code: #{status_code}" if check_verbose(args) 
+        else
+          skipped = true
+        end          
+      end
+      if task_response && skipped
+        resp = upsert_skipped_task("node_drain","✖️  SKIPPED: The target node is not cordoned 🗡️💀♻️")
+      elsif task_response
+        resp = upsert_passed_task("cordon_target_node","✔️  PASSED: The target node is cordoned sucessfully 🗡️💀♻️")
+      else
+        resp = upsert_failed_task("cordon_target_node","✖️  FAILED: The target node is unable to cordoned sucessfully 🗡️💀♻️")
+      end
   end
 end
 
