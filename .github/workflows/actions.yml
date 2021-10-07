@@ -347,8 +347,6 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Debug
-      uses: mxschmitt/action-tmate@v3
     - name: Cleanup Tmp DIR
       run: |
         sudo rm -rf /tmp/*
