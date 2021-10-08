@@ -383,7 +383,9 @@ jobs:
               popd
               docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/cnf-testsuite/data:/var/lib/docker -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz"
-              tar -czf --use-compress-program=pigz /tmp/setup_environment.tar /shared/$DIR/cnf-testsuite
+              tar -cf /tmp/setup_environment.tar /shared/$DIR/cnf-testsuite
+              pigz -1 /tmp/setup_environment.tar
+              ls /tmp/
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
         fi
