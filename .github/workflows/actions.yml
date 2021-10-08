@@ -367,11 +367,11 @@ jobs:
       env:
         cache-name: setup_environment_tar
       with:
-        path: /tmp/setup_environment.tar.gz
+        path: /tmp/setup_environment.tar
         key: setup_environment_tar${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
-    - name: Create environment.tar.gz if one is not found in cache
+    - name: Create environment.tar if one is not found in cache
       run: |
-        if ! [ -f "/tmp/setup_environment.tar.gz" ]; then 
+        if ! [ -f "/tmp/setup_environment.tar" ]; then 
               shards install
               export DIR=$(uuidgen)
               mkdir /shared/$DIR
@@ -383,12 +383,12 @@ jobs:
               popd
               docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/cnf-testsuite/data:/var/lib/docker -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz"
-              tar -czf /tmp/setup_environment.tar.gz /shared/$DIR/cnf-testsuite
+              tar -cf /tmp/setup_environment.tar /shared/$DIR/cnf-testsuite
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
         fi
         touch /shared/$DIR/cnf-testsuite/cache
-        docker run --name cache-$DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/cnf-testsuite/data:/var/lib/docker -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -v /shared/$DIR/cnf-testsuite/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh"
+        docker run --name $DIR-cache --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/cnf-testsuite/data:/var/lib/docker -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -v /shared/$DIR/cnf-testsuite/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh && kubectl get pods --all-namespaces"
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
@@ -397,7 +397,6 @@ jobs:
         docker rm -f $DIR-shards
         docker rm -f $DIR-cache
         sudo rm -rf /shared/$DIR
-        sudo rm -rf /tmp/*
         docker container prune -f || true
         docker volume prune -f || true
         docker network prune -f || true
