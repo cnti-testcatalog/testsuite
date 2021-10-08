@@ -367,8 +367,8 @@ jobs:
       env:
         cache-name: setup_environment_tar
       with:
-        path: /tmp/setup_environment.tar
-        key: setupenv${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        path: /tmp/setup_environment.tar.gz
+        key: setuptar${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create environment.tar if one is not found in cache
       run: |
         if ! [ -f "/tmp/setup_environment.tar" ]; then 
