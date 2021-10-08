@@ -365,17 +365,17 @@ jobs:
     - name: Cache Offline Environment
       uses: actions/cache@v2
       env:
-        cache-name: setup_environment_tar
+        cache-name: setup_environment_env
       with:
-        path: /tmp/setup_environment.tar.gz
-        key: setuptar${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        path: /tmp/environment.env
+        key: set_environment_env_${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create environment.tar if one is not found in cache
       run: |
-        if ! [ -f "/tmp/setup_environment.tar" ]; then 
+        if ! [ -f "/tmp/environment.env" ]; then 
               shards install
               export DIR=$(uuidgen)
               mkdir /shared/$DIR
-              echo "export DIR=$DIR" > dir.env
+              echo "export DIR=$DIR" > /tmp/environment.env
               cp -a $(pwd) /shared/$DIR/cnf-testsuite
               pushd /shared/$DIR/cnf-testsuite
               crystal src/cnf-testsuite.cr setup 
@@ -383,20 +383,16 @@ jobs:
               popd
               docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/cnf-testsuite/data:/var/lib/docker -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz"
-              tar -cf /tmp/setup_environment.tar /shared/$DIR/cnf-testsuite
-              apt update && apt install -y pigz
-              pigz -9 /tmp/setup_environment.tar
-              ls -la /tmp
-              ls -s /tmp/setup_environment.tar.gz
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
+              source /tmp/environment.env
         fi
         touch /shared/$DIR/cnf-testsuite/cache
         docker run --name $DIR-cache --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/cnf-testsuite/data:/var/lib/docker -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -v /shared/$DIR/cnf-testsuite/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh && kubectl get pods --all-namespaces"
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
-        source dir.env
+        source /tmp/environment.env
         docker rm -f $DIR
         docker rm -f $DIR-shards
         docker rm -f $DIR-cache
