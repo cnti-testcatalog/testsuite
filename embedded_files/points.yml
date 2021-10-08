@@ -32,6 +32,14 @@
   required: true
 - name: non_root_user 
   tags: security, dynamic, workload
+- name: privilege_escalation 
+  tags: security, dynamic, workload
+- name: symlink_file_system 
+  tags: security, dynamic, workload
+- name: application_credentials 
+  tags: security, dynamic, workload
+- name: host_network 
+  tags: security, dynamic, workload
 #- name: shells 
 #  tags: security, dynamic
 #- name: protected_access 
