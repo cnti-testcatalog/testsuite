@@ -368,7 +368,7 @@ jobs:
         cache-name: setup_environment_env
       with:
         path: /tmp/environment.env
-        key: set_environment_env_${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: setup_env_${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create environment.tar if one is not found in cache
       run: |
         if ! [ -f "/tmp/environment.env" ]; then 
@@ -396,7 +396,7 @@ jobs:
         docker rm -f $DIR
         docker rm -f $DIR-shards
         docker rm -f $DIR-cache
-        sudo rm -rf /shared/$DIR
+        # sudo rm -rf /shared/$DIR
         docker container prune -f || true
         docker volume prune -f || true
         docker network prune -f || true
