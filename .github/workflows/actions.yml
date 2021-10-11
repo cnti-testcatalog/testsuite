@@ -401,6 +401,7 @@ jobs:
               mkdir /shared/$DIR
               echo "export DIR=$DIR" > /tmp/environment.env
               tar -xf /tmp/setup_environment.tar.gz -C /shared/$DIR
+              ls -la /shared/$DIR
               ls -la /shared/$DIR/cnf-testsuite
         fi
         touch /shared/$DIR/cnf-testsuite/cache
