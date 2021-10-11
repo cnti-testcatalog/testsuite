@@ -179,3 +179,24 @@ task "host_network", ["kubescape_scan"] do |_, args|
     end
   end
 end
+
+desc "Attackers who have Cluster-admin permissions (can perform any action on any resource), can take advantage of their high privileges for malicious intentions. Determines which subjects have cluster admin permissions."
+task "cluster_admin", ["kubescape_scan"] do |_, args|
+  unless args.named["offline"]?
+      CNFManager::Task.task_runner(args) do |args, config|
+      VERBOSE_LOGGING.info "cluster_admin" if check_verbose(args)
+      results_json = Kubescape.parse
+      test_json = Kubescape.test_by_test_name(results_json, "Cluster-admin binding")
+
+      emoji_security="🔓🔑"
+      if Kubescape.test_passed?(test_json) 
+        upsert_passed_task("cluster_admin", "✔️  PASSED: No cluster admin bound to a pod #{emoji_security}")
+      else
+        resp = upsert_failed_task("cluster_admin", "✖️  FAILED: Cluster admin bound to a pod #{emoji_security}")
+        Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+        puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+        resp
+      end
+    end
+  end
+end
