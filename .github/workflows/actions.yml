@@ -410,7 +410,7 @@ jobs:
         bucket: cache-github
         key: setup2_${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
         artifacts: |
-          /tmp/setup_environment.tar.gz
+          /tmp/setup_environment.tar
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
