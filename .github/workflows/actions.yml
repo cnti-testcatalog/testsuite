@@ -401,11 +401,18 @@ jobs:
               mkdir /shared/$DIR
               echo "export DIR=$DIR" > /tmp/environment.env
               tar -xf /tmp/setup_environment.tar.gz -C /shared/$DIR
+              echo "Cached Already Exists" > /tmp/skip_upload
         fi
         touch /shared/$DIR/cnf-testsuite/cache
         docker run --name $DIR-cache --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/cnf-testsuite/data:/var/lib/docker -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -v /shared/$DIR/cnf-testsuite/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh && kubectl get pods --all-namespaces"
+    - name: Check file existence  
+      id: check_files
+      uses: andstor/file-existence-action@v1
+      with:
+        files: "/tmp/skip_upload"
     - name: Save cache
       uses: leroy-merlin-br/action-s3-cache@v1
+      if: steps.check_files.outputs.files_exists == 'false'
       with:
         action: put
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -426,7 +433,6 @@ jobs:
         docker container prune -f || true
         docker volume prune -f || true
         docker network prune -f || true
-
 
         
   test_helm_chart_in_airgapped_env:
