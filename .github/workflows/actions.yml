@@ -397,6 +397,11 @@ jobs:
               pigz -9 /tmp/setup_environment.tar
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
+              export DIR=$(uuidgen)
+              mkdir /shared/$DIR
+              echo "export DIR=$DIR" > /tmp/environment.env
+              tar -xf /tmp/setup_environment.tar.gz -C /shared/$DIR
+              ls -la /shared/$DIR/cnf-testsuite
         fi
         touch /shared/$DIR/cnf-testsuite/cache
         docker run --name $DIR-cache --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/cnf-testsuite/data:/var/lib/docker -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -v /shared/$DIR/cnf-testsuite/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh && kubectl get pods --all-namespaces"
