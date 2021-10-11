@@ -401,7 +401,6 @@ jobs:
               mkdir /shared/$DIR
               echo "export DIR=$DIR" > /tmp/environment.env
               tar -xf /tmp/setup_environment.tar.gz -C /shared/$DIR
-              sleep 1000000
         fi
         touch /shared/$DIR/cnf-testsuite/cache
         docker run --name $DIR-cache --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/cnf-testsuite/data:/var/lib/docker -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -v /shared/$DIR/cnf-testsuite/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh && kubectl get pods --all-namespaces"
