@@ -279,6 +279,13 @@ crystal src/cnf-testsuite.cr check_reaped
 ```
 ./cnf-testsuite host_network
 ```
+
+ #### :heavy_check_mark: To check if [cluster admin is bound to a pod](https://bit.ly/3zUimHR)
+
+```
+./cnf-testsuite cluster_admin
+```
+
 <details> <summary>Details for Security Tests To Do's</summary>
 <p>
 
