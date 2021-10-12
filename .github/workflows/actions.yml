@@ -283,7 +283,6 @@ jobs:
               crystal src/cnf-testsuite.cr setup 
               crystal src/cnf-testsuite.cr airgapped output-file=$(pwd)/airgapped.tar.gz
               crystal src/cnf-testsuite.cr cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=$(pwd)/airgapped.tar.gz
-              popd
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               docker run --name cluster --network none --privileged -v $(pwd)/cnf-testsuite:/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/cnf-testsuite/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               tar -cf /tmp/chaos_environment.tar -C ../ cnf-testsuite
