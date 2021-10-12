@@ -266,8 +266,6 @@ jobs:
         libz-dev \
         ./crystal.deb \
         && sudo rm -rf /var/lib/apt/lists/*
-        
-        key: airgapped-$GITHUB_JOB-reset122-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       with:
