@@ -119,4 +119,17 @@ describe "Security" do
     end
   end
 
+  it "'service_account_mapping' should fail on a cnf that automatically maps the service account", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite service_account_mapping`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Service accounts automatically mapped/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+    end
+  end
+
 end
