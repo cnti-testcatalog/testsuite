@@ -268,7 +268,7 @@ crystal src/cnf-testsuite.cr check_reaped
 ./cnf-testsuite symlink_file_system
 ```
 
- #### :heavy_check_mark: To check if there ar application credentials in [configuration files](https://bit.ly/3zUimHR) for arbitrary host file system access 
+ #### :heavy_check_mark: To check if there are application credentials in [configuration files](https://bit.ly/3zUimHR) for arbitrary host file system access 
 
 ```
 ./cnf-testsuite application_credentials
