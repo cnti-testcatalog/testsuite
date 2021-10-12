@@ -180,23 +180,24 @@ task "host_network", ["kubescape_scan"] do |_, args|
   end
 end
 
-desc "Attackers who have Cluster-admin permissions (can perform any action on any resource), can take advantage of their high privileges for malicious intentions. Determines which subjects have cluster admin permissions."
-task "cluster_admin", ["kubescape_scan"] do |_, args|
+desc "Potential attacker may gain access to a POD and steal its service account token. Therefore, it is recommended to disable automatic mapping of the service account tokens in service account configuration and enable it only for PODs that need to use them."
+task "service_account_mapping", ["kubescape_scan"] do |_, args|
   unless args.named["offline"]?
       CNFManager::Task.task_runner(args) do |args, config|
-      VERBOSE_LOGGING.info "cluster_admin" if check_verbose(args)
-      results_json = Kubescape.parse
-      test_json = Kubescape.test_by_test_name(results_json, "Cluster-admin binding")
+    VERBOSE_LOGGING.info "service_account_mapping" if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Automatic mapping of service account")
 
-      emoji_security="🔓🔑"
-      if Kubescape.test_passed?(test_json) 
-        upsert_passed_task("cluster_admin", "✔️  PASSED: No cluster admin bound to a pod #{emoji_security}")
-      else
-        resp = upsert_failed_task("cluster_admin", "✖️  FAILED: Cluster admin bound to a pod #{emoji_security}")
-        Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-        puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
-        resp
-      end
+    emoji_security="🔓🔑"
+    if Kubescape.test_passed?(test_json) 
+      upsert_passed_task("service_account_mapping", "✔️  PASSED: No service accounts automatically mapped #{emoji_security}")
+    else
+      resp = upsert_failed_task("service_account_mapping", "✖️  FAILED: Service accounts automatically mapped #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
     end
   end
+  end
 end
+
