@@ -274,6 +274,8 @@ jobs:
         libz-dev \
         ./crystal.deb \
         && sudo rm -rf /var/lib/apt/lists/*
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       with:
@@ -300,8 +302,6 @@ jobs:
               tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               echo "Cached Already Exists" > /tmp/skip_upload
         fi
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
     - name: Create Cluster & Run Tests.
       run: |
         touch $(pwd)/cnf-testsuite/cache
