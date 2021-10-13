@@ -275,6 +275,14 @@ jobs:
         aws-region: us-east-1
         bucket: cache-github
         key: chaos_${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+    - name: Maximize build space
+      uses: easimon/maximize-build-space@master
+      with:
+        root-reserve-mb: 512
+        swap-size-mb: 100
+        remove-dotnet: 'true'
+        remove-android: 'true'
+        remove-haskell: 'true'
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         if ! [ -f "/tmp/chaos_environment.tar.gz" ]; then 
@@ -283,15 +291,10 @@ jobs:
               crystal src/cnf-testsuite.cr setup 
               crystal src/cnf-testsuite.cr airgapped output-file=$(pwd)/airgapped.tar.gz
               crystal src/cnf-testsuite.cr cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=$(pwd)/airgapped.tar.gz
-              sudo rm -rf /usr/share/dotnet
-              sudo rm -rf /usr/local/lib/android
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
-              echo "Current Path: $(pwd)"
-              echo "User: $(whoami)"
-              # sudo tar -cf /tmp/setup_environment.tar -C ../ cnf-testsuite
-              # apt update && apt install -y pigz
-              # pigz -6 /tmp/chaos_environment.tar
+              rm $(pwd)/airgapped.tar.gz
+              sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C ../ cnf-testsuite
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
