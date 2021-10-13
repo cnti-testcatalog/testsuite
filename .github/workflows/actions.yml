@@ -238,6 +238,14 @@ jobs:
     env:
       OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-cache"
     steps: 
+    - name: Maximize build space
+      uses: easimon/maximize-build-space@master
+      with:
+        root-reserve-mb: 512
+        swap-size-mb: 100
+        remove-dotnet: 'true'
+        remove-android: 'true'
+        remove-haskell: 'true'
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -275,14 +283,6 @@ jobs:
         aws-region: us-east-1
         bucket: cache-github
         key: chaos_${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
-    - name: Maximize build space
-      uses: easimon/maximize-build-space@master
-      with:
-        root-reserve-mb: 512
-        swap-size-mb: 100
-        remove-dotnet: 'true'
-        remove-android: 'true'
-        remove-haskell: 'true'
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         if ! [ -f "/tmp/chaos_environment.tar.gz" ]; then 
