@@ -296,19 +296,21 @@ jobs:
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               rm $(pwd)/airgapped.tar.gz
-              sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C ../ cnf-testsuite
+              sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data
+              sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) .kube
+              sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) tmpdata
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               echo "Cached Already Exists" > /tmp/skip_upload
         fi
-    # - name: Setup tmate session
-    #   uses: mxschmitt/action-tmate@v3
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Create Cluster & Run Tests.
       run: |
-        touch $(pwd)/cnf-testsuite/cache
-        sed -i "/${{ matrix.tag }}/a \ \ required: true" $(pwd)/cnf-testsuite/embedded_files/points.yml
-        docker run --name cache --network none --privileged -v $(pwd)/cnf-testsuite:/cnf-testsuite -v $(pwd)/cnf-testsuite/data:/var/lib/docker -v $(pwd)/cnf-testsuite/.kube:/root/.kube -v $(pwd)/cnf-testsuite/tmpdata:/tmp -v $(pwd)/cnf-testsuite/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr ${{ matrix.tag }} offline=true verbose strict"
+        touch $(pwd)/cache
+        sed -i "/${{ matrix.tag }}/a \ \ required: true" $(pwd)/embedded_files/points.yml
+        docker run --name cache --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr ${{ matrix.tag }} offline=true verbose strict"
     - name: Check file existence  
       id: check_files
       uses: andstor/file-existence-action@v1
