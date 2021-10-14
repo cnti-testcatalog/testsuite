@@ -958,6 +958,7 @@ end
       Log.info { "cnf_manager generate" }
       FileUtils.rm_rf(output_file)
       FileUtils.mkdir_p("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
+      FileUtils.mkdir_p("#{AirGap::TAR_BINARY_DIR}")
 
       # todo put all of these setup elements into a configuration file.
 
@@ -1012,6 +1013,12 @@ end
       AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/disk-fill/rbac.yaml", output_file, prefix:  "disk-fill-")
       url = "https://github.com/vmware-tanzu/sonobuoy/releases/download/v#{SONOBUOY_K8S_VERSION}/sonobuoy_#{SONOBUOY_K8S_VERSION}_#{SONOBUOY_OS}_amd64.tar.gz"
       TarClient.tar_file_by_url(url, output_file, "sonobuoy.tar.gz")
+      url = "https://github.com/armosec/kubescape/releases/download/v#{KUBESCAPE_VERSION}/kubescape-ubuntu-latest"
+      TarClient.tar_file_by_url(url, output_file, "kubescape-ubuntu-latest")
+      `kubescape download framework nsa --output #{AirGap::TAR_BINARY_DIR}/nsa.json`
+      TarClient.append(output_file, TarClient::TAR_TMP_BASE, "#{AirGap::TAR_BINARY_DIR}/nsa.json")
+      url = "https://github.com/armosec/kubescape/releases/download/v#{KUBESCAPE_VERSION}/kubescape-ubuntu-latest"
+      TarClient.tar_file_by_url(url, output_file, "kubescape-ubuntu-latest")
       Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
       # todo create helm chart configuration yaml that includes all chart elements for specs
       AirGap.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
