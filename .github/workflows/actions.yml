@@ -300,6 +300,9 @@ jobs:
               sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
+              mv /tmp/chaos_environment.tar.gz $(pwd)
+              sudo rm -rf /tmp/ ; sudo mkdir /tmp ; sudo mount /dev/buildvg/buildlv /tmp
+              sudo chmod 777 /tmp
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               echo "Cached Already Exists" > /tmp/skip_upload
         fi
