@@ -4,7 +4,8 @@ require "colorize"
 require "totem"
 
 desc "Sets up an airgapped tarball"
-task "airgapped",  do  |_, args|
+task "airgapped",  do  |t, args|
+  t.invoke("install_kubescape")
   #./cnf-testsuite setup --offline=./airgapped.tar.gz
   #./cnf-testsuite airgapped -o ~/airgapped.tar.gz
   #./cnf-testsuite offline of=~/airgapped.tar.gz
