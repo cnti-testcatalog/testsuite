@@ -282,8 +282,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
         bucket: cache-github
-        key: chaos_
-        # key: chaos_${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: chaos-$GITHUB_JOB-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         if ! [ -f "/tmp/chaos_environment.tar.gz" ]; then 
@@ -297,7 +296,7 @@ jobs:
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               rm $(pwd)/airgapped.tar.gz
-              sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata
+              sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata cnfs 
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               mv /tmp/chaos_environment.tar.gz $(pwd)
@@ -307,8 +306,6 @@ jobs:
               echo "Cached Already Exists" > /tmp/skip_upload
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
         fi
-    # - name: Setup tmate session
-    #   uses: mxschmitt/action-tmate@v3
     - name: Create Cluster & Run Tests.
       run: |
         touch $(pwd)/cache
@@ -328,7 +325,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1 # Or whatever region your bucket was created
         bucket: cache-github
-        key: chaos_${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: chaos-$GITHUB_JOB-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
         artifacts: |
           /tmp/chaos_environment.tar.gz
 
