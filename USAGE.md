@@ -262,10 +262,27 @@ crystal src/cnf-testsuite.cr check_reaped
 ./cnf-testsuite privilege_escalation
 ```
 
- #### :heavy_check_mark: To check if if an attacker can use a [symlink](https://bit.ly/3zUimHR) for arbitrary host file system access 
+ #### :heavy_check_mark: To check if an attacker can use a [symlink](https://bit.ly/3zUimHR) for arbitrary host file system access 
 
 ```
 ./cnf-testsuite symlink_file_system
+```
+
+ #### :heavy_check_mark: To check if there are application credentials in [configuration files](https://bit.ly/3zUimHR) for arbitrary host file system access 
+
+```
+./cnf-testsuite application_credentials
+```
+ 
+ #### :heavy_check_mark: To check if there is a [host network attached to a pod](https://bit.ly/3zUimHR)
+
+```
+./cnf-testsuite host_network
+```
+ #### :heavy_check_mark: To check if there are [service accounts that are automatically mapped](https://bit.ly/3zUimHR)
+
+```
+./cnf-testsuite service_account_mapping
 ```
 
 <details> <summary>Details for Security Tests To Do's</summary>
@@ -807,4 +824,20 @@ Sressing the disk with continuous and heavy IO can cause degradation in reads/ w
 
 ```
 ./cnf-testsuite platform:node_failure poc destructive
+```
+### Security Platform Tests
+##### :heavy_check_mark: Run All platform security tests
+
+```
+./cnf-testsuite platform:security 
+```
+ #### :heavy_check_mark: To check if [cluster admin is bound to a pod](https://bit.ly/3zUimHR)
+
+```
+./cnf-testsuite platform:cluster_admin
+```
+ #### :heavy_check_mark: To check if [the control plane is hardened](https://bit.ly/3zUimHR)
+
+```
+./cnf-testsuite platform:control_plane_hardening
 ```
