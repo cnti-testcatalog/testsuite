@@ -305,6 +305,7 @@ jobs:
               sudo chmod 777 /tmp
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               echo "Cached Already Exists" > /tmp/skip_upload
+              docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
         fi
     # - name: Setup tmate session
     #   uses: mxschmitt/action-tmate@v3
