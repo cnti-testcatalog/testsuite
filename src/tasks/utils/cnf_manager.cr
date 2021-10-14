@@ -1015,8 +1015,8 @@ end
       TarClient.tar_file_by_url(url, output_file, "sonobuoy.tar.gz")
       url = "https://github.com/armosec/kubescape/releases/download/v#{KUBESCAPE_VERSION}/kubescape-ubuntu-latest"
       TarClient.tar_file_by_url(url, output_file, "kubescape-ubuntu-latest")
-      `kubescape download framework nsa --output #{AirGap::TAR_BINARY_DIR}/nsa.json`
-      TarClient.append(output_file, TarClient::TAR_TMP_BASE, "#{AirGap::TAR_BINARY_DIR}/nsa.json")
+      `kubescape download framework nsa --output #{TarClient::TAR_DOWNLOAD_DIR}/nsa.json`
+      TarClient.append(output_file, TarClient::TAR_TMP_BASE, "#{TarClient::TAR_DOWNLOAD_DIR}/nsa.json")
       url = "https://github.com/armosec/kubescape/releases/download/v#{KUBESCAPE_VERSION}/kubescape-ubuntu-latest"
       TarClient.tar_file_by_url(url, output_file, "kubescape-ubuntu-latest")
       Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
