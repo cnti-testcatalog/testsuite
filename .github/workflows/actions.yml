@@ -312,16 +312,17 @@ jobs:
         touch $(pwd)/cache
         sed -i "/${{ matrix.tag }}/a \ \ required: true" $(pwd)/embedded_files/points.yml
         docker run --name cache --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr ${{ matrix.tag }} offline=true verbose strict"
-    - name: use cache
-      id: cache
-      uses: idein/action-s3-cache
+    - name: Use Cache
+      uses: shonansurvivors/actions-s3-cache@v1.0.1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: us-east-1
       with:
-        key: ${{ hashFiles('/src/tasks/airgap.cr') }}
-        path: /tmp/chaos_environment.tar.gz
-        aws-s3-bucket: cache-github
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+        s3-bucket: cache-github
+        cache-key: ${{ hashFiles('/src/tasks/airgap.cr') }}
+        paths: /tmp/chaos_environment.tar.gz
+        command: echo 'downloaded'
         
     # - name: Check file existence  
     #   id: check_files
