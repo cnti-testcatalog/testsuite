@@ -318,9 +318,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_DEFAULT_REGION: us-east-1
+        CACHE: {{ hashFiles('/src/tasks/airgap.cr') }}
       with:
         s3-bucket: cache-github
-        cache-key: ${{ hashFiles('/src/tasks/airgap.cr') }}
+        cache-key: "$CACHE"
         paths: /tmp/chaos_environment.tar.gz
         command: echo 'downloaded'
         
