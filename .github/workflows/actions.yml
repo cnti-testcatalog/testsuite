@@ -312,23 +312,34 @@ jobs:
         touch $(pwd)/cache
         sed -i "/${{ matrix.tag }}/a \ \ required: true" $(pwd)/embedded_files/points.yml
         docker run --name cache --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr ${{ matrix.tag }} offline=true verbose strict"
-    - name: Check file existence  
-      id: check_files
-      uses: andstor/file-existence-action@v1
+    - name: use cache
+      id: cache
+      uses: idein/action-s3-cache
       with:
-        files: "/tmp/skip_upload"
-    - name: Save cache
-      uses: leroy-merlin-br/action-s3-cache@v1
-      if: steps.check_files.outputs.files_exists == 'true'
-      with:
-        action: put
+        key: ${{ hashFiles('/src/tasks/airgap.cr') }}
+        path: /tmp/chaos_environment.tar.gz
+        aws-s3-bucket: cache-github
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1 # Or whatever region your bucket was created
-        bucket: cache-github
-        key: ${{ hashFiles('/src/tasks/airgap.cr') }}
-        artifacts: |
-          /tmp/chaos_environment.tar.gz
+        aws-region: us-east-1
+        
+    # - name: Check file existence  
+    #   id: check_files
+    #   uses: andstor/file-existence-action@v1
+    #   with:
+    #     files: "/tmp/skip_upload"
+    # - name: Save cache
+    #   uses: leroy-merlin-br/action-s3-cache@v1
+    #   if: steps.check_files.outputs.files_exists == 'true'
+    #   with:
+    #     action: put
+    #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #     aws-region: us-east-1 # Or whatever region your bucket was created
+    #     bucket: cache-github
+    #     key: ${{ hashFiles('/src/tasks/airgap.cr') }}
+    #     artifacts: |
+    #       /tmp/chaos_environment.tar.gz
 
   build:
     name: Build Release
