@@ -274,7 +274,23 @@ jobs:
         libz-dev \
         ./crystal.deb \
         && sudo rm -rf /var/lib/apt/lists/*
+
+    - name: Check for Cache
+      uses: actions/cache@v2
+      env:
+        cache-name: check-cache
+      with:
+        path: /tmp/exists
+        key: exists-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+
+    - name: Check file existence  
+      id: check_files
+      uses: andstor/file-existence-action@v1
+      with:
+        files: "/tmp/exists"
+
     - name: Retrieve cache
+      if: steps.check_files.outputs.files_exists == 'false'
       uses: leroy-merlin-br/action-s3-cache@v1
       with:
         action: get
@@ -282,8 +298,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
         bucket: cache-github
-        key: chaos-$GITHUB_JOB-
-        # key: chaos-$GITHUB_JOB-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: chaos-airgapped
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         if ! [ -f "/tmp/chaos_environment.tar.gz" ]; then 
@@ -298,6 +313,7 @@ jobs:
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               rm $(pwd)/airgapped.tar.gz
               sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata cnfs 
+              echo "Cached Now Exists" > /tmp/exists
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               mv /tmp/chaos_environment.tar.gz $(pwd)
@@ -305,6 +321,7 @@ jobs:
               sudo chmod 777 /tmp
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               echo "Cached Already Exists" > /tmp/skip_upload
+              echo "Cached Now Exists" > /tmp/exists
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
         fi
     - name: Create Cluster & Run Tests.
@@ -312,36 +329,24 @@ jobs:
         touch $(pwd)/cache
         sed -i "/${{ matrix.tag }}/a \ \ required: true" $(pwd)/embedded_files/points.yml
         docker run --name cache --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr ${{ matrix.tag }} offline=true verbose strict"
-    - name: Use Cache
-      uses: shonansurvivors/actions-s3-cache@v1.0.1
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_DEFAULT_REGION: us-east-1
-        CACHE: ${{ hashFiles('/src/tasks/airgap.cr') }}
+ 
+    - name: Check file existence  
+      id: check_files
+      uses: andstor/file-existence-action@v1
       with:
-        s3-bucket: cache-github
-        cache-key: "$CACHE"
-        paths: /tmp/chaos_environment.tar.gz
-        command: echo 'downloaded'
-        
-    # - name: Check file existence  
-    #   id: check_files
-    #   uses: andstor/file-existence-action@v1
-    #   with:
-    #     files: "/tmp/skip_upload"
-    # - name: Save cache
-    #   uses: leroy-merlin-br/action-s3-cache@v1
-    #   if: steps.check_files.outputs.files_exists == 'true'
-    #   with:
-    #     action: put
-    #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #     aws-region: us-east-1 # Or whatever region your bucket was created
-    #     bucket: cache-github
-    #     key: ${{ hashFiles('/src/tasks/airgap.cr') }}
-    #     artifacts: |
-    #       /tmp/chaos_environment.tar.gz
+        files: "/tmp/skip_upload"
+    - name: Save cache
+      uses: leroy-merlin-br/action-s3-cache@v1
+      if: steps.check_files.outputs.files_exists == 'true'
+      with:
+        action: put
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1 # Or whatever region your bucket was created
+        bucket: cache-github
+        key: chaos-airgapped
+        artifacts: |
+          /tmp/chaos_environment.tar.gz
 
   build:
     name: Build Release
