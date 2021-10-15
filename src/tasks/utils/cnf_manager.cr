@@ -1019,7 +1019,7 @@ end
       FileUtils.rm_rf("#{TarClient::TAR_TMP_BASE}/#{download_path}")
       FileUtils.mkdir_p("#{TarClient::TAR_TMP_BASE}/" + download_path)
       `./tools/kubescape/kubescape download framework nsa --output #{TarClient::TAR_DOWNLOAD_DIR}/nsa.json`
-      TarClient.append(output_file, TarClient::TAR_TMP_BASE, "#{TarClient::TAR_DOWNLOAD_DIR}/nsa.json")
+      TarClient.append(output_file, TarClient::TAR_TMP_BASE, "#{download_path}/nsa.json")
       Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
       # todo create helm chart configuration yaml that includes all chart elements for specs
       AirGap.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
