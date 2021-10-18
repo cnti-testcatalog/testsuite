@@ -6,7 +6,7 @@ require "./utils/utils.cr"
 
 
 desc "Sets up Kubescape in the K8s Cluster"
-task "install_kubescape" do |_, args|
+task "install_kubescape", ["uninstall_kubescape"] do |_, args|
   Log.info {"install_kubescape"}
   # version = `curl --silent "https://api.github.com/repos/armosec/kubescape/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'`
   current_dir = FileUtils.pwd 
