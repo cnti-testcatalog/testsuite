@@ -282,8 +282,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
         bucket: cache-github
-        key: chaos-$GITHUB_JOB-
-        # key: chaos-$GITHUB_JOB-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: ${{ github.job }}_${{ hashFiles('**/utils/airgap/**', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         if ! [ -f "/tmp/chaos_environment.tar.gz" ]; then 
@@ -304,7 +303,7 @@ jobs:
               sudo rm -rf /tmp/ ; sudo mkdir /tmp ; sudo mount /dev/buildvg/buildlv /tmp
               sudo chmod 777 /tmp
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
-              echo "Cached Already Exists" > /tmp/skip_upload
+              echo "Cache Already Exists" > /tmp/skip_upload
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
         fi
     - name: Create Cluster & Run Tests.
@@ -319,14 +318,14 @@ jobs:
         files: "/tmp/skip_upload"
     - name: Save cache
       uses: leroy-merlin-br/action-s3-cache@v1
-      if: steps.check_files.outputs.files_exists == 'true'
+      if: steps.check_files.outputs.files_exists == 'false'
       with:
         action: put
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1 # Or whatever region your bucket was created
         bucket: cache-github
-        key: ${{ hashFiles('**/src/tasks/airgap.cr') }}
+        key: ${{ github.job }}_${{ hashFiles('**/utils/airgap/**', '**/src/tasks/utils/cnf_manager.cr') }}
         artifacts: |
           /tmp/chaos_environment.tar.gz
 
@@ -382,7 +381,7 @@ jobs:
         cache-name: cache-crystal-shards
       with:
         path: ./lib
-        key: lib-${{ hashFiles('*/shard.lock') }}
+        key: lib-${{ hashFiles('**/shard.lock') }}
         restore-keys: |
           lib-
     - name: Retrieve cache
@@ -393,8 +392,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
         bucket: cache-github
-        # key: setup_${{ hashFiles('*/utils/airgap/**', '*/src/tasks/utils/cnf_manager.cr') }}
-        key: setup_${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: ${{ github.job }}_${{ hashFiles('**/utils/airgap/**', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create environment.tar if one is not found in cache
       run: |
         if ! [ -f "/tmp/setup_environment.tar.gz" ]; then 
@@ -432,7 +430,7 @@ jobs:
         files: "/tmp/skip_upload"
     - name: Save cache
       uses: leroy-merlin-br/action-s3-cache@v1
-      if: steps.check_files.outputs.files_exists == 'true'
+      if: steps.check_files.outputs.files_exists == 'false'
       with:
         action: put
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
