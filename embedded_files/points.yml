@@ -79,7 +79,7 @@
 #- name: versioned_helm_chart
 #  tags: configuration_lifecycle, dynamic, workload
 - name: versioned_tag
-  tags: configuration_lifecycle, static, workload
+  tags: configuration_lifecycle, dynamic, workload
 - name: ip_addresses
   pass: 0
   fail: -1 
