@@ -15,13 +15,15 @@ task "install_kubescape", ["uninstall_kubescape"] do |_, args|
     write_file = "#{current_dir}/#{TOOLS_DIR}/kubescape/kubescape"
     Log.info { "write_file: #{write_file}" }
     if args.named["offline"]?
-        `mv #{TarClient::TAR_DOWNLOAD_DIR}/kubescape-ubuntu-latest #{write_file}`
-      `mv #{TarClient::TAR_DOWNLOAD_DIR}/nsa.json #{current_dir}/#{TOOLS_DIR}/kubescape/`
+        Log.info { "kubescape install offline mode" }
+      `cp #{TarClient::TAR_DOWNLOAD_DIR}/kubescape-ubuntu-latest #{write_file}`
+      `cp #{TarClient::TAR_DOWNLOAD_DIR}/nsa.json #{current_dir}/#{TOOLS_DIR}/kubescape/`
       stderr = IO::Memory.new
       status = Process.run("chmod +x #{write_file}", shell: true, output: stderr, error: stderr)
       success = status.success?
       raise "Unable to make #{write_file} executable" if success == false
     else
+      Log.info { "kubescape install online mode" }
       url = "https://github.com/armosec/kubescape/releases/download/v#{KUBESCAPE_VERSION}/kubescape-ubuntu-latest"
       Log.info { "url: #{url}" }
       resp = Halite.follow.get("#{url}") do |response| 
