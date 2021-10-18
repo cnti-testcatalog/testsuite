@@ -442,6 +442,7 @@ jobs:
         key: ${{ github.job }}_${{ hashFiles('**/utils/airgap/**', '**/src/tasks/utils/cnf_manager.cr') }}
         artifacts: |
           /tmp/setup_environment.tar.gz
+
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
