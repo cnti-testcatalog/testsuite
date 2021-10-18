@@ -440,7 +440,7 @@ jobs:
         aws-region: us-east-1 # Or whatever region your bucket was created
         bucket: cache-github
         # key: setup_${{ github.job }}_${{ hashFiles('*/utils/airgap/**', '*/src/tasks/utils/cnf_manager.cr') }}
-        key: setup_${{ github.job }}_${{ hashFiles('*/shard.lock') }}
+        key: setup_${{ github.job }}_${{ hashFiles('**/shard.lock') }}
         artifacts: |
           /tmp/setup_environment.tar.gz
     - name: Delete Cluster
