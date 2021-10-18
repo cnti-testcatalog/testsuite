@@ -6,7 +6,7 @@ module Kubescape
   #kubescape scan framework nsa --exclude-namespaces kube-system,kube-public
   def self.scan(cmd="framework nsa --use-from ./tools/kubescape/nsa.json --exclude-namespaces kube-system,kube-public --format json --output kubescape_results.json")
     alt_cmd = "./tools/kubescape/kubescape scan " + cmd
-    Log.info { "command: #{cmd}" }
+    Log.info { "scan command: #{cmd}" }
     status = Process.run(
       alt_cmd,
       shell: true,
