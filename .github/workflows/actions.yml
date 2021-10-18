@@ -382,16 +382,9 @@ jobs:
         cache-name: cache-crystal-shards
       with:
         path: ./lib
-        key: lib-${{ hashFiles('**/shard.lock') }}
+        key: lib-${{ hashFiles('*/shard.lock') }}
         restore-keys: |
           lib-
-    # - name: Cache Offline Environment
-    #   uses: actions/cache@v2
-    #   env:
-    #     cache-name: setup_environment_env
-    #   with:
-    #     path: /tmp/environment.env
-    #     key: setup_env_${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       with:
@@ -400,6 +393,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
         bucket: cache-github
+        # key: setup_${{ hashFiles('*/utils/airgap/**', '*/src/tasks/utils/cnf_manager.cr') }}
         key: setup_${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create environment.tar if one is not found in cache
       run: |
@@ -424,7 +418,7 @@ jobs:
               mkdir /shared/$DIR
               echo "export DIR=$DIR" > /tmp/environment.env
               tar -xf /tmp/setup_environment.tar.gz -C /shared/$DIR
-              echo "Cached Already Exists" > /tmp/skip_upload
+              echo "Cache Already Exists" > /tmp/skip_upload
         fi
     - name: Create Cluster & Run Tests.
       run: |
@@ -438,14 +432,14 @@ jobs:
         files: "/tmp/skip_upload"
     - name: Save cache
       uses: leroy-merlin-br/action-s3-cache@v1
-      if: steps.check_files.outputs.files_exists == 'false'
+      if: steps.check_files.outputs.files_exists == 'true'
       with:
         action: put
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1 # Or whatever region your bucket was created
         bucket: cache-github
-        key: setup_${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: setup_${{ hashFiles('*/utils/airgap/**', '*/src/tasks/utils/cnf_manager.cr') }}
         artifacts: |
           /tmp/setup_environment.tar.gz
     - name: Delete Cluster
