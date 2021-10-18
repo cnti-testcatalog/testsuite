@@ -15,7 +15,11 @@ task "install_opa" do |_, args|
     Helm.install("--set auditInterval=1 --set postInstall.labelNamespace.enabled=false opa-gatekeeper #{OPA_OFFLINE_DIR}/#{chart}")
   else
     Helm.helm_repo_add("gatekeeper", "https://open-policy-agent.github.io/gatekeeper/charts")
-    Helm.install("--set auditInterval=1 opa-gatekeeper gatekeeper/gatekeeper")
+    begin
+      Helm.install("--set auditInterval=1 opa-gatekeeper gatekeeper/gatekeeper")
+    rescue e : Helm::CannotReuseReleaseNameError
+      stdout_warning "gatekeeper already installed"
+    end
   end
     File.write("enforce-image-tag.yml", ENFORCE_IMAGE_TAG)
     File.write("constraint_template.yml", CONSTRAINT_TEMPLATE)

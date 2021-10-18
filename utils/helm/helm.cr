@@ -274,6 +274,11 @@ module Helm
                          error: stderr = IO::Memory.new)
     Log.info { "Helm.install output: #{output.to_s}" }
     Log.info { "Helm.install stderr: #{stderr.to_s}" }
+
+    if CannotReuseReleaseNameError.error_text_content_match?(stderr.to_s)
+      raise CannotReuseReleaseNameError.new
+    end
+
     {status: status, output: output, error: stderr}
   end
 
@@ -325,4 +330,9 @@ module Helm
     {status: status, output: output, error: stderr}
   end
 
+  class CannotReuseReleaseNameError < Exception
+    def self.error_text_content_match?(str : String)
+      str.includes? "cannot re-use a name that is still in use"
+    end
+  end
 end
