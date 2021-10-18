@@ -365,12 +365,6 @@ Also here is some info about [things that could cause failures.](https://kuberne
 ./cnf-testsuite increase_decrease_capacity
 ```
 
-#### :heavy_check_mark: To test if Cluster API is enabled on the platform and manages a node
-
-```
-./cnf-testsuite clusterapi_enabled
-```
-
 <details> <summary>Details for Scalability Tests To Do's</summary>
 <p>
 
@@ -786,6 +780,12 @@ Sressing the disk with continuous and heavy IO can cause degradation in reads/ w
 
 ```
 ./cnf-testsuite  k8s_conformance
+```
+
+#### :heavy_check_mark: To test if Cluster API is enabled on the platform and manages a node
+
+```
+./cnf-testsuite clusterapi_enabled
 ```
 
 ### Hardware and Scheduling Platform Tests
