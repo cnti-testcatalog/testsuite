@@ -7,10 +7,18 @@ do
     sleep 1
 done
 
-until [[ $(kubectl get pods --namespace=kube-system --field-selector=status.phase=Running | wc -l) == $(kubectl get pods --namespace=kube-system | wc -l) ]]
+until [[ $(($(kubectl get pods --namespace=kube-system | wc -l)-1)) != $(kubectl -n kube-system get pods -o go-template='{{range $index, $element := .items}}{{range .status.containerStatuses}}{{if .ready}}{{$element.metadata.name}}{{"\n"}}{{end}}{{end}}{{end}}' | wc -l) ]]
+do
+  echo "Waiting for system pods to be reset"
+  echo "System Pod Count: $(($(kubectl get pods --namespace=kube-system | wc -l)-1))" 
+  echo "Ready Pod Count: $(kubectl -n kube-system get pods -o go-template='{{range $index, $element := .items}}{{range .status.containerStatuses}}{{if .ready}}{{$element.metadata.name}}{{"\n"}}{{end}}{{end}}{{end}}' | wc -l)"
+  sleep 1
+done
+
+until [[ $(($(kubectl get pods --namespace=kube-system | wc -l)-1)) = $(kubectl -n kube-system get pods -o go-template='{{range $index, $element := .items}}{{range .status.containerStatuses}}{{if .ready}}{{$element.metadata.name}}{{"\n"}}{{end}}{{end}}{{end}}' | wc -l) ]]
 do
   echo "Waiting for system pods to be ready"
-  echo "System Pod Count: $(kubectl get pods --namespace=kube-system | wc -l)" 
-  echo "Ready Pod Count: $(kubectl get pods --namespace=kube-system --field-selector=status.phase=Running | wc -l)"
+  echo "System Pod Count: $(($(kubectl get pods --namespace=kube-system | wc -l)-1))" 
+  echo "Ready Pod Count: $(kubectl -n kube-system get pods -o go-template='{{range $index, $element := .items}}{{range .status.containerStatuses}}{{if .ready}}{{$element.metadata.name}}{{"\n"}}{{end}}{{end}}{{end}}' | wc -l)"
   sleep 1
 done
