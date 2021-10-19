@@ -17,6 +17,7 @@ module AirGap
   CTR_VERSION="1.5.0"
   TAR_BOOTSTRAP_IMAGES_DIR = "/tmp/bootstrap_images"
   TAR_REPOSITORY_DIR = "/tmp/repositories"
+  TAR_BINARY_DIR = "/tmp/binaries"
 
   def self.tar_helm_repo(command, output_file : String = "./airgapped.tar.gz")
     Log.info { "tar_helm_repo command: #{command} output_file: #{output_file}" }
