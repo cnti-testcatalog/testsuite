@@ -67,4 +67,120 @@ describe "Security" do
       `./cnf-testsuite sample_privileged_cnf_whitelisted_cleanup`
     end
   end
+  it "'privilege_escalation' should fail on a cnf that has escalated privileges", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite privilege_escalation`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: No containers that allow privilege escalation were found/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+    end
+  end
+
+  it "'symlink_file_system' should pass on a cnf that does not allow a symlink attack", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite symlink_file_system`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: No containers allow a symlink attack/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+    end
+  end
+
+  it "'insecure_capabilities' should pass on a cnf that does not have containers with insecure capabilities", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite insecure_capabilities`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Containers with insecure capabilities were not found/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+    end
+  end
+
+  it "'insecure_capabilities' should fail on a cnf that has containers with insecure capabilities", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite insecure_capabilities`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Containers with insecure capabilities were not found/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml`
+    end
+  end
+
+  it "'dangerous_capabilities' should pass on a cnf that does not have containers with dangerous capabilities", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite dangerous_capabilities`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Containers with dangerous capabilities were not found/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+    end
+  end
+
+  it "'dangerous_capabilities' should fail on a cnf that has containers with dangerous capabilities", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite dangerous_capabilities`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Containers with dangerous capabilities were not found/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
+    end
+  end
+
+  it "'application_credentials' should fail on a cnf that allows applications credentials in configuration files", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite application_credentials`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Found applications credentials in configuration files/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+    end
+  end
+
+  it "'host_network' should pass on a cnf that does not have a host network attached to pod", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite host_network`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: No host network attached to pod/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+    end
+  end
+
+  it "'service_account_mapping' should fail on a cnf that automatically maps the service account", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite service_account_mapping`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Service accounts automatically mapped/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+    end
+  end
 end

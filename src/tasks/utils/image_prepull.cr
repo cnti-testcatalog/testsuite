@@ -2,7 +2,7 @@ require "kubectl_client"
 require "airgap"
 
 # todo put this in bootstrap utils
-def self.image_pull(yml)
+def self.image_pull(yml, offline)
   containers  = yml.map { |y|
     mc = Helm::Manifest.manifest_containers(y)
     mc.as_a? if mc
@@ -21,7 +21,9 @@ def self.image_pull(yml)
   LOGGING.info "Images: #{images}"
 
   # todo put this in bootstrap utils
-  resp = AirGap.create_pod_by_image("conformance/cri-tools:latest", "cri-tools")
+  unless offline
+    resp = AirGap.create_pod_by_image("conformance/cri-tools:latest", "cri-tools")
+  end
 
   images.map do |image| 
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)

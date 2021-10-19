@@ -140,39 +140,55 @@ module CNFManager
 				if check_containers
 					containers.as_a.each do |container|
 						resp = yield resource, container, volumes, initialized
-						LOGGING.debug "yield resp: #{resp}"
+						Log.debug { "yield resp: #{resp}" }
 						# if any response is false, the test fails
 						test_passed = false if resp == false
 					end
 				else
 					resp = yield resource, containers, volumes, initialized
-					LOGGING.debug "yield resp: #{resp}"
+					Log.debug { "yield resp: #{resp}" }
 					# if any response is false, the test fails
 					test_passed = false if resp == false
 				end
       end
 		end
-    LOGGING.debug "workload resource test intialized: #{initialized} test_passed: #{test_passed}"
+    Log.debug { "workload resource test intialized: #{initialized} test_passed: #{test_passed}" }
     initialized && test_passed
   end
 
   def self.cnf_installed?
-    LOGGING.info("cnf_config_list")
-    LOGGING.info("find: find #{CNF_DIR}/* -name #{CONFIG_FILE}")
-    cnf_testsuite = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
-    LOGGING.info("find response: #{cnf_testsuite}")
-    if cnf_testsuite.size == 0 
+    Log.info { "cnf_config_list" }
+    find_cmd = "find #{CNF_DIR}/* -name '#{CONFIG_FILE}'"
+    Log.info { "find: #{find_cmd}" }
+    Process.run(
+      find_cmd,
+      shell: true,
+      output: find_stdout = IO::Memory.new,
+      error: find_stderr = IO::Memory.new
+    )
+
+    cnf_testsuite = find_stdout.to_s.split("\n").select{ |x| x.empty? == false }
+    Log.info { "find response: #{cnf_testsuite}" }
+    if cnf_testsuite.size == 0
       false
-    else 
+    else
       true
     end
   end
 
   def self.cnf_config_list(silent=false)
-    LOGGING.info("cnf_config_list")
-    LOGGING.info("find: find #{CNF_DIR}/* -name #{CONFIG_FILE}")
-    cnf_testsuite = `find #{CNF_DIR}/* -name "#{CONFIG_FILE}"`.split("\n").select{|x| x.empty? == false}
-    LOGGING.info("find response: #{cnf_testsuite}")
+    Log.info { "cnf_config_list" }
+    find_cmd = "find #{CNF_DIR}/* -name \"#{CONFIG_FILE}\""
+    Log.info { "find: #{find_cmd}" }
+    Process.run(
+      find_cmd,
+      shell: true,
+      output: find_stdout = IO::Memory.new,
+      error: find_stderr = IO::Memory.new
+    )
+
+    cnf_testsuite = find_stdout.to_s.split("\n").select{ |x| x.empty? == false }
+    Log.info { "find response: #{cnf_testsuite}" }
     if cnf_testsuite.size == 0 && !silent
       raise "No cnf_testsuite.yml found! Did you run the setup task?"
     end
@@ -192,8 +208,15 @@ module CNFManager
   end
 
   def self.sample_testsuite_yml(sample_dir)
-    LOGGING.info "sample_testsuite_yml sample_dir: #{sample_dir}"
-    cnf_testsuite = `find #{sample_dir}/* -name "cnf-testsuite.yml"`.split("\n")[0]
+    Log.info { "sample_testsuite_yml sample_dir: #{sample_dir}" }
+    find_cmd = "find #{sample_dir}/* -name \"cnf-testsuite.yml\""
+    Process.run(
+      find_cmd,
+      shell: true,
+      output: find_stdout = IO::Memory.new,
+      error: find_stderr = IO::Memory.new
+    )
+    cnf_testsuite = find_stdout.to_s.split("\n")[0]
     if cnf_testsuite.empty?
       raise "No cnf_testsuite.yml found in #{sample_dir}!"
     end
@@ -527,29 +550,52 @@ module CNFManager
     helm_chart_path = config.cnf_config[:helm_chart_path]
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
 
+    # Create a CNF sandbox dir
+    FileUtils.mkdir_p(destination_cnf_dir)
+
+    # Copy cnf-testsuite.yml file to the cnf sandbox dir
+    copy_cnf_cmd = "cp -a #{ensure_cnf_testsuite_yml_path(config_file)} #{destination_cnf_dir}"
+    Log.info { copy_cnf_cmd }
+    status = Process.run(copy_cnf_cmd, shell: true)
+
     # todo manifest_or_helm_directory should either be the source helm/manifest files or the destination
     # directory that they will be copied to/generated into, but *not both*
     case install_method[0]
     when Helm::InstallMethod::ManifestDirectory
       Log.info { "preparing manifest_directory sandbox" }
-      FileUtils.mkdir_p(destination_cnf_dir)
       source_directory = config_source_dir(config_file) + "/" + manifest_directory
-      LOGGING.info "cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}"
-      yml_cp = `cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}`
+      src_path = Path[source_directory].expand.to_s
+      Log.info { "cp -a #{src_path} #{destination_cnf_dir}" }
+
+      begin
+        FileUtils.cp_r(src_path, destination_cnf_dir)
+      rescue File::AlreadyExistsError
+        Log.info { "manifest sandbox dir already exists at #{destination_cnf_dir}/#{File.basename(src_path)}" }
+      end
     when Helm::InstallMethod::HelmDirectory
-      FileUtils.mkdir_p(destination_cnf_dir)
       Log.info { "preparing helm_directory sandbox" }
       source_directory = config_source_dir(config_file) + "/" + helm_directory
-      LOGGING.info "cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}"
-      yml_cp = `cp -a #{Path[source_directory].expand.to_s} #{destination_cnf_dir}`
+      src_path = Path[source_directory].expand.to_s
+      Log.info { "cp -a #{src_path} #{destination_cnf_dir}" }
+
+      begin
+        FileUtils.cp_r(src_path, destination_cnf_dir)
+      rescue File::AlreadyExistsError
+        Log.info { "helm sandbox dir already exists at #{destination_cnf_dir}/#{File.basename(src_path)}" }
+      rescue File::NotFoundError
+        Log.info { "helm directory not found at #{src_path}" }
+        raise HelmDirectoryMissingError.new(src_path)
+      end
     when Helm::InstallMethod::HelmChart
       Log.info { "preparing helm chart sandbox" }
-      source_directory = ""
       FileUtils.mkdir_p(Path[destination_cnf_dir].expand.to_s + "/exported_chart")
     end
 
-    LOGGING.info("cp -a #{ensure_cnf_testsuite_yml_path(config_file)} #{destination_cnf_dir}")
-    yml_cp = `cp -a #{ensure_cnf_testsuite_yml_path(config_file)} #{destination_cnf_dir}`
+    Log.for("verbose").debug {
+      stdout = IO::Memory.new
+      Process.run("ls -alR #{destination_cnf_dir}", shell: true, output: stdout, error: stdout)
+      "Contents of destination_cnf_dir #{destination_cnf_dir}: \n#{stdout}"
+    }
   end
 
   # Retrieve the helm chart source: only works with helm chart
@@ -655,10 +701,18 @@ module CNFManager
 
     GitClient.clone("#{git_clone_url} #{destination_cnf_dir}/#{release_name}")  if git_clone_url.empty? == false
 
-    sandbox_setup(config, cli_args)
+    begin
+      sandbox_setup(config, cli_args)
+    rescue e : HelmDirectoryMissingError
+      stdout_warning "helm directory at #{e.helm_directory} is missing"
+    end
 
     helm = BinarySingleton.helm
     Log.info { "helm path: #{BinarySingleton.helm}" }
+
+    # This is to indicate if the release has already been setup.
+    # Set it to false by default to indicate a new release is being setup
+    fresh_install = true
 
     helm_install = {status: "", output: IO::Memory.new, error: IO::Memory.new}
     elapsed_time = Time.measure do
@@ -677,7 +731,11 @@ module CNFManager
         Log.for("verbose").info { "deploying by manifest file" } if verbose
         file_list = Helm::Manifest.manifest_file_list(install_method[1], silent=false)
         yml = Helm::Manifest.manifest_ymls_from_file_list(file_list)
-        image_pull(yml)
+        if input_file && !input_file.empty?
+          image_pull(yml, "offline=true")
+        else
+          image_pull(yml, "offline=false")
+        end
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
       when Helm::InstallMethod::HelmChart
         if input_file && !input_file.empty?
@@ -698,23 +756,46 @@ module CNFManager
         Log.for("verbose").info { "deploying with chart repository" } if verbose
         Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
         yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
-        image_pull(yml)
-        helm_intall = Helm.install("#{release_name} #{helm_chart}")
+
+        if input_file && !input_file.empty?
+          image_pull(yml, "offline=true")
+        else
+          image_pull(yml, "offline=false")
+        end
+ 
+        begin
+          helm_install = Helm.install("#{release_name} #{helm_chart}")
+        rescue e : Helm::CannotReuseReleaseNameError
+          stdout_warning "Release name #{release_name} has already been setup."
+          # Mark that install is not fresh
+          fresh_install = false
+        end
         export_published_chart(config, cli_args)
       when Helm::InstallMethod::HelmDirectory
         Log.for("verbose").info { "deploying with helm directory" } if verbose
         # prepare a helm directory for deployment into an airgapped environment, put in airgap module
         if input_file && !input_file.empty?
-          template_files = Find.find("#{destination_cnf_dir}/#{helm_directory}", 
-                                          "*.yaml*", "100")
+          template_files = Dir.glob(["#{destination_cnf_dir}/#{helm_directory}/*.yaml*"])
           template_files.map{|x| AirGap.image_pull_policy(x)}
         end
         #TODO Add helm options into cnf-testsuite yml
         #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
         Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
         yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
-        image_pull(yml)
-        helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory}")
+        
+        if input_file && !input_file.empty?
+          image_pull(yml, "offline=true")
+        else
+          image_pull(yml, "offline=false")
+        end
+
+        begin
+          helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory}")
+        rescue e : Helm::CannotReuseReleaseNameError
+          stdout_warning "Release name #{release_name} has already been setup."
+          # Mark that install is not fresh
+          fresh_install = false
+        end
       else
         raise "Deployment method not found"
       end
@@ -733,25 +814,24 @@ module CNFManager
     end
 
     Log.info { "elapsed_time.seconds: #{elapsed_time.seconds}" }
-
-    Log.info { "helm_install: #{helm_install}" }
-    Log.info { "helm_install[:output].to_s: #{helm_install[:output].to_s}" }
     helm_used = false
     if helm_install && helm_install[:error].to_s.size == 0 # && helm_pull.to_s.size > 0
       helm_used = true
       stdout_success "Successfully setup #{release_name}"
     end
 
+    # Not required to write elapsed time configmap if the cnf already exists due to a previous Helm install
+    return true if fresh_install == false
+
+    # Immutable config maps are only supported in Kubernetes 1.19+
+    immutable_configmap = true
     if version_less_than(KubectlClient.server_version, "1.19.0")
-      k8s_ver = false
-    else
-      k8s_ver = true 
+      immutable_configmap = false
     end
 
-    # TODO save to an [preferrably immutable] config map 
     #TODO if helm_install then set helm_deploy = true in template
     Log.info { "save config" }
-    elapsed_time_template = Crinja.render(configmap_temp, { "helm_install" => helm_used, "release_name" => "cnf-testsuite-#{release_name}-startup-information", "elapsed_time" => "#{elapsed_time.seconds}", "k8s_ver" => "#{k8s_ver}"})
+    elapsed_time_template = Crinja.render(configmap_temp, { "helm_install" => helm_used, "release_name" => "cnf-testsuite-#{release_name}-startup-information", "elapsed_time" => "#{elapsed_time.seconds}", "immutable" => immutable_configmap})
     #TODO find a way to kubectlapply directly without a map
     Log.debug { "elapsed_time_template : #{elapsed_time_template}" }
     File.write("#{destination_cnf_dir}/configmap_test.yml", "#{elapsed_time_template}")
@@ -768,7 +848,7 @@ def self.configmap_temp
   kind: ConfigMap
   metadata:
     name: '{{ release_name }}'
-  {% if k8s_ver %}
+  {% if immutable %}
   immutable: true
   {% endif %}
   data:
@@ -959,6 +1039,14 @@ end
       AirGap.generate(output_file, append=true)
 
 
+    end
+  end
+
+  class HelmDirectoryMissingError < Exception
+    property helm_directory : String = ""
+
+    def initialize(helm_directory : String)
+      self.helm_directory = helm_directory
     end
   end
 
