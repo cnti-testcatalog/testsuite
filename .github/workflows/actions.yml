@@ -282,7 +282,8 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
         bucket: cache-github
-        key: ${{ github.job }}_${{ hashFiles('**/utils/airgap/**', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: chaos-airgapped_
+        #key: ${{ github.job }}_${{ hashFiles('**/utils/airgap/**', '**/src/tasks/utils/cnf_manager.cr') }} - Working 
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         if ! [ -f "/tmp/chaos_environment.tar.gz" ]; then 
@@ -318,7 +319,7 @@ jobs:
         files: "/tmp/skip_upload"
     - name: Save cache
       uses: leroy-merlin-br/action-s3-cache@v1
-      if: steps.check_files.outputs.files_exists == 'false'
+      if: steps.check_files.outputs.files_exists == 'true'
       with:
         action: put
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
