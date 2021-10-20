@@ -35,4 +35,8 @@ RUN curl -Lo ./kind "https://kind.sigs.k8s.io/dl/v0.11.1/kind-$(uname)-amd64" &&
     chmod +x ./kind && \
     mv ./kind /usr/local/bin
 
+RUN add-apt-repository ppa:git-core/ppa -y && \
+    apt update && \
+    apt install -y git
+
     
