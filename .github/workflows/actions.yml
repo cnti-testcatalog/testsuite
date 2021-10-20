@@ -281,7 +281,7 @@ jobs:
         cache-name: cluster-cache
       with:
         path: /tmp/cache
-        key: ${{ hashFiles('**/utils/airgap/**', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: ${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
@@ -289,7 +289,7 @@ jobs:
         files: "/tmp/cache"
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
-      if: steps.check_cache.outputs.files_exists == 'true'
+      # if: steps.check_cache.outputs.files_exists == 'true'
       with:
         action: get
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
