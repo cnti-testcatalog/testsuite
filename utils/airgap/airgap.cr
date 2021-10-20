@@ -119,6 +119,7 @@ module AirGap
     end
     resp = AirGap.create_pod_by_image(images[0], "cri-tools")
 
+
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
     KubectlClient::Get.wait_for_critools
