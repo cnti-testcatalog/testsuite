@@ -184,42 +184,4 @@ describe "Security" do
     end
   end
 
-  it "'exposed_dashboard' should fail when the Kubernetes dashboard is exposed", tags: ["security"] do
-    dashboard_install_url = "https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml"
-    begin
-      # Run the exposed_dashboard test to confirm no vulnerability before dashboard is installed
-      response_s = `./cnf-testsuite exposed_dashboard`
-      (/PASSED: No exposed dashboard found in the cluster/ =~ response_s).should_not be_nil
-
-      # Install the dashboard version 2.0.0.
-      # According to the kubescape rule, anything less than v2.0.1 would fail.
-      KubectlClient::Apply.file(dashboard_install_url)
-
-      # Construct patch spec to expose Kubernetes Dashboard on a Node Port
-      patch_spec = {
-        spec: {
-          type: "NodePort",
-          ports: [
-            {
-              nodePort: 30500,
-              port: 443,
-              protocol: "TCP",
-              targetPort: 8443
-            }
-          ]
-        }
-      }
-      # Apply the patch to expose the dashboard on the NodePort
-      result = KubectlClient::Patch.spec("service", "kubernetes-dashboard", patch_spec.to_json, "kubernetes-dashboard")
-
-      # Run the test again to confirm vulnerability with an exposed dashboard
-      response_s = `./cnf-testsuite exposed_dashboard`
-      Log.info { response_s }
-      $?.success?.should be_true
-      (/FAILED: Found exposed dashboard in the cluster/ =~ response_s).should_not be_nil
-    ensure
-      # Ensure to remove the Kubectl dashboard after the test
-      KubectlClient::Delete.file(dashboard_install_url)
-    end
-  end
 end

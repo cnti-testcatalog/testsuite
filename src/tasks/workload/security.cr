@@ -6,7 +6,7 @@ require "totem"
 require "../utils/utils.cr"
 
 desc "CNF containers should be isolated from one another and the host.  The CNF Test suite uses tools like Falco, Sysdig Inspect and gVisor"
-task "security", ["privileged", "non_root_user", "symlink_file_system", "privilege_escalation", "insecure_capabilities", "dangerous_capabilities", "exposed_dashboard"] do |_, args|
+task "security", ["privileged", "non_root_user", "symlink_file_system", "privilege_escalation", "insecure_capabilities", "dangerous_capabilities"] do |_, args|
   stdout_score("security")
 end
 
@@ -236,27 +236,6 @@ task "dangerous_capabilities", ["kubescape_scan"] do |_, args|
       upsert_passed_task("dangerous_capabilities", "✔️  PASSED: Containers with dangerous capabilities were not found #{emoji_security}")
     else
       resp = upsert_failed_task("dangerous_capabilities", "✖️  FAILED: Found containers with dangerous capabilities #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
-      resp
-    end
-  end
-end
-
-desc "Check if the cluster has an exposed dashboard"
-task "exposed_dashboard", ["kubescape_scan"] do |_, args|
-  next if args.named["offline"]?
-
-  CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "exposed_dashboard" } if check_verbose(args)
-    results_json = Kubescape.parse
-    test_json = Kubescape.test_by_test_name(results_json, "Exposed dashboard")
-
-    emoji_security = "🔓🔑"
-    if Kubescape.test_passed?(test_json)
-      upsert_passed_task("exposed_dashboard", "✔️  PASSED: No exposed dashboard found in the cluster #{emoji_security}")
-    else
-      resp = upsert_failed_task("exposed_dashboard", "✖️  FAILED: Found exposed dashboard in the cluster #{emoji_security}")
       Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
       puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
       resp
