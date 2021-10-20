@@ -281,7 +281,7 @@ jobs:
         cache-name: cluster-cache
       with:
         path: /tmp/cache
-        key: ${{ hashFiles('**/utils/airgap/**', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: ${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
@@ -289,7 +289,7 @@ jobs:
         files: "/tmp/cache"
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
-      if: steps.check_cache.outputs.files_exists == 'true'
+      # if: steps.check_cache.outputs.files_exists == 'true'
       with:
         action: get
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -319,7 +319,8 @@ jobs:
               sudo chmod 777 /tmp
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
-              echo "Cache Already Exists" > /tmp/skip_upload
+              # echo "Cache Already Exists" > /tmp/skip_upload
+              echo "Cache Created" > /tmp/cache
         fi
     - name: Create Cluster & Run Tests.
       run: |

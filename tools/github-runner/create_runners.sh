@@ -31,10 +31,10 @@ VIPS=(
 
 RUNNER_COUNT=0
 for node in "${!RUNNERS[@]}"; do
-    ssh root@${RUNNERS[$node]} "docker pull conformance/github-runner:v1.0.0"
+    ssh root@${RUNNERS[$node]} "docker pull conformance/github-runner:v2.283.3"
     RUNNERS_PER_NODE=16
     until [ $RUNNERS_PER_NODE -eq 0 ]; do
-        ssh root@${RUNNERS[$node]} "docker run -d --network host --restart always --name github-runner$RUNNER_COUNT -e REPO_URL="https://github.com/cncf/cnf-testsuite" -e RUNNER_NAME="runner$RUNNER_COUNT" -e RUNNER_TOKEN="$TOKEN" -e RUNNER_WORKDIR="/github-runner-cnf-testsuite" -e RUNNER_GROUP="testsuite" -e LABELS="v1.0.0" -v /var/run/docker.sock:/var/run/docker.sock -v /runner-tmp/runner$RUNNER_COUNT:/tmp -v /shared:/shared conformance/github-runner:v1.0.0"
+        ssh root@${RUNNERS[$node]} "docker run -d --network host --restart always --name github-runner$RUNNER_COUNT -e REPO_URL="https://github.com/cncf/cnf-testsuite" -e RUNNER_NAME="runner$RUNNER_COUNT" -e RUNNER_TOKEN="$TOKEN" -e RUNNER_WORKDIR="/github-runner-cnf-testsuite" -e LABELS="v1.0.0" -v /var/run/docker.sock:/var/run/docker.sock -v /runner-tmp/runner$RUNNER_COUNT:/tmp -v /shared:/shared conformance/github-runner:v2.283.3"
         RUNNER_COUNT=$(($RUNNER_COUNT + 1))
         RUNNERS_PER_NODE=$(($RUNNERS_PER_NODE - 1))
     done
