@@ -209,7 +209,7 @@ describe "Security" do
         }
       }
       # Apply the patch to expose the dashboard on the NodePort
-      KubectlClient::Patch.spec("service", "kubernetes-dashboard", "kubernetes-dashboard", patch_spec)
+      result = KubectlClient::Patch.spec("service", "kubernetes-dashboard", patch_spec.to_json, "kubernetes-dashboard")
 
       # Run the test again to confirm vulnerability with an exposed dashboard
       response_s = `./cnf-testsuite exposed_dashboard`
