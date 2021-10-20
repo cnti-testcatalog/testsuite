@@ -1,4 +1,4 @@
-FROM myoung34/github-runner:latest 
+FROM myoung34/github-runner:2.283.3-ubuntu-bionic
 
 ARG CRYSTAL_VERSION=1.0.0
 ARG CRYSTAL_URL=https://github.com/crystal-lang/crystal/releases/download
@@ -23,6 +23,7 @@ RUN apt-get install apt-transport-https --yes && \
     echo "deb https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list && \
     apt-get update && \
     apt-get install helm uuid-runtime && \
+    rm /usr/bin/python && \
     ln -s /usr/bin/python3 /usr/bin/python
 
 RUN wget -O /tmp/kustomize.tar.gz "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.1.3/kustomize_v4.1.3_linux_amd64.tar.gz" && \
@@ -33,5 +34,9 @@ RUN wget -O /tmp/kustomize.tar.gz "https://github.com/kubernetes-sigs/kustomize/
 RUN curl -Lo ./kind "https://kind.sigs.k8s.io/dl/v0.11.1/kind-$(uname)-amd64" && \
     chmod +x ./kind && \
     mv ./kind /usr/local/bin
+
+RUN add-apt-repository ppa:git-core/ppa -y && \
+    apt update && \
+    apt install -y git
 
     

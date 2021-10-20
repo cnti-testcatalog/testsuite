@@ -10,10 +10,13 @@ KIND_NODE_IMAGE="conformance/node:v1.21.1"
 /entrypoint-original.sh &
 while ! docker ps -q ; do sleep 1; done
 
-echo "Setting up KIND cluster"
+if ! [ -f "/cache" ]; then
 
-docker load -i /node.tar.gz
+  echo "Setting up KIND cluster"
 
-kind create cluster --config=/kind-config.yaml --image=${KIND_NODE_IMAGE} --wait=900s
+  docker load -i /node.tar.gz
+
+  kind create cluster --config=/kind-config.yaml --image=${KIND_NODE_IMAGE} --wait=900s
+fi
 
 exec "$@"
