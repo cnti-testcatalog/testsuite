@@ -13,7 +13,7 @@ describe "Platform" do
     (/(PASSED: Control plane hardened)/ =~ response_s).should_not be_nil
   end
 
-  it "'cluster_admin' should fail on a cnf that uses a cluster admin binding", tags: ["security"] do
+  it "'cluster_admin' should fail on a cnf that uses a cluster admin binding", tags: ["platform:security"] do
     begin
       # LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
       # $?.success?.should be_true
@@ -26,7 +26,7 @@ describe "Platform" do
     end
   end
 
-  it "'exposed_dashboard' should fail when the Kubernetes dashboard is exposed", tags: ["security"] do
+  it "'exposed_dashboard' should fail when the Kubernetes dashboard is exposed", tags: ["platform:security"] do
     dashboard_install_url = "https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml"
     begin
       # Run the exposed_dashboard test to confirm no vulnerability before dashboard is installed
