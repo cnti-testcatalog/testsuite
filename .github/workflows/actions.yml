@@ -319,7 +319,8 @@ jobs:
               sudo chmod 777 /tmp
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
-              echo "Cache Already Exists" > /tmp/skip_upload
+              # echo "Cache Already Exists" > /tmp/skip_upload
+              echo "Cache Created" > /tmp/cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
