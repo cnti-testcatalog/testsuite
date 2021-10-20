@@ -163,3 +163,5 @@
   tags: platform, platform:security, dynamic
 - name: cluster_admin
   tags: platform, platform:security, dynamic
+- name: exposed_dashboard
+  tags: platform, platform:security, dynamic
