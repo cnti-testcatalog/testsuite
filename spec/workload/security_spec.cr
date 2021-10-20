@@ -185,16 +185,14 @@ describe "Security" do
   end
 
   it "'exposed_dashboard' should fail when the Kubernetes dashboard is exposed", tags: ["security"] do
+    dashboard_install_url = "https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml"
     begin
       # Install the dashboard version 2.0.0.
       # According to the kubescape rule, anything less than v2.0.1 would fail.
-      KubectlClient::Apply.file("https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml")
+      KubectlClient::Apply.file(dashboard_install_url)
 
       response_s = `./cnf-testsuite exposed_dashboard`
       (/FAILED: Found exposed dashboard in the cluster/ =~ response_s).should be_nil
-
-      # Get the spec for the dashboard service
-      dashboard_svc_spec = KubectlClient::Get.resource("service", "kubernetes-dashboard", "kubernetes-dashboard")
 
       # Construct patch spec to expose Kubernetes Dashboard on a Node Port
       patch_spec = {
@@ -218,6 +216,9 @@ describe "Security" do
       Log.info { response_s }
       $?.success?.should be_true
       (/FAILED: Found exposed dashboard in the cluster/ =~ response_s).should_not be_nil
+    ensure
+      # Ensure to remove the Kubectl dashboard after the test
+      KubectlClient::Delete.file(dashboard_install_url)
     end
   end
 end
