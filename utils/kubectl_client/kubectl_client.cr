@@ -141,6 +141,13 @@ module KubectlClient
     end
   end
 
+  module Patch
+    def self.spec(kind : String, resource : String, spec_input : String)
+      cmd = "kubectl patch #{kind} #{resource} --type=json -p=#{spec_input.to_json.inspect}"
+      ShellCmd.run(cmd, "KubectlClient::Patch.spec")
+    end
+  end
+
   module Scale
     def self.command(cli)
       cmd = "kubectl scale #{cli}"
@@ -373,8 +380,9 @@ module KubectlClient
       end
     end
 
-    def self.resource(kind, resource_name) : JSON::Any
-      cmd = "kubectl get #{kind} #{resource_name} -o json"
+    def self.resource(kind, resource_name, namespace : String = "") : JSON::Any
+      namespace_opt = "-n #{namespace}"
+      cmd = "kubectl get #{kind} #{resource_name} -o json #{namespace_opt}"
       result = ShellCmd.run(cmd, "KubectlClient::Get.resource")
       response = result[:output]
 
