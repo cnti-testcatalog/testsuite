@@ -48,6 +48,8 @@ dependencies:
     path: utils/helm
   airgap:
     path: utils/airgap
+  retriable:
+    github: Sija/retriable.cr
 
 development_dependencies:
   ameba:

@@ -226,7 +226,7 @@ jobs:
         echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
         echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
         LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.tag }} -v
-        
+
   chaos-airgapped:
     name: Chaos Tests Airgapped
     needs: [tests]
@@ -469,6 +469,81 @@ jobs:
         docker volume prune -f || true
         docker network prune -f || true
 
+  opa-airgapped:
+    name: Run OPA tests in airgapped env
+    runs-on: [v1.0.0]
+    env:
+      OFFLINE_IMAGE: "conformance/offline:crystal-1.0.0-r1"
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Cleanup tmp DIR
+      run: |
+        sudo rm -rf /tmp/*
+    - name: Cache crystal shards
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-crystal-shards
+      with:
+        path: ./lib
+        key: lib-${{ hashFiles('**/shard.lock') }}
+        restore-keys: |
+          lib-
+    - name: Cache airgapped.tar.gz
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-airgapped-tar
+      with:
+        path: /tmp/airgapped.tar.gz
+        key: airgapped-$GITHUB_JOB-reset122-${{ hashFiles('**/src/tasks/airgap.cr', '**/src/tasks/utils/airgap.cr', '**/src/tasks/utils/airgap_utils.cr', '**/src/tasks/utils/tar.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+    - name: Create airgapped.tar.gz if one is not found in cache
+      run: |
+        shards install
+        crystal src/cnf-testsuite.cr setup
+        helm repo add stable https://cncf.gitlab.io/stable
+        if ! [ -f "/tmp/airgapped.tar.gz" ]; then
+              echo "Cached airgapped.tar.gz not found, re-creating airgapped.tar.gz"
+              crystal src/cnf-testsuite.cr airgapped output-file=/tmp/airgapped.tar.gz
+              LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
+        else
+              echo "Cached airgapped.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
+        fi
+        echo "Checking for CoreDNS"
+        tar -C /tmp/ -xvf /tmp/airgapped.tar.gz
+        if [ -f "/tmp/images/coredns_1.6.7.tar" ]; then
+           echo "CoreDNS found, CNF Setup Ran."
+        else
+           echo "CoreDNS not found, Re-Running CNF Setup."
+           LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
+        fi
+    - name: Create Cluster & Run Tests.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      run: |
+        export DIR=$(uuidgen)
+        echo "export DIR=$DIR" > dir.env
+        mkdir /shared/$DIR
+        # Create Airgapped Tar
+        #DOTO Use pre-created airgapped.tar.gz
+        # wget --auth-no-challenge --header='Accept:application/octet-stream' https://$GITHUB_TOKEN:@api.github.com/repos/cncf/cnf-testsuite/releases/assets/38092818 -O airgapped.tar.gz
+        cp -a $(pwd) /shared/$DIR/cnf-testsuite
+        cp /tmp/airgapped.tar.gz /shared/$DIR/
+        sed -i "/versioned_tag/a \ \ required: true" embedded_files/points.yml
+        docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
+        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr versioned_tag verbose strict offline=true"
+    - name: Delete Cluster
+      if: ${{ always() }}
+      run: |
+        source dir.env
+        docker rm -f $DIR
+        docker rm -f $DIR-shards
+        sudo rm -rf /shared/$DIR
+        sudo rm -rf /tmp/*
+        docker container prune -f || true
+        docker volume prune -f || true
+        docker network prune -f || true
         
   test_helm_chart_in_airgapped_env:
     name: Test helm chart In An Airgapped Env.
