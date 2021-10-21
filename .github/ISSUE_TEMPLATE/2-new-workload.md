@@ -26,11 +26,11 @@ assignees: ""
 - [ ] Update [installation instructions](https://github.com/cncf/cnf-testsuite/blob/main/install.md) if needed
 - [ ] Update [Test Categories md](https://github.com/cncf/cnf-testsuite/blob/main/TEST-CATEGORIES.md) if needed
 - [ ] Update [USAGE md](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md) if needed
-      - [ ] how to run
-      - [ ] Description and details
-           - [ ] what the best practice is
-           - [ ] why are we testing this
-       - [ ] Remediation steps if test does not pass
+  - [ ] How to run
+  - [ ] Description and details
+    - [ ] What the best practice is
+    - [ ] Why are we testing this
+  - [ ] Remediation steps if test does not pass
 
 ### QA tasks
 
