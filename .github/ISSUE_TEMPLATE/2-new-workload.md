@@ -9,16 +9,16 @@ assignees: ""
 ## Title: [Workload] CATEGORY_NAME test: DESCRIPTIVE_TEST_NAME
 
 **Is your workload test idea related to a problem? Please describe.**
-- 
+- tbd
 
 **Describe the solution you'd like**
-- 
+- tbd
 
 **Test Category Name**
 - ADD CATEGORY_NAME (e.g. State, Security, etc from [README](https://github.com/cncf/cnf-testsuite/blob/main/README.md#cnf-testsuite))
 
 **Type of test (static or runtime)**
-- 
+- tbd
 
 ---
 
