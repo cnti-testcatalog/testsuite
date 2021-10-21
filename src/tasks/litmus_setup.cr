@@ -59,6 +59,10 @@ module LitmusManager
 
   Version = "2.1.0"
 
+  # todo fill out with code form resilience.cr line 503
+  def self.condon_target_node
+  end
+
   ## wait_for_test will wait for the completion of litmus test
   def self.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
     ## Maximum wait time is TCD (total chaos duration) + 60s (additional wait time)

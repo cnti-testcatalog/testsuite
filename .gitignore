@@ -53,3 +53,7 @@ airgaptest.tar.gz
 falco_rule.yaml
 /enforce-image-tag.yml
 /constraint_template.yml
+/install.sh
+/kubescape_results.json
+/tools/kubescape
+
