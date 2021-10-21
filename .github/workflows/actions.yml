@@ -319,8 +319,7 @@ jobs:
               sudo chmod 777 /tmp
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
-              # echo "Cache Already Exists" > /tmp/skip_upload
-              echo "Cache Created" > /tmp/cache
+              echo "Cache Already Exists" > /tmp/skip_upload
         fi
     - name: Create Cluster & Run Tests.
       run: |
@@ -421,8 +420,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
         bucket: cache-github
-        # key: setup-airgapped
-        key: setup_airgapped_env_ee6810aced47b1d47f998cccfbae4b10fbc384d3f81d96d455fca2d6bf5ea7c4
+        key: setup-airgapped
     - name: Create environment.tar if one is not found in cache
       run: |
         if ! [ -f "/tmp/setup_environment.tar.gz" ]; then 
@@ -447,8 +445,7 @@ jobs:
               mkdir /shared/$DIR
               echo "export DIR=$DIR" > /tmp/environment.env
               tar -xf /tmp/setup_environment.tar.gz -C /shared/$DIR
-              # echo "Cache Already Exists" > /tmp/skip_upload
-              echo "Cache Created" > /tmp/cache
+              echo "Cache Already Exists" > /tmp/skip_upload
         fi
     - name: Create Cluster & Run Tests.
       run: |
