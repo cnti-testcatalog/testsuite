@@ -289,7 +289,7 @@ jobs:
         files: "/tmp/cache"
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
-      # if: steps.check_cache.outputs.files_exists == 'true'
+      if: steps.check_cache.outputs.files_exists == 'true'
       with:
         action: get
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -319,8 +319,7 @@ jobs:
               sudo chmod 777 /tmp
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
-              # echo "Cache Already Exists" > /tmp/skip_upload
-              echo "Cache Created" > /tmp/cache
+              echo "Cache Already Exists" > /tmp/skip_upload
         fi
     - name: Create Cluster & Run Tests.
       run: |
@@ -400,15 +399,29 @@ jobs:
         key: lib-${{ hashFiles('**/shard.lock') }}
         restore-keys: |
           lib-
+    - name: Fetch Cluster Cache
+      uses: actions/cache@v2
+      env:
+        cache-name: cluster-cache
+      with:
+        path: /tmp/cache
+        key: ${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+    - name: Check cache existence  
+      id: check_setup_cache
+      uses: andstor/file-existence-action@v1
+      with:
+        files: "/tmp/cache"
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
+      if: steps.check_setup_cache.outputs.files_exists == 'true'
       with:
         action: get
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
         bucket: cache-github
-        key: ${{ github.job }}_${{ hashFiles('**/utils/airgap/**', '**/src/tasks/utils/cnf_manager.cr') }}
+        # key: setup-airgapped
+        key: setup_airgapped_env_ee6810aced47b1d47f998cccfbae4b10fbc384d3f81d96d455fca2d6bf5ea7c4
     - name: Create environment.tar if one is not found in cache
       run: |
         if ! [ -f "/tmp/setup_environment.tar.gz" ]; then 
@@ -426,13 +439,15 @@ jobs:
               tar -cf /tmp/setup_environment.tar -C /shared/$DIR cnf-testsuite
               apt update && apt install -y pigz
               pigz -6 /tmp/setup_environment.tar
+              echo "Cache Created" > /tmp/cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               export DIR=$(uuidgen)
               mkdir /shared/$DIR
               echo "export DIR=$DIR" > /tmp/environment.env
               tar -xf /tmp/setup_environment.tar.gz -C /shared/$DIR
-              echo "Cache Already Exists" > /tmp/skip_upload
+              # echo "Cache Already Exists" > /tmp/skip_upload
+              echo "Cache Created" > /tmp/cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
@@ -453,7 +468,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1 # Or whatever region your bucket was created
         bucket: cache-github
-        key: ${{ github.job }}_${{ hashFiles('**/utils/airgap/**', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: setup-airgapped
         artifacts: |
           /tmp/setup_environment.tar.gz
 
