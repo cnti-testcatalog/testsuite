@@ -6,56 +6,31 @@ labels: workload
 assignees: ""
 ---
 
-## [Acceptance Criteria] (TBD)
+## Title: [Workload] CATEGORY_NAME test: DESCRIPTIVE_TEST_NAME
 
-### CATEGORY_NAME test: DESCRIPTIVE_TEST_NAME
+**Is your workload test idea related to a problem? Please describe.**
+- 
 
-**Short description of workload test:**
+**Describe the solution you'd like**
+- 
 
-- goal of this test
-
-**Test Category**
-
+**Test Category Name**
 - ADD CATEGORY_NAME (e.g. State, Security, etc from [README](https://github.com/cncf/cnf-testsuite/blob/main/README.md#cnf-testsuite))
 
 **Type of test (static or runtime)**
-
-- ADD STATIC or RUNTIME
-
-**Proof of Concept** (if available)
-
-- [ ] link to proof of concept of new workload test
+- 
 
 ---
 
-### Implementation Tasks: TBD
-
-**Environment set up tasks:**
-
-- [ ]
-
-**Upstream tool set up tasks: (test suite + upstream tools)**
-
-- [ ]
-
-**CNF setup Tasks**
-
-- [ ]
-
-**Sample CNF tasks:**
-
-- [ ]
-
-**Code implementation tasks:**
-
-- [ ]
-
-**Documentation tasks:**
-
-- [ ] Update [Test Categories md](https://github.com/cncf/cnf-testsuite/blob/main/TEST-CATEGORIES.md) if needed
-- [ ] Update [Pseudo Code md](https://github.com/cncf/cnf-testsuite/blob/main/PSEUDO-CODE.md) if needed
-- [ ] Update [USAGE md](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md) if needed
+### Documentation tasks:
 - [ ] Update [installation instructions](https://github.com/cncf/cnf-testsuite/blob/main/install.md) if needed
+- [ ] Update [Test Categories md](https://github.com/cncf/cnf-testsuite/blob/main/TEST-CATEGORIES.md) if needed
+- [ ] Update [USAGE md](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md) if needed
+      - [ ] how to run
+      - [ ] Description and details
+           - [ ] what the best practice is
+           - [ ] why are we testing this
+       - [ ] Remediation steps if test does not pass
 
 ### QA tasks
 
