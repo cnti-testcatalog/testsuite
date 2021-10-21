@@ -841,3 +841,23 @@ Sressing the disk with continuous and heavy IO can cause degradation in reads/ w
 ```
 ./cnf-testsuite platform:control_plane_hardening
 ```
+
+#### :heavy_check_mark: To check if [dashboard is exposed](https://bit.ly/3zUimHR)
+
+<details> <summary>Details for platform:exposed_dashboard</summary>
+<p>
+
+<b>Exposed Dashboard:</b> If Kubernetes dashboard is exposed externally in Dashboard versions before 2.01, it will allow unauthenticated remote management of the cluster.
+
+<b>Remediation for failing this test:</b>
+
+Update dashboard version to v2.0.1 or above.
+
+</p>
+</details>
+
+```
+./cnf-testsuite platform:exposed_dashboard
+```
+
+
