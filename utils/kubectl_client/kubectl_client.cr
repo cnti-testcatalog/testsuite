@@ -141,6 +141,17 @@ module KubectlClient
     end
   end
 
+  module Patch
+    def self.spec(kind : String, resource : String, spec_input : String, namespace : String? = nil)
+      namespace_opt = ""
+      if namespace != nil
+        namespace_opt = "-n #{namespace}"
+      end
+      cmd = "kubectl patch #{kind} #{resource} #{namespace_opt} -p '#{spec_input}'"
+      ShellCmd.run(cmd, "KubectlClient::Patch.spec")
+    end
+  end
+
   module Scale
     def self.command(cli)
       cmd = "kubectl scale #{cli}"
@@ -380,8 +391,12 @@ module KubectlClient
       end
     end
 
-    def self.resource(kind, resource_name) : JSON::Any
-      cmd = "kubectl get #{kind} #{resource_name} -o json"
+    def self.resource(kind, resource_name, namespace : String? = nil) : JSON::Any
+      namespace_opt = ""
+      if namespace != nil
+        namespace_opt = "-n #{namespace}"
+      end
+      cmd = "kubectl get #{kind} #{resource_name} -o json #{namespace_opt}"
       result = ShellCmd.run(cmd, "KubectlClient::Get.resource")
       response = result[:output]
 

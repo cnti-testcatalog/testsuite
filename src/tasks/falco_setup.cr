@@ -12,15 +12,17 @@ task "install_falco" do |_, args|
   File.write("falco_rule.yaml", FALCO_RULES)
   if ENV["FALCO_ENV"]? == "CI"
     image_arg = "--set image.repository=conformance/falco"
+    image_tag = "--set image.tag=0.29.1"
+    chart_version = "--version 1.15.7"
   end
   if args.named["offline"]?
       Log.info { "install falco offline mode" }
     helm_chart = Dir.entries(FALCO_OFFLINE_DIR).first
-    Helm.install("falco --set ebpf.enabled=true #{image_arg} -f ./falco_rule.yaml #{FALCO_OFFLINE_DIR}/#{helm_chart}")
+    Helm.install("falco --set ebpf.enabled=true #{chart_version} #{image_arg} #{image_tag} -f ./falco_rule.yaml #{FALCO_OFFLINE_DIR}/#{helm_chart}")
   else
     Helm.helm_repo_add("falcosecurity","https://falcosecurity.github.io/charts")
     # needs ebpf parameter for precompiled module 
-    Helm.install("falco --set ebpf.enabled=true #{image_arg} -f ./falco_rule.yaml falcosecurity/falco")
+    Helm.install("falco --set ebpf.enabled=true #{chart_version} #{image_arg} #{image_tag} -f ./falco_rule.yaml falcosecurity/falco")
   end
 end
 

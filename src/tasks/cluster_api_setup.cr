@@ -32,6 +32,8 @@ task "cluster_api_setup" do |_, args|
     error: stderr = IO::Memory.new
   )
 
+  Log.info { "Completed downloading clusterctl" }
+
   unless Dir.exists?(cluster_api_dir)
     cmd = "git clone https://github.com/kubernetes-sigs/cluster-api --depth 1 --branch v0.3.10 #{cluster_api_dir}"
     stdout = IO::Memory.new
@@ -65,7 +67,7 @@ task "cluster_api_setup" do |_, args|
   cluster_init_cmd = "clusterctl init --core cluster-api:v0.3.8  --bootstrap kubeadm:v0.3.8 --control-plane kubeadm:v0.3.8 --infrastructure docker:v0.3.8 --config #{FileUtils.pwd}/clusterctl.yaml"
   stdout = IO::Memory.new
   Process.run(cluster_init_cmd, shell: true, output: stdout, error: stdout)
-  Log.info { stdout }
+  Log.for("clusterctl init").info { stdout }
 
   ## TODO: wait here for crds to be created if needed
 
@@ -87,12 +89,12 @@ task "cluster_api_setup" do |_, args|
     output: create_capd_stdout = IO::Memory.new,
     error: create_capd_stderr = IO::Memory.new
   )
-  create_capd_resp = create_capd_stdout.to_s
 
-  Log.info { create_capd_resp }
-  File.write("capd.yaml", create_capd_resp)
-  KubectlClient::Get.wait_for_install_by_apply("capd.yaml")
-  KubectlClient::Apply.file("capd.yaml")
+  Log.for("clusterctl-config").info { create_capd_stdout.to_s }
+  capd_path = "#{cluster_api_dir}/capd.yaml"
+  File.write(capd_path, create_capd_stdout.to_s)
+  FileUtils.cd(current_dir)
+  KubectlClient::Get.wait_for_install_by_apply(capd_path)
   Log.info { "cluster api setup complete" }
 end
 
