@@ -33,3 +33,4 @@ module CRIToolsSetup
     KubectlClient::Get.pod_status("cri-tools").split(",")[0]
   end
 end
+
