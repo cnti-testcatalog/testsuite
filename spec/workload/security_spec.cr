@@ -184,4 +184,30 @@ describe "Security" do
     end
   end
 
+  it "'ingress_egress_blocked' should fail on a cnf that has no ingress and egress traffic policy", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite ingress_egress_blocked`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Ingress and Egress traffic blocked on pods/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
+    end
+  end
+
+  it "'ingress_egress_blocked' should not fail on a cnf that has ingress and egress traffic policy", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite ingress_egress_blocked`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Ingress and Egress traffic not blocked on pods/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
+    end
+  end
+
 end
