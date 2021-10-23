@@ -19,7 +19,11 @@ describe "Resilience Node Drain Chaos" do
       response_s = `./cnf-testsuite node_drain verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: node_drain chaos test passed/ =~ response_s).should_not be_nil
+      if KubectlClient::Get.schedulable_nodes_list.size > 1
+        (/PASSED: node_drain chaos test passed/ =~ response_s).should_not be_nil
+      else
+        (/SKIPPED: node_drain chaos test skipped/ =~ response_s).should_not be_nil
+      end
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
