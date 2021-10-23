@@ -17,6 +17,7 @@ module AirGap
   CTR_VERSION="1.5.0"
   TAR_BOOTSTRAP_IMAGES_DIR = "/tmp/bootstrap_images"
   TAR_REPOSITORY_DIR = "/tmp/repositories"
+  TAR_BINARY_DIR = "/tmp/binaries"
 
   def self.tar_helm_repo(command, output_file : String = "./airgapped.tar.gz")
     Log.info { "tar_helm_repo command: #{command} output_file: #{output_file}" }
@@ -117,6 +118,7 @@ module AirGap
       raise "No images with Tar or Shell found. Please deploy a Pod with Tar or Shell to your cluster."
     end
     resp = AirGap.create_pod_by_image(images[0], "cri-tools")
+
 
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")

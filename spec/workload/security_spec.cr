@@ -183,4 +183,5 @@ describe "Security" do
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
     end
   end
+
 end

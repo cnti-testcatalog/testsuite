@@ -98,8 +98,7 @@ end
 
 desc "Check if any containers are running in privileged mode"
 task "privilege_escalation", ["kubescape_scan"] do |_, args|
-  unless args.named["offline"]?
-      CNFManager::Task.task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "privilege_escalation" if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Allow privilege escalation")
@@ -114,76 +113,68 @@ task "privilege_escalation", ["kubescape_scan"] do |_, args|
       resp
     end
   end
-  end
 end
 
 desc "Check if an attacker can use symlink for arbitrary host file system access."
 task "symlink_file_system", ["kubescape_scan"] do |_, args|
-  unless args.named["offline"]?
-      CNFManager::Task.task_runner(args) do |args, config|
-      VERBOSE_LOGGING.info "symlink_file_system" if check_verbose(args)
-      results_json = Kubescape.parse
-      test_json = Kubescape.test_by_test_name(results_json, "CVE-2021-25741 - Using symlink for arbitrary host file system access.")
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "symlink_file_system" if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "CVE-2021-25741 - Using symlink for arbitrary host file system access.")
 
-      emoji_security="🔓🔑"
-      if Kubescape.test_passed?(test_json) 
-        upsert_passed_task("symlink_file_system", "✔️  PASSED: No containers allow a symlink attack #{emoji_security}")
-      else
-        resp = upsert_failed_task("symlink_file_system", "✖️  FAILED: Found containers that allow a symlink attack #{emoji_security}")
-        Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-        puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
-        resp
-      end
+    emoji_security="🔓🔑"
+    if Kubescape.test_passed?(test_json) 
+      upsert_passed_task("symlink_file_system", "✔️  PASSED: No containers allow a symlink attack #{emoji_security}")
+    else
+      resp = upsert_failed_task("symlink_file_system", "✖️  FAILED: Found containers that allow a symlink attack #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
     end
   end
 end
 
 desc "Check if applications credentials are in configuration files."
 task "application_credentials", ["kubescape_scan"] do |_, args|
-  unless args.named["offline"]?
-      CNFManager::Task.task_runner(args) do |args, config|
-      VERBOSE_LOGGING.info "application_credentials" if check_verbose(args)
-      results_json = Kubescape.parse
-      test_json = Kubescape.test_by_test_name(results_json, "Applications credentials in configuration files")
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "application_credentials" if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Applications credentials in configuration files")
 
-      emoji_security="🔓🔑"
-      if Kubescape.test_passed?(test_json) 
-        upsert_passed_task("application_credentials", "✔️  PASSED: No applications credentials in configuration files #{emoji_security}")
-      else
-        resp = upsert_failed_task("application_credentials", "✖️  FAILED: Found applications credentials in configuration files #{emoji_security}")
-        Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-        puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
-        resp
-      end
+    emoji_security="🔓🔑"
+    if Kubescape.test_passed?(test_json) 
+      upsert_passed_task("application_credentials", "✔️  PASSED: No applications credentials in configuration files #{emoji_security}")
+    else
+      resp = upsert_failed_task("application_credentials", "✖️  FAILED: Found applications credentials in configuration files #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
     end
   end
 end
 
 desc "Check if potential attackers may gain access to a POD and inherit access to the entire host network. For example, in AWS case, they will have access to the entire VPC."
 task "host_network", ["kubescape_scan"] do |_, args|
-  unless args.named["offline"]?
-      CNFManager::Task.task_runner(args) do |args, config|
-      VERBOSE_LOGGING.info "host_network" if check_verbose(args)
-      results_json = Kubescape.parse
-      test_json = Kubescape.test_by_test_name(results_json, "hostNetwork access")
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "host_network" if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "hostNetwork access")
 
-      emoji_security="🔓🔑"
-      if Kubescape.test_passed?(test_json) 
-        upsert_passed_task("host_network", "✔️  PASSED: No host network attached to pod #{emoji_security}")
-      else
-        resp = upsert_failed_task("host_network", "✖️  FAILED: Found host network attached to pod #{emoji_security}")
-        Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-        puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
-        resp
-      end
+    emoji_security="🔓🔑"
+    if Kubescape.test_passed?(test_json) 
+      upsert_passed_task("host_network", "✔️  PASSED: No host network attached to pod #{emoji_security}")
+    else
+      resp = upsert_failed_task("host_network", "✖️  FAILED: Found host network attached to pod #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
     end
   end
 end
 
 desc "Potential attacker may gain access to a POD and steal its service account token. Therefore, it is recommended to disable automatic mapping of the service account tokens in service account configuration and enable it only for PODs that need to use them."
 task "service_account_mapping", ["kubescape_scan"] do |_, args|
-  unless args.named["offline"]?
-      CNFManager::Task.task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "service_account_mapping" if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Automatic mapping of service account")
@@ -197,7 +188,6 @@ task "service_account_mapping", ["kubescape_scan"] do |_, args|
       puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
       resp
     end
-  end
   end
 end
 

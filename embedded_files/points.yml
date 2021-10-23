@@ -78,6 +78,8 @@
 
 #- name: versioned_helm_chart
 #  tags: configuration_lifecycle, dynamic, workload
+- name: versioned_tag
+  tags: configuration_lifecycle, dynamic, workload
 - name: ip_addresses
   pass: 0
   fail: -1 
@@ -162,4 +164,6 @@
 - name: control_plane_hardening
   tags: platform, platform:security, dynamic
 - name: cluster_admin
+  tags: platform, platform:security, dynamic
+- name: exposed_dashboard
   tags: platform, platform:security, dynamic

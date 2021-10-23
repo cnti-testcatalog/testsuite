@@ -4,9 +4,9 @@ require "log"
 module Kubescape
 
   #kubescape scan framework nsa --exclude-namespaces kube-system,kube-public
-  def self.scan(cmd="framework nsa --exclude-namespaces kube-system,kube-public --format json --output kubescape_results.json")
+  def self.scan(cmd="framework nsa --use-from ./tools/kubescape/nsa.json --exclude-namespaces kube-system,kube-public --format json --output kubescape_results.json")
     alt_cmd = "./tools/kubescape/kubescape scan " + cmd
-    Log.info { "command: #{cmd}" }
+    Log.info { "scan command: #{cmd}" }
     status = Process.run(
       alt_cmd,
       shell: true,
@@ -19,6 +19,7 @@ module Kubescape
   end
 
   def self.parse(results_file="kubescape_results.json")
+    Log.info { "kubescape parse" }
     results_json = File.open(results_file) do |f| 
       JSON.parse(f)
     end
@@ -30,6 +31,7 @@ module Kubescape
   end
 
   def self.test_by_test_name(results_json, test_name)
+    Log.info { "kubescape test_by_test_name" }
     resp= results_json.as_a.find {|test|test["name"]==test_name}
     if resp
       resp
@@ -47,6 +49,7 @@ module Kubescape
   end
 
   def self.test_passed?(test_json)
+    Log.info { "kubescape test_passed?" }
     score = score(test_json)
     Log.info { "score: #{score}" }
     score.as_i == 100

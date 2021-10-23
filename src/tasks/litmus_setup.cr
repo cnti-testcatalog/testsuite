@@ -22,6 +22,17 @@ module LitmusManager
 
   Version = "2.1.0"
 
+  def self.cordon_target_node(deployment_label, deployment_value)
+    app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_value} -o=jsonpath='{.items[0].spec.nodeName}'"
+    Log.info { "Getting the operator node name: #{app_nodeName_cmd}" }
+    status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
+    Log.for("verbose").info { "status_code: #{status_code}" } 
+    app_nodeName = appNodeName_response.to_s 
+    status_code = KubectlClient::Cordon.command("#{app_nodeName}")
+    Log.for("verbose").info { "status_code: #{status_code}" }
+    Log.info { "The target node has been cordoned sucessfully" }
+  end
+
   ## wait_for_test will wait for the completion of litmus test
   def self.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
     ## Maximum wait time is TCD (total chaos duration) + 60s (additional wait time)
