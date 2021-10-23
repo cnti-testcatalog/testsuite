@@ -18,44 +18,6 @@ task "install_litmus" do |_, args|
   end
 end
 
-desc "Cordon target node to make it non schedulable"
-task "cordon_target_node" do | _,args|
-  CNFManager::Task.task_runner(args) do |args, config|
-      skipped = false
-      ENV["SKIP_TASK"] ||= "false"
-      Log.for("verbose").info { "cordon_target_node" } if check_verbose(args)
-      Log.debug { "cnf_config: #{config}" }
-      #TODO tests should fail if cnf not installed
-      destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-      task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-        schedulable_nodes_count=KubectlClient::Get.schedulable_nodes_list
-        if schedulable_nodes_count.size > 1
-      
-          Log.info { "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}" }
-          deployment_label="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}"
-          deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
-
-          app_nodeName_cmd = "kubectl get pods -l #{ deployment_label}=#{ deployment_label_value } -o=jsonpath='{.items[0].spec.nodeName}'"
-          puts "Getting the operator node name #{app_nodeName_cmd}" if check_verbose(args)
-          status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
-          puts "status_code: #{status_code}" if check_verbose(args)  
-          app_nodeName = appNodeName_response.to_s 
-          status_code = KubectlClient::Cordon.command("#{app_nodeName}")
-          puts "status_code: #{status_code}" if check_verbose(args) 
-        else
-          ENV["SKIP_TASK"] = "true"
-        end          
-      end
-      if task_response && ENV["SKIP_TASK"].to_i == "true"
-        resp = upsert_skipped_task("node_drain","✖️  SKIPPED: The target node is not cordoned 🗡️💀♻️")
-      elsif task_response
-        resp = upsert_passed_task("cordon_target_node","✔️  PASSED: The target node is cordoned sucessfully 🗡️💀♻️")
-      else
-        resp = upsert_failed_task("cordon_target_node","✖️  FAILED: The target node is unable to cordoned sucessfully 🗡️💀♻️")
-      end
-  end
-end
-
 module LitmusManager
 
   Version = "2.1.0"
@@ -126,4 +88,45 @@ module LitmusManager
       return false
     end
   end
+
+  ## install_litmus will install the infra components of litmus
+  def self.install_litmus(args)
+    if args.named["offline"]?
+      Log.info {"install litmus offline mode"}
+      AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v#{LitmusManager::Version}.yaml")
+      KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v#{LitmusManager::Version}.yaml")
+      KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/chaos_crds.yaml")
+    else
+      KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v#{LitmusManager::Version}.yaml")
+      KubectlClient::Apply.file("https://raw.githubusercontent.com/litmuschaos/chaos-operator/master/deploy/chaos_crds.yaml")
+    end
+  end
+
+  ## cordon_target_node will cordon the target node under chaos
+  def self.cordon_target_node(args)
+    CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "cordon_target_node" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
+    #TODO tests should fail if cnf not installed
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+    Log.info { "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}" }
+    deployment_label="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}"
+    deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
+
+    app_nodeName_cmd = "kubectl get pods -l #{ deployment_label}=#{ deployment_label_value } -o=jsonpath='{.items[0].spec.nodeName}'"
+    puts "Getting the operator node name #{app_nodeName_cmd}" if check_verbose(args)
+    status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
+    puts "status_code: #{status_code}" if check_verbose(args)  
+    app_nodeName = appNodeName_response.to_s 
+    status_code = KubectlClient::Cordon.command("#{app_nodeName}")
+    puts "status_code: #{status_code}" if check_verbose(args) 
+    end
+    if task_response
+      resp = upsert_passed_task("cordon_target_node","✔️  PASSED: The target node is cordoned sucessfully 🗡️💀♻️")
+    else
+      resp = upsert_failed_task("cordon_target_node","✖️  FAILED: The target node is unable to cordoned sucessfully 🗡️💀♻️")
+    end  
+  end
+end
 end

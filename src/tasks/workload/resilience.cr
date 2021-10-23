@@ -489,60 +489,62 @@ task "pod_io_stress", ["install_litmus"] do |_, args|
 end
 
 desc "Does the CNF crash when node-drain occurs"
-task "node_drain", ["cordon_target_node", "install_litmus"] do |t, args|
+task "node_drain" do |t, args|
   CNFManager::Task.task_runner(args) do |args, config|
     skipped = false
     Log.for("verbose").info {"node_drain"} if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      schedulable_nodes_count=KubectlClient::Get.schedulable_nodes_list
-      if schedulable_nodes_count.size > 0
-
-        if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
-          test_passed = true
-        else
-          puts "No resource label found for node_drain test for resource: #{resource["name"]}".colorize(:red)
-          test_passed = false
-        end
-        if test_passed
-          if args.named["offline"]?
-            Log.info {"install resilience offline mode"}
-            AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
-            KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
-            KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-rbac.yaml")
-          else
-            KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/experiment.yaml")
-            KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/rbac.yaml")
-          end
-          KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
-          deployment_label="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}"
-          deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
-    
-          app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_label_value} -o=jsonpath='{.items[0].spec.nodeName}'"
-          puts "Getting the app node name #{app_nodeName_cmd}" if check_verbose(args)
-          status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
-          puts "status_code: #{status_code}" if check_verbose(args)  
-          app_nodeName = appNodeName_response.to_s
-      
-          chaos_experiment_name = "node-drain"
-          total_chaos_duration = "90"
-          test_name = "#{resource["name"]}-#{Random.rand(99)}" 
-          chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
-
-          template = Crinja.render(chaos_template_node_drain, {"chaos_experiment_name"=> "#{chaos_experiment_name}","deployment_label"=> "#{deployment_label}","deployment_label_value"=> "#{deployment_label_value}", "test_name" => test_name,"total_chaos_duration" => total_chaos_duration,"app_nodeName" => app_nodeName})
-          File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
-          KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-          LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
-          test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+    schedulable_nodes_count=KubectlClient::Get.schedulable_nodes_list
+    if schedulable_nodes_count.size > 1
+      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+        test_passed = true
+      else
+        puts "No resource label found for node_drain test for resource: #{resource["name"]}".colorize(:red)
+        test_passed = false
       end
+      if test_passed
+
+        LitmusManager.cordon_target_node(args)
+        LitmusManager.install_litmus(args)
+        if args.named["offline"]?
+          Log.info {"install resilience offline mode"}
+          AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-rbac.yaml")
+        else
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/rbac.yaml")
+        end
+        KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
+        deployment_label="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}"
+        deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
+  
+        app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_label_value} -o=jsonpath='{.items[0].spec.nodeName}'"
+        puts "Getting the app node name #{app_nodeName_cmd}" if check_verbose(args)
+        status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
+        puts "status_code: #{status_code}" if check_verbose(args)  
+        app_nodeName = appNodeName_response.to_s
+    
+        chaos_experiment_name = "node-drain"
+        total_chaos_duration = "90"
+        test_name = "#{resource["name"]}-#{Random.rand(99)}" 
+        chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
+
+        template = Crinja.render(chaos_template_node_drain, {"chaos_experiment_name"=> "#{chaos_experiment_name}","deployment_label"=> "#{deployment_label}","deployment_label_value"=> "#{deployment_label_value}", "test_name" => test_name,"total_chaos_duration" => total_chaos_duration,"app_nodeName" => app_nodeName})
+        File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
+        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
+        test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+    end
     else
       skipped = true
-    end                
     end
-    if task_response && ENV["SKIP_TASK"].to_i == "true"
+    end
+    if task_response && skipped
       Log.for("verbose").warn{"The node_drain test needs minimum 2 schedulable nodes, current number of nodes: #{KubectlClient::Get.schedulable_nodes_list.size}"} if check_verbose(args)
-      resp = upsert_skipped_task("node_drain","✖️  SKIPPED: node_drain chaos test skipped 🗡️💀♻️")
+      resp = upsert_skipped_task("node_drain","✖️  SKIPPED: node_drain chaos test skipped insufficient number of nodes🗡️💀♻️")
     elsif task_response
       resp = upsert_passed_task("node_drain","✔️  PASSED: node_drain chaos test passed 🗡️💀♻️")
     else
