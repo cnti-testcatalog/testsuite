@@ -289,7 +289,7 @@ jobs:
         files: "/tmp/cache"
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
-      # if: steps.check_cache.outputs.files_exists == 'true'
+      if: steps.check_cache.outputs.files_exists == 'true'
       with:
         action: get
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -319,14 +319,13 @@ jobs:
               sudo chmod 777 /tmp
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
-              # echo "Cache Already Exists" > /tmp/skip_upload
-              echo "Cache Created" > /tmp/cache
+              echo "Cache Already Exists" > /tmp/skip_upload
         fi
     - name: Create Cluster & Run Tests.
       run: |
         touch $(pwd)/cache
         sed -i "/${{ matrix.tag }}/a \ \ required: true" $(pwd)/embedded_files/points.yml
-        docker run --name cache --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr ${{ matrix.tag }} offline=true verbose strict"
+    #     docker run --name cache --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr ${{ matrix.tag }} offline=true verbose strict"
     - name: Check file existence  
       id: check_files
       uses: andstor/file-existence-action@v1
@@ -344,6 +343,8 @@ jobs:
         key: chaos-airgapped
         artifacts: |
           /tmp/chaos_environment.tar.gz
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
 
   build:
     name: Build Release
