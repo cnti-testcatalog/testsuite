@@ -281,7 +281,7 @@ jobs:
         cache-name: cluster-cache
       with:
         path: /tmp/cache
-        key: ${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
@@ -406,7 +406,7 @@ jobs:
         cache-name: cluster-cache
       with:
         path: /tmp/cache
-        key: ${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_setup_cache
       uses: andstor/file-existence-action@v1
