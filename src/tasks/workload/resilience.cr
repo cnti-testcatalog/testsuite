@@ -523,7 +523,7 @@ task "node_drain", ["install_litmus"] do |t, args|
           puts "status_code: #{status_code}" if check_verbose(args)  
           app_nodeName = appNodeName_response.to_s
 
-          litmus_nodeName_cmd = "kubectl get pods -l app.kubernetes.io/name=litmus -o=jsonpath='{.items[0].spec.nodeName}'"
+          litmus_nodeName_cmd = "kubectl get pods -n litmus -l app.kubernetes.io/name=litmus -o=jsonpath='{.items[0].spec.nodeName}'"
           puts "Getting the app node name #litmus_nodeName_cmd}" if check_verbose(args)
           status_code = Process.run("#{litmus_nodeName_cmd}", shell: true, output: litmusNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
           puts "status_code: #{status_code}" if check_verbose(args)  
