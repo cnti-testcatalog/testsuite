@@ -289,7 +289,7 @@ jobs:
         files: "/tmp/cache"
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
-      if: steps.check_cache.outputs.files_exists == 'true'
+      # if: steps.check_cache.outputs.files_exists == 'true'
       with:
         action: get
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -320,6 +320,7 @@ jobs:
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               echo "Cache Already Exists" > /tmp/skip_upload
+              echo "Cache Created" > /tmp/cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
@@ -413,7 +414,7 @@ jobs:
         files: "/tmp/cache"
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
-      if: steps.check_setup_cache.outputs.files_exists == 'true'
+      # if: steps.check_setup_cache.outputs.files_exists == 'true'
       with:
         action: get
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -446,6 +447,7 @@ jobs:
               echo "export DIR=$DIR" > /tmp/environment.env
               tar -xf /tmp/setup_environment.tar.gz -C /shared/$DIR
               echo "Cache Already Exists" > /tmp/skip_upload
+              echo "Cache Created" > /tmp/cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
