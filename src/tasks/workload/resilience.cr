@@ -528,7 +528,9 @@ task "node_drain", ["install_litmus"] do |t, args|
           status_code = Process.run("#{litmus_nodeName_cmd}", shell: true, output: litmusNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
           puts "status_code: #{status_code}" if check_verbose(args)  
           litmus_nodeName = litmusNodeName_response.to_s
-          if litmus_nodeName = app_nodeName
+          Log.info { "Workload Node Name: #{app_nodeName}" }
+          Log.info { "Litmus Node Name: #{litmus_nodeName}" }
+          if litmus_nodeName == app_nodeName
             Log.info { "Litmus and the workload are scheduled to the same node. Re-scheduling Litmus" }
             nodes = KubectlClient::Get.schedulable_nodes_list
             node_names = nodes.map { |item|

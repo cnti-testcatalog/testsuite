@@ -43,7 +43,7 @@ module LitmusManager
     end
     deploy_index = file.index("kind: Deployment") || 0 
     spec_literal = "spec:"
-    template = "\n      nodeSelector:\n        kubernetes.io/hostname: devcluster-control-plane"
+    template = "\n      nodeSelector:\n        kubernetes.io/hostname: #{node_name}"
     spec1_index = file.index(spec_literal, deploy_index + 1)  || 0
     spec2_index = file.index(spec_literal, spec1_index + 1) || 0
     output_file = file.insert(spec2_index + spec_literal.size, template) unless spec2_index == 0
