@@ -186,27 +186,35 @@ describe "Security" do
 
   it "'ingress_egress_blocked' should fail on a cnf that has no ingress and egress traffic policy", tags: ["security"] do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns`
       $?.success?.should be_true
       response_s = `./cnf-testsuite ingress_egress_blocked`
       LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: Ingress and Egress traffic blocked on pods/ =~ response_s).should be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns`
     end
   end
 
-  it "'ingress_egress_blocked' should not fail on a cnf that has ingress and egress traffic policy", tags: ["security"] do
+  it "'ingress_egress_blocked' should pass on a cnf that has ingress and egress traffic policy", tags: ["security"] do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-ingress-egress-blocked`
       $?.success?.should be_true
+
+      # Remove local-path-provisioner
+      KubectlClient::Delete.file("https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml")
+
+      # Apply traffic policy file that is made available in the sample cnf dir
+      traffic_policy_manifest = "#{Path[__DIR__].parent.parent}/sample-cnfs/sample-ingress-egress-blocked/traffic-policy.yml"
+      KubectlClient::Apply.file(traffic_policy_manifest)
+
       response_s = `./cnf-testsuite ingress_egress_blocked`
       LOGGING.info response_s
       $?.success?.should be_true
       (/FAILED: Ingress and Egress traffic not blocked on pods/ =~ response_s).should be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-ingress-egress-blocked`
     end
   end
 
