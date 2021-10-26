@@ -842,14 +842,14 @@ Sressing the disk with continuous and heavy IO can cause degradation in reads/ w
 ./cnf-testsuite platform:control_plane_hardening
 ```
 
-#### :heavy_check_mark: To check if [dashboard is exposed](https://bit.ly/3zUimHR)
+#### :heavy_check_mark: To check if dashboard is exposed
 
 <details> <summary>Details for platform:exposed_dashboard</summary>
 <p>
 
-<b>Exposed Dashboard:</b> If Kubernetes dashboard is exposed externally in Dashboard versions before 2.01, it will allow unauthenticated remote management of the cluster.
+<b>Exposed Dashboard:</b> If Kubernetes dashboard is exposed externally in Dashboard versions before 2.01, it will allow unauthenticated remote management of the cluster. By default, the dashboard exposes an internal endpoint (ClusterIP service). While the [NSA and CISA’s K8s Hardening guide](https://bit.ly/3zUimHR) does not directly address the dashboard exposure it does go over related areas like the Control plane API. See more details in Kubescape documentation: [C-0047 - Exposed dashboard](https://hub.armo.cloud/docs/c-0047)
 
-<b>Remediation for failing this test:</b>
+<b>Remediation for failing this test: </b>
 
 Update dashboard version to v2.0.1 or above.
 
