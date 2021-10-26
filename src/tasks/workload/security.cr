@@ -191,6 +191,27 @@ task "service_account_mapping", ["kubescape_scan"] do |_, args|
   end
 end
 
+desc "Check if security services are being used to harden the application"
+task "linux_hardening", ["kubescape_scan"] do |_, args|
+  next if args.named["offline"]?
+
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "linux_hardening" } if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Linux hardening")
+
+    emoji_security = "🔓🔑"
+    if Kubescape.test_passed?(test_json)
+      upsert_passed_task("linux_hardening", "✔️  PASSED: Security services are being used to harden applications #{emoji_security}")
+    else
+      resp = upsert_failed_task("linux_hardening", "✖️  FAILED: Found resources that do not use security services #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end
+
 desc "Check if the containers have insecure capabilities."
 task "insecure_capabilities", ["kubescape_scan"] do |_, args|
   next if args.named["offline"]?
