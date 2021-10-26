@@ -515,6 +515,47 @@ task "node_drain", ["install_litmus"] do |t, args|
           test_passed = false
         end
         if test_passed
+          deployment_label="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}"
+          deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
+          app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_label_value} -o=jsonpath='{.items[0].spec.nodeName}'"
+          puts "Getting the app node name #{app_nodeName_cmd}" if check_verbose(args)
+          status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
+          puts "status_code: #{status_code}" if check_verbose(args)  
+          app_nodeName = appNodeName_response.to_s
+
+          litmus_nodeName_cmd = "kubectl get pods -l app.kubernetes.io/name=litmus -o=jsonpath='{.items[0].spec.nodeName}'"
+          puts "Getting the app node name #litmus_nodeName_cmd}" if check_verbose(args)
+          status_code = Process.run("#{litmus_nodeName_cmd}", shell: true, output: litmusNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
+          puts "status_code: #{status_code}" if check_verbose(args)  
+          litmus_nodeName = litmusNodeName_response.to_s
+          if litmus_nodeName = app_nodeName
+            Log.info { "Litmus and the workload are scheduled to the same node. Re-scheduling Litmus" }
+            nodes = KubectlClient::Get.schedulable_nodes_list
+            node_names = nodes.map { |item|
+              Log.info { "items labels: #{item.dig?("metadata", "labels")}" }
+              node_name = item.dig?("metadata", "labels", "kubernetes.io/hostname")
+              Log.debug { "NodeName: #{node_name}" }
+              node_name
+            }
+            Log.info { "All Schedulable Nodes: #{nodes}" }
+            Log.info { "Schedulable Node Names: #{node_names}" }
+            litmus_nodes = node_names - ["#{litmus_nodeName}"]
+            Log.info { "Schedulable Litmus Nodes: #{litmus_nodes}" }
+            Halite.follow.get("#{LitmusManager::ONLINE_LITMUS_OPERATOR}") do |response|
+              Log.info { "Litmus Response: #{response}" }
+              File.write("#{LitmusManager::DOWNLOADED_LITMUS_FILE}", response.body_io)
+            end
+            if args.named["offline"]?
+                 Log.info {"Re-Schedule Litmus in offline mode"}
+                 LitmusManager.add_node_selector(litmus_nodes[0], airgap=true)
+               else
+                 Log.info {"Re-Schedule Litmus in online mode"}
+                 LitmusManager.add_node_selector(litmus_nodes[0], airgap=false)
+            end
+            KubectlClient::Apply.file("#{LitmusManager::MODIFIED_LITMUS_FILE}")
+            KubectlClient::Get.resource_wait_for_install(kind="Deployment", resource_nome="litmus", wait_count=180, namespace="litmus")
+          end
+
           if args.named["offline"]?
                Log.info {"install resilience offline mode"}
                AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
@@ -525,14 +566,7 @@ task "node_drain", ["install_litmus"] do |t, args|
                KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/rbac.yaml")
           end
           KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
-          deployment_label="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}"
-          deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
 
-          app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_label_value} -o=jsonpath='{.items[0].spec.nodeName}'"
-          puts "Getting the app node name #{app_nodeName_cmd}" if check_verbose(args)
-          status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
-          puts "status_code: #{status_code}" if check_verbose(args)  
-          app_nodeName = appNodeName_response.to_s
 
           chaos_experiment_name = "node-drain"
           total_chaos_duration = "90"

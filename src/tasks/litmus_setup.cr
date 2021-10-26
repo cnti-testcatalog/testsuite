@@ -9,11 +9,15 @@ desc "Install LitmusChaos"
 task "install_litmus" do |_, args|
   if args.named["offline"]?
     Log.info {"install litmus offline mode"}
-    AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v#{LitmusManager::Version}.yaml")
-    KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v#{LitmusManager::Version}.yaml")
+    AirGap.image_pull_policy(LitmusManager::OFFLINE_LITMUS_OPERATOR)
+    KubectlClient::Apply.file(LitmusManager::OFFLINE_LITMUS_OPERATOR)
     KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/chaos_crds.yaml")
   else
-    KubectlClient::Apply.file("https://litmuschaos.github.io/litmus/litmus-operator-v#{LitmusManager::Version}.yaml")
+    #todo in resilience node_drain task
+    #todo get node name 
+    #todo download litmus file then modify it with add_node_selector
+    #todo apply modified litmus file
+    KubectlClient::Apply.file(LitmusManager::ONLINE_LITMUS_OPERATOR)
     KubectlClient::Apply.file("https://raw.githubusercontent.com/litmuschaos/chaos-operator/master/deploy/chaos_crds.yaml")
   end
 end
@@ -21,6 +25,30 @@ end
 module LitmusManager
 
   Version = "2.1.0"
+  NODE_LABEL = "kubernetes.io/hostname"
+  OFFLINE_LITMUS_OPERATOR = "#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v#{LitmusManager::Version}.yaml"
+  ONLINE_LITMUS_OPERATOR = "https://litmuschaos.github.io/litmus/litmus-operator-v#{LitmusManager::Version}.yaml"
+  # for node drain
+  DOWNLOADED_LITMUS_FILE = "litmus-operator-downloaded.yaml"
+  MODIFIED_LITMUS_FILE = "litmus-operator-modified.yaml"
+
+
+
+  def self.add_node_selector(node_name, airgap=false )
+    if airgap
+      file = File.read(OFFLINE_LITMUS_OPERATOR)
+
+    else
+      file = File.read(DOWNLOADED_LITMUS_FILE)
+    end
+    deploy_index = file.index("kind: Deployment") || 0 
+    spec_literal = "spec:"
+    template = "\n      nodeSelector:\n        kubernetes.io/hostname: devcluster-control-plane"
+    spec1_index = file.index(spec_literal, deploy_index + 1)  || 0
+    spec2_index = file.index(spec_literal, spec1_index + 1) || 0
+    output_file = file.insert(spec2_index + spec_literal.size, template) unless spec2_index == 0
+    File.write(MODIFIED_LITMUS_FILE, output_file) unless output_file == nil
+  end
 
   def self.cordon_target_node(deployment_label, deployment_value)
     app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_value} -o=jsonpath='{.items[0].spec.nodeName}'"
