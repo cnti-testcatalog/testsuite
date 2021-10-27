@@ -15,7 +15,7 @@ describe CnfTestSuite do
 
  it "'testsuite all' should run the configuration lifecycle tests", tags: ["testsuite-config-lifecycle"] do
     `./cnf-testsuite samples_cleanup`
-    response_s = `./cnf-testsuite all ~reasonable_startup_time ~reasonable_image_size ~disk_fill ~pod_delete ~pod_io_stress ~pod_network_latency ~pod_network_corruption ~pod_network_duplication ~pod_memory_hog ~chaos_network_loss ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published "cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml" verbose`
+    response_s = `./cnf-testsuite all ~reasonable_startup_time ~reasonable_image_size ~disk_fill ~pod_delete ~pod_io_stress ~pod_network_latency ~pod_network_corruption ~pod_network_duplication ~pod_memory_hog ~chaos_network_loss ~node_drain ~chaos_cpu_hog ~chaos_container_kill ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published "cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml" verbose`
     LOGGING.info response_s
     (/PASSED: Helm readiness probe found/ =~ response_s).should_not be_nil
     (/PASSED: Helm liveness probe/ =~ response_s).should_not be_nil

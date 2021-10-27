@@ -998,11 +998,11 @@ end
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/sonobuoy-logs.tar", 
        image: "docker.io/sonobuoy/systemd-logs:v0.3"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/litmus-operator.tar", 
-       image: "litmuschaos/chaos-operator:2.0.0"},
+       image: "litmuschaos/chaos-operator:#{LitmusManager::Version}"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/litmus-runner.tar", 
-       image: "litmuschaos/chaos-runner:2.0.0"},
+       image: "litmuschaos/chaos-runner:#{LitmusManager::Version}"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/go-runner.tar", 
-       image: "litmuschaos/go-runner:2.0.0"},
+       image: "litmuschaos/go-runner:#{LitmusManager::Version}"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/gatekeeper.tar", 
        image: "openpolicyagent/gatekeeper:v3.6.0"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/gatekeeper-crds.tar", 
@@ -1014,22 +1014,22 @@ end
         TarClient.append(output_file, TarClient::TAR_TMP_BASE, "bootstrap_images/" + x[:input_file].split("/")[-1])
       end
       # todo keep crictl and containerd tar files, move to the rest to cnf-test-suite specific bootstrap
-      AirGap.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v2.0.0.yaml", output_file)
+      AirGap.tar_manifest("https://litmuschaos.github.io/litmus/litmus-operator-v#{LitmusManager::Version}.yaml", output_file)
       AirGap.tar_manifest("https://raw.githubusercontent.com/litmuschaos/chaos-operator/master/deploy/chaos_crds.yaml", output_file)
-      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-latency/experiment.yaml", output_file, prefix: "lat-")
-      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-latency/rbac.yaml", output_file, prefix: "lat-")
-      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-corruption/experiment.yaml", output_file, prefix: "corr-")
-      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-corruption/rbac.yaml", output_file, prefix:  "corr-")
-      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-duplication/experiment.yaml", output_file, prefix: "dup-")
-      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-network-duplication/rbac.yaml", output_file, prefix:  "dup-")
-      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-delete/experiment.yaml", output_file, prefix: "pod-delete-")
-      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-delete/rbac.yaml", output_file, prefix:  "pod-delete-")
-      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-memory-hog/experiment.yaml", output_file, prefix: "pod-memory-hog-")
-      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-memory-hog/rbac.yaml", output_file, prefix:  "pod-memory-hog-")
-      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-io-stress/experiment.yaml", output_file, prefix: "pod-io-stress-")
-      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/pod-io-stress/rbac.yaml", output_file, prefix:  "pod-io-stress-")
-      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/disk-fill/experiment.yaml", output_file, prefix:  "disk-fill-")
-      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/2.0.0?file=charts/generic/disk-fill/rbac.yaml", output_file, prefix:  "disk-fill-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-network-latency/experiment.yaml", output_file, prefix: "lat-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-network-latency/rbac.yaml", output_file, prefix: "lat-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-network-corruption/experiment.yaml", output_file, prefix: "corr-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-network-corruption/rbac.yaml", output_file, prefix:  "corr-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-network-duplication/experiment.yaml", output_file, prefix: "dup-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-network-duplication/rbac.yaml", output_file, prefix:  "dup-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-delete/experiment.yaml", output_file, prefix: "pod-delete-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-delete/rbac.yaml", output_file, prefix:  "pod-delete-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-memory-hog/experiment.yaml", output_file, prefix: "pod-memory-hog-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-memory-hog/rbac.yaml", output_file, prefix:  "pod-memory-hog-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-io-stress/experiment.yaml", output_file, prefix: "pod-io-stress-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-io-stress/rbac.yaml", output_file, prefix:  "pod-io-stress-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/disk-fill/experiment.yaml", output_file, prefix:  "disk-fill-")
+      AirGap.tar_manifest("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/disk-fill/rbac.yaml", output_file, prefix:  "disk-fill-")
       url = "https://github.com/vmware-tanzu/sonobuoy/releases/download/v#{SONOBUOY_K8S_VERSION}/sonobuoy_#{SONOBUOY_K8S_VERSION}_#{SONOBUOY_OS}_amd64.tar.gz"
       TarClient.tar_file_by_url(url, output_file, "sonobuoy.tar.gz")
       url = "https://github.com/armosec/kubescape/releases/download/v#{KUBESCAPE_VERSION}/kubescape-ubuntu-latest"
