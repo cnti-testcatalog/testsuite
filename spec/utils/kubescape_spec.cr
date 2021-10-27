@@ -2,7 +2,7 @@ require "../spec_helper"
 require "../../src/tasks/utils/kubescape.cr"
 
 describe "K8sInstrumentation" do
-  before_each do
+  before_all do
     LOGGING.info `./cnf-testsuite install_kubescape`
   end
 
