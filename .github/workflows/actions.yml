@@ -287,6 +287,8 @@ jobs:
       uses: andstor/file-existence-action@v1
       with:
         files: "/tmp/cache"
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.check_cache.outputs.files_exists == 'true'
@@ -412,8 +414,6 @@ jobs:
       uses: andstor/file-existence-action@v1
       with:
         files: "/tmp/cache"
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.check_setup_cache.outputs.files_exists == 'true'
