@@ -186,14 +186,14 @@ describe "Security" do
 
   it "'ingress_egress_blocked' should fail on a cnf that has no ingress and egress traffic policy", tags: ["security"] do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
       $?.success?.should be_true
       response_s = `./cnf-testsuite ingress_egress_blocked`
       LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: Ingress and Egress traffic blocked on pods/ =~ response_s).should be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
     end
   end
 
