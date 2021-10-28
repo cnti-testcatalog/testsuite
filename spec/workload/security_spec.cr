@@ -145,6 +145,20 @@ describe "Security" do
     end
   end
 
+
+  it "'linux_hardening' should fail on a cnf that does not make use of security services", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite linux_hardening`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Security services are being used to harden applications/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+    end
+  end
+
   it "'application_credentials' should fail on a cnf that allows applications credentials in configuration files", tags: ["security"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
