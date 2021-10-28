@@ -7,7 +7,7 @@ require "sam"
 
 describe "Compatibility" do
 
-  it "'cni_compatible' should pass if the cnf works with calico and flannel", tags: ["volume_hostpath_not_found"]  do
+  it "'cni_compatible' should pass if the cnf works with calico and flannel", tags: ["compatibility"]  do
     begin
       `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
