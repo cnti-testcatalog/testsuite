@@ -184,4 +184,17 @@ describe "Security" do
     end
   end
 
+  it "'resource_policies' should fail on a cnf that has containers with no resource limits defined", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite resource_policies`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Containers have resource limits defined/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+    end
+  end
+
 end
