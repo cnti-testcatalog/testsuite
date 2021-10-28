@@ -348,7 +348,7 @@ jobs:
           /tmp/chaos_environment.tar.gz
 
   chaos-pod-delete:
-    name: Chaos Tests Airgapped
+    name: Chaos Tests Airgapped(Pod_Delete)
     needs: [tests]
     runs-on: [ubuntu-latest]
     strategy:
@@ -398,7 +398,7 @@ jobs:
         cache-name: cluster-cache
       with:
         path: /tmp/cache
-        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cache_test_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
@@ -440,28 +440,28 @@ jobs:
         #       echo "Cache Already Exists" > /tmp/skip_upload
         #       echo "Cache Created" > /tmp/cache
         # fi
-    - name: Create Cluster & Run Tests.
-      run: |
-        touch $(pwd)/cache
-        sed -i "/pod_delete/a \ \ required: true" $(pwd)/embedded_files/points.yml
-        docker run --name cache --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr pod_delete offline=true verbose strict"
-    - name: Check file existence  
-      id: check_files
-      uses: andstor/file-existence-action@v1
-      with:
-        files: "/tmp/skip_upload"
-    - name: Save cache
-      uses: leroy-merlin-br/action-s3-cache@v1
-      if: steps.check_files.outputs.files_exists == 'false'
-      with:
-        action: put
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1 # Or whatever region your bucket was created
-        bucket: cache-github
-        key: chaos-airgapped
-        artifacts: |
-          /tmp/chaos_environment.tar.gz
+    # - name: Create Cluster & Run Tests.
+    #   run: |
+    #     touch $(pwd)/cache
+    #     sed -i "/pod_delete/a \ \ required: true" $(pwd)/embedded_files/points.yml
+    #     docker run --name cache --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr pod_delete offline=true verbose strict"
+    # - name: Check file existence  
+    #   id: check_files
+    #   uses: andstor/file-existence-action@v1
+    #   with:
+    #     files: "/tmp/skip_upload"
+    # - name: Save cache
+    #   uses: leroy-merlin-br/action-s3-cache@v1
+    #   if: steps.check_files.outputs.files_exists == 'false'
+    #   with:
+    #     action: put
+    #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #     aws-region: us-east-1 # Or whatever region your bucket was created
+    #     bucket: cache-github
+    #     key: chaos-airgapped
+    #     artifacts: |
+    #       /tmp/chaos_environment.tar.gz
 
 
   build:
