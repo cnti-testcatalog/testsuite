@@ -14,7 +14,8 @@ task "security", [
     "insecure_capabilities",
     "dangerous_capabilities",
     "resource_policies",
-    "linux_hardening"
+    "linux_hardening",
+    "ingress_egress_blocked"
   ] do |_, args|
   stdout_score("security")
 end
@@ -277,6 +278,27 @@ task "resource_policies", ["kubescape_scan"] do |_, args|
       upsert_passed_task("resource_policies", "✔️  PASSED: Containers have resource limits defined #{emoji_security}")
     else
       resp = upsert_failed_task("resource_policies", "✖️  FAILED: Found containers without resource limits defined #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end
+
+desc "Check Ingress and Egress traffic policy"
+task "ingress_egress_blocked", ["kubescape_scan"] do |_, args|
+  next if args.named["offline"]?
+
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "ingress_egress_blocked" } if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Ingress and Egress blocked")
+
+    emoji_security = "🔓🔑"
+    if Kubescape.test_passed?(test_json)
+      upsert_passed_task("ingress_egress_blocked", "✔️  PASSED: Ingress and Egress traffic blocked on pods #{emoji_security}")
+    else
+      resp = upsert_failed_task("ingress_egress_blocked", "✖️  FAILED: Ingress and Egress traffic not blocked on pods #{emoji_security}")
       Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
       puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
       resp
