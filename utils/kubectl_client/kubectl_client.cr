@@ -171,6 +171,13 @@ module KubectlClient
     end
   end
 
+  module Cordon
+    def self.command(command)
+      cmd = "kubectl cordon #{command}"
+      ShellCmd.run(cmd, "KubectlClient::Cordon.command")
+    end
+  end
+
   module Set
     def self.image(deployment_name, container_name, image_name, version_tag=nil) : Bool
       # use --record when setting image to have history
