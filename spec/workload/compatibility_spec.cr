@@ -11,7 +11,7 @@ describe "Compatibility" do
     begin
       `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
-      response_s = `./cnf-testsuite cnf_compatible verbose`
+      response_s = `./cnf-testsuite cni_compatible verbose`
       Log.info {"Status:  #{response_s}"}
       (/PASSED: CNF compatible with both Calico and Cilium/ =~ response_s).should_not be_nil
     ensure

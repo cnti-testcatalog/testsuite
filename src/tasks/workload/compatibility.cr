@@ -9,12 +9,12 @@ task "compatibility" do |_, args|
 end
 
 desc "Check if CNF compatible with multiple CNIs"
-task "cnf_compatible" do |_, args|
+task "cni_compatible" do |_, args|
   if args.named["offline"]?
-      puts "offline mode cnf_compatible skipped".colorize(:yellow)
+      puts "offline mode cni_compatible skipped".colorize(:yellow)
   else
     CNFManager::Task.task_runner(args) do |args, config|
-      VERBOSE_LOGGING.info "cnf_compatible" if check_verbose(args)
+      VERBOSE_LOGGING.info "cni_compatible" if check_verbose(args)
 
       kubeconfig = KindManager.create_cluster("calico-test", "projectcalico/tigera-operator")
       Log.info { "kubeconfig: #{kubeconfig}" }
