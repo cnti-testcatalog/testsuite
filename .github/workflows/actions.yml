@@ -462,8 +462,6 @@ jobs:
     #     key: chaos-airgapped
     #     artifacts: |
     #       /tmp/chaos_environment.tar.gz
-
-
   build:
     name: Build Release
     runs-on: ubuntu-latest
