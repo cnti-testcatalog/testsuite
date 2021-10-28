@@ -858,6 +858,58 @@ def self.configmap_temp
 end
 
 
+  def self.cnf_to_new_cluster(config, kubeconfig)
+    release_name = config.cnf_config[:release_name]
+    install_method = config.cnf_config[:install_method]
+    release_name = config.cnf_config[:release_name]
+    install_method = config.cnf_config[:install_method]
+    helm_directory = config.cnf_config[:helm_directory]
+    manifest_directory = config.cnf_config[:manifest_directory]
+    helm_repository = config.cnf_config[:helm_repository]
+    helm_repo_name = "#{helm_repository && helm_repository["name"]}"
+    helm_repo_url = "#{helm_repository && helm_repository["repo_url"]}"
+    helm_chart_path = config.cnf_config[:helm_chart_path]
+    helm_chart = config.cnf_config[:helm_chart]
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    case install_method[0]
+    when Helm::InstallMethod::ManifestDirectory
+      KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", "--kubeconfig #{kubeconfig}")
+    when Helm::InstallMethod::HelmChart
+      begin
+        helm_install = Helm.install("#{release_name} #{helm_chart} --kubeconfig #{kubeconfig}")
+      rescue e : Helm::CannotReuseReleaseNameError
+        stdout_warning "Release name #{release_name} has already been setup."
+      end
+    when Helm::InstallMethod::HelmDirectory
+      begin
+
+        helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} --kubeconfig #{kubeconfig}")
+      rescue e : Helm::CannotReuseReleaseNameError
+        stdout_warning "Release name #{release_name} has already been setup."
+      end
+    else
+      raise "Deployment method not found"
+    end
+
+    resource_ymls = cnf_workload_resources(nil, config) do |resource|
+      resource
+    end
+    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+
+    wait_list = resource_names.map do | resource |
+      case resource[:kind].as_s.downcase
+      when "replicaset", "deployment", "statefulset", "pod", "daemonset"
+        Log.info { "waiting on resource of kind: #{resource[:kind].as_s.downcase}" }
+        KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s)
+      else 
+        true
+      end
+    end
+    Log.info { "wait_list: #{wait_list}" }
+    # check list of booleans, make sure all are true (is ready)
+    !wait_list.any?(false)
+  end
+
   def self.sample_cleanup(config_file, force=false, installed_from_manifest=false, verbose=true)
     Log.info { "sample_cleanup" }
     Log.info { "sample_cleanup installed_from_manifest: #{installed_from_manifest}" }

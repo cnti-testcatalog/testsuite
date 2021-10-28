@@ -128,8 +128,8 @@ module KubectlClient
   end
 
   module Apply
-    def self.file(file_name)
-      cmd = "kubectl apply -f #{file_name}"
+    def self.file(file_name, options="")
+      cmd = "kubectl apply -f #{file_name} #{options}"
       ShellCmd.run(cmd, "KubectlClient::Apply.file")
     end
 
