@@ -10,8 +10,8 @@ end
 
 desc "Check if CNF compatible with multiple CNIs"
 task "cni_compatible" do |_, args|
-  if args.named["offline"]?
-      puts "offline mode cni_compatible skipped".colorize(:yellow)
+  if args.named["offline"]? || args.raw.includes? "offline"
+      puts "offline mode cni_compatible skipped".colorize(:yellow) 
   else
     CNFManager::Task.task_runner(args) do |args, config|
       VERBOSE_LOGGING.info "cni_compatible" if check_verbose(args)

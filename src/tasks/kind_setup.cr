@@ -75,7 +75,7 @@ module KindManager
     Log.info {"Deleting Kind Cluster: #{name}"}
     `kind delete cluster --name #{name}`
     current_dir = FileUtils.pwd 
-    File.delete "#{current_dir}/#{TOOLS_DIR}/kind/#{name}_admin.conf"
+    File.delete "#{current_dir}/#{TOOLS_DIR}/kind/#{name}_admin.conf" if File.exists? "#{current_dir}/#{TOOLS_DIR}/kind/#{name}_admin.conf"
   end
 
   #totod make a create cluster with flannel
