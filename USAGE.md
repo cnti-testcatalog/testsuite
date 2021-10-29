@@ -164,6 +164,12 @@ crystal bin/ameba.cr
 ./cnf-testsuite compatibility
 ```
 
+#### :heavy_check_mark: To check if the CNF is compatible with different CNIs
+
+```
+./cnf-testsuite cni_compatible
+```
+
 <details> <summary>Details for Compatibility Tests To Do's</summary>
 <p>
 
