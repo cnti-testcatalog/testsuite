@@ -13,7 +13,9 @@
 - name: single_process_type 
   tags: microservice, dynamic, workload
 
-#- name: cni_spec 
+- name: cni_compatibility
+ tags: compatibility, dynamic
+# - name: cni_spec 
 #  tags: compatibility, dynamic
 #- name: api_snoop_alpha 
 #  tags: compatibility, dynamic

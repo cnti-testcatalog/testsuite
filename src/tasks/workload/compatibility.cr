@@ -5,7 +5,7 @@ require "totem"
 require "../utils/utils.cr"
 
 desc "CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements."
-task "compatibility" do |_, args|
+task "compatibility", ["cni_compatible"] do |_, args|
 end
 
 desc "Check if CNF compatible with multiple CNIs"
