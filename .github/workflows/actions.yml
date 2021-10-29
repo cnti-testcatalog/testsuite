@@ -280,7 +280,7 @@ jobs:
         cache-name: cluster-cache
       with:
         path: /tmp/cache
-        key: cache_test_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
@@ -321,6 +321,8 @@ jobs:
               echo "Cache Already Exists" > /tmp/skip_upload
               echo "Cache Created" > /tmp/cache
         fi
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Create Cluster & Run Tests.
       run: |
         touch $(pwd)/cache
@@ -395,7 +397,7 @@ jobs:
         cache-name: cluster-cache
       with:
         path: /tmp/cache
-        key: cache_test_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
@@ -510,7 +512,7 @@ jobs:
         cache-name: cluster-cache
       with:
         path: /tmp/cache
-        key: cache_test_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
@@ -625,7 +627,7 @@ jobs:
         cache-name: cluster-cache
       with:
         path: /tmp/cache
-        key: cache_test_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
@@ -740,7 +742,7 @@ jobs:
         cache-name: cluster-cache
       with:
         path: /tmp/cache
-        key: cache_test_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
@@ -855,7 +857,7 @@ jobs:
         cache-name: cluster-cache
       with:
         path: /tmp/cache
-        key: cache_test_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
