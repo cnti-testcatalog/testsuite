@@ -236,4 +236,17 @@ describe "Security" do
     end
   end
 
+  it "'non_root_containers' should pass on a cnf that does not have containers running with root user or user with root group memberships", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite non_root_containers`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Found containers running with root user or user with root group membership/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+    end
+  end
+
 end

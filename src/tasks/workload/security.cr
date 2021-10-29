@@ -16,7 +16,8 @@ task "security", [
     "resource_policies",
     "linux_hardening",
     "ingress_egress_blocked",
-    "host_pid_ipc_privileges"
+    "host_pid_ipc_privileges",
+    "non_root_containers"
   ] do |_, args|
   stdout_score("security")
 end
@@ -321,6 +322,27 @@ task "host_pid_ipc_privileges", ["kubescape_scan"] do |_, args|
       upsert_passed_task("host_pid_ipc_privileges", "✔️  PASSED: No containers with hostPID and hostIPC privileges #{emoji_security}")
     else
       resp = upsert_failed_task("host_pid_ipc_privileges", "✖️  FAILED: Found containers with hostPID and hostIPC privileges #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end
+
+desc "Check if the containers are running with non-root user with non-root group membership"
+task "non_root_containers", ["kubescape_scan"] do |_, args|
+  next if args.named["offline"]?
+
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "non_root_containers" } if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Non-root containers")
+
+    emoji_security = "🔓🔑"
+    if Kubescape.test_passed?(test_json)
+      upsert_passed_task("non_root_containers", "✔️  PASSED: Containers are running with non-root user with non-root group membership #{emoji_security}")
+    else
+      resp = upsert_failed_task("non_root_containers", "✖️  FAILED: Found containers running with root user or user with root group membership #{emoji_security}")
       Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
       puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
       resp
