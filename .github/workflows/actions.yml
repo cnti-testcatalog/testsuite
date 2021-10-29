@@ -134,8 +134,6 @@ jobs:
         echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
         echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
 
-        sleep 1000000000
-
         LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
 
     - name: Delete Cluster
@@ -279,13 +277,13 @@ jobs:
       env:
         cache-name: cluster-cache
       with:
-        path: /tmp/cache
+        path: ./cache
         key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
       with:
-        files: "/tmp/cache"
+        files: "./cache"
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.check_cache.outputs.files_exists == 'true'
@@ -310,7 +308,7 @@ jobs:
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               rm $(pwd)/airgapped.tar.gz
               sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata cnfs
-              echo "Cache Created" > /tmp/cache
+              mv cnf-testsuite ./cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               mv /tmp/chaos_environment.tar.gz $(pwd)
@@ -319,13 +317,12 @@ jobs:
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               echo "Cache Already Exists" > /tmp/skip_upload
-              echo "Cache Created" > /tmp/cache
+              mv cnf-testsuite ./cache
         fi
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
     - name: Create Cluster & Run Tests.
       run: |
-        touch $(pwd)/cache
         sed -i "/pod_delete/a \ \ required: true" $(pwd)/embedded_files/points.yml
         docker run --name cache --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr pod_delete offline=true verbose strict"
     - name: Check file existence  
@@ -396,13 +393,13 @@ jobs:
       env:
         cache-name: cluster-cache
       with:
-        path: /tmp/cache
+        path: ./cache
         key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
       with:
-        files: "/tmp/cache"
+        files: "./cache"
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.check_cache.outputs.files_exists == 'true'
@@ -427,7 +424,7 @@ jobs:
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               rm $(pwd)/airgapped.tar.gz
               sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata cnfs
-              echo "Cache Created" > /tmp/cache
+              mv cnf-testsuite ./cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               mv /tmp/chaos_environment.tar.gz $(pwd)
@@ -436,11 +433,10 @@ jobs:
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               echo "Cache Already Exists" > /tmp/skip_upload
-              echo "Cache Created" > /tmp/cache
+              mv cnf-testsuite ./cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
-        touch $(pwd)/cache
         sed -i "/pod_io_stress/a \ \ required: true" $(pwd)/embedded_files/points.yml
         docker run --name cache --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr pod_io_stress offline=true verbose strict"
     - name: Check file existence  
@@ -511,13 +507,13 @@ jobs:
       env:
         cache-name: cluster-cache
       with:
-        path: /tmp/cache
+        path: ./cache
         key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
       with:
-        files: "/tmp/cache"
+        files: "./cache"
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.check_cache.outputs.files_exists == 'true'
@@ -542,7 +538,7 @@ jobs:
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               rm $(pwd)/airgapped.tar.gz
               sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata cnfs
-              echo "Cache Created" > /tmp/cache
+              mv cnf-testsuite ./cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               mv /tmp/chaos_environment.tar.gz $(pwd)
@@ -551,11 +547,10 @@ jobs:
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               echo "Cache Already Exists" > /tmp/skip_upload
-              echo "Cache Created" > /tmp/cache
+              mv cnf-testsuite ./cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
-        touch $(pwd)/cache
         sed -i "/pod_network_latency/a \ \ required: true" $(pwd)/embedded_files/points.yml
         docker run --name cache --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr pod_network_latency offline=true verbose strict"
     - name: Check file existence  
@@ -626,13 +621,13 @@ jobs:
       env:
         cache-name: cluster-cache
       with:
-        path: /tmp/cache
+        path: ./cache
         key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
       with:
-        files: "/tmp/cache"
+        files: "./cache"
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.check_cache.outputs.files_exists == 'true'
@@ -657,7 +652,7 @@ jobs:
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               rm $(pwd)/airgapped.tar.gz
               sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata cnfs
-              echo "Cache Created" > /tmp/cache
+              mv cnf-testsuite ./cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               mv /tmp/chaos_environment.tar.gz $(pwd)
@@ -666,11 +661,10 @@ jobs:
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               echo "Cache Already Exists" > /tmp/skip_upload
-              echo "Cache Created" > /tmp/cache
+              mv cnf-testsuite ./cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
-        touch $(pwd)/cache
         sed -i "/disk_fill/a \ \ required: true" $(pwd)/embedded_files/points.yml
         docker run --name cache --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr disk_fill offline=true verbose strict"
     - name: Check file existence  
@@ -741,13 +735,13 @@ jobs:
       env:
         cache-name: cluster-cache
       with:
-        path: /tmp/cache
+        path: ./cache
         key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
       with:
-        files: "/tmp/cache"
+        files: "./cache"
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.check_cache.outputs.files_exists == 'true'
@@ -772,7 +766,7 @@ jobs:
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               rm $(pwd)/airgapped.tar.gz
               sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata cnfs
-              echo "Cache Created" > /tmp/cache
+              mv cnf-testsuite ./cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               mv /tmp/chaos_environment.tar.gz $(pwd)
@@ -781,11 +775,10 @@ jobs:
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               echo "Cache Already Exists" > /tmp/skip_upload
-              echo "Cache Created" > /tmp/cache
+              mv cnf-testsuite ./cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
-        touch $(pwd)/cache
         sed -i "/pod_network_corruption/a \ \ required: true" $(pwd)/embedded_files/points.yml
         docker run --name cache --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr pod_network_corruption offline=true verbose strict"
     - name: Check file existence  
@@ -856,13 +849,13 @@ jobs:
       env:
         cache-name: cluster-cache
       with:
-        path: /tmp/cache
+        path: ./cache
         key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_cache
       uses: andstor/file-existence-action@v1
       with:
-        files: "/tmp/cache"
+        files: "./cache"
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.check_cache.outputs.files_exists == 'true'
@@ -887,7 +880,7 @@ jobs:
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               rm $(pwd)/airgapped.tar.gz
               sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata cnfs
-              echo "Cache Created" > /tmp/cache
+              mv cnf-testsuite ./cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               mv /tmp/chaos_environment.tar.gz $(pwd)
@@ -896,11 +889,10 @@ jobs:
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               echo "Cache Already Exists" > /tmp/skip_upload
-              echo "Cache Created" > /tmp/cache
+              mv cnf-testsuite ./cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
-        touch $(pwd)/cache
         sed -i "/pod_network_duplication/a \ \ required: true" $(pwd)/embedded_files/points.yml
         docker run --name cache --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr pod_network_duplication offline=true verbose strict"
     - name: Check file existence  
@@ -982,13 +974,13 @@ jobs:
       env:
         cache-name: cluster-cache
       with:
-        path: /tmp/cache
+        path: ./cache
         key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Check cache existence  
       id: check_setup_cache
       uses: andstor/file-existence-action@v1
       with:
-        files: "/tmp/cache"
+        files: "./cache"
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.check_setup_cache.outputs.files_exists == 'true'
@@ -1016,7 +1008,7 @@ jobs:
               tar -cf /tmp/setup_environment.tar -C /shared/$DIR cnf-testsuite
               apt update && apt install -y pigz
               pigz -6 /tmp/setup_environment.tar
-              echo "Cache Created" > /tmp/cache
+              mv cnf-testsuite ./cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               export DIR=$(uuidgen)
@@ -1024,13 +1016,12 @@ jobs:
               echo "export DIR=$DIR" > /tmp/environment.env
               tar -xf /tmp/setup_environment.tar.gz -C /shared/$DIR
               echo "Cache Already Exists" > /tmp/skip_upload
-              echo "Cache Created" > /tmp/cache
+              mv cnf-testsuite ./cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
         source /tmp/environment.env
-        touch /shared/$DIR/cnf-testsuite/cache
-        docker run --name $DIR-cache --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/cnf-testsuite/data:/var/lib/docker -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -v /shared/$DIR/cnf-testsuite/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh && kubectl get pods --all-namespaces"
+        docker run --name $DIR-cache --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/cnf-testsuite/data:/var/lib/docker -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh && kubectl get pods --all-namespaces"
     - name: Check file existence  
       id: check_files
       uses: andstor/file-existence-action@v1
