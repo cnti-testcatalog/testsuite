@@ -285,6 +285,21 @@ crystal src/cnf-testsuite.cr check_reaped
 ./cnf-testsuite service_account_mapping
 ```
 
+#### :heavy_check_mark: To check if there is an [ingress and egress policy defined](https://bit.ly/3bhT10s).
+<details> <summary>Details for ingress_egress_blocked test</summary>
+<p>
+
+<b>Ingress Egress Blocked: </b> Network policies control traffic flow between Pods, namespaces, and external IP addresses. By default, no network policies are applied to Pods or namespaces, resulting in unrestricted ingress and egress traffic within the Pod network. Pods become isolated through a network policy that applies to the Pod or the Pod’s namespace. Once a Pod is selected in a network policy, it rejects any connections that are not specifically allowed by any applicable policy object.Administrators should use a default policy selecting all Pods to deny all ingress and egress traffic and ensure any unselected Pods are isolated. Additional policies could then relax these restrictions for permissible connections.(For ARMO runtime needs to add exception). See more at [Armo's C-0030 doc on ingress egress blocked details](https://bit.ly/3bhT10s).
+
+<b>Remediation Steps: </b> By default, you should disable or restrict Ingress and Egress traffic on all pods.
+
+</details>
+
+```
+./cnf-testsuite ingress_egress_blocked
+```
+
+
 <details> <summary>Details for Security Tests To Do's</summary>
 <p>
 
