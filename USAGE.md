@@ -652,24 +652,6 @@ crystal src/cnf-testsuite.cr performance
 ./cnf-testsuite resilience
 ```
 
-#### :heavy_check_mark: Test if the CNF crashes when network loss occurs
-
-```
-./cnf-testsuite chaos_network_loss
-```
-
-#### :heavy_check_mark: Test if the CNF crashes under high CPU load
-
-```
-./cnf-testsuite chaos_cpu_hog
-```
-
-#### :heavy_check_mark: Test if the CNF restarts after container is killed
-
-```
-./cnf-testsuite chaos_container_kill
-```
-
 #### :heavy_check_mark: Test if the CNF crashes when network latency occurs
 
 <details> <summary>Details for litmus pod network latency experiment</summary>
