@@ -6,7 +6,15 @@ require "totem"
 require "../utils/utils.cr"
 
 desc "CNF containers should be isolated from one another and the host.  The CNF Test suite uses tools like Falco, Sysdig Inspect and gVisor"
-task "security", ["privileged", "non_root_user", "symlink_file_system", "privilege_escalation", "insecure_capabilities", "dangerous_capabilities"] do |_, args|
+task "security", [
+    "privileged",
+    "non_root_user",
+    "symlink_file_system",
+    "privilege_escalation",
+    "insecure_capabilities",
+    "dangerous_capabilities",
+    "ingress_egress_blocked"
+  ] do |_, args|
   stdout_score("security")
 end
 
@@ -226,6 +234,27 @@ task "dangerous_capabilities", ["kubescape_scan"] do |_, args|
       upsert_passed_task("dangerous_capabilities", "✔️  PASSED: Containers with dangerous capabilities were not found #{emoji_security}")
     else
       resp = upsert_failed_task("dangerous_capabilities", "✖️  FAILED: Found containers with dangerous capabilities #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end
+
+desc "Check Ingress and Egress traffic policy"
+task "ingress_egress_blocked", ["kubescape_scan"] do |_, args|
+  next if args.named["offline"]?
+
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "ingress_egress_blocked" } if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Ingress and Egress blocked")
+
+    emoji_security = "🔓🔑"
+    if Kubescape.test_passed?(test_json)
+      upsert_passed_task("ingress_egress_blocked", "✔️  PASSED: Ingress and Egress traffic blocked on pods #{emoji_security}")
+    else
+      resp = upsert_failed_task("ingress_egress_blocked", "✖️  FAILED: Ingress and Egress traffic not blocked on pods #{emoji_security}")
       Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
       puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
       resp
