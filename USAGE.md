@@ -305,6 +305,53 @@ crystal src/cnf-testsuite.cr check_reaped
 ./cnf-testsuite ingress_egress_blocked
 ```
 
+#### :heavy_check_mark: To check if there are any privileged containers
+
+```
+./cnf-testsuite privileged_containers
+```
+
+#### :heavy_check_mark: To check if namespaces have network policies defined
+
+```
+./cnf-testsuite network_policies
+```
+
+#### :heavy_check_mark: To check if containers are running with non-root user with non-root membership 
+
+```
+./cnf-testsuite non_root_containers
+```
+
+#### :heavy_check_mark: To check if containers are running with hostPID or hostIPC privileges
+
+```
+./cnf-testsuite host_pid_ipc_privileges
+```
+
+#### :heavy_check_mark: To check if security services are being used to harden containers
+
+```
+./cnf-testsuite linux_hardening
+```
+
+#### :heavy_check_mark: To check if containers have resource limits defined
+
+```
+./cnf-testsuite resource_policies
+```
+
+#### :heavy_check_mark: To check if containers have immutable file systems
+
+```
+./cnf-testsuite immutable_file_systems
+```
+
+#### :heavy_check_mark: To check if containers have hostPath mounts
+
+```
+./cnf-testsuite hostpath_mounts
+```
 
 <details> <summary>Details for Security Tests To Do's</summary>
 <p>
