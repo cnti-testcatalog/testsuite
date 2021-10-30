@@ -275,4 +275,17 @@ describe "Security" do
     end
   end
 
+  it "'immutable_file_systems' should fail when the cnf containers with mutable file systems", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite immutable_file_systems`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Containers have immutable file systems/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+    end
+  end
+
 end
