@@ -261,4 +261,18 @@ describe "Security" do
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
     end
   end
+
+  it "'privileged_containers' should pass when the cnf has no privileged containers", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite privileged_containers`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Namespaces have network policies defined/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+    end
+  end
+
 end
