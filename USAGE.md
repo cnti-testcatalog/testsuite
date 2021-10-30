@@ -164,6 +164,12 @@ crystal bin/ameba.cr
 ./cnf-testsuite compatibility
 ```
 
+#### :heavy_check_mark: To check if the CNF is compatible with different CNIs
+
+```
+./cnf-testsuite cni_compatible
+```
+
 <details> <summary>Details for Compatibility Tests To Do's</summary>
 <p>
 
@@ -284,6 +290,21 @@ crystal src/cnf-testsuite.cr check_reaped
 ```
 ./cnf-testsuite service_account_mapping
 ```
+
+#### :heavy_check_mark: To check if there is an [ingress and egress policy defined](https://bit.ly/3bhT10s).
+<details> <summary>Details for ingress_egress_blocked test</summary>
+<p>
+
+<b>Ingress Egress Blocked: </b> Network policies control traffic flow between Pods, namespaces, and external IP addresses. By default, no network policies are applied to Pods or namespaces, resulting in unrestricted ingress and egress traffic within the Pod network. Pods become isolated through a network policy that applies to the Pod or the Pod’s namespace. Once a Pod is selected in a network policy, it rejects any connections that are not specifically allowed by any applicable policy object.Administrators should use a default policy selecting all Pods to deny all ingress and egress traffic and ensure any unselected Pods are isolated. Additional policies could then relax these restrictions for permissible connections.(For ARMO runtime needs to add exception). See more at [Armo's C-0030 doc on ingress egress blocked details](https://bit.ly/3bhT10s).
+
+<b>Remediation Steps: </b> By default, you should disable or restrict Ingress and Egress traffic on all pods.
+
+</details>
+
+```
+./cnf-testsuite ingress_egress_blocked
+```
+
 
 <details> <summary>Details for Security Tests To Do's</summary>
 <p>
@@ -650,24 +671,6 @@ crystal src/cnf-testsuite.cr performance
 
 ```
 ./cnf-testsuite resilience
-```
-
-#### :heavy_check_mark: Test if the CNF crashes when network loss occurs
-
-```
-./cnf-testsuite chaos_network_loss
-```
-
-#### :heavy_check_mark: Test if the CNF crashes under high CPU load
-
-```
-./cnf-testsuite chaos_cpu_hog
-```
-
-#### :heavy_check_mark: Test if the CNF restarts after container is killed
-
-```
-./cnf-testsuite chaos_container_kill
 ```
 
 #### :heavy_check_mark: Test if the CNF crashes when network latency occurs

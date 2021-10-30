@@ -16,6 +16,7 @@ DEFAULT_POINTSFILENAME = "points_v1.yml"
 PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
 SONOBUOY_K8S_VERSION = "0.19.0"
 KUBESCAPE_VERSION = "1.0.97"
+KIND_VERSION = "0.11.1"
 SONOBUOY_OS = "linux"
 IGNORED_SECRET_TYPES = ["kubernetes.io/service-account-token", "kubernetes.io/dockercfg", "kubernetes.io/dockerconfigjson", "helm.sh/release.v1"]
 EMPTY_JSON = JSON.parse(%({}))
@@ -33,6 +34,7 @@ EmbeddedFileManager.points_yml
 EmbeddedFileManager.points_yml_write_file
 EmbeddedFileManager.enforce_image_tag
 EmbeddedFileManager.constraint_template
+EmbeddedFileManager.disable_cni
 
 # BinarySingleton = CNFGlobals.new
 # class CNFGlobals
