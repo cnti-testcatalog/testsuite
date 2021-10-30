@@ -349,3 +349,24 @@ task "non_root_containers", ["kubescape_scan"] do |_, args|
     end
   end
 end
+
+desc "Check if the network policies are defined for namespaces"
+task "network_policies", ["kubescape_scan"] do |_, args|
+  next if args.named["offline"]?
+
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "network_policies" } if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Network policies")
+
+    emoji_security = "🔓🔑"
+    if Kubescape.test_passed?(test_json)
+      upsert_passed_task("network_policies", "✔️  PASSED: Namespaces have network policies defined #{emoji_security}")
+    else
+      resp = upsert_failed_task("network_policies", "✖️  FAILED: Found namespaces which do not have network policies defined #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end
