@@ -17,7 +17,11 @@ task "security", [
     "linux_hardening",
     "ingress_egress_blocked",
     "host_pid_ipc_privileges",
-    "non_root_containers"
+    "non_root_containers",
+    "privileged_containers",
+    "network_policies",
+    "immutable_file_systems",
+    "hostpath_mounts"
   ] do |_, args|
   stdout_score("security")
 end
