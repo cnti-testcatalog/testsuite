@@ -399,13 +399,34 @@ task "immutable_file_systems", ["kubescape_scan"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     Log.for("verbose").info { "immutable_file_systems" } if check_verbose(args)
     results_json = Kubescape.parse
-    test_json = Kubescape.test_by_test_name(results_json, "Privileged container")
+    test_json = Kubescape.test_by_test_name(results_json, "Immutable container filesystem")
 
     emoji_security = "🔓🔑"
     if Kubescape.test_passed?(test_json)
       upsert_passed_task("immutable_file_systems", "✔️  PASSED: Containers have immutable file systems #{emoji_security}")
     else
       resp = upsert_failed_task("immutable_file_systems", "✖️  FAILED: Found containers with mutable file systems #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end
+
+desc "Check if containers have hostPath mounts"
+task "hostpath_mounts", ["kubescape_scan"] do |_, args|
+  next if args.named["offline"]?
+
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "hostpath_mounts" } if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Allowed hostPath")
+
+    emoji_security = "🔓🔑"
+    if Kubescape.test_passed?(test_json)
+      upsert_passed_task("hostpath_mounts", "✔️  PASSED: Containers do not have hostPath mounts #{emoji_security}")
+    else
+      resp = upsert_failed_task("hostpath_mounts", "✖️  FAILED: Found containers with hostPath mounts #{emoji_security}")
       Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
       puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
       resp

@@ -269,7 +269,7 @@ describe "Security" do
       response_s = `./cnf-testsuite privileged_containers`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Namespaces have network policies defined/ =~ response_s).should be_nil
+      (/FAILED: Found privileged containers/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
     end
@@ -288,4 +288,16 @@ describe "Security" do
     end
   end
 
+  it "'hostpath_mounts' should pass when the cnf has no containers with hostPath mounts", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite hostpath_mounts`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Found containers with hostPath mounts/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+    end
+  end
 end
