@@ -13,7 +13,15 @@ task "security", [
     "privilege_escalation",
     "insecure_capabilities",
     "dangerous_capabilities",
-    "ingress_egress_blocked"
+    "resource_policies",
+    "linux_hardening",
+    "ingress_egress_blocked",
+    "host_pid_ipc_privileges",
+    "non_root_containers",
+    "privileged_containers",
+    "network_policies",
+    "immutable_file_systems",
+    "hostpath_mounts"
   ] do |_, args|
   stdout_score("security")
 end
@@ -199,6 +207,27 @@ task "service_account_mapping", ["kubescape_scan"] do |_, args|
   end
 end
 
+desc "Check if security services are being used to harden the application"
+task "linux_hardening", ["kubescape_scan"] do |_, args|
+  next if args.named["offline"]?
+
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "linux_hardening" } if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Linux hardening")
+
+    emoji_security = "🔓🔑"
+    if Kubescape.test_passed?(test_json)
+      upsert_passed_task("linux_hardening", "✔️  PASSED: Security services are being used to harden applications #{emoji_security}")
+    else
+      resp = upsert_failed_task("linux_hardening", "✖️  FAILED: Found resources that do not use security services #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end
+
 desc "Check if the containers have insecure capabilities."
 task "insecure_capabilities", ["kubescape_scan"] do |_, args|
   next if args.named["offline"]?
@@ -241,6 +270,27 @@ task "dangerous_capabilities", ["kubescape_scan"] do |_, args|
   end
 end
 
+desc "Check if the containers have resource limits defined."
+task "resource_policies", ["kubescape_scan"] do |_, args|
+  next if args.named["offline"]?
+
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "resource_policies" } if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Resource policies")
+
+    emoji_security = "🔓🔑"
+    if Kubescape.test_passed?(test_json)
+      upsert_passed_task("resource_policies", "✔️  PASSED: Containers have resource limits defined #{emoji_security}")
+    else
+      resp = upsert_failed_task("resource_policies", "✖️  FAILED: Found containers without resource limits defined #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end
+
 desc "Check Ingress and Egress traffic policy"
 task "ingress_egress_blocked", ["kubescape_scan"] do |_, args|
   next if args.named["offline"]?
@@ -255,6 +305,132 @@ task "ingress_egress_blocked", ["kubescape_scan"] do |_, args|
       upsert_passed_task("ingress_egress_blocked", "✔️  PASSED: Ingress and Egress traffic blocked on pods #{emoji_security}")
     else
       resp = upsert_failed_task("ingress_egress_blocked", "✖️  FAILED: Ingress and Egress traffic not blocked on pods #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end
+
+desc "Check the Host PID/IPC privileges of the containers"
+task "host_pid_ipc_privileges", ["kubescape_scan"] do |_, args|
+  next if args.named["offline"]?
+
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "host_pid_ipc_privileges" } if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Host PID/IPC privileges")
+
+    emoji_security = "🔓🔑"
+    if Kubescape.test_passed?(test_json)
+      upsert_passed_task("host_pid_ipc_privileges", "✔️  PASSED: No containers with hostPID and hostIPC privileges #{emoji_security}")
+    else
+      resp = upsert_failed_task("host_pid_ipc_privileges", "✖️  FAILED: Found containers with hostPID and hostIPC privileges #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end
+
+desc "Check if the containers are running with non-root user with non-root group membership"
+task "non_root_containers", ["kubescape_scan"] do |_, args|
+  next if args.named["offline"]?
+
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "non_root_containers" } if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Non-root containers")
+
+    emoji_security = "🔓🔑"
+    if Kubescape.test_passed?(test_json)
+      upsert_passed_task("non_root_containers", "✔️  PASSED: Containers are running with non-root user with non-root group membership #{emoji_security}")
+    else
+      resp = upsert_failed_task("non_root_containers", "✖️  FAILED: Found containers running with root user or user with root group membership #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end
+
+desc "Check if network policies are defined for namespaces"
+task "network_policies", ["kubescape_scan"] do |_, args|
+  next if args.named["offline"]?
+
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "network_policies" } if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Network policies")
+
+    emoji_security = "🔓🔑"
+    if Kubescape.test_passed?(test_json)
+      upsert_passed_task("network_policies", "✔️  PASSED: Namespaces have network policies defined #{emoji_security}")
+    else
+      resp = upsert_failed_task("network_policies", "✖️  FAILED: Found namespaces which do not have network policies defined #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end
+
+desc "Check that privileged containers are not used"
+task "privileged_containers", ["kubescape_scan"] do |_, args|
+  next if args.named["offline"]?
+
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "privileged_containers" } if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Privileged container")
+
+    emoji_security = "🔓🔑"
+    if Kubescape.test_passed?(test_json)
+      upsert_passed_task("privileged_containers", "✔️  PASSED: No privileged containers were found #{emoji_security}")
+    else
+      resp = upsert_failed_task("privileged_containers", "✖️  FAILED: Found privileged containers #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end
+
+desc "Check if containers have immutable file systems"
+task "immutable_file_systems", ["kubescape_scan"] do |_, args|
+  next if args.named["offline"]?
+
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "immutable_file_systems" } if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Immutable container filesystem")
+
+    emoji_security = "🔓🔑"
+    if Kubescape.test_passed?(test_json)
+      upsert_passed_task("immutable_file_systems", "✔️  PASSED: Containers have immutable file systems #{emoji_security}")
+    else
+      resp = upsert_failed_task("immutable_file_systems", "✖️  FAILED: Found containers with mutable file systems #{emoji_security}")
+      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
+      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      resp
+    end
+  end
+end
+
+desc "Check if containers have hostPath mounts"
+task "hostpath_mounts", ["kubescape_scan"] do |_, args|
+  next if args.named["offline"]?
+
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "hostpath_mounts" } if check_verbose(args)
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Allowed hostPath")
+
+    emoji_security = "🔓🔑"
+    if Kubescape.test_passed?(test_json)
+      upsert_passed_task("hostpath_mounts", "✔️  PASSED: Containers do not have hostPath mounts #{emoji_security}")
+    else
+      resp = upsert_failed_task("hostpath_mounts", "✖️  FAILED: Found containers with hostPath mounts #{emoji_security}")
       Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
       puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
       resp

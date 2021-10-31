@@ -145,6 +145,19 @@ describe "Security" do
     end
   end
 
+  it "'linux_hardening' should fail on a cnf that does not make use of security services", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite linux_hardening`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Security services are being used to harden applications/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+    end
+  end
+
   it "'application_credentials' should fail on a cnf that allows applications credentials in configuration files", tags: ["security"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
@@ -184,6 +197,19 @@ describe "Security" do
     end
   end
 
+  it "'resource_policies' should fail on a cnf that has containers with no resource limits defined", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite resource_policies`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Containers have resource limits defined/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+    end
+  end
+
   it "'ingress_egress_blocked' should fail on a cnf that has no ingress and egress traffic policy", tags: ["security"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
@@ -197,4 +223,81 @@ describe "Security" do
     end
   end
 
+  it "'host_pid_ipc_privileges' should pass on a cnf that does not have containers with host PID/IPC privileges", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite host_pid_ipc_privileges`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Found containers with hostPID and hostIPC privileges/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+    end
+  end
+
+  it "'non_root_containers' should pass on a cnf that does not have containers running with root user or user with root group memberships", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite non_root_containers`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Found containers running with root user or user with root group membership/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+    end
+  end
+
+  it "'network_policies' should fail when namespaces do not have network policies defined", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite network_policies`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Namespaces have network policies defined/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+    end
+  end
+
+  it "'privileged_containers' should pass when the cnf has no privileged containers", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite privileged_containers`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Found privileged containers/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+    end
+  end
+
+  it "'immutable_file_systems' should fail when the cnf containers with mutable file systems", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite immutable_file_systems`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Containers have immutable file systems/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+    end
+  end
+
+  it "'hostpath_mounts' should pass when the cnf has no containers with hostPath mounts", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite hostpath_mounts`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Found containers with hostPath mounts/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+    end
+  end
 end
