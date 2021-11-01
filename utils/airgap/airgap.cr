@@ -11,10 +11,10 @@ require "kubectl_client"
 require "file_utils"
 
 class CriToolsTemplate
-  def initialize(@name : String, @image: String)
+  def initialize(@name : String, @image : String)
   end
 
-  ECR.def_to_s "cri-tools-template.yml.ecr"
+  ECR.def_to_s "#{__DIR__}/cri-tools-template.yml.ecr"
 end
 
 # todo put in a separate library. it shold go under ./tools for now
@@ -227,7 +227,7 @@ module AirGap
   # TODO make this work with runtimes other than containerd
   # TODO make a tool that cleans up the cri images
   def self.create_pod_by_image(image, name="cri-tools")
-    template = CriToolsTemplate.new(name, image).to_s
+    template = CriToolsTemplate.new(name, image.to_s).to_s
     File.write("#{name}-manifest.yml", template)
     KubectlClient::Apply.file("#{name}-manifest.yml")
     LOGGING.info KubectlClient::Get.resource_wait_for_install("DaemonSet", name)
