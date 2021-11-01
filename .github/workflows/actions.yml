@@ -976,12 +976,11 @@ jobs:
               echo "Cache Already Exists" > /tmp/skip_upload
               echo "Cache Created" > $(pwd)/cache
         fi
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
     - name: Create Cluster & Run Tests.
       run: |
         source /tmp/environment.env
-        docker run --name $DIR-cache --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/cnf-testsuite/data:/var/lib/docker -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -v $(pwd)/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh && kubectl get pods --all-namespaces"
+        touch /shared/$DIR/cache
+        docker run --name $DIR-cache --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/cnf-testsuite/data:/var/lib/docker -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -v /shared/$DIR/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh && kubectl get pods --all-namespaces"
     - name: Check file existence  
       id: check_files
       uses: andstor/file-existence-action@v1
