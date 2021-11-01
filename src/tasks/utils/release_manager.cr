@@ -7,9 +7,11 @@ require "halite"
 module ReleaseManager 
   module GithubReleaseManager
     def self.github_releases : Array(JSON::Any)
-      existing_releases = Halite.basic_auth(user: ENV["GITHUB_USER"], pass: ENV["GITHUB_TOKEN"]).
-        get("https://api.github.com/repos/cncf/cnf-testsuite/releases", 
-            headers: {Accept: "application/vnd.github.v3+json"})
+      existing_releases = Halite.auth("Bearer #{ENV["GITHUB_TOKEN"]}").
+        get(
+          "https://api.github.com/repos/cncf/cnf-testsuite/releases",
+          headers: {Accept: "application/vnd.github.v3+json"}
+        )
       JSON.parse(existing_releases.body).as_a
     end 
 
@@ -116,14 +118,14 @@ TEMPLATE
 
         LOGGING.info "Release not found.  Creating a release: # url: #{release_url} headers: #{headers} json #{json}"
 
-        found_resp = Halite.basic_auth(user: ENV["GITHUB_USER"], pass: ENV["GITHUB_TOKEN"]).post(release_url, headers: headers, json: json) 
+        found_resp = Halite.auth("Bearer #{ENV["GITHUB_TOKEN"]}").post(release_url, headers: headers, json: json)
         found_release = JSON.parse(found_resp.body)
         # TODO error if cant create a release
         LOGGING.info "(unless) found_release: #{found_release}"
       end
 
       # PATCH /repos/:owner/:repo/releases/:release_id
-      found_resp = Halite.basic_auth(user: ENV["GITHUB_USER"], pass: ENV["GITHUB_TOKEN"]).
+      found_resp = Halite.auth("Bearer #{ENV["GITHUB_TOKEN"]}").
         patch("#{release_url}/#{found_release["id"]}",
               json: { "tag_name" => upsert_version,
                       "draft" => draft,
@@ -172,7 +174,7 @@ TEMPLATE
       puts "this is found_release #{typeof(found_release)}"
       if found_release
         puts "this is found_release id #{found_release["id"]}"
-        resp = Halite.basic_auth(user: ENV["GITHUB_USER"], pass: ENV["GITHUB_TOKEN"]).
+        resp = Halite.auth("Bearer #{ENV["GITHUB_TOKEN"]}").
           delete("https://api.github.com/repos/cncf/cnf-testsuite/releases/#{found_release["id"]}")
         resp_code = resp.status_code
         LOGGING.info "resp_code: #{resp_code}"
