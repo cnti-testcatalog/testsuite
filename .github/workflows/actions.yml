@@ -313,8 +313,8 @@ jobs:
               echo "Cache Already Exists" > /tmp/skip_upload
               echo "Cache Created" > ./cache
         fi
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
+    # - name: Setup tmate session
+    #   uses: mxschmitt/action-tmate@v3
     - name: Create Cluster & Run Tests.
       run: |
         sed -i "/pod_delete/a \ \ required: true" $(pwd)/embedded_files/points.yml
@@ -966,7 +966,7 @@ jobs:
               tar -cf /tmp/setup_environment.tar -C /shared/$DIR cnf-testsuite
               apt update && apt install -y pigz
               pigz -6 /tmp/setup_environment.tar
-              echo "Cache Created" > ./cache
+              echo "Cache Created" > $(pwd)/cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               export DIR=$(uuidgen)
@@ -974,7 +974,7 @@ jobs:
               echo "export DIR=$DIR" > /tmp/environment.env
               tar -xf /tmp/setup_environment.tar.gz -C /shared/$DIR
               echo "Cache Already Exists" > /tmp/skip_upload
-              echo "Cache Created" > ./cache
+              echo "Cache Created" > $(pwd)/cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
