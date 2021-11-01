@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-    name: {{ name }}
+    name: <%= @name %>
 spec:
   selector:
     matchLabels:
-      name: {{ name }}
+      name: <%= @name %>
   template:
     metadata:
       labels:
-        name: {{ name }}
+        name: <%= n@ame %>
     spec:
       containers:
-        - name: {{ name }}
-          image: '{{ image }}'
+        - name: <%= @name %>
+          image: '<%= @image %>'
           command: ["/bin/sh"]
           args: ["-c", "sleep infinity"]
           volumeMounts:
