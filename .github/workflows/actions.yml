@@ -963,10 +963,9 @@ jobs:
       run: chmod +x ./cnf-testsuite
     - name: Publish Release
       env:
-        GITHUB_USER: ${{ secrets.GH_USER }}
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        if [ -z "${GITHUB_USER+x}" ] || [ -z "${GITHUB_TOKEN+x}" ]; then
+        if [ -z "${GITHUB_TOKEN+x}" ]; then
           exit 0
         else
           ./cnf-testsuite upsert_release
