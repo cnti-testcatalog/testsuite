@@ -302,7 +302,7 @@ jobs:
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               rm $(pwd)/airgapped.tar.gz
               sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata cnfs
-              mv cnf-testsuite ./cache
+              echo "Cache Created" > ./cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               mv /tmp/chaos_environment.tar.gz $(pwd)
@@ -311,7 +311,7 @@ jobs:
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               echo "Cache Already Exists" > /tmp/skip_upload
-              mv cnf-testsuite ./cache
+              echo "Cache Created" > ./cache
         fi
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
@@ -412,7 +412,7 @@ jobs:
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               rm $(pwd)/airgapped.tar.gz
               sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata cnfs
-              mv cnf-testsuite ./cache
+              echo "Cache Created" > ./cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               mv /tmp/chaos_environment.tar.gz $(pwd)
@@ -421,7 +421,7 @@ jobs:
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               echo "Cache Already Exists" > /tmp/skip_upload
-              mv cnf-testsuite ./cache
+              echo "Cache Created" > ./cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
@@ -520,7 +520,7 @@ jobs:
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               rm $(pwd)/airgapped.tar.gz
               sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata cnfs
-              mv cnf-testsuite ./cache
+              echo "Cache Created" > ./cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               mv /tmp/chaos_environment.tar.gz $(pwd)
@@ -529,7 +529,7 @@ jobs:
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               echo "Cache Already Exists" > /tmp/skip_upload
-              mv cnf-testsuite ./cache
+              echo "Cache Created" > ./cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
@@ -628,7 +628,7 @@ jobs:
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               rm $(pwd)/airgapped.tar.gz
               sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata cnfs
-              mv cnf-testsuite ./cache
+              echo "Cache Created" > ./cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               mv /tmp/chaos_environment.tar.gz $(pwd)
@@ -637,7 +637,7 @@ jobs:
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               echo "Cache Already Exists" > /tmp/skip_upload
-              mv cnf-testsuite ./cache
+              echo "Cache Created" > ./cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
@@ -736,7 +736,7 @@ jobs:
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               rm $(pwd)/airgapped.tar.gz
               sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata cnfs
-              mv cnf-testsuite ./cache
+              echo "Cache Created" > ./cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               mv /tmp/chaos_environment.tar.gz $(pwd)
@@ -745,7 +745,7 @@ jobs:
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               echo "Cache Already Exists" > /tmp/skip_upload
-              mv cnf-testsuite ./cache
+              echo "Cache Created" > ./cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
@@ -844,7 +844,7 @@ jobs:
               docker run --name cluster --network none --privileged -v $(pwd):/cnf-testsuite -v $(pwd)/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/data:/var/lib/docker -v $(pwd)/.kube:/root/.kube -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz"
               rm $(pwd)/airgapped.tar.gz
               sudo tar --use-compress-program="pigz -6" -cf /tmp/chaos_environment.tar.gz -C $(pwd) data .kube tmpdata cnfs
-              mv cnf-testsuite ./cache
+              echo "Cache Created" > ./cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               mv /tmp/chaos_environment.tar.gz $(pwd)
@@ -853,7 +853,7 @@ jobs:
               sudo tar -xf /tmp/chaos_environment.tar.gz -C $(pwd)
               docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
               echo "Cache Already Exists" > /tmp/skip_upload
-              mv cnf-testsuite ./cache
+              echo "Cache Created" > ./cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
@@ -966,7 +966,7 @@ jobs:
               tar -cf /tmp/setup_environment.tar -C /shared/$DIR cnf-testsuite
               apt update && apt install -y pigz
               pigz -6 /tmp/setup_environment.tar
-              mv cnf-testsuite ./cache
+              echo "Cache Created" > ./cache
             else
               echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               export DIR=$(uuidgen)
@@ -974,7 +974,7 @@ jobs:
               echo "export DIR=$DIR" > /tmp/environment.env
               tar -xf /tmp/setup_environment.tar.gz -C /shared/$DIR
               echo "Cache Already Exists" > /tmp/skip_upload
-              mv cnf-testsuite ./cache
+              echo "Cache Created" > ./cache
         fi
     - name: Create Cluster & Run Tests.
       run: |
