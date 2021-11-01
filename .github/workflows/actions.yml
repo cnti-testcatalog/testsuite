@@ -976,6 +976,8 @@ jobs:
               echo "Cache Already Exists" > /tmp/skip_upload
               echo "Cache Created" > $(pwd)/cache
         fi
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Create Cluster & Run Tests.
       run: |
         source /tmp/environment.env
