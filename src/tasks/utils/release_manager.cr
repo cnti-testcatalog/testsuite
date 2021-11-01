@@ -244,7 +244,7 @@ TEMPLATE
       #           "Content-Type" => "application/gzip",
       #           "Content-Length" => File.size("#{cnf_tarball_name}").to_s
       #   }, raw: "#{File.open("#{cnf_tarball_name}")}")A
-    asset_resp = `curl --http1.1 -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} -H "Content-Type: $(file -b --mime-type #{asset_name})" --data-binary @#{asset_name} "https://uploads.github.com/repos/cncf/cnf-testsuite/releases/#{release_id}/assets?name=$(basename #{asset_name})"`
+    asset_resp = `curl --http1.1 -H "Authorization: Bearer #{ENV["GITHUB_TOKEN"]}" -H "Content-Type: $(file -b --mime-type #{asset_name})" --data-binary @#{asset_name} "https://uploads.github.com/repos/cncf/cnf-testsuite/releases/#{release_id}/assets?name=$(basename #{asset_name})"`
     LOGGING.info "asset_resp: #{asset_resp}"
     asset = JSON.parse(asset_resp.strip)
     LOGGING.info "asset: #{asset}"
@@ -273,14 +273,14 @@ TEMPLATE
   end
 
   def self.latest_release
-    resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} --silent "https://api.github.com/repos/cncf/cnf-testsuite/releases/latest"`
+    resp = `curl -H "Authorization: Bearer #{ENV["GITHUB_TOKEN"]}" --silent "https://api.github.com/repos/cncf/cnf-testsuite/releases/latest"`
     LOGGING.info "latest_release: #{resp}"
     parsed_resp = JSON.parse(resp)
     parsed_resp["tag_name"]?.not_nil!.to_s
   end
 
   def self.latest_snapshot
-    resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} --silent "https://api.github.com/repos/cncf/cnf-testsuite/releases"`
+    resp = `curl -H "Authorization: Bearer #{ENV["GITHUB_TOKEN"]}" --silent "https://api.github.com/repos/cncf/cnf-testsuite/releases"`
     LOGGING.info "latest_release: #{resp}"
     parsed_resp = JSON.parse(resp)
     prerelease = parsed_resp.as_a.select{ | x | x["prerelease"]==true && !("#{x["published_at"]?}".empty?) }
@@ -304,7 +304,7 @@ TEMPLATE
 
   def self.issue_title(issue_number)
     pure_issue = issue_number.gsub("#", "")
-    resp = `curl -u #{ENV["GITHUB_USER"]}:#{ENV["GITHUB_TOKEN"]} "https://api.github.com/repos/cncf/cnf-testsuite/issues/#{pure_issue}"`
+    resp = `curl -H "Authorization: Bearer #{ENV["GITHUB_TOKEN"]}" "https://api.github.com/repos/cncf/cnf-testsuite/issues/#{pure_issue}"`
     # LOGGING.info "issue_text: #{resp}"
     parsed_resp = JSON.parse(resp)
     parsed_resp["title"]?.not_nil!.to_s
