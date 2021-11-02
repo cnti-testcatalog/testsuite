@@ -42,6 +42,7 @@ task "install_kubescape" do |_, args|
 
         # Download framework file using Github token if the GITHUB_TOKEN env var is present
         framework_path = "#{current_dir}/#{TOOLS_DIR}/kubescape/nsa.json"
+        asset_url = "https://github.com/armosec/regolibrary/releases/download/v#{KUBESCAPE_FRAMEWORK_VERSION}/nsa"
         if ENV.has_key?("GITHUB_TOKEN")
           Halite.auth("Bearer #{ENV["GITHUB_TOKEN"]}").get(asset_url) do |response|
             File.write(framework_path, response.body_io)
