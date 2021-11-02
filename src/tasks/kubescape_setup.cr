@@ -39,7 +39,19 @@ task "install_kubescape" do |_, args|
         status = Process.run("chmod +x #{write_file}", shell: true, output: stderr, error: stderr)
         success = status.success?
         raise "Unable to make #{write_file} executable" if success == false
-        `#{current_dir}/#{TOOLS_DIR}/kubescape/kubescape download framework nsa --output #{current_dir}/#{TOOLS_DIR}/kubescape/nsa.json`
+
+        # Download framework file using Github token if the GITHUB_TOKEN env var is present
+        framework_path = "#{current_dir}/#{TOOLS_DIR}/kubescape/nsa.json"
+        if ENV.has_key?("GITHUB_TOKEN")
+          Halite.auth("Bearer #{ENV["GITHUB_TOKEN"]}").get(asset_url) do |response|
+            File.write(framework_path, response.body_io)
+          end
+        else
+          Halite.get(asset_url) do |response|
+            File.write(framework_path, response.body_io)
+          end
+        end
+
       end
     end
   end
