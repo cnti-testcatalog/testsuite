@@ -164,6 +164,12 @@ crystal bin/ameba.cr
 ./cnf-testsuite compatibility
 ```
 
+#### :heavy_check_mark: To check if the CNF is compatible with different CNIs
+
+```
+./cnf-testsuite cni_compatible
+```
+
 <details> <summary>Details for Compatibility Tests To Do's</summary>
 <p>
 
@@ -283,6 +289,156 @@ crystal src/cnf-testsuite.cr check_reaped
 
 ```
 ./cnf-testsuite service_account_mapping
+```
+
+#### :heavy_check_mark: To check if there is an [ingress and egress policy defined](https://bit.ly/3bhT10s).
+<details> <summary>Details for ingress_egress_blocked test</summary>
+<p>
+
+<b>Ingress Egress Blocked: </b> Network policies control traffic flow between Pods, namespaces, and external IP addresses. By default, no network policies are applied to Pods or namespaces, resulting in unrestricted ingress and egress traffic within the Pod network. Pods become isolated through a network policy that applies to the Pod or the Pod’s namespace. Once a Pod is selected in a network policy, it rejects any connections that are not specifically allowed by any applicable policy object.Administrators should use a default policy selecting all Pods to deny all ingress and egress traffic and ensure any unselected Pods are isolated. Additional policies could then relax these restrictions for permissible connections.(For ARMO runtime needs to add exception). See more at [Armo's C-0030 doc on ingress egress blocked details](https://bit.ly/3bhT10s).
+
+<b>Remediation Steps: </b> By default, you should disable or restrict Ingress and Egress traffic on all pods.
+
+</details>
+
+```
+./cnf-testsuite ingress_egress_blocked
+```
+#### :heavy_check_mark: To check if there are any privileged containers
+
+<details> <summary>Details for Privileged Containers</summary>
+
+<p><b>Privileged Containers:</b> A privileged container is a container that has all the capabilities of the host machine, which lifts all the limitations regular containers have. This means that privileged containers can do almost every action that can be performed directly on the host. Attackers who gain access to a privileged container or have permissions to create a new privileged container (by using the compromised pod’s service account, for example), can get access to the host’s resources.
+    
+<b>Remediation:</b> Change the deployment and/or pod definition to unprivileged. The securityContext.privileged should be false.
+    
+Read more at [ARMO-C0057](https://bit.ly/31iGng3)
+    
+</p>
+</details>
+
+```
+./cnf-testsuite privileged_containers
+```
+
+#### :heavy_check_mark: To check if namespaces have network policies defined
+<details> <summary>Details for Network Policies</summary>
+
+<p><b>Network Policies:</b> There is a MITRE check that fails if there are no policies defined for a specific namespace (cluster internal networking).
+
+If no network policy is defined, attackers who gain access to a single container may use it to probe the network. Lists namespaces in which no network policies are defined.
+    
+<b>Remediation:</b> Define network policies or use similar network protection mechanisms.
+    
+Read more at [ARMO-C0011](https://bit.ly/2ZEwb0A)
+    
+</p>
+</details>
+
+```
+./cnf-testsuite network_policies
+```
+
+#### :heavy_check_mark: To check if containers are running with non-root user with non-root membership
+<details> <summary>Details for Non Root Containers</summary>
+
+<p><b>Non Root Containers:</b> Container engines allow containers to run applications as a non-root user with non-root group membership. Typically, this non-default setting is configured when the container image is built. . Alternatively, Kubernetes can load containers into a Pod with SecurityContext:runAsUser specifying a non-zero user. While the runAsUser directive effectively forces non-root execution at deployment, NSA and CISA encourage developers to build container applications to execute as a non-root user. Having non-root execution integrated at build time provides better assurance that applications will function correctly without root privileges.
+    
+<b>Remediation:</b> If your application does not need root privileges, make sure to define the runAsUser and runAsGroup under the PodSecurityContext to use user ID 1000 or higher, do not turn on allowPrivlegeEscalation bit and runAsNonRoot is true.
+    
+Read more at [ARMO-C0013](https://bit.ly/2Zzlts3)
+    
+</p>
+</details>
+
+```
+./cnf-testsuite non_root_containers
+```
+
+#### :heavy_check_mark: To check if containers are running with hostPID or hostIPC privileges
+<details> <summary>Details for hostPID and hostIPC Privileges</summary>
+
+<p><b>Host PID/IPC Privileges:</b> Containers should be as isolated as possible from the host machine. The hostPID and hostIPC fields in Kubernetes may excessively expose the host for potentially malicious actions.
+    
+<b>Remediation:</b> Apply least privilege principle and disable the hostPID and hostIPC fields unless strictly needed.
+    
+Read more at [ARMO-C0038](https://bit.ly/3nGvpIQ)
+    
+</p>
+</details>
+
+```
+./cnf-testsuite host_pid_ipc_privileges
+```
+
+#### :heavy_check_mark: To check if security services are being used to harden containers
+<details> <summary>Details for Linux Hardening</summary>
+
+<p><b>Linux Hardening:</b> Check if there is AppArmor, Seccomp, SELinux or Capabilities are defined in the securityContext of container and pod. If none of these fields are defined for both the container and pod, alert.
+    
+<b>Remediation:</b> In order to reduce the attack surface, it is recommended to harden your application using security services such as SELinux®, AppArmor®, and seccomp. Starting from Kubernetes version 22, SELinux is enabled by default.
+    
+Read more at [ARMO-C0055](https://bit.ly/2ZKOjpJ)
+    
+</p>
+</details>
+
+```
+./cnf-testsuite linux_hardening
+```
+
+#### :heavy_check_mark: To check if containers have resource limits defined
+<details> <summary>Details for Resource Policies</summary>
+
+<p><b>Resource Policies:</b> CPU and memory resources should have a limit set for every container to prevent resource exhaustion.
+
+Check for each container if there is a ‘limits’ field defined. Check for each limitrange/resourcequota if there is a max/hard field defined, respectively.
+    
+<b>Remediation:</b> Define LimitRange and ResourceQuota policies to limit resource usage for namespaces or nodes.
+    
+Read more at [ARMO-C0009](https://bit.ly/3Ezxkps)
+    
+</p>
+</details>
+
+```
+./cnf-testsuite resource_policies
+```
+
+#### :heavy_check_mark: To check if containers have immutable file systems
+<details> <summary>Details for Immutable File Systems</summary>
+
+<p><b>Immutable Filesystems:</b> Mutable container filesystem can be abused to gain malicious code and data injection into containers. Use immutable (read-only) filesystem to limit potential attacks.
+
+Checks whether the readOnlyRootFilesystem field in the SecurityContext is set to true.
+    
+<b>Remediation:</b> Set the filesystem of the container to read-only when possible. If the containers application needs to write into the filesystem, it is possible to mount secondary filesystems for specific directories where application require write access.
+    
+Read more at [ARMO-C0017](https://bit.ly/3pSMtxK)
+    
+</p>
+</details>
+
+```
+./cnf-testsuite immutable_file_systems
+```
+
+#### :heavy_check_mark: To check if containers have hostPath mounts
+<details> <summary>Details for Hostpath Mounts</summary>
+
+<p><b>Writable Hostpath Mounts:</b> Mounting host directory to the container can be abused to get access to sensitive data and gain persistence on the host machine.
+
+hostPath volume mounts a directory or a file from the host to the container. Attackers who have permissions to create a new container in the cluster may create one with a writable hostPath volume and gain persistence on the underlying host. For example, the latter can be achieved by creating a cron job on the host.
+    
+<b>Remediation:</b> Refrain from using host path mount.
+    
+Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
+    
+</p>
+</details>
+
+```
+./cnf-testsuite hostpath_mounts
 ```
 
 <details> <summary>Details for Security Tests To Do's</summary>
@@ -650,24 +806,6 @@ crystal src/cnf-testsuite.cr performance
 
 ```
 ./cnf-testsuite resilience
-```
-
-#### :heavy_check_mark: Test if the CNF crashes when network loss occurs
-
-```
-./cnf-testsuite chaos_network_loss
-```
-
-#### :heavy_check_mark: Test if the CNF crashes under high CPU load
-
-```
-./cnf-testsuite chaos_cpu_hog
-```
-
-#### :heavy_check_mark: Test if the CNF restarts after container is killed
-
-```
-./cnf-testsuite chaos_container_kill
 ```
 
 #### :heavy_check_mark: Test if the CNF crashes when network latency occurs

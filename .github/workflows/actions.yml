@@ -90,8 +90,7 @@ jobs:
     - name: Run Crystal Spec
       env:
         FALCO_ENV: CI
-        GITHUB_USER: ${{ secrets.GH_USER }}
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         DOCKERHUB_USERNAMES: ${{ secrets.DOCKERHUB_USERNAMES }}
         DOCKERHUB_PASSWORDS: ${{ secrets.DOCKERHUB_PASSWORDS }}
         DOCKERHUB_EMAIL: ${{ secrets.DOCKERHUB_EMAIL }}
@@ -1062,14 +1061,14 @@ jobs:
         fi
     - name: Create Cluster & Run Tests.
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         export DIR=$(uuidgen)
         echo "export DIR=$DIR" > dir.env
         mkdir /shared/$DIR
         # Create Airgapped Tar
         #DOTO Use pre-created airgapped.tar.gz
-        # wget --auth-no-challenge --header='Accept:application/octet-stream' https://$GITHUB_TOKEN:@api.github.com/repos/cncf/cnf-testsuite/releases/assets/38092818 -O airgapped.tar.gz
+        # wget --auth-no-challenge --header='Accept:application/octet-stream' -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/repos/cncf/cnf-testsuite/releases/assets/38092818 -O airgapped.tar.gz
         cp -a $(pwd) /shared/$DIR/cnf-testsuite
         cp /tmp/airgapped.tar.gz /shared/$DIR/
         sed -i "/versioned_tag/a \ \ required: true" embedded_files/points.yml
@@ -1145,7 +1144,7 @@ jobs:
         mkdir /shared/$DIR
         # Create Airgapped Tar
         #DOTO Use pre-created airgapped.tar.gz
-        # wget --auth-no-challenge --header='Accept:application/octet-stream' https://$GITHUB_TOKEN:@api.github.com/repos/cncf/cnf-testsuite/releases/assets/38092818 -O airgapped.tar.gz
+        # wget --auth-no-challenge --header='Accept:application/octet-stream' -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/repos/cncf/cnf-testsuite/releases/assets/38092818 -O airgapped.tar.gz
         cp -a $(pwd) /shared/$DIR/cnf-testsuite
         cp /tmp/airgapped.tar.gz /shared/$DIR/
         docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
@@ -1492,10 +1491,9 @@ jobs:
       run: chmod +x ./cnf-testsuite
     - name: Publish Release
       env:
-        GITHUB_USER: ${{ secrets.GH_USER }}
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        if [ -z "${GITHUB_USER+x}" ] || [ -z "${GITHUB_TOKEN+x}" ]; then
+        if [ -z "${GITHUB_TOKEN+x}" ]; then
           exit 0
         else
           ./cnf-testsuite upsert_release

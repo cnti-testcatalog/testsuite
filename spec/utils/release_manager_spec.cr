@@ -33,16 +33,16 @@ describe "ReleaseManager" do
   end
 
   it "'#ReleaseManager::GithubReleaseManager.github_releases' should return the existing releases", tags: ["release"]  do
-    if ENV["GITHUB_USER"]?.nil?
-      puts "Warning: Set GITHUB_USER and GITHUB_TOKEN to activate release manager tests!".colorize(:red) 
+    if ENV["GITHUB_TOKEN"]?.nil?
+      puts "Warning: Set GITHUB_TOKEN to activate release manager tests!".colorize(:red)
     else 
       ((ReleaseManager::GithubReleaseManager.github_releases.size) > 0).should be_true
     end
   end
 
   it "'#ReleaseManager::GithubReleaseManager.upsert_release' should return the upserted release and asset response", tags: ["release"]  do
-    if ENV["GITHUB_USER"]?.nil?
-      puts "Warning: Set GITHUB_USER and GITHUB_TOKEN to activate release manager tests!".colorize(:red) 
+    if ENV["GITHUB_TOKEN"]?.nil?
+      puts "Warning: Set GITHUB_TOKEN to activate release manager tests!".colorize(:red)
     else 
       found_release, asset = ReleaseManager::GithubReleaseManager.upsert_release("test_version")
       if asset
@@ -59,8 +59,8 @@ describe "ReleaseManager" do
   end
 
   it "'#ReleaseManager::GithubReleaseManager.delete_release' should delete the release from the found_id", tags: ["release"]  do
-    if ENV["GITHUB_USER"]?.nil?
-      puts "Warning: Set GITHUB_USER and GITHUB_TOKEN to activate release manager tests!".colorize(:red) 
+    if ENV["GITHUB_TOKEN"]?.nil?
+      puts "Warning: Set GITHUB_TOKEN to activate release manager tests!".colorize(:red)
     else 
       found_release, asset = ReleaseManager::GithubReleaseManager.upsert_release("test_version")
       # wait for upsert to finish
@@ -79,8 +79,8 @@ describe "ReleaseManager" do
   end
 
   it "'#ReleaseManager.latest_release' should return latest release", tags: ["release"] do
-    if ENV["GITHUB_USER"]?.nil?
-      puts "Warning: Set GITHUB_USER and GITHUB_TOKEN to activate release manager tests!".colorize(:red) 
+    if ENV["GITHUB_TOKEN"]?.nil?
+      puts "Warning: Set GITHUB_TOKEN to activate release manager tests!".colorize(:red)
     else 
       issues = ReleaseManager.latest_release
       # https://github.com/semver/semver/blob/master/semver.md#is-v123-a-semantic-version
@@ -89,8 +89,8 @@ describe "ReleaseManager" do
   end
 
   it "'#ReleaseManager.latest_snapshot' should return the latest snapshot", tags: ["release"]  do
-    if ENV["GITHUB_USER"]?.nil?
-      puts "Warning: Set GITHUB_USER and GITHUB_TOKEN to activate release manager tests!".colorize(:red) 
+    if ENV["GITHUB_TOKEN"]?.nil?
+      puts "Warning: Set GITHUB_TOKEN to activate release manager tests!".colorize(:red)
     else 
       issues = ReleaseManager.latest_snapshot
       # https://github.com/semver/semver/blob/master/semver.md#is-v123-a-semantic-version
@@ -100,8 +100,8 @@ describe "ReleaseManager" do
 
 
   it "'#ReleaseManager.issue_title' should return issue title", tags: ["release"]  do
-    if ENV["GITHUB_USER"]?.nil?
-      puts "Warning: Set GITHUB_USER and GITHUB_TOKEN to activate release manager tests!".colorize(:red) 
+    if ENV["GITHUB_TOKEN"]?.nil?
+      puts "Warning: Set GITHUB_TOKEN to activate release manager tests!".colorize(:red)
     else 
       issues = ReleaseManager.issue_title("#318")
       (issues.match(/#206 documentation update/)).should_not be_nil

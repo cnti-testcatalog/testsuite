@@ -6,7 +6,7 @@ require "./utils/utils.cr"
 require "retriable"
 
 desc "Sets up Kubescape in the K8s Cluster"
-task "install_kubescape", ["uninstall_kubescape"] do |_, args|
+task "install_kubescape" do |_, args|
   Log.info {"install_kubescape"}
   # version = `curl --silent "https://api.github.com/repos/armosec/kubescape/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'`
   current_dir = FileUtils.pwd 
@@ -39,7 +39,20 @@ task "install_kubescape", ["uninstall_kubescape"] do |_, args|
         status = Process.run("chmod +x #{write_file}", shell: true, output: stderr, error: stderr)
         success = status.success?
         raise "Unable to make #{write_file} executable" if success == false
-        `#{current_dir}/#{TOOLS_DIR}/kubescape/kubescape download framework nsa --output #{current_dir}/#{TOOLS_DIR}/kubescape/nsa.json`
+
+        # Download framework file using Github token if the GITHUB_TOKEN env var is present
+        framework_path = "#{current_dir}/#{TOOLS_DIR}/kubescape/nsa.json"
+        asset_url = "https://github.com/armosec/regolibrary/releases/download/v#{KUBESCAPE_FRAMEWORK_VERSION}/nsa"
+        if ENV.has_key?("GITHUB_TOKEN")
+          Halite.auth("Bearer #{ENV["GITHUB_TOKEN"]}").get(asset_url) do |response|
+            File.write(framework_path, response.body_io)
+          end
+        else
+          Halite.get(asset_url) do |response|
+            File.write(framework_path, response.body_io)
+          end
+        end
+
       end
     end
   end
