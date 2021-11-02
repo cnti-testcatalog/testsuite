@@ -105,23 +105,15 @@ module CNFManager
       end
     end
 
-    # Please don't indent this.
-    def self.testsuite_yml_template
-      <<-TEMPLATE
-      release_name:
-      {{ install_key }} 
-      TEMPLATE
-    end
-
     def self.generate_initial_testsuite_yml(config_src, config_yml_path="./cnf-testsuite.yml")
       if !File.exists?(config_yml_path)
         case CNFManager.install_method_by_config_src(config_src) 
         when Helm::InstallMethod::HelmChart
-          testsuite_yml_template_resp = Crinja.render(testsuite_yml_template, { "install_key" => "helm_chart: #{config_src}"})
+          testsuite_yml_template_resp = TestSuiteYmlTemplate.new("helm_chart: #{config_src}").to_s
         when Helm::InstallMethod::HelmDirectory
-          testsuite_yml_template_resp = Crinja.render(testsuite_yml_template, { "install_key" => "helm_directory: #{config_src}"})
+          testsuite_yml_template_resp = TestSuiteYmlTemplate.new("helm_directory: #{config_src}").to_s
         when Helm::InstallMethod::ManifestDirectory
-          testsuite_yml_template_resp = Crinja.render(testsuite_yml_template, { "install_key" => "manifest_directory: #{config_src}"})
+          testsuite_yml_template_resp = TestSuiteYmlTemplate.new("manifest_directory: #{config_src}").to_s
         else
           puts "Error: #{config_src} is neither a helm_chart, helm_directory, or manifest_directory.".colorize(:red)
           exit 1
@@ -134,3 +126,9 @@ module CNFManager
   end
 end
 
+class TestSuiteYmlTemplate
+  def initialize(@install_key : String)
+  end
+
+  ECR.def_to_s("src/templates/testsuite_template.yml.ecr")
+end
