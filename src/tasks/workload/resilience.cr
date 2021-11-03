@@ -31,7 +31,9 @@ end
 #      end
 #
 #      if test_passed
-#        template = Crinja.render(network_chaos_template, { "labels" => KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h })
+#        template = ChaosTemplates::Network.new(
+#                     KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h
+#                   ).to_s
 #        File.write("#{destination_cnf_dir}/chaos_network_loss.yml", template)
 #        run_chaos = KubectlClient::Apply.file("#{destination_cnf_dir}/chaos_network_loss.yml")
 #        Log.for("verbose").debug { "#{run_chaos[:output]}" } if check_verbose(args)
@@ -76,7 +78,9 @@ end
 #         test_passed = false
 #       end
 #       if test_passed
-#         template = Crinja.render(cpu_chaos_template, { "labels" => KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h })
+#         template = ChaosTemplates::Cpu.new(
+#                      KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h
+#                    ).to_s
 #         File.write("#{destination_cnf_dir}/chaos_cpu_hog.yml", template)
 #         run_chaos = KubectlClient::Apply.file("#{destination_cnf_dir}/chaos_cpu_hog.yml")
 #         Log.for("verbose").debug { "#{run_chaos[:output]}" } if check_verbose(args)
@@ -615,55 +619,18 @@ class ChaosTemplates
     end
     ECR.def_to_s("src/templates/chaos_templates/pod_io_stress.yml.ecr")
   end
-end
 
-def network_chaos_template
-  <<-TEMPLATE
-  apiVersion: chaos-mesh.org/v1alpha1
-  kind: NetworkChaos
-  metadata:
-    name: network-loss
-    namespace: default
-  spec:
-    action: loss
-    mode: one
-    selector:
-      labelSelectors:
-        {% for label in labels %}
-        '{{ label[0]}}': '{{ label[1] }}'
-        {% endfor %}
-    loss:
-      loss: '100'
-      correlation: '100'
-    duration: '40s'
-    scheduler:
-      cron: '@every 600s'
-  TEMPLATE
-end
+  class Network
+    def initialize(@labels)
+    end
+    ECR.def_to_s("src/templates/chaos_templates/network.yml.ecr")
+  end
 
-def cpu_chaos_template
-  <<-TEMPLATE
-  apiVersion: chaos-mesh.org/v1alpha1
-  kind: StressChaos
-  metadata:
-    name: burn-cpu
-    namespace: default
-  spec:
-    mode: one
-    selector:
-      labelSelectors:
-        {% for label in labels %}
-        '{{ label[0]}}': '{{ label[1] }}'
-        {% endfor %}
-    stressors:
-      cpu:
-        workers: 1
-        load: 100
-        options: ['-c 0']
-    duration: '40s'
-    scheduler:
-      cron: '@every 600s'
-  TEMPLATE
+  class Cpu
+    def initialize(@labels)
+    end
+    ECR.def_to_s("src/templates/chaos_templates/cpu.yml.ecr")
+  end
 end
 
 def chaos_template_container_kill
