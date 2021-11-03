@@ -629,7 +629,7 @@ If no workload resources use a (non-exempt) secret, the test is skipped.
 #### :heavy_check_mark: To check if a CNF version uses [immutable configmaps](https://kubernetes.io/docs/concepts/configuration/configmap/#configmap-immutable)
 
 ```
-./cnf-testsuite immutable_configmaps
+./cnf-testsuite immutable_configmap
 ```
 
 <details> <summary>Details for Configuration and Lifecycle Tests To Do's</summary>
