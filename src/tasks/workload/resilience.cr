@@ -129,7 +129,10 @@ end
 #       end
 #       if test_passed
 #         # TODO change helm_chart_container_name to container_name
-#         template = Crinja.render(chaos_template_container_kill, { "labels" => KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h, "helm_chart_container_name" => "#{container.as_h["name"]}" })
+#         template = ChaosTemplates::ContainerKill.new(
+#                      "#{container.as_h["name"]}"
+#                      KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h
+#         ).to_s
 #         Log.debug { "chaos template: #{template}" }
 #         File.write("#{destination_cnf_dir}/chaos_container_kill.yml", template)
 #         run_chaos = KubectlClient::Apply.file("#{destination_cnf_dir}/chaos_container_kill.yml")
