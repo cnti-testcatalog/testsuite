@@ -173,9 +173,6 @@
 - name: node_drain
   tags: resilience, dynamic, workload
 
-- name: immutable_configmap
-  tags: configuration_lifecycle, dynamic, workload
-
 - name: service_account_mapping
   tags: security, dynamic, workload
 
