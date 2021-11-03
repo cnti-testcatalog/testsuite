@@ -169,3 +169,36 @@
   tags: platform, platform:security, dynamic
 - name: exposed_dashboard
   tags: platform, platform:security, dynamic
+
+- name: node_drain
+  tags: resilience, dynamic, workload
+
+- name: immutable_configmap
+  tags: configuration_lifecycle, dynamic, workload
+
+- name: service_account_mapping
+  tags: security, dynamic, workload
+
+- name: privileged_containers
+  tags: security, dynamic, workload
+
+- name: network_policies
+  tags: security, dynamic, workload
+
+- name: non_root_containers
+  tags: security, dynamic, workload
+
+- name: host_pid_ipc_privileges
+  tags: security, dynamic, workload
+
+- name: linux_hardening
+  tags: security, dynamic, workload
+
+- name: resource_policies
+  tags: security, dynamic, workload
+
+- name: immutable_file_systems
+  tags: security, dynamic, workload
+
+- name: hostpath_mounts
+  tags: security, dynamic, workload
