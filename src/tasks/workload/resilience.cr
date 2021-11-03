@@ -255,7 +255,13 @@ task "pod_network_corruption", ["install_litmus"] do |_, args|
         test_name = "#{resource["name"]}-#{Random.rand(99)}"
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
-        template = Crinja.render(chaos_template_pod_network_corruption, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name,"total_chaos_duration" => total_chaos_duration})
+        template = ChaosTemplates::PodNetworkCorruption.new(
+          test_name,
+          "#{chaos_experiment_name}",
+          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
+          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}",
+          total_chaos_duration
+        ).to_s
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
         LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
@@ -658,43 +664,18 @@ class ChaosTemplates
     end
     ECR.def_to_s("src/templates/chaos_templates/pod_network_latency.yml.ecr")
   end
-end
 
-def chaos_template_pod_network_corruption
-  <<-TEMPLATE
-  apiVersion: litmuschaos.io/v1alpha1
-  kind: ChaosEngine
-  metadata:
-    name: {{ test_name }}
-    namespace: default
-  spec:
-    jobCleanUpPolicy: 'delete'
-    annotationCheck: 'true'
-    engineState: 'active'
-    appinfo:
-      appns: 'default'
-      applabel: '{{ deployment_label}}={{ deployment_label_value }}'
-      appkind: 'deployment'
-    chaosServiceAccount: {{ chaos_experiment_name }}-sa
-    experiments:
-      - name: {{ chaos_experiment_name }}
-        spec:
-          components:
-            env:
-              # If not provided it will take the first container of target pod
-              - name: TARGET_CONTAINER
-                value: ''
-              - name: NETWORK_INTERFACE
-                value: 'eth0'
-              - name: NETWORK_PACKET_CORRUPTION_PERCENTAGE
-                value: '100' #in PERCENTAGE
-              - name: TOTAL_CHAOS_DURATION
-                value: '{{ total_chaos_duration }}'
-              - name: CONTAINER_RUNTIME
-                value: 'containerd'
-              - name: SOCKET_PATH
-                value: '/run/containerd/containerd.sock'
-  TEMPLATE
+  class PodNetworkCorruption
+    def initialize(
+      @test_name : String,
+      @chaos_experiment_name : String,
+      @deployment_label : String,
+      @deployment_label_value : String,
+      @total_chaos_duration : String
+    )
+    end
+    ECR.def_to_s("src/templates/chaos_templates/pod_network_corruption.yml.ecr")
+  end
 end
 
 def chaos_template_pod_network_duplication
