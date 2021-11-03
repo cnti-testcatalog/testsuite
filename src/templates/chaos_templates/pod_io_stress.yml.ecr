@@ -1,29 +1,29 @@
 apiVersion: litmuschaos.io/v1alpha1
 kind: ChaosEngine
 metadata:
-  name: <%= test_name %>
+  name: <%= @test_name %>
   namespace: default
 spec:
   engineState: 'active'
   appinfo:
     appns: 'default'
-    applabel: '<%= deployment_label %>=<%= deployment_label_value %>'
+    applabel: '<%= @deployment_label %>=<%= @deployment_label_value %>'
     appkind: 'deployment'
-  chaosServiceAccount: <%= chaos_experiment_name %>-sa
+  chaosServiceAccount: <%= @chaos_experiment_name %>-sa
   experiments:
-    - name: <%= chaos_experiment_name %>
+    - name: <%= @chaos_experiment_name %>
       spec:
         components:
           env:
             # set chaos duration (in sec) as desired
             - name: TOTAL_CHAOS_DURATION
-              value: '<%= total_chaos_duration %>'
+              value: '<%= @total_chaos_duration %>'
 
             ## specify the size as percentage of free space on the file system
             - name: FILESYSTEM_UTILIZATION_PERCENTAGE
               value: '50'
             - name: TARGET_PODS
-              value: '<%= target_pod_name %>'
+              value: '<%= @target_pod_name %>'
 
               ## provide the cluster runtime
             - name: CONTAINER_RUNTIME

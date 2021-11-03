@@ -612,6 +612,7 @@ class ChaosTemplates
       @total_chaos_duration : String,
       @target_pod_name : String
     )
+    end
     ECR.def_to_s("src/templates/chaos_templates/pod_io_stress.yml.ecr")
   end
 end
