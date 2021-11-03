@@ -1,0 +1,34 @@
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: <%= test_name %>
+  namespace: default
+spec:
+  engineState: 'active'
+  appinfo:
+    appns: 'default'
+    applabel: '<%= deployment_label %>=<%= deployment_label_value %>'
+    appkind: 'deployment'
+  chaosServiceAccount: <%= chaos_experiment_name %>-sa
+  experiments:
+    - name: <%= chaos_experiment_name %>
+      spec:
+        components:
+          env:
+            # set chaos duration (in sec) as desired
+            - name: TOTAL_CHAOS_DURATION
+              value: '<%= total_chaos_duration %>'
+
+            ## specify the size as percentage of free space on the file system
+            - name: FILESYSTEM_UTILIZATION_PERCENTAGE
+              value: '50'
+            - name: TARGET_PODS
+              value: '<%= target_pod_name %>'
+
+              ## provide the cluster runtime
+            - name: CONTAINER_RUNTIME
+              value: 'containerd'
+
+            # provide the socket file path
+            - name: SOCKET_PATH
+              value: '/run/containerd/containerd.sock'
