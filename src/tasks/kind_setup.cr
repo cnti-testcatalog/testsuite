@@ -73,7 +73,11 @@ module KindManager
       `#{kind} create cluster --name #{name} --config disable_cni.yml --kubeconfig #{kubeconfig}`
     end
     Log.info {`#{helm} install #{name}-plugin #{cni_plugin} --namespace kube-system --kubeconfig #{kubeconfig}`}
-    wait_for_cluster(kubeconfig)
+    if wait_for_cluster(kubeconfig)
+      kubeconfig
+    else
+      nil
+    end
   end
 
   def self.wait_for_cluster(kubeconfig, wait_count : Int32 = 180)
