@@ -159,11 +159,11 @@ module CNFManager
       AirGap.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
       Helm.helm_repo_add("gatekeeper","https://open-policy-agent.github.io/gatekeeper/charts")
       # Calico Helm Repo Is Broken, Download From Github
+      # Helm.helm_repo_add("projectcalico","https://docs.projectcalico.org/charts")
+      # AirGap.tar_helm_repo("projectcalico/tigera-operator", output_file)
       url = "https://github.com/projectcalico/calico/releases/download/v3.20.1/tigera-operator-v3.20.1.tgz"
       TarClient.tar_file_by_url(url, output_file, "calico.tar.gz")
-      # Helm.helm_repo_add("projectcalico","https://docs.projectcalico.org/charts")
       Helm.helm_repo_add("cilium","https://helm.cilium.io/")
-      AirGap.tar_helm_repo("projectcalico/tigera-operator", output_file)
       # AirGap.tar_helm_repo("cilium/cilium --version 1.10.5 --set operator.replicas=1", output_file)
       AirGap.tar_helm_repo("cilium/cilium --version 1.10.5", output_file)
       AirGap.tar_helm_repo("gatekeeper/gatekeeper --version 3.6.0", output_file)
