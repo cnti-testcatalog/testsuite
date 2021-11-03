@@ -308,7 +308,13 @@ task "pod_network_duplication", ["install_litmus"] do |_, args|
         test_name = "#{resource["name"]}-#{Random.rand(99)}"
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
-        template = Crinja.render(chaos_template_pod_network_duplication, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name,"total_chaos_duration" => total_chaos_duration})
+        template = ChaosTemplates::PodNetworkDuplication.new(
+          test_name,
+          "#{chaos_experiment_name}",
+          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
+          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}",
+          total_chaos_duration
+        ).to_s
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
         LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
@@ -676,49 +682,19 @@ class ChaosTemplates
     end
     ECR.def_to_s("src/templates/chaos_templates/pod_network_corruption.yml.ecr")
   end
+
+  class PodNetworkDuplication
+    def initialize(
+      @test_name : String,
+      @chaos_experiment_name : String,
+      @deployment_label : String,
+      @deployment_label_value : String,
+      @total_chaos_duration : String
+    )
+    end
+    ECR.def_to_s("src/templates/chaos_templates/pod_network_duplication.yml.ecr")
+  end
 end
-
-def chaos_template_pod_network_duplication
-  <<-TEMPLATE
-  apiVersion: litmuschaos.io/v1alpha1
-  kind: ChaosEngine
-  metadata:
-    name: {{ test_name }}
-    namespace: default
-  spec:
-    jobCleanUpPolicy: 'delete'
-    annotationCheck: 'true'
-    engineState: 'active'
-    appinfo:
-      appns: 'default'
-      applabel: '{{ deployment_label}}={{ deployment_label_value }}'
-      appkind: 'deployment'
-    chaosServiceAccount: {{ chaos_experiment_name }}-sa
-    experiments:
-      - name: {{ chaos_experiment_name }}
-        spec:
-          components:
-            env:
-              - name: TOTAL_CHAOS_DURATION
-                value: '60' # in seconds
-
-              - name: NETWORK_PACKET_DUPLICATION_PERCENTAGE
-                value: '100'
-    
-              - name: CONTAINER_RUNTIME
-                value: 'containerd'
-
-              # provide the socket file path
-              - name: SOCKET_PATH
-                value: '/run/containerd/containerd.sock'
-                
-              ## percentage of total pods to target
-              - name: PODS_AFFECTED_PERC
-                value: ''
-
-  TEMPLATE
-end
-
 
 def chaos_template_disk_fill
   <<-TEMPLATE

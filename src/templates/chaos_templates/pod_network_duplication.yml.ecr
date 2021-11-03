@@ -9,24 +9,27 @@ spec:
   engineState: 'active'
   appinfo:
     appns: 'default'
-    applabel: '<%= @deployment_label %>=<% @deployment_label_value %>'
+    applabel: '<%= @deployment_label %>=<%= @deployment_label_value %>'
     appkind: 'deployment'
   chaosServiceAccount: <%= @chaos_experiment_name %>-sa
   experiments:
-    - name: <%= @chaos_experiment_name %>
+    - name: <%= chaos_experiment_name %>
       spec:
         components:
           env:
-            # If not provided it will take the first container of target pod
-            - name: TARGET_CONTAINER
-              value: ''
-            - name: NETWORK_INTERFACE
-              value: 'eth0'
-            - name: NETWORK_PACKET_CORRUPTION_PERCENTAGE
-              value: '100' #in PERCENTAGE
             - name: TOTAL_CHAOS_DURATION
-              value: '<%= @total_chaos_duration %>'
+              value: '60' # in seconds
+
+            - name: NETWORK_PACKET_DUPLICATION_PERCENTAGE
+              value: '100'
+
             - name: CONTAINER_RUNTIME
               value: 'containerd'
+
+            # provide the socket file path
             - name: SOCKET_PATH
               value: '/run/containerd/containerd.sock'
+
+            ## percentage of total pods to target
+            - name: PODS_AFFECTED_PERC
+              value: ''
