@@ -13,7 +13,7 @@ spec:
     appkind: 'deployment'
   chaosServiceAccount: <%= @chaos_experiment_name %>-sa
   experiments:
-    - name: <%= chaos_experiment_name %>
+    - name: <%= @chaos_experiment_name %>
       spec:
         components:
           env:

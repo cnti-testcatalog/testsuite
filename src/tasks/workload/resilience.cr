@@ -360,7 +360,12 @@ task "disk_fill", ["install_litmus"] do |_, args|
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
         # todo change to use all labels instead of first label
-        template = Crinja.render(chaos_template_disk_fill, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name})
+        template = ChaosTemplates::DiskFill.new(
+          test_name,
+          "#{chaos_experiment_name}",
+          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
+          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
+        ).to_s
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
         LitmusManager.wait_for_test(test_name,chaos_experiment_name,disk_fill_time,args)
@@ -694,42 +699,17 @@ class ChaosTemplates
     end
     ECR.def_to_s("src/templates/chaos_templates/pod_network_duplication.yml.ecr")
   end
-end
 
-def chaos_template_disk_fill
-  <<-TEMPLATE
-  apiVersion: litmuschaos.io/v1alpha1
-  kind: ChaosEngine
-  metadata:
-    name: {{ test_name }}
-    namespace: default
-  spec:
-    annotationCheck: 'true'
-    engineState: 'active'
-    auxiliaryAppInfo: ''
-    appinfo:
-      appns: 'default'
-      applabel: '{{ deployment_label}}={{ deployment_label_value }}'
-      appkind: 'deployment'
-    chaosServiceAccount: {{ chaos_experiment_name }}-sa
-    jobCleanUpPolicy: 'delete'
-    experiments:
-      - name: {{ chaos_experiment_name }}
-        spec:
-          components:
-            env:
-              # specify the fill percentage according to the disk pressure required
-              - name: EPHEMERAL_STORAGE_MEBIBYTES
-                value: '500'
-                
-              - name: TARGET_CONTAINER
-                value: '' 
-              - name: FILL_PERCENTAGE
-                value: ''
-              - name: CONTAINER_PATH
-                value: '/var/lib/containerd/io.containerd.grpc.v1.cri/containers/'
-                            
-  TEMPLATE
+  class DiskFill
+    def initialize(
+      @test_name : String,
+      @chaos_experiment_name : String,
+      @deployment_label : String,
+      @deployment_label_value : String
+    )
+    end
+    ECR.def_to_s("src/templates/chaos_templates/disk_fill.yml.ecr")
+  end
 end
 
 def chaos_template_pod_delete
