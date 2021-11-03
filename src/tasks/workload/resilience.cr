@@ -411,7 +411,15 @@ task "pod_delete", ["install_litmus"] do |_, args|
         test_name = "#{resource["name"]}-#{Random.rand(99)}" 
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
-        template = Crinja.render(chaos_template_pod_delete, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name,"target_pod_name" => target_pod_name,"total_chaos_duration" => total_chaos_duration})
+        template = ChaosTemplates::PodDelete.new(
+          test_name,
+          "#{chaos_experiment_name}",
+          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
+          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}",
+          total_chaos_duration,
+          target_pod_name
+        ).to_s
+
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
         LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
@@ -457,7 +465,15 @@ task "pod_memory_hog", ["install_litmus"] do |_, args|
         test_name = "#{resource["name"]}-#{Random.rand(99)}" 
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
-        template = Crinja.render(chaos_template_pod_memory_hog, {"chaos_experiment_name"=> "#{chaos_experiment_name}", "deployment_label" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}", "deployment_label_value" => "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}", "test_name" => test_name,"target_pod_name" => target_pod_name,"total_chaos_duration" => total_chaos_duration})
+        template = ChaosTemplates::PodMemoryHog.new(
+          test_name,
+          "#{chaos_experiment_name}",
+          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
+          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}",
+          total_chaos_duration,
+          target_pod_name
+        ).to_s
+
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
         LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
@@ -613,7 +629,14 @@ task "node_drain", ["install_litmus"] do |t, args|
           test_name = "#{resource["name"]}-#{Random.rand(99)}" 
           chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
-          template = Crinja.render(chaos_template_node_drain, {"chaos_experiment_name"=> "#{chaos_experiment_name}","deployment_label"=> "#{deployment_label}","deployment_label_value"=> "#{deployment_label_value}", "test_name" => test_name,"total_chaos_duration" => total_chaos_duration,"app_nodeName" => app_nodeName})
+          template = ChaosTemplates::NodeDrain.new(
+            test_name,
+            "#{chaos_experiment_name}",
+            "#{deployment_label}",
+            "#{deployment_label_value}",
+            total_chaos_duration,
+            app_nodeName
+          ).to_s
           File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
           KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
           LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
@@ -710,112 +733,43 @@ class ChaosTemplates
     end
     ECR.def_to_s("src/templates/chaos_templates/disk_fill.yml.ecr")
   end
-end
 
-def chaos_template_pod_delete
-  <<-TEMPLATE
-  apiVersion: litmuschaos.io/v1alpha1
-  kind: ChaosEngine
-  metadata:
-    name: {{ test_name }}
-    namespace: default
-  spec:
-    engineState: 'active'
-    appinfo:
-      appns: 'default'
-      applabel: '{{ deployment_label}}={{ deployment_label_value }}'
-      appkind: 'deployment'
-    chaosServiceAccount: {{ chaos_experiment_name }}-sa
-    jobCleanUpPolicy: 'delete'
-    experiments:
-      - name: {{ chaos_experiment_name }}
-        spec:
-          components:
-            env:
-              # specify the fill percentage according to the disk pressure required
-              - name: TOTAL_CHAOS_DURATION
-                value: '{{ total_chaos_duration }}'
-                
-              - name: CHAOS_INTERVAL
-                value: '10'
-                
-              - name: TARGET_PODS
-                value: '{{ target_pod_name }}'
-              - name: FORCE
-                value: 'false'
-  TEMPLATE
-end
+  class PodDelete
+    def initialize(
+      @test_name : String,
+      @chaos_experiment_name : String,
+      @deployment_label : String,
+      @deployment_label_value : String,
+      @total_chaos_duration : String,
+      @target_pod_name : String
+    )
+    end
+    ECR.def_to_s("src/templates/chaos_templates/pod_delete.yml.ecr")
+  end
 
-def chaos_template_pod_memory_hog
-  <<-TEMPLATE
-  apiVersion: litmuschaos.io/v1alpha1
-  kind: ChaosEngine
-  metadata:
-    name: {{ test_name }}
-    namespace: default
-  spec:
-    appinfo:
-      appns: 'default'
-      applabel: '{{ deployment_label}}={{ deployment_label_value }}'
-      appkind: 'deployment'
-    # It can be delete/retain
-    jobCleanUpPolicy: 'delete'   
-    # It can be active/stop
-    engineState: 'active'    
-    chaosServiceAccount: {{ chaos_experiment_name }}-sa
-    experiments:
-      - name: {{ chaos_experiment_name }}
-        spec:
-          components:
-            env:
-              # Enter the amount of memory in megabytes to be consumed by the application pod
-              - name: MEMORY_CONSUMPTION
-                value: '500'
-  
-              - name: TOTAL_CHAOS_DURATION
-                value: '{{ total_chaos_duration }}'
-              - name: TARGET_PODS
-                value: '{{ target_pod_name }}'             
-              # provide the name of container runtime
-              # it supports docker, containerd, crio
-              # default to docker
-              - name: CONTAINER_RUNTIME
-                value: 'containerd'
-              # provide the socket file path
-              # applicable only for containerd and crio runtime
-              - name: SOCKET_PATH
-                value: '/run/containerd/containerd.sock'
-                          
-  TEMPLATE
-end
+  class PodMemoryHog
+    def initialize(
+      @test_name : String,
+      @chaos_experiment_name : String,
+      @deployment_label : String,
+      @deployment_label_value : String,
+      @total_chaos_duration : String,
+      @target_pod_name : String
+    )
+    end
+    ECR.def_to_s("src/templates/chaos_templates/pod_memory_hog.yml.ecr")
+  end
 
-def chaos_template_node_drain
-  <<-TEMPLATE
-  apiVersion: litmuschaos.io/v1alpha1
-  kind: ChaosEngine
-  metadata:
-    name: {{ test_name }}
-    namespace: default
-  spec:
-    appinfo:
-      appns: 'default'
-      applabel: '{{ deployment_label}}={{ deployment_label_value }}'
-      appkind: 'deployment'
-    # It can be delete/retain
-    jobCleanUpPolicy: 'delete'   
-    # It can be active/stop
-    engineState: 'active'    
-    chaosServiceAccount: {{ chaos_experiment_name }}-sa
-    experiments:
-      - name: {{ chaos_experiment_name }}
-        spec:
-          components:
-            env:
-              - name: TOTAL_CHAOS_DURATION
-                value: '{{ total_chaos_duration }}'
-
-              - name: TARGET_NODE
-                value: '{{ app_nodeName }}'                
-
-  TEMPLATE
+  class NodeDrain
+    def initialize(
+      @test_name : String,
+      @chaos_experiment_name : String,
+      @deployment_label : String,
+      @deployment_label_value : String,
+      @total_chaos_duration : String,
+      @app_nodename : String
+    )
+    end
+    ECR.def_to_s("src/templates/chaos_templates/node_drain.yml.ecr")
+  end
 end
