@@ -1,3 +1,4 @@
+# coding: utf-8
 require "sam"
 require "file_utils"
 require "colorize"
@@ -16,14 +17,29 @@ task "cni_compatible" do |_, args|
     CNFManager::Task.task_runner(args) do |args, config|
       VERBOSE_LOGGING.info "cni_compatible" if check_verbose(args)
 
-      kubeconfig = KindManager.create_cluster("calico-test", "projectcalico/tigera-operator")
+      if args.named["offline"]?
+           kubeconfig = KindManager.create_cluster("calico-test", "#{TarClient::TAR_DOWNLOAD_DIR}/calico.tar.gz")
+         else
+           current_dir = FileUtils.pwd 
+           chart = "#{current_dir}/#{TOOLS_DIR}/calico.tar.gz"
+           Halite.get("https://github.com/projectcalico/calico/releases/download/v3.20.1/tigera-operator-v3.20.1.tgz") do |response|
+             File.write("#{chart}", response.body_io)
+           end
+           kubeconfig = KindManager.create_cluster("calico-test", "#{chart}")
+      end
       Log.info { "kubeconfig: #{kubeconfig}" }
-
       calico_cnf_passed = CNFManager.cnf_to_new_cluster(config, kubeconfig)
       Log.info { "calico_cnf_passed: #{calico_cnf_passed}" }
       puts "CNF failed to install on Calico CNI cluster".colorize(:red) unless calico_cnf_passed
 
-      kubeconfig = KindManager.create_cluster("cilium-test", "cilium/cilium --version 1.10.5 --set operator.replicas=1")
+
+      if args.named["offline"]?
+           kubeconfig = KindManager.create_cluster("cilium-test", "#{TarClient::TAR_REPOSITORY_DIR}/cilium_cilium --set operator.replicas=1")
+         else
+
+           kubeconfig = KindManager.create_cluster("cilium-test", "cilium/cilium --version 1.10.5 --set operator.replicas=1")
+      end
+      Log.info { "kubeconfig: #{kubeconfig}" }
       cilium_cnf_passed = CNFManager.cnf_to_new_cluster(config, kubeconfig)
       Log.info { "cilium_cnf_passed: #{cilium_cnf_passed}" }
       puts "CNF failed to install on Cilum CNI cluster".colorize(:red) unless cilium_cnf_passed

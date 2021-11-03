@@ -52,33 +52,6 @@ task "uninstall_kind" do |_, args|
   FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/kind")
 end
 
-desc "Install Kind/Calico"
-task "create_kind_calico" do |_, args|
-  Log.info { "Creating Kind/Calico Cluster" }
-  if args.named["offline"]?
-       KindManager.create_cluster("calico-test", "#{TarClient::TAR_DOWNLOAD_DIR}/calico.tar.gz")
-     else
-       current_dir = FileUtils.pwd 
-       chart = "#{current_dir}/#{TOOLS_DIR}/calico.tar.gz"
-       Halite.get("https://github.com/projectcalico/calico/releases/download/v3.20.1/tigera-operator-v3.20.1.tgz") do |response|
-         File.write("#{chart}", response.body_io)
-       end
-       KindManager.create_cluster("calico-test", "#{chart}")
-  end
-end
-
-desc "Install Kind/Cilium"
-task "create_kind_cilium" do |_, args|
-  Log.info { "Creating Kind/Cilium Cluster" }
-  KindManager.create_cluster("cilium-test", "cilium/cilium --version 1.10.5 --set operator.replicas=1")
-end
-
-desc "Delete Cluster"
-task "delete_test_clusters" do |_, arg|
-  KindManager.delete_cluster("calico-test")
-  KindManager.delete_cluster("cilium-test")
-end
-
 module KindManager
   def self.delete_cluster(name)
     Log.info {"Deleting Kind Cluster: #{name}"}
@@ -130,7 +103,7 @@ STRING
       end
       sleep 1
       timeout = timeout - 1 
-      LOGGING.info "Waitting for CRI-Tools Pod"
+      LOGGING.info "Waitting for Cluster to be Ready"
       if timeout <= 0
         break
       end
