@@ -206,7 +206,7 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
           test_name,
           "#{chaos_experiment_name}",
           "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
+          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}",
           total_chaos_duration
         ).to_s
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
