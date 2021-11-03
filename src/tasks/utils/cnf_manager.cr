@@ -831,7 +831,7 @@ module CNFManager
 
     #TODO if helm_install then set helm_deploy = true in template
     Log.info { "save config" }
-    elapsed_time_template = Crinja.render(configmap_temp, { "helm_install" => helm_used, "release_name" => "cnf-testsuite-#{release_name}-startup-information", "elapsed_time" => "#{elapsed_time.seconds}", "immutable" => immutable_configmap})
+    elapsed_time_template = Crinja.render(configmap_temp, { "helm_used" => helm_used, "release_name" => "cnf-testsuite-#{release_name}-startup-information", "elapsed_time" => "#{elapsed_time.seconds}", "immutable" => immutable_configmap})
     #TODO find a way to kubectlapply directly without a map
     Log.debug { "elapsed_time_template : #{elapsed_time_template}" }
     File.write("#{destination_cnf_dir}/configmap_test.yml", "#{elapsed_time_template}")
