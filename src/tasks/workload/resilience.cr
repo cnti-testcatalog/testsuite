@@ -2,7 +2,6 @@
 require "sam"
 require "file_utils"
 require "colorize"
-require "crinja"
 require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if the CNFs are resilient to failures."
