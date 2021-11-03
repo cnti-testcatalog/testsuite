@@ -631,27 +631,12 @@ class ChaosTemplates
     end
     ECR.def_to_s("src/templates/chaos_templates/cpu.yml.ecr")
   end
-end
 
-def chaos_template_container_kill
-  <<-TEMPLATE
-  apiVersion: chaos-mesh.org/v1alpha1
-  kind: PodChaos
-  metadata:
-    name: container-kill
-    namespace: default
-  spec:
-    action: container-kill
-    mode: one
-    containerName: '{{ helm_chart_container_name }}'
-    selector:
-      labelSelectors:
-        {% for label in labels %}
-        '{{ label[0]}}': '{{ label[1] }}'
-        {% endfor %}
-    scheduler:
-      cron: '@every 600s'
-  TEMPLATE
+  class ContainerKill
+    def initialize(@helm_chart_container_name : String, @labels : Hash(String, String))
+    end
+    ECR.def_to_s("src/templates/chaos_templates/container_kill.yml.ecr")
+  end
 end
 
 def chaos_template_pod_network_latency
