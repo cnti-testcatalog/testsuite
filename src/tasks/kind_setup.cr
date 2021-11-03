@@ -55,7 +55,16 @@ end
 desc "Install Kind/Calico"
 task "create_kind_calico" do |_, args|
   Log.info { "Creating Kind/Calico Cluster" }
-  KindManager.create_cluster("calico-test", "projectcalico/tigera-operator")
+  if args.named["offline"]?
+       KindManager.create_cluster("calico-test", "#{TarClient::TAR_DOWNLOAD_DIR}/calico.tar.gz")
+     else
+       current_dir = FileUtils.pwd 
+       chart = "#{current_dir}/#{TOOLS_DIR}/calico.tar.gz"
+       Halite.get("https://github.com/projectcalico/calico/releases/download/v3.20.1/tigera-operator-v3.20.1.tgz") do |response|
+         File.write("#{chart}", response.body_io)
+       end
+       KindManager.create_cluster("calico-test", "#{chart}")
+  end
 end
 
 desc "Install Kind/Cilium"
