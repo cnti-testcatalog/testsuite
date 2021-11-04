@@ -20,6 +20,7 @@ task "cni_compatible" do |_, args|
       if args.named["offline"]?
            kubeconfig = KindManager.create_cluster("calico-test", "#{TarClient::TAR_DOWNLOAD_DIR}/projectcalico_tigera-operator")
          else
+           Helm.helm_repo_add("projectcalico","https://docs.projectcalico.org/charts")
            kubeconfig = KindManager.create_cluster("calico-test", "projectcalico/tigera-operator --version v3.20.2")
       end
       Log.info { "kubeconfig: #{kubeconfig}" }
@@ -31,7 +32,7 @@ task "cni_compatible" do |_, args|
       if args.named["offline"]?
            kubeconfig = KindManager.create_cluster("cilium-test", "#{TarClient::TAR_REPOSITORY_DIR}/cilium_cilium --set operator.replicas=1")
          else
-
+           Helm.helm_repo_add("cilium","https://helm.cilium.io/")
            kubeconfig = KindManager.create_cluster("cilium-test", "cilium/cilium --version 1.10.5 --set operator.replicas=1")
       end
       Log.info { "kubeconfig: #{kubeconfig}" }
