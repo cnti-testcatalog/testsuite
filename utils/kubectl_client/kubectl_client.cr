@@ -586,7 +586,7 @@ module KubectlClient
     def self.resource_wait_for_install(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default", kubeconfig=nil)
       # Not all cnfs have #{kind}.  some have only a pod.  need to check if the
       # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod
-      Log.info { "resource_wait_for_install kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}" }
+      Log.info { "resource_wait_for_install kind: #{kind} resource_name: #{resource_name} namespace: #{namespace} kubeconfig: #{kubeconfig}" }
       second_count = 0
 
       # Intialization
