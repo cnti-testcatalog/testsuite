@@ -519,6 +519,7 @@ module KubectlClient
     end
 
     def self.resource_ready?(kind, namespace, resource_name, kubeconfig=nil) : Bool
+      ready = false
       case kind.downcase
       when "pod"
         pod_ready = KubectlClient::Get.pod_status(pod_name_prefix: resource_name, namespace: namespace, kubeconfig: kubeconfig).split(",")[2]
@@ -529,21 +530,50 @@ module KubectlClient
         unavailable = replica_count(kind, namespace, resource_name, "{.status.unavailableReplicas}", kubeconfig)
         current = replica_count(kind, namespace, resource_name, "{.status.readyReplicas}", kubeconfig)
         Log.info { "current_replicas: #{current}, desired_replicas: #{desired}, unavailable_replicas: #{unavailable}"  }
+
+        ready = current == desired 
+        
         if desired == 0 && unavailable >= 1
-          return false
+          ready = false
         end
-        return current == desired unless (current == -1 || desired == -1)
+
+        if (current == -1 || desired == -1)
+          ready = false
+        end
+        
       when "daemonset"
         desired = replica_count(kind, namespace, resource_name, "{.status.desiredNumberScheduled}", kubeconfig)
         current = replica_count(kind, namespace, resource_name, "{.status.numberAvailable}", kubeconfig)
+        unavailable = replica_count(kind, namespace, resource_name, "{.status.unavailableReplicas}", kubeconfig)
         Log.info { "current_replicas: #{current}, desired_replicas: #{desired}" }
-        return current == desired unless (current == -1 || desired == -1)
+
+        ready = current == desired
+        
+        if desired == 0 && unavailable >= 1
+          ready = false
+        end
+        
+        if (current == -1 || desired == -1)
+          ready = false
+        end
+        
       else
         desired = replica_count(kind, namespace, resource_name, "{.status.replicas}", kubeconfig)
         current = replica_count(kind, namespace, resource_name, "{.status.readyReplicas}", kubeconfig)
+        unavailable = replica_count(kind, namespace, resource_name, "{.status.unavailableReplicas}", kubeconfig)
         Log.info { "current_replicas: #{current}, desired_replicas: #{desired}" }
-        return current == desired unless (current == -1 || desired == -1)
+
+        ready = current == desired
+        
+        if desired == 0 && unavailable >= 1
+          ready = false
+        end
+
+        if (current == -1 || desired == -1)
+          ready = false
+        end
       end
+      ready
     end
 
     def self.replica_count(kind, namespace, resource_name, jsonpath, kubeconfig=nil) : Int32
