@@ -112,8 +112,16 @@ module CNFManager
        image: "openpolicyagent/gatekeeper-crds:v3.6.0"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/tigera-operator.tar", 
        image: "tigera/operator:v1.20.4"},
-      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/calico-ctl.tar", 
-       image: "quay.io/docker.io/calico/ctl:v3.20.2"},
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/calico-controller.tar", 
+       image: "calico/kube-controllers:v3.20.2"},
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/calico-flexvol.tar", 
+       image: "calico/pod2daemon-flexvol:v3.20.2"},
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/calico-cni.tar", 
+       image: "calico/cni:v3.20.2"},
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/calico-node.tar", 
+       image: "calico/node:v3.20.2"},
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/calico-typha.tar", 
+       image: "calico/typha:v3.20.2"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium.tar", 
        image: "quay.io/cilium/cilium:v1.10.5@sha256:0612218e28288db360c63677c09fafa2d17edda4f13867bcabf87056046b33bb"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium-cert.tar", 
@@ -158,11 +166,8 @@ module CNFManager
       # todo create helm chart configuration yaml that includes all chart elements for specs
       AirGap.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
       Helm.helm_repo_add("gatekeeper","https://open-policy-agent.github.io/gatekeeper/charts")
-      # Calico Helm Repo Is Broken, Download From Github
-      # Helm.helm_repo_add("projectcalico","https://docs.projectcalico.org/charts")
-      # AirGap.tar_helm_repo("projectcalico/tigera-operator", output_file)
-      url = "https://github.com/projectcalico/calico/releases/download/v3.20.1/tigera-operator-v3.20.1.tgz"
-      TarClient.tar_file_by_url(url, output_file, "calico.tar.gz")
+      Helm.helm_repo_add("projectcalico","https://docs.projectcalico.org/charts")
+      AirGap.tar_helm_repo("projectcalico/tigera-operator --version v3.20.2", output_file)
       Helm.helm_repo_add("cilium","https://helm.cilium.io/")
       # AirGap.tar_helm_repo("cilium/cilium --version 1.10.5 --set operator.replicas=1", output_file)
       AirGap.tar_helm_repo("cilium/cilium --version 1.10.5", output_file)

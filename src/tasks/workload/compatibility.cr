@@ -18,14 +18,9 @@ task "cni_compatible" do |_, args|
       VERBOSE_LOGGING.info "cni_compatible" if check_verbose(args)
 
       if args.named["offline"]?
-           kubeconfig = KindManager.create_cluster("calico-test", "#{TarClient::TAR_DOWNLOAD_DIR}/calico.tar.gz")
+           kubeconfig = KindManager.create_cluster("calico-test", "#{TarClient::TAR_DOWNLOAD_DIR}/projectcalico_tigera-operator")
          else
-           current_dir = FileUtils.pwd 
-           chart = "#{current_dir}/#{TOOLS_DIR}/calico.tar.gz"
-           Halite.get("https://github.com/projectcalico/calico/releases/download/v3.20.1/tigera-operator-v3.20.1.tgz") do |response|
-             File.write("#{chart}", response.body_io)
-           end
-           kubeconfig = KindManager.create_cluster("calico-test", "#{chart}")
+           kubeconfig = KindManager.create_cluster("calico-test", "projectcalico/tigera-operator --version v3.20.2")
       end
       Log.info { "kubeconfig: #{kubeconfig}" }
       calico_cnf_passed = CNFManager.cnf_to_new_cluster(config, kubeconfig)
