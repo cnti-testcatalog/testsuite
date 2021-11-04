@@ -900,7 +900,7 @@ end
       case resource[:kind].as_s.downcase
       when "replicaset", "deployment", "statefulset", "pod", "daemonset"
         Log.info { "waiting on resource of kind: #{resource[:kind].as_s.downcase}" }
-        KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, 10, namespace="default", kubeconfig)
+        KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, 180, namespace="default", kubeconfig)
       else 
         true
       end
