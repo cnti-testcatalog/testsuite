@@ -111,7 +111,7 @@ module CNFManager
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/gatekeeper-crds.tar", 
        image: "openpolicyagent/gatekeeper-crds:v3.6.0"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/tigera-operator.tar", 
-       image: "tigera/operator:v1.20.4"},
+       image: "quay.io/tigera/operator:v1.20.4"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/calico-controller.tar", 
        image: "calico/kube-controllers:v3.20.2"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/calico-flexvol.tar", 
@@ -124,10 +124,8 @@ module CNFManager
        image: "calico/typha:v3.20.2"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium.tar", 
        image: "quay.io/cilium/cilium:v1.10.5@sha256:0612218e28288db360c63677c09fafa2d17edda4f13867bcabf87056046b33bb"},
-      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium-cert.tar", 
-       image: "quay.io/cilium/certgen:v0.1.5"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium-operator.tar", 
-       image: "quay.io/cilium/operator:v1.10.5@sha256:2d2f730f219d489ff0702923bf24c0002cd93eb4b47ba344375566202f56d972"},
+       image: "quay.io/cilium/operator-generic:v1.10.5@sha256:2d2f730f219d489ff0702923bf24c0002cd93eb4b47ba344375566202f56d972"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/prometheus.tar", 
        image: "prom/prometheus:v2.18.1"}].map do |x|
         DockerClient.pull(x[:image])
