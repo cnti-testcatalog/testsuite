@@ -532,24 +532,24 @@ module KubectlClient
         if desired == 0 && unavailable >= 1
           return false
         end
-        return current == desired
+        return current == desired unless (current == -1 || desired == -1)
       when "daemonset"
         desired = replica_count(kind, namespace, resource_name, "{.status.desiredNumberScheduled}", kubeconfig)
         current = replica_count(kind, namespace, resource_name, "{.status.numberAvailable}", kubeconfig)
         Log.info { "current_replicas: #{current}, desired_replicas: #{desired}" }
-        return current == desired
+        return current == desired unless (current == -1 || desired == -1)
       else
         desired = replica_count(kind, namespace, resource_name, "{.status.replicas}", kubeconfig)
         current = replica_count(kind, namespace, resource_name, "{.status.readyReplicas}", kubeconfig)
         Log.info { "current_replicas: #{current}, desired_replicas: #{desired}" }
-        return current == desired
+        return current == desired unless (current == -1 || desired == -1)
       end
     end
 
     def self.replica_count(kind, namespace, resource_name, jsonpath, kubeconfig=nil) : Int32
       cmd = "kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='#{jsonpath}' #{kubeconfig ? "--kubeconfig " + kubeconfig : ""}"
       result = ShellCmd.run(cmd, "KubectlClient::Get.replica_count")
-      return 0 if result[:output].empty?
+      return -1 if result[:output].empty?
       result[:output].to_i
     end
 
