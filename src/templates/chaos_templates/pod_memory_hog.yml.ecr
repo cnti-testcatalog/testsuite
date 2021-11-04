@@ -4,30 +4,34 @@ metadata:
   name: <%= @test_name %>
   namespace: default
 spec:
-  jobCleanUpPolicy: 'delete'
-  annotationCheck: 'true'
-  engineState: 'active'
   appinfo:
     appns: 'default'
     applabel: '<%= @deployment_label %>=<%= @deployment_label_value %>'
     appkind: 'deployment'
+  # It can be delete/retain
+  jobCleanUpPolicy: 'delete'
+  # It can be active/stop
+  engineState: 'active'
   chaosServiceAccount: <%= @chaos_experiment_name %>-sa
   experiments:
     - name: <%= @chaos_experiment_name %>
       spec:
         components:
           env:
-            - name: TOTAL_CHAOS_DURATION
-              value: '60' # in seconds
-            - name: NETWORK_PACKET_DUPLICATION_PERCENTAGE
-              value: '100'
+            # Enter the amount of memory in megabytes to be consumed by the application pod
+            - name: MEMORY_CONSUMPTION
+              value: '500'
 
+            - name: TOTAL_CHAOS_DURATION
+              value: '<%= @total_chaos_duration %>'
+            - name: TARGET_PODS
+              value: '<%= @target_pod_name %>'
+            # provide the name of container runtime
+            # it supports docker, containerd, crio
+            # default to docker
             - name: CONTAINER_RUNTIME
               value: 'containerd'
             # provide the socket file path
+            # applicable only for containerd and crio runtime
             - name: SOCKET_PATH
               value: '/run/containerd/containerd.sock'
-
-            ## percentage of total pods to target
-            - name: PODS_AFFECTED_PERC
-              value: ''
