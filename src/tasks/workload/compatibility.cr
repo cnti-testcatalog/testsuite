@@ -18,6 +18,8 @@ task "cni_compatible" do |_, args|
       VERBOSE_LOGGING.info "cni_compatible" if check_verbose(args)
 
       if args.named["offline"]?
+
+           `docker image load -i #{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/kind-node.tar`
            kubeconfig = KindManager.create_cluster("calico-test", "#{TarClient::TAR_DOWNLOAD_DIR}/projectcalico_tigera-operator")
          else
            Helm.helm_repo_add("projectcalico","https://docs.projectcalico.org/charts")
