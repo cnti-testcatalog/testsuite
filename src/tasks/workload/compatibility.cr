@@ -18,12 +18,14 @@ task "cni_compatible" do |_, args|
       VERBOSE_LOGGING.info "cni_compatible" if check_verbose(args)
 
       if args.named["offline"]?
-
-           `docker image load -i #{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/kind-node.tar`
-           kubeconfig = KindManager.create_cluster("calico-test", "#{TarClient::TAR_DOWNLOAD_DIR}/projectcalico_tigera-operator")
+            Log.info { "Running cni_compatible(Cluster Creation) in Offline Mode" }
+            status = `docker image load -i #{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/kind-node.tar`
+            Log.info { "#{status}" }
+           kubeconfig = KindManager.create_cluster("calico-test", "#{TarClient::TAR_DOWNLOAD_DIR}/projectcalico_tigera-operator", offline=true)
          else
+           Log.info { "Running cni_compatible(Cluster Creation) in Online Mode" }
            Helm.helm_repo_add("projectcalico","https://docs.projectcalico.org/charts")
-           kubeconfig = KindManager.create_cluster("calico-test", "projectcalico/tigera-operator --version v3.20.2")
+           kubeconfig = KindManager.create_cluster("calico-test", "projectcalico/tigera-operator --version v3.20.2", offline=false)
       end
       Log.info { "kubeconfig: #{kubeconfig}" }
       calico_cnf_passed = CNFManager.cnf_to_new_cluster(config, kubeconfig)
@@ -32,10 +34,10 @@ task "cni_compatible" do |_, args|
 
 
       if args.named["offline"]?
-           kubeconfig = KindManager.create_cluster("cilium-test", "#{TarClient::TAR_REPOSITORY_DIR}/cilium_cilium --set operator.replicas=1")
+           kubeconfig = KindManager.create_cluster("cilium-test", "#{TarClient::TAR_REPOSITORY_DIR}/cilium_cilium --set operator.replicas=1", offline=true)
          else
            Helm.helm_repo_add("cilium","https://helm.cilium.io/")
-           kubeconfig = KindManager.create_cluster("cilium-test", "cilium/cilium --version 1.10.5 --set operator.replicas=1")
+           kubeconfig = KindManager.create_cluster("cilium-test", "cilium/cilium --version 1.10.5 --set operator.replicas=1", offline=false)
       end
       Log.info { "kubeconfig: #{kubeconfig}" }
       cilium_cnf_passed = CNFManager.cnf_to_new_cluster(config, kubeconfig)
