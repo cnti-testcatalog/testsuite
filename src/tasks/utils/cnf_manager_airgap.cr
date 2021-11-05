@@ -154,7 +154,7 @@ module CNFManager
       url = "https://github.com/armosec/kubescape/releases/download/v#{KUBESCAPE_VERSION}/kubescape-ubuntu-latest"
       TarClient.tar_file_by_url(url, output_file, "kubescape-ubuntu-latest")
       url = "https://github.com/kubernetes-sigs/kind/releases/download/v#{KIND_VERSION}/kind-linux-amd64"
-      TarClient.tar_file_by_url(url, output_file, "kind-linux-amd64")
+      TarClient.tar_file_by_url(url, output_file, "kind")
       download_path = "download/" 
       FileUtils.rm_rf("#{TarClient::TAR_TMP_BASE}/#{download_path}")
       FileUtils.mkdir_p("#{TarClient::TAR_TMP_BASE}/" + download_path)
