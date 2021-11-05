@@ -62,7 +62,7 @@ module KindManager
 
   #totod make a create cluster with flannel
 
-  def self.create_cluster(name, cni_plugin)
+  def self.create_cluster(name, cni_plugin, offline)
     Log.info {"Creating Kind Cluster"}
     current_dir = FileUtils.pwd 
     helm = BinarySingleton.helm
@@ -70,7 +70,11 @@ module KindManager
     kubeconfig = "#{current_dir}/#{TOOLS_DIR}/kind/#{name}_admin.conf"
     File.write("disable_cni.yml", DISABLE_CNI)
     unless File.exists?("#{kubeconfig}")
-      `#{kind} create cluster --name #{name} --config disable_cni.yml --kubeconfig #{kubeconfig}`
+      if offline
+        `#{kind} create cluster --name #{name} --config disable_cni.yml --image kindest/node:v1.21.1 --kubeconfig #{kubeconfig}`
+      else
+        `#{kind} create cluster --name #{name} --config disable_cni.yml --kubeconfig #{kubeconfig}`
+      end
     end
     Log.info {`#{helm} install #{name}-plugin #{cni_plugin} --namespace kube-system --kubeconfig #{kubeconfig}`}
     if wait_for_cluster(kubeconfig)
