@@ -106,6 +106,8 @@ module CNFManager
        image: "litmuschaos/chaos-runner:#{LitmusManager::Version}"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/go-runner.tar", 
        image: "litmuschaos/go-runner:#{LitmusManager::Version}"},
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/kind-node.tar", 
+       image: "kindest/node:v1.21.1"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/gatekeeper.tar", 
        image: "openpolicyagent/gatekeeper:v3.6.0"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/gatekeeper-crds.tar", 
