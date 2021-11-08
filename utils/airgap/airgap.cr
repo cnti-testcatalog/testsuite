@@ -157,7 +157,8 @@ module AirGap
       end
     else
       DockerClient.cp("#{tarball} #{kind_name}:/#{tarball.split("/")[-1]}")
-      DockerClient.exec("-ti #{kind_name} ctr -n=k8s.io image import /#{tarball.split("/")[-1]}")
+      #DockerClient.exec("-ti #{kind_name} ctr -n=k8s.io image import /#{tarball.split("/")[-1]}")
+      `docker exec -ti #{kind_name} ctr -n=k8s.io image import /#{tarball.split("/")[-1]}`
     end
   end
 
