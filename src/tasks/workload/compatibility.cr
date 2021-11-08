@@ -23,7 +23,8 @@ task "cni_compatible" do |_, args|
 
       if args.named["offline"]?
             Log.info { "Running cni_compatible(Cluster Creation) in Offline Mode" }
-            chart = Dir.entries("#{TarClient::TAR_REPOSITORY_DIR}/projectcalico_tigera-operator").first
+
+            chart = Dir.entries("#{TarClient::TAR_REPOSITORY_DIR}/projectcalico_tigera-operator")[1]
             status = `docker image load -i #{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/kind-node.tar`
             Log.info { "#{status}" }
            kubeconfig = KindManager.create_cluster("calico-test", "#{TarClient::TAR_REPOSITORY_DIR}/projectcalico_tigera-operator/#{chart}", offline=true)
@@ -47,7 +48,7 @@ task "cni_compatible" do |_, args|
 
 
       if args.named["offline"]?
-           chart = Dir.entries("#{TarClient::TAR_REPOSITORY_DIR}/cilium_cilium").first
+           chart = Dir.entries("#{TarClient::TAR_REPOSITORY_DIR}/cilium_cilium")[1]
            kubeconfig = KindManager.create_cluster("cilium-test", "#{TarClient::TAR_REPOSITORY_DIR}/cilium_cilium/#{chart} --set operator.replicas=1", offline=true)
            ENV["KUBECONFIG"]="#{kubeconfig}"
            if Dir.exists?("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
