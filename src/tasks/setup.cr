@@ -19,7 +19,7 @@ task "offline" do |_, args|
   input_file = args.named["if"].as(String) if args.named["if"]?
   if input_file && !input_file.empty?
       AirGap.extract(input_file)
-      AirGap.cache_images(input_file)
+      AirGap.cache_images()
   end
 end
 

@@ -77,9 +77,10 @@ module AirGap
     TarClient.untar(output_file, output_dir)
   end
 
-  def self.cache_images(tarball_name="./airgapped.tar.gz", cnf_setup=false)
+  def self.cache_images(cnf_setup=false)
     Log.info { "cache_images" }
     AirGap.bootstrap_cluster()
+    #TODO Potentially remove this. 
     if ENV["CRYSTAL_ENV"]? == "TEST"
       # todo change chaos-mesh tar to something more generic
       image_files = ["#{TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
