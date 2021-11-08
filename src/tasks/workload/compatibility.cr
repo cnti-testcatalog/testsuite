@@ -17,6 +17,8 @@ task "cni_compatible" do |_, args|
     CNFManager::Task.task_runner(args) do |args, config|
       VERBOSE_LOGGING.info "cni_compatible" if check_verbose(args)
 
+      puts "KUBECONFIG is not set. Please set a KUBECONFIG, i.p 'export KUBECONFIG=path-to-your-kubeconfig'".colorize(:red) unless ENV.has_key?("KUBECONFIG")
+      raise "KUBECONFIG is not set. Please set a KUBECONFIG, i.p 'export KUBECONFIG=path-to-your-kubeconfig'" unless ENV.has_key?("KUBECONFIG")
       kubeconfig_orig = ENV["KUBECONFIG"]
 
       if args.named["offline"]?
