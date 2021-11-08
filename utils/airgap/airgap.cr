@@ -82,7 +82,6 @@ module AirGap
     unless kind_name
       AirGap.bootstrap_cluster()
     end
-    
     #TODO Potentially remove this. 
     if ENV["CRYSTAL_ENV"]? == "TEST"
       # todo change chaos-mesh tar to something more generic
@@ -157,8 +156,8 @@ module AirGap
         resp
       end
     else
-      KubectlClient.cp("#{tarball} #{kind_name}:/tmp/#{tarball.split("/")[-1]}")
-      KubectlClient.exec("-ti #{kind_name} -- ctr -n=k8s.io image import /tmp/#{tarball.split("/")[-1]}")
+      DockerClient.cp("#{tarball} #{kind_name}:/tmp/#{tarball.split("/")[-1]}")
+      DockerClient.exec("-ti #{kind_name} ctr -n=k8s.io image import /tmp/#{tarball.split("/")[-1]}")
     end
   end
 
