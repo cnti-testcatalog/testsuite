@@ -42,8 +42,8 @@ module KubectlClient
     {status: status, output: output, error: stderr}
   end
 
-  def self.logs(pod_name, container_name="")
-    status = Process.run("kubectl logs #{pod_name} #{container_name}",
+  def self.logs(pod_name, options="")
+    status = Process.run("kubectl logs #{pod_name} #{options}",
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
