@@ -77,9 +77,12 @@ module AirGap
     TarClient.untar(output_file, output_dir)
   end
 
-  def self.cache_images(cnf_setup=false)
+  def self.cache_images(cnf_setup=false, kind_name=false)
     Log.info { "cache_images" }
-    AirGap.bootstrap_cluster()
+    unless kind_name
+      AirGap.bootstrap_cluster()
+    end
+    
     #TODO Potentially remove this. 
     if ENV["CRYSTAL_ENV"]? == "TEST"
       # todo change chaos-mesh tar to something more generic
@@ -97,7 +100,7 @@ module AirGap
       end
     end
     Log.info { "publishing: #{image_files}" }
-    resp = image_files.map {|x| AirGap.publish_tarball(x)}
+    resp = image_files.map {|x| AirGap.publish_tarball(x, kind_name)}
     Log.debug { "resp: #{resp}" }
     resp
   end
@@ -139,18 +142,23 @@ module AirGap
     AirGap.install_cri_binaries(pods)
   end
 
-  def self.publish_tarball(tarball)
-    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-    pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
-    pods.map do |pod| 
-      pod_name = pod.dig?("metadata", "name")
-      KubectlClient.cp("#{tarball} #{pod_name}:/tmp/#{tarball.split("/")[-1]}")
-    end
-    pods.map do |pod| 
-      pod_name = pod.dig?("metadata", "name")
-      resp = KubectlClient.exec("-ti #{pod_name} -- ctr -n=k8s.io image import /tmp/#{tarball.split("/")[-1]}")
-      Log.debug { "Resp: #{resp}" }
-      resp
+  def self.publish_tarball(tarball, kind_name=false)
+    unless kind_name
+      pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+      pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+      pods.map do |pod| 
+        pod_name = pod.dig?("metadata", "name")
+        KubectlClient.cp("#{tarball} #{pod_name}:/tmp/#{tarball.split("/")[-1]}")
+      end
+      pods.map do |pod| 
+        pod_name = pod.dig?("metadata", "name")
+        resp = KubectlClient.exec("-ti #{pod_name} -- ctr -n=k8s.io image import /tmp/#{tarball.split("/")[-1]}")
+        Log.debug { "Resp: #{resp}" }
+        resp
+      end
+    else
+      KubectlClient.cp("#{tarball} #{kind_name}:/tmp/#{tarball.split("/")[-1]}")
+      KubectlClient.exec("-ti #{kind_name} -- ctr -n=k8s.io image import /tmp/#{tarball.split("/")[-1]}")
     end
   end
 

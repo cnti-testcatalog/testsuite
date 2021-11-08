@@ -29,7 +29,7 @@ task "cni_compatible" do |_, args|
            ENV["KUBECONFIG"]="#{kubeconfig}"
            #TODO Don't bootstrap all images, only Calico & Cilium are needed.
            if Dir.exists?("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
-             AirGap.cache_images()
+             AirGap.cache_images(kind_name: "calico-test-control-plane" )
            else
              puts "Bootstrap directory is missing, please run ./cnf-testsuite setup offline=<path-to-your-airgapped.tar.gz>".colorize(:red)
              raise "Bootstrap directory is missing, please run ./cnf-testsuite setup offline=<path-to-your-airgapped.tar.gz>"
@@ -49,7 +49,7 @@ task "cni_compatible" do |_, args|
            kubeconfig = KindManager.create_cluster("cilium-test", "#{TarClient::TAR_REPOSITORY_DIR}/cilium_cilium --set operator.replicas=1", offline=true)
            ENV["KUBECONFIG"]="#{kubeconfig}"
            if Dir.exists?("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
-             AirGap.cache_images()
+             AirGap.cache_images(kind_name: "cilium-test-control-plane" )
            else
              puts "Bootstrap directory is missing, please run ./cnf-testsuite setup offline=<path-to-your-airgapped.tar.gz>".colorize(:red)
              raise "Bootstrap directory is missing, please run ./cnf-testsuite setup offline=<path-to-your-airgapped.tar.gz>"
