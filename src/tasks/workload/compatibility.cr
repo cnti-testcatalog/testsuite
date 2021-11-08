@@ -25,7 +25,7 @@ task "cni_compatible" do |_, args|
             Log.info { "Running cni_compatible(Cluster Creation) in Offline Mode" }
             status = `docker image load -i #{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/kind-node.tar`
             Log.info { "#{status}" }
-           kubeconfig = KindManager.create_cluster("calico-test", "#{TarClient::TAR_DOWNLOAD_DIR}/projectcalico_tigera-operator", offline=true)
+           kubeconfig = KindManager.create_cluster("calico-test", "#{TarClient::TAR_REPOSITORY_DIR}/projectcalico_tigera-operator", offline=true)
            ENV["KUBECONFIG"]="#{kubeconfig}"
            #TODO Don't bootstrap all images, only Calico & Cilium are needed.
            if Dir.exists?("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
