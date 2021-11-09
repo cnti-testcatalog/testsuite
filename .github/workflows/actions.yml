@@ -238,7 +238,7 @@ jobs:
     - name: Maximize build space
       uses: easimon/maximize-build-space@master
       with:
-        root-reserve-mb: 8000
+        root-reserve-mb: 10000
         swap-size-mb: 100
         remove-dotnet: 'true'
         remove-android: 'true'
@@ -348,7 +348,7 @@ jobs:
     - name: Maximize build space
       uses: easimon/maximize-build-space@master
       with:
-        root-reserve-mb: 8000
+        root-reserve-mb: 10000
         swap-size-mb: 100
         remove-dotnet: 'true'
         remove-android: 'true'
@@ -456,7 +456,7 @@ jobs:
     - name: Maximize build space
       uses: easimon/maximize-build-space@master
       with:
-        root-reserve-mb: 8000
+        root-reserve-mb: 10000
         swap-size-mb: 100
         remove-dotnet: 'true'
         remove-android: 'true'
@@ -564,7 +564,7 @@ jobs:
     - name: Maximize build space
       uses: easimon/maximize-build-space@master
       with:
-        root-reserve-mb: 8000
+        root-reserve-mb: 10000
         swap-size-mb: 100
         remove-dotnet: 'true'
         remove-android: 'true'
@@ -672,7 +672,7 @@ jobs:
     - name: Maximize build space
       uses: easimon/maximize-build-space@master
       with:
-        root-reserve-mb: 8000
+        root-reserve-mb: 10000
         swap-size-mb: 100
         remove-dotnet: 'true'
         remove-android: 'true'
@@ -780,7 +780,7 @@ jobs:
     - name: Maximize build space
       uses: easimon/maximize-build-space@master
       with:
-        root-reserve-mb: 8000
+        root-reserve-mb: 10000
         swap-size-mb: 100
         remove-dotnet: 'true'
         remove-android: 'true'
