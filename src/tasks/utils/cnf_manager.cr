@@ -858,7 +858,7 @@ def self.configmap_temp
 end
 
 
-  def self.cnf_to_new_cluster(config, kubeconfig)
+  def self.cnf_to_new_cluster(config, kubeconfig, offline=false)
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
     release_name = config.cnf_config[:release_name]
@@ -876,6 +876,10 @@ end
       KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", "--kubeconfig #{kubeconfig}")
     when Helm::InstallMethod::HelmChart
       begin
+        if offline
+          helm_chart = AirGap.helm_tar_dir(install_method[1])
+          Log.info { "Install Chart In Airgapped Mode: #{helm_chart}"}
+        end
         helm_install = Helm.install("#{release_name} #{helm_chart} --kubeconfig #{kubeconfig}")
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_warning "Release name #{release_name} has already been setup."

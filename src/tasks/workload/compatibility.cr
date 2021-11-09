@@ -42,7 +42,7 @@ task "cni_compatible" do |_, args|
            kubeconfig = KindManager.create_cluster("calico-test", "projectcalico/tigera-operator --version v3.20.2", offline=false)
       end
       Log.info { "kubeconfig: #{kubeconfig}" }
-      calico_cnf_passed = CNFManager.cnf_to_new_cluster(config, kubeconfig)
+      calico_cnf_passed = CNFManager.cnf_to_new_cluster(config, kubeconfig, (args.named["offline"] !=nil))
       Log.info { "calico_cnf_passed: #{calico_cnf_passed}" }
       puts "CNF failed to install on Calico CNI cluster".colorize(:red) unless calico_cnf_passed
 
@@ -62,7 +62,7 @@ task "cni_compatible" do |_, args|
            kubeconfig = KindManager.create_cluster("cilium-test", "cilium/cilium --version 1.10.5 --set operator.replicas=1", offline=false)
       end
       Log.info { "kubeconfig: #{kubeconfig}" }
-      cilium_cnf_passed = CNFManager.cnf_to_new_cluster(config, kubeconfig)
+      cilium_cnf_passed = CNFManager.cnf_to_new_cluster(config, kubeconfig, (args.named["offline"] !=nil))
       Log.info { "cilium_cnf_passed: #{cilium_cnf_passed}" }
       puts "CNF failed to install on Cilum CNI cluster".colorize(:red) unless cilium_cnf_passed
 
