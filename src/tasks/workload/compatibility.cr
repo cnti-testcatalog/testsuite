@@ -53,9 +53,9 @@ task "cni_compatible" do |_, args|
       if args.named["offline"]?
            chart_directory = "#{TarClient::TAR_REPOSITORY_DIR}/cilium_cilium"
            chart = Dir.entries("#{chart_directory}")[1]
+           Log.info { "Installing Airgapped CNI Chart: #{chart_directory}/#{chart}" }
 
            kubeconfig = KindManager.create_cluster("cilium-test", "#{chart_directory}/#{chart} --set operator.replicas=1", offline=true)
-           Log.info { "Installing Airgapped CNI Chart: #{chart_directory}/#{chart}" }
 
            ENV["KUBECONFIG"]="#{kubeconfig}"
            if Dir.exists?("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
