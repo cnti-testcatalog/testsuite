@@ -18,6 +18,7 @@ task "log_output" do |_, args|
       case resource["kind"].as_s.downcase
       when "replicaset", "deployment", "pod"
         result = KubectlClient.logs("#{resource["kind"]}/#{resource["name"]}", "--tail=5 --prefix=true")
+        Log.for("Log lines").info { result[:output] }
         if result[:output].size > 0
           test_passed = true
         end
