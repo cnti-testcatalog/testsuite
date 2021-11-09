@@ -877,10 +877,12 @@ end
     when Helm::InstallMethod::HelmChart
       begin
         if offline
-          helm_chart = AirGap.helm_tar_dir(install_method[1])
-          Log.info { "Install Chart In Airgapped Mode: #{helm_chart}"}
+          chart_info = AirGap.tar_info_by_config_src(install_method[1])
+          chart_name = chart_info[:chart_name]
+          tar_name = chart_info[:tar_name]
+          Log.info { "Install Chart In Airgapped Mode: Name: #{chart_name}, Tar: #{tar_name}" }
         end
-        helm_install = Helm.install("#{release_name} #{helm_chart} --kubeconfig #{kubeconfig}")
+        helm_install = Helm.install("#{release_name} #{tar_name} --kubeconfig #{kubeconfig}")
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_warning "Release name #{release_name} has already been setup."
       end
