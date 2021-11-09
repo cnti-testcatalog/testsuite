@@ -24,19 +24,21 @@ task "cni_compatible" do |_, args|
       if args.named["offline"]?
             Log.info { "Running cni_compatible(Cluster Creation) in Offline Mode" }
 
-            chart = Dir.entries("#{TarClient::TAR_REPOSITORY_DIR}/projectcalico_tigera-operator")[1]
+            chart_directory = "#{TarClient::TAR_REPOSITORY_DIR}/projectcalico_tigera-operator"
+            chart = Dir.entries("#{chart_directory}")[1]
             status = `docker image load -i #{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/kind-node.tar`
             Log.info { "#{status}" }
-           kubeconfig = KindManager.create_cluster("calico-test", "#{TarClient::TAR_REPOSITORY_DIR}/projectcalico_tigera-operator/#{chart}", offline=true)
-           ENV["KUBECONFIG"]="#{kubeconfig}"
-           #TODO Don't bootstrap all images, only Calico & Cilium are needed.
-           if Dir.exists?("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
-             AirGap.cache_images(kind_name: "calico-test-control-plane" )
-             AirGap.cache_images(cnf_setup: true, kind_name: "calico-test-control-plane" )
-           else
-             puts "Bootstrap directory is missing, please run ./cnf-testsuite setup offline=<path-to-your-airgapped.tar.gz>".colorize(:red)
-             raise "Bootstrap directory is missing, please run ./cnf-testsuite setup offline=<path-to-your-airgapped.tar.gz>"
-           end
+            Log.info { "Installing Airgapped CNI Chart: #{chart_directory}/#{chart}" }
+            kubeconfig = KindManager.create_cluster("calico-test", "#{chart_directory}/#{chart}", offline=true)
+            ENV["KUBECONFIG"]="#{kubeconfig}"
+            #TODO Don't bootstrap all images, only Calico & Cilium are needed.
+            if Dir.exists?("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
+              AirGap.cache_images(kind_name: "calico-test-control-plane" )
+              AirGap.cache_images(cnf_setup: true, kind_name: "calico-test-control-plane" )
+            else
+              puts "Bootstrap directory is missing, please run ./cnf-testsuite setup offline=<path-to-your-airgapped.tar.gz>".colorize(:red)
+              raise "Bootstrap directory is missing, please run ./cnf-testsuite setup offline=<path-to-your-airgapped.tar.gz>"
+            end
          else
            Log.info { "Running cni_compatible(Cluster Creation) in Online Mode" }
            Helm.helm_repo_add("projectcalico","https://docs.projectcalico.org/charts")
@@ -49,8 +51,12 @@ task "cni_compatible" do |_, args|
 
 
       if args.named["offline"]?
-           chart = Dir.entries("#{TarClient::TAR_REPOSITORY_DIR}/cilium_cilium")[1]
-           kubeconfig = KindManager.create_cluster("cilium-test", "#{TarClient::TAR_REPOSITORY_DIR}/cilium_cilium/#{chart} --set operator.replicas=1", offline=true)
+           chart_directory = "#{TarClient::TAR_REPOSITORY_DIR}/cilium_cilium"
+           chart = Dir.entries("#{chart_directory}")[1]
+
+           kubeconfig = KindManager.create_cluster("cilium-test", "#{chart_directory}/#{chart} --set operator.replicas=1", offline=true)
+           Log.info { "Installing Airgapped CNI Chart: #{chart_directory}/#{chart}" }
+
            ENV["KUBECONFIG"]="#{kubeconfig}"
            if Dir.exists?("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
              AirGap.cache_images(kind_name: "cilium-test-control-plane" )
