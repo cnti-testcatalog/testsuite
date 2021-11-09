@@ -55,7 +55,7 @@ task "cni_compatible" do |_, args|
            chart = Dir.entries("#{chart_directory}")[2]
            Log.info { "Installing Airgapped CNI Chart: #{chart_directory}/#{chart}" }
 
-           kubeconfig = KindManager.create_cluster("cilium-test", "#{chart_directory}/#{chart} --set operator.replicas=1", offline=true)
+           kubeconfig = KindManager.create_cluster("cilium-test", "#{chart_directory}/#{chart} --set operator.replicas=1 --set operator.image.useDigest=false --set operator.image.useDigest=false", offline=true)
 
            ENV["KUBECONFIG"]="#{kubeconfig}"
            if Dir.exists?("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
@@ -67,7 +67,7 @@ task "cni_compatible" do |_, args|
            end
          else
            Helm.helm_repo_add("cilium","https://helm.cilium.io/")
-           kubeconfig = KindManager.create_cluster("cilium-test", "cilium/cilium --version 1.10.5 --set operator.replicas=1", offline=false)
+           kubeconfig = KindManager.create_cluster("cilium-test", "cilium/cilium --version 1.10.5 --set operator.replicas=1 --set operator.image.useDigest=false --set operator.image.useDigest=false", offline=false)
       end
       Log.info { "kubeconfig: #{kubeconfig}" }
       cilium_cnf_passed = CNFManager.cnf_to_new_cluster(config, kubeconfig, (args.named["offline"] !=nil))
