@@ -1,0 +1,32 @@
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: <%= @test_name %>
+  namespace: default
+spec:
+  jobCleanUpPolicy: 'delete'
+  annotationCheck: 'true'
+  engineState: 'active'
+  appinfo:
+    appns: 'default'
+    applabel: '<%= @deployment_label %>=<%= @deployment_label_value %>'
+    appkind: 'deployment'
+  chaosServiceAccount: <%= @chaos_experiment_name %>-sa
+  experiments:
+    - name: <%= @chaos_experiment_name %>
+      spec:
+        components:
+          env:
+            # If not provided it will take the first container of target pod
+            - name: TARGET_CONTAINER
+              value: ''
+            - name: NETWORK_INTERFACE
+              value: 'eth0'
+            - name: NETWORK_PACKET_CORRUPTION_PERCENTAGE
+              value: '100' #in PERCENTAGE
+            - name: TOTAL_CHAOS_DURATION
+              value: '<%= @total_chaos_duration %>'
+            - name: CONTAINER_RUNTIME
+              value: 'containerd'
+            - name: SOCKET_PATH
+              value: '/run/containerd/containerd.sock'

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp
+immutable: true
+data:
+  api.server: <%= @test_url %>

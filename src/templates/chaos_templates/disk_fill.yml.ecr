@@ -1,0 +1,30 @@
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: <%= @test_name %>
+  namespace: default
+spec:
+  annotationCheck: 'true'
+  engineState: 'active'
+  auxiliaryAppInfo: ''
+  appinfo:
+    appns: 'default'
+    applabel: '<%= @deployment_label %>=<%= @deployment_label_value %>'
+    appkind: 'deployment'
+  chaosServiceAccount: <%= @chaos_experiment_name %>-sa
+  jobCleanUpPolicy: 'delete'
+  experiments:
+    - name: <%= @chaos_experiment_name %>
+      spec:
+        components:
+          env:
+            # specify the fill percentage according to the disk pressure required
+            - name: EPHEMERAL_STORAGE_MEBIBYTES
+              value: '500'
+
+            - name: TARGET_CONTAINER
+              value: ''
+            - name: FILL_PERCENTAGE
+              value: ''
+            - name: CONTAINER_PATH
+              value: '/var/lib/containerd/io.containerd.grpc.v1.cri/containers/'

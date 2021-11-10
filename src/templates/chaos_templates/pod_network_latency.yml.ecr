@@ -1,0 +1,37 @@
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: <%= @test_name %>
+  namespace: default
+spec:
+  jobCleanUpPolicy: 'delete'
+  annotationCheck: 'true'
+  engineState: 'active'
+  appinfo:
+    appns: 'default'
+    applabel: '<%= @deployment_label %>=<%= @deployment_label_value %>'
+    appkind: 'deployment'
+  chaosServiceAccount: <%= @chaos_experiment_name %>-sa
+  experiments:
+    - name: <%= @chaos_experiment_name %>
+      spec:
+        components:
+          env:
+            # If not provided it will take the first container of target pod
+            - name: TARGET_CONTAINER
+              value: ''
+            - name: NETWORK_INTERFACE
+              value: 'eth0'
+            - name: NETWORK_LATENCY
+              value: '60000'
+            - name: TOTAL_CHAOS_DURATION
+              value: '<%= @total_chaos_duration %>'
+            # provide the name of container runtime
+            # it supports docker, containerd, crio
+            # default to docker
+            - name: CONTAINER_RUNTIME
+              value: 'containerd'
+            # provide the socket file path
+            # applicable only for containerd and crio runtime
+            - name: SOCKET_PATH
+              value: '/run/containerd/containerd.sock'
