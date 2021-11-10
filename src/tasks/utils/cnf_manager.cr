@@ -881,7 +881,7 @@ module CNFManager
           tar_name = chart_info[:tar_name]
           Log.info { "Install Chart In Airgapped Mode: Name: #{chart_name}, Tar: #{tar_name}" }
         end
-        helm_install = Helm.install("#{release_name} #{tar_name} --kubeconfig #{kubeconfig}")
+        helm_install = Helm.install("#{release_name} #{helm_chart} --kubeconfig #{kubeconfig}")
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_warning "Release name #{release_name} has already been setup."
       end
