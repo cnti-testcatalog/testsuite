@@ -3,7 +3,7 @@ require "colorize"
 require "./../../src/tasks/utils/utils.cr"
 require "kubectl_client"
 
-describe "Observability" do
+describe "Platform Observability" do
 
   it "'kube_state_metrics' should return some json", tags: ["platform:observability"] do
 
