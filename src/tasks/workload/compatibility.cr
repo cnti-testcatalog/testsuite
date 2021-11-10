@@ -29,7 +29,7 @@ task "cni_compatible" do |_, args|
             status = `docker image load -i #{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/kind-node.tar`
             Log.info { "#{status}" }
             Log.info { "Installing Airgapped CNI Chart: #{chart_directory}/#{chart}" }
-            kubeconfig = KindManager.create_cluster("calico-test", "#{chart_directory}/#{chart}", offline=true)
+            kubeconfig = KindManager.create_cluster("calico-test", "#{chart_directory}/#{chart} --namespace calico", offline=true)
             ENV["KUBECONFIG"]="#{kubeconfig}"
             #TODO Don't bootstrap all images, only Calico & Cilium are needed.
             if Dir.exists?("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
@@ -55,7 +55,7 @@ task "cni_compatible" do |_, args|
            chart = Dir.entries("#{chart_directory}")[2]
            Log.info { "Installing Airgapped CNI Chart: #{chart_directory}/#{chart}" }
 
-           kubeconfig = KindManager.create_cluster("cilium-test", "#{chart_directory}/#{chart} --set operator.replicas=1 --set image.repository=cilium/cilium --set image.useDigest=false --set operator.image.useDigest=false --set operator.image.repository=cilium/operator", offline=true)
+           kubeconfig = KindManager.create_cluster("cilium-test", "#{chart_directory}/#{chart}  --namespace cilium --set operator.replicas=1 --set image.repository=cilium/cilium --set image.useDigest=false --set operator.image.useDigest=false --set operator.image.repository=cilium/operator", offline=true)
 
            ENV["KUBECONFIG"]="#{kubeconfig}"
            if Dir.exists?("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
