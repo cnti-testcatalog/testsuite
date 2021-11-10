@@ -672,8 +672,8 @@ crystal src/cnf-testsuite.cr check_reaped
 ./cnf-testsuite observability
 ```
 
-#### :heavy_check_mark: To check if logs are being sent to STDOUT/STDERR
-<details> <summary>Details for Log Output</summary>
+#### :heavy_check_mark: To check if logs are being sent to stdout/stderr
+<details> <summary>Details for Log Output test</summary>
 <p>
 
 <b>Log Output Details:</b> It's considered a best-practice for containers and pods to output logs to STDOUT/STDERR so that commands return useful debug or other information about the application.
