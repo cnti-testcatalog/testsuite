@@ -683,6 +683,8 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 <b>Remediation Steps:</b> Make sure applications and CNF's are sending log output to STDOUT and or STDERR.
 </p>
 
+</details>
+
 ```
 ./cnf-testsuite log_output
 ``` 
