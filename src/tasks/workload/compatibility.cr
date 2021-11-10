@@ -55,22 +55,11 @@ task "cni_compatible" do |_, args|
            chart = Dir.entries("#{chart_directory}")[2]
            Log.info { "Installing Airgapped CNI Chart: #{chart_directory}/#{chart}" }
 
-           kubeconfig = KindManager.create_cluster("cilium-test", "#{chart_directory}/#{chart} --set operator.replicas=1 --set image.useDigest=false --set operator.image.useDigest=false", offline=true)
+           kubeconfig = KindManager.create_cluster("cilium-test", "#{chart_directory}/#{chart} --set operator.replicas=1 --set image.repository=cilium/cilium --set image.useDigest=false --set operator.image.useDigest=false --set operator.image.repository=cilium/operator", offline=true)
 
            ENV["KUBECONFIG"]="#{kubeconfig}"
            if Dir.exists?("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
              AirGap.cache_images(kind_name: "cilium-test-control-plane" )
-             #- This doesn't work due to a bug with the Cilium Images
-             #TODO Create Function for Docker Import & Docker Exec
-             # `docker import #{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium.tar cilium/cilium:v1.10.5`
-             # `docker import #{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium-operator.tar cilium/operator-generic:v1.10.5`
-             # DockerClient.save("cilium/cilium:v1.10.5", "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium-new.tar")
-             # DockerClient.save("cilium/operator-generic:v1.10.5", "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium-operator-new.tar")
-             # DockerClient.cp("cilium-new.tar cilium-test-control-plane:/cilium-new.tar")
-             # DockerClient.cp("cilium-operator-new.tar cilium-test-control-plane:/cilium-operator-new.tar")
-             # `docker exec -ti cilium-test-control-plane ctr -n=k8s.io image import /cilium-new.tar`
-             # `docker exec -ti cilium-test-control-plane ctr -n=k8s.io image import /cilium-operator-new.tar`
-
              AirGap.cache_images(cnf_setup: true, kind_name: "cilium-test-control-plane" )
            else
              puts "Bootstrap directory is missing, please run ./cnf-testsuite setup offline=<path-to-your-airgapped.tar.gz>".colorize(:red)
@@ -78,7 +67,7 @@ task "cni_compatible" do |_, args|
            end
          else
            Helm.helm_repo_add("cilium","https://helm.cilium.io/")
-           kubeconfig = KindManager.create_cluster("cilium-test", "cilium/cilium --version 1.10.5 --set operator.replicas=1 --set image.useDigest=false --set operator.image.useDigest=false", offline=false)
+           kubeconfig = KindManager.create_cluster("cilium-test", "cilium/cilium --version 1.10.5 --set operator.replicas=1 --set image.repository=cilium/cilium --set image.useDigest=false --set operator.image.useDigest=false --set operator.image.repository=cilium/operator", offline=false)
       end
       Log.info { "kubeconfig: #{kubeconfig}" }
       cilium_cnf_passed = CNFManager.cnf_to_new_cluster(config, kubeconfig, (args.named["offline"] !=nil))
