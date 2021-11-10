@@ -675,10 +675,10 @@ crystal src/cnf-testsuite.cr check_reaped
 <details> <summary>Details for Observability Tests To Do's</summary>
 <p>
 
-#### :memo: (To Do) Test if there traffic to Fluentd
+#### :heavy_check_mark: Check if the CNF outputs logs to stdout/stderr
 
 ```
-crystal src/cnf-testsuite.cr fluentd_traffic
+./cnf-testsuite log_output
 ```
 
 #### :memo: (To Do) Test if there is traffic to Jaeger

@@ -17,7 +17,10 @@ task "install_litmus" do |_, args|
     #todo get node name 
     #todo download litmus file then modify it with add_node_selector
     #todo apply modified litmus file
+    Log.info { "install litmus online mode" }
+    Log.info { "install litmus operator"}
     KubectlClient::Apply.file(LitmusManager::ONLINE_LITMUS_OPERATOR)
+    Log.info { "install chaos operator"}
     KubectlClient::Apply.file("https://raw.githubusercontent.com/litmuschaos/chaos-operator/master/deploy/chaos_crds.yaml")
   end
 end

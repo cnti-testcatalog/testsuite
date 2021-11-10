@@ -30,9 +30,7 @@ dependencies:
   commander:
     github: mrrooijen/commander
     version: ~> 0.4.0
-  crinja:
-    github: straight-shoota/crinja
-    version: ~> 0.7.0
+
   retriable:
     github: Sija/retriable.cr
     version: ~> 0.2.4

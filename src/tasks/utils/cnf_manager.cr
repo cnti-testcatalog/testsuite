@@ -1,7 +1,6 @@
 # coding: utf-8
 require "totem"
 require "colorize"
-require "crinja"
 require "./types/cnf_testsuite_yml_type.cr"
 require "helm"
 require "git_client"
@@ -14,8 +13,18 @@ require "tar"
 require "./image_prepull.cr"
 require "./generate_config.cr"
 require "log"
+require "ecr"
 
 module CNFManager
+
+  class ConfigMapTemplate
+    # elapsed_time should be Int32 but it is being passed as string
+    # So the old behaviour has been retained as is to prevent any breakages
+    def initialize(@release_name : String, @helm_used : Bool, @elapsed_time : String, @immutable : Bool)
+    end
+
+    ECR.def_to_s("src/templates/configmap_template.yml.ecr")
+  end
 
   # TODO: figure out recursively check for unmapped json and warn on that
   # https://github.com/Nicolab/crystal-validator#check
@@ -831,7 +840,12 @@ module CNFManager
 
     #TODO if helm_install then set helm_deploy = true in template
     Log.info { "save config" }
-    elapsed_time_template = Crinja.render(configmap_temp, { "helm_install" => helm_used, "release_name" => "cnf-testsuite-#{release_name}-startup-information", "elapsed_time" => "#{elapsed_time.seconds}", "immutable" => immutable_configmap})
+    elapsed_time_template = ConfigMapTemplate.new(
+      "cnf-testsuite-#{release_name}-startup-information",
+      helm_used,
+      "#{elapsed_time.seconds}",
+      immutable_configmap
+    ).to_s
     #TODO find a way to kubectlapply directly without a map
     Log.debug { "elapsed_time_template : #{elapsed_time_template}" }
     File.write("#{destination_cnf_dir}/configmap_test.yml", "#{elapsed_time_template}")
@@ -841,21 +855,6 @@ module CNFManager
     KubectlClient::Apply.file("#{destination_cnf_dir}/configmap_test.yml")
     # TODO when uninstalling, remove config map
   end
-
-def self.configmap_temp
-  <<-TEMPLATE
-  apiVersion: v1
-  kind: ConfigMap
-  metadata:
-    name: '{{ release_name }}'
-  {% if immutable %}
-  immutable: true
-  {% endif %}
-  data:
-    startup_time: '{{ elapsed_time }}'
-    helm_used: '{{ helm_used }}'
-  TEMPLATE
-end
 
 
   def self.cnf_to_new_cluster(config, kubeconfig, offline=false)

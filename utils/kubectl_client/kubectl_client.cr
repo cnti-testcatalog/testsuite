@@ -42,13 +42,13 @@ module KubectlClient
     {status: status, output: output, error: stderr}
   end
 
-  def self.logs(pod_name, container_name="")
-    status = Process.run("kubectl logs #{pod_name} #{container_name}",
+  def self.logs(pod_name, options="")
+    status = Process.run("kubectl logs #{pod_name} #{options}",
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
     LOGGING.debug "KubectlClient.logs output: #{output.to_s}"
-    LOGGING.debug "KubectlClient.logs stderr: #{stderr.to_s}"
+    LOGGING.info "KubectlClient.logs stderr: #{stderr.to_s}"
     {status: status, output: output, error: stderr}
   end
 
@@ -58,7 +58,7 @@ module KubectlClient
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    LOGGING.info "KubectlClient.describe output: #{output.to_s}"
+    LOGGING.debug "KubectlClient.describe output: #{output.to_s}"
     LOGGING.info "KubectlClient.describe stderr: #{stderr.to_s}"
     {status: status, output: output, error: stderr}
   end

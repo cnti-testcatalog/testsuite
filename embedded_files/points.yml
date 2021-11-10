@@ -199,3 +199,6 @@
 
 - name: hostpath_mounts
   tags: security, dynamic, workload
+
+- name: log_output
+  tags: observability, dynamic, workload

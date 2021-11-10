@@ -1,7 +1,6 @@
 # coding: utf-8
 require "totem"
 require "colorize"
-require "crinja"
 # require "./tar.cr"
 require "tar"
 require "find"
@@ -10,6 +9,13 @@ require "docker_client"
 require "kubectl_client"
 # require "./airgap_utils.cr"
 require "file_utils"
+
+class CriToolsTemplate
+  def initialize(@name : String, @image : String)
+  end
+
+  ECR.def_to_s "#{__DIR__}/cri-tools-template.yml.ecr"
+end
 
 # todo put in a separate library. it shold go under ./tools for now
 module AirGap
@@ -230,57 +236,11 @@ module AirGap
   # TODO make this work with runtimes other than containerd
   # TODO make a tool that cleans up the cri images
   def self.create_pod_by_image(image, name="cri-tools")
-    template = Crinja.render(cri_tools_template, { "image" => image, "name" => name})
+    template = CriToolsTemplate.new(name, image.to_s).to_s
     File.write("#{name}-manifest.yml", template)
     KubectlClient::Apply.file("#{name}-manifest.yml")
     LOGGING.info KubectlClient::Get.resource_wait_for_install("DaemonSet", name)
   end
-
-  # Make an image all all of the nodes that has tar access
-def self.cri_tools_template 
-  <<-TEMPLATE
-  apiVersion: apps/v1
-  kind: DaemonSet
-  metadata:
-      name: {{ name }}
-  spec:
-    selector:
-      matchLabels:
-        name: {{ name }}
-    template:
-      metadata:
-        labels:
-          name: {{ name }}
-      spec:
-        containers:
-          - name: {{ name }}
-            image: '{{ image }}'
-            command: ["/bin/sh"]
-            args: ["-c", "sleep infinity"]
-            volumeMounts:
-            - mountPath: /run/containerd/containerd.sock
-              name: containerd-volume
-            - mountPath: /tmp/usr/bin
-              name: usrbin
-            - mountPath: /tmp/usr/local/bin
-              name: local
-            - mountPath: /tmp/bin
-              name: bin
-        volumes:
-        - name: containerd-volume
-          hostPath:
-            path: /var/run/containerd/containerd.sock
-        - name: usrbin
-          hostPath:
-            path: /usr/bin/
-        - name: local
-          hostPath:
-            path: /usr/local/bin/
-        - name: bin
-          hostPath:
-            path: /bin/
-  TEMPLATE
-end
 
   def self.pods_with_tar() : KubectlClient::K8sManifestList
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list).select do |pod|
