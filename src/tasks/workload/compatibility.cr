@@ -59,16 +59,17 @@ task "cni_compatible" do |_, args|
 
            ENV["KUBECONFIG"]="#{kubeconfig}"
            if Dir.exists?("#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}")
-             # AirGap.cache_images(kind_name: "cilium-test-control-plane" ) - This doesn't work due to a bug with the Cilium Images
+             AirGap.cache_images(kind_name: "cilium-test-control-plane" )
+             #- This doesn't work due to a bug with the Cilium Images
              #TODO Create Function for Docker Import & Docker Exec
-             `docker import #{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium.tar cilium/cilium:v1.10.5`
-             `docker import #{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium-operator.tar cilium/cilium:v1.10.5`
-             DockerClient.save("cilium/cilium:v1.10.5", "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium-new.tar")
-             DockerClient.save("cilium/operator-generic:v1.10.5", "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium-operator-new.tar")
-             DockerClient.cp("cilium-new.tar cilium-test-control-plane:/cilium-new.tar")
-             DockerClient.cp("cilium-operator-new.tar cilium-test-control-plane:/cilium-operator-new.tar")
-             `docker exec -ti cilium-test-control-plane ctr -n=k8s.io image import /cilium-new.tar`
-             `docker exec -ti cilium-test-control-plane ctr -n=k8s.io image import /cilium-operator-new.tar`
+             # `docker import #{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium.tar cilium/cilium:v1.10.5`
+             # `docker import #{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium-operator.tar cilium/operator-generic:v1.10.5`
+             # DockerClient.save("cilium/cilium:v1.10.5", "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium-new.tar")
+             # DockerClient.save("cilium/operator-generic:v1.10.5", "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium-operator-new.tar")
+             # DockerClient.cp("cilium-new.tar cilium-test-control-plane:/cilium-new.tar")
+             # DockerClient.cp("cilium-operator-new.tar cilium-test-control-plane:/cilium-operator-new.tar")
+             # `docker exec -ti cilium-test-control-plane ctr -n=k8s.io image import /cilium-new.tar`
+             # `docker exec -ti cilium-test-control-plane ctr -n=k8s.io image import /cilium-operator-new.tar`
 
              AirGap.cache_images(cnf_setup: true, kind_name: "cilium-test-control-plane" )
            else
