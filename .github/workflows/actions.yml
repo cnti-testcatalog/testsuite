@@ -276,7 +276,7 @@ jobs:
       id: cluster-cache
       with:
         path: ./cache
-        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cach_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.cluster-cache.outputs.cache-hit == 'true'
@@ -386,7 +386,7 @@ jobs:
       id: cluster-cache
       with:
         path: ./cache
-        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cach_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.cluster-cache.outputs.cache-hit == 'true'
@@ -494,7 +494,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ./cache
-        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cach_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.cluster-cache.outputs.cache-hit == 'true'
@@ -602,7 +602,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ./cache
-        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cach_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.cluster-cache.outputs.cache-hit == 'true'
@@ -710,7 +710,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ./cache
-        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cach_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.cluster-cache.outputs.cache-hit == 'true'
@@ -818,7 +818,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ./cache
-        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cach_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.cluster-cache.outputs.cache-hit == 'true'
@@ -937,7 +937,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ./cache
-        key: cache_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: cach_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Retrieve cache
       uses: leroy-merlin-br/action-s3-cache@v1
       if: steps.cluster-cache.outputs.cache-hit == 'true'
