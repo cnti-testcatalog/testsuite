@@ -672,14 +672,23 @@ crystal src/cnf-testsuite.cr check_reaped
 ./cnf-testsuite observability
 ```
 
-<details> <summary>Details for Observability Tests To Do's</summary>
+#### :heavy_check_mark: To check if logs are being sent to STDOUT/STDERR
+<details> <summary>Details for Log Output</summary>
 <p>
 
-#### :heavy_check_mark: Check if the CNF outputs logs to stdout/stderr
+<b>Log Output Details:</b> It's considered a best-practice for containers and pods to output logs to STDOUT/STDERR so that commands return useful debug or other information about the application.
+
+For example, running `kubectl get logs` returns useful information for diagnosing or troubleshooting issues. 
+
+<b>Remediation Steps:</b> Make sure applications and CNF's are sending log output to STDOUT and or STDERR.
+</p>
 
 ```
 ./cnf-testsuite log_output
-```
+``` 
+
+<details> <summary>Details for Observability Tests To Do's</summary>
+<p>
 
 #### :memo: (To Do) Test if there is traffic to Jaeger
 
