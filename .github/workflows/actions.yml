@@ -284,7 +284,7 @@ jobs:
       run: |
         shards install
         crystal src/cnf-testsuite.cr setup 
-        sudo rm -rf /tmp/ ; sudo mkdir /tmp ; sudo mount /dev/buildvg/buildlv /tmp
+        sudo rm -rf /tmp/ ; sudo mkdir /tmp ; sudo mount /dev/buildvg/buildlv /tmp; sudo chmod 777 /tmp -R
         # helm repo add stable https://cncf.gitlab.io/stable
         # if ! [ -f "/tmp/airgapped.tar.gz" ]; then 
         #       echo "Cached airgapped.tar.gz not found, re-creating airgapped.tar.gz"
