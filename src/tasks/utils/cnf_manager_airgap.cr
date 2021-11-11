@@ -174,6 +174,7 @@ module CNFManager
       FileUtils.mkdir_p("#{TarClient::TAR_TMP_BASE}/repositories/projectcalico_tigera-operator")
       Helm.fetch("https://github.com/projectcalico/calico/releases/download/v3.20.2/tigera-operator-v3.20.2-1.tgz -d #{TarClient::TAR_TMP_BASE}/repositories/projectcalico_tigera-operator")
       TarClient.append(output_file, TarClient::TAR_TMP_BASE, "repositories/projectcalico_tigera-operator")
+      FileUtils.rm_rf("#{TarClient::TAR_TMP_BASE}/repositories/projectcalico_tigera-operator")
 
       Helm.helm_repo_add("cilium","https://helm.cilium.io/")
       AirGap.tar_helm_repo("cilium/cilium --version 1.10.5", output_file)
