@@ -166,10 +166,25 @@ module CNFManager
       # todo create helm chart configuration yaml that includes all chart elements for specs
       AirGap.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
       Helm.helm_repo_add("gatekeeper","https://open-policy-agent.github.io/gatekeeper/charts")
-      Helm.helm_repo_add("projectcalico","https://docs.projectcalico.org/charts")
-      AirGap.tar_helm_repo("projectcalico/tigera-operator --version v3.20.2", output_file)
+      
+      # Calico Helm  Relase Can't be Pinned, Download Directly
+      # Helm.helm_repo_add("projectcalico","https://docs.projectcalico.org/charts")
+      # AirGap.tar_helm_repo("projectcalico/tigera-operator --version v3.20.2", output_file)
+      tar_dir = AirGap.helm_tar_dir("projectcalico/tigera-operator")
+      info = AirGap.tar_info_by_config_src("projectcalico/tigera-operator")
+      repo_dir = info[:repo_dir]
+      tar_name = info[:tar_name]
+      repo_path = info[:repo_path]
+      FileUtils.mkdir_p(tar_dir)
+      Helm.fetch("https://github.com/projectcalico/calico/releases/download/v3.20.2/tigera-operator-v3.20.2-1.tgz -d #{tar_dir}")
+      TarClient.modify_tar!(tar_name) do |directory| 
+        template_files = Find.find(directory, "*.yaml*", "100")
+        template_files.map{|x| AirGap.image_pull_policy(x)}
+      end
+      TarClient.append(output_file, "/tmp", "#{repo_path}")
+      FileUtils.rm_rf("/tmp/#{repo_path}")
+
       Helm.helm_repo_add("cilium","https://helm.cilium.io/")
-      # AirGap.tar_helm_repo("cilium/cilium --version 1.10.5 --set operator.replicas=1", output_file)
       AirGap.tar_helm_repo("cilium/cilium --version 1.10.5", output_file)
       AirGap.tar_helm_repo("gatekeeper/gatekeeper --version 3.6.0", output_file)
       AirGap.generate(output_file, append=true)
