@@ -301,8 +301,8 @@ jobs:
            echo "CoreDNS not found, Re-Running CNF Setup."
            LOG_LEVEL=debug crystal src/cnf-testsuite.cr cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz
         fi
-    # - name: Setup tmate session
-    #   uses: mxschmitt/action-tmate@v3
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Create Cluster & Run Tests.
       run: |
         sed -i "/${{ matrix.test }}/a \ \ required: true" $(pwd)/embedded_files/points.yml
