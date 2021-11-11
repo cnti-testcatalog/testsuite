@@ -161,7 +161,7 @@ module CNFManager
       FileUtils.rm_rf("#{TarClient::TAR_TMP_BASE}/#{download_path}")
       FileUtils.mkdir_p("#{TarClient::TAR_TMP_BASE}/" + download_path)
       `./tools/kubescape/kubescape download framework nsa --output #{TarClient::TAR_DOWNLOAD_DIR}/nsa.json`
-      TarClient.append(output_file, TarClient::TAR_TMP_BASE, "#{download_path}/nsa.json")
+      TarClient.append(output_file, TarClient::TAR_TMP_BASE, "#{download_path}nsa.json")
       Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
       # todo create helm chart configuration yaml that includes all chart elements for specs
       AirGap.tar_helm_repo("chaos-mesh/chaos-mesh --version 0.5.1", output_file)
@@ -171,9 +171,8 @@ module CNFManager
       # Helm.helm_repo_add("projectcalico","https://docs.projectcalico.org/charts")
       # AirGap.tar_helm_repo("projectcalico/tigera-operator --version v3.20.2", output_file)
 
-      tar_dir = AirGap.helm_tar_dir("projectcalico/tigera-operator")
-      Helm.fetch("https://github.com/projectcalico/calico/releases/download/v3.20.2/tigera-operator-v3.20.2-1.tgz -d #{tar_dir}")
-      TarClient.append(output_file, TarClient::TAR_TMP_BASE, "#{tar_dir}")
+      Helm.fetch("https://github.com/projectcalico/calico/releases/download/v3.20.2/tigera-operator-v3.20.2-1.tgz -d /tmp/repositories/projectcalico_tigera-operator")
+      TarClient.append(output_file, TarClient::TAR_TMP_BASE, "repositories/projectcalico_tigera-operator")
 
       Helm.helm_repo_add("cilium","https://helm.cilium.io/")
       AirGap.tar_helm_repo("cilium/cilium --version 1.10.5", output_file)
