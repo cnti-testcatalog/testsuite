@@ -280,6 +280,8 @@ jobs:
       with:
         path: /tmp/airgapped.tar.gz
         key: airgapped-$GITHUB_JOB-${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
         shards install
