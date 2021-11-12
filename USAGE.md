@@ -342,7 +342,7 @@ See more at [ARMO-C0046](https://bit.ly/C0046_Insecure_Capabilities)
 #### :heavy_check_mark: To check for dangerous capabilities
 <details> <summary>Details for Dangerous Capabilities</summary>
 
-<p><b>Insecure Capabilities:</b> Giving dangerous and unnecessary capabilities for a container can increase the impact of a container compromise.
+<p><b>Dangerous Capabilities:</b> Giving dangerous and unnecessary capabilities for a container can increase the impact of a container compromise.
 
 This test checks against a [blacklist of dangerous capabilities](https://github.com/FairwindsOps/polaris/blob/master/checks/dangerousCapabilities.yaml).
 
