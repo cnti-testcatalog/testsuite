@@ -1022,13 +1022,25 @@ Sressing the disk with continuous and heavy IO can cause degradation in reads/ w
 ```
 ./cnf-testsuite platform:security 
 ```
- #### :heavy_check_mark: To check if [cluster admin is bound to a pod](https://bit.ly/3zUimHR)
+#### :heavy_check_mark: To check if [cluster admin is bound to a pod](https://bit.ly/C0035_cluster_admin)
+<details> <summary>Details for Cluster Admin Binding</summary>
+
+<p><b>Cluster Admin Binding:</b> Role-based access control (RBAC) is a key security feature in Kubernetes. RBAC can restrict the allowed actions of the various identities in the cluster. Cluster-admin is a built-in high privileged role in Kubernetes. Attackers who have permissions to create bindings and cluster-bindings in the cluster can create a binding to the cluster-admin ClusterRole or to other high privileges roles.
+
+Check which subjects have cluster-admin RBAC permissions – either by being bound to the cluster-admin clusterrole, or by having equivalent high privileges.
+
+<b>Remediation:</b> You should apply least privilege principle. Make sure cluster admin permissions are granted only when it is absolutely necessary. Don't use subjects with high privileged permissions for daily operations.
+
+See more at [ARMO-C0035](https://bit.ly/C0035_cluster_admin)
+
+</p>
+</details>
 
 ```
 ./cnf-testsuite platform:cluster_admin
 ```
 
- #### :heavy_check_mark: To check if [the control plane is hardened](https://bit.ly/C0005_Control_Plane)
+#### :heavy_check_mark: To check if [the control plane is hardened](https://bit.ly/C0005_Control_Plane)
 <details> <summary>Details for Control Plane Hardening</summary>
 
 <p><b>Control Plane Hardening:</b> The control plane is the core of Kubernetes and gives users the ability to view containers, schedule new Pods, read Secrets, and execute commands in the cluster. Therefore, it should be protected. It is recommended to avoid control plane exposure to the Internet or to an untrusted network. The API server runs on ports 6443 and 8080. We recommend to block them in the firewall. Note that port 8080, when accessed through the local machine, does not require TLS encryption, and the requests bypass authentication and authorization modules.
