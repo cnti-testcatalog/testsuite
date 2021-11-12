@@ -1041,6 +1041,7 @@ See more at [ARMO-C0005](https://bit.ly/C0005_Control_Plane)
 
 </p>
 </details>
+
 ```
 ./cnf-testsuite platform:control_plane_hardening
 ```
