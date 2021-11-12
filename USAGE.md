@@ -316,7 +316,17 @@ See more at [ARMO-C0041](https://bit.ly/C0041_hostNetwork)
 ./cnf-testsuite host_network
 ``` 
 
-#### :heavy_check_mark: To check if there are [service accounts that are automatically mapped](https://bit.ly/3zUimHR)
+#### :heavy_check_mark: To check if there are [service accounts that are automatically mapped](https://bit.ly/C0034_service_account_mapping)
+<details> <summary>Details for Service Account Mapping</summary>
+
+<p><b>Dangerous Capabilities:</b> The automatic mounting of service account tokens should be disabled.
+
+<b>Remediation:</b> Disable automatic mounting of service account tokens to PODs either at the service account level or at the individual POD level, by specifying the automountServiceAccountToken: false. Note that POD level takes precedence.
+
+See more at [ARMO-C0034](https://bit.ly/C0034_service_account_mapping)
+
+</p>
+</details>
 
 ```
 ./cnf-testsuite service_account_mapping
