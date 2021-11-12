@@ -299,12 +299,23 @@ See more at [ARMO-C0058](https://bit.ly/C0058_symlink_filesystem)
 ```
 ./cnf-testsuite application_credentials
 ```
- 
-#### :heavy_check_mark: To check if there is a [host network attached to a pod](https://bit.ly/3zUimHR)
+
+#### :heavy_check_mark: To check if there is a [host network attached to a pod](https://bit.ly/C0041_hostNetwork)
+<details> <summary>Details for hostNetwork</summary>
+
+<p><b>hostNetwork:</b> PODs should not have access to the host systems network.
+
+<b>Remediation:</b> Only connect PODs to hostNetwork when it is necessary. If not, set the hostNetwork field of the pod spec to false, or completely remove it (false is the default). Whitelist only those PODs that must have access to host network by design.
+
+See more at [ARMO-C0041](https://bit.ly/C0041_hostNetwork)
+
+</p>
+</details>
 
 ```
 ./cnf-testsuite host_network
-```
+``` 
+
 #### :heavy_check_mark: To check if there are [service accounts that are automatically mapped](https://bit.ly/3zUimHR)
 
 ```
