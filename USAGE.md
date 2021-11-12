@@ -278,7 +278,17 @@ See more at [ARMO-C0016](https://bit.ly/C0016_privilege_escalation)
 ./cnf-testsuite privilege_escalation
 ```
 
-#### :heavy_check_mark: To check if an attacker can use a [symlink](https://bit.ly/3zUimHR) for arbitrary host file system access 
+#### :heavy_check_mark: To check if an attacker can use a [symlink](https://bit.ly/C0058_symlink_filesystem) for arbitrary host file system access
+<details> <summary>Details for Symlink Filesystem Access</summary>
+
+<p><b>CVE-2021-25741 Symlink Host Access:</b> A user may be able to create a container with subPath or subPathExpr volume mounts to access files & directories anywhere on the host filesystem. Following Kubernetes versions are affected: v1.22.0 - v1.22.1, v1.21.0 - v1.21.4, v1.20.0 - v1.20.10, version v1.19.14 and lower. This control checks the vulnerable versions and the actual usage of the subPath feature in all Pods in the cluster.
+
+<b>Remediation:</b> To mitigate this vulnerability without upgrading kubelet, you can disable the VolumeSubpath feature gate on kubelet and kube-apiserver, or remove any existing Pods using subPath or subPathExpr feature.
+
+See more at [ARMO-C0058](https://bit.ly/C0058_symlink_filesystem)
+
+</p>
+</details>
 
 ```
 ./cnf-testsuite symlink_file_system
