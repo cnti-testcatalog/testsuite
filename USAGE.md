@@ -256,36 +256,46 @@ crystal src/cnf-testsuite.cr check_reaped
 ./cnf-testsuite privileged
 ```
 
- #### :heavy_check_mark: To check if any containers are running as a [root user](https://github.com/cncf/cnf-wg/blob/best-practice-no-root-in-containers/cbpps/0002-no-root-in-containers.md)
+#### :heavy_check_mark: To check if any containers are running as a [root user](https://github.com/cncf/cnf-wg/blob/best-practice-no-root-in-containers/cbpps/0002-no-root-in-containers.md)
 
 ```
 ./cnf-testsuite non_root_user
 ```
 
- #### :heavy_check_mark: To check if any containers allow for [privilege escalation](https://bit.ly/3zUimHR)
+#### :heavy_check_mark: To check if any containers allow for [privilege escalation](https://bit.ly/C0016_privilege_escalation)
+<details> <summary>Details for Privilege Escalation</summary>
+
+<p><b>Privilege Escalation:</b> Check that the allowPrivilegeEscalation field in securityContext of container is set to false.
+
+<b>Remediation:</b> If your application does not need it, make sure the allowPrivilegeEscalation field of the securityContext is set to false.
+
+See more at [ARMO-C0016](https://bit.ly/C0016_privilege_escalation)
+
+</p>
+</details>
 
 ```
 ./cnf-testsuite privilege_escalation
 ```
 
- #### :heavy_check_mark: To check if an attacker can use a [symlink](https://bit.ly/3zUimHR) for arbitrary host file system access 
+#### :heavy_check_mark: To check if an attacker can use a [symlink](https://bit.ly/3zUimHR) for arbitrary host file system access 
 
 ```
 ./cnf-testsuite symlink_file_system
 ```
 
- #### :heavy_check_mark: To check if there are application credentials in [configuration files](https://bit.ly/3zUimHR) for arbitrary host file system access 
+#### :heavy_check_mark: To check if there are application credentials in [configuration files](https://bit.ly/3zUimHR) for arbitrary host file system access 
 
 ```
 ./cnf-testsuite application_credentials
 ```
  
- #### :heavy_check_mark: To check if there is a [host network attached to a pod](https://bit.ly/3zUimHR)
+#### :heavy_check_mark: To check if there is a [host network attached to a pod](https://bit.ly/3zUimHR)
 
 ```
 ./cnf-testsuite host_network
 ```
- #### :heavy_check_mark: To check if there are [service accounts that are automatically mapped](https://bit.ly/3zUimHR)
+#### :heavy_check_mark: To check if there are [service accounts that are automatically mapped](https://bit.ly/3zUimHR)
 
 ```
 ./cnf-testsuite service_account_mapping
