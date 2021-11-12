@@ -294,7 +294,7 @@ See more at [ARMO-C0058](https://bit.ly/C0058_symlink_filesystem)
 ./cnf-testsuite symlink_file_system
 ```
 
-#### :heavy_check_mark: To check if there are application credentials in [configuration files](https://bit.ly/3zUimHR) for arbitrary host file system access 
+#### :heavy_check_mark: To check if there are application credentials in [configuration files](https://bit.ly/C0012_application_credentials) for arbitrary host file system access 
 
 ```
 ./cnf-testsuite application_credentials
