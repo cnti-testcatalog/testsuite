@@ -339,6 +339,24 @@ See more at [ARMO-C0046](https://bit.ly/C0046_Insecure_Capabilities)
 ./cnf-testsuite insecure_capabilities
 ```
 
+#### :heavy_check_mark: To check for dangerous capabilities
+<details> <summary>Details for Dangerous Capabilities</summary>
+
+<p><b>Insecure Capabilities:</b> Giving dangerous and unnecessary capabilities for a container can increase the impact of a container compromise.
+
+This test checks against a [blacklist of dangerous capabilities](https://github.com/FairwindsOps/polaris/blob/master/checks/dangerousCapabilities.yaml).
+
+<b>Remediation:</b> Check and remove all unnecessary capabilities from the POD security context of the containers and use the exception mechanism to remove warnings where these capabilities are necessary.
+
+See more at [ARMO-C0028](https://bit.ly/C0028_Dangerous_Capabilities)
+
+</p>
+</details>
+
+```
+./cnf-testsuite dangerous_capabilities
+```
+
 #### :heavy_check_mark: To check if namespaces have network policies defined
 <details> <summary>Details for Network Policies</summary>
 
