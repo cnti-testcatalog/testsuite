@@ -1027,8 +1027,20 @@ Sressing the disk with continuous and heavy IO can cause degradation in reads/ w
 ```
 ./cnf-testsuite platform:cluster_admin
 ```
- #### :heavy_check_mark: To check if [the control plane is hardened](https://bit.ly/3zUimHR)
 
+ #### :heavy_check_mark: To check if [the control plane is hardened](https://bit.ly/C0005_Control_Plane)
+<details> <summary>Details for Control Plane Hardening</summary>
+
+<p><b>Control Plane Hardening:</b> The control plane is the core of Kubernetes and gives users the ability to view containers, schedule new Pods, read Secrets, and execute commands in the cluster. Therefore, it should be protected. It is recommended to avoid control plane exposure to the Internet or to an untrusted network. The API server runs on ports 6443 and 8080. We recommend to block them in the firewall. Note that port 8080, when accessed through the local machine, does not require TLS encryption, and the requests bypass authentication and authorization modules.
+
+Checks if the insecure-port flag is set (in case of cloud vendor hosted Kubernetes service this verification will not be effective).
+
+<b>Remediation:</b> Set the insecure-port flag of the API server to zero.
+
+See more at [ARMO-C0005](https://bit.ly/C0005_Control_Plane)
+
+</p>
+</details>
 ```
 ./cnf-testsuite platform:control_plane_hardening
 ```
