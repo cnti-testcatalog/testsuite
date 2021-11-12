@@ -321,6 +321,24 @@ Read more at [ARMO-C0057](https://bit.ly/31iGng3)
 ./cnf-testsuite privileged_containers
 ```
 
+#### :heavy_check_mark: To check for insecure capabilities
+<details> <summary>Details for Insecure Capabilities</summary>
+
+<p><b>Insecure Capabilities:</b> Giving insecure and unnecessary capabilities for a container can increase the impact of a container compromise.
+
+This test checks against a [blacklist of insecure capabilities](https://github.com/FairwindsOps/polaris/blob/master/checks/insecureCapabilities.yaml).
+
+<b>Remediation:</b> Remove all insecure capabilities which aren’t necessary for the container.
+
+See more at [ARMO-C0046](https://bit.ly/C0046_Insecure_Capabilities)
+
+</p>
+</details>
+
+```
+./cnf-testsuite insecure_capabilities
+```
+
 #### :heavy_check_mark: To check if namespaces have network policies defined
 <details> <summary>Details for Network Policies</summary>
 
