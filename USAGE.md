@@ -294,11 +294,24 @@ See more at [ARMO-C0058](https://bit.ly/C0058_symlink_filesystem)
 ./cnf-testsuite symlink_file_system
 ```
 
-#### :heavy_check_mark: To check if there are application credentials in [configuration files](https://bit.ly/C0012_application_credentials) for arbitrary host file system access 
+#### :heavy_check_mark: To check if there are [service accounts that are automatically mapped](https://bit.ly/C0012_application_credentials)
+<details> <summary>Details for Service Application Credentials</summary>
+
+<p><b>Application Credentials:</b> Developers store secrets in the Kubernetes configuration files, such as environment variables in the pod configuration. Such behavior is commonly seen in clusters that are monitored by Azure Security Center. Attackers who have access to those configurations, by querying the API server or by accessing those files on the developer’s endpoint, can steal the stored secrets and use them.
+
+Check if the pod has sensitive information in environment variables, by using list of known sensitive key names. Check if there are configmaps with sensitive information.
+
+<b>Remediation:</b> Use Kubernetes secrets or Key Management Systems to store credentials.
+
+See more at [ARMO-C0012](https://bit.ly/C0012_application_credentials)
+
+</p>
+</details>
 
 ```
 ./cnf-testsuite application_credentials
 ```
+
 
 #### :heavy_check_mark: To check if there is a [host network attached to a pod](https://bit.ly/C0041_hostNetwork)
 <details> <summary>Details for hostNetwork</summary>
@@ -319,7 +332,7 @@ See more at [ARMO-C0041](https://bit.ly/C0041_hostNetwork)
 #### :heavy_check_mark: To check if there are [service accounts that are automatically mapped](https://bit.ly/C0034_service_account_mapping)
 <details> <summary>Details for Service Account Mapping</summary>
 
-<p><b>Dangerous Capabilities:</b> The automatic mounting of service account tokens should be disabled.
+<p><b>Service Account Mapping:</b> The automatic mounting of service account tokens should be disabled.
 
 <b>Remediation:</b> Disable automatic mounting of service account tokens to PODs either at the service account level or at the individual POD level, by specifying the automountServiceAccountToken: false. Note that POD level takes precedence.
 
