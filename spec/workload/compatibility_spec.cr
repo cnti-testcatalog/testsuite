@@ -6,6 +6,11 @@ require "file_utils"
 require "sam"
 
 describe "Compatibility" do
+  
+  before_all do
+    `./cnf-testsuite setup`
+    $?.success?.should be_true
+  end
 
   it "'cni_compatible' should pass if the cnf works with calico and flannel", tags: ["compatibility"]  do
     begin

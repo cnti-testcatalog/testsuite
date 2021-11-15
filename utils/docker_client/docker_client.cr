@@ -14,6 +14,26 @@ module DockerClient
     LOGGING.info "Docker.pull stderr: #{stderr.to_s}"
     {status: status, output: output, error: stderr}
   end
+  def self.exec(command)
+    LOGGING.info "Docker.exec command: #{command}"
+    status = Process.run("docker exec #{command}",
+                         shell: true,
+                         output: output = IO::Memory.new,
+                         error: stderr = IO::Memory.new)
+    LOGGING.info "Docker.exec output: #{output.to_s}"
+    LOGGING.info "Docker.exec stderr: #{stderr.to_s}"
+    {status: status, output: output, error: stderr}
+  end
+  def self.cp(copy)
+    LOGGING.info "Docker.cp command: #{copy}"
+    status = Process.run("docker cp #{copy}",
+                         shell: true,
+                         output: output = IO::Memory.new,
+                         error: stderr = IO::Memory.new)
+    LOGGING.info "Docker.cp output: #{output.to_s}"
+    LOGGING.info "Docker.cp stderr: #{stderr.to_s}"
+    {status: status, output: output, error: stderr}
+  end
   def self.save(image, output_file)
     LOGGING.info "Docker.save command: docker save #{image} -o #{output_file}"
     status = Process.run("docker save #{image} -o #{output_file}",
