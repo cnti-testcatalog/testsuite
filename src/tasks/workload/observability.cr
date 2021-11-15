@@ -36,3 +36,34 @@ task "log_output" do |_, args|
     end
   end
 end
+
+desc "Does the CNF emit prometheus traffic"
+task "prometheus_traffic" do |_, args|
+
+  # if args.named["offline"]?
+  #     Log.info { "skipping prometheus_adapter: in offline mode" }
+  #   puts "SKIPPED: Prometheus Adapter".colorize(:yellow)
+  #   next
+  # end
+  Log.info { "Running: prometheus_traffic" }
+    task_response = CNFManager::Task.task_runner(args) do |args|
+
+      Retriable.retry do
+        resp = Halite.get("https://quay.io/api/v1/repository/prometheus/prometheus/tag/?onlyActiveTags=true&limit=100")
+      end
+      prometheus_server_releases = resp.body
+      sha_list = named_sha_list(prometheus_server_releases)
+      imageids = KubectlClient::Get.all_container_repo_digests
+      match = DockerClient::K8s.local_digest_match(sha_list, imageids)
+
+      matched_service = KubectlClient::Get.service_by_digest(match[:digest])
+
+      if match[:found]
+        emoji_prometheus_adapter="📶☠️"
+        upsert_passed_task("prometheus_traffic","✔️  PASSED: Your cnf is sending prometheus traffic #{emoji_prometheus_adapter}")
+      else
+        emoji_prometheus_adapter="📶☠️"
+        upsert_failed_task("prometheus_traffic", "✖️  FAILED: Your cnf is not sending prometheus traffic #{emoji_prometheus_adapter}")
+      end
+    end
+end

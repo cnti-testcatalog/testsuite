@@ -26,4 +26,32 @@ describe "Observability" do
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_no_logs/cnf-testsuite.yml`
     end
   end
+
+  it "'prometheus_traffic' should pass if there is prometheus traffic", tags: ["observability"] do
+
+      LOGGING.info "Installing prometheus server" 
+      helm = BinarySingleton.helm
+      resp = `#{helm} install prometheus prometheus-community/prometheus`
+      LOGGING.info resp
+      KubectlClient::Get.wait_for_install("prometheus-server")
+
+      response_s = `./cnf-testsuite prometheus_traffic`
+      LOGGING.info response_s
+      (/PASSED: Your cnf is sending prometheus traffic/ =~ response_s).should_not be_nil
+  ensure
+      resp = `#{helm} delete prometheus`
+      LOGGING.info resp
+      $?.success?.should be_true
+  end
+
+  it "'prometheus_traffic' should fail if there is no prometheus traffic", tags: ["observability"] do
+
+      helm = BinarySingleton.helm
+      resp = `#{helm} delete prometheus`
+      LOGGING.info resp
+
+      response_s = `./cnf-testsuite prometheus_traffic`
+      LOGGING.info response_s
+      (/FAILED: Your cnf is not sending prometheus traffic/ =~ response_s).should_not be_nil
+  end
 end

@@ -242,7 +242,11 @@ module KubectlClient
       option = all_namespaces ? "--all-namespaces" : ""
       cmd = "kubectl get pods #{option} -o json"
       result = ShellCmd.run(cmd, "KubectlClient::Get.pods")
-      JSON.parse(result[:output])
+      response = result[:output]
+      if result[:status].success? && !response.empty?
+        return JSON.parse(response)
+      end
+      JSON.parse(%({}))
     end
    
     # todo put this in a manifest module
@@ -327,17 +331,21 @@ module KubectlClient
       }.flatten
     end
 
+    #todo default flag for schedulable pods vs all pods
     def self.pods_by_resource(resource_yml) : K8sManifestList
       Log.info { "pods_by_resource" }
       Log.debug { "pods_by_resource resource: #{resource_yml}" }
       return [resource_yml] if resource_yml["kind"].as_s.downcase == "pod"
       Log.info { "resource kind: #{resource_yml["kind"]}" }
       
+      #todo change this to kubectl get all pods --all-namespaces -o json for performance
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
       Log.info { "resource kind: #{resource_yml["kind"]}" }
       name = resource_yml["metadata"]["name"]?
       Log.info { "pods_by_resource name: #{name}" }
       if name
+        #todo deployment labels may not match template metadata labels.  
+        # -- may need to match on selector matchlabels instead
         labels = KubectlClient::Get.resource_spec_labels(resource_yml["kind"], name).as_h
         Log.info { "pods_by_resource labels: #{labels}" }
         KubectlClient::Get.pods_by_labels(pods, labels)
@@ -355,6 +363,8 @@ module KubectlClient
         else
           match = true
         end
+        #todo deployment labels may not match template metadata labels.  
+        # -- may need to match on selector matchlabels instead
         labels.map do |key, value|
           if pod.dig?("metadata", "labels", key) == value
             match = true
@@ -421,6 +431,44 @@ module KubectlClient
         return JSON.parse(resp)
       end
       JSON.parse(%({}))
+    end
+
+    def self.services : JSON::Any
+      cmd = "kubectl get services -o json"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.services")
+      response = result[:output]
+
+      if result[:status].success? && !response.empty?
+        resp = JSON.parse(response)
+      else
+        resp = JSON.parse(%({}))
+      end
+      resp
+    end
+    def self.service_by_digest(container_digest)
+      Log.info { "service_by_digest container_digest: #{container_digest}" }
+      services = KubectlClient::Get.services 
+      matched_service = JSON.parse(%({}))
+      services["items"].as_a.each do |service|
+        Log.debug { "service_by_digest service: #{service}" }
+        service_labels = service.dig?("spec", "selector")
+        next unless service_labels
+        # pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+        pods = KubectlClient::Get.pods
+        service_pods = KubectlClient::Get.pods_by_labels(pods["items"].as_a, service_labels.as_h)
+
+        service_pods.each do |service_pod|
+          Log.debug { "service_by_digest service_pod: #{service_pod}" }
+          statuses = service_pod.dig("status", "containerStatuses")
+          statuses.as_a.each do |status|
+            Log.debug { "service_by_digest status: #{status}" }
+            matched_service = service if status.dig("imageID").as_s.includes?(container_digest)
+          end
+        end
+
+      end
+      Log.info { "service_by_digest matched_service: #{matched_service}" }
+      matched_service
     end
 
     def self.deployment_containers(deployment_name) : JSON::Any
@@ -775,7 +823,11 @@ module KubectlClient
     end
     def self.resource_spec_labels(kind, resource_name) : JSON::Any
       Log.debug { "resource_labels kind: #{kind} resource_name: #{resource_name}" }
-      resp = resource(kind, resource_name).dig?("spec", "template", "metadata", "labels")
+      if kind.as_s.downcase == "service"
+        resp = resource(kind, resource_name).dig?("spec", "selector")
+      else
+        resp = resource(kind, resource_name).dig?("spec", "template", "metadata", "labels")
+      end
       Log.debug { "resource_labels: #{resp}" }
       if resp
         resp
@@ -885,12 +937,12 @@ module KubectlClient
 
     def self.all_container_repo_digests
       imageids = all_pod_container_statuses.reduce([] of String) do |acc, x|
-        # acc << "hi"
         acc | x.map{|i| i["imageID"].as_s}
       end
       Log.debug { "pod container image ids: #{imageids}" }
       imageids
     end
+
   end
 
 end
