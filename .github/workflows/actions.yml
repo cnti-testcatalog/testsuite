@@ -380,7 +380,8 @@ jobs:
               cp -a $(pwd) /shared/$DIR/cnf-testsuite
               pushd /shared/$DIR/cnf-testsuite
               LOG_LEVEL=info crystal src/cnf-testsuite.cr setup 
-              LOG_LEVEL=info crystal src/cnf-testsuite.cr airgapped output-file=/tmp/airgapped.tar.gz
+              LOG_LEVEL=info crystal src/cnf-testsuite.cr airgapped output-file=/shared/$DIR/airgapped.tar.gz
+              cp /shared/$DIR/airgapped.tar.gz /tmp/airgapped.tar.gz
               popd
               docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
             else
@@ -391,13 +392,12 @@ jobs:
               echo "export DIR=$DIR" > /tmp/environment.env
               cp -a $(pwd) /shared/$DIR/cnf-testsuite
               docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
+              cp /tmp/airgapped.tar.gz /shared/$DIR/airgapped.tar.gz
         fi
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
     - name: Create Cluster & Run Tests.
       run: |
         source /tmp/environment.env
-        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /tmp/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh"
+        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh"
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
