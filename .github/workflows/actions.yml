@@ -392,6 +392,8 @@ jobs:
               cp -a $(pwd) /shared/$DIR/cnf-testsuite
               docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
         fi
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Create Cluster & Run Tests.
       run: |
         source /tmp/environment.env
