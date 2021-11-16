@@ -282,7 +282,7 @@ jobs:
         key: airgapped-${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
-        sudo mv /tmp/airgapped.tar.gz $(pwd) ; sudo rm -rf /tmp/ ; sudo mkdir /tmp ; sudo mount /dev/buildvg/buildlv /tmp; sudo chmod 777 /tmp -R
+        sudo mv /tmp/airgapped.tar.gz $(pwd) || true ; sudo rm -rf /tmp/ ; sudo mkdir /tmp ; sudo mount /dev/buildvg/buildlv /tmp; sudo chmod 777 /tmp -R
         shards install
         crystal src/cnf-testsuite.cr setup 
         helm repo add stable https://cncf.gitlab.io/stable
