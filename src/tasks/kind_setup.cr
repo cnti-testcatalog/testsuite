@@ -111,7 +111,7 @@ STRING
       end
       sleep 1
       timeout = timeout - 1 
-      LOGGING.info "Waitting for Cluster to be Ready"
+      LOGGING.info "Waiting for Cluster to be Ready"
       if timeout <= 0
         break
       end
