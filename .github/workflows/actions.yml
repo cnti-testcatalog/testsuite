@@ -372,17 +372,19 @@ jobs:
     - name: Create environment.tar if one is not found in cache
       run: |
         if ! [ -f "/tmp/airgapped.tar.gz" ]; then 
+              echo "Cached airgapped.tar.gz not found, re-creating airgapped.tar.gz"
               shards install
               export DIR=$(uuidgen)
               mkdir /shared/$DIR
               echo "export DIR=$DIR" > /tmp/environment.env
               cp -a $(pwd) /shared/$DIR/cnf-testsuite
               pushd /shared/$DIR/cnf-testsuite
-              crystal src/cnf-testsuite.cr setup 
-              crystal src/cnf-testsuite.cr airgapped output-file=/tmp/airgapped.tar.gz
+              LOG_LEVEL=info crystal src/cnf-testsuite.cr setup 
+              LOG_LEVEL=info crystal src/cnf-testsuite.cr airgapped output-file=/tmp/airgapped.tar.gz
               popd
               docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
             else
+              echo "Cached airgapped.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
               shards install
               export DIR=$(uuidgen)
               mkdir /shared/$DIR
