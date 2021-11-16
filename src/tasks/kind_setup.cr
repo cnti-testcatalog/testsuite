@@ -54,9 +54,10 @@ end
 
 module KindManager
   def self.delete_cluster(name)
+    current_dir = FileUtils.pwd
+    kind = "#{current_dir}/#{TOOLS_DIR}/kind/kind"
     Log.info {"Deleting Kind Cluster: #{name}"}
-    `kind delete cluster --name #{name}`
-    current_dir = FileUtils.pwd 
+    `#{kind} delete cluster --name #{name}`
     File.delete "#{current_dir}/#{TOOLS_DIR}/kind/#{name}_admin.conf" if File.exists? "#{current_dir}/#{TOOLS_DIR}/kind/#{name}_admin.conf"
   end
 
