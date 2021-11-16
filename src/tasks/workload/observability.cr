@@ -48,22 +48,26 @@ task "prometheus_traffic" do |_, args|
   Log.info { "Running: prometheus_traffic" }
     task_response = CNFManager::Task.task_runner(args) do |args|
 
-      Retriable.retry do
-        resp = Halite.get("https://quay.io/api/v1/repository/prometheus/prometheus/tag/?onlyActiveTags=true&limit=100")
+      do_this_on_each_retry = ->(ex : Exception, attempt : Int32, elapsed_time : Time::Span, next_interval : Time::Span) do
+          Log.info { "#{ex.class}: '#{ex.message}' - #{attempt} attempt in #{elapsed_time} seconds and #{next_interval} seconds until the next try."}
       end
-      prometheus_server_releases = resp.body
-      sha_list = named_sha_list(prometheus_server_releases)
-      imageids = KubectlClient::Get.all_container_repo_digests
-      match = DockerClient::K8s.local_digest_match(sha_list, imageids)
 
-      matched_service = KubectlClient::Get.service_by_digest(match[:digest])
+      Retriable.retry(on_retry: do_this_on_each_retry, times: 3, base_interval: 1.second) do
+        resp = Halite.get("https://quay.io/api/v1/repository/prometheus/prometheus/tag/?onlyActiveTags=true&limit=100")
+        prometheus_server_releases = resp.body
+        sha_list = named_sha_list(prometheus_server_releases)
+        imageids = KubectlClient::Get.all_container_repo_digests
+        match = DockerClient::K8s.local_digest_match(sha_list, imageids)
 
-      if match[:found]
-        emoji_prometheus_adapter="📶☠️"
-        upsert_passed_task("prometheus_traffic","✔️  PASSED: Your cnf is sending prometheus traffic #{emoji_prometheus_adapter}")
-      else
-        emoji_prometheus_adapter="📶☠️"
-        upsert_failed_task("prometheus_traffic", "✖️  FAILED: Your cnf is not sending prometheus traffic #{emoji_prometheus_adapter}")
+        matched_service = KubectlClient::Get.service_by_digest(match[:digest])
+
+        if match[:found]
+          emoji_prometheus_adapter="📶☠️"
+          upsert_passed_task("prometheus_traffic","✔️  PASSED: Your cnf is sending prometheus traffic #{emoji_prometheus_adapter}")
+        else
+          emoji_prometheus_adapter="📶☠️"
+          upsert_failed_task("prometheus_traffic", "✖️  FAILED: Your cnf is not sending prometheus traffic #{emoji_prometheus_adapter}")
+        end
       end
     end
 end
