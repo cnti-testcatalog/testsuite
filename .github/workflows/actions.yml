@@ -279,10 +279,10 @@ jobs:
         cache-name: cache-airgapped-tar
       with:
         path: /tmp/airgapped.tar.gz
-        key: airgapped-$GITHUB_JOB-${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
+        key: airgapped-${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create airgapped.tar.gz if one is not found in cache
       run: |
-        sudo rm -rf /tmp/ ; sudo mkdir /tmp ; sudo mount /dev/buildvg/buildlv /tmp; sudo chmod 777 /tmp -R
+        sudo mv /tmp/airgapped.tar.gz $(pwd) || true ; sudo rm -rf /tmp/ ; sudo mkdir /tmp ; sudo mount /dev/buildvg/buildlv /tmp; sudo chmod 777 /tmp -R
         shards install
         crystal src/cnf-testsuite.cr setup 
         helm repo add stable https://cncf.gitlab.io/stable
@@ -362,72 +362,42 @@ jobs:
         key: lib-${{ hashFiles('**/shard.lock') }}
         restore-keys: |
           lib-
-    - name: Fetch Cluster Cache
-      id: cluster-cache
+    - name: Cache airgapped.tar.gz
       uses: actions/cache@v2
+      env:
+        cache-name: setup-airgapped-tar
       with:
-        path: ./cache
-        key: cach_${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
-    # - name: Retrieve cache
-    #   uses: leroy-merlin-br/action-s3-cache@v1
-    #   if: steps.cluster-cache.outputs.cache-hit == 'true'
-    #   with:
-    #     action: get
-    #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #     aws-region: us-east-1
-    #     bucket: cache-github
-    #     key: setup-airgapped
+        path: /tmp/airgapped.tar.gz
+        key: setup-${{ hashFiles('**/utils/airgap/airgap.cr', '**/src/tasks/utils/cnf_manager.cr') }}
     - name: Create environment.tar if one is not found in cache
       run: |
-        if ! [ -f "/tmp/setup_environment.tar.gz" ]; then 
+        if ! [ -f "/tmp/airgapped.tar.gz" ]; then 
+              echo "Cached airgapped.tar.gz not found, re-creating airgapped.tar.gz"
               shards install
               export DIR=$(uuidgen)
               mkdir /shared/$DIR
               echo "export DIR=$DIR" > /tmp/environment.env
               cp -a $(pwd) /shared/$DIR/cnf-testsuite
               pushd /shared/$DIR/cnf-testsuite
-              crystal src/cnf-testsuite.cr setup 
-              crystal src/cnf-testsuite.cr airgapped output-file=/shared/$DIR/airgapped.tar.gz
+              LOG_LEVEL=info crystal src/cnf-testsuite.cr setup 
+              LOG_LEVEL=info crystal src/cnf-testsuite.cr airgapped output-file=/shared/$DIR/airgapped.tar.gz
+              cp /shared/$DIR/airgapped.tar.gz /tmp/airgapped.tar.gz
               popd
               docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
-              docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/cnf-testsuite/data:/var/lib/docker -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz"
-              # tar -cf /tmp/setup_environment.tar -C /shared/$DIR cnf-testsuite
-              # apt update && apt install -y pigz
-              # pigz -6 /tmp/setup_environment.tar
-              # echo "Cache Created" > $(pwd)/cache
             else
-              echo "Cached environment.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
+              echo "Cached airgapped.tar.gz file found, using cache for JOB_ID: $GITHUB_JOB"
+              shards install
               export DIR=$(uuidgen)
               mkdir /shared/$DIR
               echo "export DIR=$DIR" > /tmp/environment.env
-              tar -xf /tmp/setup_environment.tar.gz -C /shared/$DIR
-              echo "Cache Already Exists" > /tmp/skip_upload
-              echo "Cache Created" > $(pwd)/cache
+              cp -a $(pwd) /shared/$DIR/cnf-testsuite
+              docker run --entrypoint=/bin/bash --name $DIR-shards -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
+              cp /tmp/airgapped.tar.gz /shared/$DIR/airgapped.tar.gz
         fi
     - name: Create Cluster & Run Tests.
       run: |
         source /tmp/environment.env
-        touch /shared/$DIR/cache
-        docker run --name $DIR-cache --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/cnf-testsuite/data:/var/lib/docker -v /shared/$DIR/cnf-testsuite/.kube:/root/.kube -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -v /shared/$DIR/cache:/cache -t $OFFLINE_IMAGE /bin/bash -c "/cnf-testsuite/tools/wait_for_cluster.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh && kubectl get pods --all-namespaces"
-    - name: Check file existence  
-      id: check_files
-      uses: andstor/file-existence-action@v1
-      with:
-        files: "/tmp/skip_upload"
-    - name: Save cache
-      uses: leroy-merlin-br/action-s3-cache@v1
-      if: steps.check_files.outputs.files_exists == 'true'
-      with:
-        action: put
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1 # Or whatever region your bucket was created
-        bucket: cache-github
-        key: setup-airgapped
-        artifacts: |
-          /tmp/setup_environment.tar.gz
-
+        docker run --name $DIR --network none --privileged -v /shared/$DIR/cnf-testsuite:/cnf-testsuite -v /shared/$DIR/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v /shared/$DIR/cnf-testsuite/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && ./.github/workflows/check_litmus.sh"
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
