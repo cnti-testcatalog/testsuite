@@ -688,6 +688,20 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 ```
 ./cnf-testsuite log_output
 ``` 
+#### :heavy_check_mark: To check if prometheus is installed and configured for the cnf 
+<details> <summary>Details for prometheus traffic test</summary>
+<p>
+
+<b>Prometheus Traffic Details:</b> It's considered a best-practice for CNFs to actively expose metrics.
+
+<b>Remediation Steps:</b> Install and configure Prometheus for your CNF.
+</p>
+
+</details>
+
+```
+./cnf-testsuite prometheus_traffic 
+``` 
 
 <details> <summary>Details for Observability Tests To Do's</summary>
 <p>

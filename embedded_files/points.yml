@@ -202,3 +202,7 @@
 
 - name: log_output
   tags: observability, dynamic, workload
+- name: prometheus_traffic 
+  tags: observability, dynamic, workload
+  pass: 10
+  fail: 0 
