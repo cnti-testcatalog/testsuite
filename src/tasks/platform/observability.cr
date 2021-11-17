@@ -82,20 +82,20 @@ namespace "platform" do
         #worker_node = worker_nodes.split("\n")[0]
 
         # Install and find CRI Tools name
-        File.write("cri_tools.yml", CRI_TOOLS)
+        File.write("cluster_tools.yml", CLUSTER_TOOLS)
         #TODO use kubectlclient
-        install_cri_tools = `kubectl create -f cri_tools.yml`
+        install_cluster_tools = `kubectl create -f cluster_tools.yml`
         pod_ready = ""
         pod_ready_timeout = 45
         until (pod_ready == "true" || pod_ready_timeout == 0)
-          pod_ready = KubectlClient::Get.pod_status("cri-tools").split(",")[2]
+          pod_ready = KubectlClient::Get.pod_status("cluster-tools").split(",")[2]
           Log.info { "Pod Ready Status: #{pod_ready}" }
           sleep 1
           pod_ready_timeout = pod_ready_timeout - 1
         end
-        cri_tools_pod = KubectlClient::Get.pod_status("cri-tools").split(",")[0]
+        cluster_tools_pod = KubectlClient::Get.pod_status("cluster-tools").split(",")[0]
         #, "--field-selector spec.nodeName=#{worker_node}")
-        LOGGING.debug "cri_tools_pod: #{cri_tools_pod}"
+        LOGGING.debug "cluster_tools_pod: #{cluster_tools_pod}"
 
         # Fetch id sha256 sums for all repo_digests https://github.com/docker/distribution/issues/1662
         repo_digest_list = KubectlClient::Get.all_container_repo_digests
@@ -103,9 +103,9 @@ namespace "platform" do
         id_sha256_list = repo_digest_list.reduce([] of String) do |acc, repo_digest|
           Log.info { "repo_digest: #{repo_digest}" }
           #TODO use kubectlclient
-          # cricti = `kubectl exec -ti #{CRIToolsSetup.cri_tools_pod} -- crictl inspecti #{repo_digest}`
+          # cricti = `kubectl exec -ti #{CRIToolsSetup.cluster_tools_pod} -- crictl inspecti #{repo_digest}`
           # LOGGING.info "cricti: #{cricti}"
-          resp = KubectlClient.exec("#{CRIToolsSetup.cri_tools_pod} -- crictl inspecti #{repo_digest}")
+          resp = KubectlClient.exec("#{ClusterToolsSetup.cluster_tools_pod} -- crictl inspecti #{repo_digest}")
           cricti = resp[:output].to_s
           begin
             parsed_json = JSON.parse(cricti)
@@ -266,26 +266,26 @@ end
         #worker_node = worker_nodes.split("\n")[0]
 
         # Install and find CRI Tools name
-        File.write("cri_tools.yml", CRI_TOOLS)
-        KubectlClient::Apply.file("cri_tools.yml")
+        File.write("cluster_tools.yml", CLUSTER_TOOLS)
+        KubectlClient::Apply.file("cluster_tools.yml")
         pod_ready = ""
         pod_ready_timeout = 45
         until (pod_ready == "true" || pod_ready_timeout == 0)
-          pod_ready = KubectlClient::Get.pod_status("cri-tools").split(",")[2]
+          pod_ready = KubectlClient::Get.pod_status("cluster-tools").split(",")[2]
           Log.info { "Pod Ready Status: #{pod_ready}" }
           sleep 1
           pod_ready_timeout = pod_ready_timeout - 1
         end
-        cri_tools_pod = KubectlClient::Get.pod_status("cri-tools").split(",")[0]
+        cluster_tools_pod = KubectlClient::Get.pod_status("cluster-tools").split(",")[0]
         #, "--field-selector spec.nodeName=#{worker_node}")
-        Log.debug { "cri_tools_pod: #{cri_tools_pod}" }
+        Log.debug { "cluster_tools_pod: #{cluster_tools_pod}" }
 
         # Fetch id sha256 sums for all repo_digests https://github.com/docker/distribution/issues/1662
         repo_digest_list = KubectlClient::Get.all_container_repo_digests
         Log.info { "container_repo_digests: #{repo_digest_list}" }
         id_sha256_list = repo_digest_list.reduce([] of String) do |acc, repo_digest|
           Log.debug { "repo_digest: #{repo_digest}" }
-          cricti = KubectlClient.exec("-ti #{cri_tools_pod} -- crictl inspecti #{repo_digest}")
+          cricti = KubectlClient.exec("-ti #{cluster_tools_pod} -- crictl inspecti #{repo_digest}")
           begin
             parsed_json = JSON.parse(cricti[:output])
             acc << parsed_json["status"]["id"].as_s

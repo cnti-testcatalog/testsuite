@@ -4,8 +4,8 @@ require "log"
 require "halite"
 
 module EmbeddedFileManager 
-  macro cri_tools
-    CRI_TOOLS = Base64.decode_string("{{ `cat ./tools/cri-tools/manifest.yml | base64` }}")
+  macro cluster_tools
+    CLUSTER_TOOLS = Base64.decode_string("{{ `cat ./tools/cluster-tools/manifest.yml | base64` }}")
   end
   macro falco_rules
     FALCO_RULES = Base64.decode_string("{{ `cat ./embedded_files/falco_rule.yaml | base64` }}")

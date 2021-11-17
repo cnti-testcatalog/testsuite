@@ -67,18 +67,18 @@ task "prometheus_traffic" do |_, args|
 
         Log.info { "service_url: #{service_url}"}
         # todo call from install cni container
-        # todo make a prerequisite for cri_tools
+        # todo make a prerequisite for cluster_tools
         pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-        pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+        pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
 
-        File.write("cri_tools.yml", CRI_TOOLS)
-        KubectlClient::Apply.file("cri_tools.yml")
+        File.write("cluster_tools.yml", CLUSTER_TOOLS)
+        KubectlClient::Apply.file("cluster_tools.yml")
 
-        KubectlClient::Get.wait_for_critools
-        cri_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
-        Log.info { "cri_tools_pod_name: #{cri_tools_pod_name}"}
+        KubectlClient::Get.wait_for_cluster_tools
+        cluster_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
+        Log.info { "cluster_tools_pod_name: #{cluster_tools_pod_name}"}
         Log.info { "service_url: #{service_url}"}
-        prom_api_resp  = KubectlClient.exec("--namespace=default -ti #{cri_tools_pod_name} -- curl http://#{service_url}/api/v1/targets?state=active")  
+        prom_api_resp  = KubectlClient.exec("--namespace=default -ti #{cluster_tools_pod_name} -- curl http://#{service_url}/api/v1/targets?state=active")  
 
         # prom_api_resp = Halite.get("http://#{service_url}/api/v1/targets?state=active")
         Log.debug { "prom_api_resp: #{prom_api_resp}"}
