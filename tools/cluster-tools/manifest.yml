@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: cluster-tools
+spec:
+  selector:
+    matchLabels:
+      name: cluster-tools
+  template:
+    metadata:
+      labels:
+        name: cluster-tools
+    spec:
+      containers:
+        - name: cluster-tools
+          image: conformance/cri-tools:v1.0.0
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh"]
+          args: ["-c", "sleep infinity"]
+          volumeMounts:
+          - mountPath: /run/containerd/containerd.sock
+            name: containerd-volume
+      volumes:
+      - name: containerd-volume
+        hostPath:
+          path: /var/run/containerd/containerd.sock
