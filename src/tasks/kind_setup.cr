@@ -54,9 +54,10 @@ end
 
 module KindManager
   def self.delete_cluster(name)
+    current_dir = FileUtils.pwd
+    kind = "#{current_dir}/#{TOOLS_DIR}/kind/kind"
     Log.info {"Deleting Kind Cluster: #{name}"}
-    `kind delete cluster --name #{name}`
-    current_dir = FileUtils.pwd 
+    `#{kind} delete cluster --name #{name}`
     File.delete "#{current_dir}/#{TOOLS_DIR}/kind/#{name}_admin.conf" if File.exists? "#{current_dir}/#{TOOLS_DIR}/kind/#{name}_admin.conf"
   end
 
@@ -111,7 +112,7 @@ STRING
       end
       sleep 1
       timeout = timeout - 1 
-      LOGGING.info "Waitting for Cluster to be Ready"
+      LOGGING.info "Waiting for Cluster to be Ready"
       if timeout <= 0
         break
       end
