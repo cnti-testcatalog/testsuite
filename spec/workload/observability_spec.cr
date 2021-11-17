@@ -30,6 +30,7 @@ describe "Observability" do
   it "'prometheus_traffic' should pass if there is prometheus traffic", tags: ["observability"] do
 
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-prometheus-coredns/cnf-testsuite.yml`
+      LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
       LOGGING.info "Installing prometheus server" 
       helm = BinarySingleton.helm
       resp = `#{helm} install prometheus prometheus-community/prometheus`
@@ -65,6 +66,7 @@ describe "Observability" do
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       LOGGING.info "Installing prometheus server" 
       helm = BinarySingleton.helm
+      LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
       resp = `#{helm} install prometheus prometheus-community/prometheus`
       LOGGING.info resp
       KubectlClient::Get.wait_for_install("prometheus-server")
