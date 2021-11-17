@@ -49,12 +49,12 @@ describe "Microservice" do
   end
 
   it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"]  do
-      LOGGING.info `kubectl apply -f #{TOOLS_DIR}/cri-tools/manifest.yml`
+      LOGGING.info `kubectl apply -f #{TOOLS_DIR}/cluster-tools/manifest.yml`
       $?.success?.should be_true
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-      pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+      pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
       LOGGING.info "CRI Pod: #{pods[0]}"
-      KubectlClient::Get.resource_wait_for_install("DaemonSet", "cri-tools")
+      KubectlClient::Get.resource_wait_for_install("DaemonSet", "cluster-tools")
       LOGGING.info "CPU Logs"
       LOGGING.info "#{KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=cpu --num-threads=4 --cpu-max-prime=9999 run")}"
       LOGGING.info "Memory logs" 
@@ -70,7 +70,7 @@ describe "Microservice" do
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns`
       $?.success?.should be_true
-      LOGGING.info `kubectl delete -f #{TOOLS_DIR}/cri-tools/manifest.yml`
+      LOGGING.info `kubectl delete -f #{TOOLS_DIR}/cluster-tools/manifest.yml`
     end
   end
 
@@ -80,18 +80,18 @@ describe "Microservice" do
       response_s = `./cnf-testsuite reasonable_startup_time verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      LOGGING.info `kubectl apply -f #{TOOLS_DIR}/cri-tools/manifest.yml`
+      LOGGING.info `kubectl apply -f #{TOOLS_DIR}/cluster-tools/manifest.yml`
       $?.success?.should be_true
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-      pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+      pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
       LOGGING.info "CRI Pod: #{pods[0]}"
-      KubectlClient::Get.resource_wait_for_install("DaemonSet", "cri-tools")
+      KubectlClient::Get.resource_wait_for_install("DaemonSet", "cluster-tools")
       LOGGING.info "#{KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=cpu --num-threads=4 --cpu-max-prime=9999 run")}"
       (/FAILED: CNF had a startup time of/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-testsuite.yml force=true`
       $?.success?.should be_true
-      LOGGING.info `kubectl delete -f #{TOOLS_DIR}/cri-tools/manifest.yml`
+      LOGGING.info `kubectl delete -f #{TOOLS_DIR}/cluster-tools/manifest.yml`
     end
   end
 
