@@ -13,7 +13,8 @@ spec:
     spec:
       containers:
         - name: cri-tools
-          image: conformance/cri-tools:latest
+          image: conformance/cri-tools:v1.0.0
+          imagePullPolicy: IfNotPresent
           command: ["/bin/sh"]
           args: ["-c", "sleep infinity"]
           volumeMounts:

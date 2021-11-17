@@ -70,6 +70,10 @@ task "prometheus_traffic" do |_, args|
         # todo make a prerequisite for cri_tools
         pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
         pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+
+        File.write("cri_tools.yml", CRI_TOOLS)
+        KubectlClient::Apply.file("cri_tools.yml")
+
         KubectlClient::Get.wait_for_critools
         cri_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
         Log.info { "cri_tools_pod_name: #{cri_tools_pod_name}"}

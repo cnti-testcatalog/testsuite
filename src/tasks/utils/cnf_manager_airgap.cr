@@ -128,6 +128,8 @@ module CNFManager
        image: "cilium/cilium:v1.10.5"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cilium-operator.tar", 
        image: "cilium/operator-generic:v1.10.5"},
+      {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/cri-tools.tar", 
+       image: "conformance/cri-tools:v1.0.0"},
       {input_file: "#{AirGap::TAR_BOOTSTRAP_IMAGES_DIR}/prometheus.tar", 
        image: "prom/prometheus:v2.18.1"}].map do |x|
         DockerClient.pull(x[:image])
