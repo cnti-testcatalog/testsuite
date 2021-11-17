@@ -332,8 +332,7 @@ module KubectlClient
     end
 
     #todo default flag for schedulable pods vs all pods
-    def self.pods_by_resource(resource_yml) : K8sManifestList
-      Log.info { "pods_by_resource" }
+    def self.pods_by_resource(resource_yml : JSON::Any) : K8sManifestList Log.info { "pods_by_resource" }
       Log.debug { "pods_by_resource resource: #{resource_yml}" }
       return [resource_yml] if resource_yml["kind"].as_s.downcase == "pod"
       Log.info { "resource kind: #{resource_yml["kind"]}" }
@@ -469,6 +468,19 @@ module KubectlClient
       end
       Log.info { "service_by_digest matched_service: #{matched_service}" }
       matched_service
+    end
+    def self.service_url_by_digest(container_digest)
+      Log.info { "service_url_by_digest container_digest: #{container_digest}" }
+      matched_service = service_by_digest(container_digest)
+      service_name = service.dig?("metadata", "name")
+      ports = service.dig?("spec", "ports")
+      
+      url_list = ports.map do |port|
+        "#{service_name}:#{port["port"]}"
+      end
+
+      Log.info { "service_url_by_digest url_list: #{url_list}" }
+      url_list
     end
 
     def self.deployment_containers(deployment_name) : JSON::Any
