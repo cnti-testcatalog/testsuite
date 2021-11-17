@@ -578,54 +578,84 @@ module KubectlClient
       end
     end
 
-    def self.resource_ready?(kind, namespace, resource_name) : Bool
+    def self.resource_ready?(kind, namespace, resource_name, kubeconfig=nil) : Bool
+      ready = false
       case kind.downcase
       when "pod"
-        pod_ready = KubectlClient::Get.pod_status(pod_name_prefix: resource_name, namespace: namespace).split(",")[2]
+        pod_ready = KubectlClient::Get.pod_status(pod_name_prefix: resource_name, namespace: namespace, kubeconfig: kubeconfig).split(",")[2]
         Log.info { "pod_ready: #{pod_ready}"}
         return pod_ready == "true"
       when "replicaset", "deployment", "statefulset"
-        desired = replica_count(kind, namespace, resource_name, "{.status.replicas}")
-        unavailable = replica_count(kind, namespace, resource_name, "{.status.unavailableReplicas}")
-        current = replica_count(kind, namespace, resource_name, "{.status.readyReplicas}")
+        desired = replica_count(kind, namespace, resource_name, "{.status.replicas}", kubeconfig)
+        unavailable = replica_count(kind, namespace, resource_name, "{.status.unavailableReplicas}", kubeconfig)
+        current = replica_count(kind, namespace, resource_name, "{.status.readyReplicas}", kubeconfig)
         Log.info { "current_replicas: #{current}, desired_replicas: #{desired}, unavailable_replicas: #{unavailable}"  }
+
+        ready = current == desired 
+        
         if desired == 0 && unavailable >= 1
-          return false
+          ready = false
         end
-        return current == desired
+
+        if (current == -1 || desired == -1)
+          ready = false
+        end
+        
       when "daemonset"
-        desired = replica_count(kind, namespace, resource_name, "{.status.desiredNumberScheduled}")
-        current = replica_count(kind, namespace, resource_name, "{.status.numberAvailable}")
+        desired = replica_count(kind, namespace, resource_name, "{.status.desiredNumberScheduled}", kubeconfig)
+        current = replica_count(kind, namespace, resource_name, "{.status.numberAvailable}", kubeconfig)
+        unavailable = replica_count(kind, namespace, resource_name, "{.status.unavailableReplicas}", kubeconfig)
         Log.info { "current_replicas: #{current}, desired_replicas: #{desired}" }
-        return current == desired
+
+        ready = current == desired
+        
+        if desired == 0 && unavailable >= 1
+          ready = false
+        end
+        
+        if (current == -1 || desired == -1)
+          ready = false
+        end
+        
       else
-        desired = replica_count(kind, namespace, resource_name, "{.status.replicas}")
-        current = replica_count(kind, namespace, resource_name, "{.status.readyReplicas}")
+        desired = replica_count(kind, namespace, resource_name, "{.status.replicas}", kubeconfig)
+        current = replica_count(kind, namespace, resource_name, "{.status.readyReplicas}", kubeconfig)
+        unavailable = replica_count(kind, namespace, resource_name, "{.status.unavailableReplicas}", kubeconfig)
         Log.info { "current_replicas: #{current}, desired_replicas: #{desired}" }
-        return current == desired
+
+        ready = current == desired
+        
+        if desired == 0 && unavailable >= 1
+          ready = false
+        end
+
+        if (current == -1 || desired == -1)
+          ready = false
+        end
       end
+      ready
     end
 
-    def self.replica_count(kind, namespace, resource_name, jsonpath) : Int32
-      cmd = "kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='#{jsonpath}'"
+    def self.replica_count(kind, namespace, resource_name, jsonpath, kubeconfig=nil) : Int32
+      cmd = "kubectl get #{kind} --namespace=#{namespace} #{resource_name} -o=jsonpath='#{jsonpath}' #{kubeconfig ? "--kubeconfig " + kubeconfig : ""}"
       result = ShellCmd.run(cmd, "KubectlClient::Get.replica_count")
-      return 0 if result[:output].empty?
+      return -1 if result[:output].empty?
       result[:output].to_i
     end
 
-    def self.resource_wait_for_install(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default")
+    def self.resource_wait_for_install(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default", kubeconfig=nil)
       # Not all cnfs have #{kind}.  some have only a pod.  need to check if the
       # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod
-      Log.info { "resource_wait_for_install kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}" }
+      Log.info { "resource_wait_for_install kind: #{kind} resource_name: #{resource_name} namespace: #{namespace} kubeconfig: #{kubeconfig}" }
       second_count = 0
 
       # Intialization
-      is_ready = resource_ready?(kind, namespace, resource_name)
+      is_ready = resource_ready?(kind, namespace, resource_name, kubeconfig)
 
       until is_ready || second_count > wait_count
         Log.info { "KubectlClient::Get.resource_wait_for_install attempt: #{second_count}; is_ready: #{is_ready}" }
         sleep 1
-        is_ready = resource_ready?(kind, namespace, resource_name)
+        is_ready = resource_ready?(kind, namespace, resource_name, kubeconfig)
         second_count = second_count + 1
       end
 
@@ -748,10 +778,11 @@ module KubectlClient
 
     #TODO remove the need for a split and return name/ true /false in a hash
     #TODO add a spec for this
-    def self.pod_status(pod_name_prefix, field_selector="", namespace="default")
+    def self.pod_status(pod_name_prefix, field_selector="", namespace="default", kubeconfig=nil)
       Log.info { "pod_status: #{pod_name_prefix}" }
 
-      all_pods_cmd = "kubectl get pods #{field_selector} -o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}'"
+      all_pods_cmd = "kubectl get pods #{field_selector} -o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}' #{kubeconfig ? "--kubeconfig " + kubeconfig : ""}"
+
       all_pods_result = Process.run(
         all_pods_cmd,
         shell: true,
@@ -811,7 +842,7 @@ module KubectlClient
       # TODO refactor to return container statuses
       status = "#{pod_name_prefix},NotFound,false"
       if pod != "not found"
-        cmd = "kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}'"
+        cmd = "kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}' #{kubeconfig ? "--kubeconfig " + kubeconfig : ""}"
         result = ShellCmd.run(cmd, "pod_status")
         status = result[:output]
         Log.debug { "pod_status status before parse: #{status}" }

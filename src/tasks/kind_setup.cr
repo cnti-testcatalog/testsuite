@@ -52,35 +52,18 @@ task "uninstall_kind" do |_, args|
   FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/kind")
 end
 
-desc "Install Kind/Calico"
-task "create_kind_calico" do |_, args|
-  Log.info { "Creating Kind/Calico Cluster" }
-  KindManager.create_cluster("calico-test", "projectcalico/tigera-operator")
-end
-
-desc "Install Kind/Cilium"
-task "create_kind_cilium" do |_, args|
-  Log.info { "Creating Kind/Cilium Cluster" }
-  KindManager.create_cluster("cilium-test", "cilium/cilium --version 1.10.5 --set operator.replicas=1")
-end
-
-desc "Delete Cluster"
-task "delete_test_clusters" do |_, arg|
-  KindManager.delete_cluster("calico-test")
-  KindManager.delete_cluster("cilium-test")
-end
-
 module KindManager
   def self.delete_cluster(name)
+    current_dir = FileUtils.pwd
+    kind = "#{current_dir}/#{TOOLS_DIR}/kind/kind"
     Log.info {"Deleting Kind Cluster: #{name}"}
-    `kind delete cluster --name #{name}`
-    current_dir = FileUtils.pwd 
+    `#{kind} delete cluster --name #{name}`
     File.delete "#{current_dir}/#{TOOLS_DIR}/kind/#{name}_admin.conf" if File.exists? "#{current_dir}/#{TOOLS_DIR}/kind/#{name}_admin.conf"
   end
 
   #totod make a create cluster with flannel
 
-  def self.create_cluster(name, cni_plugin)
+  def self.create_cluster(name, cni_plugin, offline)
     Log.info {"Creating Kind Cluster"}
     current_dir = FileUtils.pwd 
     helm = BinarySingleton.helm
@@ -88,10 +71,18 @@ module KindManager
     kubeconfig = "#{current_dir}/#{TOOLS_DIR}/kind/#{name}_admin.conf"
     File.write("disable_cni.yml", DISABLE_CNI)
     unless File.exists?("#{kubeconfig}")
-      `#{kind} create cluster --name #{name} --config disable_cni.yml --kubeconfig #{kubeconfig}`
+      if offline
+        `#{kind} create cluster --name #{name} --config disable_cni.yml --image kindest/node:v1.21.1 --kubeconfig #{kubeconfig}`
+      else
+        `#{kind} create cluster --name #{name} --config disable_cni.yml --kubeconfig #{kubeconfig}`
+      end
     end
     Log.info {`#{helm} install #{name}-plugin #{cni_plugin} --namespace kube-system --kubeconfig #{kubeconfig}`}
-    wait_for_cluster(kubeconfig)
+    if wait_for_cluster(kubeconfig)
+      kubeconfig
+    else
+      nil
+    end
   end
 
   def self.wait_for_cluster(kubeconfig, wait_count : Int32 = 180)
@@ -121,7 +112,7 @@ STRING
       end
       sleep 1
       timeout = timeout - 1 
-      LOGGING.info "Waitting for CRI-Tools Pod"
+      LOGGING.info "Waiting for Cluster to be Ready"
       if timeout <= 0
         break
       end
