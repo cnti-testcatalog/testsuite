@@ -256,36 +256,90 @@ crystal src/cnf-testsuite.cr check_reaped
 ./cnf-testsuite privileged
 ```
 
- #### :heavy_check_mark: To check if any containers are running as a [root user](https://github.com/cncf/cnf-wg/blob/best-practice-no-root-in-containers/cbpps/0002-no-root-in-containers.md)
+#### :heavy_check_mark: To check if any containers are running as a [root user](https://github.com/cncf/cnf-wg/blob/best-practice-no-root-in-containers/cbpps/0002-no-root-in-containers.md)
 
 ```
 ./cnf-testsuite non_root_user
 ```
 
- #### :heavy_check_mark: To check if any containers allow for [privilege escalation](https://bit.ly/3zUimHR)
+#### :heavy_check_mark: To check if any containers allow for [privilege escalation](https://bit.ly/C0016_privilege_escalation)
+<details> <summary>Details for Privilege Escalation</summary>
+
+<p><b>Privilege Escalation:</b> Check that the allowPrivilegeEscalation field in securityContext of container is set to false.
+
+<b>Remediation:</b> If your application does not need it, make sure the allowPrivilegeEscalation field of the securityContext is set to false.
+
+See more at [ARMO-C0016](https://bit.ly/C0016_privilege_escalation)
+
+</p>
+</details>
 
 ```
 ./cnf-testsuite privilege_escalation
 ```
 
- #### :heavy_check_mark: To check if an attacker can use a [symlink](https://bit.ly/3zUimHR) for arbitrary host file system access 
+#### :heavy_check_mark: To check if an attacker can use a [symlink](https://bit.ly/C0058_symlink_filesystem) for arbitrary host file system access
+<details> <summary>Details for Symlink Filesystem Access</summary>
+
+<p><b>CVE-2021-25741 Symlink Host Access:</b> A user may be able to create a container with subPath or subPathExpr volume mounts to access files & directories anywhere on the host filesystem. Following Kubernetes versions are affected: v1.22.0 - v1.22.1, v1.21.0 - v1.21.4, v1.20.0 - v1.20.10, version v1.19.14 and lower. This control checks the vulnerable versions and the actual usage of the subPath feature in all Pods in the cluster.
+
+<b>Remediation:</b> To mitigate this vulnerability without upgrading kubelet, you can disable the VolumeSubpath feature gate on kubelet and kube-apiserver, or remove any existing Pods using subPath or subPathExpr feature.
+
+See more at [ARMO-C0058](https://bit.ly/C0058_symlink_filesystem)
+
+</p>
+</details>
 
 ```
 ./cnf-testsuite symlink_file_system
 ```
 
- #### :heavy_check_mark: To check if there are application credentials in [configuration files](https://bit.ly/3zUimHR) for arbitrary host file system access 
+#### :heavy_check_mark: To check if there are [service accounts that are automatically mapped](https://bit.ly/C0012_application_credentials)
+<details> <summary>Details for Service Application Credentials</summary>
+
+<p><b>Application Credentials:</b> Developers store secrets in the Kubernetes configuration files, such as environment variables in the pod configuration. Such behavior is commonly seen in clusters that are monitored by Azure Security Center. Attackers who have access to those configurations, by querying the API server or by accessing those files on the developer’s endpoint, can steal the stored secrets and use them.
+
+Check if the pod has sensitive information in environment variables, by using list of known sensitive key names. Check if there are configmaps with sensitive information.
+
+<b>Remediation:</b> Use Kubernetes secrets or Key Management Systems to store credentials.
+
+See more at [ARMO-C0012](https://bit.ly/C0012_application_credentials)
+
+</p>
+</details>
 
 ```
 ./cnf-testsuite application_credentials
 ```
- 
- #### :heavy_check_mark: To check if there is a [host network attached to a pod](https://bit.ly/3zUimHR)
+
+
+#### :heavy_check_mark: To check if there is a [host network attached to a pod](https://bit.ly/C0041_hostNetwork)
+<details> <summary>Details for hostNetwork</summary>
+
+<p><b>hostNetwork:</b> PODs should not have access to the host systems network.
+
+<b>Remediation:</b> Only connect PODs to hostNetwork when it is necessary. If not, set the hostNetwork field of the pod spec to false, or completely remove it (false is the default). Whitelist only those PODs that must have access to host network by design.
+
+See more at [ARMO-C0041](https://bit.ly/C0041_hostNetwork)
+
+</p>
+</details>
 
 ```
 ./cnf-testsuite host_network
-```
- #### :heavy_check_mark: To check if there are [service accounts that are automatically mapped](https://bit.ly/3zUimHR)
+``` 
+
+#### :heavy_check_mark: To check if there are [service accounts that are automatically mapped](https://bit.ly/C0034_service_account_mapping)
+<details> <summary>Details for Service Account Mapping</summary>
+
+<p><b>Service Account Mapping:</b> The automatic mounting of service account tokens should be disabled.
+
+<b>Remediation:</b> Disable automatic mounting of service account tokens to PODs either at the service account level or at the individual POD level, by specifying the automountServiceAccountToken: false. Note that POD level takes precedence.
+
+See more at [ARMO-C0034](https://bit.ly/C0034_service_account_mapping)
+
+</p>
+</details>
 
 ```
 ./cnf-testsuite service_account_mapping
@@ -319,6 +373,42 @@ Read more at [ARMO-C0057](https://bit.ly/31iGng3)
 
 ```
 ./cnf-testsuite privileged_containers
+```
+
+#### :heavy_check_mark: To check for insecure capabilities
+<details> <summary>Details for Insecure Capabilities</summary>
+
+<p><b>Insecure Capabilities:</b> Giving insecure and unnecessary capabilities for a container can increase the impact of a container compromise.
+
+This test checks against a [blacklist of insecure capabilities](https://github.com/FairwindsOps/polaris/blob/master/checks/insecureCapabilities.yaml).
+
+<b>Remediation:</b> Remove all insecure capabilities which aren’t necessary for the container.
+
+See more at [ARMO-C0046](https://bit.ly/C0046_Insecure_Capabilities)
+
+</p>
+</details>
+
+```
+./cnf-testsuite insecure_capabilities
+```
+
+#### :heavy_check_mark: To check for dangerous capabilities
+<details> <summary>Details for Dangerous Capabilities</summary>
+
+<p><b>Dangerous Capabilities:</b> Giving dangerous and unnecessary capabilities for a container can increase the impact of a container compromise.
+
+This test checks against a [blacklist of dangerous capabilities](https://github.com/FairwindsOps/polaris/blob/master/checks/dangerousCapabilities.yaml).
+
+<b>Remediation:</b> Check and remove all unnecessary capabilities from the POD security context of the containers and use the exception mechanism to remove warnings where these capabilities are necessary.
+
+See more at [ARMO-C0028](https://bit.ly/C0028_Dangerous_Capabilities)
+
+</p>
+</details>
+
+```
+./cnf-testsuite dangerous_capabilities
 ```
 
 #### :heavy_check_mark: To check if namespaces have network policies defined
@@ -986,12 +1076,37 @@ Sressing the disk with continuous and heavy IO can cause degradation in reads/ w
 ```
 ./cnf-testsuite platform:security 
 ```
- #### :heavy_check_mark: To check if [cluster admin is bound to a pod](https://bit.ly/3zUimHR)
+#### :heavy_check_mark: To check if [cluster admin is bound to a pod](https://bit.ly/C0035_cluster_admin)
+<details> <summary>Details for Cluster Admin Binding</summary>
+
+<p><b>Cluster Admin Binding:</b> Role-based access control (RBAC) is a key security feature in Kubernetes. RBAC can restrict the allowed actions of the various identities in the cluster. Cluster-admin is a built-in high privileged role in Kubernetes. Attackers who have permissions to create bindings and cluster-bindings in the cluster can create a binding to the cluster-admin ClusterRole or to other high privileges roles.
+
+Check which subjects have cluster-admin RBAC permissions – either by being bound to the cluster-admin clusterrole, or by having equivalent high privileges.
+
+<b>Remediation:</b> You should apply least privilege principle. Make sure cluster admin permissions are granted only when it is absolutely necessary. Don't use subjects with high privileged permissions for daily operations.
+
+See more at [ARMO-C0035](https://bit.ly/C0035_cluster_admin)
+
+</p>
+</details>
 
 ```
 ./cnf-testsuite platform:cluster_admin
 ```
- #### :heavy_check_mark: To check if [the control plane is hardened](https://bit.ly/3zUimHR)
+
+#### :heavy_check_mark: To check if [the control plane is hardened](https://bit.ly/C0005_Control_Plane)
+<details> <summary>Details for Control Plane Hardening</summary>
+
+<p><b>Control Plane Hardening:</b> The control plane is the core of Kubernetes and gives users the ability to view containers, schedule new Pods, read Secrets, and execute commands in the cluster. Therefore, it should be protected. It is recommended to avoid control plane exposure to the Internet or to an untrusted network. The API server runs on ports 6443 and 8080. We recommend to block them in the firewall. Note that port 8080, when accessed through the local machine, does not require TLS encryption, and the requests bypass authentication and authorization modules.
+
+Checks if the insecure-port flag is set (in case of cloud vendor hosted Kubernetes service this verification will not be effective).
+
+<b>Remediation:</b> Set the insecure-port flag of the API server to zero.
+
+See more at [ARMO-C0005](https://bit.ly/C0005_Control_Plane)
+
+</p>
+</details>
 
 ```
 ./cnf-testsuite platform:control_plane_hardening
