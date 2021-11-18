@@ -25,7 +25,7 @@ EMPTY_JSON_ARRAY = JSON.parse(%([]))
 
 #Embedded global text variables
 EmbeddedFileManager.node_failure_values
-EmbeddedFileManager.cri_tools
+EmbeddedFileManager.cluster_tools
 EmbeddedFileManager.falco_rules
 EmbeddedFileManager.reboot_daemon
 EmbeddedFileManager.chaos_network_loss

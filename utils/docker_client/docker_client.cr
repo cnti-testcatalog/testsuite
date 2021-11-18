@@ -185,4 +185,49 @@ module DockerClient
       latest_image 
     end
   end
+
+  def self.named_sha_list(resp_json)
+    Log.debug { "sha_list resp_json: #{resp_json}" }
+    parsed_json = JSON.parse(resp_json)
+    Log.debug { "sha list parsed json: #{parsed_json}" }
+    #if tags then this is a quay repository, otherwise assume docker hub repository
+    if parsed_json["tags"]?
+        parsed_json["tags"].not_nil!.as_a.reduce([] of Hash(String, String)) do |acc, i|
+      acc << {"name" => i["name"].not_nil!.as_s, "manifest_digest" => i["manifest_digest"].not_nil!.as_s}
+    end
+    else
+      parsed_json["results"].not_nil!.as_a.reduce([] of Hash(String, String)) do |acc, i|
+        # always use amd64
+        amd64image = i["images"].as_a.find{|x| x["architecture"].as_s == "amd64"}
+        Log.debug { "amd64image: #{amd64image}" }
+        if amd64image && amd64image["digest"]?
+            acc << {"name" => i["name"].not_nil!.as_s, "manifest_digest" => amd64image["digest"].not_nil!.as_s}
+        else
+          Log.error { "amd64 image not found in #{i["images"]}" }
+          acc
+        end
+      end
+    end
+  end
+
+  module K8s
+    def self.local_digest_match(remote_sha_list, local_digests)
+      Log.info { "remote_sha_list: #{ remote_sha_list}"}
+      Log.info { "remote_sha_list: #{ remote_sha_list.map { |x| x["manifest_digest"] }}"}
+
+      # find hash for image
+      Log.info { "local_digests: #{local_digests}" }
+      found = false
+      release_name = ""
+      digest = ""
+      remote_sha_list.each do |x|
+        if local_digests.find{|i| i.includes?(x["manifest_digest"])}
+          found = true
+          release_name = x["name"]
+          digest = x["manifest_digest"]
+        end
+      end
+      {found: found, digest: digest, release_name: release_name}
+    end
+  end
 end

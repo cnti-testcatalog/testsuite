@@ -1,19 +1,20 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-    name: cri-tools
+    name: cluster-tools
 spec:
   selector:
     matchLabels:
-      name: cri-tools
+      name: cluster-tools
   template:
     metadata:
       labels:
-        name: cri-tools
+        name: cluster-tools
     spec:
       containers:
-        - name: cri-tools
-          image: conformance/cri-tools:latest
+        - name: cluster-tools
+          image: conformance/cri-tools:v1.0.0
+          imagePullPolicy: IfNotPresent
           command: ["/bin/sh"]
           args: ["-c", "sleep infinity"]
           volumeMounts:

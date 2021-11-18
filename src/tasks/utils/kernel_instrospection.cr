@@ -24,7 +24,7 @@ module KernelIntrospection
 
   module Local
     #Exec with Pod Name & Container Name
-    #kubectl exec -ti cri-tools-5tlms --container cri-tools-two -- cat /proc/1/status
+    #kubectl exec -ti cluster-tools-5tlms --container cluster-tools-two -- cat /proc/1/status
   end
 
   # todo (optional) get the resource name for the pod name
