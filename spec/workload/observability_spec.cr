@@ -29,7 +29,7 @@ describe "Observability" do
 
   it "'prometheus_traffic' should pass if there is prometheus traffic", tags: ["observability"] do
 
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-prom-prod-discovery/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
       LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
       LOGGING.info "Installing prometheus server" 
       helm = BinarySingleton.helm
@@ -41,7 +41,7 @@ describe "Observability" do
       LOGGING.info response_s
       (/PASSED: Your cnf is sending prometheus traffic/ =~ response_s).should_not be_nil
   ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-prom-prod-discovery/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
       resp = `#{helm} delete prometheus`
       LOGGING.info resp
       $?.success?.should be_true
