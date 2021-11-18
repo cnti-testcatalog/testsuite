@@ -141,6 +141,13 @@ module KubectlClient
     end
   end
 
+  module Describe
+    def self.cluster_policy_report()
+      cmd = "kubectl get cpolr -o json"
+      ShellCmd.run(cmd, "KubectlClient::Describe.cluster_policy_report")
+    end
+  end
+
   module Patch
     def self.spec(kind : String, resource : String, spec_input : String, namespace : String? = nil)
       namespace_opt = ""
@@ -244,7 +251,12 @@ module KubectlClient
       result = ShellCmd.run(cmd, "KubectlClient::Get.pods")
       JSON.parse(result[:output])
     end
-   
+  
+    def self.policy_report(name : String)
+      cmd = "kubectl get polr #{name} -o json"
+      ShellCmd.run(cmd, "KubectlClient::Get.policy_report")
+    end
+
     # todo put this in a manifest module
     def self.resource_map(k8s_manifest, &block)
       if nodes["items"]?

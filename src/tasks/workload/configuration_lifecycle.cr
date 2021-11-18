@@ -9,8 +9,41 @@ require "../utils/utils.cr"
 rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
-task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used", "immutable_configmap"].concat(rolling_version_change_test_names) do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used", "immutable_configmap", "latest_tag"].concat(rolling_version_change_test_names) do |_, args|
   stdout_score("configuration_lifecycle")
+end
+
+desc "Check if the CNF is using images with latest tag"
+task "latest_tag" do |_, args|
+  Log.for("verbose").info { "latest_tag" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/disallow_latest_tag/disallow_latest_tag.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+  result = KubectlClient::Get.policy_report("polr-ns-default")
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+  failures = [] of String
+  policy_report["results"].as_a.each do |test_result|
+    if test_result["result"] == "fail"
+      test_passed = false
+      failures.push(test_result["message"].as_s)
+    end
+  end
+
+  emoji_passed="🏷️✔️"
+  emoji_failed="🏷️❌"
+
+  if test_passed
+    resp = upsert_passed_task("check_latest_tag", "✔️  PASSED: Images do not use latest tag #{emoji_passed}")
+  else
+    resp = upsert_failed_task("check_latest_tag","✖️  FAILED: Found images with latest tag #{emoji_failed}")
+    failures.each do |msg|
+      puts "Policy Failure: #{msg}".colorize(:red)
+    end
+  end
 end
 
 desc "Does a search for IP addresses or subnets come back as negative?"
