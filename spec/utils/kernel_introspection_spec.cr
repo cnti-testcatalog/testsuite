@@ -13,15 +13,15 @@ describe "KernelInstrospection" do
     # KubectlClient::Apply.file("./tools/cluster-tools/manifest.yml")
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     (pods).should_not be_nil
-    pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
-    KubectlClient::Get.resource_wait_for_install("Daemonset", "cluster-tools")
+    pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+    KubectlClient::Get.resource_wait_for_install("Daemonset", "cri-tools")
     LOGGING.info "pods: #{pods}"
     (pods).should_not be_nil
     if pods && pods[0]? != Nil
       (pods.size).should be > 0
       first_node = pods[0]
       if first_node
-        statuses = KernelIntrospection::K8s.status_by_proc(first_node.dig("metadata", "name"), "cluster-tools")
+        statuses = KernelIntrospection::K8s.status_by_proc(first_node.dig("metadata", "name"), "cri-tools")
         LOGGING.info "statuses: #{statuses}"
         (statuses).should_not be_nil
         # (statuses[0]["Pid"]).should eq "1"
