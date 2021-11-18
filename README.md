@@ -57,7 +57,7 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
   - [#cnf-testsuite-dev](https://cloud-native.slack.com/archives/C014TNCEX8R)
 - Join the weekly developer meetings
 
-  - Meetings every Thursday at 14:15 - 15:00 UTC
+  - Meetings every Thursday at 15:15 - 16:00 UTC
   - Meeting minutes are [here](https://docs.google.com/document/d/1IbrgjqIkOCvrrSG0DRE6X62UUZpBq-818Mn8q0nkkd0/edit)
 
 - Join the weekly [CNF Working Group meetings](https://github.com/cncf/cnf-wg#recurring-meetings)

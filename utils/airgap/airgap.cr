@@ -1,7 +1,6 @@
 # coding: utf-8
 require "totem"
 require "colorize"
-require "crinja"
 # require "./tar.cr"
 require "tar"
 require "find"
@@ -10,6 +9,13 @@ require "docker_client"
 require "kubectl_client"
 # require "./airgap_utils.cr"
 require "file_utils"
+
+class CriToolsTemplate
+  def initialize(@name : String, @image : String)
+  end
+
+  ECR.def_to_s "#{__DIR__}/cri-tools-template.yml.ecr"
+end
 
 # todo put in a separate library. it shold go under ./tools for now
 module AirGap
@@ -77,9 +83,12 @@ module AirGap
     TarClient.untar(output_file, output_dir)
   end
 
-  def self.cache_images(tarball_name="./airgapped.tar.gz", cnf_setup=false)
+  def self.cache_images(cnf_setup=false, kind_name=false)
     Log.info { "cache_images" }
-    AirGap.bootstrap_cluster()
+    unless kind_name
+      AirGap.bootstrap_cluster()
+    end
+    #TODO Potentially remove this. 
     if ENV["CRYSTAL_ENV"]? == "TEST"
       # todo change chaos-mesh tar to something more generic
       image_files = ["#{TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
@@ -96,7 +105,7 @@ module AirGap
       end
     end
     Log.info { "publishing: #{image_files}" }
-    resp = image_files.map {|x| AirGap.publish_tarball(x)}
+    resp = image_files.map {|x| AirGap.publish_tarball(x, kind_name)}
     Log.debug { "resp: #{resp}" }
     resp
   end
@@ -138,18 +147,24 @@ module AirGap
     AirGap.install_cri_binaries(pods)
   end
 
-  def self.publish_tarball(tarball)
-    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-    pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
-    pods.map do |pod| 
-      pod_name = pod.dig?("metadata", "name")
-      KubectlClient.cp("#{tarball} #{pod_name}:/tmp/#{tarball.split("/")[-1]}")
-    end
-    pods.map do |pod| 
-      pod_name = pod.dig?("metadata", "name")
-      resp = KubectlClient.exec("-ti #{pod_name} -- ctr -n=k8s.io image import /tmp/#{tarball.split("/")[-1]}")
-      Log.debug { "Resp: #{resp}" }
-      resp
+  def self.publish_tarball(tarball, kind_name=false)
+    unless kind_name
+      pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+      pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
+      pods.map do |pod| 
+        pod_name = pod.dig?("metadata", "name")
+        KubectlClient.cp("#{tarball} #{pod_name}:/tmp/#{tarball.split("/")[-1]}")
+      end
+      pods.map do |pod| 
+        pod_name = pod.dig?("metadata", "name")
+        resp = KubectlClient.exec("-ti #{pod_name} -- ctr -n=k8s.io image import /tmp/#{tarball.split("/")[-1]}")
+        Log.debug { "Resp: #{resp}" }
+        resp
+      end
+    else
+      DockerClient.cp("#{tarball} #{kind_name}:/#{tarball.split("/")[-1]}")
+      #DockerClient.exec("-ti #{kind_name} ctr -n=k8s.io image import /#{tarball.split("/")[-1]}")
+      `docker exec -ti #{kind_name} ctr -n=k8s.io image import /#{tarball.split("/")[-1]}`
     end
   end
 
@@ -221,57 +236,11 @@ module AirGap
   # TODO make this work with runtimes other than containerd
   # TODO make a tool that cleans up the cri images
   def self.create_pod_by_image(image, name="cri-tools")
-    template = Crinja.render(cri_tools_template, { "image" => image, "name" => name})
+    template = CriToolsTemplate.new(name, image.to_s).to_s
     File.write("#{name}-manifest.yml", template)
     KubectlClient::Apply.file("#{name}-manifest.yml")
     LOGGING.info KubectlClient::Get.resource_wait_for_install("DaemonSet", name)
   end
-
-  # Make an image all all of the nodes that has tar access
-def self.cri_tools_template 
-  <<-TEMPLATE
-  apiVersion: apps/v1
-  kind: DaemonSet
-  metadata:
-      name: {{ name }}
-  spec:
-    selector:
-      matchLabels:
-        name: {{ name }}
-    template:
-      metadata:
-        labels:
-          name: {{ name }}
-      spec:
-        containers:
-          - name: {{ name }}
-            image: '{{ image }}'
-            command: ["/bin/sh"]
-            args: ["-c", "sleep infinity"]
-            volumeMounts:
-            - mountPath: /run/containerd/containerd.sock
-              name: containerd-volume
-            - mountPath: /tmp/usr/bin
-              name: usrbin
-            - mountPath: /tmp/usr/local/bin
-              name: local
-            - mountPath: /tmp/bin
-              name: bin
-        volumes:
-        - name: containerd-volume
-          hostPath:
-            path: /var/run/containerd/containerd.sock
-        - name: usrbin
-          hostPath:
-            path: /usr/bin/
-        - name: local
-          hostPath:
-            path: /usr/local/bin/
-        - name: bin
-          hostPath:
-            path: /bin/
-  TEMPLATE
-end
 
   def self.pods_with_tar() : KubectlClient::K8sManifestList
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list).select do |pod|

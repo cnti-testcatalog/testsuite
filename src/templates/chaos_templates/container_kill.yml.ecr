@@ -1,0 +1,16 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: container-kill
+  namespace: default
+spec:
+  action: container-kill
+  mode: one
+  containerName: '<%= @helm_chart_container_name %>'
+  selector:
+    labelSelectors:
+      <% @labels.each do |label| %>
+      '<%= label[0] %>': '<%= label[1] %>'
+      <% end %>
+  scheduler:
+    cron: '@every 600s'

@@ -1,0 +1,25 @@
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: <%= @test_name %>
+  namespace: default
+spec:
+  appinfo:
+    appns: 'default'
+    applabel: '<%= @deployment_label %>=<%= @deployment_label_value %>'
+    appkind: 'deployment'
+  # It can be delete/retain
+  jobCleanUpPolicy: 'delete'
+  # It can be active/stop
+  engineState: 'active'
+  chaosServiceAccount: <%= @chaos_experiment_name %>-sa
+  experiments:
+    - name: <%= @chaos_experiment_name %>
+      spec:
+        components:
+          env:
+            - name: TOTAL_CHAOS_DURATION
+              value: '<%= @total_chaos_duration %>'
+
+            - name: TARGET_NODE
+              value: '<%= @app_nodename %>'

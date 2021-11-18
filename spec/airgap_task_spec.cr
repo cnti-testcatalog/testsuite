@@ -37,8 +37,8 @@ describe "AirGap" do
 
   it "'setup' task should install the necessary cri tools in the cluster", tags: ["airgap-setup"] do
     response_s = `./cnf-testsuite -l info setup offline=/tmp/airgapped.tar.gz`
-    $?.success?.should be_true
     Log.info { response_s }
+    $?.success?.should be_true
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
     # Get the generated name of the cri-tools per node

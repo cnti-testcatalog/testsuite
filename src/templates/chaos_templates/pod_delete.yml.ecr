@@ -1,0 +1,29 @@
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: <%= @test_name %>
+  namespace: default
+spec:
+  engineState: 'active'
+  appinfo:
+    appns: 'default'
+    applabel: '<%= @deployment_label %>=<%= @deployment_label_value %>'
+    appkind: 'deployment'
+  chaosServiceAccount: <%= @chaos_experiment_name %>-sa
+  jobCleanUpPolicy: 'delete'
+  experiments:
+    - name: <%= @chaos_experiment_name %>
+      spec:
+        components:
+          env:
+            # specify the fill percentage according to the disk pressure required
+            - name: TOTAL_CHAOS_DURATION
+              value: '<%= @total_chaos_duration %>'
+
+            - name: CHAOS_INTERVAL
+              value: '10'
+
+            - name: TARGET_PODS
+              value: '<%= @target_pod_name %>'
+            - name: FORCE
+              value: 'false'

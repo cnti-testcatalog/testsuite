@@ -5,7 +5,7 @@ require "totem"
 
 desc "Sets up the CNF test suite, the K8s cluster, and upstream projects"
 
-task "setup", ["offline", "helm_local_install", "prereqs", "configuration_file_setup", "install_api_snoop", "install_sonobuoy", "install_chart_testing", "cnf_testsuite_setup"] do  |_, args|
+task "setup", ["offline", "helm_local_install", "prereqs", "configuration_file_setup", "install_api_snoop", "install_sonobuoy", "install_chart_testing", "cnf_testsuite_setup", "install_kind"] do  |_, args|
 
   stdout_success "Setup complete"
 end
@@ -19,7 +19,7 @@ task "offline" do |_, args|
   input_file = args.named["if"].as(String) if args.named["if"]?
   if input_file && !input_file.empty?
       AirGap.extract(input_file)
-      AirGap.cache_images(input_file)
+      AirGap.cache_images()
   end
 end
 

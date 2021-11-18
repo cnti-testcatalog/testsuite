@@ -55,4 +55,7 @@ falco_rule.yaml
 /constraint_template.yml
 /install.sh
 /tools/kubescape
+/tools/kind
 /kubescape_results.json
+/cilium
+/tigera-operator

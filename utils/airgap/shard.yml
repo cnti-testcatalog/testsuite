@@ -18,9 +18,6 @@ dependencies:
   totem:
     github: icyleaf/totem
     version: ~> 0.7.0
-  crinja:
-    github: straight-shoota/crinja
-    version: ~> 0.7.0
   tar:
     path: utils/tar
   helm:

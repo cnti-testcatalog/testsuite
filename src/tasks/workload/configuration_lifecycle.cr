@@ -568,16 +568,13 @@ task "secrets_used" do |_, args|
 end
 
 # https://www.cloudytuts.com/tutorials/kubernetes/how-to-create-immutable-configmaps-and-secrets/
-def configmap_template
-  <<-TEMPLATE
-  apiVersion: v1
-  kind: ConfigMap
-  metadata:
-    name: myapp
-  immutable: true
-  data:
-    api.server: {{ test_url }}
-  TEMPLATE
+class ImmutableConfigMapTemplate
+  # elapsed_time should be Int32 but it is being passed as string
+  # So the old behaviour has been retained as is to prevent any breakages
+  def initialize(@test_url : String)
+  end
+
+  ECR.def_to_s("src/templates/immutable_configmap.yml.ecr")
 end
 
 desc "Does the CNF use immutable configmaps?"
@@ -595,14 +592,14 @@ task "immutable_configmap" do |_, args|
 
     test_config_map_filename = "#{destination_cnf_dir}/test_config_map.yml";
 
-    template = Crinja.render(configmap_template, { "test_url" => "doesnt_matter" })
+    template = ImmutableConfigMapTemplate.new("doesnt_matter").to_s
     Log.debug { "test immutable_configmap template: #{template}" }
     File.write(test_config_map_filename, template)
     KubectlClient::Apply.file(test_config_map_filename)
 
     # now we change then apply again
 
-    template = Crinja.render(configmap_template, { "test_url" => "doesnt_matter_again" })
+    template = ImmutableConfigMapTemplate.new("doesnt_matter_again").to_s
     Log.debug { "test immutable_configmap change template: #{template}" }
     File.write(test_config_map_filename, template)
 

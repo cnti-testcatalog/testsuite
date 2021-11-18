@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: python-server
+  labels:
+    k8s-app: python3-server
+spec:
+  containers:
+  - image: "python:3.10.0-bullseye"
+    name: python-http-server
+    command: ["/bin/bash", "-c"]
+    args: ["-c", "python -m http.server &>/dev/null"]
+    livenessProbe:
+      tcpSocket:
+        port: 8000
+    readinessProbe:
+      tcpSocket:
+        port: 8000
+    resources: {}
+    ports:
+      - containerPort: 8000
+  dnsPolicy: Default
