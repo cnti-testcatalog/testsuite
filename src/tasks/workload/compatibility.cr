@@ -82,9 +82,9 @@ task "cni_compatible" do |_, args|
 
       emoji_security="🔓🔑"
       if calico_cnf_passed && cilium_cnf_passed 
-        upsert_passed_task("cnf_compatible", "✔️  PASSED: CNF compatible with both Calico and Cilium #{emoji_security}")
+        upsert_passed_task("cni_compatible", "✔️  PASSED: CNF compatible with both Calico and Cilium #{emoji_security}")
       else
-        upsert_failed_task("cnf_compatible", "✖️  FAILED: CNF not compatible with either Calico or Cillium #{emoji_security}")
+        upsert_failed_task("cni_compatible", "✖️  FAILED: CNF not compatible with either Calico or Cillium #{emoji_security}")
       end
     ensure
       KindManager.delete_cluster("calico-test")

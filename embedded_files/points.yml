@@ -13,7 +13,7 @@
 - name: single_process_type 
   tags: microservice, dynamic, workload
 
-- name: cni_compatibility
+- name: cni_compatible
   tags: compatibility, dynamic
 # - name: cni_spec 
 #  tags: compatibility, dynamic
