@@ -59,3 +59,5 @@ falco_rule.yaml
 /kubescape_results.json
 /cilium
 /tigera-operator
+/disable_cni.yml
+/cluster_tools.yml

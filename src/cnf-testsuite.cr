@@ -1,4 +1,5 @@
 require "sam"
+require "./proto/**"
 require "./tasks/**"
 require "./tasks/utils/utils.cr"
 require "./tasks/utils/release_manager.cr"

@@ -48,6 +48,8 @@ dependencies:
     path: utils/airgap
   retriable:
     github: Sija/retriable.cr
+  protobuf:
+    github: jeromegn/protobuf.cr
 
 development_dependencies:
   ameba:
