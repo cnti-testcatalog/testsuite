@@ -206,3 +206,5 @@
   tags: observability, dynamic, workload
   pass: 10
   fail: 0 
+- name: open_metrics 
+  tags: observability, dynamic, workload

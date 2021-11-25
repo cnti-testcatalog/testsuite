@@ -82,7 +82,7 @@ describe "Observability" do
   end
 end
 
-it "'open_metrics' should pass if there is a valid open metrics response from the cnf", tags: ["observability"] do
+it "'open_metrics' should fail if there is a valid open metrics response from the cnf", tags: ["observability"] do
 
   LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
   LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
@@ -94,7 +94,7 @@ it "'open_metrics' should pass if there is a valid open metrics response from th
 
   response_s = `./cnf-testsuite open_metrics`
   LOGGING.info response_s
-  (/PASSED: Your cnf is sending open metrics traffic/ =~ response_s).should_not be_nil
+  (/FAILED: Your cnf's metrics traffic is not Open Metrics compatible/ =~ response_s).should_not be_nil
 ensure
   LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
   resp = `#{helm} delete prometheus`
