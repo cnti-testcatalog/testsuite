@@ -5,7 +5,8 @@ require "totem"
 require "../utils/utils.cr"
 
 desc "In order to maintain, debug, and have insight into a protected environment, its infrastructure elements must have the property of being observable. This means these elements must externalize their internal states in some way that lends itself to metrics, tracing, and logging."
-task "observability", ["log_output"] do |_, args|
+task "observability", ["log_output", "prometheus_traffic", "open_metrics"] do |_, args|
+  stdout_score("observability")
 end
 
 desc "Check if the CNF outputs logs to stdout or stderr"
