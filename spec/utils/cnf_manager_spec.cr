@@ -153,7 +153,8 @@ describe "SampleUtils" do
             "non_root_containers", "host_pid_ipc_privileges",
             "linux_hardening", "resource_policies",
             "immutable_file_systems", "hostpath_mounts", "log_output",
-            "prometheus_traffic", "open_metrics"]
+            "prometheus_traffic", "open_metrics",
+            "ingress_egress_blocked"]
     (CNFManager::Points.all_task_test_names()).sort.should eq(tags.sort)
   end
 
