@@ -13,7 +13,7 @@
 - name: single_process_type 
   tags: microservice, dynamic, workload
 
-- name: cni_compatibility
+- name: cni_compatible
   tags: compatibility, dynamic
 # - name: cni_spec 
 #  tags: compatibility, dynamic
@@ -211,3 +211,5 @@
   fail: 0 
 - name: open_metrics 
   tags: observability, dynamic, workload
+  pass: 5 
+  fail: 0 
