@@ -200,6 +200,9 @@
 - name: hostpath_mounts
   tags: security, dynamic, workload
 
+- name: ingress_egress_blocked 
+  tags: security, dynamic, workload
+
 - name: log_output
   tags: observability, dynamic, workload
 - name: prometheus_traffic 
