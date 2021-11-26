@@ -1,0 +1,60 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metrics-data
+data:
+  OpenMetricsData: |-
+    # HELP meows Heard around the house.
+    # TYPE meows counter
+    meows_total{cat="Shamus"} 1
+    meows_created{cat="Shamus"} 1604597246.05814
+    meows_total{cat="Unknown"} 3
+    meows_created{cat="Unknown"} 1604597246.05893
+    # HELP thermostat Thermostat display.
+    # TYPE thermostat gauge
+    thermostat 19.3
+    # HELP temperature Ambient room temperature measurements.
+    # TYPE temperature histogram
+    temperature_bucket{room="bathroom",le="10.0"} 0
+    temperature_bucket{room="bathroom",le="15.0"} 0
+    temperature_bucket{room="bathroom",le="20.0"} 0
+    temperature_bucket{room="bathroom",le="22.0"} 9
+    temperature_bucket{room="bathroom",le="25.0"} 11
+    temperature_bucket{room="bathroom",le="+Inf"} 11
+    temperature_sum{room="bathroom"} 234.387663039796
+    temperature_count{room="bathroom"} 11
+    temperature_created{room="bathroom"} 1604597246.08967
+    temperature_bucket{room="kitchen",le="10.0"} 0
+    temperature_bucket{room="kitchen",le="15.0"} 0
+    temperature_bucket{room="kitchen",le="20.0"} 1
+    temperature_bucket{room="kitchen",le="22.0"} 4
+    temperature_bucket{room="kitchen",le="25.0"} 9
+    temperature_bucket{room="kitchen",le="+Inf"} 9
+    temperature_sum{room="kitchen"} 198.854388891071
+    temperature_count{room="kitchen"} 9
+    temperature_created{room="kitchen"} 1604597246.08957
+    # EOF
+---
+apiVersion: v1
+kind: Pod
+metadata:
+    name: metrics-example
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "80"
+spec:
+  containers:
+    - name: metrics-example
+      image: flashspys/nginx-static
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - name: metrics-configmap
+          mountPath: /static/
+  volumes:
+    - name: metrics-configmap
+      configMap:
+        name: metrics-data
+        items:
+        - key: OpenMetricsData
+          path: metrics
