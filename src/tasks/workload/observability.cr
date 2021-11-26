@@ -148,15 +148,19 @@ task "open_metrics", ["prometheus_traffic"] do |_, args|
   task_response = CNFManager::Task.task_runner(args) do |args, config|
     release_name = config.cnf_config[:release_name]
     configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-open-metrics")
-    open_metrics_validated = configmap["data"].as_h["open_metrics_validated"].as_s
+    if configmap != EMPTY_JSON
+      open_metrics_validated = configmap["data"].as_h["open_metrics_validated"].as_s
 
-    emoji_observability="📶☠️"
-    if open_metrics_validated == "true"
-      upsert_passed_task("open_metrics","✔️  PASSED: Your cnf's metrics traffic is Open Metrics compatible #{emoji_observability}")
+      emoji_observability="📶☠️"
+      if open_metrics_validated == "true"
+        upsert_passed_task("open_metrics","✔️  PASSED: Your cnf's metrics traffic is Open Metrics compatible #{emoji_observability}")
+      else
+        open_metrics_response = configmap["data"].as_h["open_metrics_response"].as_s
+        puts "Open Metrics Failed: #{open_metrics_response}".colorize(:red)
+        upsert_failed_task("open_metrics", "✖️  FAILED: Your cnf's metrics traffic is not Open Metrics compatible #{emoji_observability}")
+      end
     else
-      open_metrics_response = configmap["data"].as_h["open_metrics_response"].as_s
-      puts "Open Metrics Failed: #{open_metrics_response}".colorize(:red)
-      upsert_failed_task("open_metrics", "✖️  FAILED: Your cnf's metrics traffic is not Open Metrics compatible #{emoji_observability}")
+      upsert_skipped_task("open_metrics", "✖️  SKIPPED: Prometheus traffic not configured #{emoji_observability}")
     end
   end
 end
