@@ -41,6 +41,7 @@ end
 desc "Does the CNF emit prometheus traffic"
 task "prometheus_traffic" do |_, args|
   Log.info { "Running: prometheus_traffic" }
+  next if args.named["offline"]?
   task_response = CNFManager::Task.task_runner(args) do |args, config|
 
     release_name = config.cnf_config[:release_name]
@@ -143,6 +144,7 @@ end
 desc "Does the CNF emit prometheus open metric compatible traffic"
 task "open_metrics", ["prometheus_traffic"] do |_, args|
   Log.info { "Running: open_metrics" }
+  next if args.named["offline"]?
   task_response = CNFManager::Task.task_runner(args) do |args, config|
     release_name = config.cnf_config[:release_name]
     configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-open-metrics")
