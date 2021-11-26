@@ -101,3 +101,23 @@ ensure
   LOGGING.info resp
   $?.success?.should be_true
 end
+
+it "'open_metrics' should pass if there is a valid open metrics response from the cnf", tags: ["observability"] do
+
+  LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-openmetrics/cnf-testsuite.yml`
+  LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
+  LOGGING.info "Installing prometheus server" 
+  helm = BinarySingleton.helm
+  resp = `#{helm} install prometheus prometheus-community/prometheus`
+  LOGGING.info resp
+  KubectlClient::Get.wait_for_install("prometheus-server")
+
+  response_s = `./cnf-testsuite open_metrics`
+  LOGGING.info response_s
+  (/PASSED: Your cnf's metrics traffic is Open Metrics compatible/ =~ response_s).should_not be_nil
+ensure
+  LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-openmetrics/cnf-testsuite.yml`
+  resp = `#{helm} delete prometheus`
+  LOGGING.info resp
+  $?.success?.should be_true
+end
