@@ -148,10 +148,10 @@ task "open_metrics", ["prometheus_traffic"] do |_, args|
   task_response = CNFManager::Task.task_runner(args) do |args, config|
     release_name = config.cnf_config[:release_name]
     configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-open-metrics")
+    emoji_observability="📶☠️"
     if configmap != EMPTY_JSON
       open_metrics_validated = configmap["data"].as_h["open_metrics_validated"].as_s
 
-      emoji_observability="📶☠️"
       if open_metrics_validated == "true"
         upsert_passed_task("open_metrics","✔️  PASSED: Your cnf's metrics traffic is Open Metrics compatible #{emoji_observability}")
       else
