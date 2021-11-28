@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: cluster-tools
-          image: conformance/cri-tools:v1.0.0
+          image: conformance/cluster-tools:v1.0.0
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh"]
           args: ["-c", "sleep infinity"]

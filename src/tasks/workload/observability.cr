@@ -5,7 +5,8 @@ require "totem"
 require "../utils/utils.cr"
 
 desc "In order to maintain, debug, and have insight into a protected environment, its infrastructure elements must have the property of being observable. This means these elements must externalize their internal states in some way that lends itself to metrics, tracing, and logging."
-task "observability", ["log_output"] do |_, args|
+task "observability", ["log_output", "prometheus_traffic", "open_metrics"] do |_, args|
+  stdout_score("observability")
 end
 
 desc "Check if the CNF outputs logs to stdout or stderr"
@@ -39,14 +40,12 @@ end
 
 desc "Does the CNF emit prometheus traffic"
 task "prometheus_traffic" do |_, args|
-
-  # if args.named["offline"]?
-  #     Log.info { "skipping prometheus_adapter: in offline mode" }
-  #   puts "SKIPPED: Prometheus Adapter".colorize(:yellow)
-  #   next
-  # end
   Log.info { "Running: prometheus_traffic" }
+  next if args.named["offline"]?
   task_response = CNFManager::Task.task_runner(args) do |args, config|
+
+    release_name = config.cnf_config[:release_name]
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir] 
 
     do_this_on_each_retry = ->(ex : Exception, attempt : Int32, elapsed_time : Time::Span, next_interval : Time::Span) do
       Log.info { "#{ex.class}: '#{ex.message}' - #{attempt} attempt in #{elapsed_time} seconds and #{next_interval} seconds until the next try."}
@@ -61,29 +60,15 @@ task "prometheus_traffic" do |_, args|
       imageids = KubectlClient::Get.all_container_repo_digests
       match = DockerClient::K8s.local_digest_match(sha_list, imageids)
       if match[:found]
-        # matched_service = KubectlClient::Get.service_by_digest(match[:digest])
         service = KubectlClient::Get.service_by_digest(match[:digest])
         service_url = service.dig("metadata", "name") 
 
         Log.info { "service_url: #{service_url}"}
-        # todo call from install cni container
-        # todo make a prerequisite for cluster_tools
-        pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-        pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
+        ClusterTools.install
+        prom_api_resp = ClusterTools.exec("curl http://#{service_url}/api/v1/targets?state=active")
 
-        File.write("cluster_tools.yml", CLUSTER_TOOLS)
-        KubectlClient::Apply.file("cluster_tools.yml")
-
-        KubectlClient::Get.wait_for_cluster_tools
-        cluster_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
-        Log.info { "cluster_tools_pod_name: #{cluster_tools_pod_name}"}
-        Log.info { "service_url: #{service_url}"}
-        prom_api_resp  = KubectlClient.exec("--namespace=default -ti #{cluster_tools_pod_name} -- curl http://#{service_url}/api/v1/targets?state=active")  
-
-        # prom_api_resp = Halite.get("http://#{service_url}/api/v1/targets?state=active")
         Log.debug { "prom_api_resp: #{prom_api_resp}"}
         prom_json = JSON.parse(prom_api_resp[:output])
-        #todo get cnf ip address
         matched_target = false
         active_targets = prom_json.dig("data", "activeTargets")
         Log.debug { "active_targets: #{active_targets}"}
@@ -103,12 +88,40 @@ task "prometheus_traffic" do |_, args|
               prom_target_urls.each do |url|
                 Log.info { "checking: #{url} against #{ip.dig("ip").as_s}"}
                 if url.includes?(ip.dig("ip").as_s)
+                  msg = ClusterTools.open_metric_validator(url)
+                  # Immutable config maps are only supported in Kubernetes 1.19+
+                  immutable_configmap = true
+
+                  if version_less_than(KubectlClient.server_version, "1.19.0")
+                    immutable_configmap = false
+                  end
+                  if msg[:status].success?
+                    metrics_config_map = Prometheus::OpenMetricConfigMapTemplate.new(
+                      "cnf-testsuite-#{release_name}-open-metrics",
+                      true,
+                      "",
+                      immutable_configmap
+                    ).to_s
+                  else
+                    Log.info { "Openmetrics failure reason: #{msg[:output]}"}
+                    metrics_config_map = Prometheus::OpenMetricConfigMapTemplate.new(
+                      "cnf-testsuite-#{release_name}-open-metrics",
+                      false,
+                      msg[:output],
+                      immutable_configmap
+                    ).to_s
+                  end
+
+                  Log.debug { "metrics_config_map : #{metrics_config_map}" }
+                  File.write("#{destination_cnf_dir}/configmap_test.yml", "#{metrics_config_map}")
+                  KubectlClient::Delete.file("#{destination_cnf_dir}/configmap_test.yml")
+                  KubectlClient::Apply.file("#{destination_cnf_dir}/configmap_test.yml")
                   ip_match = true
                 end
               end
             end
           end
-         ip_match 
+          ip_match 
         end
 
         # todo 1) check if scrape_url is ip address that directly matches cnf
@@ -124,6 +137,30 @@ task "prometheus_traffic" do |_, args|
       else
         upsert_skipped_task("prometheus_traffic", "✖️  SKIPPED: Prometheus server not found #{emoji_observability}")
       end
+    end
+  end
+end
+
+desc "Does the CNF emit prometheus open metric compatible traffic"
+task "open_metrics", ["prometheus_traffic"] do |_, args|
+  Log.info { "Running: open_metrics" }
+  next if args.named["offline"]?
+  task_response = CNFManager::Task.task_runner(args) do |args, config|
+    release_name = config.cnf_config[:release_name]
+    configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-open-metrics")
+    emoji_observability="📶☠️"
+    if configmap != EMPTY_JSON
+      open_metrics_validated = configmap["data"].as_h["open_metrics_validated"].as_s
+
+      if open_metrics_validated == "true"
+        upsert_passed_task("open_metrics","✔️  PASSED: Your cnf's metrics traffic is Open Metrics compatible #{emoji_observability}")
+      else
+        open_metrics_response = configmap["data"].as_h["open_metrics_response"].as_s
+        puts "Open Metrics Failed: #{open_metrics_response}".colorize(:red)
+        upsert_failed_task("open_metrics", "✖️  FAILED: Your cnf's metrics traffic is not Open Metrics compatible #{emoji_observability}")
+      end
+    else
+      upsert_skipped_task("open_metrics", "✖️  SKIPPED: Prometheus traffic not configured #{emoji_observability}")
     end
   end
 end

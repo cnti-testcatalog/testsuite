@@ -44,6 +44,10 @@ shards:
     git: https://github.com/icyleaf/popcorn.git
     version: 0.3.0
 
+  protobuf:
+    git: https://github.com/jeromegn/protobuf.cr.git
+    version: 2.2.3
+
   readline:
     git: https://github.com/crystal-lang/crystal-readline.git
     version: 0.1.1+git.commit.27a06e3b2a7bdb8e2d97252420eb8829be976e5b

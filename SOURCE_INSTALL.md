@@ -263,6 +263,15 @@ Run the following to cleanup the specific cnf-testsuite test:
 You can also run `cleanall` and cnf-testsuite will attempt to cleanup everything.
 
 _NOTE: Cleanup does not handle manually deployed CNFs_
+#### NOTE: If the OpenMetrics version changes, the protobuf file will need to be regenerated
+```
+git clone https://github.com/jeromegn/protobuf.cr
+crystal build bin/protoc-gen-crystal.cr -o ~/bin/protoc-gen-crystal
+git clone https://github.com/OpenObservability/OpenMetrics
+cp ../protobuf.cr/openmetrics_data_model.pb.cr src/proto/ 
+# You will need to install protobufs on your system e.g. sudo apt-get install -y protobuf-compiler
+protoc -I.  --crystal_out . openmetrics_data_model.proto
+```
 
 ### Ready to Bring Your Own CNF?
 
