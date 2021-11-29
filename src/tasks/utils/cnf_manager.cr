@@ -17,13 +17,13 @@ require "ecr"
 
 module CNFManager
 
-  class ConfigMapTemplate
+  class ElapsedTimeConfigMapTemplate
     # elapsed_time should be Int32 but it is being passed as string
     # So the old behaviour has been retained as is to prevent any breakages
     def initialize(@release_name : String, @helm_used : Bool, @elapsed_time : String, @immutable : Bool)
     end
 
-    ECR.def_to_s("src/templates/configmap_template.yml.ecr")
+    ECR.def_to_s("src/templates/elapsed_time_configmap.yml.ecr")
   end
 
   # TODO: figure out recursively check for unmapped json and warn on that
@@ -843,7 +843,7 @@ module CNFManager
 
     #TODO if helm_install then set helm_deploy = true in template
     Log.info { "save config" }
-    elapsed_time_template = ConfigMapTemplate.new(
+    elapsed_time_template = ElapsedTimeConfigMapTemplate.new(
       "cnf-testsuite-#{release_name}-startup-information",
       helm_used,
       "#{elapsed_time.seconds}",
@@ -851,7 +851,7 @@ module CNFManager
     ).to_s
     #TODO find a way to kubectlapply directly without a map
     Log.debug { "elapsed_time_template : #{elapsed_time_template}" }
-    configmap_path = "#{destination_cnf_dir}/config_maps/configmap_test.yml"
+    configmap_path = "#{destination_cnf_dir}/config_maps/elapsed_time.yml"
     File.write(configmap_path, "#{elapsed_time_template}")
     # TODO if the config map exists on install, complain, delete then overwrite?
     KubectlClient::Delete.file(configmap_path)
@@ -928,7 +928,7 @@ module CNFManager
 
     Log.for("verbose").info { "cleanup config: #{config.inspect}" } if verbose
     #TODO Issue-1115: Delete all configmaps within the <cnf-sandbox-dir>/config_maps directory
-    KubectlClient::Delete.file("#{destination_cnf_dir}/config_maps/configmap_test.yml")
+    KubectlClient::Delete.file("#{destination_cnf_dir}/config_maps/elapsed_time.yml")
     release_name = "#{config.get("release_name").as_s?}"
     manifest_directory = destination_cnf_dir + "/" + "#{config["manifest_directory"]? && config["manifest_directory"].as_s?}"
     Log.info { "manifest_directory: #{manifest_directory}" }
