@@ -567,6 +567,9 @@ module CNFManager
     Log.info { copy_cnf_cmd }
     status = Process.run(copy_cnf_cmd, shell: true)
 
+    # Create dir for config maps
+    FileUtils.mkdir_p("#{destination_cnf_dir}/config_maps")
+
     # todo manifest_or_helm_directory should either be the source helm/manifest files or the destination
     # directory that they will be copied to/generated into, but *not both*
     case install_method[0]
