@@ -851,11 +851,12 @@ module CNFManager
     ).to_s
     #TODO find a way to kubectlapply directly without a map
     Log.debug { "elapsed_time_template : #{elapsed_time_template}" }
-    File.write("#{destination_cnf_dir}/configmap_test.yml", "#{elapsed_time_template}")
+    configmap_path = "#{destination_cnf_dir}/config_maps/configmap_test.yml"
+    File.write(configmap_path, "#{elapsed_time_template}")
     # TODO if the config map exists on install, complain, delete then overwrite?
-    KubectlClient::Delete.file("#{destination_cnf_dir}/configmap_test.yml")
+    KubectlClient::Delete.file(configmap_path)
     #TODO call kubectl apply on file
-    KubectlClient::Apply.file("#{destination_cnf_dir}/configmap_test.yml")
+    KubectlClient::Apply.file(configmap_path)
     # TODO when uninstalling, remove config map
   end
 
