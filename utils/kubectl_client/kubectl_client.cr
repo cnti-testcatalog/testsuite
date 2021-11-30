@@ -973,6 +973,7 @@ module KubectlClient
 
     def self.all_pod_container_statuses
       statuses = all_pod_statuses.map do |x|
+        # todo there are some pods that dont have containerStatuses
         x["containerStatuses"].as_a
       end
       statuses

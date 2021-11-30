@@ -61,3 +61,4 @@ falco_rule.yaml
 /tigera-operator
 /disable_cni.yml
 /cluster_tools.yml
+/fluentd-values.yml
