@@ -927,8 +927,10 @@ module CNFManager
     config = parsed_config_file(ensure_cnf_testsuite_yml_path(config_file))
 
     Log.for("verbose").info { "cleanup config: #{config.inspect}" } if verbose
-    #TODO Issue-1115: Delete all configmaps within the <cnf-sandbox-dir>/config_maps directory
-    KubectlClient::Delete.file("#{destination_cnf_dir}/config_maps/elapsed_time.yml")
+    Dir.entries("#{destination_cnf_dir}/config_maps").each do |config_map|
+      Log.info { "Deleting configmap: #{config_map}" }
+      KubectlClient::Delete.file("#{destination_cnf_dir}/config_maps/#{config_map}")
+    end
     release_name = "#{config.get("release_name").as_s?}"
     manifest_directory = destination_cnf_dir + "/" + "#{config["manifest_directory"]? && config["manifest_directory"].as_s?}"
     Log.info { "manifest_directory: #{manifest_directory}" }
