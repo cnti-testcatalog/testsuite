@@ -17,7 +17,7 @@ task "install_falco" do |_, args|
   end
   begin
     if args.named["offline"]?
-        Log.info { "install falco offline mode" }
+      Log.info { "install falco offline mode" }
       helm_chart = Dir.entries(FALCO_OFFLINE_DIR).first
       Helm.install("falco --set ebpf.enabled=true #{chart_version} #{image_arg} #{image_tag} -f ./falco_rule.yaml #{FALCO_OFFLINE_DIR}/#{helm_chart}")
     else
