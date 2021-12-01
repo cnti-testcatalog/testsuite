@@ -641,8 +641,10 @@ module CNFManager
 
     unless input_file && !input_file.empty?
       helm_info = Helm.pull(helm_chart) 
-      puts "Helm pull error".colorize(:red)
-      raise "Helm pull error" unless helm_info[:status].success? 
+      unless helm_info[:status].success?
+        puts "Helm pull error".colorize(:red)
+        raise "Helm pull error"
+      end
     end
 
     TarClient.untar(tgz_name,  "#{destination_cnf_dir}/exported_chart")
