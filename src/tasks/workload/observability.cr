@@ -164,3 +164,36 @@ task "open_metrics", ["prometheus_traffic"] do |_, args|
     end
   end
 end
+
+desc "Are the CNF's logs captured by a logging system"
+task "routed_logs" do |_, args|
+  Log.info { "Running: routed_logs" }
+  next if args.named["offline"]?
+    emoji_observability="📶☠️"
+  task_response = CNFManager::Task.task_runner(args) do |args, config|
+    match = FluentD.match()
+    Log.info { "fluentd match: #{match}" }
+    if match[:found]
+        all_resourced_logged = CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
+          resource_logged = true 
+          resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name])
+          pods = KubectlClient::Get.pods_by_resource(resource)
+          pods.each do |pod|
+            # if any pod/container is not monitored by fluentd, fail
+            if resource_logged
+              resource_logged = FluentD.app_tailed_by_fluentd?(pod.dig("metadata", "name"), match)
+            end
+          end
+          resource_logged
+        end
+        Log.info { "all_resourced_logged: #{all_resourced_logged}" }
+        if all_resourced_logged 
+          upsert_passed_task("routed_logs","✔️  PASSED: Your cnf's logs are being captured #{emoji_observability}")
+        else
+          upsert_failed_task("routed_logs", "✖️  FAILED: Your cnf's logs are not being captured #{emoji_observability}")
+        end
+    else
+      upsert_skipped_task("routed_logs", "✖️  SKIPPED: Fluentd not configured #{emoji_observability}")
+    end
+  end
+end

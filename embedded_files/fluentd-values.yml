@@ -3,6 +3,6 @@ fileConfigs:
     <label @OUTPUT>
       <match **>
         @type file
-        path "/dev/null"
+        path "/testdata"
       </match>
     </label>
