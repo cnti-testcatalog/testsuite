@@ -11,7 +11,7 @@ describe "Platform" do
   it "'control_plane_hardening' should pass if the control plane has been hardened", tags: ["platform:security"] do
     response_s = `./cnf-testsuite platform:control_plane_hardening`
 
-
+    current_dir = FileUtils.pwd
     framework_path = "#{current_dir}/#{TOOLS_DIR}/kubescape/nsa.json"
     ls_op = `ls #{framework_path}`
     head_op = `head #{framework_path}`
