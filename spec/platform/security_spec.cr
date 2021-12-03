@@ -15,8 +15,8 @@ describe "Platform" do
     framework_path = "#{current_dir}/#{TOOLS_DIR}/kubescape/nsa.json"
     ls_op = `ls #{framework_path}`
     head_op = `head #{framework_path}`
-    Log.debug { "KUBESCAPE_DEBUG_FRAMEWORK_CHECK: #{ls_op}" }
-    Log.debug { "KUBESCAPE_DEBUG head: #{head_op}" }
+    Log.info { "KUBESCAPE_DEBUG_FRAMEWORK_CHECK: #{ls_op}" }
+    Log.info { "KUBESCAPE_DEBUG head: #{head_op}" }
 
     LOGGING.info response_s
     (/(PASSED: Control plane hardened)/ =~ response_s).should_not be_nil
