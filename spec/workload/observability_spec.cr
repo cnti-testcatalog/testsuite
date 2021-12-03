@@ -136,3 +136,23 @@ ensure
   LOGGING.info resp
   $?.success?.should be_true
 end
+
+it "'routed_logs' should fail if cnfs logs are not captured", tags: ["observability"] do
+
+  LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+  # resp = `./cnf-testsuite install_fluentd`
+  Log.info {"Installing FluentD daemonset "}
+  Helm.helm_repo_add("fluent","https://fluent.github.io/helm-charts")
+  #todo  #helm install --values ./override.yml fluentd ./fluentd
+  Helm.install("--values ./spec/fixtures/fluentd-values.yml fluentd fluent/fluentd")
+  KubectlClient::Get.resource_wait_for_install("Daemonset", "fluentd")
+
+  response_s = `./cnf-testsuite routed_logs`
+  LOGGING.info response_s
+  (/FAILED: Your cnf's logs are not being captured/ =~ response_s).should_not be_nil
+ensure
+  LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+  resp = `./cnf-testsuite uninstall_fluentd`
+  LOGGING.info resp
+  $?.success?.should be_true
+end
