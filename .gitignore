@@ -54,7 +54,7 @@ falco_rule.yaml
 /enforce-image-tag.yml
 /constraint_template.yml
 /install.sh
-/tools/kubescape
+/tools/kubescape/kubescape
 /tools/kind
 /kubescape_results.json
 /cilium

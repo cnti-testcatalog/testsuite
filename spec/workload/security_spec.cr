@@ -106,18 +106,18 @@ describe "Security" do
     end
   end
 
-  it "'insecure_capabilities' should fail on a cnf that has containers with insecure capabilities", tags: ["security"] do
-    begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite insecure_capabilities`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/PASSED: Containers with insecure capabilities were not found/ =~ response_s).should be_nil
-    ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml`
-    end
-  end
+  # it "'insecure_capabilities' should fail on a cnf that has containers with insecure capabilities", tags: ["security"] do
+  #   begin
+  #     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml`
+  #     $?.success?.should be_true
+  #     response_s = `./cnf-testsuite insecure_capabilities`
+  #     LOGGING.info response_s
+  #     $?.success?.should be_true
+  #     (/PASSED: Containers with insecure capabilities were not found/ =~ response_s).should be_nil
+  #   ensure
+  #     `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml`
+  #   end
+  # end
 
   it "'dangerous_capabilities' should pass on a cnf that does not have containers with dangerous capabilities", tags: ["security"] do
     begin
@@ -132,18 +132,18 @@ describe "Security" do
     end
   end
 
-  it "'dangerous_capabilities' should fail on a cnf that has containers with dangerous capabilities", tags: ["security"] do
-    begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite dangerous_capabilities`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/PASSED: Containers with dangerous capabilities were not found/ =~ response_s).should be_nil
-    ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
-    end
-  end
+  # it "'dangerous_capabilities' should fail on a cnf that has containers with dangerous capabilities", tags: ["security"] do
+  #   begin
+  #     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
+  #     $?.success?.should be_true
+  #     response_s = `./cnf-testsuite dangerous_capabilities`
+  #     LOGGING.info response_s
+  #     $?.success?.should be_true
+  #     (/PASSED: Containers with dangerous capabilities were not found/ =~ response_s).should be_nil
+  #   ensure
+  #     `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
+  #   end
+  # end
 
   it "'linux_hardening' should fail on a cnf that does not make use of security services", tags: ["security"] do
     begin
@@ -158,18 +158,18 @@ describe "Security" do
     end
   end
 
-  it "'application_credentials' should fail on a cnf that allows applications credentials in configuration files", tags: ["security"] do
-    begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite application_credentials`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/FAILED: Found applications credentials in configuration files/ =~ response_s).should_not be_nil
-    ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
-    end
-  end
+  # it "'application_credentials' should fail on a cnf that allows applications credentials in configuration files", tags: ["security"] do
+  #   begin
+  #     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+  #     $?.success?.should be_true
+  #     response_s = `./cnf-testsuite application_credentials`
+  #     LOGGING.info response_s
+  #     $?.success?.should be_true
+  #     (/FAILED: Found applications credentials in configuration files/ =~ response_s).should_not be_nil
+  #   ensure
+  #     `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+  #   end
+  # end
 
   it "'host_network' should pass on a cnf that does not have a host network attached to pod", tags: ["security"] do
     begin
