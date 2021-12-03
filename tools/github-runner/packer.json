@@ -55,8 +55,7 @@
         "sudo wget -O /ephemeral-runner.sh https://raw.githubusercontent.com/myoung34/docker-github-actions-runner/2.284.0/ephemeral-runner.sh && sudo chmod +x /ephemeral-runner.sh",
         "sudo wget -O /entrypoint.sh https://raw.githubusercontent.com/myoung34/docker-github-actions-runner/2.284.0/entrypoint.sh && sudo chmod +x /entrypoint.sh",
         "sudo cat /entrypoint.sh",
-        "pwd",
-        "sudo apt update"
+        "sudo rm /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"
       ]
     }
   ]
