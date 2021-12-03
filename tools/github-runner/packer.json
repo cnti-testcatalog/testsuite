@@ -1,0 +1,63 @@
+{
+  "min_packer_version": "1.3.3",
+  "variables": {
+    "qemu_output_dir": "qemu-images",
+    "qemu_output_name": "my-build.qcow2",
+    "qemu_source_checksum_url": "https://github.com/multani/packer-qemu-debian/releases/download/10.0.0-1/SHA256SUMS",
+    "qemu_source_iso": "https://github.com/multani/packer-qemu-debian/releases/download/10.0.0-1/debian-10.0.0-1.qcow2",
+    "qemu_ssh_password": "debian",
+    "qemu_ssh_username": "debian"
+  },
+
+  "builders": [
+    {
+      "type": "qemu",
+      "iso_url": "{{ user `qemu_source_iso` }}",
+      "iso_checksum": "file:{{ user `qemu_source_checksum_url` }}",
+
+      "disk_image": true,
+      "accelerator": "kvm",
+      "boot_wait": "1s",
+      "format": "qcow2",
+      "use_backing_file": false,
+
+      "disk_size": 8000,
+
+      "headless": true,
+      "shutdown_command": "echo '{{ user `qemu_ssh_password` }}'  | sudo -S /sbin/shutdown -hP now",
+
+      "ssh_host_port_max": 2229,
+      "ssh_host_port_min": 2222,
+      "ssh_password": "{{ user `qemu_ssh_password` }}",
+      "ssh_username": "{{ user `qemu_ssh_username` }}",
+      "ssh_wait_timeout": "1000s",
+
+      "output_directory": "{{ user `qemu_output_dir` }}",
+      "vm_name": "{{ user `qemu_output_name` }}"
+    }
+  ],
+
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "sudo apt-get update && sudo apt-get install -y --no-install-recommends awscli wget curl tar unzip apt-transport-https ca-certificates gpg-agent gnupg software-properties-common build-essential zlib1g-dev zstd gettext liblttng-ust0 libcurl4-openssl-dev inetutils-ping jq dirmngr openssh-client locales python3-pip python dumb-init autoconf git",
+        "pip3 install --no-cache-dir awscliv2",
+        "sudo apt-get install make libssl-dev libghc-zlib-dev libcurl4-gnutls-dev libexpat1-dev gettext unzip -y",
+        "cd ~ && wget https://github.com/git/git/archive/v2.29.0.zip -O git.zip && unzip git.zip && cd git-*",
+        "sudo make prefix=/usr/local all",
+        "sudo make prefix=/usr/local install && cd ~",
+        "git version",
+        "curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable\" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && sudo apt-get update && sudo apt-get install -y docker-ce docker-ce-cli containerd.io",
+        "sudo mkdir /actions-runner && cd /actions-runner",
+        "sudo wget -O ./install.sh https://raw.githubusercontent.com/myoung34/docker-github-actions-runner/2.284.0/install_actions.sh && sudo chmod +x ./install.sh && sudo ./install.sh '2.284.0' 'x64'",
+        "sudo wget -O /token.sh https://raw.githubusercontent.com/myoung34/docker-github-actions-runner/2.284.0/token.sh && sudo chmod +x /token.sh",
+        "sudo wget -O /ephemeral-runner.sh https://raw.githubusercontent.com/myoung34/docker-github-actions-runner/2.284.0/ephemeral-runner.sh && sudo chmod +x /ephemeral-runner.sh",
+        "sudo wget -O /entrypoint.sh https://raw.githubusercontent.com/myoung34/docker-github-actions-runner/2.284.0/entrypoint.sh && sudo chmod +x /entrypoint.sh",
+        "sudo cat /entrypoint.sh",
+        "pwd",
+        "sudo apt update"
+      ]
+    }
+  ]
+}
