@@ -52,6 +52,7 @@ task "install_kubescape" do |_, args|
             File.write(framework_path, response.body_io)
           end
         end
+        Log.debug { "KUBESCAPE_DEBUG" }
         `head #{framework_path}`
       end
     end
