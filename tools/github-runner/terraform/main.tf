@@ -44,11 +44,15 @@ resource "libvirt_volume" "volume" {
   name = "volume-${count.index}"
   base_volume_id = "${libvirt_volume.os_image.id}"
   count = "${var.runner_count}"
+  size = 40000000000
 }
 
 data "template_file" "user_data" {
   template = <<EOF
 #cloud-config
+growpart:
+  mode: auto
+  devices: ['/']
 runcmd:
   - [ systemctl, start, runner ]
 write_files:
