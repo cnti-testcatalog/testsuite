@@ -6,6 +6,12 @@ variable "elastic_ips" {
   type = string
 }
 
+variable "runner_count" {
+    type = number
+    default = 10
+  }
+
+
 terraform {
   required_providers {
     libvirt = {
@@ -28,11 +34,16 @@ resource "libvirt_network" "vmbr0" {
   }
 }
 
-resource "libvirt_volume" "debian" {
+resource "libvirt_volume" "os_image" {
   name   = "debian.qcow2"
   source = "../qemu-images/my-build.qcow2"
-#  source = "https://github.com/multani/packer-qemu-debian/releases/download/10.0.0-1/debian-10.0.0-1.qcow2"
   format = "qcow2"
+}
+
+resource "libvirt_volume" "volume" {
+  name = "volume-${count.index}"
+  base_volume_id = "${libvirt_volume.os_image.id}"
+  count = ${var.runner_count}
 }
 
 data "template_file" "user_data" {
@@ -59,7 +70,7 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
 }
 
 resource "libvirt_domain" "test" {
-  name   = "test"
+  name   = "runner-${count.index}"
   memory = "512"
   vcpu   = 1
 
@@ -70,6 +81,6 @@ resource "libvirt_domain" "test" {
   }
 
   disk {
-    volume_id = "${libvirt_volume.debian.id}"
+    volume_id = element(libvirt_volume.volume.*.id, count.index)
   }
 }
