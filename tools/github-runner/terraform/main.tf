@@ -1,3 +1,11 @@
+variable "token" {
+  type = string
+}
+
+variable "elastic_ips" {
+  type = string
+}
+
 terraform {
   required_providers {
     libvirt = {
@@ -8,6 +16,16 @@ terraform {
 
 provider "libvirt" {
     uri = "qemu:///system"
+}
+
+resource "libvirt_network" "vmbr0" {
+  name = "vmbr0"
+  mode = "route"
+  bridge = "vmbr0"
+  addresses = ["${var.elastic_ips}"]
+  dns {
+    enabled = true
+  }
 }
 
 resource "libvirt_volume" "debian" {
@@ -31,7 +49,7 @@ write_files:
       Requires=network-online.target
       [Service]
       ExecStartPre=/bin/bash -c "while true; do ping -c1 www.google.com > /dev/null && break; done"
-      ExecStart=/bin/bash -c 'export REPO_URL="https://github.com/cncf/cnf-testsuite" ; export RUNNER_NAME="foo-runner" ; export RUNNER_TOKEN="" ; export RUNNER_WORKDIR="/tmp/github-runner-cnf-testsuite" ; cd /actions-runner ; /entrypoint.sh ./bin/Runner.Listener run --startuptype service'
+      ExecStart=/bin/bash -c 'export REPO_URL="https://github.com/cncf/cnf-testsuite" ; export RUNNER_NAME="foo-runner" ; export RUNNER_TOKEN="${var.token}" ; export RUNNER_WORKDIR="/tmp/github-runner-cnf-testsuite" ; cd /actions-runner ; /entrypoint.sh ./bin/Runner.Listener run --startuptype service'
 EOF
 }
 
@@ -48,7 +66,7 @@ resource "libvirt_domain" "test" {
   cloudinit = "${libvirt_cloudinit_disk.cloud_init.id}"
 
   network_interface {
-    network_name = "default"
+    network_name = "${libvirt_network.vmbr0.name}"
   }
 
   disk {
