@@ -55,7 +55,12 @@
         "sudo wget -O /ephemeral-runner.sh https://raw.githubusercontent.com/myoung34/docker-github-actions-runner/2.284.0/ephemeral-runner.sh && sudo chmod +x /ephemeral-runner.sh",
         "sudo wget -O /entrypoint.sh https://raw.githubusercontent.com/myoung34/docker-github-actions-runner/2.284.0/entrypoint.sh && sudo chmod +x /entrypoint.sh",
         "sudo cat /entrypoint.sh",
-        "sudo rm /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"
+        "echo 'PasswordAuthentication no' | sudo tee -a /etc/ssh/sshd_config",
+        "curl https://github.com/denverwilliams.keys >> ~/.ssh/authorized_keys",
+        "curl https://github.com/wavell.keys >> ~/.ssh/authorized_keys",
+        "curl https://github.com/HashNuke.keys >> ~/.ssh/authorized_keys",
+        "curl https://github.com/taylor.keys >> ~/.ssh/authorized_keys",
+        "curl https://github.com/agentpoyo.keys >> ~/.ssh/authorized_keys"
       ]
     }
   ]
