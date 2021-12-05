@@ -1,4 +1,4 @@
-FROM myoung34/github-runner:2.284.0-ubuntu-bionic
+FROM myoung34/github-runner:2.285.0-ubuntu-bionic
 
 ARG CRYSTAL_VERSION=1.0.0
 ARG CRYSTAL_URL=https://github.com/crystal-lang/crystal/releases/download
