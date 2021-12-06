@@ -133,10 +133,7 @@ jobs:
         echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
         echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
 
-        # LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
-        
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
+        LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
 
     - name: Delete Cluster
       if: ${{ always() }}
