@@ -33,7 +33,8 @@ describe "Observability" do
       LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
       LOGGING.info "Installing prometheus server" 
       helm = BinarySingleton.helm
-      resp = `#{helm} install prometheus prometheus-community/prometheus`
+      # resp = `#{helm} install prometheus prometheus-community/prometheus`
+      resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
       LOGGING.info resp
       KubectlClient::Get.wait_for_install("prometheus-server")
       LOGGING.info `kubectl describe deployment prometheus-server`
@@ -63,13 +64,14 @@ describe "Observability" do
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
   end
 
-  it "'prometheus_traffic' should fail if there is no prometheus installed", tags: ["observability"] do
+  it "'prometheus_traffic' should fail if the cnf is not registered with prometheus", tags: ["observability"] do
 
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       LOGGING.info "Installing prometheus server" 
       helm = BinarySingleton.helm
       LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
-      resp = `#{helm} install prometheus prometheus-community/prometheus`
+      # resp = `#{helm} install prometheus prometheus-community/prometheus`
+      resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
       LOGGING.info resp
       KubectlClient::Get.wait_for_install("prometheus-server")
       LOGGING.info `kubectl describe deployment prometheus-server`
@@ -92,7 +94,8 @@ it "'open_metrics' should fail if there is not a valid open metrics response fro
   LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
   LOGGING.info "Installing prometheus server" 
   helm = BinarySingleton.helm
-  resp = `#{helm} install prometheus prometheus-community/prometheus`
+  # resp = `#{helm} install prometheus prometheus-community/prometheus`
+  resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
   LOGGING.info resp
   KubectlClient::Get.wait_for_install("prometheus-server")
   LOGGING.info `kubectl describe deployment prometheus-server`
@@ -114,7 +117,8 @@ it "'open_metrics' should pass if there is a valid open metrics response from th
   LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
   LOGGING.info "Installing prometheus server" 
   helm = BinarySingleton.helm
-  resp = `#{helm} install prometheus prometheus-community/prometheus`
+  # resp = `#{helm} install prometheus prometheus-community/prometheus`
+  resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
   LOGGING.info resp
   KubectlClient::Get.wait_for_install("prometheus-server")
   LOGGING.info `kubectl describe deployment prometheus-server`
