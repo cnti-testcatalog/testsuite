@@ -332,7 +332,8 @@ module KubectlClient
     end
 
     #todo default flag for schedulable pods vs all pods
-    def self.pods_by_resource(resource_yml : JSON::Any) : K8sManifestList Log.info { "pods_by_resource" }
+    def self.pods_by_resource(resource_yml : JSON::Any) : K8sManifestList 
+      Log.info { "pods_by_resource" }
       Log.debug { "pods_by_resource resource: #{resource_yml}" }
       return [resource_yml] if resource_yml["kind"].as_s.downcase == "pod"
       Log.info { "resource kind: #{resource_yml["kind"]}" }
@@ -469,6 +470,23 @@ module KubectlClient
       Log.info { "service_by_digest matched_service: #{matched_service}" }
       matched_service
     end
+
+    def self.pods_by_digest(container_digest)
+      matched_pod = [] of JSON::Any  
+      pods = KubectlClient::Get.pods
+      pods["items"].as_a.each do |pod|
+        Log.debug { "pod_by_digest pod: #{pod}" }
+        statuses = pod.dig?("status", "containerStatuses")
+        if statuses
+          statuses.as_a.each do |status|
+            Log.debug { "pod_by_digest status: #{status}" }
+            matched_pod << pod if status.dig("imageID").as_s.includes?(container_digest)
+          end
+        end
+      end
+      matched_pod
+    end
+
     def self.service_url_by_digest(container_digest)
       Log.info { "service_url_by_digest container_digest: #{container_digest}" }
       matched_service = service_by_digest(container_digest)
@@ -973,6 +991,7 @@ module KubectlClient
 
     def self.all_pod_container_statuses
       statuses = all_pod_statuses.map do |x|
+        # todo there are some pods that dont have containerStatuses
         x["containerStatuses"].as_a
       end
       statuses

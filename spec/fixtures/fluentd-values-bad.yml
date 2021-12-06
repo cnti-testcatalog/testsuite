@@ -1,0 +1,15 @@
+fileConfigs:
+  04_outputs.conf: |-
+    <label @OUTPUT>
+      <match **>
+        @type file
+        path "/testdata"
+      </match>
+    </label>
+
+volumeMounts:
+- name: etcfluentd-main
+  mountPath: /etc/fluent
+- name: etcfluentd-config
+  mountPath: /etc/fluent/config.d/
+

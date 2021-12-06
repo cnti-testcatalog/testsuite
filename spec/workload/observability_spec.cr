@@ -33,9 +33,12 @@ describe "Observability" do
       LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
       LOGGING.info "Installing prometheus server" 
       helm = BinarySingleton.helm
-      resp = `#{helm} install prometheus prometheus-community/prometheus`
+      # resp = `#{helm} install prometheus prometheus-community/prometheus`
+      resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
       LOGGING.info resp
       KubectlClient::Get.wait_for_install("prometheus-server")
+      LOGGING.info `kubectl describe deployment prometheus-server`
+      #todo logging on prometheus pod
 
       response_s = `./cnf-testsuite prometheus_traffic`
       LOGGING.info response_s
@@ -61,15 +64,18 @@ describe "Observability" do
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
   end
 
-  it "'prometheus_traffic' should fail if there is no prometheus installed", tags: ["observability"] do
+  it "'prometheus_traffic' should fail if the cnf is not registered with prometheus", tags: ["observability"] do
 
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       LOGGING.info "Installing prometheus server" 
       helm = BinarySingleton.helm
       LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
-      resp = `#{helm} install prometheus prometheus-community/prometheus`
+      # resp = `#{helm} install prometheus prometheus-community/prometheus`
+      resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
       LOGGING.info resp
       KubectlClient::Get.wait_for_install("prometheus-server")
+      LOGGING.info `kubectl describe deployment prometheus-server`
+      #todo logging on prometheus pod
 
       response_s = `./cnf-testsuite prometheus_traffic`
       LOGGING.info response_s
@@ -82,15 +88,18 @@ describe "Observability" do
   end
 end
 
-it "'open_metrics' should fail if there is a valid open metrics response from the cnf", tags: ["observability"] do
+it "'open_metrics' should fail if there is not a valid open metrics response from the cnf", tags: ["observability"] do
 
   LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
   LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
   LOGGING.info "Installing prometheus server" 
   helm = BinarySingleton.helm
-  resp = `#{helm} install prometheus prometheus-community/prometheus`
+  # resp = `#{helm} install prometheus prometheus-community/prometheus`
+  resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
   LOGGING.info resp
   KubectlClient::Get.wait_for_install("prometheus-server")
+  LOGGING.info `kubectl describe deployment prometheus-server`
+  #todo logging on prometheus pod
 
   response_s = `./cnf-testsuite open_metrics`
   LOGGING.info response_s
@@ -108,9 +117,12 @@ it "'open_metrics' should pass if there is a valid open metrics response from th
   LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
   LOGGING.info "Installing prometheus server" 
   helm = BinarySingleton.helm
-  resp = `#{helm} install prometheus prometheus-community/prometheus`
+  # resp = `#{helm} install prometheus prometheus-community/prometheus`
+  resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
   LOGGING.info resp
   KubectlClient::Get.wait_for_install("prometheus-server")
+  LOGGING.info `kubectl describe deployment prometheus-server`
+  #todo logging on prometheus pod
 
   response_s = `./cnf-testsuite open_metrics`
   LOGGING.info response_s
@@ -118,6 +130,41 @@ it "'open_metrics' should pass if there is a valid open metrics response from th
 ensure
   LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-openmetrics/cnf-testsuite.yml`
   resp = `#{helm} delete prometheus`
+  LOGGING.info resp
+  $?.success?.should be_true
+end
+
+it "'routed_logs' should pass if cnfs logs are captured", tags: ["observability"] do
+
+  LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+  resp = `./cnf-testsuite install_fluentd`
+  LOGGING.info resp
+  response_s = `./cnf-testsuite routed_logs`
+  LOGGING.info response_s
+  (/PASSED: Your cnf's logs are being captured/ =~ response_s).should_not be_nil
+ensure
+  LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+  resp = `./cnf-testsuite uninstall_fluentd`
+  LOGGING.info resp
+  $?.success?.should be_true
+end
+
+it "'routed_logs' should fail if cnfs logs are not captured", tags: ["observability"] do
+
+  LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+  # resp = `./cnf-testsuite install_fluentd`
+  Log.info {"Installing FluentD daemonset "}
+  Helm.helm_repo_add("fluent","https://fluent.github.io/helm-charts")
+  #todo  #helm install --values ./override.yml fluentd ./fluentd
+  Helm.install("--values ./spec/fixtures/fluentd-values-bad.yml fluentd fluent/fluentd")
+  KubectlClient::Get.resource_wait_for_install("Daemonset", "fluentd")
+
+  response_s = `./cnf-testsuite routed_logs`
+  LOGGING.info response_s
+  (/FAILED: Your cnf's logs are not being captured/ =~ response_s).should_not be_nil
+ensure
+  LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+  resp = `./cnf-testsuite uninstall_fluentd`
   LOGGING.info resp
   $?.success?.should be_true
 end

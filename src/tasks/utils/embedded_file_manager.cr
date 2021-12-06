@@ -37,6 +37,9 @@ module EmbeddedFileManager
   macro disable_cni 
     DISABLE_CNI = Base64.decode_string("{{ `cat ./embedded_files/kind-disable-cni.yaml  | base64`}}")
   end
+  macro fluentd_values 
+    FLUENTD_VALUES = Base64.decode_string("{{ `cat ./embedded_files/fluentd-values.yml  | base64`}}")
+  end
   def self.points_yml_write_file
     File.write("points.yml", POINTSFILE)
   end
