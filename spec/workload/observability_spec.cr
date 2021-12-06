@@ -152,7 +152,7 @@ it "'routed_logs' should fail if cnfs logs are not captured", tags: ["observabil
   Log.info {"Installing FluentD daemonset "}
   Helm.helm_repo_add("fluent","https://fluent.github.io/helm-charts")
   #todo  #helm install --values ./override.yml fluentd ./fluentd
-  Helm.install("--values ./spec/fixtures/fluentd-values.yml fluentd fluent/fluentd")
+  Helm.install("--values ./spec/fixtures/fluentd-values-bad.yml fluentd fluent/fluentd")
   KubectlClient::Get.resource_wait_for_install("Daemonset", "fluentd")
 
   response_s = `./cnf-testsuite routed_logs`
