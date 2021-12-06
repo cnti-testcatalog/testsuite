@@ -147,7 +147,7 @@ jobs:
   chaos:
     name: Chaos Tests
     needs: [tests]
-    runs-on: [ubuntu-latest]
+    runs-on: [vms]
     strategy:
       fail-fast: false
       matrix:
