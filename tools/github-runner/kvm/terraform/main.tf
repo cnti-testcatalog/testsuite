@@ -36,7 +36,7 @@ resource "libvirt_network" "vmbr0" {
 
 resource "libvirt_volume" "os_image" {
   name   = "debian.qcow2"
-  source = "../qemu-images/my-build.qcow2"
+  source = "/my-build.qcow2"
   format = "qcow2"
 }
 
@@ -65,7 +65,7 @@ write_files:
       Requires=network-online.target
       [Service]
       ExecStartPre=/bin/bash -c "while true; do ping -c1 www.google.com > /dev/null && break; done"
-      ExecStart=/bin/bash -c 'export REPO_URL="https://github.com/cncf/cnf-testsuite" ; export RUNNER_NAME="runner${count.index}" ; export RUNNER_TOKEN="${var.token}" ; export RUNNER_WORKDIR="/tmp/github-runner-cnf-testsuite" ; cd /actions-runner ; /entrypoint.sh ./bin/Runner.Listener run --startuptype service'
+      ExecStart=/bin/bash -c 'export REPO_URL="https://github.com/cncf/cnf-testsuite" ; export RUNNER_NAME="runner${count.index}" ; export RUNNER_TOKEN="${var.token}" ; export RUNNER_WORKDIR="/tmp/github-runner-cnf-testsuite" ; export LABELS="vm" ; cd /actions-runner ; /entrypoint.sh ./bin/Runner.Listener run --startuptype service'
 EOF
 }
 

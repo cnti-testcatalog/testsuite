@@ -13,4 +13,5 @@ for node in "${!RUNNERS[@]}"; do
     ssh root@${RUNNERS[$node]} 'sudo sed -i "/net.ipv4.ip_forward=1/ s/# *//" /etc/sysctl.conf'
     ssh root@${RUNNERS[$node]} 'sudo sed -i "/net.ipv6.conf.all.forwarding=1/ s/# *//" /etc/sysctl.conf'
     ssh root@${RUNNERS[$node]} 'sudo sysctl -p'
+    scp ./qemu-images/my-build.qcow2 root@${RUNNERS[$node]}/my-build.qcow2
 done
