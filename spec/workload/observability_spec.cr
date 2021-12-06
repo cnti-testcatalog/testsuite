@@ -36,6 +36,8 @@ describe "Observability" do
       resp = `#{helm} install prometheus prometheus-community/prometheus`
       LOGGING.info resp
       KubectlClient::Get.wait_for_install("prometheus-server")
+      LOGGING.info `kubectl describe deployment prometheus-server`
+      #todo logging on prometheus pod
 
       response_s = `./cnf-testsuite prometheus_traffic`
       LOGGING.info response_s
@@ -70,6 +72,8 @@ describe "Observability" do
       resp = `#{helm} install prometheus prometheus-community/prometheus`
       LOGGING.info resp
       KubectlClient::Get.wait_for_install("prometheus-server")
+      LOGGING.info `kubectl describe deployment prometheus-server`
+      #todo logging on prometheus pod
 
       response_s = `./cnf-testsuite prometheus_traffic`
       LOGGING.info response_s
@@ -91,6 +95,8 @@ it "'open_metrics' should fail if there is not a valid open metrics response fro
   resp = `#{helm} install prometheus prometheus-community/prometheus`
   LOGGING.info resp
   KubectlClient::Get.wait_for_install("prometheus-server")
+  LOGGING.info `kubectl describe deployment prometheus-server`
+  #todo logging on prometheus pod
 
   response_s = `./cnf-testsuite open_metrics`
   LOGGING.info response_s
@@ -111,6 +117,8 @@ it "'open_metrics' should pass if there is a valid open metrics response from th
   resp = `#{helm} install prometheus prometheus-community/prometheus`
   LOGGING.info resp
   KubectlClient::Get.wait_for_install("prometheus-server")
+  LOGGING.info `kubectl describe deployment prometheus-server`
+  #todo logging on prometheus pod
 
   response_s = `./cnf-testsuite open_metrics`
   LOGGING.info response_s
