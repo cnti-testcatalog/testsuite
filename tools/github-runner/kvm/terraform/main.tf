@@ -8,7 +8,7 @@ variable "elastic_ips" {
 
 variable "runner_count" {
     type = number
-    default = 10
+    default = 8
   }
 
 
@@ -48,6 +48,7 @@ resource "libvirt_volume" "volume" {
 }
 
 data "template_file" "user_data" {
+  count = "${var.runner_count}"
   template = <<EOF
 #cloud-config
 growpart:
@@ -64,21 +65,22 @@ write_files:
       Requires=network-online.target
       [Service]
       ExecStartPre=/bin/bash -c "while true; do ping -c1 www.google.com > /dev/null && break; done"
-      ExecStart=/bin/bash -c 'export REPO_URL="https://github.com/cncf/cnf-testsuite" ; export RUNNER_NAME="foo-runner" ; export RUNNER_TOKEN="${var.token}" ; export RUNNER_WORKDIR="/tmp/github-runner-cnf-testsuite" ; cd /actions-runner ; /entrypoint.sh ./bin/Runner.Listener run --startuptype service'
+      ExecStart=/bin/bash -c 'export REPO_URL="https://github.com/cncf/cnf-testsuite" ; export RUNNER_NAME="runner${count.index}" ; export RUNNER_TOKEN="${var.token}" ; export RUNNER_WORKDIR="/tmp/github-runner-cnf-testsuite" ; cd /actions-runner ; /entrypoint.sh ./bin/Runner.Listener run --startuptype service'
 EOF
 }
 
 resource "libvirt_cloudinit_disk" "cloud_init" {
-  name           = "cloud-init.iso"
-  user_data      = "${data.template_file.user_data.rendered}"
+  name           = "cloud-init-${count.index}.iso"
+  count          = "${var.runner_count}"
+  user_data      = element(data.template_file.user_data.*.rendered, count.index)
 }
 
 resource "libvirt_domain" "test" {
   name   = "runner-${count.index}"
-  memory = "512"
-  vcpu   = 1
+  memory = "4200"
+  vcpu   = 2
 
-  cloudinit = "${libvirt_cloudinit_disk.cloud_init.id}"
+  cloudinit = element(libvirt_cloudinit_disk.cloud_init.*.id, count.index)
 
   network_interface {
     network_name = "${libvirt_network.vmbr0.name}"
