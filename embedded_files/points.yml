@@ -231,3 +231,5 @@
   tags: observability, dynamic, workload
   pass: 5 
   fail: 0 
+- name: alpha_k8s_apis
+  tags: configuration_lifecycle, dynamic, workload
