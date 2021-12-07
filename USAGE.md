@@ -165,6 +165,16 @@ crystal bin/ameba.cr
 ```
 
 #### :heavy_check_mark: To check if the CNF is compatible with different CNIs
+<details> <summary>Details for CNI Compatibility Tests</summary>
+
+<p><b>CNI Compatible Tests:</b> Best practice states a good CNF should be compatible with multiple and different CNIs (Cloud Container Interface). The CNI handles the container network for the container network namespace, along with management of IP Addresses through IPAM plug-in among other networking needs and requirements. You can read more about CNIs for kubernetes with a list of CNIs for use [here](https://bit.ly/cni-compatible-k8s-doc)
+
+<b>What's Tested:</b> This test will install temporary kind clusters to test your CNF using Calico and Cilium CNIs.
+
+<b>Remediation:</b> To mitigate this issue, make sure your CNF is compatible with Calico, Cilium and other available CNIs.
+
+</p>
+</details>
 
 ```
 ./cnf-testsuite cni_compatible
@@ -225,7 +235,7 @@ crystal src/cnf-testsuite.cr api_snoop_general_apis
 <details> <summary>Details for State Tests To Do's</summary>
 <p>
 
-#### :memo: (To Do) To test if the CNF responds properly [when being restarted](//https://github.com/litmuschaos/litmus)
+#### :memo: (To Do) To test if the CNF responds properly [when being restarted](https://github.com/litmuschaos/litmus)
 
 ```
 crystal src/cnf-testsuite.cr reset_cnf
@@ -607,6 +617,19 @@ Also here is some info about [things that could cause failures.](https://kuberne
 </p>
 </details>
 
+##### To run the increase_capacity test individually:
+
+```
+./cnf-testsuite increase_capacity
+```
+
+##### To run the decrease_capacity test individually:
+
+```
+./cnf-testsuite decrease_capacity
+```
+
+##### To run both increase and decrease tests, you can use the alias command that calls them both:
 ```
 ./cnf-testsuite increase_decrease_capacity
 ```
@@ -693,6 +716,12 @@ crystal src/cnf-testsuite.cr external_retry
 ./cnf-testsuite hardcoded_ip_addresses_in_k8s_runtime_configuration
 ```
 
+#### :heavy_check_mark: To check if a CNF version can be downgraded through a rolling_version_change
+
+```
+./cnf-testsuite rolling_version_change
+```
+
 #### :heavy_check_mark: To check if a CNF version can be downgraded through a rolling_downgrade
 
 ```
@@ -706,15 +735,16 @@ crystal src/cnf-testsuite.cr external_retry
 ```
 
 #### :heavy_check_mark: To check if a CNF uses K8s secrets
+<details> <summary>Additional Information</summary>
+
+<p><b>Rules for the test:</b> The whole test passes if _any_ workload resource in the cnf uses a (non-exempt) secret. If no workload resources use a (non-exempt) secret, the test is skipped.
+    
+</p>
+</details>
 
 ```
 ./cnf-testsuite secrets_used
 ```
-
-##Additional information##
-Rules for the test:
-The whole test passes if _any_ workload resource in the cnf uses a (non-exempt) secret.
-If no workload resources use a (non-exempt) secret, the test is skipped.
 
 #### :heavy_check_mark: To check if a CNF version uses [immutable configmaps](https://kubernetes.io/docs/concepts/configuration/configmap/#configmap-immutable)
 
