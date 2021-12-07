@@ -54,6 +54,8 @@
         "curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -",
         "echo 'deb https://baltocdn.com/helm/stable/debian/ all main' | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list",
         "sudo apt-get update && sudo apt-get install -y helm",
+        "curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl",
+        "sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl",
         "curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable\" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && sudo apt-get update && sudo apt-get install -y docker-ce docker-ce-cli containerd.io",
         "sudo mkdir /actions-runner && cd /actions-runner",
         "sudo wget -O ./install.sh https://raw.githubusercontent.com/myoung34/docker-github-actions-runner/2.285.1/install_actions.sh && sudo chmod +x ./install.sh && sudo ./install.sh '2.285.1' 'x64'",
