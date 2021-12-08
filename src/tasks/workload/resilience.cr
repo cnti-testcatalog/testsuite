@@ -5,7 +5,7 @@ require "colorize"
 require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if the CNFs are resilient to failures."
- task "resilience", ["pod_network_latency", "pod_network_corruption", "disk_fill", "pod_delete", "pod_memory_hog", "pod_io_stress", "node_drain"] do |t, args|
+ task "resilience", ["pod_network_latency", "pod_network_corruption", "disk_fill", "pod_delete", "pod_memory_hog", "pod_io_stress", "node_drain", "pod_dns_error"] do |t, args|
   Log.for("verbose").info {  "resilience" } if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
@@ -654,6 +654,59 @@ task "node_drain", ["install_litmus"] do |t, args|
   end
 end
 
+desc "Does the CNF crash when pod-dns-error occurs"
+task "pod_dns_error", ["install_litmus"] do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "pod_dns_error" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+        test_passed = true
+      else
+        puts "No resource label found for pod_dns_error test for resource: #{resource["name"]}".colorize(:red)
+        test_passed = false
+      end
+      if test_passed
+        if args.named["offline"]?
+          Log.info { "install resilience offline mode" }
+          AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-dns-error-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-dns-error-experiment.yaml")
+          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-dns-error-rbac.yaml")
+        else
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-dns-error/experiment.yaml")
+          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-dns-error/rbac.yaml")
+        end
+        KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
+
+        chaos_experiment_name = "pod-dns-error"
+        total_chaos_duration = "120"
+        target_pod_name = ""
+        test_name = "#{resource["name"]}-#{Random.rand(99)}" 
+        chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
+
+        template = ChaosTemplates::PodDnsError.new(
+          test_name,
+          "#{chaos_experiment_name}",
+          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
+          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}",
+          total_chaos_duration,
+        ).to_s
+
+        File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
+        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
+        test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+      end
+    end
+    if task_response
+      resp = upsert_passed_task("pod_dns_error","✔️  PASSED: pod_dns_error chaos test passed 🗡️💀♻️")
+    else
+      resp = upsert_failed_task("pod_dns_error","✖️  FAILED: pod_dns_error chaos test failed 🗡️💀♻️")
+    end
+  end
+end
+
 class ChaosTemplates
   class PodIoStress
     def initialize(
@@ -770,5 +823,17 @@ class ChaosTemplates
     )
     end
     ECR.def_to_s("src/templates/chaos_templates/node_drain.yml.ecr")
+  end
+
+  class PodDnsError
+    def initialize(
+      @test_name : String,
+      @chaos_experiment_name : String,
+      @deployment_label : String,
+      @deployment_label_value : String,
+      @total_chaos_duration : String,
+    )
+    end
+    ECR.def_to_s("src/templates/chaos_templates/pod_dns_error.yml.ecr")
   end
 end
