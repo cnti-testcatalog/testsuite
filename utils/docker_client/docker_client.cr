@@ -157,7 +157,7 @@ module DockerClient
 
   module Get
     # TODO remove if not used
-    def self.image_tags(image_name) : Halite::Response 
+    def self.image_tags(image_name) 
       LOGGING.info "tags image name: #{image_name}"
       # if image doesn't have a / in it, it has no user and is an official docker reposistory
       # these are prefixed with library/
@@ -170,10 +170,23 @@ module DockerClient
       modified_image_with_repo = ((image_name =~ /\//) == nil) ? "library/" + image_name : image_name
 
       #TODO make this work with a local registry, if used in the future
+      #TODO make this work with quay, if used in the future
       LOGGING.info "docker halite url: #{"https://hub.docker.com/v2/repositories/#{modified_image_with_repo}/tags/?page_size=100"}"
       docker_resp = Halite.get("https://hub.docker.com/v2/repositories/#{modified_image_with_repo}/tags/?page_size=100", headers: {"Authorization" => "JWT"})
       LOGGING.debug "docker image resp: #{docker_resp}"
-      docker_resp
+      # docker_resp.body.split(" ")
+      parsed_json = JSON.parse(docker_resp.body)
+      parsed_json["results"].not_nil!.as_a.reduce([] of Hash(String, String)) do |acc, i|
+        # always use amd64
+        amd64image = i["images"].as_a.find{|x| x["architecture"].as_s == "amd64"}
+        Log.debug { "amd64image: #{amd64image}" }
+        if amd64image && amd64image["digest"]?
+            acc << {"name" => i["name"].not_nil!.as_s, "compressed_distribution_digest" => amd64image["digest"].not_nil!.as_s}
+        else
+          Log.error { "amd64 image not found in #{i["images"]}" }
+          acc
+        end
+      end
     end
     
     def self.image_by_tag(docker_image_list, tag)
@@ -214,7 +227,7 @@ module DockerClient
     def self.local_digest_match(remote_sha_list, local_digests)
       Log.info { "remote_sha_list: #{ remote_sha_list}"}
       Log.info { "remote_sha_list: #{ remote_sha_list.map { |x| x["manifest_digest"] }}"}
-
+ 
       # find hash for image
       Log.info { "local_digests: #{local_digests}" }
       found = false
