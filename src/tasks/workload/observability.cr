@@ -113,9 +113,10 @@ task "prometheus_traffic" do |_, args|
                   end
 
                   Log.debug { "metrics_config_map : #{metrics_config_map}" }
-                  File.write("#{destination_cnf_dir}/configmap_test.yml", "#{metrics_config_map}")
-                  KubectlClient::Delete.file("#{destination_cnf_dir}/configmap_test.yml")
-                  KubectlClient::Apply.file("#{destination_cnf_dir}/configmap_test.yml")
+                  configmap_path = "#{destination_cnf_dir}/config_maps/metrics_configmap.yml"
+                  File.write(configmap_path, "#{metrics_config_map}")
+                  KubectlClient::Delete.file(configmap_path)
+                  KubectlClient::Apply.file(configmap_path)
                   ip_match = true
                 end
               end

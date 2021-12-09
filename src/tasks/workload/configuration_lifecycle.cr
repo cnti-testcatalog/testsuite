@@ -557,7 +557,7 @@ task "immutable_configmap" do |_, args|
     # feature test to see if immutable_configmaps are enabled
     # https://github.com/cncf/cnf-testsuite/issues/508#issuecomment-758438413
 
-    test_config_map_filename = "#{destination_cnf_dir}/test_config_map.yml";
+    test_config_map_filename = "#{destination_cnf_dir}/config_maps/test_config_map.yml";
 
     template = ImmutableConfigMapTemplate.new("doesnt_matter").to_s
     Log.debug { "test immutable_configmap template: #{template}" }
