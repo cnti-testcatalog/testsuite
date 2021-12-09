@@ -725,10 +725,10 @@ module CNFManager
 
     helm_install = {status: "", output: IO::Memory.new, error: IO::Memory.new}
     # todo get a baseline on all the nodes
-    nodes = KubectlClient::Get.nodes
-    baseline_pods = JaegerManager.jaeger_pods(nodes["items"].as_a)
-    baselines = JaegerManager.jaeger_metrics_by_pods(baseline_pods)
-    Log.info { "baselines: #{baselines}" }
+    # nodes = KubectlClient::Get.nodes
+    # baseline_pods = JaegerManager.jaeger_pods(nodes["items"].as_a)
+    # baselines = JaegerManager.jaeger_metrics_by_pods(baseline_pods)
+    # Log.info { "baselines: #{baselines}" }
     # todo separate out install methods into a module/function that accepts a block
     elapsed_time = Time.measure do
       case install_method[0]
