@@ -51,12 +51,4 @@ module ClusterTools
       end
     end
   end
-  #todo move to prometheus module
-  def self.open_metric_validator(url)
-    Log.info { "ClusterTools open_metric_validator" }
-    cli = %(/bin/bash -c "curl #{url} | openmetricsvalidator")
-    resp = exec(cli)
-    Log.info { "metrics resp: #{resp}"}
-    resp
-  end
 end

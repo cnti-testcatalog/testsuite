@@ -88,7 +88,7 @@ task "prometheus_traffic" do |_, args|
               prom_target_urls.each do |url|
                 Log.info { "checking: #{url} against #{ip.dig("ip").as_s}"}
                 if url.includes?(ip.dig("ip").as_s)
-                  msg = ClusterTools.open_metric_validator(url)
+                  msg = Prometheus.open_metric_validator(url)
                   # Immutable config maps are only supported in Kubernetes 1.19+
                   immutable_configmap = true
 

@@ -311,6 +311,24 @@ module KubectlClient
       nodes
     end
 
+    def self.nodes_by_resource(resource) : Array(JSON::Any)   
+      retry_limit = 50
+      retries = 1
+      empty_json_any = [] of JSON::Any
+      nodes = empty_json_any
+      # Get.nodes seems to have failures sometimes
+      until (nodes != empty_json_any) || retries > retry_limit
+        nodes = KubectlClient::Get.resource_select(KubectlClient::Get.nodes) do |item, metadata|
+          item.dig?("metadata", "name") == resourc.dig?("metadata", "name")
+        end
+      end
+      if nodes == empty_json_any
+        Log.error { "nodes empty: #{nodes}" }
+      end
+      Log.debug { "nodes: #{nodes}" }
+      nodes
+    end
+
     def self.pods_by_nodes(nodes_json : Array(JSON::Any))
       Log.info { "pods_by_node" }
       nodes_json.map { |item|
@@ -1002,6 +1020,34 @@ module KubectlClient
         acc | x.map{|i| i["imageID"].as_s}
       end
       Log.debug { "pod container image ids: #{imageids}" }
+      imageids
+    end
+
+    def self.pod_statuses_by_nodes(nodes)
+      pods = KubectlClient::Get.pods_by_nodes(nodes)
+      Log.info { "pod_statuses_by_nodes pods_by_nodes pods: #{pods}" }
+      statuses = pods.map do |x|
+        x["status"]
+      end
+      Log.info { "pod_statuses_by_nodes statuses: #{statuses}" }
+      statuses
+    end
+
+    def self.pod_container_statuses_by_nodes(nodes)
+      statuses = pod_statuses_by_nodes(nodes).map do |x|
+        # todo there are some pods that dont have containerStatuses
+        x["containerStatuses"].as_a
+      end
+      Log.info { "pod_container_statuses_by_nodes containerStatuses: #{statuses}" }
+      statuses
+    end
+
+    def self.container_digests_by_nodes(nodes)
+      Log.info { "container_digests_by_nodes nodes: #{nodes}" }
+      imageids = pod_container_statuses_by_nodes(nodes).reduce([] of String) do |acc, x|
+        acc | x.map{|i| i["imageID"].as_s}
+      end
+      Log.info { "container_digests_by_nodes image ids: #{imageids}" }
       imageids
     end
 
