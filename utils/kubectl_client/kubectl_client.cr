@@ -1051,6 +1051,24 @@ module KubectlClient
       imageids
     end
 
-  end
+    def self.container_images_by_nodes(nodes)
+      Log.info { "container_images_by_nodes nodes: #{nodes}" }
+      images = pod_container_statuses_by_nodes(nodes).reduce([] of String) do |acc, x|
+        acc | x.map{|i| i["image"].as_s}
+      end
+      Log.info { "container_images_by_nodes images: #{images}" }
+      images
+    end
 
+    def self.container_tag_from_image_by_nodes(image, nodes)
+      Log.info { "container_tag_from_image_by_nodes nodes: #{nodes}" }
+      # TODO Remove duplicates & and support multiple?
+      all_images = container_images_by_nodes(nodes)
+      matched_image = all_images.select{ | x | x =~ /#{image}/ }
+      parsed_image = DockerClient.parse_image("#{matched_image[0]}") if matched_image
+      tags = parsed_image["tag"] if parsed_image
+      Log.info { "container_tag_from_image_by_nodes tags: #{tags}" } if tags
+      tags
+    end
+  end
 end

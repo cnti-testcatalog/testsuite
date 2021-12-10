@@ -9,6 +9,7 @@ module ClusterTools
     Log.info { "ClusterTools uninstall" }
     KubectlClient::Delete.file("cluster_tools.yml")
   end
+  #TODO, Support multiple nodes
   def self.exec(cli, namespace="default")
     Log.info { "ClusterTools exec partial cli: #{cli}" }
     # todo cluster_tools_exec command

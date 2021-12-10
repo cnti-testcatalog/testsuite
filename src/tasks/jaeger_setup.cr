@@ -53,7 +53,14 @@ module JaegerManager
 
 
   def self.jaeger_pods(nodes)
+    image_search = "jaegertracing\/jaeger-agent"
+    jaeger_tag = KubectlClient::Get.container_tag_from_image_by_nodes(image_search, nodes)
+
+    Log.info { "jaeger container tag: #{jaeger_tag}" }
+
     pods = KubectlClient::Get.pods_by_nodes(nodes)
+
+    image_name = "jaegertracing/jaeger-agent"
     #todo sha hash
     # page = 1
     match = Hash{:found => false, :digest => "", :release_name => ""}
@@ -61,18 +68,21 @@ module JaegerManager
     imageids = KubectlClient::Get.container_digests_by_nodes(nodes)
     # while match[:found]==false && page < 3 
       # Log.info { "page: #{page}".colorize(:yellow)}
-      image_name = "jaegertracing/jaeger-agent"
       tags = DockerClient::Get.image_tags(image_name)
       Log.info { "jaeger_pods tags : #{tags}"}
+
+      sha_list = tags.not_nil!.reduce([] of Hash(String, String)) do |acc, i|
+        resp = ClusterTools.official_content_digest_by_image_name(image_name + ":" + i["name"])
+        acc << {"name" => image_name, "manifest_digest" => resp["Digest"].as_s}
+      end
+
+      match = DockerClient::K8s.local_digest_match(sha_list, imageids)
+
       # sha_list : Array(JSON::Any) = [] of JSON::Any
       # sha_list = tags.each do | tag|
       #   resp = ClusterTools.official_content_digest_by_image_name(image_name + ":" + tag)
       #   resp["Digest"]
       # end
-      sha_list = tags.not_nil!.reduce([] of Hash(String, String)) do |acc, i|
-        resp = ClusterTools.official_content_digest_by_image_name(image_name + ":" + i["name"])
-        acc << {"name" => image_name, "manifest_digest" => resp["Digest"].as_s}
-      end
       # resp = Halite.get("https://hub.docker.com/v2/repositories/jaegertracing/jaeger-agent/tags?page=#{page}&page_size=100", 
       #                   headers: {"Authorization" => "JWT"})
       # #todo get all tags
@@ -80,7 +90,6 @@ module JaegerManager
       # docker_resp = resp.body
       # Log.debug { "docker_resp: #{docker_resp}" }
       # sha_list = named_sha_list(docker_resp)
-      match = DockerClient::K8s.local_digest_match(sha_list, imageids)
     #   page = page + 1
     # end
     Log.info { "match : #{match}"}
