@@ -823,6 +823,21 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 ./cnf-testsuite prometheus_traffic 
 ``` 
 
+#### :heavy_check_mark: To check if Open Metrics is being used and or compatible.
+<details> <summary>Details for Open Metrics</summary>
+<p>
+
+<b>Open Metics Details:</b> OpenMetrics specifies the de-facto standard for transmitting cloud-native metrics at scale, with support for both text representation and Protocol Buffers and brings it into an Internet Engineering Task Force (IETF) standard. It supports both pull and push-based data collection. Sourced from [OpenMetric Readme](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md)
+
+<b>Remediation Steps:</b> Ensure your CNF is OpenMetrics compatible.
+</p>
+
+</details>
+
+```
+./cnf-testsuite open_metrics
+```
+
 <details> <summary>Details for Observability Tests To Do's</summary>
 <p>
 
@@ -832,22 +847,10 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 crystal src/cnf-testsuite.cr jaeger_traffic
 ```
 
-#### :memo: (To Do) Test if there is traffic to Prometheus
-
-```
-crystal src/cnf-testsuite.cr prometheus traffic
-```
-
 #### :memo: (To Do) Test if tracing calls are compatible with [OpenTelemetry](https://opentracing.io/)
 
 ```
 crystal src/cnf-testsuite.cr opentelemetry_compatible
-```
-
-#### :memo: (To Do) Test are if the monitoring calls are compatible with [OpenMetric](https://github.com/OpenObservability/OpenMetrics)
-
-```
-crystal src/cnf-testsuite.cr openmetric_compatible
 ```
 
 </p>
