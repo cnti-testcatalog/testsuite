@@ -1036,7 +1036,7 @@ module KubectlClient
     def self.pod_container_statuses_by_nodes(nodes)
       statuses = pod_statuses_by_nodes(nodes).map do |x|
         # todo there are some pods that dont have containerStatuses
-        x["containerStatuses"].as_a
+        x["containerStatuses"].as_a if x["containerStatuses"]?
       end
       Log.info { "pod_container_statuses_by_nodes containerStatuses: #{statuses}" }
       statuses
@@ -1045,7 +1045,11 @@ module KubectlClient
     def self.container_digests_by_nodes(nodes)
       Log.info { "container_digests_by_nodes nodes: #{nodes}" }
       imageids = pod_container_statuses_by_nodes(nodes).reduce([] of String) do |acc, x|
-        acc | x.map{|i| i["imageID"].as_s}
+        if x
+          acc | x.map{|i| i["imageID"].as_s}
+        else
+          acc
+        end
       end
       Log.info { "container_digests_by_nodes image ids: #{imageids}" }
       imageids
@@ -1054,7 +1058,11 @@ module KubectlClient
     def self.container_images_by_nodes(nodes)
       Log.info { "container_images_by_nodes nodes: #{nodes}" }
       images = pod_container_statuses_by_nodes(nodes).reduce([] of String) do |acc, x|
-        acc | x.map{|i| i["image"].as_s}
+        if x
+          acc | x.map{|i| i["image"].as_s}
+        else
+          acc
+        end
       end
       Log.info { "container_images_by_nodes images: #{images}" }
       images
