@@ -197,3 +197,31 @@ task "routed_logs" do |_, args|
     end
   end
 end
+
+desc "Does the CNF install use tracing?"
+task "tracing" do |_, args|
+  Log.for("verbose").info { "tracing" } if check_verbose(args)
+  Log.info { "tracing args: #{args.inspect}" }
+  if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
+    CNFManager::Task.task_runner(args) do |args, config|
+      
+      emoji_tracing_deploy="⎈🚀"
+      helm_chart = config.cnf_config[:helm_chart]
+      helm_directory = config.cnf_config[:helm_directory]
+      release_name = config.cnf_config[:release_name]
+      yml_file_path = config.cnf_config[:yml_file_path]
+      configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
+      #TODO check if json is empty
+      tracing_used = configmap["data"].as_h["tracing_used"].as_s
+
+      if tracing_used == "true" 
+        upsert_passed_task("tracing", "✔️  PASSED: Tracing used #{emoji_tracing_deploy}")
+      else
+        upsert_failed_task("tracing", "✖️  FAILED: Tracing not used #{emoji_tracing_deploy}")
+      end
+    end
+  else
+    upsert_failed_task("tracing", "✖️  FAILED: No cnf_testsuite.yml found! Did you run the setup task?")
+  end
+end
+

@@ -10,6 +10,7 @@ module FluentD
     if pagination
       page = 1
       resp =
+        #todo change to look up local tag based on image name, then look up the image/tag on docker hub.  this will reduce docker hub calls
         Halite.get("https://hub.docker.com/v2/repositories/fluent/fluentd-kubernetes-daemonset/tags?page=1&page_size=100", headers: {"Authorization" => "JWT"})
       docker_resp = resp.body
       sha_list = named_sha_list(docker_resp)

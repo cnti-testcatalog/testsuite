@@ -1,6 +1,7 @@
 require "../spec_helper"
 require "colorize"
 require "../../src/tasks/utils/utils.cr"
+require "../../src/tasks/jaeger_setup.cr"
 
 describe "Observability" do
   it "'log_output' should pass with a cnf that outputs logs to stdout", tags: ["observability"]  do
@@ -167,4 +168,19 @@ ensure
   resp = `./cnf-testsuite uninstall_fluentd`
   LOGGING.info resp
   $?.success?.should be_true
+end
+
+it "'tracing' should fail if tracing is not used", tags: ["observability"] do
+
+  LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+  # resp = `./cnf-testsuite install_fluentd`
+  Log.info {"Installing Jaeger "}
+  JaegerManager.install
+
+  response_s = `./cnf-testsuite tracing`
+  LOGGING.info response_s
+  (/FAILED: Tracing not used/ =~ response_s).should_not be_nil
+ensure
+  LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+  JaegerManager.uninstall
 end

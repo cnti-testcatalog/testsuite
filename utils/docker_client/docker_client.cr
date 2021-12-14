@@ -226,7 +226,7 @@ module DockerClient
   module K8s
     def self.local_digest_match(remote_sha_list, local_digests)
       Log.info { "remote_sha_list: #{ remote_sha_list}"}
-      Log.info { "remote_sha_list: #{ remote_sha_list.map { |x| x["manifest_digest"] }}"}
+      # Log.info { "remote_sha_list: #{ remote_sha_list.map { |x| x && x["manifest_digest"] }}"}
  
       # find hash for image
       Log.info { "local_digests: #{local_digests}" }

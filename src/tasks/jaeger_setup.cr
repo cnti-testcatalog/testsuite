@@ -53,30 +53,37 @@ module JaegerManager
 
 
   def self.jaeger_pods(nodes)
+    match = Hash{:found => false, :digest => "", :release_name => ""}
     image_search = "jaegertracing\/jaeger-agent"
     jaeger_tag = KubectlClient::Get.container_tag_from_image_by_nodes(image_search, nodes)
 
-    Log.info { "jaeger container tag: #{jaeger_tag}" }
+    if jaeger_tag
+      Log.info { "jaeger container tag: #{jaeger_tag}" }
 
-    pods = KubectlClient::Get.pods_by_nodes(nodes)
+      pods = KubectlClient::Get.pods_by_nodes(nodes)
 
-    image_name = "jaegertracing/jaeger-agent"
-    #todo sha hash
-    # page = 1
-    match = Hash{:found => false, :digest => "", :release_name => ""}
-    # match = {:found => false}
-    imageids = KubectlClient::Get.container_digests_by_nodes(nodes)
-    # while match[:found]==false && page < 3 
+      image_name = "jaegertracing/jaeger-agent"
+      #todo sha hash
+      # page = 1
+      # match = Hash{:found => false, :digest => "", :release_name => ""}
+      # match = {:found => false}
+      imageids = KubectlClient::Get.container_digests_by_nodes(nodes)
+      # while match[:found]==false && page < 3 
       # Log.info { "page: #{page}".colorize(:yellow)}
-      tags = DockerClient::Get.image_tags(image_name)
-      Log.info { "jaeger_pods tags : #{tags}"}
+      # tags = DockerClient::Get.image_tags(image_name)
+      # Log.info { "jaeger_pods tags : #{tags}"}
 
-      sha_list = tags.not_nil!.reduce([] of Hash(String, String)) do |acc, i|
-        resp = ClusterTools.official_content_digest_by_image_name(image_name + ":" + i["name"])
-        acc << {"name" => image_name, "manifest_digest" => resp["Digest"].as_s}
-      end
-
+      # sha_list = tags.not_nil!.reduce([] of Hash(String, String)) do |acc, i|
+      # resp = ClusterTools.official_content_digest_by_image_name(image_name + ":" + i["name"])
+      resp = ClusterTools.official_content_digest_by_image_name(image_name + ":" + jaeger_tag )
+      sha_list = [{"name" => image_name, "manifest_digest" => resp["Digest"].as_s}]
+      Log.info { "jaeger_pods sha_list : #{sha_list}"}
       match = DockerClient::K8s.local_digest_match(sha_list, imageids)
+      #   acc << {"name" => image_name, "manifest_digest" => resp["Digest"].as_s}
+      # end
+      # Log.info { "jaeger_pods sha_list : #{sha_list}"}
+      #
+      # match = DockerClient::K8s.local_digest_match(sha_list, imageids)
 
       # sha_list : Array(JSON::Any) = [] of JSON::Any
       # sha_list = tags.each do | tag|
@@ -90,9 +97,12 @@ module JaegerManager
       # docker_resp = resp.body
       # Log.debug { "docker_resp: #{docker_resp}" }
       # sha_list = named_sha_list(docker_resp)
-    #   page = page + 1
-    # end
-    Log.info { "match : #{match}"}
+      #   page = page + 1
+      # end
+      Log.info { "match : #{match}"}
+    else
+      match[:found]=false
+    end
     if match[:found]
       # todo get pod by container digest by node
       # nodes = KubectlClient::Get.resource_select(KubectlClient::Get.nodes) do |item, metadata|
@@ -114,15 +124,20 @@ module JaegerManager
         pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod| 
           found = false
           #todo add another pod comparison for sha hash
-          found = pod["status"]["containerStatuses"].as_a.select do |container_status|
+          found = pod["status"]["containerStatuses"].as_a.any? do |container_status|
             Log.info { "container_status imageid: #{container_status["imageID"]}"}
-            Log.info { "match digest: #{match[:digest]}"
-            container_status["imageID"].as_s.includes?("#{match[:digest]}")}
+            Log.info { "match digest: #{match[:digest]}"}
+            # todo why is this matching multiple pods
+            match_found = container_status["imageID"].as_s.includes?("#{match[:digest]}")
+            Log.info { "container_status match_found: #{match_found}"}
+            match_found
           end
-          if pod.dig?("spec", "nodeName") == "#{node_name}" && found
-            Log.info { "pod: #{pod}" }
-            pod_name = pod.dig?("metadata", "name")
-            Log.info { "PodName: #{pod_name}" }
+          Log.info { "found pod: #{pod}"}
+          pod_name = pod.dig?("metadata", "name")
+          Log.info { "found PodName: #{pod_name}" }
+          if found && pod.dig?("spec", "nodeName") == "#{node_name}"
+            Log.info { "found pod and node: #{pod} #{node_name}" }
+            # Log.info { "PodName: #{pod_name}" }
             true
           else
             Log.info { "spec node_name: No Match: #{node_name}" }
@@ -156,15 +171,21 @@ module JaegerManager
   def self.jaeger_metrics_by_pods(jaeger_pods)
     #todo cluster tools curl call
     Log.info { "jaeger_metrics_by_pods"}
-    jaeger_pods.each do |pod|
+    metrics = jaeger_pods.map do |pod|
       Log.info { "jaeger_metrics_by_pods pod: #{pod}"}
       pod_ips = pod.dig("status", "podIPs")
-      Log.info { "pod_ips: #{pod_ips}"}
-      pod_ips.as_a.each do |ip|
-        Log.info { "checking: against #{ip.dig("ip").as_s}"}
+      Log.debug { "pod_ips: #{pod_ips}"}
+      ip_metrics = pod_ips.as_a.map do |ip|
+        Log.debug{ "checking: against #{ip.dig("ip").as_s}"}
         msg = metrics_by_pod(ip.dig("ip").as_s)
+        Log.debug{ "msg #{msg}"}
+        msg
       end
+      Log.debug { "jaeger_metrics_by_pods ip_metrics: #{ip_metrics}"}
+      ip_metrics
     end
+    Log.info { "jaeger_metrics_by_pods metrics: #{metrics}"}
+    metrics.flatten
   end
 
   #todo move to prometheus module
@@ -173,16 +194,26 @@ module JaegerManager
     #todo debug this (wrong) ip
     cli = %(curl http://#{url}:#{JAEGER_PORT}/metrics)
     resp = ClusterTools.exec(cli)
-    Log.info { "jaeger metrics resp: #{resp}"}
-    resp
+    Log.info { "jaeger metrics resp: #{resp[:output]}"}
+    resp[:output]
   end
 
-  def self.connected_clients_total(resource_name)
-    node = node_for_cnf(resource_name)
-    pod = jaeger_pod(node)
-    metrics = jaeger_metrics(pod)
-    connected_clients = metrics.match(/jaeger_agent_client_stats_connected_clients \K[0-9]{1,20}/)
-    connected_clients[0]
+  # def self.connected_clients_total(resource_name)
+  def self.connected_clients_total
+    # node = node_for_cnf(resource_name)
+    nodes = KubectlClient::Get.nodes
+    pods = jaeger_pods(nodes["items"].as_a)
+    metrics = jaeger_metrics_by_pods(pods)
+    metrics.reduce(0) do |acc, metric|
+      connected_clients = metric.match(/jaeger_agent_client_stats_connected_clients \K[0-9]{1,20}/)
+      clients = connected_clients[0] if connected_clients
+      if clients
+        acc + clients.to_i
+      else
+        acc
+      end
+
+    end
   end
 
   def self.tracing_used?(baseline, cnf_count)

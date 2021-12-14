@@ -57,6 +57,8 @@ module ClusterTools
   # Accepts org/image:tag or repo/org/image:tag
   # A content digest is an uncompressed digest, which is what Kubernetes tracks 
   def self.official_content_digest_by_image_name(image_name)
+      Log.info { "official_content_digest_by_image_name( image_name : #{image_name}"}
+
     result = exec("skopeo inspect docker://#{image_name}")
     response = result[:output]
     if result[:status].success? && !response.empty?
