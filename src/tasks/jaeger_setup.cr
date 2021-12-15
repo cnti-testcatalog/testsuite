@@ -2,6 +2,7 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
+require "./utils/utils.cr"
 
 desc "Install Jaeger"
 task "install_jaeger" do |_, args|
