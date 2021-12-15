@@ -159,13 +159,17 @@ module JaegerManager
     Log.info { "jaeger_metrics_by_pods"}
     metrics = jaeger_pods.map do |pod|
       Log.info { "jaeger_metrics_by_pods pod: #{pod}"}
-      pod_ips = pod.dig("status", "podIPs")
+      pod_ips = pod.dig?("status", "podIPs")
       Log.debug { "pod_ips: #{pod_ips}"}
-      ip_metrics = pod_ips.as_a.map do |ip|
-        Log.debug{ "checking: against #{ip.dig("ip").as_s}"}
-        msg = metrics_by_pod(ip.dig("ip").as_s)
-        Log.debug{ "msg #{msg}"}
-        msg
+      if pod_ips
+        ip_metrics = pod_ips.as_a.map do |ip|
+          Log.debug{ "checking: against #{ip.dig("ip").as_s}"}
+          msg = metrics_by_pod(ip.dig("ip").as_s)
+          Log.debug{ "msg #{msg}"}
+          msg
+        end
+      else
+        ip_metrics = ""
       end
       Log.debug { "jaeger_metrics_by_pods ip_metrics: #{ip_metrics}"}
       ip_metrics
