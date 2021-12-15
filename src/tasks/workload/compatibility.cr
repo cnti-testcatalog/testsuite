@@ -7,6 +7,7 @@ require "../utils/utils.cr"
 
 desc "CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements."
 task "compatibility", ["cni_compatible"] do |_, args|
+  stdout_score("compatibility")
 end
 
 desc "Check if CNF compatible with multiple CNIs"
