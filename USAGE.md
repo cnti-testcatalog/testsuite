@@ -823,8 +823,24 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 ./cnf-testsuite prometheus_traffic 
 ``` 
 
+#### :heavy_check_mark: To check if logs and data are being routed through fluentd
+<details> <summary>Details for fluentd routed logging</summary>
+<p>
+
+<b>Routed Logs Details:</b> It's considered a best-practice for CNFs to route logs and data through programs like fluentd to analyze and better understand data. This test will check if your CNF is using fluentd.
+
+<b>Remediation Steps:</b> Install and configure fluentd to collect data and logs. See more at [fluentd.org](https://bit.ly/fluentd).
+</p>
+
+</details>
+
+```
+./cnf-testsuite routed_logs
+```
+
 #### :heavy_check_mark: To check if Open Metrics is being used and or compatible.
 <details> <summary>Details for Open Metrics</summary>
+
 <p>
 
 <b>Open Metics Details:</b> OpenMetrics specifies the de-facto standard for transmitting cloud-native metrics at scale, with support for both text representation and Protocol Buffers and brings it into an Internet Engineering Task Force (IETF) standard. It supports both pull and push-based data collection. Sourced from [OpenMetric Readme](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md)
