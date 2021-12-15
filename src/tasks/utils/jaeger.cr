@@ -1,3 +1,4 @@
+require "./cluster_utils.cr"
 module JaegerManager
   JAEGER_PORT = "14271"
   def self.uninstall
