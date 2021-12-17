@@ -62,9 +62,6 @@ task "kubescape_framework_download" do |_, args|
         File.write(framework_path, response.body_io)
       end
     end
-    Log.info { "KUBESCAPE_DEBUG_URL: #{asset_url}" }
-    Log.info { "KUBESCAPE_DEBUG" }
-    `head #{framework_path}`
   end
 end
 
