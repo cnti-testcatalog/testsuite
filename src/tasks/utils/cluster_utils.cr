@@ -53,6 +53,7 @@ module ClusterTools
     end
   end
   # https://windsock.io/explaining-docker-image-ids/
+  # works on dockerhub and quay!
   # ex. kubectl exec -ti cluster-tools-ww9lg -- skopeo inspect docker://jaegertracing/jaeger-agent:1.28.0
   # Accepts org/image:tag or repo/org/image:tag
   # A content digest is an uncompressed digest, which is what Kubernetes tracks 

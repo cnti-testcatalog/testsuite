@@ -729,7 +729,7 @@ module CNFManager
     # nodes = KubectlClient::Get.nodes
     # baseline_pods = JaegerManager.jaeger_pods(nodes["items"].as_a)
     # baselines = JaegerManager.jaeger_metrics_by_pods(baseline_pods)
-    baselines = JaegerManager.connected_clients_total
+    baselines = JaegerManager.unique_services_total
     Log.info { "baselines: #{baselines}" }
     # todo separate out install methods into a module/function that accepts a block
     elapsed_time = Time.measure do
@@ -830,7 +830,7 @@ module CNFManager
       end
     end
 
-    metrics_checkpoints = JaegerManager.connected_clients_total
+    metrics_checkpoints = JaegerManager.unique_services_total
     Log.info { "metrics_checkpoints: #{metrics_checkpoints}" }
     tracing_used = JaegerManager.tracing_used?(baselines, metrics_checkpoints)
     Log.info { "tracing_used: #{tracing_used}" }

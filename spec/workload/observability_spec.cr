@@ -171,12 +171,10 @@ ensure
 end
 
 it "'tracing' should fail if tracing is not used", tags: ["observability"] do
-
-  LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-  # resp = `./cnf-testsuite install_fluentd`
   Log.info {"Installing Jaeger "}
   JaegerManager.install
-
+  
+  LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
   response_s = `./cnf-testsuite tracing`
   LOGGING.info response_s
   (/FAILED: Tracing not used/ =~ response_s).should_not be_nil
@@ -184,3 +182,17 @@ ensure
   LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
   JaegerManager.uninstall
 end
+
+it "'tracing' should pass if tracing is used", tags: ["observability"] do
+  Log.info {"Installing Jaeger "}
+  JaegerManager.install
+
+  LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-tracing/cnf-testsuite.yml`
+  response_s = `./cnf-testsuite tracing`
+  LOGGING.info response_s
+  (/PASSED: Tracing used/ =~ response_s).should_not be_nil
+ensure
+  LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-tracing/cnf-testsuite.yml`
+  JaegerManager.uninstall
+end
+
