@@ -1089,21 +1089,26 @@ module KubectlClient
         pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod| 
           found = false
           #todo add another pod comparison for sha hash
-          found = pod["status"]["containerStatuses"].as_a.any? do |container_status|
-            Log.info { "container_status imageid: #{container_status["imageID"]}"}
-            Log.info { "pods_by_digest_and_nodes digest: #{digest}"}
-            match_found = container_status["imageID"].as_s.includes?("#{digest}")
-            Log.info { "container_status match_found: #{match_found}"}
-            match_found
-          end
-          Log.info { "found pod: #{pod}"}
-          pod_name = pod.dig?("metadata", "name")
-          Log.info { "found PodName: #{pod_name}" }
-          if found && pod.dig?("spec", "nodeName") == "#{node_name}"
-            Log.info { "found pod and node: #{pod} #{node_name}" }
-            true
+          if pod["status"]["containerStatuses"]?
+            found = pod["status"]["containerStatuses"].as_a.any? do |container_status|
+              Log.info { "container_status imageid: #{container_status["imageID"]}"}
+              Log.info { "pods_by_digest_and_nodes digest: #{digest}"}
+              match_found = container_status["imageID"].as_s.includes?("#{digest}")
+              Log.info { "container_status match_found: #{match_found}"}
+              match_found
+            end
+            Log.info { "found pod: #{pod}"}
+            pod_name = pod.dig?("metadata", "name")
+            Log.info { "found PodName: #{pod_name}" }
+            if found && pod.dig?("spec", "nodeName") == "#{node_name}"
+              Log.info { "found pod and node: #{pod} #{node_name}" }
+              true
+            else
+              Log.info { "spec node_name: No Match: #{node_name}" }
+              false
+            end
           else
-            Log.info { "spec node_name: No Match: #{node_name}" }
+            Log.info { "no containerstatuses" }
             false
           end
         end
