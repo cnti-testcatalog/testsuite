@@ -23,61 +23,63 @@ module JaegerManager
 
 
   def self.jaeger_pods(nodes)
-    match = Hash{:found => false, :digest => "", :release_name => ""}
-    image_search = "jaegertracing\/jaeger-agent"
-    #todo get name of pod and match against one pod instead of getting all pods and matching them
-    jaeger_tag = KubectlClient::Get.container_tag_from_image_by_nodes(image_search, nodes)
-
-    if jaeger_tag
-      Log.info { "jaeger container tag: #{jaeger_tag}" }
-
-      pods = KubectlClient::Get.pods_by_nodes(nodes)
-
-      # image_name = "jaegertracing/jaeger-agent"
-      image_name = "jaegertracing/jaeger-collector"
-      #todo container_digests_by_pod (use pod from previous image search)
-      imageids = KubectlClient::Get.container_digests_by_nodes(nodes)
-      resp = ClusterTools.official_content_digest_by_image_name(image_name + ":" + jaeger_tag )
-      sha_list = [{"name" => image_name, "manifest_digest" => resp["Digest"].as_s}]
-      Log.info { "jaeger_pods sha_list : #{sha_list}"}
-      match = DockerClient::K8s.local_digest_match(sha_list, imageids)
-      Log.info { "match : #{match}"}
-    else
-      match[:found]=false
-    end
-    if match[:found]
-      Log.info { "pods_by_node" }
-      nodes.map { |item|
-        Log.info { "items labels: #{item.dig?("metadata", "labels")}" }
-        node_name = item.dig?("metadata", "labels", "kubernetes.io/hostname")
-        Log.debug { "NodeName: #{node_name}" }
-        pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod| 
-          found = false
-          #todo add another pod comparison for sha hash
-          found = pod["status"]["containerStatuses"].as_a.any? do |container_status|
-            Log.info { "container_status imageid: #{container_status["imageID"]}"}
-            Log.info { "match digest: #{match[:digest]}"}
-            # todo why is this matching multiple pods
-            match_found = container_status["imageID"].as_s.includes?("#{match[:digest]}")
-            Log.info { "container_status match_found: #{match_found}"}
-            match_found
-          end
-          Log.info { "found pod: #{pod}"}
-          pod_name = pod.dig?("metadata", "name")
-          Log.info { "found PodName: #{pod_name}" }
-          if found && pod.dig?("spec", "nodeName") == "#{node_name}"
-            Log.info { "found pod and node: #{pod} #{node_name}" }
-            true
-          else
-            Log.info { "spec node_name: No Match: #{node_name}" }
-            false
-          end
-        end
-      }.flatten
-    else
-      Log.info { "match not found: #{match}".colorize(:red) }
-      [EMPTY_JSON]
-    end
+    match = ClusterTools.local_match_by_image_name("jaegertracing/jaeger-collector", nodes)
+    # match = Hash{:found => false, :digest => "", :release_name => ""}
+    # image_search = "jaegertracing\/jaeger-agent"
+    # #todo get name of pod and match against one pod instead of getting all pods and matching them
+    # jaeger_tag = KubectlClient::Get.container_tag_from_image_by_nodes(image_search, nodes)
+    #
+    # if jaeger_tag
+    #   Log.info { "jaeger container tag: #{jaeger_tag}" }
+    #
+    #   pods = KubectlClient::Get.pods_by_nodes(nodes)
+    #
+    #   # image_name = "jaegertracing/jaeger-agent"
+    #   image_name = "jaegertracing/jaeger-collector"
+    #   #todo container_digests_by_pod (use pod from previous image search)
+    #   imageids = KubectlClient::Get.container_digests_by_nodes(nodes)
+    #   resp = ClusterTools.official_content_digest_by_image_name(image_name + ":" + jaeger_tag )
+    #   sha_list = [{"name" => image_name, "manifest_digest" => resp["Digest"].as_s}]
+    #   Log.info { "jaeger_pods sha_list : #{sha_list}"}
+    #   match = DockerClient::K8s.local_digest_match(sha_list, imageids)
+    #   Log.info { "match : #{match}"}
+    # else
+    #   match[:found]=false
+    # end
+    KubectlClient::Get.pods_by_digest_and_nodes(match[:digest], nodes)
+    # if match[:found]
+    #   Log.info { "pods_by_node" }
+    #   nodes.map { |item|
+    #     Log.info { "items labels: #{item.dig?("metadata", "labels")}" }
+    #     node_name = item.dig?("metadata", "labels", "kubernetes.io/hostname")
+    #     Log.debug { "NodeName: #{node_name}" }
+    #     pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod| 
+    #       found = false
+    #       #todo add another pod comparison for sha hash
+    #       found = pod["status"]["containerStatuses"].as_a.any? do |container_status|
+    #         Log.info { "container_status imageid: #{container_status["imageID"]}"}
+    #         Log.info { "match digest: #{match[:digest]}"}
+    #         # todo why is this matching multiple pods
+    #         match_found = container_status["imageID"].as_s.includes?("#{match[:digest]}")
+    #         Log.info { "container_status match_found: #{match_found}"}
+    #         match_found
+    #       end
+    #       Log.info { "found pod: #{pod}"}
+    #       pod_name = pod.dig?("metadata", "name")
+    #       Log.info { "found PodName: #{pod_name}" }
+    #       if found && pod.dig?("spec", "nodeName") == "#{node_name}"
+    #         Log.info { "found pod and node: #{pod} #{node_name}" }
+    #         true
+    #       else
+    #         Log.info { "spec node_name: No Match: #{node_name}" }
+    #         false
+    #       end
+    #     end
+    #   }.flatten
+    # else
+    #   Log.info { "match not found: #{match}".colorize(:red) }
+    #   [EMPTY_JSON]
+    # end
   end
 
   def self.jaeger_metrics_by_pods(jaeger_pods)

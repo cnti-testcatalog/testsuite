@@ -67,4 +67,31 @@ module ClusterTools
     end
     JSON.parse(%({}))
   end
+
+  def self.local_match_by_image_name(image_name, nodes=KubectlClient::Get.nodes["items"].as_a )
+    match = Hash{:found => false, :digest => "", :release_name => ""}
+    # image_search = "jaegertracing\/jaeger-agent"
+    #todo get name of pod and match against one pod instead of getting all pods and matching them
+    jaeger_tag = KubectlClient::Get.container_tag_from_image_by_nodes(image_name, nodes)
+
+    if jaeger_tag
+      Log.info { "jaeger container tag: #{jaeger_tag}" }
+
+      pods = KubectlClient::Get.pods_by_nodes(nodes)
+
+      # image_name = "jaegertracing/jaeger-agent"
+      # image_name = "jaegertracing/jaeger-collector"
+      #todo container_digests_by_pod (use pod from previous image search) --- performance enhancement
+      imageids = KubectlClient::Get.container_digests_by_nodes(nodes)
+      resp = ClusterTools.official_content_digest_by_image_name(image_name + ":" + jaeger_tag )
+      sha_list = [{"name" => image_name, "manifest_digest" => resp["Digest"].as_s}]
+      Log.info { "jaeger_pods sha_list : #{sha_list}"}
+      match = DockerClient::K8s.local_digest_match(sha_list, imageids)
+      Log.info { "match : #{match}"}
+    else
+      match[:found]=false
+    end
+    match
+  end
+
 end

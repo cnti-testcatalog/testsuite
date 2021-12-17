@@ -498,7 +498,7 @@ module KubectlClient
         if statuses
           statuses.as_a.each do |status|
             Log.debug { "pod_by_digest status: #{status}" }
-            matched_pod << pod if status.dig("imageID").as_s.includes?(container_digest)
+            matched_pod << pod if status.dig("imageID").as_s.includes?("#{container_digest}")
           end
         end
       end
@@ -1072,11 +1072,48 @@ module KubectlClient
       Log.info { "container_tag_from_image_by_nodes nodes: #{nodes}" }
       # TODO Remove duplicates & and support multiple?
       all_images = container_images_by_nodes(nodes)
-      matched_image = all_images.select{ | x | x =~ /#{image}/ }
+      # matched_image = all_images.select{ | x | x =~ /#{image}/ }
+      matched_image = all_images.select{ | x | x.includes?(image) }
       parsed_image = DockerClient.parse_image("#{matched_image[0]}") if matched_image.size > 0
       tags = parsed_image["tag"] if parsed_image
       Log.info { "container_tag_from_image_by_nodes tags: #{tags}" } if tags
       tags
+    end
+
+    def self.pods_by_digest_and_nodes(digest, nodes=KubectlClient::Get.nodes["items"].as_a)
+      Log.info { "pods_by_digest_and_nodes" }
+      digest_pods = nodes.map { |item|
+        Log.info { "items labels: #{item.dig?("metadata", "labels")}" }
+        node_name = item.dig?("metadata", "labels", "kubernetes.io/hostname")
+        Log.debug { "NodeName: #{node_name}" }
+        pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod| 
+          found = false
+          #todo add another pod comparison for sha hash
+          found = pod["status"]["containerStatuses"].as_a.any? do |container_status|
+            Log.info { "container_status imageid: #{container_status["imageID"]}"}
+            Log.info { "pods_by_digest_and_nodes digest: #{digest}"}
+            match_found = container_status["imageID"].as_s.includes?("#{digest}")
+            Log.info { "container_status match_found: #{match_found}"}
+            match_found
+          end
+          Log.info { "found pod: #{pod}"}
+          pod_name = pod.dig?("metadata", "name")
+          Log.info { "found PodName: #{pod_name}" }
+          if found && pod.dig?("spec", "nodeName") == "#{node_name}"
+            Log.info { "found pod and node: #{pod} #{node_name}" }
+            true
+          else
+            Log.info { "spec node_name: No Match: #{node_name}" }
+            false
+          end
+        end
+      }.flatten
+      if digest_pods.empty?
+        Log.info { "match not found for digest: #{digest}" }
+        [EMPTY_JSON]
+      else
+        digest_pods
+      end
     end
   end
 end
