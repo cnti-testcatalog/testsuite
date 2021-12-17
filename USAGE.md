@@ -853,7 +853,21 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 ```
 ./cnf-testsuite open_metrics
 ```
+#### :heavy_check_mark: To check if tracing is being used with Jaeger.
+<details> <summary>Details for tracing with Jaeger</summary>
 
+<p>
+
+<b>Tracing Details:</b> Jaeger uses distributed tracing to follow the path of a request through different microservices. Rather than guessing, we can see a visual representation of the call flows.. Sourced from [Redhat's blog on Jaeger](https://www.redhat.com/en/topics/microservices/what-is-jaeger)
+
+<b>Remediation Steps:</b> Ensure your CNF is using tracing.
+</p>
+
+</details>
+
+```
+./cnf-testsuite open_metrics
+```
 <details> <summary>Details for Observability Tests To Do's</summary>
 <p>
 
