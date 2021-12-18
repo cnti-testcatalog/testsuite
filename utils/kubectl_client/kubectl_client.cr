@@ -311,6 +311,24 @@ module KubectlClient
       nodes
     end
 
+    def self.nodes_by_resource(resource) : Array(JSON::Any)   
+      retry_limit = 50
+      retries = 1
+      empty_json_any = [] of JSON::Any
+      nodes = empty_json_any
+      # Get.nodes seems to have failures sometimes
+      until (nodes != empty_json_any) || retries > retry_limit
+        nodes = KubectlClient::Get.resource_select(KubectlClient::Get.nodes) do |item, metadata|
+          item.dig?("metadata", "name") == resourc.dig?("metadata", "name")
+        end
+      end
+      if nodes == empty_json_any
+        Log.error { "nodes empty: #{nodes}" }
+      end
+      Log.debug { "nodes: #{nodes}" }
+      nodes
+    end
+
     def self.pods_by_nodes(nodes_json : Array(JSON::Any))
       Log.info { "pods_by_node" }
       nodes_json.map { |item|
@@ -480,7 +498,7 @@ module KubectlClient
         if statuses
           statuses.as_a.each do |status|
             Log.debug { "pod_by_digest status: #{status}" }
-            matched_pod << pod if status.dig("imageID").as_s.includes?(container_digest)
+            matched_pod << pod if status.dig("imageID").as_s.includes?("#{container_digest}")
           end
         end
       end
@@ -1005,6 +1023,102 @@ module KubectlClient
       imageids
     end
 
-  end
+    def self.pod_statuses_by_nodes(nodes)
+      pods = KubectlClient::Get.pods_by_nodes(nodes)
+      Log.info { "pod_statuses_by_nodes pods_by_nodes pods: #{pods}" }
+      statuses = pods.map do |x|
+        x["status"]
+      end
+      Log.info { "pod_statuses_by_nodes statuses: #{statuses}" }
+      statuses
+    end
 
+    def self.pod_container_statuses_by_nodes(nodes)
+      statuses = pod_statuses_by_nodes(nodes).map do |x|
+        # todo there are some pods that dont have containerStatuses
+        x["containerStatuses"].as_a if x["containerStatuses"]?
+      end
+      Log.info { "pod_container_statuses_by_nodes containerStatuses: #{statuses}" }
+      statuses
+    end
+
+    def self.container_digests_by_nodes(nodes)
+      Log.info { "container_digests_by_nodes nodes: #{nodes}" }
+      imageids = pod_container_statuses_by_nodes(nodes).reduce([] of String) do |acc, x|
+        if x
+          acc | x.map{|i| i["imageID"].as_s}
+        else
+          acc
+        end
+      end
+      Log.info { "container_digests_by_nodes image ids: #{imageids}" }
+      imageids
+    end
+
+    def self.container_images_by_nodes(nodes)
+      Log.info { "container_images_by_nodes nodes: #{nodes}" }
+      images = pod_container_statuses_by_nodes(nodes).reduce([] of String) do |acc, x|
+        if x
+          acc | x.map{|i| i["image"].as_s}
+        else
+          acc
+        end
+      end
+      Log.info { "container_images_by_nodes images: #{images}" }
+      images
+    end
+
+    def self.container_tag_from_image_by_nodes(image, nodes)
+      Log.info { "container_tag_from_image_by_nodes nodes: #{nodes}" }
+      # TODO Remove duplicates & and support multiple?
+      all_images = container_images_by_nodes(nodes)
+      # matched_image = all_images.select{ | x | x =~ /#{image}/ }
+      matched_image = all_images.select{ | x | x.includes?(image) }
+      parsed_image = DockerClient.parse_image("#{matched_image[0]}") if matched_image.size > 0
+      tags = parsed_image["tag"] if parsed_image
+      Log.info { "container_tag_from_image_by_nodes tags: #{tags}" } if tags
+      tags
+    end
+
+    def self.pods_by_digest_and_nodes(digest, nodes=KubectlClient::Get.nodes["items"].as_a)
+      Log.info { "pods_by_digest_and_nodes" }
+      digest_pods = nodes.map { |item|
+        Log.info { "items labels: #{item.dig?("metadata", "labels")}" }
+        node_name = item.dig?("metadata", "labels", "kubernetes.io/hostname")
+        Log.debug { "NodeName: #{node_name}" }
+        pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod| 
+          found = false
+          #todo add another pod comparison for sha hash
+          if pod["status"]["containerStatuses"]?
+            found = pod["status"]["containerStatuses"].as_a.any? do |container_status|
+              Log.info { "container_status imageid: #{container_status["imageID"]}"}
+              Log.info { "pods_by_digest_and_nodes digest: #{digest}"}
+              match_found = container_status["imageID"].as_s.includes?("#{digest}")
+              Log.info { "container_status match_found: #{match_found}"}
+              match_found
+            end
+            Log.info { "found pod: #{pod}"}
+            pod_name = pod.dig?("metadata", "name")
+            Log.info { "found PodName: #{pod_name}" }
+            if found && pod.dig?("spec", "nodeName") == "#{node_name}"
+              Log.info { "found pod and node: #{pod} #{node_name}" }
+              true
+            else
+              Log.info { "spec node_name: No Match: #{node_name}" }
+              false
+            end
+          else
+            Log.info { "no containerstatuses" }
+            false
+          end
+        end
+      }.flatten
+      if digest_pods.empty?
+        Log.info { "match not found for digest: #{digest}" }
+        [EMPTY_JSON]
+      else
+        digest_pods
+      end
+    end
+  end
 end

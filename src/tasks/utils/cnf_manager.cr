@@ -8,6 +8,7 @@ require "uuid"
 require "./points.cr"
 require "./task.cr"
 require "./config.cr"
+require "./jaeger.cr"
 require "airgap"
 require "tar"
 require "./image_prepull.cr"
@@ -20,7 +21,7 @@ module CNFManager
   class ElapsedTimeConfigMapTemplate
     # elapsed_time should be Int32 but it is being passed as string
     # So the old behaviour has been retained as is to prevent any breakages
-    def initialize(@release_name : String, @helm_used : Bool, @elapsed_time : String, @immutable : Bool)
+    def initialize(@release_name : String, @helm_used : Bool, @elapsed_time : String, @immutable : Bool, @tracing_used : Bool)
     end
 
     ECR.def_to_s("src/templates/elapsed_time_configmap.yml.ecr")
@@ -729,6 +730,13 @@ module CNFManager
     fresh_install = true
 
     helm_install = {status: "", output: IO::Memory.new, error: IO::Memory.new}
+    # todo get a baseline on all the nodes
+    # nodes = KubectlClient::Get.nodes
+    # baseline_pods = JaegerManager.jaeger_pods(nodes["items"].as_a)
+    # baselines = JaegerManager.jaeger_metrics_by_pods(baseline_pods)
+    baselines = JaegerManager.unique_services_total
+    Log.info { "baselines: #{baselines}" }
+    # todo separate out install methods into a module/function that accepts a block
     elapsed_time = Time.measure do
       case install_method[0]
       when Helm::InstallMethod::ManifestDirectory
@@ -827,6 +835,11 @@ module CNFManager
       end
     end
 
+    metrics_checkpoints = JaegerManager.unique_services_total
+    Log.info { "metrics_checkpoints: #{metrics_checkpoints}" }
+    tracing_used = JaegerManager.tracing_used?(baselines, metrics_checkpoints)
+    Log.info { "tracing_used: #{tracing_used}" }
+
     Log.info { "elapsed_time.seconds: #{elapsed_time.seconds}" }
     helm_used = false
     if helm_install && helm_install[:error].to_s.size == 0 # && helm_pull.to_s.size > 0
@@ -849,7 +862,8 @@ module CNFManager
       "cnf-testsuite-#{release_name}-startup-information",
       helm_used,
       "#{elapsed_time.seconds}",
-      immutable_configmap
+      immutable_configmap,
+      tracing_used
     ).to_s
     #TODO find a way to kubectlapply directly without a map
     Log.debug { "elapsed_time_template : #{elapsed_time_template}" }

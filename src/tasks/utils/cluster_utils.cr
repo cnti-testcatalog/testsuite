@@ -9,6 +9,7 @@ module ClusterTools
     Log.info { "ClusterTools uninstall" }
     KubectlClient::Delete.file("cluster_tools.yml")
   end
+  #TODO, Support multiple nodes
   def self.exec(cli, namespace="default")
     Log.info { "ClusterTools exec partial cli: #{cli}" }
     # todo cluster_tools_exec command
@@ -51,12 +52,46 @@ module ClusterTools
       end
     end
   end
-  #todo move to prometheus module
-  def self.open_metric_validator(url)
-    Log.info { "ClusterTools open_metric_validator" }
-    cli = %(/bin/bash -c "curl #{url} | openmetricsvalidator")
-    resp = exec(cli)
-    Log.info { "metrics resp: #{resp}"}
-    resp
+  # https://windsock.io/explaining-docker-image-ids/
+  # works on dockerhub and quay!
+  # ex. kubectl exec -ti cluster-tools-ww9lg -- skopeo inspect docker://jaegertracing/jaeger-agent:1.28.0
+  # Accepts org/image:tag or repo/org/image:tag
+  # A content digest is an uncompressed digest, which is what Kubernetes tracks 
+  def self.official_content_digest_by_image_name(image_name)
+      Log.info { "official_content_digest_by_image_name( image_name : #{image_name}"}
+
+    result = exec("skopeo inspect docker://#{image_name}")
+    response = result[:output]
+    if result[:status].success? && !response.empty?
+      return JSON.parse(response)
+    end
+    JSON.parse(%({}))
   end
+
+  def self.local_match_by_image_name(image_name, nodes=KubectlClient::Get.nodes["items"].as_a )
+    match = Hash{:found => false, :digest => "", :release_name => ""}
+    # image_search = "jaegertracing\/jaeger-agent"
+    #todo get name of pod and match against one pod instead of getting all pods and matching them
+    jaeger_tag = KubectlClient::Get.container_tag_from_image_by_nodes(image_name, nodes)
+
+    if jaeger_tag
+      Log.info { "jaeger container tag: #{jaeger_tag}" }
+
+      pods = KubectlClient::Get.pods_by_nodes(nodes)
+
+      # image_name = "jaegertracing/jaeger-agent"
+      # image_name = "jaegertracing/jaeger-collector"
+      #todo container_digests_by_pod (use pod from previous image search) --- performance enhancement
+      imageids = KubectlClient::Get.container_digests_by_nodes(nodes)
+      resp = ClusterTools.official_content_digest_by_image_name(image_name + ":" + jaeger_tag )
+      sha_list = [{"name" => image_name, "manifest_digest" => resp["Digest"].as_s}]
+      Log.info { "jaeger_pods sha_list : #{sha_list}"}
+      match = DockerClient::K8s.local_digest_match(sha_list, imageids)
+      Log.info { "match : #{match}"}
+    else
+      match[:found]=false
+    end
+    match
+  end
+
 end

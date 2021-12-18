@@ -5,7 +5,7 @@ require "totem"
 require "../utils/utils.cr"
 
 desc "In order to maintain, debug, and have insight into a protected environment, its infrastructure elements must have the property of being observable. This means these elements must externalize their internal states in some way that lends itself to metrics, tracing, and logging."
-task "observability", ["log_output", "prometheus_traffic", "open_metrics"] do |_, args|
+task "observability", ["log_output", "prometheus_traffic", "open_metrics", "routed_logs", "tracing"] do |_, args|
   stdout_score("observability")
 end
 
@@ -88,7 +88,7 @@ task "prometheus_traffic" do |_, args|
               prom_target_urls.each do |url|
                 Log.info { "checking: #{url} against #{ip.dig("ip").as_s}"}
                 if url.includes?(ip.dig("ip").as_s)
-                  msg = ClusterTools.open_metric_validator(url)
+                  msg = Prometheus.open_metric_validator(url)
                   # Immutable config maps are only supported in Kubernetes 1.19+
                   immutable_configmap = true
 
@@ -198,3 +198,31 @@ task "routed_logs" do |_, args|
     end
   end
 end
+
+desc "Does the CNF install use tracing?"
+task "tracing" do |_, args|
+  Log.for("verbose").info { "tracing" } if check_verbose(args)
+  Log.info { "tracing args: #{args.inspect}" }
+  if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
+    CNFManager::Task.task_runner(args) do |args, config|
+      
+      emoji_tracing_deploy="⎈🚀"
+      helm_chart = config.cnf_config[:helm_chart]
+      helm_directory = config.cnf_config[:helm_directory]
+      release_name = config.cnf_config[:release_name]
+      yml_file_path = config.cnf_config[:yml_file_path]
+      configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
+      #TODO check if json is empty
+      tracing_used = configmap["data"].as_h["tracing_used"].as_s
+
+      if tracing_used == "true" 
+        upsert_passed_task("tracing", "✔️  PASSED: Tracing used #{emoji_tracing_deploy}")
+      else
+        upsert_failed_task("tracing", "✖️  FAILED: Tracing not used #{emoji_tracing_deploy}")
+      end
+    end
+  else
+    upsert_failed_task("tracing", "✖️  FAILED: No cnf_testsuite.yml found! Did you run the setup task?")
+  end
+end
+

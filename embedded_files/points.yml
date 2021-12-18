@@ -14,7 +14,7 @@
   tags: microservice, dynamic, workload
 
 - name: cni_compatible
-  tags: compatibility, dynamic
+  tags: compatibility, dynamic, workload
 # - name: cni_spec 
 #  tags: compatibility, dynamic
 #- name: api_snoop_alpha 
@@ -210,6 +210,14 @@
   pass: 10
   fail: 0 
 - name: open_metrics 
+  tags: observability, dynamic, workload
+  pass: 5 
+  fail: 0 
+- name: routed_logs 
+  tags: observability, dynamic, workload
+  pass: 5 
+  fail: 0 
+- name: tracing 
   tags: observability, dynamic, workload
   pass: 5 
   fail: 0 
