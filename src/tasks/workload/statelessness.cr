@@ -11,6 +11,18 @@ task "state", ["volume_hostpath_not_found", "no_local_volume_configuration"] do 
   stdout_score("state")
 end
 
+desc "Does the CNF use an elastic persistent volume"
+task "elastic_volumes" do |_, args|
+  # TODO When using a default StorageClass, the storageclass name will be populated in the persistent volumes claim post-creation.
+  # TODO Inspect the workload resource and search for any "Persistent Volume Claims" --> https://loft.sh/blog/kubernetes-persistent-volumes-examples-and-best-practices/#what-are-persistent-volume-claims-pvcs 
+  # TODO Inspect the Persistent Volumes Claim and determine if a Storage Class is use. If a Storage Class is defined, dynamic provisioning is in use. If no storge class is defined, static provisioningis in use -> https://v1-20.docs.kubernetes.io/docs/concepts/storage/persistent-volumes/#lifecycle-of-a-volume-and-claim
+
+  # TODO If using dynamic provisioning, find the and inspect the associated storageClass and find the provisioning driver being used -> https://kubernetes.io/docs/concepts/storage/storage-classes/#the-storageclass-resource
+  # TODO Match and check if the provisioning driver used is of an elastic volume type.
+  # TODO If using static provisioning, find the and inspect the associated Persistent Volume and determine the provisioning driver being used -> 
+  # TODO Match and check if the provisioning driver used is of an elastic volume type.
+end
+
 desc "Does the CNF use a non-cloud native data store: hostPath volume"
 task "volume_hostpath_not_found" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
