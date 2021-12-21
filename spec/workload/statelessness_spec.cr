@@ -10,6 +10,20 @@ describe "State" do
   before_all do
     `./cnf-testsuite configuration_file_setup`
   end
+  
+  it "'elastic_volume' should pass if the cnf uses an elastic volume", tags: ["elastic_volume"]  do
+    begin
+      `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite elastic_volumes verbose`
+      LOGGING.info "Status:  #{response_s}"
+      (/PASSED: hostPath volumes not found/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
+      $?.success?.should be_true
+    end
+  end
+
 
   it "'volume_hostpath_not_found' should pass if the cnf doesn't have a hostPath volume", tags: ["volume_hostpath_not_found"]  do
     begin

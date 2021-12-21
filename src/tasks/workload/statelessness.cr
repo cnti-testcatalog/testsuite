@@ -13,6 +13,24 @@ end
 
 desc "Does the CNF use an elastic persistent volume"
 task "elastic_volumes" do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    LOGGING.debug "cnf_config: #{config}"
+    VERBOSE_LOGGING.info "elastic_volumes" if check_verbose(args)
+    emoji_probe="🧫"
+    task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
+      LOGGING.info "resource: #{resource}"
+      LOGGING.info "volumes: #{volumes}"
+      volumes.as_a.each do |volume| 
+        if volume["persistentVolumeClaim"]?
+             LOGGING.info "persistent_volume: #{volume["name"]}"
+        end
+        volumes = false
+      end
+    end
+    resp = upsert_passed_task("elastic_volumes","✔️  PASSED: Elastic Volumes Used #{emoji_probe}")
+    resp
+  end
+
   # TODO When using a default StorageClass, the storageclass name will be populated in the persistent volumes claim post-creation.
   # TODO Inspect the workload resource and search for any "Persistent Volume Claims" --> https://loft.sh/blog/kubernetes-persistent-volumes-examples-and-best-practices/#what-are-persistent-volume-claims-pvcs 
   # TODO Inspect the Persistent Volumes Claim and determine if a Storage Class is use. If a Storage Class is defined, dynamic provisioning is in use. If no storge class is defined, static provisioningis in use -> https://v1-20.docs.kubernetes.io/docs/concepts/storage/persistent-volumes/#lifecycle-of-a-volume-and-claim
