@@ -11,23 +11,50 @@ task "state", ["volume_hostpath_not_found", "no_local_volume_configuration"] do 
   stdout_score("state")
 end
 
+ELASTIC_PROVISIONING_DRIVERS_REGEX = /kubernetes.io\/aws-ebs|kubernetes.io\/azure-file|kubernetes.io\/azure-disk|kubernetes.io\/cinder|kubernetes.io\/gce-pd|kubernetes.io\/glusterfs|kubernetes.io\/quobyte|kubernetes.io\/rbd|kubernetes.io\/vsphere-volume|kubernetes.io\/portworx-volume|kubernetes.io\/scaleio|kubernetes.io\/storageos/
 desc "Does the CNF use an elastic persistent volume"
 task "elastic_volumes" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     LOGGING.debug "cnf_config: #{config}"
     VERBOSE_LOGGING.info "elastic_volumes" if check_verbose(args)
     emoji_probe="🧫"
+    elastic = false
     task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
       LOGGING.info "resource: #{resource}"
       LOGGING.info "volumes: #{volumes}"
-      volumes.as_a.each do |volume| 
-        if volume["persistentVolumeClaim"]?
-             LOGGING.info "persistent_volume: #{volume["name"]}"
+      volume_claims = volumes.as_a.select{ |x| x.dig?("persistentVolumeClaim", "claimName") } 
+      dynamic_claims = volume_claims.reduce( [] of Hash(String, JSON::Any)) do |acc, claim| 
+        resource = KubectlClient::Get.resource("pvc", claim.dig?("persistentVolumeClaim", "claimName"))
+        LOGGING.info "StorageClass: #{resource.dig?("spec", "storageClassName")}"
+        if resource.dig?("spec", "storageClassName")
+          acc << { "claim_name" =>  claim.dig("persistentVolumeClaim", "claimName"), "class_name" => resource.dig("spec", "storageClassName") }
+        else
+          acc
         end
-        volumes = false
       end
+      LOGGING.info "Dynamic Claims: #{dynamic_claims}"
+      provisoners = dynamic_claims.reduce( [] of String) do |acc, claim| 
+        resource = KubectlClient::Get.resource("storageclasses", claim.dig?("class_name"))
+        if resource.dig?("provisioner")
+             acc << resource.dig("provisioner").as_s 
+           else
+             acc
+        end
+      end
+      LOGGING.info "Provisoners: #{provisoners}"
+      provisoners.each do |provisoner|
+        if (provisoner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX) 
+          LOGGING.info "Provisoners: #{provisoners}"
+          elastic = true
+        end
+      end
+      elastic
     end
-    resp = upsert_passed_task("elastic_volumes","✔️  PASSED: Elastic Volumes Used #{emoji_probe}")
+    if elastic
+      resp = upsert_passed_task("elastic_volumes","✔️  PASSED: Elastic Volumes Used #{emoji_probe}")
+    else
+      resp = upsert_failed_task("elastic_volumes","✔️  FAILED: Elastic Volumes Not Used #{emoji_probe}")
+    end
     resp
   end
 
