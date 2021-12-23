@@ -47,17 +47,17 @@ task "elastic_volumes" do |_, args|
       end
       LOGGING.info "Provisoners: #{provisoners}"
       provisoners.each do |provisoner|
-        # if ENV["CRYSTAL_ENV"]? == "TEST"
-        #      if (provisoner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX_SPEC) 
-        #        LOGGING.info "Provisoners: #{provisoners}"
-        #        elastic = true
-        #      end
-        #    else
+         if ENV["CRYSTAL_ENV"]? == "TEST"
+              if (provisoner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX_SPEC) 
+                LOGGING.info "Provisoners: #{provisoners}"
+                elastic = true
+              end
+            else
              if (provisoner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX) 
                LOGGING.info "Provisoners: #{provisoners}"
                elastic = true
              end
-        # end
+         end
       end
       elastic
     end
