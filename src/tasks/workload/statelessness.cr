@@ -11,7 +11,11 @@ task "state", ["volume_hostpath_not_found", "no_local_volume_configuration"] do 
   stdout_score("state")
 end
 
-ELASTIC_PROVISIONING_DRIVERS_REGEX = /kubernetes.io\/aws-ebs|kubernetes.io\/azure-file|kubernetes.io\/azure-disk|kubernetes.io\/cinder|kubernetes.io\/gce-pd|kubernetes.io\/glusterfs|kubernetes.io\/quobyte|kubernetes.io\/rbd|kubernetes.io\/vsphere-volume|kubernetes.io\/portworx-volume|kubernetes.io\/scaleio|kubernetes.io\/storageos/
+ELASTIC_PROVISIONING_DRIVERS_REGEX = /kubernetes.io\/aws-ebs|kubernetes.io\/azure-file|kubernetes.io\/azure-disk|kubernetes.io\/cinder|kubernetes.io\/gce-pd|kubernetes.io\/glusterfs|kubernetes.io\/quobyte|kubernetes.io\/rbd|kubernetes.io\/vsphere-volume|kubernetes.io\/portworx-volume|kubernetes.io\/scaleio|kubernetes.io\/storageos|rook-ceph.rbd.csi.ceph.com/
+
+
+ELASTIC_PROVISIONING_DRIVERS_REGEX_SPEC = /kubernetes.io\/aws-ebs|kubernetes.io\/azure-file|kubernetes.io\/azure-disk|kubernetes.io\/cinder|kubernetes.io\/gce-pd|kubernetes.io\/glusterfs|kubernetes.io\/quobyte|kubernetes.io\/rbd|kubernetes.io\/vsphere-volume|kubernetes.io\/portworx-volume|kubernetes.io\/scaleio|kubernetes.io\/storageos|rook-ceph.rbd.csi.ceph.com|rancher.io\/local-path/
+
 desc "Does the CNF use an elastic persistent volume"
 task "elastic_volumes" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
@@ -43,10 +47,17 @@ task "elastic_volumes" do |_, args|
       end
       LOGGING.info "Provisoners: #{provisoners}"
       provisoners.each do |provisoner|
-        if (provisoner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX) 
-          LOGGING.info "Provisoners: #{provisoners}"
-          elastic = true
-        end
+        # if ENV["CRYSTAL_ENV"]? == "TEST"
+        #      if (provisoner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX_SPEC) 
+        #        LOGGING.info "Provisoners: #{provisoners}"
+        #        elastic = true
+        #      end
+        #    else
+             if (provisoner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX) 
+               LOGGING.info "Provisoners: #{provisoners}"
+               elastic = true
+             end
+        # end
       end
       elastic
     end
