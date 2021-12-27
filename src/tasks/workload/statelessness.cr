@@ -7,8 +7,78 @@ require "../utils/utils.cr"
 require "kubectl_client"
 
 desc "The CNF test suite checks if state is stored in a custom resource definition or a separate database (e.g. etcd) rather than requiring local storage.  It also checks to see if state is resilient to node failure"
-task "state", ["volume_hostpath_not_found", "no_local_volume_configuration"] do |_, args|
+task "state", ["volume_hostpath_not_found", "no_local_volume_configuration", "elastic_volumes"] do |_, args|
   stdout_score("state")
+end
+
+ELASTIC_PROVISIONING_DRIVERS_REGEX = /kubernetes.io\/aws-ebs|kubernetes.io\/azure-file|kubernetes.io\/azure-disk|kubernetes.io\/cinder|kubernetes.io\/gce-pd|kubernetes.io\/glusterfs|kubernetes.io\/quobyte|kubernetes.io\/rbd|kubernetes.io\/vsphere-volume|kubernetes.io\/portworx-volume|kubernetes.io\/scaleio|kubernetes.io\/storageos|rook-ceph.rbd.csi.ceph.com/
+
+
+ELASTIC_PROVISIONING_DRIVERS_REGEX_SPEC = /kubernetes.io\/aws-ebs|kubernetes.io\/azure-file|kubernetes.io\/azure-disk|kubernetes.io\/cinder|kubernetes.io\/gce-pd|kubernetes.io\/glusterfs|kubernetes.io\/quobyte|kubernetes.io\/rbd|kubernetes.io\/vsphere-volume|kubernetes.io\/portworx-volume|kubernetes.io\/scaleio|kubernetes.io\/storageos|rook-ceph.rbd.csi.ceph.com|rancher.io\/local-path/
+
+desc "Does the CNF use an elastic persistent volume"
+task "elastic_volumes" do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    LOGGING.debug "cnf_config: #{config}"
+    VERBOSE_LOGGING.info "elastic_volumes" if check_verbose(args)
+    emoji_probe="🧫"
+    elastic = false
+    task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
+      LOGGING.info "resource: #{resource}"
+      LOGGING.info "volumes: #{volumes}"
+      volume_claims = volumes.as_a.select{ |x| x.dig?("persistentVolumeClaim", "claimName") } 
+      dynamic_claims = volume_claims.reduce( [] of Hash(String, JSON::Any)) do |acc, claim| 
+        resource = KubectlClient::Get.resource("pvc", claim.dig?("persistentVolumeClaim", "claimName"))
+        LOGGING.info "StorageClass: #{resource.dig?("spec", "storageClassName")}"
+        if resource.dig?("spec", "storageClassName")
+          acc << { "claim_name" =>  claim.dig("persistentVolumeClaim", "claimName"), "class_name" => resource.dig("spec", "storageClassName") }
+        else
+          acc
+        end
+      end
+      LOGGING.info "Dynamic Claims: #{dynamic_claims}"
+      provisoners = dynamic_claims.reduce( [] of String) do |acc, claim| 
+        resource = KubectlClient::Get.resource("storageclasses", claim.dig?("class_name"))
+        if resource.dig?("provisioner")
+             acc << resource.dig("provisioner").as_s 
+           else
+             acc
+        end
+      end
+      LOGGING.info "Provisoners: #{provisoners}"
+      provisoners.each do |provisoner|
+         if ENV["CRYSTAL_ENV"]? == "TEST"
+           if (provisoner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX_SPEC) 
+             LOGGING.info "provisioner test mode"
+             LOGGING.info "Provisoners: #{provisoners}"
+             elastic = true
+           end
+         else
+           if (provisoner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX) 
+             LOGGING.info "provisioner production mode"
+             LOGGING.info "Provisoners: #{provisoners}"
+             elastic = true
+           end
+         end
+      end
+      elastic
+    end
+    if elastic
+      resp = upsert_passed_task("elastic_volumes","✔️  PASSED: Elastic Volumes Used #{emoji_probe}")
+    else
+      resp = upsert_failed_task("elastic_volumes","✔️  FAILED: Elastic Volumes Not Used #{emoji_probe}")
+    end
+    resp
+  end
+
+  # TODO When using a default StorageClass, the storageclass name will be populated in the persistent volumes claim post-creation.
+  # TODO Inspect the workload resource and search for any "Persistent Volume Claims" --> https://loft.sh/blog/kubernetes-persistent-volumes-examples-and-best-practices/#what-are-persistent-volume-claims-pvcs 
+  # TODO Inspect the Persistent Volumes Claim and determine if a Storage Class is use. If a Storage Class is defined, dynamic provisioning is in use. If no storge class is defined, static provisioningis in use -> https://v1-20.docs.kubernetes.io/docs/concepts/storage/persistent-volumes/#lifecycle-of-a-volume-and-claim
+
+  # TODO If using dynamic provisioning, find the and inspect the associated storageClass and find the provisioning driver being used -> https://kubernetes.io/docs/concepts/storage/storage-classes/#the-storageclass-resource
+  # TODO Match and check if the provisioning driver used is of an elastic volume type.
+  # TODO If using static provisioning, find the and inspect the associated Persistent Volume and determine the provisioning driver being used -> 
+  # TODO Match and check if the provisioning driver used is of an elastic volume type.
 end
 
 desc "Does the CNF use a non-cloud native data store: hostPath volume"

@@ -232,6 +232,12 @@ crystal src/cnf-testsuite.cr api_snoop_general_apis
 ./cnf-testsuite no_local_volume_configuration
 ```
 
+#### :heavy_check_mark: To test if the CNF uses elastic volumes
+
+```
+./cnf-testsuite elastic_volumes
+```
+
 <details> <summary>Details for State Tests To Do's</summary>
 <p>
 
