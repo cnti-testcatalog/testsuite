@@ -148,6 +148,8 @@
   tags: state, dynamic, workload
 - name: elastic_volumes 
   tags: state, dynamic, workload
+  pass: 5 
+  fail: 0 
 #- name: hardware_and_scheduling
 #  tags: hardware, dynamic, workload
 #- name: static_accessing_hardware 
