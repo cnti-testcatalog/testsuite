@@ -64,3 +64,4 @@ falco_rule.yaml
 /fluentd-values.yml
 /.env
 /*.kubeconfig
+/*.config
