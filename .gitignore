@@ -62,3 +62,5 @@ falco_rule.yaml
 /disable_cni.yml
 /cluster_tools.yml
 /fluentd-values.yml
+/.env
+/*.kubeconfig

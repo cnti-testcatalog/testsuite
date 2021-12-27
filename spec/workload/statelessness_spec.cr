@@ -13,26 +13,26 @@ describe "State" do
   
   it "'elastic_volume' should pass if the cnf uses an elastic volume", tags: ["elastic_volume"]  do
     begin
-      `./cnf-testsuite -l info cnf_setup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
       $?.success?.should be_true
       response_s = `./cnf-testsuite -l info elastic_volumes verbose`
       LOGGING.info "Status:  #{response_s}"
       (/PASSED: Elastic Volumes Used/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
       $?.success?.should be_true
     end
   end
 
   it "'elastic_volume' should fail if the cnf doesn't use an elastic volume", tags: ["elastic_volume"]  do
     begin
-      `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
       response_s = `./cnf-testsuite -l info elastic_volumes verbose`
       LOGGING.info "Status:  #{response_s}"
       (/FAILED: Elastic Volumes Not Used/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
     end
   end
