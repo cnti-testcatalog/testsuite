@@ -228,7 +228,7 @@ jobs:
 
   chaos-airgapped:
     name: Chaos Tests Airgapped
-    runs-on: [vms]
+    runs-on: [vm]
     strategy:
       fail-fast: false
       matrix:
