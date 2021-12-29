@@ -38,13 +38,15 @@ resource "libvirt_volume" "os_image" {
   name   = "debian.qcow2"
   source = "/my-build.qcow2"
   format = "qcow2"
+  pool = "mypool"
 }
 
 resource "libvirt_volume" "volume" {
   name = "volume-${count.index}"
   base_volume_id = "${libvirt_volume.os_image.id}"
   count = "${var.runner_count}"
-  size = 40000000000
+  size = 80000000000
+  pool = "mypool"
 }
 
 data "template_file" "user_data" {
