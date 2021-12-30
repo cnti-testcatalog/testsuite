@@ -77,8 +77,8 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
 
 resource "libvirt_domain" "test" {
   name   = "runner-${count.index}"
-  memory = "4200"
-  vcpu   = 2
+  memory = "20000"
+  vcpu   = 4
 
   cloudinit = element(libvirt_cloudinit_disk.cloud_init.*.id, count.index)
 
