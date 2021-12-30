@@ -18,7 +18,7 @@
       "disk_image": true,
       "accelerator": "kvm",
       "boot_wait": "1s",
-      "format": "qcow2",
+      "format": "raw",
       "use_backing_file": false,
 
       "disk_size": 8000,
