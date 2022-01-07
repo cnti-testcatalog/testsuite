@@ -78,6 +78,7 @@ module CNFManager
   # CNFManager.cnf_workload_resources(args, config) {|cnf_config, resource| #your code}
   # ```
   def self.cnf_workload_resources(args, config, &block)
+    Log.info { "cnf_workload_resources" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     yml_file_path = config.cnf_config[:yml_file_path]
     helm_directory = config.cnf_config[:helm_directory]
@@ -92,6 +93,7 @@ module CNFManager
     template_ymls = [] of YAML::Any
     case install_method[0]
     when Helm::InstallMethod::HelmChart, Helm::InstallMethod::HelmDirectory
+      Log.info { "EXPORTED CHART PATH: #{helm_chart_path}" } 
       Helm.generate_manifest_from_templates(release_name,
                                             helm_chart_path,
                                             manifest_file_path)
@@ -111,6 +113,34 @@ module CNFManager
     resource_resp
   end
 
+  def self.namespace_from_parameters(parameters)
+    Log.info { "namespace_from_parameters: #{parameters}" }
+    parameter_list = parameters.strip().split(" ")
+    namespace_index = parameter_list.index{|x| x =="--namespace"}
+    namespace = "--namespace #{parameter_list[(namespace_index + 1)]}" if namespace_index
+    Log.info { "namespace_from_parameters namespace: #{namespace}" }
+    namespace
+  end
+
+  def self.install_parameters(config)
+    Log.info { "install_parameters" }
+    install_method = config.cnf_config[:install_method]
+    helm_chart = config.cnf_config[:helm_chart]
+    helm_directory = config.cnf_config[:helm_directory]
+    manifest_directory = config.cnf_config[:manifest_directory]
+    case install_method[0]
+    when Helm::InstallMethod::ManifestDirectory
+      directory_parameters = directory_parameter_split(manifest_directory)["parameters"]
+    when Helm::InstallMethod::HelmChart
+      directory_parameters = directory_parameter_split(helm_chart)["parameters"]
+    when Helm::InstallMethod::HelmDirectory
+      directory_parameters = directory_parameter_split(helm_directory)["parameters"]
+    else
+      directory_parameters = ""
+    end
+    Log.info { "directory_parameters :#{directory_parameters}" }
+    directory_parameters
+  end
   #test_passes_completely = workload_resource_test do | cnf_config, resource, container, initialized |
   def self.workload_resource_test(args, config,
                                   check_containers = true,
@@ -119,6 +149,8 @@ module CNFManager
                                              JSON::Any, JSON::Any, Bool | Nil) -> Bool | Nil)
             # resp = yield resource, container, volumes, initialized
     test_passed = true
+    namespace = namespace_from_parameters(install_parameters(config))
+
     resource_ymls = cnf_workload_resources(args, config) do |resource|
       resource
     end
@@ -133,7 +165,8 @@ module CNFManager
     # todo check to see if following 'resource' variable is conflicting with above resource variable
 		resource_names.each do | resource |
 			Log.for("verbose").debug { resource.inspect } if check_verbose(args)
-			volumes = KubectlClient::Get.resource_volumes(resource[:kind].as_s, resource[:name].as_s)
+      #todo accept namespace
+			volumes = KubectlClient::Get.resource_volumes(resource[:kind].as_s, resource[:name].as_s, namespace)
       Log.for("verbose").debug { "check_service: #{check_service}" } if check_verbose(args)
       Log.for("verbose").debug { "check_containers: #{check_containers}" } if check_verbose(args)
       case resource[:kind].as_s.downcase
@@ -146,7 +179,7 @@ module CNFManager
           test_passed = false if resp == false
         end
       else
-				containers = KubectlClient::Get.resource_containers(resource[:kind].as_s, resource[:name].as_s)
+				containers = KubectlClient::Get.resource_containers(resource[:kind].as_s, resource[:name].as_s, namespace)
 				if check_containers
 					containers.as_a.each do |container|
 						resp = yield resource, container, volumes, initialized
@@ -335,13 +368,27 @@ module CNFManager
     cnf_installation_method(parsed_config_file)
   end
 
+  def self.directory_parameter_split(directory_with_parameters)
+    Log.info { "directory_parameter_split : #{directory_with_parameters}" }
+    directory = directory_with_parameters.split(" ")[0]
+    parameters = directory_with_parameters.split(" ")[1..-1].join(" ") 
+    Log.info { "directory : #{directory} parameters: #{parameters}"} 
+    {"directory" => directory, "parameters" => parameters} 
+  end
+
+  def self.ensure_directory(directory_with_parameters)
+    Log.info { "directory_parameter_split : #{directory_with_parameters}" }
+    split = directory_parameter_split(directory_with_parameters)
+    split["directory"]
+  end
+
   #Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
   def self.cnf_installation_method(config : Totem::Config) : Tuple(Helm::InstallMethod, String)
     Log.info { "cnf_installation_method" }
     Log.info { "cnf_installation_method config: #{config}" }
     Log.info { "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}" }
     helm_chart = optional_key_as_string(config, "helm_chart")
-    helm_directory = optional_key_as_string(config, "helm_directory")
+    helm_directory = ensure_directory(optional_key_as_string(config, "helm_directory"))
     manifest_directory = optional_key_as_string(config, "manifest_directory")
     release_name = optional_key_as_string(config, "release_name")
     full_helm_directory = ""
@@ -349,6 +396,8 @@ module CNFManager
     Log.info { "release_name: #{release_name}" }
     Log.info { "helm_directory: #{helm_directory}" }
     Log.info { "manifest_directory: #{manifest_directory}" }
+    #todo did this ever work? should be full path to destination.  This is not 
+    # even the relative path
     if Dir.exists?(helm_directory) 
       Log.info { "Change helm_directory relative path into full path" }
       full_helm_directory = Path[helm_directory].expand.to_s
@@ -556,6 +605,7 @@ module CNFManager
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
     helm_directory = config.cnf_config[:helm_directory]
+    source_helm_directory = config.cnf_config[:source_helm_directory]
     manifest_directory = config.cnf_config[:manifest_directory]
     helm_chart_path = config.cnf_config[:helm_chart_path]
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
@@ -587,7 +637,7 @@ module CNFManager
       end
     when Helm::InstallMethod::HelmDirectory
       Log.info { "preparing helm_directory sandbox" }
-      source_directory = config_source_dir(config_file) + "/" + helm_directory
+      source_directory = config_source_dir(config_file) + "/" + source_helm_directory.split(" ")[0] # todo support parameters separately
       src_path = Path[source_directory].expand.to_s
       Log.info { "cp -a #{src_path} #{destination_cnf_dir}" }
 
@@ -803,7 +853,8 @@ module CNFManager
         end
         #TODO Add helm options into cnf-testsuite yml
         #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
-        Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
+        # Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
+        Helm.template(release_name, "#{destination_cnf_dir}/#{helm_directory}", output_file="cnfs/temp_template.yml") 
         yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
         
         if input_file && !input_file.empty?
@@ -942,6 +993,8 @@ module CNFManager
     destination_cnf_dir = CNFManager.cnf_destination_dir(config_file)
     Log.info { "destination_cnf_dir: #{destination_cnf_dir}" }
     config = parsed_config_file(ensure_cnf_testsuite_yml_path(config_file))
+    parsed_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
+    namespace = namespace_from_parameters(install_parameters(parsed_config))
 
     Log.for("verbose").info { "cleanup config: #{config.inspect}" } if verbose
 
@@ -972,7 +1025,8 @@ module CNFManager
           stdout_success "Successfully cleaned up #{manifest_directory} directory"
         end
       else
-        helm_uninstall = Helm.uninstall(release_name.split(" ")[0])
+        # helm_uninstall = Helm.uninstall(release_name.split(" ")[0])
+        helm_uninstall = Helm.uninstall(release_name + " #{namespace}")
         ret = helm_uninstall[:status].success?
         Log.for("verbose").info { helm_uninstall[:output].to_s } if verbose
         FileUtils.rm_rf(destination_cnf_dir)

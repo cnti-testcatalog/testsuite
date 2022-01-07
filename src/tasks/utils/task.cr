@@ -45,6 +45,7 @@ module CNFManager
                                             install_method: {Helm::InstallMethod::HelmChart, ""},
                                             manifest_directory: "",
                                             helm_directory: "", 
+                                            source_helm_directory: "", 
                                             helm_chart_path: "", 
                                             manifest_file_path: "",
                                             git_clone_url: "",

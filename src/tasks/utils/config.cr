@@ -20,6 +20,7 @@ module CNFManager
                                      install_method: Tuple(Helm::InstallMethod, String),
                                      manifest_directory: String,
                                      helm_directory: String, 
+                                     source_helm_directory: String, 
                                      helm_chart_path: String, 
                                      manifest_file_path: String, 
                                      git_clone_url: String,
@@ -67,13 +68,20 @@ module CNFManager
       release_name = optional_key_as_string(config, "release_name")
       service_name = optional_key_as_string(config, "service_name")
       helm_directory = optional_key_as_string(config, "helm_directory")
+      source_helm_directory = optional_key_as_string(config, "helm_directory")
       git_clone_url = optional_key_as_string(config, "git_clone_url")
       install_script = optional_key_as_string(config, "install_script")
       docker_repository = optional_key_as_string(config, "docker_repository")
       if helm_directory.empty?
         working_chart_directory = "exported_chart"
+        Log.info { "USING EXPORTED CHART PATH" } 
       else
+        # todo separate parameters from helm directory
+        # TODO Fix bug with helm_directory for arguments, it creates an invalid path
+        helm_directory = source_helm_directory.split("/")[0] + " " + source_helm_directory.split(" ")[1..-1].join(" ")
+        # helm_directory = optional_key_as_string(config, "helm_directory")
         working_chart_directory = helm_directory
+        Log.info { "NOT USING EXPORTED CHART PATH" } 
       end
       helm_chart_path = destination_cnf_dir + "/" + working_chart_directory 
       helm_chart_path = Path[helm_chart_path].expand.to_s
@@ -112,6 +120,7 @@ module CNFManager
                                install_method: install_method,
                                manifest_directory: manifest_directory,
                                helm_directory: helm_directory, 
+                               source_helm_directory: source_helm_directory, 
                                helm_chart_path: helm_chart_path, 
                                manifest_file_path: manifest_file_path,
                                git_clone_url: git_clone_url,

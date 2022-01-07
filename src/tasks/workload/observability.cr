@@ -136,7 +136,7 @@ task "prometheus_traffic" do |_, args|
           upsert_failed_task("prometheus_traffic", "✖️  FAILED: Your cnf is not sending prometheus traffic #{emoji_observability}")
         end
       else
-        upsert_skipped_task("prometheus_traffic", "✖️  SKIPPED: Prometheus server not found #{emoji_observability}")
+        upsert_skipped_task("prometheus_traffic", "⏭️  SKIPPED: Prometheus server not found #{emoji_observability}")
       end
     end
   end
@@ -161,7 +161,7 @@ task "open_metrics", ["prometheus_traffic"] do |_, args|
         upsert_failed_task("open_metrics", "✖️  FAILED: Your cnf's metrics traffic is not Open Metrics compatible #{emoji_observability}")
       end
     else
-      upsert_skipped_task("open_metrics", "✖️  SKIPPED: Prometheus traffic not configured #{emoji_observability}")
+      upsert_skipped_task("open_metrics", "⏭️  SKIPPED: Prometheus traffic not configured #{emoji_observability}")
     end
   end
 end
@@ -194,7 +194,7 @@ task "routed_logs" do |_, args|
           upsert_failed_task("routed_logs", "✖️  FAILED: Your cnf's logs are not being captured #{emoji_observability}")
         end
     else
-      upsert_skipped_task("routed_logs", "✖️  SKIPPED: Fluentd not configured #{emoji_observability}")
+      upsert_skipped_task("routed_logs", "⏭️  SKIPPED: Fluentd not configured #{emoji_observability}")
     end
   end
 end

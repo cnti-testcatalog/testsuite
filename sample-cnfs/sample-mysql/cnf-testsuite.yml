@@ -1,0 +1,7 @@
+---
+release_name: mysql
+helm_chart: bitnami/mysql
+helm_repository:
+  name: bitnami 
+  repo_url: https://charts.bitnami.com/bitnami
+

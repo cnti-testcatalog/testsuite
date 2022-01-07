@@ -34,7 +34,7 @@ module JaegerManager
     #todo cluster tools curl call
     Log.info { "jaeger_metrics_by_pods"}
     metrics = jaeger_pods.map do |pod|
-      Log.info { "jaeger_metrics_by_pods pod: #{pod}"}
+      Log.debug { "jaeger_metrics_by_pods pod: #{pod}"}
       pod_ips = pod.dig?("status", "podIPs")
       Log.debug { "pod_ips: #{pod_ips}"}
       if pod_ips
@@ -50,7 +50,7 @@ module JaegerManager
       Log.debug { "jaeger_metrics_by_pods ip_metrics: #{ip_metrics}"}
       ip_metrics
     end
-    Log.info { "jaeger_metrics_by_pods metrics: #{metrics}"}
+    Log.debug { "jaeger_metrics_by_pods metrics: #{metrics}"}
     metrics.flatten
   end
 

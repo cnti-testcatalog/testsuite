@@ -1,6 +1,7 @@
 require "../spec_helper"
 require "colorize"
 require "../../src/tasks/utils/utils.cr"
+require "../../src/tasks/utils/mysql.cr"
 require "kubectl_client"
 require "../../src/tasks/utils/system_information/helm.cr"
 require "file_utils"
@@ -21,6 +22,31 @@ describe "State" do
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
       $?.success?.should be_true
+    end
+  end
+
+  it "'database_persistence' should pass if the cnf uses a database that uses an elastic volume with a stateful set", tags: ["elastic_volume"]  do
+    begin
+      Log.info {"Installing Mysql "}
+      # Mysql.install
+      # todo make helm directories work with parameters
+      Log.info {`./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-mysql/cnf-testsuite.yml`}
+      KubectlClient::Get.resource_wait_for_install("Pod", "mysql-0")
+      # KubectlClient::Delete.file("https://raw.githubusercontent.com/mysql/mysql-operator/trunk/samples/sample-cluster.yaml  --wait=false")
+      # temp_pw = Random.rand.to_s
+      # KubectlClient::Create.command(%(secret generic mypwds --from-literal=rootUser=root --from-literal=rootHost=% --from-literal=rootPassword="#{temp_pw}"))
+      # KubectlClient::Apply.file("https://raw.githubusercontent.com/mysql/mysql-operator/trunk/samples/sample-cluster.yaml")
+      # KubectlClient::Get.resource_wait_for_install("Pod", "mycluster-2")
+      response_s = `LOG_LEVEL=info ./cnf-testsuite database_persistence`
+      Log.info {"Status:  #{response_s}"}
+      (/PASSED: Elastic Volumes and Statefulsets Used/ =~ response_s).should_not be_nil
+    ensure
+      # Mysql.uninstall
+       # KubectlClient::Delete.file("https://raw.githubusercontent.com/mysql/mysql-operator/trunk/samples/sample-cluster.yaml  --wait=false")
+       # KubectlClient::Delete.file("https://raw.githubusercontent.com/mysql/mysql-operator/trunk/samples/sample-cluster.yaml")
+      #todo fix cleanup for helm directory with parameters
+      Log.info {`./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-mysql/cnf-testsuite.yml`}
+      Log.info {`kubectl delete pvc data-mysql-0`}
     end
   end
 

@@ -270,6 +270,20 @@ def upsert_na_task(task, message)
   message
 end
 
+def upsert_dynamic_task(task, status : CNFManager::Points::Results::ResultStatus, message)
+  CNFManager::Points.upsert_task(task, status.to_s.downcase, CNFManager::Points.task_points(task, status))
+  case status.to_s.downcase 
+  when /pass/
+    stdout_success message
+  when /fail/
+  stdout_failure message
+  message
+  else
+    stdout_warning message
+  end
+  message
+end
+
 def stdout_info(msg)
   puts msg
 end
