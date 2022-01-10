@@ -15,7 +15,6 @@ module JaegerManager
     Helm.helm_repo_add("jaegertracing","https://jaegertracing.github.io/helm-charts")
     Helm.install("jaeger --set cassandra.config.cluster_size=1 --set cassandra.config.seed_size=1 jaegertracing/jaeger")
     KubectlClient::Get.resource_wait_for_install("Deployment", "jaeger-collector", 300)
-    KubectlClient::Get.resource_wait_for_install("Deployment", "jaeger-hotrod", 300)
     KubectlClient::Get.resource_wait_for_install("Deployment", "jaeger-query", 300)
     KubectlClient::Get.resource_wait_for_install("Daemonset", "jaeger-agent", 300)
   end
