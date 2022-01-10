@@ -170,7 +170,7 @@ ensure
   $?.success?.should be_true
 end
 
-it "'tracing' should fail if tracing is not used", tags: ["observability"] do
+it "'tracing' should fail if tracing is not used", tags: ["observability_jager"] do
   Log.info {"Installing Jaeger "}
   JaegerManager.install
   
@@ -183,7 +183,7 @@ ensure
   JaegerManager.uninstall
 end
 
-it "'tracing' should pass if tracing is used", tags: ["observability"] do
+it "'tracing' should pass if tracing is used", tags: ["observability_jager"] do
   Log.info {"Installing Jaeger "}
   JaegerManager.install
 
