@@ -131,7 +131,7 @@ describe "SampleUtils" do
 
   it "'CNFManager::Points.all_task_test_names' should return all tasks names", tags: ["points"] do
     CNFManager::Points.clean_results_yml
-    tags = ["versioned_tag", "cni_compatible", "reasonable_image_size",
+    tags = ["database_persistence","versioned_tag", "cni_compatible", "reasonable_image_size",
             "reasonable_startup_time", "single_process_type",
             "privileged", "non_root_user", "privilege_escalation",
             "symlink_file_system", "application_credentials",

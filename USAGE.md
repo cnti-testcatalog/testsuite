@@ -237,6 +237,11 @@ crystal src/cnf-testsuite.cr api_snoop_general_apis
 ```
 ./cnf-testsuite elastic_volumes
 ```
+#### :heavy_check_mark: To test if the CNF uses a database with either statefulsets, elastic volumes, or both
+
+```
+./cnf-testsuite database_persistence 
+```
 
 <details> <summary>Details for State Tests To Do's</summary>
 <p>
