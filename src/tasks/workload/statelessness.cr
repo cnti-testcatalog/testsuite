@@ -221,7 +221,9 @@ task "elastic_volumes" do |_, args|
       namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
 
       full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
-      elastic = WorkloadResource.elastic?(full_resource, volumes, namespace)  
+      if WorkloadResource.elastic?(full_resource, volumes, namespace)  
+        elastic = true
+      end
     end
     if elastic
       resp = upsert_passed_task("elastic_volumes","✔️  PASSED: Elastic Volumes Used #{emoji_probe}")
