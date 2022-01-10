@@ -882,7 +882,7 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 </details>
 
 ```
-./cnf-testsuite open_metrics
+./cnf-testsuite tracing
 ```
 <details> <summary>Details for Observability Tests To Do's</summary>
 <p>
