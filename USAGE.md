@@ -233,9 +233,19 @@ crystal src/cnf-testsuite.cr api_snoop_general_apis
 ```
 
 #### :heavy_check_mark: To test if the CNF uses elastic volumes
+<details> <summary>Details for elastic volume</summary>
+<p>
+
+<b>Elastic Volume Details:</b> It's considered best practice to use elastic volumes for storage. Instead of local storage, the CNF should use elastic persistent volumes, which are available to all nodes (based on policy).
+
+<b>Remediation Steps:</b> Setup and use elastic persistent volumes instead of local storage.
+</p>
+
+</details>
+
 
 ```
-./cnf-testsuite elastic_volumes
+./cnf-testsuite elastic_volume
 ```
 
 <details> <summary>Details for State Tests To Do's</summary>
@@ -872,7 +882,7 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 </details>
 
 ```
-./cnf-testsuite open_metrics
+./cnf-testsuite tracing
 ```
 <details> <summary>Details for Observability Tests To Do's</summary>
 <p>
