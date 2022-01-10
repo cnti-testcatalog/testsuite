@@ -874,7 +874,7 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 
 <p>
 
-<b>Tracing Details:</b> Jaeger uses distributed tracing to follow the path of a request through different microservices. Rather than guessing, we can see a visual representation of the call flows.. Sourced from [Red Hat's blog on Jaeger](https://www.redhat.com/en/topics/microservices/what-is-jaeger)
+<b>Tracing Details:</b> Jaeger uses distributed tracing to follow the path of a request through different microservices. Rather than guessing, we can see a visual representation of the call flows. Sourced from [Red Hat's blog on Jaeger](https://www.redhat.com/en/topics/microservices/what-is-jaeger)
 
 <b>Remediation Steps:</b> Ensure your CNF is using tracing.
 </p>
