@@ -1,3 +1,4 @@
+# coding: utf-8
 require "sam"
 require "file_utils"
 require "colorize"
@@ -204,6 +205,7 @@ task "tracing" do |_, args|
   Log.for("verbose").info { "tracing" } if check_verbose(args)
   Log.info { "tracing args: #{args.inspect}" }
   next if args.named["offline"]?
+  ClusterTools.install
   match = JaegerManager.match()
   Log.info { "jaeger match: #{match}" }
   emoji_tracing_deploy="⎈🚀"
