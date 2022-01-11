@@ -201,11 +201,10 @@ task "routed_logs" do |_, args|
 end
 
 desc "Does the CNF install use tracing?"
-task "tracing" do |_, args|
+task "tracing", ["install_cluster_tools"] do |_, args|
   Log.for("verbose").info { "tracing" } if check_verbose(args)
   Log.info { "tracing args: #{args.inspect}" }
   next if args.named["offline"]?
-  ClusterTools.install
   match = JaegerManager.match()
   Log.info { "jaeger match: #{match}" }
   emoji_tracing_deploy="⎈🚀"
