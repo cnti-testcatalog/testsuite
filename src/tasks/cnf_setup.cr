@@ -31,6 +31,8 @@ task "cnf_setup", ["helm_local_install"] do |_, args|
     CNFManager.sample_setup(cli_hash)
     puts "cnf setup airgapped mode complete".colorize(:green)
   else
+    Log.info { "Installing ClusterTools"}
+    ClusterTools.install
     puts "cnf setup online mode".colorize(:green)
     CNFManager.sample_setup(cli_hash)
     puts "cnf setup online mode complete".colorize(:green)
