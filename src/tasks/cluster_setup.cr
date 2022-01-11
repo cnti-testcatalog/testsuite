@@ -10,12 +10,7 @@ require "./utils/utils.cr"
 desc "Install CNF Test Suite Cluster Tools"
 task "install_cluster_tools" do |_, args|
   Log.info { "install_cluster_tools" }
-  cli_hash = CNFManager.sample_setup_cli_args(args)
-  input_file =  cli_hash[:input_file]
-
-  unless input_file && !input_file.empty?
-    ClusterTools.install
-  end
+  ClusterTools.install
 end
 
 desc "Uninstall CNF Test Suite Cluster Tools"

@@ -244,7 +244,7 @@ task "elastic_volumes" do |_, args|
 end
 
 desc "Does the CNF use a database which uses perisistence in a cloud native way"
-task "database_persistence", ["install_cluster_tools"]  do |_, args|
+task "database_persistence" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     Log.info {"cnf_config: #{config}"}
     Log.info {"database_persistence"}

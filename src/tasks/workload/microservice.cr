@@ -17,7 +17,7 @@ end
 REASONABLE_STARTUP_BUFFER = 10.0
 
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
-task "reasonable_startup_time", ["install_cluster_tools"] do |_, args|
+task "reasonable_startup_time" do |_, args|
   
   LOGGING.info "Running reasonable_startup_time test"
   CNFManager::Task.task_runner(args) do |args, config|
