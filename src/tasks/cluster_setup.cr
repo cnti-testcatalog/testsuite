@@ -10,7 +10,10 @@ require "./utils/utils.cr"
 desc "Install CNF Test Suite Cluster Tools"
 task "install_cluster_tools" do |_, args|
   Log.info { "install_cluster_tools" }
-  ClusterTools.install
+
+  unless args.named["offline"]?
+    ClusterTools.install
+  end
   # File.write("cluster_tools.yml", CLUSTER_TOOLS)
   # KubectlClient::Apply.file("cluster_tools.yml")
   # ClusterTools.wait_for_cluster_tools
