@@ -888,7 +888,7 @@ module CNFManager
     end
 
     if match[:found]
-      sleep 10
+      sleep 20
       metrics_checkpoints = JaegerManager.unique_services_total
       Log.info { "metrics_checkpoints: #{metrics_checkpoints}" }
       tracing_used = JaegerManager.tracing_used?(baselines, metrics_checkpoints)
