@@ -67,7 +67,7 @@ module JaegerManager
     nodes = KubectlClient::Get.nodes
     pods = jaeger_pods(nodes["items"].as_a)
     metrics = jaeger_metrics_by_pods(pods)
-    metrics.reduce(0) do |acc, metric|
+    total_clients = metrics.reduce(0) do |acc, metric|
       connected_clients = metric.match(/jaeger_agent_client_stats_connected_clients \K[0-9]{1,20}/)
       clients = connected_clients[0] if connected_clients
       if clients
@@ -77,21 +77,32 @@ module JaegerManager
       end
 
     end
+    Log.info { "total clients for all pods: #{total_clients}" }
+    total_clients
   end
 
   def self.unique_services_total
     nodes = KubectlClient::Get.nodes
     pods = jaeger_pods(nodes["items"].as_a)
     metrics = jaeger_metrics_by_pods(pods)
-    metrics.reduce(0) do |acc, metric|
+    total_count = metrics.reduce(0) do |acc, metric|
       unique_services = metric.match(/jaeger_agent_client_stats_connected_clients \K[0-9]{1,20}/)
-      unique_services = metric.split("/n").reduce(0){|acc, f| c = (f =~ /jaeger_collector_spans_saved_by_svc_total{debug=".*",result=".*",svc="(?!other-services).*}/) ; c ? acc + 1 : acc }
+      unique_services = metric.split("/n").reduce(0) do |acc, f|
+        c = (f =~ /jaeger_collector_spans_saved_by_svc_total{debug=".*",result=".*",svc="(?!other-services).*}/)
+        if c
+          acc + 1
+        else
+          acc
+        end
+      end
       if unique_services 
         acc + unique_services 
       else
         acc
       end
     end
+    Log.info { "total unique services for all pods: #{total_count}" }
+    total_count
   end
 
   def self.tracing_used?(baseline, cnf_count)

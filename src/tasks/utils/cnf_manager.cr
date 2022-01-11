@@ -781,12 +781,12 @@ module CNFManager
     fresh_install = true
 
     helm_install = {status: "", output: IO::Memory.new, error: IO::Memory.new}
-    # todo get a baseline on all the nodes
-    # nodes = KubectlClient::Get.nodes
-    # baseline_pods = JaegerManager.jaeger_pods(nodes["items"].as_a)
-    # baselines = JaegerManager.jaeger_metrics_by_pods(baseline_pods)
-    baselines = JaegerManager.unique_services_total
-    Log.info { "baselines: #{baselines}" }
+
+    match = JaegerManager.match()
+    if match[:found]
+      baselines = JaegerManager.unique_services_total
+      Log.info { "baselines: #{baselines}" }
+    end
     # todo separate out install methods into a module/function that accepts a block
     elapsed_time = Time.measure do
       case install_method[0]
@@ -887,10 +887,15 @@ module CNFManager
       end
     end
 
-    metrics_checkpoints = JaegerManager.unique_services_total
-    Log.info { "metrics_checkpoints: #{metrics_checkpoints}" }
-    tracing_used = JaegerManager.tracing_used?(baselines, metrics_checkpoints)
-    Log.info { "tracing_used: #{tracing_used}" }
+    if match[:found]
+      sleep 10
+      metrics_checkpoints = JaegerManager.unique_services_total
+      Log.info { "metrics_checkpoints: #{metrics_checkpoints}" }
+      tracing_used = JaegerManager.tracing_used?(baselines, metrics_checkpoints)
+      Log.info { "tracing_used: #{tracing_used}" }
+    else
+      tracing_used = false
+    end
 
     Log.info { "elapsed_time.seconds: #{elapsed_time.seconds}" }
     helm_used = false
