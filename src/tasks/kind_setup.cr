@@ -52,73 +52,168 @@ task "uninstall_kind" do |_, args|
   FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/kind")
 end
 
-module KindManager
-  def self.delete_cluster(name)
-    current_dir = FileUtils.pwd
-    kind = "#{current_dir}/#{TOOLS_DIR}/kind/kind"
-    Log.info {"Deleting Kind Cluster: #{name}"}
-    `#{kind} delete cluster --name #{name}`
-    File.delete "#{current_dir}/#{TOOLS_DIR}/kind/#{name}_admin.conf" if File.exists? "#{current_dir}/#{TOOLS_DIR}/kind/#{name}_admin.conf"
+# USAGE:
+#
+# To create a kind cluster called hello, with no kind config
+#
+#     kind_manager = KindManager.new
+#     kind_manager.create_cluster("hello", nil, false)
+#
+class KindManager
+  # Project root based on which tools dir would be determined
+  property project_root : String
+
+  # Path to helm
+  property helm : String
+
+  # Path to kind
+  property kind : String
+
+  def initialize
+    @project_root = FileUtils.pwd
+    @helm = BinarySingleton.helm
+    @kind = "#{project_root}/#{TOOLS_DIR}/kind/kind"
+    Log.for("kind_project_root").info { project_root }
   end
 
   #totod make a create cluster with flannel
 
-  def self.create_cluster(name, cni_plugin, offline)
-    Log.info {"Creating Kind Cluster"}
-    current_dir = FileUtils.pwd 
-    helm = BinarySingleton.helm
-    kind = "#{current_dir}/#{TOOLS_DIR}/kind/kind"
-    kubeconfig = "#{current_dir}/#{TOOLS_DIR}/kind/#{name}_admin.conf"
-    File.write("disable_cni.yml", DISABLE_CNI)
+  def create_cluster(name : String, kind_config : String?, offline : Bool, k8s_version = "1.21.1") : KindManager::Cluster?
+    Log.info { "Creating Kind Cluster" }
+    kubeconfig = "#{project_root}/#{TOOLS_DIR}/kind/#{name}_admin.conf"
+    Log.for("kind_kubeconfig").info { kubeconfig }
+
+    kind_config_opt = ""
+    if kind_config != nil
+      kind_config_opt = "--config #{kind_config}"
+    end
+
     unless File.exists?("#{kubeconfig}")
+      # Debug notes:
+      # * Add --verbosity 100 to debug kind issues.
+      # * Use --retain to retain cluster incase there is an error with creation.
+      cmd = "#{kind} create cluster --name #{name} #{kind_config_opt} --image kindest/node:v#{k8s_version} --kubeconfig #{kubeconfig}"
       if offline
-        `#{kind} create cluster --name #{name} --config disable_cni.yml --image kindest/node:v1.21.1 --kubeconfig #{kubeconfig}`
+        ShellCmd.run(cmd, "KindManager#create_cluster(offline)")
       else
-        `#{kind} create cluster --name #{name} --config disable_cni.yml --kubeconfig #{kubeconfig}`
+        ShellCmd.run(cmd, "KindManager#create_cluster(online)")
       end
     end
-    Log.info {`#{helm} install #{name}-plugin #{cni_plugin} --namespace kube-system --kubeconfig #{kubeconfig}`}
-    if wait_for_cluster(kubeconfig)
-      kubeconfig
-    else
-      nil
+
+    return KindManager::Cluster.new(name, kubeconfig)
+  end
+
+  def delete_cluster(name)
+    Log.info {"Deleting Kind Cluster: #{name}"}
+    ShellCmd.run("#{kind} delete cluster --name #{name}", "KindManager#delete_cluster")
+
+    if File.exists? "#{project_root}/#{TOOLS_DIR}/kind/#{name}_admin.conf"
+      Log.info {"Deleting kubeconfig for kind cluster: #{name}"}
+      File.delete "#{project_root}/#{TOOLS_DIR}/kind/#{name}_admin.conf"
     end
   end
 
-  def self.wait_for_cluster(kubeconfig, wait_count : Int32 = 180)
-    Log.info { "wait_for_cluster" }
-    ready = false
-    timeout = wait_count
-    until (ready == true || timeout <= 0) 
-      all_pods = `kubectl get pods --namespace=kube-system  --kubeconfig #{kubeconfig}`
-      Log.info { "all_pods: #{all_pods}" }
-      pod_count  = all_pods.split("\n").reduce(0) {|acc,x| acc+1}
-      Log.info { "pod_count: #{pod_count}" }
-
-cmd = <<-STRING 
-kubectl -n kube-system get pods -o go-template='{{range $index, $element := .items}}{{range .status.containerStatuses}}{{if .ready}}{{$element.metadata.name}}{{"\\n"}}{{end}}{{end}}{{end}}'  --kubeconfig #{kubeconfig}
-STRING
-
-      Log.info { "cmd: #{cmd}" }
-      ready_pods = `#{cmd}`
-      Log.info { "ready_pods: #{ready_pods}" }
-      ready_count  = ready_pods.split("\n").reduce(0) {|acc,x| acc+1}
-      Log.info { "ready_count: #{ready_count}" }
-
-      header_count = 1
-      if (pod_count.to_i - header_count) == ready_count.to_i
-        Log.info { "Cluster installed" }
-        ready = true
-      end
-      sleep 1
-      timeout = timeout - 1 
-      LOGGING.info "Waiting for Cluster to be Ready"
-      if timeout <= 0
-        break
-      end
+  def self.disable_cni_config
+    project_root = FileUtils.pwd
+    kind_config = "#{project_root}/#{TOOLS_DIR}/kind/disable_cni.yml"
+    unless File.exists?(kind_config)
+      File.write(kind_config, DISABLE_CNI)
     end
-    ready
+
+    kind_config
   end
 
+  def self.create_cluster_with_chart_and_wait(name, kind_config, chart_opts, offline) : KindManager::Cluster
+    manager = KindManager.new
+    cluster = manager.create_cluster(name, kind_config, offline)
+    Helm.install("#{name}-plugin #{chart_opts} --namespace kube-system --kubeconfig #{cluster.kubeconfig}")
+    cluster.wait_until_pods_ready()
+    cluster
+  end
+
+  class Cluster
+    property name
+    property kubeconfig
+
+    def initialize(@name : String, @kubeconfig : String)
+    end
+
+    def wait_until_nodes_ready(wait_count : Int32 = 180)
+      Log.info { "wait_until_nodes_ready" }
+      ready = false
+      timeout = wait_count
+      until (ready == true || timeout <= 0)
+        cmd = "kubectl get nodes --kubeconfig #{kubeconfig}"
+        result = ShellCmd.run(cmd, "wait_until_nodes_ready:all_nodes")
+        all_nodes = result[:output]
+        Log.info { "all_nodes: #{all_nodes}" }
+
+        all_nodes = all_nodes.split("\n")
+        range_end = all_nodes.size - 2
+        all_nodes = all_nodes[1..range_end]
+        node_count = all_nodes.size
+        Log.info { "node_count: #{node_count}" }
+
+        ready_count  = all_nodes.reduce(0) do |acc, node|
+          if /\s(Ready)/.match(node)
+            acc = acc + 1
+          else
+            acc
+          end
+        end
+
+        if node_count == ready_count
+          Log.info { "Nodes are ready for the #{name} cluster" }
+          ready = true
+        else
+          sleep 1
+          timeout = timeout - 1
+          Log.info { "Waiting for nodes on #{name} cluster to be ready: #{ready}" }
+          break if timeout <= 0
+        end
+      end
+      ready
+    end
+
+    def wait_until_pods_ready(wait_count : Int32 = 180)
+      Log.info { "wait_until_pods_ready" }
+      ready = false
+      timeout = wait_count
+      until (ready == true || timeout <= 0)
+        all_pods_cmd = <<-STRING
+        kubectl get pods -A -o go-template='{{range $index, $element := .items}}{{range .status.containerStatuses}}{{$element.metadata.name}}{{"\\n"}}{{end}}{{end}}'  --kubeconfig #{kubeconfig}
+        STRING
+        result = ShellCmd.run(all_pods_cmd, "wait_until_pods_ready:all_pods")
+        all_pods = result[:output]
+        Log.info { "all_pods: #{all_pods}" }
+        # Reducing count by 1 because the blank last line in the output will also be counted.
+        pod_count  = (all_pods.split("\n").reduce(0) {|acc,x| acc+1}) - 1
+        Log.info { "pod_count: #{pod_count}" }
+
+        ready_pods_cmd = <<-STRING
+        kubectl get pods -A -o go-template='{{range $index, $element := .items}}{{range .status.containerStatuses}}{{if .ready}}{{$element.metadata.name}}{{"\\n"}}{{end}}{{end}}{{end}}'  --kubeconfig #{kubeconfig}
+        STRING
+
+        result = ShellCmd.run(ready_pods_cmd, "wait_until_pods_ready:get_ready_pods")
+        ready_pods = result[:output]
+        Log.info { "ready_pods: #{ready_pods}" }
+
+        # Reducing count by 1 because the last blank line in the output will also be counted.
+        ready_count  = (ready_pods.split("\n").reduce(0) {|acc,x| acc+1}) - 1
+        Log.info { "pod_ready_count: #{ready_count}" }
+
+        if pod_count.to_i == ready_count.to_i
+          Log.info { "Pods on #{name} cluster are ready" }
+          ready = true
+        else
+          sleep 1
+          timeout = timeout - 1
+          Log.info { "Waiting for pods on #{name} cluster to be ready: #{ready}" }
+          break if timeout <= 0
+        end
+      end
+      ready
+    end
+
+  end
 end
-

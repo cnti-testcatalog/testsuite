@@ -28,6 +28,11 @@ module ShellCmd
   end
 end
 
+def ensure_kubeconfig!
+  puts "KUBECONFIG is not set. Please set a KUBECONFIG, i.p 'export KUBECONFIG=path-to-your-kubeconfig'".colorize(:red) unless ENV.has_key?("KUBECONFIG")
+  raise "KUBECONFIG is not set. Please set a KUBECONFIG, i.p 'export KUBECONFIG=path-to-your-kubeconfig'" unless ENV.has_key?("KUBECONFIG")
+end
+
 def log_formatter
   Log::Formatter.new do |entry, io|
     progname = "cnf-testsuite"
