@@ -32,7 +32,7 @@ describe "Security" do
     end
   end
 
-  it "'privileged' should pass with a non-privileged cnf", tags: ["security"]  do
+  it "'privileged' should pass with a non-privileged cnf", tags: ["privileged"]  do
     begin
       LOGGING.debug `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-statefulset-cnf/cnf-testsuite.yml`
       response_s = `./cnf-testsuite privileged verbose`
@@ -43,7 +43,7 @@ describe "Security" do
       LOGGING.debug `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-statefulset-cnf/cnf-testsuite.yml`
     end
   end
-  it "'privileged' should fail on a non-whitelisted, privileged cnf", tags: ["security"] do
+  it "'privileged' should fail on a non-whitelisted, privileged cnf", tags: ["privileged"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml verbose wait_count=0`
       $?.success?.should be_true
@@ -55,7 +55,7 @@ describe "Security" do
       `./cnf-testsuite sample_privileged_cnf_non_whitelisted_cleanup`
     end
   end
-  it "'privileged' should pass on a whitelisted, privileged cnf", tags: ["security"] do
+  it "'privileged' should pass on a whitelisted, privileged cnf", tags: ["privileged"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_whitelisted_privileged_cnf/cnf-testsuite.yml verbose wait_count=0`
       $?.success?.should be_true
@@ -67,7 +67,7 @@ describe "Security" do
       `./cnf-testsuite sample_privileged_cnf_whitelisted_cleanup`
     end
   end
-  it "'privilege_escalation' should fail on a cnf that has escalated privileges", tags: ["security"] do
+  it "'privilege_escalation' should fail on a cnf that has escalated privileges", tags: ["privileged"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -80,7 +80,7 @@ describe "Security" do
     end
   end
 
-  it "'symlink_file_system' should pass on a cnf that does not allow a symlink attack", tags: ["security"] do
+  it "'symlink_file_system' should pass on a cnf that does not allow a symlink attack", tags: ["capabilities"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -93,7 +93,7 @@ describe "Security" do
     end
   end
 
-  it "'insecure_capabilities' should pass on a cnf that does not have containers with insecure capabilities", tags: ["security"] do
+  it "'insecure_capabilities' should pass on a cnf that does not have containers with insecure capabilities", tags: ["capabilities"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -119,7 +119,7 @@ describe "Security" do
   #   end
   # end
 
-  it "'dangerous_capabilities' should pass on a cnf that does not have containers with dangerous capabilities", tags: ["security"] do
+  it "'dangerous_capabilities' should pass on a cnf that does not have containers with dangerous capabilities", tags: ["capabilities"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -145,7 +145,7 @@ describe "Security" do
   #   end
   # end
 
-  it "'linux_hardening' should fail on a cnf that does not make use of security services", tags: ["security"] do
+  it "'linux_hardening' should fail on a cnf that does not make use of security services", tags: ["capabilities"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
       $?.success?.should be_true
@@ -223,7 +223,7 @@ describe "Security" do
     end
   end
 
-  it "'host_pid_ipc_privileges' should pass on a cnf that does not have containers with host PID/IPC privileges", tags: ["security"] do
+  it "'host_pid_ipc_privileges' should pass on a cnf that does not have containers with host PID/IPC privileges", tags: ["capabilities"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
       $?.success?.should be_true
@@ -262,7 +262,7 @@ describe "Security" do
     end
   end
 
-  it "'privileged_containers' should pass when the cnf has no privileged containers", tags: ["security"] do
+  it "'privileged_containers' should pass when the cnf has no privileged containers", tags: ["privileged"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
       $?.success?.should be_true
