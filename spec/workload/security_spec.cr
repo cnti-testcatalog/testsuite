@@ -292,12 +292,14 @@ describe "Security" do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
       $?.success?.should be_true
+      ClusterTools.uninstall
       response_s = `./cnf-testsuite hostpath_mounts`
       LOGGING.info response_s
       $?.success?.should be_true
       (/FAILED: Found containers with hostPath mounts/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      ClusterTools.install
     end
   end
 end
