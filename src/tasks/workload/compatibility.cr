@@ -5,11 +5,6 @@ require "colorize"
 require "totem"
 require "../utils/utils.cr"
 
-def ensure_kubeconfig!
-  puts "KUBECONFIG is not set. Please set a KUBECONFIG, i.p 'export KUBECONFIG=path-to-your-kubeconfig'".colorize(:red) unless ENV.has_key?("KUBECONFIG")
-  raise "KUBECONFIG is not set. Please set a KUBECONFIG, i.p 'export KUBECONFIG=path-to-your-kubeconfig'" unless ENV.has_key?("KUBECONFIG")
-end
-
 desc "CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements."
 task "compatibility", ["cni_compatible"] do |_, args|
   stdout_score("compatibility")
