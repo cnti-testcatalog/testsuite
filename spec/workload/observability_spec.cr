@@ -170,7 +170,7 @@ ensure
   $?.success?.should be_true
 end
 
-it "'tracing' should fail if tracing is not used", tags: ["observability_jaeger"] do
+it "'tracing' should fail if tracing is not used", tags: ["observability_jaeger_fail"] do
   Log.info {"Installing Jaeger "}
   JaegerManager.install
   
@@ -187,7 +187,7 @@ ensure
   KubectlClient::Get.resource_wait_for_uninstall("Daemonset", "jaeger-agent")
 end
 
-it "'tracing' should pass if tracing is used", tags: ["observability_jaeger"] do
+it "'tracing' should pass if tracing is used", tags: ["observability_jaeger_pass"] do
   Log.info {"Installing Jaeger "}
   JaegerManager.install
 
