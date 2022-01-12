@@ -18,7 +18,7 @@ module KubectlClient
   OCI_RUNTIME_REGEX = /containerd|docker|runc|railcar|crun|rkt|gviso|nabla|runv|clearcontainers|kata|cri-o/i
 
   module ShellCmd
-    def self.run(cmd, log_prefix)
+    def self.run(cmd, log_prefix, force_output=false)
       Log.info { "#{log_prefix} command: #{cmd}" }
       status = Process.run(
         cmd,
@@ -26,7 +26,11 @@ module KubectlClient
         output: output = IO::Memory.new,
         error: stderr = IO::Memory.new
       )
-      Log.debug { "#{log_prefix} output: #{output.to_s}" }
+      if force_output == false
+        Log.debug { "#{log_prefix} output: #{output.to_s}" }
+      else
+        Log.info { "#{log_prefix} output: #{output.to_s}" }
+      end
       Log.info { "#{log_prefix} stderr: #{stderr.to_s}" }
       {status: status, output: output.to_s, error: stderr.to_s}
     end
