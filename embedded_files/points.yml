@@ -5,6 +5,7 @@
   fail: -1 
   skipped: 0 
   na: 0 
+  neutral: 0 
 
 - name: reasonable_image_size
   tags: microservice, dynamic, workload
@@ -150,6 +151,11 @@
   tags: state, dynamic, workload
   pass: 5 
   fail: 0 
+- name: database_persistence
+  tags: state, dynamic, workload
+  pass5: 5 
+  pass3: 3 
+  fail: -1
 #- name: hardware_and_scheduling
 #  tags: hardware, dynamic, workload
 #- name: static_accessing_hardware 

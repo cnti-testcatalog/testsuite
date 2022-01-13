@@ -196,6 +196,22 @@ module Helm
     resource_names
   end
 
+  def self.kind_exists?(args, config, kind)
+    Log.info { "kind_exists?: #{kind}" }
+    resource_ymls = CNFManager.cnf_workload_resources(args, config) do |resource|
+      resource
+    end
+    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+    found = false
+		resource_names.each do | resource |
+      if resource[:kind].as_s.downcase == kind.downcase
+        found = true
+      end
+    end
+    Log.info { "kind_exists? found: #{found}" }
+    found
+  end
+
   def self.helm_repo_add(helm_repo_name, helm_repo_url)
     helm = BinarySingleton.helm
     Log.info { "helm_repo_add: helm repo add command: #{helm} repo add #{helm_repo_name} #{helm_repo_url}" }

@@ -13,11 +13,10 @@ module JaegerManager
   def self.install
     Log.info {"Installing Jaeger daemonset "}
     Helm.helm_repo_add("jaegertracing","https://jaegertracing.github.io/helm-charts")
-    Helm.install("jaeger jaegertracing/jaeger ")
-    KubectlClient::Get.resource_wait_for_install("Deployment", "jaeger-collector")
-    KubectlClient::Get.resource_wait_for_install("Deployment", "jaeger-hotrod")
-    KubectlClient::Get.resource_wait_for_install("Deployment", "jaeger-query")
-    KubectlClient::Get.resource_wait_for_install("Daemonset", "jaeger-agent")
+    Helm.install("jaeger --set cassandra.config.cluster_size=1 --set cassandra.config.seed_size=1 jaegertracing/jaeger")
+    KubectlClient::Get.resource_wait_for_install("Deployment", "jaeger-collector", 300)
+    KubectlClient::Get.resource_wait_for_install("Deployment", "jaeger-query", 300)
+    KubectlClient::Get.resource_wait_for_install("Daemonset", "jaeger-agent", 300)
   end
 
   def self.node_for_cnf(resource_name)
@@ -34,7 +33,7 @@ module JaegerManager
     #todo cluster tools curl call
     Log.info { "jaeger_metrics_by_pods"}
     metrics = jaeger_pods.map do |pod|
-      Log.info { "jaeger_metrics_by_pods pod: #{pod}"}
+      Log.debug { "jaeger_metrics_by_pods pod: #{pod}"}
       pod_ips = pod.dig?("status", "podIPs")
       Log.debug { "pod_ips: #{pod_ips}"}
       if pod_ips
@@ -50,7 +49,7 @@ module JaegerManager
       Log.debug { "jaeger_metrics_by_pods ip_metrics: #{ip_metrics}"}
       ip_metrics
     end
-    Log.info { "jaeger_metrics_by_pods metrics: #{metrics}"}
+    Log.debug { "jaeger_metrics_by_pods metrics: #{metrics}"}
     metrics.flatten
   end
 
@@ -68,7 +67,7 @@ module JaegerManager
     nodes = KubectlClient::Get.nodes
     pods = jaeger_pods(nodes["items"].as_a)
     metrics = jaeger_metrics_by_pods(pods)
-    metrics.reduce(0) do |acc, metric|
+    total_clients = metrics.reduce(0) do |acc, metric|
       connected_clients = metric.match(/jaeger_agent_client_stats_connected_clients \K[0-9]{1,20}/)
       clients = connected_clients[0] if connected_clients
       if clients
@@ -78,21 +77,32 @@ module JaegerManager
       end
 
     end
+    Log.info { "total clients for all pods: #{total_clients}" }
+    total_clients
   end
 
   def self.unique_services_total
     nodes = KubectlClient::Get.nodes
     pods = jaeger_pods(nodes["items"].as_a)
     metrics = jaeger_metrics_by_pods(pods)
-    metrics.reduce(0) do |acc, metric|
+    total_count = metrics.reduce(0) do |acc, metric|
       unique_services = metric.match(/jaeger_agent_client_stats_connected_clients \K[0-9]{1,20}/)
-      unique_services = metric.split("/n").reduce(0){|acc, f| c = (f =~ /jaeger_collector_spans_saved_by_svc_total{debug=".*",result=".*",svc="(?!other-services).*}/) ; c ? acc + 1 : acc }
+      unique_services = metric.split("/n").reduce(0) do |acc, f|
+        c = (f =~ /jaeger_collector_spans_saved_by_svc_total{debug=".*",result=".*",svc="(?!other-services).*}/)
+        if c
+          acc + 1
+        else
+          acc
+        end
+      end
       if unique_services 
         acc + unique_services 
       else
         acc
       end
     end
+    Log.info { "total unique services for all pods: #{total_count}" }
+    total_count
   end
 
   def self.tracing_used?(baseline, cnf_count)

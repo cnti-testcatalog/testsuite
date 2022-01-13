@@ -422,7 +422,7 @@ module KubectlClient
     def self.resource(kind, resource_name, namespace : String? = nil) : JSON::Any
       namespace_opt = ""
       if namespace != nil
-        namespace_opt = "-n #{namespace}"
+        namespace_opt = "-n #{namespace.gsub("--namespace ", "").gsub("-n ", "") if namespace}"
       end
       cmd = "kubectl get #{kind} #{resource_name} -o json #{namespace_opt}"
       result = ShellCmd.run(cmd, "KubectlClient::Get.resource")
@@ -523,13 +523,13 @@ module KubectlClient
       resource_containers("deployment", deployment_name)
     end
 
-    def self.resource_containers(kind, resource_name) : JSON::Any
-      Log.debug { "kubectl get resource containers kind: #{kind} resource_name: #{resource_name}" }
+    def self.resource_containers(kind, resource_name, namespace : String? = nil) : JSON::Any
+      Log.debug { "kubectl get resource containers kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}" }
       case kind.downcase
       when "pod"
-        resp = resource(kind, resource_name).dig?("spec", "containers")
+        resp = resource(kind, resource_name, namespace).dig?("spec", "containers")
       when "deployment", "statefulset", "replicaset", "daemonset"
-        resp = resource(kind, resource_name).dig?("spec", "template", "spec", "containers")
+        resp = resource(kind, resource_name, namespace).dig?("spec", "template", "spec", "containers")
         # unless kind.downcase == "service" ## services have no containers
       end
 
@@ -541,13 +541,14 @@ module KubectlClient
       end
     end
 
-    def self.resource_volumes(kind, resource_name) : JSON::Any
-      Log.debug { "kubectl get resource volumes kind: #{kind} resource_name: #{resource_name}" }
+    #todo pass in namespace
+    def self.resource_volumes(kind, resource_name, namespace="default") : JSON::Any
+      Log.info { "kubectl get resource volumes kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}" }
       unless kind.downcase == "service" ## services have no volumes
-        resp = resource(kind, resource_name).dig?("spec", "template", "spec", "volumes")
+        resp = resource(kind, resource_name, namespace).dig?("spec", "template", "spec", "volumes")
       end
 
-      Log.debug { "kubectl get resource volumes: #{resp}" }
+      Log.info { "kubectl get resource volumes: #{resp}" }
       if resp && resp.as_a.size > 0
         resp
       else
@@ -717,7 +718,7 @@ module KubectlClient
         Log.info { "second_count = #{second_count}" }
         sleep 1
         Log.debug { "wait command: kubectl get #{kind} --namespace=#{namespace}" }
-        resource_uninstalled = KubectlClient::Get.resource(kind, resource_name)
+        resource_uninstalled = KubectlClient::Get.resource(kind, resource_name) #todo add namespace
         Log.debug { "resource_uninstalled #{resource_uninstalled}" }
         second_count = second_count + 1
       end
@@ -1025,11 +1026,11 @@ module KubectlClient
 
     def self.pod_statuses_by_nodes(nodes)
       pods = KubectlClient::Get.pods_by_nodes(nodes)
-      Log.info { "pod_statuses_by_nodes pods_by_nodes pods: #{pods}" }
+      Log.debug { "pod_statuses_by_nodes pods_by_nodes pods: #{pods}" }
       statuses = pods.map do |x|
         x["status"]
       end
-      Log.info { "pod_statuses_by_nodes statuses: #{statuses}" }
+      Log.debug { "pod_statuses_by_nodes statuses: #{statuses}" }
       statuses
     end
 
@@ -1038,12 +1039,12 @@ module KubectlClient
         # todo there are some pods that dont have containerStatuses
         x["containerStatuses"].as_a if x["containerStatuses"]?
       end
-      Log.info { "pod_container_statuses_by_nodes containerStatuses: #{statuses}" }
+      Log.debug { "pod_container_statuses_by_nodes containerStatuses: #{statuses}" }
       statuses
     end
 
     def self.container_digests_by_nodes(nodes)
-      Log.info { "container_digests_by_nodes nodes: #{nodes}" }
+      Log.debug { "container_digests_by_nodes nodes: #{nodes}" }
       imageids = pod_container_statuses_by_nodes(nodes).reduce([] of String) do |acc, x|
         if x
           acc | x.map{|i| i["imageID"].as_s}
@@ -1056,7 +1057,7 @@ module KubectlClient
     end
 
     def self.container_images_by_nodes(nodes)
-      Log.info { "container_images_by_nodes nodes: #{nodes}" }
+      Log.debug { "container_images_by_nodes nodes: #{nodes}" }
       images = pod_container_statuses_by_nodes(nodes).reduce([] of String) do |acc, x|
         if x
           acc | x.map{|i| i["image"].as_s}
@@ -1069,7 +1070,7 @@ module KubectlClient
     end
 
     def self.container_tag_from_image_by_nodes(image, nodes)
-      Log.info { "container_tag_from_image_by_nodes nodes: #{nodes}" }
+      Log.debug { "container_tag_from_image_by_nodes nodes: #{nodes}" }
       # TODO Remove duplicates & and support multiple?
       all_images = container_images_by_nodes(nodes)
       # matched_image = all_images.select{ | x | x =~ /#{image}/ }
@@ -1091,20 +1092,20 @@ module KubectlClient
           #todo add another pod comparison for sha hash
           if pod["status"]["containerStatuses"]?
             found = pod["status"]["containerStatuses"].as_a.any? do |container_status|
-              Log.info { "container_status imageid: #{container_status["imageID"]}"}
-              Log.info { "pods_by_digest_and_nodes digest: #{digest}"}
+              Log.debug { "container_status imageid: #{container_status["imageID"]}"}
+              Log.debug { "pods_by_digest_and_nodes digest: #{digest}"}
               match_found = container_status["imageID"].as_s.includes?("#{digest}")
-              Log.info { "container_status match_found: #{match_found}"}
+              Log.debug { "container_status match_found: #{match_found}"}
               match_found
             end
-            Log.info { "found pod: #{pod}"}
+            Log.debug { "found pod: #{pod}"}
             pod_name = pod.dig?("metadata", "name")
-            Log.info { "found PodName: #{pod_name}" }
+            Log.debug { "found PodName: #{pod_name}" }
             if found && pod.dig?("spec", "nodeName") == "#{node_name}"
-              Log.info { "found pod and node: #{pod} #{node_name}" }
+              Log.debug { "found pod and node: #{pod} #{node_name}" }
               true
             else
-              Log.info { "spec node_name: No Match: #{node_name}" }
+              Log.debug { "spec node_name: No Match: #{node_name}" }
               false
             end
           else

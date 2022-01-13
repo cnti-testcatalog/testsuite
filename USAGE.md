@@ -247,6 +247,21 @@ crystal src/cnf-testsuite.cr api_snoop_general_apis
 ```
 ./cnf-testsuite elastic_volume
 ```
+#### :heavy_check_mark: To test if the CNF uses a database with either statefulsets, elastic volumes, or both
+<details> <summary>Details for Database Persistence</summary>
+
+<p><b>Database Persistence:</b> A database may use statefulsets along with elastic volumes to achieve a high level of resiliency.  Any database in K8s should at least use elastic volumes to achieve a minimum level of resilience regardless of whether a statefulset is used.  Statefulsets without elastic volumes is not recommended, especially if it explicitly uses local storage.  The least optimal storage configuration for a database managed by K8s is local storage and no statefulsets, as this is not tolerant to node failure. 
+
+<b>Remediation:</b> Select a database configuration that uses statefulsets and elastic storage volumes.
+
+See more at [OpenEBS Storage Concepts](https://openebs.io/docs/concepts/basics)
+
+</p>
+</details>
+
+```
+./cnf-testsuite database_persistence 
+```
 
 <details> <summary>Details for State Tests To Do's</summary>
 <p>
