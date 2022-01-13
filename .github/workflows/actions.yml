@@ -71,16 +71,17 @@ jobs:
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
             endpoint = ["http://localhost:5000"]
         EOF
-    - if: matrix.spec == 'private_registry_image'
-          run: |
-            cat << EOF > /tmp/cluster.yml
-            kind: Cluster
-            apiVersion: kind.x-k8s.io/v1alpha4
-            containerdConfigPatches:
-              - |-
-                [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-                  endpoint = ["http://localhost:5000"]
-            EOF
+    - name: Mirror Override
+      if: matrix.spec == 'private_registry_image'
+      run: |
+        cat << EOF > /tmp/cluster.yml
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        containerdConfigPatches:
+          - |-
+            [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
+              endpoint = ["http://localhost:5000"]
+        EOF
     - name: Create Kind Cluster 
       run: |
         cat /tmp/cluster.yml
