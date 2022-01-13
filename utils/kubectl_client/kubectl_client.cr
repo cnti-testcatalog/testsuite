@@ -18,7 +18,7 @@ module KubectlClient
   OCI_RUNTIME_REGEX = /containerd|docker|runc|railcar|crun|rkt|gviso|nabla|runv|clearcontainers|kata|cri-o/i
 
   module ShellCmd
-    def self.run(cmd, log_prefix)
+    def self.run(cmd, log_prefix, force_output=false)
       Log.info { "#{log_prefix} command: #{cmd}" }
       status = Process.run(
         cmd,
@@ -26,7 +26,11 @@ module KubectlClient
         output: output = IO::Memory.new,
         error: stderr = IO::Memory.new
       )
-      Log.debug { "#{log_prefix} output: #{output.to_s}" }
+      if force_output == false
+        Log.debug { "#{log_prefix} output: #{output.to_s}" }
+      else
+        Log.info { "#{log_prefix} output: #{output.to_s}" }
+      end
       Log.info { "#{log_prefix} stderr: #{stderr.to_s}" }
       {status: status, output: output.to_s, error: stderr.to_s}
     end
@@ -75,17 +79,9 @@ module KubectlClient
 
   def self.server_version()
     Log.debug { "KubectlClient.server_version" }
-    result = ShellCmd.run("kubectl version", "KubectlClient.server_version")
-
-    # example
-    # Server Version: version.Info{Major:"1", Minor:"18", GitVersion:"v1.18.16", GitCommit:"7a98bb2b7c9112935387825f2fce1b7d40b76236", GitTreeState:"clean", BuildDate:"2021-02-17T11:52:32Z", GoVersion:"go1.13.15", Compiler:"gc", Platform:"linux/amd64"}
-    resp = result[:output].match /Server Version: version.Info{(Major:"(([0-9]{1,3})"\, )Minor:"([0-9]{1,3}[+]?)")/
-    Log.debug { "KubectlClient.server_version match: #{resp}" }
-    if resp
-      version = "#{resp && resp.not_nil![3]}.#{resp && resp.not_nil![4]}.0"
-    else
-      version = ""
-    end
+    result = ShellCmd.run("kubectl version --output json", "KubectlClient.server_version", true)
+    version = JSON.parse(result[:output])["serverVersion"]["gitVersion"].as_s
+    version = version.gsub("v", "")
     Log.info { "KubectlClient.server_version: #{version}" }
     version
   end
