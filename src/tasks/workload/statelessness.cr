@@ -7,7 +7,7 @@ require "../utils/utils.cr"
 require "kubectl_client"
 
 desc "The CNF test suite checks if state is stored in a custom resource definition or a separate database (e.g. etcd) rather than requiring local storage.  It also checks to see if state is resilient to node failure"
-task "state", ["volume_hostpath_not_found", "no_local_volume_configuration", "elastic_volumes"] do |_, args|
+task "state", ["volume_hostpath_not_found", "no_local_volume_configuration", "elastic_volumes", "database_persistence"] do |_, args|
   stdout_score("state")
 end
 
