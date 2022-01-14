@@ -696,8 +696,7 @@ task "alpha_k8s_apis" do |_, args|
 
     # Get kubernetes version of the current server.
     # This is used to setup kind with same k8s image version.
-    # k8s_server_version = KubectlClient.server_version
-    k8s_server_version = "1.21.2"
+    k8s_server_version = KubectlClient.server_version
 
     # Online mode workflow below
     offline = false
