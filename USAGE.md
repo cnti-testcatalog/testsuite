@@ -189,12 +189,6 @@ crystal bin/ameba.cr
 crystal src/cnf-testsuite.cr cni_spec
 ```
 
-#### :memo: (To Do) To check for the use of alpha K8s API endpoints
-
-```
-crystal src/cnf-testsuite.cr api_snoop_alpha
-```
-
 #### :memo: (To Do) To check for the use of beta K8s API endpoints
 
 ```
@@ -781,6 +775,22 @@ crystal src/cnf-testsuite.cr external_retry
 
 ```
 ./cnf-testsuite immutable_configmap
+```
+
+#### :heavy_check_mark: To check if a CNF uses Kubernetes alpha APIs
+
+<details> <summary>Details for Kubernetes alpha APIs test</summary>
+<p>
+
+<b>Kubernetes alpha APIs:</b> It is considered a best-practice for resources to not use [Kubernetes alpha APIs](https://bit.ly/apisnoop).
+
+<b>Remediation Steps:</b> Make sure applications and CNFs are not using Kubernetes alpha APIs. You can learn more about Kubernetes API versioning [here](https://bit.ly/k8s_api).
+</p>
+
+</details>
+
+```
+./cnf-testsuite alpha_k8s_apis
 ```
 
 <details> <summary>Details for Configuration and Lifecycle Tests To Do's</summary>
