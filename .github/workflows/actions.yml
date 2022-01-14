@@ -59,16 +59,32 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Create Kind Cluster 
+    - name: Mirror Setup
       run: |
         cat << EOF > /tmp/cluster.yml
         kind: Cluster
         apiVersion: kind.x-k8s.io/v1alpha4
         containerdConfigPatches:
         - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+            endpoint = ["http://139.178.70.81:80"]
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
             endpoint = ["http://localhost:5000"]
         EOF
+    - name: Mirror Override
+      if: matrix.spec == 'private_registry_image'
+      run: |
+        cat << EOF > /tmp/cluster.yml
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        containerdConfigPatches:
+          - |-
+            [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
+              endpoint = ["http://localhost:5000"]
+        EOF
+    - name: Create Kind Cluster 
+      run: |
+        cat /tmp/cluster.yml
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
         echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
