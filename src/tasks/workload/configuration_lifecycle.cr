@@ -9,7 +9,8 @@ require "../utils/utils.cr"
 rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
-task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used", "immutable_configmap"].concat(rolling_version_change_test_names) do |_, args|
+# task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used", "immutable_configmap"].concat(rolling_version_change_test_names) do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap"]do |_, args|
   stdout_score("configuration_lifecycle", "configuration")
 end
 
@@ -164,154 +165,154 @@ task "readiness" do |_, args|
   end
 end
 
-rolling_version_change_test_names.each do |tn|
-  pretty_test_name = tn.split(/:|_/).join(" ")
-  pretty_test_name_capitalized = tn.split(/:|_/).map(&.capitalize).join(" ")
-
-  desc "Test if the CNF containers are loosely coupled by performing a #{pretty_test_name}"
-  task "#{tn}" do |_, args|
-    CNFManager::Task.task_runner(args) do |args, config|
-      LOGGING.debug "cnf_config: #{config}"
-      VERBOSE_LOGGING.info "#{tn}" if check_verbose(args)
-      container_names = config.cnf_config[:container_names]
-      LOGGING.debug "container_names: #{container_names}"
-      update_applied = true
-      unless container_names
-        puts "Please add a container names set of entries into your cnf-testsuite.yml".colorize(:red)
-        update_applied = false
-      end
-
-      # TODO use tag associated with image name string (e.g. busybox:v1.7.9) as the version tag
-      # TODO optional get a valid version from the remote repo and roll to that, if no tag
-      #  e.g. wget -q https://registry.hub.docker.com/v1/repositories/debian/tags -O -  | sed -e 's/[][]//g' -e 's/"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}'
-      # note: all images are not on docker hub nor are they always on a docker hub compatible api
-
-      task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-        test_passed = true
-        valid_cnf_testsuite_yml = true
-        LOGGING.debug "#{tn} container: #{container}"
-        LOGGING.debug "container_names: #{container_names}"
-        config_container = container_names.find{|x| x["name"]==container.as_h["name"]} if container_names
-        LOGGING.debug "config_container: #{config_container}"
-        unless config_container && config_container["#{tn}_test_tag"]? && !config_container["#{tn}_test_tag"].empty?
-          puts "Please add the container name #{container.as_h["name"]} and a corresponding #{tn}_test_tag into your cnf-testsuite.yml under container names".colorize(:red)
-          valid_cnf_testsuite_yml = false
-        end
-
-        VERBOSE_LOGGING.debug "#{tn}: #{container} valid_cnf_testsuite_yml=#{valid_cnf_testsuite_yml}" if check_verbose(args)
-        VERBOSE_LOGGING.debug "#{tn}: #{container} config_container=#{config_container}" if check_verbose(args)
-        if valid_cnf_testsuite_yml && config_container
-          resp = KubectlClient::Set.image(resource["name"],
-                                          container.as_h["name"],
-                                          # split out image name from version tag
-                                          container.as_h["image"].as_s.rpartition(":")[0],
-                                          config_container["#{tn}_test_tag"])
-        else
-          resp = false
-        end
-        # If any containers dont have an update applied, fail
-        test_passed = false if resp == false
-
-        rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"], timeout="60s")
-        unless rollout_status
-          test_passed = false
-        end
-        VERBOSE_LOGGING.debug "#{tn}: #{container} test_passed=#{test_passed}" if check_verbose(args)
-        test_passed
-      end
-      VERBOSE_LOGGING.debug "#{tn}: task_response=#{task_response}" if check_verbose(args)
-      if task_response
-        resp = upsert_passed_task("#{tn}","✔️  PASSED: CNF for #{pretty_test_name_capitalized} Passed" )
-      else
-        resp = upsert_failed_task("#{tn}", "✖️  FAILED: CNF for #{pretty_test_name_capitalized} Failed")
-      end
-      resp
-      # TODO should we roll the image back to original version in an ensure?
-      # TODO Use the kubectl rollback to history command
-    end
-  end
-end
-
-desc "Test if the CNF can perform a rollback"
-task "rollback" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "rollback" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
-
-    container_names = config.cnf_config[:container_names]
-    LOGGING.debug "container_names: #{container_names}"
-
-    update_applied = true
-    rollout_status = true
-    rollback_status = true
-    version_change_applied = true
-
-    unless container_names
-      puts "Please add a container names set of entries into your cnf-testsuite.yml".colorize(:red)
-      update_applied = false
-    end
-
-    task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-
-        deployment_name = resource["name"]
-        container_name = container.as_h["name"]
-        full_image_name_tag = container.as_h["image"].as_s.rpartition(":")
-        image_name = full_image_name_tag[0]
-        image_tag = full_image_name_tag[2]
-
-        VERBOSE_LOGGING.debug "deployment_name: #{deployment_name}" if check_verbose(args)
-        VERBOSE_LOGGING.debug "container_name: #{container_name}" if check_verbose(args)
-        VERBOSE_LOGGING.debug "image_name: #{image_name}" if check_verbose(args)
-        VERBOSE_LOGGING.debug "image_tag: #{image_tag}" if check_verbose(args)
-        LOGGING.debug "rollback: setting new version"
-        #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
-
-        version_change_applied = true
-        # compare cnf_testsuite.yml container list with the current container name
-        config_container = container_names.find{|x| x["name"] == container_name } if container_names
-        unless config_container && config_container["rollback_from_tag"]? && !config_container["rollback_from_tag"].empty?
-          puts "Please add the container name #{container.as_h["name"]} and a corresponding rollback_from_tag into your cnf-testsuite.yml under container names".colorize(:red)
-          version_change_applied = false
-        end
-        if version_change_applied && config_container
-          rollback_from_tag = config_container["rollback_from_tag"]
-
-          if rollback_from_tag == image_tag
-            fail_msg = "✖️  FAILED: please specify a different version than the helm chart default image.tag for 'rollback_from_tag' "
-            puts fail_msg.colorize(:red)
-            version_change_applied=false
-          end
-
-          VERBOSE_LOGGING.debug "rollback: update deployment: #{deployment_name}, container: #{container_name}, image: #{image_name}, tag: #{rollback_from_tag}" if check_verbose(args)
-          # set a temporary image/tag, so that we can rollback to the current (original) tag later
-          version_change_applied = KubectlClient::Set.image(deployment_name,
-                                                            container_name,
-                                                            image_name,
-                                                            rollback_from_tag)
-        end
-
-        LOGGING.info "rollback version change successful? #{version_change_applied}"
-
-        VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
-        rollout_status = KubectlClient::Rollout.status(deployment_name, timeout="60s")
-        if  rollout_status == false
-          puts "Rolling update failed on resource: #{deployment_name} and container: #{container_name}".colorize(:red)
-        end
-
-        # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision
-        VERBOSE_LOGGING.debug "rollback: rolling back to old version" if check_verbose(args)
-        rollback_status = KubectlClient::Rollout.undo(deployment_name)
-
-    end
-
-
-    if task_response && version_change_applied && rollout_status && rollback_status
-      upsert_passed_task("rollback","✔️  PASSED: CNF Rollback Passed" )
-    else
-      upsert_failed_task("rollback", "✖️  FAILED: CNF Rollback Failed")
-    end
-  end
-end
+# rolling_version_change_test_names.each do |tn|
+#   pretty_test_name = tn.split(/:|_/).join(" ")
+#   pretty_test_name_capitalized = tn.split(/:|_/).map(&.capitalize).join(" ")
+#
+#   desc "Test if the CNF containers are loosely coupled by performing a #{pretty_test_name}"
+#   task "#{tn}" do |_, args|
+#     CNFManager::Task.task_runner(args) do |args, config|
+#       LOGGING.debug "cnf_config: #{config}"
+#       VERBOSE_LOGGING.info "#{tn}" if check_verbose(args)
+#       container_names = config.cnf_config[:container_names]
+#       LOGGING.debug "container_names: #{container_names}"
+#       update_applied = true
+#       unless container_names
+#         puts "Please add a container names set of entries into your cnf-testsuite.yml".colorize(:red)
+#         update_applied = false
+#       end
+#
+#       # TODO use tag associated with image name string (e.g. busybox:v1.7.9) as the version tag
+#       # TODO optional get a valid version from the remote repo and roll to that, if no tag
+#       #  e.g. wget -q https://registry.hub.docker.com/v1/repositories/debian/tags -O -  | sed -e 's/[][]//g' -e 's/"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}'
+#       # note: all images are not on docker hub nor are they always on a docker hub compatible api
+#
+#       task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+#         test_passed = true
+#         valid_cnf_testsuite_yml = true
+#         LOGGING.debug "#{tn} container: #{container}"
+#         LOGGING.debug "container_names: #{container_names}"
+#         config_container = container_names.find{|x| x["name"]==container.as_h["name"]} if container_names
+#         LOGGING.debug "config_container: #{config_container}"
+#         unless config_container && config_container["#{tn}_test_tag"]? && !config_container["#{tn}_test_tag"].empty?
+#           puts "Please add the container name #{container.as_h["name"]} and a corresponding #{tn}_test_tag into your cnf-testsuite.yml under container names".colorize(:red)
+#           valid_cnf_testsuite_yml = false
+#         end
+#
+#         VERBOSE_LOGGING.debug "#{tn}: #{container} valid_cnf_testsuite_yml=#{valid_cnf_testsuite_yml}" if check_verbose(args)
+#         VERBOSE_LOGGING.debug "#{tn}: #{container} config_container=#{config_container}" if check_verbose(args)
+#         if valid_cnf_testsuite_yml && config_container
+#           resp = KubectlClient::Set.image(resource["name"],
+#                                           container.as_h["name"],
+#                                           # split out image name from version tag
+#                                           container.as_h["image"].as_s.rpartition(":")[0],
+#                                           config_container["#{tn}_test_tag"])
+#         else
+#           resp = false
+#         end
+#         # If any containers dont have an update applied, fail
+#         test_passed = false if resp == false
+#
+#         rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"], timeout="60s")
+#         unless rollout_status
+#           test_passed = false
+#         end
+#         VERBOSE_LOGGING.debug "#{tn}: #{container} test_passed=#{test_passed}" if check_verbose(args)
+#         test_passed
+#       end
+#       VERBOSE_LOGGING.debug "#{tn}: task_response=#{task_response}" if check_verbose(args)
+#       if task_response
+#         resp = upsert_passed_task("#{tn}","✔️  PASSED: CNF for #{pretty_test_name_capitalized} Passed" )
+#       else
+#         resp = upsert_failed_task("#{tn}", "✖️  FAILED: CNF for #{pretty_test_name_capitalized} Failed")
+#       end
+#       resp
+#       # TODO should we roll the image back to original version in an ensure?
+#       # TODO Use the kubectl rollback to history command
+#     end
+#   end
+# end
+#
+# desc "Test if the CNF can perform a rollback"
+# task "rollback" do |_, args|
+#   CNFManager::Task.task_runner(args) do |args, config|
+#     VERBOSE_LOGGING.info "rollback" if check_verbose(args)
+#     LOGGING.debug "cnf_config: #{config}"
+#
+#     container_names = config.cnf_config[:container_names]
+#     LOGGING.debug "container_names: #{container_names}"
+#
+#     update_applied = true
+#     rollout_status = true
+#     rollback_status = true
+#     version_change_applied = true
+#
+#     unless container_names
+#       puts "Please add a container names set of entries into your cnf-testsuite.yml".colorize(:red)
+#       update_applied = false
+#     end
+#
+#     task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+#
+#         deployment_name = resource["name"]
+#         container_name = container.as_h["name"]
+#         full_image_name_tag = container.as_h["image"].as_s.rpartition(":")
+#         image_name = full_image_name_tag[0]
+#         image_tag = full_image_name_tag[2]
+#
+#         VERBOSE_LOGGING.debug "deployment_name: #{deployment_name}" if check_verbose(args)
+#         VERBOSE_LOGGING.debug "container_name: #{container_name}" if check_verbose(args)
+#         VERBOSE_LOGGING.debug "image_name: #{image_name}" if check_verbose(args)
+#         VERBOSE_LOGGING.debug "image_tag: #{image_tag}" if check_verbose(args)
+#         LOGGING.debug "rollback: setting new version"
+#         #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
+#
+#         version_change_applied = true
+#         # compare cnf_testsuite.yml container list with the current container name
+#         config_container = container_names.find{|x| x["name"] == container_name } if container_names
+#         unless config_container && config_container["rollback_from_tag"]? && !config_container["rollback_from_tag"].empty?
+#           puts "Please add the container name #{container.as_h["name"]} and a corresponding rollback_from_tag into your cnf-testsuite.yml under container names".colorize(:red)
+#           version_change_applied = false
+#         end
+#         if version_change_applied && config_container
+#           rollback_from_tag = config_container["rollback_from_tag"]
+#
+#           if rollback_from_tag == image_tag
+#             fail_msg = "✖️  FAILED: please specify a different version than the helm chart default image.tag for 'rollback_from_tag' "
+#             puts fail_msg.colorize(:red)
+#             version_change_applied=false
+#           end
+#
+#           VERBOSE_LOGGING.debug "rollback: update deployment: #{deployment_name}, container: #{container_name}, image: #{image_name}, tag: #{rollback_from_tag}" if check_verbose(args)
+#           # set a temporary image/tag, so that we can rollback to the current (original) tag later
+#           version_change_applied = KubectlClient::Set.image(deployment_name,
+#                                                             container_name,
+#                                                             image_name,
+#                                                             rollback_from_tag)
+#         end
+#
+#         LOGGING.info "rollback version change successful? #{version_change_applied}"
+#
+#         VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
+#         rollout_status = KubectlClient::Rollout.status(deployment_name, timeout="60s")
+#         if  rollout_status == false
+#           puts "Rolling update failed on resource: #{deployment_name} and container: #{container_name}".colorize(:red)
+#         end
+#
+#         # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision
+#         VERBOSE_LOGGING.debug "rollback: rolling back to old version" if check_verbose(args)
+#         rollback_status = KubectlClient::Rollout.undo(deployment_name)
+#
+#     end
+#
+#
+#     if task_response && version_change_applied && rollout_status && rollback_status
+#       upsert_passed_task("rollback","✔️  PASSED: CNF Rollback Passed" )
+#     else
+#       upsert_failed_task("rollback", "✖️  FAILED: CNF Rollback Failed")
+#     end
+#   end
+# end
 
 desc "Does the CNF use NodePort"
 task "nodeport_not_used" do |_, args|
