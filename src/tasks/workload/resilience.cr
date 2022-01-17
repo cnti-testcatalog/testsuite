@@ -9,7 +9,7 @@ desc "The CNF test suite checks to see if the CNFs are resilient to failures."
   Log.for("verbose").info {  "resilience" } if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
-  stdout_score("resilience")
+  stdout_score("resilience", "Reliability, Resilience, and Availability")
 end
 
 #desc "Does the CNF crash when network loss occurs"
