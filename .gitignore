@@ -65,3 +65,4 @@ falco_rule.yaml
 /.env
 /*.kubeconfig
 /*.config
+/tools/apisnoop

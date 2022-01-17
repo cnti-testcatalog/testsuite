@@ -9,8 +9,9 @@ require "../utils/utils.cr"
 rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
+
 # task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used", "immutable_configmap"].concat(rolling_version_change_test_names) do |_, args|
-task "configuration_lifecycle", ["ip_addresses", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap"]do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap", "alpha_k8s_apis"]do |_, args|
   stdout_score("configuration_lifecycle", "configuration")
 end
 
@@ -680,6 +681,67 @@ task "immutable_configmap" do |_, args|
     resp
   end
 end
+
+desc "Check if CNF uses Kubernetes alpha APIs"
+task "alpha_k8s_apis" do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "alpha_k8s_apis" } if check_verbose(args)
+    ensure_kubeconfig!
+    kubeconfig_orig = ENV["KUBECONFIG"]
+    emoji="⭕️🔍"
+
+    # No offline support for this task for now
+    if args.named["offline"]? && args.named["offline"]? != "false"
+      upsert_skipped_task("alpha_k8s_apis","⏭️  SKIPPED: alpha_k8s_apis chaos test skipped #{emoji}")
+      next
+    end
+
+    # Get kubernetes version of the current server.
+    # This is used to setup kind with same k8s image version.
+    k8s_server_version = KubectlClient.server_version
+
+    # Online mode workflow below
+    offline = false
+    cluster_name = "apisnooptest"
+    # Ensure any old cluster is deleted
+    KindManager.new.delete_cluster(cluster_name)
+    apisnoop = ApiSnoop.new(FileUtils.pwd)
+    # FileUtils.cp("apisnoop-kind.yaml", "tools/apisnoop/kind/kind+apisnoop.yaml")
+    cluster = apisnoop.setup_kind_cluster(cluster_name, k8s_server_version)
+    Log.info { "apisnoop cluster kubeconfig: #{cluster.kubeconfig}" }
+    ENV["KUBECONFIG"] = "#{cluster.kubeconfig}"
+
+    cnf_setup_complete = CNFManager.cnf_to_new_cluster(config, cluster.kubeconfig, offline)
+
+    # CNF setup failed on kind cluster. Inform in test output.
+    unless cnf_setup_complete
+      puts "CNF failed to install on apisnoop cluster".colorize(:red)
+      upsert_failed_task("alpha_k8s_apis", "✖️  FAILED: Could not check CNF for usage of Kubernetes alpha APIs #{emoji}")
+      next
+    end
+
+    # CNF setup was fine on kind cluster. Check for usage of alpha Kubernetes APIs.
+    Log.info { "CNF setup complete on apisnoop cluster" }
+
+    Log.info { "Query the apisnoop database" }
+    pod_name = "pod/apisnoop-#{cluster_name}-control-plane"
+    db_query = "select count(*) from testing.audit_event where endpoint in (select endpoint from open_api where level='alpha' and release ilike '#{k8s_server_version}')"
+    exec_cmd = "#{pod_name} --container snoopdb --kubeconfig #{cluster.kubeconfig} -- psql -d apisnoop -c \"#{db_query}\""
+
+    result = KubectlClient.exec(exec_cmd)
+    api_count = result[:output].split("\n")[2].to_i
+
+    if api_count == 0
+      upsert_passed_task("alpha_k8s_apis", "✔️  PASSED: CNF does not use Kubernetes alpha APIs #{emoji}")
+    else
+      upsert_failed_task("alpha_k8s_apis", "✖️  FAILED: CNF uses Kubernetes alpha APIs #{emoji}")
+    end
+  ensure
+    KindManager.new.delete_cluster(cluster_name)
+    ENV["KUBECONFIG"]="#{kubeconfig_orig}"
+  end
+end
+
 
 def secrets_used_skipped_msg(emoji)
 <<-TEMPLATE

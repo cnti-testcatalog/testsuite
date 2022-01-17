@@ -118,7 +118,7 @@ describe "SampleUtils" do
 
   it "'CNFManager::Points.tasks_by_tag' should return the tasks assigned to a tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
-    tags = ["versioned_tag", "ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "rollback", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap"]
+    tags = ["versioned_tag", "ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "rollback", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap", "alpha_k8s_apis"]
     (CNFManager::Points.tasks_by_tag("configuration_lifecycle")).sort.should eq(tags.sort)
     (CNFManager::Points.tasks_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
@@ -153,7 +153,7 @@ describe "SampleUtils" do
             "linux_hardening", "resource_policies",
             "immutable_file_systems", "hostpath_mounts", "log_output",
             "prometheus_traffic", "open_metrics",
-            "ingress_egress_blocked", "routed_logs", "tracing", "elastic_volumes"]
+            "ingress_egress_blocked", "routed_logs", "tracing", "elastic_volumes", "alpha_k8s_apis"]
     (CNFManager::Points.all_task_test_names()).sort.should eq(tags.sort)
   end
 

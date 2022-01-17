@@ -420,4 +420,18 @@ describe CnfTestSuite do
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-testsuite.yml deploy_with_chart=false`
     end
   end
+
+  it "'alpha_k8s_apis' should pass with a CNF that does not make use of alpha k8s APIs", tags: ["apisnoop"] do
+    begin
+      Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_coredns` }
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite alpha_k8s_apis verbose`
+      Log.info { response_s }
+      $?.success?.should be_true
+      (/PASSED: CNF does not use Kubernetes alpha APIs/ =~ response_s).should_not be_nil
+    ensure
+      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_coredns` }
+    end
+  end
+
 end
