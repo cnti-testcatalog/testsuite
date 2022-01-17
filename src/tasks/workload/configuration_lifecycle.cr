@@ -10,7 +10,7 @@ rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rol
 
 desc "Configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
 # task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "rollback", "secrets_used", "immutable_configmap"].concat(rolling_version_change_test_names) do |_, args|
-task "configuration_lifecycle", ["ip_addresses", "liveness", "readiness", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap"]do |_, args|
+task "configuration_lifecycle", ["ip_addresses", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap"]do |_, args|
   stdout_score("configuration_lifecycle", "configuration")
 end
 
@@ -106,64 +106,64 @@ task "versioned_tag", ["install_opa"] do |_, args|
    end
 end
 
-desc "Is there a liveness entry in the helm chart?"
-task "liveness" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "liveness" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
-    resp = ""
-    emoji_probe="⎈🧫"
-    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      test_passed = true
-      begin
-        VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
-        container.as_h["livenessProbe"].as_h
-      rescue ex
-        VERBOSE_LOGGING.error ex.message if check_verbose(args)
-        test_passed = false
-        puts "No livenessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
-      end
-      LOGGING.debug "liveness test_passed: #{test_passed}"
-      test_passed
-    end
-    LOGGING.debug "liveness task response: #{task_response}"
-    if task_response
-      resp = upsert_passed_task("liveness","✔️  PASSED: Helm liveness probe found #{emoji_probe}")
-		else
-			resp = upsert_failed_task("liveness","✖️  FAILED: No livenessProbe found #{emoji_probe}")
-    end
-    resp
-  end
-end
-
-desc "Is there a readiness entry in the helm chart?"
-task "readiness" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    LOGGING.debug "cnf_config: #{config}"
-    VERBOSE_LOGGING.info "readiness" if check_verbose(args)
-    # Parse the cnf-testsuite.yml
-    resp = ""
-    emoji_probe="⎈🧫"
-    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      test_passed = true
-      begin
-        VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
-        container.as_h["readinessProbe"].as_h
-      rescue ex
-        VERBOSE_LOGGING.error ex.message if check_verbose(args)
-        test_passed = false
-        puts "No readinessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
-      end
-      test_passed
-    end
-    if task_response
-      resp = upsert_passed_task("readiness","✔️  PASSED: Helm readiness probe found #{emoji_probe}")
-		else
-      resp = upsert_failed_task("readiness","✖️  FAILED: No readinessProbe found #{emoji_probe}")
-    end
-    resp
-  end
-end
+# desc "Is there a liveness entry in the helm chart?"
+# task "liveness" do |_, args|
+#   CNFManager::Task.task_runner(args) do |args, config|
+#     VERBOSE_LOGGING.info "liveness" if check_verbose(args)
+#     LOGGING.debug "cnf_config: #{config}"
+#     resp = ""
+#     emoji_probe="⎈🧫"
+#     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+#       test_passed = true
+#       begin
+#         VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
+#         container.as_h["livenessProbe"].as_h
+#       rescue ex
+#         VERBOSE_LOGGING.error ex.message if check_verbose(args)
+#         test_passed = false
+#         puts "No livenessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+#       end
+#       LOGGING.debug "liveness test_passed: #{test_passed}"
+#       test_passed
+#     end
+#     LOGGING.debug "liveness task response: #{task_response}"
+#     if task_response
+#       resp = upsert_passed_task("liveness","✔️  PASSED: Helm liveness probe found #{emoji_probe}")
+# 		else
+# 			resp = upsert_failed_task("liveness","✖️  FAILED: No livenessProbe found #{emoji_probe}")
+#     end
+#     resp
+#   end
+# end
+#
+# desc "Is there a readiness entry in the helm chart?"
+# task "readiness" do |_, args|
+#   CNFManager::Task.task_runner(args) do |args, config|
+#     LOGGING.debug "cnf_config: #{config}"
+#     VERBOSE_LOGGING.info "readiness" if check_verbose(args)
+#     # Parse the cnf-testsuite.yml
+#     resp = ""
+#     emoji_probe="⎈🧫"
+#     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+#       test_passed = true
+#       begin
+#         VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
+#         container.as_h["readinessProbe"].as_h
+#       rescue ex
+#         VERBOSE_LOGGING.error ex.message if check_verbose(args)
+#         test_passed = false
+#         puts "No readinessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+#       end
+#       test_passed
+#     end
+#     if task_response
+#       resp = upsert_passed_task("readiness","✔️  PASSED: Helm readiness probe found #{emoji_probe}")
+# 		else
+#       resp = upsert_failed_task("readiness","✖️  FAILED: No readinessProbe found #{emoji_probe}")
+#     end
+#     resp
+#   end
+# end
 
 # rolling_version_change_test_names.each do |tn|
 #   pretty_test_name = tn.split(/:|_/).join(" ")
