@@ -26,7 +26,7 @@ task "all", ["workload", "platform"] do  |_, args|
 end
 
 desc "The CNF Test Suite program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
-task "workload", ["automatic_cnf_install", "ensure_cnf_installed", "configuration_file_setup", "compatibility","state", "security", "configuration_lifecycle", "observability", "microservice", "resilience"] do  |_, args|
+task "workload", ["automatic_cnf_install", "ensure_cnf_installed", "configuration_file_setup", "compatibility","state", "security", "configuration", "observability", "microservice", "resilience"] do  |_, args|
   VERBOSE_LOGGING.info "workload" if check_verbose(args)
 
   total = CNFManager::Points.total_points("workload")
