@@ -16,7 +16,15 @@ describe "Compatibility" do
     begin
       `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
-      response_s = `./cnf-testsuite cni_compatible verbose`
+      retry_limit = 5 
+      retries = 1
+      response_s = "" 
+      until (/PASSED/ =~ response_s) || retries > retry_limit
+        Log.info {"cni_compatible spec retry: #{retries}"i}
+        sleep 1.0
+        response_s = `./cnf-testsuite cni_compatible verbose`
+        retries = retries + 1
+      end
       Log.info {"Status:  #{response_s}"}
       (/PASSED: CNF compatible with both Calico and Cilium/ =~ response_s).should_not be_nil
     ensure
