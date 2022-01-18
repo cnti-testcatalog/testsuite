@@ -325,8 +325,12 @@ def stdout_failure(msg)
 end
 
 def stdout_score(test_name)
+  stdout_score(test_name, test_name)
+end
+def stdout_score(test_name, full_name)
   total = CNFManager::Points.total_points(test_name)
-  pretty_test_name = test_name.split(/:|_/).map(&.capitalize).join(" ")
+  # pretty_test_name = test_name.split(/:|_/).map(&.capitalize).join(" ")
+  pretty_test_name = full_name.split(/:|_/).map(&.capitalize).join(" ")
   # test_log_msg = "#{pretty_test_name} final score: #{total} of #{CNFManager::Points.total_max_points(test_name)}"
   test_log_msg = 
 <<-STRING

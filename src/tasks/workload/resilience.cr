@@ -5,11 +5,70 @@ require "colorize"
 require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if the CNFs are resilient to failures."
- task "resilience", ["pod_network_latency", "pod_network_corruption", "disk_fill", "pod_delete", "pod_memory_hog", "pod_io_stress", "node_drain"] do |t, args|
+ task "resilience", ["pod_network_latency", "pod_network_corruption", "disk_fill", "pod_delete", "pod_memory_hog", "pod_io_stress", "node_drain", "liveness", "readiness"] do |t, args|
   Log.for("verbose").info {  "resilience" } if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
-  stdout_score("resilience")
+  stdout_score("resilience", "Reliability, Resilience, and Availability")
+end
+
+desc "Is there a liveness entry in the helm chart?"
+task "liveness" do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "liveness" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    resp = ""
+    emoji_probe="⎈🧫"
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      test_passed = true
+      begin
+        VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
+        container.as_h["livenessProbe"].as_h
+      rescue ex
+        VERBOSE_LOGGING.error ex.message if check_verbose(args)
+        test_passed = false
+        puts "No livenessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+      end
+      LOGGING.debug "liveness test_passed: #{test_passed}"
+      test_passed
+    end
+    LOGGING.debug "liveness task response: #{task_response}"
+    if task_response
+      resp = upsert_passed_task("liveness","✔️  PASSED: Helm liveness probe found #{emoji_probe}")
+		else
+			resp = upsert_failed_task("liveness","✖️  FAILED: No livenessProbe found #{emoji_probe}")
+    end
+    resp
+  end
+end
+
+desc "Is there a readiness entry in the helm chart?"
+task "readiness" do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    LOGGING.debug "cnf_config: #{config}"
+    VERBOSE_LOGGING.info "readiness" if check_verbose(args)
+    # Parse the cnf-testsuite.yml
+    resp = ""
+    emoji_probe="⎈🧫"
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      test_passed = true
+      begin
+        VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
+        container.as_h["readinessProbe"].as_h
+      rescue ex
+        VERBOSE_LOGGING.error ex.message if check_verbose(args)
+        test_passed = false
+        puts "No readinessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+      end
+      test_passed
+    end
+    if task_response
+      resp = upsert_passed_task("readiness","✔️  PASSED: Helm readiness probe found #{emoji_probe}")
+		else
+      resp = upsert_failed_task("readiness","✖️  FAILED: No readinessProbe found #{emoji_probe}")
+    end
+    resp
+  end
 end
 
 #desc "Does the CNF crash when network loss occurs"
