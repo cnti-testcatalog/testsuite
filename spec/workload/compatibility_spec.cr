@@ -20,7 +20,7 @@ describe "Compatibility" do
       retries = 1
       response_s = "" 
       until (/PASSED/ =~ response_s) || retries > retry_limit
-        Log.info {"cni_compatible spec retry: #{retries}"i}
+        Log.info {"cni_compatible spec retry: #{retries}"}
         sleep 1.0
         response_s = `./cnf-testsuite cni_compatible verbose`
         retries = retries + 1
