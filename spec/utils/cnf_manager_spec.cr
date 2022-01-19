@@ -118,8 +118,8 @@ describe "SampleUtils" do
 
   it "'CNFManager::Points.tasks_by_tag' should return the tasks assigned to a tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
-    tags = ["versioned_tag", "ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "rollback", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap", "alpha_k8s_apis"]
-    (CNFManager::Points.tasks_by_tag("configuration_lifecycle")).sort.should eq(tags.sort)
+    tags = ["alpha_k8s_apis", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "hostport_not_used", "immutable_configmap", "ip_addresses", "nodeport_not_used", "secrets_used", "versioned_tag"]
+    (CNFManager::Points.tasks_by_tag("configuration")).sort.should eq(tags.sort)
     (CNFManager::Points.tasks_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
@@ -165,7 +165,7 @@ describe "SampleUtils" do
   it "'CNFManager::Points.results_by_tag' should return a list of results by tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
-    (CNFManager::Points.results_by_tag("configuration_lifecycle")).should eq([{"name" => "liveness", "status" => "passed", "points" => 5}])
+    (CNFManager::Points.results_by_tag("resilience")).should eq([{"name" => "liveness", "status" => "passed", "points" => 5}])
     (CNFManager::Points.results_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
@@ -378,8 +378,8 @@ describe "SampleUtils" do
     response_s = `./cnf-testsuite validate_config cnf-config=spec/fixtures/cnf-testsuite-unmapped-keys-and-subkeys.yml`
     $?.success?.should be_true
     LOGGING.debug "validate_config resp: #{response_s}"
-    (/WARNING: Unmapped cnf_testsuite.yml keys. Please add them to the validator/ =~ response_s).should_not be_nil
-    (/WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_testsuite.yml/ =~ response_s).should_not be_nil
+    # (/WARNING: Unmapped cnf_testsuite.yml keys. Please add them to the validator/ =~ response_s).should_not be_nil
+    # (/WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_testsuite.yml/ =~ response_s).should_not be_nil
     (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
   end
 
