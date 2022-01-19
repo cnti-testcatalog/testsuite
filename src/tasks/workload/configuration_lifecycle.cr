@@ -686,6 +686,13 @@ desc "Check if CNF uses Kubernetes alpha APIs"
 task "alpha_k8s_apis" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     Log.for("verbose").info { "alpha_k8s_apis" } if check_verbose(args)
+
+    unless check_poc(args)
+      Log.info { "Skipping alpha_k8s_apis: not in poc mode" }
+      puts "SKIPPED: alpha_k8s_apis".colorize(:yellow)
+      next
+    end
+
     ensure_kubeconfig!
     kubeconfig_orig = ENV["KUBECONFIG"]
     emoji="⭕️🔍"
