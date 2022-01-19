@@ -724,8 +724,9 @@ task "alpha_k8s_apis" do |_, args|
     Log.info { "CNF setup complete on apisnoop cluster" }
 
     Log.info { "Query the apisnoop database" }
+    k8s_major_minor_version = k8s_server_version.split(".")[0..1].join(".")
     pod_name = "pod/apisnoop-#{cluster_name}-control-plane"
-    db_query = "select count(*) from testing.audit_event where endpoint in (select endpoint from open_api where level='alpha' and release ilike '#{k8s_server_version}')"
+    db_query = "select count(*) from testing.audit_event where endpoint in (select endpoint from open_api where level='alpha' and release ilike '#{k8s_major_minor_version}%')"
     exec_cmd = "#{pod_name} --container snoopdb --kubeconfig #{cluster.kubeconfig} -- psql -d apisnoop -c \"#{db_query}\""
 
     result = KubectlClient.exec(exec_cmd)
