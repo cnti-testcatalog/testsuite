@@ -745,8 +745,10 @@ task "alpha_k8s_apis" do |_, args|
       upsert_failed_task("alpha_k8s_apis", "✖️  FAILED: CNF uses Kubernetes alpha APIs #{emoji}")
     end
   ensure
-    KindManager.new.delete_cluster(cluster_name)
-    ENV["KUBECONFIG"]="#{kubeconfig_orig}"
+    if cluster_name != nil
+      KindManager.new.delete_cluster(cluster_name)
+      ENV["KUBECONFIG"]="#{kubeconfig_orig}"
+    end
   end
 end
 
