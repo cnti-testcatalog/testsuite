@@ -11,6 +11,7 @@ spec:
       labels:
         name: cluster-tools
     spec:
+      hostNetwork: true
       containers:
         - name: cluster-tools
           image: conformance/cluster-tools:v1.0.0
@@ -20,7 +21,14 @@ spec:
           volumeMounts:
           - mountPath: /run/containerd/containerd.sock
             name: containerd-volume
+          - mountPath: /proc
+            name: proc
+          securityContext:
+            privileged: true
       volumes:
       - name: containerd-volume
         hostPath:
           path: /var/run/containerd/containerd.sock
+      - name: proc
+        hostPath:
+          path: /proc
