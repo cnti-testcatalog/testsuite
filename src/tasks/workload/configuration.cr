@@ -685,6 +685,13 @@ desc "Check if CNF uses Kubernetes alpha APIs"
 task "alpha_k8s_apis" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     Log.for("verbose").info { "alpha_k8s_apis" } if check_verbose(args)
+
+    unless check_poc(args)
+      Log.info { "Skipping alpha_k8s_apis: not in poc mode" }
+      puts "SKIPPED: alpha_k8s_apis".colorize(:yellow)
+      next
+    end
+
     ensure_kubeconfig!
     kubeconfig_orig = ENV["KUBECONFIG"]
     emoji="⭕️🔍"
@@ -723,8 +730,9 @@ task "alpha_k8s_apis" do |_, args|
     Log.info { "CNF setup complete on apisnoop cluster" }
 
     Log.info { "Query the apisnoop database" }
+    k8s_major_minor_version = k8s_server_version.split(".")[0..1].join(".")
     pod_name = "pod/apisnoop-#{cluster_name}-control-plane"
-    db_query = "select count(*) from testing.audit_event where endpoint in (select endpoint from open_api where level='alpha' and release ilike '#{k8s_server_version}')"
+    db_query = "select count(*) from testing.audit_event where endpoint in (select endpoint from open_api where level='alpha' and release ilike '#{k8s_major_minor_version}%')"
     exec_cmd = "#{pod_name} --container snoopdb --kubeconfig #{cluster.kubeconfig} -- psql -d apisnoop -c \"#{db_query}\""
 
     result = KubectlClient.exec(exec_cmd)
@@ -736,8 +744,10 @@ task "alpha_k8s_apis" do |_, args|
       upsert_failed_task("alpha_k8s_apis", "✖️  FAILED: CNF uses Kubernetes alpha APIs #{emoji}")
     end
   ensure
-    KindManager.new.delete_cluster(cluster_name)
-    ENV["KUBECONFIG"]="#{kubeconfig_orig}"
+    if cluster_name != nil
+      KindManager.new.delete_cluster(cluster_name)
+      ENV["KUBECONFIG"]="#{kubeconfig_orig}"
+    end
   end
 end
 
