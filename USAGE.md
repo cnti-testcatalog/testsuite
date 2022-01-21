@@ -614,6 +614,16 @@ crystal src/cnf-testsuite.cr protected_access
 
 #### :heavy_check_mark: To check if the CNF exposes any of its containers as a service
 
+<details> <summary>Details for the service discovery test</summary>
+<p>
+
+<b>Service discovery:</b> For microservices to be accessible to other applications in the cluster, they should be exposed via a Service.
+
+<b>Remediation Steps:</b> Make sure the CNF exposes any of its containers as a Kubernetes Service. You can learn more about Kubernetes Service [here](https://kubernetes.io/docs/concepts/services-networking/service/).
+</p>
+
+</details>
+
 ```
 ./cnf-testsuite service_discovery
 ```
