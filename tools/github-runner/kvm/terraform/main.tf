@@ -6,9 +6,8 @@ variable "elastic_ips" {
   type = string
 }
 
-variable "runner_count" {
-    type = number
-    default = 8
+variable "index" {
+    type = string
   }
 
 
@@ -35,20 +34,13 @@ resource "libvirt_network" "vmbr0" {
 }
 
 resource "libvirt_volume" "os_image" {
-  name   = "debian.raw"
+  name   = "debian.raw-${var.index}"
   source = "/my-build.raw"
   format = "raw"
-}
-
-resource "libvirt_volume" "volume" {
-  name = "volume-${count.index}"
-  base_volume_id = "${libvirt_volume.os_image.id}"
-  count = "${var.runner_count}"
-  size = 52000000000
+  pool = "pool${var.index}"
 }
 
 data "template_file" "user_data" {
-  count = "${var.runner_count}"
   template = <<EOF
 #cloud-config
 growpart:
@@ -65,30 +57,34 @@ write_files:
       Requires=network-online.target
       [Service]
       ExecStartPre=/bin/bash -c "while true; do ping -c1 www.google.com > /dev/null && break; done"
-      ExecStart=/bin/bash -c 'export REPO_URL="https://github.com/cncf/cnf-testsuite" ; export RUNNER_NAME="runner${count.index}" ; export RUNNER_TOKEN="${var.token}" ; export RUNNER_WORKDIR="/tmp/github-runner-cnf-testsuite" ; export LABELS="vm" ; cd /actions-runner ; /entrypoint.sh ./bin/Runner.Listener run --startuptype service'
+      ExecStart=/bin/bash -c 'export REPO_URL="https://github.com/cncf/cnf-testsuite" ; export RUNNER_NAME="runner${var.index}" ; export RUNNER_TOKEN="${var.token}" ; export RUNNER_WORKDIR="/tmp/github-runner-cnf-testsuite" ; export LABELS="vm" ; cd /actions-runner ; /entrypoint.sh ./bin/Runner.Listener run --startuptype service'
 EOF
 }
 
 resource "libvirt_cloudinit_disk" "cloud_init" {
-  name           = "cloud-init-${count.index}.iso"
-  count          = "${var.runner_count}"
-  user_data      = element(data.template_file.user_data.*.rendered, count.index)
+  name           = "cloud-init${var.index}.iso"
+  user_data      = "${data.template_file.user_data.rendered}"
+  pool = "pool${var.index}"
 }
 
-resource "libvirt_domain" "test" {
-  name   = "runner-${count.index}"
+resource "libvirt_volume" "volume" {
+  name = "volume${var.index}"
+  base_volume_id = "${libvirt_volume.os_image.id}"
+  pool = "pool${var.index}"
+}
+
+resource "libvirt_domain" "runner" {
+  name   = "runner${var.index}"
   memory = "20000"
   vcpu   = 4
 
-  cloudinit = element(libvirt_cloudinit_disk.cloud_init.*.id, count.index)
+  cloudinit = "${libvirt_cloudinit_disk.cloud_init.id}"
 
   network_interface {
     network_name = "${libvirt_network.vmbr0.name}"
   }
 
   disk {
-    volume_id = element(libvirt_volume.volume.*.id, count.index)
+    volume_id = "${libvirt_volume.volume.id}"
   }
-
-  count = "${var.runner_count}"
 }
