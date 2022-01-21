@@ -246,4 +246,61 @@ task "single_process_type" do |_, args|
   end
 end
 
+desc "Are any of the containers exposed as a service?"
+task "service_discovery" do |_, args|
+  CNFManager::Task.task_runner(args) do |args,config|
+    Log.for("verbose").info { "service_discovery" } if check_verbose(args)
+    namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
+    resource_ymls = CNFManager.cnf_workload_resources(args, config) do |resource|
+      resource
+    end
+    resources = Helm.workload_resource_kind_names(resource_ymls)
 
+    pod_ips = [] of String
+    service_names = [] of String
+
+    resources.each do |resource|
+      case resource[:kind].as_s.downcase
+      when "service"
+        # Collect service names
+        service_names.push(resource[:name].as_s)
+      when "pod"
+        # Collect IPs of pods
+        resource_info = KubectlClient::Get.resource(resource[:kind].as_s, resource[:name].as_s, namespace)
+        pod_ip = resource_info.dig?("status", "podIP")
+        if !pod_ip.nil?
+          pod_ips.push(pod_ip.as_s)
+        end
+      end
+    end
+
+    endpoint_ips = [] of String
+    endpoints = KubectlClient::Get.endpoints().dig("items")
+    endpoints.as_a.each do |endpoint|
+      if service_names.includes?(endpoint["metadata"]["name"])
+        endpoint["subsets"].as_a.each do |subset|
+          ips = subset["addresses"].as_a.map {|address| address["ip"].as_s }
+          endpoint_ips.concat(ips)
+        end
+      end
+    end
+
+    Log.info { "Endpoint IPs: #{endpoint_ips.inspect}" }
+    Log.info { "Pod IPS: #{pod_ips.inspect}" }
+
+    # TODO get IPs of services from endpoints
+    # TODO check if IPs of Pods are part of the endpoint IPs list
+
+    task_response = true
+
+    emoji_image_size="⚖️👀"
+    emoji_small="🐜"
+    emoji_big="🦖"
+
+    if task_response
+      upsert_passed_task("service_discovery", "✔️  PASSED: Some containers exposed as a service #{emoji_small} #{emoji_image_size}")
+    else
+      upsert_failed_task("service_discovery", "✖️  FAILED: No containers exposed as a service #{emoji_big} #{emoji_image_size}")
+    end
+  end
+end
