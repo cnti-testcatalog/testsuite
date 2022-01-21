@@ -30,16 +30,13 @@ Check out the [usage documentation](USAGE.md) for more info about invoking comma
 
 The CNF Test Suite will inspect CNFs for the following characteristics:
 
-- **Compatibility** - CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements.
-- **State** - The CNF's state should be stored in a custom resource definition or a separate database (e.g. etcd) rather than requiring local storage. The CNF should also be resilient to node failure.
-- **Security** - CNF containers should be isolated from one another and the host.
+- **Configuration** - The CNF's configuration should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces.
+- **Compatibility, Installability & Upgradability** - CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements while using standard, in-band deployment tools such as Helm (version 3) charts.
 - **Microservice** - The CNF should be developed and delivered as a microservice.
-- **Scalability** - CNFs should support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines).
-- **Configuration and Lifecycle** - The CNF's configuration and lifecycle should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces.
-- **Observability** - CNFs should externalize their internal states in a way that supports metrics, tracing, and logging.
-- **Installable and Upgradeable** - CNFs should use standard, in-band deployment tools such as Helm (version 3) charts.
-- **Hardware Resources and Scheduling** - The CNF container should access all hardware and schedule to specific worker nodes by using a device plugin.
-- **Resilience** - CNFs should be resilient to failures inevitable in cloud environments. CNF Resilience should be tested to ensure CNFs are designed to deal with non-carrier-grade shared cloud HW/SW platforms.
+- **State** - The CNF's state should be stored in a custom resource definition or a separate database (e.g. etcd) rather than requiring local storage. The CNF should also be resilient to node failure.
+- **Reliability, Resilience & Availability** - CNFs should be reliable, resilient and available to failures inevitable in cloud environments. CNFs should be tested to ensure they are designed to deal with non-carrier-grade shared cloud HW/SW platforms.
+- **Observability & Diagnostics** - CNFs should externalize their internal states in a way that supports metrics, tracing, and logging.
+- **Security** - CNF containers should be isolated from one another and the host. CNFs are to be verified against any common CVE or other vulnerabilities.
 
 See the [Test Categories Documentation](TEST-CATEGORIES.md) for a complete overview of the tests.
 
