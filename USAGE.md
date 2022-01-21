@@ -612,6 +612,12 @@ crystal src/cnf-testsuite.cr protected_access
 ./cnf-testsuite single_process_type
 ```
 
+#### :heavy_check_mark: To check if the CNF exposes any of its containers as a service
+
+```
+./cnf-testsuite service_discovery
+```
+
 ---
 
 ### Scalability Tests
