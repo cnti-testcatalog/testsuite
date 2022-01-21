@@ -250,54 +250,49 @@ desc "Are any of the containers exposed as a service?"
 task "service_discovery" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
     Log.for("verbose").info { "service_discovery" } if check_verbose(args)
+
+    # Get all resources for the CNF
     namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
-    resource_ymls = CNFManager.cnf_workload_resources(args, config) do |resource|
-      resource
-    end
+    resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
     resources = Helm.workload_resource_kind_names(resource_ymls)
 
-    pod_ips = [] of String
-    service_names = [] of String
-
+    # Collect service names from the CNF resource list
+    cnf_service_names = [] of String
     resources.each do |resource|
       case resource[:kind].as_s.downcase
       when "service"
-        # Collect service names
-        service_names.push(resource[:name].as_s)
-      when "pod"
-        # Collect IPs of pods
-        resource_info = KubectlClient::Get.resource(resource[:kind].as_s, resource[:name].as_s, namespace)
-        pod_ip = resource_info.dig?("status", "podIP")
-        if !pod_ip.nil?
-          pod_ips.push(pod_ip.as_s)
-        end
+        cnf_service_names.push(resource[:name].as_s)
       end
     end
 
-    endpoint_ips = [] of String
-    endpoints = KubectlClient::Get.endpoints().dig("items")
-    endpoints.as_a.each do |endpoint|
-      if service_names.includes?(endpoint["metadata"]["name"])
-        endpoint["subsets"].as_a.each do |subset|
-          ips = subset["addresses"].as_a.map {|address| address["ip"].as_s }
-          endpoint_ips.concat(ips)
-        end
+    # Get all the pods in the cluster
+    pods = KubectlClient::Get.pods().dig("items").as_a
+
+    # Get pods for the services in the CNF based on the labels
+    test_passed = false
+    KubectlClient::Get.services().dig("items").as_a.each do |service_info|
+      # Only check for pods for services that are defined by the CNF
+      service_name = service_info["metadata"]["name"]
+      next unless cnf_service_names.includes?(service_name)
+
+      # Some services may not have selectors defined. Example: service/kubernetes
+      pod_selector = service_info.dig?("spec", "selector")
+      next unless pod_selector
+
+      # Fetch matching pods for the CNF
+      # If any service has a matching pod, then mark test as passed
+      matching_pods = KubectlClient::Get.pods_by_labels(pods, pod_selector.as_h)
+      if matching_pods.size > 0
+        Log.debug { "Matching pods for service #{service_name}: #{matching_pods.inspect}" }
+        test_passed = true
       end
     end
-
-    Log.info { "Endpoint IPs: #{endpoint_ips.inspect}" }
-    Log.info { "Pod IPS: #{pod_ips.inspect}" }
-
-    # TODO get IPs of services from endpoints
-    # TODO check if IPs of Pods are part of the endpoint IPs list
-
-    task_response = true
 
     emoji_image_size="⚖️👀"
     emoji_small="🐜"
     emoji_big="🦖"
 
-    if task_response
+    if test_passed
       upsert_passed_task("service_discovery", "✔️  PASSED: Some containers exposed as a service #{emoji_small} #{emoji_image_size}")
     else
       upsert_failed_task("service_discovery", "✖️  FAILED: No containers exposed as a service #{emoji_big} #{emoji_image_size}")
