@@ -137,6 +137,14 @@ module KubectlClient
     end
   end
 
+  module Describe
+    def self.cluster_policy_report()
+      cmd = "kubectl get cpolr -o json"
+      ShellCmd.run(cmd, "KubectlClient::Describe.cluster_policy_report")
+    end
+  end
+
+
   module Patch
     def self.spec(kind : String, resource : String, spec_input : String, namespace : String? = nil)
       namespace_opt = ""
@@ -243,6 +251,26 @@ module KubectlClient
         return JSON.parse(response)
       end
       JSON.parse(%({}))
+    end
+
+    def self.policy_report(name : String)
+      cmd = "kubectl get polr #{name} -o json"
+      ShellCmd.run(cmd, "KubectlClient::Get.policy_report")
+    end
+
+    def self.policy_report_allnamespaces()
+      cmd = "kubectl get polr -A -o json"
+      ShellCmd.run(cmd, "KubectlClient::Get.policy_report_allnamespaces")
+    end
+
+    def self.delete_all_clusterpolicies_and_policyreports_allnamespaces()
+      cmd = "kubectl delete cpol,polr --all -A"
+      ShellCmd.run(cmd, "KubectlClient::Get.delete_all_clusterpolicies_and_policyreports_allnamespaces")
+    end
+
+    def self.policy_report_failed(name : String)
+      cmd = "kubectl get polr -A -o yaml | grep \"result: fail\" -B10 | grep #{name} -B2 -A7"
+      ShellCmd.run(cmd, "KubectlClient::Get.policy_report_failed")
     end
    
     # todo put this in a manifest module
