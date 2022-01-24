@@ -8,7 +8,7 @@ require "../utils/utils.cr"
 rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
 desc "The CNF test suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
-task "compatibility", ["install_script_helm", "helm_chart_valid", "helm_chart_published", "helm_deploy", "cni_compatible", "increase_decrease_capacity", "rollback", "restrict_external_ips", "disallow_container_sock_mounts", "disallow_default_namespace", "disallow_helm_tiller", "require_labels", "require_requests_limits", "require_pod_probes", "restrict_nodeport", "restrict_volume_types", "restrict_seccomp", "run_as_non_root", "require_non_root_groups", "deny_privilege_escalation", "restrict_sysctls", "disallow_selinux", "disallow_privileged_containers", "disallow_host_ports", "disallow_host_path", "disallow_host_namespaces", "disallow_add_capabilities", "disallow_latest_tag", "require_ro_rootfs"].concat(rolling_version_change_test_names) do |_, args|
+task "compatibility", ["install_script_helm", "helm_chart_valid", "helm_chart_published", "helm_deploy", "cni_compatible", "increase_decrease_capacity", "rollback"].concat(rolling_version_change_test_names) do |_, args|
   stdout_score("compatibility", "Compatibility, Installability, and Upgradeability")
 
 end
