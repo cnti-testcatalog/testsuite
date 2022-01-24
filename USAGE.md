@@ -826,6 +826,7 @@ crystal src/cnf-testsuite.cr external_retry
 </p>
 
 </details>
+
 ```
 ./cnf-testsuite disallow_helm_tiller
 ```
@@ -906,6 +907,7 @@ crystal src/cnf-testsuite.cr external_retry
 </p>
 
 </details>
+
 ```
 ./cnf-testsuite run_as_non_root
 ```
@@ -950,6 +952,7 @@ crystal src/cnf-testsuite.cr external_retry
 </p>
 
 </details>
+
 ```
 ./cnf-testsuite restrict_sysctls
 ```
@@ -979,6 +982,7 @@ crystal src/cnf-testsuite.cr external_retry
 </p>
 
 </details>
+
 ```
 ./cnf-testsuite disallow_privileged_containers
 ```
