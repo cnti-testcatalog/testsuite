@@ -900,6 +900,7 @@ crystal src/cnf-testsuite.cr external_retry
 
 <b>Remediation Steps:</b> Make sure containers define a specific version of the image tag
 </p>
+
 ```
 ./cnf-testsuite disallow_latest_tag
 ```
