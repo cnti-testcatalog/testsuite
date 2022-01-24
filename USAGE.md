@@ -915,6 +915,7 @@ crystal src/cnf-testsuite.cr external_retry
 </p>
 
 </details>
+
 ```
 ./cnf-testsuite require_ro_rootfs
 ```
