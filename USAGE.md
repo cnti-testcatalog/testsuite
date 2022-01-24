@@ -564,7 +564,7 @@ Sressing the disk with continuous and heavy IO can cause degradation in reads/ w
 ./cnf-testsuite readiness
 ```
 
-#### Observability Tests
+#### Observability and Diagnostic Tests
 
 ##### :heavy_check_mark: To run all observability tests
 
@@ -955,7 +955,7 @@ crystal src/cnf-testsuite.cr protected_access
 </p>
 </details>
 
-#### Configuration and Diagnostic Tests
+#### Configuration Tests
 
 ##### :heavy_check_mark: To run all of the configuration and lifecycle tests
 
