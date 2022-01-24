@@ -10,7 +10,7 @@ rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rol
 
 desc "Configuration should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
 
-task "configuration", ["ip_addresses", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap", "alpha_k8s_apis"]do |_, args|
+task "configuration", ["ip_addresses", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap", "alpha_k8s_apis", "restrict_external_ips", "disallow_container_sock_mounts", "disallow_default_namespace", "disallow_helm_tiller", "require_labels", "require_requests_limits", "require_pod_probes", "restrict_nodeport", "restrict_volume_types", "restrict_seccomp", "run_as_non_root", "require_non_root_groups", "deny_privilege_escalation", "restrict_sysctls", "disallow_selinux", "disallow_privileged_containers", "disallow_host_ports", "disallow_host_path", "disallow_host_namespaces", "disallow_add_capabilities", "disallow_latest_tag", "require_ro_rootfs"]do |_, args|
   stdout_score("configuration", "configuration")
 end
 
