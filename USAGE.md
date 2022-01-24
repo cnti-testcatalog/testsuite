@@ -882,6 +882,8 @@ crystal src/cnf-testsuite.cr external_retry
 <b>Remediation Steps:</b> Make sure the field spec.volumes[*].hostPath is not defined
 </p>
 
+</details>
+
 ```
 ./cnf-testsuite disallow_host_path
 ```
@@ -895,6 +897,8 @@ crystal src/cnf-testsuite.cr external_retry
 <b>Remediation Steps:</b> Make sure the fields spec.hostNetwork, spec.hostIPC, and spec.hostPID are not set to true in the container spec
 </p>
 
+</details>
+
 ```
 ./cnf-testsuite disallow_host_namespaces
 ```
@@ -907,6 +911,8 @@ crystal src/cnf-testsuite.cr external_retry
 
 <b>Remediation Steps:</b> Make sure containers define a specific version of the image tag
 </p>
+
+</details>
 
 ```
 ./cnf-testsuite disallow_latest_tag
