@@ -880,12 +880,6 @@ crystal src/cnf-testsuite.cr external_retry
 ```
 
 #### :heavy_check_mark: To check if containers are using host namespaces
-
-```
-./cnf-testsuite disallow_host_namespaces
-```
-
-#### :heavy_check_mark: To check if containers are using host namespaces
 <details> <summary>Details for disallow host namespaces test</summary>
 <p>
 
