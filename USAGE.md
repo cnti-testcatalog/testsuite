@@ -874,6 +874,13 @@ crystal src/cnf-testsuite.cr external_retry
 ```
 
 #### :heavy_check_mark: To check if containers are using hostpath volumes
+<details> <summary>Details for disallow host path test</summary>
+<p>
+
+<b>Disallow Host Path Details:</b> HostPath volumes let Pods use host directories and volumes in containers. Using host resources can be used to access shared data or escalate privileges and should not be allowed.
+
+<b>Remediation Steps:</b> Make sure the field spec.volumes[*].hostPath is not defined
+</p>
 
 ```
 ./cnf-testsuite disallow_host_path
