@@ -7,13 +7,13 @@
 - [Common Examples](USAGE.md#common-example-commands)
 - [Logging Options](USAGE.md#logging-options)
 - [Workload Tests](USAGE.md#workload-tests)
-  - [Compatibility, Installability, and Upgradability Tests](USAGE.md#compatibility-installability-upgradability-tests)
+  - [Compatibility, Installability, and Upgradability Tests](USAGE.md#compatibility-installability-and-upgradability-tests)
   - [Microservice Tests](USAGE.md#microservice-tests)
   - [State Tests](USAGE.md#state-tests)
-  - [Reliability, Resilience and Availability Tests](USAGE.md#resilience-tests)
-  - [Observability & Diagnostic Tests](USAGE.md#observability-tests)
+  - [Reliability, Resilience and Availability Tests](USAGE.md#reliability-resilience-and-availability)
+  - [Observability and Diagnostic Tests](USAGE.md#observability-and-diagnostic-tests)
   - [Security Tests](USAGE.md#security-tests)
-  - [Configuration Tests](USAGE.md#configuration-and-lifecycle-tests)
+  - [Configuration Tests](USAGE.md#configuration-tests)
 - [Platform Tests](USAGE.md#platform-tests)
 
 ### Overview
