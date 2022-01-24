@@ -771,6 +771,138 @@ crystal src/cnf-testsuite.cr external_retry
 ./cnf-testsuite secrets_used
 ```
 
+#### :heavy_check_mark: To install kyverno
+
+```
+./cnf-testsuite install_kyverno
+```
+
+#### :heavy_check_mark: To check if a CNF is running services with external IP's
+
+```
+./cnf-testsuite restrict_external_ips
+```
+
+#### :heavy_check_mark: To check if a CNF is using container socker mounts
+
+```
+./cnf-testsuite disallow_container_sock_mounts
+```
+
+#### :heavy_check_mark: To check if a CNF is using default namespace
+
+```
+./cnf-testsuite disallow_default_namespace
+```
+
+#### :heavy_check_mark: To check if containers are using any tiller images
+
+```
+./cnf-testsuite disallow_helm_tiller
+```
+
+#### :heavy_check_mark: To check if containers are using labels
+
+```
+./cnf-testsuite require_labels
+```
+
+#### :heavy_check_mark: To check if containers are defining resource requests and limits
+
+```
+./cnf-testsuite require_requests_limits
+```
+
+#### :heavy_check_mark: To check if containers are configured with liveness and readiness probes
+
+```
+./cnf-testsuite require_pod_probes
+```
+
+#### :heavy_check_mark: To check if node ports are used in the service configuration using kyverno
+
+```
+./cnf-testsuite restrict_nodeport
+```
+
+#### :heavy_check_mark: To check if CNF is using non core volume types
+
+```
+./cnf-testsuite restrict_volume_types
+```
+
+#### :heavy_check_mark: To check if containers are running as non root
+
+```
+./cnf-testsuite run_as_non_root
+```
+
+#### :heavy_check_mark: To check if containers are running with non root groups
+
+```
+./cnf-testsuite require_non_root_groups
+```
+
+#### :heavy_check_mark: To check if containers are running with privilege escalation
+
+```
+./cnf-testsuite deny_privilege_escalation
+```
+
+#### :heavy_check_mark: To check if containers are setting additional sysctls above the ones allowed
+
+```
+./cnf-testsuite restrict_sysctls
+```
+
+#### :heavy_check_mark: To check if containers are using custom SELinux options
+
+```
+./cnf-testsuite disallow_selinux
+```
+
+#### :heavy_check_mark: To check if containers are running in previleged mode
+
+```
+./cnf-testsuite disallow_privileged_containers
+```
+
+#### :heavy_check_mark: To check if containers are using host ports
+
+```
+./cnf-testsuite disallow_host_ports
+```
+
+#### :heavy_check_mark: To check if containers are using hostpath volumes
+
+```
+./cnf-testsuite disallow_host_path
+```
+
+#### :heavy_check_mark: To check if containers are using host namespaces
+
+```
+./cnf-testsuite disallow_host_namespaces
+```
+
+#### :heavy_check_mark: To check if containers are using host namespaces
+
+```
+./cnf-testsuite disallow_host_namespaces
+```
+
+#### :heavy_check_mark: To check if containers are using latest tag
+
+```
+./cnf-testsuite disallow_latest_tag
+```
+
+#### :heavy_check_mark: To check if containers are using readonly root filesystem
+
+```
+./cnf-testsuite require_ro_rootfs
+```
+
 #### :heavy_check_mark: To check if a CNF version uses [immutable configmaps](https://kubernetes.io/docs/concepts/configuration/configmap/#configmap-immutable)
 
 ```
