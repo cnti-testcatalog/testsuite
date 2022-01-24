@@ -783,7 +783,7 @@ crystal src/cnf-testsuite.cr external_retry
 ./cnf-testsuite restrict_external_ips
 ```
 
-#### :heavy_check_mark: To check if a CNF is using container socker mounts
+#### :heavy_check_mark: To check if a CNF is using container socket mounts
 
 ```
 ./cnf-testsuite disallow_container_sock_mounts
