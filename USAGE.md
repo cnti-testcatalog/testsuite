@@ -886,19 +886,40 @@ crystal src/cnf-testsuite.cr external_retry
 ```
 
 #### :heavy_check_mark: To check if containers are using host namespaces
+<details> <summary>Details for disallow host namespaces test</summary>
+<p>
+
+<b>Disallow Host Namespaces Details:</b> Host namespaces (Process ID namespace, Inter-Process Communication namespace, and  network namespace) allow access to shared information and can be used to elevate privileges. Hence it is a best practise to not allow pods access to host namespaces
+
+<b>Remediation Steps:</b> Make sure the fields spec.hostNetwork, spec.hostIPC, and spec.hostPID are not set to true in the container spec
+</p>
 
 ```
 ./cnf-testsuite disallow_host_namespaces
 ```
 
 #### :heavy_check_mark: To check if containers are using latest tag
+<details> <summary>Details for disallow latest tag test</summary>
+<p>
 
+<b>Disallow Latest Tag Details:</b> The ':latest' tag is mutable and can lead to unexpected errors if the image changes. A best practice is to use an immutable tag that maps to a specific version of an application Pod
+
+<b>Remediation Steps:</b> Make sure containers define a specific version of the image tag
+</p>
 ```
 ./cnf-testsuite disallow_latest_tag
 ```
 
 #### :heavy_check_mark: To check if containers are using readonly root filesystem
+<details> <summary>Details for readonly root filesystem test</summary>
+<p>
 
+<b>Readonly Root Filesystem Details:</b> It's considered a best-practice for containers and pods to have a readonly root filesytem. A read-only root file system helps to enforce an immutable infrastructure strategy; the container only needs to write on the mounted volume that persists the state. An immutable root filesystem can also prevent malicious binaries from writing to the host system
+
+<b>Remediation Steps:</b> Make sure containers define a securityContext with `readOnlyRootFilesystem: true`
+</p>
+
+</details>
 ```
 ./cnf-testsuite require_ro_rootfs
 ```
