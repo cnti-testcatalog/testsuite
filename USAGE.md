@@ -771,55 +771,120 @@ crystal src/cnf-testsuite.cr external_retry
 ./cnf-testsuite secrets_used
 ```
 
-#### :heavy_check_mark: To install kyverno
-
-```
-./cnf-testsuite install_kyverno
-```
-
 #### :heavy_check_mark: To check if a CNF is running services with external IP's
+<details> <summary>Details for external IP's</summary>
+<p>
+
+<b>External IP's Details:</b> Service externalIPs can be used for a MITM attack (CVE-2020-8554). Restrict externalIPs or limit to a known set of addresses. See: https://github.com/kyverno/kyverno/issues/1367 
+
+<b>Remediation Steps:</b> Make sure to not define external IP's in your kubernetes service configuration
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite restrict_external_ips
 ```
 
 #### :heavy_check_mark: To check if a CNF is using container socket mounts
+<details> <summary>Details for container socket mounts</summary>
+<p>
+
+<b>Container Socker Mounts Details:</b> Container daemon socket bind mounts allows access to the container engine on the node. This access can be used for privilege escalation and to manage containers outside of Kubernetes, and hence should not be allowed
+
+<b>Remediation Steps:</b> Make sure to not mount /var/run/docker.sock, /var/run/containerd.sock or /var/run/crio.sock on the containers
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite disallow_container_sock_mounts
 ```
 
 #### :heavy_check_mark: To check if a CNF is using default namespace
+<details> <summary>Details for default namespace</summary>
+<p>
+
+<b>Default Namespace Details:</b> Kubernetes Namespaces are an optional feature that provide a way to segment and isolate cluster resources across multiple applications and users. As a best practice, workloads should be isolated with Namespaces. Namespaces should be required and the default (empty) Namespace should not be used
+
+<b>Remediation Steps:</b> Make sure to use a different namespace than the default one
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite disallow_default_namespace
 ```
 
 #### :heavy_check_mark: To check if containers are using any tiller images
+<details> <summary>Details for tiller images</summary>
+<p>
 
+<b>Tiller Images Details:</b> Tiller, found in Helm v2, has known security challenges. It requires administrative privileges and acts as a shared resource accessible to any authenticated user. Tiller can lead to privilege escalation as restricted users can impact other users. It is recommend to use Helm v3+ which does not contain Tiller for these reasons
+
+<b>Remediation Steps:</b> Make sure not to pull any images with name tiller in them
+</p>
+
+</details>
 ```
 ./cnf-testsuite disallow_helm_tiller
 ```
 
 #### :heavy_check_mark: To check if containers are using labels
+<details> <summary>Details for labels test</summary>
+<p>
+
+<b>Labels Details:</b> Defining and using labels help to identify semantic attributes of your application or Deployment. A common set of labels allows tools to work collaboratively, describing objects in a common manner that all tools can understand. The recommended labels describe applications in a way that can be queried 
+
+<b>Remediation Steps:</b> Make sure to define `app.kubernetes.io/name` label under metadata
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite require_labels
 ```
 
 #### :heavy_check_mark: To check if containers are defining resource requests and limits
+<details> <summary>Details for pod requests and limits test</summary>
+<p>
+
+<b>Pod Requests and Limits Details:</b> As application workloads share cluster resources, it is important to limit resources requested and consumed by each Pod. It is recommended to require resource requests and limits per Pod, especially for memory and CPU. If a Namespace level request or limit is specified, defaults will automatically be applied to each Pod based on the LimitRange configuration.
+
+<b>Remediation Steps:</b> Make sure to define the requests and limits for CPU and Memory under the container spec
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite require_requests_limits
 ```
 
 #### :heavy_check_mark: To check if containers are configured with liveness and readiness probes
+<details> <summary>Details for pod probes test</summary>
+<p>
+
+<b>Pod Probes Details:</b> Liveness and readiness probes need to be configured to correctly manage a Pod's lifecycle during deployments, restarts, and upgrades. For each Pod, a periodic `livenessProbe` is performed by the kubelet to determine if the Pod's containers are running or need to be restarted. A `readinessProbe` is used by Services and Deployments to determine if the Pod is ready to receive network traffic. Liveness and readiness need to be configured as a best practice. 
+
+<b>Remediation Steps:</b> Make sure the `periodSeconds` field is greater than zero under livenessProbe and readinessProbe section of the container spec
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite require_pod_probes
 ```
 
 #### :heavy_check_mark: To check if node ports are used in the service configuration using kyverno
+<details> <summary>Details for nodeport test</summary>
+<p>
+
+<b>NodePort Details:</b> A Kubernetes Service of type NodePort uses a host port to receive traffic from any source. A NetworkPolicy cannot be used to control traffic to host ports. Although NodePort Services can be useful, their use must be limited to Services with additional upstream security checks
+
+<b>Remediation Steps:</b> Make sure Services of type NodePort are defined in the service configuration
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite restrict_nodeport
@@ -832,42 +897,102 @@ crystal src/cnf-testsuite.cr external_retry
 ```
 
 #### :heavy_check_mark: To check if containers are running as non root
+<details> <summary>Details for non root test</summary>
+<p>
 
+<b>Non Root Details:</b> Containers must be required to run as non-root users as a best practice 
+
+<b>Remediation Steps:</b> Make sure the fields spec.securityContext.runAsNonRoot, spec.containers[*].securityContext.runAsNonRoot, and spec.initContainers[*].securityContext.runAsNonRoot must be `true` in the container spec
+</p>
+
+</details>
 ```
 ./cnf-testsuite run_as_non_root
 ```
 
 #### :heavy_check_mark: To check if containers are running with non root groups
+<details> <summary>Details for non root groups test</summary>
+<p>
+
+<b>Non Root Groups Details:</b> Containers should be forbidden from running with a root primary or supplementary GID as a best practice
+
+<b>Remediation Steps:</b> Make sure the fields  spec.securityContext.runAsGroup, spec.containers[*].securityContext.runAsGroup, and spec.initContainers[*].securityContext.runAsGroup must be empty or greater than zero in the container spec
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite require_non_root_groups
 ```
 
 #### :heavy_check_mark: To check if containers are running with privilege escalation
+<details> <summary>Details for privilege escalation test</summary>
+<p>
+
+<b>Privilege Escalation Details:</b> Privilege escalation, such as via set-user-ID or set-group-ID file mode, should not be allowed as a best practice
+
+<b>Remediation Steps:</b> Make sure the fields spec.containers[*].securityContext.allowPrivilegeEscalation, and spec.initContainers[*].securityContext.allowPrivilegeEscalation must be undefined or set to `false` under container spec
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite deny_privilege_escalation
 ```
 
 #### :heavy_check_mark: To check if containers are setting additional sysctls above the ones allowed
+<details> <summary>Details for check sysctls test</summary>
+<p>
 
+<b>Check Sysctls Details:</b> Sysctls can disable security mechanisms or affect all containers on a host, and should be disallowed except for an allowed "safe" subset. A sysctl is considered safe if it is namespaced in the container or the Pod, and it is isolated from other Pods or processes on the same Node
+
+<b>Remediation Steps:</b> Make sure the field spec.securityContext.sysctls must not use any other names than 'kernel.shm_rmid_forced', 'net.ipv4.ip_local_port_range', 'net.ipv4.tcp_syncookies' and 'net.ipv4.ping_group_range' under the container spec
+</p>
+
+</details>
 ```
 ./cnf-testsuite restrict_sysctls
 ```
 
 #### :heavy_check_mark: To check if containers are using custom SELinux options
+<details> <summary>Details for custom SELinux options test</summary>
+<p>
+
+<b>Custom SELinux Options Details:</b> SELinux options can be used to escalate privileges and as a best practice must not be allowed
+
+<b>Remediation Steps:</b> Make sure the fields spec.securityContext.seLinuxOptions, spec.containers[*].securityContext.seLinuxOptions, and spec.initContainers[*].securityContext.seLinuxOptions are empty under the container spec
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite disallow_selinux
 ```
 
 #### :heavy_check_mark: To check if containers are running in previleged mode
+<details> <summary>Details for disallow privileged containers test</summary>
+<p>
 
+<b>Disallow Privileged Containers Details:</b> Privileged mode disables most security mechanisms and as a best practice must not be allowed
+
+<b>Remediation Steps:</b> Make sure the fields spec.containers[*].securityContext.privileged and spec.initContainers[*].securityContext.privileged are not set to true under the container spec
+</p>
+
+</details>
 ```
 ./cnf-testsuite disallow_privileged_containers
 ```
 
 #### :heavy_check_mark: To check if containers are using host ports
+<details> <summary>Details for disallow host ports test</summary>
+<p>
+
+<b>Disallow Host Port Details:</b> Access to host ports allows potential snooping of network traffic and should not be allowed, or at minimum restricted to a known list.
+
+<b>Remediation Steps:</b> Make sure the fields spec.containers[*].ports[*].hostPort and spec.initContainers[*].ports[*].hostPort are empty under the container spec
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite disallow_host_ports
