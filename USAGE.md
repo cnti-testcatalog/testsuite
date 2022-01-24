@@ -955,7 +955,7 @@ crystal src/cnf-testsuite.cr protected_access
 </p>
 </details>
 
-#### Configuration Tests
+#### Configuration and Diagnostic Tests
 
 ##### :heavy_check_mark: To run all of the configuration and lifecycle tests
 
