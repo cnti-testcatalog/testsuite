@@ -8,7 +8,7 @@ require "../utils/utils.cr"
 rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
 desc "The CNF test suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
-task "compatibility", ["install_script_helm", "helm_chart_valid", "helm_chart_published", "helm_deploy", "cni_compatible", "increase_decrease_capacity", "rollback"].concat(rolling_version_change_test_names) do |_, args|
+task "compatibility", ["install_script_helm", "helm_chart_valid", "helm_chart_published", "helm_deploy", "cni_compatible", "increase_decrease_capacity", "rollback", "restrict_external_ips", "disallow_container_sock_mounts", "disallow_default_namespace", "disallow_helm_tiller", "require_labels", "require_requests_limits", "require_pod_probes", "restrict_nodeport", "restrict_volume_types", "restrict_seccomp", "run_as_non_root", "require_non_root_groups", "deny_privilege_escalation", "restrict_sysctls", "disallow_selinux", "disallow_privileged_containers", "disallow_host_ports", "disallow_host_path", "disallow_host_namespaces", "disallow_add_capabilities", "disallow_latest_tag", "require_ro_rootfs"].concat(rolling_version_change_test_names) do |_, args|
   stdout_score("compatibility", "Compatibility, Installability, and Upgradeability")
 
 end
@@ -76,6 +76,999 @@ rolling_version_change_test_names.each do |tn|
       resp
       # TODO should we roll the image back to original version in an ensure?
       # TODO Use the kubectl rollback to history command
+    end
+  end
+end
+
+desc "Check if the CNF is running kubernetes services with external IP's configured?"
+task "restrict_external_ips" do |_, args|
+  Log.for("verbose").info { "restrict-external-ips" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/restrict-service-external-ips/restrict-service-external-ips.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "restrict-external-ips"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("restrict_external_ips", "✔️  PASSED: Services are not using external IP's #{emoji_passed}")
+  else
+    resp = upsert_failed_task("restrict_external_ips", "✔️  FAILED: externalIPs are not allowed in Services #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using external IP which is not allowed".colorize(:red)
+      end
+    end
+  end
+end
+
+
+desc "Check if the CNF is running containers with container sock mounts?"
+task "disallow_container_sock_mounts" do |_, args|
+  Log.for("verbose").info { "disallow-container-sock-mounts" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/disallow_cri_sock_mount/disallow_cri_sock_mount.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "disallow-container-sock-mounts"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("disallow_container_sock_mounts", "✔️  PASSED: Containers are not using container sock mounts #{emoji_passed}")
+  else
+    resp = upsert_failed_task("disallow_container_sock_mounts", "✔️  FAILED: Use of the container sock mount is not allowed #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using container Unix socket".colorize(:red)
+      end
+    end
+  end
+end
+
+
+desc "Check if the CNF is running containers in default namespace?"
+task "disallow_default_namespace" do |_, args|
+  Log.for("verbose").info { "disallow-default-namespace" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/disallow_default_namespace/disallow_default_namespace.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  sleep(3.seconds)
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "disallow-default-namespace"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+#  sleep(1.minutes)
+
+  if test_passed
+    resp = upsert_passed_task("disallow_default_namespace", "✔️  PASSED: Containers are not running in default namespace #{emoji_passed}")
+  else
+    resp = upsert_failed_task("disallow_default_namespace", "✔️  FAILED: Using default namespace is not allowed #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using default namespace".colorize(:red)
+      end
+    end
+  end
+end
+
+
+desc "Check if the CNF is running containers with name tiller in their image name?"
+task "disallow_helm_tiller" do |_, args|
+  Log.for("verbose").info { "disallow-helm-tiller" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/disallow_helm_tiller/disallow_helm_tiller.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "disallow-helm-tiller"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("disallow_helm_tiller", "✔️  PASSED: No containers are running with name tiller in their image names #{emoji_passed}")
+  else
+    resp = upsert_failed_task("disallow_helm_tiller", "✔️  FAILED: Helm Tiller is not allowed in the image name #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using tiller in the image name".colorize(:red)
+      end
+    end
+  end
+end
+
+
+desc "Check if the CNF is running containers with labels configured?"
+task "require_labels" do |_, args|
+  Log.for("verbose").info { "require-labels" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/require_labels/require_labels.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "require-labels"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("require_labels", "✔️  PASSED: Containers are configured with labels #{emoji_passed}")
+  else
+    resp = upsert_failed_task("require_labels", "✔️  FAILED: The label `app.kubernetes.io/name` is required for containers. #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is not configured with labels".colorize(:red)
+      end
+    end
+  end
+end
+
+
+desc "Check if the CNF is running containers with CPU and memory requests and limits configured?"
+task "require_requests_limits" do |_, args|
+  Log.for("verbose").info { "require-requests-limits" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/require_pod_requests_limits/require_pod_requests_limits.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "require-requests-limits"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("require_requests_limits", "✔️  PASSED: Containers are configured with CPU and memory requests and limits #{emoji_passed}")
+  else
+    resp = upsert_failed_task("require_requests_limits", "✔️  FAILED: CPU and memory resource requests and limits are required for the containers. #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is not configured with CPU and memory requests and limits".colorize(:red)
+      end
+    end
+  end
+end
+
+desc "Check if the CNF is running containers with liveness and readiness probe configured?"
+task "require_pod_probes" do |_, args|
+  Log.for("verbose").info { "require-pod-probes" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/require_probes/require_probes.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "require-pod-probes"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("require_pod_probes", "✔️  PASSED: Containers are configured with liveness and readiness probe #{emoji_passed}")
+  else
+    resp = upsert_failed_task("require_pod_probes", "✔️  FAILED: Liveness and readiness probes are required. #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is not configured with liveness and readiness probes".colorize(:red)
+      end
+    end
+  end
+end
+
+desc "Check if the CNF is running any service of type nodeport?"
+task "restrict_nodeport" do |_, args|
+  Log.for("verbose").info { "restrict-nodeport" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/restrict_node_port/restrict_node_port.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "restrict-nodeport"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("restrict_nodeport", "✔️  PASSED: There are no service with type nodeport running #{emoji_passed}")
+  else
+    resp = upsert_failed_task("restrict_nodeport", "✔️  FAILED: Services of type NodePort are not allowed. #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using a service of type nodePort".colorize(:red)
+      end
+    end
+  end
+end
+
+
+desc "Check if the CNF is running any containers with non-core volume types that are not allowed?"
+task "restrict_volume_types" do |_, args|
+  Log.for("verbose").info { "restrict-volume-types" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/pod-security/restricted/restrict-volume-types/restrict-volume-types.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "restrict-volume-types"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("restrict_volume_types", "✔️  PASSED: Containers are not using volumes types that are blocked #{emoji_passed}")
+  else
+    resp = upsert_failed_task("restrict_volume_types", "✔️  FAILED: Use of certain non-core volume types is restricted. #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using a one of the non core volume type which is not allowed".colorize(:red)
+      end
+    end
+  end
+end
+
+desc "Check if the CNF is running any containers with custom seccomp profile?"
+task "restrict_seccomp" do |_, args|
+  Log.for("verbose").info { "restrict-seccomp" }
+
+  policy_url = "https://raw.githubusercontent.com/nsagark/policies/main/pod-security/restricted/restrict-seccomp/restrict-seccomp.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "restrict-seccomp"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("restrict_seccomp", "✔️  PASSED: Containers are not using custom seccomp profiles #{emoji_passed}")
+  else
+    resp = upsert_failed_task("restrict_seccomp", "✔️  FAILED: Use of custom Seccomp profiles is disallowed #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using a custom seccomp profile".colorize(:red)
+      end
+    end
+  end
+end
+
+
+desc "Check if the CNF is running any containers running as root?"
+task "run_as_non_root" do |_, args|
+  Log.for("verbose").info { "run-as-non-root" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/pod-security/restricted/require-run-as-nonroot/require-run-as-nonroot.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "require-run-as-non-root"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("run_as_non_root", "✔️  PASSED: Containers are running as nonroot #{emoji_passed}")
+  else
+    resp = upsert_failed_task("run_as_non_root", "✔️  FAILED: Containers must be required to run as non-root users #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is running as root user".colorize(:red)
+      end
+    end
+  end
+end
+
+desc "Check if the CNF is using non root groups for its containers?"
+task "require_non_root_groups" do |_, args|
+  Log.for("verbose").info { "require-non-root-groups" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/pod-security/restricted/require-non-root-groups/require-non-root-groups.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "require-non-root-groups"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("require_non_root_groups", "✔️  PASSED: Containers are using non root groups #{emoji_passed}")
+  else
+    resp = upsert_failed_task("require_non_root_groups", "✔️  FAILED: Containers are forbidden from running with a root primary or supplementary GID. The runAsGroup, supplementalGroups, and f
+sGroup fields must be set to a number greater than zero #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using a non root groups".colorize(:red)
+      end
+    end
+  end
+end
+
+
+desc "Check if the CNF is allowing privilege escalation for its containers?"
+task "deny_privilege_escalation" do |_, args|
+  Log.for("verbose").info { "deny-privilege-escalation" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/pod-security/restricted/deny-privilege-escalation/deny-privilege-escalation.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "deny-privilege-escalation"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("deny_privilege_escalation", "✔️  PASSED: Containers are not using privilege escalation #{emoji_passed}")
+  else
+    resp = upsert_failed_task("deny_privilege_escalation", "✔️  FAILED: Privilege escalation is disallowed. The fields spec.containers[*].securityContext.allowPrivilegeEscalation, and spec.in
+itContainers[*].securityContext.allowPrivilegeEscalation must be undefined or set to `false #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using privilege escalation".colorize(:red)
+      end
+    end
+  end
+end
+
+desc "Check if the CNF is using safe subsets for its containers?"
+task "restrict_sysctls" do |_, args|
+  Log.for("verbose").info { "restrict-sysctls" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/pod-security/baseline/restrict-sysctls/restrict-sysctls.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "restrict-sysctls"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("restrict_sysctls", "✔️  PASSED: Containers are using safe sysctl subsets #{emoji_passed}")
+  else
+    resp = upsert_failed_task("restrict_sysctls", "✔️  FAILED: Setting additional sysctls above the allowed type is disallowed. The field spec.securityContext.sysctls must not use any other n
+ames than 'kernel.shm_rmid_forced', 'net.ipv4.ip_local_port_range', 'net.ipv4.tcp_syncookies' and 'net.ipv4.ping_group_range' #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using additional sysctls above the allowed type".colorize(:red)
+      end
+    end
+  end
+end
+
+
+desc "Check if the CNF is using custom SELinux options for its containers?"
+task "disallow_selinux" do |_, args|
+  Log.for("verbose").info { "disallow-selinux" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/pod-security/baseline/disallow-selinux/disallow-selinux.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "disallow-selinux"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("disallow_selinux", "✔️  PASSED: Containers are not using custom SELinux options #{emoji_passed}")
+  else
+    resp = upsert_failed_task("disallow_selinux", "✔️  FAILED: Setting custom SELinux options is disallowed as it can be used to escalate privileges #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using a seLinuxOptions field".colorize(:red)
+      end
+    end
+  end
+end
+
+desc "Check if the CNF is using privileged containers?"
+task "disallow_privileged_containers" do |_, args|
+  Log.for("verbose").info { "disallow-privileged-containers" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/pod-security/baseline/disallow-privileged-containers/disallow-privileged-containers.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "disallow-privileged-containers"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("disallow_privileged_containers", "✔️  PASSED: Containers are not using privileged mode #{emoji_passed}")
+  else
+    resp = upsert_failed_task("disallow_privileged_containers", "✔️  FAILED: Privileged mode is disallowed. The fields spec.containers[*].securityContext.privileged and spec.initContainers[*]
+.securityContext.privileged must not be set to true #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is running in privileged mode".colorize(:red)
+      end
+    end
+  end
+end
+
+
+desc "Check if the CNF is using host ports for its containers?"
+task "disallow_host_ports" do |_, args|
+  Log.for("verbose").info { "disallow-host-ports" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/pod-security/baseline/disallow-host-ports/disallow-host-ports.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "disallow-host-ports"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("disallow_host_ports", "✔️  PASSED: Containers are not using host ports #{emoji_passed}")
+  else
+    resp = upsert_failed_task("disallow_host_ports", "✔️  FAILED: Use of host ports is disallowed. The fields spec.containers[*].ports[*].hostPort and spec.initContainers[*].ports[*].hostPort
+ must be empty #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using a hostport which is not allowed by the policy".colorize(:red)
+      end
+    end
+  end
+end
+
+desc "Check if the CNF is using hostpath volumes for its containers?"
+task "disallow_host_path" do |_, args|
+  Log.for("verbose").info { "disallow-host-path" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/pod-security/baseline/disallow-host-path/disallow-host-path.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "disallow-host-path"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("disallow_host_path", "✔️  PASSED: Containers are not using hostpath volumes #{emoji_passed}")
+  else
+    resp = upsert_failed_task("disallow_host_path", "✔️  FAILED: HostPath volumes are forbidden. The fields spec.volumes[*].hostPath must not be set for containers #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using a hostpath volume".colorize(:red)
+      end
+    end
+  end
+end
+
+
+desc "Check if the CNF is using host namespaces for its containers?"
+task "disallow_host_namespaces" do |_, args|
+  Log.for("verbose").info { "disallow-host-namespaces" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/pod-security/baseline/disallow-host-namespaces/disallow-host-namespaces.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "disallow-host-namespaces"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("disallow_host_namespaces", "✔️  PASSED: Containers are not using host namespaces #{emoji_passed}")
+  else
+    resp = upsert_failed_task("disallow_host_namespaces", "✔️  FAILED: Containers should not be allowed access to host namespaces. The fields spec.hostNetwork, spec.hostIPC, and spec.hostPID
+must not be set to true #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using a host namespace".colorize(:red)
+      end
+    end
+  end
+end
+
+
+desc "Check if the CNF is using additional capabilities for its containers?"
+task "disallow_add_capabilities" do |_, args|
+  Log.for("verbose").info { "disallow-add-capabilities" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/pod-security/baseline/disallow-adding-capabilities/disallow-adding-capabilities.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "disallow-add-capabilities"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("disallow_add_capabilities", "✔️  PASSED: Containers are not using additional capabilities #{emoji_passed}")
+  else
+    resp = upsert_failed_task("disallow_add_capabilities", "✔️  FAILED: Users cannot add any additional capabilities to a pod beyond the default set #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using additional capabilities".colorize(:red)
+      end
+    end
+  end
+end
+
+desc "Check if the CNF is using the latest tag for its images?"
+task "disallow_latest_tag" do |_, args|
+  Log.for("verbose").info { "disallow-latest-tag" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/disallow_latest_tag/disallow_latest_tag.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️     ✔️"
+  emoji_failed="🏷️     ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "disallow-latest-tag"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("disallow_latest_tag", "✔️  PASSED: Container images are not using the latest tag #{emoji_passed}")
+  else
+    resp = upsert_failed_task("disallow_latest_tag", "✔️  FAILED: Container images cannot use the latest tag #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using the latest image tag".colorize(:red)
+      end
+    end
+  end
+end
+
+#desc "Check if the CNF is using images with latest tag"
+#task "latest_tag" do |_, args|
+#  Log.for("verbose").info { "latest_tag" }
+
+#  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/disallow_latest_tag/disallow_latest_tag.yaml"
+#  apply_result = KubectlClient::Apply.file(policy_url)
+
+#  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+
+#  policy_report = JSON.parse(result[:output])
+#  test_passed = true
+#  failures = [] of String
+#  policy_report["results"].as_a.each do |test_result|
+#    if test_result["result"] == "fail"
+#      test_passed = false
+#      failures.push(test_result["message"].as_s)
+#    end
+#  end
+#
+#  emoji_passed="🏷️✔️"
+#  emoji_failed="🏷️❌"
+#
+#  if test_passed
+#    resp = upsert_passed_task("check_latest_tag", "✔️  PASSED: Images do not use latest tag #{emoji_passed}")
+#  else
+#    resp = upsert_failed_task("check_latest_tag","✖️  FAILED: Found images with latest tag #{emoji_failed}")
+#    failures.each do |msg|
+#      puts "Policy Failure: #{msg}".colorize(:red)
+#    end
+#  end
+#end
+
+desc "Check if the CNF is dropping all capabilities and only adding ones that are required"
+task "drop_all" do |_, args|
+  Log.for("verbose").info { "drop_all" }
+
+  policy_url = "https://raw.githubusercontent.com/nsagark/policies/main/best-practices/require_drop_all/require_drop_all.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+  result = KubectlClient::Get.policy_report("polr-ns-default")
+
+  emoji_passed="🏷️    ✔️"
+  emoji_failed="🏷️    ❌"
+
+  policy_report = JSON.parse(result[:output])
+  failures = [] of String
+  policy_report["results"].as_a.each do |test_result|
+    if test_result["result"] == "fail" && test_result["policy"] == "drop-all-capabilities"
+      test_passed = false
+      resp = upsert_failed_task("check_drop_all","✖️  FAILED: All capabilities should be dropped from a Pod, with only those required added back #{emoji_failed}")
+      puts "#{test_result["resources"]}".colorize(:red)
+    end
+  end
+end
+
+desc "Check if the CNF is dropping the CAP_NET_RAW capability"
+task "drop_cap_net_raw" do |_, args|
+  Log.for("verbose").info { "drop_cap_net_raw" }
+
+  policy_url = "https://raw.githubusercontent.com/nsagark/policies/main/best-practices/require_drop_cap_net_raw/require_drop_cap_net_raw.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+  result = KubectlClient::Get.policy_report("polr-ns-default")
+
+  emoji_passed="🏷️   ✔️"
+  emoji_failed="🏷️   ❌"
+
+  policy_report = JSON.parse(result[:output])
+  failures = [] of String
+  policy_report["results"].as_a.each do |test_result|
+    if test_result["result"] == "fail" && test_result["policy"] == "drop-cap-net-raw"
+      test_passed = false
+      resp = upsert_failed_task("drop_CAP_NET_RAW","✖️  FAILED: CAP_NET_RAW capability should be dropped from a Pod #{emoji_failed}")
+      puts "#{test_result["resources"]}".colorize(:red)
+    end
+  end
+end
+
+
+desc "Check if the CNF has read only root filesystem?"
+task "require_ro_rootfs" do |_, args|
+  Log.for("verbose").info { "require_ro_rootfs" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/require_ro_rootfs/require_ro_rootfs.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️    ✔️"
+  emoji_failed="🏷️    ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "require-ro-rootfs"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("require_ro_rootfs", "✔️  PASSED: Root filesystem is read-only #{emoji_passed}")
+  else
+    resp = upsert_failed_task("require_ro_rootfs", "✔️  FAILED: Root filesystem must be read-only #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace does not have a read-only filesystem".colorize(:red)
+      end
+    end
+  end
+end
+
+desc "This policy will create a new NetworkPolicy resource named `default-deny` which will deny all traffic anytime a new Namespace is created"
+task "add_default_network_policy" do |_, args|
+  kyverno_version="1.5.0"
+  stdout = IO::Memory.new
+  stderr = IO::Memory.new
+  url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/add_network_policy.yaml"
+#  url = "https://raw.githubusercontent.com/nsagark/nginx/main/install.yaml?token=AVOW2YXCWWYMYX7PFYJ6ZBLBU7ZQC"
+  result = KubectlClient::Apply.file(url)
+
+  if !result[:status].success?
+    puts "Policy could not be applied"
+    exit 1
+  else
+    puts "add_default_network_policy was applied successfully"
+  end
+end
+
+desc "This policy will report if any containers are pulling images from a non-allowed list of image registries"
+task "restrict_image_registries" do |_, args|
+  Log.for("verbose").info { "restrict-image-registries" }
+
+  url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/restrict_image_registries/restrict_image_registries.yaml"
+#  url = "https://raw.githubusercontent.com/nsagark/nginx/main/install.yaml?token=AVOW2YXCWWYMYX7PFYJ6ZBLBU7ZQC"
+  apply_result = KubectlClient::Apply.file(url)
+  sleep(3.seconds)
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️      ✔️"
+  emoji_failed="🏷️      ❌  "
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "restrict-image-registries"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+
+  if test_passed
+    resp = upsert_passed_task("restrict_image_registries", "✔️  PASSED: Containers are using the images from the allowed list of image registries #{emoji_passed}")
+  else
+    resp = upsert_failed_task("restrict_image_registries", "✖️  FAILED: Containers are not using the images from the allowed list of image registries #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is pulling image from an unknown image registry".colorize(:red)
+      end
     end
   end
 end
