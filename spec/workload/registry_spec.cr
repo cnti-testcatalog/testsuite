@@ -9,8 +9,8 @@ require "sam"
 
 describe "Private Registry: Image" do
   before_all do
-    install_registry = `kubectl create -f #{TOOLS_DIR}/registry/manifest.yml`
-    install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
+    install_registry = `kubectl apply -f #{TOOLS_DIR}/registry/manifest.yml`
+    install_dockerd = `kubectl apply -f #{TOOLS_DIR}/dockerd/manifest.yml`
     KubectlClient::Get.resource_wait_for_install("Pod", "registry")
     KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
     if ENV["DOCKERHUB_USERNAME"]? && ENV["DOCKERHUB_PASSWORD"]?
