@@ -14,14 +14,15 @@ describe "Private Registry: Image" do
     KubectlClient::Get.resource_wait_for_install("Pod", "registry")
     KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
     if ENV["DOCKERHUB_USERNAME"]? && ENV["DOCKERHUB_PASSWORD"]?
-        LOGGING.info KubectlClient.exec("dockerd -ti -- docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD")
-       else
-         puts "DOCKERHUB_USERNAME & DOCKERHUB_PASSWORD Must be set."
-         exit 1
+      result = KubectlClient.exec("dockerd -t -- docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD", true)
+      Log.info { "Docker Login output: #{result[:output]}" }
+    else
+      puts "DOCKERHUB_USERNAME & DOCKERHUB_PASSWORD Must be set.".colorize(:red)
+      exit 1
     end
-    KubectlClient.exec("dockerd -ti -- docker pull coredns/coredns:1.6.7")
-    KubectlClient.exec("dockerd -ti -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7")
-    KubectlClient.exec("dockerd -ti -- docker push registry:5000/coredns:1.6.7")
+    KubectlClient.exec("dockerd -i -- docker pull coredns/coredns:1.6.7", true)
+    KubectlClient.exec("dockerd -i -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7", true)
+    KubectlClient.exec("dockerd -i -- docker push registry:5000/coredns:1.6.7", true)
   end
 
   it "'reasonable_image_size' should pass if using local registry and a port", tags: ["private_registry_image"]  do
@@ -60,16 +61,16 @@ end
 
 describe "Private Registry: Rolling" do
   before_all do
-    install_registry = `kubectl create -f #{TOOLS_DIR}/registry/manifest.yml`
-    install_dockerd = `kubectl create -f #{TOOLS_DIR}/dockerd/manifest.yml`
+    install_registry = `kubectl apply -f #{TOOLS_DIR}/registry/manifest.yml`
+    install_dockerd = `kubectl apply -f #{TOOLS_DIR}/dockerd/manifest.yml`
     KubectlClient::Get.resource_wait_for_install("Pod", "registry")
     KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
-    KubectlClient.exec("dockerd -ti -- docker pull coredns/coredns:1.6.7")
-    KubectlClient.exec("dockerd -ti -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7")
-    KubectlClient.exec("dockerd -ti -- docker push registry:5000/coredns:1.6.7")
-    KubectlClient.exec("dockerd -ti -- docker pull coredns/coredns:1.8.0")
-    KubectlClient.exec("dockerd -ti -- docker tag coredns/coredns:1.8.0 registry:5000/coredns:1.8.0")
-    KubectlClient.exec("dockerd -ti -- docker push registry:5000/coredns:1.8.0")
+    KubectlClient.exec("dockerd -t -- docker pull coredns/coredns:1.6.7", true)
+    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7", true)
+    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns:1.6.7", true)
+    KubectlClient.exec("dockerd -t -- docker pull coredns/coredns:1.8.0", true)
+    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.8.0 registry:5000/coredns:1.8.0", true)
+    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns:1.8.0", true)
   end
 
   it "'rolling_update' should pass if using local registry and a port", tags: ["private_registry_rolling"]  do
