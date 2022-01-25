@@ -60,7 +60,7 @@ rolling_version_change_test_names.each do |tn|
         # If any containers dont have an update applied, fail
         test_passed = false if resp == false
 
-        rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"], timeout="60s")
+        rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"], timeout="180s")
         unless rollout_status
           test_passed = false
         end
