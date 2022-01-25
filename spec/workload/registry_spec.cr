@@ -20,9 +20,9 @@ describe "Private Registry: Image" do
       puts "DOCKERHUB_USERNAME & DOCKERHUB_PASSWORD Must be set.".colorize(:red)
       exit 1
     end
-    KubectlClient.exec("dockerd -i -- docker pull coredns/coredns:1.6.7", true)
-    KubectlClient.exec("dockerd -i -- docker tag coredns/coredns:1.6.7 registry:5000/coredns/coredns:1.6.7", true)
-    KubectlClient.exec("dockerd -i -- docker push registry:5000/coredns/coredns:1.6.7", true)
+    KubectlClient.exec("dockerd -t -- docker pull coredns/coredns:1.6.7", true)
+    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.6.7 registry:5000/coredns/coredns:1.6.7", true)
+    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns/coredns:1.6.7", true)
   end
 
   it "'reasonable_image_size' should pass if using local registry and a port", tags: ["private_registry_image"]  do
