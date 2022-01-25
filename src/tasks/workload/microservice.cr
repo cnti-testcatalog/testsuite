@@ -17,16 +17,18 @@ end
 REASONABLE_STARTUP_BUFFER = 10.0
 
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
-task "shared_databse" do |_, args|
-  # todo loop through local resources and see if db match found
-  db_match = Mariadb.match
-  #todo find offical database ip
-  db_pods = KubectlClient::Get.pods_by_digest(db_match[:digest])
-  db_pod_digests = db_pods.map{|i| i["imageID"].as_s}
+task "shared_database" do |_, args|
+  LOGGING.info "Running shared_database test"
+  CNFManager::Task.task_runner(args) do |args, config|
+    # todo loop through local resources and see if db match found
+    db_match = Mariadb.match
+    #todo find offical database ip
+    db_pods = KubectlClient::Get.pods_by_digest(db_match[:digest])
+    Log.info { "DB Pods: #{db_pods}" }
+    # db = db_pods.dig?("status", "containerStatuses")
+    # Log.info { "Pod Digests: #{db_container_statues}" }
 
-  #todo find node for database
-  task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-  ende
+    #todo find node for database
   #todo get service by resource
   # todo get in cluster tools on same node as database
   # todo get container id for database
@@ -35,13 +37,13 @@ task "shared_databse" do |_, args|
   # todo get info.pid from output
   # todo `kubectl exec -ti cluster-tools-55vq8 -- nsenter -t <info.pid> -n netstat`
   # todo digest_by_resource
-  # todo get digest_from_podid
-
+    # todo get digest_from_podid
+    nil
+  end
 end
 
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
 task "reasonable_startup_time" do |_, args|
-  
   LOGGING.info "Running reasonable_startup_time test"
   CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "reasonable_startup_time" if check_verbose(args)
