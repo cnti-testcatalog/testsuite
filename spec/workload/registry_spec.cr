@@ -21,8 +21,8 @@ describe "Private Registry: Image" do
       exit 1
     end
     KubectlClient.exec("dockerd -t -- docker pull coredns/coredns:1.6.7", true)
-    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.6.7 registry:5000/coredns/coredns:1.6.7", true)
-    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns/coredns:1.6.7", true)
+    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7 registry:5000/coredns/coredns:1.6.7", true)
+    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns:1.6.7 registry:5000/coredns/coredns:1.6.7", true)
   end
 
   it "'reasonable_image_size' should pass if using local registry and a port", tags: ["private_registry_image"]  do
@@ -66,11 +66,11 @@ describe "Private Registry: Rolling" do
     KubectlClient::Get.resource_wait_for_install("Pod", "registry")
     KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
     KubectlClient.exec("dockerd -t -- docker pull coredns/coredns:1.6.7", true)
-    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.6.7 registry:5000/coredns/coredns:1.6.7", true)
-    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns/coredns:1.6.7", true)
+    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7 registry:5000/coredns/coredns:1.6.7", true)
+    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns:1.6.7 registry:5000/coredns/coredns:1.6.7", true)
     KubectlClient.exec("dockerd -t -- docker pull coredns/coredns:1.8.0", true)
-    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.8.0 registry:5000/coredns/coredns:1.8.0", true)
-    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns/coredns:1.8.0", true)
+    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.8.0 registry:5000/coredns:1.8.0 registry:5000/coredns/coredns:1.8.0", true)
+    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns:1.8.0 registry:5000/coredns/coredns:1.8.0", true)
   end
 
   it "'rolling_update' should pass if using local registry and a port", tags: ["private_registry_rolling"]  do
