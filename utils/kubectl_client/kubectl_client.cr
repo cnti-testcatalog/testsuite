@@ -234,6 +234,17 @@ module KubectlClient
       JSON.parse(result[:output])
     end
 
+    def self.endpoints(all_namespaces=false) : K8sManifest
+      option = all_namespaces ? "--all-namespaces" : ""
+      cmd = "kubectl get endpoints #{option} -o json"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.endpoints")
+      response = result[:output]
+      if result[:status].success? && !response.empty?
+        return JSON.parse(response)
+      end
+      JSON.parse(%({}))
+    end
+
     def self.pods(all_namespaces=true) : K8sManifest 
       option = all_namespaces ? "--all-namespaces" : ""
       cmd = "kubectl get pods #{option} -o json"
