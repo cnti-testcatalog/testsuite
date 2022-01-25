@@ -28,13 +28,13 @@ describe "Private Registry: Image" do
 
     cnf="./sample-cnfs/sample_local_registry"
 
-    LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf} wait_count=0`
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
     response_s = `./cnf-testsuite reasonable_image_size verbose`
     LOGGING.info response_s
     $?.success?.should be_true
     (/Image size is good/ =~ response_s).should_not be_nil
   ensure
-    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf} wait_count=0`
+    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
   end
 
 
@@ -43,13 +43,13 @@ describe "Private Registry: Image" do
 
     cnf="./sample-cnfs/sample_local_registry_org_image"
 
-    LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf} wait_count=0`
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
     response_s = `./cnf-testsuite reasonable_image_size verbose`
     LOGGING.info response_s
     $?.success?.should be_true
     (/Image size is good/ =~ response_s).should_not be_nil
   ensure
-    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf} wait_count=0`
+    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
   end
 
 	after_all do
