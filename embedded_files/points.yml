@@ -13,6 +13,10 @@
   tags: microservice, dynamic, workload
 - name: single_process_type 
   tags: microservice, dynamic, workload
+- name: service_discovery
+  tags: microservice, dynamic, workload
+  pass: 5
+  fail: 0
 
 - name: cni_compatible
   tags: compatibility, dynamic, workload
