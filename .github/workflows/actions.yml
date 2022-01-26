@@ -22,17 +22,18 @@ jobs:
     - id: set-matrix
       run: |
         JSON="{\"include\":["
-        TEST_ARRAY=$(grep -roP --no-filename 'tags: \K(\[|")(.*)(\]|")' spec/ | tr -d '[],' | tr -s '\n' ' ' | xargs -n1 | sort -u | xargs)
-        TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-config-lifecycle/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-microservice/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-all/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/disk_fill/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/chaos_container_kill/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/chaos_cpu_hog/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/pod_delete/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/pod_io_stress/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/pod_memory_hog/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/pod_network_latency/}")
+        # TEST_ARRAY=$(grep -roP --no-filename 'tags: \K(\[|")(.*)(\]|")' spec/ | tr -d '[],' | tr -s '\n' ' ' | xargs -n1 | sort -u | xargs)
+        # TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-config-lifecycle/}")
+        # TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-microservice/}")
+        # TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-all/}")
+        # TEST_ARRAY=("${TEST_ARRAY[@]/disk_fill/}")
+        # TEST_ARRAY=("${TEST_ARRAY[@]/chaos_container_kill/}")
+        # TEST_ARRAY=("${TEST_ARRAY[@]/chaos_cpu_hog/}")
+        # TEST_ARRAY=("${TEST_ARRAY[@]/pod_delete/}")
+        # TEST_ARRAY=("${TEST_ARRAY[@]/pod_io_stress/}")
+        # TEST_ARRAY=("${TEST_ARRAY[@]/pod_memory_hog/}")
+        # TEST_ARRAY=("${TEST_ARRAY[@]/pod_network_latency/}")
+        TEST_ARRAY=(private_image_registry)
         TEST_LIST=$(for i in ${TEST_ARRAY[@]}
         do
                  echo "{\"spec\":\"$i\"}," | tr -d '\n'
@@ -162,87 +163,87 @@ jobs:
         docker container prune -f || true
         docker volume prune -f || true
         
-  chaos:
-    name: Chaos Tests
-    needs: [tests]
-    runs-on: [ubuntu-latest]
-    strategy:
-      fail-fast: false
-      matrix:
-        tag: ["pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill", "pod_network_corruption", "pod_network_duplication"]
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Create Kind Cluster 
-      run: |
-        cat << EOF > /tmp/cluster.yml
-        kind: Cluster
-        apiVersion: kind.x-k8s.io/v1alpha4
-        containerdConfigPatches:
-        - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-            endpoint = ["http://localhost:5000"]
-        EOF
-        export CLUSTER=$(uuidgen)
-        echo "export CLUSTER=$CLUSTER" > cluster.env
-        echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
-        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
-        export KUBECONFIG=$(pwd)/$CLUSTER.conf
-        kubectl get nodes 
-    - name: Cache crystal shards
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-crystal-shards
-      with:
-        path: ./lib
-        key: lib-${{ hashFiles('**/shard.lock') }}
-        restore-keys: |
-          lib-
-    - name: Install Crystal
-      env:
-        CRYSTAL_VERSION: 1.0.0
-        CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download
-      run: |
-        wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga; 
-        sudo apt install -y --no-install-recommends \
-        git \
-        libssl-dev \
-        libxml2-dev \
-        libyaml-dev \
-        libgmp-dev \
-        libz-dev \
-        ./crystal.deb \
-        && sudo rm -rf /var/lib/apt/lists/*
-    - name: Setup CNF-Conformance
-      run: |
-        helm repo add stable https://cncf.gitlab.io/stable
-        git fetch --all --tags --force
-        shards install  
-        echo "RUNNER: $RUNNER_NAME"
-    - name: Run Crystal Spec
-      run: |
-        source cluster.env
-        export KUBECONFIG=$(pwd)/$CLUSTER.conf
-        until [[ $(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
-            echo "Waiting for local-path-storage"
-            sleep 1
-        done
-        LOCAL_PATH_STORAGE_POD=$(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o jsonpath='{range .items[*]}{.metadata.name}')
-        until [[ $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- apk add curl jq) ]]; do
-            echo "Failed to install packages, retrying"
-            sleep 1
-        done
-        CLUSTER_RATE_LIMIT=$(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || true)
-        TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token || true)
-        ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
-        TOKEN=$(curl --user "$DOCKERHUB_USERNAME:$DOCKERHUB_PASSWORD" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
-        AUTH_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Authenticated Rate Limit Exceeded")
-        echo "RUNNER RATE LIMIT: $ANONYMOUS_RUNNER_RATE_LIMIT"
-        echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
-        echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
-        LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.tag }} -v
+  # chaos:
+  #   name: Chaos Tests
+  #   needs: [tests]
+  #   runs-on: [ubuntu-latest]
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       tag: ["pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill", "pod_network_corruption", "pod_network_duplication"]
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
+  #   - name: Create Kind Cluster 
+  #     run: |
+  #       cat << EOF > /tmp/cluster.yml
+  #       kind: Cluster
+  #       apiVersion: kind.x-k8s.io/v1alpha4
+  #       containerdConfigPatches:
+  #       - |-
+  #         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
+  #           endpoint = ["http://localhost:5000"]
+  #       EOF
+  #       export CLUSTER=$(uuidgen)
+  #       echo "export CLUSTER=$CLUSTER" > cluster.env
+  #       echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
+  #       kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
+  #       export KUBECONFIG=$(pwd)/$CLUSTER.conf
+  #       kubectl get nodes 
+  #   - name: Cache crystal shards
+  #     uses: actions/cache@v2
+  #     env:
+  #       cache-name: cache-crystal-shards
+  #     with:
+  #       path: ./lib
+  #       key: lib-${{ hashFiles('**/shard.lock') }}
+  #       restore-keys: |
+  #         lib-
+  #   - name: Install Crystal
+  #     env:
+  #       CRYSTAL_VERSION: 1.0.0
+  #       CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download
+  #     run: |
+  #       wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga; 
+  #       sudo apt install -y --no-install-recommends \
+  #       git \
+  #       libssl-dev \
+  #       libxml2-dev \
+  #       libyaml-dev \
+  #       libgmp-dev \
+  #       libz-dev \
+  #       ./crystal.deb \
+  #       && sudo rm -rf /var/lib/apt/lists/*
+  #   - name: Setup CNF-Conformance
+  #     run: |
+  #       helm repo add stable https://cncf.gitlab.io/stable
+  #       git fetch --all --tags --force
+  #       shards install  
+  #       echo "RUNNER: $RUNNER_NAME"
+  #   - name: Run Crystal Spec
+  #     run: |
+  #       source cluster.env
+  #       export KUBECONFIG=$(pwd)/$CLUSTER.conf
+  #       until [[ $(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
+  #           echo "Waiting for local-path-storage"
+  #           sleep 1
+  #       done
+  #       LOCAL_PATH_STORAGE_POD=$(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o jsonpath='{range .items[*]}{.metadata.name}')
+  #       until [[ $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- apk add curl jq) ]]; do
+  #           echo "Failed to install packages, retrying"
+  #           sleep 1
+  #       done
+  #       CLUSTER_RATE_LIMIT=$(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || true)
+  #       TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token || true)
+  #       ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
+  #       TOKEN=$(curl --user "$DOCKERHUB_USERNAME:$DOCKERHUB_PASSWORD" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
+  #       AUTH_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Authenticated Rate Limit Exceeded")
+  #       echo "RUNNER RATE LIMIT: $ANONYMOUS_RUNNER_RATE_LIMIT"
+  #       echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
+  #       echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
+  #       LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.tag }} -v
 
   #TODO Split into a new repo #1160
   # chaos-airgapped:
@@ -326,35 +327,35 @@ jobs:
   #       docker run --entrypoint=/bin/bash --name shards -v $(pwd):/cnf-testsuite -t $OFFLINE_IMAGE -c "shards install"
   #       docker run --name cluster --network none --privileged -e KUBECONFIG=/root/.kube/config -v $(pwd):/cnf-testsuite -v /tmp/airgapped.tar.gz:/airgapped/airgapped.tar.gz -v $(pwd)/tmpdata:/tmp -t $OFFLINE_IMAGE /bin/bash -c "LOG_LEVEL=info crystal src/cnf-testsuite.cr setup offline=/airgapped/airgapped.tar.gz && LOG_LEVEL=info crystal src/cnf-testsuite.cr install_litmus offline=true && LOG_LEVEL=info crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/coredns/cnf-testsuite.yml input-file=/airgapped/airgapped.tar.gz && ./.github/workflows/check_litmus.sh && LOG_LEVEL=info crystal src/cnf-testsuite.cr ${{ matrix.test }} offline=true verbose strict"
 
-  build:
-    name: Build Release
-    runs-on: ubuntu-latest
-    env:
-      CRYSTAL_IMAGE: "hashnuke/crystal-custom:1.2.2-alpine"
-    steps: 
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Cache crystal shards
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-crystal-shards
-      with:
-        path: ./lib
-        key: lib-${{ hashFiles('**/shard.lock') }}
-        restore-keys: |
-          lib-
-    - name: Build Release
-      run: |
-        docker pull $CRYSTAL_IMAGE
-        docker run --rm -v $PWD:/workspace -w /workspace $CRYSTAL_IMAGE shards install
-        docker run --rm -v $PWD:/workspace -w /workspace $CRYSTAL_IMAGE crystal build --warnings none src/cnf-testsuite.cr --release --static --link-flags '-lxml2 -llzma'
-    - name: upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: release
-        path: cnf-testsuite
+  # build:
+  #   name: Build Release
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     CRYSTAL_IMAGE: "hashnuke/crystal-custom:1.2.2-alpine"
+  #   steps: 
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
+  #   - name: Cache crystal shards
+  #     uses: actions/cache@v2
+  #     env:
+  #       cache-name: cache-crystal-shards
+  #     with:
+  #       path: ./lib
+  #       key: lib-${{ hashFiles('**/shard.lock') }}
+  #       restore-keys: |
+  #         lib-
+  #   - name: Build Release
+  #     run: |
+  #       docker pull $CRYSTAL_IMAGE
+  #       docker run --rm -v $PWD:/workspace -w /workspace $CRYSTAL_IMAGE shards install
+  #       docker run --rm -v $PWD:/workspace -w /workspace $CRYSTAL_IMAGE crystal build --warnings none src/cnf-testsuite.cr --release --static --link-flags '-lxml2 -llzma'
+  #   - name: upload artifact
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: release
+  #       path: cnf-testsuite
         
 
   #TODO Split into a new repo #1160
@@ -727,200 +728,200 @@ jobs:
   #       docker volume prune -f || true
   #       docker network prune -f || true
 
-  test_binary_configuration_lifecycle:
-    name: Test Binary Without Source(config_lifecycle)
-    runs-on: [v1.0.0]
-    steps: 
-    - name: Cleanup Tmp DIR
-      run: |
-        sudo rm -rf /tmp/*
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Cache crystal shards
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-crystal-shards
-      with:
-        path: ./lib
-        key: lib-${{ hashFiles('**/shard.lock') }}
-        restore-keys: |
-          lib-
-    - name: Build cnf-testsuite & Create Kind Cluster 
-      run: |
-        shards install
-        crystal build src/cnf-testsuite.cr --warnings none &
-        cat << EOF > /tmp/cluster.yml
-        kind: Cluster
-        apiVersion: kind.x-k8s.io/v1alpha4
-        containerdConfigPatches:
-        - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-            endpoint = ["http://localhost:5000"]
-        EOF
-        export CLUSTER=$(uuidgen)
-        echo "export CLUSTER=$CLUSTER" > cluster.env
-        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
-        export KUBECONFIG=/tmp/$CLUSTER.conf
-        kubectl get nodes 
-    - name: Run Test Suite without source(config_lifecycle)
-      run: |
-        source cluster.env
-        export KUBECONFIG=/tmp/$CLUSTER.conf
-        helm repo add stable https://cncf.gitlab.io/stable
-        export DIR=$(uuidgen)
-        mkdir /shared/$DIR
-        mv cnf-testsuite /shared/$DIR 
-        cd /shared/$DIR
-        ./cnf-testsuite setup
-        wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
-        ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
-        export FALCO_ENV="CI"
-        LOG_LEVEL=info ./cnf-testsuite all ~compatibility ~resilience ~reasonable_startup_time ~reasonable_image_size ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose
-    - name: Delete Cluster
-      if: ${{ always() }}
-      run: |
-        source cluster.env
-        kind delete cluster --name $CLUSTER
-        docker container prune -f || true
-        docker volume prune -f || true
-        docker network prune -f || true
+  # test_binary_configuration_lifecycle:
+  #   name: Test Binary Without Source(config_lifecycle)
+  #   runs-on: [v1.0.0]
+  #   steps: 
+  #   - name: Cleanup Tmp DIR
+  #     run: |
+  #       sudo rm -rf /tmp/*
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
+  #   - name: Cache crystal shards
+  #     uses: actions/cache@v2
+  #     env:
+  #       cache-name: cache-crystal-shards
+  #     with:
+  #       path: ./lib
+  #       key: lib-${{ hashFiles('**/shard.lock') }}
+  #       restore-keys: |
+  #         lib-
+  #   - name: Build cnf-testsuite & Create Kind Cluster 
+  #     run: |
+  #       shards install
+  #       crystal build src/cnf-testsuite.cr --warnings none &
+  #       cat << EOF > /tmp/cluster.yml
+  #       kind: Cluster
+  #       apiVersion: kind.x-k8s.io/v1alpha4
+  #       containerdConfigPatches:
+  #       - |-
+  #         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
+  #           endpoint = ["http://localhost:5000"]
+  #       EOF
+  #       export CLUSTER=$(uuidgen)
+  #       echo "export CLUSTER=$CLUSTER" > cluster.env
+  #       kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
+  #       export KUBECONFIG=/tmp/$CLUSTER.conf
+  #       kubectl get nodes 
+  #   - name: Run Test Suite without source(config_lifecycle)
+  #     run: |
+  #       source cluster.env
+  #       export KUBECONFIG=/tmp/$CLUSTER.conf
+  #       helm repo add stable https://cncf.gitlab.io/stable
+  #       export DIR=$(uuidgen)
+  #       mkdir /shared/$DIR
+  #       mv cnf-testsuite /shared/$DIR 
+  #       cd /shared/$DIR
+  #       ./cnf-testsuite setup
+  #       wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
+  #       ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
+  #       export FALCO_ENV="CI"
+  #       LOG_LEVEL=info ./cnf-testsuite all ~compatibility ~resilience ~reasonable_startup_time ~reasonable_image_size ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose
+  #   - name: Delete Cluster
+  #     if: ${{ always() }}
+  #     run: |
+  #       source cluster.env
+  #       kind delete cluster --name $CLUSTER
+  #       docker container prune -f || true
+  #       docker volume prune -f || true
+  #       docker network prune -f || true
 
-  test_binary_microservice:
-    name: Test Binary Without Source(microservice)
-    runs-on: [v1.0.0]
-    steps: 
-    - name: Cleanup Tmp DIR
-      run: |
-        sudo rm -rf /tmp/*
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Cache crystal shards
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-crystal-shards
-      with:
-        path: ./lib
-        key: lib-${{ hashFiles('**/shard.lock') }}
-        restore-keys: |
-          lib-
-    - name: Build cnf-testsuite & Create Kind Cluster 
-      run: |
-        shards install
-        crystal build src/cnf-testsuite.cr --warnings none &
-        cat << EOF > /tmp/cluster.yml
-        kind: Cluster
-        apiVersion: kind.x-k8s.io/v1alpha4
-        containerdConfigPatches:
-        - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-            endpoint = ["http://localhost:5000"]
-        EOF
-        export CLUSTER=$(uuidgen)
-        echo "export CLUSTER=$CLUSTER" > cluster.env
-        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
-        export KUBECONFIG=/tmp/$CLUSTER.conf
-        kubectl get nodes 
-    - name: Run Test Suite without source(microservice)
-      run: |
-        source cluster.env
-        export KUBECONFIG=/tmp/$CLUSTER.conf
-        helm repo add stable https://cncf.gitlab.io/stable
-        ./cnf-testsuite setup
-        wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
-        ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
-        export FALCO_ENV="CI"
-        LOG_LEVEL=info ./cnf-testsuite all ~resilience ~compatibility ~pod_network_latency ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hostport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~install_script_helm ~helm_chart_valid ~helm_chart_published ~rollback ~secrets_used ~immutable_configmap verbose
-    - name: Delete Cluster
-      if: ${{ always() }}
-      run: |
-        source cluster.env
-        kind delete cluster --name $CLUSTER
-        docker container prune -f || true
-        docker volume prune -f || true
-        docker network prune -f || true
+  # test_binary_microservice:
+  #   name: Test Binary Without Source(microservice)
+  #   runs-on: [v1.0.0]
+  #   steps: 
+  #   - name: Cleanup Tmp DIR
+  #     run: |
+  #       sudo rm -rf /tmp/*
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
+  #   - name: Cache crystal shards
+  #     uses: actions/cache@v2
+  #     env:
+  #       cache-name: cache-crystal-shards
+  #     with:
+  #       path: ./lib
+  #       key: lib-${{ hashFiles('**/shard.lock') }}
+  #       restore-keys: |
+  #         lib-
+  #   - name: Build cnf-testsuite & Create Kind Cluster 
+  #     run: |
+  #       shards install
+  #       crystal build src/cnf-testsuite.cr --warnings none &
+  #       cat << EOF > /tmp/cluster.yml
+  #       kind: Cluster
+  #       apiVersion: kind.x-k8s.io/v1alpha4
+  #       containerdConfigPatches:
+  #       - |-
+  #         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
+  #           endpoint = ["http://localhost:5000"]
+  #       EOF
+  #       export CLUSTER=$(uuidgen)
+  #       echo "export CLUSTER=$CLUSTER" > cluster.env
+  #       kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
+  #       export KUBECONFIG=/tmp/$CLUSTER.conf
+  #       kubectl get nodes 
+  #   - name: Run Test Suite without source(microservice)
+  #     run: |
+  #       source cluster.env
+  #       export KUBECONFIG=/tmp/$CLUSTER.conf
+  #       helm repo add stable https://cncf.gitlab.io/stable
+  #       ./cnf-testsuite setup
+  #       wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
+  #       ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
+  #       export FALCO_ENV="CI"
+  #       LOG_LEVEL=info ./cnf-testsuite all ~resilience ~compatibility ~pod_network_latency ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hostport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~install_script_helm ~helm_chart_valid ~helm_chart_published ~rollback ~secrets_used ~immutable_configmap verbose
+  #   - name: Delete Cluster
+  #     if: ${{ always() }}
+  #     run: |
+  #       source cluster.env
+  #       kind delete cluster --name $CLUSTER
+  #       docker container prune -f || true
+  #       docker volume prune -f || true
+  #       docker network prune -f || true
 
-  test_binary_all:
-    name: Test Binary Without Source(all)
-    runs-on: [v1.0.0]
-    steps: 
-    - name: Cleanup Tmp DIR
-      run: |
-        sudo rm -rf /tmp/*
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Cache crystal shards
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-crystal-shards
-      with:
-        path: ./lib
-        key: lib-${{ hashFiles('**/shard.lock') }}
-        restore-keys: |
-          lib-
-    - name: Build cnf-testsuite & Create Kind Cluster 
-      run: |
-        shards install
-        crystal build src/cnf-testsuite.cr --warnings none &
-        cat << EOF > /tmp/cluster.yml
-        kind: Cluster
-        apiVersion: kind.x-k8s.io/v1alpha4
-        containerdConfigPatches:
-        - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-            endpoint = ["http://localhost:5000"]
-        EOF
-        export CLUSTER=$(uuidgen)
-        echo "export CLUSTER=$CLUSTER" > cluster.env
-        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
-        export KUBECONFIG=/tmp/$CLUSTER.conf
-        kubectl get nodes 
-    - name: Run Test Suite without source(all)
-      run: |
-        source cluster.env
-        export KUBECONFIG=/tmp/$CLUSTER.conf
-        helm repo add stable https://cncf.gitlab.io/stable
-        export DIR=$(uuidgen)
-        ./cnf-testsuite setup
-        wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
-        ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
-        export FALCO_ENV="CI"
-        LOG_LEVEL=info ./cnf-testsuite all ~resilience ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hostport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size verbose
-    - name: Delete Cluster
-      if: ${{ always() }}
-      run: |
-        source cluster.env
-        kind delete cluster --name $CLUSTER
-        docker container prune -f || true
-        docker volume prune -f || true
-        docker network prune -f || true
+  # test_binary_all:
+  #   name: Test Binary Without Source(all)
+  #   runs-on: [v1.0.0]
+  #   steps: 
+  #   - name: Cleanup Tmp DIR
+  #     run: |
+  #       sudo rm -rf /tmp/*
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
+  #   - name: Cache crystal shards
+  #     uses: actions/cache@v2
+  #     env:
+  #       cache-name: cache-crystal-shards
+  #     with:
+  #       path: ./lib
+  #       key: lib-${{ hashFiles('**/shard.lock') }}
+  #       restore-keys: |
+  #         lib-
+  #   - name: Build cnf-testsuite & Create Kind Cluster 
+  #     run: |
+  #       shards install
+  #       crystal build src/cnf-testsuite.cr --warnings none &
+  #       cat << EOF > /tmp/cluster.yml
+  #       kind: Cluster
+  #       apiVersion: kind.x-k8s.io/v1alpha4
+  #       containerdConfigPatches:
+  #       - |-
+  #         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
+  #           endpoint = ["http://localhost:5000"]
+  #       EOF
+  #       export CLUSTER=$(uuidgen)
+  #       echo "export CLUSTER=$CLUSTER" > cluster.env
+  #       kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
+  #       export KUBECONFIG=/tmp/$CLUSTER.conf
+  #       kubectl get nodes 
+  #   - name: Run Test Suite without source(all)
+  #     run: |
+  #       source cluster.env
+  #       export KUBECONFIG=/tmp/$CLUSTER.conf
+  #       helm repo add stable https://cncf.gitlab.io/stable
+  #       export DIR=$(uuidgen)
+  #       ./cnf-testsuite setup
+  #       wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
+  #       ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
+  #       export FALCO_ENV="CI"
+  #       LOG_LEVEL=info ./cnf-testsuite all ~resilience ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hostport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size verbose
+  #   - name: Delete Cluster
+  #     if: ${{ always() }}
+  #     run: |
+  #       source cluster.env
+  #       kind delete cluster --name $CLUSTER
+  #       docker container prune -f || true
+  #       docker volume prune -f || true
+  #       docker network prune -f || true
 
-  release:
-    name: Publish Release
-    needs: [spec, build]
-    runs-on: ubuntu-latest
-    steps: 
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Download artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: release
-    - name: Make release executable
-      run: chmod +x ./cnf-testsuite
-    - name: Publish Release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        if [ -z "${GITHUB_TOKEN+x}" ]; then
-          exit 0
-        else
-          ./cnf-testsuite upsert_release
-        fi
+  # release:
+  #   name: Publish Release
+  #   needs: [spec, build]
+  #   runs-on: ubuntu-latest
+  #   steps: 
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
+  #     with:
+  #       fetch-depth: 0
+  #   - name: Download artifact
+  #     uses: actions/download-artifact@v2
+  #     with:
+  #       name: release
+  #   - name: Make release executable
+  #     run: chmod +x ./cnf-testsuite
+  #   - name: Publish Release
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     run: |
+  #       if [ -z "${GITHUB_TOKEN+x}" ]; then
+  #         exit 0
+  #       else
+  #         ./cnf-testsuite upsert_release
+  #       fi
