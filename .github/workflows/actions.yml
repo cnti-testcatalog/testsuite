@@ -33,7 +33,7 @@ jobs:
         # TEST_ARRAY=("${TEST_ARRAY[@]/pod_io_stress/}")
         # TEST_ARRAY=("${TEST_ARRAY[@]/pod_memory_hog/}")
         # TEST_ARRAY=("${TEST_ARRAY[@]/pod_network_latency/}")
-        TEST_ARRAY=(private_registry_image)
+        TEST_ARRAY=(private_registry_image private_registry_rolling)
         TEST_LIST=$(for i in ${TEST_ARRAY[@]}
         do
                  echo "{\"spec\":\"$i\"}," | tr -d '\n'
