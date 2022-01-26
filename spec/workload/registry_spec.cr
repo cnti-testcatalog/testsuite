@@ -22,13 +22,7 @@ describe "Private Registry: Image" do
     end
 
     Log.info { "SEARCH REGISTRY BEFORE pull" }
-    KubectlClient.exec("dockerd -t -- docker search registry:5000/coredns", true)
-
     KubectlClient.exec("dockerd -t -- docker pull coredns/coredns:1.6.7", true)
-
-    KubectlClient.exec("dockerd -t -- apk add curl", true)
-    KubectlClient.exec("dockerd -t -- curl https://google.com", true)
-
     KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7", true)
     KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns:1.6.7", true)
 
