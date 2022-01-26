@@ -60,7 +60,7 @@ rolling_version_change_test_names.each do |tn|
         # If any containers dont have an update applied, fail
         test_passed = false if resp == false
 
-        rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"], timeout="180s")
+        rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"], timeout="60s")
         unless rollout_status
           test_passed = false
         end
@@ -141,7 +141,7 @@ task "rollback" do |_, args|
         LOGGING.info "rollback version change successful? #{version_change_applied}"
 
         VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
-        rollout_status = KubectlClient::Rollout.status(deployment_name, timeout="180s")
+        rollout_status = KubectlClient::Rollout.status(deployment_name, timeout="60s")
         if  rollout_status == false
           puts "Rolling update failed on resource: #{deployment_name} and container: #{container_name}".colorize(:red)
         end
