@@ -21,7 +21,6 @@ describe "Private Registry: Image" do
       exit 1
     end
 
-    Log.info { "SEARCH REGISTRY BEFORE pull" }
     KubectlClient.exec("dockerd -t -- docker pull coredns/coredns:1.6.7", true)
     KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7", true)
     KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns:1.6.7", true)
