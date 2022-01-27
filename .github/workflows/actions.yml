@@ -330,7 +330,7 @@ jobs:
     name: Build Release
     runs-on: ubuntu-latest
     env:
-      CRYSTAL_IMAGE: "hashnuke/crystal-custom:1.2.2-alpine"
+      CRYSTAL_IMAGE: "conformance/crystal:1.2.2-alpine"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
