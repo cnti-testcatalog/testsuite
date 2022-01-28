@@ -71,6 +71,8 @@ describe "Private Registry: Rolling" do
     KubectlClient::Get.resource_wait_for_install("Pod", "registry")
     KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
 
+    KubectlClient.exec("dockerd -t -- apk add curl", true)
+    KubectlClient.exec("dockerd -t -- curl http://example.com", true)
     KubectlClient.exec("dockerd -t -- docker pull coredns/coredns:1.6.7", true)
     KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7", true)
     KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns:1.6.7", true)
