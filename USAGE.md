@@ -672,6 +672,21 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 ./cnf-testsuite security
 ```
 
+##### :heavy_check_mark: To check if a CNF is using container socket mounts
+<details> <summary>Details for container socket mounts</summary>
+<p>
+
+<b>Container Socker Mounts Details:</b> Container daemon socket bind mounts allows access to the container engine on the node. This access can be used for privilege escalation and to manage containers outside of Kubernetes, and hence should not be allowed
+
+<b>Remediation Steps:</b> Make sure to not mount /var/run/docker.sock, /var/run/containerd.sock or /var/run/crio.sock on the containers
+</p>
+
+</details>
+
+```
+./cnf-testsuite disallow_container_sock_mounts
+```
+
 ##### :heavy_check_mark: To check if any containers are running in [privileged mode](https://github.com/open-policy-agent/gatekeeper)
 
 ```
