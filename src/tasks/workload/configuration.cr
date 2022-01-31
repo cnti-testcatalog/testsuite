@@ -14,6 +14,9 @@ task "configuration", ["ip_addresses", "nodeport_not_used", "hostport_not_used",
   stdout_score("configuration", "configuration")
 end
 
+
+
+
 desc "Does a search for IP addresses or subnets come back as negative?"
 task "ip_addresses" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|

@@ -678,6 +678,22 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 ./cnf-testsuite privileged
 ```
 
+#### :heavy_check_mark: To check if a CNF is running services with external IP's
+<details> <summary>Details for external IP's</summary>
+<p>
+
+<b>External IP's Details:</b> Service externalIPs can be used for a MITM attack (CVE-2020-8554). Restrict externalIPs or limit to a known set of addresses. See: https://github.com/kyverno/kyverno/issues/1367
+
+<b>Remediation Steps:</b> Make sure to not define external IP's in your kubernetes service configuration
+</p>
+
+</details>
+
+```
+./cnf-testsuite restrict_external_ips
+```
+
+
 ##### :heavy_check_mark: To check if any containers are running as a [root user](https://github.com/cncf/cnf-wg/blob/best-practice-no-root-in-containers/cbpps/0002-no-root-in-containers.md)
 
 ```
