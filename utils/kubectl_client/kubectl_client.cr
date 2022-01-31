@@ -485,6 +485,14 @@ module KubectlClient
       matched_service
     end
 
+    def self.pods_by_service(service)
+      Log.info { "pods_by_service service: #{service}" }
+      service_labels = service.dig?("spec", "selector")
+      return unless service_labels
+      pods = KubectlClient::Get.pods
+      service_pods = KubectlClient::Get.pods_by_labels(pods["items"].as_a, service_labels.as_h)
+    end
+
     def self.pods_by_digest(container_digest)
       matched_pod = [] of JSON::Any  
       pods = KubectlClient::Get.pods

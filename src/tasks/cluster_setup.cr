@@ -20,8 +20,12 @@ task "uninstall_cluster_tools" do |_, args|
 end
 
 module ClusterToolsSetup
-  def self.cluster_tools_pod
+  def self.cluster_tools_pod()
     KubectlClient::Get.pod_status("cluster-tools").split(",")[0]
+  end
+
+  def self.cluster_tools_pod_by_node(node)
+    KubectlClient::Get.pod_status("cluster-tools", "--field_selector spec.nodeName=#{node}").split(",")[0]
   end
 end
 
