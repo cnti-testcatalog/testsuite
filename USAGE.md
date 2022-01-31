@@ -678,7 +678,7 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 ./cnf-testsuite privileged
 ```
 
-#### :heavy_check_mark: To check if a CNF is running services with external IP's
+##### :heavy_check_mark: To check if a CNF is running services with external IP's
 <details> <summary>Details for external IP's</summary>
 <p>
 
