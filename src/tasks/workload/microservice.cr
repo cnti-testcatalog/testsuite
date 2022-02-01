@@ -164,21 +164,6 @@ task "shared_database" do |_, args|
       end
     end
 
-    #todo exclude service pod_ids from foreign ip list
-    #todo if any foreign ips left, fail
-
-
-    #todo find node for database
-  #todo get service by resource
-  # todo get in cluster tools on same node as database
-  # todo get container id for database
-  # todo get first 13 characters
-  # todo use 13 characters in ` kubectl exec -ti cluster-tools-z8vgq -- crictl inspect <13 characters>`
-  # todo get info.pid from output
-  # todo `kubectl exec -ti cluster-tools-55vq8 -- nsenter -t <info.pid> -n netstat`
-  # todo digest_by_resource
-    # todo get digest_from_podid
-  # todo get ips for all cnf podips
     failed_emoji = "(ভ_ভ) ރ 💾"
     passed_emoji = "🖥️  💾"
     if integrated_database_found 

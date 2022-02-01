@@ -9,6 +9,45 @@ require "sam"
 
 describe "Microservice" do
 
+  it "'shared_database' should pass if no database is used by two microservices", tags: ["process_check"]  do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample-statefulset-cnf/cnf-testsuite.yml`
+      response_s = `./cnf-testsuite shared_database`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: No shared database found/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-statefulset-cnf/cnf-testsuite.yml`
+      $?.success?.should be_true
+    end
+  end
+
+  it "'shared_database' should pass if one service connects to a database but other non-service connections are made to the database", tags: ["process_check"]  do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample-multi-db-connections-exempt/cnf-testsuite.yml`
+      response_s = `./cnf-testsuite shared_database`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: No shared database found/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-multi-db-connections-exempt/cnf-testsuite.yml`
+      $?.success?.should be_true
+    end
+  end
+
+  it "'shared_database' should fail if two services on the cluster connect to the same database", tags: ["process_check"]  do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample-multi-db-connections-fail/cnf-testsuite.yml`
+      response_s = `./cnf-testsuite shared_database`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Found a shared database/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-multi-db-connections-fail/cnf-testsuite.yml`
+      $?.success?.should be_true
+    end
+  end
+
   it "'single_process_type' should pass if the containers in the cnf have only one process type", tags: ["process_check"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
