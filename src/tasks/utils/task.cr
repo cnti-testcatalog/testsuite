@@ -19,18 +19,21 @@ module CNFManager
 
     # TODO give example for calling
     def self.all_cnfs_task_runner(args, &block : Sam::Args, CNFManager::Config  -> String | Colorize::Object(String) | Nil)
+      cnf_configs = CNFManager.cnf_config_list(silent: true)
+      Log.info { "CNF configs found: #{cnf_configs.size}" }
 
       # Platforms tests dont have any cnfs
-      if CNFManager.cnf_config_list(silent: true).size == 0
+      if cnf_configs.size == 0
         single_task_runner(args, &block)
       else
-        CNFManager.cnf_config_list(silent: true).map do |x|
+        cnf_configs.map do |x|
           new_args = Sam::Args.new(args.named, args.raw)
           new_args.named["cnf-config"] = x
           single_task_runner(new_args, &block)
         end
       end
     end
+
     # TODO give example for calling
     def self.single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
       LOGGING.debug("single_task_runner args: #{args.inspect}")
