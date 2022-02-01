@@ -15,7 +15,6 @@ end
 
 desc "Uninstall CNF Test Suite Cluster Tools"
 task "uninstall_cluster_tools" do |_, args|
-  KubectlClient::Delete.file("cluster_tools.yml")
   ClusterTools.uninstall
 end
 
