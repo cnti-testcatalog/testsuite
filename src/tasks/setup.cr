@@ -6,7 +6,6 @@ require "totem"
 desc "Sets up the CNF test suite, the K8s cluster, and upstream projects"
 
 task "setup", ["offline", "helm_local_install", "prereqs", "configuration_file_setup", "install_apisnoop", "install_sonobuoy", "install_chart_testing", "cnf_testsuite_setup", "install_kind"] do  |_, args|
-
   stdout_success "Setup complete"
 end
 
