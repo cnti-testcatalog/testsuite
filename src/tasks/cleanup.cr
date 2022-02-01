@@ -17,7 +17,13 @@ task "samples_cleanup" do  |_, args|
   end
 
   CNFManager::Task.all_cnfs_task_runner(args) do |task_args, config|
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(task_args["cnf-config"]))
+    Log.info { "Task args: #{task_args.inspect}" }
+    next unless task_args["cnf-config"]?
+
+    cnf_config_file = task_args["cnf-config"].as(String)
+    cnf_config_file = CNFManager.ensure_cnf_testsuite_yml_path(cnf_config_file)
+
+    config = CNFManager.parsed_config_file(cnf_config_file)
     install_method = CNFManager.cnf_installation_method(config)
     if install_method[0] == Helm::InstallMethod::ManifestDirectory
       installed_from_manifest = true
@@ -25,8 +31,14 @@ task "samples_cleanup" do  |_, args|
       installed_from_manifest = false
     end
 
-    Log.info { "CNF CONFIG: #{task_args["cnf-config"]}" }
-    # CNFManager.sample_cleanup(config_file: cnf, force: force, installed_from_manifest: installed_from_manifest, verbose: check_verbose(args))
+    Log.info { "CNF CONFIG: #{cnf_config_file}" }
+    CNFManager.sample_cleanup(
+      config_file: cnf_config_file,
+      force: force,
+      installed_from_manifest: installed_from_manifest,
+      verbose: check_verbose(args)
+    )
+    nil
   end
 end
 
