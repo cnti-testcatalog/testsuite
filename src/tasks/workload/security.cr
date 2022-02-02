@@ -378,7 +378,6 @@ end
 desc "Check that privileged containers are not used"
 task "privileged_containers", ["uninstall_dockerd", "uninstall_cluster_tools", "kubescape_scan" ] do |_, args|
   next if args.named["offline"]?
-#  sleep 40.0
 
   CNFManager::Task.task_runner(args) do |args, config|
     Log.for("verbose").info { "privileged_containers" } if check_verbose(args)
