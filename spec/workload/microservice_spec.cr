@@ -9,7 +9,7 @@ require "sam"
 
 describe "Microservice" do
 
-  it "'shared_database' should pass if no database is used by two microservices", tags: ["process_check"]  do
+  it "'shared_database' should pass if no database is used by two microservices", tags: ["shared_database"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample-statefulset-cnf/cnf-testsuite.yml`
       response_s = `./cnf-testsuite shared_database`
@@ -22,7 +22,7 @@ describe "Microservice" do
     end
   end
 
-  it "'shared_database' should pass if one service connects to a database but other non-service connections are made to the database", tags: ["process_check"]  do
+  it "'shared_database' should pass if one service connects to a database but other non-service connections are made to the database", tags: ["shared_database"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample-multi-db-connections-exempt/cnf-testsuite.yml`
       response_s = `./cnf-testsuite shared_database`
@@ -35,7 +35,7 @@ describe "Microservice" do
     end
   end
 
-  it "'shared_database' should fail if two services on the cluster connect to the same database", tags: ["process_check"]  do
+  it "'shared_database' should fail if two services on the cluster connect to the same database", tags: ["shared_database"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample-multi-db-connections-fail/cnf-testsuite.yml`
       response_s = `./cnf-testsuite shared_database`

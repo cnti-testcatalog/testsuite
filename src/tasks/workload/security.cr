@@ -170,7 +170,7 @@ task "application_credentials", ["kubescape_scan"] do |_, args|
 end
 
 desc "Check if potential attackers may gain access to a POD and inherit access to the entire host network. For example, in AWS case, they will have access to the entire VPC."
-task "host_network", ["kubescape_scan"] do |_, args|
+task "host_network", ["uninstall_cluster_tools", "kubescape_scan"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "host_network" if check_verbose(args)
     results_json = Kubescape.parse
