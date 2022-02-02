@@ -8,6 +8,7 @@ module ClusterTools
   def self.uninstall
     Log.info { "ClusterTools uninstall" }
     KubectlClient::Delete.file("cluster_tools.yml")
+    KubectlClient::Get.resource_wait_for_uninstall("Daemonset", "cluster-tools")
   end
 
   def self.exec(cli, namespace="default")

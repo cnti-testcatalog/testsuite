@@ -376,8 +376,9 @@ task "network_policies", ["kubescape_scan"] do |_, args|
 end
 
 desc "Check that privileged containers are not used"
-task "privileged_containers", ["kubescape_scan"] do |_, args|
+task "privileged_containers", ["uninstall_dockerd", "uninstall_cluster_tools", "kubescape_scan" ] do |_, args|
   next if args.named["offline"]?
+#  sleep 40.0
 
   CNFManager::Task.task_runner(args) do |args, config|
     Log.for("verbose").info { "privileged_containers" } if check_verbose(args)
@@ -385,6 +386,7 @@ task "privileged_containers", ["kubescape_scan"] do |_, args|
     test_json = Kubescape.test_by_test_name(results_json, "Privileged container")
 
     emoji_security = "🔓🔑"
+    #todo whitelist
     if Kubescape.test_passed?(test_json)
       upsert_passed_task("privileged_containers", "✔️  PASSED: No privileged containers were found #{emoji_security}")
     else
@@ -394,6 +396,9 @@ task "privileged_containers", ["kubescape_scan"] do |_, args|
       resp
     end
   end
+ensure
+  ClusterTools.install
+  `./cnf-testsuite install_dockerd`
 end
 
 desc "Check if containers have immutable file systems"
