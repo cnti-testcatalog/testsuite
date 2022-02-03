@@ -32,3 +32,23 @@ spec:
       - name: proc
         hostPath:
           path: /proc
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: cluster-tools-k8s
+spec:
+  selector:
+    matchLabels:
+      name: cluster-tools-k8s
+  template:
+    metadata:
+      labels:
+        name: cluster-tools-k8s
+    spec:
+      containers:
+        - name: cluster-tools-k8s
+          image: conformance/cluster-tools:v1.0.0
+          imagePullPolicy: Always
+          command: ["/bin/sh"]
+          args: ["-c", "sleep infinity"]
