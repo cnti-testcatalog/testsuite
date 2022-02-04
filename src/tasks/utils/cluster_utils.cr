@@ -8,6 +8,7 @@ module ClusterTools
   def self.uninstall
     Log.info { "ClusterTools uninstall" }
     KubectlClient::Delete.file("cluster_tools.yml")
+    KubectlClient::Get.resource_wait_for_uninstall("Daemonset", "cluster-tools")
   end
 
   def self.exec(cli, namespace="default")
@@ -23,6 +24,21 @@ module ClusterTools
     resp = KubectlClient.exec(full_cli)  
     resp
   end
+
+  def self.exec_k8s(cli, namespace="default")
+    Log.info { "ClusterTools exec partial cli: #{cli}" }
+    # todo change to get all pods, schedulable nodes is slow
+    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+    pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools-k8s")
+
+    cluster_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
+    Log.info { "cluster_tools_pod_name: #{cluster_tools_pod_name}"}
+    full_cli = "--namespace=#{namespace} -ti #{cluster_tools_pod_name} -- #{cli}"
+    Log.info { "ClusterTools exec full cli: #{full_cli}" }
+    resp = KubectlClient.exec(full_cli)  
+    resp
+  end
+
 
   def self.wait_for_cluster_tools(wait_count : Int32 = 10)
     Log.info { "ClusterTools wait_for_cluster_tools" }

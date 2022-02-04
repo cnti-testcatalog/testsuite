@@ -17,8 +17,171 @@ end
 REASONABLE_STARTUP_BUFFER = 10.0
 
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
+task "shared_database" do |_, args|
+  LOGGING.info "Running shared_database test"
+  CNFManager::Task.task_runner(args) do |args, config|
+    # todo loop through local resources and see if db match found
+    db_match = Mariadb.match
+    Log.info { "DB Digest: #{db_match[:digest]}" }
+    #todo find offical database ip
+    db_pods = KubectlClient::Get.pods_by_digest(db_match[:digest])
+    Log.info { "DB Pods: #{db_pods}" }
+
+    db_pod_ips = [] of Array(JSON::Any)
+    pod_statuses = db_pods.map { |i|
+      db_pod_ips << i.dig("status", "podIPs").as_a
+      {
+        "statuses" => i.dig("status", "containerStatuses"),
+       "nodeName" => i.dig("spec", "nodeName")}
+    }.compact
+    db_pod_ips = db_pod_ips.compact.flatten
+    Log.info { "Pod Statuses: #{pod_statuses}" }
+    Log.info { "db_pod_ips: #{db_pod_ips}" }
+
+    database_container_statuses = pod_statuses.map do |statuses| 
+      # filterd_statuses : Array(JSON::Any)
+      filterd_statuses = statuses["statuses"].as_a.select{ |x|
+        x && x.dig("imageID").as_s.includes?("#{db_match[:digest]}")
+      }
+      resp : NamedTuple("nodeName": String, "ids" : Array(String)) = 
+      {
+        # this is the worst part of crystal
+        "nodeName": statuses["nodeName"].as_s, 
+       "ids": filterd_statuses.map{ |s| s.dig("containerID").as_s.gsub("containerd://", "")[0..12]}
+      }
+
+      resp
+    end.compact.flatten
+
+    resource_pod_ips = [] of Array(JSON::Any)
+    # CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
+    resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
+    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+    # resource_names.each do |resource_name|
+    #   resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name])
+    #   pods = KubectlClient::Get.pods_by_resource(resource)
+    #   resource_pod_ips << pods.map { |pod|
+    #     pod.dig("status", "podIPs").as_a
+    #   }.flatten.compact
+    # end
+    # cnf_ips = resource_pod_ips.compact.flatten
+    # Log.info { "cnf IPs: #{cnf_ips}"}
+
+    cnf_services = KubectlClient::Get.services
+    # cnf_services = resource_names.map { |resource_name|
+    #   case resource_name[:kind].as_s.downcase
+    #   when "service"
+    #     resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name])
+    #   end
+    # }.compact 
+
+    #todo get all pod_ips by first cnf service that is not the database service
+    service_pod_ips = [] of Array(NamedTuple(service_group_id: Int32, pod_ips: Array(JSON::Any)))
+    cnf_services["items"].as_a.each_with_index do |cnf_service, index|
+      service_pods = KubectlClient::Get.pods_by_service(cnf_service)
+      if service_pods
+        service_pod_ips << service_pods.map { |pod|
+          {
+            service_group_id: index,
+            pod_ips: pod.dig("status", "podIPs").as_a.select{|ip|
+              db_pod_ips.select{|dbip| dbip["ip"].as_s != ip["ip"].as_s}
+            }
+          }
+
+        }.flatten.compact
+      end
+    end
+
+    service_pod_ips = service_pod_ips.compact.flatten
+    Log.info { "service_pod_ips: #{service_pod_ips}"}
+
+    integrated_database_found = false
+    Log.info { "Container Statuses: #{database_container_statuses}" }
+    database_container_statuses.each do |status|
+      Log.info { "Container Info: #{status}"}
+      # get network information on the node for each database pod
+      cluster_tools = ClusterToolsSetup.cluster_tools_pod_by_node("#{status["nodeName"]}")
+      Log.info { "Container Tools Pod: #{cluster_tools}"}
+      pids = status["ids"].map do |id| 
+        inspect = KubectlClient.exec("#{cluster_tools} -ti -- crictl inspect #{id}")
+        pid = JSON.parse(inspect[:output]).dig("info", "pid")
+        Log.info { "Container PID: #{pid}"}
+        # get multiple call for a larger sample
+        parsed_netstat = (1..10).map {
+          sleep 10
+          netstat = KubectlClient.exec("#{cluster_tools} -ti -- nsenter -t #{pid} -n netstat")
+          Log.info { "Container Netstat: #{netstat}"}
+          Netstat.parse(netstat[:output])
+        }.flatten.compact
+        # Log.info { "Container Netstat: #{netstat}"}
+        # parsed_netstat = Netstat.parse(netstat[:output])
+        # Log.info { "Container Netstat: #{parsed_netstat}"}
+        #todo filter for 3306 in local_address
+        filtered_local_address = parsed_netstat.reduce([] of NamedTuple(proto: String, 
+                                                                         recv: String, 
+                                                                         send: String, 
+                                                                         local_address: String, 
+                                                                         foreign_address: String, 
+                                                                         state: String)) do |acc,x|
+          if x[:local_address].includes?("3306")
+            acc << x
+          else
+            acc
+          end
+         end
+        Log.info { "filtered_local_address: #{filtered_local_address}"}
+        #todo filter for ips that belong to the cnf
+        filtered_foreign_addresses = filtered_local_address.reduce([] of NamedTuple(proto: String, 
+                                                                         recv: String, 
+                                                                         send: String, 
+                                                                         local_address: String, 
+                                                                         foreign_address: String, 
+                                                                         state: String)) do |acc,x|
+
+
+
+         ignored_ip = service_pod_ips[0]["pod_ips"].find{|i| x[:foreign_address].includes?(i["ip"].as_s)}
+         if ignored_ip 
+           Log.info { "dont add: #{x[:foreign_address]}"}
+           acc
+         else
+           Log.info { " add: #{x[:foreign_address]}"}
+           acc << x
+         end
+         acc
+        end
+        Log.info { "filtered_foreign_addresses: #{filtered_foreign_addresses}"}
+        #todo if count on uniq foreign ip addresses > 1 then fail
+        # only count violators if they are part of any service, cluster wide
+        violators = service_pod_ips.reduce([] of Array(JSON::Any)) do |acc, service_group|
+          acc << service_group["pod_ips"].select do |spip| 
+            Log.info { " service ip: #{spip["ip"].as_s}"}
+            filtered_foreign_addresses.find do |f|
+              f[:foreign_address].includes?(spip["ip"].as_s)
+            end
+          end 
+        end
+        violators = violators.flatten.compact
+        if violators.size > 1
+        # if filtered_foreign_address.size > 1
+          puts "Found multiple pod ips from different services that connect to the same database: #{violators}".colorize(:red)
+          integrated_database_found = true 
+        end
+      end
+    end
+
+    failed_emoji = "(ভ_ভ) ރ 💾"
+    passed_emoji = "🖥️  💾"
+    if integrated_database_found 
+      upsert_failed_task("shared_database", "✖️  FAILED: Found a shared database #{failed_emoji}")
+    else
+      upsert_passed_task("shared_database", "✔️  PASSED: No shared database found #{passed_emoji}")
+    end
+  end
+end
+
+desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
 task "reasonable_startup_time" do |_, args|
-  
   LOGGING.info "Running reasonable_startup_time test"
   CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "reasonable_startup_time" if check_verbose(args)
