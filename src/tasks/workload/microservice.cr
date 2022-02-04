@@ -10,7 +10,7 @@ require "halite"
 require "totem"
 
 desc "The CNF test suite checks to see if CNFs follows microservice principles"
-task "microservice", ["reasonable_image_size", "reasonable_startup_time", "single_process_type"] do |_, args|
+task "microservice", ["reasonable_image_size", "reasonable_startup_time", "single_process_type", "service_discovery"] do |_, args|
   stdout_score("microservice")
 end
 
@@ -312,11 +312,11 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
           KubectlClient.cp("#{yml_file_path}/config.json default/dockerd:/root/.docker/config.json")
         end
 
-
-        KubectlClient.exec("dockerd -ti -- docker pull #{fqdn_image}")
-        KubectlClient.exec("dockerd -ti -- docker save #{fqdn_image} -o /tmp/image.tar")
-        KubectlClient.exec("dockerd -ti -- gzip -f /tmp/image.tar")
-        exec_resp =  KubectlClient.exec("dockerd -ti -- wc -c /tmp/image.tar.gz | awk '{print$1}'")
+        Log.info { "FQDN of the docker image: #{fqdn_image}" }
+        KubectlClient.exec("dockerd -t -- docker pull #{fqdn_image}")
+        KubectlClient.exec("dockerd -t -- docker save #{fqdn_image} -o /tmp/image.tar")
+        KubectlClient.exec("dockerd -t -- gzip -f /tmp/image.tar")
+        exec_resp =  KubectlClient.exec("dockerd -t -- wc -c /tmp/image.tar.gz | awk '{print$1}'")
         compressed_size = exec_resp[:output]
         # TODO strip out secret from under auths, save in array
         # TODO make a new auths array, assign previous array into auths array
@@ -409,4 +409,56 @@ task "single_process_type" do |_, args|
   end
 end
 
+desc "Are any of the containers exposed as a service?"
+task "service_discovery" do |_, args|
+  CNFManager::Task.task_runner(args) do |args,config|
+    Log.for("verbose").info { "service_discovery" } if check_verbose(args)
 
+    # Get all resources for the CNF
+    namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
+    resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
+    resources = Helm.workload_resource_kind_names(resource_ymls)
+
+    # Collect service names from the CNF resource list
+    cnf_service_names = [] of String
+    resources.each do |resource|
+      case resource[:kind].as_s.downcase
+      when "service"
+        cnf_service_names.push(resource[:name].as_s)
+      end
+    end
+
+    # Get all the pods in the cluster
+    pods = KubectlClient::Get.pods().dig("items").as_a
+
+    # Get pods for the services in the CNF based on the labels
+    test_passed = false
+    KubectlClient::Get.services().dig("items").as_a.each do |service_info|
+      # Only check for pods for services that are defined by the CNF
+      service_name = service_info["metadata"]["name"]
+      next unless cnf_service_names.includes?(service_name)
+
+      # Some services may not have selectors defined. Example: service/kubernetes
+      pod_selector = service_info.dig?("spec", "selector")
+      next unless pod_selector
+
+      # Fetch matching pods for the CNF
+      # If any service has a matching pod, then mark test as passed
+      matching_pods = KubectlClient::Get.pods_by_labels(pods, pod_selector.as_h)
+      if matching_pods.size > 0
+        Log.debug { "Matching pods for service #{service_name}: #{matching_pods.inspect}" }
+        test_passed = true
+      end
+    end
+
+    emoji_image_size="⚖️👀"
+    emoji_small="🐜"
+    emoji_big="🦖"
+
+    if test_passed
+      upsert_passed_task("service_discovery", "✔️  PASSED: Some containers exposed as a service #{emoji_small} #{emoji_image_size}")
+    else
+      upsert_failed_task("service_discovery", "✖️  FAILED: No containers exposed as a service #{emoji_big} #{emoji_image_size}")
+    end
+  end
+end

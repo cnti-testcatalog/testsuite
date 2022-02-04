@@ -175,3 +175,29 @@ describe "Microservice" do
     dockerd_name_helper
   end
 end
+
+it "'service_discovery' should pass if any containers in the cnf are exposed as a service", tags: ["service_discovery"]  do
+  begin
+    Log.info { `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns` }
+    response_s = `./cnf-testsuite service_discovery verbose`
+    Log.info { response_s }
+    $?.success?.should be_true
+    (/PASSED: Some containers exposed as a service/ =~ response_s).should_not be_nil
+  ensure
+    Log.info { `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns` }
+    $?.success?.should be_true
+  end
+end
+
+it "'service_discovery' should fail if no containers in the cnf are exposed as a service", tags: ["service_discovery"]  do
+  begin
+    Log.info { `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_nonroot` }
+    response_s = `./cnf-testsuite service_discovery verbose`
+    Log.info { response_s }
+    $?.success?.should be_true
+    (/FAILED: No containers exposed as a service/ =~ response_s).should_not be_nil
+  ensure
+    Log.info { `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_nonroot` }
+    $?.success?.should be_true
+  end
+end

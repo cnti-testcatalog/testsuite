@@ -67,9 +67,9 @@ module KubectlClient
     {status: status, output: output, error: stderr}
   end
 
-  def self.exec(command)
+  def self.exec(command, force_output=false)
     cmd = "kubectl exec #{command}"
-    ShellCmd.run(cmd, "KubectlClient.exec")
+    ShellCmd.run(cmd, "KubectlClient.exec", force_output)
   end
 
   def self.cp(command)
@@ -232,6 +232,17 @@ module KubectlClient
       cmd = "kubectl get nodes -o json"
       result = ShellCmd.run(cmd, "KubectlClient::Get.nodes")
       JSON.parse(result[:output])
+    end
+
+    def self.endpoints(all_namespaces=false) : K8sManifest
+      option = all_namespaces ? "--all-namespaces" : ""
+      cmd = "kubectl get endpoints #{option} -o json"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.endpoints")
+      response = result[:output]
+      if result[:status].success? && !response.empty?
+        return JSON.parse(response)
+      end
+      JSON.parse(%({}))
     end
 
     def self.pods(all_namespaces=true) : K8sManifest 
