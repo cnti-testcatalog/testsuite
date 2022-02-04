@@ -312,11 +312,11 @@ task "reasonable_image_size", ["install_dockerd"] do |_, args|
           KubectlClient.cp("#{yml_file_path}/config.json default/dockerd:/root/.docker/config.json")
         end
 
-
-        KubectlClient.exec("dockerd -ti -- docker pull #{fqdn_image}")
-        KubectlClient.exec("dockerd -ti -- docker save #{fqdn_image} -o /tmp/image.tar")
-        KubectlClient.exec("dockerd -ti -- gzip -f /tmp/image.tar")
-        exec_resp =  KubectlClient.exec("dockerd -ti -- wc -c /tmp/image.tar.gz | awk '{print$1}'")
+        Log.info { "FQDN of the docker image: #{fqdn_image}" }
+        KubectlClient.exec("dockerd -t -- docker pull #{fqdn_image}")
+        KubectlClient.exec("dockerd -t -- docker save #{fqdn_image} -o /tmp/image.tar")
+        KubectlClient.exec("dockerd -t -- gzip -f /tmp/image.tar")
+        exec_resp =  KubectlClient.exec("dockerd -t -- wc -c /tmp/image.tar.gz | awk '{print$1}'")
         compressed_size = exec_resp[:output]
         # TODO strip out secret from under auths, save in array
         # TODO make a new auths array, assign previous array into auths array
