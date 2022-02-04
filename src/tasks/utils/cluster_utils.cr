@@ -40,9 +40,10 @@ module ClusterTools
   end
 
 
-  def self.wait_for_cluster_tools(wait_count : Int32 = 10)
+  def self.wait_for_cluster_tools(wait_count : Int32 = 20)
     Log.info { "ClusterTools wait_for_cluster_tools" }
     KubectlClient::Get.resource_wait_for_install("Daemonset", "cluster-tools")
+    KubectlClient::Get.resource_wait_for_install("Daemonset", "cluster-tools-k8s")
     # pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     # pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
     # ready = false
