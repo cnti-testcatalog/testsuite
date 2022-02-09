@@ -89,7 +89,7 @@ describe "Microservice" do
 
   it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"]  do
       cluster_tools_install = KubectlClient::Apply.file("#{TOOLS_DIR}/cluster-tools/manifest.yml")
-      cluster_tools_install[:status].success? be_true
+      cluster_tools_install[:status].success?.should be_true
 
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
       pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
@@ -122,7 +122,7 @@ describe "Microservice" do
       $?.success?.should be_true
 
       cluster_tools_install = KubectlClient::Apply.file("#{TOOLS_DIR}/cluster-tools/manifest.yml")
-      cluster_tools_install[:status].success? be_true
+      cluster_tools_install[:status].success?.should be_true
 
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
       pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
