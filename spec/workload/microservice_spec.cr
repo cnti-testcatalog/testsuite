@@ -88,8 +88,7 @@ describe "Microservice" do
   end
 
   it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"]  do
-      cluster_tools_install = KubectlClient::Apply.file("#{TOOLS_DIR}/cluster-tools/manifest.yml")
-      cluster_tools_install[:status].success?.should be_true
+      ClusterTools.install
 
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
       pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
@@ -110,7 +109,7 @@ describe "Microservice" do
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns`
       $?.success?.should be_true
-      KubectlClient::Delete.file("#{TOOLS_DIR}/cluster-tools/manifest.yml")
+      ClusterTools.uninstall
     end
   end
 
@@ -121,8 +120,7 @@ describe "Microservice" do
       LOGGING.info response_s
       $?.success?.should be_true
 
-      cluster_tools_install = KubectlClient::Apply.file("#{TOOLS_DIR}/cluster-tools/manifest.yml")
-      cluster_tools_install[:status].success?.should be_true
+      ClusterTools.install
 
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
       pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
@@ -133,7 +131,7 @@ describe "Microservice" do
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-testsuite.yml force=true`
       $?.success?.should be_true
-      KubectlClient::Delete.file("#{TOOLS_DIR}/cluster-tools/manifest.yml")
+      ClusterTools.uninstall
     end
   end
 
