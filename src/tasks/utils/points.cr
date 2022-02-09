@@ -193,10 +193,25 @@ module CNFManager
         tasks = all_task_test_names
         Log.debug { "all_task_test_names tasks: #{tasks}" }
       end
+
+      results_yaml = File.open("#{Results.file}") do |file|
+        YAML.parse(file)
+      end
+
+      skipped_tests = results_yaml["items"].as_a.reduce([] of String) do |acc, test_info|
+        if test_info["status"] == "skipped"
+          acc + [test_info["name"].as_s]
+        else
+          acc
+        end
+      end
+
       max = tasks.reduce(0) do |acc, x|
         #TODO remove, from the potential points, the actually assigned points that are assigned to 'na' in the results.yml
         if na_assigned?(x)
           Log.info { "na_assigned for #{x}" }
+          acc
+        elsif skipped_tests.includes?(x)
           acc
         else
           points = task_points(x)
