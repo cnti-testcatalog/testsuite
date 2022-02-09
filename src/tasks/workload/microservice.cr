@@ -100,7 +100,7 @@ task "shared_database" do |_, args|
     database_container_statuses.each do |status|
       Log.info { "Container Info: #{status}"}
       # get network information on the node for each database pod
-      cluster_tools = ClusterToolsSetup.cluster_tools_pod_by_node("#{status["nodeName"]}")
+      cluster_tools = ClusterTools.pod_by_node("#{status["nodeName"]}")
       Log.info { "Container Tools Pod: #{cluster_tools}"}
       pids = status["ids"].map do |id| 
         inspect = KubectlClient.exec("#{cluster_tools} -ti -- crictl inspect #{id}")

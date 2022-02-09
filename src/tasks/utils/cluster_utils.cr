@@ -2,12 +2,12 @@ module ClusterTools
   def self.install
     Log.info { "ClusterTools install" }
     File.write("cluster_tools.yml", CLUSTER_TOOLS)
-    KubectlClient::Apply.file("cluster_tools.yml")
+    KubectlClient::Apply.file("#{TOOLS_DIR}/cluster-tools/manifest.yml")
     wait_for_cluster_tools
   end
   def self.uninstall
     Log.info { "ClusterTools uninstall" }
-    KubectlClient::Delete.file("cluster_tools.yml")
+    KubectlClient::Delete.file("#{TOOLS_DIR}/cluster-tools/manifest.yml")
     KubectlClient::Get.resource_wait_for_uninstall("Daemonset", "cluster-tools")
   end
 
@@ -106,4 +106,16 @@ module ClusterTools
     match
   end
 
+  def self.pod_name()
+    KubectlClient::Get.pod_status("cluster-tools").split(",")[0]
+  end
+
+  def self.pod_by_node(node)
+    resource = KubectlClient::Get.resource("Daemonset", "cluster-tools")
+    pods = KubectlClient::Get.pods_by_resource(resource)
+    cluster_pod = pods.find do |pod|
+      pod.dig("spec", "nodeName") == node
+    end
+    cluster_pod.dig("metadata", "name") if cluster_pod
+  end
 end
