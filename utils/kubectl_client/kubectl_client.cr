@@ -67,9 +67,9 @@ module KubectlClient
     {status: status, output: output, error: stderr}
   end
 
-  def self.exec(command)
+  def self.exec(command, force_output=false)
     cmd = "kubectl exec #{command}"
-    ShellCmd.run(cmd, "KubectlClient.exec")
+    ShellCmd.run(cmd, "KubectlClient.exec", force_output)
   end
 
   def self.cp(command)
@@ -494,6 +494,14 @@ module KubectlClient
       end
       Log.info { "service_by_digest matched_service: #{matched_service}" }
       matched_service
+    end
+
+    def self.pods_by_service(service)
+      Log.info { "pods_by_service service: #{service}" }
+      service_labels = service.dig?("spec", "selector")
+      return unless service_labels
+      pods = KubectlClient::Get.pods
+      service_pods = KubectlClient::Get.pods_by_labels(pods["items"].as_a, service_labels.as_h)
     end
 
     def self.pods_by_digest(container_digest)

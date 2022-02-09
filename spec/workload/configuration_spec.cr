@@ -97,7 +97,7 @@ describe CnfTestSuite do
 
   it "'rolling_update' should pass when valid version is given", tags: ["rolling_update"]  do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose wait_count=0`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose`
       $?.success?.should be_true
       response_s = `./cnf-testsuite rolling_update verbose`
       LOGGING.info response_s

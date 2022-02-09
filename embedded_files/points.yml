@@ -17,6 +17,8 @@
   tags: microservice, dynamic, workload
   pass: 5
   fail: 0
+- name: shared_database
+  tags: microservice, dynamic, workload
 
 - name: cni_compatible
   tags: compatibility, dynamic, workload

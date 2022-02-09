@@ -407,6 +407,22 @@ crystal src/cnf-testsuite.cr external_retry
 ./cnf-testsuite service_discovery
 ```
 
+#### :heavy_check_mark: To check if the CNF has multiple microservices that share a database 
+
+<details> <summary>Details for the shared database test</summary>
+<p>
+
+<b>Shared Database:</b> Microservices should not share a database with one another.
+
+<b>Remediation Steps:</b> Make sure the CNF microservices do not share a database [here](https://martinfowler.com/bliki/IntegrationDatabase.html).
+</p>
+
+</details>
+
+```
+./cnf-testsuite shared_database 
+```
+
 #### State Tests
 
 ##### :heavy_check_mark: To run all of the state tests

@@ -169,7 +169,7 @@ task "application_credentials", ["kubescape_scan"] do |_, args|
 end
 
 desc "Check if potential attackers may gain access to a POD and inherit access to the entire host network. For example, in AWS case, they will have access to the entire VPC."
-task "host_network", ["kubescape_scan"] do |_, args|
+task "host_network", ["uninstall_cluster_tools", "kubescape_scan"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "host_network" if check_verbose(args)
     results_json = Kubescape.parse
@@ -375,7 +375,7 @@ task "network_policies", ["kubescape_scan"] do |_, args|
 end
 
 desc "Check that privileged containers are not used"
-task "privileged_containers", ["kubescape_scan"] do |_, args|
+task "privileged_containers", ["uninstall_dockerd", "uninstall_cluster_tools", "kubescape_scan" ] do |_, args|
   next if args.named["offline"]?
 
   CNFManager::Task.task_runner(args) do |args, config|
@@ -384,6 +384,7 @@ task "privileged_containers", ["kubescape_scan"] do |_, args|
     test_json = Kubescape.test_by_test_name(results_json, "Privileged container")
 
     emoji_security = "🔓🔑"
+    #todo whitelist
     if Kubescape.test_passed?(test_json)
       upsert_passed_task("privileged_containers", "✔️  PASSED: No privileged containers were found #{emoji_security}")
     else
@@ -393,6 +394,9 @@ task "privileged_containers", ["kubescape_scan"] do |_, args|
       resp
     end
   end
+ensure
+  ClusterTools.install
+  `./cnf-testsuite install_dockerd`
 end
 
 desc "Check if containers have immutable file systems"

@@ -141,7 +141,7 @@ task "rollback" do |_, args|
         LOGGING.info "rollback version change successful? #{version_change_applied}"
 
         VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
-        rollout_status = KubectlClient::Rollout.status(deployment_name, timeout="60s")
+        rollout_status = KubectlClient::Rollout.status(deployment_name, timeout="180s")
         if  rollout_status == false
           puts "Rolling update failed on resource: #{deployment_name} and container: #{container_name}".colorize(:red)
         end

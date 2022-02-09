@@ -154,7 +154,7 @@ describe "SampleUtils" do
             "immutable_file_systems", "hostpath_mounts", "log_output",
             "prometheus_traffic", "open_metrics",
             "ingress_egress_blocked", "dangerous_capabilities", "insecure_capabilities",
-            "routed_logs", "tracing", "elastic_volumes", "alpha_k8s_apis", "service_discovery",]
+            "routed_logs", "tracing", "elastic_volumes", "alpha_k8s_apis", "service_discovery", "shared_database"]
     (CNFManager::Points.all_task_test_names()).sort.should eq(tags.sort)
   end
 
