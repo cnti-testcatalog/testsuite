@@ -119,19 +119,10 @@ describe "Microservice" do
       response_s = `./cnf-testsuite reasonable_startup_time verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-
-      ClusterTools.install
-
-      pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-      pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
-      LOGGING.info "CRI Pod: #{pods[0]}"
-      KubectlClient::Get.resource_wait_for_install("DaemonSet", "cluster-tools")
-      KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=cpu --num-threads=4 --cpu-max-prime=9999 run", true)
       (/FAILED: CNF had a startup time of/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-testsuite.yml force=true`
       $?.success?.should be_true
-      ClusterTools.uninstall
     end
   end
 
