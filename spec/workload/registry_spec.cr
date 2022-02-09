@@ -9,8 +9,8 @@ require "sam"
 
 describe "Private Registry: Image" do
   before_all do
-    install_registry = `kubectl apply -f #{TOOLS_DIR}/registry/manifest.yml`
-    install_dockerd = `kubectl apply -f #{TOOLS_DIR}/dockerd/manifest.yml`
+    install_registry = KubectlClient::Apply.file("#{TOOLS_DIR}/registry/manifest.yml")
+    install_dockerd = KubectlClient::Apply.file("#{TOOLS_DIR}/dockerd/manifest.yml")
     KubectlClient::Get.resource_wait_for_install("Pod", "registry")
     KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
 
@@ -62,16 +62,16 @@ describe "Private Registry: Image" do
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
   end
 
-	after_all do
-  	  delete_registry = `kubectl delete -f #{TOOLS_DIR}/registry/manifest.yml`
-    	delete_dockerd = `kubectl delete -f #{TOOLS_DIR}/dockerd/manifest.yml`
+  after_all do
+    delete_registry = KubectlClient::Delete.file("#{TOOLS_DIR}/registry/manifest.yml")
+    delete_dockerd = KubectlClient::Delete.file("#{TOOLS_DIR}/dockerd/manifest.yml")
   end	
 end
 
 describe "Private Registry: Rolling" do
   before_all do
-    install_registry = `kubectl apply -f #{TOOLS_DIR}/registry/manifest.yml`
-    install_dockerd = `kubectl apply -f #{TOOLS_DIR}/dockerd/manifest.yml`
+    install_registry = KubectlClient::Apply.file("#{TOOLS_DIR}/registry/manifest.yml")
+    install_dockerd = KubectlClient::Apply.file("#{TOOLS_DIR}/dockerd/manifest.yml")
     KubectlClient::Get.resource_wait_for_install("Pod", "registry")
     KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
 
@@ -129,8 +129,8 @@ describe "Private Registry: Rolling" do
     end
   end  
 
-	after_all do
-  	  delete_registry = `kubectl delete -f #{TOOLS_DIR}/registry/manifest.yml`
-    	delete_dockerd = `kubectl delete -f #{TOOLS_DIR}/dockerd/manifest.yml`
+  after_all do
+    delete_registry = KubectlClient::Delete.file("#{TOOLS_DIR}/registry/manifest.yml")
+    delete_dockerd = KubectlClient::Delete.file("#{TOOLS_DIR}/dockerd/manifest.yml")
   end	
 end
