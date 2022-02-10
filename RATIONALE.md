@@ -132,6 +132,10 @@ Why: Disk Pressure is a scenario we find in Kubernetes applications that can res
 
 * ✔️ Test if the CNF crashes when pod delete occurs
 
+Why: The CNF should recreate the minimum number of replicas when a pod fails. This experiment helps to simulate such a scenario with forced/graceful pod 
+failure on specific or random replicas of an application resource.  It then checks the deployment sanity (replica availability & uninterrupted service) 
+and recovery workflow of the application.
+
 * ✔️ Test if the CNF crashes when pod memory hog occurs
 
 * ✔️ Test if the CNF crashes when pod io stress occurs
