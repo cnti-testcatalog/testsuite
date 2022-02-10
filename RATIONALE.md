@@ -138,6 +138,10 @@ and recovery workflow of the application.
 
 * ✔️ Test if the CNF crashes when pod memory hog occurs
 
+Why: A CNF can fail due to running out of memory.  This can be mitigated by using two levels of memory policies (pod level and node level) in K8s.  
+If the memory policies for a CNF are not fine grained enough, the CNFs out-of-memory failure blast radius will result in using all of the system 
+memory on the node.
+
 * ✔️ Test if the CNF crashes when pod io stress occurs
 
 * ✔️ Test if the CNF crashes when pod network corruption occurs
