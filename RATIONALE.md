@@ -209,6 +209,9 @@ In order to prevent illegitimate escalation by processes and restrict a processe
 
 * ✔️ To check if an attacker can use a symlink for arbitrary host file system access (CVE-2021-25741)
 
+Why: *Due to CVE-2021-25741, subPath or subPathExpr volume mounts can be [used to gain unauthorised access](https://hub.armo.cloud/docs/c-0058) to files and directories anywhere on the host filesystem. In order to follow a best-practice security standard and prevent unauthorised data access, there should be no active CVEs affecting either the container or underlying platform.*
+
+
 * ✔️ To check if there are service accounts that are automatically mapped
 
 * ✔️ To check if there is a host network attached to a pod
