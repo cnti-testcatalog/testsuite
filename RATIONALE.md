@@ -216,10 +216,7 @@ In order to prevent illegitimate escalation by processes and restrict a processe
 * ✔️ To check if there are service accounts that are automatically mapped
 
 * ✔️ To check if there is a host network attached to a pod
-    * Value: high
-    * Defense:
-        * Vendor: red/yellow
-        * Service provider: red/yellow
+
 * ✔️ To check if there are service accounts that are automatically mapped
 
 * ✔️ To check if there is an ingress and egress policy defined.
