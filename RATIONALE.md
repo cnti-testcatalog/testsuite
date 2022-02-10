@@ -4,7 +4,7 @@
 
 ## Compatibility, Installability, and Upgradability Tests
 
-Why (Category): Service providers have historically had issues with the 
+Why: Service providers have historically had issues with the 
 installability of vendor network functions.  This category tests the installability
 and lifecycle management (the create, update, and delete of network applications) against 
 widely used K8s installation solutions such as Helm.
@@ -52,7 +52,7 @@ something like blue/green deploys.
 
 ## Microservice Tests 
 
-Why (Category): [Good microservice practices](https://vmblog.com/archive/2022/01/04/the-zeitgeist-of-cloud-native-microservices.aspx)
+Why: [Good microservice practices](https://vmblog.com/archive/2022/01/04/the-zeitgeist-of-cloud-native-microservices.aspx)
 promote agility which means less time will occur between deployments.  One benefit of more agility 
 is it allows for different organizations and teams to deploy at the rate of change that they 
 build out features, instead of deploying in lock step with other teams. This is very important 
@@ -86,7 +86,7 @@ it forces the two services to upgrade in lock step
 
 ## State Tests
 
-Why (category): If infrastructure is immutable, it is easily reproduced, consistent, disposable, 
+Why: If infrastructure is immutable, it is easily reproduced, consistent, disposable, 
 will have a repeatable deployment process, and will not have configuration or artifacts that 
 are modifiable in place.  This ensures that all *configuration* is stateless.  Any *data* that is 
 persistent should be managed by K8s statefulsets.
@@ -111,7 +111,7 @@ Why: When a traditional database such as mysql is configured to use statefulsets
 
 ## Reliability, Resilience and Availability
 
-Why (Category): Cloud native systems promote resilience by putting a high priority on testing 
+Why: Cloud native systems promote resilience by putting a high priority on testing 
 individual components (chaos testing) as they are running (possibly in production).
 [Reliability in traditional telecommunications](https://vmblog.com/archive/2021/09/15/cloud-native-chaos-and-telcos-enforcing-reliability-and-availability-for-telcos.aspx)
 is handled differently than in Cloud Native systems. Cloud native systems try to address reliability 
@@ -248,7 +248,7 @@ https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escala
 
 
 ## Configuration Tests 
-Why (category): Declarative APIs for an immutable infrastructure are anything that configures 
+Why: Declarative APIs for an immutable infrastructure are anything that configures 
 the infrastructure element. This declaration can come in the form of a YAML file or a script, 
 as long as the configuration designates the desired outcome, not how to achieve said outcome. 
 *"Because it describes the state of the world, declarative configuration does not have to be 
