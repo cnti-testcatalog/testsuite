@@ -144,9 +144,9 @@ using all of the system memory on the node.
 
 * ✔️ Test if the CNF crashes when pod io stress occurs
 
-Why: Stressing the disk with continuous and heavy IO can cause degradation in reads/ writes by other microservices that use this shared disk.  
-Scratch space can be used up on a node which leads to the lack of space for newer containers to get scheduled which causes a movement of 
-all pods to other nodes. This test determines the limits of how a CNF uses its storage device.
+Why: Stressing the disk with continuous and heavy IO can cause degradation in reads/ writes by other microservices that use this 
+shared disk.  Scratch space can be used up on a node which leads to the lack of space for newer containers to get scheduled which 
+causes a movement of all pods to other nodes. This test determines the limits of how a CNF uses its storage device.
 
 * ✔️ Test if the CNF crashes when pod network corruption occurs
 
