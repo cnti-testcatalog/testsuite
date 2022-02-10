@@ -194,14 +194,6 @@ container runtime, the container orchestrator,and then the applications themselv
 require specialist security attention* -- Chris Binne, Rory Mccune. Cloud Native Security.  
 (Wiley, 2021)(pp. xix)
 
-* [NO] To check if any containers are running in privileged mode (required to pass) (dup .. our version)
-
-*The docs describe Privileged mode as essentially enabling “…access to all devices on the host 
-as well as [having the ability to] set some configuration in AppArmor or SElinux to allow the 
-container nearly all the same access to the host as processes running outside containers on the 
-host.” In other words, you should rarely, if ever, use this switch on your container command line.*
-Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley. Kindle Edition. 
-
 * ✔️ To check if any containers are running as a root user (checks the user outside the container that is running dockerd)
 
 Why: *Even with other security controls used within a Linux system running containers, 
@@ -226,6 +218,12 @@ In order to prevent illegitimate escalation by processes and restrict a processe
 * ✔️ To check if there is an ingress and egress policy defined.
 
 * ✔️ To check if there are any privileged containers (kubscape version)
+
+Why: *The docs describe Privileged mode as essentially enabling “…access to all devices on the host 
+as well as [having the ability to] set some configuration in AppArmor or SElinux to allow the 
+container nearly all the same access to the host as processes running outside containers on the 
+host.” In other words, you should rarely, if ever, use this switch on your container command line.*
+Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley. Kindle Edition. 
 
 * ✔️ To check for insecure capabilities
 
