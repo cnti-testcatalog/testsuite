@@ -150,22 +150,6 @@ describe "Microservice" do
   ensure
     `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup force=true`
   end
-
-  it "'reasonable_image_size' should skip if dockerd does not install", tags: ["reasonable_image_size"] do
-    cnf="./sample-cnfs/sample-coredns-cnf"
-    LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
-    LOGGING.info `./cnf-testsuite uninstall_dockerd`
-    dockerd_tempname_helper
-
-    response_s = `./cnf-testsuite reasonable_image_size verbose`
-    LOGGING.info response_s
-    $?.success?.should be_true
-    (/SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install/ =~ response_s).should_not be_nil
-  ensure
-    LOGGING.info "reasonable_image_size skipped ensure"
-    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
-    dockerd_name_helper
-  end
 end
 
 it "'service_discovery' should pass if any containers in the cnf are exposed as a service", tags: ["service_discovery"]  do
