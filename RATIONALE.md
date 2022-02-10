@@ -208,9 +208,9 @@ Wiley. Kindle Edition.
 
 * ✔️ To check if any containers allow for privilege escalation
 
-Why: 
+Why: *When [privilege escalation](https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation) is [enabled for a container](https://hub.armo.cloud/docs/c-0016), it will allow setuid binaries to change the effective user ID, allowing processes to turn on extra capabilities. 
+In order to prevent illegitimate escalation by processes and restrict a processes to a NonRoot user mode, escalation must be disabled.*
 
-https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation
 * ✔️ To check if an attacker can use a symlink for arbitrary host file system access (CVE-2021-25741)
 
 * ✔️ To check if there are service accounts that are automatically mapped
