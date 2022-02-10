@@ -26,33 +26,9 @@ task "uninstall_dockerd" do |_, args|
 end
 
 def dockerd_filename
-  "./#{TOOLS_DIR}/dockerd/manifest.yml"
-end
-
-def dockerd_tempname
-  "./#{TOOLS_DIR}/dockerd/manifest.tmp"
-end
-
-def dockerd_tempname_helper
-  Log.info { "dockerd_tempname_helper" }
-  Log.info { "Contents of #{TOOLS_DIR} before moving dockerd manifest to tempfile" }
-  Log.info { "ls #{TOOLS_DIR}: #{Dir.children(TOOLS_DIR)}" }
-  Log.info { "ls #{TOOLS_DIR}/dockerd: #{Dir.children("#{TOOLS_DIR}/dockerd")}" }
-  FileUtils.mv(dockerd_filename, dockerd_tempname)
-  Log.info { "Contents of #{TOOLS_DIR} after moving dockerd manifest to tempfile" }
-  Log.info { "ls #{TOOLS_DIR}: #{Dir.children(TOOLS_DIR)}" }
-  Log.info { "ls #{TOOLS_DIR}/dockerd: #{Dir.children("#{TOOLS_DIR}/dockerd")}" }
-end
-
-def dockerd_name_helper
-  Log.info { "dockerd_name_helper" }
-  Log.info { "Contents of #{TOOLS_DIR} before moving dockerd manifest from tempfile to it's place" }
-  Log.info { "ls #{TOOLS_DIR}: #{Dir.children(TOOLS_DIR)}" }
-  Log.info { "ls #{TOOLS_DIR}/dockerd: #{Dir.children("#{TOOLS_DIR}/dockerd")}" }
-  FileUtils.mv(dockerd_tempname, dockerd_filename)
-  Log.info { "Contents of #{TOOLS_DIR} after moving dockerd manifest from tempfile to it's place" }
-  Log.info { "ls #{TOOLS_DIR}: #{Dir.children(TOOLS_DIR)}" }
-  Log.info { "ls #{TOOLS_DIR}/dockerd: #{Dir.children("#{TOOLS_DIR}/dockerd")}" }
+  manifest_path = "./#{TOOLS_DIR}/dockerd-manifest.yml"
+  File.write(manifest_path, DOCKERD_MANIFEST)
+  manifest_path
 end
 
 ### Checks to see if dockerd is already installed.  Alternatively

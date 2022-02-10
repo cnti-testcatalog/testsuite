@@ -88,18 +88,18 @@ describe "Microservice" do
   end
 
   it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"]  do
-      LOGGING.info `kubectl apply -f #{TOOLS_DIR}/cluster-tools/manifest.yml`
-      $?.success?.should be_true
+      ClusterTools.install
+
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
       pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
       LOGGING.info "CRI Pod: #{pods[0]}"
       KubectlClient::Get.resource_wait_for_install("DaemonSet", "cluster-tools")
       LOGGING.info "CPU Logs"
-      LOGGING.info "#{KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=cpu --num-threads=4 --cpu-max-prime=9999 run")}"
-      LOGGING.info "Memory logs" 
-      LOGGING.info "#{KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=memory --memory-block-size=1M --memory-total-size=100G --num-threads=1 run")}"
+      KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=cpu --num-threads=4 --cpu-max-prime=9999 run", true)
+      LOGGING.info "Memory logs"
+      KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=memory --memory-block-size=1M --memory-total-size=100G --num-threads=1 run", true)
       LOGGING.info "Disk logs"
-      LOGGING.info "#{KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- /bin/bash -c 'sysbench fileio prepare && sysbench fileio --file-test-mode=rndrw run'")}"
+      KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- /bin/bash -c 'sysbench fileio prepare && sysbench fileio --file-test-mode=rndrw run'", true)
       `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
     begin
       response_s = `./cnf-testsuite reasonable_startup_time verbose`
@@ -109,7 +109,7 @@ describe "Microservice" do
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns`
       $?.success?.should be_true
-      LOGGING.info `kubectl delete -f #{TOOLS_DIR}/cluster-tools/manifest.yml`
+      ClusterTools.uninstall
     end
   end
 
@@ -119,18 +119,10 @@ describe "Microservice" do
       response_s = `./cnf-testsuite reasonable_startup_time verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      LOGGING.info `kubectl apply -f #{TOOLS_DIR}/cluster-tools/manifest.yml`
-      $?.success?.should be_true
-      pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-      pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
-      LOGGING.info "CRI Pod: #{pods[0]}"
-      KubectlClient::Get.resource_wait_for_install("DaemonSet", "cluster-tools")
-      LOGGING.info "#{KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=cpu --num-threads=4 --cpu-max-prime=9999 run")}"
       (/FAILED: CNF had a startup time of/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-testsuite.yml force=true`
       $?.success?.should be_true
-      LOGGING.info `kubectl delete -f #{TOOLS_DIR}/cluster-tools/manifest.yml`
     end
   end
 
@@ -157,22 +149,6 @@ describe "Microservice" do
     (/Image size too large/ =~ response_s).should_not be_nil
   ensure
     `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup force=true`
-  end
-
-  it "'reasonable_image_size' should skip if dockerd does not install", tags: ["reasonable_image_size"] do
-    cnf="./sample-cnfs/sample-coredns-cnf"
-    LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
-    LOGGING.info `./cnf-testsuite uninstall_dockerd`
-    dockerd_tempname_helper
-
-    response_s = `./cnf-testsuite reasonable_image_size verbose`
-    LOGGING.info response_s
-    $?.success?.should be_true
-    (/SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install/ =~ response_s).should_not be_nil
-  ensure
-    LOGGING.info "reasonable_image_size skipped ensure"
-    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
-    dockerd_name_helper
   end
 end
 

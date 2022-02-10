@@ -17,19 +17,3 @@ desc "Uninstall CNF Test Suite Cluster Tools"
 task "uninstall_cluster_tools" do |_, args|
   ClusterTools.uninstall
 end
-
-module ClusterToolsSetup
-  def self.cluster_tools_pod()
-    KubectlClient::Get.pod_status("cluster-tools").split(",")[0]
-  end
-
-  def self.cluster_tools_pod_by_node(node)
-    resource = KubectlClient::Get.resource("Daemonset", "cluster-tools")
-    pods = KubectlClient::Get.pods_by_resource(resource)
-    cluster_pod = pods.find do |pod| 
-      pod.dig("spec", "nodeName") == node 
-    end
-    cluster_pod.dig("metadata", "name") if cluster_pod
-  end
-end
-
