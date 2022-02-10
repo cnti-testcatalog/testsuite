@@ -26,7 +26,9 @@ task "uninstall_dockerd" do |_, args|
 end
 
 def dockerd_filename
-  "./#{TOOLS_DIR}/dockerd/manifest.yml"
+  manifest_path = "./#{TOOLS_DIR}/dockerd-manifest.yml"
+  File.write(manifest_path, DOCKERD_MANIFEST)
+  manifest_path
 end
 
 def dockerd_tempname
