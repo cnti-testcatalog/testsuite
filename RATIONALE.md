@@ -219,7 +219,7 @@ In order to prevent illegitimate escalation by processes and restrict a processe
 
 * ✔️ To check if there are any privileged containers (kubscape version)
 
-Why: *The docs describe Privileged mode as essentially enabling “…access to all devices on the host 
+Why: *... docs describe Privileged mode as essentially enabling “…access to all devices on the host 
 as well as [having the ability to] set some configuration in AppArmor or SElinux to allow the 
 container nearly all the same access to the host as processes running outside containers on the 
 host.” In other words, you should rarely, if ever, use this switch on your container command line.*
