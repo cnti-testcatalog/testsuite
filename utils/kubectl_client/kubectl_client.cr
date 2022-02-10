@@ -41,8 +41,8 @@ module KubectlClient
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    LOGGING.info "KubectlClient.wait output: #{output.to_s}"
-    LOGGING.info "KubectlClient.wait stderr: #{stderr.to_s}"
+    Log.info { "KubectlClient.wait output: #{output.to_s}" }
+    Log.info { "KubectlClient.wait stderr: #{stderr.to_s}" }
     {status: status, output: output, error: stderr}
   end
 
@@ -51,8 +51,8 @@ module KubectlClient
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    LOGGING.debug "KubectlClient.logs output: #{output.to_s}"
-    LOGGING.info "KubectlClient.logs stderr: #{stderr.to_s}"
+    Log.debug { "KubectlClient.logs output: #{output.to_s}" }
+    Log.info { "KubectlClient.logs stderr: #{stderr.to_s}" }
     {status: status, output: output, error: stderr}
   end
 
@@ -62,8 +62,8 @@ module KubectlClient
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    LOGGING.debug "KubectlClient.describe output: #{output.to_s}"
-    LOGGING.info "KubectlClient.describe stderr: #{stderr.to_s}"
+    Log.debug { "KubectlClient.describe output: #{output.to_s}" }
+    Log.info { "KubectlClient.describe stderr: #{stderr.to_s}" }
     {status: status, output: output, error: stderr}
   end
 
@@ -622,7 +622,7 @@ module KubectlClient
           end
           sleep 1
           timeout = timeout - 1 
-          LOGGING.info "Waiting for CRI-Tools Pod"
+          Log.info { "Waiting for CRI-Tools Pod" }
         end
         if timeout <= 0
           break
