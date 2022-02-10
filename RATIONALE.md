@@ -122,9 +122,13 @@ component that "never fails" in the cloud native world.
 
 * ✔️ Test if the CNF crashes when network latency occurs
 
-Why: A CNF should be resilient to network latency.
+Why: Network latency can have a significant impact on the overall performance of the application.  Network outages that result from low latency can cause 
+a range of failures for applications and can severely impact user/customers with downtime. This chaos experiment allows you to see the impact of latency 
+traffic on the CNF.
 
 * ✔️ Test if the CNF crashes when disk fill occurs
+
+Why: Disk Pressure is a scenario we find in Kubernetes applications that can result in the eviction of the application replica and impact its delivery. Such scenarios can still occur despite whatever availability aids K8s provides. These problems are generally referred to as "Noisy Neighbour" problems.
 
 * ✔️ Test if the CNF crashes when pod delete occurs
 
