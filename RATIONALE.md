@@ -290,28 +290,15 @@ exposed](https://kubernetes.io/docs/concepts/configuration/secret/) during the
 workflow of creating, viewing, and editing Pods
 
 * ✔️ To check if a CNF version uses immutable configmaps
-    * Value: medium
-    * Defense:
-        * Vendor: yellow/green
-        * Service provider: green
 
 Why: *"For clusters that extensively use ConfigMaps (at least tens of thousands of unique ConfigMap to Pod mounts), 
 [preventing changes](https://kubernetes.io/docs/concepts/configuration/configmap/#configmap-immutable)
-to their data has the following advantages:
+to their data has the following advantages:*
 - *protects you from accidental (or unwanted) updates that could cause applications outages*
 - *improves performance of your cluster by significantly reducing load on kube-apiserver, by 
 closing watches for ConfigMaps marked as immutable.*"
 
 *  (Maybe/PoC) To check if a CNF uses Kubernetes alpha APIs 'alpha_k8s_apis'
 
-
 Why: If a CNF uses alpha or undocumented APIs, the CNF is tightly coupled to an unstable platform
 
-[1] "No one knows more about what an application needs to run in a healthy state than the developer. 
-For a long time, infrastructure administrators have tried to figure out what “healthy” means for 
-applications they are responsible for running. Without knowledge of what actually makes an 
-application healthy, their attempts to monitor and alert when applications are unhealthy are 
-often fragile and incomplete. To increase the operability of cloud native applications, 
-applications should expose a health check."" Garrison, Justin; Nova, Kris. Cloud Native 
-Infrastructure: Patterns for Scalable Infrastructure and Applications in a Dynamic 
-Environment . O'Reilly Media. Kindle Edition. 
