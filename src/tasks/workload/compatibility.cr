@@ -39,6 +39,7 @@ rolling_version_change_test_names.each do |tn|
         valid_cnf_testsuite_yml = true
         LOGGING.debug "#{tn} container: #{container}"
         LOGGING.debug "container_names: #{container_names}"
+        #todo use skopeo to get the next and previous versions of the cnf image dynamically
         config_container = container_names.find{|x| x["name"]==container.as_h["name"]} if container_names
         LOGGING.debug "config_container: #{config_container}"
         unless config_container && config_container["#{tn}_test_tag"]? && !config_container["#{tn}_test_tag"].empty?
