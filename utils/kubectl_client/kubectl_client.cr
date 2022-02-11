@@ -126,6 +126,14 @@ module KubectlClient
       result = ShellCmd.run(cmd, "KubectlClient::Create.command")
       result[:status].success?
     end
+
+    def self.namespace(name : String)
+      cmd = "kubectl create namespace #{name}"
+      result = ShellCmd.run(cmd, "KubectlClient::Create.namespace")
+      return true if result[:status].success?
+      return true if result[:stderr].includes?("AlreadyExists")
+      return false
+    end
   end
 
   module Apply
