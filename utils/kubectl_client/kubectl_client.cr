@@ -443,7 +443,7 @@ module KubectlClient
       end
     end
 
-    def self.resource(kind, resource_name, namespace : String? = nil) : JSON::Any
+    def self.resource(kind, resource_name, namespace : String | Nil = nil) : JSON::Any
       namespace_opt = ""
       if namespace != nil
         namespace_opt = "-n #{namespace.gsub("--namespace ", "").gsub("-n ", "") if namespace}"
@@ -745,23 +745,17 @@ module KubectlClient
       Log.info { "resource_wait_for_uninstall kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}" }
       empty_hash = {} of String => JSON::Any 
       second_count = 0
-      pod_ready : String | Nil
-      #TODO use the kubectl client get
-      all_kind = ShellCmd.run("kubectl get #{kind} --namespace=#{namespace}", "all_kind")
 
-      resource_uninstalled = KubectlClient::Get.resource(kind, resource_name)
+      resource_uninstalled = KubectlClient::Get.resource(kind, resource_name, namespace)
       Log.debug { "resource_uninstalled #{resource_uninstalled}" }
-      
-      until (resource_uninstalled && resource_uninstalled.as_h == empty_hash)  || second_count > wait_count
+      until (resource_uninstalled && resource_uninstalled.as_h == empty_hash) || second_count > wait_count
         Log.info { "second_count = #{second_count}" }
         sleep 1
-        Log.debug { "wait command: kubectl get #{kind} --namespace=#{namespace}" }
-        resource_uninstalled = KubectlClient::Get.resource(kind, resource_name) #todo add namespace
+        resource_uninstalled = KubectlClient::Get.resource(kind, resource_name, namespace)
         Log.debug { "resource_uninstalled #{resource_uninstalled}" }
         second_count = second_count + 1
       end
 
-      Log.info { "final resource_uninstalled #{resource_uninstalled}" }
       if (resource_uninstalled && resource_uninstalled.as_h == empty_hash)
         Log.info { "kind/resource #{kind}, #{resource_name} uninstalled." }
         true
