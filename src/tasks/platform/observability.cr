@@ -89,7 +89,7 @@ namespace "platform" do
         Log.info { "container_repo_digests: #{repo_digest_list}" }
         id_sha256_list = repo_digest_list.reduce([] of String) do |acc, repo_digest|
           Log.info { "repo_digest: #{repo_digest}" }
-          resp = KubectlClient.exec("#{ClusterTools.pod_name} -- crictl inspecti #{repo_digest}")
+          resp = KubectlClient.exec("#{ClusterTools.pod_name} -- crictl inspecti #{repo_digest}", namespace: TESTSUITE_NAMESPACE)
           cricti = resp[:output].to_s
           begin
             parsed_json = JSON.parse(cricti)
