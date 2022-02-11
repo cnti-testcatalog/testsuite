@@ -7,7 +7,7 @@ require "../utils/utils.cr"
 require "kubectl_client"
 
 desc "The CNF test suite checks if state is stored in a custom resource definition or a separate database (e.g. etcd) rather than requiring local storage.  It also checks to see if state is resilient to node failure"
-task "state", ["volume_hostpath_not_found", "no_local_volume_configuration", "elastic_volumes", "database_persistence"] do |_, args|
+task "state", ["volume_hostpath_not_found", "no_local_volume_configuration", "elastic_volumes", "database_persistence", "node_drain"] do |_, args|
   stdout_score("state")
 end
 
@@ -205,6 +205,117 @@ module WorkloadResource
   end
 end
 
+desc "Does the CNF crash when node-drain occurs"
+task "node_drain", ["install_litmus"] do |t, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    skipped = false
+    Log.for("verbose").info {"node_drain"} if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+
+      Log.info { "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}" }
+      schedulable_nodes_count=KubectlClient::Get.schedulable_nodes_list
+      if schedulable_nodes_count.size > 1
+        LitmusManager.cordon_target_node("#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}","#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}")
+      else
+        Log.info { "The target node was unable to cordoned sucessfully" }
+        skipped = true
+      end 
+      
+      unless skipped
+        if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+          test_passed = true
+        else
+          puts "No resource label found for node_drain test for resource: #{resource["name"]}".colorize(:red)
+          test_passed = false
+        end
+        if test_passed
+          deployment_label="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}"
+          deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
+          app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_label_value} -o=jsonpath='{.items[0].spec.nodeName}'"
+          puts "Getting the app node name #{app_nodeName_cmd}" if check_verbose(args)
+          status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
+          puts "status_code: #{status_code}" if check_verbose(args)  
+          app_nodeName = appNodeName_response.to_s
+
+          litmus_nodeName_cmd = "kubectl get pods -n litmus -l app.kubernetes.io/name=litmus -o=jsonpath='{.items[0].spec.nodeName}'"
+          puts "Getting the app node name #litmus_nodeName_cmd}" if check_verbose(args)
+          status_code = Process.run("#{litmus_nodeName_cmd}", shell: true, output: litmusNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
+          puts "status_code: #{status_code}" if check_verbose(args)  
+          litmus_nodeName = litmusNodeName_response.to_s
+          Log.info { "Workload Node Name: #{app_nodeName}" }
+          Log.info { "Litmus Node Name: #{litmus_nodeName}" }
+          if litmus_nodeName == app_nodeName
+            Log.info { "Litmus and the workload are scheduled to the same node. Re-scheduling Litmus" }
+            nodes = KubectlClient::Get.schedulable_nodes_list
+            node_names = nodes.map { |item|
+              Log.info { "items labels: #{item.dig?("metadata", "labels")}" }
+              node_name = item.dig?("metadata", "labels", "kubernetes.io/hostname")
+              Log.debug { "NodeName: #{node_name}" }
+              node_name
+            }
+            Log.info { "All Schedulable Nodes: #{nodes}" }
+            Log.info { "Schedulable Node Names: #{node_names}" }
+            litmus_nodes = node_names - ["#{litmus_nodeName}"]
+            Log.info { "Schedulable Litmus Nodes: #{litmus_nodes}" }
+            Halite.follow.get("#{LitmusManager::ONLINE_LITMUS_OPERATOR}") do |response|
+              Log.info { "Litmus Response: #{response}" }
+              File.write("#{LitmusManager::DOWNLOADED_LITMUS_FILE}", response.body_io)
+            end
+            if args.named["offline"]?
+                 Log.info {"Re-Schedule Litmus in offline mode"}
+                 LitmusManager.add_node_selector(litmus_nodes[0], airgap=true)
+               else
+                 Log.info {"Re-Schedule Litmus in online mode"}
+                 LitmusManager.add_node_selector(litmus_nodes[0], airgap=false)
+            end
+            KubectlClient::Apply.file("#{LitmusManager::MODIFIED_LITMUS_FILE}")
+            KubectlClient::Get.resource_wait_for_install(kind="Deployment", resource_nome="litmus", wait_count=180, namespace="litmus")
+          end
+
+          if args.named["offline"]?
+               Log.info {"install resilience offline mode"}
+               AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
+               KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
+               KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-rbac.yaml")
+             else
+               KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/experiment.yaml")
+               KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/rbac.yaml")
+          end
+          KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
+
+
+          chaos_experiment_name = "node-drain"
+          total_chaos_duration = "90"
+          test_name = "#{resource["name"]}-#{Random.rand(99)}" 
+          chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
+
+          template = ChaosTemplates::NodeDrain.new(
+            test_name,
+            "#{chaos_experiment_name}",
+            "#{deployment_label}",
+            "#{deployment_label_value}",
+            total_chaos_duration,
+            app_nodeName
+          ).to_s
+          File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
+          KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+          LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
+          test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+        end
+      end
+    end
+    if skipped
+      Log.for("verbose").warn{"The node_drain test needs minimum 2 schedulable nodes, current number of nodes: #{KubectlClient::Get.schedulable_nodes_list.size}"} if check_verbose(args)
+      resp = upsert_skipped_task("node_drain","⏭️  SKIPPED: node_drain chaos test skipped 🗡️💀♻️")
+    elsif task_response
+      resp = upsert_passed_task("node_drain","✔️  PASSED: node_drain chaos test passed 🗡️💀♻️")
+    else
+      resp = upsert_failed_task("node_drain","✖️  FAILED: node_drain chaos test failed 🗡️💀♻️")
+    end
+  end
+end
 
 desc "Does the CNF use an elastic persistent volume"
 task "elastic_volumes" do |_, args|
