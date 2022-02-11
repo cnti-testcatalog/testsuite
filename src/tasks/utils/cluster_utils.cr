@@ -88,7 +88,7 @@ module ClusterTools
   end
 
   def self.pod_name()
-    KubectlClient::Get.pod_status("cluster-tools").split(",")[0]
+    KubectlClient::Get.pod_status("cluster-tools", namespace: TESTSUITE_NAMESPACE).split(",")[0]
   end
 
   def self.pod_by_node(node)
