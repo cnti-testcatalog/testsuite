@@ -14,24 +14,24 @@ describe "Private Registry: Image" do
     KubectlClient::Get.resource_wait_for_install("Pod", "registry")
     KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
 
-    KubectlClient.exec("dockerd -t -- apk add curl", true)
-    KubectlClient.exec("dockerd -t -- curl http://example.com", true)
+    KubectlClient.exec("dockerd -t -- apk add curl", force_output: true)
+    KubectlClient.exec("dockerd -t -- curl http://example.com", force_output: true)
 
     if ENV["DOCKERHUB_USERNAME"]? && ENV["DOCKERHUB_PASSWORD"]?
-      result = KubectlClient.exec("dockerd -t -- docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD", true)
+      result = KubectlClient.exec("dockerd -t -- docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD", force_output: true)
       Log.info { "Docker Login output: #{result[:output]}" }
     else
       puts "DOCKERHUB_USERNAME & DOCKERHUB_PASSWORD Must be set.".colorize(:red)
       exit 1
     end
 
-    KubectlClient.exec("dockerd -t -- docker pull coredns/coredns:1.6.7", true)
-    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7", true)
-    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns:1.6.7", true)
+    KubectlClient.exec("dockerd -t -- docker pull coredns/coredns:1.6.7", force_output: true)
+    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7", force_output: true)
+    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns:1.6.7", force_output: true)
 
     # This is required for the test that uses the sample_local_registry_org_image CNF
-    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.6.7 registry:5000/coredns-sample-org/coredns:1.6.7", true)
-    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns-sample-org/coredns:1.6.7", true)
+    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.6.7 registry:5000/coredns-sample-org/coredns:1.6.7", force_output: true)
+    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns-sample-org/coredns:1.6.7", force_output: true)
   end
 
   it "'reasonable_image_size' should pass if using local registry and a port", tags: ["private_registry_image"]  do
@@ -75,16 +75,16 @@ describe "Private Registry: Rolling" do
     KubectlClient::Get.resource_wait_for_install("Pod", "registry")
     KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
 
-    KubectlClient.exec("dockerd -t -- apk add curl", true)
-    KubectlClient.exec("dockerd -t -- curl http://example.com", true)
+    KubectlClient.exec("dockerd -t -- apk add curl", force_output: true)
+    KubectlClient.exec("dockerd -t -- curl http://example.com", force_output: true)
 
-    KubectlClient.exec("dockerd -t -- docker pull coredns/coredns:1.6.7", true)
-    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7", true)
-    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns:1.6.7", true)
+    KubectlClient.exec("dockerd -t -- docker pull coredns/coredns:1.6.7", force_output: true)
+    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.6.7 registry:5000/coredns:1.6.7", force_output: true)
+    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns:1.6.7", force_output: true)
 
-    KubectlClient.exec("dockerd -t -- docker pull coredns/coredns:1.8.0", true)
-    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.8.0 registry:5000/coredns:1.8.0", true)
-    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns:1.8.0", true)
+    KubectlClient.exec("dockerd -t -- docker pull coredns/coredns:1.8.0", force_output: true)
+    KubectlClient.exec("dockerd -t -- docker tag coredns/coredns:1.8.0 registry:5000/coredns:1.8.0", force_output: true)
+    KubectlClient.exec("dockerd -t -- docker push registry:5000/coredns:1.8.0", force_output: true)
   end
 
   it "'rolling_update' should pass if using local registry and a port", tags: ["private_registry_rolling"]  do

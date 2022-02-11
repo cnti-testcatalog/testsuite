@@ -67,9 +67,14 @@ module KubectlClient
     {status: status, output: output, error: stderr}
   end
 
-  def self.exec(command, force_output=false)
-    cmd = "kubectl exec #{command}"
-    ShellCmd.run(cmd, "KubectlClient.exec", force_output)
+  def self.exec(command, namespace : String | Nil = nil, force_output : Bool = false)
+    full_cmd = ["kubectl", "exec"]
+    if namespace
+      full_cmd << "-n #{namespace}"
+    end
+    full_cmd << command
+    full_cmd = full_cmd.join(" ")
+    ShellCmd.run(full_cmd, "KubectlClient.exec", force_output)
   end
 
   def self.cp(command)

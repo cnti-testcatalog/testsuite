@@ -95,11 +95,11 @@ describe "Microservice" do
       LOGGING.info "CRI Pod: #{pods[0]}"
       KubectlClient::Get.resource_wait_for_install("DaemonSet", "cluster-tools")
       LOGGING.info "CPU Logs"
-      KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=cpu --num-threads=4 --cpu-max-prime=9999 run", true)
+      KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=cpu --num-threads=4 --cpu-max-prime=9999 run", force_output: true)
       LOGGING.info "Memory logs"
-      KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=memory --memory-block-size=1M --memory-total-size=100G --num-threads=1 run", true)
+      KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=memory --memory-block-size=1M --memory-total-size=100G --num-threads=1 run", force_output: true)
       LOGGING.info "Disk logs"
-      KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- /bin/bash -c 'sysbench fileio prepare && sysbench fileio --file-test-mode=rndrw run'", true)
+      KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- /bin/bash -c 'sysbench fileio prepare && sysbench fileio --file-test-mode=rndrw run'", force_output: true)
       `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
     begin
       response_s = `./cnf-testsuite reasonable_startup_time verbose`
