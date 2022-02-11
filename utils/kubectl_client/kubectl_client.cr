@@ -621,7 +621,7 @@ module KubectlClient
       JSON.parse(%({}))
     end
 
-    def self.wait_for_install(deployment_name, wait_count : Int32 = 180, namespace="default")
+    def self.wait_for_install(deployment_name, wait_count : Int32 = 180, namespace : String = "default")
       resource_wait_for_install("deployment", deployment_name, wait_count, namespace)
     end
 
@@ -712,7 +712,13 @@ module KubectlClient
       result[:output].to_i
     end
 
-    def self.resource_wait_for_install(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default", kubeconfig=nil)
+    def self.resource_wait_for_install(
+      kind : String,
+      resource_name : String,
+      wait_count : Int32 = 180,
+      namespace : String = "default",
+      kubeconfig : String | Nil = nil
+    )
       # Not all cnfs have #{kind}.  some have only a pod.  need to check if the
       # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod
       Log.info { "resource_wait_for_install kind: #{kind} resource_name: #{resource_name} namespace: #{namespace} kubeconfig: #{kubeconfig}" }
@@ -733,7 +739,7 @@ module KubectlClient
     end
 
     #TODO add parameter and functionality that checks for individual pods to be successfully terminated
-    def self.resource_wait_for_uninstall(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default")
+    def self.resource_wait_for_uninstall(kind : String, resource_name : String, wait_count : Int32 = 180, namespace : String | Nil = "default")
       # Not all cnfs have #{kind}.  some have only a pod.  need to check if the
       # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod
       Log.info { "resource_wait_for_uninstall kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}" }
@@ -755,7 +761,7 @@ module KubectlClient
         second_count = second_count + 1
       end
 
-        Log.info { "final resource_uninstalled #{resource_uninstalled}" }
+      Log.info { "final resource_uninstalled #{resource_uninstalled}" }
       if (resource_uninstalled && resource_uninstalled.as_h == empty_hash)
         Log.info { "kind/resource #{kind}, #{resource_name} uninstalled." }
         true
