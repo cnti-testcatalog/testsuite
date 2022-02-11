@@ -10,7 +10,7 @@ task "setup", ["offline", "helm_local_install", "prereqs", "create_namespace", "
 end
 
 task "create_namespace" do |_, args|
-  if KubectlClient::Create.namespace("cnf-testsuite")
+  if KubectlClient::Create.namespace(TESTSUITE_NAMESPACE)
     stdout_success "Created cnf-testsuite namespace on the Kubernetes cluster"
   else
     stdout_failure "Could not create cnf-testsuite namespace on the Kubernetes cluster"

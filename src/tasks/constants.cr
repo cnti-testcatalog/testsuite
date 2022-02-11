@@ -23,6 +23,8 @@ IGNORED_SECRET_TYPES = ["kubernetes.io/service-account-token", "kubernetes.io/do
 EMPTY_JSON = JSON.parse(%({}))
 EMPTY_JSON_ARRAY = JSON.parse(%([]))
 
+TESTSUITE_NAMESPACE = "cnf-testsuite"
+
 #Embedded global text variables
 EmbeddedFileManager.node_failure_values
 EmbeddedFileManager.cluster_tools
