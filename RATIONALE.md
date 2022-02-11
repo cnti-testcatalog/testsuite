@@ -108,6 +108,11 @@ Why: When a traditional database such as mysql is configured to use statefulsets
  the database to use a persistent identifier that it maintains across any rescheduling. 
  Persistent Pod identifiers make it easier to match existing volumes to the new Pods that 
  have been rescheduled. https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+ 
+* ✔️ Test if the CNF crashes when node drain occurs
+
+Why: No CNF should fail because of stateful configuration. A CNF should function properly if it is rescheduled on other nodes.   This test will remove 
+resources which are running on a target node and reschedule them on the another node.
 
 ## Reliability, Resilience and Availability
 
@@ -157,11 +162,6 @@ starting a traffic control (tc) process with netem rules to add egress packet co
 
 Why: A higher quality CNF should be resilient to erroneously duplicated packets. This test injects network duplication on the specified container 
 by starting a traffic control (tc) process with netem rules to add egress delays.
-
-* ✔️ Test if the CNF crashes when node drain occurs
-
-Why: A CNF should function properly if it is rescheduled on other nodes.  This test will remove resources which are running on a target node and 
-reschedule them on the another node.
 
 * ✔️ To test if there is a liveness entry in the Helm chart
 
