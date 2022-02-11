@@ -131,7 +131,7 @@ module KubectlClient
       cmd = "kubectl create namespace #{name}"
       result = ShellCmd.run(cmd, "KubectlClient::Create.namespace")
       return true if result[:status].success?
-      return true if result[:stderr].includes?("AlreadyExists")
+      return true if result[:error].includes?("AlreadyExists")
       return false
     end
   end
