@@ -137,8 +137,12 @@ module KubectlClient
   end
 
   module Apply
-    def self.file(file_name, options="")
-      cmd = "kubectl apply -f #{file_name} #{options}"
+    def self.file(file_name, kubeconfig : String | Nil = nil, namespace: String | Nil = nil)
+      cmd = ["kubectl apply"]
+      cmd << "--kubeconfig #{kubeconfig}" if kubeconfig
+      cmd << "-n #{namespace}" if namespace
+      cmd << "-f #{file_name}"
+      cmd = cmd.join(" ")
       ShellCmd.run(cmd, "KubectlClient::Apply.file")
     end
 
@@ -174,8 +178,8 @@ module KubectlClient
       ShellCmd.run(cmd, "KubectlClient::Delete.command")
     end
 
-    def self.file(file_name)
-      cmd = "kubectl delete -f #{file_name}"
+    def self.file(file_name, namespace : String | Nil = nil)
+      cmd = "kubectl delete #{namespace ? "-n #{namespace}" : ""} -f #{file_name}"
       ShellCmd.run(cmd, "KubectlClient::Delete.file")
     end
   end

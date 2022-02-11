@@ -949,7 +949,7 @@ module CNFManager
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     case install_method[0]
     when Helm::InstallMethod::ManifestDirectory
-      KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", "--kubeconfig #{kubeconfig}")
+      KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", kubeconfig: kubeconfig)
     when Helm::InstallMethod::HelmChart
       begin
         if offline
