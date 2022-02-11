@@ -235,6 +235,8 @@ Why: *Due to CVE-2021-25741, subPath or subPathExpr volume mounts can be [used t
 
 * ✔️ To check if there are service accounts that are automatically mapped
 
+Why: *When a pod gets created and a service account wasn't specified, then the default service account will be used. Service accounts assigned in this way can unintentionally give third-party applications root access to the K8s APIs and other applicaton services. In order to follow a zero-trust / fine-grained security methodology, this functionality will need to be [explicitly disabled](https://hub.armo.cloud/docs/c-0034) by using the [automountServiceAccountToken: false](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#use-the-default-service-account-to-access-the-api-server) flag.*
+
 * ✔️ To check if there is a host network attached to a pod
 
 * ✔️ To check if there are service accounts that are automatically mapped
