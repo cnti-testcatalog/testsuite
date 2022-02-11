@@ -431,6 +431,13 @@ crystal src/cnf-testsuite.cr external_retry
 ./cnf-testsuite state
 ```
 
+##### :heavy_check_mark: Test if the CNF crashes when node drain and rescheduling occurs.  All configuration should be stateless.
+
+```
+./cnf-testsuite node_drain
+```
+
+
 ##### :heavy_check_mark: To test if the CNF uses a volume host path
 
 ```
@@ -576,12 +583,6 @@ Sressing the disk with continuous and heavy IO can cause degradation in reads/ w
 
 ```
 ./cnf-testsuite pod_network_duplication
-```
-
-##### :heavy_check_mark: Test if the CNF crashes when node drain occurs
-
-```
-./cnf-testsuite node_drain
 ```
 
 ##### :heavy_check_mark: To test if there is a liveness entry in the Helm chart

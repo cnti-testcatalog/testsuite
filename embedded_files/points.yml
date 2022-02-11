@@ -162,6 +162,9 @@
   pass5: 5 
   pass3: 3 
   fail: -1
+- name: node_drain
+  tags: state, dynamic, workload
+
 #- name: hardware_and_scheduling
 #  tags: hardware, dynamic, workload
 #- name: static_accessing_hardware 
@@ -185,9 +188,6 @@
   tags: platform, platform:security, dynamic
 - name: exposed_dashboard
   tags: platform, platform:security, dynamic
-
-- name: node_drain
-  tags: resilience, dynamic, workload
 
 - name: service_account_mapping
   tags: security, dynamic, workload
