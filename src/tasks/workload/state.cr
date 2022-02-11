@@ -258,7 +258,7 @@ task "database_persistence" do |_, args|
     # VERBOSE_LOGGING.info "hithere" if check_verbose(args)
     Log.info {"hithere info"}
     Log.info {"database_persistence mysql: #{match}"}
-    if match
+    if match[:found]
       statefulset_exists = Helm.kind_exists?(args, config, "statefulset")
       task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
         namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
