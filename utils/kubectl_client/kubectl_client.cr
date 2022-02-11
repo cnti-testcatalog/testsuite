@@ -137,7 +137,7 @@ module KubectlClient
   end
 
   module Apply
-    def self.file(file_name, kubeconfig : String | Nil = nil, namespace: String | Nil = nil)
+    def self.file(file_name, kubeconfig : String | Nil = nil, namespace : String | Nil = nil)
       cmd = ["kubectl apply"]
       cmd << "--kubeconfig #{kubeconfig}" if kubeconfig
       cmd << "-n #{namespace}" if namespace
