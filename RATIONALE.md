@@ -150,13 +150,22 @@ causes a movement of all pods to other nodes. This test determines the limits of
 
 * ✔️ Test if the CNF crashes when pod network corruption occurs
 
+Why: A higher quality CNF should be resilient to a lossy/flaky network.  This test injects packet corruption on the specified CNF's container by 
+starting a traffic control (tc) process with netem rules to add egress packet corruption.
+
 * ✔️ Test if the CNF crashes when pod network duplication occurs
+
+Why: A higher quality CNF should be resilient to erroneously duplicated packets. This test injects network duplication on the specified container 
+by starting a traffic control (tc) process with netem rules to add egress delays.
 
 * ✔️ Test if the CNF crashes when node drain occurs
 
+Why: A CNF should function properly if it is rescheduled on other nodes.  This test will remove resources which are running on a target node and 
+reschedule them on the another node.
+
 * ✔️ To test if there is a liveness entry in the Helm chart
 
-Why: A cloud native principle is that applications and application developers understand their own 
+Why: A cloud native principle is that application developers understand their own 
 resilience requirements better than operators[1].  This is exemplified in the Kubernetes best practice 
 of pods declaring how they should be managed through the liveness and readiness entries in the 
 pod's configuration. 
