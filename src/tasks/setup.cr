@@ -5,8 +5,16 @@ require "totem"
 
 desc "Sets up the CNF test suite, the K8s cluster, and upstream projects"
 
-task "setup", ["offline", "helm_local_install", "prereqs", "configuration_file_setup", "install_apisnoop", "install_sonobuoy", "install_chart_testing", "cnf_testsuite_setup", "install_kind"] do  |_, args|
+task "setup", ["offline", "helm_local_install", "prereqs", "create_namespace", "configuration_file_setup", "install_apisnoop", "install_sonobuoy", "install_chart_testing", "cnf_testsuite_setup", "install_kind"] do  |_, args|
   stdout_success "Setup complete"
+end
+
+task "create_namespace" do |_, args|
+  if KubectlClient::Create.namespace("cnf-testsuite")
+    stdout_success "Created cnf-testsuite namespace on the Kubernetes cluster"
+  else
+    stdout_failure "Could not create cnf-testsuite namespace on the Kubernetes cluster"
+  end
 end
 
 task "offline" do |_, args|
@@ -23,7 +31,7 @@ task "offline" do |_, args|
 end
 
 task "configuration_file_setup" do |_, args|
-  VERBOSE_LOGGING.info "configuration_file_setup" if check_verbose(args)
+  Log.for("verbose").info { "configuration_file_setup" } if check_verbose(args)
   CNFManager::Points.create_points_yml
 end
 
