@@ -88,28 +88,15 @@ describe "Microservice" do
   end
 
   it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"]  do
-      ClusterTools.install
-
-      pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-      pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
-      LOGGING.info "CRI Pod: #{pods[0]}"
-      KubectlClient::Get.resource_wait_for_install("DaemonSet", "cluster-tools")
-      LOGGING.info "CPU Logs"
-      KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=cpu --num-threads=4 --cpu-max-prime=9999 run", force_output: true)
-      LOGGING.info "Memory logs"
-      KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- sysbench --test=memory --memory-block-size=1M --memory-total-size=100G --num-threads=1 run", force_output: true)
-      LOGGING.info "Disk logs"
-      KubectlClient.exec("#{pods[0].dig?("metadata", "name")} -ti -- /bin/bash -c 'sysbench fileio prepare && sysbench fileio --file-test-mode=rndrw run'", force_output: true)
-      `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
     begin
+      `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
       response_s = `./cnf-testsuite reasonable_startup_time verbose`
-      LOGGING.info response_s
+      Log.info { response_s }
       
       (/PASSED: CNF had a reasonable startup time/ =~ response_s).should_not be_nil
     ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns`
+      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns` }
       $?.success?.should be_true
-      ClusterTools.uninstall
     end
   end
 
