@@ -6,7 +6,7 @@ require "halite"
 
 module K8sInstrumentation
   def self.disk_speed
-    pod_status = KubectlClient::Get.pod_status("cluster-tools")
+    pod_status = KubectlClient::Get.pod_status("cluster-tools", namespace: TESTSUITE_NAMESPACE)
     cluster_tools = pod_status.split(",")[0]
     Log.info { "k8s_instrumentation_debug Pod status: #{pod_status.inspect}" }
     result = ShellCmd.run("kubectl get all -A", "k8s_instrumentation_debug", force_output: true)
