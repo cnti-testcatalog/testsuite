@@ -55,6 +55,7 @@ module ClusterTools
     Log.info { "official_content_digest_by_image_name: #{image_name}"}
 
     result = exec("skopeo inspect docker://#{image_name}")
+    Log.for("skopeo_inspect").info { result[:output] }
     response = result[:output]
     if result[:status].success? && !response.empty?
       return JSON.parse(response)
