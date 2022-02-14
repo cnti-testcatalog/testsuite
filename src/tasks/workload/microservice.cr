@@ -109,7 +109,7 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
         # get multiple call for a larger sample
         parsed_netstat = (1..10).map {
           sleep 10
-          netstat = KubectlClient.exec("#{cluster_tools} -ti -- nsenter -t #{pid} -n netstat")
+          netstat = KubectlClient.exec("#{cluster_tools} -ti -- nsenter -t #{pid} -n netstat", namespace: TESTSUITE_NAMESPACE)
           Log.info { "Container Netstat: #{netstat}"}
           Netstat.parse(netstat[:output])
         }.flatten.compact
