@@ -93,7 +93,7 @@ module ClusterTools
 
   def self.pod_by_node(node)
     resource = KubectlClient::Get.resource("Daemonset", "cluster-tools", namespace: TESTSUITE_NAMESPACE)
-    pods = KubectlClient::Get.pods_by_resource(resource)
+    pods = KubectlClient::Get.pods_by_resource(resource, namespace: TESTSUITE_NAMESPACE)
     cluster_pod = pods.find do |pod|
       pod.dig("spec", "nodeName") == node
     end
