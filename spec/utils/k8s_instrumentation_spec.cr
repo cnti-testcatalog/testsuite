@@ -12,7 +12,7 @@ describe "K8sInstrumentation" do
   end
 
   it "'#disk_speed' should return all responses for the sysbench disk speed call on a pod", tags: ["k8s-instrumentation"]  do
-    LOGGING.info `./cnf-testsuite install_cluster_tools`
+    ClusterTools.install
     resp = K8sInstrumentation.disk_speed
     (resp["95th percentile"]).should_not be_nil
     (resp["95th percentile"].to_f).should_not be_nil
