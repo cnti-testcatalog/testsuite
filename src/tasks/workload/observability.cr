@@ -66,6 +66,7 @@ task "prometheus_traffic" do |_, args|
 
         Log.info { "service_url: #{service_url}"}
         ClusterTools.install
+        ShellCmd.run("kubectl get all -A", "view_all_services", force_output: true)
         prom_api_resp = ClusterTools.exec_k8s("curl http://#{service_url}.default.svc.local/api/v1/targets?state=active")
 
         Log.debug { "prom_api_resp: #{prom_api_resp}"}
