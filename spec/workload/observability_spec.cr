@@ -34,7 +34,7 @@ describe "Observability" do
   end
 
   it "'prometheus_traffic' should pass if there is prometheus traffic", tags: ["observability"] do
-    Shell.cmd.run("./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml", "spec_sample_setup", force_output: true)
+    ShellCmd.run("./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml", "spec_sample_setup", force_output: true)
     helm = BinarySingleton.helm
 
     Log.info { "Add prometheus helm repo" }
