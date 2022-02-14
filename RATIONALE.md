@@ -79,7 +79,7 @@ should interact with other processes through a microservice API.
 Why: A K8s microservice should expose it's API though a K8s service resource.  K8s services
 handle service discovery and load balancing for the cluster.
 
-* ✔️ To check if the CNF uses a shared database #1165
+* ✔️ To check if the CNF uses a shared database
 
 Why: A K8s microservice should not share a database with another K8s database because
 it forces the two services to upgrade in lock step
