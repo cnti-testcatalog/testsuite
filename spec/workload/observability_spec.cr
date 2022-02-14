@@ -34,26 +34,25 @@ describe "Observability" do
   end
 
   it "'prometheus_traffic' should pass if there is prometheus traffic", tags: ["observability"] do
+    Shell.cmd.run("./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml", "spec_sample_setup", force_output: true)
+    helm = BinarySingleton.helm
 
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
-      LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
-      LOGGING.info "Installing prometheus server" 
-      helm = BinarySingleton.helm
-      # resp = `#{helm} install prometheus prometheus-community/prometheus`
-      resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
-      LOGGING.info resp
-      KubectlClient::Get.wait_for_install("prometheus-server")
-      LOGGING.info `kubectl describe deployment prometheus-server`
-      #todo logging on prometheus pod
+    Log.info { "Add prometheus helm repo" }
+    ShellCmd.run("#{helm} repo add prometheus-community https://prometheus-community.github.io/helm-charts", "helm_repo_add_prometheus", force_output: true)
 
-      response_s = `./cnf-testsuite prometheus_traffic`
-      LOGGING.info response_s
-      (/PASSED: Your cnf is sending prometheus traffic/ =~ response_s).should_not be_nil
+    Log.info { "Installing prometheus server" }
+    install_cmd = "#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus"
+    ShellCmd.run(install_cmd, "helm_install_prometheus", force_output: true)
+
+    KubectlClient::Get.wait_for_install("prometheus-server")
+    ShellCmd.run("kubectl describe deployment prometheus-server", force_output: true)
+
+    test_result = ShellCmd.run("./cnf-testsuite prometheus_traffic", "run_test_cmd", force_output: true)
+    (/PASSED: Your cnf is sending prometheus traffic/ =~ test_result[:output]).should_not be_nil
   ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
-      resp = `#{helm} delete prometheus`
-      LOGGING.info resp
-      $?.success?.should be_true
+    ShellCmd.run("./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml", "spec_sample_cleaup")
+    result = ShellCmd.run("#{helm} delete prometheus")
+    result[:status].success?.should be_true
   end
 
   it "'prometheus_traffic' should skip if there is no prometheus installed", tags: ["observability"] do
