@@ -6,7 +6,10 @@ require "halite"
 
 module K8sInstrumentation
   def self.disk_speed
-    cluster_tools = KubectlClient::Get.pod_status("cluster-tools").split(",")[0]
+    pod_status = KubectlClient::Get.pod_status("cluster-tools")
+    cluster_tools = pod_status.split(",")[0]
+    Log.info { "k8s_instrumentation_debug Pod status: #{pod_status.inspect}" }
+    result = ShellCmd.run("kubectl get all -A", "k8s_instrumentation_debug", force_output: true)
     resp = KubectlClient.exec("#{cluster_tools} -ti -- /bin/bash -c 'sysbench fileio prepare && sysbench fileio --file-test-mode=rndrw run'", namespace: TESTSUITE_NAMESPACE)
     parse_sysbench(resp[:output].to_s)
   end
