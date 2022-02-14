@@ -45,13 +45,13 @@ describe "Observability" do
     ShellCmd.run(install_cmd, "helm_install_prometheus", force_output: true)
 
     KubectlClient::Get.wait_for_install("prometheus-server")
-    ShellCmd.run("kubectl describe deployment prometheus-server", force_output: true)
+    ShellCmd.run("kubectl describe deployment prometheus-server", "k8s_describe_prometheus", force_output: true)
 
     test_result = ShellCmd.run("./cnf-testsuite prometheus_traffic", "run_test_cmd", force_output: true)
     (/PASSED: Your cnf is sending prometheus traffic/ =~ test_result[:output]).should_not be_nil
   ensure
     ShellCmd.run("./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml", "spec_sample_cleaup")
-    result = ShellCmd.run("#{helm} delete prometheus")
+    result = ShellCmd.run("#{helm} delete prometheus", "helm_delete_prometheus")
     result[:status].success?.should be_true
   end
 
