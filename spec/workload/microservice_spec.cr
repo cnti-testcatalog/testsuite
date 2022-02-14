@@ -8,6 +8,10 @@ require "file_utils"
 require "sam"
 
 describe "Microservice" do
+  before_all do
+    `./cnf-testsuite setup`
+    $?.success?.should be_true
+  end
 
   it "'shared_database' should pass if no database is used by two microservices", tags: ["shared_database"]  do
     begin

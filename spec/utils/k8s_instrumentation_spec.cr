@@ -6,7 +6,10 @@ require "file_utils"
 require "sam"
 
 describe "K8sInstrumentation" do
-
+  before_all do
+    `./cnf-testsuite setup`
+    $?.success?.should be_true
+  end
 
   it "'#disk_speed' should return all responses for the sysbench disk speed call on a pod", tags: ["k8s-instrumentation"]  do
     LOGGING.info `./cnf-testsuite install_cluster_tools`
@@ -15,6 +18,4 @@ describe "K8sInstrumentation" do
     (resp["95th percentile"].to_f).should_not be_nil
   end
 
-
 end
-

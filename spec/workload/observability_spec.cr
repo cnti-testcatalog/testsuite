@@ -4,6 +4,11 @@ require "../../src/tasks/utils/utils.cr"
 require "../../src/tasks/jaeger_setup.cr"
 
 describe "Observability" do
+  before_all do
+    `./cnf-testsuite setup`
+    $?.success?.should be_true
+  end
+
   it "'log_output' should pass with a cnf that outputs logs to stdout", tags: ["observability"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
