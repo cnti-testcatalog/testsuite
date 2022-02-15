@@ -691,7 +691,7 @@ module CNFManager
     Log.info { "tgz_name: #{tgz_name}" }
 
     unless input_file && !input_file.empty?
-      `rm #{tgz_name}`
+      FileUtils.rm_rf(tgz_name)
       helm_info = Helm.pull(helm_chart) 
       unless helm_info[:status].success?
         puts "Helm pull error".colorize(:red)
