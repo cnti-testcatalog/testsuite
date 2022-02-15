@@ -63,8 +63,13 @@ module ClusterTools
     JSON.parse(%({}))
   end
 
-  def self.local_match_by_image_name(image_name, nodes=KubectlClient::Get.nodes["items"].as_a )
+  def self.local_match_by_image_name(image_name, nodes = nil)
     Log.info { "local_match_by_image_name image_name: #{image_name}" }
+
+    if nodes == nil
+      nodes = KubectlClient::Get.nodes["items"].as_a
+    end
+
     match = Hash{:found => false, :digest => "", :release_name => ""}
     #todo get name of pod and match against one pod instead of getting all pods and matching them
     tag = KubectlClient::Get.container_tag_from_image_by_nodes(image_name, nodes)
