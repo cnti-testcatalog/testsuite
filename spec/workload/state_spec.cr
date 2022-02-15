@@ -30,7 +30,7 @@ describe "State" do
       Log.info {"Installing Mysql "}
       # Mysql.install
       # todo make helm directories work with parameters
-      Log.info {`./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-mysql/cnf-testsuite.yml`}
+      ShellCmd.run("./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-mysql/cnf-testsuite.yml", "sample_cnf_setup")
       KubectlClient::Get.resource_wait_for_install("Pod", "mysql-0")
       # KubectlClient::Delete.file("https://raw.githubusercontent.com/mysql/mysql-operator/trunk/samples/sample-cluster.yaml  --wait=false")
       # temp_pw = Random.rand.to_s
@@ -45,8 +45,8 @@ describe "State" do
        # KubectlClient::Delete.file("https://raw.githubusercontent.com/mysql/mysql-operator/trunk/samples/sample-cluster.yaml  --wait=false")
        # KubectlClient::Delete.file("https://raw.githubusercontent.com/mysql/mysql-operator/trunk/samples/sample-cluster.yaml")
       #todo fix cleanup for helm directory with parameters
-      Log.info {`./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-mysql/cnf-testsuite.yml`}
-      Log.info {`kubectl delete pvc data-mysql-0`}
+      ShellCmd.run("./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-mysql/cnf-testsuite.yml", "sample_cnf_cleanup")
+      ShellCmd.run("kubectl delete pvc data-mysql-0", "delete_pvc")
     end
   end
 
