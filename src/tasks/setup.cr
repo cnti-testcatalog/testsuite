@@ -5,9 +5,18 @@ require "totem"
 
 desc "Sets up the CNF test suite, the K8s cluster, and upstream projects"
 
-task "setup", ["offline", "helm_local_install", "prereqs", "configuration_file_setup", "install_api_snoop", "install_sonobuoy", "install_chart_testing", "cnf_testsuite_setup", "install_kind"] do  |_, args|
-
+task "setup", ["offline", "helm_local_install", "prereqs", "create_namespace", "configuration_file_setup", "install_apisnoop", "install_sonobuoy", "install_chart_testing", "cnf_testsuite_setup", "install_kind"] do  |_, args|
   stdout_success "Setup complete"
+end
+
+task "create_namespace" do |_, args|
+  if KubectlClient::Create.namespace(TESTSUITE_NAMESPACE)
+    stdout_success "Created #{TESTSUITE_NAMESPACE} namespace on the Kubernetes cluster"
+  else
+    stdout_failure "Could not create #{TESTSUITE_NAMESPACE} namespace on the Kubernetes cluster"
+  end
+rescue e : KubectlClient::Create::AlreadyExistsError
+  stdout_success "#{TESTSUITE_NAMESPACE} namespace already exists on the Kubernetes cluster"
 end
 
 task "offline" do |_, args|
@@ -24,7 +33,7 @@ task "offline" do |_, args|
 end
 
 task "configuration_file_setup" do |_, args|
-  VERBOSE_LOGGING.info "configuration_file_setup" if check_verbose(args)
+  Log.for("verbose").info { "configuration_file_setup" } if check_verbose(args)
   CNFManager::Points.create_points_yml
 end
 

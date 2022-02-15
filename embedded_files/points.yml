@@ -5,6 +5,7 @@
   fail: -1 
   skipped: 0 
   na: 0 
+  neutral: 0 
 
 - name: reasonable_image_size
   tags: microservice, dynamic, workload
@@ -12,9 +13,15 @@
   tags: microservice, dynamic, workload
 - name: single_process_type 
   tags: microservice, dynamic, workload
+- name: service_discovery
+  tags: microservice, dynamic, workload
+  pass: 5
+  fail: 0
+- name: shared_database
+  tags: microservice, dynamic, workload
 
 - name: cni_compatible
-  tags: compatibility, dynamic
+  tags: compatibility, dynamic, workload
 # - name: cni_spec 
 #  tags: compatibility, dynamic
 #- name: api_snoop_alpha 
@@ -25,9 +32,9 @@
 #  tags: compatibility, dynamic
 
 #- name: reset_cnf 
-#  tags: state, dynamic, configuration_lifecycle
+#  tags: state, dynamic, configuration
 #- name: check_reaped 
-#  tags: state, dynamic, configuration_lifecycle
+#  tags: state, dynamic, configuration
 
 - name: privileged 
   tags: security, dynamic, workload
@@ -48,17 +55,17 @@
 #  tags: security, dynamic
 
 - name: increase_capacity 
-  tags: scalability, dynamic, workload
+  tags: compatibility, dynamic, workload
   pass: 10
   fail: -5 
 - name: decrease_capacity 
-  tags: scalability, dynamic, workload
+  tags: compatibility, dynamic, workload
   pass: 10
   fail: -5 
 #- name: small_autoscaling 
-#  tags: scalability, dynamic, workload
+#  tags: compatibility, dynamic, workload
 #- name: large_autoscaling 
-#  tags: scalability, dynamic, workload
+#  tags: compatibility, dynamic, workload
 # - name: network_chaos 
 #   tags: resilience, dynamic, workload
 - name: pod_network_latency
@@ -79,39 +86,39 @@
 #  tags: scalability, dynamic, workload
 
 #- name: versioned_helm_chart
-#  tags: configuration_lifecycle, dynamic, workload
+#  tags: configuration, dynamic, workload
 - name: versioned_tag
-  tags: configuration_lifecycle, dynamic, workload
+  tags: configuration, dynamic, workload
 - name: ip_addresses
   pass: 0
   fail: -1 
-  tags: configuration_lifecycle, static, workload
+  tags: configuration, static, workload
 - name: liveness
-  tags: configuration_lifecycle, dynamic, workload
+  tags: resilience, dynamic, workload
 - name: readiness
-  tags: configuration_lifecycle, dynamic, workload
+  tags: resilience, dynamic, workload
 #- name: no_volume_with_configuration
-#  tags: configuration_lifecycle, dynamic
+#  tags: configuration, dynamic
 - name: rolling_update
-  tags: configuration_lifecycle, dynamic, workload
+  tags: compatibility, dynamic, workload
 - name: rolling_downgrade
-  tags: configuration_lifecycle, dynamic, workload
+  tags: compatibility, dynamic, workload
 - name: rolling_version_change
-  tags: configuration_lifecycle, dynamic, workload
+  tags: compatibility, dynamic, workload
 - name: rollback
-  tags: configuration_lifecycle, dynamic, workload
+  tags: compatibility, dynamic, workload
 - name: nodeport_not_used
-  tags: configuration_lifecycle, dynamic, workload
+  tags: configuration, dynamic, workload
 - name: hostport_not_used
-  tags: configuration_lifecycle, dynamic, workload
+  tags: configuration, dynamic, workload
 - name: hardcoded_ip_addresses_in_k8s_runtime_configuration
-  tags: configuration_lifecycle, dynamic, workload
+  tags: configuration, dynamic, workload
 - name: secrets_used
-  tags: configuration_lifecycle, dynamic, workload
+  tags: configuration, dynamic, workload
   pass: 5
   fail: 0 
 - name: immutable_configmap
-  tags: configuration_lifecycle, dynamic, workload
+  tags: configuration, dynamic, workload
   pass: 1
   fail: 0 
 
@@ -127,13 +134,13 @@
 #  tags: observability, dynamic, workload
 
 - name: helm_deploy
-  tags: installability, dynamic, workload
+  tags: compatibility, dynamic, workload
 - name: install_script_helm
-  tags: installability, static, workload
+  tags: compatibility, static, workload
 - name: helm_chart_valid
-  tags: installability, dynamic, workload
+  tags: compatibility, dynamic, workload
 - name: helm_chart_published
-  tags: installability, dynamic, workload
+  tags: compatibility, dynamic, workload
   
 # - name: chaos_network_loss 
 #   tags: resilience, dynamic, workload
@@ -146,6 +153,18 @@
   tags: state, dynamic, workload
 - name: no_local_volume_configuration 
   tags: state, dynamic, workload
+- name: elastic_volumes 
+  tags: state, dynamic, workload
+  pass: 5 
+  fail: 0 
+- name: database_persistence
+  tags: state, dynamic, workload
+  pass5: 5 
+  pass3: 3 
+  fail: -1
+- name: node_drain
+  tags: state, dynamic, workload
+
 #- name: hardware_and_scheduling
 #  tags: hardware, dynamic, workload
 #- name: static_accessing_hardware 
@@ -169,9 +188,6 @@
   tags: platform, platform:security, dynamic
 - name: exposed_dashboard
   tags: platform, platform:security, dynamic
-
-- name: node_drain
-  tags: resilience, dynamic, workload
 
 - name: service_account_mapping
   tags: security, dynamic, workload
@@ -203,6 +219,12 @@
 - name: ingress_egress_blocked 
   tags: security, dynamic, workload
 
+- name: insecure_capabilities
+  tags: security, dynamic, workload
+
+- name: dangerous_capabilities
+  tags: security, dynamic, workload
+
 - name: log_output
   tags: observability, dynamic, workload
 - name: prometheus_traffic 
@@ -213,3 +235,13 @@
   tags: observability, dynamic, workload
   pass: 5 
   fail: 0 
+- name: routed_logs 
+  tags: observability, dynamic, workload
+  pass: 5 
+  fail: 0 
+- name: tracing 
+  tags: observability, dynamic, workload
+  pass: 5 
+  fail: 0 
+- name: alpha_k8s_apis
+  tags: configuration, dynamic, workload

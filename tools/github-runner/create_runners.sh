@@ -1,7 +1,6 @@
 #!/bin/bash
 
 RUNNERS=(
-    145.40.90.133
     136.144.55.87
     136.144.55.243
     139.178.69.151
@@ -15,7 +14,6 @@ RUNNERS=(
     136.144.54.249)
 
 VIPS=(
-    147.75.68.32/28
     147.75.89.176/28
     147.75.108.64/28
     147.75.202.0/28
@@ -31,10 +29,10 @@ VIPS=(
 
 RUNNER_COUNT=0
 for node in "${!RUNNERS[@]}"; do
-    ssh root@${RUNNERS[$node]} "docker pull conformance/github-runner:v2.285.0"
+    ssh root@${RUNNERS[$node]} "docker pull conformance/github-runner:2.287.1"
     RUNNERS_PER_NODE=16
     until [ $RUNNERS_PER_NODE -eq 0 ]; do
-        ssh root@${RUNNERS[$node]} "docker run -d --network host --restart always --name github-runner$RUNNER_COUNT -e REPO_URL="https://github.com/cncf/cnf-testsuite" -e RUNNER_NAME="runner$RUNNER_COUNT" -e RUNNER_TOKEN="$TOKEN" -e RUNNER_WORKDIR="/github-runner-cnf-testsuite" -e LABELS="v1.0.0" -v /var/run/docker.sock:/var/run/docker.sock -v /runner-tmp/runner$RUNNER_COUNT:/tmp -v /shared:/shared conformance/github-runner:v2.285.0"
+        ssh root@${RUNNERS[$node]} "docker run -d --network host --restart always --name github-runner$RUNNER_COUNT -e REPO_URL="https://github.com/cncf/cnf-testsuite" -e RUNNER_NAME="runner$RUNNER_COUNT" -e RUNNER_TOKEN="$TOKEN" -e RUNNER_WORKDIR="/github-runner-cnf-testsuite" -e LABELS="v1.0.0" -v /var/run/docker.sock:/var/run/docker.sock -v /runner-tmp/runner$RUNNER_COUNT:/tmp -v /github-runner-cnf-testsuite/cnf-testsuite/cnf-testsuite/tools:/docker-host-repo/tools -v /shared:/shared conformance/github-runner:2.287.1"
         RUNNER_COUNT=$(($RUNNER_COUNT + 1))
         RUNNERS_PER_NODE=$(($RUNNERS_PER_NODE - 1))
     done

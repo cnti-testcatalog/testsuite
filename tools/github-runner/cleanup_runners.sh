@@ -1,7 +1,6 @@
 #!/bin/bash
 
 RUNNERS=(
-    145.40.90.133
     136.144.55.87
     136.144.55.243
     139.178.69.151
@@ -15,7 +14,7 @@ RUNNERS=(
     136.144.54.249)
 
 
-TOKEN=$(curl  -XPOST -H "authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/cncf/cnf-testsuite/actions/runners/registration-token | jq -r .token)
+#TOKEN=$(curl  -XPOST -H "authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/cncf/cnf-testsuite/actions/runners/registration-token | jq -r .token)
 
 for node in "${RUNNERS[@]}"; do
     RUNNER_CONTAINERS=( $(ssh root@$node docker ps --filter "name=github-runner" --format '{{.Names}}' | xargs) )

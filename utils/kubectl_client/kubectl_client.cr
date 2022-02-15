@@ -18,7 +18,7 @@ module KubectlClient
   OCI_RUNTIME_REGEX = /containerd|docker|runc|railcar|crun|rkt|gviso|nabla|runv|clearcontainers|kata|cri-o/i
 
   module ShellCmd
-    def self.run(cmd, log_prefix)
+    def self.run(cmd, log_prefix, force_output=false)
       Log.info { "#{log_prefix} command: #{cmd}" }
       status = Process.run(
         cmd,
@@ -26,7 +26,11 @@ module KubectlClient
         output: output = IO::Memory.new,
         error: stderr = IO::Memory.new
       )
-      Log.debug { "#{log_prefix} output: #{output.to_s}" }
+      if force_output == false
+        Log.debug { "#{log_prefix} output: #{output.to_s}" }
+      else
+        Log.info { "#{log_prefix} output: #{output.to_s}" }
+      end
       Log.info { "#{log_prefix} stderr: #{stderr.to_s}" }
       {status: status, output: output.to_s, error: stderr.to_s}
     end
@@ -37,8 +41,8 @@ module KubectlClient
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    LOGGING.info "KubectlClient.wait output: #{output.to_s}"
-    LOGGING.info "KubectlClient.wait stderr: #{stderr.to_s}"
+    Log.info { "KubectlClient.wait output: #{output.to_s}" }
+    Log.info { "KubectlClient.wait stderr: #{stderr.to_s}" }
     {status: status, output: output, error: stderr}
   end
 
@@ -47,8 +51,8 @@ module KubectlClient
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    LOGGING.debug "KubectlClient.logs output: #{output.to_s}"
-    LOGGING.info "KubectlClient.logs stderr: #{stderr.to_s}"
+    Log.debug { "KubectlClient.logs output: #{output.to_s}" }
+    Log.info { "KubectlClient.logs stderr: #{stderr.to_s}" }
     {status: status, output: output, error: stderr}
   end
 
@@ -58,14 +62,19 @@ module KubectlClient
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
-    LOGGING.debug "KubectlClient.describe output: #{output.to_s}"
-    LOGGING.info "KubectlClient.describe stderr: #{stderr.to_s}"
+    Log.debug { "KubectlClient.describe output: #{output.to_s}" }
+    Log.info { "KubectlClient.describe stderr: #{stderr.to_s}" }
     {status: status, output: output, error: stderr}
   end
 
-  def self.exec(command)
-    cmd = "kubectl exec #{command}"
-    ShellCmd.run(cmd, "KubectlClient.exec")
+  def self.exec(command, namespace : String | Nil = nil, force_output : Bool = false)
+    full_cmd = ["kubectl", "exec"]
+    if namespace
+      full_cmd << "-n #{namespace}"
+    end
+    full_cmd << command
+    full_cmd = full_cmd.join(" ")
+    ShellCmd.run(full_cmd, "KubectlClient.exec", force_output)
   end
 
   def self.cp(command)
@@ -75,17 +84,9 @@ module KubectlClient
 
   def self.server_version()
     Log.debug { "KubectlClient.server_version" }
-    result = ShellCmd.run("kubectl version", "KubectlClient.server_version")
-
-    # example
-    # Server Version: version.Info{Major:"1", Minor:"18", GitVersion:"v1.18.16", GitCommit:"7a98bb2b7c9112935387825f2fce1b7d40b76236", GitTreeState:"clean", BuildDate:"2021-02-17T11:52:32Z", GoVersion:"go1.13.15", Compiler:"gc", Platform:"linux/amd64"}
-    resp = result[:output].match /Server Version: version.Info{(Major:"(([0-9]{1,3})"\, )Minor:"([0-9]{1,3}[+]?)")/
-    Log.debug { "KubectlClient.server_version match: #{resp}" }
-    if resp
-      version = "#{resp && resp.not_nil![3]}.#{resp && resp.not_nil![4]}.0"
-    else
-      version = ""
-    end
+    result = ShellCmd.run("kubectl version --output json", "KubectlClient.server_version", true)
+    version = JSON.parse(result[:output])["serverVersion"]["gitVersion"].as_s
+    version = version.gsub("v", "")
     Log.info { "KubectlClient.server_version: #{version}" }
     version
   end
@@ -120,16 +121,31 @@ module KubectlClient
   end
 
   module Create
+    class AlreadyExistsError < Exception
+    end
+
     def self.command(cli : String)
       cmd = "kubectl create #{cli}"
       result = ShellCmd.run(cmd, "KubectlClient::Create.command")
       result[:status].success?
     end
+
+    def self.namespace(name : String)
+      cmd = "kubectl create namespace #{name}"
+      result = ShellCmd.run(cmd, "KubectlClient::Create.namespace")
+      return true if result[:status].success?
+      raise AlreadyExistsError.new if result[:error].includes?("AlreadyExists")
+      return false
+    end
   end
 
   module Apply
-    def self.file(file_name, options="")
-      cmd = "kubectl apply -f #{file_name} #{options}"
+    def self.file(file_name, kubeconfig : String | Nil = nil, namespace : String | Nil = nil)
+      cmd = ["kubectl apply"]
+      cmd << "--kubeconfig #{kubeconfig}" if kubeconfig
+      cmd << "-n #{namespace}" if namespace
+      cmd << "-f #{file_name}"
+      cmd = cmd.join(" ")
       ShellCmd.run(cmd, "KubectlClient::Apply.file")
     end
 
@@ -165,8 +181,8 @@ module KubectlClient
       ShellCmd.run(cmd, "KubectlClient::Delete.command")
     end
 
-    def self.file(file_name)
-      cmd = "kubectl delete -f #{file_name}"
+    def self.file(file_name, namespace : String | Nil = nil)
+      cmd = "kubectl delete #{namespace ? "-n #{namespace}" : ""} -f #{file_name}"
       ShellCmd.run(cmd, "KubectlClient::Delete.file")
     end
   end
@@ -236,6 +252,17 @@ module KubectlClient
       cmd = "kubectl get nodes -o json"
       result = ShellCmd.run(cmd, "KubectlClient::Get.nodes")
       JSON.parse(result[:output])
+    end
+
+    def self.endpoints(all_namespaces=false) : K8sManifest
+      option = all_namespaces ? "--all-namespaces" : ""
+      cmd = "kubectl get endpoints #{option} -o json"
+      result = ShellCmd.run(cmd, "KubectlClient::Get.endpoints")
+      response = result[:output]
+      if result[:status].success? && !response.empty?
+        return JSON.parse(response)
+      end
+      JSON.parse(%({}))
     end
 
     def self.pods(all_namespaces=true) : K8sManifest 
@@ -311,6 +338,24 @@ module KubectlClient
       nodes
     end
 
+    def self.nodes_by_resource(resource) : Array(JSON::Any)   
+      retry_limit = 50
+      retries = 1
+      empty_json_any = [] of JSON::Any
+      nodes = empty_json_any
+      # Get.nodes seems to have failures sometimes
+      until (nodes != empty_json_any) || retries > retry_limit
+        nodes = KubectlClient::Get.resource_select(KubectlClient::Get.nodes) do |item, metadata|
+          item.dig?("metadata", "name") == resourc.dig?("metadata", "name")
+        end
+      end
+      if nodes == empty_json_any
+        Log.error { "nodes empty: #{nodes}" }
+      end
+      Log.debug { "nodes: #{nodes}" }
+      nodes
+    end
+
     def self.pods_by_nodes(nodes_json : Array(JSON::Any))
       Log.info { "pods_by_node" }
       nodes_json.map { |item|
@@ -332,7 +377,7 @@ module KubectlClient
     end
 
     #todo default flag for schedulable pods vs all pods
-    def self.pods_by_resource(resource_yml : JSON::Any) : K8sManifestList 
+    def self.pods_by_resource(resource_yml : JSON::Any, namespace : String | Nil = nil) : K8sManifestList 
       Log.info { "pods_by_resource" }
       Log.debug { "pods_by_resource resource: #{resource_yml}" }
       return [resource_yml] if resource_yml["kind"].as_s.downcase == "pod"
@@ -346,7 +391,7 @@ module KubectlClient
       if name
         #todo deployment labels may not match template metadata labels.  
         # -- may need to match on selector matchlabels instead
-        labels = KubectlClient::Get.resource_spec_labels(resource_yml["kind"], name).as_h
+        labels = KubectlClient::Get.resource_spec_labels(resource_yml["kind"], name, namespace: namespace).as_h
         Log.info { "pods_by_resource labels: #{labels}" }
         KubectlClient::Get.pods_by_labels(pods, labels)
       else
@@ -401,10 +446,10 @@ module KubectlClient
       end
     end
 
-    def self.resource(kind, resource_name, namespace : String? = nil) : JSON::Any
+    def self.resource(kind, resource_name, namespace : String | Nil = nil) : JSON::Any
       namespace_opt = ""
       if namespace != nil
-        namespace_opt = "-n #{namespace}"
+        namespace_opt = "-n #{namespace.gsub("--namespace ", "").gsub("-n ", "") if namespace}"
       end
       cmd = "kubectl get #{kind} #{resource_name} -o json #{namespace_opt}"
       result = ShellCmd.run(cmd, "KubectlClient::Get.resource")
@@ -471,6 +516,14 @@ module KubectlClient
       matched_service
     end
 
+    def self.pods_by_service(service)
+      Log.info { "pods_by_service service: #{service}" }
+      service_labels = service.dig?("spec", "selector")
+      return unless service_labels
+      pods = KubectlClient::Get.pods
+      service_pods = KubectlClient::Get.pods_by_labels(pods["items"].as_a, service_labels.as_h)
+    end
+
     def self.pods_by_digest(container_digest)
       matched_pod = [] of JSON::Any  
       pods = KubectlClient::Get.pods
@@ -480,7 +533,7 @@ module KubectlClient
         if statuses
           statuses.as_a.each do |status|
             Log.debug { "pod_by_digest status: #{status}" }
-            matched_pod << pod if status.dig("imageID").as_s.includes?(container_digest)
+            matched_pod << pod if status.dig("imageID").as_s.includes?("#{container_digest}")
           end
         end
       end
@@ -505,13 +558,13 @@ module KubectlClient
       resource_containers("deployment", deployment_name)
     end
 
-    def self.resource_containers(kind, resource_name) : JSON::Any
-      Log.debug { "kubectl get resource containers kind: #{kind} resource_name: #{resource_name}" }
+    def self.resource_containers(kind, resource_name, namespace : String? = nil) : JSON::Any
+      Log.debug { "kubectl get resource containers kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}" }
       case kind.downcase
       when "pod"
-        resp = resource(kind, resource_name).dig?("spec", "containers")
+        resp = resource(kind, resource_name, namespace).dig?("spec", "containers")
       when "deployment", "statefulset", "replicaset", "daemonset"
-        resp = resource(kind, resource_name).dig?("spec", "template", "spec", "containers")
+        resp = resource(kind, resource_name, namespace).dig?("spec", "template", "spec", "containers")
         # unless kind.downcase == "service" ## services have no containers
       end
 
@@ -523,13 +576,14 @@ module KubectlClient
       end
     end
 
-    def self.resource_volumes(kind, resource_name) : JSON::Any
-      Log.debug { "kubectl get resource volumes kind: #{kind} resource_name: #{resource_name}" }
+    #todo pass in namespace
+    def self.resource_volumes(kind, resource_name, namespace="default") : JSON::Any
+      Log.info { "kubectl get resource volumes kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}" }
       unless kind.downcase == "service" ## services have no volumes
-        resp = resource(kind, resource_name).dig?("spec", "template", "spec", "volumes")
+        resp = resource(kind, resource_name, namespace).dig?("spec", "template", "spec", "volumes")
       end
 
-      Log.debug { "kubectl get resource volumes: #{resp}" }
+      Log.info { "kubectl get resource volumes: #{resp}" }
       if resp && resp.as_a.size > 0
         resp
       else
@@ -570,7 +624,7 @@ module KubectlClient
       JSON.parse(%({}))
     end
 
-    def self.wait_for_install(deployment_name, wait_count : Int32 = 180, namespace="default")
+    def self.wait_for_install(deployment_name, wait_count : Int32 = 180, namespace : String = "default")
       resource_wait_for_install("deployment", deployment_name, wait_count, namespace)
     end
 
@@ -588,7 +642,7 @@ module KubectlClient
           end
           sleep 1
           timeout = timeout - 1 
-          LOGGING.info "Waiting for CRI-Tools Pod"
+          Log.info { "Waiting for CRI-Tools Pod" }
         end
         if timeout <= 0
           break
@@ -661,7 +715,13 @@ module KubectlClient
       result[:output].to_i
     end
 
-    def self.resource_wait_for_install(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default", kubeconfig=nil)
+    def self.resource_wait_for_install(
+      kind : String,
+      resource_name : String,
+      wait_count : Int32 = 180,
+      namespace : String = "default",
+      kubeconfig : String | Nil = nil
+    )
       # Not all cnfs have #{kind}.  some have only a pod.  need to check if the
       # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod
       Log.info { "resource_wait_for_install kind: #{kind} resource_name: #{resource_name} namespace: #{namespace} kubeconfig: #{kubeconfig}" }
@@ -682,29 +742,23 @@ module KubectlClient
     end
 
     #TODO add parameter and functionality that checks for individual pods to be successfully terminated
-    def self.resource_wait_for_uninstall(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default")
+    def self.resource_wait_for_uninstall(kind : String, resource_name : String, wait_count : Int32 = 180, namespace : String | Nil = "default")
       # Not all cnfs have #{kind}.  some have only a pod.  need to check if the
       # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod
       Log.info { "resource_wait_for_uninstall kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}" }
       empty_hash = {} of String => JSON::Any 
       second_count = 0
-      pod_ready : String | Nil
-      #TODO use the kubectl client get
-      all_kind = ShellCmd.run("kubectl get #{kind} --namespace=#{namespace}", "all_kind")
 
-      resource_uninstalled = KubectlClient::Get.resource(kind, resource_name)
+      resource_uninstalled = KubectlClient::Get.resource(kind, resource_name, namespace)
       Log.debug { "resource_uninstalled #{resource_uninstalled}" }
-      
-      until (resource_uninstalled && resource_uninstalled.as_h == empty_hash)  || second_count > wait_count
+      until (resource_uninstalled && resource_uninstalled.as_h == empty_hash) || second_count > wait_count
         Log.info { "second_count = #{second_count}" }
         sleep 1
-        Log.debug { "wait command: kubectl get #{kind} --namespace=#{namespace}" }
-        resource_uninstalled = KubectlClient::Get.resource(kind, resource_name)
+        resource_uninstalled = KubectlClient::Get.resource(kind, resource_name, namespace)
         Log.debug { "resource_uninstalled #{resource_uninstalled}" }
         second_count = second_count + 1
       end
 
-        Log.info { "final resource_uninstalled #{resource_uninstalled}" }
       if (resource_uninstalled && resource_uninstalled.as_h == empty_hash)
         Log.info { "kind/resource #{kind}, #{resource_name} uninstalled." }
         true
@@ -796,11 +850,21 @@ module KubectlClient
 
     #TODO remove the need for a split and return name/ true /false in a hash
     #TODO add a spec for this
-    def self.pod_status(pod_name_prefix, field_selector="", namespace="default", kubeconfig=nil)
+    def self.pod_status(pod_name_prefix, field_selector="", namespace : String | Nil = nil, kubeconfig : String | Nil = nil)
       Log.info { "pod_status: #{pod_name_prefix}" }
 
-      all_pods_cmd = "kubectl get pods #{field_selector} -o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}' #{kubeconfig ? "--kubeconfig " + kubeconfig : ""}"
-
+      all_pods_cmd = ["kubectl get pods #{field_selector}"]
+      all_pods_cmd << "-o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}'"
+  
+      if kubeconfig
+        all_pods_cmd << "--kubeconfig #{kubeconfig}"
+      end
+  
+      if namespace
+        all_pods_cmd << "-n #{namespace}"
+      end
+  
+      all_pods_cmd = all_pods_cmd.join(" ")
       all_pods_result = Process.run(
         all_pods_cmd,
         shell: true,
@@ -860,7 +924,8 @@ module KubectlClient
       # TODO refactor to return container statuses
       status = "#{pod_name_prefix},NotFound,false"
       if pod != "not found"
-        cmd = "kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}' #{kubeconfig ? "--kubeconfig " + kubeconfig : ""}"
+        cmd_opts = "#{kubeconfig ? "--kubeconfig #{kubeconfig}" : ""} #{namespace ? "-n #{namespace}" : ""}"
+        cmd = "kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}' #{cmd_opts}"
         result = ShellCmd.run(cmd, "pod_status")
         status = result[:output]
         Log.debug { "pod_status status before parse: #{status}" }
@@ -882,12 +947,12 @@ module KubectlClient
     def self.deployment_spec_labels(deployment_name) : JSON::Any
       resource_spec_labels("deployment", deployment_name)
     end
-    def self.resource_spec_labels(kind, resource_name) : JSON::Any
+    def self.resource_spec_labels(kind, resource_name, namespace : String | Nil = nil) : JSON::Any
       Log.debug { "resource_labels kind: #{kind} resource_name: #{resource_name}" }
       if kind.as_s.downcase == "service"
-        resp = resource(kind, resource_name).dig?("spec", "selector")
+        resp = resource(kind, resource_name, namespace: namespace).dig?("spec", "selector")
       else
-        resp = resource(kind, resource_name).dig?("spec", "template", "metadata", "labels")
+        resp = resource(kind, resource_name, namespace: namespace).dig?("spec", "template", "metadata", "labels")
       end
       Log.debug { "resource_labels: #{resp}" }
       if resp
@@ -1005,6 +1070,108 @@ module KubectlClient
       imageids
     end
 
-  end
+    def self.pod_statuses_by_nodes(nodes)
+      pods = KubectlClient::Get.pods_by_nodes(nodes)
+      Log.debug { "pod_statuses_by_nodes pods_by_nodes pods: #{pods}" }
+      statuses = pods.map do |x|
+        x["status"]
+      end
+      Log.debug { "pod_statuses_by_nodes statuses: #{statuses}" }
+      statuses
+    end
 
+    def self.pod_container_statuses_by_nodes(nodes)
+      statuses = pod_statuses_by_nodes(nodes).map do |x|
+        # todo there are some pods that dont have containerStatuses
+        x["containerStatuses"].as_a if x["containerStatuses"]?
+      end
+      Log.debug { "pod_container_statuses_by_nodes containerStatuses: #{statuses}" }
+      statuses
+    end
+
+    def self.container_digests_by_nodes(nodes)
+      Log.debug { "container_digests_by_nodes nodes: #{nodes}" }
+      imageids = pod_container_statuses_by_nodes(nodes).reduce([] of String) do |acc, x|
+        if x
+          acc | x.map{|i| i["imageID"].as_s}
+        else
+          acc
+        end
+      end
+      Log.info { "container_digests_by_nodes image ids: #{imageids}" }
+      imageids
+    end
+
+    def self.container_images_by_nodes(nodes)
+      Log.debug { "container_images_by_nodes nodes: #{nodes}" }
+      images = pod_container_statuses_by_nodes(nodes).reduce([] of String) do |acc, x|
+        if x
+          acc | x.map{|i| i["image"].as_s}
+        else
+          acc
+        end
+      end
+      Log.info { "container_images_by_nodes images: #{images}" }
+      images
+    end
+
+    #todo match against multiple images
+    # def self.container_tag_from_image_by_nodes(images : Array(String), nodes)
+    #   images.map{|x| container_tag_from_image_by_nodes(x, nodes)}.flatten.concat
+    # end
+    def self.container_tag_from_image_by_nodes(image, nodes)
+      Log.info { "container_tag_from_image_by_nodes image: #{image}" }
+      Log.debug { "container_tag_from_image_by_nodes nodes: #{nodes}" }
+      # TODO Remove duplicates & and support multiple?
+      all_images = container_images_by_nodes(nodes).flatten
+      Log.info { "container_tag_from_image_by_nodes all_images: #{all_images}" }
+      matched_image = all_images.select{ | x | x.includes?(image) }
+      Log.info { "container_tag_from_image_by_nodes matched_image: #{matched_image}" }
+      parsed_image = DockerClient.parse_image("#{matched_image[0]}") if matched_image.size > 0
+      tags = parsed_image["tag"] if parsed_image
+      Log.info { "container_tag_from_image_by_nodes tags: #{tags}" } if tags
+      tags
+    end
+
+    def self.pods_by_digest_and_nodes(digest, nodes=KubectlClient::Get.nodes["items"].as_a)
+      Log.info { "pods_by_digest_and_nodes" }
+      digest_pods = nodes.map { |item|
+        Log.info { "items labels: #{item.dig?("metadata", "labels")}" }
+        node_name = item.dig?("metadata", "labels", "kubernetes.io/hostname")
+        Log.debug { "NodeName: #{node_name}" }
+        pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod| 
+          found = false
+          #todo add another pod comparison for sha hash
+          if pod["status"]["containerStatuses"]?
+            found = pod["status"]["containerStatuses"].as_a.any? do |container_status|
+              Log.debug { "container_status imageid: #{container_status["imageID"]}"}
+              Log.debug { "pods_by_digest_and_nodes digest: #{digest}"}
+              match_found = container_status["imageID"].as_s.includes?("#{digest}")
+              Log.debug { "container_status match_found: #{match_found}"}
+              match_found
+            end
+            Log.debug { "found pod: #{pod}"}
+            pod_name = pod.dig?("metadata", "name")
+            Log.debug { "found PodName: #{pod_name}" }
+            if found && pod.dig?("spec", "nodeName") == "#{node_name}"
+              Log.debug { "found pod and node: #{pod} #{node_name}" }
+              true
+            else
+              Log.debug { "spec node_name: No Match: #{node_name}" }
+              false
+            end
+          else
+            Log.info { "no containerstatuses" }
+            false
+          end
+        end
+      }.flatten
+      if digest_pods.empty?
+        Log.info { "match not found for digest: #{digest}" }
+        [EMPTY_JSON]
+      else
+        digest_pods
+      end
+    end
+  end
 end

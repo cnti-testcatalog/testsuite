@@ -29,24 +29,23 @@ end
 desc "Check if any containers are running in as root"
 task "non_root_user", ["install_falco"] do |_, args|
    unless KubectlClient::Get.resource_wait_for_install("Daemonset", "falco") 
-     LOGGING.info "Falco Failed to Start"
+     Log.info { "Falco Failed to Start" }
      upsert_skipped_task("non_root_user", "✖️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).")
      node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
      pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
      falco_pod_name = pods[0].dig("metadata", "name")
-     LOGGING.info "Falco Pod Name: #{falco_pod_name}"
+     Log.info { "Falco Pod Name: #{falco_pod_name}" }
      resp = KubectlClient.logs(falco_pod_name)
-     puts "Falco Logs: #{resp[:output]}"
      next
    end
 
    CNFManager::Task.task_runner(args) do |args,config|
-     VERBOSE_LOGGING.info "non_root_user" if check_verbose(args)
-     LOGGING.debug "cnf_config: #{config}"
+     Log.for("verbose").info { "non_root_user" } if check_verbose(args)
+     Log.debug { "cnf_config: #{config}" }
      fail_msgs = [] of String
      task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
        test_passed = true
-       LOGGING.info "Falco is Running"
+       Log.info { "Falco is Running" }
        kind = resource["kind"].as_s.downcase
        case kind 
        when  "deployment","statefulset","pod","replicaset", "daemonset"
@@ -84,7 +83,7 @@ end
 desc "Check if any containers are running in privileged mode"
 task "privileged" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "privileged" if check_verbose(args)
+    Log.for("verbose").info { "privileged" } if check_verbose(args)
     white_list_container_names = config.cnf_config[:white_list_container_names]
     VERBOSE_LOGGING.info "white_list_container_names #{white_list_container_names.inspect}" if check_verbose(args)
     violation_list = [] of String
@@ -170,7 +169,7 @@ task "application_credentials", ["kubescape_scan"] do |_, args|
 end
 
 desc "Check if potential attackers may gain access to a POD and inherit access to the entire host network. For example, in AWS case, they will have access to the entire VPC."
-task "host_network", ["kubescape_scan"] do |_, args|
+task "host_network", ["uninstall_cluster_tools", "kubescape_scan"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "host_network" if check_verbose(args)
     results_json = Kubescape.parse
@@ -376,7 +375,7 @@ task "network_policies", ["kubescape_scan"] do |_, args|
 end
 
 desc "Check that privileged containers are not used"
-task "privileged_containers", ["kubescape_scan"] do |_, args|
+task "privileged_containers", ["uninstall_dockerd", "uninstall_cluster_tools", "kubescape_scan" ] do |_, args|
   next if args.named["offline"]?
 
   CNFManager::Task.task_runner(args) do |args, config|
@@ -385,6 +384,7 @@ task "privileged_containers", ["kubescape_scan"] do |_, args|
     test_json = Kubescape.test_by_test_name(results_json, "Privileged container")
 
     emoji_security = "🔓🔑"
+    #todo whitelist
     if Kubescape.test_passed?(test_json)
       upsert_passed_task("privileged_containers", "✔️  PASSED: No privileged containers were found #{emoji_security}")
     else
@@ -394,6 +394,9 @@ task "privileged_containers", ["kubescape_scan"] do |_, args|
       resp
     end
   end
+ensure
+  ClusterTools.install
+  `./cnf-testsuite install_dockerd`
 end
 
 desc "Check if containers have immutable file systems"

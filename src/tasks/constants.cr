@@ -13,7 +13,7 @@ NA = "na"
 # todo move to helm module
 # CHART_YAML = "Chart.yaml"
 DEFAULT_POINTSFILENAME = "points_v1.yml"
-PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon"]
+PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon", "cluster-tools"]
 SONOBUOY_K8S_VERSION = "0.19.0"
 KUBESCAPE_VERSION = "1.0.132"
 KUBESCAPE_FRAMEWORK_VERSION = "1.0.108"
@@ -23,9 +23,12 @@ IGNORED_SECRET_TYPES = ["kubernetes.io/service-account-token", "kubernetes.io/do
 EMPTY_JSON = JSON.parse(%({}))
 EMPTY_JSON_ARRAY = JSON.parse(%([]))
 
+TESTSUITE_NAMESPACE = "cnf-testsuite"
+
 #Embedded global text variables
 EmbeddedFileManager.node_failure_values
 EmbeddedFileManager.cluster_tools
+EmbeddedFileManager.dockerd_manifest
 EmbeddedFileManager.falco_rules
 EmbeddedFileManager.reboot_daemon
 EmbeddedFileManager.chaos_network_loss

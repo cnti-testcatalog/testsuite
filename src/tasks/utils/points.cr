@@ -14,6 +14,9 @@ module CNFManager
         Failed
         Skipped
         NA
+        Neutral
+        Pass5
+        Pass3
       end
 
       @@file : String
@@ -75,33 +78,50 @@ module CNFManager
       end
     end
 
+    def self.dynamic_task_points(task, status_name)
+      points =points_yml.find {|x| x["name"] == task}
+      Log.warn { "****Warning**** task #{task} not found in points.yml".colorize(:yellow) } unless points
+      if points && points[status_name]?
+          resp = points[status_name].as_i if points
+      else
+        points =points_yml.find {|x| x["name"] == "default_scoring"}
+        resp = points[status_name].as_i if points
+      end
+      resp
+    end
+
     # Returns what the potential points should be (for a points type) in order to assign those points to a task
     def self.task_points(task, status : CNFManager::Points::Results::ResultStatus = CNFManager::Points::Results::ResultStatus::Passed)
+      #todo replace case statement with dynamic point call
       case status
       when CNFManager::Points::Results::ResultStatus::Passed
         resp = CNFManager::Points.task_points(task, true)
       when CNFManager::Points::Results::ResultStatus::Failed
         resp = CNFManager::Points.task_points(task, false)
       when CNFManager::Points::Results::ResultStatus::Skipped
-        field_name = "skipped"
-        points =points_yml.find {|x| x["name"] == task}
-        Log.warn { "****Warning**** task #{task} not found in points.yml".colorize(:yellow) } unless points
-        if points && points[field_name]?
-            resp = points[field_name].as_i if points
-        else
-          points =points_yml.find {|x| x["name"] == "default_scoring"}
-          resp = points[field_name].as_i if points
-        end
+        resp = dynamic_task_points(task, "skipped")
+        # field_name = "skipped"
+        # points =points_yml.find {|x| x["name"] == task}
+        # Log.warn { "****Warning**** task #{task} not found in points.yml".colorize(:yellow) } unless points
+        # if points && points[field_name]?
+        #     resp = points[field_name].as_i if points
+        # else
+        #   points =points_yml.find {|x| x["name"] == "default_scoring"}
+        #   resp = points[field_name].as_i if points
+        # end
       when CNFManager::Points::Results::ResultStatus::NA
-        field_name = "na"
-        points =points_yml.find {|x| x["name"] == task}
-        Log.warn { "****Warning**** task #{task} not found in points.yml".colorize(:yellow) } unless points
-        if points && points[field_name]?
-            resp = points[field_name].as_i if points
-        else
-          points =points_yml.find {|x| x["name"] == "default_scoring"}
-          resp = points[field_name].as_i if points
-        end
+        resp = dynamic_task_points(task, "na")
+        # field_name = "na"
+        # points =points_yml.find {|x| x["name"] == task}
+        # Log.warn { "****Warning**** task #{task} not found in points.yml".colorize(:yellow) } unless points
+        # if points && points[field_name]?
+        #     resp = points[field_name].as_i if points
+        # else
+        #   points =points_yml.find {|x| x["name"] == "default_scoring"}
+        #   resp = points[field_name].as_i if points
+        # end
+      else
+        resp = dynamic_task_points(task, status.to_s.downcase)
       end
       Log.info { "task_points: task: #{task} is worth: #{resp} points" }
       resp
@@ -173,10 +193,25 @@ module CNFManager
         tasks = all_task_test_names
         Log.debug { "all_task_test_names tasks: #{tasks}" }
       end
+
+      results_yaml = File.open("#{Results.file}") do |file|
+        YAML.parse(file)
+      end
+
+      skipped_tests = results_yaml["items"].as_a.reduce([] of String) do |acc, test_info|
+        if test_info["status"] == "skipped"
+          acc + [test_info["name"].as_s]
+        else
+          acc
+        end
+      end
+
       max = tasks.reduce(0) do |acc, x|
         #TODO remove, from the potential points, the actually assigned points that are assigned to 'na' in the results.yml
         if na_assigned?(x)
           Log.info { "na_assigned for #{x}" }
+          acc
+        elsif skipped_tests.includes?(x)
           acc
         else
           points = task_points(x)

@@ -1,8 +1,14 @@
 require "../spec_helper"
 require "colorize"
 require "../../src/tasks/utils/utils.cr"
+require "../../src/tasks/jaeger_setup.cr"
 
 describe "Observability" do
+  before_all do
+    `./cnf-testsuite setup`
+    $?.success?.should be_true
+  end
+
   it "'log_output' should pass with a cnf that outputs logs to stdout", tags: ["observability"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
@@ -28,26 +34,25 @@ describe "Observability" do
   end
 
   it "'prometheus_traffic' should pass if there is prometheus traffic", tags: ["observability"] do
+    ShellCmd.run("./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml", "spec_sample_setup", force_output: true)
+    helm = BinarySingleton.helm
 
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
-      LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
-      LOGGING.info "Installing prometheus server" 
-      helm = BinarySingleton.helm
-      # resp = `#{helm} install prometheus prometheus-community/prometheus`
-      resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
-      LOGGING.info resp
-      KubectlClient::Get.wait_for_install("prometheus-server")
-      LOGGING.info `kubectl describe deployment prometheus-server`
-      #todo logging on prometheus pod
+    Log.info { "Add prometheus helm repo" }
+    ShellCmd.run("#{helm} repo add prometheus-community https://prometheus-community.github.io/helm-charts", "helm_repo_add_prometheus", force_output: true)
 
-      response_s = `./cnf-testsuite prometheus_traffic`
-      LOGGING.info response_s
-      (/PASSED: Your cnf is sending prometheus traffic/ =~ response_s).should_not be_nil
+    Log.info { "Installing prometheus server" }
+    install_cmd = "#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus"
+    ShellCmd.run(install_cmd, "helm_install_prometheus", force_output: true)
+
+    KubectlClient::Get.wait_for_install("prometheus-server")
+    ShellCmd.run("kubectl describe deployment prometheus-server", "k8s_describe_prometheus", force_output: true)
+
+    test_result = ShellCmd.run("./cnf-testsuite prometheus_traffic", "run_test_cmd", force_output: true)
+    (/PASSED: Your cnf is sending prometheus traffic/ =~ test_result[:output]).should_not be_nil
   ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
-      resp = `#{helm} delete prometheus`
-      LOGGING.info resp
-      $?.success?.should be_true
+    ShellCmd.run("./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml", "spec_sample_cleaup")
+    result = ShellCmd.run("#{helm} delete prometheus", "helm_delete_prometheus")
+    result[:status].success?.should be_true
   end
 
   it "'prometheus_traffic' should skip if there is no prometheus installed", tags: ["observability"] do
@@ -67,7 +72,7 @@ describe "Observability" do
   it "'prometheus_traffic' should fail if the cnf is not registered with prometheus", tags: ["observability"] do
 
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-      LOGGING.info "Installing prometheus server" 
+      Log.info { "Installing prometheus server" }
       helm = BinarySingleton.helm
       LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
       # resp = `#{helm} install prometheus prometheus-community/prometheus`
@@ -86,85 +91,117 @@ describe "Observability" do
       LOGGING.info resp
       $?.success?.should be_true
   end
-end
 
-it "'open_metrics' should fail if there is not a valid open metrics response from the cnf", tags: ["observability"] do
+  it "'open_metrics' should fail if there is not a valid open metrics response from the cnf", tags: ["observability"] do
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
+    LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
+    Log.info { "Installing prometheus server" }
+    helm = BinarySingleton.helm
+    # resp = `#{helm} install prometheus prometheus-community/prometheus`
+    resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
+    LOGGING.info resp
+    KubectlClient::Get.wait_for_install("prometheus-server")
+    LOGGING.info `kubectl describe deployment prometheus-server`
+    #todo logging on prometheus pod
 
-  LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
-  LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
-  LOGGING.info "Installing prometheus server" 
-  helm = BinarySingleton.helm
-  # resp = `#{helm} install prometheus prometheus-community/prometheus`
-  resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
-  LOGGING.info resp
-  KubectlClient::Get.wait_for_install("prometheus-server")
-  LOGGING.info `kubectl describe deployment prometheus-server`
-  #todo logging on prometheus pod
+    response_s = `./cnf-testsuite open_metrics`
+    LOGGING.info response_s
+    (/FAILED: Your cnf's metrics traffic is not Open Metrics compatible/ =~ response_s).should_not be_nil
+  ensure
+    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
+    resp = `#{helm} delete prometheus`
+    LOGGING.info resp
+    $?.success?.should be_true
+  end
 
-  response_s = `./cnf-testsuite open_metrics`
-  LOGGING.info response_s
-  (/FAILED: Your cnf's metrics traffic is not Open Metrics compatible/ =~ response_s).should_not be_nil
-ensure
-  LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
-  resp = `#{helm} delete prometheus`
-  LOGGING.info resp
-  $?.success?.should be_true
-end
+  it "'open_metrics' should pass if there is a valid open metrics response from the cnf", tags: ["observability"] do
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-openmetrics/cnf-testsuite.yml`
+    LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
+    LOGGING.info "Installing prometheus server"
+    helm = BinarySingleton.helm
+    # resp = `#{helm} install prometheus prometheus-community/prometheus`
+    resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
+    LOGGING.info resp
+    KubectlClient::Get.wait_for_install("prometheus-server")
+    LOGGING.info `kubectl describe deployment prometheus-server`
+    #todo logging on prometheus pod
 
-it "'open_metrics' should pass if there is a valid open metrics response from the cnf", tags: ["observability"] do
+    response_s = `./cnf-testsuite open_metrics`
+    LOGGING.info response_s
+    (/PASSED: Your cnf's metrics traffic is Open Metrics compatible/ =~ response_s).should_not be_nil
+  ensure
+    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-openmetrics/cnf-testsuite.yml`
+    resp = `#{helm} delete prometheus`
+    LOGGING.info resp
+    $?.success?.should be_true
+  end
 
-  LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-openmetrics/cnf-testsuite.yml`
-  LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
-  LOGGING.info "Installing prometheus server" 
-  helm = BinarySingleton.helm
-  # resp = `#{helm} install prometheus prometheus-community/prometheus`
-  resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
-  LOGGING.info resp
-  KubectlClient::Get.wait_for_install("prometheus-server")
-  LOGGING.info `kubectl describe deployment prometheus-server`
-  #todo logging on prometheus pod
+  it "'routed_logs' should pass if cnfs logs are captured", tags: ["observability"] do
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+    resp = `./cnf-testsuite install_fluentd`
+    LOGGING.info resp
+    response_s = `./cnf-testsuite routed_logs`
+    LOGGING.info response_s
+    (/PASSED: Your cnf's logs are being captured/ =~ response_s).should_not be_nil
+  ensure
+    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+    resp = `./cnf-testsuite uninstall_fluentd`
+    LOGGING.info resp
+    $?.success?.should be_true
+  end
 
-  response_s = `./cnf-testsuite open_metrics`
-  LOGGING.info response_s
-  (/PASSED: Your cnf's metrics traffic is Open Metrics compatible/ =~ response_s).should_not be_nil
-ensure
-  LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-openmetrics/cnf-testsuite.yml`
-  resp = `#{helm} delete prometheus`
-  LOGGING.info resp
-  $?.success?.should be_true
-end
+  it "'routed_logs' should fail if cnfs logs are not captured", tags: ["observability"] do
+  
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+    # resp = `./cnf-testsuite install_fluentd`
+    Log.info {"Installing FluentD daemonset "}
+    Helm.helm_repo_add("fluent","https://fluent.github.io/helm-charts")
+    #todo  #helm install --values ./override.yml fluentd ./fluentd
+    Helm.install("--values ./spec/fixtures/fluentd-values-bad.yml fluentd fluent/fluentd")
+    KubectlClient::Get.resource_wait_for_install("Daemonset", "fluentd")
 
-it "'routed_logs' should pass if cnfs logs are captured", tags: ["observability"] do
+    response_s = `./cnf-testsuite routed_logs`
+    LOGGING.info response_s
+    (/FAILED: Your cnf's logs are not being captured/ =~ response_s).should_not be_nil
+  ensure
+    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+    resp = `./cnf-testsuite uninstall_fluentd`
+    LOGGING.info resp
+    $?.success?.should be_true
+  end
 
-  LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-  resp = `./cnf-testsuite install_fluentd`
-  LOGGING.info resp
-  response_s = `./cnf-testsuite routed_logs`
-  LOGGING.info response_s
-  (/PASSED: Your cnf's logs are being captured/ =~ response_s).should_not be_nil
-ensure
-  LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-  resp = `./cnf-testsuite uninstall_fluentd`
-  LOGGING.info resp
-  $?.success?.should be_true
-end
+  it "'tracing' should fail if tracing is not used", tags: ["observability_jaeger_fail"] do
+    Log.info {"Installing Jaeger "}
+    JaegerManager.install
 
-it "'routed_logs' should fail if cnfs logs are not captured", tags: ["observability"] do
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+    response_s = `./cnf-testsuite tracing`
+    LOGGING.info response_s
+    (/FAILED: Tracing not used/ =~ response_s).should_not be_nil
+  ensure
+    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+    JaegerManager.uninstall
+    KubectlClient::Get.resource_wait_for_uninstall("Statefulset", "jaeger-cassandra")
+    KubectlClient::Get.resource_wait_for_uninstall("Deployment", "jaeger-collector")
+    KubectlClient::Get.resource_wait_for_uninstall("Deployment", "jaeger-query")
+    KubectlClient::Get.resource_wait_for_uninstall("Daemonset", "jaeger-agent")
+  end
 
-  LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-  # resp = `./cnf-testsuite install_fluentd`
-  Log.info {"Installing FluentD daemonset "}
-  Helm.helm_repo_add("fluent","https://fluent.github.io/helm-charts")
-  #todo  #helm install --values ./override.yml fluentd ./fluentd
-  Helm.install("--values ./spec/fixtures/fluentd-values-bad.yml fluentd fluent/fluentd")
-  KubectlClient::Get.resource_wait_for_install("Daemonset", "fluentd")
+  it "'tracing' should pass if tracing is used", tags: ["observability_jaeger_pass"] do
+    Log.info {"Installing Jaeger "}
+    JaegerManager.install
 
-  response_s = `./cnf-testsuite routed_logs`
-  LOGGING.info response_s
-  (/FAILED: Your cnf's logs are not being captured/ =~ response_s).should_not be_nil
-ensure
-  LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-  resp = `./cnf-testsuite uninstall_fluentd`
-  LOGGING.info resp
-  $?.success?.should be_true
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-tracing/cnf-testsuite.yml`
+    response_s = `./cnf-testsuite tracing`
+    LOGGING.info response_s
+    (/PASSED: Tracing used/ =~ response_s).should_not be_nil
+  ensure
+    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-tracing/cnf-testsuite.yml`
+    JaegerManager.uninstall
+    KubectlClient::Get.resource_wait_for_uninstall("Statefulset", "jaeger-cassandra")
+    KubectlClient::Get.resource_wait_for_uninstall("Deployment", "jaeger-collector")
+    KubectlClient::Get.resource_wait_for_uninstall("Deployment", "jaeger-query")
+    KubectlClient::Get.resource_wait_for_uninstall("Daemonset", "jaeger-agent")
+  end
+
 end

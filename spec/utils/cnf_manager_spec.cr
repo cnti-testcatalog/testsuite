@@ -118,8 +118,8 @@ describe "SampleUtils" do
 
   it "'CNFManager::Points.tasks_by_tag' should return the tasks assigned to a tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
-    tags = ["versioned_tag", "ip_addresses", "liveness", "readiness", "rolling_update", "rolling_downgrade", "rolling_version_change", "rollback", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap"]
-    (CNFManager::Points.tasks_by_tag("configuration_lifecycle")).sort.should eq(tags.sort)
+    tags = ["alpha_k8s_apis", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "hostport_not_used", "immutable_configmap", "ip_addresses", "nodeport_not_used", "secrets_used", "versioned_tag"]
+    (CNFManager::Points.tasks_by_tag("configuration")).sort.should eq(tags.sort)
     (CNFManager::Points.tasks_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
@@ -131,7 +131,7 @@ describe "SampleUtils" do
 
   it "'CNFManager::Points.all_task_test_names' should return all tasks names", tags: ["points"] do
     CNFManager::Points.clean_results_yml
-    tags = ["versioned_tag", "cni_compatible", "reasonable_image_size",
+    tags = ["database_persistence","versioned_tag", "cni_compatible", "reasonable_image_size",
             "reasonable_startup_time", "single_process_type",
             "privileged", "non_root_user", "privilege_escalation",
             "symlink_file_system", "application_credentials",
@@ -153,7 +153,8 @@ describe "SampleUtils" do
             "linux_hardening", "resource_policies",
             "immutable_file_systems", "hostpath_mounts", "log_output",
             "prometheus_traffic", "open_metrics",
-            "ingress_egress_blocked"]
+            "ingress_egress_blocked", "dangerous_capabilities", "insecure_capabilities",
+            "routed_logs", "tracing", "elastic_volumes", "alpha_k8s_apis", "service_discovery", "shared_database"]
     (CNFManager::Points.all_task_test_names()).sort.should eq(tags.sort)
   end
 
@@ -165,7 +166,7 @@ describe "SampleUtils" do
   it "'CNFManager::Points.results_by_tag' should return a list of results by tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
-    (CNFManager::Points.results_by_tag("configuration_lifecycle")).should eq([{"name" => "liveness", "status" => "passed", "points" => 5}])
+    (CNFManager::Points.results_by_tag("resilience")).should eq([{"name" => "liveness", "status" => "passed", "points" => 5}])
     (CNFManager::Points.results_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
@@ -378,8 +379,8 @@ describe "SampleUtils" do
     response_s = `./cnf-testsuite validate_config cnf-config=spec/fixtures/cnf-testsuite-unmapped-keys-and-subkeys.yml`
     $?.success?.should be_true
     LOGGING.debug "validate_config resp: #{response_s}"
-    (/WARNING: Unmapped cnf_testsuite.yml keys. Please add them to the validator/ =~ response_s).should_not be_nil
-    (/WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_testsuite.yml/ =~ response_s).should_not be_nil
+    # (/WARNING: Unmapped cnf_testsuite.yml keys. Please add them to the validator/ =~ response_s).should_not be_nil
+    # (/WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_testsuite.yml/ =~ response_s).should_not be_nil
     (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
   end
 

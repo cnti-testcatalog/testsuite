@@ -9,27 +9,41 @@ task "cleanup", ["samples_cleanup"] do  |_, args|
 end
 
 desc "Cleans up the CNF Test Suite sample projects"
-task "samples_cleanup", ["sample_coredns_cleanup", "cleanup_sample_coredns", "bad_helm_cnf_cleanup", "sample_privileged_cnf_non_whitelisted_cleanup", "sample_privileged_cnf_whitelisted_cleanup", "sample_coredns_bad_liveness_cleanup", "sample_coredns_source_cleanup", "sample_generic_cnf_cleanup"] do  |_, args|
+task "samples_cleanup" do  |_, args|
   if args.named["force"]? && args.named["force"] == "true"
     force = true 
   else
     force = false
   end
-  #TODO use all_cnfs_task_runner to clean up all cnfs in the cnfs folder that have a cnf-testsuite yml
-  `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-large-cnf`
-  `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-deploy-repo`
-  `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-repo`
-  `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-bad_helm_coredns-cnf`
-  `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-coredns-cnf-bad-chart`
-  `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns_chart_directory`
-  # get rid of lingering coredns pods
-  if force
-  `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-coredns-cnf force=true`
+
+  CNFManager::Task.all_cnfs_task_runner(args) do |task_args, config|
+    Log.info { "Task args: #{task_args.inspect}" }
+    next unless task_args["cnf-config"]?
+
+    cnf_config_file = task_args["cnf-config"].as(String)
+    cnf_config_file = CNFManager.ensure_cnf_testsuite_yml_path(cnf_config_file)
+
+    config = CNFManager.parsed_config_file(cnf_config_file)
+    install_method = CNFManager.cnf_installation_method(config)
+    if install_method[0] == Helm::InstallMethod::ManifestDirectory
+      installed_from_manifest = true
+    else
+      installed_from_manifest = false
+    end
+
+    Log.info { "CNF CONFIG: #{cnf_config_file}" }
+    CNFManager.sample_cleanup(
+      config_file: cnf_config_file,
+      force: force,
+      installed_from_manifest: installed_from_manifest,
+      verbose: check_verbose(args)
+    )
+    nil
   end
 end
 
 desc "Cleans up the CNF Test Suite helper tools and containers"
-task "tools_cleanup", ["helm_local_cleanup", "sonobuoy_cleanup", "uninstall_chaosmesh","uninstall_litmus", "uninstall_dockerd", "uninstall_kubescape"] do  |_, args|
+task "tools_cleanup", ["helm_local_cleanup", "sonobuoy_cleanup", "uninstall_chaosmesh","uninstall_litmus", "uninstall_dockerd", "uninstall_kubescape","uninstall_cluster_tools"] do  |_, args|
 end
 
 desc "Cleans up the CNF Test Suite sample projects, helper tools, and containers"
@@ -38,7 +52,7 @@ end
 
 task "results_yml_cleanup" do |_, args|
   if File.exists?("#{CNFManager::Points::Results.file}")
-    rm = File.delete(CNFManager::Points::Results.file)
-    VERBOSE_LOGGING.info rm if check_verbose(args)
+    File.delete(CNFManager::Points::Results.file)
+    Log.for("verbose").info { "Deleted results file at #{CNFManager::Points::Results.file}" } if check_verbose(args)
   end
 end

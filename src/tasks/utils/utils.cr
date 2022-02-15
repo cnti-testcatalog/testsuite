@@ -9,6 +9,30 @@ require "option_parser"
 require "../constants.cr"
 require "semantic_version"
 
+module ShellCmd
+  def self.run(cmd, log_prefix, force_output=false)
+    Log.info { "#{log_prefix} command: #{cmd}" }
+    status = Process.run(
+      cmd,
+      shell: true,
+      output: output = IO::Memory.new,
+      error: stderr = IO::Memory.new
+    )
+    if force_output == false
+      Log.debug { "#{log_prefix} output: #{output.to_s}" }
+    else
+      Log.info { "#{log_prefix} output: #{output.to_s}" }
+    end
+    Log.info { "#{log_prefix} stderr: #{stderr.to_s}" }
+    {status: status, output: output.to_s, error: stderr.to_s}
+  end
+end
+
+def ensure_kubeconfig!
+  puts "KUBECONFIG is not set. Please set a KUBECONFIG, i.p 'export KUBECONFIG=path-to-your-kubeconfig'".colorize(:red) unless ENV.has_key?("KUBECONFIG")
+  raise "KUBECONFIG is not set. Please set a KUBECONFIG, i.p 'export KUBECONFIG=path-to-your-kubeconfig'" unless ENV.has_key?("KUBECONFIG")
+end
+
 def log_formatter
   Log::Formatter.new do |entry, io|
     progname = "cnf-testsuite"
@@ -270,6 +294,20 @@ def upsert_na_task(task, message)
   message
 end
 
+def upsert_dynamic_task(task, status : CNFManager::Points::Results::ResultStatus, message)
+  CNFManager::Points.upsert_task(task, status.to_s.downcase, CNFManager::Points.task_points(task, status))
+  case status.to_s.downcase 
+  when /pass/
+    stdout_success message
+  when /fail/
+  stdout_failure message
+  message
+  else
+    stdout_warning message
+  end
+  message
+end
+
 def stdout_info(msg)
   puts msg
 end
@@ -287,8 +325,12 @@ def stdout_failure(msg)
 end
 
 def stdout_score(test_name)
+  stdout_score(test_name, test_name)
+end
+def stdout_score(test_name, full_name)
   total = CNFManager::Points.total_points(test_name)
-  pretty_test_name = test_name.split(/:|_/).map(&.capitalize).join(" ")
+  # pretty_test_name = test_name.split(/:|_/).map(&.capitalize).join(" ")
+  pretty_test_name = full_name.split(/:|_/).map(&.capitalize).join(" ")
   # test_log_msg = "#{pretty_test_name} final score: #{total} of #{CNFManager::Points.total_max_points(test_name)}"
   test_log_msg = 
 <<-STRING

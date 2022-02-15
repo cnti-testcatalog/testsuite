@@ -12,7 +12,7 @@ ENV IMAGE_SERVICE_ENDPOINT=unix:///run/containerd/containerd.sock
 
 COPY --from=validator /validator/bin/openmetricsvalidator /usr/local/bin/
 RUN echo "deb http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list
-RUN apt update && apt install -y curl sysbench
+RUN apt update && apt install -y curl sysbench skopeo net-tools
 RUN curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRI_VERSION}/crictl-${CRI_VERSION}-linux-amd64.tar.gz --output crictl-${CRI_VERSION}-linux-amd64.tar.gz
 RUN tar zxvf crictl-$CRI_VERSION-linux-amd64.tar.gz -C /usr/local/bin
 RUN rm -f crictl-$CRI_VERSION-linux-amd64.tar.gz

@@ -1,3 +1,4 @@
+# coding: utf-8
 require "sam"
 require "file_utils"
 require "colorize"
@@ -5,8 +6,8 @@ require "totem"
 require "../utils/utils.cr"
 
 desc "In order to maintain, debug, and have insight into a protected environment, its infrastructure elements must have the property of being observable. This means these elements must externalize their internal states in some way that lends itself to metrics, tracing, and logging."
-task "observability", ["log_output", "prometheus_traffic", "open_metrics"] do |_, args|
-  stdout_score("observability")
+task "observability", ["log_output", "prometheus_traffic", "open_metrics", "routed_logs", "tracing"] do |_, args|
+  stdout_score("observability", "Observability and Diagnostics")
 end
 
 desc "Check if the CNF outputs logs to stdout or stderr"
@@ -65,7 +66,7 @@ task "prometheus_traffic" do |_, args|
 
         Log.info { "service_url: #{service_url}"}
         ClusterTools.install
-        prom_api_resp = ClusterTools.exec("curl http://#{service_url}/api/v1/targets?state=active")
+        prom_api_resp = ClusterTools.exec_k8s("curl http://#{service_url}.default.svc.cluster.local/api/v1/targets?state=active")
 
         Log.debug { "prom_api_resp: #{prom_api_resp}"}
         prom_json = JSON.parse(prom_api_resp[:output])
@@ -88,7 +89,7 @@ task "prometheus_traffic" do |_, args|
               prom_target_urls.each do |url|
                 Log.info { "checking: #{url} against #{ip.dig("ip").as_s}"}
                 if url.includes?(ip.dig("ip").as_s)
-                  msg = ClusterTools.open_metric_validator(url)
+                  msg = Prometheus.open_metric_validator(url)
                   # Immutable config maps are only supported in Kubernetes 1.19+
                   immutable_configmap = true
 
@@ -113,9 +114,10 @@ task "prometheus_traffic" do |_, args|
                   end
 
                   Log.debug { "metrics_config_map : #{metrics_config_map}" }
-                  File.write("#{destination_cnf_dir}/configmap_test.yml", "#{metrics_config_map}")
-                  KubectlClient::Delete.file("#{destination_cnf_dir}/configmap_test.yml")
-                  KubectlClient::Apply.file("#{destination_cnf_dir}/configmap_test.yml")
+                  configmap_path = "#{destination_cnf_dir}/config_maps/metrics_configmap.yml"
+                  File.write(configmap_path, "#{metrics_config_map}")
+                  KubectlClient::Delete.file(configmap_path)
+                  KubectlClient::Apply.file(configmap_path)
                   ip_match = true
                 end
               end
@@ -135,7 +137,7 @@ task "prometheus_traffic" do |_, args|
           upsert_failed_task("prometheus_traffic", "✖️  FAILED: Your cnf is not sending prometheus traffic #{emoji_observability}")
         end
       else
-        upsert_skipped_task("prometheus_traffic", "✖️  SKIPPED: Prometheus server not found #{emoji_observability}")
+        upsert_skipped_task("prometheus_traffic", "⏭️  SKIPPED: Prometheus server not found #{emoji_observability}")
       end
     end
   end
@@ -160,7 +162,7 @@ task "open_metrics", ["prometheus_traffic"] do |_, args|
         upsert_failed_task("open_metrics", "✖️  FAILED: Your cnf's metrics traffic is not Open Metrics compatible #{emoji_observability}")
       end
     else
-      upsert_skipped_task("open_metrics", "✖️  SKIPPED: Prometheus traffic not configured #{emoji_observability}")
+      upsert_skipped_task("open_metrics", "⏭️  SKIPPED: Prometheus traffic not configured #{emoji_observability}")
     end
   end
 end
@@ -193,7 +195,42 @@ task "routed_logs" do |_, args|
           upsert_failed_task("routed_logs", "✖️  FAILED: Your cnf's logs are not being captured #{emoji_observability}")
         end
     else
-      upsert_skipped_task("routed_logs", "✖️  SKIPPED: Fluentd not configured #{emoji_observability}")
+      upsert_skipped_task("routed_logs", "⏭️  SKIPPED: Fluentd not configured #{emoji_observability}")
     end
   end
 end
+
+desc "Does the CNF install use tracing?"
+task "tracing" do |_, args|
+  Log.for("verbose").info { "tracing" } if check_verbose(args)
+  Log.info { "tracing args: #{args.inspect}" }
+  next if args.named["offline"]?
+  match = JaegerManager.match()
+  Log.info { "jaeger match: #{match}" }
+  emoji_tracing_deploy="⎈🚀"
+  if match[:found]
+    if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
+      CNFManager::Task.task_runner(args) do |args, config|
+
+        helm_chart = config.cnf_config[:helm_chart]
+        helm_directory = config.cnf_config[:helm_directory]
+        release_name = config.cnf_config[:release_name]
+        yml_file_path = config.cnf_config[:yml_file_path]
+        configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
+        #TODO check if json is empty
+        tracing_used = configmap["data"].as_h["tracing_used"].as_s
+
+        if tracing_used == "true" 
+          upsert_passed_task("tracing", "✔️  PASSED: Tracing used #{emoji_tracing_deploy}")
+        else
+          upsert_failed_task("tracing", "✖️  FAILED: Tracing not used #{emoji_tracing_deploy}")
+        end
+      end
+    else
+      upsert_failed_task("tracing", "✖️  FAILED: No cnf_testsuite.yml found! Did you run the setup task?")
+    end
+  else
+    upsert_skipped_task("tracing", "✖️  SKIPPED: Jaeger not configured #{emoji_tracing_deploy}")
+  end
+end
+
