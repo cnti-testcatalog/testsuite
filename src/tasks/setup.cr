@@ -11,12 +11,12 @@ end
 
 task "create_namespace" do |_, args|
   if KubectlClient::Create.namespace(TESTSUITE_NAMESPACE)
-    stdout_success "Created cnf-testsuite namespace on the Kubernetes cluster"
+    stdout_success "Created #{TESTSUITE_NAMESPACE} namespace on the Kubernetes cluster"
   else
-    stdout_failure "Could not create cnf-testsuite namespace on the Kubernetes cluster"
+    stdout_failure "Could not create #{TESTSUITE_NAMESPACE} namespace on the Kubernetes cluster"
   end
 rescue e : KubectlClient::Create::AlreadyExistsError
-  stdout_success "cnf-testsuite namespace already exists on the Kubernetes cluster"
+  stdout_success "#{TESTSUITE_NAMESPACE} namespace already exists on the Kubernetes cluster"
 end
 
 task "offline" do |_, args|
