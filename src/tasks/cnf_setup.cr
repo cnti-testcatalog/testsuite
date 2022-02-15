@@ -4,7 +4,7 @@ require "colorize"
 require "totem"
 require "./utils/utils.cr"
 
-task "cnf_setup", ["helm_local_install"] do |_, args|
+task "cnf_setup", ["helm_local_install", "create_namespace"] do |_, args|
   Log.for("verbose").info { "cnf_setup" } if check_verbose(args)
   Log.for("verbose").debug { "args = #{args.inspect}" } if check_verbose(args)
   cli_hash = CNFManager.sample_setup_cli_args(args)

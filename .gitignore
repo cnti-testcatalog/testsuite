@@ -15,6 +15,7 @@
 /tools/sonobuoy
 /tools/cluster-api
 /tools/airgapped_kind/kind_node/node.tar.gz
+/tools/dockerd-manifest.yml
 admin.conf
 cnf-testsuite
 results.yml

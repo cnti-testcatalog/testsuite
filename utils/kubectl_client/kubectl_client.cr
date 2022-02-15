@@ -67,9 +67,14 @@ module KubectlClient
     {status: status, output: output, error: stderr}
   end
 
-  def self.exec(command, force_output=false)
-    cmd = "kubectl exec #{command}"
-    ShellCmd.run(cmd, "KubectlClient.exec", force_output)
+  def self.exec(command, namespace : String | Nil = nil, force_output : Bool = false)
+    full_cmd = ["kubectl", "exec"]
+    if namespace
+      full_cmd << "-n #{namespace}"
+    end
+    full_cmd << command
+    full_cmd = full_cmd.join(" ")
+    ShellCmd.run(full_cmd, "KubectlClient.exec", force_output)
   end
 
   def self.cp(command)
@@ -116,16 +121,31 @@ module KubectlClient
   end
 
   module Create
+    class AlreadyExistsError < Exception
+    end
+
     def self.command(cli : String)
       cmd = "kubectl create #{cli}"
       result = ShellCmd.run(cmd, "KubectlClient::Create.command")
       result[:status].success?
     end
+
+    def self.namespace(name : String)
+      cmd = "kubectl create namespace #{name}"
+      result = ShellCmd.run(cmd, "KubectlClient::Create.namespace")
+      return true if result[:status].success?
+      raise AlreadyExistsError.new if result[:error].includes?("AlreadyExists")
+      return false
+    end
   end
 
   module Apply
-    def self.file(file_name, options="")
-      cmd = "kubectl apply -f #{file_name} #{options}"
+    def self.file(file_name, kubeconfig : String | Nil = nil, namespace : String | Nil = nil)
+      cmd = ["kubectl apply"]
+      cmd << "--kubeconfig #{kubeconfig}" if kubeconfig
+      cmd << "-n #{namespace}" if namespace
+      cmd << "-f #{file_name}"
+      cmd = cmd.join(" ")
       ShellCmd.run(cmd, "KubectlClient::Apply.file")
     end
 
@@ -161,8 +181,8 @@ module KubectlClient
       ShellCmd.run(cmd, "KubectlClient::Delete.command")
     end
 
-    def self.file(file_name)
-      cmd = "kubectl delete -f #{file_name}"
+    def self.file(file_name, namespace : String | Nil = nil)
+      cmd = "kubectl delete #{namespace ? "-n #{namespace}" : ""} -f #{file_name}"
       ShellCmd.run(cmd, "KubectlClient::Delete.file")
     end
   end
@@ -357,7 +377,7 @@ module KubectlClient
     end
 
     #todo default flag for schedulable pods vs all pods
-    def self.pods_by_resource(resource_yml : JSON::Any) : K8sManifestList 
+    def self.pods_by_resource(resource_yml : JSON::Any, namespace : String | Nil = nil) : K8sManifestList 
       Log.info { "pods_by_resource" }
       Log.debug { "pods_by_resource resource: #{resource_yml}" }
       return [resource_yml] if resource_yml["kind"].as_s.downcase == "pod"
@@ -371,7 +391,7 @@ module KubectlClient
       if name
         #todo deployment labels may not match template metadata labels.  
         # -- may need to match on selector matchlabels instead
-        labels = KubectlClient::Get.resource_spec_labels(resource_yml["kind"], name).as_h
+        labels = KubectlClient::Get.resource_spec_labels(resource_yml["kind"], name, namespace: namespace).as_h
         Log.info { "pods_by_resource labels: #{labels}" }
         KubectlClient::Get.pods_by_labels(pods, labels)
       else
@@ -426,7 +446,7 @@ module KubectlClient
       end
     end
 
-    def self.resource(kind, resource_name, namespace : String? = nil) : JSON::Any
+    def self.resource(kind, resource_name, namespace : String | Nil = nil) : JSON::Any
       namespace_opt = ""
       if namespace != nil
         namespace_opt = "-n #{namespace.gsub("--namespace ", "").gsub("-n ", "") if namespace}"
@@ -604,7 +624,7 @@ module KubectlClient
       JSON.parse(%({}))
     end
 
-    def self.wait_for_install(deployment_name, wait_count : Int32 = 180, namespace="default")
+    def self.wait_for_install(deployment_name, wait_count : Int32 = 180, namespace : String = "default")
       resource_wait_for_install("deployment", deployment_name, wait_count, namespace)
     end
 
@@ -695,7 +715,13 @@ module KubectlClient
       result[:output].to_i
     end
 
-    def self.resource_wait_for_install(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default", kubeconfig=nil)
+    def self.resource_wait_for_install(
+      kind : String,
+      resource_name : String,
+      wait_count : Int32 = 180,
+      namespace : String = "default",
+      kubeconfig : String | Nil = nil
+    )
       # Not all cnfs have #{kind}.  some have only a pod.  need to check if the
       # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod
       Log.info { "resource_wait_for_install kind: #{kind} resource_name: #{resource_name} namespace: #{namespace} kubeconfig: #{kubeconfig}" }
@@ -716,29 +742,23 @@ module KubectlClient
     end
 
     #TODO add parameter and functionality that checks for individual pods to be successfully terminated
-    def self.resource_wait_for_uninstall(kind : String, resource_name : String, wait_count : Int32 = 180, namespace="default")
+    def self.resource_wait_for_uninstall(kind : String, resource_name : String, wait_count : Int32 = 180, namespace : String | Nil = "default")
       # Not all cnfs have #{kind}.  some have only a pod.  need to check if the
       # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod
       Log.info { "resource_wait_for_uninstall kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}" }
       empty_hash = {} of String => JSON::Any 
       second_count = 0
-      pod_ready : String | Nil
-      #TODO use the kubectl client get
-      all_kind = ShellCmd.run("kubectl get #{kind} --namespace=#{namespace}", "all_kind")
 
-      resource_uninstalled = KubectlClient::Get.resource(kind, resource_name)
+      resource_uninstalled = KubectlClient::Get.resource(kind, resource_name, namespace)
       Log.debug { "resource_uninstalled #{resource_uninstalled}" }
-      
-      until (resource_uninstalled && resource_uninstalled.as_h == empty_hash)  || second_count > wait_count
+      until (resource_uninstalled && resource_uninstalled.as_h == empty_hash) || second_count > wait_count
         Log.info { "second_count = #{second_count}" }
         sleep 1
-        Log.debug { "wait command: kubectl get #{kind} --namespace=#{namespace}" }
-        resource_uninstalled = KubectlClient::Get.resource(kind, resource_name) #todo add namespace
+        resource_uninstalled = KubectlClient::Get.resource(kind, resource_name, namespace)
         Log.debug { "resource_uninstalled #{resource_uninstalled}" }
         second_count = second_count + 1
       end
 
-        Log.info { "final resource_uninstalled #{resource_uninstalled}" }
       if (resource_uninstalled && resource_uninstalled.as_h == empty_hash)
         Log.info { "kind/resource #{kind}, #{resource_name} uninstalled." }
         true
@@ -830,11 +850,21 @@ module KubectlClient
 
     #TODO remove the need for a split and return name/ true /false in a hash
     #TODO add a spec for this
-    def self.pod_status(pod_name_prefix, field_selector="", namespace="default", kubeconfig=nil)
+    def self.pod_status(pod_name_prefix, field_selector="", namespace : String | Nil = nil, kubeconfig : String | Nil = nil)
       Log.info { "pod_status: #{pod_name_prefix}" }
 
-      all_pods_cmd = "kubectl get pods #{field_selector} -o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}' #{kubeconfig ? "--kubeconfig " + kubeconfig : ""}"
-
+      all_pods_cmd = ["kubectl get pods #{field_selector}"]
+      all_pods_cmd << "-o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}'"
+  
+      if kubeconfig
+        all_pods_cmd << "--kubeconfig #{kubeconfig}"
+      end
+  
+      if namespace
+        all_pods_cmd << "-n #{namespace}"
+      end
+  
+      all_pods_cmd = all_pods_cmd.join(" ")
       all_pods_result = Process.run(
         all_pods_cmd,
         shell: true,
@@ -894,7 +924,8 @@ module KubectlClient
       # TODO refactor to return container statuses
       status = "#{pod_name_prefix},NotFound,false"
       if pod != "not found"
-        cmd = "kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}' #{kubeconfig ? "--kubeconfig " + kubeconfig : ""}"
+        cmd_opts = "#{kubeconfig ? "--kubeconfig #{kubeconfig}" : ""} #{namespace ? "-n #{namespace}" : ""}"
+        cmd = "kubectl get pods #{pod} -o jsonpath='{.metadata.name},{.status.phase},{.status.containerStatuses[*].ready}' #{cmd_opts}"
         result = ShellCmd.run(cmd, "pod_status")
         status = result[:output]
         Log.debug { "pod_status status before parse: #{status}" }
@@ -916,12 +947,12 @@ module KubectlClient
     def self.deployment_spec_labels(deployment_name) : JSON::Any
       resource_spec_labels("deployment", deployment_name)
     end
-    def self.resource_spec_labels(kind, resource_name) : JSON::Any
+    def self.resource_spec_labels(kind, resource_name, namespace : String | Nil = nil) : JSON::Any
       Log.debug { "resource_labels kind: #{kind} resource_name: #{resource_name}" }
       if kind.as_s.downcase == "service"
-        resp = resource(kind, resource_name).dig?("spec", "selector")
+        resp = resource(kind, resource_name, namespace: namespace).dig?("spec", "selector")
       else
-        resp = resource(kind, resource_name).dig?("spec", "template", "metadata", "labels")
+        resp = resource(kind, resource_name, namespace: namespace).dig?("spec", "template", "metadata", "labels")
       end
       Log.debug { "resource_labels: #{resp}" }
       if resp
