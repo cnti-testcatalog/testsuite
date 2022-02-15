@@ -1064,8 +1064,6 @@ crystal src/cnf-testsuite.cr protected_access
 ./cnf-testsuite clusterapi_enabled
 ```
 
-#### Hardware and Scheduling Platform Tests
-
 ##### :heavy_check_mark: Run All platform harware and scheduling tests
 
 ```
@@ -1078,15 +1076,11 @@ crystal src/cnf-testsuite.cr protected_access
 ./cnf-testsuite platform:oci_compliant
 ```
 
-#### Observability Platform Tests
-
 ##### :bulb: (PoC) Run All platform observability tests
 
 ```
 ./cnf-testsuite platform:observability poc
 ```
-
-#### Resilience Platform Tests
 
 ##### :bulb: (PoC) Run All platform resilience tests
 
@@ -1101,7 +1095,7 @@ crystal src/cnf-testsuite.cr protected_access
 ```
 ./cnf-testsuite platform:node_failure poc destructive
 ```
-#### Security Platform Tests
+
 ##### :heavy_check_mark: Run All platform security tests
 
 ```
