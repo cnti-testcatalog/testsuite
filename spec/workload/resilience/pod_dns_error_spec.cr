@@ -14,16 +14,17 @@ describe "Resilience pod dns error Chaos" do
 
   it "'pod_dns_error' A 'Good' CNF should not crash when pod dns error occurs", tags: ["pod_dns_error"]  do
     begin
-      `./cnf-testsuite cnf_setup cnf-config=example-cnfs/envoy/cnf-testsuite.yml`
+     Log.info { `./cnf-testsuite cnf_setup cnf-config=example-cnfs/envoy/cnf-testsuite.yml`}
       $?.success?.should be_true
       response_s = `./cnf-testsuite pod_dns_error verbose`
-      LOGGING.info response_s
+      Log.info { response_s }
       $?.success?.should be_true
-      (/PASSED: pod_dns_error chaos test passed/ =~ response_s).should_not be_nil
+      ((/SKIPPED: pod_dns_error docker runtime not found/)  =~ response_s || 
+       (/PASSED: pod_dns_error chaos test passed/ =~ response_s)).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_setup cnf-config=example-cnfs/envoy/cnf-testsuite.yml`
+      Log.info {`./cnf-testsuite cnf_cleanup cnf-config=example-cnfs/envoy/cnf-testsuite.yml`}
       $?.success?.should be_true
-      `./cnf-testsuite uninstall_litmus`
+      Log.info {`./cnf-testsuite uninstall_litmus`}
       $?.success?.should be_true
     end
   end

@@ -607,49 +607,55 @@ task "pod_dns_error", ["install_litmus"] do |_, args|
     Log.for("verbose").info { "pod_dns_error" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
-        test_passed = true
-      else
-        puts "No resource label found for pod_dns_error test for resource: #{resource["name"]}".colorize(:red)
-        test_passed = false
-      end
-      if test_passed
-        if args.named["offline"]?
-          Log.info { "install resilience offline mode" }
-          AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-dns-error-experiment.yaml")
-          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-dns-error-experiment.yaml")
-          KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-dns-error-rbac.yaml")
+    runtimes = KubectlClient::Get.container_runtimes
+    Log.info { "pod_dns_error runtimes: #{runtimes}" }
+    if runtimes.find{|r| r.downcase.includes?("docker")}
+      task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+        if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+          test_passed = true
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-dns-error/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-dns-error/rbac.yaml")
+          puts "No resource label found for pod_dns_error test for resource: #{resource["name"]}".colorize(:red)
+          test_passed = false
         end
-        KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
+        if test_passed
+          if args.named["offline"]?
+              Log.info { "install resilience offline mode" }
+            AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-dns-error-experiment.yaml")
+            KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-dns-error-experiment.yaml")
+            KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-dns-error-rbac.yaml")
+          else
+            KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-dns-error/experiment.yaml")
+            KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-dns-error/rbac.yaml")
+          end
+          KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
-        chaos_experiment_name = "pod-dns-error"
-        total_chaos_duration = "120"
-        target_pod_name = ""
-        test_name = "#{resource["name"]}-#{Random.rand(99)}" 
-        chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
+          chaos_experiment_name = "pod-dns-error"
+          total_chaos_duration = "120"
+          target_pod_name = ""
+          test_name = "#{resource["name"]}-#{Random.rand(99)}" 
+          chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
-        template = ChaosTemplates::PodDnsError.new(
-          test_name,
-          "#{chaos_experiment_name}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}",
-          total_chaos_duration,
-        ).to_s
+          template = ChaosTemplates::PodDnsError.new(
+            test_name,
+            "#{chaos_experiment_name}",
+            "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
+            "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}",
+            total_chaos_duration,
+          ).to_s
 
-        File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
-        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
-        test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+          File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
+          KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+          LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
+          test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+        end
       end
-    end
-    if task_response
-      resp = upsert_passed_task("pod_dns_error","✔️  PASSED: pod_dns_error chaos test passed 🗡️💀♻️")
+      if task_response
+        resp = upsert_passed_task("pod_dns_error","✔️  PASSED: pod_dns_error chaos test passed 🗡️💀♻️")
+      else
+        resp = upsert_failed_task("pod_dns_error","✖️  FAILED: pod_dns_error chaos test failed 🗡️💀♻️")
+      end
     else
-      resp = upsert_failed_task("pod_dns_error","✖️  FAILED: pod_dns_error chaos test failed 🗡️💀♻️")
+      resp = upsert_skipped_task("pod_dns_error","✖️  SKIPPED: pod_dns_error docker runtime not found 🗡️💀♻️")
     end
   end
 end

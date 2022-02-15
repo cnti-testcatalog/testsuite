@@ -82,6 +82,8 @@
   tags: resilience, dynamic, workload  
 - name: disk_fill
   tags: resilience, dynamic, workload  
+- name: pod_dns_error
+  tags: pod_dns_error, dynamic, workload  
 #- name: external_retry 
 #  tags: scalability, dynamic, workload
 
