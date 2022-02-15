@@ -2,7 +2,7 @@ require "./cluster_utils.cr"
 module Mysql
   MYSQL_PORT = "3306" 
   def self.match()
-    ClusterTools.local_match_by_image_name("mysql/mysql-server")
+    ClusterTools.local_match_by_image_name("bitnami/mysql")
   end
   def self.uninstall
     Log.for("verbose").info { "uninstall_mysql" } 

@@ -691,7 +691,7 @@ module CNFManager
     Log.info { "tgz_name: #{tgz_name}" }
 
     unless input_file && !input_file.empty?
-      `rm #{tgz_name}`
+      FileUtils.rm_rf(tgz_name)
       helm_info = Helm.pull(helm_chart) 
       unless helm_info[:status].success?
         puts "Helm pull error".colorize(:red)
@@ -949,7 +949,7 @@ module CNFManager
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     case install_method[0]
     when Helm::InstallMethod::ManifestDirectory
-      KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", "--kubeconfig #{kubeconfig}")
+      KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", kubeconfig: kubeconfig)
     when Helm::InstallMethod::HelmChart
       begin
         if offline

@@ -367,7 +367,6 @@ task "database_persistence" do |_, args|
     statefulset_exists = false
     match = Mysql.match
     # VERBOSE_LOGGING.info "hithere" if check_verbose(args)
-    Log.info {"hithere info"}
     Log.info {"database_persistence mysql: #{match}"}
     if match && match[:found]
       statefulset_exists = Helm.kind_exists?(args, config, "statefulset")

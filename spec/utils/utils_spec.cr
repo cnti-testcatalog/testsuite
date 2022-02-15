@@ -7,6 +7,11 @@ require "file_utils"
 require "sam"
 
 describe "Utils" do
+  before_all do
+    `./cnf-testsuite setup`
+    $?.success?.should be_true
+  end
+
   before_each do
     `./cnf-testsuite results_yml_cleanup`
   end

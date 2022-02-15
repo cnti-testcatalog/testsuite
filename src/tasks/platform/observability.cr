@@ -89,7 +89,7 @@ namespace "platform" do
         Log.info { "container_repo_digests: #{repo_digest_list}" }
         id_sha256_list = repo_digest_list.reduce([] of String) do |acc, repo_digest|
           Log.info { "repo_digest: #{repo_digest}" }
-          resp = KubectlClient.exec("#{ClusterTools.pod_name} -- crictl inspecti #{repo_digest}")
+          resp = KubectlClient.exec("#{ClusterTools.pod_name} -- crictl inspecti #{repo_digest}", namespace: TESTSUITE_NAMESPACE)
           cricti = resp[:output].to_s
           begin
             parsed_json = JSON.parse(cricti)
@@ -259,7 +259,7 @@ end
         Log.info { "container_repo_digests: #{repo_digest_list}" }
         id_sha256_list = repo_digest_list.reduce([] of String) do |acc, repo_digest|
           Log.debug { "repo_digest: #{repo_digest}" }
-          cricti = KubectlClient.exec("-ti #{cluster_tools_pod} -- crictl inspecti #{repo_digest}")
+          cricti = KubectlClient.exec("-ti #{cluster_tools_pod} -- crictl inspecti #{repo_digest}", namespace: TESTSUITE_NAMESPACE)
           begin
             parsed_json = JSON.parse(cricti[:output])
             acc << parsed_json["status"]["id"].as_s
