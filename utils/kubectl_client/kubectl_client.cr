@@ -1094,7 +1094,6 @@ module KubectlClient
       # TODO Remove duplicates & and support multiple?
       all_images = container_images_by_nodes(nodes).flatten
       Log.info { "container_tag_from_image_by_nodes all_images: #{all_images}" }
-      # matched_image = all_images.select{ | x | x =~ /#{image}/ }
       matched_image = all_images.select{ | x | x.includes?(image) }
       Log.info { "container_tag_from_image_by_nodes matched_image: #{matched_image}" }
       parsed_image = DockerClient.parse_image("#{matched_image[0]}") if matched_image.size > 0
