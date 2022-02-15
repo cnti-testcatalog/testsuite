@@ -1115,12 +1115,18 @@ module KubectlClient
       images
     end
 
+    #todo match against multiple images
+    # def self.container_tag_from_image_by_nodes(images : Array(String), nodes)
+    #   images.map{|x| container_tag_from_image_by_nodes(x, nodes)}.flatten.concat
+    # end
     def self.container_tag_from_image_by_nodes(image, nodes)
+      Log.info { "container_tag_from_image_by_nodes image: #{image}" }
       Log.debug { "container_tag_from_image_by_nodes nodes: #{nodes}" }
       # TODO Remove duplicates & and support multiple?
-      all_images = container_images_by_nodes(nodes)
-      # matched_image = all_images.select{ | x | x =~ /#{image}/ }
+      all_images = container_images_by_nodes(nodes).flatten
+      Log.info { "container_tag_from_image_by_nodes all_images: #{all_images}" }
       matched_image = all_images.select{ | x | x.includes?(image) }
+      Log.info { "container_tag_from_image_by_nodes matched_image: #{matched_image}" }
       parsed_image = DockerClient.parse_image("#{matched_image[0]}") if matched_image.size > 0
       tags = parsed_image["tag"] if parsed_image
       Log.info { "container_tag_from_image_by_nodes tags: #{tags}" } if tags

@@ -62,7 +62,10 @@ module ClusterTools
     JSON.parse(%({}))
   end
 
-  def self.local_match_by_image_name(image_name : String)
+  def self.local_match_by_image_name(image_names : Array(String), nodes=KubectlClient::Get.nodes["items"].as_a )
+    image_names.map{|x| local_match_by_image_name(x, nodes)}.flatten.find{|m|m[:found]==true}
+  end
+  def self.local_match_by_image_name(image_name, nodes=KubectlClient::Get.nodes["items"].as_a )
     Log.info { "local_match_by_image_name image_name: #{image_name}" }
     nodes = KubectlClient::Get.nodes["items"].as_a
     local_match_by_image_name(image_name, nodes)
@@ -86,8 +89,9 @@ module ClusterTools
       sha_list = [{"name" => image_name, "manifest_digest" => resp["Digest"].as_s}]
       Log.info { "jaeger_pods sha_list : #{sha_list}"}
       match = DockerClient::K8s.local_digest_match(sha_list, imageids)
-      Log.info { "match : #{match}"}
+      Log.info { "local_match_by_image_name match : #{match}"}
     else
+      Log.info { "local_match_by_image_name tag: #{tag} match : #{match}"}
       match[:found]=false
     end
     Log.info { "local_match_by_image_name match: #{match}" }
