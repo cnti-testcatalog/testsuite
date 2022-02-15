@@ -121,6 +121,9 @@ module KubectlClient
   end
 
   module Create
+    class AlreadyExistsError < Exception
+    end
+
     def self.command(cli : String)
       cmd = "kubectl create #{cli}"
       result = ShellCmd.run(cmd, "KubectlClient::Create.command")
@@ -131,7 +134,7 @@ module KubectlClient
       cmd = "kubectl create namespace #{name}"
       result = ShellCmd.run(cmd, "KubectlClient::Create.namespace")
       return true if result[:status].success?
-      return true if result[:error].includes?("AlreadyExists")
+      raise AlreadyExistsError.new if result[:error].includes?("AlreadyExists")
       return false
     end
   end
