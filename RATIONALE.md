@@ -79,7 +79,7 @@ should interact with other processes through a microservice API.
 Why: A K8s microservice should expose it's API though a K8s service resource.  K8s services
 handle service discovery and load balancing for the cluster.
 
-* ✔️ To check if the CNF uses a shared database #1165
+* ✔️ To check if the CNF uses a shared database
 
 Why: A K8s microservice should not share a database with another K8s database because
 it forces the two services to upgrade in lock step
@@ -108,6 +108,11 @@ Why: When a traditional database such as mysql is configured to use statefulsets
  the database to use a persistent identifier that it maintains across any rescheduling. 
  Persistent Pod identifiers make it easier to match existing volumes to the new Pods that 
  have been rescheduled. https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+ 
+* ✔️ Test if the CNF crashes when node drain occurs
+
+Why: No CNF should fail because of stateful configuration. A CNF should function properly if it is rescheduled on other nodes.   This test will remove 
+resources which are running on a target node and reschedule them on the another node.
 
 ## Reliability, Resilience and Availability
 
@@ -122,25 +127,45 @@ component that "never fails" in the cloud native world.
 
 * ✔️ Test if the CNF crashes when network latency occurs
 
-Why: A CNF should be resilient to network latency.
+Why: Network latency can have a significant impact on the overall performance of the application.  Network outages that result from low latency can cause 
+a range of failures for applications and can severely impact user/customers with downtime. This chaos experiment allows you to see the impact of latency 
+traffic on the CNF.
 
 * ✔️ Test if the CNF crashes when disk fill occurs
 
+Why: Disk Pressure is a scenario we find in Kubernetes applications that can result in the eviction of the application replica and impact its delivery. Such scenarios can still occur despite whatever availability aids K8s provides. These problems are generally referred to as "Noisy Neighbour" problems.
+
 * ✔️ Test if the CNF crashes when pod delete occurs
+
+Why: The CNF should recreate the minimum number of replicas when a pod fails. This experiment helps to simulate such a scenario with forced/graceful pod 
+failure on specific or random replicas of an application resource.  It then checks the deployment sanity (replica availability & uninterrupted service) 
+and recovery workflow of the application.
 
 * ✔️ Test if the CNF crashes when pod memory hog occurs
 
+Why: A CNF can fail due to running out of memory.  This can be mitigated by using two levels of memory policies (pod level and node level) 
+in K8s.  If the memory policies for a CNF are not fine grained enough, the CNFs out-of-memory failure blast radius will result in 
+using all of the system memory on the node.
+
 * ✔️ Test if the CNF crashes when pod io stress occurs
+
+Why: Stressing the disk with continuous and heavy IO can cause degradation in reads/ writes by other microservices that use this 
+shared disk.  Scratch space can be used up on a node which leads to the lack of space for newer containers to get scheduled which 
+causes a movement of all pods to other nodes. This test determines the limits of how a CNF uses its storage device.
 
 * ✔️ Test if the CNF crashes when pod network corruption occurs
 
+Why: A higher quality CNF should be resilient to a lossy/flaky network.  This test injects packet corruption on the specified CNF's container by 
+starting a traffic control (tc) process with netem rules to add egress packet corruption.
+
 * ✔️ Test if the CNF crashes when pod network duplication occurs
 
-* ✔️ Test if the CNF crashes when node drain occurs
+Why: A higher quality CNF should be resilient to erroneously duplicated packets. This test injects network duplication on the specified container 
+by starting a traffic control (tc) process with netem rules to add egress delays.
 
 * ✔️ To test if there is a liveness entry in the Helm chart
 
-Why: A cloud native principle is that applications and application developers understand their own 
+Why: A cloud native principle is that application developers understand their own 
 resilience requirements better than operators[1].  This is exemplified in the Kubernetes best practice 
 of pods declaring how they should be managed through the liveness and readiness entries in the 
 pod's configuration. 
@@ -190,14 +215,6 @@ container runtime, the container orchestrator,and then the applications themselv
 require specialist security attention* -- Chris Binne, Rory Mccune. Cloud Native Security.  
 (Wiley, 2021)(pp. xix)
 
-* [NO] To check if any containers are running in privileged mode (required to pass) (dup .. our version)
-
-*The docs describe Privileged mode as essentially enabling “…access to all devices on the host 
-as well as [having the ability to] set some configuration in AppArmor or SElinux to allow the 
-container nearly all the same access to the host as processes running outside containers on the 
-host.” In other words, you should rarely, if ever, use this switch on your container command line.*
-Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley. Kindle Edition. 
-
 * ✔️ To check if any containers are running as a root user (checks the user outside the container that is running dockerd)
 
 Why: *Even with other security controls used within a Linux system running containers, 
@@ -213,15 +230,28 @@ In order to prevent illegitimate escalation by processes and restrict a processe
 
 * ✔️ To check if an attacker can use a symlink for arbitrary host file system access (CVE-2021-25741)
 
-* ✔️ To check if there are service accounts that are automatically mapped
+Why: *Due to CVE-2021-25741, subPath or subPathExpr volume mounts can be [used to gain unauthorised access](https://hub.armo.cloud/docs/c-0058) to files and directories anywhere on the host filesystem. In order to follow a best-practice security standard and prevent unauthorised data access, there should be no active CVEs affecting either the container or underlying platform.*
 
 * ✔️ To check if there is a host network attached to a pod
 
+Why: *When a container has the [hostNetwork](https://hub.armo.cloud/docs/c-0041) feature turned on, the container has direct access to the underlying hostNetwork. Hackers frequently exploit this feature to [facilitate a container breakout](https://media.defense.gov/2021/Aug/03/2002820425/-1/-1/1/CTR_KUBERNETES%20HARDENING%20GUIDANCE.PDF) and gain access to the underlying host network, data and other integral resources.*
+
 * ✔️ To check if there are service accounts that are automatically mapped
+
+Why: *When a pod gets created and a service account wasn't specified, then the default service account will be used. Service accounts assigned in this way can unintentionally give third-party applications root access to the K8s APIs and other applicaton services. In order to follow a zero-trust / fine-grained security methodology, this functionality will need to be [explicitly disabled](https://hub.armo.cloud/docs/c-0034) by using the [automountServiceAccountToken: false](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#use-the-default-service-account-to-access-the-api-server) flag. In addition, if RBAC is not enabled, the SA has unlimited permissions in the cluster.*
 
 * ✔️ To check if there is an ingress and egress policy defined.
 
+Why: *By default, [no network policies are applied](https://hub.armo.cloud/docs/c-0030) to Pods or namespaces, resulting in unrestricted ingress and egress traffic within the Pod network. In order to [prevent lateral movement](https://media.defense.gov/2021/Aug/03/2002820425/-1/-1/1/CTR_KUBERNETES%20HARDENING%20GUIDANCE.PDF) or escalation on a compromised cluster, administrators should implement a default policy to deny all ingress and egress traffic. This will ensure that all Pods are isolated by default and further policies could then be used to specifically relax these restrictions on a case-by-case basis.*
+
+
 * ✔️ To check if there are any privileged containers (kubscape version)
+
+Why: *... docs describe Privileged mode as essentially enabling “…access to all devices on the host 
+as well as [having the ability to] set some configuration in AppArmor or SElinux to allow the 
+container nearly all the same access to the host as processes running outside containers on the 
+host.” In other words, you should rarely, if ever, use this switch on your container command line.*
+Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley. Kindle Edition. 
 
 * ✔️ To check for insecure capabilities
 
