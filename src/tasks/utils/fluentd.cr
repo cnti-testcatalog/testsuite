@@ -21,9 +21,10 @@ module FluentD
     found = false
     fluentd_pods = KubectlClient::Get.pods_by_digest(match[:digest])
     fluentd_pods.each do |fluentd|
-      logs = KubectlClient.logs(fluentd.dig?("metadata","name"))
+      pod_name = fluentd.dig("metadata","name").as_s
+      logs = KubectlClient.logs(pod_name)
       Log.debug { "fluentd logs: #{logs}"}
-      found = logs[:output].to_s.includes?(pod_name.as_s)
+      found = logs[:output].to_s.includes?(pod_name)
     end
     Log.info { "fluentd found match: #{found}"}
     found

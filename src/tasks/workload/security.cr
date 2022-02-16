@@ -33,7 +33,7 @@ task "non_root_user", ["install_falco"] do |_, args|
      upsert_skipped_task("non_root_user", "✖️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).")
      node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
      pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
-     falco_pod_name = pods[0].dig("metadata", "name")
+     falco_pod_name = pods[0].dig("metadata", "name").as_s
      Log.info { "Falco Pod Name: #{falco_pod_name}" }
      resp = KubectlClient.logs(falco_pod_name)
      next
@@ -55,7 +55,7 @@ task "non_root_user", ["install_falco"] do |_, args|
          pods.map do |pod|
            # containers.as_a.map do |container|
            #   container_name = container.dig("name")
-           pod_name = pod.dig("metadata", "name")
+           pod_name = pod.dig("metadata", "name").as_s
            # if Falco.find_root_pod(pod_name, container_name)
            if Falco.find_root_pod(pod_name)
              fail_msg = "resource: #{resource} and pod #{pod_name} uses a root user"
