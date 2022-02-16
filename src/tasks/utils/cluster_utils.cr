@@ -62,16 +62,22 @@ module ClusterTools
     JSON.parse(%({}))
   end
 
-  def self.local_match_by_image_name(image_names : Array(String), nodes=KubectlClient::Get.nodes["items"].as_a )
+  def self.local_match_by_image_name(image_names : Array(String))
+    nodes = KubectlClient::Get.nodes["items"].as_a
     image_names.map{|x| local_match_by_image_name(x, nodes)}.flatten.find{|m|m[:found]==true}
   end
-  def self.local_match_by_image_name(image_name, nodes=KubectlClient::Get.nodes["items"].as_a )
+
+  def self.local_match_by_image_name(image_names : Array(String), nodes : Array(JSON::Any))
+    image_names.map{|x| local_match_by_image_name(x, nodes)}.flatten.find{|m|m[:found]==true}
+  end
+
+  def self.local_match_by_image_name(image_name : String)
     Log.info { "local_match_by_image_name image_name: #{image_name}" }
     nodes = KubectlClient::Get.nodes["items"].as_a
     local_match_by_image_name(image_name, nodes)
   end
 
-  def self.local_match_by_image_name(image_name, nodes : Array(JSON::Any))
+  def self.local_match_by_image_name(image_name : String, nodes : Array(JSON::Any))
     Log.info { "local_match_by_image_name image_name: #{image_name}" }
 
     match = Hash{:found => false, :digest => "", :release_name => ""}
