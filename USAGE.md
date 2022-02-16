@@ -407,6 +407,22 @@ crystal src/cnf-testsuite.cr external_retry
 ./cnf-testsuite service_discovery
 ```
 
+#### :heavy_check_mark: To check if the CNF has multiple microservices that share a database 
+
+<details> <summary>Details for the shared database test</summary>
+<p>
+
+<b>Shared Database:</b> Microservices should not share a database with one another.
+
+<b>Remediation Steps:</b> Make sure the CNF microservices do not share a database [here](https://martinfowler.com/bliki/IntegrationDatabase.html).
+</p>
+
+</details>
+
+```
+./cnf-testsuite shared_database 
+```
+
 #### State Tests
 
 ##### :heavy_check_mark: To run all of the state tests
@@ -414,6 +430,13 @@ crystal src/cnf-testsuite.cr external_retry
 ```
 ./cnf-testsuite state
 ```
+
+##### :heavy_check_mark: Test if the CNF crashes when node drain and rescheduling occurs.  All configuration should be stateless.
+
+```
+./cnf-testsuite node_drain
+```
+
 
 ##### :heavy_check_mark: To test if the CNF uses a volume host path
 
@@ -560,12 +583,6 @@ Sressing the disk with continuous and heavy IO can cause degradation in reads/ w
 
 ```
 ./cnf-testsuite pod_network_duplication
-```
-
-##### :heavy_check_mark: Test if the CNF crashes when node drain occurs
-
-```
-./cnf-testsuite node_drain
 ```
 
 ##### :heavy_check_mark: To test if there is a liveness entry in the Helm chart
@@ -1043,6 +1060,12 @@ crystal src/cnf-testsuite.cr protected_access
 ./cnf-testsuite immutable_configmap
 ```
 
+#### :heavy_check_mark: Test if the CNF crashes when pod dns error occurs
+
+```
+./cnf-testsuite pod_dns_error
+```
+
 ### Platform Tests
 
 ##### :heavy_check_mark: Run all platform tests
@@ -1063,8 +1086,6 @@ crystal src/cnf-testsuite.cr protected_access
 ./cnf-testsuite clusterapi_enabled
 ```
 
-#### Hardware and Scheduling Platform Tests
-
 ##### :heavy_check_mark: Run All platform harware and scheduling tests
 
 ```
@@ -1077,15 +1098,11 @@ crystal src/cnf-testsuite.cr protected_access
 ./cnf-testsuite platform:oci_compliant
 ```
 
-#### Observability Platform Tests
-
 ##### :bulb: (PoC) Run All platform observability tests
 
 ```
 ./cnf-testsuite platform:observability poc
 ```
-
-#### Resilience Platform Tests
 
 ##### :bulb: (PoC) Run All platform resilience tests
 
@@ -1100,7 +1117,7 @@ crystal src/cnf-testsuite.cr protected_access
 ```
 ./cnf-testsuite platform:node_failure poc destructive
 ```
-#### Security Platform Tests
+
 ##### :heavy_check_mark: Run All platform security tests
 
 ```

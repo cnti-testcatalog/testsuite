@@ -1,0 +1,16 @@
+---
+helm_directory: wordpress 
+git_clone_url: 
+release_name: test --set mariadb.primary.persistence.enabled=false --set persistence.enabled=false 
+container_names: 
+  - name: wordpress 
+    rolling_update_test_tag: "5.6.0-debian-10-r11"
+    rolling_downgrade_test_tag: 5.6.0-debian-10-r10 
+    rolling_version_change_test_tag: latest
+    rollback_from_tag: latest
+  - name: mariadb
+    rolling_update_test_tag: "10.5.8-debian-10-r21"
+    rolling_downgrade_test_tag: 10.5.8-debian-10-r20 
+    rolling_version_change_test_tag: latest
+    rollback_from_tag: latest
+allowlist_helm_chart_container_names: []

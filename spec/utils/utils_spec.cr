@@ -7,6 +7,11 @@ require "file_utils"
 require "sam"
 
 describe "Utils" do
+  before_all do
+    `./cnf-testsuite setup`
+    $?.success?.should be_true
+  end
+
   before_each do
     `./cnf-testsuite results_yml_cleanup`
   end
@@ -194,7 +199,7 @@ describe "Utils" do
       LOGGING.info resp
       resp
     end
-    (task_response).should eq("✖️  FAILED: Found privileged containers: [\"coredns\", \"kube-proxy\"]".colorize(:red))
+    (task_response).should eq("✖️  FAILED: Found privileged containers: [\"cluster-tools\", \"coredns\", \"kube-proxy\"]".colorize(:red))
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
   end

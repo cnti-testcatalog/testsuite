@@ -17,6 +17,8 @@
   tags: microservice, dynamic, workload
   pass: 5
   fail: 0
+- name: shared_database
+  tags: microservice, dynamic, workload
 
 - name: cni_compatible
   tags: compatibility, dynamic, workload
@@ -80,6 +82,8 @@
   tags: resilience, dynamic, workload  
 - name: disk_fill
   tags: resilience, dynamic, workload  
+- name: pod_dns_error
+  tags: pod_dns_error, dynamic, workload  
 #- name: external_retry 
 #  tags: scalability, dynamic, workload
 
@@ -160,6 +164,9 @@
   pass5: 5 
   pass3: 3 
   fail: -1
+- name: node_drain
+  tags: state, dynamic, workload
+
 #- name: hardware_and_scheduling
 #  tags: hardware, dynamic, workload
 #- name: static_accessing_hardware 
@@ -183,9 +190,6 @@
   tags: platform, platform:security, dynamic
 - name: exposed_dashboard
   tags: platform, platform:security, dynamic
-
-- name: node_drain
-  tags: resilience, dynamic, workload
 
 - name: service_account_mapping
   tags: security, dynamic, workload
@@ -215,6 +219,12 @@
   tags: security, dynamic, workload
 
 - name: ingress_egress_blocked 
+  tags: security, dynamic, workload
+
+- name: insecure_capabilities
+  tags: security, dynamic, workload
+
+- name: dangerous_capabilities
   tags: security, dynamic, workload
 
 - name: log_output

@@ -4,6 +4,10 @@ require "./../../src/tasks/utils/utils.cr"
 require "kubectl_client"
 
 describe "Platform Observability" do
+  before_all do
+    `./cnf-testsuite setup`
+    $?.success?.should be_true
+  end
 
   it "'kube_state_metrics' should return some json", tags: ["platform:observability"] do
 
