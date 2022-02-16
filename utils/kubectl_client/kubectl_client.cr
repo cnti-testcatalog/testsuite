@@ -35,7 +35,7 @@ module KubectlClient
       {status: status, output: output.to_s, error: stderr.to_s}
     end
   end
-  
+
   def self.wait(cmd)
     status = Process.run("kubectl wait #{cmd}",
                          shell: true,
@@ -46,8 +46,13 @@ module KubectlClient
     {status: status, output: output, error: stderr}
   end
 
-  def self.logs(pod_name, options="")
-    status = Process.run("kubectl logs #{pod_name} #{options}",
+  def self.logs(pod_name : String, namespace : String | Nil = nil, options : String | Nil = nil)
+    full_cmd = ["kubectl", "logs"]
+    full_cmd.push("-n #{namespace}") if namespace
+    full_cmd.push(pod_name)
+    full_cmd.push(options) if options
+    full_cmd = full_cmd.join(" ")
+    status = Process.run(full_cmd,
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
