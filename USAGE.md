@@ -996,6 +996,22 @@ crystal src/cnf-testsuite.cr protected_access
 ./cnf-testsuite configuration_lifecycle
 ```
 
+##### :heavy_check_mark: To check if containers are using labels
+<details> <summary>Details for labels test</summary>
+<p>
+
+<b>Labels Details:</b> Defining and using labels help to identify semantic attributes of your application or Deployment. A common set of labels allows tools to work collaboratively, describing objects in a common manner that all tools can understand. The recommended labels describe applications in a way that can be queried
+
+<b>Remediation Steps:</b> Make sure to define `app.kubernetes.io/name` label under metadata
+</p>
+
+</details>
+
+```
+./cnf-testsuite require_labels
+```
+
+
 ##### :heavy_check_mark: To test if there are versioned tags on all images using OPA Gatekeeper
 
 ```
