@@ -43,11 +43,7 @@ immutable infrastructure and declarative specifications.
 
 ## Microservice Tests 
 
-#### [Good microservice practices](https://vmblog.com/archive/2022/01/04/the-zeitgeist-of-cloud-native-microservices.aspx)
-promote agility which means less time will occur between deployments.  One benefit of more agility 
-is it allows for different organizations and teams to deploy at the rate of change that they 
-build out features, instead of deploying in lock step with other teams. This is very important 
-when it comes to changes that are time sensitive like security patches.
+#### [Good microservice practices](https://vmblog.com/archive/2022/01/04/the-zeitgeist-of-cloud-native-microservices.aspx) promote agility which means less time will occur between deployments.  One benefit of more agility is it allows for different organizations and teams to deploy at the rate of change that they build out features, instead of deploying in lock step with other teams. This is very important when it comes to changes that are time sensitive like security patches.
 ***
 
 #### *To check if the CNF has a reasonable image size* 
@@ -78,10 +74,8 @@ it forces the two services to upgrade in lock step
 
 ## State Tests
 
-> If infrastructure is immutable, it is easily reproduced, consistent, disposable, 
-will have a repeatable deployment process, and will not have configuration or artifacts that 
-are modifiable in place.  This ensures that all *configuration* is stateless.  Any *data* that is 
-persistent should be managed by K8s statefulsets.
+#### If infrastructure is immutable, it is easily reproduced, consistent, disposable, will have a repeatable deployment process, and will not have configuration or artifacts that are modifiable in place.  This ensures that all *configuration* is stateless.  Any *data* that is persistent should be managed by K8s statefulsets.
+***
 
 * ✔️ To test if the CNF uses a volume host path
 
@@ -108,14 +102,7 @@ resources which are running on a target node and reschedule them on the another 
 
 ## Reliability, Resilience and Availability
 
-> Cloud native systems promote resilience by putting a high priority on testing 
-individual components (chaos testing) as they are running (possibly in production).
-[Reliability in traditional telecommunications](https://vmblog.com/archive/2021/09/15/cloud-native-chaos-and-telcos-enforcing-reliability-and-availability-for-telcos.aspx)
-is handled differently than in Cloud Native systems. Cloud native systems try to address reliability 
-(MTBF) by having the subcomponents have higher availability through higher serviceability (MTTR) 
-and redundancy. For example, having ten redundant subcomponents where seven components are available 
-and three have failed will produce a top level component that is more reliable (MTBF) than a single 
-component that "never fails" in the cloud native world.  
+#### Cloud native systems promote resilience by putting a high priority on testing individual components (chaos testing) as they are running (possibly in production).[Reliability in traditional telecommunications](https://vmblog.com/archive/2021/09/15/cloud-native-chaos-and-telcos-enforcing-reliability-and-availability-for-telcos.aspx) is handled differently than in Cloud Native systems. Cloud native systems try to address reliability (MTBF) by having the subcomponents have higher availability through higher serviceability (MTTR) and redundancy. For example, having ten redundant subcomponents where seven components are available and three have failed will produce a top level component that is more reliable (MTBF) than a single component that "never fails" in the cloud native world.  
 
 * ✔️ Test if the CNF crashes when network latency occurs
 
@@ -162,7 +149,7 @@ resilience requirements better than operators[1].  This is exemplified in the Ku
 of pods declaring how they should be managed through the liveness and readiness entries in the 
 pod's configuration. 
  
-[1] "No one knows more about what an application needs to run in a healthy state than the developer. 
+> [1] "No one knows more about what an application needs to run in a healthy state than the developer. 
 For a long time, infrastructure administrators have tried to figure out what “healthy” means for 
 applications they are responsible for running. Without knowledge of what actually makes an 
 application healthy, their attempts to monitor and alert when applications are unhealthy are 
@@ -175,10 +162,7 @@ Environment . O'Reilly Media. Kindle Edition.
 
 ## Observability and Diagnostic Tests
 
-> In order to maintain, debug, and have insight into a production environment that is protected 
-(versioned, kept in source control, and changed only by using a deployment pipeline), its 
-infrastructure elements must have the property of being observable. This means these elements must 
-externalize their internal states in some way that lends itself to metrics, tracing, and logging.
+#### In order to maintain, debug, and have insight into a production environment that is protected (versioned, kept in source control, and changed only by using a deployment pipeline), its infrastructure elements must have the property of being observable. This means these elements must externalize their internal states in some way that lends itself to metrics, tracing, and logging.
  
 * ✔️ To check if logs are being sent to stdout/stderr (standard out, standard error) instead of a log file
 
@@ -201,11 +185,7 @@ such as those that will eventually cause a failure.
 
 ## Security Tests 
 
-> *Cloud native security is a [...] mutifaceted topic [...] with multiple, diverse components 
-that need to be secured. The cloud platform, the underlying host operating system, the 
-container runtime, the container orchestrator,and then the applications themselves each 
-require specialist security attention* -- Chris Binne, Rory Mccune. Cloud Native Security.  
-(Wiley, 2021)(pp. xix)
+#### *"Cloud native security is a [...] mutifaceted topic [...] with multiple, diverse components that need to be secured. The cloud platform, the underlying host operating system, the container runtime, the container orchestrator,and then the applications themselves each require specialist security attention"* -- Chris Binne, Rory Mccune. Cloud Native Security. (Wiley, 2021)(pp. xix)*
 
 * ✔️ To check if any containers are running as a root user (checks the user outside the container that is running dockerd)
 
@@ -264,14 +244,7 @@ Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley
 * ✔️ To check if containers have hostPath mounts (check: is this a duplicate of state test - ./cnf-testsuite volume_hostpath_not_found)
 
 ## Configuration Tests 
-> Declarative APIs for an immutable infrastructure are anything that configures 
-the infrastructure element. This declaration can come in the form of a YAML file or a script, 
-as long as the configuration designates the desired outcome, not how to achieve said outcome. 
-*"Because it describes the state of the world, declarative configuration does not have to be 
-executed to be understood. Its impact is concretely declared. Since the effects of declarative 
-configuration can be understood before they are executed, declarative configuration is far less 
-error-prone. " --Hightower, Kelsey; Burns, Brendan; Beda, Joe. Kubernetes: Up and 
-Running: Dive into the Future of Infrastructure (Kindle Locations 183-186). Kindle Edition*
+#### Declarative APIs for an immutable infrastructure are anything that configures the infrastructure element. This declaration can come in the form of a YAML file or a script, as long as the configuration designates the desired outcome, not how to achieve said outcome. *"Because it describes the state of the world, declarative configuration does not have to be executed to be understood. Its impact is concretely declared. Since the effects of declarative configuration can be understood before they are executed, declarative configuration is far less error-prone. " --Hightower, Kelsey; Burns, Brendan; Beda, Joe. Kubernetes: Up and Running: Dive into the Future of Infrastructure (Kindle Locations 183-186). Kindle Edition*
 
 * ✔️ To test if there are versioned tags on all images using OPA Gatekeeper
 
