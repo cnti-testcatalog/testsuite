@@ -40,7 +40,7 @@ module FluentD
     fluentd_pods = KubectlClient::Get.pods_by_digest(match[:digest])
     fluentd_pods.each do |fluentd|
       pod_name = fluentd.dig("metadata","name").as_s
-      logs = KubectlClient.logs(pod_name)
+      logs = KubectlClient.logs(pod_name, namespace: TESTSUITE_NAMESPACE)
       Log.debug { "fluentd logs: #{logs}"}
       found = logs[:output].to_s.includes?(pod_name)
     end
