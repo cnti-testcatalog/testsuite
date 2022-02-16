@@ -9,7 +9,7 @@ installability of vendor network functions.  This category tests the installabil
 and lifecycle management (the create, update, and delete of network applications) against 
 widely used K8s installation solutions such as Helm.**
 
-To test the increasing and decreasing of capacity
+**To test the increasing and decreasing of capacity**
 
 `A CNF should be able to increase and decrease its capacity without running into errors`
 
