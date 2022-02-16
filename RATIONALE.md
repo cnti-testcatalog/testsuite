@@ -4,14 +4,14 @@
 
 ## Compatibility, Installability, and Upgradability Tests
 
-Why: Service providers have historically had issues with the 
+**Service providers have historically had issues with the 
 installability of vendor network functions.  This category tests the installability
 and lifecycle management (the create, update, and delete of network applications) against 
-widely used K8s installation solutions such as Helm.
+widely used K8s installation solutions such as Helm.**
 
-* ✔️ To test the increasing and decreasing of capacity
+To test the increasing and decreasing of capacity
 
-Why: A CNF should be able to increase and decrease its capacity without running into errors
+`A CNF should be able to increase and decrease its capacity without running into errors`
 
 * ✔️ Test if the Helm chart is published
 
