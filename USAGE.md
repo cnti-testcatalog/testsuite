@@ -1044,6 +1044,12 @@ crystal src/cnf-testsuite.cr protected_access
 ./cnf-testsuite immutable_configmap
 ```
 
+#### :heavy_check_mark: Test if the CNF crashes when pod dns error occurs
+
+```
+./cnf-testsuite pod_dns_error
+```
+
 ### Platform Tests
 
 ##### :heavy_check_mark: Run all platform tests
