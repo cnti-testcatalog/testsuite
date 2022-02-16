@@ -4,37 +4,31 @@
 
 ## Compatibility, Installability, and Upgradability Tests
 
-**Service providers have historically had issues with the 
-installability of vendor network functions.  This category tests the installability
-and lifecycle management (the create, update, and delete of network applications) against 
-widely used K8s installation solutions such as Helm.**
+#### Service providers have historically had issues with the installability of vendor network functions.  This category tests the installabilityand lifecycle management (the create, update, and delete of network applications) against widely used K8s installation solutions such as Helm.
+***
 
-**To test the increasing and decreasing of capacity**
+#### *To test the increasing and decreasing of capacity*:
+> A CNF should be able to increase and decrease its capacity without running into errors.
 
-`A CNF should be able to increase and decrease its capacity without running into errors`
-
-* ✔️ Test if the Helm chart is published
-
-Why: If a helm chart is published, it is significantly easier to install for the end user.  
+#### *Test if the Helm chart is published*:
+> If a helm chart is published, it is significantly easier to install for the end user.  
 The management and versioning of the helm chart are handled by the helm registry and client tools
 rather than manually as directly referencing the helm chart source.
 
-* ✔️ Test if the Helm chart is valid
+#### *Test if the Helm chart is valid*
 
-* ✔️ Test if the Helm deploys
+#### *Test if the Helm deploys*
     
-* ✔️ Test if CNF/the install script uses Helm v3
-
-Why: Helm v3 has significant ease-of-use improvements over helm v2, which has additional dependencies
+#### *Test if CNF/the install script uses Helm v3*
+> Helm v3 has significant ease-of-use improvements over helm v2, which has additional dependencies
 such as tiller.  
 
-* ✔️ To test if the CNF can perform a rolling update
+#### *To test if the CNF can perform a rolling update*
 
-* ✔️ To check if a CNF version can be downgraded through a rolling_version_change
+#### *To check if a CNF version can be downgraded through a rolling_version_change*
 
-* ✔️ To check if a CNF version can be downgraded through a rolling_downgrade
-
-Why (update, version change, downgrade):  K8s best practice for version/installation 
+#### *To check if a CNF version can be downgraded through a rolling_downgrade*
+> (update, version change, downgrade):  K8s best practice for version/installation 
 management (lifecycle management) of applications is to have [K8s track the version of 
 the manifest information](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#updating-a-deployment)
 for the resource (deployment, pod, etc) internally.  Whenever a 
@@ -42,13 +36,10 @@ rollback is needed the resource will have the exact manifest information
 that was tied to the application when it was deployed.  This adheres the principles driving 
 immutable infrastructure and declarative specifications. 
 
-* ✔️ To check if a CNF version can be rolled back 
-        
-Why:  K8s best practice is to allow [K8s to manage the rolling back](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment) of an application resource
-instead of having operators manually rolling back the resource by using 
-something like blue/green deploys. 
+#### *To check if a CNF version can be rolled back*
+> K8s best practice is to allow [K8s to manage the rolling back](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment) of an application resource instead of having operators manually rolling back the resource by using something like blue/green deploys. 
 
-* ✔️ To check if the CNF is compatible with different CNIs
+#### *To check if the CNF is compatible with different CNIs*
 
 ## Microservice Tests 
 
