@@ -26,6 +26,49 @@ task "security", [
   stdout_score("security")
 end
 
+desc "Check if the CNF is running containers with name tiller in their image name?"
+task "disallow_helm_tiller" do |_, args|
+  unless check_poc(args)
+    Log.info { "skipping disallow_helm_tiller: not in poc mode" }
+    puts "SKIPPED: Disallow Helm Tiller".colorize(:yellow)
+    next
+  end
+
+  Log.for("verbose").info { "disallow-helm-tiller" }
+
+  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/disallow_helm_tiller/disallow_helm_tiller.yaml"
+  apply_result = KubectlClient::Apply.file(policy_url)
+  sleep(3.seconds)
+  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
+#  result = KubectlClient::Get.policy_report("polr-ns-default")
+  result = KubectlClient::Get.policy_report_allnamespaces()
+  emoji_passed="🏷️      ✔️"
+  emoji_failed="🏷️      ❌"
+
+  policy_report = JSON.parse(result[:output])
+  test_passed = true
+
+  failures = [] of JSON::Any
+  policy_report["items"].as_a.each do |item|
+    item["results"].as_a.each do |test_result|
+      if test_result["result"] == "fail" && test_result["policy"] == "disallow-helm-tiller"
+        test_passed = false
+        failures.push(test_result["resources"])
+      end
+    end
+  end
+
+  if test_passed
+    resp = upsert_passed_task("disallow_helm_tiller", "✔️  PASSED: No containers are running with name tiller in their image names #{emoji_passed}")
+  else
+    resp = upsert_failed_task("disallow_helm_tiller", "✔️  FAILED: Helm Tiller is not allowed in the image name #{emoji_failed}")
+    failures.each do |failure_resources|
+      failure_resources.as_a.each do |failure|
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using tiller in the image name".colorize(:red)
+      end
+    end
+  end
+end
 
 desc "Check if the CNF is running containers with container sock mounts?"
 task "disallow_container_sock_mounts", ["install_kyverno"] do |_, args|
