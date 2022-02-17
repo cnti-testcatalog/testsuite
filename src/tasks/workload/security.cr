@@ -28,7 +28,12 @@ end
 
 
 desc "Check if the CNF is running containers with container sock mounts?"
-task "disallow_container_sock_mounts" do |_, args|
+task "disallow_container_sock_mounts", ["install_kyverno"] do |_, args|
+  unless check_poc(args)
+    Log.info { "disallow_container_sock_mounts: not in poc mode" }
+    puts "SKIPPED: Disallow Container Sock Mounts".colorize(:yellow)
+    next
+  end
   Log.for("verbose").info { "disallow-container-sock-mounts" }
 
   policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/disallow_cri_sock_mount/disallow_cri_sock_mount.yaml"
