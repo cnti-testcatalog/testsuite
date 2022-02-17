@@ -17,6 +17,12 @@ end
 
 desc "Check if the CNF is running containers with labels configured?"
 task "require_labels", ["install_kyverno"] do |_, args|
+  unless check_poc(args)
+    Log.info { "skipping require_labels: not in poc mode" }
+    puts "SKIPPED: Require Labels".colorize(:yellow)
+    next
+  end
+
   Log.for("verbose").info { "require-labels" }
 
   policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/require_labels/require_labels.yaml"
