@@ -42,6 +42,8 @@ describe "Microservice" do
   it "'shared_database' should fail if two services on the cluster connect to the same database", tags: ["shared_database"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample-multi-db-connections-fail/cnf-testsuite.yml`
+      KubectlClient::Get.resource_wait_for_install("Deployment", "test-wordpress")
+      KubectlClient::Get.resource_wait_for_install("Deployment", "test-wordpress2")
       response_s = `./cnf-testsuite shared_database`
       LOGGING.info response_s
       $?.success?.should be_true
