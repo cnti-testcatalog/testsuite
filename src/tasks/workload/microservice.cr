@@ -308,23 +308,23 @@ task "reasonable_image_size" do |_, args|
             puts "str_auths: #{str_auths}"
           end
           File.write("#{yml_file_path}/config.json", str_auths)
-          KubectlClient.exec("dockerd -ti -- mkdir -p /root/.docker/")
-          KubectlClient.cp("#{yml_file_path}/config.json default/dockerd:/root/.docker/config.json")
+          Dockerd.exec("mkdir -p /root/.docker/")
+          KubectlClient.cp("#{yml_file_path}/config.json #{TESTSUITE_NAMESPACE}/dockerd:/root/.docker/config.json")
         end
 
         Log.info { "FQDN of the docker image: #{fqdn_image}" }
-        KubectlClient.exec("dockerd -t -- docker pull #{fqdn_image}")
-        KubectlClient.exec("dockerd -t -- docker save #{fqdn_image} -o /tmp/image.tar")
-        KubectlClient.exec("dockerd -t -- gzip -f /tmp/image.tar")
-        exec_resp =  KubectlClient.exec("dockerd -t -- wc -c /tmp/image.tar.gz | awk '{print$1}'")
+        Dockerd.exec("docker pull #{fqdn_image}")
+        Dockerd.exec("docker save #{fqdn_image} -o /tmp/image.tar")
+        Dockerd.exec("gzip -f /tmp/image.tar")
+        exec_resp = Dockerd.exec("wc -c /tmp/image.tar.gz | awk '{print$1}'")
         compressed_size = exec_resp[:output]
         # TODO strip out secret from under auths, save in array
         # TODO make a new auths array, assign previous array into auths array
         # TODO save auths array to a file
-        LOGGING.info "compressed_size: #{fqdn_image} = '#{compressed_size.to_s}'"
+        Log.info { "compressed_size: #{fqdn_image} = '#{compressed_size.to_s}'" }
         max_size = 5_000_000_000
         if ENV["CRYSTAL_ENV"]? == "TEST"
-           LOGGING.info("Using Test Mode max_size")
+           Log.info { "Using Test Mode max_size" }
            max_size = 16_000_000
         end
 
@@ -334,7 +334,7 @@ task "reasonable_image_size" do |_, args|
             test_passed=false
           end
         rescue ex
-          LOGGING.error "invalid compressed_size: #{fqdn_image} = '#{compressed_size.to_s}', #{ex.message}".colorize(:red)
+          Log.error { "invalid compressed_size: #{fqdn_image} = '#{compressed_size.to_s}', #{ex.message}".colorize(:red) }
           test_passed = false
         end
       else
