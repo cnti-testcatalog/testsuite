@@ -35,4 +35,3 @@ task "uninstall_falco" do |_, args|
   Log.for("verbose").info { "uninstall_falco" } if check_verbose(args)
   Helm.delete("-n #{TESTSUITE_NAMESPACE} falco")
 end
-
