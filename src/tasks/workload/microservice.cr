@@ -103,13 +103,13 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
       cluster_tools = ClusterTools.pod_by_node("#{status["nodeName"]}")
       Log.info { "Container Tools Pod: #{cluster_tools}"}
       pids = status["ids"].map do |id| 
-        inspect = KubectlClient.exec("#{cluster_tools} -ti -- crictl inspect #{id}", namespace: TESTSUITE_NAMESPACE)
+        inspect = KubectlClient.exec("#{cluster_tools} -t -- crictl inspect #{id}", namespace: TESTSUITE_NAMESPACE)
         pid = JSON.parse(inspect[:output]).dig("info", "pid")
         Log.info { "Container PID: #{pid}"}
         # get multiple call for a larger sample
         parsed_netstat = (1..10).map {
           sleep 10
-          netstat = KubectlClient.exec("#{cluster_tools} -ti -- nsenter -t #{pid} -n netstat", namespace: TESTSUITE_NAMESPACE)
+          netstat = KubectlClient.exec("#{cluster_tools} -t -- nsenter -t #{pid} -n netstat", namespace: TESTSUITE_NAMESPACE)
           Log.info { "Container Netstat: #{netstat}"}
           Netstat.parse(netstat[:output])
         }.flatten.compact

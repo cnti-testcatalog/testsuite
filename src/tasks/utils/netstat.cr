@@ -2,7 +2,7 @@ require "colorize"
 require "kubectl_client"
 
 module Netstat 
-# kubectl exec cluster-tools-lhwkk -ti -- nsenter -t 743858 -n netstat
+# kubectl exec cluster-tools-lhwkk -t -- nsenter -t 743858 -n netstat
 # Active Internet connections (w/o servers)
 # Proto Recv-Q Send-Q Local Address           Foreign Address         State      
 # tcp        0      0 10.244.0.193:3306       10.244.0.194:36378      TIME_WAIT  
