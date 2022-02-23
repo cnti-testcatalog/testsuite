@@ -6,7 +6,14 @@ module Kubescape
   #kubescape scan framework nsa --exclude-namespaces kube-system,kube-public
   def self.scan(cli : String | Nil = nil)
     if cli == nil
-      exclude_namespaces = ["kube-system","kube-public","local-path-storage",TESTSUITE_NAMESPACE].join(",")
+      exclude_namespaces = [
+        "kube-system",
+        "kube-public",
+        "kube-node-lease",
+        "local-path-storage",
+        "litmus",
+        TESTSUITE_NAMESPACE
+      ].join(",")
       cli = "framework nsa --use-from ./tools/kubescape/nsa.json --exclude-namespaces #{exclude_namespaces} --format json --output kubescape_results.json"
     end
     cmd = "./tools/kubescape/kubescape scan #{cli}"
