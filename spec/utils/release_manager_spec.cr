@@ -65,7 +65,7 @@ describe "ReleaseManager" do
       found_release, asset = ReleaseManager::GithubReleaseManager.upsert_release("test_version")
       # wait for upsert to finish
       resp_code = ReleaseManager::GithubReleaseManager.delete_release("test_version")
-      (resp_code == 204).should be_truthy
+      resp_code.should eq 204
     end
   end
   it "'#ReleaseManager.detached_head?' should return if the head is detached", tags: ["release"]  do
