@@ -15,6 +15,10 @@ module Dockerd
     KubectlClient::Delete.file(manifest_file, namespace: TESTSUITE_NAMESPACE)
   end
 
+  def self.exec(cli)
+    KubectlClient.exec("dockerd -t -- #{cli}", namespace: TESTSUITE_NAMESPACE)
+  end
+
   def self.manifest_file
     manifest_path = "./#{TOOLS_DIR}/dockerd-manifest.yml"
     unless File.exists?(manifest_path)
