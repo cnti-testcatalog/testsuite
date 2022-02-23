@@ -62,7 +62,7 @@ module KubectlClient
   end
 
   def self.describe(kind, resource_name)
-    # kubectl describe requiretags block-latest-tag 
+    # kubectl describe requiretags block-latest-tag
     status = Process.run("kubectl describe #{kind} #{resource_name}",
                          shell: true,
                          output: output = IO::Memory.new,
@@ -125,6 +125,13 @@ module KubectlClient
     end
   end
 
+  module Describe
+    def self.cluster_policy_report()
+      cmd = "kubectl get cpolr -o json"
+      ShellCmd.run(cmd, "KubectlClient::Describe.cluster_policy_report")
+    end
+  end
+
   module Create
     class AlreadyExistsError < Exception
     end
@@ -161,6 +168,14 @@ module KubectlClient
       result[:status].success?
     end
   end
+
+  module Describe
+    def self.cluster_policy_report()
+      cmd = "kubectl get cpolr -o json"
+      ShellCmd.run(cmd, "KubectlClient::Describe.cluster_policy_report")
+    end
+  end
+
 
   module Patch
     def self.spec(kind : String, resource : String, spec_input : String, namespace : String? = nil)
@@ -231,6 +246,26 @@ module KubectlClient
     {{- end -}}
     GOTEMPLATE
 
+    def self.policy_report(name : String)
+      cmd = "kubectl get polr #{name} -o json"
+      ShellCmd.run(cmd, "KubectlClient::Get.policy_report")
+    end
+
+    def self.policy_report_allnamespaces()
+      cmd = "kubectl get polr -A -o json"
+      ShellCmd.run(cmd, "KubectlClient::Get.policy_report_allnamespaces")
+    end
+
+    def self.delete_all_clusterpolicies_and_policyreports_allnamespaces()
+      cmd = "kubectl delete cpol,polr --all -A"
+      ShellCmd.run(cmd, "KubectlClient::Get.delete_all_clusterpolicies_and_policyreports_allnamespaces")
+    end
+
+    def self.policy_report_failed(name : String)
+      cmd = "kubectl get polr -A -o yaml | grep \"result: fail\" -B10 | grep #{name} -B2 -A7"
+      ShellCmd.run(cmd, "KubectlClient::Get.policy_report_failed")
+    end
+
     def self.privileged_containers(namespace="--all-namespaces")
       cmd = "kubectl get pods #{namespace} -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'"
       result = ShellCmd.run(cmd, "KubectlClient::Get.privileged_containers")
@@ -270,7 +305,7 @@ module KubectlClient
       JSON.parse(%({}))
     end
 
-    def self.pods(all_namespaces=true) : K8sManifest 
+    def self.pods(all_namespaces=true) : K8sManifest
       option = all_namespaces ? "--all-namespaces" : ""
       cmd = "kubectl get pods #{option} -o json"
       result = ShellCmd.run(cmd, "KubectlClient::Get.pods")
@@ -280,7 +315,27 @@ module KubectlClient
       end
       JSON.parse(%({}))
     end
-   
+
+    def self.policy_report(name : String)
+      cmd = "kubectl get polr #{name} -o json"
+      ShellCmd.run(cmd, "KubectlClient::Get.policy_report")
+    end
+
+    def self.policy_report_allnamespaces()
+      cmd = "kubectl get polr -A -o json"
+      ShellCmd.run(cmd, "KubectlClient::Get.policy_report_allnamespaces")
+    end
+
+    def self.delete_all_clusterpolicies_and_policyreports_allnamespaces()
+      cmd = "kubectl delete cpol,polr --all -A"
+      ShellCmd.run(cmd, "KubectlClient::Get.delete_all_clusterpolicies_and_policyreports_allnamespaces")
+    end
+
+    def self.policy_report_failed(name : String)
+      cmd = "kubectl get polr -A -o yaml | grep \"result: fail\" -B10 | grep #{name} -B2 -A7"
+      ShellCmd.run(cmd, "KubectlClient::Get.policy_report_failed")
+    end
+
     # todo put this in a manifest module
     def self.resource_map(k8s_manifest, &block)
       if nodes["items"]?
@@ -317,7 +372,7 @@ module KubectlClient
       end
     end
 
-    def self.schedulable_nodes_list : Array(JSON::Any)   
+    def self.schedulable_nodes_list : Array(JSON::Any)
       retry_limit = 50
       retries = 1
       empty_json_any = [] of JSON::Any
@@ -328,8 +383,8 @@ module KubectlClient
           taints = item.dig?("spec", "taints")
           Log.debug { "taints: #{taints}" }
           if (taints && taints.as_a.find{ |x| x.dig?("effect") == "NoSchedule" })
-            # EMPTY_JSON 
-            false 
+            # EMPTY_JSON
+            false
           else
             # item
             true
@@ -343,7 +398,7 @@ module KubectlClient
       nodes
     end
 
-    def self.nodes_by_resource(resource) : Array(JSON::Any)   
+    def self.nodes_by_resource(resource) : Array(JSON::Any)
       retry_limit = 50
       retries = 1
       empty_json_any = [] of JSON::Any
@@ -367,7 +422,7 @@ module KubectlClient
         Log.info { "items labels: #{item.dig?("metadata", "labels")}" }
         node_name = item.dig?("metadata", "labels", "kubernetes.io/hostname")
         Log.debug { "NodeName: #{node_name}" }
-        pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod| 
+        pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod|
           if pod.dig?("spec", "nodeName") == "#{node_name}"
             Log.debug { "pod: #{pod}" }
             pod_name = pod.dig?("metadata", "name")
@@ -387,14 +442,14 @@ module KubectlClient
       Log.debug { "pods_by_resource resource: #{resource_yml}" }
       return [resource_yml] if resource_yml["kind"].as_s.downcase == "pod"
       Log.info { "resource kind: #{resource_yml["kind"]}" }
-      
+
       #todo change this to kubectl get all pods --all-namespaces -o json for performance
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
       Log.info { "resource kind: #{resource_yml["kind"]}" }
       name = resource_yml["metadata"]["name"]?
       Log.info { "pods_by_resource name: #{name}" }
       if name
-        #todo deployment labels may not match template metadata labels.  
+        #todo deployment labels may not match template metadata labels.
         # -- may need to match on selector matchlabels instead
         labels = KubectlClient::Get.resource_spec_labels(resource_yml["kind"], name, namespace: namespace).as_h
         Log.info { "pods_by_resource labels: #{labels}" }
@@ -413,7 +468,7 @@ module KubectlClient
         else
           match = true
         end
-        #todo deployment labels may not match template metadata labels.  
+        #todo deployment labels may not match template metadata labels.
         # -- may need to match on selector matchlabels instead
         labels.map do |key, value|
           if pod.dig?("metadata", "labels", key) == value
@@ -424,7 +479,7 @@ module KubectlClient
           end
         end
         match
-      end 
+      end
     end
 
     def self.pods_by_label(pods_json : Array(JSON::Any), label_key, label_value)
@@ -437,7 +492,7 @@ module KubectlClient
           Log.debug { "metadata labels: No Match #{label_value}" }
           false
         end
-      end 
+      end
     end
 
     def self.deployment(deployment_name) : JSON::Any
@@ -497,7 +552,7 @@ module KubectlClient
     end
     def self.service_by_digest(container_digest)
       Log.info { "service_by_digest container_digest: #{container_digest}" }
-      services = KubectlClient::Get.services 
+      services = KubectlClient::Get.services
       matched_service = JSON.parse(%({}))
       services["items"].as_a.each do |service|
         Log.debug { "service_by_digest service: #{service}" }
@@ -530,7 +585,7 @@ module KubectlClient
     end
 
     def self.pods_by_digest(container_digest)
-      matched_pod = [] of JSON::Any  
+      matched_pod = [] of JSON::Any
       pods = KubectlClient::Get.pods
       pods["items"].as_a.each do |pod|
         Log.debug { "pod_by_digest pod: #{pod}" }
@@ -550,7 +605,7 @@ module KubectlClient
       matched_service = service_by_digest(container_digest)
       service_name = service.dig?("metadata", "name")
       ports = service.dig?("spec", "ports")
-      
+
       url_list = ports.map do |port|
         "#{service_name}:#{port["port"]}"
       end
@@ -639,8 +694,8 @@ module KubectlClient
       ready = false
       timeout = wait_count
       `touch /tmp/testfile`
-      pods.map do |pod| 
-        until (ready == true || timeout <= 0) 
+      pods.map do |pod|
+        until (ready == true || timeout <= 0)
           sh = KubectlClient.cp("/tmp/testfile #{pod.dig?("metadata", "name")}:/tmp/test")
           if sh[:status].success?
             ready = true
@@ -668,8 +723,8 @@ module KubectlClient
         current = replica_count(kind, namespace, resource_name, "{.status.readyReplicas}", kubeconfig)
         Log.info { "current_replicas: #{current}, desired_replicas: #{desired}, unavailable_replicas: #{unavailable}"  }
 
-        ready = current == desired 
-        
+        ready = current == desired
+
         if desired == 0 && unavailable >= 1
           ready = false
         end
@@ -677,7 +732,7 @@ module KubectlClient
         if (current == -1 || desired == -1)
           ready = false
         end
-        
+
       when "daemonset"
         desired = replica_count(kind, namespace, resource_name, "{.status.desiredNumberScheduled}", kubeconfig)
         current = replica_count(kind, namespace, resource_name, "{.status.numberAvailable}", kubeconfig)
@@ -685,15 +740,15 @@ module KubectlClient
         Log.info { "current_replicas: #{current}, desired_replicas: #{desired}" }
 
         ready = current == desired
-        
+
         if desired == 0 && unavailable >= 1
           ready = false
         end
-        
+
         if (current == -1 || desired == -1)
           ready = false
         end
-        
+
       else
         desired = replica_count(kind, namespace, resource_name, "{.status.replicas}", kubeconfig)
         current = replica_count(kind, namespace, resource_name, "{.status.readyReplicas}", kubeconfig)
@@ -701,7 +756,7 @@ module KubectlClient
         Log.info { "current_replicas: #{current}, desired_replicas: #{desired}" }
 
         ready = current == desired
-        
+
         if desired == 0 && unavailable >= 1
           ready = false
         end
@@ -751,7 +806,7 @@ module KubectlClient
       # Not all cnfs have #{kind}.  some have only a pod.  need to check if the
       # passed in pod has a deployment, if so, watch the deployment.  Otherwise watch the pod
       Log.info { "resource_wait_for_uninstall kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}" }
-      empty_hash = {} of String => JSON::Any 
+      empty_hash = {} of String => JSON::Any
       second_count = 0
 
       resource_uninstalled = KubectlClient::Get.resource(kind, resource_name, namespace)
@@ -844,11 +899,11 @@ module KubectlClient
     #
     # end
 
-    #TODO create a function for waiting for the complete uninstall of a resource 
+    #TODO create a function for waiting for the complete uninstall of a resource
     # that has pods
     #TODO get all resources for a cnf
     #TODO for a replicaset, deployment, statefulset, or daemonset list all pods
-    #TODO check for terminated status of all pods to be complete (check if pod 
+    #TODO check for terminated status of all pods to be complete (check if pod
     # no longer exists)
     # def self.resource_wait_for_termination
     # end
@@ -1144,7 +1199,7 @@ module KubectlClient
         Log.info { "items labels: #{item.dig?("metadata", "labels")}" }
         node_name = item.dig?("metadata", "labels", "kubernetes.io/hostname")
         Log.debug { "NodeName: #{node_name}" }
-        pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod| 
+        pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod|
           found = false
           #todo add another pod comparison for sha hash
           if pod["status"]["containerStatuses"]?
@@ -1180,3 +1235,4 @@ module KubectlClient
     end
   end
 end
+
