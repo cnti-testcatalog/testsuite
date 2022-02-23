@@ -196,8 +196,12 @@ module KubectlClient
   end
 
   module Delete
-    def self.command(command)
+    def self.command(command, labels : Hash(String, String) | Nil = {} of String => String)
       cmd = "kubectl delete #{command}"
+      if !labels.empty?
+        label_options = labels.map {|key, value| "-l #{key}=#{value}" }.join(" ")
+        cmd = "#{cmd} #{label_options}"
+      end
       ShellCmd.run(cmd, "KubectlClient::Delete.command")
     end
 
