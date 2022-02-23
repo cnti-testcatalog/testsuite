@@ -9,10 +9,10 @@ require "sam"
 
 describe "Private Registry: Image" do
   before_all do
-    install_dockerd = KubectlClient::Apply.file("#{TOOLS_DIR}/dockerd/manifest.yml")
     install_registry = KubectlClient::Apply.file("#{TOOLS_DIR}/registry/manifest.yml")
-    KubectlClient::Get.resource_wait_for_install("Pod", "registry")
+    install_dockerd = KubectlClient::Apply.file("#{TOOLS_DIR}/dockerd/manifest.yml")
     KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
+    KubectlClient::Get.resource_wait_for_install("Pod", "registry")
 
     KubectlClient.exec("dockerd -t -- apk add curl", force_output: true)
     KubectlClient.exec("dockerd -t -- curl http://example.com", force_output: true)
@@ -66,10 +66,10 @@ end
 
 describe "Private Registry: Rolling" do
   before_all do
-    install_dockerd = KubectlClient::Apply.file("#{TOOLS_DIR}/dockerd/manifest.yml")
     install_registry = KubectlClient::Apply.file("#{TOOLS_DIR}/registry/manifest.yml")
-    KubectlClient::Get.resource_wait_for_install("Pod", "registry")
+    install_dockerd = KubectlClient::Apply.file("#{TOOLS_DIR}/dockerd/manifest.yml")
     KubectlClient::Get.resource_wait_for_install("Pod", "dockerd")
+    KubectlClient::Get.resource_wait_for_install("Pod", "registry")
 
     KubectlClient.exec("dockerd -t -- apk add curl", force_output: true)
     KubectlClient.exec("dockerd -t -- curl http://example.com", force_output: true)
