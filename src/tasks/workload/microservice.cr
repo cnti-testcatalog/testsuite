@@ -265,8 +265,8 @@ task "reasonable_startup_time" do |_, args|
 end
 
 desc "Does the CNF have a reasonable container image size (< 5GB)?"
-task "reasonable_image_size", ["install_dockerd"] do |_, args|
-  unless Dockerd.wait_for_install
+task "reasonable_image_size" do |_, args|
+  unless Dockerd.install
     upsert_skipped_task("reasonable_image_size", "✖️  SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install")
     next
   end
