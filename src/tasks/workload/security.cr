@@ -375,7 +375,7 @@ task "network_policies", ["kubescape_scan"] do |_, args|
 end
 
 desc "Check that privileged containers are not used"
-task "privileged_containers", ["uninstall_dockerd", "uninstall_cluster_tools", "kubescape_scan" ] do |_, args|
+task "privileged_containers", ["kubescape_scan" ] do |_, args|
   next if args.named["offline"]?
 
   CNFManager::Task.task_runner(args) do |args, config|
@@ -394,9 +394,6 @@ task "privileged_containers", ["uninstall_dockerd", "uninstall_cluster_tools", "
       resp
     end
   end
-ensure
-  ClusterTools.install
-  `./cnf-testsuite install_dockerd`
 end
 
 desc "Check if containers have immutable file systems"
