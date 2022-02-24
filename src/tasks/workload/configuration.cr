@@ -653,15 +653,15 @@ task "immutable_configmap" do |_, args|
       volumes.as_a.each do |config_map_volume|
         if config_map_volume["configMap"]?
           config_map_volume_exists = true
-          LOGGING.info "config_map_volume: #{config_map_volume["name"]}"
+          Log.info { "config_map_volume: #{config_map_volume["name"]}"}
           container_config_map_mounted = false
           containers.as_a.each do |container|
             if container["volumeMounts"]?
                 vmount = container["volumeMounts"].as_a
-              LOGGING.info "vmount: #{vmount}"
-              LOGGING.debug "container[env]: #{container["env"]? && container["env"]}"
+              Log.info { "vmount: #{vmount}"}
+              Log.info { "container[env]: #{container["env"]? && container["env"]}" }
               if (vmount.find { |x| x["name"] == config_map_volume["name"]? })
-                LOGGING.debug config_map_volume["name"]
+                Log.info { config_map_volume["name"] }
                 container_config_map_mounted = true
               end
             end
@@ -672,12 +672,12 @@ task "immutable_configmap" do |_, args|
             config_map_volume_mounted = false
           end
 
-          LOGGING.debug "config_maps_json[items][0]: #{config_maps_json["items"][0]}"
-          LOGGING.debug "config_map_volume[configMap] #{config_map_volume["configMap"]}"
+          Log.info { "config_maps_json[items][0]: #{config_maps_json["items"][0]}" }
+          Log.info { "config_map_volume[configMap] #{config_map_volume["configMap"]}" }
 
           this_volume_config_map = config_maps_json["items"].as_a.find {|x| x["metadata"]? && x["metadata"]["name"]? && x["metadata"]["name"] == config_map_volume["configMap"]["name"] }
 
-          LOGGING.debug "this_volume_config_map: #{this_volume_config_map}"
+          Log.info { "this_volume_config_map: #{this_volume_config_map}" }
           # https://crystal-lang.org/api/0.20.4/Hash.html#key%3F%28value%29-instance-method
           unless config_map_volume_mounted && this_volume_config_map && this_volume_config_map["immutable"]? && this_volume_config_map["immutable"] == true
             all_volume_configmap_are_immutable = false
@@ -692,18 +692,20 @@ task "immutable_configmap" do |_, args|
       all_env_configmap_are_immutable = true
 
       containers.as_a.each do |container|
-        LOGGING.debug "container config_maps #{container["env"]?}"
+        Log.info { "container config_maps #{container["env"]?}" }
         if container["env"]?
           container["env"].as_a.find do |c|
+            # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#define-container-environment-variables-with-data-from-multiple-configmaps
+            this_env_mounted_config_map_name = c.dig?("valueFrom", "configMapKeyRef", "name")
+            if this_env_mounted_config_map_name
 
-          # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#define-container-environment-variables-with-data-from-multiple-configmaps
-          this_env_mounted_config_map_name = c.dig?("valueFrom", "configMapKeyRef", "name")
+              this_env_mounted_config_map_json = config_maps_json["items"].as_a.find{ |s| s["metadata"]["name"] == this_env_mounted_config_map_name }
 
-          this_env_mounted_config_map_json = config_maps_json["items"].as_a.find{ |s| s["metadata"]["name"] == this_env_mounted_config_map_name }
-
-            LOGGING.debug "blarf this_env_mounted_config_map_json #{this_env_mounted_config_map_json}"
-            unless this_env_mounted_config_map_json && this_env_mounted_config_map_json["immutable"]? && this_env_mounted_config_map_json["immutable"] == true
-              all_env_configmap_are_immutable = false
+              Log.info { "blarf this_env_mounted_config_map_json #{this_env_mounted_config_map_json}" }
+              unless this_env_mounted_config_map_json && this_env_mounted_config_map_json["immutable"]? && this_env_mounted_config_map_json["immutable"] == true
+                Log.info {" configmap immutable = false" }
+                all_env_configmap_are_immutable = false
+              end
             end
           end
         end
