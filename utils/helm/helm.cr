@@ -366,9 +366,10 @@ module Helm
   class InstallationFailed < Exception
     MESSAGE_REGEX = /Error: INSTALLATION FAILED: (.+)$/
 
-    def self.error_text(str : String)
+    def self.error_text(str : String) : String?
       result = MESSAGE_REGEX.match(str)
-      return result.not_nil![1]?
+      return result[1] if result
+      return nil
     end
   end
 end
