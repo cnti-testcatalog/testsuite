@@ -24,7 +24,11 @@ module ShellCmd
     else
       Log.info { "#{log_prefix} output: #{output.to_s}" }
     end
-    Log.info { "#{log_prefix} stderr: #{stderr.to_s}" }
+
+    # Don't have to output log line if stderr is empty
+    if stderr.to_s.size > 1
+      Log.info { "#{log_prefix} stderr: #{stderr.to_s}" }
+    end
     {status: status, output: output.to_s, error: stderr.to_s}
   end
 end
