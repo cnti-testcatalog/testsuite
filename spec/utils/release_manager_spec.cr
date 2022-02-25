@@ -64,6 +64,8 @@ describe "ReleaseManager" do
     else 
       found_release, asset = ReleaseManager::GithubReleaseManager.upsert_release("test_version")
       # wait for upsert to finish
+      Log.info {"upsert sleep"}
+      sleep 10.0
       resp_code = ReleaseManager::GithubReleaseManager.delete_release("test_version")
       (resp_code == 204).should be_truthy
     end
@@ -74,7 +76,9 @@ describe "ReleaseManager" do
 
   it "'#ReleaseManager.commit_message_issues' should list previsions releases", tags: ["release"]  do
     hash = ReleaseManager.current_hash
-    issues = ReleaseManager.commit_message_issues("v0.9.19", hash)
+    #todo dynamically change issues tag so that it is only a few weeks back
+    # if this tag is too far in the past, the specs will not run
+    issues = ReleaseManager.commit_message_issues("v0.24.0", hash)
     (issues[0].match(/#/)).should_not be_nil
   end
 
