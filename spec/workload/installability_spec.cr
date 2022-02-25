@@ -15,7 +15,8 @@ describe CnfTestSuite do
     LOGGING.info response_s
     $?.success?.should be_true
     (/FAILED: Helm not found in supplied install script/ =~ response_s).should_not be_nil
-    `./cnf-testsuite sample_coredns_source_cleanup`
+  ensure
+    `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf-source/cnf-testsuite.yml`
   end
 
 	it "'helm_deploy' should fail on a bad helm chart", tags: ["helm"] do
@@ -25,7 +26,7 @@ describe CnfTestSuite do
     $?.success?.should be_true
     (/FAILED: Helm deploy failed/ =~ response_s).should_not be_nil
   ensure
-    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-bad-helm-deploy-repo verbose`
+    `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-bad-helm-deploy-repo verbose`
   end
 
   it "'helm_deploy' should fail if command is not supplied cnf-config argument", tags: ["helm"] do
@@ -36,12 +37,14 @@ describe CnfTestSuite do
   end
 
   it "'helm_chart_valid' should pass on a good helm chart", tags: ["helm"]  do
-    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose wait_count=0`
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose`
     $?.success?.should be_true
     response_s = `./cnf-testsuite helm_chart_valid verbose`
     LOGGING.info response_s
     $?.success?.should be_true
     (/Lint Passed/ =~ response_s).should_not be_nil
+  ensure
+    `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose`
   end
 
   it "'helm_chart_valid' should fail on a bad helm chart", tags: ["helm"] do
@@ -57,8 +60,7 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/Lint Failed/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite bad_helm_cnf_cleanup force=true`
-      `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose wait_count=0`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose`
     end
   end
 
