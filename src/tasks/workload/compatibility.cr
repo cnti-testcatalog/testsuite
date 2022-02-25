@@ -353,6 +353,7 @@ task "helm_deploy" do |_, args|
       yml_file_path = config.cnf_config[:yml_file_path]
       configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
       #TODO check if json is empty
+      Log.for("helm_used_debug").info { configmap["data"].inspect }
       helm_used = configmap["data"].as_h["helm_used"].as_s
 
       if helm_used == "true" 
