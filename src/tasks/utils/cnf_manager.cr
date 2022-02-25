@@ -865,6 +865,9 @@ module CNFManager
 
         begin
           helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory}")
+        rescue e : Helm::InstallationFailed
+          stdout_failure "Helm installation failed"
+          stdout_failure "\t#{e.message}"
         rescue e : Helm::CannotReuseReleaseNameError
           stdout_warning "Release name #{release_name} has already been setup."
           # Mark that install is not fresh
