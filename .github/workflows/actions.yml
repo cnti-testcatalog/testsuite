@@ -758,6 +758,9 @@ jobs:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
             endpoint = ["http://localhost:5000"]
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
+            endpoint = ["http://localhost:5000"]
         EOF
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
