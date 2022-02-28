@@ -65,7 +65,7 @@ rolling_version_change_test_names.each do |tn|
         unless rollout_status
           Log.info { "Rollout failed for #{resource["kind"]}/#{resource["name"]}" }
           KubectlClient.describe(resource["kind"], resource["name"], force_output: true)
-          KubectlClient.exec("get all", force_output: true)
+          KubectlClient::ShellCmd.run("kubectl get all", "get_all_resources", force_output: true)
           test_passed = false
         end
         VERBOSE_LOGGING.debug "#{tn}: #{container} test_passed=#{test_passed}" if check_verbose(args)
