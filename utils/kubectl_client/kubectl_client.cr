@@ -65,15 +65,10 @@ module KubectlClient
     {status: status, output: output, error: stderr}
   end
 
-  def self.describe(kind, resource_name)
+  def self.describe(kind, resource_name, force_output : Bool = false)
     # kubectl describe requiretags block-latest-tag
-    status = Process.run("kubectl describe #{kind} #{resource_name}",
-                         shell: true,
-                         output: output = IO::Memory.new,
-                         error: stderr = IO::Memory.new)
-    Log.debug { "KubectlClient.describe output: #{output.to_s}" }
-    Log.info { "KubectlClient.describe stderr: #{stderr.to_s}" }
-    {status: status, output: output, error: stderr}
+    cmd = "kubectl describe #{kind} #{resource_name}"
+    ShellCmd.run(cmd, "KubectlClient.describe", force_output: force_output)
   end
 
   def self.exec(command, namespace : String | Nil = nil, force_output : Bool = false)
