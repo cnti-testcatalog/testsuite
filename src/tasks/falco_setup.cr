@@ -19,11 +19,11 @@ task "install_falco" do |_, args|
     if args.named["offline"]?
       Log.info { "install falco offline mode" }
       helm_chart = Dir.entries(FALCO_OFFLINE_DIR).first
-      Helm.install("falco --set ebpf.enabled=true #{chart_version} #{image_arg} #{image_tag} -f ./falco_rule.yaml #{FALCO_OFFLINE_DIR}/#{helm_chart}")
+      Helm.install("falco --set ebpf.enabled=true #{chart_version} #{image_arg} #{image_tag} -f ./falco_rule.yaml -n #{TESTSUITE_NAMESPACE} #{FALCO_OFFLINE_DIR}/#{helm_chart}")
     else
       Helm.helm_repo_add("falcosecurity","https://falcosecurity.github.io/charts")
       # needs ebpf parameter for precompiled module
-      Helm.install("falco --set ebpf.enabled=true #{chart_version} #{image_arg} #{image_tag} -f ./falco_rule.yaml falcosecurity/falco")
+      Helm.install("falco --set ebpf.enabled=true #{chart_version} #{image_arg} #{image_tag} -f ./falco_rule.yaml -n #{TESTSUITE_NAMESPACE} falcosecurity/falco")
     end
   rescue Helm::CannotReuseReleaseNameError
     Log.info { "Falco already installed" }
@@ -33,6 +33,5 @@ end
 desc "Uninstall Falco"
 task "uninstall_falco" do |_, args|
   Log.for("verbose").info { "uninstall_falco" } if check_verbose(args)
-  Helm.delete("falco")
+  Helm.delete("-n #{TESTSUITE_NAMESPACE} falco")
 end
-

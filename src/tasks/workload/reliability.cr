@@ -598,6 +598,10 @@ task "pod_io_stress", ["install_litmus"] do |_, args|
       resp = upsert_failed_task("pod_io_stress","✖️  FAILED: pod_io_stress chaos test failed 🗡️💀♻️")
     end
   end
+ensure
+  # This ensures that no litmus-related resources are left behind after the test is run.
+  # Only the default namespace is cleaned up.
+  KubectlClient::Delete.command("all", {"app.kubernetes.io/part-of" => "litmus"})
 end
 
 

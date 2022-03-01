@@ -61,8 +61,11 @@ rolling_version_change_test_names.each do |tn|
         # If any containers dont have an update applied, fail
         test_passed = false if resp == false
 
-        rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"], timeout="60s")
+        rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"], timeout="100s")
         unless rollout_status
+          Log.info { "Rollout failed for #{resource["kind"]}/#{resource["name"]}" }
+          KubectlClient.describe(resource["kind"], resource["name"], force_output: true)
+          KubectlClient::ShellCmd.run("kubectl get all", "get_all_resources", force_output: true)
           test_passed = false
         end
         VERBOSE_LOGGING.debug "#{tn}: #{container} test_passed=#{test_passed}" if check_verbose(args)
@@ -355,7 +358,7 @@ task "helm_deploy" do |_, args|
       #TODO check if json is empty
       helm_used = configmap["data"].as_h["helm_used"].as_s
 
-      if helm_used == "true" 
+      if helm_used == "true"
         upsert_passed_task("helm_deploy", "✔️  PASSED: Helm deploy successful #{emoji_helm_deploy}")
       else
         upsert_failed_task("helm_deploy", "✖️  FAILED: Helm deploy failed #{emoji_helm_deploy}")

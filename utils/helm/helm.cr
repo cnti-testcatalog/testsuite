@@ -295,6 +295,17 @@ module Helm
       raise CannotReuseReleaseNameError.new
     end
 
+    # When calling Helm.install. Do not rescue from this error.
+    # This helps catch those one-off scenarios when helm install fails
+    #
+    # Examples:
+    # * https://github.com/helm/helm/issues/10285
+    # * Also check platform observability failure in this build - https://github.com/cncf/cnf-testsuite/runs/5308701193?check_suite_focus=true
+    result = InstallationFailed.error_text(stderr.to_s)
+    if result
+      raise InstallationFailed.new("Helm install error: #{result}")
+    end
+
     {status: status, output: output, error: stderr}
   end
 
@@ -349,6 +360,16 @@ module Helm
   class CannotReuseReleaseNameError < Exception
     def self.error_text_content_match?(str : String)
       str.includes? "cannot re-use a name that is still in use"
+    end
+  end
+
+  class InstallationFailed < Exception
+    MESSAGE_REGEX = /Error: INSTALLATION FAILED: (.+)$/
+
+    def self.error_text(str : String) : String?
+      result = MESSAGE_REGEX.match(str)
+      return result[1] if result
+      return nil
     end
   end
 end

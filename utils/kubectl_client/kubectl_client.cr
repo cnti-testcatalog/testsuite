@@ -31,7 +31,11 @@ module KubectlClient
       else
         Log.info { "#{log_prefix} output: #{output.to_s}" }
       end
-      Log.info { "#{log_prefix} stderr: #{stderr.to_s}" }
+
+      # Don't have to output log line if stderr is empty
+      if stderr.to_s.size > 1
+        Log.info { "#{log_prefix} stderr: #{stderr.to_s}" }
+      end
       {status: status, output: output.to_s, error: stderr.to_s}
     end
   end
@@ -46,8 +50,13 @@ module KubectlClient
     {status: status, output: output, error: stderr}
   end
 
-  def self.logs(pod_name, options="")
-    status = Process.run("kubectl logs #{pod_name} #{options}",
+  def self.logs(pod_name : String, namespace : String | Nil = nil, options : String | Nil = nil)
+    full_cmd = ["kubectl", "logs"]
+    full_cmd.push("-n #{namespace}") if namespace
+    full_cmd.push(pod_name)
+    full_cmd.push(options) if options
+    full_cmd = full_cmd.join(" ")
+    status = Process.run(full_cmd,
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
@@ -56,15 +65,10 @@ module KubectlClient
     {status: status, output: output, error: stderr}
   end
 
-  def self.describe(kind, resource_name)
+  def self.describe(kind, resource_name, force_output : Bool = false)
     # kubectl describe requiretags block-latest-tag
-    status = Process.run("kubectl describe #{kind} #{resource_name}",
-                         shell: true,
-                         output: output = IO::Memory.new,
-                         error: stderr = IO::Memory.new)
-    Log.debug { "KubectlClient.describe output: #{output.to_s}" }
-    Log.info { "KubectlClient.describe stderr: #{stderr.to_s}" }
-    {status: status, output: output, error: stderr}
+    cmd = "kubectl describe #{kind} #{resource_name}"
+    ShellCmd.run(cmd, "KubectlClient.describe", force_output: force_output)
   end
 
   def self.exec(command, namespace : String | Nil = nil, force_output : Bool = false)
@@ -191,8 +195,12 @@ module KubectlClient
   end
 
   module Delete
-    def self.command(command)
+    def self.command(command, labels : Hash(String, String) | Nil = {} of String => String)
       cmd = "kubectl delete #{command}"
+      if !labels.empty?
+        label_options = labels.map {|key, value| "-l #{key}=#{value}" }.join(" ")
+        cmd = "#{cmd} #{label_options}"
+      end
       ShellCmd.run(cmd, "KubectlClient::Delete.command")
     end
 

@@ -780,7 +780,8 @@ module CNFManager
     # Set it to false by default to indicate a new release is being setup
     fresh_install = true
 
-    helm_install = {status: "", output: IO::Memory.new, error: IO::Memory.new}
+    helm_install = {status: "", output: "", error: ""}
+    helm_error = false
 
     match = JaegerManager.match()
     if match[:found]
@@ -838,6 +839,10 @@ module CNFManager
  
         begin
           helm_install = Helm.install("#{release_name} #{helm_chart}")
+        rescue e : Helm::InstallationFailed
+          stdout_failure "Helm installation failed"
+          stdout_failure "\t#{e.message}"
+          helm_error = true
         rescue e : Helm::CannotReuseReleaseNameError
           stdout_warning "Release name #{release_name} has already been setup."
           # Mark that install is not fresh
@@ -865,6 +870,10 @@ module CNFManager
 
         begin
           helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory}")
+        rescue e : Helm::InstallationFailed
+          stdout_failure "Helm installation failed"
+          stdout_failure "\t#{e.message}"
+          helm_error = true
         rescue e : Helm::CannotReuseReleaseNameError
           stdout_warning "Release name #{release_name} has already been setup."
           # Mark that install is not fresh
@@ -899,7 +908,7 @@ module CNFManager
 
     Log.info { "elapsed_time.seconds: #{elapsed_time.seconds}" }
     helm_used = false
-    if helm_install && helm_install[:error].to_s.size == 0 # && helm_pull.to_s.size > 0
+    if helm_install && helm_error == false && helm_install[:error].to_s.size == 0 # && helm_pull.to_s.size > 0
       helm_used = true
       stdout_success "Successfully setup #{release_name}"
     end
@@ -932,7 +941,6 @@ module CNFManager
     KubectlClient::Apply.file(configmap_path)
     # TODO when uninstalling, remove config map
   end
-
 
   def self.cnf_to_new_cluster(config, kubeconfig, offline=false)
     release_name = config.cnf_config[:release_name]

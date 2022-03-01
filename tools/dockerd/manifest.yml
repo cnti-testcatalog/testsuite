@@ -6,7 +6,7 @@ metadata:
 data:
   config.yaml: |
     {
-      "insecure-registries" : ["registry:5000"] 
+      "insecure-registries" : ["registry:5000", "registry.default.svc.cluster.local:5000"]
     }
 ---
 apiVersion: v1

@@ -19,7 +19,7 @@ task "log_output" do |_, args|
       test_passed = false
       case resource["kind"].as_s.downcase
       when "replicaset", "deployment", "statefulset", "pod", "daemonset"
-        result = KubectlClient.logs("#{resource["kind"]}/#{resource["name"]}", "--all-containers --tail=5 --prefix=true")
+        result = KubectlClient.logs("#{resource["kind"]}/#{resource["name"]}", options: "--all-containers --tail=5 --prefix=true")
         Log.for("Log lines").info { result[:output] }
         if result[:output].size > 0
           test_passed = true

@@ -51,19 +51,20 @@ describe "Platform Observability" do
   end
 
   it "'prometheus_adapter' should detect the named release of the installed prometheus_adapter", tags: ["platform:observability"] do
-
-	    LOGGING.info "Installing prometheus-adapter" 
-      helm = BinarySingleton.helm
-		  resp = `#{helm} install prometheus-adapter stable/prometheus-adapter`
-		  LOGGING.info resp
-		  KubectlClient::Get.wait_for_install("prometheus-adapter")
-      response_s = `./cnf-testsuite platform:prometheus_adapter poc`
-      LOGGING.info response_s
-      (/(PASSED){1}.*(Your platform is using the){1}.*(release for the prometheus adapter){1}/ =~ response_s).should_not be_nil
+    Log.info { "Installing prometheus-adapter" }
+    helm = BinarySingleton.helm
+    begin
+      result = Helm.install("prometheus-adapter stable/prometheus-adapter")
+      Log.info { "Prometheus installed" }
+    rescue e : Helm::CannotReuseReleaseNameError
+      Log.info { "Prometheus already installed" }
+    end
+    KubectlClient::Get.wait_for_install("prometheus-adapter")
+    response_s = `./cnf-testsuite platform:prometheus_adapter poc`
+    LOGGING.info response_s
+    (/(PASSED){1}.*(Your platform is using the){1}.*(release for the prometheus adapter){1}/ =~ response_s).should_not be_nil
   ensure
-      resp = `#{helm} delete prometheus-adapter`
-      LOGGING.info resp
-      $?.success?.should be_true
+    resp = Helm.uninstall("prometheus-adapter")
   end
 
   it "'metrics_server' should detect the named release of the installed metrics_server", tags: ["platform:observability"] do

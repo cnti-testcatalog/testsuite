@@ -67,7 +67,7 @@ describe "ReleaseManager" do
       Log.info {"upsert sleep"}
       sleep 10.0
       resp_code = ReleaseManager::GithubReleaseManager.delete_release("test_version")
-      (resp_code == 204).should be_truthy
+      resp_code.should eq 204
     end
   end
   it "'#ReleaseManager.detached_head?' should return if the head is detached", tags: ["release"]  do

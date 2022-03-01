@@ -159,14 +159,14 @@ end
 
 desc "Check if any containers are running in as root"
 task "non_root_user", ["install_falco"] do |_, args|
-   unless KubectlClient::Get.resource_wait_for_install("Daemonset", "falco") 
+   unless KubectlClient::Get.resource_wait_for_install("Daemonset", "falco", namespace: TESTSUITE_NAMESPACE)
      Log.info { "Falco Failed to Start" }
      upsert_skipped_task("non_root_user", "✖️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).")
      node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
      pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
-     falco_pod_name = pods[0].dig("metadata", "name")
+     falco_pod_name = pods[0].dig("metadata", "name").as_s
      Log.info { "Falco Pod Name: #{falco_pod_name}" }
-     resp = KubectlClient.logs(falco_pod_name)
+     resp = KubectlClient.logs(falco_pod_name, namespace: TESTSUITE_NAMESPACE)
      next
    end
 
@@ -186,7 +186,7 @@ task "non_root_user", ["install_falco"] do |_, args|
          pods.map do |pod|
            # containers.as_a.map do |container|
            #   container_name = container.dig("name")
-           pod_name = pod.dig("metadata", "name")
+           pod_name = pod.dig("metadata", "name").as_s
            # if Falco.find_root_pod(pod_name, container_name)
            if Falco.find_root_pod(pod_name)
              fail_msg = "resource: #{resource} and pod #{pod_name} uses a root user"
@@ -506,7 +506,7 @@ task "network_policies", ["kubescape_scan"] do |_, args|
 end
 
 desc "Check that privileged containers are not used"
-task "privileged_containers", ["uninstall_dockerd", "uninstall_cluster_tools", "kubescape_scan" ] do |_, args|
+task "privileged_containers", ["kubescape_scan" ] do |_, args|
   next if args.named["offline"]?
 
   CNFManager::Task.task_runner(args) do |args, config|
@@ -525,9 +525,6 @@ task "privileged_containers", ["uninstall_dockerd", "uninstall_cluster_tools", "
       resp
     end
   end
-ensure
-  ClusterTools.install
-  `./cnf-testsuite install_dockerd`
 end
 
 desc "Check if containers have immutable file systems"

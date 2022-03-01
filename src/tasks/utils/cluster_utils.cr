@@ -5,6 +5,7 @@ module ClusterTools
     KubectlClient::Apply.file("cluster_tools.yml", namespace: TESTSUITE_NAMESPACE)
     wait_for_cluster_tools
   end
+
   def self.uninstall
     Log.info { "ClusterTools uninstall" }
     File.write("cluster_tools.yml", CLUSTER_TOOLS)
