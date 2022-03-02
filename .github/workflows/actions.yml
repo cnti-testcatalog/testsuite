@@ -221,6 +221,8 @@ jobs:
         git fetch --all --tags --force
         shards install  
         echo "RUNNER: $RUNNER_NAME"
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Run Crystal Spec
       run: |
         source cluster.env
