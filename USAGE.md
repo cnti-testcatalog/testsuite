@@ -262,7 +262,7 @@ Now run the test:
 ##### :heavy_check_mark: To check if the CNF is compatible with different CNIs
 <details> <summary>Details for CNI Compatibility Tests</summary>
 
-<p><b>CNI Compatible Tests:</b> Best practice states a good CNF should be compatible with multiple and different CNIs (Container Network Interface). The CNI handles the container network for the container network namespace, along with management of IP Addresses through IPAM plug-in among other networking needs and requirements. You can read more about CNIs for kubernetes with their list of [compatible CNIs](https://bit.ly/cni-compatible-k8s-doc)
+<p><b>CNI Compatible Tests:</b> Best practice states a good CNF should be compatible with multiple and different CNIs (Container Network Interface). The CNI handles the container network for the container network namespace, along with management of IP Addresses through IPAM plug-in among other networking needs and requirements. You can read more about CNIs for kubernetes with their list of [compatible CNIs](https://bit.ly/cni-compatible-k8s-doc). 
 
 <b>What's Tested:</b> This test will install temporary kind clusters to test your CNF using Calico and Cilium CNIs.
 
