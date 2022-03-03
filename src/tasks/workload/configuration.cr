@@ -39,10 +39,13 @@ task "require_labels", ["install_kyverno"] do |_, args|
 
   failures = [] of JSON::Any
   policy_report["items"].as_a.each do |item|
-    item["results"].as_a.each do |test_result|
-      if test_result["result"] == "fail" && test_result["policy"] == "require-labels"
-        test_passed = false
-        failures.push(test_result["resources"])
+    report_namespace = item["metadata"]["namespace"]
+    if !EXCLUDE_NAMESPACES.includes?(report_namespace)
+      item["results"].as_a.each do |test_result|
+        if test_result["result"] == "fail" && test_result["policy"] == "require-labels"
+          test_passed = false
+          failures.push(test_result["resources"])
+        end
       end
     end
   end
