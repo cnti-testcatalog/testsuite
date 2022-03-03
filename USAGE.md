@@ -234,7 +234,7 @@ Now run the test:
 ./cnf-testsuite install_script_helm
 ```
 
-##### :heavy_check_mark: To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tasks/run-application/rolling-update-replication-controller/)
+##### :heavy_check_mark: To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/)
 
 ```
 ./cnf-testsuite rolling_update
@@ -261,14 +261,15 @@ Now run the test:
 
 ##### :heavy_check_mark: To check if the CNF is compatible with different CNIs
 <details> <summary>Details for CNI Compatibility Tests</summary>
+<p>
 
-<p><b>CNI Compatible Tests:</b> Best practice states a good CNF should be compatible with multiple and different CNIs (Cloud Container Interface). The CNI handles the container network for the container network namespace, along with management of IP Addresses through IPAM plug-in among other networking needs and requirements. You can read more about CNIs for kubernetes with a list of CNIs for use [here](https://bit.ly/cni-compatible-k8s-doc)
+<b>CNI Compatible Tests:</b> Best practice states a good CNF should be compatible with multiple and different CNIs (Container Network Interface). The CNI handles the container network for the container network namespace, along with management of IP Addresses through IPAM plug-in among other networking needs and requirements. You can read more about CNIs for kubernetes with their list of [compatible CNIs](https://bit.ly/cni-compatible-k8s-doc). 
 
 <b>What's Tested:</b> This test will install temporary kind clusters to test your CNF using Calico and Cilium CNIs.
 
 <b>Remediation:</b> To mitigate this issue, make sure your CNF is compatible with Calico, Cilium and other available CNIs.
-
 </p>
+
 </details>
 
 ```
