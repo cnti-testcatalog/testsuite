@@ -5,43 +5,24 @@ require "totem"
 require "./utils/utils.cr"
 
 desc "Install Kyverno"
-task "install_kyverno", ["download_kyverno_policies"] do |_, args|
-  kyverno_version="1.5.0"
-  url = "https://raw.githubusercontent.com/kyverno/kyverno/v#{kyverno_version}/definitions/release/install.yaml"
-  result = KubectlClient::Apply.file(url)
-  is_ready = KubectlClient::Get.resource_wait_for_install("deployment", "kyverno", 180, "kyverno")
+task "install_kyverno" do |_, args|
+  install_status = Kyverno.install
 
-  if is_ready
+  if install_status
     stdout_success "Kyverno successfully installed"
   else
     stdout_success "Kyverno installation failed"
   end
 end
 
-desc "Download Kyverno best practices policies"
-task "download_kyverno_policies" do |_, args|
-  kyverno_version="1.5.0"
-  url = "https://github.com/kyverno/kyverno.git"
-  clone_path = "#{tools_path}/kyverno-policies"
-  result = GitClient.clone("#{url} #{clone_path}")
-
-  if result[:status].success?
-    stdout_success "Kyverno best practices policies downloaded successfully"
-  else
-    stdout_success "Failed to download Kyverno best practices policies"
-  end
-end
-
 desc "Uninstall Kyverno"
 task "uninstall_kyverno" do |_, args|
-  kyverno_version="1.5.0"
-  url = "https://raw.githubusercontent.com/kyverno/kyverno/v#{kyverno_version}/definitions/release/install.yaml"
-  result = KubectlClient::Delete.file(url)
+  uninstall_status = Kyverno.uninstall
 
-  if !result[:status].success?
-    stdout_failure "Kyverno could not be uninstalled."
-  else
+  if uninstall_status
     stdout_success "Kyverno was uninstalled successfully"
+  else
+    stdout_failure "Kyverno could not be uninstalled."
   end
 end
 
