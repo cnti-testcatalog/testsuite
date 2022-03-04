@@ -30,7 +30,7 @@ task "require_labels", ["install_kyverno"] do |_, args|
   sleep(3.seconds)
   # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
 #  result = KubectlClient::Get.policy_report("polr-ns-default")
-  result = KubectlClient::Get.policy_report_allnamespaces()
+  result = Kyverno::PolicyReport.all()
   emoji_passed="🏷️      ✔️"
   emoji_failed="🏷️      ❌"
 

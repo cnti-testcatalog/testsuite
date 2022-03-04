@@ -39,9 +39,7 @@ task "restrict_external_ips", ["install_kyverno"] do |_, args|
   policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/restrict-service-external-ips/restrict-service-external-ips.yaml"
   apply_result = KubectlClient::Apply.file(policy_url)
   sleep(3.seconds)
-  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
-#  result = KubectlClient::Get.policy_report("polr-ns-default")
-  result = KubectlClient::Get.policy_report_allnamespaces()
+  result = Kyverno::PolicyReport.all()
   emoji_passed="🏷️       ✔️"
   emoji_failed="🏷️       ❌"
 
@@ -83,9 +81,7 @@ task "disallow_helm_tiller", ["install_kyverno"] do |_, args|
   policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/disallow_helm_tiller/disallow_helm_tiller.yaml"
   apply_result = KubectlClient::Apply.file(policy_url)
   sleep(3.seconds)
-  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
-#  result = KubectlClient::Get.policy_report("polr-ns-default")
-  result = KubectlClient::Get.policy_report_allnamespaces()
+  result = Kyverno::PolicyReport.all()
   emoji_passed="🏷️      ✔️"
   emoji_failed="🏷️      ❌"
 
@@ -126,9 +122,7 @@ task "disallow_container_sock_mounts", ["install_kyverno"] do |_, args|
   policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/disallow_cri_sock_mount/disallow_cri_sock_mount.yaml"
   apply_result = KubectlClient::Apply.file(policy_url)
   sleep(3.seconds)
-  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
-#  result = KubectlClient::Get.policy_report("polr-ns-default")
-  result = KubectlClient::Get.policy_report_allnamespaces()
+  result = Kyverno::PolicyReport.all()
   emoji_passed="🏷️      ✔️"
   emoji_failed="🏷️      ❌"
 
