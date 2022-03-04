@@ -421,7 +421,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'require_labels' should fail if a cnf does not have the app.kubernetes.io/name label" do
+  it "'require_labels' should fail if a cnf does not have the app.kubernetes.io/name label", tags: ["require_labels"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_nonroot/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -434,7 +434,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'require_labels' should pass if a cnf has the app.kubernetes.io/name label" do
+  it "'require_labels' should pass if a cnf has the app.kubernetes.io/name label", tags: ["require_labels"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
       $?.success?.should be_true
