@@ -14,43 +14,18 @@ task "configuration", ["ip_addresses", "nodeport_not_used", "hostport_not_used",
   stdout_score("configuration", "configuration")
 end
 
-
 desc "Check if the CNF is running containers with labels configured?"
 task "require_labels", ["install_kyverno"] do |_, args|
-  unless check_poc(args)
-    Log.info { "skipping require_labels: not in poc mode" }
-    puts "SKIPPED: Require Labels".colorize(:yellow)
-    next
-  end
-
   Log.for("verbose").info { "require-labels" }
 
-  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/require_labels/require_labels.yaml"
-  apply_result = KubectlClient::Apply.file(policy_url)
+  policy_path = Kyverno.best_practice_policy("best-practices/require_labels/require_labels.yaml")
+  apply_result = KubectlClient::Apply.file(policy_path)
   sleep(3.seconds)
-  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
-#  result = KubectlClient::Get.policy_report("polr-ns-default")
-  result = Kyverno::PolicyReport.all()
   emoji_passed="🏷️      ✔️"
   emoji_failed="🏷️      ❌"
+  failures = Kyverno::PolicyReport.failures_for_policy("require-labels")
 
-  policy_report = JSON.parse(result[:output])
-  test_passed = true
-
-  failures = [] of JSON::Any
-  policy_report["items"].as_a.each do |item|
-    report_namespace = item["metadata"]["namespace"]
-    if !EXCLUDE_NAMESPACES.includes?(report_namespace)
-      item["results"].as_a.each do |test_result|
-        if test_result["result"] == "fail" && test_result["policy"] == "require-labels"
-          test_passed = false
-          failures.push(test_result["resources"])
-        end
-      end
-    end
-  end
-
-  if test_passed
+  if failures.size == 0
     resp = upsert_passed_task("require_labels", "✔️  PASSED: Containers are configured with labels #{emoji_passed}")
   else
     resp = upsert_failed_task("require_labels", "✔️  FAILED: The label `app.kubernetes.io/name` is required for containers. #{emoji_failed}")
