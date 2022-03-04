@@ -32,4 +32,41 @@ module Kyverno
   def self.delete_policies_repo
     FileUtils.rm_rf(policies_repo_path)
   end
+
+  module PolicyReport
+    def self.all()
+      cmd = "kubectl get polr -A -o json"
+      ShellCmd.run(cmd, "Kyverno::PolicyReport.all")
+    end
+
+    def self.get(name : String)
+      cmd = "kubectl get polr #{name} -o json"
+      ShellCmd.run(cmd, "Kyverno::PolicyReport.get")
+    end
+
+    def self.delete_all()
+      cmd = "kubectl delete polr --all -A"
+      result = ShellCmd.run(cmd, "Kyverno::PolicyReport.delete_all")
+      result[:status].success?
+    end
+  end
+
+  module ClusterPolicy
+    def self.all()
+      cmd = "kubectl get cpol -o json"
+      ShellCmd.run(cmd, "Kyverno::ClusterPolicy.all")
+    end
+
+    def self.delete_all()
+      cmd = "kubectl delete cpol --all -A"
+      result = ShellCmd.run(cmd, "Kyverno::ClusterPolicy.delete_all")
+      result[:status].success?
+    end
+  end
+
+  # NOTE: Not used anywhere. Retaining until the entire Kyverno PR is merged.
+  # def self.policy_report_failed(name : String)
+  #   cmd = "kubectl get polr -A -o yaml | grep \"result: fail\" -B10 | grep #{name} -B2 -A7"
+  #   ShellCmd.run(cmd, "KubectlClient::Get.policy_report_failed")
+  # end
 end
