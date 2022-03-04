@@ -313,6 +313,10 @@ def upsert_dynamic_task(task, status : CNFManager::Points::Results::ResultStatus
   message
 end
 
+def tools_path
+  File.dirname(File.real_path(PROGRAM_NAME))
+end
+
 def stdout_info(msg)
   puts msg
 end
