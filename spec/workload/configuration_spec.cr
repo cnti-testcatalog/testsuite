@@ -421,6 +421,32 @@ describe CnfTestSuite do
     end
   end
 
+  it "'require_labels' should fail if a cnf does not have the app.kubernetes.io/name label" do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_nonroot/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite require_labels verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Pods should have the app.kubernetes.io\/name label/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot/cnf-testsuite.yml`
+    end
+  end
+
+  it "'require_labels' should pass if a cnf has the app.kubernetes.io/name label" do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite require_labels verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Pods have the app.kubernetes.io\/name label/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+    end
+  end
+
   # Commenting because the test has now been marked as a POC
   #
   # it "'alpha_k8s_apis' should pass with a CNF that does not make use of alpha k8s APIs", tags: ["apisnoop"] do
