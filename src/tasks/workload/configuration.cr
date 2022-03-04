@@ -18,7 +18,7 @@ desc "Check if the CNF is running containers with labels configured?"
 task "require_labels", ["install_kyverno"] do |_, args|
   Log.for("verbose").info { "require-labels" }
 
-  policy_path = Kyverno.best_practice_policy("best-practices/require_labels/require_labels.yaml")
+  policy_path = Kyverno.best_practice_policy("require_labels/require_labels.yaml")
   apply_result = KubectlClient::Apply.file(policy_path)
   sleep(3.seconds)
   emoji_passed="🏷️      ✔️"
