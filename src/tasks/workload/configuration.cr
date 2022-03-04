@@ -28,13 +28,16 @@ task "require_labels", ["install_kyverno"] do |_, args|
   if failures.size == 0
     resp = upsert_passed_task("require_labels", "✔️  PASSED: Pods have the app.kubernetes.io/name label #{emoji_passed}")
   else
-    resp = upsert_failed_task("require_labels", "✔️  FAILED: Pods should have the app.kubernetes.io/name label #{emoji_failed}")
+    resp = upsert_failed_task("require_labels", "✔️  FAILED: Pods should have the app.kubernetes.io/name label. #{emoji_failed}")
     failures.each do |failure_resources|
       failure_resources.as_a.each do |failure|
         puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is not configured with labels".colorize(:red)
       end
     end
   end
+ensure
+  Kyverno::ClusterPolicy.delete_all()
+  Kyverno::PolicyReport.delete_all()
 end
 
 desc "Does a search for IP addresses or subnets come back as negative?"
