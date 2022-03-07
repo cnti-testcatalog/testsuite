@@ -236,23 +236,31 @@ host.” In other words, you should rarely, if ever, use this switch on your con
 Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley. Kindle Edition. 
 
 #### *To check for insecure capabilities*
+> Giving [insecure](https://hub.armo.cloud/docs/c-0046) and unnecessary capabilities for a container can increase the impact of a container compromise.
 
 #### *To check for dangerous capabilities*
+> Giving [dangerous](https://hub.armo.cloud/docs/c-0028) and unnecessary capabilities for a container can increase the impact of a container compromise.
 
 #### *To check if namespaces have network policies defined*
+> [MITRE check](https://hub.armo.cloud/docs/c-0011) that fails if there are no policies defined for a specific namespace (cluster internal networking)
 
-#### *To check if containers are running with non-root user with non-root membership (to do: check to see if this is a duplicate of 244)*
-   > (this is for the users inside the container)
+#### *To check if containers are running with non-root user with non-root membership*
+   > Container engines allow containers to run applications as a non-root user with non-root group membership. Typically, this non-default setting is configured when the container image is built. . Alternatively, Kubernetes can load containers into a Pod with SecurityContext:runAsUser specifying a non-zero user. While the runAsUser directive effectively forces non-root execution at deployment, [NSA and CISA encourage developers](https://hub.armo.cloud/docs/c-0013) to build container applications to execute as a non-root user. Having non-root execution integrated at build time provides better assurance that applications will function correctly without root privileges.
 
 #### *To check if containers are running with hostPID or hostIPC privileges*
+> Containers should be isolated from the host machine as much as possible. The [hostPID and hostIPC](https://hub.armo.cloud/docs/c-0038) fields in deployment yaml may allow cross-container influence and may expose the host itself to potentially malicious or destructive actions. This control identifies all PODs using hostPID or hostIPC privileges.
 
 #### *To check if security services are being used to harden containers*
+> In order to reduce the attack surface, it is recommend, when it is possible, to harden your application using [security services](https://hub.armo.cloud/docs/c-0055) such as SELinux®, AppArmor®, and seccomp. Starting from Kubernetes version 22, SELinux is enabled by default.
 
 #### *To check if containers have resource limits defined*
+> CPU and memory [resources should have a limit](https://hub.armo.cloud/docs/c-0009) set for every container or a namespace to prevent resource exhaustion. This control identifies all the Pods without resource limit definitions by checking thier yaml definition file as well as their namespace LimitRange objects. It is also recommended to use ResourceQuota object to restrict overall namespace resources, but this is not verified by this control.
 
 #### *To check if containers have immutable file systems*
+> By default, containers are permitted mostly unrestricted execution within their own context. An attacker who has access to a container, [can create files](https://hub.armo.cloud/docs/c-0017) and download scripts as he wishes, and modify the underlying application running on the container.
 
 #### *To check if containers have hostPath mounts (check: is this a duplicate of state test - ./cnf-testsuite volume_hostpath_not_found)*
+> [hostPath mount](https://hub.armo.cloud/docs/c-0006) can be used by attackers to get access to the underlying host and thus break from the container to the host. (See “3: Writable hostPath mount” for details).
 
 ## Configuration Tests 
 #### Declarative APIs for an immutable infrastructure are anything that configures the infrastructure element. This declaration can come in the form of a YAML file or a script, as long as the configuration designates the desired outcome, not how to achieve said outcome. *"Because it describes the state of the world, declarative configuration does not have to be executed to be understood. Its impact is concretely declared. Since the effects of declarative configuration can be understood before they are executed, declarative configuration is far less error-prone. " --Hightower, Kelsey; Burns, Brendan; Beda, Joe. Kubernetes: Up and Running: Dive into the Future of Infrastructure (Kindle Locations 183-186). Kindle Edition*
