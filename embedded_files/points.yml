@@ -255,4 +255,7 @@
   tags: configuration, dynamic, workload
 
 - name: helm_tiller
+  tags: platform, platform:security, dynamic
+
+- name: external_ips
   tags: security, dynamic, workload
