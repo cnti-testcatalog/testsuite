@@ -23,15 +23,15 @@ task "require_labels", ["install_kyverno"] do |_, args|
   sleep(3.seconds)
   emoji_passed="🏷️      ✔️"
   emoji_failed="🏷️      ❌"
-  failures = Kyverno::PolicyReport.failures_for_policy("require-labels")
+  failures = Kyverno::PolicyReport.failures("require-labels")
 
   if failures.size == 0
     resp = upsert_passed_task("require_labels", "✔️  PASSED: Pods have the app.kubernetes.io/name label #{emoji_passed}")
   else
     resp = upsert_failed_task("require_labels", "✔️  FAILED: Pods should have the app.kubernetes.io/name label. #{emoji_failed}")
-    failures.each do |failure_resources|
-      failure_resources.as_a.each do |failure|
-        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is not configured with labels".colorize(:red)
+    failures.each do |failure|
+      failure.resources.each do |resource|
+        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
       end
     end
   end

@@ -91,25 +91,6 @@ module Kyverno
       result = ShellCmd.run(cmd, "Kyverno::PolicyReport.delete_all")
       result[:status].success?
     end
-
-    def self.failures_for_policy(policy_name : String)
-      result = Kyverno::PolicyReport.all()
-      policy_reports = JSON.parse(result[:output])
-
-      failures = [] of JSON::Any
-      policy_reports["items"].as_a.each do |policy_report|
-        report_namespace = policy_report["metadata"]["namespace"]
-        if !EXCLUDE_NAMESPACES.includes?(report_namespace)
-          policy_report["results"].as_a.each do |test_result|
-            if test_result["result"] == "fail" && test_result["policy"] == policy_name
-              failures.push(test_result["resources"])
-            end
-          end
-        end
-      end
-
-      failures
-    end
   end
 
   module ClusterPolicy
