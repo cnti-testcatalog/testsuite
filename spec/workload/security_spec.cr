@@ -310,8 +310,7 @@ describe "Security" do
       response_s = `./cnf-testsuite container_sock_mounts verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Container engine daemon sockets are not mounted as volumes/ =~ response_s).should_not be_nil
-      (/Unix socket is not allowed/ =~ response_s).should_not be_nil
+      (/PASSED: Container engine daemon sockets are not mounted as volumes/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
@@ -324,9 +323,11 @@ describe "Security" do
       response_s = `./cnf-testsuite container_sock_mounts verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Container engine daemon sockets are mounted as volumes/ =~ response_s).should_not be_nil
+      (/FAILED: Container engine daemon sockets are mounted as volumes/ =~ response_s).should_not be_nil
+      (/Unix socket is not allowed/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_container_sock_mount/cnf-testsuite.yml`
     end
   end
+
 end
