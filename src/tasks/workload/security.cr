@@ -119,15 +119,15 @@ task "container_sock_mounts", ["install_kyverno"] do |_, args|
   sleep(3.seconds)
   emoji_passed="🏷️      ✔️"
   emoji_failed="🏷️      ❌"
-  failures = Kyverno::PolicyReport.failures_for_policy("disallow-container-sock-mounts")
+  failures = Kyverno::PolicyReport.failures("disallow-container-sock-mounts")
 
   if failures.size == 0
     resp = upsert_passed_task("container_sock_mounts", "✔️  PASSED: Container engine daemon sockets are not mounted as volumes #{emoji_passed}")
   else
     resp = upsert_failed_task("container_sock_mounts", "✔️  FAILED: Container engine daemon sockets are mounted as volumes #{emoji_failed}")
-    failures.each do |failure_resources|
-      failure_resources.as_a.each do |failure|
-        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} has container engine socket mounted as volume".colorize(:red)
+    failures.each do |failure|
+      failure.resources.each do |resource|
+        puts "#{resource.kind} #{resource.name} in #{resource.namespace}: #{failure.message}".colorize(:red)
       end
     end
   end
