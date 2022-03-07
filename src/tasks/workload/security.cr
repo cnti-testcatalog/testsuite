@@ -22,8 +22,7 @@ task "security", [
     "network_policies",
     "immutable_file_systems",
     "hostpath_mounts",
-    "container_sock_mounts",
-    "helm_tiller"
+    "container_sock_mounts"
   ] do |_, args|
   stdout_score("security")
 end
@@ -65,29 +64,6 @@ task "restrict_external_ips", ["install_kyverno"] do |_, args|
     failures.each do |failure_resources|
       failure_resources.as_a.each do |failure|
         puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using external IP which is not allowed".colorize(:red)
-      end
-    end
-  end
-end
-
-desc "Check if the CNF is running containers with name tiller in their image name?"
-task "helm_tiller", ["install_kyverno"] do |_, args|
-  Log.for("verbose").info { "disallow-helm-tiller" }
-
-  policy_path = Kyverno.best_practice_policy("disallow_helm_tiller/disallow_helm_tiller.yaml")
-  apply_result = KubectlClient::Apply.file(policy_path)
-  sleep(3.seconds)
-  emoji_passed="🏷️      ✔️"
-  emoji_failed="🏷️      ❌"
-  failures = Kyverno::PolicyReport.failures("disallow-helm-tiller")
-
-  if failures.size == 0
-    resp = upsert_passed_task("helm_tiller", "✔️  PASSED: No Helm Tiller containers are running #{emoji_passed}")
-  else
-    resp = upsert_failed_task("helm_tiller", "✔️  FAILED: A container with the Helm Tiller image is running #{emoji_failed}")
-    failures.each do |failure|
-      failure.resources.each do |resource|
-        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
       end
     end
   end

@@ -5,7 +5,7 @@ require "../utils/utils.cr"
 
 namespace "platform" do
   desc "The CNF test suite checks to see if the platform is hardened."
-  task "security", ["control_plane_hardening", "cluster_admin", "exposed_dashboard"] do |t, args|
+  task "security", ["control_plane_hardening", "cluster_admin", "exposed_dashboard", "helm_tiller"] do |t, args|
     Log.for("verbose").info { "security" } if check_verbose(args)
     stdout_score("platform:security")
   end
@@ -72,4 +72,31 @@ namespace "platform" do
     end
   end
 
+  desc "Check if the CNF is running containers with name tiller in their image name?"
+  task "helm_tiller", ["install_kyverno"] do |_, args|
+    Log.for("verbose").info { "platform:helm_tiller" }
+
+    CNFManager::Task.task_runner(args) do |args, config|
+      policy_path = Kyverno.best_practice_policy("disallow_helm_tiller/disallow_helm_tiller.yaml")
+      apply_result = KubectlClient::Apply.file(policy_path)
+      sleep(3.seconds)
+      emoji_passed="🏷️      ✔️"
+      emoji_failed="🏷️      ❌"
+      failures = Kyverno::PolicyReport.failures("disallow-helm-tiller")
+
+      if failures.size == 0
+        resp = upsert_passed_task("helm_tiller", "✔️  PASSED: No Helm Tiller containers are running #{emoji_passed}")
+      else
+        resp = upsert_failed_task("helm_tiller", "✔️  FAILED: Containers with the Helm Tiller image are running #{emoji_failed}")
+        failures.each do |failure|
+          failure.resources.each do |resource|
+            puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+          end
+        end
+      end
+    end
+  ensure
+    Kyverno::ClusterPolicy.delete_all()
+    Kyverno::PolicyReport.delete_all()
+  end
 end
