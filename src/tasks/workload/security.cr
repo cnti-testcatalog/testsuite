@@ -21,7 +21,8 @@ task "security", [
     "privileged_containers",
     "network_policies",
     "immutable_file_systems",
-    "hostpath_mounts"
+    "hostpath_mounts",
+    "container_sock_mounts"
   ] do |_, args|
   stdout_score("security")
 end
@@ -110,42 +111,23 @@ task "disallow_helm_tiller", ["install_kyverno"] do |_, args|
   end
 end
 
-desc "Check if the CNF is running containers with container sock mounts?"
-task "disallow_container_sock_mounts", ["install_kyverno"] do |_, args|
-  unless check_poc(args)
-    Log.info { "disallow_container_sock_mounts: not in poc mode" }
-    puts "SKIPPED: Disallow Container Sock Mounts".colorize(:yellow)
-    next
-  end
-  Log.for("verbose").info { "disallow-container-sock-mounts" }
-
-  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/disallow_cri_sock_mount/disallow_cri_sock_mount.yaml"
-  apply_result = KubectlClient::Apply.file(policy_url)
+desc "Check if the CNF is running containers with container sock mounts"
+task "container_sock_mounts", ["install_kyverno"] do |_, args|
+  Log.for("verbose").info { "container_sock_mounts" }
+  policy_path = Kyverno.best_practice_policy("disallow_cri_sock_mount/disallow_cri_sock_mount.yaml")
+  apply_result = KubectlClient::Apply.file(policy_path)
   sleep(3.seconds)
-  result = Kyverno::PolicyReport.all()
   emoji_passed="🏷️      ✔️"
   emoji_failed="🏷️      ❌"
+  failures = Kyverno::PolicyReport.failures_for_policy("disallow-container-sock-mounts")
 
-  policy_report = JSON.parse(result[:output])
-  test_passed = true
-
-  failures = [] of JSON::Any
-  policy_report["items"].as_a.each do |item|
-    item["results"].as_a.each do |test_result|
-      if test_result["result"] == "fail" && test_result["policy"] == "disallow-container-sock-mounts"
-        test_passed = false
-        failures.push(test_result["resources"])
-      end
-    end
-  end
-
-  if test_passed
-    resp = upsert_passed_task("disallow_container_sock_mounts", "✔️  PASSED: Containers are not using container sock mounts #{emoji_passed}")
+  if failures.size == 0
+    resp = upsert_passed_task("disallow_container_sock_mounts", "✔️  PASSED: Container engine daemon sockets are not mounted as volumes #{emoji_passed}")
   else
-    resp = upsert_failed_task("disallow_container_sock_mounts", "✔️  FAILED: Use of the container sock mount is not allowed #{emoji_failed}")
+    resp = upsert_failed_task("disallow_container_sock_mounts", "✔️  FAILED: Container engine daemon sockets are mounted as volumes #{emoji_failed}")
     failures.each do |failure_resources|
       failure_resources.as_a.each do |failure|
-        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using container Unix socket".colorize(:red)
+        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]}: #{failure["message"]}".colorize(:red)
       end
     end
   end

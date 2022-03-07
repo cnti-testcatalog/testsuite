@@ -247,3 +247,6 @@
   fail: 0 
 - name: alpha_k8s_apis
   tags: configuration, dynamic, workload
+
+- name: container_sock_mounts
+  tags: security, dynamic, workload
