@@ -330,4 +330,29 @@ describe "Security" do
     end
   end
 
+  it "'external_ips' should pass if a cnf has no services with external IPs", tags: ["external_ips"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite external_ips verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Services are not using external IPs/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+    end
+  end
+
+  it "'external_ips' should fail if a cnf has services with external IPs", tags: ["external_ips"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_external_ips/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite external_ips verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Services are using external IPs/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_external_ips/cnf-testsuite.yml`
+    end
+  end
 end
