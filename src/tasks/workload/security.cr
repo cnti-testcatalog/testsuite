@@ -131,6 +131,9 @@ task "container_sock_mounts", ["install_kyverno"] do |_, args|
       end
     end
   end
+ensure
+  Kyverno::ClusterPolicy.delete_all()
+  Kyverno::PolicyReport.delete_all()
 end
 
 desc "Check if any containers are running in as root"
