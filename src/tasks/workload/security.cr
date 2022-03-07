@@ -27,46 +27,29 @@ task "security", [
   stdout_score("security")
 end
 
-desc "Check if the CNF is running kubernetes services with external IP's configured?"
-task "restrict_external_ips", ["install_kyverno"] do |_, args|
-  unless check_poc(args)
-    Log.info { "skipping restrict_external_ips: not in poc mode" }
-    puts "SKIPPED: Restrict External IPs".colorize(:yellow)
-    next
-  end
-
-  Log.for("verbose").info { "restrict-external-ips" }
-
-  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/restrict-service-external-ips/restrict-service-external-ips.yaml"
-  apply_result = KubectlClient::Apply.file(policy_url)
+desc "Check if the CNF has services with external IPs configured"
+task "external_ips", ["install_kyverno"] do |_, args|
+  Log.for("verbose").info { "external_ips" }
+  policy_path = Kyverno.best_practice_policy("restrict-service-external-ips/restrict-service-external-ips.yaml")
+  apply_result = KubectlClient::Apply.file(policy_path)
   sleep(3.seconds)
-  result = Kyverno::PolicyReport.all()
-  emoji_passed="🏷️       ✔️"
-  emoji_failed="🏷️       ❌"
+  emoji_passed="🏷️      ✔️"
+  emoji_failed="🏷️      ❌"
+  failures = Kyverno::PolicyReport.failures("restrict-external-ips")
 
-  policy_report = JSON.parse(result[:output])
-  test_passed = true
-
-  failures = [] of JSON::Any
-  policy_report["items"].as_a.each do |item|
-    item["results"].as_a.each do |test_result|
-      if test_result["result"] == "fail" && test_result["policy"] == "restrict-external-ips"
-        test_passed = false
-        failures.push(test_result["resources"])
-      end
-    end
-  end
-
-  if test_passed
-    resp = upsert_passed_task("restrict_external_ips", "✔️  PASSED: Services are not using external IP's #{emoji_passed}")
+  if failures.size == 0
+    resp = upsert_passed_task("external_ips", "✔️  PASSED: Services are not using external IPs #{emoji_passed}")
   else
-    resp = upsert_failed_task("restrict_external_ips", "✔️  FAILED: externalIPs are not allowed in Services #{emoji_failed}")
-    failures.each do |failure_resources|
-      failure_resources.as_a.each do |failure|
-        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using external IP which is not allowed".colorize(:red)
+    resp = upsert_failed_task("external_ips", "✖️  FAILED: Services are using external IPs #{emoji_failed}")
+    failures.each do |failure|
+      failure.resources.each do |resource|
+        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
       end
     end
   end
+ensure
+  Kyverno::ClusterPolicy.delete_all()
+  Kyverno::PolicyReport.delete_all()
 end
 
 desc "Check if the CNF is running containers with container sock mounts"
