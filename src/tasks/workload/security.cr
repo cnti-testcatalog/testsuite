@@ -22,7 +22,8 @@ task "security", [
     "network_policies",
     "immutable_file_systems",
     "hostpath_mounts",
-    "container_sock_mounts"
+    "container_sock_mounts",
+    "helm_tiller"
   ] do |_, args|
   stdout_score("security")
 end
@@ -70,42 +71,23 @@ task "restrict_external_ips", ["install_kyverno"] do |_, args|
 end
 
 desc "Check if the CNF is running containers with name tiller in their image name?"
-task "disallow_helm_tiller", ["install_kyverno"] do |_, args|
-  unless check_poc(args)
-    Log.info { "skipping disallow_helm_tiller: not in poc mode" }
-    puts "SKIPPED: Disallow Helm Tiller".colorize(:yellow)
-    next
-  end
-
+task "helm_tiller", ["install_kyverno"] do |_, args|
   Log.for("verbose").info { "disallow-helm-tiller" }
 
-  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/disallow_helm_tiller/disallow_helm_tiller.yaml"
-  apply_result = KubectlClient::Apply.file(policy_url)
+  policy_path = Kyverno.best_practice_policy("disallow_helm_tiller/disallow_helm_tiller.yaml")
+  apply_result = KubectlClient::Apply.file(policy_path)
   sleep(3.seconds)
-  result = Kyverno::PolicyReport.all()
   emoji_passed="🏷️      ✔️"
   emoji_failed="🏷️      ❌"
+  failures = Kyverno::PolicyReport.failures("disallow-helm-tiller")
 
-  policy_report = JSON.parse(result[:output])
-  test_passed = true
-
-  failures = [] of JSON::Any
-  policy_report["items"].as_a.each do |item|
-    item["results"].as_a.each do |test_result|
-      if test_result["result"] == "fail" && test_result["policy"] == "disallow-helm-tiller"
-        test_passed = false
-        failures.push(test_result["resources"])
-      end
-    end
-  end
-
-  if test_passed
-    resp = upsert_passed_task("disallow_helm_tiller", "✔️  PASSED: No containers are running with name tiller in their image names #{emoji_passed}")
+  if failures.size == 0
+    resp = upsert_passed_task("helm_tiller", "✔️  PASSED: No Helm Tiller containers are running #{emoji_passed}")
   else
-    resp = upsert_failed_task("disallow_helm_tiller", "✔️  FAILED: Helm Tiller is not allowed in the image name #{emoji_failed}")
-    failures.each do |failure_resources|
-      failure_resources.as_a.each do |failure|
-        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is using tiller in the image name".colorize(:red)
+    resp = upsert_failed_task("helm_tiller", "✔️  FAILED: A container with the Helm Tiller image is running #{emoji_failed}")
+    failures.each do |failure|
+      failure.resources.each do |resource|
+        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
       end
     end
   end
