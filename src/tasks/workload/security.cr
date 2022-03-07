@@ -127,7 +127,7 @@ task "container_sock_mounts", ["install_kyverno"] do |_, args|
     resp = upsert_failed_task("container_sock_mounts", "✔️  FAILED: Container engine daemon sockets are mounted as volumes #{emoji_failed}")
     failures.each do |failure|
       failure.resources.each do |resource|
-        puts "#{resource.kind} #{resource.name} in #{resource.namespace}: #{failure.message}".colorize(:red)
+        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
       end
     end
   end
