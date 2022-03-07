@@ -250,3 +250,6 @@
 
 - name: container_sock_mounts
   tags: security, dynamic, workload
+
+- name: require_labels
+  tags: configuration, dynamic, workload
