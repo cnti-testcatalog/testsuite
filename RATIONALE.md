@@ -16,16 +16,20 @@ The management and versioning of the helm chart are handled by the helm registry
 rather than manually as directly referencing the helm chart source.
 
 #### *Test if the Helm chart is valid*
+> A chart should pass the [lint specification](https://helm.sh/docs/helm/helm_lint/#helm)
 
 #### *Test if the Helm deploys*
-    
+> A helm chart should be [deployable to a cluster](https://helm.sh/docs/helm/helm_install/#helm)
+
 #### *Test if CNF/the install script uses Helm v3*
 > Helm v3 has significant ease-of-use improvements over helm v2, which has additional dependencies
 such as tiller.  
 
 #### *To test if the CNF can perform a rolling update*
+> See rolling downgrade
 
 #### *To check if a CNF version can be downgraded through a rolling_version_change*
+> See rolling downgrade
 
 #### *To check if a CNF version can be downgraded through a rolling_downgrade*
 > (update, version change, downgrade):  K8s best practice for version/installation 
@@ -40,6 +44,7 @@ immutable infrastructure and declarative specifications.
 > K8s best practice is to allow [K8s to manage the rolling back](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment) of an application resource instead of having operators manually rolling back the resource by using something like blue/green deploys. 
 
 #### *To check if the CNF is compatible with different CNIs*
+> A CNF should be runnable by any CNI that adheres to the [CNI specification](https://github.com/containernetworking/cni/blob/master/SPEC.md)
 
 ## Microservice Tests 
 
@@ -83,6 +88,7 @@ it forces the two services to upgrade in lock step
 to the node that it is on.  
 
 #### *To test if the CNF uses local storage*
+> A CNF should refrain from using the [local storage class](https://kubernetes.io/docs/concepts/storage/storage-classes/#local)
 
 #### *To test if the CNF uses elastic volumes*
 
@@ -160,6 +166,8 @@ Environment . O'Reilly Media. Kindle Edition.
 
 #### *To test if there is a readiness entry in the Helm chart*
 
+> A CNF should tell Kubernetes when it is [ready to serve traffic](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes).
+
 ## Observability and Diagnostic Tests
 
 #### In order to maintain, debug, and have insight into a production environment that is protected (versioned, kept in source control, and changed only by using a deployment pipeline), its infrastructure elements must have the property of being observable. This means these elements must externalize their internal states in some way that lends itself to metrics, tracing, and logging.
@@ -178,11 +186,14 @@ the maintainer of a cluster of hundreds or thousands of services the ability to 
 such as those that will eventually cause a failure.
 
 #### *To check if logs and data are being routed through fluentd*
+> A CNF should have logs managed by a [unified logging layer](https://www.fluentd.org/why)
 
 #### *To check if OpenMetrics is being used and or compatible.*
+> A CNF should expose metrics that are [open metrics compatible](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md)
 
 #### *To check if tracing is being used with Jaeger.*
-
+> A CNF should provide tracing that conforms to the [open telemetry tracing specification](https://opentelemetry.io/docs/reference/specification/trace/api/)
+>  
 ## Security Tests 
 
 #### *"Cloud native security is a [...] mutifaceted topic [...] with multiple, diverse components that need to be secured. The cloud platform, the underlying host operating system, the container runtime, the container orchestrator,and then the applications themselves each require specialist security attention"* -- Chris Binne, Rory Mccune. Cloud Native Security. (Wiley, 2021)(pp. xix)*
@@ -284,7 +295,7 @@ to their data has the following advantages:*
 - *improves performance of your cluster by significantly reducing load on kube-apiserver, by 
 closing watches for ConfigMaps marked as immutable.*"
 
-#### *(Maybe/PoC) To check if a CNF uses Kubernetes alpha APIs 'alpha_k8s_apis'*
+#### *To check if a CNF uses Kubernetes alpha APIs 'alpha_k8s_apis'*
 
 > If a CNF uses alpha or undocumented APIs, the CNF is tightly coupled to an unstable platform
 
