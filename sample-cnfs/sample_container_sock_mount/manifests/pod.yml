@@ -19,11 +19,11 @@ spec:
     ports:
       - containerPort: 8080
       - containerPort: 8443
-    volumes:
-      - name: docker-engine-socket
-        hostPath:
-          path: "/var/run/docker.sock"
-      - name: containerd-engine-socket
-        hostPath:
-          path: "/var/run/containerd.sock"
+  volumes:
+    - name: docker-engine-socket
+      hostPath:
+        path: "/var/run/docker.sock"
+    - name: containerd-engine-socket
+      hostPath:
+        path: "/var/run/containerd.sock"
   dnsPolicy: Default
