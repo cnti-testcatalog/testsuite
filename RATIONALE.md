@@ -26,10 +26,10 @@ rather than manually as directly referencing the helm chart source.
 such as tiller.  
 
 #### *To test if the CNF can perform a rolling update*
-See rolling downgrade
+> See rolling downgrade
 
 #### *To check if a CNF version can be downgraded through a rolling_version_change*
-See rolling downgrade
+> See rolling downgrade
 
 #### *To check if a CNF version can be downgraded through a rolling_downgrade*
 > (update, version change, downgrade):  K8s best practice for version/installation 
@@ -44,7 +44,7 @@ immutable infrastructure and declarative specifications.
 > K8s best practice is to allow [K8s to manage the rolling back](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment) of an application resource instead of having operators manually rolling back the resource by using something like blue/green deploys. 
 
 #### *To check if the CNF is compatible with different CNIs*
-A CNF should be runnable by any CNI that adheres to the [CNI specification](https://github.com/containernetworking/cni/blob/master/SPEC.md)
+> A CNF should be runnable by any CNI that adheres to the [CNI specification](https://github.com/containernetworking/cni/blob/master/SPEC.md)
 
 ## Microservice Tests 
 
@@ -88,7 +88,7 @@ it forces the two services to upgrade in lock step
 to the node that it is on.  
 
 #### *To test if the CNF uses local storage*
-A CNF should refrain from using the [local storage class](https://kubernetes.io/docs/concepts/storage/storage-classes/#local)
+> A CNF should refrain from using the [local storage class](https://kubernetes.io/docs/concepts/storage/storage-classes/#local)
 
 #### *To test if the CNF uses elastic volumes*
 
@@ -166,7 +166,7 @@ Environment . O'Reilly Media. Kindle Edition.
 
 #### *To test if there is a readiness entry in the Helm chart*
 
-A CNF should tell Kubernetes when it is [ready to serve traffic](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes).
+> A CNF should tell Kubernetes when it is [ready to serve traffic](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes).
 
 ## Observability and Diagnostic Tests
 
@@ -295,7 +295,7 @@ to their data has the following advantages:*
 - *improves performance of your cluster by significantly reducing load on kube-apiserver, by 
 closing watches for ConfigMaps marked as immutable.*"
 
-#### *(Maybe/PoC) To check if a CNF uses Kubernetes alpha APIs 'alpha_k8s_apis'*
+#### *To check if a CNF uses Kubernetes alpha APIs 'alpha_k8s_apis'*
 
 > If a CNF uses alpha or undocumented APIs, the CNF is tightly coupled to an unstable platform
 
