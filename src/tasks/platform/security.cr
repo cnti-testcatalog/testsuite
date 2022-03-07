@@ -87,7 +87,7 @@ namespace "platform" do
       if failures.size == 0
         resp = upsert_passed_task("helm_tiller", "✔️  PASSED: No Helm Tiller containers are running #{emoji_passed}")
       else
-        resp = upsert_failed_task("helm_tiller", "✔️  FAILED: Containers with the Helm Tiller image are running #{emoji_failed}")
+        resp = upsert_failed_task("helm_tiller", "✖️  FAILED: Containers with the Helm Tiller image are running #{emoji_failed}")
         failures.each do |failure|
           failure.resources.each do |resource|
             puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)

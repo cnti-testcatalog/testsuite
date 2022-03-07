@@ -28,7 +28,7 @@ task "require_labels", ["install_kyverno"] do |_, args|
   if failures.size == 0
     resp = upsert_passed_task("require_labels", "✔️  PASSED: Pods have the app.kubernetes.io/name label #{emoji_passed}")
   else
-    resp = upsert_failed_task("require_labels", "✔️  FAILED: Pods should have the app.kubernetes.io/name label. #{emoji_failed}")
+    resp = upsert_failed_task("require_labels", "✖️  FAILED: Pods should have the app.kubernetes.io/name label. #{emoji_failed}")
     failures.each do |failure|
       failure.resources.each do |resource|
         puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
