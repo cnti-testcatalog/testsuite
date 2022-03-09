@@ -22,7 +22,8 @@ task "security", [
     "network_policies",
     "immutable_file_systems",
     "hostpath_mounts",
-    "container_sock_mounts"
+    "container_sock_mounts",
+    "external_ips"
   ] do |_, args|
   stdout_score("security")
 end
