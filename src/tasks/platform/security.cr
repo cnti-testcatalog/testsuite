@@ -73,8 +73,9 @@ namespace "platform" do
   end
 
   desc "Check if the CNF is running containers with name tiller in their image name?"
-  task "helm_tiller", ["install_kyverno"] do |_, args|
+  task "helm_tiller" do |_, args|
     Log.for("verbose").info { "platform:helm_tiller" }
+    Kyverno.install
 
     CNFManager::Task.task_runner(args) do |args, config|
       policy_path = Kyverno.best_practice_policy("disallow_helm_tiller/disallow_helm_tiller.yaml")

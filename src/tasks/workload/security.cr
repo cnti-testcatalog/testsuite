@@ -29,8 +29,9 @@ task "security", [
 end
 
 desc "Check if the CNF has services with external IPs configured"
-task "external_ips", ["install_kyverno"] do |_, args|
+task "external_ips" do |_, args|
   Log.for("verbose").info { "external_ips" }
+  Kyverno.install
   policy_path = Kyverno.best_practice_policy("restrict-service-external-ips/restrict-service-external-ips.yaml")
   apply_result = KubectlClient::Apply.file(policy_path)
   sleep(3.seconds)
@@ -54,8 +55,9 @@ ensure
 end
 
 desc "Check if the CNF is running containers with container sock mounts"
-task "container_sock_mounts", ["install_kyverno"] do |_, args|
+task "container_sock_mounts" do |_, args|
   Log.for("verbose").info { "container_sock_mounts" }
+  Kyverno.install
   policy_path = Kyverno.best_practice_policy("disallow_cri_sock_mount/disallow_cri_sock_mount.yaml")
   apply_result = KubectlClient::Apply.file(policy_path)
   sleep(3.seconds)

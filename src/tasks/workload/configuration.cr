@@ -15,9 +15,9 @@ task "configuration", ["ip_addresses", "nodeport_not_used", "hostport_not_used",
 end
 
 desc "Check if the CNF is running containers with labels configured?"
-task "require_labels", ["install_kyverno"] do |_, args|
+task "require_labels" do |_, args|
   Log.for("verbose").info { "require-labels" }
-
+  Kyverno.install
   policy_path = Kyverno.best_practice_policy("require_labels/require_labels.yaml")
   apply_result = KubectlClient::Apply.file(policy_path)
   sleep(3.seconds)
