@@ -5,6 +5,9 @@
 # USAGE:
 #   GH_USER=TODO GH_TOKEN=TODO bash tools/github-runner/delete-runners-on-github.sh
 #
+# NOTES:
+# For now, this script only deletes the first 100 runners. To delete more runners, run the script again.
+#
 
 curl -u $GH_USER:$GH_TOKEN -H "Accept: application/vnd.github.v3+json" \
   https://api.github.com/repos/cncf/cnf-testsuite/actions/runners?per_page=100 | \
