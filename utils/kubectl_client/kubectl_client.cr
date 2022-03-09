@@ -1123,7 +1123,7 @@ module KubectlClient
         if x["containerStatuses"]?
           x["containerStatuses"].as_a
         else
-          []
+          [] of JSON::Any
         end
       end
       statuses
@@ -1153,7 +1153,7 @@ module KubectlClient
         if x["containerStatuses"]?
           x["containerStatuses"].as_a
         else
-          []
+          [] of JSON::Any
         end
       end
       Log.debug { "pod_container_statuses_by_nodes containerStatuses: #{statuses}" }
