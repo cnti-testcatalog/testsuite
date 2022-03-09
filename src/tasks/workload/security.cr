@@ -35,14 +35,13 @@ task "external_ips" do |_, args|
   policy_path = Kyverno.best_practice_policy("restrict-service-external-ips/restrict-service-external-ips.yaml")
   apply_result = KubectlClient::Apply.file(policy_path)
   sleep(3.seconds)
-  emoji_passed="🏷️      ✔️"
-  emoji_failed="🏷️      ❌"
+  emoji_security = "🔓🔑"
   failures = Kyverno::PolicyReport.failures("restrict-external-ips")
 
   if failures.size == 0
-    resp = upsert_passed_task("external_ips", "✔️  PASSED: Services are not using external IPs #{emoji_passed}")
+    resp = upsert_passed_task("external_ips", "✔️  PASSED: Services are not using external IPs #{emoji_security}")
   else
-    resp = upsert_failed_task("external_ips", "✖️  FAILED: Services are using external IPs #{emoji_failed}")
+    resp = upsert_failed_task("external_ips", "✖️  FAILED: Services are using external IPs #{emoji_security}")
     failures.each do |failure|
       failure.resources.each do |resource|
         puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -61,14 +60,13 @@ task "container_sock_mounts" do |_, args|
   policy_path = Kyverno.best_practice_policy("disallow_cri_sock_mount/disallow_cri_sock_mount.yaml")
   apply_result = KubectlClient::Apply.file(policy_path)
   sleep(3.seconds)
-  emoji_passed="🏷️      ✔️"
-  emoji_failed="🏷️      ❌"
+  emoji_security = "🔓🔑"
   failures = Kyverno::PolicyReport.failures("disallow-container-sock-mounts")
 
   if failures.size == 0
-    resp = upsert_passed_task("container_sock_mounts", "✔️  PASSED: Container engine daemon sockets are not mounted as volumes #{emoji_passed}")
+    resp = upsert_passed_task("container_sock_mounts", "✔️  PASSED: Container engine daemon sockets are not mounted as volumes #{emoji_security}")
   else
-    resp = upsert_failed_task("container_sock_mounts", "✖️  FAILED: Container engine daemon sockets are mounted as volumes #{emoji_failed}")
+    resp = upsert_failed_task("container_sock_mounts", "✖️  FAILED: Container engine daemon sockets are mounted as volumes #{emoji_security}")
     failures.each do |failure|
       failure.resources.each do |resource|
         puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)

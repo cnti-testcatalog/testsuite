@@ -21,8 +21,8 @@ task "require_labels" do |_, args|
   policy_path = Kyverno.best_practice_policy("require_labels/require_labels.yaml")
   apply_result = KubectlClient::Apply.file(policy_path)
   sleep(3.seconds)
-  emoji_passed="🏷️      ✔️"
-  emoji_failed="🏷️      ❌"
+  emoji_passed = "🏷️✔️"
+  emoji_failed = "🏷️❌"
   failures = Kyverno::PolicyReport.failures("require-labels")
 
   if failures.size == 0

@@ -81,14 +81,13 @@ namespace "platform" do
       policy_path = Kyverno.best_practice_policy("disallow_helm_tiller/disallow_helm_tiller.yaml")
       apply_result = KubectlClient::Apply.file(policy_path)
       sleep(3.seconds)
-      emoji_passed="🏷️      ✔️"
-      emoji_failed="🏷️      ❌"
+      emoji_security="🔓🔑"
       failures = Kyverno::PolicyReport.failures("disallow-helm-tiller")
 
       if failures.size == 0
-        resp = upsert_passed_task("helm_tiller", "✔️  PASSED: No Helm Tiller containers are running #{emoji_passed}")
+        resp = upsert_passed_task("helm_tiller", "✔️  PASSED: No Helm Tiller containers are running #{emoji_security}")
       else
-        resp = upsert_failed_task("helm_tiller", "✖️  FAILED: Containers with the Helm Tiller image are running #{emoji_failed}")
+        resp = upsert_failed_task("helm_tiller", "✖️  FAILED: Containers with the Helm Tiller image are running #{emoji_security}")
         failures.each do |failure|
           failure.resources.each do |resource|
             puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
