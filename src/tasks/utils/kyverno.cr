@@ -73,8 +73,7 @@ module Kyverno
         end
       end
 
-      Log.for("kyverno_failures").info { failures.inspect }
-
+      Log.for("kyverno_failures for #{policy_name}").info { failures.inspect }
       failures
     end
 
