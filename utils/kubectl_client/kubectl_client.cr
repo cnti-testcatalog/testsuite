@@ -1120,7 +1120,11 @@ module KubectlClient
     def self.all_pod_container_statuses
       statuses = all_pod_statuses.map do |x|
         # todo there are some pods that dont have containerStatuses
-        x["containerStatuses"].as_a
+        if x["containerStatuses"]?
+          x["containerStatuses"].as_a
+        else
+          [] of JSON::Any
+        end
       end
       statuses
     end
@@ -1146,7 +1150,11 @@ module KubectlClient
     def self.pod_container_statuses_by_nodes(nodes)
       statuses = pod_statuses_by_nodes(nodes).map do |x|
         # todo there are some pods that dont have containerStatuses
-        x["containerStatuses"].as_a if x["containerStatuses"]?
+        if x["containerStatuses"]?
+          x["containerStatuses"].as_a
+        else
+          [] of JSON::Any
+        end
       end
       Log.debug { "pod_container_statuses_by_nodes containerStatuses: #{statuses}" }
       statuses
