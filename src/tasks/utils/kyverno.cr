@@ -73,6 +73,8 @@ module Kyverno
         end
       end
 
+      Log.for("kyverno_failures").info { failures.inspect }
+
       failures
     end
 
