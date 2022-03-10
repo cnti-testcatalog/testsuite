@@ -10,7 +10,7 @@ rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rol
 
 desc "Configuration should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
 
-task "configuration", ["ip_addresses", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap", "alpha_k8s_apis"]do |_, args|
+task "configuration", ["ip_addresses", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap", "alpha_k8s_apis", "require_labels"] do |_, args|
   stdout_score("configuration", "configuration")
 end
 
