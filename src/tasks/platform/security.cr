@@ -82,7 +82,7 @@ namespace "platform" do
       apply_result = KubectlClient::Apply.file(policy_path)
       sleep(3.seconds)
       emoji_security="🔓🔑"
-      failures = Kyverno::PolicyReport.failures("disallow-helm-tiller")
+      failures = Kyverno::PolicyReport.failures("disallow-helm-tiller", EXCLUDE_NAMESPACES)
 
       if failures.size == 0
         resp = upsert_passed_task("helm_tiller", "✔️  PASSED: No Helm Tiller containers are running #{emoji_security}")

@@ -55,14 +55,14 @@ module Kyverno
       end
     end
 
-    def self.failures(policy_name : String) : Array(PolicyFailure)
+    def self.failures(policy_name : String, exclude_namespaces : Array(String) = [] of String) : Array(PolicyFailure)
       result = Kyverno::PolicyReport.all()
       policy_reports = JSON.parse(result[:output])
 
       failures = [] of PolicyFailure
       policy_reports["items"].as_a.each do |policy_report|
         report_namespace = policy_report["metadata"]["namespace"]
-        if !EXCLUDE_NAMESPACES.includes?(report_namespace)
+        if !exclude_namespaces.includes?(report_namespace)
           policy_report["results"].as_a.each do |test_result|
             if test_result["result"] == "fail" && test_result["policy"] == policy_name
               failed_resources = test_result["resources"].as_a.map { |r| FailedResource.new(r["kind"].to_s, r["name"].to_s, r["namespace"].to_s) }

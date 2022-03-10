@@ -23,7 +23,7 @@ task "require_labels" do |_, args|
   sleep(3.seconds)
   emoji_passed = "🏷️✔️"
   emoji_failed = "🏷️❌"
-  failures = Kyverno::PolicyReport.failures("require-labels")
+  failures = Kyverno::PolicyReport.failures("require-labels", EXCLUDE_NAMESPACES)
 
   if failures.size == 0
     resp = upsert_passed_task("require_labels", "✔️  PASSED: Pods have the app.kubernetes.io/name label #{emoji_passed}")

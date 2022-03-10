@@ -36,7 +36,7 @@ task "external_ips" do |_, args|
   apply_result = KubectlClient::Apply.file(policy_path)
   sleep(3.seconds)
   emoji_security = "🔓🔑"
-  failures = Kyverno::PolicyReport.failures("restrict-external-ips")
+  failures = Kyverno::PolicyReport.failures("restrict-external-ips", EXCLUDE_NAMESPACES)
 
   if failures.size == 0
     resp = upsert_passed_task("external_ips", "✔️  PASSED: Services are not using external IPs #{emoji_security}")
@@ -61,7 +61,7 @@ task "container_sock_mounts" do |_, args|
   apply_result = KubectlClient::Apply.file(policy_path)
   sleep(3.seconds)
   emoji_security = "🔓🔑"
-  failures = Kyverno::PolicyReport.failures("disallow-container-sock-mounts")
+  failures = Kyverno::PolicyReport.failures("disallow-container-sock-mounts", EXCLUDE_NAMESPACES)
 
   if failures.size == 0
     resp = upsert_passed_task("container_sock_mounts", "✔️  PASSED: Container engine daemon sockets are not mounted as volumes #{emoji_security}")
