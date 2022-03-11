@@ -93,7 +93,7 @@ describe "Microservice" do
 
   it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"]  do
     begin
-      `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
+      Log.info {`./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`}
       response_s = `./cnf-testsuite reasonable_startup_time verbose`
       Log.info { response_s }
       

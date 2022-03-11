@@ -197,6 +197,7 @@ task "reasonable_startup_time" do |_, args|
     helm = BinarySingleton.helm
     VERBOSE_LOGGING.info helm if check_verbose(args)
 
+
     configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
     #TODO check if json is empty
     startup_time = configmap["data"].as_h["startup_time"].as_s

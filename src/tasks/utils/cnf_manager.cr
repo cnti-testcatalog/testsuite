@@ -789,6 +789,7 @@ module CNFManager
       Log.info { "baselines: #{baselines}" }
     end
     # todo separate out install methods into a module/function that accepts a block
+    liveness_time = 0
     elapsed_time = Time.measure do
       case install_method[0]
       when Helm::InstallMethod::ManifestDirectory
@@ -888,6 +889,64 @@ module CNFManager
       end
       resource_names = Helm.workload_resource_kind_names(resource_ymls)
       #TODO move to kubectlclient and make resource_install_and_wait_for_all function
+
+      #
+      # get liveness probe initialDelaySeconds and FailureThreshold
+      # if   ((periodSeconds * failureThreshhold) + initialDelaySeconds) / defaultFailureThreshold) > startuptimelimit then fail; else pass
+      # get largest startuptime of all resoures, then save into config map
+      resource_ymls.map do |resource|
+        kind = resource["kind"].as_s.downcase
+        case kind 
+        when  "pod"
+          Log.info { "resource: #{resource}" }
+          containers = resource.dig("spec", "spec", "containers")
+        when  "deployment","statefulset","replicaset", "daemonset"
+          Log.info { "resource: #{resource}" }
+
+          containers = resource.dig("spec", "template", "spec", "containers")
+        end
+        containers && containers.as_a.map do |container|
+          initialDelaySeconds = container.dig?("livenessProbe", "initialDelaySeconds")
+          failureThreshhold = container.dig?("livenessProbe", "failureThreshhold")
+          periodSeconds = container.dig?("livenessProbe", "periodSeconds")
+          total_period_failure = 0 
+          total_extended_period = 0
+          adjusted_with_default = 0
+          defaultFailureThreshold = 3
+          defaultPeriodSeconds = 10
+
+          if failureThreshhold
+            ft = failureThreshhold.as_i
+          else
+            ft = defaultFailureThreshold
+          end
+
+          if periodSeconds
+            ps = periodSeconds.as_i
+          else
+            ps = defaultPeriodSeconds
+          end
+
+          total_period_failure = ps * ft
+
+          if initialDelaySeconds
+            total_extended_period = initialDelaySeconds.as_i + total_period_failure
+          else
+            total_extended_period = total_period_failure
+          end
+
+          adjusted_with_default = (total_extended_period / defaultFailureThreshold).round.to_i
+
+          Log.info { "total_period_failure: #{total_period_failure}" }
+          Log.info { "total_extended_period: #{total_extended_period}" }
+          Log.info { "liveness_time: #{liveness_time}" }
+          Log.info { "adjusted_with_default: #{adjusted_with_default}" }
+          if liveness_time < adjusted_with_default
+            liveness_time = adjusted_with_default
+          end
+        end
+      end
+
       resource_names.each do | resource |
         case resource[:kind].as_s.downcase
         when "replicaset", "deployment", "statefulset", "pod", "daemonset"
@@ -906,6 +965,7 @@ module CNFManager
       tracing_used = false
     end
 
+    Log.info { "final liveness_time: #{liveness_time}" }
     Log.info { "elapsed_time.seconds: #{elapsed_time.seconds}" }
     helm_used = false
     if helm_install && helm_error == false && helm_install[:error].to_s.size == 0 # && helm_pull.to_s.size > 0
@@ -927,7 +987,8 @@ module CNFManager
     elapsed_time_template = ElapsedTimeConfigMapTemplate.new(
       "cnf-testsuite-#{release_name}-startup-information",
       helm_used,
-      "#{elapsed_time.seconds}",
+      # "#{elapsed_time.seconds}",
+      "#{liveness_time}",
       immutable_configmap,
       tracing_used
     ).to_s
