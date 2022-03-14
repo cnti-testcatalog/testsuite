@@ -23,6 +23,7 @@ module Kyverno
 
     result = TarClient.untar(tempfile.path, tools_path)
     tempfile.delete
+    download_policies_repo
     return true if result[:status].success?
     return false
   end
