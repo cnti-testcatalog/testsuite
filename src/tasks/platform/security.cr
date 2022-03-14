@@ -74,15 +74,13 @@ namespace "platform" do
 
   desc "Check if the CNF is running containers with name tiller in their image name?"
   task "helm_tiller" do |_, args|
+    emoji_security="🔓🔑"
     Log.for("verbose").info { "platform:helm_tiller" }
     Kyverno.install
 
     CNFManager::Task.task_runner(args) do |args, config|
       policy_path = Kyverno.best_practice_policy("disallow_helm_tiller/disallow_helm_tiller.yaml")
-      apply_result = KubectlClient::Apply.file(policy_path)
-      sleep(3.seconds)
-      emoji_security="🔓🔑"
-      failures = Kyverno::PolicyReport.failures("disallow-helm-tiller", EXCLUDE_NAMESPACES)
+      failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
       if failures.size == 0
         resp = upsert_passed_task("helm_tiller", "✔️  PASSED: No Helm Tiller containers are running #{emoji_security}")
@@ -95,8 +93,5 @@ namespace "platform" do
         end
       end
     end
-  ensure
-    Kyverno::ClusterPolicy.delete_all()
-    Kyverno::PolicyReport.delete_all()
   end
 end

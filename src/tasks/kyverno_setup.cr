@@ -26,15 +26,3 @@ task "uninstall_kyverno" do |_, args|
     stdout_failure "Kyverno could not be uninstalled."
   end
 end
-
-desc "Delete all cluster policies and policy reports in all namespaces"
-task "cleanup_policies" do |_, args|
-  delete_cluster_policies = Kyverno::ClusterPolicy.delete_all
-  delete_policy_reports = Kyverno::PolicyReport.delete_all
-
-  if delete_cluster_policies && delete_policy_reports
-    stdout_failure "Kyverno policies could not be uninstalled. Please uninstall manually"
-  else
-    stdout_success "Kyverno policies were uninstalled successfully"
-  end
-end
