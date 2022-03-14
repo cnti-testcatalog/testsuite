@@ -899,8 +899,8 @@ module CNFManager
         case kind 
         when  "pod"
           Log.info { "resource: #{resource}" }
-          containers = resource.dig("spec", "spec", "containers")
-        when  "deployment","statefulset","replicaset", "daemonset"
+          containers = resource.dig("spec", "containers")
+        when  "deployment","statefulset","replicaset","daemonset"
           Log.info { "resource: #{resource}" }
 
           containers = resource.dig("spec", "template", "spec", "containers")
