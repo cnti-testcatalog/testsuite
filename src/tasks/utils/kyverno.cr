@@ -1,12 +1,45 @@
+require "http/client"
+
 module Kyverno
-  VERSION = "1.5.0"
+  VERSION = "1.6.1"
+
+  def self.binary_path
+    "#{tools_path}/kyverno"
+  end
 
   def self.install
-    result = KubectlClient::Apply.file(manifest_url)
-    return false if !result[:status].success?
+    cli_path = "#{tools_path}/kyverno"
+    return true if File.exists?(cli_path)
 
-    download_policies_repo
-    KubectlClient::Get.resource_wait_for_install("deployment", "kyverno", 180, "kyverno")
+    # Support different flavours of Linux and MacOS
+    flavour = ""
+    {% if flag?(:linux) && flag?(:x86_64) %}
+      flavour = "linux_x86_64"
+    {% elsif flag?(:linux) && flag?(:aarch64) %}
+      flavour = "linux_arm64"
+    {% elsif flag?(:darwin) && flag?(:x86_64) %}
+      flavour = "darwin_x86_64"
+    {% elsif flag?(:darwin) && flag?(:aarch64) %}
+      flavour = "darwin_arm64"
+    {% end %}
+
+    file_name = "kyverno-cli_v#{VERSION}_#{flavour}.tar.gz"
+    url = "https://github.com/kyverno/kyverno/releases/download/v#{VERSION}/#{file_name}"
+    tempfile = File.tempfile("kyverno", ".tar.gz")
+
+    HTTP::Client.get(url) do |response|
+      if response.status_code == 302
+        redirect_url = response.headers["Location"]
+        HTTP::Client.get(redirect_url) do |response|
+          File.write(tempfile.path, response.body_io)
+        end
+      end
+    end
+
+    result = TarClient.untar(tempfile.path, tools_path)
+    tempfile.delete
+    return true if result[:status].success?
+    return false
   end
 
   def self.uninstall

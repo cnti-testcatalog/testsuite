@@ -3,6 +3,7 @@ require "file_utils"
 require "colorize"
 require "totem"
 require "./utils/utils.cr"
+require "tar"
 
 desc "Install Kyverno"
 task "install_kyverno" do |_, args|
