@@ -10,24 +10,9 @@ module Kyverno
   def self.install
     cli_path = "#{tools_path}/kyverno"
     return true if File.exists?(cli_path)
-
-    # Support different flavours of Linux and MacOS
-    flavour = ""
-    {% if flag?(:linux) && flag?(:x86_64) %}
-      flavour = "linux_x86_64"
-    {% elsif flag?(:linux) && flag?(:aarch64) %}
-      flavour = "linux_arm64"
-    {% elsif flag?(:darwin) && flag?(:x86_64) %}
-      flavour = "darwin_x86_64"
-    {% elsif flag?(:darwin) && flag?(:aarch64) %}
-      flavour = "darwin_arm64"
-    {% end %}
-
-    file_name = "kyverno-cli_v#{VERSION}_#{flavour}.tar.gz"
-    url = "https://github.com/kyverno/kyverno/releases/download/v#{VERSION}/#{file_name}"
     tempfile = File.tempfile("kyverno", ".tar.gz")
 
-    HTTP::Client.get(url) do |response|
+    HTTP::Client.get(download_url) do |response|
       if response.status_code == 302
         redirect_url = response.headers["Location"]
         HTTP::Client.get(redirect_url) do |response|
@@ -43,13 +28,26 @@ module Kyverno
   end
 
   def self.uninstall
-    result = KubectlClient::Delete.file(manifest_url)
+    FileUtils.rm_rf(binary_path)
     delete_policies_repo
     KubectlClient::Get.resource_wait_for_uninstall("deployment", "kyverno", 180, "kyverno")
   end
 
-  def self.manifest_url
-    "https://raw.githubusercontent.com/kyverno/kyverno/v#{VERSION}/definitions/release/install.yaml"
+  def self.download_url
+    # Support different flavours of Linux and MacOS
+    flavour = ""
+    {% if flag?(:linux) && flag?(:x86_64) %}
+      flavour = "linux_x86_64"
+    {% elsif flag?(:linux) && flag?(:aarch64) %}
+      flavour = "linux_arm64"
+    {% elsif flag?(:darwin) && flag?(:x86_64) %}
+      flavour = "darwin_x86_64"
+    {% elsif flag?(:darwin) && flag?(:aarch64) %}
+      flavour = "darwin_arm64"
+    {% end %}
+
+    file_name = "kyverno-cli_v#{VERSION}_#{flavour}.tar.gz"
+    "https://github.com/kyverno/kyverno/releases/download/v#{VERSION}/#{file_name}"
   end
 
   def self.best_practice_policy(policy_path : String) : String
@@ -68,6 +66,52 @@ module Kyverno
 
   def self.delete_policies_repo
     FileUtils.rm_rf(policies_repo_path)
+  end
+
+  module PolicyAudit
+    struct FailedResource
+      property kind
+      property name
+      property namespace
+
+      def initialize(@kind : String, @name : String, @namespace : String)
+      end
+    end
+
+    struct PolicyFailure
+      property message
+      property resources
+
+      def initialize(@message : String, @resources : Array(FailedResource))
+      end
+    end
+
+    def self.run(policy_path : String, exclude_namespaces : Array(String) = [] of String)
+      cmd = "#{Kyverno.binary_path} apply #{policy_path} --cluster --policy-report"
+      result = ShellCmd.run(cmd, "", force_output: true)
+      policy_report_yaml = result[:output].split("\n")[6..-1].join("\n")
+      policy_report = YAML.parse(policy_report_yaml)
+
+      failures = [] of PolicyFailure
+      policy_report["results"].as_a.each do |test_result|
+        if test_result["result"] == "fail"
+          failed_resources = test_result["resources"].as_a.reduce([] of FailedResource) do |acc, resource|
+            if exclude_namespaces.includes?(resource["namespace"])
+              acc
+            else
+              acc << FailedResource.new(resource["kind"].to_s, resource["name"].to_s, resource["namespace"].to_s)
+            end
+          end
+
+          if failed_resources.size > 0
+            policy_failure = PolicyFailure.new(test_result["message"].to_s, failed_resources)
+            failures.push(policy_failure)
+          end
+        end
+      end
+
+      failures
+    end
   end
 
   module PolicyReport

@@ -18,12 +18,10 @@ desc "Check if the CNF is running containers with labels configured?"
 task "require_labels" do |_, args|
   Log.for("verbose").info { "require-labels" }
   Kyverno.install
-  policy_path = Kyverno.best_practice_policy("require_labels/require_labels.yaml")
-  apply_result = KubectlClient::Apply.file(policy_path)
-  sleep(3.seconds)
   emoji_passed = "🏷️✔️"
   emoji_failed = "🏷️❌"
-  failures = Kyverno::PolicyReport.failures("require-labels", EXCLUDE_NAMESPACES)
+  policy_path = Kyverno.best_practice_policy("require_labels/require_labels.yaml")
+  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
   if failures.size == 0
     resp = upsert_passed_task("require_labels", "✔️  PASSED: Pods have the app.kubernetes.io/name label #{emoji_passed}")
@@ -35,9 +33,6 @@ task "require_labels" do |_, args|
       end
     end
   end
-ensure
-  Kyverno::ClusterPolicy.delete_all()
-  Kyverno::PolicyReport.delete_all()
 end
 
 desc "Does a search for IP addresses or subnets come back as negative?"
