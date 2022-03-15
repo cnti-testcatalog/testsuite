@@ -247,3 +247,15 @@
   fail: 0 
 - name: alpha_k8s_apis
   tags: configuration, dynamic, workload
+
+- name: container_sock_mounts
+  tags: security, dynamic, workload
+
+- name: require_labels
+  tags: configuration, dynamic, workload
+
+- name: helm_tiller
+  tags: platform, platform:security, dynamic
+
+- name: external_ips
+  tags: security, dynamic, workload

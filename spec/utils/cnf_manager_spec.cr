@@ -118,7 +118,7 @@ describe "SampleUtils" do
 
   it "'CNFManager::Points.tasks_by_tag' should return the tasks assigned to a tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
-    tags = ["alpha_k8s_apis", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "hostport_not_used", "immutable_configmap", "ip_addresses", "nodeport_not_used", "secrets_used", "versioned_tag"]
+    tags = ["alpha_k8s_apis", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "hostport_not_used", "immutable_configmap", "ip_addresses", "nodeport_not_used", "secrets_used", "versioned_tag", "require_labels"]
     (CNFManager::Points.tasks_by_tag("configuration")).sort.should eq(tags.sort)
     (CNFManager::Points.tasks_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
@@ -154,7 +154,8 @@ describe "SampleUtils" do
             "immutable_file_systems", "hostpath_mounts", "log_output",
             "prometheus_traffic", "open_metrics",
             "ingress_egress_blocked", "dangerous_capabilities", "insecure_capabilities",
-            "routed_logs", "tracing", "elastic_volumes", "alpha_k8s_apis", "service_discovery", "shared_database", "pod_dns_error"]
+            "routed_logs", "tracing", "elastic_volumes", "alpha_k8s_apis", "service_discovery", "shared_database", "pod_dns_error",
+            "external_ips", "container_sock_mounts", "require_labels"]
     (CNFManager::Points.all_task_test_names()).sort.should eq(tags.sort)
   end
 

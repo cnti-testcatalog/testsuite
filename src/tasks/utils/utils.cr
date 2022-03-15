@@ -9,6 +9,7 @@ require "option_parser"
 require "../constants.cr"
 require "semantic_version"
 require "./dockerd.cr"
+require "./kyverno.cr"
 
 module ShellCmd
   def self.run(cmd, log_prefix, force_output=false)
@@ -311,6 +312,11 @@ def upsert_dynamic_task(task, status : CNFManager::Points::Results::ResultStatus
     stdout_warning message
   end
   message
+end
+
+def tools_path
+  current_path = File.dirname(File.real_path(PROGRAM_NAME))
+  "#{current_path}/tools"
 end
 
 def stdout_info(msg)

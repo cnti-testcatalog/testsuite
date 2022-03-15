@@ -67,3 +67,5 @@ falco_rule.yaml
 /*.kubeconfig
 /*.config
 /tools/apisnoop
+/tools/kyverno-policies
+/tools/kyverno
