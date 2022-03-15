@@ -705,6 +705,25 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 ./cnf-testsuite container_sock_mounts
 ```
 
+##### :heavy_check_mark: To check if namespaces have a default network
+
+```
+./cnf-testsuite default_network_policy
+```
+
+<details>
+<summary>Details for `default_network_policy`</summary>
+
+<p>
+By default, Kubernetes allows communications across all Pods within a cluster. The NetworkPolicy resource and a CNI plug-in that supports NetworkPolicy must be used to restrict communications.
+</p>
+
+<p>
+<b>Remediation steps:</b> A default NetworkPolicy should be configured for each Namespace to default deny all ingress and egress traffic to the Pods in the Namespace. Application teams can then configure additional NetworkPolicy resources to allow desired traffic to application Pods from select sources. This policy will create a new NetworkPolicy resource named `default-deny` which will deny all traffic anytime a new Namespace is created.
+</p>
+
+</details>
+
 ##### :heavy_check_mark: To check if containers are using any tiller images
 <details> <summary>Details for tiller images</summary>
 <p>
@@ -948,6 +967,34 @@ Read more at [ARMO-C0038](https://bit.ly/3nGvpIQ)
 ./cnf-testsuite host_pid_ipc_privileges
 ```
 
+##### :heavy_check_mark: To check if CNF resources use custom SELinux options that allow privilege escalation
+
+```
+./cnf-testsuite selinux_options
+```
+
+<details>
+<summary>Details for `selinux_options`</summary>
+
+<p>
+SELinux options can be used to escalate privileges and should not be allowed.
+</p>
+
+<p>
+<b>Remediation steps:</b>
+Ensure the following guidelines are followed for any cluster resource that allow SELinux options.
+  <ul>
+    <li>
+    If the SELinux option `type` is set, it should only be one of the allowed values: `container_t`, `container_init_t`, or `container_kvm_t`.
+    </li>
+    <li>
+    SELinux options `user` or `role` should not be set.
+    </li>
+  </ul>
+</p>
+
+</details>
+
 ##### :heavy_check_mark: To check if security services are being used to harden containers
 <details> <summary>Details for Linux Hardening</summary>
 
@@ -1043,6 +1090,44 @@ crystal src/cnf-testsuite.cr protected_access
 ```
 ./cnf-testsuite configuration_lifecycle
 ```
+
+##### :heavy_check_mark: To check if resources of the CNF are not in the default namespace
+
+```
+./cnf-testsuite default_namespace
+```
+
+<details>
+<summary>Details for `default_namespace`</summary>
+
+<p>
+Kubernetes Namespaces provide a way to segment and isolate cluster resources across multiple applications and users. As a best practice, workloads should be isolated with Namespaces.
+</p>
+
+<p>
+<b>Remediation steps:</b> Namespaces should be required and the default (empty) Namespace should not be used. This policy validates that Pods specify a Namespace name other than `default`.
+</p>
+
+</details>
+
+##### :heavy_check_mark: To check if Pods in the CNF use container images with the latest tag
+
+```
+./cnf-testsuite latest_tag
+```
+
+<details>
+<summary>Details for `latest_tag`</summary>
+
+<p>
+The `:latest` tag is mutable and can lead to unexpected errors if the image changes. Even when a tag is not specified, the `:latest` tag is used by default.
+</p>
+
+<p>
+<b>Remediation steps:</b> When specifying container images, always specify a tag and ensure to use an immutable tag that maps to a specific version of an application Pod. Avoid using the `latest` tag, as it is not guaranteed to be always point to the same version of the image.
+</p>
+
+</details>
 
 ##### :heavy_check_mark: To check if pods are using the `app.kubernetes.io/name` label
 <details> <summary>Details for labels test</summary>
