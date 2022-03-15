@@ -104,7 +104,7 @@ podLabels: {}
 livenessProbe:
   tcpSocket:
     port: admin
-  initialDelaySeconds: 30
+  initialDelaySeconds: 70
   # periodSeconds: 10
   # timeoutSeconds: 5
   # failureThreshold: 3

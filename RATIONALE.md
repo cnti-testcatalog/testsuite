@@ -62,7 +62,8 @@ immutable infrastructure and declarative specifications.
 #### *To check if the CNF have a reasonable startup time*: [reasonable_startup_time](USAGE.md#heavy_check_mark-to-check-if-the-cnf-have-a-reasonable-startup-time)
 
 > A CNF that starts up with a time (adjusted for server resources) that is approaching a minute 
-is indicative of a monolithic application
+is indicative of a monolithic application.  The liveness probe's initialDelaySeconds and failureThreshhold determine the startup time and retry amount of the CNF.
+Specifically, if the initiaDelay is too long it is indicative of a monolithic application.  If the failureThreshold is too high it is indicative of a CNF or a component of the CNF that has too many intermittent failures.
 
 #### *To check if the CNF has multiple process types within one container*: [single_process_type](USAGE.md#heavy_check_mark-to-check-if-the-cnf-has-multiple-process-types-within-one-container)
 
