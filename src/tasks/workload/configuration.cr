@@ -35,6 +35,27 @@ task "require_labels" do |_, args|
   end
 end
 
+desc "Check if the CNF installs resources in the default namespace"
+task "default_namespace" do |_, args|
+  Log.for("verbose").info { "default_namespace" }
+  Kyverno.install
+  emoji_passed = "🏷️✔️"
+  emoji_failed = "🏷️❌"
+  policy_path = Kyverno.best_practice_policy("disallow_default_namespace/disallow_default_namespace.yaml")
+  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+
+  if failures.size == 0
+    resp = upsert_passed_task("default_namespace", "✔️  PASSED: default namespace is not being used #{emoji_passed}")
+  else
+    resp = upsert_failed_task("default_namespace", "✖️  FAILED: Resources are created in the default namespace #{emoji_failed}")
+    failures.each do |failure|
+      failure.resources.each do |resource|
+        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+      end
+    end
+  end
+end
+
 desc "Does a search for IP addresses or subnets come back as negative?"
 task "ip_addresses" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
