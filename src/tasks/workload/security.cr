@@ -48,6 +48,26 @@ task "external_ips" do |_, args|
   end
 end
 
+desc "Check if the CNF or the cluster resources have custom SELinux options"
+task "selinux_options" do |_, args|
+  Log.for("verbose").info { "selinux_options" }
+  Kyverno.install
+  emoji_security = "🔓🔑"
+  policy_path = Kyverno.policy_path("pod-security/baseline/disallow-selinux/disallow-selinux.yaml")
+  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+
+  if failures.size == 0
+    resp = upsert_passed_task("selinux_options", "✔️  PASSED: Resources are not using custom SELinux options #{emoji_security}")
+  else
+    resp = upsert_failed_task("selinux_options", "✖️  FAILED: Resources are using custom SELinux options #{emoji_security}")
+    failures.each do |failure|
+      failure.resources.each do |resource|
+        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+      end
+    end
+  end
+end
+
 desc "Check if the CNF is running containers with container sock mounts"
 task "container_sock_mounts" do |_, args|
   Log.for("verbose").info { "container_sock_mounts" }
