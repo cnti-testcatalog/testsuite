@@ -56,6 +56,27 @@ task "default_namespace" do |_, args|
   end
 end
 
+desc "Check if the CNF uses container images with the latest tag"
+task "latest_tag" do |_, args|
+  Log.for("verbose").info { "latest_tag" }
+  Kyverno.install
+  emoji_passed = "🏷️✔️"
+  emoji_failed = "🏷️❌"
+  policy_path = Kyverno.best_practice_policy("disallow_latest_tag/disallow_latest_tag.yaml")
+  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+
+  if failures.size == 0
+    resp = upsert_passed_task("latest_tag", "✔️  PASSED: Container images are not using the latest tag #{emoji_passed}")
+  else
+    resp = upsert_failed_task("latest_tag", "✖️  FAILED: Container images are using the latest tag #{emoji_failed}")
+    failures.each do |failure|
+      failure.resources.each do |resource|
+        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+      end
+    end
+  end
+end
+
 desc "Does a search for IP addresses or subnets come back as negative?"
 task "ip_addresses" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
