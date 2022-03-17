@@ -477,7 +477,7 @@ describe CnfTestSuite do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_latest_tag`
       $?.success?.should be_true
-      response_s = `./cnf-testsuite default_namespace verbose`
+      response_s = `./cnf-testsuite latest_tag verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/FAILED: Container images are using the latest tag/ =~ response_s).should_not be_nil
@@ -490,7 +490,7 @@ describe CnfTestSuite do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_nonroot`
       $?.success?.should be_true
-      response_s = `./cnf-testsuite default_namespace verbose`
+      response_s = `./cnf-testsuite latest_tag verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: Container images are not using the latest tag/ =~ response_s).should_not be_nil
