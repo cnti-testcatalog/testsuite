@@ -355,4 +355,30 @@ describe "Security" do
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_external_ips/cnf-testsuite.yml`
     end
   end
+
+  it "'selinux_options' should fail if containers have custom selinux options that can be used for privilege escalations", tags: ["selinux_options"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_latest_tag`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite selinux_options verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Resources are using custom SELinux options/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_latest_tag`
+    end
+  end
+
+  it "'selinux_options' should pass if containers do not have custom selinux options that can be used for privilege escalations", tags: ["selinux_options"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_nonroot`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite selinux_options verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Resources are not using custom SELinux options/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot`
+    end
+  end
 end
