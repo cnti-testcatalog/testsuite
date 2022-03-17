@@ -447,6 +447,32 @@ describe CnfTestSuite do
     end
   end
 
+  it "'default_namespace' should fail if a cnf creates resources in the default namespace", tags: ["default_namespace"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite default_namespace verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Resources are created in the default namespace/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns`
+    end
+  end
+
+  it "'default_namespace' should pass if a cnf does not create resources in the default namespace", tags: ["default_namespace"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_latest_tag`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite default_namespace verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: default namespace is not being used/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_latest_tag`
+    end
+  end
+
   # Commenting because the test has now been marked as a POC
   #
   # it "'alpha_k8s_apis' should pass with a CNF that does not make use of alpha k8s APIs", tags: ["apisnoop"] do
