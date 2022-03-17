@@ -23,7 +23,8 @@ task "security", [
     "immutable_file_systems",
     "hostpath_mounts",
     "container_sock_mounts",
-    "external_ips"
+    "external_ips",
+    "selinux_options"
   ] do |_, args|
   stdout_score("security")
 end
