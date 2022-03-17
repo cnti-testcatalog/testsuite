@@ -473,6 +473,32 @@ describe CnfTestSuite do
     end
   end
 
+  it "'latest_tag' should fail if a cnf has containers that use images with the latest tag", tags: ["latest_tag"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_latest_tag`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite default_namespace verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Container images are using the latest tag/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_latest_tag`
+    end
+  end
+
+  it "'latest_tag' should pass if a cnf does not have containers that use images with the latest tag", tags: ["latest_tag"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_nonroot`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite default_namespace verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Container images are not using the latest tag/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot`
+    end
+  end
+
   # Commenting because the test has now been marked as a POC
   #
   # it "'alpha_k8s_apis' should pass with a CNF that does not make use of alpha k8s APIs", tags: ["apisnoop"] do
