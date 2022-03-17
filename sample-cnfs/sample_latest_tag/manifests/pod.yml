@@ -27,4 +27,7 @@ spec:
     ports:
       - containerPort: 8080
       - containerPort: 8443
+    securityContext:
+      seLinuxOptions:
+        type: spc_t
   dnsPolicy: Default
