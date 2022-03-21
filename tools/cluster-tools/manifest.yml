@@ -14,7 +14,7 @@ spec:
       hostNetwork: true
       containers:
         - name: cluster-tools
-          image: conformance/cluster-tools:v1.0.0
+          image: conformance/cluster-tools:v1.0.1
           imagePullPolicy: Always
           command: ["/bin/sh"]
           args: ["-c", "sleep infinity"]
@@ -23,6 +23,8 @@ spec:
             name: containerd-volume
           - mountPath: /proc
             name: proc
+          - mountPath: /run/dockershim.sock
+            name: dockerd-volume
           securityContext:
             privileged: true
       volumes:
@@ -32,6 +34,9 @@ spec:
       - name: proc
         hostPath:
           path: /proc
+      - name: dockerd-volume
+        hostPath:
+          path: /run/dockershim.sock
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -48,14 +53,19 @@ spec:
     spec:
       containers:
         - name: cluster-tools-k8s
-          image: conformance/cluster-tools:v1.0.0
+          image: conformance/cluster-tools:v1.0.1
           imagePullPolicy: Always
           command: ["/bin/sh"]
           args: ["-c", "sleep infinity"]
           volumeMounts:
           - mountPath: /run/containerd/containerd.sock
             name: containerd-volume
+          - mountPath: /run/dockershim.sock
+            name: dockerd-volume
       volumes:
       - name: containerd-volume
         hostPath:
           path: /var/run/containerd/containerd.sock
+      - name: dockerd-volume
+        hostPath:
+          path: /run/dockershim.sock

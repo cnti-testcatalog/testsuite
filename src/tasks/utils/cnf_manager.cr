@@ -967,8 +967,12 @@ module CNFManager
 
     Log.info { "final liveness_time: #{liveness_time}" }
     Log.info { "elapsed_time.seconds: #{elapsed_time.seconds}" }
+    Log.info { "helm_install: #{helm_install}" }
+    Log.info { "helm_error: #{helm_error}" }
+    Log.info { "helm_install[:error].to_s: #{helm_install[:error].to_s}" }
+    Log.info { "helm_install[:error].to_s.size: #{helm_install[:error].to_s.size}" }
     helm_used = false
-    if helm_install && helm_error == false && helm_install[:error].to_s.size == 0 # && helm_pull.to_s.size > 0
+    if helm_install && helm_error == false # fails on warnings ... && helm_install[:error].to_s.size == 0 # && helm_pull.to_s.size > 0
       helm_used = true
       stdout_success "Successfully setup #{release_name}"
     end

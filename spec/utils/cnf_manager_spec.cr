@@ -286,10 +286,12 @@ describe "SampleUtils" do
     config_file = "sample-cnfs/k8s-non-helm"
     args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-testsuite.yml", "verbose", "wait_count=0"])
     cli_hash = CNFManager.sample_setup_cli_args(args)
+    Log.info {"Running Setup"}
     CNFManager.sample_setup(cli_hash)
     # args = Sam::Args.new
     # config_file = "sample-cnfs/k8s-non-helm"
     # CNFManager.sample_setup_args(sample_dir: config_file, deploy_with_chart: false, args: args, verbose: true, install_from_manifest: true, wait_count: 0 )
+    Log.info {"Parse Config"}
     config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
     release_name = config.cnf_config[:release_name]
     (Dir.exists? "cnfs/#{release_name}").should be_true
