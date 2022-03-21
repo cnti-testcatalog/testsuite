@@ -66,5 +66,21 @@ describe "Platform" do
     end
   end
 
-end
+  it "'helm_tiller' should fail if Helm Tiller is running in the cluster", tags: ["platform:security"] do
+    ShellCmd.run("kubectl run tiller --image=rancher/tiller:v2.11.0", "create_tiller")
+    KubectlClient::Get.resource_wait_for_install("pod", "tiller")
+    response_s = `./cnf-testsuite platform:helm_tiller`
+    $?.success?.should be_true
+    (/FAILED: Containers with the Helm Tiller image are running/ =~ response_s).should_not be_nil
+  ensure
+    KubectlClient::Delete.command("pod/tiller")
+    KubectlClient::Get.resource_wait_for_uninstall("pod", "tiller")
+  end
 
+  it "'helm_tiller' should fail if Helm Tiller is running in the cluster", tags: ["platform:security"] do
+    # By default we have nothing to setup for this task to pass since Helm v3 does not use Tiller.
+    response_s = `./cnf-testsuite platform:helm_tiller`
+    $?.success?.should be_true
+    (/PASSED: No Helm Tiller containers are running/ =~ response_s).should_not be_nil
+  end
+end

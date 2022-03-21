@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  containers:
+  - image: bitnami/nginx:1.20
+    name: nginx
+    command:
+      - /opt/bitnami/scripts/nginx/entrypoint.sh
+      - /opt/bitnami/scripts/nginx/run.sh
+    livenessProbe:
+      tcpSocket:
+        port: 8080
+    readinessProbe:
+      tcpSocket:
+        port: 8080
+    resources: {}
+    ports:
+      - containerPort: 8080
+      - containerPort: 8443
+  dnsPolicy: Default
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  externalIPs:
+    - 2.2.2.2

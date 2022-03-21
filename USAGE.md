@@ -696,13 +696,13 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 
 <b>Container Socker Mounts Details:</b> Container daemon socket bind mounts allows access to the container engine on the node. This access can be used for privilege escalation and to manage containers outside of Kubernetes, and hence should not be allowed
 
-<b>Remediation Steps:</b> Make sure to not mount /var/run/docker.sock, /var/run/containerd.sock or /var/run/crio.sock on the containers
+<b>Remediation Steps:</b> Make sure to not mount `/var/run/docker.sock`, `/var/run/containerd.sock` or `/var/run/crio.sock` on the containers
 </p>
 
 </details>
 
 ```
-./cnf-testsuite disallow_container_sock_mounts
+./cnf-testsuite container_sock_mounts
 ```
 
 ##### :heavy_check_mark: To check if containers are using any tiller images
@@ -717,7 +717,7 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 </details>
 
 ```
-./cnf-testsuite disallow_helm_tiller
+./cnf-testsuite platform:helm_tiller
 ```
 
 
@@ -727,19 +727,19 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 ./cnf-testsuite privileged
 ```
 
-##### :heavy_check_mark: To check if a CNF is running services with external IP's
-<details> <summary>Details for external IP's</summary>
+##### :heavy_check_mark: To check if a CNF is running services with external IPs
+<details> <summary>Details for external IPs</summary>
 <p>
 
 <b>External IP's Details:</b> Service externalIPs can be used for a MITM attack (CVE-2020-8554). Restrict externalIPs or limit to a known set of addresses. See: https://github.com/kyverno/kyverno/issues/1367
 
-<b>Remediation Steps:</b> Make sure to not define external IP's in your kubernetes service configuration
+<b>Remediation Steps:</b> Make sure to not define external IPs in your kubernetes service configuration
 </p>
 
 </details>
 
 ```
-./cnf-testsuite restrict_external_ips
+./cnf-testsuite external_ips
 ```
 
 
@@ -1044,7 +1044,7 @@ crystal src/cnf-testsuite.cr protected_access
 ./cnf-testsuite configuration_lifecycle
 ```
 
-##### :heavy_check_mark: To check if containers are using labels
+##### :heavy_check_mark: To check if pods are using the `app.kubernetes.io/name` label
 <details> <summary>Details for labels test</summary>
 <p>
 

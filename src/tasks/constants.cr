@@ -52,4 +52,11 @@ EmbeddedFileManager.fluentd_values
 # end
 
 
-
+EXCLUDE_NAMESPACES = [
+  "kube-system",
+  "kube-public",
+  "kube-node-lease",
+  "local-path-storage",
+  "litmus",
+  TESTSUITE_NAMESPACE
+]

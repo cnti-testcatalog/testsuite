@@ -10,50 +10,26 @@ rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rol
 
 desc "Configuration should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
 
-task "configuration", ["ip_addresses", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap", "alpha_k8s_apis"]do |_, args|
+task "configuration", ["ip_addresses", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap", "alpha_k8s_apis", "require_labels"] do |_, args|
   stdout_score("configuration", "configuration")
 end
 
-
 desc "Check if the CNF is running containers with labels configured?"
-task "require_labels", ["install_kyverno"] do |_, args|
-  unless check_poc(args)
-    Log.info { "skipping require_labels: not in poc mode" }
-    puts "SKIPPED: Require Labels".colorize(:yellow)
-    next
-  end
-
+task "require_labels" do |_, args|
   Log.for("verbose").info { "require-labels" }
+  Kyverno.install
+  emoji_passed = "🏷️✔️"
+  emoji_failed = "🏷️❌"
+  policy_path = Kyverno.best_practice_policy("require_labels/require_labels.yaml")
+  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
-  policy_url = "https://raw.githubusercontent.com/kyverno/policies/main/best-practices/require_labels/require_labels.yaml"
-  apply_result = KubectlClient::Apply.file(policy_url)
-  sleep(3.seconds)
-  # TODO move this to a generic kubectl helper to fetch resource OR move to kyverno module
-#  result = KubectlClient::Get.policy_report("polr-ns-default")
-  result = KubectlClient::Get.policy_report_allnamespaces()
-  emoji_passed="🏷️      ✔️"
-  emoji_failed="🏷️      ❌"
-
-  policy_report = JSON.parse(result[:output])
-  test_passed = true
-
-  failures = [] of JSON::Any
-  policy_report["items"].as_a.each do |item|
-    item["results"].as_a.each do |test_result|
-      if test_result["result"] == "fail" && test_result["policy"] == "require-labels"
-        test_passed = false
-        failures.push(test_result["resources"])
-      end
-    end
-  end
-
-  if test_passed
-    resp = upsert_passed_task("require_labels", "✔️  PASSED: Containers are configured with labels #{emoji_passed}")
+  if failures.size == 0
+    resp = upsert_passed_task("require_labels", "✔️  PASSED: Pods have the app.kubernetes.io/name label #{emoji_passed}")
   else
-    resp = upsert_failed_task("require_labels", "✔️  FAILED: The label `app.kubernetes.io/name` is required for containers. #{emoji_failed}")
-    failures.each do |failure_resources|
-      failure_resources.as_a.each do |failure|
-        puts "#{failure["kind"]} #{failure["name"]} in #{failure["namespace"]} namespace is not configured with labels".colorize(:red)
+    resp = upsert_failed_task("require_labels", "✖️  FAILED: Pods should have the app.kubernetes.io/name label. #{emoji_failed}")
+    failures.each do |failure|
+      failure.resources.each do |resource|
+        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
       end
     end
   end
