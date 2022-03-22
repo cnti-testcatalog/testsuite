@@ -7,8 +7,8 @@ RUN make openmetricsvalidator
 FROM debian:latest
 ENV CRI_VERSION="v1.17.0"
 ENV CTR_VERSION="1.5.0"
-ENV CONTAINER_RUNTIME_ENDPOINT=unix:///run/containerd/containerd.sock
-ENV IMAGE_SERVICE_ENDPOINT=unix:///run/containerd/containerd.sock
+#ENV CONTAINER_RUNTIME_ENDPOINT=unix:///run/containerd/containerd.sock
+#ENV IMAGE_SERVICE_ENDPOINT=unix:///run/containerd/containerd.sock
 
 COPY --from=validator /validator/bin/openmetricsvalidator /usr/local/bin/
 RUN echo "deb http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list

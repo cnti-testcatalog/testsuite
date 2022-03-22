@@ -23,6 +23,8 @@ spec:
             name: containerd-volume
           - mountPath: /proc
             name: proc
+          - mountPath: /run/dockershim.sock
+            name: dockerd-volume
           securityContext:
             privileged: true
       volumes:
@@ -32,6 +34,9 @@ spec:
       - name: proc
         hostPath:
           path: /proc
+      - name: dockerd-volume
+        hostPath:
+          path: /run/dockershim.sock
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -55,7 +60,12 @@ spec:
           volumeMounts:
           - mountPath: /run/containerd/containerd.sock
             name: containerd-volume
+          - mountPath: /run/dockershim.sock
+            name: dockerd-volume
       volumes:
       - name: containerd-volume
         hostPath:
           path: /var/run/containerd/containerd.sock
+      - name: dockerd-volume
+        hostPath:
+          path: /run/dockershim.sock
