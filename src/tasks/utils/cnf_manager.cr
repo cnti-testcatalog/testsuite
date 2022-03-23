@@ -903,7 +903,6 @@ module CNFManager
         when  "deployment","statefulset","replicaset","daemonset"
           Log.info { "resource: #{resource}" }
           containers = resource.dig("spec", "template", "spec", "containers")
-          Log.for("RESOURCE_CONTAINERS").info { containers }
         end
         containers && containers.as_a.map do |container|
           initialDelaySeconds = container.dig?("livenessProbe", "initialDelaySeconds")
@@ -950,7 +949,6 @@ module CNFManager
       resource_names.each do | resource |
         case resource[:kind].downcase
         when "replicaset", "deployment", "statefulset", "pod", "daemonset"
-          Log.for("INSTALL_RESOURCE_WAIT").info { "Waiting for #{resource[:kind]}, #{resource[:name]}" }
           KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], wait_count: wait_count, namespace: resource[:namespace])
         end
       end
