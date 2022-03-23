@@ -1052,7 +1052,7 @@ module CNFManager
       case resource[:kind].downcase
       when "replicaset", "deployment", "statefulset", "pod", "daemonset"
         Log.info { "waiting on resource of kind: #{resource[:kind].downcase}" }
-        KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], 180, namespace="default", kubeconfig)
+        KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], 180, namespace: resource[:namespace], kubeconfig: kubeconfig)
       else 
         true
       end
