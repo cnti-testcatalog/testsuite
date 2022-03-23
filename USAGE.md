@@ -877,7 +877,7 @@ See more at [ARMO-C0058](https://bit.ly/C0058_symlink_filesystem)
 ./cnf-testsuite symlink_file_system
 ```
 
-##### :heavy_check_mark: To check if there are [service accounts that are automatically mapped](https://bit.ly/C0012_application_credentials)
+##### :heavy_check_mark: To check if there are [application credentials stored in configuration or environment variables](https://bit.ly/C0012_application_credentials)
 <details> <summary>Details for Service Application Credentials</summary>
 
 <p><b>Application Credentials:</b> Developers store secrets in the Kubernetes configuration files, such as environment variables in the pod configuration. Such behavior is commonly seen in clusters that are monitored by Azure Security Center. Attackers who have access to those configurations, by querying the API server or by accessing those files on the developer’s endpoint, can steal the stored secrets and use them.
