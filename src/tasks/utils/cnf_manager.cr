@@ -1068,8 +1068,12 @@ module CNFManager
     config = parsed_config_file(ensure_cnf_testsuite_yml_path(config_file))
     parsed_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
     namespace = namespace_from_parameters(install_parameters(parsed_config))
-
     Log.for("verbose").info { "cleanup config: #{config.inspect}" } if verbose
+
+    resource_ymls = cnf_workload_resources(nil, parsed_config) do |resource_yml|
+      resource_yml
+    end
+    resources = Helm.workload_resource_kind_names(resource_ymls)
 
     config_maps_dir = "#{destination_cnf_dir}/config_maps"
     if Dir.exists?(config_maps_dir)
@@ -1108,6 +1112,14 @@ module CNFManager
         end
       end
     end
+
+    resources.each do | resource |
+      case resource[:kind].downcase
+      when "replicaset", "deployment", "statefulset", "pod", "daemonset"
+        KubectlClient::Get.resource_wait_for_uninstall(kind: resource[:kind], resource_name: resource[:name], namespace: resource[:namespace])
+      end
+    end
+
     ret
   end
 
