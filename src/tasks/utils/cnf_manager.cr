@@ -145,7 +145,7 @@ module CNFManager
   def self.workload_resource_test(args, config,
                                   check_containers = true,
                                   check_service = false,
-                                  &block  : (NamedTuple(kind: YAML::Any, name: YAML::Any),
+                                  &block  : (NamedTuple(kind: String, name: String, namespace: String),
                                              JSON::Any, JSON::Any, Bool | Nil) -> Bool | Nil)
             # resp = yield resource, container, volumes, initialized
     test_passed = true
@@ -166,10 +166,10 @@ module CNFManager
 		resource_names.each do | resource |
 			Log.for("verbose").debug { resource.inspect } if check_verbose(args)
       #todo accept namespace
-			volumes = KubectlClient::Get.resource_volumes(resource[:kind].as_s, resource[:name].as_s, namespace)
+			volumes = KubectlClient::Get.resource_volumes(resource[:kind], resource[:name], namespace)
       Log.for("verbose").debug { "check_service: #{check_service}" } if check_verbose(args)
       Log.for("verbose").debug { "check_containers: #{check_containers}" } if check_verbose(args)
-      case resource[:kind].as_s.downcase
+      case resource[:kind].downcase
       when "service"
         if check_service
           Log.info { "checking service: #{resource}" }
@@ -179,7 +179,7 @@ module CNFManager
           test_passed = false if resp == false
         end
       else
-				containers = KubectlClient::Get.resource_containers(resource[:kind].as_s, resource[:name].as_s, namespace)
+				containers = KubectlClient::Get.resource_containers(resource[:kind], resource[:name], namespace)
 				if check_containers
 					containers.as_a.each do |container|
 						resp = yield resource, container, volumes, initialized
@@ -948,10 +948,10 @@ module CNFManager
       end
 
       resource_names.each do | resource |
-        case resource[:kind].as_s.downcase
+        case resource[:kind].downcase
         when "replicaset", "deployment", "statefulset", "pod", "daemonset"
-          Log.for("INSTALL_RESOURCE_WAIT").info { "Waiting for #{resource[:kind].as_s}, #{resource[:name].as_s}" }
-          KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
+          Log.for("INSTALL_RESOURCE_WAIT").info { "Waiting for #{resource[:kind]}, #{resource[:name]}" }
+          KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], wait_count: wait_count, namespace: resource[:namespace])
         end
       end
     end
@@ -1049,10 +1049,10 @@ module CNFManager
     resource_names = Helm.workload_resource_kind_names(resource_ymls)
 
     wait_list = resource_names.map do | resource |
-      case resource[:kind].as_s.downcase
+      case resource[:kind].downcase
       when "replicaset", "deployment", "statefulset", "pod", "daemonset"
-        Log.info { "waiting on resource of kind: #{resource[:kind].as_s.downcase}" }
-        KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, 180, namespace="default", kubeconfig)
+        Log.info { "waiting on resource of kind: #{resource[:kind].downcase}" }
+        KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], 180, namespace="default", kubeconfig)
       else 
         true
       end

@@ -399,7 +399,7 @@ module KubectlClient
       if name
         #todo deployment labels may not match template metadata labels.
         # -- may need to match on selector matchlabels instead
-        labels = KubectlClient::Get.resource_spec_labels(resource_yml["kind"], name, namespace: namespace).as_h
+        labels = KubectlClient::Get.resource_spec_labels(resource_yml["kind"].as_s, name.as_s, namespace: namespace).as_h
         Log.info { "pods_by_resource labels: #{labels}" }
         KubectlClient::Get.pods_by_labels(pods, labels)
       else
@@ -454,7 +454,7 @@ module KubectlClient
       end
     end
 
-    def self.resource(kind, resource_name, namespace : String | Nil = nil) : JSON::Any
+    def self.resource(kind : String, resource_name : String, namespace : String | Nil = nil) : JSON::Any
       namespace_opt = ""
       if namespace != nil
         namespace_opt = "-n #{namespace.gsub("--namespace ", "").gsub("-n ", "") if namespace}"
@@ -955,9 +955,9 @@ module KubectlClient
     def self.deployment_spec_labels(deployment_name) : JSON::Any
       resource_spec_labels("deployment", deployment_name)
     end
-    def self.resource_spec_labels(kind, resource_name, namespace : String | Nil = nil) : JSON::Any
+    def self.resource_spec_labels(kind : String, resource_name : String, namespace : String | Nil = nil) : JSON::Any
       Log.debug { "resource_labels kind: #{kind} resource_name: #{resource_name}" }
-      if kind.as_s.downcase == "service"
+      if kind.downcase == "service"
         resp = resource(kind, resource_name, namespace: namespace).dig?("spec", "selector")
       else
         resp = resource(kind, resource_name, namespace: namespace).dig?("spec", "template", "metadata", "labels")

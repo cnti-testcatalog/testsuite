@@ -150,7 +150,7 @@ task "versioned_tag", ["install_opa"] do |_, args|
      fail_msgs = [] of String
      task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
        test_passed = true
-       kind = resource["kind"].as_s.downcase
+       kind = resource["kind"].downcase
        case kind 
        when  "deployment","statefulset","pod","replicaset", "daemonset"
          resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
@@ -191,7 +191,7 @@ task "nodeport_not_used" do |_, args|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false, check_service: true) do |resource, container, initialized|
       LOGGING.info "nodeport_not_used resource: #{resource}"
-      if resource["kind"].as_s.downcase == "service"
+      if resource["kind"].downcase == "service"
         LOGGING.info "resource kind: #{resource}"
         service = KubectlClient::Get.resource(resource[:kind], resource[:name])
         LOGGING.debug "service: #{service}"

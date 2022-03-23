@@ -109,7 +109,7 @@ task "non_root_user", ["install_falco"] do |_, args|
      task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
        test_passed = true
        Log.info { "Falco is Running" }
-       kind = resource["kind"].as_s.downcase
+       kind = resource["kind"].downcase
        case kind 
        when  "deployment","statefulset","pod","replicaset", "daemonset"
          resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])

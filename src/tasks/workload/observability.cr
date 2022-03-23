@@ -17,7 +17,7 @@ task "log_output" do |_, args|
 
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = false
-      case resource["kind"].as_s.downcase
+      case resource["kind"].downcase
       when "replicaset", "deployment", "statefulset", "pod", "daemonset"
         result = KubectlClient.logs("#{resource["kind"]}/#{resource["name"]}", options: "--all-containers --tail=5 --prefix=true")
         Log.for("Log lines").info { result[:output] }
