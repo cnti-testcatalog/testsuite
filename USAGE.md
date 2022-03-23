@@ -839,7 +839,7 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 ```
 
 
-##### :heavy_check_mark: To check if any containers are running as a [root user](https://github.com/cncf/cnf-wg/blob/best-practice-no-root-in-containers/cbpps/0002-no-root-in-containers.md)
+##### :heavy_check_mark: To check if any containers are running as a [root user](https://github.com/cncf/cnf-wg/blob/main/cbpps/0002-no-root-in-containers.md)
 
 ```
 ./cnf-testsuite non_root_user
