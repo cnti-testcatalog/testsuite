@@ -155,11 +155,11 @@ task "open_metrics", ["prometheus_traffic"] do |_, args|
       open_metrics_validated = configmap["data"].as_h["open_metrics_validated"].as_s
 
       if open_metrics_validated == "true"
-        upsert_passed_task("open_metrics","✔️  PASSED: Your cnf's metrics traffic is Open Metrics compatible #{emoji_observability}")
+        upsert_passed_task("open_metrics","✔️  PASSED: Your cnf's metrics traffic is OpenMetrics compatible #{emoji_observability}")
       else
         open_metrics_response = configmap["data"].as_h["open_metrics_response"].as_s
-        puts "Open Metrics Failed: #{open_metrics_response}".colorize(:red)
-        upsert_failed_task("open_metrics", "✖️  FAILED: Your cnf's metrics traffic is not Open Metrics compatible #{emoji_observability}")
+        puts "OpenMetrics Failed: #{open_metrics_response}".colorize(:red)
+        upsert_failed_task("open_metrics", "✖️  FAILED: Your cnf's metrics traffic is not OpenMetrics compatible #{emoji_observability}")
       end
     else
       upsert_skipped_task("open_metrics", "⏭️  SKIPPED: Prometheus traffic not configured #{emoji_observability}")
