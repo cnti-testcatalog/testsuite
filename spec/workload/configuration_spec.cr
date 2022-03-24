@@ -457,10 +457,12 @@ describe CnfTestSuite do
       (/FAILED: Resources are created in the default namespace/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns`
+      ShellCmd.run("kubectl get all -A", "test_cleanup_check", force_output=true)
     end
   end
 
   it "'default_namespace' should pass if a cnf does not create resources in the default namespace", tags: ["default_namespace"] do
+    ShellCmd.run("kubectl get all -A", "test_startup_check", force_output=true)
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_latest_tag`
       $?.success?.should be_true
