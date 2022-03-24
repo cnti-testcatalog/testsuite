@@ -104,7 +104,7 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/Passed/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cleanup_sample_coredns`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
   end
 
@@ -138,7 +138,7 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/Passed/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cleanup_sample_coredns`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
   end
 
@@ -164,7 +164,7 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/Passed/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cleanup_sample_coredns`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
   end
 
@@ -190,7 +190,7 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/Passed/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cleanup_sample_coredns`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
   end
 
@@ -218,7 +218,7 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/PASSED: NodePort is not used/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cleanup_sample_coredns`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
   end
 
@@ -244,7 +244,7 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/PASSED: HostPort is not used/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cleanup_sample_coredns`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
   end
 
@@ -283,7 +283,7 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/PASSED: No hard-coded IP addresses found in the runtime K8s configuration/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cleanup_sample_coredns`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
   end
 
