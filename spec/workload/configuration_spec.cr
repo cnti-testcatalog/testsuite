@@ -463,7 +463,6 @@ describe CnfTestSuite do
 
   it "'default_namespace' should pass if a cnf does not create resources in the default namespace", tags: ["default_namespace"] do
     begin
-      KubectlClient::Utils.wait_for_terminations()
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_latest_tag`
       $?.success?.should be_true
       response_s = `./cnf-testsuite default_namespace verbose`
