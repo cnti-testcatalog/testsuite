@@ -457,12 +457,25 @@ describe CnfTestSuite do
       (/FAILED: Resources are created in the default namespace/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns`
-      ShellCmd.run("kubectl get all -A", "test_cleanup_check", force_output=true)
+
+      # Using sleep() to wait for terminating resources to be fully deleted before running the next test.
+      #
+      # 1. Resources still in terminating state are not detected by Kyverno
+      #    and result in failures of the next default_namespace test.
+      #
+      # 2. Helm uninstall wait option and kubectl delete wait options,
+      #    do not wait for child resources to be fully deleted.
+      #
+      # 3. The output from kubectl json does not clearly indicate when a resource is in a terminating state.
+      #    Solution to this is a really solid wait_for_unintsall helper that checks for child resources also.
+      #    Can be possible by using the app.kubernetes.io/name label to lookup other resources of the CNF,
+      #    and using that selector to look for terminating resources.
+      #
+      sleep(3)
     end
   end
 
   it "'default_namespace' should pass if a cnf does not create resources in the default namespace", tags: ["default_namespace"] do
-    ShellCmd.run("kubectl get all -A", "test_startup_check", force_output=true)
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_latest_tag`
       $?.success?.should be_true
