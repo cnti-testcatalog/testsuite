@@ -51,8 +51,6 @@ describe CnfTestSuite do
     # LOGGING.debug `pwd` 
     # LOGGING.debug `echo $KUBECONFIG`
     begin
-      # `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose`
-      # $?.success?.should be_true
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-bad_helm_coredns-cnf/cnf-testsuite.yml verbose wait_count=0`
       $?.success?.should be_true
       response_s = `./cnf-testsuite helm_chart_valid`

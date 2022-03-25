@@ -705,25 +705,6 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 ./cnf-testsuite container_sock_mounts
 ```
 
-##### :heavy_check_mark: To check if namespaces have a default network
-
-```
-./cnf-testsuite default_network_policy
-```
-
-<details>
-<summary>Details for `default_network_policy`</summary>
-
-<p>
-By default, Kubernetes allows communications across all Pods within a cluster. The NetworkPolicy resource and a CNI plug-in that supports NetworkPolicy must be used to restrict communications.
-</p>
-
-<p>
-<b>Remediation steps:</b> A default NetworkPolicy should be configured for each Namespace to default deny all ingress and egress traffic to the Pods in the Namespace. Application teams can then configure additional NetworkPolicy resources to allow desired traffic to application Pods from select sources. This policy will create a new NetworkPolicy resource named `default-deny` which will deny all traffic anytime a new Namespace is created.
-</p>
-
-</details>
-
 ##### :heavy_check_mark: To check if containers are using any tiller images
 <details> <summary>Details for tiller images</summary>
 <p>
