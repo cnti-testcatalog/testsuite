@@ -201,6 +201,44 @@ module KubectlClient
     end
   end
 
+  module Utils
+    # Using sleep() to wait for terminating resources is unreliable.
+    #
+    # 1. Resources still in terminating state can interfere with test runs.
+    #    and result in failures of the next test (or spec test).
+    #
+    # 2. Helm uninstall wait option and kubectl delete wait options,
+    #    do not wait for child resources to be fully deleted.
+    #
+    # 3. The output from kubectl json does not clearly indicate when a resource is in a terminating state.
+    #    To wait for uninstall, we can use the app.kubernetes.io/name label,
+    #    to lookup resources belonging to a CNF to wait for uninstall.
+    #    We only use this helper in the spec tests, so we use the "kubectl get" output to keep things simple.
+    #
+    def self.wait_for_terminations(namespace : String | Nil = nil, wait_count : Int32 = 30)
+      cmd = "kubectl get all"
+      if namespace != nil
+        cmd = "#{cmd} -n #{namespace}"
+      else
+        cmd = "#{cmd} -A" # Check all namespaces by default
+      end
+
+      # By default assume there is a resource still terminating.
+      found_terminated = true
+      second_count = 0
+      until found_terminated = false || second_count > wait_count
+        result = ShellCmd.run(cmd, "kubectl_get_resources")
+        if result[:output].match(/([\s+]Terminating)/)
+          found_terminated = true
+        else
+          sleep(1)
+          second_count = second_count + 1
+        end
+        Log.info { "found_terminated = #{found_terminated}; second_count = #{second_count}" }
+      end
+    end
+  end
+
   module Cordon
     def self.command(command)
       cmd = "kubectl cordon #{command}"
