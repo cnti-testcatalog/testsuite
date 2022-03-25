@@ -189,8 +189,14 @@ module KubectlClient
       ShellCmd.run(cmd, "KubectlClient::Delete.command")
     end
 
-    def self.file(file_name, namespace : String | Nil = nil)
-      cmd = "kubectl delete #{namespace ? "-n #{namespace}" : ""} -f #{file_name}"
+    def self.file(file_name, namespace : String | Nil = nil, wait : Bool = false)
+      cmd = "kubectl delete -f #{file_name}"
+      if namespace
+        cmd = "#{cmd} -n #{namespace}"
+      end
+      if wait == true
+        cmd = "#{cmd} --wait=true"
+      end
       ShellCmd.run(cmd, "KubectlClient::Delete.file")
     end
   end
