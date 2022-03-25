@@ -1113,14 +1113,6 @@ module CNFManager
       end
     end
 
-    Log.for("cnf_cleanup_resources").info { resources.inspect }
-    resources.each do | resource |
-      case resource[:kind].downcase
-      when "replicaset", "deployment", "statefulset", "pod", "daemonset"
-        KubectlClient::Get.resource_wait_for_uninstall(kind: resource[:kind], resource_name: resource[:name], namespace: resource[:namespace])
-      end
-    end
-
     ret
   end
 
