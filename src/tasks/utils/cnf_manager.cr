@@ -1094,7 +1094,7 @@ module CNFManager
     # todo use install_from_config_src to determine installation method
     if dir_exists || force == true
       if installed_from_manifest
-        ret = KubectlClient::Delete.file("#{manifest_directory}")
+        ret = KubectlClient::Delete.file("#{manifest_directory}", wait: true)
         # Log.for("verbose").info { kubectl_delete } if verbose
         # TODO put more safety around this
         FileUtils.rm_rf(destination_cnf_dir)
@@ -1102,7 +1102,7 @@ module CNFManager
           stdout_success "Successfully cleaned up #{manifest_directory} directory"
         end
       else
-        helm_uninstall = Helm.uninstall(release_name.split(" ")[0] + " #{namespace}")
+        helm_uninstall = Helm.uninstall(release_name.split(" ")[0] + " #{namespace} --wait")
         # helm_uninstall = Helm.uninstall(release_name + " #{namespace}")
         ret = helm_uninstall[:status].success?
         Log.for("verbose").info { helm_uninstall[:output].to_s } if verbose
