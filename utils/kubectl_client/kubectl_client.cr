@@ -226,13 +226,14 @@ module KubectlClient
       # By default assume there is a resource still terminating.
       found_terminating = true
       second_count = 0
-      until found_terminating = false || second_count == wait_count
+      while (found_terminating == true && second_count < wait_count)
         result = ShellCmd.run(cmd, "kubectl_get_resources", force_output: true)
         if result[:output].match(/([\s+]Terminating)/)
           found_terminating = true
-        else
-          sleep(1)
           second_count = second_count + 1
+          sleep(1)
+        else
+          found_terminating = false
         end
         Log.info { "found_terminating = #{found_terminating}; second_count = #{second_count}" }
       end
