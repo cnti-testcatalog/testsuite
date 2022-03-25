@@ -1113,6 +1113,7 @@ module CNFManager
       end
     end
 
+    Log.for("cnf_cleanup_resources").info { resources.inspect }
     resources.each do | resource |
       case resource[:kind].downcase
       when "replicaset", "deployment", "statefulset", "pod", "daemonset"
