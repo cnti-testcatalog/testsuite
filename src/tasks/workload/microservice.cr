@@ -278,10 +278,10 @@ task "reasonable_image_size" do |_, args|
 
       yml_file_path = config.cnf_config[:yml_file_path]
 
-      if resource["kind"].as_s.downcase == "deployment" ||
-          resource["kind"].as_s.downcase == "statefulset" ||
-          resource["kind"].as_s.downcase == "pod" ||
-          resource["kind"].as_s.downcase == "replicaset"
+      if resource["kind"].downcase == "deployment" ||
+          resource["kind"].downcase == "statefulset" ||
+          resource["kind"].downcase == "pod" ||
+          resource["kind"].downcase == "replicaset"
 				test_passed = true
 
 				fqdn_image = container.as_h["image"].as_s
@@ -364,7 +364,7 @@ task "single_process_type" do |_, args|
     fail_msgs = [] of String
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
-      kind = resource["kind"].as_s.downcase
+      kind = resource["kind"].downcase
       case kind 
       when  "deployment","statefulset","pod","replicaset", "daemonset"
         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
@@ -423,9 +423,9 @@ task "service_discovery" do |_, args|
     # Collect service names from the CNF resource list
     cnf_service_names = [] of String
     resources.each do |resource|
-      case resource[:kind].as_s.downcase
+      case resource[:kind].downcase
       when "service"
-        cnf_service_names.push(resource[:name].as_s)
+        cnf_service_names.push(resource[:name])
       end
     end
 

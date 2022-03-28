@@ -97,14 +97,6 @@ task "generate_config" do |_, args|
 end
 
 #TODO force all cleanups to use generic cleanup
-task "sample_coredns_cleanup" do |_, args|
-  CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-coredns-cnf", verbose: true)
-end
-
-task "cleanup_sample_coredns" do |_, args|
-  CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_coredns", verbose: true)
-end
-
 task "bad_helm_cnf_cleanup" do |_, args|
   CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-bad_helm_coredns-cnf", verbose: true)
 end

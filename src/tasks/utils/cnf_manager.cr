@@ -145,7 +145,7 @@ module CNFManager
   def self.workload_resource_test(args, config,
                                   check_containers = true,
                                   check_service = false,
-                                  &block  : (NamedTuple(kind: YAML::Any, name: YAML::Any),
+                                  &block  : (NamedTuple(kind: String, name: String, namespace: String),
                                              JSON::Any, JSON::Any, Bool | Nil) -> Bool | Nil)
             # resp = yield resource, container, volumes, initialized
     test_passed = true
@@ -166,10 +166,10 @@ module CNFManager
 		resource_names.each do | resource |
 			Log.for("verbose").debug { resource.inspect } if check_verbose(args)
       #todo accept namespace
-			volumes = KubectlClient::Get.resource_volumes(resource[:kind].as_s, resource[:name].as_s, namespace)
+			volumes = KubectlClient::Get.resource_volumes(resource[:kind], resource[:name], namespace)
       Log.for("verbose").debug { "check_service: #{check_service}" } if check_verbose(args)
       Log.for("verbose").debug { "check_containers: #{check_containers}" } if check_verbose(args)
-      case resource[:kind].as_s.downcase
+      case resource[:kind].downcase
       when "service"
         if check_service
           Log.info { "checking service: #{resource}" }
@@ -179,7 +179,7 @@ module CNFManager
           test_passed = false if resp == false
         end
       else
-				containers = KubectlClient::Get.resource_containers(resource[:kind].as_s, resource[:name].as_s, namespace)
+				containers = KubectlClient::Get.resource_containers(resource[:kind], resource[:name], namespace)
 				if check_containers
 					containers.as_a.each do |container|
 						resp = yield resource, container, volumes, initialized
@@ -902,7 +902,6 @@ module CNFManager
           containers = resource.dig("spec", "containers")
         when  "deployment","statefulset","replicaset","daemonset"
           Log.info { "resource: #{resource}" }
-
           containers = resource.dig("spec", "template", "spec", "containers")
         end
         containers && containers.as_a.map do |container|
@@ -948,9 +947,9 @@ module CNFManager
       end
 
       resource_names.each do | resource |
-        case resource[:kind].as_s.downcase
+        case resource[:kind].downcase
         when "replicaset", "deployment", "statefulset", "pod", "daemonset"
-          KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, wait_count)
+          KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], wait_count: wait_count, namespace: resource[:namespace])
         end
       end
     end
@@ -1052,10 +1051,10 @@ module CNFManager
     resource_names = Helm.workload_resource_kind_names(resource_ymls)
 
     wait_list = resource_names.map do | resource |
-      case resource[:kind].as_s.downcase
+      case resource[:kind].downcase
       when "replicaset", "deployment", "statefulset", "pod", "daemonset"
-        Log.info { "waiting on resource of kind: #{resource[:kind].as_s.downcase}" }
-        KubectlClient::Get.resource_wait_for_install(resource[:kind].as_s, resource[:name].as_s, 180, namespace="default", kubeconfig)
+        Log.info { "waiting on resource of kind: #{resource[:kind].downcase}" }
+        KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], 180, namespace: resource[:namespace], kubeconfig: kubeconfig)
       else 
         true
       end
@@ -1073,8 +1072,12 @@ module CNFManager
     config = parsed_config_file(ensure_cnf_testsuite_yml_path(config_file))
     parsed_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
     namespace = namespace_from_parameters(install_parameters(parsed_config))
-
     Log.for("verbose").info { "cleanup config: #{config.inspect}" } if verbose
+
+    resource_ymls = cnf_workload_resources(nil, parsed_config) do |resource_yml|
+      resource_yml
+    end
+    resources = Helm.workload_resource_kind_names(resource_ymls)
 
     config_maps_dir = "#{destination_cnf_dir}/config_maps"
     if Dir.exists?(config_maps_dir)
@@ -1095,7 +1098,7 @@ module CNFManager
     # todo use install_from_config_src to determine installation method
     if dir_exists || force == true
       if installed_from_manifest
-        ret = KubectlClient::Delete.file("#{manifest_directory}")
+        ret = KubectlClient::Delete.file("#{manifest_directory}", wait: true)
         # Log.for("verbose").info { kubectl_delete } if verbose
         # TODO put more safety around this
         FileUtils.rm_rf(destination_cnf_dir)
@@ -1103,7 +1106,7 @@ module CNFManager
           stdout_success "Successfully cleaned up #{manifest_directory} directory"
         end
       else
-        helm_uninstall = Helm.uninstall(release_name.split(" ")[0] + " #{namespace}")
+        helm_uninstall = Helm.uninstall(release_name.split(" ")[0] + " #{namespace} --wait")
         # helm_uninstall = Helm.uninstall(release_name + " #{namespace}")
         ret = helm_uninstall[:status].success?
         Log.for("verbose").info { helm_uninstall[:output].to_s } if verbose
@@ -1113,6 +1116,7 @@ module CNFManager
         end
       end
     end
+
     ret
   end
 

@@ -259,3 +259,12 @@
 
 - name: external_ips
   tags: security, dynamic, workload
+
+- name: selinux_options
+  tags: security, dynamic, workload
+
+- name: default_namespace
+  tags: configuration, dynamic, workload
+
+- name: latest_tag
+  tags: configuration, dynamic, workload

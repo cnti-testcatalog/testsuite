@@ -55,6 +55,10 @@ module Kyverno
     "#{policies_repo_path}/best-practices/#{policy_path}"
   end
 
+  def self.policy_path(policy_path : String) : String
+    "#{policies_repo_path}/#{policy_path}"
+  end
+
   def self.policies_repo_path
     "#{tools_path}/kyverno-policies"
   end

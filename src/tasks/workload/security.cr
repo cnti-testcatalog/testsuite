@@ -23,7 +23,8 @@ task "security", [
     "immutable_file_systems",
     "hostpath_mounts",
     "container_sock_mounts",
-    "external_ips"
+    "external_ips",
+    "selinux_options"
   ] do |_, args|
   stdout_score("security")
 end
@@ -40,6 +41,26 @@ task "external_ips" do |_, args|
     resp = upsert_passed_task("external_ips", "✔️  PASSED: Services are not using external IPs #{emoji_security}")
   else
     resp = upsert_failed_task("external_ips", "✖️  FAILED: Services are using external IPs #{emoji_security}")
+    failures.each do |failure|
+      failure.resources.each do |resource|
+        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+      end
+    end
+  end
+end
+
+desc "Check if the CNF or the cluster resources have custom SELinux options"
+task "selinux_options" do |_, args|
+  Log.for("verbose").info { "selinux_options" }
+  Kyverno.install
+  emoji_security = "🔓🔑"
+  policy_path = Kyverno.policy_path("pod-security/baseline/disallow-selinux/disallow-selinux.yaml")
+  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+
+  if failures.size == 0
+    resp = upsert_passed_task("selinux_options", "✔️  PASSED: Resources are not using custom SELinux options #{emoji_security}")
+  else
+    resp = upsert_failed_task("selinux_options", "✖️  FAILED: Resources are using custom SELinux options #{emoji_security}")
     failures.each do |failure|
       failure.resources.each do |resource|
         puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -88,7 +109,7 @@ task "non_root_user", ["install_falco"] do |_, args|
      task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
        test_passed = true
        Log.info { "Falco is Running" }
-       kind = resource["kind"].as_s.downcase
+       kind = resource["kind"].downcase
        case kind 
        when  "deployment","statefulset","pod","replicaset", "daemonset"
          resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
