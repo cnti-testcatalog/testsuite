@@ -8,6 +8,9 @@ require "./points.cr"
 module CNFManager 
 
   module Task
+    FAILURE = 1
+    CRITICAL_FAILURE = 2
+
     def self.task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
       LOGGING.info("task_runner args: #{args.inspect}")
       if check_cnf_config(args)
@@ -64,6 +67,7 @@ module CNFManager
                                             white_list_container_names: [""]} )
         end
         ret = yield args, config
+        #todo lax mode, never returns 1
         if args.raw.includes? "strict" 
           if CNFManager::Points.failed_required_tasks.size > 0
             stdout_failure "Test Suite failed in strict mode. Stopping executing."
@@ -81,10 +85,13 @@ module CNFManager
         ex.backtrace.each do |x|
           LOGGING.error x
         end
-        update_yml("#{CNFManager::Points::Results.file}", "exit_code", "1")
+        
+        update_yml("#{CNFManager::Points::Results.file}", "exit_code", "2")
         if args.raw.includes? "strict" 
-          LOGGING.info "Strict mode exception.  Stopping executing."
-          exit 1
+          LOGGING.info "Strict mode exception.  Stopping execution."
+          exit 2
+        else
+          Log.info { "exception with skipped exit code" }
         end
       end
     end
