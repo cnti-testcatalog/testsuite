@@ -123,7 +123,7 @@ describe "Utils" do
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end
-    (yaml["exit_code"]).should eq(1)
+    (yaml["exit_code"]).should eq(2)
   end
 
   it "'all_cnfs_task_runner' should run a test against all cnfs in the cnfs directory if there is not cnf-config argument passed to it", tags: ["task_runner"]  do
