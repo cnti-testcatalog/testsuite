@@ -727,6 +727,21 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 ./cnf-testsuite privileged
 ```
 
+##### :heavy_check_mark: To check if any pods in the CNF use sysctls with restricted values
+<details>
+  <summary>Details for sysctls test</summary>
+  <p>
+    <b>Details:</b> Sysctls can disable security mechanisms or affect all containers on a host, and should be disallowed except for an allowed "safe" subset. A sysctl is considered safe if it is namespaced in the container or the Pod, and it is isolated from other Pods or processes on the same Node. This test ensures that only those "safe" subsets are specified in a Pod.
+  </p>
+  <p>
+    <b>Remediation Steps:</b> Setting additional sysctls above the allowed type is disallowed. The field spec.securityContext.sysctls must be unset or not use any other names than kernel.shm_rmid_forced, net.ipv4.ip_local_port_range, net.ipv4.ip_unprivileged_port_start, net.ipv4.tcp_syncookies and net.ipv4.ping_group_range.
+  </p>
+</details>
+
+```
+./cnf-testsuite sysctls
+```
+
 ##### :heavy_check_mark: To check if a CNF is running services with external IPs
 <details> <summary>Details for external IPs</summary>
 <p>

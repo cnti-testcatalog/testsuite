@@ -24,9 +24,30 @@ task "security", [
     "hostpath_mounts",
     "container_sock_mounts",
     "external_ips",
-    "selinux_options"
+    "selinux_options",
+    "sysctls"
   ] do |_, args|
   stdout_score("security")
+end
+
+desc "Check if pods in the CNF use sysctls with restricted values"
+task "sysctls" do |_, args|
+  Log.for("verbose").info { "sysctls" }
+  Kyverno.install
+  emoji_security = "🔓🔑"
+  policy_path = Kyverno.policy_path("pod-security/baseline/restrict-sysctls/restrict-sysctls.yaml")
+  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+
+  if failures.size == 0
+    resp = upsert_passed_task("sysctls", "✔️  PASSED: No restricted values found for sysctls #{emoji_security}")
+  else
+    resp = upsert_failed_task("sysctls", "✖️  FAILED: Restricted values for are being used for sysctls #{emoji_security}")
+    failures.each do |failure|
+      failure.resources.each do |resource|
+        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+      end
+    end
+  end
 end
 
 desc "Check if the CNF has services with external IPs configured"
