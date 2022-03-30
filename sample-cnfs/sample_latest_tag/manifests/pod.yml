@@ -28,7 +28,7 @@ spec:
       - containerPort: 8080
       - containerPort: 8443
     securityContext:
-      sysctls: net.ipv4.ip_local_port_range
+      sysctls: kernel.msg
       seLinuxOptions:
         type: spc_t
   dnsPolicy: Default
