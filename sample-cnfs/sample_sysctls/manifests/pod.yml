@@ -1,16 +1,13 @@
 ---
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: nginx-stuff
-
----
-apiVersion: v1
 kind: Pod
 metadata:
   name: nginx
-  namespace: nginx-stuff
 spec:
+  securityContext:
+    sysctls:
+      - name: kernel.msgmax
+        value: "60000"
   containers:
   - image: bitnami/nginx:latest
     name: nginx
@@ -27,7 +24,4 @@ spec:
     ports:
       - containerPort: 8080
       - containerPort: 8443
-    securityContext:
-      seLinuxOptions:
-        type: spc_t
   dnsPolicy: Default
