@@ -159,7 +159,7 @@ describe "SampleUtils" do
             "prometheus_traffic", "open_metrics",
             "ingress_egress_blocked", "dangerous_capabilities", "insecure_capabilities",
             "routed_logs", "tracing", "elastic_volumes", "alpha_k8s_apis", "service_discovery", "shared_database", "pod_dns_error",
-            "external_ips", "container_sock_mounts", "require_labels", "default_namespace", "selinux_options", "latest_tag"]
+            "external_ips", "container_sock_mounts", "require_labels", "default_namespace", "selinux_options", "latest_tag", "sysctls"]
     (CNFManager::Points.all_task_test_names()).sort.should eq(tags.sort)
   end
 
