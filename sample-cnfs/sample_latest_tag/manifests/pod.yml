@@ -12,7 +12,9 @@ metadata:
   namespace: nginx-stuff
 spec:
   securityContext:
-    sysctls: kernel.msg
+    sysctls:
+      - name: kernel.msgmax
+        value: "60000"
   containers:
   - image: bitnami/nginx:latest
     name: nginx
