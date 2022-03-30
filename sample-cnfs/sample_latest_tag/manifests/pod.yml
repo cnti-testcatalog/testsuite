@@ -11,6 +11,8 @@ metadata:
   name: nginx
   namespace: nginx-stuff
 spec:
+  securityContext:
+    sysctls: kernel.msg
   containers:
   - image: bitnami/nginx:latest
     name: nginx
@@ -28,7 +30,6 @@ spec:
       - containerPort: 8080
       - containerPort: 8443
     securityContext:
-      sysctls: kernel.msg
       seLinuxOptions:
         type: spc_t
   dnsPolicy: Default
