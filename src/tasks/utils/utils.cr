@@ -249,6 +249,18 @@ def check_poc
   check_wip
 end
 
+def check_containerd
+  resp = KubectlClient::Get.container_runtimes
+  containerd = false
+  resp.each do |x|
+    if (x =~ /containerd/)
+      containerd = true
+    end
+    Log.info { "Containerd?: #{containerd}" }
+  end
+  containerd
+end
+
 def check_poc(args)
   check_wip(args)
 end
