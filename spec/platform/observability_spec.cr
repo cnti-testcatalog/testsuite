@@ -43,7 +43,11 @@ describe "Platform Observability" do
       end
       response_s = `./cnf-testsuite platform:node_exporter poc`
       LOGGING.info response_s
-      (/(PASSED){1}.*(Your platform is using the){1}.*(release for the node exporter){1}/ =~ response_s).should_not be_nil
+      if check_containerd
+        (/(PASSED){1}.*(Your platform is using the){1}.*(release for the node exporter){1}/ =~ response_s).should_not be_nil
+      else
+        (/skipping node_exporter: This test only supports the Containerd Runtime./ =~ response_s).should_not be_nil
+      end
   ensure
       resp = `#{helm} delete node-exporter`
       LOGGING.info resp

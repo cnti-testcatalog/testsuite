@@ -68,6 +68,13 @@ namespace "platform" do
       puts "SKIPPED: Node Exporter".colorize(:yellow)
       next
     end
+
+    unless check_containerd
+      Log.info { "skipping node_exporter: This test only supports the Containerd Runtime." }
+      puts "SKIPPED: Node Exporter".colorize(:yellow)
+      next
+    end
+
     if args.named["offline"]?
       Log.info { "skipping node_exporter: in offline mode" }
       puts "SKIPPED: Node Exporter".colorize(:yellow)
