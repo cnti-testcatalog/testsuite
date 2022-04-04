@@ -227,6 +227,9 @@
 - name: dangerous_capabilities
   tags: security, dynamic, workload
 
+- name: sysctls
+  tags: security, dynamic, workload
+
 - name: log_output
   tags: observability, dynamic, workload
 - name: prometheus_traffic 
