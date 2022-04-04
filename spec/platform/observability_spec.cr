@@ -58,7 +58,8 @@ describe "Platform Observability" do
     Log.info { "Installing prometheus-adapter" }
     helm = BinarySingleton.helm
     begin
-      result = Helm.install("prometheus-adapter stable/prometheus-adapter")
+      Helm.helm_repo_add("prometheus-community","https://prometheus-community.github.io/helm-charts")
+      result = Helm.install("prometheus-adapter prometheus-community/prometheus-adapter")
       Log.info { "Prometheus installed" }
     rescue e : Helm::CannotReuseReleaseNameError
       Log.info { "Prometheus already installed" }
@@ -72,16 +73,22 @@ describe "Platform Observability" do
   end
 
   it "'metrics_server' should detect the named release of the installed metrics_server", tags: ["platform:observability"] do
-		  LOGGING.info "Installing metrics_server" 
-		  resp = `kubectl create -f spec/fixtures/metrics-server.yaml`
-		  LOGGING.info resp
-		  KubectlClient::Get.wait_for_install(deployment_name: "metrics-server", namespace:"kube-system")
-
+    Log.info { "Installing metrics-server" }
+    helm = BinarySingleton.helm
+    begin
+      Helm.helm_repo_add("metrics-server","https://kubernetes-sigs.github.io/metrics-server/")
+      result = Helm.install("--set image.repository=docker.io/bitnami/metrics-server --set image.tag=0.6.1 --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server")
+      Log.info { "Metrics Server installed" }
+    rescue e : Helm::CannotReuseReleaseNameError
+      Log.info { "Metrics Server already installed" }
+    end
+		  Log.info { result } 
+		  KubectlClient::Get.wait_for_install(deployment_name: "metrics-server")
       response_s = `./cnf-testsuite platform:metrics_server poc`
       LOGGING.info response_s
       (/(PASSED){1}.*(Your platform is using the){1}.*(release for the metrics server){1}/ =~ response_s).should_not be_nil
   ensure
-      resp = `kubectl delete -f spec/fixtures/metrics-server.yaml`
+      resp = Helm.uninstall("metrics-server")
       LOGGING.info resp
       $?.success?.should be_true
   end
