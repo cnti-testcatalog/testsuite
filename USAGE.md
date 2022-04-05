@@ -877,22 +877,6 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 ./cnf-testsuite container_sock_mounts
 ```
 
-##### :heavy_check_mark: To check if containers are using any tiller images
-<details> <summary>Details for tiller images</summary>
-<p>
-
-<b>Tiller Images Details:</b> Tiller, found in Helm v2, has known security challenges. It requires administrative privileges and acts as a shared resource accessible to any authenticated user. Tiller can lead to privilege escalation as restricted users can impact other users. It is recommend to use Helm v3+ which does not contain Tiller for these reasons
-
-<b>Remediation Steps:</b> Make sure not to pull any images with name tiller in them
-</p>
-
-</details>
-
-```
-./cnf-testsuite platform:helm_tiller
-```
-
-
 ##### :heavy_check_mark: To check if any containers are running in [privileged mode](https://github.com/open-policy-agent/gatekeeper)
 
 ```
@@ -1463,3 +1447,19 @@ Update dashboard version to v2.0.1 or above.
 ```
 ./cnf-testsuite platform:exposed_dashboard
 ```
+
+##### :heavy_check_mark: To check if containers are using any tiller images
+<details> <summary>Details for tiller images</summary>
+<p>
+
+<b>Tiller Images Details:</b> Tiller, found in Helm v2, has known security challenges. It requires administrative privileges and acts as a shared resource accessible to any authenticated user. Tiller can lead to privilege escalation as restricted users can impact other users. It is recommend to use Helm v3+ which does not contain Tiller for these reasons
+
+<b>Remediation Steps:</b> Make sure not to pull any images with name tiller in them
+</p>
+
+</details>
+
+```
+./cnf-testsuite platform:helm_tiller
+```
+
