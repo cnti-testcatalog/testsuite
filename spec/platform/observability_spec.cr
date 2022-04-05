@@ -65,8 +65,9 @@ describe "Platform Observability" do
       Log.info { "Prometheus already installed" }
     end
     KubectlClient::Get.wait_for_install("prometheus-adapter")
+
     response_s = `./cnf-testsuite platform:prometheus_adapter poc`
-    LOGGING.info response_s
+    Log.info { response_s }
     (/(PASSED){1}.*(Your platform is using the){1}.*(release for the prometheus adapter){1}/ =~ response_s).should_not be_nil
   ensure
     resp = Helm.uninstall("prometheus-adapter")
