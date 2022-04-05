@@ -379,6 +379,8 @@ Now run the test:
 
 <b>Kubernetes alpha APIs:</b> It is considered a best-practice for resources to not use [Kubernetes alpha APIs](https://bit.ly/apisnoop).
 
+<b>Read the [rationale](RATIONALE.md#poc-to-check-if-a-cnf-uses-kubernetes-alpha-apis-alpha_k8s_apis-alpha_k8s_apis) behind this test.</b>
+
 <b>Remediation Steps:</b> Make sure applications and CNFs are not using Kubernetes alpha APIs. You can learn more about Kubernetes API versioning [here](https://bit.ly/k8s_api).
 </p>
 
@@ -471,18 +473,51 @@ crystal src/cnf-testsuite.cr external_retry
 ```
 
 ##### :heavy_check_mark: To check if the CNF has a reasonable image size
+<details> <summary>Details for reasonable image size</summary>
+<p>
+
+<b>Reasonable Image Size:</b> 
+
+<b>Read the [rationale](RATIONALE.md#to-check-if-the-cnf-has-a-reasonable-image-size-reasonable_image_size) behind this test.</b>
+
+<b>Remediation:</b> TBD
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite reasonable_image_size
 ```
 
 ##### :heavy_check_mark: To check if the CNF have a reasonable startup time
+<details> <summary>Details for reasonable startup time</summary>
+<p>
+
+<b>Reasonable Startup Time:</b> 
+
+<b>Read the [rationale](RATIONALE.md#to-check-if-the-cnf-have-a-reasonable-startup-time-reasonable_startup_time) behind this test.</b>
+
+<b>Remediation:</b> TBD
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite reasonable_startup_time destructive
 ```
 
-##### :heavy_check_mark: To check if the CNF has multiple process types within one container
+##### :heavy_check_mark: To check if the CNF is using only a single process type per container
+<details> <summary>Details for single process type</summary>
+<p>
+
+<b>Single process type:</b> 
+
+<b>Read the [rationale](https://github.com/cncf/cnf-testsuite/blob/main/RATIONALE.md#to-check-if-the-cnf-has-multiple-process-types-within-one-container-single_process_type) behind this test.</b>
+
+<b>Remediation:</b> TBD
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite single_process_type
@@ -494,6 +529,8 @@ crystal src/cnf-testsuite.cr external_retry
 <p>
 
 <b>Service discovery:</b> For microservices to be accessible to other applications in the cluster, they should be exposed via a Service.
+
+<b>Read the [rationale](RATIONALE.md#to-check-if-the-cnf-exposes-any-of-its-containers-as-a-service-service_discovery-service_discovery) behind this test.</b>
 
 <b>Remediation Steps:</b> Make sure the CNF exposes any of its containers as a Kubernetes Service. You can learn more about Kubernetes Service [here](https://kubernetes.io/docs/concepts/services-networking/service/).
 </p>
@@ -510,6 +547,8 @@ crystal src/cnf-testsuite.cr external_retry
 <p>
 
 <b>Shared Database:</b> Microservices should not share a database with one another.
+
+<b>Read the [rationale](RATIONALE.md#to-check-if-the-cnf-uses-a-shared-database-shared_database) behind this test.</b>
 
 <b>Remediation Steps:</b> Make sure the CNF microservices do not share a database [here](https://martinfowler.com/bliki/IntegrationDatabase.html).
 </p>
@@ -528,7 +567,18 @@ crystal src/cnf-testsuite.cr external_retry
 ./cnf-testsuite state
 ```
 
-##### :heavy_check_mark: Test if the CNF crashes when node drain and rescheduling occurs.  All configuration should be stateless.
+##### :heavy_check_mark: Test if the CNF is available when node drain and rescheduling occurs.  All configuration should be stateless.
+<details> <summary>Details for node drain</summary>
+<p>
+
+<b>Node drain:</b> 
+
+<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-node-drain-occurs-node_drain) behind this test.</b>
+
+<b>Remediation:</b> TBD
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite node_drain
@@ -536,12 +586,34 @@ crystal src/cnf-testsuite.cr external_retry
 
 
 ##### :heavy_check_mark: To test if the CNF uses a volume host path
+<details> <summary>Details for volume hostpath not found</summary>
+<p>
+
+<b>Volume hostpath not found:</b> 
+
+<b>Read the [rationale](RATIONALE.md#to-test-if-the-cnf-uses-a-volume-host-path-volume_hostpath_not_found) behind this test.</b>
+
+<b>Remediation:</b> TBD
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite volume_hostpath_not_found
 ```
 
 ##### :heavy_check_mark: To test if the CNF uses local storage
+<details> <summary>Details for no local volume configuration</summary>
+<p>
+
+<b>No local volume configurattion:</b> 
+
+<b>Read the [rationale](RATIONALE.md#to-test-if-the-cnf-uses-local-storage-no_local_volume_configuration) behind this test.</b>
+
+<b>Remediation:</b> TBD
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite no_local_volume_configuration
@@ -552,6 +624,8 @@ crystal src/cnf-testsuite.cr external_retry
 <p>
 
 <b>Elastic Volume Details:</b> It's considered best practice to use elastic volumes for storage. Instead of local storage, the CNF should use elastic persistent volumes, which are available to all nodes (based on policy).
+
+<b>Read the [rationale](RATIONALE.md#to-test-if-the-cnf-uses-elastic-volumes-elastic_volumes) behind this test.</b>
 
 <b>Remediation Steps:</b> Setup and use elastic persistent volumes instead of local storage.
 </p>
@@ -566,6 +640,8 @@ crystal src/cnf-testsuite.cr external_retry
 <details> <summary>Details for Database Persistence</summary>
 
 <p><b>Database Persistence:</b> A database may use statefulsets along with elastic volumes to achieve a high level of resiliency.  Any database in K8s should at least use elastic volumes to achieve a minimum level of resilience regardless of whether a statefulset is used.  Statefulsets without elastic volumes is not recommended, especially if it explicitly uses local storage.  The least optimal storage configuration for a database managed by K8s is local storage and no statefulsets, as this is not tolerant to node failure. 
+
+<b>Read the [rationale](RATIONALE.md#to-test-if-the-cnf-uses-a-database-with-either-statefulsets-elastic-volumes-or-both-database_persistence) behind this test.</b>
 
 <b>Remediation:</b> Select a database configuration that uses statefulsets and elastic storage volumes.
 
