@@ -72,21 +72,21 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 **What's tested:** TBD
 
 ## [Install script Helm v3](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L372)
-- Expectation: TBD?   Test if the install script uses [Helm v3](https://github.com/helm/)
+- Expectation: Test if the install script uses [Helm v3](https://github.com/helm/)
 
 **What's tested:** This checks if helm v3 or greater is used by the helm charts.
 
-## [Rolling update](tbd?)
-- Expectation: TBD? test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/)
+## [Rolling update](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
+- Expectation: test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/)
 
 **What's tested:** TBD
 
-## [Rolling version change](tbd?)
+## [Rolling version change](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
 - Expectation: tbd
 
 **What's tested:** TBD
 
-## [Rolling downgrade](tbd?)
+## [Rolling downgrade](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
 - Expectation: tbd
 
 **What's tested:** TBD
