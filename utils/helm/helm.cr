@@ -188,9 +188,14 @@ module Helm
     resource_names
   end
 
-  def self.workload_resource_kind_names(resources : Array(YAML::Any) )
+  def self.workload_resource_kind_names(resources : Array(YAML::Any) ) : Array(NamedTuple(kind: String, name: String, namespace: String))
     resource_names = resources.map do |x|
-      {kind: x["kind"], name: x["metadata"]["name"]}
+      namespace = (x.dig?("metadata", "namespace") || "default").to_s
+      {
+        kind: x["kind"].as_s,
+        name: x["metadata"]["name"].as_s,
+        namespace: namespace
+      }
     end
     Log.debug { "resource names: #{resource_names}" }
     resource_names
@@ -204,7 +209,7 @@ module Helm
     resource_names = Helm.workload_resource_kind_names(resource_ymls)
     found = false
 		resource_names.each do | resource |
-      if resource[:kind].as_s.downcase == kind.downcase
+      if resource[:kind].downcase == kind.downcase
         found = true
       end
     end

@@ -93,7 +93,7 @@ module Volume
     volume_claims = volumes.as_a.select{ |x| x.dig?("persistentVolumeClaim", "claimName") } 
     Log.info {"volume_claims #{volume_claims}"}
     storage_class_names = volume_claims.reduce( [] of Hash(String, JSON::Any)) do |acc, claim| 
-      resource = KubectlClient::Get.resource("pvc", claim.dig?("persistentVolumeClaim", "claimName"), namespace)
+      resource = KubectlClient::Get.resource("pvc", claim.dig?("persistentVolumeClaim", "claimName").to_s, namespace)
       Log.info {"pvc resource #{resource}"}
 
       if resource && resource.dig?("spec", "storageClassName")
@@ -113,8 +113,8 @@ module StorageClass
     Log.info {"elastic_by_storage_class"}
     #todo elastic_by_storage_class?
     elastic = false
-    provisoners = storage_class_names.reduce( [] of String) do |acc, storage_class| 
-      resource = KubectlClient::Get.resource("storageclasses", storage_class.dig?("class_name"), namespace)
+    provisoners = storage_class_names.reduce( [] of String) do |acc, storage_class|
+      resource = KubectlClient::Get.resource("storageclasses", storage_class.dig?("class_name").to_s, namespace)
       if resource.dig?("provisioner")
         acc << resource.dig("provisioner").as_s 
       else
@@ -143,9 +143,9 @@ module StorageClass
 end
 
 module VolumeClaimTemplate
-  def self.pvc_name_by_vct_resource(resource)
+  def self.pvc_name_by_vct_resource(resource) : String | Nil
     Log.info {"vct_pvc_name"}
-    resource_name = resource.dig?("metadata", "name")
+    resource_name = resource.dig("metadata", "name")
     vct = resource.dig?("spec", "volumeClaimTemplates")
     if vct && vct.size > 0
       #K8s only supports one volume claim template per resource
@@ -170,7 +170,8 @@ module VolumeClaimTemplate
 
   def self.storage_class_by_vct_resource(resource, namespace)
     Log.info {"storage_class_by_vct_resource"}
-    resource = KubectlClient::Get.resource("pvc", VolumeClaimTemplate.pvc_name_by_vct_resource(resource))
+    pvc_name = VolumeClaimTemplate.pvc_name_by_vct_resource(resource)
+    resource = KubectlClient::Get.resource("pvc", pvc_name.to_s)
 
     Log.info {"pvc resource #{resource}"}
     storage_class = nil
@@ -383,7 +384,7 @@ task "database_persistence" do |_, args|
           elastic_volume_used = true
         end
 
-        if resource["kind"].as_s.downcase == "statefulset" && elastic_volume
+        if resource["kind"].downcase == "statefulset" && elastic_volume
           elastic_statefulset = true
         end
 

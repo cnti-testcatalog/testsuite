@@ -727,6 +727,21 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 ./cnf-testsuite privileged
 ```
 
+##### :heavy_check_mark: To check if any pods in the CNF use sysctls with restricted values
+<details>
+  <summary>Details for sysctls test</summary>
+  <p>
+    <b>Details:</b> Sysctls can disable security mechanisms or affect all containers on a host, and should be disallowed except for an allowed "safe" subset. A sysctl is considered safe if it is namespaced in the container or the Pod, and it is isolated from other Pods or processes on the same Node. This test ensures that only those "safe" subsets are specified in a Pod.
+  </p>
+  <p>
+    <b>Remediation Steps:</b> Setting additional sysctls above the allowed type is disallowed. The field spec.securityContext.sysctls must be unset or not use any other names than kernel.shm_rmid_forced, net.ipv4.ip_local_port_range, net.ipv4.ip_unprivileged_port_start, net.ipv4.tcp_syncookies and net.ipv4.ping_group_range.
+  </p>
+</details>
+
+```
+./cnf-testsuite sysctls
+```
+
 ##### :heavy_check_mark: To check if a CNF is running services with external IPs
 <details> <summary>Details for external IPs</summary>
 <p>
@@ -948,6 +963,34 @@ Read more at [ARMO-C0038](https://bit.ly/3nGvpIQ)
 ./cnf-testsuite host_pid_ipc_privileges
 ```
 
+##### :heavy_check_mark: To check if CNF resources use custom SELinux options that allow privilege escalation
+
+```
+./cnf-testsuite selinux_options
+```
+
+<details>
+<summary>Details for `selinux_options`</summary>
+
+<p>
+SELinux options can be used to escalate privileges and should not be allowed.
+</p>
+
+<p>
+<b>Remediation steps:</b>
+Ensure the following guidelines are followed for any cluster resource that allow SELinux options.
+  <ul>
+    <li>
+    If the SELinux option `type` is set, it should only be one of the allowed values: `container_t`, `container_init_t`, or `container_kvm_t`.
+    </li>
+    <li>
+    SELinux options `user` or `role` should not be set.
+    </li>
+  </ul>
+</p>
+
+</details>
+
 ##### :heavy_check_mark: To check if security services are being used to harden containers
 <details> <summary>Details for Linux Hardening</summary>
 
@@ -1043,6 +1086,44 @@ crystal src/cnf-testsuite.cr protected_access
 ```
 ./cnf-testsuite configuration_lifecycle
 ```
+
+##### :heavy_check_mark: To check if resources of the CNF are not in the default namespace
+
+```
+./cnf-testsuite default_namespace
+```
+
+<details>
+<summary>Details for `default_namespace`</summary>
+
+<p>
+Kubernetes Namespaces provide a way to segment and isolate cluster resources across multiple applications and users. As a best practice, workloads should be isolated with Namespaces.
+</p>
+
+<p>
+<b>Remediation steps:</b> Namespaces should be required and the default (empty) Namespace should not be used. This policy validates that Pods specify a Namespace name other than `default`.
+</p>
+
+</details>
+
+##### :heavy_check_mark: To check if Pods in the CNF use container images with the latest tag
+
+```
+./cnf-testsuite latest_tag
+```
+
+<details>
+<summary>Details for `latest_tag`</summary>
+
+<p>
+The `:latest` tag is mutable and can lead to unexpected errors if the image changes. Even when a tag is not specified, the `:latest` tag is used by default.
+</p>
+
+<p>
+<b>Remediation steps:</b> When specifying container images, always specify a tag and ensure to use an immutable tag that maps to a specific version of an application Pod. Avoid using the `latest` tag, as it is not guaranteed to be always point to the same version of the image.
+</p>
+
+</details>
 
 ##### :heavy_check_mark: To check if pods are using the `app.kubernetes.io/name` label
 <details> <summary>Details for labels test</summary>

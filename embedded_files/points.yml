@@ -227,6 +227,9 @@
 - name: dangerous_capabilities
   tags: security, dynamic, workload
 
+- name: sysctls
+  tags: security, dynamic, workload
+
 - name: log_output
   tags: observability, dynamic, workload
 - name: prometheus_traffic 
@@ -259,3 +262,12 @@
 
 - name: external_ips
   tags: security, dynamic, workload
+
+- name: selinux_options
+  tags: security, dynamic, workload
+
+- name: default_namespace
+  tags: configuration, dynamic, workload
+
+- name: latest_tag
+  tags: configuration, dynamic, workload

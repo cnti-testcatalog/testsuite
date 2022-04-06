@@ -355,4 +355,56 @@ describe "Security" do
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_external_ips/cnf-testsuite.yml`
     end
   end
+
+  it "'selinux_options' should fail if containers have custom selinux options that can be used for privilege escalations", tags: ["selinux_options"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_latest_tag`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite selinux_options verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Resources are using custom SELinux options/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_latest_tag`
+    end
+  end
+
+  it "'selinux_options' should pass if containers do not have custom selinux options that can be used for privilege escalations", tags: ["selinux_options"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_nonroot`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite selinux_options verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Resources are not using custom SELinux options/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot`
+    end
+  end
+
+  it "'sysctls' should fail if Pods have restricted sysctls values", tags: ["sysctls"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_sysctls`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite sysctls verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Restricted values for are being used for sysctls/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_sysctls`
+    end
+  end
+
+  it "'sysctls' should pass if Pods have allowed sysctls values", tags: ["sysctls"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_nonroot`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite sysctls verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: No restricted values found for sysctls/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot`
+    end
+  end
 end

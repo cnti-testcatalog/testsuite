@@ -189,9 +189,54 @@ module KubectlClient
       ShellCmd.run(cmd, "KubectlClient::Delete.command")
     end
 
-    def self.file(file_name, namespace : String | Nil = nil)
-      cmd = "kubectl delete #{namespace ? "-n #{namespace}" : ""} -f #{file_name}"
+    def self.file(file_name, namespace : String | Nil = nil, wait : Bool = false)
+      cmd = "kubectl delete -f #{file_name}"
+      if namespace
+        cmd = "#{cmd} -n #{namespace}"
+      end
+      if wait == true
+        cmd = "#{cmd} --wait=true"
+      end
       ShellCmd.run(cmd, "KubectlClient::Delete.file")
+    end
+  end
+
+  module Utils
+    # Using sleep() to wait for terminating resources is unreliable.
+    #
+    # 1. Resources still in terminating state can interfere with test runs.
+    #    and result in failures of the next test (or spec test).
+    #
+    # 2. Helm uninstall wait option and kubectl delete wait options,
+    #    do not wait for child resources to be fully deleted.
+    #
+    # 3. The output from kubectl json does not clearly indicate when a resource is in a terminating state.
+    #    To wait for uninstall, we can use the app.kubernetes.io/name label,
+    #    to lookup resources belonging to a CNF to wait for uninstall.
+    #    We only use this helper in the spec tests, so we use the "kubectl get" output to keep things simple.
+    #
+    def self.wait_for_terminations(namespace : String | Nil = nil, wait_count : Int32 = 30)
+      cmd = "kubectl get all"
+      if namespace != nil
+        cmd = "#{cmd} -n #{namespace}"
+      else
+        cmd = "#{cmd} -A" # Check all namespaces by default
+      end
+
+      # By default assume there is a resource still terminating.
+      found_terminating = true
+      second_count = 0
+      while (found_terminating == true && second_count < wait_count)
+        result = ShellCmd.run(cmd, "kubectl_get_resources", force_output: true)
+        if result[:output].match(/([\s+]Terminating)/)
+          found_terminating = true
+          second_count = second_count + 1
+          sleep(1)
+        else
+          found_terminating = false
+        end
+        Log.info { "found_terminating = #{found_terminating}; second_count = #{second_count}" }
+      end
     end
   end
 
@@ -399,7 +444,7 @@ module KubectlClient
       if name
         #todo deployment labels may not match template metadata labels.
         # -- may need to match on selector matchlabels instead
-        labels = KubectlClient::Get.resource_spec_labels(resource_yml["kind"], name, namespace: namespace).as_h
+        labels = KubectlClient::Get.resource_spec_labels(resource_yml["kind"].as_s, name.as_s, namespace: namespace).as_h
         Log.info { "pods_by_resource labels: #{labels}" }
         KubectlClient::Get.pods_by_labels(pods, labels)
       else
@@ -454,7 +499,7 @@ module KubectlClient
       end
     end
 
-    def self.resource(kind, resource_name, namespace : String | Nil = nil) : JSON::Any
+    def self.resource(kind : String, resource_name : String, namespace : String | Nil = nil) : JSON::Any
       namespace_opt = ""
       if namespace != nil
         namespace_opt = "-n #{namespace.gsub("--namespace ", "").gsub("-n ", "") if namespace}"
@@ -955,9 +1000,9 @@ module KubectlClient
     def self.deployment_spec_labels(deployment_name) : JSON::Any
       resource_spec_labels("deployment", deployment_name)
     end
-    def self.resource_spec_labels(kind, resource_name, namespace : String | Nil = nil) : JSON::Any
+    def self.resource_spec_labels(kind : String, resource_name : String, namespace : String | Nil = nil) : JSON::Any
       Log.debug { "resource_labels kind: #{kind} resource_name: #{resource_name}" }
-      if kind.as_s.downcase == "service"
+      if kind.downcase == "service"
         resp = resource(kind, resource_name, namespace: namespace).dig?("spec", "selector")
       else
         resp = resource(kind, resource_name, namespace: namespace).dig?("spec", "template", "metadata", "labels")

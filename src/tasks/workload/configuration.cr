@@ -10,7 +10,18 @@ rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rol
 
 desc "Configuration should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
 
-task "configuration", ["ip_addresses", "nodeport_not_used", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "secrets_used", "immutable_configmap", "alpha_k8s_apis", "require_labels"] do |_, args|
+task "configuration", [
+    "ip_addresses",
+    "nodeport_not_used",
+    "hostport_not_used",
+    "hardcoded_ip_addresses_in_k8s_runtime_configuration",
+    "secrets_used",
+    "immutable_configmap",
+    "alpha_k8s_apis",
+    "require_labels",
+    "latest_tag",
+    "default_namespace"
+  ] do |_, args|
   stdout_score("configuration", "configuration")
 end
 
@@ -27,6 +38,48 @@ task "require_labels" do |_, args|
     resp = upsert_passed_task("require_labels", "✔️  PASSED: Pods have the app.kubernetes.io/name label #{emoji_passed}")
   else
     resp = upsert_failed_task("require_labels", "✖️  FAILED: Pods should have the app.kubernetes.io/name label. #{emoji_failed}")
+    failures.each do |failure|
+      failure.resources.each do |resource|
+        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+      end
+    end
+  end
+end
+
+desc "Check if the CNF installs resources in the default namespace"
+task "default_namespace" do |_, args|
+  Log.for("verbose").info { "default_namespace" }
+  Kyverno.install
+  emoji_passed = "🏷️✔️"
+  emoji_failed = "🏷️❌"
+  policy_path = Kyverno.best_practice_policy("disallow_default_namespace/disallow_default_namespace.yaml")
+  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+
+  if failures.size == 0
+    resp = upsert_passed_task("default_namespace", "✔️  PASSED: default namespace is not being used #{emoji_passed}")
+  else
+    resp = upsert_failed_task("default_namespace", "✖️  FAILED: Resources are created in the default namespace #{emoji_failed}")
+    failures.each do |failure|
+      failure.resources.each do |resource|
+        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+      end
+    end
+  end
+end
+
+desc "Check if the CNF uses container images with the latest tag"
+task "latest_tag" do |_, args|
+  Log.for("verbose").info { "latest_tag" }
+  Kyverno.install
+  emoji_passed = "🏷️✔️"
+  emoji_failed = "🏷️❌"
+  policy_path = Kyverno.best_practice_policy("disallow_latest_tag/disallow_latest_tag.yaml")
+  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+
+  if failures.size == 0
+    resp = upsert_passed_task("latest_tag", "✔️  PASSED: Container images are not using the latest tag #{emoji_passed}")
+  else
+    resp = upsert_failed_task("latest_tag", "✖️  FAILED: Container images are using the latest tag #{emoji_failed}")
     failures.each do |failure|
       failure.resources.each do |resource|
         puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -97,7 +150,7 @@ task "versioned_tag", ["install_opa"] do |_, args|
      fail_msgs = [] of String
      task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
        test_passed = true
-       kind = resource["kind"].as_s.downcase
+       kind = resource["kind"].downcase
        case kind 
        when  "deployment","statefulset","pod","replicaset", "daemonset"
          resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
@@ -138,7 +191,7 @@ task "nodeport_not_used" do |_, args|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false, check_service: true) do |resource, container, initialized|
       LOGGING.info "nodeport_not_used resource: #{resource}"
-      if resource["kind"].as_s.downcase == "service"
+      if resource["kind"].downcase == "service"
         LOGGING.info "resource kind: #{resource}"
         service = KubectlClient::Get.resource(resource[:kind], resource[:name])
         LOGGING.debug "service: #{service}"

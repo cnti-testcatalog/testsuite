@@ -45,4 +45,12 @@ describe CnfTestSuite do
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml`
     end
   end
+
+  it "a task should fail with an exit code of 2 when there is an exception", tags: ["security"] do
+    begin
+      response_s = `./cnf-testsuite divide_by_zero strict`
+      LOGGING.info response_s
+      ($?.exit_code == 2).should be_true
+    end
+  end
 end
