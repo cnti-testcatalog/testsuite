@@ -91,7 +91,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 **What's tested:** TBD
 
-## [Rollback](tbd?)
+## [Rollback](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L87)
 - Expectation: tbd
 
 **What's tested:** TBD
