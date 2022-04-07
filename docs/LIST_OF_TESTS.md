@@ -105,7 +105,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 ## [Kubernetes Alpha APIs - Proof of Concept](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L499)
 - Expectation: CNF should not use Kubernetes alpha APIs
 
-**What's tested:** This checks if a CNF uses Kubernetes alpha or unstable APIs
+**What's tested:** This checks if a CNF uses alpha or unstable versions of Kubernetes APIs
 
 
 # Microservice Category
