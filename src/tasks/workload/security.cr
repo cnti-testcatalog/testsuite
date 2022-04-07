@@ -28,6 +28,7 @@ task "security", [
     "sysctls",
     "host_network",
     "service_account_mapping",
+    "application_credentials"
   ] do |_, args|
   stdout_score("security")
 end
