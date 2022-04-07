@@ -25,7 +25,8 @@ task "security", [
     "container_sock_mounts",
     "external_ips",
     "selinux_options",
-    "sysctls"
+    "sysctls",
+    "host_network"
   ] do |_, args|
   stdout_score("security")
 end
