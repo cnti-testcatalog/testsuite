@@ -13,7 +13,9 @@ desc "The CNF test suite checks to see if the CNFs are resilient to failures."
    "pod_memory_hog",
    "pod_io_stress",
    "pod_dns_error",
-   "pod_network_duplication"
+   "pod_network_duplication",
+   "liveness",
+   "readiness"
   ] do |t, args|
   Log.for("verbose").info {  "resilience" } if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
