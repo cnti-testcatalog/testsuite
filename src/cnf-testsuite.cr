@@ -11,16 +11,28 @@ task "all", ["workload", "platform"] do  |_, args|
   VERBOSE_LOGGING.info "all" if check_verbose(args)
 
   total = CNFManager::Points.total_points
+  max_points = CNFManager::Points.total_max_points
+
   if total > 0
-    stdout_success "Final score: #{total} of #{CNFManager::Points.total_max_points}"
+    stdout_success "Final score: #{total} of #{max_points}"
   else
-    stdout_failure "Final score: #{total} of #{CNFManager::Points.total_max_points}"
+    stdout_failure "Final score: #{total} of #{max_points}"
   end
+
+  update_yml("#{CNFManager::Points::Results.file}", "points", total)
+  update_yml("#{CNFManager::Points::Results.file}", "maximum_points", max_points)
 
   if CNFManager::Points.failed_required_tasks.size > 0
     stdout_failure "Test Suite failed!"
     stdout_failure "Failed required tasks: #{CNFManager::Points.failed_required_tasks.inspect}"
-    update_yml("#{CNFManager::Points::Results.file}", "exit_code", "1")
+    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
+      YAML.parse(file)
+    end
+
+    Log.debug { "results yaml: #{yaml}" }
+    if (yaml["exit_code"]) != 2
+      update_yml("#{CNFManager::Points::Results.file}", "exit_code", "1")
+    end
   end
   stdout_info "CNFManager::Points::Results.have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
 end
@@ -30,16 +42,26 @@ task "workload", ["automatic_cnf_install", "ensure_cnf_installed", "configuratio
   VERBOSE_LOGGING.info "workload" if check_verbose(args)
 
   total = CNFManager::Points.total_points("workload")
+  max_points = CNFManager::Points.total_max_points("workload")
   if total > 0
-    stdout_success "Final workload score: #{total} of #{CNFManager::Points.total_max_points("workload")}"
+    stdout_success "Final workload score: #{total} of #{max_points}"
   else
-    stdout_failure "Final workload score: #{total} of #{CNFManager::Points.total_max_points("workload")}"
+    stdout_failure "Final workload score: #{total} of #{max_points}"
   end
+
+  update_yml("#{CNFManager::Points::Results.file}", "points", total)
+  update_yml("#{CNFManager::Points::Results.file}", "maximum_points", max_points)
 
   if CNFManager::Points.failed_required_tasks.size > 0
     stdout_failure "Test Suite failed!"
     stdout_failure "Failed required tasks: #{CNFManager::Points.failed_required_tasks.inspect}"
-    update_yml("#{CNFManager::Points::Results.file}", "exit_code", "1")
+    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
+      YAML.parse(file)
+    end
+    Log.debug { "results yaml: #{yaml}" }
+    if (yaml["exit_code"]) != 2
+      update_yml("#{CNFManager::Points::Results.file}", "exit_code", "1")
+    end
   end
   stdout_info "CNFManager::Points::Results.have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
 end
@@ -109,8 +131,11 @@ begin
     YAML.parse(file)
   end
   Log.debug { "results yaml: #{yaml}" }
-  if (yaml["exit_code"]) == 1
+  case (yaml["exit_code"]) 
+  when 1
     exit 1
+  when 2
+    exit 2
   end
 rescue e : Sam::NotFound
   puts e.message

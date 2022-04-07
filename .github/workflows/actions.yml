@@ -73,6 +73,21 @@ jobs:
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
             endpoint = ["http://localhost:5000"]
         EOF
+    - name: sysctls specs kind config override
+      if: matrix.spec == 'sysctls'
+      run: |
+        cat << EOF > /tmp/cluster.yml
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+
+        # Enabled additional unsafe sysctls to support the negative spec test for sysctls
+        nodes:
+        - role: control-plane
+          kubeadmConfigPatches:
+          - |
+            kind: KubeletConfiguration
+            allowedUnsafeSysctls: ["kernel.msg*"]
+        EOF
     - name: Mirror Override
       if: matrix.spec == 'private_registry_image'
       run: |
@@ -85,7 +100,6 @@ jobs:
               endpoint = ["http://localhost:5000"]
             [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
               endpoint = ["http://localhost:5000"]
-        EOF
     - name: Create Kind Cluster 
       run: |
         cat /tmp/cluster.yml

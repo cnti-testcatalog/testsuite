@@ -104,7 +104,7 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/Passed/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cleanup_sample_coredns`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
   end
 
@@ -138,7 +138,7 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/Passed/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cleanup_sample_coredns`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
   end
 
@@ -164,7 +164,7 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/Passed/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cleanup_sample_coredns`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
   end
 
@@ -190,7 +190,7 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/Passed/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cleanup_sample_coredns`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
   end
 
@@ -218,7 +218,7 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/PASSED: NodePort is not used/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cleanup_sample_coredns`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
   end
 
@@ -244,7 +244,7 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/PASSED: HostPort is not used/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cleanup_sample_coredns`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
   end
 
@@ -283,7 +283,7 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/PASSED: No hard-coded IP addresses found in the runtime K8s configuration/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cleanup_sample_coredns`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
   end
 
@@ -444,6 +444,60 @@ describe CnfTestSuite do
       (/PASSED: Pods have the app.kubernetes.io\/name label/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+    end
+  end
+
+  it "'default_namespace' should fail if a cnf creates resources in the default namespace", tags: ["default_namespace"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite default_namespace verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Resources are created in the default namespace/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns`
+      KubectlClient::Utils.wait_for_terminations()
+    end
+  end
+
+  it "'default_namespace' should pass if a cnf does not create resources in the default namespace", tags: ["default_namespace"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_latest_tag`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite default_namespace verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: default namespace is not being used/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_latest_tag`
+      KubectlClient::Utils.wait_for_terminations()
+    end
+  end
+
+  it "'latest_tag' should fail if a cnf has containers that use images with the latest tag", tags: ["latest_tag"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_latest_tag`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite latest_tag verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Container images are using the latest tag/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_latest_tag`
+    end
+  end
+
+  it "'latest_tag' should pass if a cnf does not have containers that use images with the latest tag", tags: ["latest_tag"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_nonroot`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite latest_tag verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Container images are not using the latest tag/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot`
     end
   end
 

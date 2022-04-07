@@ -68,6 +68,13 @@ namespace "platform" do
       puts "SKIPPED: Node Exporter".colorize(:yellow)
       next
     end
+
+    unless check_containerd
+      Log.info { "skipping node_exporter: This test only supports the Containerd Runtime." }
+      puts "SKIPPED: Node Exporter".colorize(:yellow)
+      next
+    end
+
     if args.named["offline"]?
       Log.info { "skipping node_exporter: in offline mode" }
       puts "SKIPPED: Node Exporter".colorize(:yellow)
@@ -199,19 +206,15 @@ end
     Retriable.retry do
       task_response = CNFManager::Task.task_runner(args) do |args|
         # Fetch image id sha256sums available for all upstream prometheus_adapter releases
-        # prometheus_adapter_releases is available at the url below
-        # curl -L -s 'https://registry.hub.docker.com/v2/repositories/directxman12/k8s-prometheus-adapter-amd64/tags?page_size=1024'
-        resp = Halite.get("https://registry.hub.docker.com/v2/repositories/directxman12/k8s-prometheus-adapter-amd64/tags?page_size=1024")
-        prometheus_adapter_releases = resp.body
-        sha_list = named_sha_list(prometheus_adapter_releases)
-        Log.debug { "sha_list: #{sha_list}" }
+        sha_list = skopeo_sha_list("k8s.gcr.io/prometheus-adapter/prometheus-adapter")
+        Log.info { "sha_list: #{sha_list}" }
 
         # find hash for image
         imageids = KubectlClient::Get.all_container_repo_digests
-        Log.debug { "imageids: #{imageids}" }
+        Log.info { "imageids: #{imageids}" }
         found = false
         release_name = ""
-        sha_list.each do |x|
+        sha_list.not_nil!.each do |x|
           if imageids.find{|i| i.includes?(x["manifest_digest"])}
             found = true
             release_name = x["name"]
@@ -336,28 +339,54 @@ end
     end
   end
 
+  def skopeo_sha_list(repo)
+    tags = skopeo_tags(repo)
+    Log.info { "sha_list tags: #{tags}" }
 
-
-def named_sha_list(resp_json)
-  Log.debug { "sha_list resp_json: #{resp_json}" }
-  parsed_json = JSON.parse(resp_json)
-  Log.debug { "sha list parsed json: #{parsed_json}" }
-  #if tags then this is a quay repository, otherwise assume docker hub repository
-  if parsed_json["tags"]?
-    parsed_json["tags"].not_nil!.as_a.reduce([] of Hash(String, String)) do |acc, i|
-      acc << {"name" => i["name"].not_nil!.as_s, "manifest_digest" => i["manifest_digest"].not_nil!.as_s}
-    end
-  else
-    parsed_json["results"].not_nil!.as_a.reduce([] of Hash(String, String)) do |acc, i|
-      # always use amd64
-      amd64image = i["images"].as_a.find{|x| x["architecture"].as_s == "amd64"}
-      Log.debug { "amd64image: #{amd64image}" }
-      if amd64image && amd64image["digest"]?
-        acc << {"name" => i["name"].not_nil!.as_s, "manifest_digest" => amd64image["digest"].not_nil!.as_s}
-      else
-        Log.error { "amd64 image not found in #{i["images"]}" }
-        acc
+    if tags
+      tags.as_a.reduce([] of Hash(String, String)) do |acc, i|
+        acc << {"name" => i.not_nil!.as_s, "manifest_digest" => skopeo_digest("#{repo}:#{i}").as_s}
       end
     end
   end
-end
+
+  def skopeo_digest(image)
+    ClusterTools.install
+    resp = ClusterTools.exec("skopeo inspect docker://#{image}")
+    Log.info { resp[:output] }
+    parsed_json = JSON.parse(resp[:output])
+    parsed_json["Digest"]
+  end
+
+  def skopeo_tags(repo)
+    ClusterTools.install
+    resp = ClusterTools.exec("skopeo list-tags docker://#{repo}")
+    Log.info { resp[:output] }
+    parsed_json = JSON.parse(resp[:output])
+    parsed_json["Tags"]
+  end
+
+
+  def named_sha_list(resp_json)
+    Log.debug { "sha_list resp_json: #{resp_json}" }
+    parsed_json = JSON.parse(resp_json)
+    Log.debug { "sha list parsed json: #{parsed_json}" }
+    #if tags then this is a quay repository, otherwise assume docker hub repository
+    if parsed_json["tags"]?
+         parsed_json["tags"].not_nil!.as_a.reduce([] of Hash(String, String)) do |acc, i|
+           acc << {"name" => i["name"].not_nil!.as_s, "manifest_digest" => i["manifest_digest"].not_nil!.as_s}
+         end
+       else
+         parsed_json["results"].not_nil!.as_a.reduce([] of Hash(String, String)) do |acc, i|
+           # always use amd64
+           amd64image = i["images"].as_a.find{|x| x["architecture"].as_s == "amd64"}
+           Log.debug { "amd64image: #{amd64image}" }
+           if amd64image && amd64image["digest"]?
+                acc << {"name" => i["name"].not_nil!.as_s, "manifest_digest" => amd64image["digest"].not_nil!.as_s}
+              else
+                Log.error { "amd64 image not found in #{i["images"]}" }
+                acc
+           end
+         end
+    end
+  end
