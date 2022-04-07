@@ -20,7 +20,8 @@ task "configuration", [
     "alpha_k8s_apis",
     "require_labels",
     "latest_tag",
-    "default_namespace"
+    "default_namespace",
+    "versioned_tag"
   ] do |_, args|
   stdout_score("configuration", "configuration")
 end
