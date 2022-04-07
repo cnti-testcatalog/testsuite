@@ -106,7 +106,7 @@ describe "Observability" do
 
     response_s = `./cnf-testsuite open_metrics`
     LOGGING.info response_s
-    (/FAILED: Your cnf's metrics traffic is not Open Metrics compatible/ =~ response_s).should_not be_nil
+    (/FAILED: Your cnf's metrics traffic is not OpenMetrics compatible/ =~ response_s).should_not be_nil
   ensure
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
     resp = `#{helm} delete prometheus`
@@ -128,7 +128,7 @@ describe "Observability" do
 
     response_s = `./cnf-testsuite open_metrics`
     LOGGING.info response_s
-    (/PASSED: Your cnf's metrics traffic is Open Metrics compatible/ =~ response_s).should_not be_nil
+    (/PASSED: Your cnf's metrics traffic is OpenMetrics compatible/ =~ response_s).should_not be_nil
   ensure
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-openmetrics/cnf-testsuite.yml`
     resp = `#{helm} delete prometheus`
