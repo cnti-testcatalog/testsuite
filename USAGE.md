@@ -675,6 +675,8 @@ Mitigation (in this case keep the timeout i.e., access latency low) could be via
 
 The applications may stall or get corrupted while they wait endlessly for a packet. The experiment limits the impact (blast radius) to only the traffic you want to test by specifying IP addresses or application information. This experiment will help to improve the resilience of your services over time.
 
+<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-network-latency-occurs-pod_network_latency) behind this test.</b>
+
 </p>
 </details>
 
@@ -690,6 +692,8 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 <b>Disk-Fill(Stress-Chaos):</b> Disk Pressure is another very common and frequent scenario we find in Kubernetes applications that can result in the eviction of the application replica and impact its delivery. Such scenarios can still occur despite whatever availability aids K8s provides. These problems are generally referred to as "Noisy Neighbour" problems.
 
 [Stressing the disk](https://litmuschaos.github.io/litmus/experiments/categories/pods/disk-fill/) with continuous and heavy IO for example can cause degradation in reads written by other microservices that use this shared disk for example modern storage solutions for Kubernetes to use the concept of storage pools out of which virtual volumes/devices are carved out. Another issue is the amount of scratch space eaten up on a node which leads to the lack of space for newer containers to get scheduled (Kubernetes too gives up by applying an "eviction" taint like "disk-pressure") and causes a wholesale movement of all pods to other nodes. Similarly with CPU chaos, by injecting a rogue process into a target container, we starve the main microservice process (typically PID 1) of the resources allocated to it (where limits are defined) causing slowness in application traffic or in other cases unrestrained use can cause the node to exhaust resources leading to the eviction of all pods. So this category of chaos experiment helps to build the immunity on the application undergoing any such stress scenario.
+
+<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-disk-fill-occurs-disk_fill) behind this test.</b>
 
 </p>
 </details>
@@ -707,6 +711,8 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [This experiment](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-delete/) helps to simulate such a scenario with forced/graceful pod failure on specific or random replicas of an application resource and checks the deployment sanity (replica availability & uninterrupted service) and recovery workflow of the application.
 
+<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-pod-delete-occurs-pod_delete) behind this test.</b>
+
 </p>
 </details>
 
@@ -722,6 +728,8 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 Memory usage within containers is subject to various constraints in Kubernetes. If the limits are specified in their spec, exceeding them can cause termination of the container (due to OOMKill of the primary process, often pid 1) - the restart of the container by kubelet, subject to the policy specified. For containers with no limits placed, the memory usage is uninhibited until such time as the Node level OOM Behaviour takes over. In this case, containers on the node can be killed based on their oom_score and the QoS class a given pod belongs to (bestEffort ones are first to be targeted). This eval is extended to all pods running on the node - thereby causing a bigger blast radius. 
 
 The [pod-memory hog](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-memory-hog/) experiment launches a stress process within the target container - which can cause either the primary process in the container to be resource constrained in cases where the limits are enforced OR eat up available system memory on the node in cases where the limits are not specified. 
+
+<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-pod-memory-hog-occurs-pod_memory_hog) behind this test.</b>
 
 </p>
 </details>
@@ -739,6 +747,9 @@ The [pod-memory hog](https://litmuschaos.github.io/litmus/experiments/categories
 Sressing the disk with continuous and heavy IO can cause degradation in reads/ writes byt other microservices that use this shared disk.  For example modern storage solutions for Kubernetes use the concept of storage pools out of which virtual volumes/devices are carved out.  Another issue is the amount of scratch space eaten up on a node which leads to  the lack of space for newer containers to get scheduled (kubernetes too gives up by applying an "eviction" taint like "disk-pressure") and causes a wholesale movement of all pods to other nodes.
 
 [This experiment](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-io-stress/) is also useful in determining the performance of the storage device used.  
+
+<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-pod-io-stress-occurs-pod_io_stress) behind this test.</b>
+
 </p>
 </details>
 
@@ -747,24 +758,69 @@ Sressing the disk with continuous and heavy IO can cause degradation in reads/ w
 ```
 
 ##### :heavy_check_mark: Test if the CNF crashes when pod network corruption occurs
+<details> <summary>Details for pod network corruption </summary>
+<p>
+
+<b>Pod Network Corruption:</b> 
+
+<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-pod-network-corruption-occurs-pod_network_corruption) behind this test.</b>
+
+<b>Remediation:</b> TBD
+</p>
+
+</details>
+
 
 ```
 ./cnf-testsuite pod_network_corruption
 ```
 
 ##### :heavy_check_mark: Test if the CNF crashes when pod network duplication occurs
+<details> <summary>Details for network duplication</summary>
+<p>
+
+<b>Network Duplication:</b> 
+
+<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-pod-network-duplication-occurs-pod_network_duplication) behind this test.</b>
+
+<b>Remediation:</b> TBD
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite pod_network_duplication
 ```
 
 ##### :heavy_check_mark: To test if there is a liveness entry in the Helm chart
+<details> <summary>Details for liveness</summary>
+<p>
+
+<b>Liveness:</b> 
+
+<b>Read the [rationale](RATIONALE.md#to-test-if-there-is-a-liveness-entry-in-the-helm-chart-liveness) behind this test.</b>
+
+<b>Remediation:</b> TBD
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite liveness
 ```
 
 ##### :heavy_check_mark: To test if there is a readiness entry in the Helm chart
+<details> <summary>Details for readiness</summary>
+<p>
+
+<b>Readiness:</b> 
+
+<b>Read the [rationale](RATIONALE.md#to-test-if-there-is-a-readiness-entry-in-the-helm-chart-readiness) behind this test.</b>
+
+<b>Remediation:</b> TBD
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite readiness
