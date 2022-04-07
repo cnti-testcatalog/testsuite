@@ -313,6 +313,9 @@ Now run the test:
 
 <b>Remediation:</b> Applications or CNFs should have the ability to downgrade based on the version tag. 
 
+</p>
+</details>
+
 ```
 ./cnf-testsuite rolling_version_change
 ```
