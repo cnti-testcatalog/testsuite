@@ -26,7 +26,8 @@ task "security", [
     "external_ips",
     "selinux_options",
     "sysctls",
-    "host_network"
+    "host_network",
+    "service_account_mapping",
   ] do |_, args|
   stdout_score("security")
 end
