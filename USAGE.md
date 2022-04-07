@@ -842,6 +842,8 @@ Sressing the disk with continuous and heavy IO can cause degradation in reads/ w
 
 For example, running `kubectl get logs` returns useful information for diagnosing or troubleshooting issues. 
 
+<b>Read the [rationale](RATIONALE.md#to-check-if-logs-are-being-sent-to-stdoutstderr-standard-out-standard-error-instead-of-a-log-file-log_output) behind this test.</b>
+
 <b>Remediation Steps:</b> Make sure applications and CNF's are sending log output to STDOUT and or STDERR.
 </p>
 
@@ -856,7 +858,7 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 
 <b>Prometheus Traffic Details:</b> It's considered a best-practice for CNFs to actively expose metrics.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-prometheus-is-installed-and-configured-for-the-cnf-prometheus_traffic) behind this test.</b>
 
 <b>Remediation Steps:</b> Install and configure Prometheus for your CNF.
 </p>
@@ -872,7 +874,7 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 
 <b>Routed Logs Details:</b> It's considered a best-practice for CNFs to route logs and data through programs like fluentd to analyze and better understand data. This test will check if your CNF is using fluentd.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-logs-and-data-are-being-routed-through-fluentd-routed_logs) behind this test.</b>
 
 <b>Remediation Steps:</b> Install and configure fluentd to collect data and logs. See more at [fluentd.org](https://bit.ly/fluentd).
 </p>
@@ -890,7 +892,7 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 
 <b>OpenMetics Details:</b> OpenMetrics specifies the de-facto standard for transmitting cloud-native metrics at scale, with support for both text representation and Protocol Buffers and brings it into an Internet Engineering Task Force (IETF) standard. It supports both pull and push-based data collection. Sourced from [OpenMetric Readme](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md)
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-openmetrics-is-being-used-and-or-compatible-open_metrics) behind this test.</b>
 
 <b>Remediation Steps:</b> Ensure your CNF is OpenMetrics compatible.
 </p>
@@ -907,7 +909,7 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 
 <b>Tracing Details:</b> Jaeger uses distributed tracing to follow the path of a request through different microservices. Rather than guessing, we can see a visual representation of the call flows. Sourced from [Red Hat's blog on Jaeger](https://www.redhat.com/en/topics/microservices/what-is-jaeger)
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-tracing-is-being-used-with-jaeger-tracing) behind this test.</b>
 
 <b>Remediation Steps:</b> Ensure your CNF is using tracing.
 </p>
@@ -932,8 +934,6 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 
 <b>Container Socker Mounts Details:</b> Container daemon socket bind mounts allows access to the container engine on the node. This access can be used for privilege escalation and to manage containers outside of Kubernetes, and hence should not be allowed
 
-<b>Read the [rationale]() behind this test.</b>
-
 <b>Remediation Steps:</b> Make sure to not mount `/var/run/docker.sock`, `/var/run/containerd.sock` or `/var/run/crio.sock` on the containers
 </p>
 
@@ -944,6 +944,15 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 ```
 
 ##### :heavy_check_mark: To check if any containers are running in [privileged mode](https://github.com/open-policy-agent/gatekeeper)
+<details> <summary>Details for privileged mode</summary>
+<p>
+
+<b>Privileged mode:</b> 
+
+<b>Remediation:</b> TBD
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite privileged
@@ -954,8 +963,6 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 <p>
 
 <b>External IP's Details:</b> Service externalIPs can be used for a MITM attack (CVE-2020-8554). Restrict externalIPs or limit to a known set of addresses. See: https://github.com/kyverno/kyverno/issues/1367
-
-<b>Read the [rationale]() behind this test.</b>
 
 <b>Remediation Steps:</b> Make sure to not define external IPs in your kubernetes service configuration
 </p>
@@ -968,6 +975,17 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 
 
 ##### :heavy_check_mark: To check if any containers are running as a [root user](https://github.com/cncf/cnf-wg/blob/main/cbpps/0002-no-root-in-containers.md)
+<details> <summary>Details for non root user</summary>
+<p>
+
+<b>Non root user:</b> 
+
+<b>Read the [rationale](RATIONALE.md#to-check-if-any-containers-are-running-as-a-root-user-checks-the-user-outside-the-container-that-is-running-dockerd-non_root_user) behind this test.</b>
+
+<b>Remediation:</b> TBD
+</p>
+
+</details>
 
 ```
 ./cnf-testsuite non_root_user
@@ -979,7 +997,7 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 
 <b>Privilege Escalation:</b> Check that the allowPrivilegeEscalation field in securityContext of container is set to false.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-any-containers-allow-for-privilege-escalation-privilege_escalation) behind this test.</b>
 
 <b>Remediation:</b> If your application does not need it, make sure the allowPrivilegeEscalation field of the securityContext is set to false.
 
@@ -998,7 +1016,7 @@ See more at [ARMO-C0016](https://bit.ly/C0016_privilege_escalation)
 
 <b>CVE-2021-25741 Symlink Host Access:</b> A user may be able to create a container with subPath or subPathExpr volume mounts to access files & directories anywhere on the host filesystem. Following Kubernetes versions are affected: v1.22.0 - v1.22.1, v1.21.0 - v1.21.4, v1.20.0 - v1.20.10, version v1.19.14 and lower. This control checks the vulnerable versions and the actual usage of the subPath feature in all Pods in the cluster.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-an-attacker-can-use-a-symlink-for-arbitrary-host-file-system-access-cve-2021-25741-symlink_file_system) behind this test.</b>
 
 <b>Remediation:</b> To mitigate this vulnerability without upgrading kubelet, you can disable the VolumeSubpath feature gate on kubelet and kube-apiserver, or remove any existing Pods using subPath or subPathExpr feature.
 
@@ -1019,7 +1037,7 @@ See more at [ARMO-C0058](https://bit.ly/C0058_symlink_filesystem)
 
 Check if the pod has sensitive information in environment variables, by using list of known sensitive key names. Check if there are configmaps with sensitive information.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-there-are-service-accounts-that-are-automatically-mapped-application_credentials) behind this test.</b>
 
 <b>Remediation:</b> Use Kubernetes secrets or Key Management Systems to store credentials.
 
@@ -1039,7 +1057,7 @@ See more at [ARMO-C0012](https://bit.ly/C0012_application_credentials)
 
 <b>hostNetwork:</b> PODs should not have access to the host systems network.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-there-is-a-host-network-attached-to-a-pod-host_network) behind this test.</b>
 
 <b>Remediation:</b> Only connect PODs to hostNetwork when it is necessary. If not, set the hostNetwork field of the pod spec to false, or completely remove it (false is the default). Whitelist only those PODs that must have access to host network by design.
 
@@ -1058,8 +1076,6 @@ See more at [ARMO-C0041](https://bit.ly/C0041_hostNetwork)
 
 <b>Service Account Mapping:</b> The automatic mounting of service account tokens should be disabled.
 
-<b>Read the [rationale]() behind this test.</b>
-
 <b>Remediation:</b> Disable automatic mounting of service account tokens to PODs either at the service account level or at the individual POD level, by specifying the automountServiceAccountToken: false. Note that POD level takes precedence.
 
 See more at [ARMO-C0034](https://bit.ly/C0034_service_account_mapping)
@@ -1077,7 +1093,7 @@ See more at [ARMO-C0034](https://bit.ly/C0034_service_account_mapping)
 
 <b>Ingress Egress Blocked: </b> Network policies control traffic flow between Pods, namespaces, and external IP addresses. By default, no network policies are applied to Pods or namespaces, resulting in unrestricted ingress and egress traffic within the Pod network. Pods become isolated through a network policy that applies to the Pod or the Pod’s namespace. Once a Pod is selected in a network policy, it rejects any connections that are not specifically allowed by any applicable policy object.Administrators should use a default policy selecting all Pods to deny all ingress and egress traffic and ensure any unselected Pods are isolated. Additional policies could then relax these restrictions for permissible connections.(For ARMO runtime needs to add exception). See more at [Armo's C-0030 doc on ingress egress blocked details](https://bit.ly/3bhT10s).
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-there-is-an-ingress-and-egress-policy-defined-ingress_egress_blocked) behind this test.</b>
 
 <b>Remediation Steps: </b> By default, you should disable or restrict Ingress and Egress traffic on all pods.
 
@@ -1093,7 +1109,7 @@ See more at [ARMO-C0034](https://bit.ly/C0034_service_account_mapping)
 
 <b>Privileged Containers:</b> A privileged container is a container that has all the capabilities of the host machine, which lifts all the limitations regular containers have. This means that privileged containers can do almost every action that can be performed directly on the host. Attackers who gain access to a privileged container or have permissions to create a new privileged container (by using the compromised pod’s service account, for example), can get access to the host’s resources.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-there-are-any-privileged-containers-kubscape-version-privileged_containers) behind this test.</b>
     
 <b>Remediation:</b> Change the deployment and/or pod definition to unprivileged. The securityContext.privileged should be false.
     
@@ -1114,7 +1130,7 @@ Read more at [ARMO-C0057](https://bit.ly/31iGng3)
 
 This test checks against a [blacklist of insecure capabilities](https://github.com/FairwindsOps/polaris/blob/master/checks/insecureCapabilities.yaml).
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-for-insecure-capabilities-insecure_capabilities) behind this test.</b>
 
 <b>Remediation:</b> Remove all insecure capabilities which aren’t necessary for the container.
 
@@ -1135,7 +1151,7 @@ See more at [ARMO-C0046](https://bit.ly/C0046_Insecure_Capabilities)
 
 This test checks against a [blacklist of dangerous capabilities](https://github.com/FairwindsOps/polaris/blob/master/checks/dangerousCapabilities.yaml).
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-for-dangerous-capabilities-dangerous_capabilities) behind this test.</b>
 
 <b>Remediation:</b> Check and remove all unnecessary capabilities from the POD security context of the containers and use the exception mechanism to remove warnings where these capabilities are necessary.
 
@@ -1156,7 +1172,7 @@ See more at [ARMO-C0028](https://bit.ly/C0028_Dangerous_Capabilities)
 
 If no network policy is defined, attackers who gain access to a single container may use it to probe the network. Lists namespaces in which no network policies are defined.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-namespaces-have-network-policies-defined-network_policies) behind this test.</b>
 
 <b>Remediation:</b> Define network policies or use similar network protection mechanisms.
     
@@ -1175,7 +1191,7 @@ Read more at [ARMO-C0011](https://bit.ly/2ZEwb0A)
 
 <b>Non Root Containers:</b> Container engines allow containers to run applications as a non-root user with non-root group membership. Typically, this non-default setting is configured when the container image is built. . Alternatively, Kubernetes can load containers into a Pod with SecurityContext:runAsUser specifying a non-zero user. While the runAsUser directive effectively forces non-root execution at deployment, NSA and CISA encourage developers to build container applications to execute as a non-root user. Having non-root execution integrated at build time provides better assurance that applications will function correctly without root privileges.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-containers-are-running-with-non-root-user-with-non-root-membership-non_root_containers) behind this test.</b>
 
 <b>Remediation:</b> If your application does not need root privileges, make sure to define the runAsUser and runAsGroup under the PodSecurityContext to use user ID 1000 or higher, do not turn on allowPrivlegeEscalation bit and runAsNonRoot is true.
     
@@ -1194,7 +1210,7 @@ Read more at [ARMO-C0013](https://bit.ly/2Zzlts3)
 
 <b>Host PID/IPC Privileges:</b> Containers should be as isolated as possible from the host machine. The hostPID and hostIPC fields in Kubernetes may excessively expose the host for potentially malicious actions.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-containers-are-running-with-hostpid-or-hostipc-privileges-host_pid_ipc_privileges) behind this test.</b>
 
 <b>Remediation:</b> Apply least privilege principle and disable the hostPID and hostIPC fields unless strictly needed.
     
@@ -1213,8 +1229,6 @@ Read more at [ARMO-C0038](https://bit.ly/3nGvpIQ)
 <p>
 
 <b>SELinux options:</b> SELinux can be used to escalate privileges and should not be allowed.
-
-<b>Read the [rationale]() behind this test.</b>
 
 <b>Remediation steps:</b>
 Ensure the following guidelines are followed for any cluster resource that allow SELinux options.
@@ -1241,7 +1255,7 @@ Ensure the following guidelines are followed for any cluster resource that allow
 
 <b>Linux Hardening:</b> Check if there is AppArmor, Seccomp, SELinux or Capabilities are defined in the securityContext of container and pod. If none of these fields are defined for both the container and pod, alert.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-security-services-are-being-used-to-harden-containers-linux_hardening) behind this test.</b>
     
 <b>Remediation:</b> In order to reduce the attack surface, it is recommended to harden your application using security services such as SELinux®, AppArmor®, and seccomp. Starting from Kubernetes version 22, SELinux is enabled by default.
     
@@ -1262,7 +1276,7 @@ Read more at [ARMO-C0055](https://bit.ly/2ZKOjpJ)
 
 Check for each container if there is a ‘limits’ field defined. Check for each limitrange/resourcequota if there is a max/hard field defined, respectively.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-containers-have-resource-limits-defined-resource_policies) behind this test.</b>
     
 <b>Remediation:</b> Define LimitRange and ResourceQuota policies to limit resource usage for namespaces or nodes.
     
@@ -1283,7 +1297,7 @@ Read more at [ARMO-C0009](https://bit.ly/3Ezxkps)
 
 Checks whether the readOnlyRootFilesystem field in the SecurityContext is set to true.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-containers-have-immutable-file-systems-immutable_file_systems) behind this test.</b>
 
 <b>Remediation:</b> Set the filesystem of the container to read-only when possible. If the containers application needs to write into the filesystem, it is possible to mount secondary filesystems for specific directories where application require write access.
     
@@ -1304,7 +1318,7 @@ Read more at [ARMO-C0017](https://bit.ly/3pSMtxK)
 
 hostPath volume mounts a directory or a file from the host to the container. Attackers who have permissions to create a new container in the cluster may create one with a writable hostPath volume and gain persistence on the underlying host. For example, the latter can be achieved by creating a cron job on the host.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-containers-have-hostpath-mounts-check-is-this-a-duplicate-of-state-test---cnf-testsuite-volume_hostpath_not_found-hostpath_mounts) behind this test.</b>
     
 <b>Remediation:</b> Refrain from using host path mount.
     
@@ -1350,8 +1364,6 @@ crystal src/cnf-testsuite.cr protected_access
 
 <b>Kubernetes Namespaces:</b> Default namespces provide a way to segment and isolate cluster resources across multiple applications and users. As a best practice, workloads should be isolated with Namespaces.
 
-<b>Read the [rationale]() behind this test.</b>
-
 <b>Remediation steps:</b> Namespaces should be required and the default (empty) Namespace should not be used. This policy validates that Pods specify a Namespace name other than `default`.
 
 </p>
@@ -1369,7 +1381,7 @@ crystal src/cnf-testsuite.cr protected_access
 
 <b>Latest tag:</b> The `:latest` tag is mutable and can lead to unexpected errors if the image changes. Even when a tag is not specified, the `:latest` tag is used by default.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-test-if-there-are-versioned-tags-on-all-images-using-opa-gatekeeper) behind this test.</b>
 
 <b>Remediation steps:</b> When specifying container images, always specify a tag and ensure to use an immutable tag that maps to a specific version of an application Pod. Avoid using the `latest` tag, as it is not guaranteed to be always point to the same version of the image.
 
@@ -1385,8 +1397,6 @@ crystal src/cnf-testsuite.cr protected_access
 <p>
 
 <b>Labels Details:</b> Defining and using labels help to identify semantic attributes of your application or Deployment. A common set of labels allows tools to work collaboratively, describing objects in a common manner that all tools can understand. The recommended labels describe applications in a way that can be queried
-
-<b>Read the [rationale]() behind this test.</b>
 
 <b>Remediation Steps:</b> Make sure to define `app.kubernetes.io/name` label under metadata
 </p>
@@ -1404,8 +1414,6 @@ crystal src/cnf-testsuite.cr protected_access
 
 <b>Versioned tag:</b> 
 
-<b>Read the [rationale]() behind this test.</b>
-
 <b>Remediation:</b> TBD
 </p>
 
@@ -1420,8 +1428,6 @@ crystal src/cnf-testsuite.cr protected_access
 <p>
 
 <b>IP Addresses:</b> 
-
-<b>Read the [rationale]() behind this test.</b>
 
 <b>Remediation:</b> TBD
 </p>
@@ -1438,7 +1444,7 @@ crystal src/cnf-testsuite.cr protected_access
 
 <b>Nodeports in use:</b> 
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-test-if-there-are-node-ports-used-in-the-service-configuration) behind this test.</b>
 
 <b>Remediation:</b> TBD
 </p>
@@ -1455,7 +1461,7 @@ crystal src/cnf-testsuite.cr protected_access
 
 <b>Hostport not used:</b> 
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-test-if-there-are-host-ports-used-in-the-service-configuration) behind this test.</b>
 
 <b>Remediation:</b> TBD
 </p>
@@ -1472,7 +1478,7 @@ crystal src/cnf-testsuite.cr protected_access
 
 <b>hardcoded ip addresses in k8s runtime conf:</b> 
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-test-if-there-are-any-non-declarative-hardcoded-ip-addresses-or-subnet-masks-in-the-k8s-runtime-configuration) behind this test.</b>
 
 <b>Remediation:</b> TBD
 </p>
@@ -1489,7 +1495,7 @@ crystal src/cnf-testsuite.cr protected_access
 
 <b>Rules for the test:</b> The whole test passes if _any_ workload resource in the cnf uses a (non-exempt) secret. If no workload resources use a (non-exempt) secret, the test is skipped.
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-a-cnf-uses-k8s-secrets-secrets_used) behind this test.</b>
     
 </p>
 </details>
@@ -1504,7 +1510,7 @@ crystal src/cnf-testsuite.cr protected_access
 
 <b>Immutable configmap:</b> 
 
-<b>Read the [rationale]() behind this test.</b>
+<b>Read the [rationale](RATIONALE.md#to-check-if-a-cnf-version-uses-immutable-configmaps-immutable_configmap) behind this test.</b>
 
 <b>Remediation:</b> TBD
 </p>
@@ -1520,8 +1526,6 @@ crystal src/cnf-testsuite.cr protected_access
 <p>
 
 <b>Pod DNS Error:</b> 
-
-<b>Read the [rationale]() behind this test.</b>
 
 <b>Remediation:</b> TBD
 </p>
