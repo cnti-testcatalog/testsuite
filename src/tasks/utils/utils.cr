@@ -340,14 +340,18 @@ def stdout_score(test_name)
 end
 def stdout_score(test_name, full_name)
   total = CNFManager::Points.total_points(test_name)
+  max_points = CNFManager::Points.total_max_points(test_name)
   # pretty_test_name = test_name.split(/:|_/).map(&.capitalize).join(" ")
   pretty_test_name = full_name.split(/:|_/).map(&.capitalize).join(" ")
   # test_log_msg = "#{pretty_test_name} final score: #{total} of #{CNFManager::Points.total_max_points(test_name)}"
   test_log_msg = 
 <<-STRING
-#{pretty_test_name} final score: #{total} of #{CNFManager::Points.total_max_points(test_name)}
+#{pretty_test_name} final score: #{total} of #{max_points}
 
 STRING
+
+  update_yml("#{CNFManager::Points::Results.file}", "points", total)
+  update_yml("#{CNFManager::Points::Results.file}", "maximum_points", max_points)
 
   if total > 0
     stdout_success test_log_msg
