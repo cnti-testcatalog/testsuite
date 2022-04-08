@@ -22,7 +22,13 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     # todo loop through local resources and see if db match found
     db_match = Mariadb.match
+    if db_match[:found] == false
+      upsert_skipped_task("shared_database", "⏭️  SKIPPED: [shared_database] No MariaDB containers were found")
+      next
+    end
+
     Log.info { "DB Digest: #{db_match[:digest]}" }
+
     #todo find offical database ip
     db_pods = KubectlClient::Get.pods_by_digest(db_match[:digest])
     Log.info { "DB Pods: #{db_pods}" }
