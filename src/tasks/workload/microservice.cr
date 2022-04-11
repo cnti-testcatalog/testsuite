@@ -16,7 +16,7 @@ end
 
 REASONABLE_STARTUP_BUFFER = 10.0
 
-desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
+desc "To check if the CNF has multiple microservices that share a database"
 task "shared_database", ["install_cluster_tools"] do |_, args|
   LOGGING.info "Running shared_database test"
   CNFManager::Task.task_runner(args) do |args, config|
