@@ -1407,43 +1407,6 @@ crystal src/cnf-testsuite.cr protected_access
 ```
 ./cnf-testsuite latest_tag
 ```
-=======
-
-```
-./cnf-testsuite default_namespace
-```
-
-<details>
-<summary>Details for `default_namespace`</summary>
-
-<p>
-Kubernetes Namespaces provide a way to segment and isolate cluster resources across multiple applications and users. As a best practice, workloads should be isolated with Namespaces.
-</p>
-
-<p>
-<b>Remediation steps:</b> Namespaces should be required and the default (empty) Namespace should not be used. This policy validates that Pods specify a Namespace name other than `default`.
-</p>
-
-</details>
-
-##### :heavy_check_mark: To check if Pods in the CNF use container images with the latest tag
-
-```
-./cnf-testsuite latest_tag
-```
-
-<details>
-<summary>Details for `latest_tag`</summary>
-
-<p>
-The `:latest` tag is mutable and can lead to unexpected errors if the image changes. Even when a tag is not specified, the `:latest` tag is used by default.
-</p>
-
-<p>
-<b>Remediation steps:</b> When specifying container images, always specify a tag and ensure to use an immutable tag that maps to a specific version of an application Pod. Avoid using the `latest` tag, as it is not guaranteed to be always point to the same version of the image.
-</p>
-
-</details>
 
 ##### :heavy_check_mark: To check if pods are using the `app.kubernetes.io/name` label
 <details> <summary>Details for labels test</summary>
