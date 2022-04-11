@@ -893,7 +893,7 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 
 <p>
 
-<b>OpenMetics Details:</b> OpenMetrics specifies the de-facto standard for transmitting cloud-native metrics at scale, with support for both text representation and Protocol Buffers and brings it into an Internet Engineering Task Force (IETF) standard. It supports both pull and push-based data collection. Sourced from [OpenMetric Readme](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md)
+<b>OpenMetics Details:</b> OpenMetrics specifies the de-facto standard for transmitting cloud-native metrics at scale, with support for both text representation and Protocol Buffers and brings it into an Internet Engineering Task Force (IETF) standard. It supports both pull and push-based data collection. Sourced from [OpenMetrics Readme](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md)
 
 <b>Read the [rationale](RATIONALE.md#to-check-if-openmetrics-is-being-used-and-or-compatible-open_metrics) behind this test.</b>
 
