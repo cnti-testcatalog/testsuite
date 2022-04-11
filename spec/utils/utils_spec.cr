@@ -162,7 +162,7 @@ describe "Utils" do
       resp
     end
     (task_response).should eq(["✔️  PASSED: No privileged containers", 
-                               "✖️  FAILED: Found 1 privileged containers: [\"coredns\"]"])
+                               "✖️  FAILED: Found 1 privileged containers: [\"privileged-coredns\"]"])
   ensure
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
