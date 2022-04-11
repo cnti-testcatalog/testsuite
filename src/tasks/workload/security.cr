@@ -114,7 +114,7 @@ desc "Check if any containers are running in as root"
 task "non_root_user", ["install_falco"] do |_, args|
    unless KubectlClient::Get.resource_wait_for_install("Daemonset", "falco", namespace: TESTSUITE_NAMESPACE)
      Log.info { "Falco Failed to Start" }
-     upsert_skipped_task("non_root_user", "✖️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).")
+     upsert_skipped_task("non_root_user", "⏭️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).")
      node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
      pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
      falco_pod_name = pods[0].dig("metadata", "name").as_s
