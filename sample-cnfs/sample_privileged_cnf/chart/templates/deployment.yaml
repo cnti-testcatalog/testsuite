@@ -69,7 +69,7 @@ spec:
 {{ toYaml .Values.nodeSelector | indent 8 }}
       {{- end }}
       containers:
-      - name: "coredns"
+      - name: "privileged-coredns"
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         securityContext:
           privileged: true
