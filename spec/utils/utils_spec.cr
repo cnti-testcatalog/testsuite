@@ -162,47 +162,27 @@ describe "Utils" do
       resp
     end
     (task_response).should eq(["✔️  PASSED: No privileged containers", 
-                               "✖️  FAILED: Found 1 privileged containers: [\"coredns\"]"])
+                               "✖️  FAILED: Found 1 privileged containers: [\"privileged-coredns\"]"])
   ensure
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
   end
 
   it "'task_runner' should run a test against a single cnf if passed a cnf-config argument even if there are multiple cnfs installed", tags: ["task_runner"]  do
-    config_file = "sample-cnfs/sample-generic-cnf"
-    args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-testsuite.yml", "verbose", "wait_count=0"])
-    cli_hash = CNFManager.sample_setup_cli_args(args)
-    CNFManager.sample_setup(cli_hash)
-    args = Sam::Args.new(["cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml", "verbose", "wait_count=0"])
-    cli_hash = CNFManager.sample_setup_cli_args(args)
-    CNFManager.sample_setup(cli_hash)
-    # my_args = Sam::Args.new
-    # config_file = "sample-cnfs/sample-generic-cnf"
-    # CNFManager.sample_setup_args(sample_dir: config_file, args: my_args)
-    # CNFManager.sample_setup_args(sample_dir: "sample-cnfs/sample_privileged_cnf", args: my_args )
-    cnfmng_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
-    release_name = cnfmng_config.cnf_config[:release_name]
-    installed_args = Sam::Args.new(["cnf-config=./cnfs/#{release_name}/cnf-testsuite.yml"])
-    task_response = CNFManager::Task.task_runner(installed_args) do |args|
-      LOGGING.info("task_runner spec args #{args.inspect}")
-      # config = cnf_testsuite_yml(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)))
-      config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
-      helm_chart_container_name = config.get("helm_chart_container_name").as_s
-      privileged_response = `kubectl get pods --all-namespaces -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
-      privileged_list = privileged_response.to_s.split(" ").uniq
-      LOGGING.info "privileged_list #{privileged_list}"
-      if privileged_list.select {|x| x == helm_chart_container_name}.size > 0
-        resp = "✖️  FAILED: Found privileged containers: #{privileged_list.inspect}".colorize(:red)
-      else
-        resp = "✔️  PASSED: No privileged containers".colorize(:green)
-      end
-      LOGGING.info resp
-      resp
-    end
-    (task_response).should eq("✖️  FAILED: Found privileged containers: [\"cluster-tools\", \"coredns\", \"kube-proxy\"]".colorize(:red))
-    CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
-    CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
-  end
+    Log.info {`./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-generic-cnf/cnf-testsuite.yml`}
+    Log.info {`./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml`}
+
+    resp = `./cnf-testsuite privileged`
+    Log.info { resp }
+    (resp).includes?("✖️  FAILED: Found 1 privileged containers: [\"privileged-coredns\"]").should be_true
+  ensure
+    response_s = `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-generic-cnf/cnf-testsuite.yml`
+    Log.info { response_s }
+    $?.success?.should be_true
+    response_s = `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml`
+    Log.info { response_s }
+    $?.success?.should be_true
+end
 
   it "'logger' command line logger level setting via config.yml", tags: ["logger"]  do
     # NOTE: the config.yml file is in the root of the repo directory. 
