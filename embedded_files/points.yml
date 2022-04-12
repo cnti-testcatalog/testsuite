@@ -2,7 +2,7 @@
 - name: default_scoring
   tags: 
   pass: 5
-  fail: -1 
+  fail: 0 
   skipped: 0 
   na: 0 
   neutral: 0 
@@ -12,7 +12,8 @@
 - name: reasonable_startup_time 
   tags: microservice, dynamic, workload
 - name: single_process_type 
-  tags: microservice, dynamic, workload
+  tags: microservice, dynamic, workload, cert
+  pass: 100
 - name: service_discovery
   tags: microservice, dynamic, workload
   pass: 5
@@ -96,9 +97,11 @@
   fail: -1 
   tags: configuration, static, workload
 - name: liveness
-  tags: resilience, dynamic, workload
+  tags: resilience, dynamic, workload, cert
+  pass: 100
 - name: readiness
-  tags: resilience, dynamic, workload
+  tags: resilience, dynamic, workload, cert
+  pass: 100
 #- name: no_volume_with_configuration
 #  tags: configuration, dynamic
 - name: rolling_update
@@ -112,9 +115,11 @@
 - name: nodeport_not_used
   tags: configuration, dynamic, workload
 - name: hostport_not_used
-  tags: configuration, dynamic, workload
+  tags: configuration, dynamic, workload, cert
+  pass: 100
 - name: hardcoded_ip_addresses_in_k8s_runtime_configuration
-  tags: configuration, dynamic, workload
+  tags: configuration, dynamic, workload, cert
+  pass: 100
 - name: secrets_used
   tags: configuration, dynamic, workload
   pass: 5
@@ -165,7 +170,8 @@
   pass3: 3 
   fail: -1
 - name: node_drain
-  tags: state, dynamic, workload
+  tags: state, dynamic, workload, cert
+  pass: 100
 
 #- name: hardware_and_scheduling
 #  tags: hardware, dynamic, workload
@@ -195,13 +201,15 @@
   tags: security, dynamic, workload
 
 - name: privileged_containers
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
+  pass: 100
 
 - name: network_policies
   tags: security, dynamic, workload
 
 - name: non_root_containers
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
+  pass: 100
 
 - name: host_pid_ipc_privileges
   tags: security, dynamic, workload
@@ -210,13 +218,15 @@
   tags: security, dynamic, workload
 
 - name: resource_policies
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cer
+  pass: 100
 
 - name: immutable_file_systems
   tags: security, dynamic, workload
 
 - name: hostpath_mounts
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
+  pass: 100
 
 - name: ingress_egress_blocked 
   tags: security, dynamic, workload
@@ -231,7 +241,8 @@
   tags: security, dynamic, workload
 
 - name: log_output
-  tags: observability, dynamic, workload
+  tags: observability, dynamic, workload, cert
+  pass: 100
 - name: prometheus_traffic 
   tags: observability, dynamic, workload
   pass: 10
@@ -252,7 +263,8 @@
   tags: configuration, dynamic, workload
 
 - name: container_sock_mounts
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
+  pass: 100
 
 - name: require_labels
   tags: configuration, dynamic, workload
@@ -264,10 +276,12 @@
   tags: security, dynamic, workload
 
 - name: selinux_options
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
+  pass: 100
 
 - name: default_namespace
   tags: configuration, dynamic, workload
 
 - name: latest_tag
-  tags: configuration, dynamic, workload
+  tags: configuration, dynamic, workload, cert
+  pass: 100
