@@ -16,7 +16,7 @@ end
 
 REASONABLE_STARTUP_BUFFER = 10.0
 
-desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
+desc "To check if the CNF has multiple microservices that share a database"
 task "shared_database", ["install_cluster_tools"] do |_, args|
   LOGGING.info "Running shared_database test"
   CNFManager::Task.task_runner(args) do |args, config|
@@ -274,7 +274,7 @@ end
 desc "Does the CNF have a reasonable container image size (< 5GB)?"
 task "reasonable_image_size" do |_, args|
   unless Dockerd.install
-    upsert_skipped_task("reasonable_image_size", "✖️  SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install")
+    upsert_skipped_task("reasonable_image_size", "⏭️  SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install")
     next
   end
   CNFManager::Task.task_runner(args) do |args,config|

@@ -1107,13 +1107,17 @@ module CNFManager
         end
       else
         helm_uninstall = Helm.uninstall(release_name.split(" ")[0] + " #{namespace} --wait")
-        # helm_uninstall = Helm.uninstall(release_name + " #{namespace}")
         ret = helm_uninstall[:status].success?
         Log.for("verbose").info { helm_uninstall[:output].to_s } if verbose
-        FileUtils.rm_rf(destination_cnf_dir)
         if ret
           stdout_success "Successfully cleaned up #{release_name.split(" ")[0]}"
+        else
+          helm_uninstall = Helm.uninstall(release_name + " #{namespace}")
+          if helm_uninstall[:status].success?
+            stdout_success "Successfully cleaned up #{release_name.split(" ")[0]}"
+          end
         end
+        FileUtils.rm_rf(destination_cnf_dir)
       end
     end
 

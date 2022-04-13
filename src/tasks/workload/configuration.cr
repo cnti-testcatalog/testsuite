@@ -139,7 +139,7 @@ task "versioned_tag", ["install_opa"] do |_, args|
   # todo wait for opa
    # unless KubectlClient::Get.resource_wait_for_install("Daemonset", "falco") 
    #   LOGGING.info "Falco Failed to Start"
-   #   upsert_skipped_task("non_root_user", "✖️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).")
+   #   upsert_skipped_task("non_root_user", "⏭️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).")
    #   node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
    #   pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
    #   falco_pod_name = pods[0].dig("metadata", "name")
@@ -305,7 +305,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
       upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  FAILED: Hard-coded IP addresses found in the runtime K8s configuration")
     end
   rescue
-    upsert_skipped_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  SKIPPED: unknown exception")
+    upsert_skipped_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "⏭️  SKIPPED: unknown exception")
   ensure
     KubectlClient::Delete.command("namespace hardcoded-ip-test --force --grace-period 0")
   end
@@ -450,7 +450,7 @@ task "immutable_configmap" do |_, args|
       Log.info { "kubectl apply failed for: #{test_config_map_filename}" }
       k8s_ver = KubectlClient.server_version
       if version_less_than(k8s_ver, "1.19.0")
-        resp = "✖️  SKIPPED: immmutable configmaps are not supported in this k8s cluster.".colorize(:yellow)
+        resp = " ⏭️  SKIPPED: immmutable configmaps are not supported in this k8s cluster.".colorize(:yellow)
         upsert_skipped_task("immutable_configmap", resp)
         immutable_configmap_supported = false
       else
@@ -547,7 +547,7 @@ task "immutable_configmap" do |_, args|
       resp = "✖️  FAILED: Found mutable configmap(s) #{emoji_probe}".colorize(:red)
       upsert_failed_task("immutable_configmap", resp)
     else
-      resp = "✖️  SKIPPED: Immutable configmap(s) not supported #{emoji_probe}".colorize(:yellow)
+      resp = "⏭️  SKIPPED: Immutable configmap(s) not supported #{emoji_probe}".colorize(:yellow)
       upsert_skipped_task("immutable_configmap", resp)
     end
     resp
@@ -561,7 +561,7 @@ task "alpha_k8s_apis" do |_, args|
 
     unless check_poc(args)
       Log.info { "Skipping alpha_k8s_apis: not in poc mode" }
-      puts "SKIPPED: alpha_k8s_apis".colorize(:yellow)
+      puts "⏭️  SKIPPED: alpha_k8s_apis".colorize(:yellow)
       next
     end
 
