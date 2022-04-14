@@ -13,6 +13,19 @@ describe "Microservice" do
     $?.success?.should be_true
   end
 
+  it "'shared_database' should be skipped no MariaDB containers are found", tags: ["shared_database"]  do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns/cnf-testsuite.yml`
+      response_s = `./cnf-testsuite shared_database`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/SKIPPED: \[shared_database\] No MariaDB containers were found/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns/cnf-testsuite.yml`
+      $?.success?.should be_true
+    end
+  end
+
   it "'shared_database' should pass if no database is used by two microservices", tags: ["shared_database"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample-statefulset-cnf/cnf-testsuite.yml`
