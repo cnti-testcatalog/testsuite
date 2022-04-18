@@ -828,7 +828,7 @@ module KubectlClient
       apply_result = KubectlClient::Apply.file(manifest_file)
       apply_resp = apply_result[:output]
 
-      until (apply_resp =~ /dockercluster.infrastructure.cluster.x-k8s.io\/capd unchanged/) != nil && (apply_resp =~ /cluster.cluster.x-k8s.io\/capd unchanged/) != nil && (apply_resp =~ /kubeadmcontrolplane.controlplane.cluster.x-k8s.io\/capd-control-plane unchanged/) != nil && (apply_resp =~ /kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io\/capd-md-0 unchanged/) !=nil && (apply_resp =~ /machinedeployment.cluster.x-k8s.io\/capd-md-0 unchanged/) != nil && (apply_resp =~ /machinehealthcheck.cluster.x-k8s.io\/capd-mhc-0 unchanged/) != nil || second_count > wait_count.to_i
+      until (apply_resp =~ /cluster.cluster.x-k8s.io\/capi-quickstart unchanged/) != nil && (apply_resp =~ /dockercluster.infrastructure.cluster.x-k8s.io\/capi-quickstart unchanged/) != nil && (apply_resp =~ /kubeadmcontrolplane.controlplane.cluster.x-k8s.io\/capi-quickstart-control-plane unchanged/) != nil && (apply_resp =~ /dockermachinetemplate.infrastructure.cluster.x-k8s.io\/capi-quickstart-control-plane unchanged/) != nil && (apply_resp =~ /dockermachinetemplate.infrastructure.cluster.x-k8s.io\/capi-quickstart-md-0 unchanged/) !=nil && (apply_resp =~ /kubeadmconfigtemplate.bootstrap.cluster.x-k8s.io\/capi-quickstart-md-0 unchanged/) != nil && (apply_resp =~ /machinedeployment.cluster.x-k8s.io\/capi-quickstart-md-0 unchanged/) != nil || second_count > wait_count.to_i
         Log.info { "second_count = #{second_count}" }
         sleep 1
         apply_result = KubectlClient::Apply.file(manifest_file)

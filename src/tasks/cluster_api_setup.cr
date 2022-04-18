@@ -48,7 +48,7 @@ task "cluster_api_setup" do |_, args|
     error: create_cluster_stderr = IO::Memory.new
   )
 
-  KubectlClient::Apply.file(create_cluster_file)
+  KubectlClient::Get.wait_for_install_by_apply(create_cluster_file)
 
   Log.for("clusterctl-create").info { create_cluster_stdout.to_s }
   Log.info { "cluster api setup complete" }
