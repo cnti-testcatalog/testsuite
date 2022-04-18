@@ -57,11 +57,9 @@ end
 desc "Cleanup Cluster API"
 task "cluster_api_cleanup" do |_, args|
   current_dir = FileUtils.pwd 
-  cluster_api_dir = "#{current_dir}/#{TOOLS_DIR}/cluster-api"
-  KubectlClient::Delete.file("#{cluster_api_dir}/capd.yaml")
+  delete_cluster_file = "#{current_dir}/capi.yaml"
+  KubectlClient::Delete.file("#{delete_cluster_file}")
 
-  cmd = "clusterctl delete --all --include-crd --include-namespace --config #{cluster_api_dir}/clusterctl.yaml"
+  cmd = "clusterctl delete --all --include-crd --include-namespace"
   Process.run(cmd, shell: true, output: stdout = IO::Memory.new, error: stderr = IO::Memory.new)
-
-  FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/cluster-api")
 end
