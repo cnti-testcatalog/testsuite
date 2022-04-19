@@ -1,0 +1,33 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: check-selinux-enablement
+  annotations:
+    policies.kyverno.io/title: Check SELinux enablement
+    kyverno.io/kyverno-version: 1.6.0
+spec:
+  validationFailureAction: audit
+  background: true
+  rules:
+    - name: selinux-option
+      match:
+        any:
+        - resources:
+            kinds:
+              - Pod
+      validate:
+        message: >-
+          SELinux is enabled
+        pattern:
+          spec:
+            =(securityContext):
+              X(seLinuxOptions): null
+            =(ephemeralContainers):
+              - =(securityContext):
+                  X(seLinuxOptions): null
+            =(initContainers):
+              - =(securityContext):
+                  X(seLinuxOptions): null
+            containers:
+              - =(securityContext):
+                  X(seLinuxOptions): null
