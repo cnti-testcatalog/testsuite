@@ -91,16 +91,16 @@ task "selinux_options" do |_, args|
     # IF SELinux is not enabled, skip this test
     # Else check for SELinux options
     if failures.size == 0
-      upsert_skipped_task("selinux_options", "✔️ SKIPPED: Resources are not using SELinux options #{emoji_security}")
+      upsert_skipped_task("selinux_options", "✔️ SKIPPED: Pods are not using SELinux options #{emoji_security}")
     else
 
       policy_path = Kyverno.policy_path("pod-security/baseline/disallow-selinux/disallow-selinux.yaml")
       failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
       if failures.size == 0
-        resp = upsert_passed_task("selinux_options", "✔️  PASSED: Resources are not using custom SELinux options #{emoji_security}")
+        resp = upsert_passed_task("selinux_options", "✔️  PASSED: Pods are not using custom SELinux options that can be used for privilege escalations #{emoji_security}")
       else
-        resp = upsert_failed_task("selinux_options", "✖️  FAILED: Resources are using custom SELinux options #{emoji_security}")
+        resp = upsert_failed_task("selinux_options", "✖️  FAILED: Pods are using custom SELinux options that can be used for privilege escalations #{emoji_security}")
         failures.each do |failure|
           failure.resources.each do |resource|
             puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
