@@ -363,22 +363,35 @@ describe "Security" do
       response_s = `./cnf-testsuite selinux_options verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Resources are using custom SELinux options/ =~ response_s).should_not be_nil
+      (/FAILED: Pods are using custom SELinux options that can be used for privilege escalations/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_latest_tag`
     end
   end
 
-  it "'selinux_options' should pass if containers do not have custom selinux options that can be used for privilege escalations", tags: ["selinux_options"] do
+  it "'selinux_options' should be skipped if containers do not use custom selinux options", tags: ["selinux_options"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_nonroot`
       $?.success?.should be_true
       response_s = `./cnf-testsuite selinux_options verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Resources are not using custom SELinux options/ =~ response_s).should_not be_nil
+      (/SKIPPED: SKIPPED: Pods are not using SELinux options/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot`
+    end
+  end
+
+  it "'selinux_options' should pass if containers do not have custom selinux options that can be used for privilege escalations", tags: ["selinux_options"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_valid_selinux_options`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite selinux_options verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Pods are not using custom SELinux options that can be used for privilege escalations/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_valid_selinux_options`
     end
   end
 
