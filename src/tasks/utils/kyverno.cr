@@ -59,6 +59,10 @@ module Kyverno
     "#{policies_repo_path}/#{policy_path}"
   end
 
+  def self.custom_policy_path(policy_path : String) : String
+    "#{tools_path}/custom-kyverno-policies/#{policy_path}"
+  end
+
   def self.policies_repo_path
     "#{tools_path}/kyverno-policies"
   end
