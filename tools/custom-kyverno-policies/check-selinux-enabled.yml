@@ -16,8 +16,7 @@ spec:
             kinds:
               - Pod
       validate:
-        message: >-
-          SELinux is enabled
+        message: "SELinux is enabled"
         pattern:
           spec:
             =(securityContext):
