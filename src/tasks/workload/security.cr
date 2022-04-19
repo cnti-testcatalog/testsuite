@@ -85,7 +85,7 @@ task "selinux_options" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     emoji_security = "🔓🔑"
 
-    policy_path = Kyverno.custom_policy_path("check-selinux-enablement.yaml")
+    policy_path = Kyverno.custom_policy_path("check-selinux-enabled.yaml")
     failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
     # IF SELinux is not enabled, skip this test
