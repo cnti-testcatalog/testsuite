@@ -325,9 +325,14 @@ task "elastic_volumes" do |_, args|
     VERBOSE_LOGGING.info "elastic_volumes" if check_verbose(args)
     emoji_probe="🧫"
     elastic = false
+    volumes_used = false
     task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
       Log.info {"resource: #{resource}"}
       Log.info {"volumes: #{volumes}"}
+
+      next if volumes.size == 0
+      volumes_used = true
+
       # todo use workload resource
       # elastic = WorkloadResource.elastic?(volumes)
       namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
@@ -337,6 +342,9 @@ task "elastic_volumes" do |_, args|
         elastic = true
       end
     end
+
+    if volumes_used == false
+      resp = upsert_skipped_task("elastic_volumes","✔️  SKIPPED: No volumes used #{emoji_probe}")
     if elastic
       resp = upsert_passed_task("elastic_volumes","✔️  PASSED: Elastic Volumes Used #{emoji_probe}")
     else
