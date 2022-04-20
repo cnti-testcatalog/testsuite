@@ -348,7 +348,7 @@ task "elastic_volumes" do |_, args|
     if elastic
       resp = upsert_passed_task("elastic_volumes","✔️  PASSED: Elastic Volumes Used #{emoji_probe}")
     else
-      resp = upsert_failed_task("elastic_volumes","✔️  FAILED: Elastic Volumes Not Used #{emoji_probe}")
+      resp = upsert_failed_task("elastic_volumes","✔️  FAILED: Volumes used are not elastic volumes #{emoji_probe}")
     end
     resp
   end

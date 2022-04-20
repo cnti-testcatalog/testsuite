@@ -56,7 +56,7 @@ describe "State" do
       $?.success?.should be_true
       response_s = `./cnf-testsuite -l info elastic_volumes verbose`
       LOGGING.info "Status:  #{response_s}"
-      (/FAILED: Elastic Volumes Not Used/ =~ response_s).should_not be_nil
+      (/FAILED: Volumes used are not elastic volumes/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
