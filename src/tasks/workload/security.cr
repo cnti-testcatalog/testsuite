@@ -92,7 +92,7 @@ task "selinux_options" do |_, args|
     # IF SELinux is not enabled, skip this test
     # Else check for SELinux options
     if failures.size == 0
-      upsert_skipped_task("selinux_options", "✔️ SKIPPED: Pods are not using SELinux options #{emoji_security}")
+      upsert_skipped_task("selinux_options", "⏭️  SKIPPED: Pods are not using SELinux options #{emoji_security}")
     else
 
       policy_path = Kyverno.policy_path("pod-security/baseline/disallow-selinux/disallow-selinux.yaml")

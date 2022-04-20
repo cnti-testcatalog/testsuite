@@ -344,7 +344,7 @@ task "elastic_volumes" do |_, args|
     end
 
     if volumes_used == false
-      resp = upsert_skipped_task("elastic_volumes","✔️  SKIPPED: No volumes used #{emoji_probe}")
+      resp = upsert_skipped_task("elastic_volumes","⏭️  SKIPPED: No volumes used #{emoji_probe}")
     elsif elastic
       resp = upsert_passed_task("elastic_volumes","✔️  PASSED: Elastic Volumes Used #{emoji_probe}")
     else
