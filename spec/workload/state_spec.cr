@@ -25,6 +25,19 @@ describe "State" do
     end
   end
 
+  it "'elastic_volume' should be skipped if the cnf does not use any volumes", tags: ["elastic_volume"]  do
+    begin
+      LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-config=./sample-cnfs/sample_nonroot`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite -l info elastic_volumes verbose`
+      LOGGING.info "Status:  #{response_s}"
+      (/SKIPPED: No volumes used/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot`
+      $?.success?.should be_true
+    end
+  end
+
   it "'database_persistence' should pass if the cnf uses a database that uses an elastic volume with a stateful set", tags: ["elastic_volume"]  do
     begin
       Log.info {"Installing Mysql "}
