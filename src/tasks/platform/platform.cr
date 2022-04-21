@@ -15,7 +15,7 @@ task "platform", ["helm_local_install", "k8s_conformance", "platform:observabili
     stdout_failure "Failed required tasks: #{CNFManager::Points.failed_required_tasks.inspect}"
     update_yml("#{CNFManager::Points::Results.file}", "exit_code", "1")
   end
-  stdout_info "CNFManager::Points::Results.have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+  stdout_info "Test results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
 end
 
 desc "Does the platform pass the K8s conformance tests?"

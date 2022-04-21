@@ -34,7 +34,7 @@ task "all", ["workload", "platform"] do  |_, args|
       update_yml("#{CNFManager::Points::Results.file}", "exit_code", "1")
     end
   end
-  stdout_info "CNFManager::Points::Results.have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+  stdout_info "Test results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
 end
 
 desc "The CNF Test Suite program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
@@ -58,12 +58,12 @@ task "workload", ["automatic_cnf_install", "ensure_cnf_installed", "configuratio
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end
-    Log.debug { "results yaml: #{yaml}" }
+    Log.info { "results yaml: #{yaml}" }
     if (yaml["exit_code"]) != 2
       update_yml("#{CNFManager::Points::Results.file}", "exit_code", "1")
     end
   end
-  stdout_info "CNFManager::Points::Results.have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+  stdout_info "Test results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
 end
 
 desc "Makes sure a cnf is in the cnf directory"
@@ -130,8 +130,8 @@ begin
   yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
     YAML.parse(file)
   end
-  Log.debug { "results yaml: #{yaml}" }
-  case (yaml["exit_code"]) 
+  Log.info { "results yaml: #{yaml}" }
+  case (yaml["exit_code"])
   when 1
     exit 1
   when 2
