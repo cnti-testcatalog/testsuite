@@ -670,7 +670,7 @@ task "pod_dns_error", ["install_litmus"] do |_, args|
         resp = upsert_failed_task("pod_dns_error","✖️  FAILED: pod_dns_error chaos test failed 🗡️💀♻️")
       end
     else
-      resp = upsert_skipped_task("pod_dns_error","✖️  SKIPPED: pod_dns_error docker runtime not found 🗡️💀♻️")
+      resp = upsert_skipped_task("pod_dns_error","⏭️  SKIPPED: pod_dns_error docker runtime not found 🗡️💀♻️")
     end
   end
 end
