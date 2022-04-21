@@ -87,8 +87,6 @@
 
 - name: helm_deploy
   tags: installability, dynamic
-- name: install_script_helm
-  tags: installability, static
 - name: helm_chart_valid
   tags: installability, dynamic
 - name: helm_chart_published
