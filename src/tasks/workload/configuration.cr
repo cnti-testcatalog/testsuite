@@ -20,7 +20,8 @@ task "configuration", [
     "alpha_k8s_apis",
     "require_labels",
     "latest_tag",
-    "default_namespace"
+    "default_namespace",
+    "versioned_tag"
   ] do |_, args|
   stdout_score("configuration", "configuration")
 end
@@ -29,18 +30,20 @@ desc "Check if the CNF is running containers with labels configured?"
 task "require_labels" do |_, args|
   Log.for("verbose").info { "require-labels" }
   Kyverno.install
-  emoji_passed = "🏷️✔️"
-  emoji_failed = "🏷️❌"
-  policy_path = Kyverno.best_practice_policy("require_labels/require_labels.yaml")
-  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+  CNFManager::Task.task_runner(args) do |args, config|
+    emoji_passed = "🏷️✔️"
+    emoji_failed = "🏷️❌"
+    policy_path = Kyverno.best_practice_policy("require_labels/require_labels.yaml")
+    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
-  if failures.size == 0
-    resp = upsert_passed_task("require_labels", "✔️  PASSED: Pods have the app.kubernetes.io/name label #{emoji_passed}")
-  else
-    resp = upsert_failed_task("require_labels", "✖️  FAILED: Pods should have the app.kubernetes.io/name label. #{emoji_failed}")
-    failures.each do |failure|
-      failure.resources.each do |resource|
-        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+    if failures.size == 0
+      resp = upsert_passed_task("require_labels", "✔️  PASSED: Pods have the app.kubernetes.io/name label #{emoji_passed}")
+    else
+      resp = upsert_failed_task("require_labels", "✖️  FAILED: Pods should have the app.kubernetes.io/name label. #{emoji_failed}")
+      failures.each do |failure|
+        failure.resources.each do |resource|
+          puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+        end
       end
     end
   end
@@ -50,18 +53,20 @@ desc "Check if the CNF installs resources in the default namespace"
 task "default_namespace" do |_, args|
   Log.for("verbose").info { "default_namespace" }
   Kyverno.install
-  emoji_passed = "🏷️✔️"
-  emoji_failed = "🏷️❌"
-  policy_path = Kyverno.best_practice_policy("disallow_default_namespace/disallow_default_namespace.yaml")
-  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+  CNFManager::Task.task_runner(args) do |args, config|
+    emoji_passed = "🏷️✔️"
+    emoji_failed = "🏷️❌"
+    policy_path = Kyverno.best_practice_policy("disallow_default_namespace/disallow_default_namespace.yaml")
+    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
-  if failures.size == 0
-    resp = upsert_passed_task("default_namespace", "✔️  PASSED: default namespace is not being used #{emoji_passed}")
-  else
-    resp = upsert_failed_task("default_namespace", "✖️  FAILED: Resources are created in the default namespace #{emoji_failed}")
-    failures.each do |failure|
-      failure.resources.each do |resource|
-        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+    if failures.size == 0
+      resp = upsert_passed_task("default_namespace", "✔️  PASSED: default namespace is not being used #{emoji_passed}")
+    else
+      resp = upsert_failed_task("default_namespace", "✖️  FAILED: Resources are created in the default namespace #{emoji_failed}")
+      failures.each do |failure|
+        failure.resources.each do |resource|
+          puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+        end
       end
     end
   end
