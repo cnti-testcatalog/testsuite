@@ -506,7 +506,7 @@ crystal src/cnf-testsuite.cr external_retry
 </details>
 
 ```
-./cnf-testsuite reasonable_startup_time destructive
+./cnf-testsuite reasonable_startup_time
 ```
 
 ##### :heavy_check_mark: To check if the CNF is using only a single process type per container
