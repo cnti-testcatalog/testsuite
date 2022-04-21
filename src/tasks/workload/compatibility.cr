@@ -8,7 +8,7 @@ require "../utils/utils.cr"
 rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
 desc "The CNF test suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
-task "compatibility", ["install_script_helm", "helm_chart_valid", "helm_chart_published", "helm_deploy", "cni_compatible", "increase_decrease_capacity", "rollback"].concat(rolling_version_change_test_names) do |_, args|
+task "compatibility", ["helm_chart_valid", "helm_chart_published", "helm_deploy", "cni_compatible", "increase_decrease_capacity", "rollback"].concat(rolling_version_change_test_names) do |_, args|
   stdout_score("compatibility", "Compatibility, Installability, and Upgradeability")
 
 end
@@ -369,39 +369,39 @@ task "helm_deploy" do |_, args|
   end
 end
 
-desc "Does the install script use helm?"
-task "install_script_helm" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
+# desc "Does the install script use helm?"
+# task "install_script_helm" do |_, args|
+#   CNFManager::Task.task_runner(args) do |args, config|
+#     # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
     
-    emoji_helm_script="⎈📦"
-    found = 0
-    # destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)))
-    # install_script = config.get("install_script").as_s?
-    install_script = config.cnf_config[:install_script]
-    Log.info { "install_script: #{install_script}" }
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    Log.info { "destination_cnf_dir: #{destination_cnf_dir}" }
-    Log.for("verbose").debug { destination_cnf_dir } if check_verbose(args)
-    if !install_script.empty?
-      response = String::Builder.new
-      content = File.open("#{destination_cnf_dir}/#{install_script}") do |file|
-        file.gets_to_end
-      end
-      # LOGGING.debug content
-      if /helm/ =~ content
-        found = 1
-      end
-      if found < 1
-        upsert_failed_task("install_script_helm", "✖️  FAILED: Helm not found in supplied install script #{emoji_helm_script}")
-      else
-        upsert_passed_task("install_script_helm", "✔️  PASSED: Helm found in supplied install script #{emoji_helm_script}")
-      end
-    else
-      upsert_passed_task("install_script_helm", "✔️  PASSED (by default): No install script provided")
-    end
-  end
-end
+#     emoji_helm_script="⎈📦"
+#     found = 0
+#     # destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)))
+#     # install_script = config.get("install_script").as_s?
+#     install_script = config.cnf_config[:install_script]
+#     Log.info { "install_script: #{install_script}" }
+#     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+#     Log.info { "destination_cnf_dir: #{destination_cnf_dir}" }
+#     Log.for("verbose").debug { destination_cnf_dir } if check_verbose(args)
+#     if !install_script.empty?
+#       response = String::Builder.new
+#       content = File.open("#{destination_cnf_dir}/#{install_script}") do |file|
+#         file.gets_to_end
+#       end
+#       # LOGGING.debug content
+#       if /helm/ =~ content
+#         found = 1
+#       end
+#       if found < 1
+#         upsert_failed_task("install_script_helm", "✖️  FAILED: Helm not found in supplied install script #{emoji_helm_script}")
+#       else
+#         upsert_passed_task("install_script_helm", "✔️  PASSED: Helm found in supplied install script #{emoji_helm_script}")
+#       end
+#     else
+#       upsert_passed_task("install_script_helm", "✔️  PASSED (by default): No install script provided")
+#     end
+#   end
+# end
 
 task "helm_chart_published", ["helm_local_install"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|

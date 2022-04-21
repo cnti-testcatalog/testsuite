@@ -26,7 +26,7 @@ describe CnfTestSuite do
     (/PASSED: Published Helm Chart Found/ =~ response_s).should_not be_nil
     (/Final workload score:/ =~ response_s).should_not be_nil
     (/Final score:/ =~ response_s).should_not be_nil
-    (CNFManager::Points.all_result_test_names(CNFManager::Points.final_cnf_results_yml).sort).should eq(["volume_hostpath_not_found", "privileged", "increase_capacity", "decrease_capacity", "install_script_helm", "helm_chart_valid", "helm_chart_published"].sort)
+    (CNFManager::Points.all_result_test_names(CNFManager::Points.final_cnf_results_yml).sort).should eq(["volume_hostpath_not_found", "privileged", "increase_capacity", "decrease_capacity", "helm_chart_valid", "helm_chart_published"].sort)
     (/^.*\.cr:[0-9].*/ =~ response_s).should be_nil
     $?.success?.should be_true
   end

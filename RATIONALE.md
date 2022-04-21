@@ -21,10 +21,6 @@ rather than manually as directly referencing the helm chart source.
 #### *Test if the Helm deploys*: [helm_deploy](USAGE.md#heavy_check_mark-test-if-the-helm-deploys)
 > A helm chart should be [deployable to a cluster](https://helm.sh/docs/helm/helm_install/#helm)
 
-#### *Test if CNF/the install script uses Helm v3*: [install_script_helm](USAGE.md#heavy_check_mark-test-if-the-install-script-uses-helm-v3)
-> Helm v3 has significant ease-of-use improvements over helm v2, which has additional dependencies
-such as tiller.  
-
 #### *To test if the CNF can perform a rolling update*: [rolling_update](USAGE.md#heavy_check_mark-to-test-if-the-cnf-can-perform-a-rolling-update)
 > See rolling downgrade
 
