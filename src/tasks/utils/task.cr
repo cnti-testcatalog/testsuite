@@ -55,7 +55,6 @@ module CNFManager
                                             helm_chart_path: "", 
                                             manifest_file_path: "",
                                             git_clone_url: "",
-                                            install_script: "",
                                             release_name: "",
                                             service_name: "",
                                             docker_repository: "",

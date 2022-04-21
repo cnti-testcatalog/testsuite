@@ -24,7 +24,6 @@ module CNFManager
                                      helm_chart_path: String, 
                                      manifest_file_path: String, 
                                      git_clone_url: String,
-                                     install_script: String,
                                      release_name: String,
                                      service_name:  String,
                                      docker_repository: String,
@@ -70,7 +69,6 @@ module CNFManager
       helm_directory = optional_key_as_string(config, "helm_directory")
       source_helm_directory = optional_key_as_string(config, "helm_directory")
       git_clone_url = optional_key_as_string(config, "git_clone_url")
-      install_script = optional_key_as_string(config, "install_script")
       docker_repository = optional_key_as_string(config, "docker_repository")
       if helm_directory.empty?
         working_chart_directory = "exported_chart"
@@ -124,7 +122,6 @@ module CNFManager
                                helm_chart_path: helm_chart_path, 
                                manifest_file_path: manifest_file_path,
                                git_clone_url: git_clone_url,
-                               install_script: install_script,
                                release_name: release_name,
                                service_name: service_name,
                                docker_repository: docker_repository,

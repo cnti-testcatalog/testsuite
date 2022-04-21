@@ -21,7 +21,6 @@ This information is also required for running various tests e.g. The 'container_
 - [Keys and Values](#Keys-and-Values)
   - [helm_directory](#helm_directory)
   - [git_clone_url](#git_clone_url)
-  - [install_script](#install_script)
   - [release_name](#release_name)
   - [deployment_name](#deployment_name)
   - [deployment_label](#deployment_label)
@@ -47,7 +46,6 @@ The following is a basic example cnf-testsuite.yml file that can be found in the
 helm_chart: stable/coredns # PUBLISHED_CNFS_HELM_CHART_REPO/NAME
 
 git_clone_url: https://github.com/coredns/coredns.git # GIT_REPO_FOR_CNFS_SOURCE_CODE
-install_script: cnfs/coredns/Makefile # PATH_TO_CNFS_INSTALL_SCRIPT
 
 release_name: privileged-coredns # DESIRED_HELM_RELEASE_NAME
 helm_chart_container_name: privileged-coredns-coredns # POD_SPEC_CONTAINER_NAME
@@ -87,15 +85,6 @@ Example setting:
 
 _Note: The install of the CNF from a helm chart will always test the helm chart source even if the complete CNF source is not provided._
 
-#### install_script
-
-This is the location of additional scripts used to install the CNF being tested. (Optional)
-
-Path to a script used for installing the CNF (relative to the location of the cnf-testsuite.yml). This is used by the CNF-Testsuite to install the CNF if a wrapper around helm is used or helm isn't used at all. If left blank, the CNF will be installed using the helm_chart value.
-
-Example setting:
-
-`install_script: cnfs/coredns/Makefile`
 
 #### release_name
 
@@ -224,7 +213,6 @@ The [`cnf-testsuite.yml`](cnf-testsuite.example.yml) file can be used (included 
 ```yaml=
 ---
 helm_directory:
-install_script:
 helm_chart:
 helm_chart_container_name:
 allowlist_helm_chart_container_names:
@@ -244,7 +232,6 @@ Below is a fully working example CoreDNS cnf-testsuite.yml that tests CoreDNS by
 # manifest_directory: manifests
 helm_chart: stable/coredns
 git_clone_url:
-install_script:
 # Optional
 release_name: coredns 
 # Optional, if you haven't configured it manually

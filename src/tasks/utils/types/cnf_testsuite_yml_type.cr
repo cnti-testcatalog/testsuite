@@ -24,8 +24,6 @@ class CnfTestSuiteYmlType
 
   property git_clone_url : String?
 
-  property install_script : String?
-
   property service_name : String?
 
   property release_name : String?

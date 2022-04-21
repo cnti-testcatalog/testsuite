@@ -266,24 +266,6 @@ Now run the test:
 ./cnf-testsuite helm_deploy destructive cnfs/<your-cnf-directory>/cnf-testsuite.yml
 ```
 
-##### :heavy_check_mark: To check if the install script uses [Helm v3](https://github.com/helm/)
-
-<details><summary>Details for install_script_helm:</summary>
-<p>
-
-<b>install_script_helm details:</b> This checks if you are using helm v3 which has vast improvements and less dependencies than v2 (eg. tiller).
-
-<b>Read the [rationale](RATIONALE.md#test-if-cnfthe-install-script-uses-helm-v3-install_script_helm) about this test.</b>
-
-<b>Remediation:</b> Update your helm charts and scripts to be compatible with the latest helm v3 or later.
-
-</p>
-</details> 
-
-```
-./cnf-testsuite install_script_helm
-```
-
 ##### :heavy_check_mark: To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/)
 
 <details><summary>Details on rolling_update:</summary>
