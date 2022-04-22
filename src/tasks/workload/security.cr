@@ -159,7 +159,7 @@ task "non_root_user", ["install_falco"] do |_, args|
        kind = resource["kind"].downcase
        case kind 
        when  "deployment","statefulset","pod","replicaset", "daemonset"
-         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
+         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
          pods = KubectlClient::Get.pods_by_resource(resource_yaml)
          # containers = KubectlClient::Get.resource_containers(kind, resource[:name]) 
          pods.map do |pod|
