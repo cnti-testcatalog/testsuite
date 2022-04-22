@@ -73,7 +73,7 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
     # cnf_ips = resource_pod_ips.compact.flatten
     # Log.info { "cnf IPs: #{cnf_ips}"}
 
-    cnf_services = KubectlClient::Get.services
+    cnf_services = KubectlClient::Get.services(all_namespaces: true)
     # cnf_services = resource_names.map { |resource_name|
     #   case resource_name[:kind].as_s.downcase
     #   when "service"
