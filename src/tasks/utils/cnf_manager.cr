@@ -165,8 +165,7 @@ module CNFManager
     # todo check to see if following 'resource' variable is conflicting with above resource variable
 		resource_names.each do | resource |
 			Log.for("verbose").debug { resource.inspect } if check_verbose(args)
-      #todo accept namespace
-			volumes = KubectlClient::Get.resource_volumes(resource[:kind], resource[:name], namespace)
+      volumes = KubectlClient::Get.resource_volumes(kind: resource[:kind], resource_name: resource[:name], namespace: resource[:namespace])
       Log.for("verbose").debug { "check_service: #{check_service}" } if check_verbose(args)
       Log.for("verbose").debug { "check_containers: #{check_containers}" } if check_verbose(args)
       case resource[:kind].downcase
@@ -179,7 +178,7 @@ module CNFManager
           test_passed = false if resp == false
         end
       else
-				containers = KubectlClient::Get.resource_containers(resource[:kind], resource[:name], namespace)
+        containers = KubectlClient::Get.resource_containers(resource[:kind], resource[:name], resource[:namespace])
 				if check_containers
 					containers.as_a.each do |container|
 						resp = yield resource, container, volumes, initialized
