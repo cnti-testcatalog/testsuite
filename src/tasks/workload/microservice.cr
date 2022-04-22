@@ -293,11 +293,11 @@ task "reasonable_image_size" do |_, args|
 				fqdn_image = container.as_h["image"].as_s
         # parsed_image = DockerClient.parse_image(fqdn_image)
 
-        image_pull_secrets = KubectlClient::Get.resource(resource[:kind], resource[:name]).dig?("spec", "template", "spec", "imagePullSecrets")
+        image_pull_secrets = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace]).dig?("spec", "template", "spec", "imagePullSecrets")
         if image_pull_secrets
           auths = image_pull_secrets.as_a.map { |secret|
             puts secret["name"]
-            secret_data = KubectlClient::Get.resource("Secret", "#{secret["name"]}").dig?("data")
+            secret_data = KubectlClient::Get.resource("Secret", "#{secret["name"]}", resource[:namespace]).dig?("data")
             if secret_data
               dockerconfigjson = Base64.decode_string("#{secret_data[".dockerconfigjson"]}")
               dockerconfigjson.gsub(%({"auths":{),"")[0..-3]
