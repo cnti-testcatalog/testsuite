@@ -631,7 +631,7 @@ module KubectlClient
 
     #todo pass in namespace
     def self.resource_volumes(kind, resource_name, namespace="default") : JSON::Any
-      Log.info { "kubectl get resource volumes kind: #{kind} resource_name: #{resource_name} namespace: #{namespace}" }
+      Log.for("KubectlClient::Get.resource_volumes").info { "#{kind} resource_name: #{resource_name} namespace: #{namespace}" }
       unless kind.downcase == "service" ## services have no volumes
         resp = resource(kind, resource_name, namespace).dig?("spec", "template", "spec", "volumes")
       end
