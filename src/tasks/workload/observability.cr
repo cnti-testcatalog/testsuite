@@ -61,7 +61,7 @@ task "prometheus_traffic" do |_, args|
       imageids = KubectlClient::Get.all_container_repo_digests
       match = DockerClient::K8s.local_digest_match(sha_list, imageids)
       if match[:found]
-        service = KubectlClient::Get.service_by_digest(match[:digest])
+        service = KubectlClient::Get.service_by_digest(match[:digest], all_namespaces: true)
         service_url = service.dig("metadata", "name") 
 
         Log.info { "service_url: #{service_url}"}
@@ -80,8 +80,8 @@ task "prometheus_traffic" do |_, args|
         Log.info { "prom_target_urls: #{prom_target_urls}"}
         prom_cnf_match = CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
           ip_match = false
-          resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name])
-          pods = KubectlClient::Get.pods_by_resource(resource)
+          resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name], resource_name[:namespace])
+          pods = KubectlClient::Get.pods_by_resource(resource, namespace: resource_name[:namespace])
           pods.each do |pod|
             pod_ips = pod.dig("status", "podIPs")
             Log.info { "pod_ips: #{pod_ips}"}
