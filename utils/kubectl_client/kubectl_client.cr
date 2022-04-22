@@ -543,9 +543,9 @@ module KubectlClient
       end
       resp
     end
-    def self.service_by_digest(container_digest)
+    def self.service_by_digest(container_digest, all_namespaces : Bool = false)
       Log.info { "service_by_digest container_digest: #{container_digest}" }
-      services = KubectlClient::Get.services
+      services = KubectlClient::Get.services(all_namespaces)
       matched_service = JSON.parse(%({}))
       services["items"].as_a.each do |service|
         Log.debug { "service_by_digest service: #{service}" }
