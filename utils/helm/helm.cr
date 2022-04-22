@@ -26,9 +26,15 @@ class BinaryReference
     helm_v3 && helm_v3.not_nil![1]
   end
 
+
+  def local_helm_path
+    current_dir = FileUtils.pwd
+    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
+  end
+
   # Get helm directory
   def helm
-    @helm ||= global_helm_installed? ? "helm" : raise "Global install of Helm not found"
+    @helm ||= global_helm_installed? ? "helm" : local_helm_path
   end
 end
 
@@ -263,11 +269,6 @@ module Helm
       stdout_failure("Please use newer version of helm")
       true
     end
-  end
-
-  def self.local_helm_path
-    current_dir = FileUtils.pwd
-    helm = "#{current_dir}/#{TOOLS_DIR}/helm/linux-amd64/helm"
   end
 
   def self.chart_name(helm_chart_repo)
