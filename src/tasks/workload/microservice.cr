@@ -422,7 +422,6 @@ task "service_discovery" do |_, args|
     Log.for("verbose").info { "service_discovery" } if check_verbose(args)
 
     # Get all resources for the CNF
-    namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
     resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
     resources = Helm.workload_resource_kind_names(resource_ymls)
 
@@ -440,7 +439,7 @@ task "service_discovery" do |_, args|
 
     # Get pods for the services in the CNF based on the labels
     test_passed = false
-    KubectlClient::Get.services().dig("items").as_a.each do |service_info|
+    KubectlClient::Get.services(all_namespaces: true).dig("items").as_a.each do |service_info|
       # Only check for pods for services that are defined by the CNF
       service_name = service_info["metadata"]["name"]
       next unless cnf_service_names.includes?(service_name)
