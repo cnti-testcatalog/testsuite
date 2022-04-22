@@ -35,30 +35,29 @@ module KernelIntrospection
   # todo loop through all pids in the container 
 
   module K8s
-    def self.proc(pod_name, container_name)
+    def self.proc(pod_name, container_name, namespace : String | Nil = nil)
       # todo if container_name nil, dont use container (assume one container)
-      resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- ls /proc/")
+      resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- ls /proc/", namespace: namespace)
       KernelIntrospection.parse_proc(resp[:output].to_s)
     end
 
-    def self.cmdline(pod_name, container_name, pid)
+    def self.cmdline(pod_name, container_name, pid, namespace : String | Nil = nil)
       # todo if container_name nil, dont use container (assume one container)
       resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- cat /proc/#{pid}/cmdline")
       resp[:output].to_s.strip
     end
 
-    def self.status(pod_name, container_name, pid)
+    def self.status(pod_name, container_name, pid, namespace : String | Nil = nil)
       # todo if container_name nil, dont use container (assume one container)
-      resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- cat /proc/#{pid}/status")
+      resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- cat /proc/#{pid}/status", namespace: namespace)
       KernelIntrospection.parse_status(resp[:output].to_s)
     end
 
-    def self.status_by_proc(pod_name, container_name)
-      proc(pod_name, container_name).map { |pid|
-        stat_cmdline = status(pod_name, container_name, pid)
-        stat_cmdline.merge({"cmdline" => cmdline(pod_name, container_name, pid)}) if stat_cmdline
-      }.compact 
-
+    def self.status_by_proc(pod_name, container_name, namespace : String | Nil = nil)
+      proc(pod_name, container_name, namespace).map { |pid|
+        stat_cmdline = status(pod_name, container_name, pid, namespace)
+        stat_cmdline.merge({"cmdline" => cmdline(pod_name, container_name, pid, namespace)}) if stat_cmdline
+      }.compact
     end
   end
 end

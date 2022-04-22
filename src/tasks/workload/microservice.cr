@@ -373,16 +373,16 @@ task "single_process_type" do |_, args|
       kind = resource["kind"].downcase
       case kind 
       when  "deployment","statefulset","pod","replicaset", "daemonset"
-        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
+        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
         pods = KubectlClient::Get.pods_by_resource(resource_yaml)
        
-        containers = KubectlClient::Get.resource_containers(kind, resource[:name]) 
+        containers = KubectlClient::Get.resource_containers(kind, resource[:name], resource[:namespace])
         pods.map do |pod|
           pod_name = pod.dig("metadata", "name")
           containers.as_a.map do |container|
             container_name = container.dig("name")
             previous_process_type = "initial_name"
-            statuses = KernelIntrospection::K8s.status_by_proc(pod_name, container_name)
+            statuses = KernelIntrospection::K8s.status_by_proc(pod_name, container_name, resource[:namespace])
             statuses.map do |status|
               LOGGING.debug "status: #{status}"
               LOGGING.info "status name: #{status["cmdline"]}"
