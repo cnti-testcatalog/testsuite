@@ -531,8 +531,11 @@ module KubectlClient
       JSON.parse(%({}))
     end
 
-    def self.services : JSON::Any
+    def self.services(all_namespaces : Bool = false) : JSON::Any
       cmd = "kubectl get services -o json"
+      if all_namespaces
+        cmd = "#{cmd} -A"
+      end
       result = ShellCmd.run(cmd, "KubectlClient::Get.services")
       response = result[:output]
 
