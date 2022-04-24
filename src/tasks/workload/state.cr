@@ -90,7 +90,7 @@ module Volume
   def self.storage_class_by_volumes(volumes, namespace : String? = nil)
     Log.info {"storage_class_by_volumes? "}
     Log.info {"storage_class_by_volumes? volumes: #{volumes}"}
-    volume_claims = volumes.as_a.select{ |x| x.dig?("persistentVolumeClaim", "claimName") } 
+    volume_claims = volumes.as_a.select{ |x| x.dig?("persistentVolumeClaim", "claimName") }
     Log.info {"volume_claims #{volume_claims}"}
     storage_class_names = volume_claims.reduce( [] of Hash(String, JSON::Any)) do |acc, claim| 
       resource = KubectlClient::Get.resource("pvc", claim.dig?("persistentVolumeClaim", "claimName").to_s, namespace)
@@ -107,6 +107,7 @@ module Volume
     storage_class_names
   end
 end
+
 module StorageClass
   def self.elastic_by_storage_class?(storage_class_names : Array(Hash(String, JSON::Any)), 
                                      namespace : String? = nil)
@@ -222,7 +223,7 @@ task "node_drain", ["install_litmus"] do |t, args|
       else
         Log.info { "The target node was unable to cordoned sucessfully" }
         skipped = true
-      end 
+      end
       
       unless skipped
         if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
@@ -471,7 +472,7 @@ task "no_local_volume_configuration" do |_, args|
 
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
-      hostPath_found = nil 
+      hostPath_found = nil
       begin
         # Note: A storageClassName value of "local-storage" is insufficient to determine if the
         # persistent volume is indeed local storage.  This is because the storageClass can be redefined
@@ -479,15 +480,15 @@ task "no_local_volume_configuration" do |_, args|
 
         volumes = [] of YAML::Any
         if resource["spec"].as_h["template"].as_h["spec"].as_h["volumes"]?
-            volumes = resource["spec"].as_h["template"].as_h["spec"].as_h["volumes"].as_a 
+          volumes = resource["spec"].as_h["template"].as_h["spec"].as_h["volumes"].as_a 
         end
-        LOGGING.debug "volumes: #{volumes}"
+        Log.debug { "volumes: #{volumes}" }
         persistent_volume_claim_names = volumes.map do |volume|
           # get persistent volume claim that matches persistent volume claim name
           if volume.as_h["persistentVolumeClaim"]? && volume.as_h["persistentVolumeClaim"].as_h["claimName"]?
-              volume.as_h["persistentVolumeClaim"].as_h["claimName"]
+            volume.as_h["persistentVolumeClaim"].as_h["claimName"]
           else
-            nil 
+            nil
           end
         end.compact
         LOGGING.debug "persistent volume claim names: #{persistent_volume_claim_names}"
@@ -502,7 +503,7 @@ task "no_local_volume_configuration" do |_, args|
           items.map do |item|
             begin
               if item["spec"]["local"]? && item["spec"]["local"]["path"]?
-                  local_storage_not_found = false 
+                local_storage_not_found = false 
               end
             rescue ex
               LOGGING.info ex.message 
@@ -518,7 +519,7 @@ task "no_local_volume_configuration" do |_, args|
       local_storage_not_found
     end
 
-    if task_response.any?(false) 
+    if task_response.any?(false)
       upsert_failed_task("no_local_volume_configuration","✖️  FAILED: local storage configuration volumes found #{failed_emoji}")
     else
       upsert_passed_task("no_local_volume_configuration","✔️  PASSED: local storage configuration volumes not found #{passed_emoji}")
