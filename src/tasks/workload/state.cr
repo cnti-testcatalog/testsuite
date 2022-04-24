@@ -219,23 +219,23 @@ task "node_drain", ["install_litmus"] do |t, args|
       Log.info { "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}" }
       schedulable_nodes_count=KubectlClient::Get.schedulable_nodes_list
       if schedulable_nodes_count.size > 1
-        LitmusManager.cordon_target_node("#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}","#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}")
+        LitmusManager.cordon_target_node("#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h.first_key}","#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h.first_value}")
       else
         Log.info { "The target node was unable to cordoned sucessfully" }
         skipped = true
       end
       
       unless skipped
-        if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+        if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h.size > 0
           test_passed = true
         else
-          puts "No resource label found for node_drain test for resource: #{resource["name"]}".colorize(:red)
+          stdout_failure("No resource label found for node_drain test for resource: #{resource["name"]} in #{resource["namespace"]}")
           test_passed = false
         end
         if test_passed
-          deployment_label="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}"
-          deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
-          app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_label_value} -o=jsonpath='{.items[0].spec.nodeName}'"
+          deployment_label="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h.first_key}"
+          deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h.first_value}"
+          app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_label_value} -n #{resource["namespace"]} -o=jsonpath='{.items[0].spec.nodeName}'"
           puts "Getting the app node name #{app_nodeName_cmd}" if check_verbose(args)
           status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
           puts "status_code: #{status_code}" if check_verbose(args)  
@@ -336,10 +336,9 @@ task "elastic_volumes" do |_, args|
 
       # todo use workload resource
       # elastic = WorkloadResource.elastic?(volumes)
-      namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
 
-      full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
-      if WorkloadResource.elastic?(full_resource, volumes, namespace)  
+      full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], resource["namespace"])
+      if WorkloadResource.elastic?(full_resource, volumes, resource["namespace"])
         elastic = true
       end
     end
@@ -381,13 +380,12 @@ task "database_persistence" do |_, args|
     if match && match[:found]
       statefulset_exists = Helm.kind_exists?(args, config, "statefulset")
       task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
-        namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
-        Log.info {"database_persistence namespace: #{namespace}"}
+        Log.info {"database_persistence namespace: #{resource["namespace"]}"}
         Log.info {"database_persistence resource: #{resource}"}
         Log.info {"database_persistence volumes: #{volumes}"}
         # elastic_volume = Volume.elastic_by_volumes?(volumes)
-        full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
-        elastic_volume = WorkloadResource.elastic?(full_resource, volumes, namespace)  
+        full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], resource["namespace"])
+        elastic_volume = WorkloadResource.elastic?(full_resource, volumes, resource["namespace"])
         Log.info {"database_persistence elastic_volume: #{elastic_volume}"}
         if elastic_volume
           elastic_volume_used = true
@@ -428,28 +426,28 @@ end
 desc "Does the CNF use a non-cloud native data store: hostPath volume"
 task "volume_hostpath_not_found" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "volume_hostpath_not_found" if check_verbose(args)
+    Log.for("verbose").info { "volume_hostpath_not_found" } if check_verbose(args)
     failed_emoji = "(ভ_ভ) ރ 💾"
     passed_emoji = "🖥️  💾"
-    LOGGING.debug "cnf_config: #{config}"
+    Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
-      hostPath_found = nil 
+      hostPath_found = nil
       begin
         # TODO check to see if volume is actually mounted.  Check to see if mount (without volume) has host path as well
         volumes = resource.dig?("spec", "template", "spec", "volumes")
         if volumes
-          hostPath_not_found = volumes.as_a.none? do |volume| 
+          hostPath_not_found = volumes.as_a.none? do |volume|
             if volume.as_h["hostPath"]?
-                true
+              true
             end
           end
         else
           hostPath_not_found = true
         end
       rescue ex
-        VERBOSE_LOGGING.error ex.message if check_verbose(args)
-        puts "Rescued: On resource #{resource["metadata"]["name"]?} of kind #{resource["kind"]}, volumes not found. #{passed_emoji}".colorize(:yellow)
+        Log.for("verbose").error { ex.message } if check_verbose(args)
+        stdout_warning("Rescued: On resource #{resource["metadata"]["name"]?} of kind #{resource["kind"]}, volumes not found. #{passed_emoji}")
         hostPath_not_found = true
       end
       hostPath_not_found 
@@ -468,7 +466,7 @@ task "no_local_volume_configuration" do |_, args|
   failed_emoji = "(ভ_ভ) ރ 💾"
   passed_emoji = "🖥️  💾"
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "no_local_volume_configuration" if check_verbose(args)
+    Log.for("verbose").info { "no_local_volume_configuration" } if check_verbose(args)
 
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
@@ -491,7 +489,7 @@ task "no_local_volume_configuration" do |_, args|
             nil
           end
         end.compact
-        LOGGING.debug "persistent volume claim names: #{persistent_volume_claim_names}"
+        Log.debug { "persistent volume claim names: #{persistent_volume_claim_names}" }
 
         # TODO (optional) check storage class of persistent volume claim
         # loop through all pvc names
@@ -499,20 +497,20 @@ task "no_local_volume_configuration" do |_, args|
         # get all items, get spec, get claimRef, get pvc name that matches pvc name 
         local_storage_not_found = true 
         persistent_volume_claim_names.map do | claim_name|
-          items = KubectlClient::Get.pv_items_by_claim_name(claim_name)
+          items = KubectlClient::Get.pv_items_by_claim_name(claim_name, namespace: resource["namespace"].as_s)
           items.map do |item|
             begin
               if item["spec"]["local"]? && item["spec"]["local"]["path"]?
                 local_storage_not_found = false 
               end
             rescue ex
-              LOGGING.info ex.message 
+              Log.info { ex.message }
               local_storage_not_found = true 
             end
           end
         end
       rescue ex
-        VERBOSE_LOGGING.error ex.message if check_verbose(args)
+        Log.for("verbose").error { ex.message } if check_verbose(args)
         puts "Rescued: On resource #{resource["metadata"]["name"]?} of kind #{resource["kind"]}, local storage configuration volumes not found #{passed_emoji}".colorize(:yellow)
         local_storage_not_found = true
       end

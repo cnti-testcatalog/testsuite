@@ -1003,6 +1003,7 @@ module KubectlClient
     def self.deployment_spec_labels(deployment_name) : JSON::Any
       resource_spec_labels("deployment", deployment_name)
     end
+
     def self.resource_spec_labels(kind : String, resource_name : String, namespace : String | Nil = nil) : JSON::Any
       Log.debug { "resource_labels kind: #{kind} resource_name: #{resource_name}" }
       if kind.downcase == "service"
@@ -1050,16 +1051,21 @@ module KubectlClient
       result[:output].split("\n")
     end
 
-    def self.pv : JSON::Any
-      # TODO should this be all namespaces?
+    def self.pv(namespace : String | Nil = nil, all_namespaces : Bool = false) : JSON::Any
       cmd = "kubectl get pv -o json"
+      if namespace
+        cmd = "#{cmd} -n #{namespace}"
+      elsif all_namespaces
+        cmd = "#{cmd} -A"
+      end
+
       result = ShellCmd.run(cmd, "KubectlClient::Get.pv")
       response = result[:output]
       return JSON.parse(response)
     end
 
-    def self.pv_items_by_claim_name(claim_name)
-      items = pv["items"].as_a.map do |x|
+    def self.pv_items_by_claim_name(claim_name, namespace : String | Nil = nil)
+      items = pv(namespace)["items"].as_a.map do |x|
         begin
           if x["spec"]["claimRef"]["name"] == claim_name
             x
