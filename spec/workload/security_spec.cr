@@ -32,6 +32,20 @@ describe "Security" do
     end
   end
 
+  it "'non_root_user' should fail with a root cnf using a non-default namespace", tags: ["security"]  do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/ndn-non-root-user/cnf-testsuite.yml`
+      response_s = `./cnf-testsuite non_root_user verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/Root user found/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/ndn-non-root-user/cnf-testsuite.yml`
+      LOGGING.debug `./cnf-testsuite uninstall_falco`
+      KubectlClient::Get.resource_wait_for_uninstall("DaemonSet", "falco")
+    end
+  end
+
   it "'privileged' should pass with a non-privileged cnf", tags: ["privileged"]  do
     begin
       LOGGING.debug `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-statefulset-cnf/cnf-testsuite.yml`
@@ -50,7 +64,8 @@ describe "Security" do
       response_s = `./cnf-testsuite privileged verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/Found.*privileged containers.*coredns/ =~ response_s).should_not be_nil
+      (/Found.*privileged containers.*/ =~ response_s).should_not be_nil
+      (/Privileged container (privileged-coredns) in.*/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite sample_privileged_cnf_non_whitelisted_cleanup`
     end
@@ -62,7 +77,7 @@ describe "Security" do
       response_s = `./cnf-testsuite privileged cnf-config=sample-cnfs/sample_whitelisted_privileged_cnf verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/Found.*privileged containers.*coredns/ =~ response_s).should be_nil
+      (/Found.*privileged containers.*/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite sample_privileged_cnf_whitelisted_cleanup`
     end
@@ -363,22 +378,35 @@ describe "Security" do
       response_s = `./cnf-testsuite selinux_options verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Resources are using custom SELinux options/ =~ response_s).should_not be_nil
+      (/FAILED: Pods are using custom SELinux options that can be used for privilege escalations/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_latest_tag`
     end
   end
 
-  it "'selinux_options' should pass if containers do not have custom selinux options that can be used for privilege escalations", tags: ["selinux_options"] do
+  it "'selinux_options' should be skipped if containers do not use custom selinux options", tags: ["selinux_options"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_nonroot`
       $?.success?.should be_true
       response_s = `./cnf-testsuite selinux_options verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Resources are not using custom SELinux options/ =~ response_s).should_not be_nil
+      (/SKIPPED: Pods are not using SELinux options/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot`
+    end
+  end
+
+  it "'selinux_options' should pass if containers do not have custom selinux options that can be used for privilege escalations", tags: ["selinux_options"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_valid_selinux_options`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite selinux_options verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Pods are not using custom SELinux options that can be used for privilege escalations/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_valid_selinux_options`
     end
   end
 

@@ -174,7 +174,7 @@ describe "Utils" do
 
     resp = `./cnf-testsuite privileged`
     Log.info { resp }
-    (resp).includes?("✖️  FAILED: Found 1 privileged containers: [\"privileged-coredns\"]").should be_true
+    (resp).includes?("✖️  FAILED: Found 1 privileged containers").should be_true
   ensure
     response_s = `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-generic-cnf/cnf-testsuite.yml`
     Log.info { response_s }
@@ -182,7 +182,7 @@ describe "Utils" do
     response_s = `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml`
     Log.info { response_s }
     $?.success?.should be_true
-end
+  end
 
   it "'logger' command line logger level setting via config.yml", tags: ["logger"]  do
     # NOTE: the config.yml file is in the root of the repo directory. 

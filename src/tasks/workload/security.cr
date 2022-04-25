@@ -25,7 +25,10 @@ task "security", [
     "container_sock_mounts",
     "external_ips",
     "selinux_options",
-    "sysctls"
+    "sysctls",
+    "host_network",
+    "service_account_mapping",
+    "application_credentials"
   ] do |_, args|
   stdout_score("security")
 end
@@ -34,17 +37,20 @@ desc "Check if pods in the CNF use sysctls with restricted values"
 task "sysctls" do |_, args|
   Log.for("verbose").info { "sysctls" }
   Kyverno.install
-  emoji_security = "🔓🔑"
-  policy_path = Kyverno.policy_path("pod-security/baseline/restrict-sysctls/restrict-sysctls.yaml")
-  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
-  if failures.size == 0
-    resp = upsert_passed_task("sysctls", "✔️  PASSED: No restricted values found for sysctls #{emoji_security}")
-  else
-    resp = upsert_failed_task("sysctls", "✖️  FAILED: Restricted values for are being used for sysctls #{emoji_security}")
-    failures.each do |failure|
-      failure.resources.each do |resource|
-        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+  CNFManager::Task.task_runner(args) do |args, config|
+    emoji_security = "🔓🔑"
+    policy_path = Kyverno.policy_path("pod-security/baseline/restrict-sysctls/restrict-sysctls.yaml")
+    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+
+    if failures.size == 0
+      resp = upsert_passed_task("sysctls", "✔️  PASSED: No restricted values found for sysctls #{emoji_security}")
+    else
+      resp = upsert_failed_task("sysctls", "✖️  FAILED: Restricted values for are being used for sysctls #{emoji_security}")
+      failures.each do |failure|
+        failure.resources.each do |resource|
+          puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+        end
       end
     end
   end
@@ -54,17 +60,19 @@ desc "Check if the CNF has services with external IPs configured"
 task "external_ips" do |_, args|
   Log.for("verbose").info { "external_ips" }
   Kyverno.install
-  emoji_security = "🔓🔑"
-  policy_path = Kyverno.best_practice_policy("restrict-service-external-ips/restrict-service-external-ips.yaml")
-  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+  CNFManager::Task.task_runner(args) do |args, config|
+    emoji_security = "🔓🔑"
+    policy_path = Kyverno.best_practice_policy("restrict-service-external-ips/restrict-service-external-ips.yaml")
+    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
-  if failures.size == 0
-    resp = upsert_passed_task("external_ips", "✔️  PASSED: Services are not using external IPs #{emoji_security}")
-  else
-    resp = upsert_failed_task("external_ips", "✖️  FAILED: Services are using external IPs #{emoji_security}")
-    failures.each do |failure|
-      failure.resources.each do |resource|
-        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+    if failures.size == 0
+      resp = upsert_passed_task("external_ips", "✔️  PASSED: Services are not using external IPs #{emoji_security}")
+    else
+      resp = upsert_failed_task("external_ips", "✖️  FAILED: Services are using external IPs #{emoji_security}")
+      failures.each do |failure|
+        failure.resources.each do |resource|
+          puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+        end
       end
     end
   end
@@ -74,19 +82,35 @@ desc "Check if the CNF or the cluster resources have custom SELinux options"
 task "selinux_options" do |_, args|
   Log.for("verbose").info { "selinux_options" }
   Kyverno.install
-  emoji_security = "🔓🔑"
-  policy_path = Kyverno.policy_path("pod-security/baseline/disallow-selinux/disallow-selinux.yaml")
-  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+  CNFManager::Task.task_runner(args) do |args, config|
+    emoji_security = "🔓🔑"
 
-  if failures.size == 0
-    resp = upsert_passed_task("selinux_options", "✔️  PASSED: Resources are not using custom SELinux options #{emoji_security}")
-  else
-    resp = upsert_failed_task("selinux_options", "✖️  FAILED: Resources are using custom SELinux options #{emoji_security}")
-    failures.each do |failure|
-      failure.resources.each do |resource|
-        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+    policy_path = Kyverno.custom_policy_path("check-selinux-enabled.yaml")
+    policy_path = Kyverno::CustomPolicies::SELinuxEnabled.new.policy_path
+    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+
+    # IF SELinux is not enabled, skip this test
+    # Else check for SELinux options
+    if failures.size == 0
+      upsert_skipped_task("selinux_options", "⏭️  SKIPPED: Pods are not using SELinux options #{emoji_security}")
+    else
+
+      policy_path = Kyverno.policy_path("pod-security/baseline/disallow-selinux/disallow-selinux.yaml")
+      failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+
+      if failures.size == 0
+        resp = upsert_passed_task("selinux_options", "✔️  PASSED: Pods are not using custom SELinux options that can be used for privilege escalations #{emoji_security}")
+      else
+        resp = upsert_failed_task("selinux_options", "✖️  FAILED: Pods are using custom SELinux options that can be used for privilege escalations #{emoji_security}")
+        failures.each do |failure|
+          failure.resources.each do |resource|
+            puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+          end
+        end
       end
+
     end
+
   end
 end
 
@@ -94,17 +118,19 @@ desc "Check if the CNF is running containers with container sock mounts"
 task "container_sock_mounts" do |_, args|
   Log.for("verbose").info { "container_sock_mounts" }
   Kyverno.install
-  emoji_security = "🔓🔑"
-  policy_path = Kyverno.best_practice_policy("disallow_cri_sock_mount/disallow_cri_sock_mount.yaml")
-  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+  CNFManager::Task.task_runner(args) do |args, config|
+    emoji_security = "🔓🔑"
+    policy_path = Kyverno.best_practice_policy("disallow_cri_sock_mount/disallow_cri_sock_mount.yaml")
+    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
-  if failures.size == 0
-    resp = upsert_passed_task("container_sock_mounts", "✔️  PASSED: Container engine daemon sockets are not mounted as volumes #{emoji_security}")
-  else
-    resp = upsert_failed_task("container_sock_mounts", "✖️  FAILED: Container engine daemon sockets are mounted as volumes #{emoji_security}")
-    failures.each do |failure|
-      failure.resources.each do |resource|
-        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+    if failures.size == 0
+      resp = upsert_passed_task("container_sock_mounts", "✔️  PASSED: Container engine daemon sockets are not mounted as volumes #{emoji_security}")
+    else
+      resp = upsert_failed_task("container_sock_mounts", "✖️  FAILED: Container engine daemon sockets are mounted as volumes #{emoji_security}")
+      failures.each do |failure|
+        failure.resources.each do |resource|
+          puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+        end
       end
     end
   end
@@ -133,7 +159,7 @@ task "non_root_user", ["install_falco"] do |_, args|
        kind = resource["kind"].downcase
        case kind 
        when  "deployment","statefulset","pod","replicaset", "daemonset"
-         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
+         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
          pods = KubectlClient::Get.pods_by_resource(resource_yaml)
          # containers = KubectlClient::Get.resource_containers(kind, resource[:name]) 
          pods.map do |pod|
@@ -170,14 +196,14 @@ task "privileged" do |_, args|
     Log.for("verbose").info { "privileged" } if check_verbose(args)
     white_list_container_names = config.cnf_config[:white_list_container_names]
     VERBOSE_LOGGING.info "white_list_container_names #{white_list_container_names.inspect}" if check_verbose(args)
-    violation_list = [] of String
+    violation_list = [] of NamedTuple(kind: String, name: String, container: String, namespace: String)
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
       privileged_list = KubectlClient::Get.privileged_containers
       white_list_containers = ((PRIVILEGED_WHITELIST_CONTAINERS + white_list_container_names) - [container])
       # Only check the containers that are in the deployed helm chart or manifest
-      (privileged_list & ([container.as_h["name"].as_s] - white_list_containers)).each do |x|
-        violation_list << x
+      (privileged_list & ([container.as_h["name"].as_s] - white_list_containers)).each do |container_name|
+        violation_list << {kind: resource[:kind], name: resource[:name], container: container_name, namespace: resource[:namespace]}
       end
       if violation_list.size > 0
         false
@@ -190,7 +216,10 @@ task "privileged" do |_, args|
     if task_response 
       upsert_passed_task("privileged", "✔️  PASSED: No privileged containers #{emoji_security}")
     else
-      upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect} #{emoji_security}")
+      upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers #{emoji_security}")
+      violation_list.each do |violation|
+        stdout_failure("Privileged container #{violation[:container]} in #{violation[:kind]}/#{violation[:name]} in the #{violation[:namespace]} namespace")
+      end
     end
   end
 end

@@ -149,7 +149,7 @@ describe "SampleUtils" do
             "hostport_not_used",
             "hardcoded_ip_addresses_in_k8s_runtime_configuration",
             "secrets_used", "immutable_configmap" , "helm_deploy",
-            "node_drain", "install_script_helm", "helm_chart_valid",
+            "node_drain", "helm_chart_valid",
             "helm_chart_published", "volume_hostpath_not_found",
             "no_local_volume_configuration", "service_account_mapping",
             "privileged_containers", "network_policies",

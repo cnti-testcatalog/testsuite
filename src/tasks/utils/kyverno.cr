@@ -59,6 +59,10 @@ module Kyverno
     "#{policies_repo_path}/#{policy_path}"
   end
 
+  def self.custom_policy_path(policy_path : String) : String
+    "#{tools_path}/custom-kyverno-policies/#{policy_path}"
+  end
+
   def self.policies_repo_path
     "#{tools_path}/kyverno-policies"
   end
@@ -71,6 +75,20 @@ module Kyverno
 
   def self.delete_policies_repo
     FileUtils.rm_rf(policies_repo_path)
+  end
+
+  module CustomPolicies
+    class SELinuxEnabled
+      ECR.def_to_s("src/templates/check-selinux-enabled.yaml")
+
+      def policy_path
+        custom_policies_path = "#{tools_path}/custom-kyverno-policies"
+        file_path = "#{custom_policies_path}/check-selinux-enabled.yml"
+        FileUtils.mkdir_p(custom_policies_path)
+        File.write(file_path, self.to_s)
+        file_path
+      end
+    end
   end
 
   module PolicyAudit
@@ -94,8 +112,7 @@ module Kyverno
     def self.run(policy_path : String, exclude_namespaces : Array(String) = [] of String)
       cmd = "#{Kyverno.binary_path} apply #{policy_path} --cluster --policy-report"
       ShellCmd.run("ls #{policy_path}", "kyverno_policy_path", force_output: true)
-      result = ShellCmd.run(cmd, "Kyverno::PolicyAudit.run", force_output: true)
-      Log.for("kyverno_audit").info { result[:output] }
+      result = ShellCmd.run(cmd, "Kyverno::PolicyAudit.run")
       policy_report_yaml = result[:output].split("\n")[6..-1].join("\n")
       policy_report = YAML.parse(policy_report_yaml)
 

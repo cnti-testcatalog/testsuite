@@ -5,7 +5,18 @@ require "colorize"
 require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if the CNFs are resilient to failures."
- task "resilience", ["pod_network_latency", "pod_network_corruption", "disk_fill", "pod_delete", "pod_memory_hog", "pod_io_stress", "pod_dns_error"] do |t, args|
+ task "resilience", [
+   "pod_network_latency",
+   "pod_network_corruption",
+   "disk_fill",
+   "pod_delete",
+   "pod_memory_hog",
+   "pod_io_stress",
+   "pod_dns_error",
+   "pod_network_duplication",
+   "liveness",
+   "readiness"
+  ] do |t, args|
   Log.for("verbose").info {  "resilience" } if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
@@ -659,7 +670,7 @@ task "pod_dns_error", ["install_litmus"] do |_, args|
         resp = upsert_failed_task("pod_dns_error","✖️  FAILED: pod_dns_error chaos test failed 🗡️💀♻️")
       end
     else
-      resp = upsert_skipped_task("pod_dns_error","✖️  SKIPPED: pod_dns_error docker runtime not found 🗡️💀♻️")
+      resp = upsert_skipped_task("pod_dns_error","⏭️  SKIPPED: pod_dns_error docker runtime not found 🗡️💀♻️")
     end
   end
 end

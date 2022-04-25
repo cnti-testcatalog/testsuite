@@ -4,6 +4,6 @@ require "colorize"
 require "totem"
 
 desc "Static tests"
-task "static", ["install_script_helm", "liveness", "ip_addresses"] do  |_, args|
+task "static", ["liveness", "ip_addresses"] do  |_, args|
 end
 
