@@ -33,8 +33,5 @@ spec:
     args: ["-c", "while true; do echo echo $(date -u) 'Hi I am from Sidecar container' >> /var/log/index.html; sleep 5;done"]
     name: sidecar-container
     resources: {}
-    volumeMounts:
-    - name: var-logs
-      mountPath: /var/log
 
   dnsPolicy: Default
