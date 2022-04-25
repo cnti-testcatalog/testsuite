@@ -50,7 +50,8 @@ describe "Security" do
       response_s = `./cnf-testsuite privileged verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/Found.*privileged containers.*coredns/ =~ response_s).should_not be_nil
+      (/Found.*privileged containers.*/ =~ response_s).should_not be_nil
+      (/Privileged container (privileged-coredns) in.*/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite sample_privileged_cnf_non_whitelisted_cleanup`
     end
@@ -62,7 +63,7 @@ describe "Security" do
       response_s = `./cnf-testsuite privileged cnf-config=sample-cnfs/sample_whitelisted_privileged_cnf verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/Found.*privileged containers.*coredns/ =~ response_s).should be_nil
+      (/Found.*privileged containers.*/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite sample_privileged_cnf_whitelisted_cleanup`
     end
