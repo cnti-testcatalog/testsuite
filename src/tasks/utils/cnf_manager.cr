@@ -86,6 +86,7 @@ module CNFManager
     release_name = config.cnf_config[:release_name]
     helm_chart_path = config.cnf_config[:helm_chart_path]
     manifest_file_path = config.cnf_config[:manifest_file_path]
+    helm_install_namespace = config.cnf_config[:helm_install_namespace]
     test_passed = true
 
     install_method = self.cnf_installation_method(config)
@@ -96,7 +97,8 @@ module CNFManager
       Log.info { "EXPORTED CHART PATH: #{helm_chart_path}" } 
       Helm.generate_manifest_from_templates(release_name,
                                             helm_chart_path,
-                                            manifest_file_path)
+                                            manifest_file_path,
+                                            helm_install_namespace)
       template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
     when Helm::InstallMethod::ManifestDirectory
     # if release_name.empty? # no helm chart
@@ -836,7 +838,7 @@ module CNFManager
           Helm.helm_repo_add(helm_repo_name, helm_repo_url)
         end
         Log.for("verbose").info { "deploying with chart repository" } if verbose
-        Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
+        Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml")
         yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
 
         if input_file && !input_file.empty?
@@ -867,7 +869,7 @@ module CNFManager
         #TODO Add helm options into cnf-testsuite yml
         #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
         # Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
-        Helm.template(release_name, "#{destination_cnf_dir}/#{helm_directory}", output_file="cnfs/temp_template.yml") 
+        Helm.template(release_name, "#{destination_cnf_dir}/#{helm_directory}", output_file="cnfs/temp_template.yml", helm_install_namespace)
         yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
         
         if input_file && !input_file.empty?
