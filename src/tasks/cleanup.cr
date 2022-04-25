@@ -43,7 +43,7 @@ task "samples_cleanup" do  |_, args|
 end
 
 desc "Cleans up the CNF Test Suite helper tools and containers"
-task "tools_cleanup", ["helm_local_cleanup", "sonobuoy_cleanup", "uninstall_chaosmesh","uninstall_litmus", "uninstall_dockerd", "uninstall_kubescape","uninstall_cluster_tools"] do  |_, args|
+task "tools_cleanup", ["helm_local_cleanup", "sonobuoy_cleanup", "uninstall_chaosmesh","uninstall_litmus", "uninstall_dockerd", "uninstall_kubescape","uninstall_cluster_tools", "uninstall_opa"] do  |_, args|
 end
 
 desc "Cleans up the CNF Test Suite sample projects, helper tools, and containers"

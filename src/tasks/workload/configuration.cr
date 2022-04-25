@@ -158,7 +158,7 @@ task "versioned_tag", ["install_opa"] do |_, args|
        kind = resource["kind"].downcase
        case kind 
        when  "deployment","statefulset","pod","replicaset", "daemonset"
-         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
+         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
          pods = KubectlClient::Get.pods_by_resource(resource_yaml)
          pods.map do |pod|
            pod_name = pod.dig("metadata", "name")
