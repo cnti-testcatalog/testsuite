@@ -752,6 +752,8 @@ module CNFManager
     helm_repository = config.cnf_config[:helm_repository]
     helm_repo_name = "#{helm_repository && helm_repository["name"]}"
     helm_repo_url = "#{helm_repository && helm_repository["repo_url"]}"
+    helm_namespace_option = config.cnf_config[:helm_repository].empty? "" : "-n #{config.cnf_config[:helm_install_namespace]}"
+
     Log.info { "helm_repo_name: #{helm_repo_name}" }
     Log.info { "helm_repo_url: #{helm_repo_url}" }
 
@@ -838,7 +840,7 @@ module CNFManager
         end
  
         begin
-          helm_install = Helm.install("#{release_name} #{helm_chart}")
+          helm_install = Helm.install("#{release_name} #{helm_chart} #{helm_namespace_option}")
         rescue e : Helm::InstallationFailed
           stdout_failure "Helm installation failed"
           stdout_failure "\t#{e.message}"
@@ -869,7 +871,7 @@ module CNFManager
         end
 
         begin
-          helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory}")
+          helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} #{helm_namespace_option}")
         rescue e : Helm::InstallationFailed
           stdout_failure "Helm installation failed"
           stdout_failure "\t#{e.message}"
@@ -1018,6 +1020,8 @@ module CNFManager
     helm_chart_path = config.cnf_config[:helm_chart_path]
     helm_chart = config.cnf_config[:helm_chart]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    helm_namespace_option = config.cnf_config[:helm_repository].empty? "" : "-n #{config.cnf_config[:helm_install_namespace]}"
+
     case install_method[0]
     when Helm::InstallMethod::ManifestDirectory
       KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", kubeconfig: kubeconfig)
@@ -1029,14 +1033,14 @@ module CNFManager
           tar_name = chart_info[:tar_name]
           Log.info { "Install Chart In Airgapped Mode: Name: #{chart_name}, Tar: #{tar_name}" }
         end
-        helm_install = Helm.install("#{release_name} #{helm_chart} --kubeconfig #{kubeconfig}")
+        helm_install = Helm.install("#{release_name} #{helm_chart} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_warning "Release name #{release_name} has already been setup."
       end
     when Helm::InstallMethod::HelmDirectory
       begin
 
-        helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} --kubeconfig #{kubeconfig}")
+        helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_warning "Release name #{release_name} has already been setup."
       end
