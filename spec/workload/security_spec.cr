@@ -32,6 +32,20 @@ describe "Security" do
     end
   end
 
+  it "'non_root_user' should fail with a root cnf using a non-default namespace", tags: ["security"]  do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/ndn-non-root-user/cnf-testsuite.yml`
+      response_s = `./cnf-testsuite non_root_user verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/Root user found/ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/ndn-non-root-user/cnf-testsuite.yml`
+      LOGGING.debug `./cnf-testsuite uninstall_falco`
+      KubectlClient::Get.resource_wait_for_uninstall("DaemonSet", "falco")
+    end
+  end
+
   it "'privileged' should pass with a non-privileged cnf", tags: ["privileged"]  do
     begin
       LOGGING.debug `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-statefulset-cnf/cnf-testsuite.yml`
