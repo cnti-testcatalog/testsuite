@@ -196,14 +196,14 @@ task "privileged" do |_, args|
     Log.for("verbose").info { "privileged" } if check_verbose(args)
     white_list_container_names = config.cnf_config[:white_list_container_names]
     VERBOSE_LOGGING.info "white_list_container_names #{white_list_container_names.inspect}" if check_verbose(args)
-    violation_list = [] of String
+    violation_list = [] of NamedTuple(kind: String, name: String, container: String, namespace: String)
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
       privileged_list = KubectlClient::Get.privileged_containers
       white_list_containers = ((PRIVILEGED_WHITELIST_CONTAINERS + white_list_container_names) - [container])
       # Only check the containers that are in the deployed helm chart or manifest
-      (privileged_list & ([container.as_h["name"].as_s] - white_list_containers)).each do |x|
-        violation_list << x
+      (privileged_list & ([container.as_h["name"].as_s] - white_list_containers)).each do |container_name|
+        violation_list << {kind: resource[:kind], name: resource[:name], container: container_name, namespace: resource[:namespace]}
       end
       if violation_list.size > 0
         false
@@ -216,7 +216,10 @@ task "privileged" do |_, args|
     if task_response 
       upsert_passed_task("privileged", "✔️  PASSED: No privileged containers #{emoji_security}")
     else
-      upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect} #{emoji_security}")
+      upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers #{emoji_security}")
+      violation_list.each do |violation|
+        stdout_failure("Privileged container #{violation[:container]} in #{violation[:kind]}/#{violation[:name]} in the #{violation[:namespace]} namespace")
+      end
     end
   end
 end
