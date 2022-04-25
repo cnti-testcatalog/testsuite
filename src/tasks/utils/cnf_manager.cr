@@ -752,7 +752,13 @@ module CNFManager
     helm_repository = config.cnf_config[:helm_repository]
     helm_repo_name = "#{helm_repository && helm_repository["name"]}"
     helm_repo_url = "#{helm_repository && helm_repository["repo_url"]}"
-    helm_namespace_option = config.cnf_config[:helm_install_namespace].empty? ? "" : "-n #{config.cnf_config[:helm_install_namespace]}"
+
+    helm_install_namespace = config.cnf_config[:helm_install_namespace]
+    helm_namespace_option = ""
+    if !helm_install_namespace.empty?
+      helm_namespace_option = "-n #{helm_install_namespace}"
+      ensure_namespace_exists!(helm_install_namespace)
+    end
 
     Log.info { "helm_repo_name: #{helm_repo_name}" }
     Log.info { "helm_repo_url: #{helm_repo_url}" }
@@ -1020,7 +1026,13 @@ module CNFManager
     helm_chart_path = config.cnf_config[:helm_chart_path]
     helm_chart = config.cnf_config[:helm_chart]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    helm_namespace_option = config.cnf_config[:helm_install_namespace].empty? ? "" : "-n #{config.cnf_config[:helm_install_namespace]}"
+
+    helm_install_namespace = config.cnf_config[:helm_install_namespace]
+    helm_namespace_option = ""
+    if !helm_install_namespace.empty?
+      helm_namespace_option = "-n #{helm_install_namespace}"
+      ensure_namespace_exists!(helm_install_namespace)
+    end
 
     case install_method[0]
     when Helm::InstallMethod::ManifestDirectory
@@ -1125,6 +1137,13 @@ module CNFManager
     end
 
     ret
+  end
+
+  def self.ensure_namespace_exists!(name)
+    KubectlClient::Create.namespace(name)
+    Log.info { "Created kubernetes namespace #{name} for the CNF install" }
+  rescue e : KubectlClient::Create::AlreadyExistsError
+    Log.info { "Kubernetes namespace #{name} already exists for the CNF install" }
   end
 
   class HelmDirectoryMissingError < Exception
