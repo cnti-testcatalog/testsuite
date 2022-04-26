@@ -38,7 +38,8 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite workload ~automatic_cnf_install ~ensure_cnf_installed ~configuration_file_setup ~compatibility ~state ~scalability ~configuration_lifecycle ~observability ~installability ~hardware_and_scheduling ~microservice ~resilience ~non_root_user`
       LOGGING.info response_s
       $?.success?.should be_false
-      (/Found.*privileged containers.*coredns/ =~ response_s).should_not be_nil
+      (/Found.*privileged containers.*/ =~ response_s).should_not be_nil
+      (/Privileged container (privileged-coredns) in.*/ =~ response_s).should_not be_nil
       response_s = `./cnf-testsuite privileged strict`
       $?.success?.should be_false
     ensure
