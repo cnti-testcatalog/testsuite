@@ -270,6 +270,13 @@ task "reasonable_startup_time" do |_, args|
   end
 end
 
+# There aren't any 5gb images to test.
+# To run this test in a test environment or for testing purposes,
+# set the env var CRYSTAL_ENV=TEST when running the test.
+#
+# Example:
+#    CRYSTAL_ENV=TEST ./cnf-testsuite reasonable_image_size
+#
 desc "Does the CNF have a reasonable container image size (< 5GB)?"
 task "reasonable_image_size" do |_, args|
   unless Dockerd.install
