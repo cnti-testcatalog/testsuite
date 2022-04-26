@@ -1,7 +1,6 @@
 ---
 helm_directory: vpp
 release_name: vpp
-deployment_label: app
 service_name: ""
 application_deployment_names: [vpp]
 docker_repository: soelvkaer/vppcontainer

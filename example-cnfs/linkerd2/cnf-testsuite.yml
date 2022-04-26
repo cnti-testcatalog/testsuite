@@ -1,6 +1,5 @@
 ---
 release_name: linkerd 
-deployment_label: linkerd.io/control-plane-component 
 application_deployment_names: [linkerd2]
 helm_chart: linkerd/linkerd2
 helm_chart_container_name: linkerd2

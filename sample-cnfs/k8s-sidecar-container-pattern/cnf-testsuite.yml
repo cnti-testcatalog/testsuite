@@ -1,7 +1,6 @@
 ---
 helm_directory: chart
 release_name: sidecar-container-demo
-deployment_label: app 
 service_name: 
 application_deployment_names: [nginx-webapp]
 docker_repository: coredns/coredns

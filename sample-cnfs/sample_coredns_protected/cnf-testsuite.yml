@@ -1,7 +1,6 @@
 ---
 helm_directory: chart
 release_name: coredns --set imageCredentials.registry=https://index.docker.io/v1/ --set imageCredentials.username=$PROTECTED_DOCKERHUB_USERNAME --set imageCredentials.password=$PROTECTED_DOCKERHUB_PASSWORD --set imageCredentials.email=$PROTECTED_DOCKERHUB_EMAIL --set image.repository=$PROTECTED_IMAGE_REPO
-deployment_label: k8s-app
 service_name: coredns-coredns
 application_deployment_names: [coredns]
 helm_chart_container_name: coredns

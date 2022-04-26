@@ -1,6 +1,5 @@
 ---
 release_name: coredns
-deployment_label: k8s-app
 service_name: coredns-coredns 
 application_deployment_names: [coredns-coredns]
 helm_repository:
