@@ -1088,8 +1088,14 @@ module CNFManager
     Log.info { "destination_cnf_dir: #{destination_cnf_dir}" }
     config = parsed_config_file(ensure_cnf_testsuite_yml_path(config_file))
     parsed_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
-    namespace = namespace_from_parameters(install_parameters(parsed_config))
     Log.for("verbose").info { "cleanup config: #{config.inspect}" } if verbose
+
+    helm_install_namespace = parsed_config.cnf_config[:helm_install_namespace]
+    helm_namespace_option = ""
+    if !helm_install_namespace.empty?
+      helm_namespace_option = "-n #{helm_install_namespace}"
+      ensure_namespace_exists!(helm_install_namespace)
+    end
 
     resource_ymls = cnf_workload_resources(nil, parsed_config) do |resource_yml|
       resource_yml
@@ -1123,13 +1129,13 @@ module CNFManager
           stdout_success "Successfully cleaned up #{manifest_directory} directory"
         end
       else
-        helm_uninstall = Helm.uninstall(release_name.split(" ")[0] + " #{namespace}")
+        helm_uninstall = Helm.uninstall(release_name.split(" ")[0] + " #{helm_namespace_option}")
         ret = helm_uninstall[:status].success?
         Log.for("verbose").info { helm_uninstall[:output].to_s } if verbose
         if ret
           stdout_success "Successfully cleaned up #{release_name.split(" ")[0]}"
         else
-          helm_uninstall = Helm.uninstall(release_name + " #{namespace}")
+          helm_uninstall = Helm.uninstall(release_name + " #{helm_namespace_option}")
           if helm_uninstall[:status].success?
             stdout_success "Successfully cleaned up #{release_name.split(" ")[0]}"
           end
