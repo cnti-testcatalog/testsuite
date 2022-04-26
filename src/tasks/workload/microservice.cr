@@ -18,7 +18,7 @@ REASONABLE_STARTUP_BUFFER = 10.0
 
 desc "To check if the CNF has multiple microservices that share a database"
 task "shared_database", ["install_cluster_tools"] do |_, args|
-  LOGGING.info "Running shared_database test"
+  Log.info { "Running shared_database test" }
   CNFManager::Task.task_runner(args) do |args, config|
     # todo loop through local resources and see if db match found
     db_match = Mariadb.match
@@ -188,10 +188,10 @@ end
 
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
 task "reasonable_startup_time" do |_, args|
-  LOGGING.info "Running reasonable_startup_time test"
+  Log.info { "Running reasonable_startup_time test" }
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "reasonable_startup_time" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config.cnf_config}"
+    Log.for("verbose").info { "reasonable_startup_time" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config.cnf_config}" }
 
     yml_file_path = config.cnf_config[:yml_file_path]
     helm_chart = config.cnf_config[:helm_chart]
@@ -201,8 +201,7 @@ task "reasonable_startup_time" do |_, args|
 
     current_dir = FileUtils.pwd
     helm = BinarySingleton.helm
-    VERBOSE_LOGGING.info helm if check_verbose(args)
-
+    Log.for("verbose").info {helm} if check_verbose(args)
 
     configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
     #TODO check if json is empty
@@ -259,8 +258,8 @@ task "reasonable_startup_time" do |_, args|
     #   startup_time_limit = 35 
     #   LOGGING.info "startup_time_limit TEST mode: #{startup_time_limit}"
     # end
-    LOGGING.info "startup_time_limit: #{startup_time_limit}"
-    LOGGING.info "startup_time: #{startup_time.to_i}"
+    Log.info { "startup_time_limit: #{startup_time_limit}" }
+    Log.info { "startup_time: #{startup_time.to_i}" }
 
     if startup_time.to_i <= startup_time_limit
       upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time #{emoji_fast}")
@@ -278,8 +277,8 @@ task "reasonable_image_size" do |_, args|
     next
   end
   CNFManager::Task.task_runner(args) do |args,config|
-    VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    Log.for("verbose").info { "reasonable_image_size" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
       yml_file_path = config.cnf_config[:yml_file_path]
@@ -365,8 +364,8 @@ end
 desc "Do the containers in a pod have only one process type?"
 task "single_process_type" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
-    VERBOSE_LOGGING.info "single_process_type" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    Log.for("verbose").info { "single_process_type" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
     fail_msgs = [] of String
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
@@ -384,9 +383,9 @@ task "single_process_type" do |_, args|
             previous_process_type = "initial_name"
             statuses = KernelIntrospection::K8s.status_by_proc(pod_name, container_name, resource[:namespace])
             statuses.map do |status|
-              LOGGING.debug "status: #{status}"
-              LOGGING.info "status name: #{status["cmdline"]}"
-              LOGGING.info "previous status name: #{previous_process_type}"
+              Log.debug { "status: #{status}" }
+              Log.info { "status name: #{status["cmdline"]}" }
+              Log.info { "previous status name: #{previous_process_type}" }
               # Fail if more than one process type
               if status["Name"] != previous_process_type && 
                   previous_process_type != "initial_name"
