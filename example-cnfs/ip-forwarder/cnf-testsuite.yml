@@ -1,6 +1,5 @@
 ---
 helm_directory: vpp
-git_clone_url: 
 install_script: 
 release_name: vpp
 deployment_name: vpp

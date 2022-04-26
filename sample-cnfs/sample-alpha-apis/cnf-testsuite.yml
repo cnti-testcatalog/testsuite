@@ -1,5 +1,4 @@
 ---
-git_clone_url: 
 install_script: 
 manifest_directory: manifests
 release_name: nginx

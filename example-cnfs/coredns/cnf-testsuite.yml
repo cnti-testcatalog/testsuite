@@ -1,5 +1,4 @@
 ---
-git_clone_url: 
 helm_chart: stable/coredns
 release_name: coredns
 helm_repository:

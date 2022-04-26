@@ -1,6 +1,5 @@
 ---
 helm_directory: chart
-git_clone_url: 
 release_name: coredns
 helm_repository:
   name: stable 

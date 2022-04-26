@@ -1,5 +1,4 @@
 ---
-git_clone_url: 
 release_name: coredns
 deployment_name: coredns-coredns 
 deployment_label: k8s-app

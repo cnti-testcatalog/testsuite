@@ -1,6 +1,5 @@
 ---
 helm_directory: chart
-git_clone_url: 
 install_script: 
 release_name: bad-helm-coredns-coredns
 deployment_name: bad-helm-coredns-coredns

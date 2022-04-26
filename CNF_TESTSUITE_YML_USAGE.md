@@ -11,16 +11,15 @@ Prereqs: You must have kubernetes cluster, curl, and helm 3.1.1 or greater on yo
 
 ### What is the cnf-testsuite.yml and why is it required?:
 
-The cnf-testsuite.yml is used by the CNF Test Suite to locate a deployed CNF on an existing K8s cluster. If the CNF is not found, it will attempt to deploy the CNF itself according to it's helm chart configuration.
+The cnf-testsuite.yml is used by cnf_setup in order to install the CNF being tested onto an existing K8s cluster.
 
-This information is also required for running various tests e.g. The 'container_names' are used for finding the name of the CNF containers in the K8s cluster and is then used to run tests like [increase_capacity](src/tasks/workload/scalability.cr#L20) and [decrease_capacity](src/tasks/workload/scalability.cr#L42)
+The information in the cnf-testsuite.yml is then further used for running various tests e.g. The 'container_names' are used for finding the name of the CNF containers in the K8s cluster and is then used to run tests like [increase_capacity](src/tasks/workload/scalability.cr#L20) and [decrease_capacity](src/tasks/workload/scalability.cr#L42)
 
 ### Table of Contents
 
 - [Overview](#Overview-of-all-cnf-testsuite.yml)
 - [Keys and Values](#Keys-and-Values)
   - [helm_directory](#helm_directory)
-  - [git_clone_url](#git_clone_url)
   - [release_name](#release_name)
   - [deployment_name](#deployment_name)
   - [deployment_label](#deployment_label)
@@ -45,8 +44,6 @@ The following is a basic example cnf-testsuite.yml file that can be found in the
 ---
 #helm_directory: coredns # PATH_TO_CNFS_HELM_CHART ; or
 helm_chart: stable/coredns # PUBLISHED_CNFS_HELM_CHART_REPO/NAME
-
-git_clone_url: https://github.com/coredns/coredns.git # GIT_REPO_FOR_CNFS_SOURCE_CODE
 
 release_name: privileged-coredns # DESIRED_HELM_RELEASE_NAME
 helm_chart_container_name: privileged-coredns-coredns # POD_SPEC_CONTAINER_NAME
@@ -73,19 +70,6 @@ The PATH is also relative to the location of the cnf-testsuite.yml. So if the cn
 Example Setting:
 
 `helm_directory: coredns`
-
-#### git_clone_url
-
-This setting is for the source code of the CNF being tested. (Optional)
-
-The value of git_clone_url is used to clone the source code for the CNF being tested and is then seached through for things like total lines of code, hardcoded ips, etc.
-
-Example setting:
-
-`git_clone_url: https://github.com/coredns/coredns.git`
-
-_Note: The install of the CNF from a helm chart will always test the helm chart source even if the complete CNF source is not provided._
-
 
 #### release_name
 
@@ -242,7 +226,6 @@ Below is a fully working example CoreDNS cnf-testsuite.yml that tests CoreDNS by
 # helm_directory: helm_chart
 # manifest_directory: manifests
 helm_chart: stable/coredns
-git_clone_url:
 # Optional
 release_name: coredns 
 # Optional, if you haven't configured it manually

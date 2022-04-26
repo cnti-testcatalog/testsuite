@@ -23,7 +23,6 @@ module CNFManager
                                      source_helm_directory: String, 
                                      helm_chart_path: String, 
                                      manifest_file_path: String,
-                                     git_clone_url: String,
                                      release_name: String,
                                      service_name:  String,
                                      docker_repository: String,
@@ -68,7 +67,6 @@ module CNFManager
       service_name = optional_key_as_string(config, "service_name")
       helm_directory = optional_key_as_string(config, "helm_directory")
       source_helm_directory = optional_key_as_string(config, "helm_directory")
-      git_clone_url = optional_key_as_string(config, "git_clone_url")
       docker_repository = optional_key_as_string(config, "docker_repository")
       helm_install_namespace = optional_key_as_string(config, "helm_install_namespace")
       if helm_directory.empty?
@@ -122,7 +120,6 @@ module CNFManager
                                source_helm_directory: source_helm_directory, 
                                helm_chart_path: helm_chart_path, 
                                manifest_file_path: manifest_file_path,
-                               git_clone_url: git_clone_url,
                                release_name: release_name,
                                service_name: service_name,
                                docker_repository: docker_repository,

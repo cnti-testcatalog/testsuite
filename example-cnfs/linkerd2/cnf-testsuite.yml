@@ -1,5 +1,4 @@
 ---
-git_clone_url: 
 install_script: 
 release_name: linkerd 
 deployment_name: linkerd

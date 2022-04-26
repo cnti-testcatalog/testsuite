@@ -1,6 +1,5 @@
 ---
 helm_directory: nat-cnf 
-git_clone_url: 
 install_script: 
 release_name: cnf-nat 
 deployment_name: cnf-nat44
