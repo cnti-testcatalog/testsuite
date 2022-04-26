@@ -1,7 +1,6 @@
 ---
 helm_directory: chart
 release_name: privileged-coredns
-deployment_name: privileged-coredns
 deployment_label: k8s-app
 service_name: privileged-coredns
 helm_chart_container_name: 

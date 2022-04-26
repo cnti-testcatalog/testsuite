@@ -1,6 +1,5 @@
 ---
 release_name: envoy 
-deployment_name: envoy
 deployment_label: app
 application_deployment_names: [envoy]
 service_name: envoy

@@ -1,10 +1,7 @@
 ---
 helm_directory: 
 helm_chart: stable/coredns
-git_clone_url: 
-install_script: 
 release_name: coredns
-deployment_name: coredns-coredns
 application_deployment_names:
 - coredns-coredns
 helm_repository:

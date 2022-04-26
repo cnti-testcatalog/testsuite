@@ -1,6 +1,5 @@
 ---
 release_name: test --set mariadb.primary.persistence.enabled=false --set persistence.enabled=false 
-# deployment_name: my-release-wordpress 
 # deployment_label: app.kubernetes.io/name
 service_name: 
 # application_deployment_names: [my-release-wordpress]

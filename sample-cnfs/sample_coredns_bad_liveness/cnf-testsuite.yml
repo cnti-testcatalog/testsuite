@@ -1,7 +1,6 @@
 ---
 helm_directory: chart
 release_name: bad-liveness
-deployment_name: bad-liveness-coredns 
 deployment_label: k8s-app
 service_name: bad-liveness-coredns 
 application_deployment_names: [bad-liveness-coredns]

@@ -1,7 +1,6 @@
 ---
 helm_directory: nat-cnf 
 release_name: cnf-nat 
-deployment_name: cnf-nat44
 deployment_label: cnf-nat44 
 service_name: 
 application_deployment_names: [cnf-nat44]

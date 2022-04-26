@@ -28,8 +28,6 @@ class CnfTestSuiteYmlType
 
   property docker_repository : String?
 
-  property deployment_name : String?
-
   property deployment_label : String?
 
   property application_deployment_names : Array(String)?

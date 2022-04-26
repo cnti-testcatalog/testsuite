@@ -1,9 +1,7 @@
 ---
 invalid_key: 
 # invalid because missing helm_chart key
-# git_clone_url: 
 # release_name: coredns
-# deployment_name: coredns-coredns 
 # application_deployment_names: [coredns-coredns]
 # helm_repository:
 #   name: stable 
