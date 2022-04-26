@@ -1,6 +1,5 @@
 ---
 helm_directory: chart
-install_script: 
 release_name: privileged-coredns
 deployment_name: privileged-coredns-coredns 
 deployment_label: k8s-app

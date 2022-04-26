@@ -1,6 +1,5 @@
 ---
 helm_directory: chart
-install_script: 
 release_name: envoy 
 deployment_name: envoy
 deployment_label: app

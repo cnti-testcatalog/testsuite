@@ -1,5 +1,4 @@
 ---
-install_script: 
 manifest_directory: manifests
 release_name: nginx
 docker_repository: 

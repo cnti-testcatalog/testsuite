@@ -1,7 +1,6 @@
 ---
 helm_directory: chart
 helm_install_namespace: "envoy-test"
-install_script: 
 release_name: envoy 
 deployment_name: envoy
 deployment_label: app

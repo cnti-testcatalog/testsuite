@@ -1,6 +1,5 @@
 ---
 helm_directory: csp
-install_script: 
 release_name: ip-forwarder-csp
 deployment_name: ip-forwarder-csp 
 deployment_label: app

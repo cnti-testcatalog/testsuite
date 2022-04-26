@@ -1,6 +1,5 @@
 ---
 helm_directory: vpp
-install_script: 
 release_name: vpp
 deployment_name: vpp
 deployment_label: app

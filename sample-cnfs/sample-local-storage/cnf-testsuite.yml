@@ -1,6 +1,5 @@
 ---
 helm_directory: chart
-install_script: chart
 release_name: coredns --set worker_node='vulkdev01-control-plane'
 deployment_name: coredns-coredns
 deployment_label: k8s-app

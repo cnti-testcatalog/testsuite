@@ -1,6 +1,5 @@
 ---
 manifest_directory: manifests 
-install_script: 
 release_name: openmetrics-compliant
 docker_repository: 
 helm_repository:

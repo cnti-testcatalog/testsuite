@@ -1,6 +1,5 @@
 ---
 helm_directory: chart
-install_script: 
 release_name: sidecar-container-demo
 deployment_name: nginx-webapp 
 deployment_label: app 

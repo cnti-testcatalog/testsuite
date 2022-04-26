@@ -1,6 +1,5 @@
 ---
 helm_directory: helm_chart
-install_script:
 release_name: nsm --set insecure=true
 service_name: nsm-admission-webhook-svc
 docker_repository: conformance/vppagent-forwarder

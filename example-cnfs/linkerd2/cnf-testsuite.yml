@@ -1,5 +1,4 @@
 ---
-install_script: 
 release_name: linkerd 
 deployment_name: linkerd
 deployment_label: linkerd.io/control-plane-component 

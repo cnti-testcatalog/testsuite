@@ -1,6 +1,5 @@
 ---
 helm_directory: cnfs/coredns/helm_chart/coredns
-install_script:
 release_name: coredns
 deployment_name: coredns-coredns
 deployment_label: k8s-app

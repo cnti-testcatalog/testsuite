@@ -1,6 +1,5 @@
 ---
 helm_directory: chart
-install_script: chart
 release_name: unifi
 deployment_name: unifi
 deployment_label: app.kubernetes.io/name
