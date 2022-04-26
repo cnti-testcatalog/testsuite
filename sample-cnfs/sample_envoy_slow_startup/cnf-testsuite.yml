@@ -1,5 +1,6 @@
 ---
 helm_directory: chart
+helm_install_namespace: "envoy-test"
 git_clone_url: 
 install_script: 
 release_name: envoy 
