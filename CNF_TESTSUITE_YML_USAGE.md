@@ -28,6 +28,7 @@ This information is also required for running various tests e.g. The 'container_
   - [docker_repository](#docker_repository)
   - [helm_repository](#helm_repository)
   - [helm_chart](#helm_chart)
+  - [helm_install_namespace](#helm_install_namespace)
   - [helm_chart_container_name](#helm_chart_container_name)
   - [allowlist_helm_chart_container_names](#allowlist_helm_chart_container_names)
   - [container_names](#container_names)
@@ -155,6 +156,16 @@ Exmple setting:
 `helm_chart: stable/coredns`
 
 An example of a publishe helm chart repo/image can be found [here](https://github.com/helm/charts/tree/master/stable/coredns#tldr).
+
+#### helm_install_namespace
+
+When this option is set, the namespace will be passed to the helm command when installing the CNF.
+
+Example setting:
+
+```
+helm_install_namespace: "hello-world"
+```
 
 #### helm_chart_container_name
 

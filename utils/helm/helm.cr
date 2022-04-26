@@ -148,7 +148,12 @@ module Helm
 
   # Use helm to apply the helm values file to the helm chart templates to create a complete manifest
   # Helm uses manifest files that can be jinja templates
-  def self.generate_manifest_from_templates(release_name, helm_chart, output_file="cnfs/temp_template.yml")
+  def self.generate_manifest_from_templates(release_name, helm_chart, output_file="cnfs/temp_template.yml", namespace : String | Nil = nil)
+    # namespace can be an empty string. So verify and set it to nil.
+    if !namespace.nil? && namespace.empty?
+      namespace = nil
+    end
+
     Log.debug { "generate_manifest_from_templates" }
     # todo remove my guilt 
     helm = BinarySingleton.helm
@@ -156,7 +161,7 @@ module Helm
 
     ShellCmd.run("ls -alR #{helm_chart}", "before generate")
     ShellCmd.run("ls -alR cnfs", "before generate")
-    resp = Helm.template(release_name, helm_chart, output_file)
+    resp = Helm.template(release_name, helm_chart, output_file, namespace)
     ShellCmd.run("ls -alR #{helm_chart}", "after generate")
     ShellCmd.run("ls -alR cnfs", "after generate")
 
@@ -275,10 +280,14 @@ module Helm
     helm_chart_repo.split("/").last
   end
 
-  def self.template(release_name, helm_chart_or_directory, output_file="cnfs/temp_template.yml")
+  def self.template(release_name, helm_chart_or_directory, output_file : String = "cnfs/temp_template.yml", namespace : String | Nil = "default")
     helm = BinarySingleton.helm
-    Log.info { "helm command: #{helm} template #{release_name} #{helm_chart_or_directory} > #{output_file}" }
-    status = Process.run("#{helm} template #{release_name} #{helm_chart_or_directory} > #{output_file}",
+    cmd = "#{helm} template #{release_name} #{helm_chart_or_directory} > #{output_file}"
+    if namespace != nil
+      cmd = "#{cmd} -n #{namespace}"
+    end
+    Log.info { "helm command: #{cmd}" }
+    status = Process.run(cmd,
                          shell: true,
                          output: output = IO::Memory.new,
                          error: stderr = IO::Memory.new)
