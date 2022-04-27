@@ -1,0 +1,15 @@
+---
+helm_directory: chart
+helm_install_namespace: cnfspace
+git_clone_url: 
+release_name: coredns
+helm_repository:
+  name: stable 
+  repo_url: https://cncf.gitlab.io/stable
+container_names: 
+  - name: coredns 
+    rolling_update_test_tag: "1.8.0"
+    rolling_downgrade_test_tag: 1.6.7
+    rolling_version_change_test_tag: 1.8.0
+    rollback_from_tag: 1.8.0 
+allowlist_helm_chart_container_names: []
