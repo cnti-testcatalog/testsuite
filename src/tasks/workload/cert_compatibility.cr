@@ -12,5 +12,5 @@ task "cert_compatibility", ["cert_compatibility_title", "helm_chart_valid", "hel
 end
 
 task "cert_compatibility_title" do |_, args|
-  puts "Compatibility, Installability & Upgradability Tests".colorize(:green)
+  puts "Compatibility, Installability & Upgradability Tests".colorize(Colorize::ColorRGB.new(0, 255, 255))
 end

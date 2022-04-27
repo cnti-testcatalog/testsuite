@@ -15,5 +15,5 @@ task "cert_microservice", ["cert_microservice_title", "reasonable_image_size", "
 end
 
 task "cert_microservice_title" do |_, args|
-  puts "Microservice Tests".colorize(:green)
+  puts "Microservice Tests".colorize(Colorize::ColorRGB.new(0, 255, 255))
 end

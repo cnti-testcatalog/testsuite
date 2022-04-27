@@ -23,5 +23,5 @@ task "cert_configuration", [
 end
 
 task "cert_configuration_title" do |_, args|
-  puts "Configuration Tests".colorize(:green)
+  puts "Configuration Tests".colorize(Colorize::ColorRGB.new(0, 255, 255))
 end

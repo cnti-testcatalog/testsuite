@@ -13,5 +13,5 @@ desc "The CNF test suite checks to see if the CNFs are resilient to failures."
 end
 
 task "cert_resilience_title" do |_, args|
-  puts "Reliability, Resilience, and Availability Tests".colorize(:green)
+  puts "Reliability, Resilience, and Availability Tests".colorize(Colorize::ColorRGB.new(0, 255, 255))
 end

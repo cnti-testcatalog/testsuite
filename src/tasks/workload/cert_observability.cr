@@ -11,6 +11,6 @@ task "cert_observability", ["cert_observability_title", "prometheus_traffic", "o
 end
 
 task "cert_observability_title" do |_, args|
-  puts "Observability and Diagnostics Tests".colorize(:green)
+  puts "Observability and Diagnostics Tests".colorize(Colorize::ColorRGB.new(0, 255, 255))
 end
 

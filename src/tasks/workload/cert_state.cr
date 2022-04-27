@@ -12,6 +12,6 @@ task "cert_state", ["cert_state_title", "volume_hostpath_not_found", "no_local_v
 end
 
 task "cert_state_title" do |_, args|
-  puts "State Tests".colorize(:green)
+  puts "State Tests".colorize(Colorize::ColorRGB.new(0, 255, 255))
 end
 
