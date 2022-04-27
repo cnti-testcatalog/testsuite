@@ -54,13 +54,13 @@ describe "Microservice" do
 
   it "'shared_database' should fail if two services on the cluster connect to the same database", tags: ["shared_database"]  do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample-multi-db-connections-fail/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/ndn-multi-db-connections-fail/cnf-testsuite.yml`
       response_s = `./cnf-testsuite shared_database`
       LOGGING.info response_s
       $?.success?.should be_true
       (/FAILED: Found a shared database/ =~ response_s).should_not be_nil
     ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-multi-db-connections-fail/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/ndn-multi-db-connections-fail/cnf-testsuite.yml`
       $?.success?.should be_true
     end
   end
@@ -146,13 +146,13 @@ describe "Microservice" do
   end
 
   it "'reasonable_image_size' should fail if image is larger than 5gb", tags: ["reasonable_image_size"] do
-    `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_envoy_slow_startup wait_count=0`
+    `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/ndn-reasonable-image-size wait_count=0`
     response_s = `./cnf-testsuite reasonable_image_size verbose`
     LOGGING.info response_s
     $?.success?.should be_true
     (/Image size too large/ =~ response_s).should_not be_nil
   ensure
-    `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_envoy_slow_startup force=true`
+    `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/ndn-reasonable-image-size force=true`
   end
 end
 
@@ -171,13 +171,13 @@ end
 
 it "'service_discovery' should fail if no containers in the cnf are exposed as a service", tags: ["service_discovery"]  do
   begin
-    Log.info { `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_nonroot` }
+    Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-ndn-privileged` }
     response_s = `./cnf-testsuite service_discovery verbose`
     Log.info { response_s }
     $?.success?.should be_true
     (/FAILED: No containers exposed as a service/ =~ response_s).should_not be_nil
   ensure
-    Log.info { `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_nonroot` }
+    Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-ndn-privileged` }
     $?.success?.should be_true
   end
 end

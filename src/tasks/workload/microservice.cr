@@ -18,7 +18,7 @@ REASONABLE_STARTUP_BUFFER = 10.0
 
 desc "To check if the CNF has multiple microservices that share a database"
 task "shared_database", ["install_cluster_tools"] do |_, args|
-  LOGGING.info "Running shared_database test"
+  Log.info { "Running shared_database test" }
   CNFManager::Task.task_runner(args) do |args, config|
     # todo loop through local resources and see if db match found
     db_match = Mariadb.match
@@ -73,7 +73,7 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
     # cnf_ips = resource_pod_ips.compact.flatten
     # Log.info { "cnf IPs: #{cnf_ips}"}
 
-    cnf_services = KubectlClient::Get.services
+    cnf_services = KubectlClient::Get.services(all_namespaces: true)
     # cnf_services = resource_names.map { |resource_name|
     #   case resource_name[:kind].as_s.downcase
     #   when "service"
@@ -188,10 +188,10 @@ end
 
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
 task "reasonable_startup_time" do |_, args|
-  LOGGING.info "Running reasonable_startup_time test"
+  Log.info { "Running reasonable_startup_time test" }
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "reasonable_startup_time" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config.cnf_config}"
+    Log.for("verbose").info { "reasonable_startup_time" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config.cnf_config}" }
 
     yml_file_path = config.cnf_config[:yml_file_path]
     helm_chart = config.cnf_config[:helm_chart]
@@ -201,8 +201,7 @@ task "reasonable_startup_time" do |_, args|
 
     current_dir = FileUtils.pwd
     helm = BinarySingleton.helm
-    VERBOSE_LOGGING.info helm if check_verbose(args)
-
+    Log.for("verbose").info {helm} if check_verbose(args)
 
     configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
     #TODO check if json is empty
@@ -259,8 +258,8 @@ task "reasonable_startup_time" do |_, args|
     #   startup_time_limit = 35 
     #   LOGGING.info "startup_time_limit TEST mode: #{startup_time_limit}"
     # end
-    LOGGING.info "startup_time_limit: #{startup_time_limit}"
-    LOGGING.info "startup_time: #{startup_time.to_i}"
+    Log.info { "startup_time_limit: #{startup_time_limit}" }
+    Log.info { "startup_time: #{startup_time.to_i}" }
 
     if startup_time.to_i <= startup_time_limit
       upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time #{emoji_fast}")
@@ -271,6 +270,13 @@ task "reasonable_startup_time" do |_, args|
   end
 end
 
+# There aren't any 5gb images to test.
+# To run this test in a test environment or for testing purposes,
+# set the env var CRYSTAL_ENV=TEST when running the test.
+#
+# Example:
+#    CRYSTAL_ENV=TEST ./cnf-testsuite reasonable_image_size
+#
 desc "Does the CNF have a reasonable container image size (< 5GB)?"
 task "reasonable_image_size" do |_, args|
   unless Dockerd.install
@@ -278,8 +284,8 @@ task "reasonable_image_size" do |_, args|
     next
   end
   CNFManager::Task.task_runner(args) do |args,config|
-    VERBOSE_LOGGING.info "reasonable_image_size" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    Log.for("verbose").info { "reasonable_image_size" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
       yml_file_path = config.cnf_config[:yml_file_path]
@@ -293,11 +299,11 @@ task "reasonable_image_size" do |_, args|
 				fqdn_image = container.as_h["image"].as_s
         # parsed_image = DockerClient.parse_image(fqdn_image)
 
-        image_pull_secrets = KubectlClient::Get.resource(resource[:kind], resource[:name]).dig?("spec", "template", "spec", "imagePullSecrets")
+        image_pull_secrets = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace]).dig?("spec", "template", "spec", "imagePullSecrets")
         if image_pull_secrets
           auths = image_pull_secrets.as_a.map { |secret|
             puts secret["name"]
-            secret_data = KubectlClient::Get.resource("Secret", "#{secret["name"]}").dig?("data")
+            secret_data = KubectlClient::Get.resource("Secret", "#{secret["name"]}", resource[:namespace]).dig?("data")
             if secret_data
               dockerconfigjson = Base64.decode_string("#{secret_data[".dockerconfigjson"]}")
               dockerconfigjson.gsub(%({"auths":{),"")[0..-3]
@@ -365,28 +371,28 @@ end
 desc "Do the containers in a pod have only one process type?"
 task "single_process_type" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
-    VERBOSE_LOGGING.info "single_process_type" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    Log.for("verbose").info { "single_process_type" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
     fail_msgs = [] of String
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
       kind = resource["kind"].downcase
       case kind 
       when  "deployment","statefulset","pod","replicaset", "daemonset"
-        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name])
+        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
         pods = KubectlClient::Get.pods_by_resource(resource_yaml)
        
-        containers = KubectlClient::Get.resource_containers(kind, resource[:name]) 
+        containers = KubectlClient::Get.resource_containers(kind, resource[:name], resource[:namespace])
         pods.map do |pod|
           pod_name = pod.dig("metadata", "name")
           containers.as_a.map do |container|
             container_name = container.dig("name")
             previous_process_type = "initial_name"
-            statuses = KernelIntrospection::K8s.status_by_proc(pod_name, container_name)
+            statuses = KernelIntrospection::K8s.status_by_proc(pod_name, container_name, resource[:namespace])
             statuses.map do |status|
-              LOGGING.debug "status: #{status}"
-              LOGGING.info "status name: #{status["cmdline"]}"
-              LOGGING.info "previous status name: #{previous_process_type}"
+              Log.debug { "status: #{status}" }
+              Log.info { "status name: #{status["cmdline"]}" }
+              Log.info { "previous status name: #{previous_process_type}" }
               # Fail if more than one process type
               if status["Name"] != previous_process_type && 
                   previous_process_type != "initial_name"
@@ -422,7 +428,6 @@ task "service_discovery" do |_, args|
     Log.for("verbose").info { "service_discovery" } if check_verbose(args)
 
     # Get all resources for the CNF
-    namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
     resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
     resources = Helm.workload_resource_kind_names(resource_ymls)
 
@@ -440,7 +445,7 @@ task "service_discovery" do |_, args|
 
     # Get pods for the services in the CNF based on the labels
     test_passed = false
-    KubectlClient::Get.services().dig("items").as_a.each do |service_info|
+    KubectlClient::Get.services(all_namespaces: true).dig("items").as_a.each do |service_info|
       # Only check for pods for services that are defined by the CNF
       service_name = service_info["metadata"]["name"]
       next unless cnf_service_names.includes?(service_name)
