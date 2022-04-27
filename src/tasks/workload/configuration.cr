@@ -251,7 +251,7 @@ task "hostport_not_used" do |_, args|
           LOGGING.debug "DAS hostPort: #{hostport}"
 
           if hostport
-            puts "resource service: #{resource} has a HostPort that is being used".colorize(:red)
+            stdout_failure("Resource #{resource[:kind]}/#{resource[:name]} in #{resource[:namespace]} namespace is using a HostPort")
             test_passed=false
           end
 
