@@ -1,7 +1,15 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cnfspace
+
+---
 apiVersion: v1
 kind: Pod
 metadata:
   name: python-server
+  namespace: cnfspace
   labels:
     k8s-app: python3-server
 spec:
