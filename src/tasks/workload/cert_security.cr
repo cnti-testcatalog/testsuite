@@ -7,6 +7,7 @@ require "../utils/utils.cr"
 
 desc "CNF containers should be isolated from one another and the host.  The CNF Test suite uses tools like Falco, Sysdig Inspect and gVisor"
 task "cert_security", [
+  "cert_security_title", 
     "privileged",
     "non_root_user",
     "symlink_file_system",
@@ -25,3 +26,6 @@ task "cert_security", [
   stdout_score("security")
 end
 
+task "cert_security_title" do |_, args|
+  puts "Security Tests".colorize(:green)
+end

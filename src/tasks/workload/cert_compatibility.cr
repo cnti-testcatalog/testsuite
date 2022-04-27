@@ -6,7 +6,11 @@ require "totem"
 require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
-task "cert_compatibility", ["helm_chart_valid", "helm_chart_published", "helm_deploy", "cni_compatible", "increase_decrease_capacity", "rollback"] do |_, args|
+task "cert_compatibility", ["cert_compatibility_title", "helm_chart_valid", "helm_chart_published", "helm_deploy", "cni_compatible", "increase_decrease_capacity", "rollback"] do |_, args|
   stdout_score("compatibility", "Compatibility, Installability, and Upgradeability")
 
+end
+
+task "cert_compatibility_title" do |_, args|
+  puts "Compatibility, Installability & Upgradability Tests".colorize(:green)
 end

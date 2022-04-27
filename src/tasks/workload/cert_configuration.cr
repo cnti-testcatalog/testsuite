@@ -10,6 +10,7 @@ require "../utils/utils.cr"
 desc "Configuration should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
 
 task "cert_configuration", [
+    "cert_configuration_title",
     "ip_addresses",
     "nodeport_not_used",
     "secrets_used",
@@ -21,3 +22,6 @@ task "cert_configuration", [
   stdout_score("configuration", "configuration")
 end
 
+task "cert_configuration_title" do |_, args|
+  puts "Configuration Tests".colorize(:green)
+end
