@@ -21,7 +21,6 @@ The information in the cnf-testsuite.yml is then further used for running variou
 - [Keys and Values](#Keys-and-Values)
   - [helm_directory](#helm_directory)
   - [release_name](#release_name)
-  - [application_deployment_name](#application_deployment_name)
   - [docker_repository](#docker_repository)
   - [helm_repository](#helm_repository)
   - [helm_chart](#helm_chart)
@@ -92,12 +91,6 @@ release_name: coredns --set imageCredentials.registry=https://index.docker.io/v1
 ```
 
 In the above example, $PROTECTED_DOCKERHUB_USERNAME and $PROTECTED_DOCKERHUB_PASSWORD are environment variables that were previously exported. The values can then be used as secrets in the helm chart.
-
-#### application_deployment_name
-
-Example setting:
-
-`application_deployment_names: [coredns-coredns]`
 
 #### docker_repository
 

@@ -2,7 +2,6 @@
 helm_directory: nat-cnf 
 release_name: cnf-nat 
 service_name: 
-application_deployment_names: [cnf-nat44]
 docker_repository: pantheontech/nsm-agent-vpp:v3.1.0
 helm_chart_container_name: cnf-nat44 
 container_names: 

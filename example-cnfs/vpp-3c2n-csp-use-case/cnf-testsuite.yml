@@ -1,7 +1,6 @@
 ---
 helm_directory: csp
 release_name: ip-forwarder-csp
-application_deployment_names: [ip-forwarder-csp]
 helm_chart_container_name: ip-forwarder-csp
 allowlist_helm_chart_container_names: [falco, nginx, calico-node, kube-proxy, nginx-proxy, node-cache]
 container_names: 

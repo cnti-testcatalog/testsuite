@@ -1,6 +1,5 @@
 ---
 release_name: linkerd 
-application_deployment_names: [linkerd2]
 helm_chart: linkerd/linkerd2
 helm_chart_container_name: linkerd2
 allowlist_helm_chart_container_names: [falco, nginx, linkerd, calico-node, kube-proxy, nginx-proxy, node-cache]

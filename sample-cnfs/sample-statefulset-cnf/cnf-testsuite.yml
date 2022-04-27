@@ -1,7 +1,6 @@
 ---
 release_name: test --set mariadb.primary.persistence.enabled=false --set persistence.enabled=false 
 service_name: 
-# application_deployment_names: [my-release-wordpress]
 docker_repository: bitnami/wordpress 
 helm_repository:
   name: bitnami 
