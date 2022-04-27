@@ -223,7 +223,7 @@ module Helm
     #
     # To resolve the issue, we insert the namespace into the resource YAMLs being returned.
     resources_with_namespace = resources.map do |resource|
-      if resource.dig("metadata", "namespace") != nil
+      if resource.dig?("metadata", "namespace") != nil
         resource
       else
         # Required workaround because we cannot assign a key or mutate YAML::Any
