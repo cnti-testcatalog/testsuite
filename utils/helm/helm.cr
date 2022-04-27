@@ -223,35 +223,39 @@ module Helm
     #
     # To resolve the issue, we insert the namespace into the resource YAMLs being returned.
     resources_with_namespace = resources.map do |resource|
-      if resource.dig?("metadata", "namespace") != nil
-        resource
-      else
-        # Required workaround because we cannot assign a key or mutate YAML::Any
-
-        # Step-1: Convert resource to Hash(YAML::Any, YAML::Any)
-        resource = resource.as_h
-
-        # Step-2: Convert metadata from YAML:Any to a Hash(YAML::Any, YAML::Any)
-        metadata = resource["metadata"].as_h
-
-        # Step-3: The key in the hash is of type YAML::Any.
-        # So convert the string "namespace" to YAML.
-        namespace_yaml_key = YAML.parse("namespace".to_yaml)
-
-        # Step-4: Convert default namespace to YAML and assign it to the namespace key
-        metadata[namespace_yaml_key] = YAML.parse(default_namespace.to_yaml)
-
-        # Step-5: Convert the "metadata" key name to YAML::Any
-        metadata_yaml_key = YAML.parse("metadata".to_yaml)
-
-        # Step-6: Set the metadata on the resource
-        resource[metadata_yaml_key] = YAML.parse(metadata.to_yaml)
-        resource = YAML.parse(resource.to_yaml)
-        resource
-      end
+      ensure_resource_with_namespace(resource, default_namespace)
     end
     Log.debug { "all resource: #{resources_with_namespace}" }
     resources_with_namespace
+  end
+
+  def self.ensure_resource_with_namespace(resource, default_namespace : String)
+    if resource.dig?("metadata", "namespace") != nil
+      resource
+    else
+      # Required workaround because we cannot assign a key or mutate YAML::Any
+
+      # Step-1: Convert resource to Hash(YAML::Any, YAML::Any)
+      resource = resource.as_h
+
+      # Step-2: Convert metadata from YAML:Any to a Hash(YAML::Any, YAML::Any)
+      metadata = resource["metadata"].as_h
+
+      # Step-3: The key in the hash is of type YAML::Any.
+      # So convert the string "namespace" to YAML.
+      namespace_yaml_key = YAML.parse("namespace".to_yaml)
+
+      # Step-4: Convert default namespace to YAML and assign it to the namespace key
+      metadata[namespace_yaml_key] = YAML.parse(default_namespace.to_yaml)
+
+      # Step-5: Convert the "metadata" key name to YAML::Any
+      metadata_yaml_key = YAML.parse("metadata".to_yaml)
+
+      # Step-6: Set the metadata on the resource
+      resource[metadata_yaml_key] = YAML.parse(metadata.to_yaml)
+      resource = YAML.parse(resource.to_yaml)
+      resource
+    end
   end
 
   def self.workload_resource_names(resources : Array(YAML::Any) )
