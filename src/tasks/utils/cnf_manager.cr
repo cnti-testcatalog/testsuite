@@ -105,8 +105,13 @@ module CNFManager
       template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
     # else
     end
-    resource_ymls = Helm.all_workload_resources(template_ymls)
-		resource_resp = resource_ymls.map do | resource |
+
+    default_namespace = "default"
+    if !helm_install_namespace.empty?
+      default_namespace = config.cnf_config[:helm_install_namespace]
+    end
+    resource_ymls = Helm.all_workload_resources(template_ymls, default_namespace)
+    resource_resp = resource_ymls.map do | resource |
       resp = yield resource
       Log.debug { "cnf_workload_resource yield resp: #{resp}" }
       resp
