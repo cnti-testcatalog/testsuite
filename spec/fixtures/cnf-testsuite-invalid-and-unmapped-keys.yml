@@ -2,7 +2,6 @@
 invalid_key: 
 # invalid because missing helm_chart key
 # release_name: coredns
-# application_deployment_names: [coredns-coredns]
 # helm_repository:
 #   name: stable 
 #   repo_url: https://cncf.gitlab.io/stable
