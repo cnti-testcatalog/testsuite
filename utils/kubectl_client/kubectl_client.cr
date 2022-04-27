@@ -647,8 +647,12 @@ module KubectlClient
       end
     end
 
-    def self.secrets : JSON::Any
+    def self.secrets(all_namespaces : Bool = false) : JSON::Any
       cmd = "kubectl get secrets -o json"
+      if all_namespaces == true
+        cmd = "#{cmd} -A"
+      end
+
       result = ShellCmd.run(cmd, "KubectlClient::Get.secrets")
       response = result[:output]
 

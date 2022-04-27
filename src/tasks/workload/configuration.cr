@@ -354,11 +354,12 @@ task "secrets_used" do |_, args|
       #  but do not have a corresponding k8s secret defined, this
       #  is an installation problem, and does not stop the test from passing
 
-      secrets = KubectlClient::Get.secrets
+      secrets = KubectlClient::Get.secrets(all_namespaces=true)
       secrets["items"].as_a.each do |s|
         s_name = s["metadata"]["name"]
         s_type = s["type"]
-        VERBOSE_LOGGING.info "secret name: #{s_name}, type: #{s_type}" if check_verbose(args)
+        s_namespace = s.dig("metadata", "namespace")
+        Log.for("verbose").info {"secret name: #{s_name}, type: #{s_type}, namespace: #{s_namespace}"} if check_verbose(args)
       end
       secret_keyref_found_and_not_ignored = false
       containers.as_a.each do |container|
