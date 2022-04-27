@@ -1,0 +1,15 @@
+---
+helm_directory: chart
+helm_install_namespace: "envoy-test"
+git_clone_url: 
+install_script: 
+release_name: envoy 
+deployment_name: envoy
+deployment_label: app
+service_name: envoy
+application_deployment_names: [envoy]
+helm_chart_container_name: envoy
+allowlist_helm_chart_container_names: [falco, nginx, envoy, calico-node, kube-proxy, nginx-proxy, node-cache]
+container_names: 
+  - name: envoy
+    rolling_update_test_tag: "v1.11.0"

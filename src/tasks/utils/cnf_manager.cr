@@ -86,6 +86,7 @@ module CNFManager
     release_name = config.cnf_config[:release_name]
     helm_chart_path = config.cnf_config[:helm_chart_path]
     manifest_file_path = config.cnf_config[:manifest_file_path]
+    helm_install_namespace = config.cnf_config[:helm_install_namespace]
     test_passed = true
 
     install_method = self.cnf_installation_method(config)
@@ -96,7 +97,8 @@ module CNFManager
       Log.info { "EXPORTED CHART PATH: #{helm_chart_path}" } 
       Helm.generate_manifest_from_templates(release_name,
                                             helm_chart_path,
-                                            manifest_file_path)
+                                            manifest_file_path,
+                                            helm_install_namespace)
       template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
     when Helm::InstallMethod::ManifestDirectory
     # if release_name.empty? # no helm chart
@@ -752,6 +754,14 @@ module CNFManager
     helm_repository = config.cnf_config[:helm_repository]
     helm_repo_name = "#{helm_repository && helm_repository["name"]}"
     helm_repo_url = "#{helm_repository && helm_repository["repo_url"]}"
+
+    helm_install_namespace = config.cnf_config[:helm_install_namespace]
+    helm_namespace_option = ""
+    if !helm_install_namespace.empty?
+      helm_namespace_option = "-n #{helm_install_namespace}"
+      ensure_namespace_exists!(helm_install_namespace)
+    end
+
     Log.info { "helm_repo_name: #{helm_repo_name}" }
     Log.info { "helm_repo_url: #{helm_repo_url}" }
 
@@ -828,7 +838,7 @@ module CNFManager
           Helm.helm_repo_add(helm_repo_name, helm_repo_url)
         end
         Log.for("verbose").info { "deploying with chart repository" } if verbose
-        Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
+        Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml")
         yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
 
         if input_file && !input_file.empty?
@@ -838,7 +848,7 @@ module CNFManager
         end
  
         begin
-          helm_install = Helm.install("#{release_name} #{helm_chart}")
+          helm_install = Helm.install("#{release_name} #{helm_chart} #{helm_namespace_option}")
         rescue e : Helm::InstallationFailed
           stdout_failure "Helm installation failed"
           stdout_failure "\t#{e.message}"
@@ -859,7 +869,7 @@ module CNFManager
         #TODO Add helm options into cnf-testsuite yml
         #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
         # Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
-        Helm.template(release_name, "#{destination_cnf_dir}/#{helm_directory}", output_file="cnfs/temp_template.yml") 
+        Helm.template(release_name, "#{destination_cnf_dir}/#{helm_directory}", output_file="cnfs/temp_template.yml", helm_install_namespace)
         yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
         
         if input_file && !input_file.empty?
@@ -869,7 +879,7 @@ module CNFManager
         end
 
         begin
-          helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory}")
+          helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} #{helm_namespace_option}")
         rescue e : Helm::InstallationFailed
           stdout_failure "Helm installation failed"
           stdout_failure "\t#{e.message}"
@@ -1018,6 +1028,14 @@ module CNFManager
     helm_chart_path = config.cnf_config[:helm_chart_path]
     helm_chart = config.cnf_config[:helm_chart]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+
+    helm_install_namespace = config.cnf_config[:helm_install_namespace]
+    helm_namespace_option = ""
+    if !helm_install_namespace.empty?
+      helm_namespace_option = "-n #{helm_install_namespace}"
+      ensure_namespace_exists!(helm_install_namespace)
+    end
+
     case install_method[0]
     when Helm::InstallMethod::ManifestDirectory
       KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", kubeconfig: kubeconfig)
@@ -1029,14 +1047,14 @@ module CNFManager
           tar_name = chart_info[:tar_name]
           Log.info { "Install Chart In Airgapped Mode: Name: #{chart_name}, Tar: #{tar_name}" }
         end
-        helm_install = Helm.install("#{release_name} #{helm_chart} --kubeconfig #{kubeconfig}")
+        helm_install = Helm.install("#{release_name} #{helm_chart} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_warning "Release name #{release_name} has already been setup."
       end
     when Helm::InstallMethod::HelmDirectory
       begin
 
-        helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} --kubeconfig #{kubeconfig}")
+        helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_warning "Release name #{release_name} has already been setup."
       end
@@ -1070,8 +1088,14 @@ module CNFManager
     Log.info { "destination_cnf_dir: #{destination_cnf_dir}" }
     config = parsed_config_file(ensure_cnf_testsuite_yml_path(config_file))
     parsed_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
-    namespace = namespace_from_parameters(install_parameters(parsed_config))
     Log.for("verbose").info { "cleanup config: #{config.inspect}" } if verbose
+
+    helm_install_namespace = parsed_config.cnf_config[:helm_install_namespace]
+    helm_namespace_option = ""
+    if !helm_install_namespace.empty?
+      helm_namespace_option = "-n #{helm_install_namespace}"
+      ensure_namespace_exists!(helm_install_namespace)
+    end
 
     resource_ymls = cnf_workload_resources(nil, parsed_config) do |resource_yml|
       resource_yml
@@ -1105,13 +1129,13 @@ module CNFManager
           stdout_success "Successfully cleaned up #{manifest_directory} directory"
         end
       else
-        helm_uninstall = Helm.uninstall(release_name.split(" ")[0] + " #{namespace} --wait")
+        helm_uninstall = Helm.uninstall(release_name.split(" ")[0] + " #{helm_namespace_option}")
         ret = helm_uninstall[:status].success?
         Log.for("verbose").info { helm_uninstall[:output].to_s } if verbose
         if ret
           stdout_success "Successfully cleaned up #{release_name.split(" ")[0]}"
         else
-          helm_uninstall = Helm.uninstall(release_name + " #{namespace}")
+          helm_uninstall = Helm.uninstall(release_name + " #{helm_namespace_option}")
           if helm_uninstall[:status].success?
             stdout_success "Successfully cleaned up #{release_name.split(" ")[0]}"
           end
@@ -1121,6 +1145,13 @@ module CNFManager
     end
 
     ret
+  end
+
+  def self.ensure_namespace_exists!(name)
+    KubectlClient::Create.namespace(name)
+    Log.info { "Created kubernetes namespace #{name} for the CNF install" }
+  rescue e : KubectlClient::Create::AlreadyExistsError
+    Log.info { "Kubernetes namespace #{name} already exists for the CNF install" }
   end
 
   class HelmDirectoryMissingError < Exception
