@@ -2,7 +2,6 @@
 helm_directory: helm_chart
 release_name: nsm --set insecure=true
 service_name: nsm-admission-webhook-svc
-docker_repository: conformance/vppagent-forwarder
 helm_repository:
   name: stable 
   repo_url: https://cncf.gitlab.io/stable

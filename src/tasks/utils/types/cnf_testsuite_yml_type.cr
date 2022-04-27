@@ -26,8 +26,6 @@ class CnfTestSuiteYmlType
 
   property release_name : String?
 
-  property docker_repository : String?
-
   property helm_repository : HelmRepositoryType?
 
   property helm_chart : String?

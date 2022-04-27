@@ -1,7 +1,6 @@
 ---
 release_name: test --set mariadb.primary.persistence.enabled=false --set persistence.enabled=false 
 service_name: 
-docker_repository: bitnami/wordpress 
 helm_repository:
   name: bitnami 
   repo_url: https://charts.bitnami.com/bitnami 

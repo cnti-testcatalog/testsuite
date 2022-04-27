@@ -2,7 +2,6 @@
 helm_directory: vpp
 release_name: vpp
 service_name: ""
-docker_repository: soelvkaer/vppcontainer
 helm_chart_container_name: vpp-1
 rolling_update_test_tag: latest
 allowlist_helm_chart_container_names: [falco, nginx, calico-node, kube-proxy, nginx-proxy, node-cache, kube-multus]

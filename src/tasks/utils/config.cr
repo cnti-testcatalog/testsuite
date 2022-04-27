@@ -25,7 +25,6 @@ module CNFManager
                                      manifest_file_path: String,
                                      release_name: String,
                                      service_name:  String,
-                                     docker_repository: String,
                                      helm_repository: NamedTuple(name:  String, repo_url:  String) | Nil,
                                      helm_chart:  String,
                                      helm_install_namespace: String,
@@ -67,7 +66,6 @@ module CNFManager
       service_name = optional_key_as_string(config, "service_name")
       helm_directory = optional_key_as_string(config, "helm_directory")
       source_helm_directory = optional_key_as_string(config, "helm_directory")
-      docker_repository = optional_key_as_string(config, "docker_repository")
       helm_install_namespace = optional_key_as_string(config, "helm_install_namespace")
       if helm_directory.empty?
         working_chart_directory = "exported_chart"
@@ -122,7 +120,6 @@ module CNFManager
                                manifest_file_path: manifest_file_path,
                                release_name: release_name,
                                service_name: service_name,
-                               docker_repository: docker_repository,
                                helm_repository: {name: helm_repo_name, repo_url: helm_repo_url},
                                helm_chart: helm_chart,
                                helm_install_namespace: helm_install_namespace,

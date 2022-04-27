@@ -56,7 +56,6 @@ module CNFManager
                                             manifest_file_path: "",
                                             release_name: "",
                                             service_name: "",
-                                            docker_repository: "",
                                             helm_repository: {name: "", repo_url: ""},
                                             helm_chart: "",
                                             helm_install_namespace: "",
