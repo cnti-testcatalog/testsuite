@@ -282,10 +282,14 @@ module Helm
 
   def self.template(release_name, helm_chart_or_directory, output_file : String = "cnfs/temp_template.yml", namespace : String | Nil = "default")
     helm = BinarySingleton.helm
-    cmd = "#{helm} template #{release_name} #{helm_chart_or_directory} > #{output_file}"
+    cmd = "#{helm} template #{release_name} #{helm_chart_or_directory}"
     if namespace != nil
       cmd = "#{cmd} -n #{namespace}"
     end
+
+    # Append output redirection after the namespace arg
+    cmd = "#{cmd} > #{output_file}"
+
     Log.info { "helm command: #{cmd}" }
     status = Process.run(cmd,
                          shell: true,
