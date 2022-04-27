@@ -159,7 +159,7 @@ task "versioned_tag", ["install_opa"] do |_, args|
        case kind 
        when  "deployment","statefulset","pod","replicaset", "daemonset"
          resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
-         pods = KubectlClient::Get.pods_by_resource(resource_yaml)
+         pods = KubectlClient::Get.pods_by_resource(resource_yaml, namespace: resource[:namespace])
          pods.map do |pod|
            pod_name = pod.dig("metadata", "name")
            if OPA.find_non_versioned_pod(pod_name)
@@ -198,7 +198,7 @@ task "nodeport_not_used" do |_, args|
       LOGGING.info "nodeport_not_used resource: #{resource}"
       if resource["kind"].downcase == "service"
         LOGGING.info "resource kind: #{resource}"
-        service = KubectlClient::Get.resource(resource[:kind], resource[:name])
+        service = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
         LOGGING.debug "service: #{service}"
         service_type = service.dig?("spec", "type")
         LOGGING.info "service_type: #{service_type}"
@@ -233,7 +233,7 @@ task "hostport_not_used" do |_, args|
       LOGGING.info "hostport_not_used resource: #{resource}"
       test_passed=true
       LOGGING.info "resource kind: #{resource}"
-      k8s_resource = KubectlClient::Get.resource(resource[:kind], resource[:name])
+      k8s_resource = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
       LOGGING.debug "resource: #{k8s_resource}"
 
       # per examaple https://github.com/cncf/cnf-testsuite/issues/164#issuecomment-904890977
