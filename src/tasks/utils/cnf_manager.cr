@@ -156,7 +156,12 @@ module CNFManager
     resource_ymls = cnf_workload_resources(args, config) do |resource|
       resource
     end
-    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+
+    default_namespace = "default"
+    if !config.cnf_config[:helm_install_namespace].empty?
+      default_namespace = config.cnf_config[:helm_install_namespace]
+    end
+    resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace: default_namespace)
     Log.info { "resource names: #{resource_names}" }
     if resource_names && resource_names.size > 0
       initialized = true
@@ -896,7 +901,12 @@ module CNFManager
       resource_ymls = cnf_workload_resources(nil, config) do |resource|
         resource
       end
-      resource_names = Helm.workload_resource_kind_names(resource_ymls)
+
+      default_namespace = "default"
+      if !helm_install_namespace.empty?
+        default_namespace = config.cnf_config[:helm_install_namespace]
+      end
+      resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace)
       #TODO move to kubectlclient and make resource_install_and_wait_for_all function
 
       #
@@ -1065,7 +1075,12 @@ module CNFManager
     resource_ymls = cnf_workload_resources(nil, config) do |resource|
       resource
     end
-    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+
+    default_namespace = "default"
+    if !helm_install_namespace.empty?
+      default_namespace = config.cnf_config[:helm_install_namespace]
+    end
+    resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace: default_namespace)
 
     wait_list = resource_names.map do | resource |
       case resource[:kind].downcase
@@ -1100,7 +1115,12 @@ module CNFManager
     resource_ymls = cnf_workload_resources(nil, parsed_config) do |resource_yml|
       resource_yml
     end
-    resources = Helm.workload_resource_kind_names(resource_ymls)
+
+    default_namespace = "default"
+    if !helm_install_namespace.empty?
+      default_namespace = helm_install_namespace
+    end
+    resources = Helm.workload_resource_kind_names(resource_ymls, default_namespace: default_namespace)
 
     config_maps_dir = "#{destination_cnf_dir}/config_maps"
     if Dir.exists?(config_maps_dir)
