@@ -1,12 +1,10 @@
 ---
 release_name: coredns-1609263557
 service_name: coredns-coredns
-- coredns-coredns
 helm_repository:
   name: stable
   repo_url: https://cncf.gitlab.io/stable
 helm_chart: stable/coredns
-helm_chart_container_name: coredns
 allowlist_helm_chart_container_names:
 - falco
 - nginx

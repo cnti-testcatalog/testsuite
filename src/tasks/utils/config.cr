@@ -28,7 +28,6 @@ module CNFManager
                                      helm_repository: NamedTuple(name:  String, repo_url:  String) | Nil,
                                      helm_chart:  String,
                                      helm_install_namespace: String,
-                                     helm_chart_container_name: String,
                                      rolling_update_tag: String,
                                      container_names: Array(Hash(String, String )) | Nil,
                                      white_list_container_names: Array(String)) 
@@ -123,7 +122,6 @@ module CNFManager
                                helm_repository: {name: helm_repo_name, repo_url: helm_repo_url},
                                helm_chart: helm_chart,
                                helm_install_namespace: helm_install_namespace,
-                               helm_chart_container_name: "",
                                rolling_update_tag: "",
                                container_names: container_names,
                                white_list_container_names: white_list_container_names })

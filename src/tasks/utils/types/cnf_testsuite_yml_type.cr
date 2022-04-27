@@ -30,8 +30,6 @@ class CnfTestSuiteYmlType
 
   property helm_chart : String?
 
-  property helm_chart_container_name : String?
-
   property rolling_update_test_tag : String?
   property rolling_downgrade_test_tag : String?
   property rolling_version_change_test_tag : String?

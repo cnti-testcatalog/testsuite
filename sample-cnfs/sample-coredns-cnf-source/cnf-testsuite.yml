@@ -2,7 +2,6 @@
 release_name: coredns
 service_name: coredns-coredns 
 helm_chart: stable/coredns
-helm_chart_container_name: coredns
 allowlist_helm_chart_container_names: [falco, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
 container_names: 
   - name: coredns 

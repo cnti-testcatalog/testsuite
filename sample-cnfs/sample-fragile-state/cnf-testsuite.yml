@@ -2,7 +2,6 @@
 helm_directory: chart
 release_name: coredns
 service_name: coredns-coredns
-helm_chart_container_name: coredns
 rolling_update_test_tag: 1.6.7
 allowlist_helm_chart_container_names: []
 container_names: 

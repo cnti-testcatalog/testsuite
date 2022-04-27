@@ -5,7 +5,6 @@ helm_repository:
   name: badrepo
   repo_url: https://bad-helm-repo.googleapis.com
 helm_chart: badrepo/coredns
-helm_chart_container_name: coredns
 container_names: 
   - name: coredns 
     rolling_update_test_tag: "1.8.0"

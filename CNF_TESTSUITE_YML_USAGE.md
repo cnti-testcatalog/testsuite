@@ -24,7 +24,6 @@ The information in the cnf-testsuite.yml is then further used for running variou
   - [helm_repository](#helm_repository)
   - [helm_chart](#helm_chart)
   - [helm_install_namespace](#helm_install_namespace)
-  - [helm_chart_container_name](#helm_chart_container_name)
   - [allowlist_helm_chart_container_names](#allowlist_helm_chart_container_names)
   - [container_names](#container_names)
 - [Creating Your Own cnf-testsuite.yml](#creating-your-own-cnf-testsuiteyml)
@@ -42,7 +41,6 @@ The following is a basic example cnf-testsuite.yml file that can be found in the
 helm_chart: stable/coredns # PUBLISHED_CNFS_HELM_CHART_REPO/NAME
 
 release_name: privileged-coredns # DESIRED_HELM_RELEASE_NAME
-helm_chart_container_name: privileged-coredns-coredns # POD_SPEC_CONTAINER_NAME
 allowlist_helm_chart_container_names: [coredns] # [LIST_OF_CONTAINERS_ALLOWED_TO_RUN_PRIVLIDGED]
 container_names: #[LIST_OF_CONTAINERS_NAMES_AND_VERSION_UPGRADE_TAGS]
   - name: sidecar-container1
@@ -123,16 +121,6 @@ Example setting:
 helm_install_namespace: "hello-world"
 ```
 
-#### helm_chart_container_name
-
-This value is the name of the 'container' defined in the Kubernetes pod spec of the CNF being tested.
-
-This value is used to look up the CNF and determine if it's running in privileged mode (only used within the specs). The containers in the test are now dynamically determined from the helm chart or manifest files (See: ['privileged' test](https://github.com/cncf/cnf-testsuite/blob/c8a2d8f06c5e5976acd1a641350978929a2eee12/src/tasks/security.cr#L32)).
-
-Example setting:
-
-`helm_chart_container_name: privileged-coredns-coredns`
-
 #### allowlist_helm_chart_container_names
 
 The values of this key are the names of the 'containers' defined in the Kubernetes pod spec of pods that are allowed to be running in privileged mode. (Optional)
@@ -181,7 +169,6 @@ The [`cnf-testsuite.yml`](cnf-testsuite.example.yml) file can be used (included 
 ---
 helm_directory:
 helm_chart:
-helm_chart_container_name:
 allowlist_helm_chart_container_names:
 container_names:
 - name: <container_name1>

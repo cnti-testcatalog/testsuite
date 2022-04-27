@@ -423,9 +423,7 @@ describe "SampleUtils" do
     dir_list.each do |dir|
       testsuite_yml = "sample-cnfs/#{dir}/cnf-testsuite.yml"
       response_s = `./cnf-testsuite validate_config cnf-config=#{testsuite_yml}`
-      if (/FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
-        LOGGING.info "\n #{testsuite_yml}: #{response_s}"
-      end
+      Log.info { "\n #{testsuite_yml}: #{response_s}" }
       (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
     end
   end
