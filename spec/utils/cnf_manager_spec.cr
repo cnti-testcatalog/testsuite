@@ -49,14 +49,14 @@ describe "SampleUtils" do
 
   it  "'task_points' should return the amount of points for a passing test", tags: ["points"] do
     # default
-    (CNFManager::Points.task_points("liveness")).should eq(5)
+    (CNFManager::Points.task_points("liveness")).should eq(100)
     # assigned
     (CNFManager::Points.task_points("increase_capacity")).should eq(10)
   end
 
   it  "'task_points(, false)' should return the amount of points for a failing test", tags: ["points"]  do
     # default
-    (CNFManager::Points.task_points("liveness", false)).should eq(-1)
+    (CNFManager::Points.task_points("liveness", false)).should eq(0)
     # assigned
     (CNFManager::Points.task_points("increase_capacity", false)).should eq(-5)
   end
@@ -96,13 +96,13 @@ describe "SampleUtils" do
     end
     # LOGGING.debug yaml["items"].as_a.inspect
     (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == CNFManager::Points.task_points("liveness")}).should be_truthy
-    (CNFManager::Points.total_points).should eq(5)
+    (CNFManager::Points.total_points).should eq(100)
   end
 
   it "'CNFManager::Points.total_points' should sum the total amount of points in the results", tags: ["points"] do
     CNFManager::Points.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
-    (CNFManager::Points.total_points).should eq(5)
+    (CNFManager::Points.total_points).should eq(100)
   end
 
   it "'CNFManager::Points.total_max_points' should not include na in the total potential points", tags: ["points"] do
@@ -171,7 +171,7 @@ describe "SampleUtils" do
   it "'CNFManager::Points.results_by_tag' should return a list of results by tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
-    (CNFManager::Points.results_by_tag("resilience")).should eq([{"name" => "liveness", "status" => "passed", "points" => 5}])
+    (CNFManager::Points.results_by_tag("resilience")).should eq([{"name" => "liveness", "status" => "passed", "points" => 100}])
     (CNFManager::Points.results_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
