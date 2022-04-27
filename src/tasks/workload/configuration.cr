@@ -206,7 +206,7 @@ task "nodeport_not_used" do |_, args|
         if service_type == "NodePort"
           #TODO make a service selector and display the related resources
           # that are tied to this service
-          puts "resource service: #{resource} has a NodePort that is being used".colorize(:red)
+          stdout_failure("Resource #{resource[:kind]}/#{resource[:name]} in #{resource[:namespace]} namespace is using a NodePort")
           test_passed=false
         end
         test_passed
