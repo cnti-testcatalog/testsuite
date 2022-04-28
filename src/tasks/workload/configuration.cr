@@ -149,40 +149,42 @@ task "versioned_tag", ["install_opa"] do |_, args|
    #   next
    # end
    #
-   CNFManager::Task.task_runner(args) do |args,config|
-     VERBOSE_LOGGING.info "versioned_tag" if check_verbose(args)
-     LOGGING.debug "cnf_config: #{config}"
-     fail_msgs = [] of String
-     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-       test_passed = true
-       kind = resource["kind"].downcase
-       case kind 
-       when  "deployment","statefulset","pod","replicaset", "daemonset"
-         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
-         pods = KubectlClient::Get.pods_by_resource(resource_yaml, namespace: resource[:namespace])
-         pods.map do |pod|
-           pod_name = pod.dig("metadata", "name")
-           if OPA.find_non_versioned_pod(pod_name)
-             fail_msg = "resource: #{resource} and pod #{pod_name} use a non versioned image."
-             unless fail_msgs.find{|x| x== fail_msg}
-               puts fail_msg.colorize(:red)
-               fail_msgs << fail_msg
-             end
-             test_passed=false
-           end
-         end
+  CNFManager::Task.task_runner(args) do |args,config|
+    VERBOSE_LOGGING.info "versioned_tag" if check_verbose(args)
+    LOGGING.debug "cnf_config: #{config}"
+    fail_msgs = [] of String
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      test_passed = true
+      kind = resource["kind"].downcase
+      case kind
+      when  "deployment","statefulset","pod","replicaset", "daemonset"
+        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
+        pods = KubectlClient::Get.pods_by_resource(resource_yaml, namespace: resource[:namespace])
+        pods.map do |pod|
+          pod_name = pod.dig("metadata", "name")
+          if OPA.find_non_versioned_pod(pod_name)
+            fail_msg = "Pod/#{pod_name} in #{resource[:kind]}/#{resource[:name]} in #{resource[:namespace]} namespace does not use a versioned image"
+            unless fail_msgs.find{|x| x== fail_msg}
+              fail_msgs << fail_msg
+            end
+            test_passed=false
+          end
        end
-       test_passed
-     end
-     emoji_versioned_tag="🏷️✔️"
-     emoji_non_versioned_tag="🏷️❌"
+      end
+      test_passed
+    end
+    emoji_versioned_tag="🏷️✔️"
+    emoji_non_versioned_tag="🏷️❌"
 
-     if task_response
-       upsert_passed_task("versioned_tag", "✔️  PASSED: Image uses a versioned tag #{emoji_versioned_tag}")
-     else
-       upsert_failed_task("versioned_tag", "✖️  FAILED: Image does not use a versioned tag #{emoji_non_versioned_tag}")
-     end
-   end
+    if task_response
+      upsert_passed_task("versioned_tag", "✔️  PASSED: Container images use versioned tags #{emoji_versioned_tag}")
+    else
+      upsert_failed_task("versioned_tag", "✖️  FAILED: Container images do not use versioned tags #{emoji_non_versioned_tag}")
+      fail_msgs.each do |msg|
+        stdout_failure(msg)
+      end
+    end
+  end
 end
 
 desc "Does the CNF use NodePort"

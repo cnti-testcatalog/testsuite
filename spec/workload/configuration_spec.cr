@@ -24,7 +24,7 @@ describe CnfTestSuite do
       response_s = `LOG_LEVEL=info ./cnf-testsuite versioned_tag verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Image uses a versioned tag/ =~ response_s).should_not be_nil
+      (/PASSED: Container images use versioned tags/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
@@ -37,7 +37,7 @@ describe CnfTestSuite do
       response_s = `LOG_LEVEL=info ./cnf-testsuite versioned_tag verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Image does not use a versioned tag/ =~ response_s).should_not be_nil
+      (/FAILED: Container images do not use versioned tags/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-testsuite.yml`
     end
