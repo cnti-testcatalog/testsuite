@@ -386,10 +386,10 @@ task "secrets_used" do |_, args|
                 Log.for("verbose").info { "container: #{c_name} ignored secret: #{s_name}" } if check_verbose(args)
                 next
               end
-              Log.for("verbose").debug { "checking secret: #{s_name}" } if check_verbose(args)
+              Log.for("checking_secret").info { s_name }
               found = (s_name == env.dig?("valueFrom", "secretKeyRef", "name"))
               if found
-                Log.for("verbose").info { "container: #{c_name} found secret reference: #{s_name}" } if check_verbose(args)
+                Log.for("secret_reference_found").info { "container: #{c_name} found secret reference: #{s_name}" }
               end
               found
             end
