@@ -378,6 +378,7 @@ task "secrets_used" do |_, args|
         c_name = container["name"]
         Log.for("verbose").info { "container: #{c_name} envs #{container["env"]?}" } if check_verbose(args)
         if container["env"]?
+          Log.for("container_info").info { container["env"] }
           container["env"].as_a.find do |env|
             Log.for("verbose").debug { "checking container: #{c_name}" } if check_verbose(args)
             secret_keyref_found_and_not_ignored = secrets.find do |s|
