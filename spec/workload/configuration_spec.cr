@@ -27,6 +27,7 @@ describe CnfTestSuite do
       (/PASSED: Container images use versioned tags/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite uninstall_opa`
     end
   end
 
