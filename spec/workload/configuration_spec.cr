@@ -302,7 +302,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'secrets_used' should fail when secrets are provided as volumes and not mounted by a container", tags: ["secrets"] do
+  it "'secrets_used' should be skipped when secrets are provided as volumes and not mounted by a container", tags: ["secrets"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_unmounted_secret_volume/cnf-testsuite.yml verbose wait_count=0 `
       $?.success?.should be_true
