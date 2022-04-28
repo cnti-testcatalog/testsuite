@@ -92,16 +92,16 @@ task "selinux_options" do |_, args|
     # IF SELinux is not enabled, skip this test
     # Else check for SELinux options
     if failures.size == 0
-      upsert_skipped_task("selinux_options", "⏭️  SKIPPED: Pods are not using SELinux options #{emoji_security}")
+      upsert_skipped_task("selinux_options", "⏭️  🏆 SKIPPED: Pods are not using SELinux options #{emoji_security}")
     else
 
       policy_path = Kyverno.policy_path("pod-security/baseline/disallow-selinux/disallow-selinux.yaml")
       failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
       if failures.size == 0
-        resp = upsert_passed_task("selinux_options", "✔️  PASSED: Pods are not using custom SELinux options that can be used for privilege escalations #{emoji_security}")
+        resp = upsert_passed_task("selinux_options", "✔️  🏆 PASSED: Pods are not using custom SELinux options that can be used for privilege escalations #{emoji_security}")
       else
-        resp = upsert_failed_task("selinux_options", "✖️  FAILED: Pods are using custom SELinux options that can be used for privilege escalations #{emoji_security}")
+        resp = upsert_failed_task("selinux_options", "✖️  🏆 FAILED: Pods are using custom SELinux options that can be used for privilege escalations #{emoji_security}")
         failures.each do |failure|
           failure.resources.each do |resource|
             puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -124,9 +124,9 @@ task "container_sock_mounts" do |_, args|
     failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
     if failures.size == 0
-      resp = upsert_passed_task("container_sock_mounts", "✔️  PASSED: Container engine daemon sockets are not mounted as volumes #{emoji_security}")
+      resp = upsert_passed_task("container_sock_mounts", "✔️  🏆 PASSED: Container engine daemon sockets are not mounted as volumes #{emoji_security}")
     else
-      resp = upsert_failed_task("container_sock_mounts", "✖️  FAILED: Container engine daemon sockets are mounted as volumes #{emoji_security}")
+      resp = upsert_failed_task("container_sock_mounts", "✖️  🏆 FAILED: Container engine daemon sockets are mounted as volumes #{emoji_security}")
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -393,9 +393,9 @@ task "resource_policies", ["kubescape_scan"] do |_, args|
 
     emoji_security = "🔓🔑"
     if Kubescape.test_passed?(test_json)
-      upsert_passed_task("resource_policies", "✔️  PASSED: Containers have resource limits defined #{emoji_security}")
+      upsert_passed_task("resource_policies", "✔️  🏆 PASSED: Containers have resource limits defined #{emoji_security}")
     else
-      resp = upsert_failed_task("resource_policies", "✖️  FAILED: Found containers without resource limits defined #{emoji_security}")
+      resp = upsert_failed_task("resource_policies", "✖️  🏆 FAILED: Found containers without resource limits defined #{emoji_security}")
       Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
       puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
       resp
@@ -456,9 +456,9 @@ task "non_root_containers", ["kubescape_scan"] do |_, args|
 
     emoji_security = "🔓🔑"
     if Kubescape.test_passed?(test_json)
-      upsert_passed_task("non_root_containers", "✔️  PASSED: Containers are running with non-root user with non-root group membership #{emoji_security}")
+      upsert_passed_task("non_root_containers", "✔️  🏆 PASSED: Containers are running with non-root user with non-root group membership #{emoji_security}")
     else
-      resp = upsert_failed_task("non_root_containers", "✖️  FAILED: Found containers running with root user or user with root group membership #{emoji_security}")
+      resp = upsert_failed_task("non_root_containers", "✖️  🏆 FAILED: Found containers running with root user or user with root group membership #{emoji_security}")
       Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
       puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
       resp
@@ -499,9 +499,9 @@ task "privileged_containers", ["kubescape_scan" ] do |_, args|
     emoji_security = "🔓🔑"
     #todo whitelist
     if Kubescape.test_passed?(test_json)
-      upsert_passed_task("privileged_containers", "✔️  PASSED: No privileged containers were found #{emoji_security}")
+      upsert_passed_task("privileged_containers", "✔️  🏆 PASSED: No privileged containers were found #{emoji_security}")
     else
-      resp = upsert_failed_task("privileged_containers", "✖️  FAILED: Found privileged containers #{emoji_security}")
+      resp = upsert_failed_task("privileged_containers", "✖️  🏆 FAILED: Found privileged containers #{emoji_security}")
       Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
       puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
       resp

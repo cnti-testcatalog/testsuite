@@ -45,9 +45,9 @@ task "liveness" do |_, args|
     end
     LOGGING.debug "liveness task response: #{task_response}"
     if task_response
-      resp = upsert_passed_task("liveness","✔️  PASSED: Helm liveness probe found #{emoji_probe}")
+      resp = upsert_passed_task("liveness","✔️  🏆 PASSED: Helm liveness probe found #{emoji_probe}")
 		else
-			resp = upsert_failed_task("liveness","✖️  FAILED: No livenessProbe found #{emoji_probe}")
+			resp = upsert_failed_task("liveness","✖️  🏆 FAILED: No livenessProbe found #{emoji_probe}")
     end
     resp
   end
@@ -74,9 +74,9 @@ task "readiness" do |_, args|
       test_passed
     end
     if task_response
-      resp = upsert_passed_task("readiness","✔️  PASSED: Helm readiness probe found #{emoji_probe}")
+      resp = upsert_passed_task("readiness","✔️  🏆 PASSED: Helm readiness probe found #{emoji_probe}")
 		else
-      resp = upsert_failed_task("readiness","✖️  FAILED: No readinessProbe found #{emoji_probe}")
+      resp = upsert_failed_task("readiness","✖️  🏆 FAILED: No readinessProbe found #{emoji_probe}")
     end
     resp
   end
