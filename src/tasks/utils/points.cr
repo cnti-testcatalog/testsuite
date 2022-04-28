@@ -169,6 +169,31 @@ module CNFManager
       total
     end
 
+    def self.total_passed(tag=nil)
+      Log.debug { "total_passed: #{tag}" }
+      if tag
+        tasks = tasks_by_tag(tag)
+      else
+        tasks = all_task_test_names
+      end
+      yaml = File.open("#{Results.file}") do |file|
+        YAML.parse(file)
+      end
+      Log.debug { "total_points: #{tag}, found tasks: #{tasks}" }
+      total = yaml["items"].as_a.reduce(0) do |acc, i|
+        Log.debug { "total_points: #{tag}, #{i["name"].as_s} = #{i["points"].as_i}" }
+        if i["points"].as_i? && i["points"].as_i > 0 && i["name"].as_s? &&
+            tasks.find{|x| x == i["name"]}
+          # (acc + i["points"].as_i)
+          (acc + 1)
+        else
+          acc
+        end
+      end
+      Log.info { "total_passed: #{tag} = #{total}" }
+      total
+    end
+
     def self.na_assigned?(task)
       yaml = File.open("#{Results.file}") do |file|
         YAML.parse(file)
@@ -223,6 +248,48 @@ module CNFManager
         end
       end
       Log.info { "total_max_points: #{tag} = #{max}" }
+      max
+    end
+
+    def self.total_max_passed(tag=nil)
+      Log.debug { "total_max_passed tag: #{tag}" }
+      if tag
+        tasks = tasks_by_tag(tag)
+        Log.debug { "tasks_by_tag tag: #{tag} tasks: #{tasks}" }
+      else
+        tasks = all_task_test_names
+        Log.debug { "all_task_test_names tasks: #{tasks}" }
+      end
+
+      results_yaml = File.open("#{Results.file}") do |file|
+        YAML.parse(file)
+      end
+
+      skipped_tests = results_yaml["items"].as_a.reduce([] of String) do |acc, test_info|
+        if test_info["status"] == "skipped"
+          acc + [test_info["name"].as_s]
+        else
+          acc
+        end
+      end
+
+      max = tasks.reduce(0) do |acc, x|
+        #TODO remove, from the potential points, the actually assigned points that are assigned to 'na' in the results.yml
+        if na_assigned?(x)
+          Log.info { "na_assigned for #{x}" }
+          acc
+        elsif skipped_tests.includes?(x)
+          acc
+        else
+          points = task_points(x)
+          if points
+            acc + 1 
+          else
+            acc
+          end
+        end
+      end
+      Log.info { "total_max_passed: #{tag} = #{max}" }
       max
     end
 
