@@ -1,9 +1,6 @@
 ---
-git_clone_url: 
-install_script: 
 manifest_directory: manifests
 release_name: nginx
-docker_repository: 
 helm_repository:
   name: 
   repo_url:

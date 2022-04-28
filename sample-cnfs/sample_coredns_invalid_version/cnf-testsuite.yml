@@ -1,16 +1,10 @@
 ---
 helm_directory: chart
-git_clone_url: 
-install_script: chart
 release_name: coredns
-deployment_name: coredns-coredns 
-deployment_label: k8s-app
 service_name: coredns-coredns
-application_deployment_names: [coredns]
 helm_repository:
   name: stable 
   repo_url: https://cncf.gitlab.io/stable
-helm_chart_container_name: coredns
 container_names: 
   - name: coredns 
     rolling_update_test_tag: "this_is_not_a_valid_version"

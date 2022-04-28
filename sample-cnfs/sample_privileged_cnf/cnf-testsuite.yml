@@ -1,12 +1,7 @@
 ---
 helm_directory: chart
-git_clone_url:
-install_script: 
 release_name: privileged-coredns
-deployment_name: privileged-coredns
-deployment_label: k8s-app
 service_name: privileged-coredns
-helm_chart_container_name: 
 allowlist_helm_chart_container_names: []
 container_names: 
   - name: coredns 

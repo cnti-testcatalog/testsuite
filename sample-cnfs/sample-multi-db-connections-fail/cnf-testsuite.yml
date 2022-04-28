@@ -1,6 +1,5 @@
 ---
 helm_directory: wordpress 
-git_clone_url: 
 release_name: test --set mariadb.primary.persistence.enabled=false --set persistence.enabled=false 
 container_names: 
   - name: wordpress 

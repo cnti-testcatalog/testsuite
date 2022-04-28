@@ -23,14 +23,11 @@ module CNFManager
                                      source_helm_directory: String, 
                                      helm_chart_path: String, 
                                      manifest_file_path: String,
-                                     git_clone_url: String,
                                      release_name: String,
                                      service_name:  String,
-                                     docker_repository: String,
                                      helm_repository: NamedTuple(name:  String, repo_url:  String) | Nil,
                                      helm_chart:  String,
                                      helm_install_namespace: String,
-                                     helm_chart_container_name: String,
                                      rolling_update_tag: String,
                                      container_names: Array(Hash(String, String )) | Nil,
                                      white_list_container_names: Array(String)) 
@@ -68,8 +65,6 @@ module CNFManager
       service_name = optional_key_as_string(config, "service_name")
       helm_directory = optional_key_as_string(config, "helm_directory")
       source_helm_directory = optional_key_as_string(config, "helm_directory")
-      git_clone_url = optional_key_as_string(config, "git_clone_url")
-      docker_repository = optional_key_as_string(config, "docker_repository")
       helm_install_namespace = optional_key_as_string(config, "helm_install_namespace")
       if helm_directory.empty?
         working_chart_directory = "exported_chart"
@@ -122,14 +117,11 @@ module CNFManager
                                source_helm_directory: source_helm_directory, 
                                helm_chart_path: helm_chart_path, 
                                manifest_file_path: manifest_file_path,
-                               git_clone_url: git_clone_url,
                                release_name: release_name,
                                service_name: service_name,
-                               docker_repository: docker_repository,
                                helm_repository: {name: helm_repo_name, repo_url: helm_repo_url},
                                helm_chart: helm_chart,
                                helm_install_namespace: helm_install_namespace,
-                               helm_chart_container_name: "",
                                rolling_update_tag: "",
                                container_names: container_names,
                                white_list_container_names: white_list_container_names })

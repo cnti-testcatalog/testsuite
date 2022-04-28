@@ -1,17 +1,10 @@
 ---
-git_clone_url: 
-install_script: 
 release_name: envoy 
-deployment_name: envoy
-deployment_label: app
-application_deployment_names: [envoy]
 service_name: envoy
-docker_repository: envoyproxy/envoy
 helm_repository:
   name: stable 
   repo_url: https://cncf.gitlab.io/stable
 helm_chart: stable/envoy
-helm_chart_container_name: envoy
 allowlist_helm_chart_container_names: [falco, nginx, envoy, calico-node, kube-proxy, nginx-proxy, node-cache]
 container_names: 
   - name: envoy

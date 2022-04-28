@@ -1,17 +1,10 @@
 ---
-git_clone_url: 
-install_script: 
 release_name: test --set mariadb.primary.persistence.enabled=false --set persistence.enabled=false 
-# deployment_name: my-release-wordpress 
-# deployment_label: app.kubernetes.io/name
 service_name: 
-# application_deployment_names: [my-release-wordpress]
-docker_repository: bitnami/wordpress 
 helm_repository:
   name: bitnami 
   repo_url: https://charts.bitnami.com/bitnami 
 helm_chart: bitnami/wordpress 
-helm_chart_container_name: busybox 
 allowlist_helm_chart_container_names: [falco, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
 container_names: 
   - name: wordpress 

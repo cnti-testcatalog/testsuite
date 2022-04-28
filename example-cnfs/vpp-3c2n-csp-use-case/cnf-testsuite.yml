@@ -1,12 +1,6 @@
 ---
 helm_directory: csp
-git_clone_url: 
-install_script: 
 release_name: ip-forwarder-csp
-deployment_name: ip-forwarder-csp 
-deployment_label: app
-application_deployment_names: [ip-forwarder-csp]
-helm_chart_container_name: ip-forwarder-csp
 allowlist_helm_chart_container_names: [falco, nginx, calico-node, kube-proxy, nginx-proxy, node-cache]
 container_names: 
   - name:  csp

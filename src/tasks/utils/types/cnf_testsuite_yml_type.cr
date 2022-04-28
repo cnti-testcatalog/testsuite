@@ -22,25 +22,13 @@ class CnfTestSuiteYmlType
 
   property helm_directory : String?
 
-  property git_clone_url : String?
-
   property service_name : String?
 
   property release_name : String?
 
-  property docker_repository : String?
-
-  property deployment_name : String?
-
-  property deployment_label : String?
-
-  property application_deployment_names : Array(String)?
-
   property helm_repository : HelmRepositoryType?
 
   property helm_chart : String?
-
-  property helm_chart_container_name : String?
 
   property rolling_update_test_tag : String?
   property rolling_downgrade_test_tag : String?

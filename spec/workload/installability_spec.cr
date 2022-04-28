@@ -8,17 +8,6 @@ describe CnfTestSuite do
     LOGGING.info `./cnf-testsuite setup`
   end
 
-  # it "'install_script_helm' should fail if install script does not have helm", tags: ["helm"]  do
-  #   LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf-source/cnf-testsuite.yml verbose wait_count=0`
-  #   $?.success?.should be_true
-  #   response_s =  `./cnf-testsuite install_script_helm`
-  #   LOGGING.info response_s
-  #   $?.success?.should be_true
-  #   (/FAILED: Helm not found in supplied install script/ =~ response_s).should_not be_nil
-  # ensure
-  #   `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf-source/cnf-testsuite.yml`
-  # end
-
 	it "'helm_deploy' should fail on a bad helm chart", tags: ["helm"] do
     LOGGING.info `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-bad-helm-deploy-repo verbose`
     response_s = `./cnf-testsuite helm_deploy destructive verbose`
