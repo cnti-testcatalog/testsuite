@@ -163,7 +163,11 @@ task "versioned_tag", ["install_opa"] do |_, args|
         pods.map do |pod|
           pod_name = pod.dig("metadata", "name")
           if OPA.find_non_versioned_pod(pod_name)
-            fail_msg = "Pod/#{pod_name} in #{resource[:kind]}/#{resource[:name]} in #{resource[:namespace]} namespace does not use a versioned image"
+            if kind == "pod"
+              fail_msg = "Pod/#{resource[:name]} in #{resource[:namespace]} namespace does not use a versioned image"
+            else
+              fail_msg = "Pod/#{pod_name} in #{resource[:kind]}/#{resource[:name]} in #{resource[:namespace]} namespace does not use a versioned image"
+            end
             unless fail_msgs.find{|x| x== fail_msg}
               fail_msgs << fail_msg
             end
