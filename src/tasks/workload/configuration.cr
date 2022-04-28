@@ -320,14 +320,14 @@ end
 desc "Does the CNF use K8s Secrets?"
 task "secrets_used" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    LOGGING.debug "cnf_config: #{config}"
-    VERBOSE_LOGGING.info "secrets_used" if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
+    Log.for("verbose").info { "secrets_used" } if check_verbose(args)
     # Parse the cnf-testsuite.yml
     resp = ""
     emoji_probe="🧫"
     task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
-      LOGGING.info "resource: #{resource}"
-      LOGGING.info "volumes: #{volumes}"
+      Log.info { "resource: #{resource}" }
+      Log.info { "volumes: #{volumes}" }
 
       volume_test_passed = false
       container_secret_mounted = false
@@ -361,7 +361,13 @@ task "secrets_used" do |_, args|
       #  is an installation problem, and does not stop the test from passing
 
       secrets = KubectlClient::Get.secrets(all_namespaces=true)
-      secrets["items"].as_a.each do |s|
+
+      # This filters out any secrets in the namespace in EXCLUDE_NAMESPACES
+      secrets = secrets["items"].as_a.select do |s|
+        !EXCLUDE_NAMESPACES.includes?(s.dig?("metadata", "namespace"))
+      end
+
+      secrets.each do |s|
         s_name = s["metadata"]["name"]
         s_type = s["type"]
         s_namespace = s.dig("metadata", "namespace")
@@ -370,20 +376,20 @@ task "secrets_used" do |_, args|
       secret_keyref_found_and_not_ignored = false
       containers.as_a.each do |container|
         c_name = container["name"]
-        VERBOSE_LOGGING.info "container: #{c_name} envs #{container["env"]?}" if check_verbose(args)
+        Log.for("verbose").info { "container: #{c_name} envs #{container["env"]?}" } if check_verbose(args)
         if container["env"]?
           container["env"].as_a.find do |env|
-            VERBOSE_LOGGING.debug "checking container: #{c_name}" if check_verbose(args)
-            secret_keyref_found_and_not_ignored = secrets["items"].as_a.find do |s|
+            Log.for("verbose").debug { "checking container: #{c_name}" } if check_verbose(args)
+            secret_keyref_found_and_not_ignored = secrets.find do |s|
               s_name = s["metadata"]["name"]
               if IGNORED_SECRET_TYPES.includes?(s["type"])
-                VERBOSE_LOGGING.info "container: #{c_name} ignored secret: #{s_name}" if check_verbose(args)
+                Log.for("verbose").info { "container: #{c_name} ignored secret: #{s_name}" } if check_verbose(args)
                 next
               end
-              VERBOSE_LOGGING.debug "checking secret: #{s_name}" if check_verbose(args)
+              Log.for("verbose").debug { "checking secret: #{s_name}" } if check_verbose(args)
               found = (s_name == env.dig?("valueFrom", "secretKeyRef", "name"))
               if found
-                VERBOSE_LOGGING.info "container: #{c_name} found secret reference: #{s_name}" if check_verbose(args)
+                Log.for("verbose").info { "container: #{c_name} found secret reference: #{s_name}" } if check_verbose(args)
               end
               found
             end
