@@ -1,5 +1,6 @@
 ---
 helm_directory: postgresql
+helm_install_namespace: cnfspace
 git_clone_url: 
 install_script: chart
 release_name: postgresql
