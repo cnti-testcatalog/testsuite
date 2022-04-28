@@ -10,7 +10,8 @@ require "halite"
 require "totem"
 
 desc "The CNF test suite checks to see if CNFs follows microservice principles"
-task "cert_microservice", ["cert_microservice_title", "reasonable_image_size", "reasonable_startup_time", "service_discovery"] do |_, args|
+task "cert_microservice", ["cert_microservice_title","reasonable_image_size", "reasonable_startup_time", "single_process_type", "service_discovery", "shared_database"] do |_, args|
+# task "cert_microservice", ["cert_microservice_title", "reasonable_image_size", "reasonable_startup_time", "service_discovery"] do |_, args|
   stdout_score("microservice")
 end
 

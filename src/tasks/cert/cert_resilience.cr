@@ -5,7 +5,20 @@ require "colorize"
 require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if the CNFs are resilient to failures."
- task "cert_resilience", ["cert_resilience_title", "pod_network_latency", "pod_network_corruption", "disk_fill", "pod_delete", "pod_memory_hog", "pod_io_stress", "pod_dns_error"] do |t, args|
+ task "cert_resilience", [
+   "cert_resilience_title",
+   "pod_network_latency",
+   "pod_network_corruption",
+   "disk_fill",
+   "pod_delete",
+   "pod_memory_hog",
+   "pod_io_stress",
+   "pod_dns_error",
+   "pod_network_duplication",
+   "liveness",
+   "readiness"
+  ] do |t, args|
+#  task "cert_resilience", ["cert_resilience_title", "pod_network_latency", "pod_network_corruption", "disk_fill", "pod_delete", "pod_memory_hog", "pod_io_stress", "pod_dns_error"] do |t, args|
   Log.for("verbose").info {  "resilience" } if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)

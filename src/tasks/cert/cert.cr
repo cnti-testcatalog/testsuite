@@ -6,7 +6,8 @@ require "totem"
 require "../utils/utils.cr"
 
 desc "The CNF Test Suite program certifies a CNF based on passing some percentage of essential tests."
-task "cert", ["cert_compatibility", "cert_state", "cert_security", "cert_configuration", "cert_observability", "cert_microservice", "cert_resilience", "latest_tag", "selinux_options", "single_process_type", "node_drain","liveness", "readiness", "log_output", "container_sock_mounts", "privileged_containers", "non_root_containers", "resource_policies", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration"] do  |_, args|
+task "cert", ["cert_compatibility", "cert_state", "cert_security", "cert_configuration", "cert_observability", "cert_microservice", "cert_resilience"] do  |_, args|
+# task "cert", ["cert_compatibility", "cert_state", "cert_security", "cert_configuration", "cert_observability", "cert_microservice", "cert_resilience", "latest_tag", "selinux_options", "single_process_type", "node_drain","liveness", "readiness", "log_output", "container_sock_mounts", "privileged_containers", "non_root_containers", "resource_policies", "hostport_not_used", "hardcoded_ip_addresses_in_k8s_runtime_configuration"] do  |_, args|
   VERBOSE_LOGGING.info "cert" if check_verbose(args)
 
   stdout_success "RESULTS SUMMARY"
