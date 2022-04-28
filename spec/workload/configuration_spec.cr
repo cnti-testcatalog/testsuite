@@ -341,7 +341,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'secrets_used' should pass when no secret volumes are mounted or no container secrets are provided (secrets ignored)`", tags: ["secrets"] do
+  it "'secrets_used' should be skipped when no secret volumes are mounted or no container secrets are provided (secrets ignored)`", tags: ["secrets"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose wait_count=0 `
       $?.success?.should be_true
