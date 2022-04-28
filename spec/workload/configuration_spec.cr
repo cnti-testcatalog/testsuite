@@ -41,6 +41,7 @@ describe CnfTestSuite do
       (/FAILED: Container images do not use versioned tags/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite uninstall_opa`
     end
   end
 
