@@ -6,3 +6,6 @@ helm_repository:
   name: stable 
   repo_url: https://cncf.gitlab.io/stable
 allowlist_helm_chart_container_names: []
+container_names: 
+  - name: coredns 
+    rolling_update_test_tag: "this_is_not_a_valid_version"
