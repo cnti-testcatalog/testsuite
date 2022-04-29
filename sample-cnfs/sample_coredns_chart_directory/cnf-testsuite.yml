@@ -1,7 +1,4 @@
 ---
 helm_directory: chart
 release_name: coredns
-container_names: 
-  - name: coredns 
-    rolling_update_test_tag: "1.8.0"
 allowlist_helm_chart_container_names: []

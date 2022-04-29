@@ -3,6 +3,3 @@ helm_directory: chart
 release_name: bad-liveness
 service_name: bad-liveness-coredns 
 allowlist_helm_chart_container_names: []
-container_names: 
-  - name: coredns 
-    rolling_update_test_tag: "1.8.0"

@@ -5,7 +5,4 @@ service_name: coredns-coredns
 helm_repository:
   name: stable 
   repo_url: https://cncf.gitlab.io/stable
-container_names: 
-  - name: coredns 
-    rolling_update_test_tag: "this_is_not_a_valid_version"
 allowlist_helm_chart_container_names: []
