@@ -391,7 +391,7 @@ describe "Security" do
       response_s = `./cnf-testsuite selinux_options verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/SKIPPED: Pods are not using SELinux options/ =~ response_s).should_not be_nil
+      (/N\/A: Pods are not using SELinux/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot`
     end
