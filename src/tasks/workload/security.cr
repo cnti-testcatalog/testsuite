@@ -89,10 +89,12 @@ task "selinux_options" do |_, args|
     policy_path = Kyverno::CustomPolicies::SELinuxEnabled.new.policy_path
     failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
+    #TODO check for AppArmor as well, and the cnf should have either selinux or apparmor
     # IF SELinux is not enabled, skip this test
     # Else check for SELinux options
     if failures.size == 0
-      upsert_skipped_task("selinux_options", "⏭️  🏆 SKIPPED: Pods are not using SELinux options #{emoji_security}")
+      # upsert_skipped_task("selinux_options", "⏭️  🏆 SKIPPED: Pods are not using SELinux options #{emoji_security}")
+      upsert_na_task("selinux_options", "⏭️  🏆 N/A: Pods are not using SELinux #{emoji_security}")
     else
 
       policy_path = Kyverno.policy_path("pod-security/baseline/disallow-selinux/disallow-selinux.yaml")

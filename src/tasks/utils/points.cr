@@ -274,12 +274,12 @@ module CNFManager
       end
 
       max = tasks.reduce(0) do |acc, x|
-        #TODO remove, from the potential points, the actually assigned points that are assigned to 'na' in the results.yml
+        # skipped counted against max score (not reduced), na not counted (reduced)
         if na_assigned?(x)
           Log.info { "na_assigned for #{x}" }
           acc
         elsif skipped_tests.includes?(x)
-          acc
+          acc + 1 
         else
           points = task_points(x)
           if points
