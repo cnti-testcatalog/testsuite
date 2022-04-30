@@ -2,6 +2,3 @@
 helm_directory: csp
 release_name: ip-forwarder-csp
 allowlist_helm_chart_container_names: [falco, nginx, calico-node, kube-proxy, nginx-proxy, node-cache]
-container_names: 
-  - name:  csp
-    rolling_update_test_tag: 1.0.0

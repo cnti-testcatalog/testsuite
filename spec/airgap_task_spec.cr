@@ -55,18 +55,18 @@ describe "AirGap" do
 
   it "'cnf_setup/cnf_cleanup' should install/cleanup a cnf helm chart in airgapped mode", tags: ["airgap-repo"]  do
     begin
-      response_s = `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz`
+      response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_rolling/cnf-testsuite.yml airgapped=/tmp/airgapped.tar.gz`
       Log.info { response_s }
       file_list = `tar -tvf /tmp/airgapped.tar.gz`
       Log.info { "file_list: #{file_list}" }
       (file_list).match(/coredns_1.8.0.tar/).should_not be_nil
       (file_list).match(/coredns_1.6.7.tar/).should_not be_nil
-      response_s = `./cnf-testsuite cnf_setup cnf-config=example-cnfs/coredns/cnf-testsuite.yml input-file=/tmp/airgapped.tar.gz`
+      response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_rolling/cnf-testsuite.yml input-file=/tmp/airgapped.tar.gz`
       $?.success?.should be_true
       Log.info { response_s }
       (/Successfully setup coredns/ =~ response_s).should_not be_nil
     ensure
-      response_s = `./cnf-testsuite cnf_cleanup cnf-config=example-cnfs/coredns/cnf-testsuite.yml wait_count=0`
+      response_s = `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_rolling/cnf-testsuite.yml wait_count=0`
       $?.success?.should be_true
       Log.info { response_s }
       (/Successfully cleaned up/ =~ response_s).should_not be_nil

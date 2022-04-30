@@ -3,6 +3,3 @@ helm_directory: chart
 release_name: envoy 
 service_name: envoy
 allowlist_helm_chart_container_names: [falco, nginx, envoy, calico-node, kube-proxy, nginx-proxy, node-cache]
-container_names: 
-  - name: envoy
-    rolling_update_test_tag: "v1.11.0"

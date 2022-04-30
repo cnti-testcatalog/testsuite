@@ -25,7 +25,6 @@ The information in the cnf-testsuite.yml is then further used for running variou
   - [helm_chart](#helm_chart)
   - [helm_install_namespace](#helm_install_namespace)
   - [allowlist_helm_chart_container_names](#allowlist_helm_chart_container_names)
-  - [container_names](#container_names)
 - [Creating Your Own cnf-testsuite.yml](#creating-your-own-cnf-testsuiteyml)
 - [Setup and Configuration](#Setup-and-Configuration)
 - [Quick Setup and Config Reference Steps](#Quick-Setup-and-Config-Reference-Steps)
@@ -42,11 +41,6 @@ helm_chart: stable/coredns # PUBLISHED_CNFS_HELM_CHART_REPO/NAME
 
 release_name: privileged-coredns # DESIRED_HELM_RELEASE_NAME
 allowlist_helm_chart_container_names: [coredns] # [LIST_OF_CONTAINERS_ALLOWED_TO_RUN_PRIVLIDGED]
-container_names: #[LIST_OF_CONTAINERS_NAMES_AND_VERSION_UPGRADE_TAGS]
-  - name: sidecar-container1
-    rolling_update_test_tag: "1.32.0"
-  - name: sidecar-container2
-    rolling_update_test_tag: "1.32.0"
 ```
 
 ### Keys and Values
@@ -134,22 +128,6 @@ Example setting:
 
 `allowlist_helm_chart_container_names: [coredns]`
 
-#### container_names
-
-This value is the name of the 'containers' defined in the Kubernetes pod spec of pods and must be set.
-
-Example setting:
-
-```yaml=
-container_names: #[LIST_OF_CONTAINERS_NAMES_AND_VERSION_UPGRADE_TAGS]
-   - name: <container_name1>
-     rolling_update_test_tag: <image-tag-version1>
-   - name: <container_name2>
-     rolling_update_test_tag: <image-tag-version2>
-```
-
-This value is used to test the upgradeability of each container image. The image tag version should be a minor version that will be used in conjunction with the kubnetes rollout feature.
-
 ### Creating Your Own cnf-testsuite.yml
 
 - Create a testsuite configuration file called `cnf-testsuite.yml` under the your CNF folder (eg. `cnfs/my_ipsec_cnf/cnf-testsuite.yml`)
@@ -170,11 +148,6 @@ The [`cnf-testsuite.yml`](cnf-testsuite.example.yml) file can be used (included 
 helm_directory:
 helm_chart:
 allowlist_helm_chart_container_names:
-container_names:
-- name: <container_name1>
-  rolling_update_test_tag: <image-tag-version1>
-- name: <container_name2>
-  rolling_update_test_tag: <image-tag-version2>
 ```
 
 Below is a fully working example CoreDNS cnf-testsuite.yml that tests CoreDNS by installing via helm from a helm repository as a reference:
@@ -193,18 +166,6 @@ helm_repository:
   repo_url: https://cncf.gitlab.io/stable
 # Optional
 allowlist_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy, kube-multus]
-
-container_names:
-# image name e.g. "coredns" in coredns:1.8.0
-  - name: coredns
-# test forward compatibility
-    rolling_update_test_tag: 1.8.0
-# temporary test backwards compatibility
-    rolling_downgrade_test_tag: 1.6.7
-# will be deprecated
-    rolling_version_change_test_tag: latest
-# temporary tag, used to rollback to the original tag
-    rollback_from_tag: latest
 ```
 
 ### Setup and Configuration

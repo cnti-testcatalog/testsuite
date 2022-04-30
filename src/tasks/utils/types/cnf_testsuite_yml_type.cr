@@ -30,15 +30,15 @@ class CnfTestSuiteYmlType
 
   property helm_chart : String?
 
-  property rolling_update_test_tag : String?
-  property rolling_downgrade_test_tag : String?
-  property rolling_version_change_test_tag : String?
+  # property rolling_update_test_tag : String?
+  # property rolling_downgrade_test_tag : String?
+  # property rolling_version_change_test_tag : String?
 
   property rollback_from_tag : String?
 
   property allowlist_helm_chart_container_names : Array(String)?
 
-  property container_names : Array(Hash(String,String))
+  # property container_names : Array(Hash(String,String))
 end
 
 class HelmRepositoryType

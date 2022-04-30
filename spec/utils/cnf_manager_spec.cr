@@ -392,30 +392,6 @@ describe "SampleUtils" do
   end
 
 
-  it "'CNFManager.validate_cnf_testsuite_yml' (function) should fail when an invalid cnf config file yml is used", tags: ["validate_config"]  do
-    args = Sam::Args.new(["cnf-config=spec/fixtures/cnf-testsuite-invalid-and-unmapped-keys.yml"])
-
-
-    yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
-    LOGGING.info yml.inspect
-    # config = CNFManager::Config.parse_config_yml(args.named["cnf-config"].as(String))    
-    # release_name = config.cnf_config[:release_name]
-    # ("#{yml.get("release_name").as_s?}").should eq(release_name)
-
-    status, warning_output = CNFManager.validate_cnf_testsuite_yml(yml)
-
-    (status).should eq(false)
-    (warning_output).should eq(nil)
-  end
-
-  it "'CNFManager.validate_cnf_testsuite_yml' (command) should fail when an invalid cnf config file yml is used", tags: ["validate_config"]  do
-    response_s = `./cnf-testsuite validate_config cnf-config=spec/fixtures/cnf-testsuite-invalid-and-unmapped-keys.yml`
-    $?.success?.should be_true
-
-    (/ERROR: cnf_testsuite.yml field validation error/ =~ response_s).should_not be_nil
-    (/FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s).should_not be_nil
-  end
-
   it "'CNFManager.validate_cnf_testsuite_yml' (command) should pass, for all sample-cnfs", tags: ["validate_config"]  do
 
     get_dirs = Dir.entries("sample-cnfs")

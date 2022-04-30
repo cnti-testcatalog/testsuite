@@ -2,10 +2,4 @@
 helm_directory: chart
 release_name: unifi
 service_name: unifi-controller 
-# helm_chart: stable/unifi
-container_names: 
-  - name: unifi 
-    rolling_update_test_tag: "5.12.34"
-    rolling_downgrade_test_tag: "5.12.12"
-    rolling_version_change_test_tag: latest
 allowlist_helm_chart_container_names: []

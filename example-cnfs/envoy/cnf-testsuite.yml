@@ -6,6 +6,3 @@ helm_repository:
   repo_url: https://cncf.gitlab.io/stable
 helm_chart: stable/envoy
 allowlist_helm_chart_container_names: [falco, nginx, envoy, calico-node, kube-proxy, nginx-proxy, node-cache]
-container_names: 
-  - name: envoy
-    rolling_update_test_tag: 1.8.0

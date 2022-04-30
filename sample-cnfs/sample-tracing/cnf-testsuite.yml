@@ -4,10 +4,4 @@ release_name: test
 helm_repository:
   name: jaegertracing 
   repo_url: https://jaegertracing.github.io/helm-charts
-container_names: 
-  - name: test
-    rolling_update_test_tag: "latest"
-    rolling_downgrade_test_tag: latest
-    rolling_version_change_test_tag: latest
-    rollback_from_tag: latest
 allowlist_helm_chart_container_names: []
