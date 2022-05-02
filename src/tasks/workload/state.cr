@@ -339,12 +339,10 @@ task "elastic_volumes" do |_, args|
       namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
 
       full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
-      if WorkloadResource.elastic?(full_resource, volumes, namespace)
-        elastic = true
-      end
+      elastic = WorkloadResource.elastic?(full_resource, volumes, namespace)
     end
 
-    #TODO Should investigate why volumes were returned as none earlier
+    Log.for("elastic_volumes:result").info { "Volumes used: #{volumes_used}; Elastic?: #{elastic}" }
     if volumes_used == false || elastic == nil
       resp = upsert_skipped_task("elastic_volumes","⏭️  SKIPPED: No volumes used #{emoji_probe}")
     elsif elastic
