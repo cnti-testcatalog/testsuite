@@ -488,6 +488,7 @@ task "immutable_configmap" do |_, args|
       config_map_volume_exists = false
       config_map_volume_mounted = true
       all_volume_configmap_are_immutable = true
+
       # Check to see all volume config maps are actually used
       # https://kubernetes.io/docs/concepts/storage/volumes/#configmap
       volumes.as_a.each do |config_map_volume|
@@ -497,8 +498,9 @@ task "immutable_configmap" do |_, args|
           container_config_map_mounted = false
           containers.as_a.each do |container|
             if container["volumeMounts"]?
-                vmount = container["volumeMounts"].as_a
-              Log.info { "vmount: #{vmount}"}
+              container_name = container.dig("name")
+              vmount = container["volumeMounts"].as_a
+              Log.info { "container: #{container_name}; vmount: #{vmount}"}
               Log.info { "container[env]: #{container["env"]? && container["env"]}" }
               if (vmount.find { |x| x["name"] == config_map_volume["name"]? })
                 Log.info { config_map_volume["name"] }
@@ -512,7 +514,6 @@ task "immutable_configmap" do |_, args|
             config_map_volume_mounted = false
           end
 
-          Log.info { "config_maps_json[items][0]: #{config_maps_json["items"][0]}" }
           Log.info { "config_map_volume[configMap] #{config_map_volume["configMap"]}" }
 
           this_volume_config_map = config_maps_json["items"].as_a.find {|x| x["metadata"]? && x["metadata"]["name"]? && x["metadata"]["name"] == config_map_volume["configMap"]["name"] }
