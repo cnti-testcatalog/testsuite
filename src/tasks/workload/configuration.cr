@@ -482,7 +482,7 @@ task "immutable_configmap" do |_, args|
       Log.info { "resource: #{resource}" }
       Log.info { "volumes: #{volumes}" }
 
-      config_maps_json = KubectlClient::Get.configmaps
+      config_maps_json = KubectlClient::Get.configmaps(all_namespaces: true)
 
       volume_test_passed = false
       config_map_volume_exists = false

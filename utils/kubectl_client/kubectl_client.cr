@@ -662,8 +662,12 @@ module KubectlClient
       JSON.parse(%({}))
     end
 
-    def self.configmaps : JSON::Any
+    def self.configmaps(all_namespaces : Bool = false) : JSON::Any
       cmd = "kubectl get configmaps -o json"
+      if all_namespaces == true
+        cmd = "#{cmd} -A"
+      end
+
       result = ShellCmd.run(cmd, "KubectlClient::Get.configmaps")
       response = result[:output]
 
