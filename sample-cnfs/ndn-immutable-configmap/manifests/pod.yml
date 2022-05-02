@@ -38,7 +38,7 @@ spec:
       - containerPort: 8080
       - containerPort: 8443
     volumeMounts:
-      - name: demo-vol
+      - name: demo-volume
         mountPath: /etc/demo-config
   volumes:
   - name: demo-volume
