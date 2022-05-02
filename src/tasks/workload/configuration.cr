@@ -430,8 +430,93 @@ class ImmutableConfigMapTemplate
   ECR.def_to_s("src/templates/immutable_configmap.yml.ecr")
 end
 
+def configmap_volume_mounted?(configmap_volume, container)
+  return false if !container["volumeMounts"]?
+
+  volume_mounts = container["volumeMounts"].as_a
+  Log.for("container_volume_mounts").info { volume_mounts }
+  result = volume_mounts.find { |x| x["name"] == configmap_volume["name"]? }
+  return true if result
+  false
+end
+
+def mutable_configmaps_as_volumes(
+  resource : NamedTuple(kind: String, name: String, namespace: String),
+  configmaps : Array(JSON::Any),
+  volumes : Array(JSON::Any),
+  containers : Array(JSON::Any)
+) : Array(
+    NamedTuple(
+      resource: NamedTuple(kind: String, name: String, namespace: String)?,
+      container: String?,
+      volume_name: String,
+      configmap: String
+    )
+  )
+  # Select all configmap volumes
+  configmap_volumes = volumes.select do |volume|
+    volume["configMap"]?
+  end
+
+  configmap_volumes.flat_map do |volume|
+    # Find the configmap that the volume is using
+    configmap = configmaps.find{ |cm| cm["metadata"]["name"] == volume["configMap"]["name"]}
+
+    # Move on if the volume does not point to a valid configmap
+    if !configmap
+      next nil
+    end
+
+    containers.map do |container|
+      # If configmap is immutable, then move on.
+      if configmap["immutable"]? && configmap["immutable"] == true
+        next nil
+      end
+
+      # If (configmap does not have immutable key OR configmap has immutable=false)
+      if (!configmap["immutable"]? || (configmap["immutable"]? && configmap["immutable"] == false))
+        if configmap_volume_mounted?(volume, container)
+          {resource: resource, container: container.dig("name").as_s, volume_name: volume["name"].as_s, configmap: configmap["namespace"]["name"].as_s}
+        else
+          {resource: nil, container: nil, volume_name: volume["name"].as_s, configmap: configmap["metadata"]["name"].as_s}
+        end
+      end
+    end.compact
+  end.compact
+end
+
+def container_env_configmap_refs(
+  resource : NamedTuple(kind: String, name: String, namespace: String),
+  configmaps : Array(JSON::Any),
+  container : JSON::Any
+) : Nil | Array(
+  NamedTuple(
+    resource: NamedTuple(kind: String, name: String, namespace: String),
+    container: String,
+    configmap: String
+  )
+)
+  return nil if !container["env"]?
+
+  Log.info { "container config_maps #{container["env"]?}" }
+  container["env"].as_a.map do |item|
+    # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#define-container-environment-variables-with-data-from-multiple-configmaps
+    env_configmap_ref = item.dig?("valueFrom", "configMapKeyRef", "name")
+    next nil if env_configmap_ref == nil
+    configmap = configmaps.find { |s| s["metadata"]["name"] == env_configmap_ref }
+    next nil if configmap == nil
+
+    if configmap && (!configmap["immutable"]? || (configmap["immutable"]? || configmap["immutable"] == false))
+      {resource: resource, container: container.dig("name").as_s, configmap: configmap["metadata"]["name"].as_s}
+    end
+  end.compact
+end
+
 desc "Does the CNF use immutable configmaps?"
 task "immutable_configmap" do |_, args|
+  resp = ""
+  emoji_probe="⚖️"
+
   task_response = CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "immutable_configmap" if check_verbose(args)
     LOGGING.debug "cnf_config: #{config}"
@@ -457,115 +542,59 @@ task "immutable_configmap" do |_, args|
     File.write(test_config_map_filename, template)
 
     immutable_configmap_supported = true
+    immutable_configmap_enabled = true
+
     # if the reapply with a change succedes immmutable configmaps is NOT enabled
     # if KubectlClient::Apply.file(test_config_map_filename) == 0
     apply_result = KubectlClient::Apply.file(test_config_map_filename)
+
+    # Delete configmap immediately to avoid interfering with further tests
+    KubectlClient::Delete.file(test_config_map_filename)
+
     if apply_result[:status].success?
-      Log.info { "kubectl apply failed for: #{test_config_map_filename}" }
+      Log.info { "kubectl apply on immutable configmap succeeded for: #{test_config_map_filename}" }
       k8s_ver = KubectlClient.server_version
       if version_less_than(k8s_ver, "1.19.0")
         resp = " ⏭️  SKIPPED: immmutable configmaps are not supported in this k8s cluster.".colorize(:yellow)
         upsert_skipped_task("immutable_configmap", resp)
-        immutable_configmap_supported = false
       else
         resp = "✖️  FAILED: immmutable configmaps are not enabled in this k8s cluster.".colorize(:red)
         upsert_failed_task("immutable_configmap", resp)
       end
-    end
-
-    # cleanup test configmap
-    KubectlClient::Delete.file(test_config_map_filename)
-
-    resp = ""
-    emoji_probe="⚖️"
-    cnf_manager_workload_resource_task_response = CNFManager.workload_resource_test(args, config, check_containers=false, check_service=true) do |resource, containers, volumes, initialized|
-      Log.info { "resource: #{resource}" }
-      Log.info { "volumes: #{volumes}" }
-
-      config_maps_json = KubectlClient::Get.configmaps(all_namespaces: true)
-
-      volume_test_passed = false
-      config_map_volume_exists = false
-      config_map_volume_mounted = true
-      all_volume_configmap_are_immutable = true
-
-      # Check to see all volume config maps are actually used
-      # https://kubernetes.io/docs/concepts/storage/volumes/#configmap
-      volumes.as_a.each do |config_map_volume|
-        if config_map_volume["configMap"]?
-          config_map_volume_exists = true
-          Log.info { "config_map_volume: #{config_map_volume["name"]}"}
-          container_config_map_mounted = false
-          containers.as_a.each do |container|
-            if container["volumeMounts"]?
-              container_name = container.dig("name")
-              vmount = container["volumeMounts"].as_a
-              Log.info { "container: #{container_name}; vmount: #{vmount}"}
-              Log.info { "container[env]: #{container["env"]? && container["env"]}" }
-              if (vmount.find { |x| x["name"] == config_map_volume["name"]? })
-                Log.info { config_map_volume["name"] }
-                container_config_map_mounted = true
-              end
-            end
-          end
-          # If any config_map volume exists, and it is not mounted by a
-          # container, fail test
-          if container_config_map_mounted == false
-            config_map_volume_mounted = false
-          end
-
-          Log.info { "config_map_volume[configMap] #{config_map_volume["configMap"]}" }
-
-          this_volume_config_map = config_maps_json["items"].as_a.find {|x| x["metadata"]? && x["metadata"]["name"]? && x["metadata"]["name"] == config_map_volume["configMap"]["name"] }
-
-          Log.info { "this_volume_config_map: #{this_volume_config_map}" }
-          # https://crystal-lang.org/api/0.20.4/Hash.html#key%3F%28value%29-instance-method
-          unless config_map_volume_mounted && this_volume_config_map && this_volume_config_map["immutable"]? && this_volume_config_map["immutable"] == true
-            all_volume_configmap_are_immutable = false
-          end
-        end
-      end
-
-      if config_map_volume_exists && config_map_volume_mounted && all_volume_configmap_are_immutable
-        volume_test_passed = true
-      end
-
-      all_env_configmap_are_immutable = true
-
-      containers.as_a.each do |container|
-        Log.info { "container config_maps #{container["env"]?}" }
-        if container["env"]?
-          container["env"].as_a.find do |c|
-            # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#define-container-environment-variables-with-data-from-multiple-configmaps
-            this_env_mounted_config_map_name = c.dig?("valueFrom", "configMapKeyRef", "name")
-            if this_env_mounted_config_map_name
-
-              this_env_mounted_config_map_json = config_maps_json["items"].as_a.find{ |s| s["metadata"]["name"] == this_env_mounted_config_map_name }
-
-              Log.info { "blarf this_env_mounted_config_map_json #{this_env_mounted_config_map_json}" }
-              unless this_env_mounted_config_map_json && this_env_mounted_config_map_json["immutable"]? && this_env_mounted_config_map_json["immutable"] == true
-                Log.info {" configmap immutable = false" }
-                all_env_configmap_are_immutable = false
-              end
-            end
-          end
-        end
-      end
-
-      all_volume_configmap_are_immutable && all_env_configmap_are_immutable
-    end
-
-    if cnf_manager_workload_resource_task_response
-      resp = "✔️  PASSED: All volume or container mounted configmaps immutable #{emoji_probe}".colorize(:green)
-      upsert_passed_task("immutable_configmap", resp)
-    elsif immutable_configmap_supported
-      resp = "✖️  FAILED: Found mutable configmap(s) #{emoji_probe}".colorize(:red)
-      upsert_failed_task("immutable_configmap", resp)
     else
-      resp = "⏭️  SKIPPED: Immutable configmap(s) not supported #{emoji_probe}".colorize(:yellow)
-      upsert_skipped_task("immutable_configmap", resp)
+
+      cnf_manager_workload_resource_task_response = CNFManager.workload_resource_test(args, config, check_containers=false, check_service=true) do |resource, containers, volumes, initialized|
+        Log.info { "resource: #{resource}" }
+        Log.info { "volumes: #{volumes}" }
+
+        # If the install type is manifest, the namesapce would be in the manifest.
+        # Else rely on config for helm-based install
+        namespace = resource.dig?("metadata", "namespace") || config.cnf_config[:helm_install_namespace]
+        configmaps = KubectlClient::Get.configmaps(namespace: namespace)
+        if configmaps.dig?("items")
+          configmaps = configmaps.dig("items").as_a
+        else
+          configmaps = [] of JSON::Any
+        end
+
+        volumes_test_results = mutable_configmaps_as_volumes(resource, configmaps, volumes.as_a, containers.as_a)
+        envs_with_mutable_configmap = containers.as_a.flat_map do |container|
+          container_env_configmap_refs(resource, configmaps, container)
+        end
+
+        volumes_test_results.size == 0 && envs_with_mutable_configmap.size == 0
+      end
+
+      if cnf_manager_workload_resource_task_response
+        resp = "✔️  PASSED: All volume or container mounted configmaps immutable #{emoji_probe}".colorize(:green)
+        upsert_passed_task("immutable_configmap", resp)
+      elsif immutable_configmap_supported
+        resp = "✖️  FAILED: Found mutable configmap(s) #{emoji_probe}".colorize(:red)
+        upsert_failed_task("immutable_configmap", resp)
+      end
+      resp
+
     end
-    resp
   end
 end
 
