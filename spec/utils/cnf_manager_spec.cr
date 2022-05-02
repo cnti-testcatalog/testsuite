@@ -66,16 +66,18 @@ describe "SampleUtils" do
     (CNFManager::Points.task_points("liveness", CNFManager::Points::Results::ResultStatus::Skipped)).should eq(0)
   end
 
-  it "'task_required' should return if the passed task is required", tags: ["tasks"]  do
-    CNFManager::Points.clean_results_yml
-    (CNFManager::Points.task_required("privileged")).should be_true
-  end
+  # todo add mock test for testing require tests (privilege mode is no longer required)
+  # it "'task_required' should return if the passed task is required", tags: ["tasks"]  do
+  #   CNFManager::Points.clean_results_yml
+  #   (CNFManager::Points.task_required("privileged")).should be_true
+  # end
 
-  it "'failed_required_tasks' should return a list of failed required tasks", tags: ["tasks"]  do
-    CNFManager::Points.clean_results_yml
-    CNFManager::Points.failed_task("privileged", "FAILED: Privileged container found")
-    (CNFManager::Points.failed_required_tasks).should eq(["privileged"])
-  end
+  # todo add mock test for testing require tests (privilege mode is no longer required)
+  # it "'failed_required_tasks' should return a list of failed required tasks", tags: ["tasks"]  do
+  #   CNFManager::Points.clean_results_yml
+  #   CNFManager::Points.failed_task("privileged", "FAILED: Privileged container found")
+  #   (CNFManager::Points.failed_required_tasks).should eq(["privileged"])
+  # end
 
   it "'upsert_task' insert task in the results file", tags: ["tasks"]  do
     CNFManager::Points.clean_results_yml
