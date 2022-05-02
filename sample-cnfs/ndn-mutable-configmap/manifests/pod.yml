@@ -10,7 +10,6 @@ kind: ConfigMap
 metadata:
   name: hello-configmap
   namespace: cnfspace
-immutable: true
 data:
   world: "hello"
 
@@ -20,8 +19,28 @@ kind: ConfigMap
 metadata:
   name: world-configmap
   namespace: cnfspace
+immutable: true
 data:
   hello: "world"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: foo-configmap
+  namespace: cnfspace
+data:
+  foo: "bar"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bar-configmap
+  namespace: cnfspace
+immutable: true
+data:
+  bar: "foo"
 
 ---
 apiVersion: v1
@@ -46,6 +65,17 @@ spec:
     ports:
       - containerPort: 8080
       - containerPort: 8443
+    env:
+      - name: CONFIGMAP_FOO_TEST
+        valueFrom:
+          configMapKeyRef:
+            name: foo-configmap
+            key: foo
+      - name: CONFIGMAP_BAR_TEST
+        valueFrom:
+          configMapKeyRef:
+            name: bar-configmap
+            key: bar
     volumeMounts:
       - name: hello-volume
         mountPath: /etc/hello-config
@@ -58,4 +88,10 @@ spec:
   - name: world-volume
     configMap:
       name: world-configmap
+  - name: foo-volume
+    configMap:
+      name: foo-configmap
+  - name: bar-volume
+    configMap:
+      name: bar-configmap
   dnsPolicy: Default
