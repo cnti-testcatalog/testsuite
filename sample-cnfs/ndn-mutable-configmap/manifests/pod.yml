@@ -2,14 +2,24 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: nginx-stuff
+  name: cnfspace
 
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: demo-configmap
-  namespace: nginx-stuff
+  name: hello-configmap
+  namespace: cnfspace
+immutable: true
+data:
+  world: "hello"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: world-configmap
+  namespace: cnfspace
 data:
   hello: "world"
 
@@ -18,7 +28,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: nginx
-  namespace: nginx-stuff
+  namespace: cnfspace
 spec:
   containers:
   - image: bitnami/nginx:1.20
@@ -37,10 +47,15 @@ spec:
       - containerPort: 8080
       - containerPort: 8443
     volumeMounts:
-      - name: demo-volume
-        mountPath: /etc/demo-config
+      - name: hello-volume
+        mountPath: /etc/hello-config
+      - name: world-volume
+        mountPath: /etc/world-config
   volumes:
-  - name: demo-volume
+  - name: hello-volume
     configMap:
-      name: demo-configmap
+      name: hello-configmap
+  - name: world-volume
+    configMap:
+      name: world-configmap
   dnsPolicy: Default
