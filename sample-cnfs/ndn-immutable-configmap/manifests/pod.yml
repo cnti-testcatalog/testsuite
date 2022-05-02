@@ -76,7 +76,7 @@ spec:
       - name: CONFIGMAP_BAR_TEST
         valueFrom:
           configMapKeyRef:
-            name: foo-configmap
+            name: bar-configmap
             key: bar
     volumeMounts:
       - name: hello-volume
