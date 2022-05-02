@@ -453,15 +453,21 @@ def mutable_configmaps_as_volumes(
       configmap: String
     )
   )
+
+  Log.for("immutable_configmap").info { "Resource: #{resource}; Volume count: #{volumes.size}" }
+
   # Select all configmap volumes
   configmap_volumes = volumes.select do |volume|
     volume["configMap"]?
   end
 
+  Log.for("immutable_configmap").info { "Volume count for configmaps: #{volumes.size}" }
+  Log.for("immutable_configmap").info { "Will loop through configmap volumes" }
   configmap_volumes.flat_map do |volume|
+    Log.for("immutable_configmap:volume_item").info {volume}
     # Find the configmap that the volume is using
     configmap = configmaps.find{ |cm| cm["metadata"]["name"] == volume["configMap"]["name"]}
-
+    Log.for("immutable_configmap:configmap_item").info {configmap}
     # Move on if the volume does not point to a valid configmap
     if !configmap
       next nil
@@ -476,7 +482,7 @@ def mutable_configmaps_as_volumes(
       # If (configmap does not have immutable key OR configmap has immutable=false)
       if (!configmap["immutable"]? || (configmap["immutable"]? && configmap["immutable"] == false))
         if configmap_volume_mounted?(volume, container)
-          {resource: resource, container: container.dig("name").as_s, volume_name: volume["name"].as_s, configmap: configmap["namespace"]["name"].as_s}
+          {resource: resource, container: container.dig("name").as_s, volume_name: volume["name"].as_s, configmap: configmap["metadata"]["name"].as_s}
         else
           {resource: nil, container: nil, volume_name: volume["name"].as_s, configmap: configmap["metadata"]["name"].as_s}
         end
@@ -569,7 +575,7 @@ task "immutable_configmap" do |_, args|
 
         # If the install type is manifest, the namesapce would be in the manifest.
         # Else rely on config for helm-based install
-        namespace = resource.dig?("metadata", "namespace") || config.cnf_config[:helm_install_namespace]
+        namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
         configmaps = KubectlClient::Get.configmaps(namespace: namespace)
         if configmaps.dig?("items")
           configmaps = configmaps.dig("items").as_a
@@ -581,6 +587,9 @@ task "immutable_configmap" do |_, args|
         envs_with_mutable_configmap = containers.as_a.flat_map do |container|
           container_env_configmap_refs(resource, configmaps, container)
         end
+
+        Log.for("immutable_configmap_volumes").info { volumes_test_results }
+        Log.for("immutable_configmap_envs").info { envs_with_mutable_configmap }
 
         volumes_test_results.size == 0 && envs_with_mutable_configmap.size == 0
       end
