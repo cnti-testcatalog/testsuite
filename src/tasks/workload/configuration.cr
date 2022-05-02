@@ -430,6 +430,19 @@ class ImmutableConfigMapTemplate
   ECR.def_to_s("src/templates/immutable_configmap.yml.ecr")
 end
 
+alias MutableConfigMapsInEnvResult = NamedTuple(
+  resource: NamedTuple(kind: String, name: String, namespace: String),
+  container: String,
+  configmap: String
+)
+
+alias MutableConfigMapsVolumesResult = NamedTuple(
+  resource: NamedTuple(kind: String, name: String, namespace: String),
+  container: String?,
+  volume: String,
+  configmap: String
+)
+
 def configmap_volume_mounted?(configmap_volume, container)
   return false if !container["volumeMounts"]?
 
@@ -445,15 +458,7 @@ def mutable_configmaps_as_volumes(
   configmaps : Array(JSON::Any),
   volumes : Array(JSON::Any),
   containers : Array(JSON::Any)
-) : Array(
-    NamedTuple(
-      resource: NamedTuple(kind: String, name: String, namespace: String)?,
-      container: String?,
-      volume_name: String,
-      configmap: String
-    )
-  )
-
+) : Array(MutableConfigMapsVolumesResult)
   Log.for("immutable_configmap").info { "Resource: #{resource}; Volume count: #{volumes.size}" }
 
   # Select all configmap volumes
@@ -482,9 +487,9 @@ def mutable_configmaps_as_volumes(
       # If (configmap does not have immutable key OR configmap has immutable=false)
       if (!configmap["immutable"]? || (configmap["immutable"]? && configmap["immutable"] == false))
         if configmap_volume_mounted?(volume, container)
-          {resource: resource, container: container.dig("name").as_s, volume_name: volume["name"].as_s, configmap: configmap["metadata"]["name"].as_s}
+          {resource: resource, container: container.dig("name").as_s, volume: volume["name"].as_s, configmap: configmap["metadata"]["name"].as_s}
         else
-          {resource: nil, container: nil, volume_name: volume["name"].as_s, configmap: configmap["metadata"]["name"].as_s}
+          {resource: resource, container: nil, volume: volume["name"].as_s, configmap: configmap["metadata"]["name"].as_s}
         end
       end
     end.compact
@@ -495,13 +500,7 @@ def container_env_configmap_refs(
   resource : NamedTuple(kind: String, name: String, namespace: String),
   configmaps : Array(JSON::Any),
   container : JSON::Any
-) : Nil | Array(
-  NamedTuple(
-    resource: NamedTuple(kind: String, name: String, namespace: String),
-    container: String,
-    configmap: String
-  )
-)
+) : Nil | Array(MutableConfigMapsInEnvResult)
   return nil if !container["env"]?
 
   Log.info { "container config_maps #{container["env"]?}" }
@@ -569,6 +568,9 @@ task "immutable_configmap" do |_, args|
       end
     else
 
+      volumes_test_results = [] of MutableConfigMapsVolumesResult
+      envs_with_mutable_configmap = [] of MutableConfigMapsInEnvResult
+
       cnf_manager_workload_resource_task_response = CNFManager.workload_resource_test(args, config, check_containers=false, check_service=true) do |resource, containers, volumes, initialized|
         Log.info { "resource: #{resource}" }
         Log.info { "volumes: #{volumes}" }
@@ -588,9 +590,6 @@ task "immutable_configmap" do |_, args|
           container_env_configmap_refs(resource, configmaps, container)
         end.compact
 
-        Log.for("mutable_configmaps_volumes").info { volumes_test_results }
-        Log.for("mutable_configmaps_envs").info { envs_with_mutable_configmap }
-
         Log.for("immutable_configmap_volumes").info { volumes_test_results }
         Log.for("immutable_configmap_envs").info { envs_with_mutable_configmap }
 
@@ -603,6 +602,21 @@ task "immutable_configmap" do |_, args|
       elsif immutable_configmap_supported
         resp = "✖️  FAILED: Found mutable configmap(s) #{emoji_probe}".colorize(:red)
         upsert_failed_task("immutable_configmap", resp)
+
+        # Print out any mutable configmaps mounted as volumes
+        volumes_test_results.each do |result|
+          msg = ""
+          if result[:resource] == nil
+            msg = "Mutable configmap #{result[:configmap]} used as volume in #{result[:resource][:kind]}/#{result[:resource][:name]} in #{result[:resource][:namespace]} namespace."
+          else
+            msg = "Mutable configmap #{result[:configmap]} mounted as volume #{result[:volume]} in #{result[:container]} container part of #{result[:resource][:kind]}/#{result[:resource][:name]} in #{result[:resource][:namespace]} namespace."
+          end
+          stdout_failure(msg)
+        end
+        envs_with_mutable_configmap.each do |result|
+          msg = "Mutable configmap #{result[:configmap]} used in env in #{result[:container]} part of #{result[:resource][:kind]}/#{result[:resource][:name]} in #{result[:resource][:namespace]}."
+          stdout_failure(msg)
+        end
       end
       resp
 
