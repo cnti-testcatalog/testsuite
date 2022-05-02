@@ -415,9 +415,9 @@ task "single_process_type" do |_, args|
     emoji_big="🦖"
 
     if task_response
-      upsert_passed_task("single_process_type", "✔️  PASSED: Only one process type used #{emoji_small} #{emoji_image_size}")
+      upsert_passed_task("single_process_type", "✔️  🏆 PASSED: Only one process type used #{emoji_small} #{emoji_image_size}")
     else
-      upsert_failed_task("single_process_type", "✖️  FAILED: More than one process type used #{emoji_big} #{emoji_image_size}")
+      upsert_failed_task("single_process_type", "✖️  🏆 FAILED: More than one process type used #{emoji_big} #{emoji_image_size}")
     end
   end
 end

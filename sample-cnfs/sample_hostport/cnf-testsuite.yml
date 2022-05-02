@@ -4,15 +4,5 @@ helm_install_namespace: cnfspace
 git_clone_url: 
 install_script: chart
 release_name: unifi
-deployment_name: unifi
-deployment_label: app.kubernetes.io/name
 service_name: unifi-controller 
-application_deployment_names: [unifi]
-# helm_chart: stable/unifi
-helm_chart_container_name: unifi
-container_names: 
-  - name: unifi 
-    rolling_update_test_tag: "5.12.34"
-    rolling_downgrade_test_tag: "5.12.12"
-    rolling_version_change_test_tag: latest
 allowlist_helm_chart_container_names: []

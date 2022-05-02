@@ -1,16 +1,7 @@
 ---
-git_clone_url: 
-install_script: 
 manifest_directory: manifests
 release_name: nginx
-docker_repository: 
 helm_repository:
   name: 
   repo_url:
-container_names: 
-  - name: nginx
-    rolling_update_test_tag: "latest"
-    rolling_downgrade_test_tag: latest
-    rolling_version_change_test_tag: latest
-    rollback_from_tag: latest
 allowlist_helm_chart_container_names: []

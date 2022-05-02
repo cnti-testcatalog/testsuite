@@ -82,9 +82,9 @@ task "latest_tag" do |_, args|
   failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
   if failures.size == 0
-    resp = upsert_passed_task("latest_tag", "✔️  PASSED: Container images are not using the latest tag #{emoji_passed}")
+    resp = upsert_passed_task("latest_tag", "✔️  🏆 PASSED: Container images are not using the latest tag #{emoji_passed}")
   else
-    resp = upsert_failed_task("latest_tag", "✖️  FAILED: Container images are using the latest tag #{emoji_failed}")
+    resp = upsert_failed_task("latest_tag", "✖️  🏆 FAILED: Container images are using the latest tag #{emoji_failed}")
     failures.each do |failure|
       failure.resources.each do |resource|
         puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -266,9 +266,9 @@ task "hostport_not_used" do |_, args|
       test_passed
     end
     if task_response
-      upsert_passed_task("hostport_not_used", "✔️  PASSED: HostPort is not used")
+      upsert_passed_task("hostport_not_used", "✔️  🏆 PASSED: HostPort is not used")
     else
-      upsert_failed_task("hostport_not_used", "✖️  FAILED: HostPort is being used")
+      upsert_failed_task("hostport_not_used", "✖️  🏆 FAILED: HostPort is being used")
     end
   end
 end
@@ -306,12 +306,12 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     VERBOSE_LOGGING.info "IPs: #{ip_search}" if check_verbose(args)
 
     if ip_search.empty?
-      upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✔️  PASSED: No hard-coded IP addresses found in the runtime K8s configuration")
+      upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✔️  🏆 PASSED: No hard-coded IP addresses found in the runtime K8s configuration")
     else
-      upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  FAILED: Hard-coded IP addresses found in the runtime K8s configuration")
+      upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  🏆 FAILED: Hard-coded IP addresses found in the runtime K8s configuration")
     end
   rescue
-    upsert_skipped_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "⏭️  SKIPPED: unknown exception")
+    upsert_skipped_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "⏭️  🏆 SKIPPED: unknown exception")
   ensure
     KubectlClient::Delete.command("namespace hardcoded-ip-test --force --grace-period 0")
   end

@@ -49,14 +49,14 @@ describe "SampleUtils" do
 
   it  "'task_points' should return the amount of points for a passing test", tags: ["points"] do
     # default
-    (CNFManager::Points.task_points("liveness")).should eq(5)
+    (CNFManager::Points.task_points("liveness")).should eq(100)
     # assigned
     (CNFManager::Points.task_points("increase_capacity")).should eq(10)
   end
 
   it  "'task_points(, false)' should return the amount of points for a failing test", tags: ["points"]  do
     # default
-    (CNFManager::Points.task_points("liveness", false)).should eq(-1)
+    (CNFManager::Points.task_points("liveness", false)).should eq(0)
     # assigned
     (CNFManager::Points.task_points("increase_capacity", false)).should eq(-5)
   end
@@ -96,13 +96,13 @@ describe "SampleUtils" do
     end
     # LOGGING.debug yaml["items"].as_a.inspect
     (yaml["items"].as_a.find {|x| x["name"] == "liveness" && x["points"] == CNFManager::Points.task_points("liveness")}).should be_truthy
-    (CNFManager::Points.total_points).should eq(5)
+    (CNFManager::Points.total_points).should eq(100)
   end
 
   it "'CNFManager::Points.total_points' should sum the total amount of points in the results", tags: ["points"] do
     CNFManager::Points.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
-    (CNFManager::Points.total_points).should eq(5)
+    (CNFManager::Points.total_points).should eq(100)
   end
 
   it "'CNFManager::Points.total_max_points' should not include na in the total potential points", tags: ["points"] do
@@ -171,7 +171,7 @@ describe "SampleUtils" do
   it "'CNFManager::Points.results_by_tag' should return a list of results by tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
-    (CNFManager::Points.results_by_tag("resilience")).should eq([{"name" => "liveness", "status" => "passed", "points" => 5}])
+    (CNFManager::Points.results_by_tag("resilience")).should eq([{"name" => "liveness", "status" => "passed", "points" => 100}])
     (CNFManager::Points.results_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
@@ -392,30 +392,6 @@ describe "SampleUtils" do
   end
 
 
-  it "'CNFManager.validate_cnf_testsuite_yml' (function) should fail when an invalid cnf config file yml is used", tags: ["validate_config"]  do
-    args = Sam::Args.new(["cnf-config=spec/fixtures/cnf-testsuite-invalid-and-unmapped-keys.yml"])
-
-
-    yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
-    LOGGING.info yml.inspect
-    # config = CNFManager::Config.parse_config_yml(args.named["cnf-config"].as(String))    
-    # release_name = config.cnf_config[:release_name]
-    # ("#{yml.get("release_name").as_s?}").should eq(release_name)
-
-    status, warning_output = CNFManager.validate_cnf_testsuite_yml(yml)
-
-    (status).should eq(false)
-    (warning_output).should eq(nil)
-  end
-
-  it "'CNFManager.validate_cnf_testsuite_yml' (command) should fail when an invalid cnf config file yml is used", tags: ["validate_config"]  do
-    response_s = `./cnf-testsuite validate_config cnf-config=spec/fixtures/cnf-testsuite-invalid-and-unmapped-keys.yml`
-    $?.success?.should be_true
-
-    (/ERROR: cnf_testsuite.yml field validation error/ =~ response_s).should_not be_nil
-    (/FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s).should_not be_nil
-  end
-
   it "'CNFManager.validate_cnf_testsuite_yml' (command) should pass, for all sample-cnfs", tags: ["validate_config"]  do
 
     get_dirs = Dir.entries("sample-cnfs")
@@ -423,9 +399,7 @@ describe "SampleUtils" do
     dir_list.each do |dir|
       testsuite_yml = "sample-cnfs/#{dir}/cnf-testsuite.yml"
       response_s = `./cnf-testsuite validate_config cnf-config=#{testsuite_yml}`
-      if (/FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
-        LOGGING.info "\n #{testsuite_yml}: #{response_s}"
-      end
+      Log.info { "\n #{testsuite_yml}: #{response_s}" }
       (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
     end
   end

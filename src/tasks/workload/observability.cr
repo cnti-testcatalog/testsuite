@@ -32,9 +32,9 @@ task "log_output" do |_, args|
     emoji_observability="📶☠️"
 
     if task_response
-      upsert_passed_task("log_output", "✔️  PASSED: Resources output logs to stdout and stderr #{emoji_observability}")
+      upsert_passed_task("log_output", "✔️  🏆 PASSED: Resources output logs to stdout and stderr #{emoji_observability}")
     else
-      upsert_failed_task("log_output", "✖️  FAILED: Resources do not output logs to stdout and stderr #{emoji_observability}")
+      upsert_failed_task("log_output", "✖️  🏆 FAILED: Resources do not output logs to stdout and stderr #{emoji_observability}")
     end
   end
 end

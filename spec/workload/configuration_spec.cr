@@ -99,33 +99,33 @@ describe CnfTestSuite do
 
   it "'rolling_update' should pass when valid version is given", tags: ["rolling_update"]  do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_rolling/cnf-testsuite.yml verbose`
       $?.success?.should be_true
       response_s = `./cnf-testsuite rolling_update verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Passed/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_rolling/cnf-testsuite.yml`
     end
   end
 
   it "'rolling_update' should fail when invalid version is given", tags: ["rolling_update"]  do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns_invalid_version/cnf-testsuite.yml deploy_with_chart=false`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_rolling_invalid_version/cnf-testsuite.yml deploy_with_chart=false`
       $?.success?.should be_true
       response_s = `./cnf-testsuite rolling_update verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Failed/ =~ response_s).should_not be_nil
     ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns_invalid_version/cnf-testsuite.yml deploy_with_chart=false`
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_rolling_invalid_version/cnf-testsuite.yml deploy_with_chart=false`
     end
   end
 
   it "'rolling_downgrade' should pass when valid version is given", tags: ["rolling_downgrade"]  do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose wait_count=0`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_rolling/cnf-testsuite.yml verbose wait_count=0`
       $?.success?.should be_true
       retry_limit = 5 
       retries = 1
@@ -140,59 +140,59 @@ describe CnfTestSuite do
       $?.success?.should be_true
       (/Passed/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_rolling/cnf-testsuite.yml`
     end
   end
 
   it "'rolling_downgrade' should fail when invalid version is given", tags: ["rolling_downgrade"]  do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns_invalid_version/cnf-testsuite.yml deploy_with_chart=false`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_rolling_invalid_version/cnf-testsuite.yml deploy_with_chart=false`
       $?.success?.should be_true
       response_s = `./cnf-testsuite rolling_downgrade verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Failed/ =~ response_s).should_not be_nil
     ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns_invalid_version/cnf-testsuite.yml deploy_with_chart=false`
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_rolling_invalid_version/cnf-testsuite.yml deploy_with_chart=false`
     end
   end
 
   it "'rolling_version_change' should pass when valid version is given", tags: ["rolling_version_change"]  do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose wait_count=0`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_rolling/cnf-testsuite.yml verbose wait_count=0`
       $?.success?.should be_true
       response_s = `./cnf-testsuite rolling_version_change verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Passed/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_rolling/cnf-testsuite.yml`
     end
   end
 
   it "'rolling_version_change' should fail when invalid version is given", tags: ["rolling_version_change"] do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns_invalid_version/cnf-testsuite.yml deploy_with_chart=false`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_rolling_invalid_version/cnf-testsuite.yml deploy_with_chart=false`
       $?.success?.should be_true
       response_s = `./cnf-testsuite rolling_version_change verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Failed/ =~ response_s).should_not be_nil
     ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns_invalid_version/cnf-testsuite.yml deploy_with_chart=false`
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_rolling_invalid_version/cnf-testsuite.yml deploy_with_chart=false`
     end
   end
 
   it "'rollback' should pass ", tags: ["rollback"]  do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose wait_count=0`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_rolling/cnf-testsuite.yml verbose wait_count=0`
       $?.success?.should be_true
       response_s = `./cnf-testsuite rollback verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/Passed/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_rolling/cnf-testsuite.yml`
     end
   end
 

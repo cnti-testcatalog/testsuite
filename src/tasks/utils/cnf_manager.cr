@@ -760,7 +760,6 @@ module CNFManager
     install_method = config.cnf_config[:install_method]
     helm_directory = config.cnf_config[:helm_directory]
     manifest_directory = config.cnf_config[:manifest_directory]
-    git_clone_url = config.cnf_config[:git_clone_url]
     helm_repository = config.cnf_config[:helm_repository]
     helm_repo_name = "#{helm_repository && helm_repository["name"]}"
     helm_repo_url = "#{helm_repository && helm_repository["repo_url"]}"
@@ -783,8 +782,6 @@ module CNFManager
     Log.for("verbose").info { "destination_cnf_dir: #{destination_cnf_dir}" } if verbose
     Log.debug { "mkdir_p destination_cnf_dir: #{destination_cnf_dir}" }
     FileUtils.mkdir_p(destination_cnf_dir)
-
-    GitClient.clone("#{git_clone_url} #{destination_cnf_dir}/#{release_name}")  if git_clone_url.empty? == false
 
     begin
       sandbox_setup(config, cli_args)

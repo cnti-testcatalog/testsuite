@@ -1,16 +1,7 @@
 ---
 manifest_directory: manifests 
-git_clone_url: 
-install_script: 
 release_name: openmetrics-compliant
-docker_repository: 
 helm_repository:
   name:
   repo_url:
-container_names: 
-  - name: metrics-example
-    rolling_update_test_tag: "latest"
-    rolling_downgrade_test_tag: latest
-    rolling_version_change_test_tag: latest
-    rollback_from_tag: latest
 allowlist_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]

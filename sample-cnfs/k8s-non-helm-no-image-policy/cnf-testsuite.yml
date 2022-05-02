@@ -1,26 +1,7 @@
 ---
 manifest_directory: manifests 
-git_clone_url: 
-install_script: 
 release_name: nginx-webapp
-docker_repository: 
 helm_repository:
   name:
   repo_url:
-container_names: 
-  - name: sidecar-container1 
-    rolling_update_test_tag: "1.32.0"
-    rolling_downgrade_test_tag: 1.32.0
-    rolling_version_change_test_tag: latest
-    rollback_from_tag: latest
-  - name: sidecar-container2
-    rolling_update_test_tag: "1.32.0"
-    rolling_downgrade_test_tag: 1.32.0
-    rolling_version_change_test_tag: latest
-    rollback_from_tag: latest
-  - name: main-container
-    rolling_update_test_tag: "1.16.0"
-    rolling_downgrade_test_tag: 1.16.0
-    rolling_version_change_test_tag: latest
-    rollback_from_tag: latest
 allowlist_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]

@@ -87,7 +87,7 @@ describe "Private Registry: Rolling" do
 
   it "'rolling_update' should pass if using local registry and a port", tags: ["private_registry_rolling"]  do
     begin
-      cnf="./sample-cnfs/sample_local_registry"
+      cnf="./sample-cnfs/sample_local_registry_rolling"
 
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
       response_s = `./cnf-testsuite rolling_update verbose`
@@ -101,7 +101,7 @@ describe "Private Registry: Rolling" do
 
   it "'rolling_downgrade' should pass if using local registry and a port", tags: ["private_registry_rolling"]  do
     begin
-      cnf="./sample-cnfs/sample_local_registry"
+      cnf="./sample-cnfs/sample_local_registry_rolling"
 
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
       response_s = `./cnf-testsuite rolling_update verbose`
@@ -115,7 +115,7 @@ describe "Private Registry: Rolling" do
 
   it "'rolling_version_change' should pass if using local registry and a port", tags: ["private_registry_version"]  do
     begin
-      cnf="./sample-cnfs/sample_local_registry"
+      cnf="./sample-cnfs/sample_local_registry_rolling"
 
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
       response_s = `./cnf-testsuite rolling_version_change verbose`
