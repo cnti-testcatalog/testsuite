@@ -39,7 +39,7 @@
 
 - name: privileged 
   tags: security, dynamic, workload
-  required: true
+  # required: true
 - name: non_root_user 
   tags: security, dynamic, workload
 - name: privilege_escalation 
@@ -55,14 +55,17 @@
 #- name: protected_access 
 #  tags: security, dynamic
 
+- name: increase_decrease_capacity 
+  tags: compatibility, dynamic, workload, cert
+  pass: 100
 - name: increase_capacity 
   tags: compatibility, dynamic, workload
   pass: 10
-  fail: -5 
+  fail: 0 
 - name: decrease_capacity 
   tags: compatibility, dynamic, workload
   pass: 10
-  fail: -5 
+  fail: 0 
 #- name: small_autoscaling 
 #  tags: compatibility, dynamic, workload
 #- name: large_autoscaling 
