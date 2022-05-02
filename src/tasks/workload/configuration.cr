@@ -363,7 +363,7 @@ task "secrets_used" do |_, args|
       namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
       secrets = KubectlClient::Get.secrets(namespace: namespace)
 
-      secrets.each do |s|
+      secrets.as_a.each do |s|
         s_name = s["metadata"]["name"]
         s_type = s["type"]
         s_namespace = s.dig("metadata", "namespace")
