@@ -369,40 +369,6 @@ task "helm_deploy" do |_, args|
   end
 end
 
-# desc "Does the install script use helm?"
-# task "install_script_helm" do |_, args|
-#   CNFManager::Task.task_runner(args) do |args, config|
-#     # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
-    
-#     emoji_helm_script="⎈📦"
-#     found = 0
-#     # destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)))
-#     # install_script = config.get("install_script").as_s?
-#     install_script = config.cnf_config[:install_script]
-#     Log.info { "install_script: #{install_script}" }
-#     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-#     Log.info { "destination_cnf_dir: #{destination_cnf_dir}" }
-#     Log.for("verbose").debug { destination_cnf_dir } if check_verbose(args)
-#     if !install_script.empty?
-#       response = String::Builder.new
-#       content = File.open("#{destination_cnf_dir}/#{install_script}") do |file|
-#         file.gets_to_end
-#       end
-#       # LOGGING.debug content
-#       if /helm/ =~ content
-#         found = 1
-#       end
-#       if found < 1
-#         upsert_failed_task("install_script_helm", "✖️  FAILED: Helm not found in supplied install script #{emoji_helm_script}")
-#       else
-#         upsert_passed_task("install_script_helm", "✔️  PASSED: Helm found in supplied install script #{emoji_helm_script}")
-#       end
-#     else
-#       upsert_passed_task("install_script_helm", "✔️  PASSED (by default): No install script provided")
-#     end
-#   end
-# end
-
 task "helm_chart_published", ["helm_local_install"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     if check_verbose(args)

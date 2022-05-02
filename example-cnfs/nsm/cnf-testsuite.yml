@@ -1,46 +1,8 @@
 ---
 helm_directory: helm_chart
-git_clone_url: 
-install_script:
 release_name: nsm --set insecure=true
 service_name: nsm-admission-webhook-svc
-docker_repository: conformance/vppagent-forwarder
 helm_repository:
   name: stable 
   repo_url: https://cncf.gitlab.io/stable
-container_names: 
-  - name: nsm
-    rolling_update_test_tag:  1.0.0
-# allowlist_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy, kube-multus]
 allowlist_helm_chart_container_names: []
-container_names: 
-  - name: nsm-admission-webhook 
-    rolling_update_test_tag: "master"
-    rolling_downgrade_test_tag: v0.2.0 
-    rolling_version_change_test_tag: master 
-    rollback_from_tag: master 
-  - name: prefix-service 
-    rolling_update_test_tag: "master"
-    rolling_downgrade_test_tag: master 
-    rolling_version_change_test_tag: master 
-    rollback_from_tag: master 
-  - name: vppagent-forwarder 
-    rolling_update_test_tag: "master"
-    rolling_downgrade_test_tag: v0.2.0 
-    rolling_version_change_test_tag: master 
-    rollback_from_tag: master 
-  - name: nsmdp 
-    rolling_update_test_tag: "master"
-    rolling_downgrade_test_tag: v0.2.0 
-    rolling_version_change_test_tag: master 
-    rollback_from_tag: master 
-  - name: nsmd
-    rolling_update_test_tag: "master"
-    rolling_downgrade_test_tag: v0.2.0 
-    rolling_version_change_test_tag: master 
-    rollback_from_tag: master 
-  - name: nsmd-k8s
-    rolling_update_test_tag: "master"
-    rolling_downgrade_test_tag: v0.2.0 
-    rolling_version_change_test_tag: master 
-    rollback_from_tag: master 

@@ -72,24 +72,43 @@ describe "Utils" do
 
   it "'single_task_runner' should accept a cnf-config argument and apply a test to that cnf", tags: ["task_runner"]  do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml"])
-    # check_cnf_config_then_deploy(args)
+
     cli_hash = CNFManager.sample_setup_cli_args(args, false)
     CNFManager.sample_setup(cli_hash) if cli_hash["config_file"]
-    task_response = CNFManager::Task.single_task_runner(args) do
-      config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
-      helm_chart_container_name = config.get("helm_chart_container_name").as_s
-      privileged_response = `kubectl get pods --all-namespaces -o jsonpath='{.items[*].spec.containers[?(@.securityContext.privileged==true)].name}'`
-      privileged_list = privileged_response.to_s.split(" ").uniq
-      LOGGING.info "privileged_list #{privileged_list}"
-      if privileged_list.select {|x| x == helm_chart_container_name}.size > 0
-        resp = "✖️  FAILED: Found privileged containers: #{privileged_list.inspect}".colorize(:red)
-      else
-        resp = "✔️  PASSED: No privileged containers".colorize(:green)
+ 
+    task_response = CNFManager::Task.single_task_runner(args) do |args, config| 
+
+      Log.info {"single_task_runner spec args #{args.inspect}"}
+
+      white_list_container_names = config.cnf_config[:white_list_container_names]
+      Log.info {"white_list_container_names #{white_list_container_names.inspect}"}
+      violation_list = [] of String
+      resource_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+
+        privileged_list = KubectlClient::Get.privileged_containers
+        white_list_containers = ((PRIVILEGED_WHITELIST_CONTAINERS + white_list_container_names) - [container])
+        # Only check the containers that are in the deployed helm chart or manifest
+        (privileged_list & ([container.as_h["name"].as_s] - white_list_containers)).each do |x|
+          violation_list << x
+        end
+        if violation_list.size > 0
+          false
+        else
+          true
+        end
       end
-      LOGGING.info resp
+      Log.debug { "violator list: #{violation_list.flatten}" }
+      emoji_security=""
+      if resource_response 
+        resp = upsert_passed_task("privileged", "✔️  PASSED: No privileged containers")
+      else
+        resp = upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect}")
+      end
+      Log.info { resp }
       resp
     end
-    (task_response).should eq("✔️  PASSED: No privileged containers".colorize(:green))
+    (task_response).should eq("✔️  PASSED: No privileged containers")
+  ensure
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
   end
 

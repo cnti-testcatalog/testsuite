@@ -11,27 +11,20 @@ Prereqs: You must have kubernetes cluster, curl, and helm 3.1.1 or greater on yo
 
 ### What is the cnf-testsuite.yml and why is it required?:
 
-The cnf-testsuite.yml is used by the CNF Test Suite to locate a deployed CNF on an existing K8s cluster. If the CNF is not found, it will attempt to deploy the CNF itself according to it's helm chart configuration.
+The cnf-testsuite.yml is used by cnf_setup in order to install the CNF being tested onto an existing K8s cluster.
 
-This information is also required for running various tests e.g. The 'container_names' are used for finding the name of the CNF containers in the K8s cluster and is then used to run tests like [increase_capacity](src/tasks/workload/scalability.cr#L20) and [decrease_capacity](src/tasks/workload/scalability.cr#L42)
+The information in the cnf-testsuite.yml is then further used for running various tests e.g. The 'container_names' are used for finding the name of the CNF containers in the K8s cluster and is then used to run tests like [increase_capacity](src/tasks/workload/scalability.cr#L20) and [decrease_capacity](src/tasks/workload/scalability.cr#L42)
 
 ### Table of Contents
 
 - [Overview](#Overview-of-all-cnf-testsuite.yml)
 - [Keys and Values](#Keys-and-Values)
   - [helm_directory](#helm_directory)
-  - [git_clone_url](#git_clone_url)
   - [release_name](#release_name)
-  - [deployment_name](#deployment_name)
-  - [deployment_label](#deployment_label)
-  - [application_deployment_name](#application_deployment_name)
-  - [docker_repository](#docker_repository)
   - [helm_repository](#helm_repository)
   - [helm_chart](#helm_chart)
   - [helm_install_namespace](#helm_install_namespace)
-  - [helm_chart_container_name](#helm_chart_container_name)
   - [allowlist_helm_chart_container_names](#allowlist_helm_chart_container_names)
-  - [container_names](#container_names)
 - [Creating Your Own cnf-testsuite.yml](#creating-your-own-cnf-testsuiteyml)
 - [Setup and Configuration](#Setup-and-Configuration)
 - [Quick Setup and Config Reference Steps](#Quick-Setup-and-Config-Reference-Steps)
@@ -46,16 +39,8 @@ The following is a basic example cnf-testsuite.yml file that can be found in the
 #helm_directory: coredns # PATH_TO_CNFS_HELM_CHART ; or
 helm_chart: stable/coredns # PUBLISHED_CNFS_HELM_CHART_REPO/NAME
 
-git_clone_url: https://github.com/coredns/coredns.git # GIT_REPO_FOR_CNFS_SOURCE_CODE
-
 release_name: privileged-coredns # DESIRED_HELM_RELEASE_NAME
-helm_chart_container_name: privileged-coredns-coredns # POD_SPEC_CONTAINER_NAME
 allowlist_helm_chart_container_names: [coredns] # [LIST_OF_CONTAINERS_ALLOWED_TO_RUN_PRIVLIDGED]
-container_names: #[LIST_OF_CONTAINERS_NAMES_AND_VERSION_UPGRADE_TAGS]
-  - name: sidecar-container1
-    rolling_update_test_tag: "1.32.0"
-  - name: sidecar-container2
-    rolling_update_test_tag: "1.32.0"
 ```
 
 ### Keys and Values
@@ -73,19 +58,6 @@ The PATH is also relative to the location of the cnf-testsuite.yml. So if the cn
 Example Setting:
 
 `helm_directory: coredns`
-
-#### git_clone_url
-
-This setting is for the source code of the CNF being tested. (Optional)
-
-The value of git_clone_url is used to clone the source code for the CNF being tested and is then seached through for things like total lines of code, hardcoded ips, etc.
-
-Example setting:
-
-`git_clone_url: https://github.com/coredns/coredns.git`
-
-_Note: The install of the CNF from a helm chart will always test the helm chart source even if the complete CNF source is not provided._
-
 
 #### release_name
 
@@ -110,30 +82,6 @@ release_name: coredns --set imageCredentials.registry=https://index.docker.io/v1
 ```
 
 In the above example, $PROTECTED_DOCKERHUB_USERNAME and $PROTECTED_DOCKERHUB_PASSWORD are environment variables that were previously exported. The values can then be used as secrets in the helm chart.
-
-#### deployment_name
-
-Example setting:
-
-`deployment_name: coredns-coredns`
-
-#### deployment_label
-
-Example setting:
-
-`deployment_label: k8s-app`
-
-#### application_deployment_name
-
-Example setting:
-
-`application_deployment_names: [coredns-coredns]`
-
-#### docker_repository
-
-Example setting:
-
-`docker_repository: coredns/coredns`
 
 #### helm_repository
 
@@ -167,16 +115,6 @@ Example setting:
 helm_install_namespace: "hello-world"
 ```
 
-#### helm_chart_container_name
-
-This value is the name of the 'container' defined in the Kubernetes pod spec of the CNF being tested.
-
-This value is used to look up the CNF and determine if it's running in privileged mode (only used within the specs). The containers in the test are now dynamically determined from the helm chart or manifest files (See: ['privileged' test](https://github.com/cncf/cnf-testsuite/blob/c8a2d8f06c5e5976acd1a641350978929a2eee12/src/tasks/security.cr#L32)).
-
-Example setting:
-
-`helm_chart_container_name: privileged-coredns-coredns`
-
 #### allowlist_helm_chart_container_names
 
 The values of this key are the names of the 'containers' defined in the Kubernetes pod spec of pods that are allowed to be running in privileged mode. (Optional)
@@ -189,22 +127,6 @@ This is done because it's a common cloud-native practice to delegate 'privileged
 Example setting:
 
 `allowlist_helm_chart_container_names: [coredns]`
-
-#### container_names
-
-This value is the name of the 'containers' defined in the Kubernetes pod spec of pods and must be set.
-
-Example setting:
-
-```yaml=
-container_names: #[LIST_OF_CONTAINERS_NAMES_AND_VERSION_UPGRADE_TAGS]
-   - name: <container_name1>
-     rolling_update_test_tag: <image-tag-version1>
-   - name: <container_name2>
-     rolling_update_test_tag: <image-tag-version2>
-```
-
-This value is used to test the upgradeability of each container image. The image tag version should be a minor version that will be used in conjunction with the kubnetes rollout feature.
 
 ### Creating Your Own cnf-testsuite.yml
 
@@ -225,13 +147,7 @@ The [`cnf-testsuite.yml`](cnf-testsuite.example.yml) file can be used (included 
 ---
 helm_directory:
 helm_chart:
-helm_chart_container_name:
 allowlist_helm_chart_container_names:
-container_names:
-- name: <container_name1>
-  rolling_update_test_tag: <image-tag-version1>
-- name: <container_name2>
-  rolling_update_test_tag: <image-tag-version2>
 ```
 
 Below is a fully working example CoreDNS cnf-testsuite.yml that tests CoreDNS by installing via helm from a helm repository as a reference:
@@ -242,7 +158,6 @@ Below is a fully working example CoreDNS cnf-testsuite.yml that tests CoreDNS by
 # helm_directory: helm_chart
 # manifest_directory: manifests
 helm_chart: stable/coredns
-git_clone_url:
 # Optional
 release_name: coredns 
 # Optional, if you haven't configured it manually
@@ -251,18 +166,6 @@ helm_repository:
   repo_url: https://cncf.gitlab.io/stable
 # Optional
 allowlist_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy, kube-multus]
-
-container_names:
-# image name e.g. "coredns" in coredns:1.8.0
-  - name: coredns
-# test forward compatibility
-    rolling_update_test_tag: 1.8.0
-# temporary test backwards compatibility
-    rolling_downgrade_test_tag: 1.6.7
-# will be deprecated
-    rolling_version_change_test_tag: latest
-# temporary tag, used to rollback to the original tag
-    rollback_from_tag: latest
 ```
 
 ### Setup and Configuration
