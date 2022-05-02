@@ -20,6 +20,7 @@ module Volume
   def self.elastic_by_volumes?(volumes, namespace : String? = nil)
     Log.info {"elastic_by_volumes"}
     storage_class_names = storage_class_by_volumes(volumes, namespace)
+    return nil if storage_class_names.size == 0
     elastic = StorageClass.elastic_by_storage_class?(storage_class_names)
     Log.info {"elastic_by_volumes elastic: #{elastic}"}
     elastic
@@ -338,12 +339,13 @@ task "elastic_volumes" do |_, args|
       namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
 
       full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
-      if WorkloadResource.elastic?(full_resource, volumes, namespace)  
+      if WorkloadResource.elastic?(full_resource, volumes, namespace)
         elastic = true
       end
     end
 
-    if volumes_used == false
+    #TODO Should investigate why volumes were returned as none earlier
+    if volumes_used == false || elastic == nil
       resp = upsert_skipped_task("elastic_volumes","⏭️  SKIPPED: No volumes used #{emoji_probe}")
     elsif elastic
       resp = upsert_passed_task("elastic_volumes","✔️  PASSED: Elastic Volumes Used #{emoji_probe}")
