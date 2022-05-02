@@ -668,10 +668,14 @@ module KubectlClient
       JSON.parse(%({}))
     end
 
-    def self.configmaps(all_namespaces : Bool = false) : JSON::Any
+    def self.configmaps(namespace : String | Nil = nil, all_namespaces : Bool = false) : JSON::Any
       cmd = "kubectl get configmaps -o json"
       if all_namespaces == true
         cmd = "#{cmd} -A"
+      end
+
+      if namespace != nil
+        cmd = "#{cmd} -n #{namespace}"
       end
 
       result = ShellCmd.run(cmd, "KubectlClient::Get.configmaps")
@@ -921,7 +925,7 @@ module KubectlClient
     #TODO remove the need for a split and return name/ true /false in a hash
     #TODO add a spec for this
     def self.pod_status(pod_name_prefix, field_selector="", namespace : String | Nil = nil, kubeconfig : String | Nil = nil)
-      Log.info { "pod_status: #{pod_name_prefix}" }
+      Log.info { "pod_status: #{pod_name_prefix} namespace: #{namespace}" }
 
       all_pods_cmd = ["kubectl get pods #{field_selector}"]
       all_pods_cmd << "-o jsonpath='{.items[*].metadata.name},{.items[*].metadata.creationTimestamp}'"
@@ -955,13 +959,13 @@ module KubectlClient
         # if current i > acc
         Log.info { "ACC: #{acc}" }
         Log.info { "I:#{i}" }
-        Log.info { "pod_name_prefix: #{pod_name_prefix}" }
+        Log.info { "pod_status: #{pod_name_prefix} namespace: #{namespace}" }
         if (i[:name] =~ /#{pod_name_prefix}/).nil?
           Log.info { "pod_name_prefix: #{pod_name_prefix} does not match #{i[:name]}" }
           acc
         end
         if i[:name] =~ /#{pod_name_prefix}/
-          Log.info { "pod_name_prefix: #{pod_name_prefix} matches #{i[:name]}" }
+          Log.info { "pod_name_prefix: #{pod_name_prefix} namespace: #{namespace} matches #{i[:name]}" }
           # acc = i
           if acc[:name] == "not found"
             Log.info { "acc not found" }
