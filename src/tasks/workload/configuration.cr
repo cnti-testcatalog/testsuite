@@ -360,12 +360,8 @@ task "secrets_used" do |_, args|
       #  but do not have a corresponding k8s secret defined, this
       #  is an installation problem, and does not stop the test from passing
 
-      secrets = KubectlClient::Get.secrets(all_namespaces=true)
-
-      # This filters out any secrets in the namespace in EXCLUDE_NAMESPACES
-      secrets = secrets["items"].as_a.select do |s|
-        !EXCLUDE_NAMESPACES.includes?(s.dig?("metadata", "namespace"))
-      end
+      namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      secrets = KubectlClient::Get.secrets(namespace: namespace)
 
       secrets.each do |s|
         s_name = s["metadata"]["name"]
