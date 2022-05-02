@@ -586,7 +586,10 @@ task "immutable_configmap" do |_, args|
         volumes_test_results = mutable_configmaps_as_volumes(resource, configmaps, volumes.as_a, containers.as_a)
         envs_with_mutable_configmap = containers.as_a.flat_map do |container|
           container_env_configmap_refs(resource, configmaps, container)
-        end
+        end.compact
+
+        Log.for("mutable_configmaps_volumes").info { volumes_test_results }
+        Log.for("mutable_configmaps_envs").info { envs_with_mutable_configmap }
 
         Log.for("immutable_configmap_volumes").info { volumes_test_results }
         Log.for("immutable_configmap_envs").info { envs_with_mutable_configmap }
