@@ -354,72 +354,29 @@ describe CnfTestSuite do
     end
   end
 
-  # # 1. test 1 fails because the sample_coredns helm chart configmap is not immutable
-  # # 2. copay that sample_coredns cnf  and and make the config map immutable rename it and make sure test passes
-
-  it "'immutable_configmap' fail without immutable configmaps", tags: ["immutable_configmap"] do
+  it "'immutable_configmap' fail with some mutable configmaps in container env or volume mount", tags: ["immutable_configmap"] do
     begin
-      `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml deploy_with_chart=false`
+      `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/ndn-mutable-configmap deploy_with_chart=false`
       $?.success?.should be_true
       response_s = `./cnf-testsuite immutable_configmap verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/FAILED: Found mutable configmap/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml deploy_with_chart=false`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/ndn-mutable-configmap deploy_with_chart=false`
     end
   end
 
-  it "'immutable_configmap' fail with only some immutable configmaps", tags: ["immutable_configmap"] do
+  it "'immutable_configmap' pass with all immutable configmaps in container env or volume mounts", tags: ["immutable_configmap"] do
     begin
-      `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml deploy_with_chart=false`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite immutable_configmap verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/FAILED: Found mutable configmap/ =~ response_s).should_not be_nil
-    ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_some/cnf-testsuite.yml deploy_with_chart=false`
-    end
-  end
-
-  it "'immutable_configmap' should pass with all immutable configmaps", tags: ["immutable_configmap"] do
-    begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-testsuite.yml deploy_with_chart=false`
+      `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/ndn-immutable-configmap deploy_with_chart=false`
       $?.success?.should be_true
       response_s = `./cnf-testsuite immutable_configmap verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: All volume or container mounted configmaps immutable/ =~ response_s).should_not be_nil
     ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-testsuite.yml deploy_with_chart=false`
-    end
-  end
-
-
-  it "'immutable_configmap' should pass with all immutable configmaps with env mounted", tags: ["immutable_configmap_env"] do
-    begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_immutable_configmap_all_plus_env/cnf-testsuite.yml deploy_with_chart=false`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite immutable_configmap verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/PASSED: All volume or container mounted configmaps immutable/ =~ response_s).should_not be_nil
-    ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-testsuite.yml deploy_with_chart=false`
-    end
-  end
-
-  it "'immutable_configmap' should fail with a mutable env mounted configmap", tags: ["immutable_configmap_fail"] do
-    begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_immutable_configmap_all_plus_env_but_fail/cnf-testsuite.yml deploy_with_chart=false`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite immutable_configmap verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/FAILED: Found mutable configmap/ =~ response_s).should_not be_nil
-    ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-testsuite.yml deploy_with_chart=false`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/ndn-immutable-configmap deploy_with_chart=false`
     end
   end
 
