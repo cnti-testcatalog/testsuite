@@ -363,7 +363,7 @@ task "secrets_used" do |_, args|
       namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
       secrets = KubectlClient::Get.secrets(namespace: namespace)
 
-      secrets.as_a.each do |s|
+      secrets["items"].as_a.each do |s|
         s_name = s["metadata"]["name"]
         s_type = s["type"]
         s_namespace = s.dig("metadata", "namespace")
@@ -377,7 +377,7 @@ task "secrets_used" do |_, args|
           Log.for("container_info").info { container["env"] }
           container["env"].as_a.find do |env|
             Log.for("verbose").debug { "checking container: #{c_name}" } if check_verbose(args)
-            secret_keyref_found_and_not_ignored = secrets.find do |s|
+            secret_keyref_found_and_not_ignored = secrets["items"].as_a.find do |s|
               s_name = s["metadata"]["name"]
               if IGNORED_SECRET_TYPES.includes?(s["type"])
                 Log.for("verbose").info { "container: #{c_name} ignored secret: #{s_name}" } if check_verbose(args)
