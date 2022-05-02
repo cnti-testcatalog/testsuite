@@ -486,6 +486,7 @@ def mutable_configmaps_as_volumes(
 
       # If (configmap does not have immutable key OR configmap has immutable=false)
       if (!configmap["immutable"]? || (configmap["immutable"]? && configmap["immutable"] == false))
+        Log.for("immutable_configmap_fail_volume").info { configmap }
         if configmap_volume_mounted?(volume, container)
           {resource: resource, container: container.dig("name").as_s, volume: volume["name"].as_s, configmap: configmap["metadata"]["name"].as_s}
         else
@@ -511,7 +512,8 @@ def container_env_configmap_refs(
     configmap = configmaps.find { |s| s["metadata"]["name"] == env_configmap_ref }
     next nil if configmap == nil
 
-    if configmap && (!configmap["immutable"]? || (configmap["immutable"]? || configmap["immutable"] == false))
+    if configmap && (!configmap["immutable"]? || (configmap["immutable"]? && configmap["immutable"] == false))
+      Log.for("immutable_configmap_fail_env").info { configmap }
       {resource: resource, container: container.dig("name").as_s, configmap: configmap["metadata"]["name"].as_s}
     end
   end.compact
