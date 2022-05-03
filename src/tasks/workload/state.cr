@@ -115,7 +115,7 @@ module StorageClass
 
     #todo elastic_by_storage_class?
     elastic = false
-    provisoners = storage_class_names.reduce( [] of String) do |acc, storage_class|
+    provisioners = storage_class_names.reduce( [] of String) do |acc, storage_class|
       resource = KubectlClient::Get.resource("storageclasses", storage_class.dig?("class_name").to_s, namespace)
       if resource.dig?("provisioner")
         acc << resource.dig("provisioner").as_s 
@@ -126,18 +126,18 @@ module StorageClass
 
     Log.for("elastic_volumes:provisioners").info { provisioners }
 
-    Log.info {"Provisoners: #{provisoners}"}
-    provisoners.each do |provisoner|
+    Log.info {"Provisioners: #{provisioners}"}
+    provisioners.each do |provisioner|
       if ENV["CRYSTAL_ENV"]? == "TEST"
-        if (provisoner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX_SPEC) 
+        if (provisioner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX_SPEC)
           Log.info {"provisioner test mode"}
-          Log.info {"Provisoners: #{provisoners}"}
+          Log.info {"Elastic provisioner: #{provisioner}"}
           elastic = true
         end
       else
-        if (provisoner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX) 
+        if (provisioner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX)
           Log.info {"provisioner production mode"}
-          Log.info {"Provisoners: #{provisoners}"}
+          Log.info {"Elastic provisioner: #{provisioner}"}
           elastic = true
         end
       end
