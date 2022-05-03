@@ -20,7 +20,6 @@ module Volume
   def self.elastic_by_volumes?(volumes, namespace : String? = nil)
     Log.info {"elastic_by_volumes"}
     storage_class_names = storage_class_by_volumes(volumes, namespace)
-    return nil if storage_class_names.size == 0
     elastic = StorageClass.elastic_by_storage_class?(storage_class_names)
     Log.info {"elastic_by_volumes elastic: #{elastic}"}
     elastic
@@ -112,6 +111,8 @@ module StorageClass
   def self.elastic_by_storage_class?(storage_class_names : Array(Hash(String, JSON::Any)), 
                                      namespace : String? = nil)
     Log.info {"elastic_by_storage_class"}
+    Log.for("elastic_volumes:storage_class_names").info { storage_class_names }
+
     #todo elastic_by_storage_class?
     elastic = false
     provisoners = storage_class_names.reduce( [] of String) do |acc, storage_class|
@@ -122,6 +123,9 @@ module StorageClass
         acc
       end
     end
+
+    Log.for("elastic_volumes:provisioners").info { provisioners }
+
     Log.info {"Provisoners: #{provisoners}"}
     provisoners.each do |provisoner|
       if ENV["CRYSTAL_ENV"]? == "TEST"
