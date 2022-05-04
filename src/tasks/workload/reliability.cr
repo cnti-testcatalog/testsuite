@@ -39,7 +39,7 @@ task "liveness" do |_, args|
       rescue ex
         Log.for("liveness").error { ex.message } if check_verbose(args)
         test_passed = false
-        stdout_failure("No livenessProbe found for container #{container.as_h["name"].as_s} part of #{resource_ref} in #{resource[:namespace]} namespace}")
+        stdout_failure("No livenessProbe found for container #{container.as_h["name"].as_s} part of #{resource_ref} in #{resource[:namespace]} namespace")
       end
       Log.for("liveness").info { "Resource #{resource_ref} passed liveness?: #{test_passed}" }
       test_passed
@@ -70,7 +70,7 @@ task "readiness" do |_, args|
       rescue ex
         Log.for("readiness").error { ex.message } if check_verbose(args)
         test_passed = false
-        stdout_failure("No readinessProbe found for container #{container.as_h["name"].as_s} part of #{resource_ref} in #{resource[:namespace]} namespace}")
+        stdout_failure("No readinessProbe found for container #{container.as_h["name"].as_s} part of #{resource_ref} in #{resource[:namespace]} namespace")
       end
       Log.for("readiness").info { "Resource #{resource_ref} passed liveness?: #{test_passed}" }
       test_passed
