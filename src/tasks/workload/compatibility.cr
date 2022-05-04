@@ -284,17 +284,17 @@ task "decrease_capacity" do |_, args|
   puts "hi: #{hi}"
 end
 
+
 def change_capacity(base_replicas, target_replica_count, args, config, resource = {kind: "", 
                                                                                    metadata: {name: ""}})
-  VERBOSE_LOGGING.info "change_capacity" if check_verbose(args)
+
+  Log.for("change_capacity:resource").info { "#{resource["kind"]}/#{resource["metadata"]["name"]}; namespace: #{resource["metadata"]["namespace"]}" }
+  Log.for("change_capacity:capacity").info { "Base replicas: #{base_replicas}; Target replicas: #{target_replica_count}" }
+
   VERBOSE_LOGGING.debug "increase_capacity args.raw: #{args.raw}" if check_verbose(args)
   VERBOSE_LOGGING.debug "increase_capacity args.named: #{args.named}" if check_verbose(args)
-  VERBOSE_LOGGING.info "base replicas: #{base_replicas}" if check_verbose(args)
-  LOGGING.debug "resource: #{resource}"
 
   initialization_time = base_replicas.to_i * 10
-  VERBOSE_LOGGING.info "resource: #{resource["metadata"]["name"]}" if check_verbose(args)
-
   scale_cmd = ""
 
   case resource["kind"].as_s.downcase
@@ -305,6 +305,9 @@ def change_capacity(base_replicas, target_replica_count, args, config, resource 
   else #TODO what else can be scaled?
     scale_cmd = "#{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
   end
+
+  namespace = resource.dig("metadata", "namespace")
+  scale_cmd = "#{scale_cmd} -n #{namespace}"
   KubectlClient::Scale.command(scale_cmd)
 
   initialized_count = wait_for_scaling(resource, base_replicas, args)
@@ -325,6 +328,9 @@ def change_capacity(base_replicas, target_replica_count, args, config, resource 
   else #TODO what else can be scaled?
     scale_cmd = "#{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}"
   end
+
+  namespace = resource.dig("metadata", "namespace")
+  scale_cmd = "#{scale_cmd} -n #{namespace}"
   KubectlClient::Scale.command(scale_cmd)
 
   current_replicas = wait_for_scaling(resource, target_replica_count, args)
@@ -342,6 +348,9 @@ def wait_for_scaling(resource, target_replica_count, args)
   second_count = 0
   current_replicas = "0"
   replicas_cmd = "kubectl get #{resource["kind"]} #{resource["metadata"]["name"]} -o=jsonpath='{.status.readyReplicas}'"
+
+  namespace = resource.dig("metadata", "namespace")
+  replicas_cmd = "#{replicas_cmd} -n #{namespace}"
   Process.run(
     replicas_cmd,
     shell: true,
