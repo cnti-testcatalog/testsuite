@@ -1,4 +1,5 @@
 ---
+#manifest_directory: coredns # PATH_TO_DIRECTORY_OF_CNFS_MANIFEST_FILES
 #helm_directory: coredns # PATH_TO_CNFS_HELM_CHART ; or
 helm_chart: stable/coredns # PUBLISHED_CNFS_HELM_CHART_REPO/NAME
 release_name: coredns # DESIRED_HELM_RELEASE_NAME
