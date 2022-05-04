@@ -4,9 +4,9 @@
 #### cnf-testsuite.yml Generator Quick Start
 Prereqs: You must have kubernetes cluster, curl, and helm 3.1.1 or greater on your system already.
 
-- Generate a cnf-testsuite.yml based on a helm chart:  `./cnf-testsuite generate_config config-src=stable/coredns output-file=./cnf-testsuite-test.yml`
-- Generate a cnf-testsuite.yml based on a helm directory:  `./cnf-testsuite generate_config config-src=<your-helm-directory> output-file=./cnf-testsuite-test.yml`
-- Generate a cnf-testsuite.yml based on a directory of manifest files:  `./cnf-testsuite generate_config config-src=<your-manifest-directory> output-file=./cnf-testsuite-test.yml`
+- Generate a cnf-testsuite.yml based on a helm chart:  `./cnf-testsuite generate_config config-src=stable/coredns output-file=./cnf-testsuite.yml`
+- Generate a cnf-testsuite.yml based on a helm directory:  `./cnf-testsuite generate_config config-src=<your-helm-directory> output-file=./cnf-testsuite.yml`
+- Generate a cnf-testsuite.yml based on a directory of manifest files:  `./cnf-testsuite generate_config config-src=<your-manifest-directory> output-file=./cnf-testsuite.yml`
 - Inspect the cnf-testsuite.yml file for accuracy
 
 ### What is the cnf-testsuite.yml and why is it required?:
