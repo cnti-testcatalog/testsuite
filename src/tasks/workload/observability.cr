@@ -178,8 +178,8 @@ task "routed_logs" do |_, args|
     if match[:found]
         all_resourced_logged = CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
           resource_logged = true 
-          resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name])
-          pods = KubectlClient::Get.pods_by_resource(resource)
+          resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name], resource_name[:namespace])
+          pods = KubectlClient::Get.pods_by_resource(resource, namespace: resource_name[:namespace])
           pods.each do |pod|
             # if any pod/container is not monitored by fluentd, fail
             if resource_logged
