@@ -222,24 +222,24 @@ task "node_drain", ["install_litmus"] do |t, args|
       Log.info { "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}" }
       schedulable_nodes_count=KubectlClient::Get.schedulable_nodes_list
       if schedulable_nodes_count.size > 1
-        LitmusManager.cordon_target_node("#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}","#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}")
+        LitmusManager.cordon_target_node("#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h.first_key}","#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h.first_value}")
       else
         Log.info { "The target node was unable to cordoned sucessfully" }
         skipped = true
       end 
       
       unless skipped
-        if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+        if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h.size > 0
           test_passed = true
         else
           stdout_failure("No resource label found for node_drain test for resource: #{resource["name"]} in #{resource["namespace"]}")
           test_passed = false
         end
         if test_passed
-          deployment_label="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}"
-          deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
-          app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_label_value} -o=jsonpath='{.items[0].spec.nodeName}'"
-          puts "Getting the app node name #{app_nodeName_cmd}" if check_verbose(args)
+          deployment_label="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h.first_key}"
+          deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h.first_value}"
+          app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_label_value} -n #{resource["namespace"]} -o=jsonpath='{.items[0].spec.nodeName}'"
+          Log.for("node_drain").info { "Getting the app node name #{app_nodeName_cmd}" } if check_verbose(args)
           status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
           Log.for("node_drain").info { "status_code: #{status_code}" } if check_verbose(args)
           app_nodeName = appNodeName_response.to_s
@@ -296,9 +296,11 @@ task "node_drain", ["install_litmus"] do |t, args|
           test_name = "#{resource["name"]}-#{Random.rand(99)}" 
           chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
+          app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
           template = ChaosTemplates::NodeDrain.new(
             test_name,
             "#{chaos_experiment_name}",
+            app_namespace,
             "#{deployment_label}",
             "#{deployment_label_value}",
             total_chaos_duration,
