@@ -1,9 +1,9 @@
 ---
-#manifest_directory: coredns # PATH_TO_DIRECTORY_OF_CNFS_MANIFEST_FILES
+allowlist_helm_chart_container_names: [] # [LIST_OF_CONTAINERS_ALLOWED_TO_RUN_PRIVLIDGED]
+helm_chart: stable/coredns # PUBLISHED_CNFS_HELM_CHART_REPO/NAME ; or
 #helm_directory: coredns # PATH_TO_CNFS_HELM_CHART ; or
-helm_chart: stable/coredns # PUBLISHED_CNFS_HELM_CHART_REPO/NAME
-release_name: coredns # DESIRED_HELM_RELEASE_NAME
+#manifest_directory: coredns # PATH_TO_DIRECTORY_OF_CNFS_MANIFEST_FILES
 helm_repository: # CONFIGURATION OF HELM REPO - ONLY NEEDED WHEN USING helm_chart
   name: stable # HELM_CHART_REPOSITORY_NAME
   repo_url: https://cncf.gitlab.io/stable # HELM_CHART_REPOSITORY_URL
-allowlist_helm_chart_container_names: [] # [LIST_OF_CONTAINERS_ALLOWED_TO_RUN_PRIVLIDGED]
+release_name: coredns # DESIRED_HELM_RELEASE_NAME
