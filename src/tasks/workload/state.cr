@@ -215,11 +215,10 @@ desc "Does the CNF crash when node-drain occurs"
 task "node_drain", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args) do |args, config|
     skipped = false
-    Log.for("verbose").info {"node_drain"} if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    Log.for("node_drain").info {"Starting test"}
+    Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-
       Log.info { "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}" }
       schedulable_nodes_count=KubectlClient::Get.schedulable_nodes_list
       if schedulable_nodes_count.size > 1
@@ -233,7 +232,7 @@ task "node_drain", ["install_litmus"] do |t, args|
         if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
           test_passed = true
         else
-          puts "No resource label found for node_drain test for resource: #{resource["name"]}".colorize(:red)
+          stdout_failure("No resource label found for node_drain test for resource: #{resource["name"]} in #{resource["namespace"]}")
           test_passed = false
         end
         if test_passed
@@ -242,13 +241,13 @@ task "node_drain", ["install_litmus"] do |t, args|
           app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_label_value} -o=jsonpath='{.items[0].spec.nodeName}'"
           puts "Getting the app node name #{app_nodeName_cmd}" if check_verbose(args)
           status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
-          puts "status_code: #{status_code}" if check_verbose(args)  
+          Log.for("node_drain").info { "status_code: #{status_code}" } if check_verbose(args)
           app_nodeName = appNodeName_response.to_s
 
           litmus_nodeName_cmd = "kubectl get pods -n litmus -l app.kubernetes.io/name=litmus -o=jsonpath='{.items[0].spec.nodeName}'"
-          puts "Getting the app node name #litmus_nodeName_cmd}" if check_verbose(args)
+          Log.for("node_drain").info { "Getting the app node name #{litmus_nodeName_cmd}" } if check_verbose(args)
           status_code = Process.run("#{litmus_nodeName_cmd}", shell: true, output: litmusNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
-          puts "status_code: #{status_code}" if check_verbose(args)  
+          Log.for("node_drain").info { "status_code: #{status_code}" } if check_verbose(args)
           litmus_nodeName = litmusNodeName_response.to_s
           Log.info { "Workload Node Name: #{app_nodeName}" }
           Log.info { "Litmus Node Name: #{litmus_nodeName}" }
