@@ -1045,7 +1045,7 @@ module CNFManager
     helm_namespace_option = ""
     if !helm_install_namespace.empty?
       helm_namespace_option = "-n #{helm_install_namespace}"
-      ensure_namespace_exists!(helm_install_namespace)
+      ensure_namespace_exists!(helm_install_namespace, kubeconfig: kubeconfig)
     else
       Log.for("cnf_to_new_cluster").info { "helm_install_namespace option is empty" }
     end
@@ -1171,8 +1171,8 @@ module CNFManager
     ret
   end
 
-  def self.ensure_namespace_exists!(name)
-    KubectlClient::Create.namespace(name)
+  def self.ensure_namespace_exists!(name, kubeconfig : String | Nil = nil)
+    KubectlClient::Create.namespace(name, kubeconfig: kubeconfig)
     Log.for("ensure_namespace_exists").info { "Created kubernetes namespace #{name} for the CNF install" }
   rescue e : KubectlClient::Create::AlreadyExistsError
     Log.for("ensure_namespace_exists").info { "Kubernetes namespace #{name} already exists for the CNF install" }

@@ -134,8 +134,11 @@ module KubectlClient
       result[:status].success?
     end
 
-    def self.namespace(name : String)
+    def self.namespace(name : String, kubeconfig : String | Nil = nil)
       cmd = "kubectl create namespace #{name}"
+      if kubeconfig
+        cmd = "#{cmd} --kubeconfig #{kubeconfig}"
+      end
       result = ShellCmd.run(cmd, "KubectlClient::Create.namespace")
       return true if result[:status].success?
       raise AlreadyExistsError.new if result[:error].includes?("AlreadyExists")
