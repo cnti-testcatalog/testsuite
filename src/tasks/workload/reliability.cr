@@ -252,10 +252,12 @@ task "disk_fill", ["install_litmus"] do |_, args|
     Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
+      if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
       else
-        puts "No resource label found for disk_fill test for resource: #{resource["name"]}".colorize(:red)
+        stdout_failure("No resource label found for disk_fill test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
         test_passed = false
       end
       if test_passed
@@ -268,19 +270,21 @@ task "disk_fill", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/disk-fill/experiment.yaml")
           KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/disk-fill/rbac.yaml")
         end
-        KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
+        KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "disk-fill"
         disk_fill_time = "100"
         test_name = "#{resource["name"]}-#{Random.rand(99)}" 
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
+        spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
         # todo change to use all labels instead of first label
         template = ChaosTemplates::DiskFill.new(
           test_name,
           "#{chaos_experiment_name}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
+          app_namespace,
+          "#{spec_labels.first_key}",
+          "#{spec_labels.first_value}"
         ).to_s
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
@@ -303,10 +307,12 @@ task "pod_delete", ["install_litmus"] do |_, args|
     Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
+      if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
       else
-        puts "No resource label found for pod_delete test for resource: #{resource["name"]}".colorize(:red)
+        stdout_failure("No resource label found for pod_delete test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
         test_passed = false
       end
       if test_passed
@@ -319,7 +325,7 @@ task "pod_delete", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-delete/experiment.yaml")
           KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-delete/rbac.yaml")
         end
-        KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
+        KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-delete"
         total_chaos_duration = "30"
@@ -327,11 +333,13 @@ task "pod_delete", ["install_litmus"] do |_, args|
         test_name = "#{resource["name"]}-#{Random.rand(99)}" 
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
+        spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
         template = ChaosTemplates::PodDelete.new(
           test_name,
           "#{chaos_experiment_name}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}",
+          app_namespace,
+          "#{spec_labels.first_key}",
+          "#{spec_labels.first_value}",
           total_chaos_duration,
           target_pod_name
         ).to_s
