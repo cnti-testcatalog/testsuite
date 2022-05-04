@@ -5,7 +5,7 @@ metadata:
   namespace: default
 spec:
   appinfo:
-    appns: 'default'
+    appns: '<%= @app_namespace %>'
     applabel: '<%= @deployment_label %>=<%= @deployment_label_value %>'
     appkind: 'deployment'
   # It can be delete/retain
