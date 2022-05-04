@@ -632,7 +632,6 @@ module KubectlClient
       end
     end
 
-    #todo pass in namespace
     def self.resource_volumes(kind, resource_name, namespace="default") : JSON::Any
       Log.for("KubectlClient::Get.resource_volumes").info { "#{kind} resource_name: #{resource_name} namespace: #{namespace}" }
 
