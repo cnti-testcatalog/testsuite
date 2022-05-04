@@ -1,5 +1,6 @@
 ---
 helm_directory: chart
+helm_install_namespace: cnfspace
 release_name: sidecar-container-demo
 service_name: 
 helm_repository:
