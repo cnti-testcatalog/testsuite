@@ -26,24 +26,25 @@ end
 desc "Is there a liveness entry in the helm chart?"
 task "liveness" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "liveness" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    Log.for("liveness").info { "Starting test" }
+    Log.for("liveness").debug { "cnf_config: #{config}" }
     resp = ""
     emoji_probe="⎈🧫"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
+      resource_ref = "#{resource[:kind]}/#{resource[:name]}"
       begin
-        VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
+        Log.for("liveness").debug { container.as_h["name"].as_s } if check_verbose(args)
         container.as_h["livenessProbe"].as_h
       rescue ex
-        VERBOSE_LOGGING.error ex.message if check_verbose(args)
+        Log.for("liveness").error { ex.message } if check_verbose(args)
         test_passed = false
-        puts "No livenessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+        stdout_failure("No livenessProbe found for container #{container.as_h["name"].as_s} part of #{resource_ref} in #{resource[:namespace]} namespace}")
       end
-      LOGGING.debug "liveness test_passed: #{test_passed}"
+      Log.for("liveness").info { "Resource #{resource_ref} passed liveness?: #{test_passed}" }
       test_passed
     end
-    LOGGING.debug "liveness task response: #{task_response}"
+    Log.for("liveness").info { "Workload resource task response: #{task_response}" }
     if task_response
       resp = upsert_passed_task("liveness","✔️  🏆 PASSED: Helm liveness probe found #{emoji_probe}")
 		else
@@ -56,23 +57,25 @@ end
 desc "Is there a readiness entry in the helm chart?"
 task "readiness" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    LOGGING.debug "cnf_config: #{config}"
-    VERBOSE_LOGGING.info "readiness" if check_verbose(args)
-    # Parse the cnf-testsuite.yml
+    Log.for("readiness").info { "Starting test" }
+    Log.for("readiness").debug { "cnf_config: #{config}" }
     resp = ""
     emoji_probe="⎈🧫"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
+      resource_ref = "#{resource[:kind]}/#{resource[:name]}"
       begin
-        VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
+        Log.for("readiness").debug { container.as_h["name"].as_s } if check_verbose(args)
         container.as_h["readinessProbe"].as_h
       rescue ex
-        VERBOSE_LOGGING.error ex.message if check_verbose(args)
+        Log.for("readiness").error { ex.message } if check_verbose(args)
         test_passed = false
-        puts "No readinessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+        stdout_failure("No readinessProbe found for container #{container.as_h["name"].as_s} part of #{resource_ref} in #{resource[:namespace]} namespace}")
       end
+      Log.for("readiness").info { "Resource #{resource_ref} passed liveness?: #{test_passed}" }
       test_passed
     end
+    Log.for("readiness").info { "Workload resource task response: #{task_response}" }
     if task_response
       resp = upsert_passed_task("readiness","✔️  🏆 PASSED: Helm readiness probe found #{emoji_probe}")
 		else
