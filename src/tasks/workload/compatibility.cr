@@ -166,8 +166,50 @@ task "rollback" do |_, args|
 end
 
 desc "Test increasing/decreasing capacity"
-task "increase_decrease_capacity", ["increase_capacity", "decrease_capacity"] do |t, args|
+# task "increase_decrease_capacity", ["increase_capacity", "decrease_capacity"] do |t, args|
+task "increase_decrease_capacity" do |t, args|
   VERBOSE_LOGGING.info "increase_decrease_capacity" if check_verbose(args)
+  CNFManager::Task.task_runner(args) do |args, config|
+    VERBOSE_LOGGING.info "increase_capacity" if check_verbose(args)
+    emoji_increase_capacity="📦📈"
+
+    increased_replicas = "3"
+    base_replicas = "1"
+    # TODO scale replicatsets separately
+    # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset
+    # resource["kind"].as_s.downcase == "replicaset"
+    increase_task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
+      if resource["kind"].as_s.downcase == "deployment" ||
+          resource["kind"].as_s.downcase == "statefulset"
+        final_count = change_capacity(base_replicas, increased_replicas, args, config, resource)
+        increased_replicas == final_count
+      else
+        true
+      end
+    end
+
+    target_replicas = "1"
+    base_replicas = "3"
+    task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
+      # TODO scale replicatsets separately
+      # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset
+      # resource["kind"].as_s.downcase == "replicaset"
+      if resource["kind"].as_s.downcase == "deployment" ||
+          resource["kind"].as_s.downcase == "statefulset"
+        final_count = change_capacity(base_replicas, target_replicas, args, config, resource)
+        target_replicas == final_count
+      else
+        true
+      end
+    end
+    emoji_decrease_capacity="📦📉"
+
+    if increase_task_response.none?(false) && task_response.none?(false) 
+      ret = upsert_passed_task("increase_decrease_capacity", "✔️  PASSED: Replicas increased to #{increased_replicas} and decreased to #{target_replicas} #{emoji_decrease_capacity}")
+    else
+      ret = upsert_failed_task("increase_decrease_capacity", increase_decrease_capacity_failure_msg(target_replicas, emoji_decrease_capacity))
+    end
+  end
 end
 
 
@@ -212,7 +254,7 @@ end
 
 desc "Test decrease capacity by setting replicas to 3 and then decreasing to 1"
 task "decrease_capacity" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
+  hi = CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "decrease_capacity" if check_verbose(args)
     target_replicas = "1"
     base_replicas = "3"
@@ -232,11 +274,14 @@ task "decrease_capacity" do |_, args|
 
     # if target_replicas == final_count 
     if task_response.none?(false) 
-      upsert_passed_task("decrease_capacity", "✔️  PASSED: Replicas decreased to #{target_replicas} #{emoji_decrease_capacity}")
+      ret = upsert_passed_task("decrease_capacity", "✔️  PASSED: Replicas decreased to #{target_replicas} #{emoji_decrease_capacity}")
     else
-      upsert_failed_task("decrease_capacity", increase_decrease_capacity_failure_msg(target_replicas, emoji_decrease_capacity))
+      ret = upsert_failed_task("decrease_capacity", increase_decrease_capacity_failure_msg(target_replicas, emoji_decrease_capacity))
     end
+    puts "1 ret: #{ret}"
+    ret
   end
+  puts "hi: #{hi}"
 end
 
 def change_capacity(base_replicas, target_replica_count, args, config, resource = {kind: "", 
@@ -554,7 +599,13 @@ end
 desc "CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements."
 task "cni_compatible" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
+
     Log.for("verbose").info { "cni_compatible" } if check_verbose(args)
+
+    emoji_security="🔓🔑"
+
+    docker_condition = docker_installation.includes?("docker found") 
+    if docker_condition
 
     ensure_kubeconfig!
     kubeconfig_orig = ENV["KUBECONFIG"]
@@ -576,11 +627,13 @@ task "cni_compatible" do |_, args|
     Log.info { "cilium_cnf_passed: #{cilium_cnf_passed}" }
     puts "CNF failed to install on Cilium CNI cluster".colorize(:red) unless cilium_cnf_passed
 
-    emoji_security="🔓🔑"
     if calico_cnf_passed && cilium_cnf_passed
       upsert_passed_task("cni_compatible", "✔️  PASSED: CNF compatible with both Calico and Cilium #{emoji_security}")
     else
       upsert_failed_task("cni_compatible", "✖️  FAILED: CNF not compatible with either Calico or Cillium #{emoji_security}")
+    end
+    else
+      upsert_skipped_task("cni_compatible", "✖️  SKIPPED: Docker not installed #{emoji_security}")
     end
   ensure
     kind_manager = KindManager.new
