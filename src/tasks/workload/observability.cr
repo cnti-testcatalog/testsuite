@@ -62,11 +62,15 @@ task "prometheus_traffic" do |_, args|
       match = DockerClient::K8s.local_digest_match(sha_list, imageids)
       if match[:found]
         service = KubectlClient::Get.service_by_digest(match[:digest])
-        service_url = service.dig("metadata", "name") 
+        service_url = service.dig("metadata", "name")
+        service_namespace = "default"
+        if service.dig?("metadata", "namespace")
+          service_namespace = service.dig("metadata", "namespace")
+        end
 
         Log.info { "service_url: #{service_url}"}
         ClusterTools.install
-        prom_api_resp = ClusterTools.exec_k8s("curl http://#{service_url}.default.svc.cluster.local/api/v1/targets?state=active")
+        prom_api_resp = ClusterTools.exec_k8s("curl http://#{service_url}.#{service_namespace}.svc.cluster.local/api/v1/targets?state=active")
 
         Log.debug { "prom_api_resp: #{prom_api_resp}"}
         prom_json = JSON.parse(prom_api_resp[:output])
