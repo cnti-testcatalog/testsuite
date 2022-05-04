@@ -17,7 +17,7 @@ ELASTIC_PROVISIONING_DRIVERS_REGEX = /kubernetes.io\/aws-ebs|kubernetes.io\/azur
 ELASTIC_PROVISIONING_DRIVERS_REGEX_SPEC = /kubernetes.io\/aws-ebs|kubernetes.io\/azure-file|kubernetes.io\/azure-disk|kubernetes.io\/cinder|kubernetes.io\/gce-pd|kubernetes.io\/glusterfs|kubernetes.io\/quobyte|kubernetes.io\/rbd|kubernetes.io\/vsphere-volume|kubernetes.io\/portworx-volume|kubernetes.io\/scaleio|kubernetes.io\/storageos|rook-ceph.rbd.csi.ceph.com|rancher.io\/local-path/
 
 module Volume
-  def self.elastic_by_volumes?(volumes, namespace : String? = nil)
+  def self.elastic_by_volumes?(volumes : Array(JSON::Any), namespace : String? = nil)
     Log.info {"elastic_by_volumes"}
     storage_class_names = storage_class_by_volumes(volumes, namespace)
     elastic = StorageClass.elastic_by_storage_class?(storage_class_names)
@@ -90,7 +90,7 @@ module Volume
   def self.storage_class_by_volumes(volumes, namespace : String? = nil)
     Log.info {"storage_class_by_volumes? "}
     Log.info {"storage_class_by_volumes? volumes: #{volumes}"}
-    volume_claims = volumes.as_a.select{ |x| x.dig?("persistentVolumeClaim", "claimName") } 
+    volume_claims = volumes.select{ |x| x.dig?("persistentVolumeClaim", "claimName") } 
     Log.info {"volume_claims #{volume_claims}"}
     storage_class_names = volume_claims.reduce( [] of Hash(String, JSON::Any)) do |acc, claim| 
       resource = KubectlClient::Get.resource("pvc", claim.dig?("persistentVolumeClaim", "claimName").to_s, namespace)
@@ -327,13 +327,13 @@ desc "Does the CNF use an elastic persistent volume"
 task "elastic_volumes" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     Log.info {"cnf_config: #{config}"}
-    VERBOSE_LOGGING.info "elastic_volumes" if check_verbose(args)
+    Log.for("verbose").info { "elastic_volumes" } if check_verbose(args)
     emoji_probe="🧫"
-    elastic = false
+    elastic_volumes_used = false
     volumes_used = false
     task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
-      Log.info {"resource: #{resource}"}
-      Log.info {"volumes: #{volumes}"}
+      Log.for("elastic_volumes:test_resource").info { resource.inspect }
+      Log.for("elastic_volumes:volumes").info { volumes.inspect }
 
       next if volumes.size == 0
       volumes_used = true
@@ -343,13 +343,18 @@ task "elastic_volumes" do |_, args|
       namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
 
       full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
-      elastic = WorkloadResource.elastic?(full_resource, volumes, namespace)
+      elastic_result = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)
+      Log.for("elastic_volumes:elastic_result").info {elastic_result}
+      if elastic_result
+        elastic_volumes_used = true
+        Log.for("elastic_volumes:elastic_result_update").info {elastic_result.inspect}
+      end
     end
 
-    Log.for("elastic_volumes:result").info { "Volumes used: #{volumes_used}; Elastic?: #{elastic}" }
-    if volumes_used == false || elastic == nil
+    Log.for("elastic_volumes:result").info { "Volumes used: #{volumes_used}; Elastic?: #{elastic_volumes_used}" }
+    if volumes_used == false
       resp = upsert_skipped_task("elastic_volumes","⏭️  SKIPPED: No volumes used #{emoji_probe}")
-    elsif elastic
+    elsif elastic_volumes_used
       resp = upsert_passed_task("elastic_volumes","✔️  PASSED: Elastic Volumes Used #{emoji_probe}")
     else
       resp = upsert_failed_task("elastic_volumes","✔️  FAILED: Volumes used are not elastic volumes #{emoji_probe}")
@@ -394,7 +399,7 @@ task "database_persistence" do |_, args|
         Log.info {"database_persistence volumes: #{volumes}"}
         # elastic_volume = Volume.elastic_by_volumes?(volumes)
         full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
-        elastic_volume = WorkloadResource.elastic?(full_resource, volumes, namespace)  
+        elastic_volume = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)  
         Log.info {"database_persistence elastic_volume: #{elastic_volume}"}
         if elastic_volume
           elastic_volume_used = true

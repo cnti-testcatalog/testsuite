@@ -25,17 +25,6 @@ EMPTY_JSON_ARRAY = JSON.parse(%([]))
 
 TESTSUITE_NAMESPACE = "cnf-testsuite"
 
-# Curated from Kubernetes documentation - https://kubernetes.io/docs/concepts/storage/volumes
-IGNORED_VOLUMES_TYPES = [
-  "configMap",
-  "downwardAPI",
-  "emptyDir",
-  "gitRepo",
-  "projected",
-  "serviceAccountToken",
-  "secret"
-]
-
 #Embedded global text variables
 EmbeddedFileManager.node_failure_values
 EmbeddedFileManager.cluster_tools
