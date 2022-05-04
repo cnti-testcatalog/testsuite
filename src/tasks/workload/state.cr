@@ -347,7 +347,6 @@ task "elastic_volumes" do |_, args|
       Log.for("elastic_volumes:elastic_result").info {elastic_result}
       if elastic_result
         elastic_volumes_used = true
-        Log.for("elastic_volumes:elastic_result_update").info {elastic_result.inspect}
       end
     end
 
