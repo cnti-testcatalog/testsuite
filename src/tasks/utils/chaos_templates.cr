@@ -64,6 +64,7 @@ class ChaosTemplates
     def initialize(
       @test_name : String,
       @chaos_experiment_name : String,
+      @app_namespace : String,
       @deployment_label : String,
       @deployment_label_value : String
     )
@@ -75,6 +76,7 @@ class ChaosTemplates
     def initialize(
       @test_name : String,
       @chaos_experiment_name : String,
+      @app_namespace : String,
       @deployment_label : String,
       @deployment_label_value : String,
       @total_chaos_duration : String,
