@@ -10,7 +10,7 @@ The information in the cnf-testsuite.yml is also used for additional configurati
 ### Table of Contents
 
 - [Overview](#Overview-of-all-cnf-testsuite.yml)
-- [Generator Quick Start](#Generator-Quick-Start:-cnf-testsuite.yml)
+- [Generator Quick Start](#Generator-Quick-Start)
 - [Keys and Values](#Keys-and-Values)
 
 
@@ -32,7 +32,7 @@ release_name: coredns # DESIRED_HELM_RELEASE_NAME
 
 ```
 
-### Generator Quick Start: cnf-testsuite.yml 
+### Generator Quick Start 
 You can quickly generate your own cnf-testsuite.yml dynamically for a CNF by running one of the below commands.
 Prereqs: You must have kubernetes cluster, curl, and helm 3.1.1 or greater on your system already.
 
