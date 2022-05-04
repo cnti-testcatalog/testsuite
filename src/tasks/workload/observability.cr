@@ -84,7 +84,7 @@ task "prometheus_traffic" do |_, args|
         Log.info { "prom_target_urls: #{prom_target_urls}"}
         prom_cnf_match = CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
           ip_match = false
-          resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name])
+          resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name], resource_name[:namespace])
           pods = KubectlClient::Get.pods_by_resource(resource)
           pods.each do |pod|
             pod_ips = pod.dig("status", "podIPs")
