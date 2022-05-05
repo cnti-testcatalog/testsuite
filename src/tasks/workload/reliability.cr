@@ -271,13 +271,13 @@ task "disk_fill", ["install_litmus"] do |_, args|
           experiment_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/disk-fill/experiment.yaml"
           experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
           experiment_yaml = File.read(experiment_path)
-          experiment_yaml = experiment_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
+          experiment_yaml = experiment_yaml.gsub("metadata:\n", "metadata:\n  namespace: #{app_namespace}\n")
           File.write(experiment_path, experiment_yaml)
 
           rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/disk-fill/rbac.yaml"
           rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
           rbac_yaml = File.read(rbac_path)
-          rbac = rbac_yaml.gsub("metadata:\n", "metadata:\n  namespace: #{app_namespace}\n")
+          rbac = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
           File.write(rbac_path, rbac_yaml)
 
           KubectlClient::Apply.file(experiment_path)
