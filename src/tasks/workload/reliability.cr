@@ -249,7 +249,7 @@ desc "Does the CNF crash when disk fill occurs"
 task "disk_fill", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     test_name = "disk_fill"
-    Log.for("verbose").info { test_name } if check_verbose(args)
+    Log.for(test_name).info { "Starting test" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
@@ -291,7 +291,7 @@ task "disk_fill", ["install_litmus"] do |_, args|
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
         spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
-        Log.for("disk_fill:spec_labels").info { "Spec labels for chaos template. Key: #{spec_labels.first_key}; Value: #{spec_labels.first_value}" }
+        Log.for("#{test_name}:spec_labels").info { "Spec labels for chaos template. Key: #{spec_labels.first_key}; Value: #{spec_labels.first_value}" }
         # todo change to use all labels instead of first label
         template = ChaosTemplates::DiskFill.new(
           test_name,
