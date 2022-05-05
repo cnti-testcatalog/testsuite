@@ -399,19 +399,19 @@ task "database_persistence" do |_, args|
     # VERBOSE_LOGGING.info "hithere" if check_verbose(args)
     Log.info {"database_persistence mysql: #{match}"}
     if match && match[:found]
-      default_namespace = "default"
+      default_namespace = config.cnf_config.dig?(:helm_install_namespace) || "default"
       if !config.cnf_config[:helm_install_namespace].empty?
         default_namespace = config.cnf_config[:helm_install_namespace]
       end
       statefulset_exists = Helm.kind_exists?(args, config, "statefulset", default_namespace)
       task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
-        namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
+        namespace = resource["namespace"] || config.cnf_config[:helm_install_namespace]
         Log.info {"database_persistence namespace: #{namespace}"}
         Log.info {"database_persistence resource: #{resource}"}
         Log.info {"database_persistence volumes: #{volumes}"}
         # elastic_volume = Volume.elastic_by_volumes?(volumes)
         full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
-        elastic_volume = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)  
+        elastic_volume = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)
         Log.info {"database_persistence elastic_volume: #{elastic_volume}"}
         if elastic_volume
           elastic_volume_used = true
