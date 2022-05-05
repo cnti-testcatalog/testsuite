@@ -399,13 +399,13 @@ task "database_persistence" do |_, args|
     # VERBOSE_LOGGING.info "hithere" if check_verbose(args)
     Log.info {"database_persistence mysql: #{match}"}
     if match && match[:found]
-      default_namespace = config.cnf_config.dig?(:helm_install_namespace) || "default"
+      default_namespace = "default"
       if !config.cnf_config[:helm_install_namespace].empty?
         default_namespace = config.cnf_config[:helm_install_namespace]
       end
       statefulset_exists = Helm.kind_exists?(args, config, "statefulset", default_namespace)
       task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
-        namespace = resource["namespace"] || config.cnf_config[:helm_install_namespace]
+        namespace = resource["namespace"] || default_namespace
         Log.info {"database_persistence namespace: #{namespace}"}
         Log.info {"database_persistence resource: #{resource}"}
         Log.info {"database_persistence volumes: #{volumes}"}
