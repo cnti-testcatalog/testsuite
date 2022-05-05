@@ -148,4 +148,20 @@ module LitmusManager
       return false
     end
   end
+
+  def self.chaos_manifests_path
+    chaos_manifests = "#{FileUtils.pwd}/#{TOOLS_DIR}/chaos-experiments"
+    if !Dir.exists?(chaos_manifests)
+      FileUtils.mkdir_p(chaos_manifests)
+    end
+    chaos_manifests
+  end
+
+  def self.download_template(url, filename)
+    filepath = "#{chaos_manifests_path}/#{filename}"
+    resp = Halite.follow.get(url) do |response| 
+      File.write(filepath, response.body_io)
+    end
+    filepath
+  end
 end

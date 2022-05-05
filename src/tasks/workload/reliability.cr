@@ -248,7 +248,8 @@ end
 desc "Does the CNF crash when disk fill occurs"
 task "disk_fill", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "disk_fill" } if check_verbose(args)
+    test_name = "disk_fill"
+    Log.for("verbose").info { test_name } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
@@ -257,7 +258,7 @@ task "disk_fill", ["install_litmus"] do |_, args|
       if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
       else
-        stdout_failure("No resource label found for disk_fill test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
+        stdout_failure("No resource label found for #{test_name} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
         test_passed = false
       end
       if test_passed
@@ -267,14 +268,26 @@ task "disk_fill", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-rbac.yaml")
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/disk-fill/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/disk-fill/rbac.yaml")
+          experiment_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/disk-fill/experiment.yaml"
+          experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+          experiment_yaml = File.read(experiment_path)
+          experiment_yaml = experiment_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
+          File.write(experiment_path, experiment_yaml)
+
+          rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/disk-fill/rbac.yaml"
+          rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+          rbac_yaml = File.read(rbac_path)
+          rbac = rbac_yaml.gsub("metadata:\n", "metadata:\n  namespace: #{app_namespace}\n")
+          File.write(rbac_path, rbac_yaml)
+
+          KubectlClient::Apply.file(experiment_path)
+          KubectlClient::Apply.file(rbac_path)
         end
         KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "disk-fill"
         disk_fill_time = "100"
-        test_name = "#{resource["name"]}-#{Random.rand(99)}" 
+        test_name = "#{resource["name"]}-#{Random.rand(99)}"
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
         spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
