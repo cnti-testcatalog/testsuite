@@ -2,7 +2,7 @@ apiVersion: litmuschaos.io/v1alpha1
 kind: ChaosEngine
 metadata:
   name: <%= @test_name %>
-  namespace: default
+  namespace: <%= @app_namespace %>
 spec:
   appinfo:
     appns: '<%= @app_namespace %>'

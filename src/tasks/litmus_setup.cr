@@ -72,8 +72,8 @@ module LitmusManager
     File.write(MODIFIED_LITMUS_FILE, output_file) unless output_file == nil
   end
 
-  def self.cordon_target_node(deployment_label, deployment_value)
-    app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_value} -o=jsonpath='{.items[0].spec.nodeName}'"
+  def self.cordon_target_node(deployment_label, deployment_value, namespace)
+    app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_value} -n #{namespace} -o=jsonpath='{.items[0].spec.nodeName}'"
     Log.info { "Getting the operator node name: #{app_nodeName_cmd}" }
     status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
     Log.for("verbose").info { "status_code: #{status_code}" } 
