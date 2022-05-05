@@ -340,7 +340,7 @@ task "pod_delete", ["install_litmus"] do |_, args|
           rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-delete/rbac.yaml"
           rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
           rbac_yaml = File.read(rbac_path)
-          rbac = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
+          rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
           File.write(rbac_path, rbac_yaml)
 
           KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
