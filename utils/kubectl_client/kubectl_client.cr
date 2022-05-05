@@ -99,21 +99,30 @@ module KubectlClient
   end
 
   module Rollout
-    def self.status(deployment_name, timeout="30s") : Bool
+    def self.status(deployment_name, namespace : String | Nil = nil, timeout="30s") : Bool
       cmd = "kubectl rollout status deployment/#{deployment_name} --timeout=#{timeout}"
+      if namespace
+        cmd = "#{cmd} -n #{namespace}"
+      end
       result = ShellCmd.run(cmd, "KubectlClient::Rollout.status")
       result[:status].success?
     end
 
-    def self.resource_status(kind, resource_name, timeout="30s") : Bool
+    def self.resource_status(kind, resource_name, namespace : String | Nil = nil, timeout : String = "30s") : Bool
       cmd = "kubectl rollout status #{kind}/#{resource_name} --timeout=#{timeout}"
-      result = ShellCmd.run(cmd, "KubectlClient::Rollout.status")
+      if namespace
+        cmd = "#{cmd} -n #{namespace}"
+      end
+      result = ShellCmd.run(cmd, "KubectlClient::Rollout.resource_status")
       Log.debug { "rollout status: #{result[:status].success?}" }
       result[:status].success?
     end
 
-    def self.undo(deployment_name) : Bool
+    def self.undo(deployment_name, namespace : String | Nil = nil) : Bool
       cmd = "kubectl rollout undo deployment/#{deployment_name}"
+      if namespace
+        cmd = "#{cmd} -n #{namespace}"
+      end
       result = ShellCmd.run(cmd, "KubectlClient::Rollout.undo")
       Log.debug { "rollback status: #{result[:status].success?}" }
       result[:status].success?

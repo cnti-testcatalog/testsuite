@@ -35,6 +35,7 @@ rolling_version_change_test_names.each do |tn|
       # note: all images are not on docker hub nor are they always on a docker hub compatible api
 
       task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+        namespace = resource["namespace"] || config.cnf_config[:helm_install_namespace]
         test_passed = true
         valid_cnf_testsuite_yml = true
         LOGGING.debug "#{tn} container: #{container}"
@@ -55,16 +56,17 @@ rolling_version_change_test_names.each do |tn|
                                           # split out image name from version tag
                                           container.as_h["image"].as_s.rpartition(":")[0],
                                           config_container["#{tn}_test_tag"],
-                                          namespace: resource["namespace"])
+                                          namespace: namespace
+                                        )
         else
           resp = false
         end
         # If any containers dont have an update applied, fail
         test_passed = false if resp == false
 
-        rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"], timeout="100s")
+        rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"], namespace: namespace, timeout: "100s")
         unless rollout_status
-          Log.info { "Rollout failed for #{resource["kind"]}/#{resource["name"]}" }
+          Log.info { "Rollout failed for #{resource["kind"]}/#{resource["name"]} in #{namespace} namespace" }
           KubectlClient.describe(resource["kind"], resource["name"], namespace: resource["namespace"], force_output: true)
           KubectlClient::ShellCmd.run("kubectl get all -A", "get_all_resources", force_output: true)
           test_passed = false
@@ -141,20 +143,20 @@ task "rollback" do |_, args|
                                                             container_name,
                                                             image_name,
                                                             rollback_from_tag,
-                                                            namespace: resource["namespace"])
+                                                            namespace: namespace)
         end
 
         LOGGING.info "rollback version change successful? #{version_change_applied}"
 
         VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
-        rollout_status = KubectlClient::Rollout.status(deployment_name, timeout="180s")
+        rollout_status = KubectlClient::Rollout.status(deployment_name, namespace: namespace, timeout: "180s")
         if  rollout_status == false
           stdout_failure("Rolling update failed on resource: #{deployment_name} and container: #{container_name}")
         end
 
         # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision
         VERBOSE_LOGGING.debug "rollback: rolling back to old version" if check_verbose(args)
-        rollback_status = KubectlClient::Rollout.undo(deployment_name)
+        rollback_status = KubectlClient::Rollout.undo(deployment_name, namespace: namespace)
 
     end
 
