@@ -24,9 +24,10 @@ describe CnfTestSuite do
       response_s = `LOG_LEVEL=info ./cnf-testsuite versioned_tag verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Image uses a versioned tag/ =~ response_s).should_not be_nil
+      (/PASSED: Container images use versioned tags/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite uninstall_opa`
     end
   end
 
@@ -37,9 +38,10 @@ describe CnfTestSuite do
       response_s = `LOG_LEVEL=info ./cnf-testsuite versioned_tag verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Image does not use a versioned tag/ =~ response_s).should_not be_nil
+      (/FAILED: Container images do not use versioned tags/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/k8s-sidecar-container-pattern/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite uninstall_opa`
     end
   end
 
@@ -300,7 +302,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'secrets_used' should fail when secrets are provided as volumes and not mounted by a container", tags: ["secrets"] do
+  it "'secrets_used' should be skipped when secrets are provided as volumes and not mounted by a container", tags: ["secrets"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_unmounted_secret_volume/cnf-testsuite.yml verbose wait_count=0 `
       $?.success?.should be_true
@@ -339,7 +341,7 @@ describe CnfTestSuite do
     end
   end
 
-  it "'secrets_used' should pass when no secret volumes are mounted or no container secrets are provided (secrets ignored)`", tags: ["secrets"] do
+  it "'secrets_used' should be skipped when no secret volumes are mounted or no container secrets are provided (secrets ignored)`", tags: ["secrets"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose wait_count=0 `
       $?.success?.should be_true
@@ -352,72 +354,29 @@ describe CnfTestSuite do
     end
   end
 
-  # # 1. test 1 fails because the sample_coredns helm chart configmap is not immutable
-  # # 2. copay that sample_coredns cnf  and and make the config map immutable rename it and make sure test passes
-
-  it "'immutable_configmap' fail without immutable configmaps", tags: ["immutable_configmap"] do
+  it "'immutable_configmap' fail with some mutable configmaps in container env or volume mount", tags: ["immutable_configmap"] do
     begin
-      `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml deploy_with_chart=false`
+      `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/ndn-mutable-configmap deploy_with_chart=false`
       $?.success?.should be_true
       response_s = `./cnf-testsuite immutable_configmap verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/FAILED: Found mutable configmap/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml deploy_with_chart=false`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/ndn-mutable-configmap deploy_with_chart=false`
     end
   end
 
-  it "'immutable_configmap' fail with only some immutable configmaps", tags: ["immutable_configmap"] do
+  it "'immutable_configmap' pass with all immutable configmaps in container env or volume mounts", tags: ["immutable_configmap"] do
     begin
-      `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml deploy_with_chart=false`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite immutable_configmap verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/FAILED: Found mutable configmap/ =~ response_s).should_not be_nil
-    ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_some/cnf-testsuite.yml deploy_with_chart=false`
-    end
-  end
-
-  it "'immutable_configmap' should pass with all immutable configmaps", tags: ["immutable_configmap"] do
-    begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-testsuite.yml deploy_with_chart=false`
+      `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/ndn-immutable-configmap deploy_with_chart=false`
       $?.success?.should be_true
       response_s = `./cnf-testsuite immutable_configmap verbose`
       LOGGING.info response_s
       $?.success?.should be_true
       (/PASSED: All volume or container mounted configmaps immutable/ =~ response_s).should_not be_nil
     ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-testsuite.yml deploy_with_chart=false`
-    end
-  end
-
-
-  it "'immutable_configmap' should pass with all immutable configmaps with env mounted", tags: ["immutable_configmap_env"] do
-    begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_immutable_configmap_all_plus_env/cnf-testsuite.yml deploy_with_chart=false`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite immutable_configmap verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/PASSED: All volume or container mounted configmaps immutable/ =~ response_s).should_not be_nil
-    ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-testsuite.yml deploy_with_chart=false`
-    end
-  end
-
-  it "'immutable_configmap' should fail with a mutable env mounted configmap", tags: ["immutable_configmap_fail"] do
-    begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_immutable_configmap_all_plus_env_but_fail/cnf-testsuite.yml deploy_with_chart=false`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite immutable_configmap verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/FAILED: Found mutable configmap/ =~ response_s).should_not be_nil
-    ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_immutable_configmap_all/cnf-testsuite.yml deploy_with_chart=false`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/ndn-immutable-configmap deploy_with_chart=false`
     end
   end
 

@@ -1,5 +1,8 @@
 ---
 helm_directory: postgresql
+helm_install_namespace: cnfspace
+git_clone_url: 
+install_script: chart
 release_name: postgresql
 service_name: postgresql
 allowlist_helm_chart_container_names: []
