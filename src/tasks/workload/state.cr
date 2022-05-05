@@ -17,7 +17,7 @@ ELASTIC_PROVISIONING_DRIVERS_REGEX = /kubernetes.io\/aws-ebs|kubernetes.io\/azur
 ELASTIC_PROVISIONING_DRIVERS_REGEX_SPEC = /kubernetes.io\/aws-ebs|kubernetes.io\/azure-file|kubernetes.io\/azure-disk|kubernetes.io\/cinder|kubernetes.io\/gce-pd|kubernetes.io\/glusterfs|kubernetes.io\/quobyte|kubernetes.io\/rbd|kubernetes.io\/vsphere-volume|kubernetes.io\/portworx-volume|kubernetes.io\/scaleio|kubernetes.io\/storageos|rook-ceph.rbd.csi.ceph.com|rancher.io\/local-path/
 
 module Volume
-  def self.elastic_by_volumes?(volumes, namespace : String? = nil)
+  def self.elastic_by_volumes?(volumes : Array(JSON::Any), namespace : String? = nil)
     Log.info {"elastic_by_volumes"}
     storage_class_names = storage_class_by_volumes(volumes, namespace)
     elastic = StorageClass.elastic_by_storage_class?(storage_class_names)
@@ -90,7 +90,7 @@ module Volume
   def self.storage_class_by_volumes(volumes, namespace : String? = nil)
     Log.info {"storage_class_by_volumes? "}
     Log.info {"storage_class_by_volumes? volumes: #{volumes}"}
-    volume_claims = volumes.as_a.select{ |x| x.dig?("persistentVolumeClaim", "claimName") } 
+    volume_claims = volumes.select{ |x| x.dig?("persistentVolumeClaim", "claimName") } 
     Log.info {"volume_claims #{volume_claims}"}
     storage_class_names = volume_claims.reduce( [] of Hash(String, JSON::Any)) do |acc, claim| 
       resource = KubectlClient::Get.resource("pvc", claim.dig?("persistentVolumeClaim", "claimName").to_s, namespace)
@@ -111,9 +111,11 @@ module StorageClass
   def self.elastic_by_storage_class?(storage_class_names : Array(Hash(String, JSON::Any)), 
                                      namespace : String? = nil)
     Log.info {"elastic_by_storage_class"}
+    Log.for("elastic_volumes:storage_class_names").info { storage_class_names }
+
     #todo elastic_by_storage_class?
     elastic = false
-    provisoners = storage_class_names.reduce( [] of String) do |acc, storage_class|
+    provisioners = storage_class_names.reduce( [] of String) do |acc, storage_class|
       resource = KubectlClient::Get.resource("storageclasses", storage_class.dig?("class_name").to_s, namespace)
       if resource.dig?("provisioner")
         acc << resource.dig("provisioner").as_s 
@@ -121,18 +123,21 @@ module StorageClass
         acc
       end
     end
-    Log.info {"Provisoners: #{provisoners}"}
-    provisoners.each do |provisoner|
+
+    Log.for("elastic_volumes:provisioners").info { provisioners }
+
+    Log.info {"Provisioners: #{provisioners}"}
+    provisioners.each do |provisioner|
       if ENV["CRYSTAL_ENV"]? == "TEST"
-        if (provisoner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX_SPEC) 
+        if (provisioner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX_SPEC)
           Log.info {"provisioner test mode"}
-          Log.info {"Provisoners: #{provisoners}"}
+          Log.info {"Elastic provisioner: #{provisioner}"}
           elastic = true
         end
       else
-        if (provisoner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX) 
+        if (provisioner =~ ELASTIC_PROVISIONING_DRIVERS_REGEX)
           Log.info {"provisioner production mode"}
-          Log.info {"Provisoners: #{provisoners}"}
+          Log.info {"Elastic provisioner: #{provisioner}"}
           elastic = true
         end
       end
@@ -209,41 +214,44 @@ end
 desc "Does the CNF crash when node-drain occurs"
 task "node_drain", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args) do |args, config|
+    test_name = "pod_memory_hog"
+    Log.for(test_name).info { "Starting test" } if check_verbose(args)
     skipped = false
-    Log.for("verbose").info {"node_drain"} if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      Log.info { "Current Resource Name: #{resource["kind"]}/#{resource["name"]} Namespace: #{resource["namespace"]}" }
+      spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
 
-      Log.info { "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}" }
       schedulable_nodes_count=KubectlClient::Get.schedulable_nodes_list
       if schedulable_nodes_count.size > 1
-        LitmusManager.cordon_target_node("#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}","#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}")
+        LitmusManager.cordon_target_node("#{spec_labels.as_h.first_key}","#{spec_labels.as_h.first_value}", namespace: resource["namespace"])
       else
         Log.info { "The target node was unable to cordoned sucessfully" }
         skipped = true
-      end 
-      
+      end
+
       unless skipped
-        if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+        if spec_labels.as_h.size > 0
           test_passed = true
         else
-          puts "No resource label found for node_drain test for resource: #{resource["name"]}".colorize(:red)
+          stdout_failure("No resource label found for #{test_name} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
           test_passed = false
         end
         if test_passed
-          deployment_label="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}"
-          deployment_label_value="#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
-          app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_label_value} -o=jsonpath='{.items[0].spec.nodeName}'"
-          puts "Getting the app node name #{app_nodeName_cmd}" if check_verbose(args)
+          deployment_label="#{spec_labels.as_h.first_key}"
+          deployment_label_value="#{spec_labels.as_h.first_value}"
+          app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_label_value} -n #{resource["namespace"]} -o=jsonpath='{.items[0].spec.nodeName}'"
+          Log.for("node_drain").info { "Getting the app node name #{app_nodeName_cmd}" } if check_verbose(args)
           status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
-          puts "status_code: #{status_code}" if check_verbose(args)  
+          Log.for("node_drain").info { "status_code: #{status_code}" } if check_verbose(args)
           app_nodeName = appNodeName_response.to_s
 
           litmus_nodeName_cmd = "kubectl get pods -n litmus -l app.kubernetes.io/name=litmus -o=jsonpath='{.items[0].spec.nodeName}'"
-          puts "Getting the app node name #litmus_nodeName_cmd}" if check_verbose(args)
+          Log.for("node_drain").info { "Getting the app node name #{litmus_nodeName_cmd}" } if check_verbose(args)
           status_code = Process.run("#{litmus_nodeName_cmd}", shell: true, output: litmusNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
-          puts "status_code: #{status_code}" if check_verbose(args)  
+          Log.for("node_drain").info { "status_code: #{status_code}" } if check_verbose(args)
           litmus_nodeName = litmusNodeName_response.to_s
           Log.info { "Workload Node Name: #{app_nodeName}" }
           Log.info { "Litmus Node Name: #{litmus_nodeName}" }
@@ -276,16 +284,24 @@ task "node_drain", ["install_litmus"] do |t, args|
           end
 
           if args.named["offline"]?
-               Log.info {"install resilience offline mode"}
-               AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
-               KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
-               KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-rbac.yaml")
-             else
-               KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/experiment.yaml")
-               KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/rbac.yaml")
-          end
-          KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
+            Log.info {"install resilience offline mode"}
+            AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
+            KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
+            KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-rbac.yaml")
+          else
+            experiment_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/experiment.yaml"
+            rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/rbac.yaml"
 
+            experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+            KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
+  
+            rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+            rbac_yaml = File.read(rbac_path)
+            rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
+            File.write(rbac_path, rbac_yaml)
+            KubectlClient::Apply.file(rbac_path)
+          end
+          KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
           chaos_experiment_name = "node-drain"
           total_chaos_duration = "90"
@@ -295,6 +311,7 @@ task "node_drain", ["install_litmus"] do |t, args|
           template = ChaosTemplates::NodeDrain.new(
             test_name,
             "#{chaos_experiment_name}",
+            app_namespace,
             "#{deployment_label}",
             "#{deployment_label_value}",
             total_chaos_duration,
@@ -302,10 +319,11 @@ task "node_drain", ["install_litmus"] do |t, args|
           ).to_s
           File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
           KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-          LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
-          test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+          LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
+          test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
         end
       end
+      test_passed
     end
     if skipped
       Log.for("verbose").warn{"The node_drain test needs minimum 2 schedulable nodes, current number of nodes: #{KubectlClient::Get.schedulable_nodes_list.size}"} if check_verbose(args)
@@ -322,13 +340,13 @@ desc "Does the CNF use an elastic persistent volume"
 task "elastic_volumes" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     Log.info {"cnf_config: #{config}"}
-    VERBOSE_LOGGING.info "elastic_volumes" if check_verbose(args)
+    Log.for("verbose").info { "elastic_volumes" } if check_verbose(args)
     emoji_probe="🧫"
-    elastic = false
+    elastic_volumes_used = false
     volumes_used = false
     task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
-      Log.info {"resource: #{resource}"}
-      Log.info {"volumes: #{volumes}"}
+      Log.for("elastic_volumes:test_resource").info { resource.inspect }
+      Log.for("elastic_volumes:volumes").info { volumes.inspect }
 
       next if volumes.size == 0
       volumes_used = true
@@ -338,14 +356,17 @@ task "elastic_volumes" do |_, args|
       namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
 
       full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
-      if WorkloadResource.elastic?(full_resource, volumes, namespace)  
-        elastic = true
+      elastic_result = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)
+      Log.for("elastic_volumes:elastic_result").info {elastic_result}
+      if elastic_result
+        elastic_volumes_used = true
       end
     end
 
+    Log.for("elastic_volumes:result").info { "Volumes used: #{volumes_used}; Elastic?: #{elastic_volumes_used}" }
     if volumes_used == false
       resp = upsert_skipped_task("elastic_volumes","⏭️  SKIPPED: No volumes used #{emoji_probe}")
-    elsif elastic
+    elsif elastic_volumes_used
       resp = upsert_passed_task("elastic_volumes","✔️  PASSED: Elastic Volumes Used #{emoji_probe}")
     else
       resp = upsert_failed_task("elastic_volumes","✔️  FAILED: Volumes used are not elastic volumes #{emoji_probe}")
@@ -378,15 +399,19 @@ task "database_persistence" do |_, args|
     # VERBOSE_LOGGING.info "hithere" if check_verbose(args)
     Log.info {"database_persistence mysql: #{match}"}
     if match && match[:found]
-      statefulset_exists = Helm.kind_exists?(args, config, "statefulset")
+      default_namespace = "default"
+      if !config.cnf_config[:helm_install_namespace].empty?
+        default_namespace = config.cnf_config[:helm_install_namespace]
+      end
+      statefulset_exists = Helm.kind_exists?(args, config, "statefulset", default_namespace)
       task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
-        namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
+        namespace = resource["namespace"] || default_namespace
         Log.info {"database_persistence namespace: #{namespace}"}
         Log.info {"database_persistence resource: #{resource}"}
         Log.info {"database_persistence volumes: #{volumes}"}
         # elastic_volume = Volume.elastic_by_volumes?(volumes)
         full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
-        elastic_volume = WorkloadResource.elastic?(full_resource, volumes, namespace)  
+        elastic_volume = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)
         Log.info {"database_persistence elastic_volume: #{elastic_volume}"}
         if elastic_volume
           elastic_volume_used = true

@@ -26,24 +26,25 @@ end
 desc "Is there a liveness entry in the helm chart?"
 task "liveness" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "liveness" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    Log.for("liveness").info { "Starting test" }
+    Log.for("liveness").debug { "cnf_config: #{config}" }
     resp = ""
     emoji_probe="⎈🧫"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
+      resource_ref = "#{resource[:kind]}/#{resource[:name]}"
       begin
-        VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
+        Log.for("liveness").debug { container.as_h["name"].as_s } if check_verbose(args)
         container.as_h["livenessProbe"].as_h
       rescue ex
-        VERBOSE_LOGGING.error ex.message if check_verbose(args)
+        Log.for("liveness").error { ex.message } if check_verbose(args)
         test_passed = false
-        puts "No livenessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+        stdout_failure("No livenessProbe found for container #{container.as_h["name"].as_s} part of #{resource_ref} in #{resource[:namespace]} namespace")
       end
-      LOGGING.debug "liveness test_passed: #{test_passed}"
+      Log.for("liveness").info { "Resource #{resource_ref} passed liveness?: #{test_passed}" }
       test_passed
     end
-    LOGGING.debug "liveness task response: #{task_response}"
+    Log.for("liveness").info { "Workload resource task response: #{task_response}" }
     if task_response
       resp = upsert_passed_task("liveness","✔️  🏆 PASSED: Helm liveness probe found #{emoji_probe}")
 		else
@@ -56,23 +57,25 @@ end
 desc "Is there a readiness entry in the helm chart?"
 task "readiness" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    LOGGING.debug "cnf_config: #{config}"
-    VERBOSE_LOGGING.info "readiness" if check_verbose(args)
-    # Parse the cnf-testsuite.yml
+    Log.for("readiness").info { "Starting test" }
+    Log.for("readiness").debug { "cnf_config: #{config}" }
     resp = ""
     emoji_probe="⎈🧫"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
+      resource_ref = "#{resource[:kind]}/#{resource[:name]}"
       begin
-        VERBOSE_LOGGING.debug container.as_h["name"].as_s if check_verbose(args)
+        Log.for("readiness").debug { container.as_h["name"].as_s } if check_verbose(args)
         container.as_h["readinessProbe"].as_h
       rescue ex
-        VERBOSE_LOGGING.error ex.message if check_verbose(args)
+        Log.for("readiness").error { ex.message } if check_verbose(args)
         test_passed = false
-        puts "No readinessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+        stdout_failure("No readinessProbe found for container #{container.as_h["name"].as_s} part of #{resource_ref} in #{resource[:namespace]} namespace")
       end
+      Log.for("readiness").info { "Resource #{resource_ref} passed liveness?: #{test_passed}" }
       test_passed
     end
+    Log.for("readiness").info { "Workload resource task response: #{task_response}" }
     if task_response
       resp = upsert_passed_task("readiness","✔️  🏆 PASSED: Helm readiness probe found #{emoji_probe}")
 		else
@@ -245,14 +248,17 @@ end
 desc "Does the CNF crash when disk fill occurs"
 task "disk_fill", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "disk_fill" } if check_verbose(args)
+    test_name = "disk_fill"
+    Log.for(test_name).info { "Starting test" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
+      if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
       else
-        puts "No resource label found for disk_fill test for resource: #{resource["name"]}".colorize(:red)
+        stdout_failure("No resource label found for #{test_name} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
         test_passed = false
       end
       if test_passed
@@ -262,28 +268,41 @@ task "disk_fill", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/disk-fill-rbac.yaml")
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/disk-fill/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/disk-fill/rbac.yaml")
+          experiment_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/disk-fill/experiment.yaml"
+          rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/disk-fill/rbac.yaml"
+
+          experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+          KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
+
+          rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+          rbac_yaml = File.read(rbac_path)
+          rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
+          File.write(rbac_path, rbac_yaml)
+          KubectlClient::Apply.file(rbac_path)
         end
-        KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
+        KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "disk-fill"
         disk_fill_time = "100"
-        test_name = "#{resource["name"]}-#{Random.rand(99)}" 
+        test_name = "#{resource["name"]}-#{Random.rand(99)}"
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
+        spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
+        Log.for("#{test_name}:spec_labels").info { "Spec labels for chaos template. Key: #{spec_labels.first_key}; Value: #{spec_labels.first_value}" }
         # todo change to use all labels instead of first label
         template = ChaosTemplates::DiskFill.new(
           test_name,
           "#{chaos_experiment_name}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}"
+          app_namespace,
+          "#{spec_labels.first_key}",
+          "#{spec_labels.first_value}"
         ).to_s
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-        LitmusManager.wait_for_test(test_name,chaos_experiment_name,disk_fill_time,args)
+        LitmusManager.wait_for_test(test_name, chaos_experiment_name, disk_fill_time, args, namespace: app_namespace)
+        test_passed = LitmusManager.check_chaos_verdict(chaos_result_name, chaos_experiment_name, args, namespace: app_namespace)
       end
-      test_passed=LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+      test_passed
     end
     if task_response 
       resp = upsert_passed_task("disk_fill","✔️  PASSED: disk_fill chaos test passed 🗡️💀♻️")
@@ -296,14 +315,17 @@ end
 desc "Does the CNF crash when pod-delete occurs"
 task "pod_delete", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "pod_delete" } if check_verbose(args)
+    test_name = "pod_delete"
+    Log.for(test_name).info { "Starting test" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
+      if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
       else
-        puts "No resource label found for pod_delete test for resource: #{resource["name"]}".colorize(:red)
+        stdout_failure("No resource label found for #{test_name} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
         test_passed = false
       end
       if test_passed
@@ -313,10 +335,19 @@ task "pod_delete", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-delete-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-delete-rbac.yaml")
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-delete/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-delete/rbac.yaml")
+          experiment_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-delete/experiment.yaml"
+          experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+
+          rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-delete/rbac.yaml"
+          rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+          rbac_yaml = File.read(rbac_path)
+          rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
+          File.write(rbac_path, rbac_yaml)
+
+          KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
+          KubectlClient::Apply.file(rbac_path)
         end
-        KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
+        KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-delete"
         total_chaos_duration = "30"
@@ -324,20 +355,22 @@ task "pod_delete", ["install_litmus"] do |_, args|
         test_name = "#{resource["name"]}-#{Random.rand(99)}" 
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
+        spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
         template = ChaosTemplates::PodDelete.new(
           test_name,
           "#{chaos_experiment_name}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}",
+          app_namespace,
+          "#{spec_labels.first_key}",
+          "#{spec_labels.first_value}",
           total_chaos_duration,
           target_pod_name
         ).to_s
 
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
+        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
       end
-      test_passed=LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+      test_passed=LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
     end
     if task_response
       resp = upsert_passed_task("pod_delete","✔️  PASSED: pod_delete chaos test passed 🗡️💀♻️")
@@ -350,14 +383,17 @@ end
 desc "Does the CNF crash when pod-memory-hog occurs"
 task "pod_memory_hog", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "pod_memory_hog" } if check_verbose(args)
+    test_name = "pod_memory_hog"
+    Log.for(test_name).info { "Starting test" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
+      if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
       else
-        puts "No resource label found for pod_memory_hog test for resource: #{resource["name"]}".colorize(:red)
+        stdout_failure("No resource label found for #{test_name} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
         test_passed = false
       end
       if test_passed
@@ -367,10 +403,19 @@ task "pod_memory_hog", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-memory-hog-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-memory-hog-rbac.yaml")
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-memory-hog/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-memory-hog/rbac.yaml")
+          experiment_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-memory-hog/experiment.yaml"
+          rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-memory-hog/rbac.yaml"
+
+          experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+          KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
+
+          rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+          rbac_yaml = File.read(rbac_path)
+          rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
+          File.write(rbac_path, rbac_yaml)
+          KubectlClient::Apply.file(rbac_path)
         end
-        KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
+        KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-memory-hog"
         total_chaos_duration = "60"
@@ -378,20 +423,23 @@ task "pod_memory_hog", ["install_litmus"] do |_, args|
         test_name = "#{resource["name"]}-#{Random.rand(99)}" 
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
+        spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
         template = ChaosTemplates::PodMemoryHog.new(
           test_name,
           "#{chaos_experiment_name}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}",
+          app_namespace,
+          "#{spec_labels.first_key}",
+          "#{spec_labels.first_value}",
           total_chaos_duration,
           target_pod_name
         ).to_s
 
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
-        test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
+        test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
       end
+      test_passed
     end
     if task_response
       resp = upsert_passed_task("pod_memory_hog","✔️  PASSED: pod_memory_hog chaos test passed 🗡️💀♻️")
@@ -516,130 +564,5 @@ task "pod_dns_error", ["install_litmus"] do |_, args|
     else
       resp = upsert_skipped_task("pod_dns_error","⏭️  SKIPPED: pod_dns_error docker runtime not found 🗡️💀♻️")
     end
-  end
-end
-
-class ChaosTemplates
-  class PodIoStress
-    def initialize(
-      @test_name : String,
-      @deployment_label : String,
-      @deployment_label_value : String,
-      @chaos_experiment_name : String,
-      @total_chaos_duration : String,
-      @target_pod_name : String
-    )
-    end
-    ECR.def_to_s("src/templates/chaos_templates/pod_io_stress.yml.ecr")
-  end
-
-  class Network
-    def initialize(@labels)
-    end
-    ECR.def_to_s("src/templates/chaos_templates/network.yml.ecr")
-  end
-
-  class Cpu
-    def initialize(@labels)
-    end
-    ECR.def_to_s("src/templates/chaos_templates/cpu.yml.ecr")
-  end
-
-  class PodNetworkLatency
-    def initialize(
-      @test_name : String,
-      @chaos_experiment_name : String,
-      @deployment_label : String,
-      @deployment_label_value : String,
-      @total_chaos_duration : String
-    )
-    end
-    ECR.def_to_s("src/templates/chaos_templates/pod_network_latency.yml.ecr")
-  end
-
-  class PodNetworkCorruption
-    def initialize(
-      @test_name : String,
-      @chaos_experiment_name : String,
-      @deployment_label : String,
-      @deployment_label_value : String,
-      @total_chaos_duration : String
-    )
-    end
-    ECR.def_to_s("src/templates/chaos_templates/pod_network_corruption.yml.ecr")
-  end
-
-  class PodNetworkDuplication
-    def initialize(
-      @test_name : String,
-      @chaos_experiment_name : String,
-      @deployment_label : String,
-      @deployment_label_value : String,
-      @total_chaos_duration : String
-    )
-    end
-    ECR.def_to_s("src/templates/chaos_templates/pod_network_duplication.yml.ecr")
-  end
-
-  class DiskFill
-    def initialize(
-      @test_name : String,
-      @chaos_experiment_name : String,
-      @deployment_label : String,
-      @deployment_label_value : String
-    )
-    end
-    ECR.def_to_s("src/templates/chaos_templates/disk_fill.yml.ecr")
-  end
-
-  class PodDelete
-    def initialize(
-      @test_name : String,
-      @chaos_experiment_name : String,
-      @deployment_label : String,
-      @deployment_label_value : String,
-      @total_chaos_duration : String,
-      @target_pod_name : String
-    )
-    end
-    ECR.def_to_s("src/templates/chaos_templates/pod_delete.yml.ecr")
-  end
-
-  class PodMemoryHog
-    def initialize(
-      @test_name : String,
-      @chaos_experiment_name : String,
-      @deployment_label : String,
-      @deployment_label_value : String,
-      @total_chaos_duration : String,
-      @target_pod_name : String
-    )
-    end
-    ECR.def_to_s("src/templates/chaos_templates/pod_memory_hog.yml.ecr")
-  end
-
-  class NodeDrain
-    def initialize(
-      @test_name : String,
-      @chaos_experiment_name : String,
-      @deployment_label : String,
-      @deployment_label_value : String,
-      @total_chaos_duration : String,
-      @app_nodename : String
-    )
-    end
-    ECR.def_to_s("src/templates/chaos_templates/node_drain.yml.ecr")
-  end
-
-  class PodDnsError
-    def initialize(
-      @test_name : String,
-      @chaos_experiment_name : String,
-      @deployment_label : String,
-      @deployment_label_value : String,
-      @total_chaos_duration : String,
-    )
-    end
-    ECR.def_to_s("src/templates/chaos_templates/pod_dns_error.yml.ecr")
   end
 end

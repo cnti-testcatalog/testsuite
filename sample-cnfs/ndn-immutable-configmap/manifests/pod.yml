@@ -1,0 +1,99 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cnfspace
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hello-configmap
+  namespace: cnfspace
+immutable: true
+data:
+  world: "hello"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: world-configmap
+  namespace: cnfspace
+immutable: true
+data:
+  hello: "world"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: foo-configmap
+  namespace: cnfspace
+immutable: true
+data:
+  foo: "bar"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bar-configmap
+  namespace: cnfspace
+immutable: true
+data:
+  bar: "foo"
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  namespace: cnfspace
+spec:
+  containers:
+  - image: bitnami/nginx:1.20
+    name: nginx
+    command:
+      - /opt/bitnami/scripts/nginx/entrypoint.sh
+      - /opt/bitnami/scripts/nginx/run.sh
+    livenessProbe:
+      tcpSocket:
+        port: 8080
+    readinessProbe:
+      tcpSocket:
+        port: 8080
+    resources: {}
+    ports:
+      - containerPort: 8080
+      - containerPort: 8443
+    env:
+      - name: CONFIGMAP_FOO_TEST
+        valueFrom:
+          configMapKeyRef:
+            name: foo-configmap
+            key: foo
+      - name: CONFIGMAP_BAR_TEST
+        valueFrom:
+          configMapKeyRef:
+            name: bar-configmap
+            key: bar
+    volumeMounts:
+      - name: hello-volume
+        mountPath: /etc/hello-config
+      - name: world-volume
+        mountPath: /etc/world-config
+  volumes:
+  - name: hello-volume
+    configMap:
+      name: hello-configmap
+  - name: world-volume
+    configMap:
+      name: world-configmap
+  - name: foo-volume
+    configMap:
+      name: foo-configmap
+  - name: bar-volume
+    configMap:
+      name: bar-configmap
+  dnsPolicy: Default

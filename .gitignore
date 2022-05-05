@@ -70,3 +70,4 @@ falco_rule.yaml
 /tools/kyverno-policies
 /tools/kyverno
 tools/custom-kyverno-policies/
+tools/chaos-experiments

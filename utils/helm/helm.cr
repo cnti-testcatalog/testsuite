@@ -169,7 +169,7 @@ module Helm
     [resp[:status].success?, output_file]
   end
 
-  def self.workload_resource_by_kind(ymls : Array(YAML::Any), kind)
+  def self.workload_resource_by_kind(ymls : Array(YAML::Any), kind : String)
     Log.info { "workload_resource_by_kind kind: #{kind}" }
     Log.debug { "workload_resource_by_kind ymls: #{ymls}" }
     resources = ymls.select{|x| x["kind"]?==kind}.reject! {|x|
@@ -183,12 +183,79 @@ module Helm
     resources
   end
 
-  def self.all_workload_resources(yml : Array(YAML::Any))
+  def self.all_workload_resources(yml : Array(YAML::Any), default_namespace : String = "default") : Array(YAML::Any)
     resources = KubectlClient::WORKLOAD_RESOURCES.map { |k,v|
       Helm.workload_resource_by_kind(yml, v)
     }.flatten
-    Log.debug { "all resource: #{resources}" }
-    resources
+
+    # This patch works around a Helm behaviour https://github.com/helm/helm/issues/10737
+    #
+    # The below map block inserts "metadata.namespace" key into resources that do not specify a namespace.
+    # The parsed resource YAML comes from "helm template" command.
+    #
+    # The "helm template" command ONLY renders the helm chart with variables substituted.
+    #
+    # The YAML output by "helm template" command would only contain the namespace for the resources if:
+    #   1. The helm chart has hardcoded namespaces.
+    #   2. OR The helm chart contains a Go variable like below:
+    #      namespace: {{ .Release.Namespace }}
+    #
+    # If none of the above are present,
+    # then the "-n <namespace>" argument passed to "helm template" command is not used anywhere in the output.
+
+    # Below is a scenario that causes an issue for cnf_setup:
+    #
+    # 0: CNF has helm chart that does not specify namespace for the resources in the YAML chart.
+    #
+    # 1. User mentions "helm_install_namespace: hello-world" in CNF config.
+    #
+    # 2. cnf_setup installs the Helm chart with "-n hello-world" namespace flag.
+    #
+    # 3. cnf_setup calls the CNFManager.workload_resource_test or cnf_workload_resources helper to fetch YAMLs
+    #    The YAMLs are from the "helm template" output.
+    #    And these now do not contain namespace for any resources due to [0] mentioned above.
+    #
+    # 4. cnf_setup calls KubectlClient::Get.resource_wait_for_install assuming the resource is in the default namespace.
+    #    Since the resource does not exist, the cnf_setup loops until timeout waiting for install.
+    #
+    # Similarly, any test that uses the CNFManager helpers to look for resources in the CNF,
+    # would also assume default namespace.
+    #
+    # To resolve the issue, we insert the namespace into the resource YAMLs being returned.
+    resources_with_namespace = resources.map do |resource|
+      ensure_resource_with_namespace(resource, default_namespace)
+    end
+    Log.debug { "all resource: #{resources_with_namespace}" }
+    resources_with_namespace
+  end
+
+  def self.ensure_resource_with_namespace(resource, default_namespace : String)
+    if resource.dig?("metadata", "namespace") != nil
+      resource
+    else
+      # Required workaround because we cannot assign a key or mutate YAML::Any
+
+      # Step-1: Convert resource to Hash(YAML::Any, YAML::Any)
+      resource = resource.as_h
+
+      # Step-2: Convert metadata from YAML:Any to a Hash(YAML::Any, YAML::Any)
+      metadata = resource["metadata"].as_h
+
+      # Step-3: The key in the hash is of type YAML::Any.
+      # So convert the string "namespace" to YAML.
+      namespace_yaml_key = YAML.parse("namespace".to_yaml)
+
+      # Step-4: Convert default namespace to YAML and assign it to the namespace key
+      metadata[namespace_yaml_key] = YAML.parse(default_namespace.to_yaml)
+
+      # Step-5: Convert the "metadata" key name to YAML::Any
+      metadata_yaml_key = YAML.parse("metadata".to_yaml)
+
+      # Step-6: Set the metadata on the resource
+      resource[metadata_yaml_key] = YAML.parse(metadata.to_yaml)
+      resource = YAML.parse(resource.to_yaml)
+      resource
+    end
   end
 
   def self.workload_resource_names(resources : Array(YAML::Any) )
@@ -199,9 +266,9 @@ module Helm
     resource_names
   end
 
-  def self.workload_resource_kind_names(resources : Array(YAML::Any) ) : Array(NamedTuple(kind: String, name: String, namespace: String))
+  def self.workload_resource_kind_names(resources : Array(YAML::Any), default_namespace : String = "default") : Array(NamedTuple(kind: String, name: String, namespace: String))
     resource_names = resources.map do |x|
-      namespace = (x.dig?("metadata", "namespace") || "default").to_s
+      namespace = (x.dig?("metadata", "namespace") || default_namespace).to_s
       {
         kind: x["kind"].as_s,
         name: x["metadata"]["name"].as_s,
@@ -212,12 +279,17 @@ module Helm
     resource_names
   end
 
-  def self.kind_exists?(args, config, kind)
+  def self.kind_exists?(args, config, kind, default_namespace : String = "default")
     Log.info { "kind_exists?: #{kind}" }
     resource_ymls = CNFManager.cnf_workload_resources(args, config) do |resource|
       resource
     end
-    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+
+    default_namespace = "default"
+    if !config.cnf_config[:helm_install_namespace].empty?
+      default_namespace = config.cnf_config[:helm_install_namespace]
+    end
+    resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace: default_namespace)
     found = false
 		resource_names.each do | resource |
       if resource[:kind].downcase == kind.downcase
@@ -280,12 +352,14 @@ module Helm
     helm_chart_repo.split("/").last
   end
 
-  def self.template(release_name, helm_chart_or_directory, output_file : String = "cnfs/temp_template.yml", namespace : String | Nil = "default")
+  def self.template(release_name, helm_chart_or_directory, output_file : String = "cnfs/temp_template.yml", namespace : String | Nil = nil)
     helm = BinarySingleton.helm
-    cmd = "#{helm} template #{release_name} #{helm_chart_or_directory} > #{output_file}"
+    cmd = "#{helm} template"
     if namespace != nil
       cmd = "#{cmd} -n #{namespace}"
     end
+    cmd = "#{cmd} #{release_name} #{helm_chart_or_directory} > #{output_file}"
+
     Log.info { "helm command: #{cmd}" }
     status = Process.run(cmd,
                          shell: true,
