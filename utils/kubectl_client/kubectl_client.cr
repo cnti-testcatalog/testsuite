@@ -65,9 +65,12 @@ module KubectlClient
     {status: status, output: output, error: stderr}
   end
 
-  def self.describe(kind, resource_name, force_output : Bool = false)
+  def self.describe(kind, resource_name, namespace : String | Nil = nil, force_output : Bool = false)
     # kubectl describe requiretags block-latest-tag
     cmd = "kubectl describe #{kind} #{resource_name}"
+    if namespace
+      cmd = "#{cmd} -n #{namespace}"
+    end
     ShellCmd.run(cmd, "KubectlClient.describe", force_output: force_output)
   end
 

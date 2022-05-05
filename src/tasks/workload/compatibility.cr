@@ -54,7 +54,8 @@ rolling_version_change_test_names.each do |tn|
                                           container.as_h["name"],
                                           # split out image name from version tag
                                           container.as_h["image"].as_s.rpartition(":")[0],
-                                          config_container["#{tn}_test_tag"])
+                                          config_container["#{tn}_test_tag"],
+                                          namespace: resource["namespace"])
         else
           resp = false
         end
@@ -64,8 +65,8 @@ rolling_version_change_test_names.each do |tn|
         rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"], timeout="100s")
         unless rollout_status
           Log.info { "Rollout failed for #{resource["kind"]}/#{resource["name"]}" }
-          KubectlClient.describe(resource["kind"], resource["name"], force_output: true)
-          KubectlClient::ShellCmd.run("kubectl get all", "get_all_resources", force_output: true)
+          KubectlClient.describe(resource["kind"], resource["name"], namespace: resource["namespace"], force_output: true)
+          KubectlClient::ShellCmd.run("kubectl get all -A", "get_all_resources", force_output: true)
           test_passed = false
         end
         VERBOSE_LOGGING.debug "#{tn}: #{container} test_passed=#{test_passed}" if check_verbose(args)
