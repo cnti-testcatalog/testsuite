@@ -278,6 +278,7 @@ task "disk_fill", ["install_litmus"] do |_, args|
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
         spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
+        Log.for("disk_fill:spec_labels").info { "Spec labels for chaos template. Key: #{spec_labels.first_key}; Value: #{spec_labels.first_value}" }
         # todo change to use all labels instead of first label
         template = ChaosTemplates::DiskFill.new(
           test_name,
