@@ -99,13 +99,14 @@ task "rollback" do |_, args|
     version_change_applied = true
 
     unless container_names
-      puts "Please add a container names set of entries into your cnf-testsuite.yml".colorize(:red)
+      stdout_failure("Please add a container names set of entries into your cnf-testsuite.yml")
       update_applied = false
     end
 
     task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
         deployment_name = resource["name"]
+        namespace = resource["namespace"] || config.cnf_config[:helm_install_namespace]
         container_name = container.as_h["name"]
         full_image_name_tag = container.as_h["image"].as_s.rpartition(":")
         image_name = full_image_name_tag[0]
@@ -122,15 +123,14 @@ task "rollback" do |_, args|
         # compare cnf_testsuite.yml container list with the current container name
         config_container = container_names.find{|x| x["name"] == container_name } if container_names
         unless config_container && config_container["rollback_from_tag"]? && !config_container["rollback_from_tag"].empty?
-          puts "Please add the container name #{container.as_h["name"]} and a corresponding rollback_from_tag into your cnf-testsuite.yml under container names".colorize(:red)
+          stdout_failure("Please add the container name #{container.as_h["name"]} and a corresponding rollback_from_tag into your cnf-testsuite.yml under container names")
           version_change_applied = false
         end
         if version_change_applied && config_container
           rollback_from_tag = config_container["rollback_from_tag"]
 
           if rollback_from_tag == image_tag
-            fail_msg = "✖️  FAILED: please specify a different version than the helm chart default image.tag for 'rollback_from_tag' "
-            puts fail_msg.colorize(:red)
+            stdout_failure("✖️  FAILED: please specify a different version than the helm chart default image.tag for 'rollback_from_tag' ")
             version_change_applied=false
           end
 
@@ -139,7 +139,8 @@ task "rollback" do |_, args|
           version_change_applied = KubectlClient::Set.image(deployment_name,
                                                             container_name,
                                                             image_name,
-                                                            rollback_from_tag)
+                                                            rollback_from_tag,
+                                                            namespace: resource["namespace"])
         end
 
         LOGGING.info "rollback version change successful? #{version_change_applied}"
@@ -147,7 +148,7 @@ task "rollback" do |_, args|
         VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
         rollout_status = KubectlClient::Rollout.status(deployment_name, timeout="180s")
         if  rollout_status == false
-          puts "Rolling update failed on resource: #{deployment_name} and container: #{container_name}".colorize(:red)
+          stdout_failure("Rolling update failed on resource: #{deployment_name} and container: #{container_name}")
         end
 
         # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision

@@ -251,7 +251,7 @@ module KubectlClient
   end
 
   module Set
-    def self.image(deployment_name, container_name, image_name, version_tag=nil) : Bool
+    def self.image(deployment_name, container_name, image_name, version_tag=nil, namespace : String | Nil = nil) : Bool
       # use --record when setting image to have history
       #TODO check if image exists in repo? DockerClient::Get.image and image_by_tags
       cmd = ""
@@ -259,6 +259,9 @@ module KubectlClient
         cmd = "kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name}:#{version_tag} --record"
       else
         cmd = "kubectl set image deployment/#{deployment_name} #{container_name}=#{image_name} --record"
+      end
+      if namespace
+        cmd = "#{cmd} -n #{namespace}"
       end
       result = ShellCmd.run(cmd, "KubectlClient::Set.image")
       result[:status].success?
