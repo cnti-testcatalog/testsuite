@@ -14,10 +14,11 @@ This INSTALL guide will detail the minimum requirements needed for cnf-testsuite
 This will detail the required minimum requirements needed in order to support cnf-testsuite.
 
 #### Minimum Requirements
-* **Kubernetes cluster** *(Working K8s cluster, see [supported K8s and installation details](#Details-on-supported-k8s-clusters-and-installation) on installation.*
+* **Kubernetes cluster** *(Working K8s cluster with containerd runtime, see [supported K8s and installation details](#Details-on-supported-k8s-clusters-and-installation) on installation.*
 * **kubectl** *(run commands against K8s clusters, see [installing kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for more details.*
 * **curl**
 * **helm 3.1.1** *or newer* *(cnf-testsuite installs if not found locally)*
+* **docker**  *(needed for the cni_compatibility test)*
 
 #### Requirements for source installation
 *Everything detailed in the [minimum requirements](https://hackmd.io/6h7NXdHnR4qUYgnnQPy5UA#Required) and the following:*
