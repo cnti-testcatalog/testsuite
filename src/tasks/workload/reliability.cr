@@ -389,7 +389,7 @@ task "pod_memory_hog", ["install_litmus"] do |_, args|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
-      spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"])
+      spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
       else
