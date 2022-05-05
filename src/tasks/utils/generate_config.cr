@@ -98,7 +98,8 @@ module CNFManager
      rollback_from_tag: #{rolling_update_test_tag} 
   TEMPLATE
             }.join("")
-            update_yml(output_file, "container_names", container_names)
+            # Don't add container_names to yml. This isn't needed until the rolling update tests are added to the cert.
+            # update_yml(output_file, "container_names", container_names)
           end
         end
         # resp
