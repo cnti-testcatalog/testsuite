@@ -8,8 +8,6 @@ require "../utils/utils.cr"
 desc "CNF containers should be isolated from one another and the host.  The CNF Test suite uses tools like Falco, Sysdig Inspect and gVisor"
 task "cert_security", [
    "cert_security_title", 
-    "privileged",
-    "non_root_user",
     "symlink_file_system",
     "privilege_escalation",
     "insecure_capabilities",
@@ -33,8 +31,6 @@ task "cert_security", [
   ] do |_, args|
 # task "cert_security", [
 #   "cert_security_title", 
-#     "privileged",
-#     "non_root_user",
 #     "symlink_file_system",
 #     "privilege_escalation",
 #     "insecure_capabilities",
