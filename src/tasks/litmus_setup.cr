@@ -84,7 +84,7 @@ module LitmusManager
   end
 
   ## wait_for_test will wait for the completion of litmus test
-  def self.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
+  def self.wait_for_test(test_name, namespace, chaos_experiment_name,total_chaos_duration,args, namespace : String = "default")
     ## Maximum wait time is TCD (total chaos duration) + 60s (additional wait time)
     delay=2
     timeout="#{total_chaos_duration}".to_i + 60
@@ -94,13 +94,13 @@ module LitmusManager
     status_code = -1
     experimentStatus = ""
     
-    experimentStatus_cmd = "kubectl get chaosengine.litmuschaos.io #{test_name} -o jsonpath='{.status.engineStatus}'"
+    experimentStatus_cmd = "kubectl get chaosengine.litmuschaos.io #{test_name} -n #{namespace} -o jsonpath='{.status.engineStatus}'"
     Log.for("wait_for_test").info { "Checking experiment status #{experimentStatus_cmd}" } if check_verbose(args)
 
     ## Wait for completion of chaosengine which indicates the completion of chaos
     until (status_code == 0 && experimentStatus == "Completed") || wait_count >= retry
       sleep delay
-      experimentStatus_cmd = "kubectl get chaosengine.litmuschaos.io #{test_name} -o jsonpath='{.status.experiments[0].status}'"
+      experimentStatus_cmd = "kubectl get chaosengine.litmuschaos.io #{test_name}  -n #{namespace} -o jsonpath='{.status.experiments[0].status}'"
       Log.for("wait_for_test").info { "Checking experiment status  #{experimentStatus_cmd}" } if check_verbose(args)
       status_code = Process.run("#{experimentStatus_cmd}", shell: true, output: experimentStatus_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
       Log.for("wait_for_test").info { "status_code: #{status_code}" } if check_verbose(args)
@@ -118,7 +118,7 @@ module LitmusManager
 
     verdict = ""
     wait_count = 0
-    verdict_cmd = "kubectl get chaosresults.litmuschaos.io #{chaos_result_name} -o jsonpath='{.status.experimentStatus.verdict}'"
+    verdict_cmd = "kubectl get chaosresults.litmuschaos.io #{chaos_result_name}  -n #{namespace} -o jsonpath='{.status.experimentStatus.verdict}'"
     Log.for("wait_for_test").info { "Checking experiment verdict  #{verdict_cmd}" } if check_verbose(args)
     ## Check the chaosresult verdict
     until (status_code == 0 && verdict != "Awaited") || wait_count >= 30
@@ -132,8 +132,8 @@ module LitmusManager
   end
 
   ## check_chaos_verdict will check the verdict of chaosexperiment
-  def self.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args): Bool
-    verdict_cmd = "kubectl get chaosresults.litmuschaos.io #{chaos_result_name} -o jsonpath='{.status.experimentStatus.verdict}'"
+  def self.check_chaos_verdict(chaos_result_name, chaos_experiment_name, args, namespace : String = "default"): Bool
+    verdict_cmd = "kubectl get chaosresults.litmuschaos.io #{chaos_result_name} -n #{namespace} -o jsonpath='{.status.experimentStatus.verdict}'"
     Log.for("check_chaos_verdict").info { "Checking experiment verdict #{verdict_cmd}" } if check_verbose(args)
     status_code = Process.run("#{verdict_cmd}", shell: true, output: verdict_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
     Log.for("check_chaos_verdict").info { "status_code: #{status_code}" } if check_verbose(args)

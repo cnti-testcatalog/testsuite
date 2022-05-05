@@ -302,9 +302,9 @@ task "disk_fill", ["install_litmus"] do |_, args|
         ).to_s
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-        LitmusManager.wait_for_test(test_name,chaos_experiment_name,disk_fill_time,args)
+        LitmusManager.wait_for_test(test_name, chaos_experiment_name, disk_fill_time, args, namespace: app_namespace)
       end
-      test_passed=LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+      test_passed=LitmusManager.check_chaos_verdict(chaos_result_name, chaos_experiment_name, args, namespace: app_namespace)
     end
     if task_response 
       resp = upsert_passed_task("disk_fill","✔️  PASSED: disk_fill chaos test passed 🗡️💀♻️")
