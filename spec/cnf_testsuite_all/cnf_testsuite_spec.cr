@@ -32,21 +32,22 @@ describe CnfTestSuite do
   #   $?.success?.should be_true
   # end
 
-  it "'workload' should fail with an exit code when a required cnf fails", tags: ["security"] do
-    begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml verbose wait_count=0`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite workload ~automatic_cnf_install ~ensure_cnf_installed ~configuration_file_setup ~compatibility ~state ~scalability ~configuration_lifecycle ~observability ~installability ~hardware_and_scheduling ~microservice ~resilience ~non_root_user`
-      LOGGING.info response_s
-      $?.success?.should be_false
-      (/Found.*privileged containers.*/ =~ response_s).should_not be_nil
-      (/Privileged container (privileged-coredns) in.*/ =~ response_s).should_not be_nil
-      response_s = `./cnf-testsuite privileged strict`
-      $?.success?.should be_false
-    ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml`
-    end
-  end
+  # todo add mock test for testing require tests (privilege mode is no longer required)
+  # it "'workload' should fail with an exit code when a required cnf fails", tags: ["security"] do
+  #   begin
+  #     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml verbose wait_count=0`
+  #     $?.success?.should be_true
+  #     response_s = `./cnf-testsuite workload ~automatic_cnf_install ~ensure_cnf_installed ~configuration_file_setup ~compatibility ~state ~scalability ~configuration_lifecycle ~observability ~installability ~hardware_and_scheduling ~microservice ~resilience ~non_root_user`
+  #     LOGGING.info response_s
+  #     $?.success?.should be_false
+  #     (/Found.*privileged containers.*/ =~ response_s).should_not be_nil
+  #     (/Privileged container (privileged-coredns) in.*/ =~ response_s).should_not be_nil
+  #     response_s = `./cnf-testsuite privileged strict`
+  #     $?.success?.should be_false
+  #   ensure
+  #     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml`
+  #   end
+  # end
 
   it "a task should fail with an exit code of 2 when there is an exception", tags: ["security"] do
     begin

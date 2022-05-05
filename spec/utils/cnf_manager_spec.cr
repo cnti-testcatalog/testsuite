@@ -58,7 +58,7 @@ describe "SampleUtils" do
     # default
     (CNFManager::Points.task_points("liveness", false)).should eq(0)
     # assigned
-    (CNFManager::Points.task_points("increase_capacity", false)).should eq(-5)
+    (CNFManager::Points.task_points("increase_decrease_capacity", false)).should eq(0)
   end
 
   it  "'task_points(, skipped)' should return the amount of points for a skipped test", tags: ["points"]  do
@@ -66,16 +66,18 @@ describe "SampleUtils" do
     (CNFManager::Points.task_points("liveness", CNFManager::Points::Results::ResultStatus::Skipped)).should eq(0)
   end
 
-  it "'task_required' should return if the passed task is required", tags: ["tasks"]  do
-    CNFManager::Points.clean_results_yml
-    (CNFManager::Points.task_required("privileged")).should be_true
-  end
+  # todo add mock test for testing require tests (privilege mode is no longer required)
+  # it "'task_required' should return if the passed task is required", tags: ["tasks"]  do
+  #   CNFManager::Points.clean_results_yml
+  #   (CNFManager::Points.task_required("privileged")).should be_true
+  # end
 
-  it "'failed_required_tasks' should return a list of failed required tasks", tags: ["tasks"]  do
-    CNFManager::Points.clean_results_yml
-    CNFManager::Points.failed_task("privileged", "FAILED: Privileged container found")
-    (CNFManager::Points.failed_required_tasks).should eq(["privileged"])
-  end
+  # todo add mock test for testing require tests (privilege mode is no longer required)
+  # it "'failed_required_tasks' should return a list of failed required tasks", tags: ["tasks"]  do
+  #   CNFManager::Points.clean_results_yml
+  #   CNFManager::Points.failed_task("privileged", "FAILED: Privileged container found")
+  #   (CNFManager::Points.failed_required_tasks).should eq(["privileged"])
+  # end
 
   it "'upsert_task' insert task in the results file", tags: ["tasks"]  do
     CNFManager::Points.clean_results_yml
@@ -158,8 +160,10 @@ describe "SampleUtils" do
             "immutable_file_systems", "hostpath_mounts", "log_output",
             "prometheus_traffic", "open_metrics",
             "ingress_egress_blocked", "dangerous_capabilities", "insecure_capabilities",
-            "routed_logs", "tracing", "elastic_volumes", "alpha_k8s_apis", "service_discovery", "shared_database", "pod_dns_error",
-            "external_ips", "container_sock_mounts", "require_labels", "default_namespace", "selinux_options", "latest_tag", "sysctls"]
+            "routed_logs", "tracing", "elastic_volumes", "alpha_k8s_apis", 
+            "service_discovery", "shared_database", "pod_dns_error",
+            "external_ips", "container_sock_mounts", "require_labels", "default_namespace", 
+            "selinux_options", "latest_tag", "sysctls", "increase_decrease_capacity"]
     (CNFManager::Points.all_task_test_names()).sort.should eq(tags.sort)
   end
 
