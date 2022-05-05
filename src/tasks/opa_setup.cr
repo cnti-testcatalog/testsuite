@@ -24,7 +24,7 @@ task "install_opa" do |_, args|
     File.write("enforce-image-tag.yml", ENFORCE_IMAGE_TAG)
     File.write("constraint_template.yml", CONSTRAINT_TEMPLATE)
     KubectlClient::Apply.file("constraint_template.yml")
-    KubectlClient.wait("--for condition=established --timeout=120s crd/requiretags.constraints.gatekeeper.sh")
+    KubectlClient.wait("--for condition=established --timeout=60s crd/requiretags.constraints.gatekeeper.sh")
     KubectlClient::Apply.file("enforce-image-tag.yml")
 end
 
