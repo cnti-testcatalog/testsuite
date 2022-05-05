@@ -8,21 +8,21 @@
   neutral: 0 
 
 - name: reasonable_image_size
-  tags: microservice, dynamic, workload
-- name: reasonable_startup_time 
-  tags: microservice, dynamic, workload
-- name: single_process_type 
   tags: microservice, dynamic, workload, cert
+- name: reasonable_startup_time 
+  tags: microservice, dynamic, workload, cert
+- name: single_process_type 
+  tags: microservice, dynamic, workload, essential, cert
   pass: 100
 - name: service_discovery
-  tags: microservice, dynamic, workload
+  tags: microservice, dynamic, workload, cert
   pass: 5
   fail: 0
 - name: shared_database
-  tags: microservice, dynamic, workload
+  tags: microservice, dynamic, workload, cert
 
 - name: cni_compatible
-  tags: compatibility, dynamic, workload
+  tags: compatibility, dynamic, workload, cert
 # - name: cni_spec 
 #  tags: compatibility, dynamic
 #- name: api_snoop_alpha 
@@ -43,20 +43,20 @@
 - name: non_root_user 
   tags: security, dynamic, workload
 - name: privilege_escalation 
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
 - name: symlink_file_system 
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
 - name: application_credentials 
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
 - name: host_network 
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
 #- name: shells 
 #  tags: security, dynamic
 #- name: protected_access 
 #  tags: security, dynamic
 
 - name: increase_decrease_capacity 
-  tags: compatibility, dynamic, workload, cert
+  tags: compatibility, dynamic, workload, essential, cert
   pass: 100
 - name: increase_capacity 
   tags: compatibility, dynamic, workload
@@ -73,21 +73,21 @@
 # - name: network_chaos 
 #   tags: resilience, dynamic, workload
 - name: pod_network_latency
-  tags: resilience, dynamic, workload
+  tags: resilience, dynamic, workload, cert
 - name: pod_network_corruption
-  tags: resilience, dynamic, workload
+  tags: resilience, dynamic, workload, cert
 - name: pod_network_duplication
-  tags: resilience, dynamic, workload
+  tags: resilience, dynamic, workload, cert
 - name: pod_delete
-  tags: resilience, dynamic, workload  
+  tags: resilience, dynamic, workload, cert  
 - name: pod_io_stress
-  tags: resilience, dynamic, workload  
+  tags: resilience, dynamic, workload, cert  
 - name: pod_memory_hog
-  tags: resilience, dynamic, workload  
+  tags: resilience, dynamic, workload, cert  
 - name: disk_fill
-  tags: resilience, dynamic, workload  
+  tags: resilience, dynamic, workload, cert  
 - name: pod_dns_error
-  tags: resilience, dynamic, workload  
+  tags: resilience, dynamic, workload, cert  
 #- name: external_retry 
 #  tags: scalability, dynamic, workload
 
@@ -100,10 +100,10 @@
   fail: -1 
   tags: configuration, static, workload
 - name: liveness
-  tags: resilience, dynamic, workload, cert
+  tags: resilience, dynamic, workload, essential, cert
   pass: 100
 - name: readiness
-  tags: resilience, dynamic, workload, cert
+  tags: resilience, dynamic, workload, essential, cert
   pass: 100
 #- name: no_volume_with_configuration
 #  tags: configuration, dynamic
@@ -114,21 +114,21 @@
 - name: rolling_version_change
   tags: compatibility, dynamic, workload
 - name: rollback
-  tags: compatibility, dynamic, workload
+  tags: compatibility, dynamic, workload, cert
 - name: nodeport_not_used
-  tags: configuration, dynamic, workload
-- name: hostport_not_used
   tags: configuration, dynamic, workload, cert
+- name: hostport_not_used
+  tags: configuration, dynamic, workload, essential, cert
   pass: 100
 - name: hardcoded_ip_addresses_in_k8s_runtime_configuration
-  tags: configuration, dynamic, workload, cert
+  tags: configuration, dynamic, workload, essential, cert
   pass: 100
 - name: secrets_used
-  tags: configuration, dynamic, workload
+  tags: configuration, dynamic, workload, cert
   pass: 5
   fail: 0 
 - name: immutable_configmap
-  tags: configuration, dynamic, workload
+  tags: configuration, dynamic, workload, cert
   pass: 1
   fail: 0 
 
@@ -144,11 +144,11 @@
 #  tags: observability, dynamic, workload
 
 - name: helm_deploy
-  tags: compatibility, dynamic, workload
+  tags: compatibility, dynamic, workload, cert
 - name: helm_chart_valid
-  tags: compatibility, dynamic, workload
+  tags: compatibility, dynamic, workload, cert
 - name: helm_chart_published
-  tags: compatibility, dynamic, workload
+  tags: compatibility, dynamic, workload, cert
   
 # - name: chaos_network_loss 
 #   tags: resilience, dynamic, workload
@@ -160,9 +160,9 @@
 - name: volume_hostpath_not_found
   tags: state, dynamic, workload
 - name: no_local_volume_configuration 
-  tags: state, dynamic, workload
+  tags: state, dynamic, workload, cert
 - name: elastic_volumes 
-  tags: state, dynamic, workload
+  tags: state, dynamic, workload, cert
   pass: 5 
   fail: 0 
 - name: database_persistence
@@ -171,7 +171,7 @@
   pass3: 3 
   fail: -1
 - name: node_drain
-  tags: state, dynamic, workload, cert
+  tags: state, dynamic, workload, essential, cert
   pass: 100
 
 #- name: hardware_and_scheduling
@@ -199,90 +199,90 @@
   tags: platform, platform:security, dynamic
 
 - name: service_account_mapping
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
 
 - name: privileged_containers
-  tags: security, dynamic, workload, cert
+  tags: security, dynamic, workload, essential, cert
   pass: 100
 
 - name: network_policies
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
 
 - name: non_root_containers
-  tags: security, dynamic, workload, cert
+  tags: security, dynamic, workload, essential, cert
   pass: 100
 
 - name: host_pid_ipc_privileges
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
 
 - name: linux_hardening
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
 
 - name: resource_policies
-  tags: security, dynamic, workload, cer
-  pass: 100
-
-- name: immutable_file_systems
-  tags: security, dynamic, workload
-
-- name: hostpath_mounts
   tags: security, dynamic, workload, cert
   pass: 100
 
+- name: immutable_file_systems
+  tags: security, dynamic, workload, cert
+
+- name: hostpath_mounts
+  tags: security, dynamic, workload, essential, cert
+  pass: 100
+
 - name: ingress_egress_blocked 
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
 
 - name: insecure_capabilities
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
 
 - name: dangerous_capabilities
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
 
 - name: sysctls
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
 
 - name: log_output
-  tags: observability, dynamic, workload, cert
+  tags: observability, dynamic, workload, essential, cert
   pass: 100
 - name: prometheus_traffic 
-  tags: observability, dynamic, workload
+  tags: observability, dynamic, workload, cert
   pass: 10
   fail: 0 
 - name: open_metrics 
-  tags: observability, dynamic, workload
+  tags: observability, dynamic, workload, cert
   pass: 5 
   fail: 0 
 - name: routed_logs 
-  tags: observability, dynamic, workload
+  tags: observability, dynamic, workload, cert
   pass: 5 
   fail: 0 
 - name: tracing 
-  tags: observability, dynamic, workload
+  tags: observability, dynamic, workload, cert
   pass: 5 
   fail: 0 
 - name: alpha_k8s_apis
   tags: configuration, dynamic, workload
 
 - name: container_sock_mounts
-  tags: security, dynamic, workload, cert
+  tags: security, dynamic, workload, essential, cert
   pass: 100
 
 - name: require_labels
-  tags: configuration, dynamic, workload
+  tags: configuration, dynamic, workload, cert
 
 - name: helm_tiller
   tags: platform, platform:security, dynamic
 
 - name: external_ips
-  tags: security, dynamic, workload
+  tags: security, dynamic, workload, cert
 
 - name: selinux_options
-  tags: security, dynamic, workload, cert
+  tags: security, dynamic, workload, essential, cert
   pass: 100
 
 - name: default_namespace
-  tags: configuration, dynamic, workload
+  tags: configuration, dynamic, workload, cert
 
 - name: latest_tag
-  tags: configuration, dynamic, workload, cert
+  tags: configuration, dynamic, workload, essential, cert
   pass: 100

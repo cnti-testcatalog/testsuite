@@ -1,5 +1,8 @@
 ---
 helm_directory: chart
+helm_install_namespace: cnfspace
+git_clone_url: 
+install_script: chart
 release_name: unifi
 service_name: unifi-controller 
 allowlist_helm_chart_container_names: []

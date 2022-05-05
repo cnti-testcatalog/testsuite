@@ -1,6 +1,7 @@
 require "./utils/system_information/helm.cr"
 require "./utils/embedded_file_manager.cr"
 
+ESSENTIAL_PASSING_SCORE = 1000
 CNF_DIR = "cnfs"
 CONFIG_FILE = "cnf-testsuite.yml"
 TOOLS_DIR = "tools"

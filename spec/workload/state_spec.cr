@@ -25,13 +25,15 @@ describe "State" do
     end
   end
 
-  it "'elastic_volume' should be skipped if the cnf does not use any volumes", tags: ["elastic_volume"]  do
+  #TODO This spec test should be for the skipped scenario instead.
+  # This CNF does not use any volumes except the ones that Kubernetes might mount by default (like the service account token)
+  it "'elastic_volume' should fail if the cnf does not use any elastic volumes", tags: ["elastic_volume"]  do
     begin
       LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-config=./sample-cnfs/sample_nonroot`
       $?.success?.should be_true
       response_s = `./cnf-testsuite -l info elastic_volumes verbose`
       LOGGING.info "Status:  #{response_s}"
-      (/SKIPPED: No volumes used/ =~ response_s).should_not be_nil
+      (/FAILED/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot`
       $?.success?.should be_true

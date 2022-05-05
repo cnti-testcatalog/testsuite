@@ -11,25 +11,20 @@ desc "Configuration should be managed in a declarative manner, using ConfigMaps,
 
 task "cert_configuration", [
     "cert_configuration_title",
-    "ip_addresses",
     "nodeport_not_used",
     "hostport_not_used",
     "hardcoded_ip_addresses_in_k8s_runtime_configuration",
     "secrets_used",
     "immutable_configmap",
-    "alpha_k8s_apis",
     "require_labels",
     "latest_tag",
     "default_namespace",
-    "versioned_tag"
   ] do |_, args|
 # task "cert_configuration", [
 #     "cert_configuration_title",
-#     "ip_addresses",
 #     "nodeport_not_used",
 #     "secrets_used",
 #     "immutable_configmap",
-#     "alpha_k8s_apis",
 #     "require_labels",
 #     "default_namespace"
 #   ] do |_, args|

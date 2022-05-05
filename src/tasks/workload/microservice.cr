@@ -429,7 +429,11 @@ task "service_discovery" do |_, args|
 
     # Get all resources for the CNF
     resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
-    resources = Helm.workload_resource_kind_names(resource_ymls)
+    default_namespace = "default"
+    if !config.cnf_config[:helm_install_namespace].empty?
+      default_namespace = config.cnf_config[:helm_install_namespace]
+    end
+    resources = Helm.workload_resource_kind_names(resource_ymls, default_namespace)
 
     # Collect service names from the CNF resource list
     cnf_service_names = [] of String

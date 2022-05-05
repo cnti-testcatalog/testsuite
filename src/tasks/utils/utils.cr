@@ -358,7 +358,7 @@ def stdout_score(test_name, full_name)
   pretty_test_name = full_name.split(/:|_/).map(&.capitalize).join(" ")
   test_log_msg = 
 <<-STRING
-#{pretty_test_name} results: #{total} of #{max_passed} tests passed
+#{pretty_test_name} results: #{total_passed} of #{max_passed} tests passed
 
 STRING
 # <<-STRING

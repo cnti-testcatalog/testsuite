@@ -105,8 +105,13 @@ module CNFManager
       template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
     # else
     end
-    resource_ymls = Helm.all_workload_resources(template_ymls)
-		resource_resp = resource_ymls.map do | resource |
+
+    default_namespace = "default"
+    if !helm_install_namespace.empty?
+      default_namespace = config.cnf_config[:helm_install_namespace]
+    end
+    resource_ymls = Helm.all_workload_resources(template_ymls, default_namespace)
+    resource_resp = resource_ymls.map do | resource |
       resp = yield resource
       Log.debug { "cnf_workload_resource yield resp: #{resp}" }
       resp
@@ -156,7 +161,12 @@ module CNFManager
     resource_ymls = cnf_workload_resources(args, config) do |resource|
       resource
     end
-    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+
+    default_namespace = "default"
+    if !config.cnf_config[:helm_install_namespace].empty?
+      default_namespace = config.cnf_config[:helm_install_namespace]
+    end
+    resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace: default_namespace)
     Log.info { "resource names: #{resource_names}" }
     if resource_names && resource_names.size > 0
       initialized = true
@@ -893,7 +903,12 @@ module CNFManager
       resource_ymls = cnf_workload_resources(nil, config) do |resource|
         resource
       end
-      resource_names = Helm.workload_resource_kind_names(resource_ymls)
+
+      default_namespace = "default"
+      if !helm_install_namespace.empty?
+        default_namespace = config.cnf_config[:helm_install_namespace]
+      end
+      resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace)
       #TODO move to kubectlclient and make resource_install_and_wait_for_all function
 
       #
@@ -1030,9 +1045,12 @@ module CNFManager
     helm_namespace_option = ""
     if !helm_install_namespace.empty?
       helm_namespace_option = "-n #{helm_install_namespace}"
-      ensure_namespace_exists!(helm_install_namespace)
+      ensure_namespace_exists!(helm_install_namespace, kubeconfig: kubeconfig)
+    else
+      Log.for("cnf_to_new_cluster").info { "helm_install_namespace option is empty" }
     end
 
+    Log.for("cnf_to_new_cluster").info { "Install method: #{install_method[0]}" }
     case install_method[0]
     when Helm::InstallMethod::ManifestDirectory
       KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", kubeconfig: kubeconfig)
@@ -1050,7 +1068,6 @@ module CNFManager
       end
     when Helm::InstallMethod::HelmDirectory
       begin
-
         helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_warning "Release name #{release_name} has already been setup."
@@ -1062,7 +1079,12 @@ module CNFManager
     resource_ymls = cnf_workload_resources(nil, config) do |resource|
       resource
     end
-    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+
+    default_namespace = "default"
+    if !helm_install_namespace.empty?
+      default_namespace = config.cnf_config[:helm_install_namespace]
+    end
+    resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace: default_namespace)
 
     wait_list = resource_names.map do | resource |
       case resource[:kind].downcase
@@ -1097,7 +1119,12 @@ module CNFManager
     resource_ymls = cnf_workload_resources(nil, parsed_config) do |resource_yml|
       resource_yml
     end
-    resources = Helm.workload_resource_kind_names(resource_ymls)
+
+    default_namespace = "default"
+    if !helm_install_namespace.empty?
+      default_namespace = helm_install_namespace
+    end
+    resources = Helm.workload_resource_kind_names(resource_ymls, default_namespace: default_namespace)
 
     config_maps_dir = "#{destination_cnf_dir}/config_maps"
     if Dir.exists?(config_maps_dir)
@@ -1144,11 +1171,11 @@ module CNFManager
     ret
   end
 
-  def self.ensure_namespace_exists!(name)
-    KubectlClient::Create.namespace(name)
-    Log.info { "Created kubernetes namespace #{name} for the CNF install" }
+  def self.ensure_namespace_exists!(name, kubeconfig : String | Nil = nil)
+    KubectlClient::Create.namespace(name, kubeconfig: kubeconfig)
+    Log.for("ensure_namespace_exists").info { "Created kubernetes namespace #{name} for the CNF install" }
   rescue e : KubectlClient::Create::AlreadyExistsError
-    Log.info { "Kubernetes namespace #{name} already exists for the CNF install" }
+    Log.for("ensure_namespace_exists").info { "Kubernetes namespace #{name} already exists for the CNF install" }
   end
 
   class HelmDirectoryMissingError < Exception
