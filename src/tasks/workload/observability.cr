@@ -19,7 +19,7 @@ task "log_output" do |_, args|
       test_passed = false
       case resource["kind"].downcase
       when "replicaset", "deployment", "statefulset", "pod", "daemonset"
-        result = KubectlClient.logs("#{resource["kind"]}/#{resource["name"]}", options: "--all-containers --tail=5 --prefix=true")
+        result = KubectlClient.logs("#{resource["kind"]}/#{resource["name"]}", namespace: resource[:namespace], options: "--all-containers --tail=5 --prefix=true")
         Log.for("Log lines").info { result[:output] }
         if result[:output].size > 0
           test_passed = true
@@ -62,11 +62,15 @@ task "prometheus_traffic" do |_, args|
       match = DockerClient::K8s.local_digest_match(sha_list, imageids)
       if match[:found]
         service = KubectlClient::Get.service_by_digest(match[:digest])
-        service_url = service.dig("metadata", "name") 
+        service_url = service.dig("metadata", "name")
+        service_namespace = "default"
+        if service.dig?("metadata", "namespace")
+          service_namespace = service.dig("metadata", "namespace")
+        end
 
         Log.info { "service_url: #{service_url}"}
         ClusterTools.install
-        prom_api_resp = ClusterTools.exec_k8s("curl http://#{service_url}.default.svc.cluster.local/api/v1/targets?state=active")
+        prom_api_resp = ClusterTools.exec_k8s("curl http://#{service_url}.#{service_namespace}.svc.cluster.local/api/v1/targets?state=active")
 
         Log.debug { "prom_api_resp: #{prom_api_resp}"}
         prom_json = JSON.parse(prom_api_resp[:output])
@@ -80,7 +84,7 @@ task "prometheus_traffic" do |_, args|
         Log.info { "prom_target_urls: #{prom_target_urls}"}
         prom_cnf_match = CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
           ip_match = false
-          resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name])
+          resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name], resource_name[:namespace])
           pods = KubectlClient::Get.pods_by_resource(resource)
           pods.each do |pod|
             pod_ips = pod.dig("status", "podIPs")
@@ -178,8 +182,8 @@ task "routed_logs" do |_, args|
     if match[:found]
         all_resourced_logged = CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
           resource_logged = true 
-          resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name])
-          pods = KubectlClient::Get.pods_by_resource(resource)
+          resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name], resource_name[:namespace])
+          pods = KubectlClient::Get.pods_by_resource(resource, namespace: resource_name[:namespace])
           pods.each do |pod|
             # if any pod/container is not monitored by fluentd, fail
             if resource_logged

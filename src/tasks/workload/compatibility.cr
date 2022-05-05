@@ -35,6 +35,7 @@ rolling_version_change_test_names.each do |tn|
       # note: all images are not on docker hub nor are they always on a docker hub compatible api
 
       task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+        namespace = resource["namespace"] || config.cnf_config[:helm_install_namespace]
         test_passed = true
         valid_cnf_testsuite_yml = true
         LOGGING.debug "#{tn} container: #{container}"
@@ -54,18 +55,20 @@ rolling_version_change_test_names.each do |tn|
                                           container.as_h["name"],
                                           # split out image name from version tag
                                           container.as_h["image"].as_s.rpartition(":")[0],
-                                          config_container["#{tn}_test_tag"])
+                                          config_container["#{tn}_test_tag"],
+                                          namespace: namespace
+                                        )
         else
           resp = false
         end
         # If any containers dont have an update applied, fail
         test_passed = false if resp == false
 
-        rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"], timeout="100s")
+        rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"], namespace: namespace, timeout: "100s")
         unless rollout_status
-          Log.info { "Rollout failed for #{resource["kind"]}/#{resource["name"]}" }
-          KubectlClient.describe(resource["kind"], resource["name"], force_output: true)
-          KubectlClient::ShellCmd.run("kubectl get all", "get_all_resources", force_output: true)
+          Log.info { "Rollout failed for #{resource["kind"]}/#{resource["name"]} in #{namespace} namespace" }
+          KubectlClient.describe(resource["kind"], resource["name"], namespace: resource["namespace"], force_output: true)
+          KubectlClient::ShellCmd.run("kubectl get all -A", "get_all_resources", force_output: true)
           test_passed = false
         end
         VERBOSE_LOGGING.debug "#{tn}: #{container} test_passed=#{test_passed}" if check_verbose(args)
@@ -99,13 +102,14 @@ task "rollback" do |_, args|
     version_change_applied = true
 
     unless container_names
-      puts "Please add a container names set of entries into your cnf-testsuite.yml".colorize(:red)
+      stdout_failure("Please add a container names set of entries into your cnf-testsuite.yml")
       update_applied = false
     end
 
     task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
         deployment_name = resource["name"]
+        namespace = resource["namespace"] || config.cnf_config[:helm_install_namespace]
         container_name = container.as_h["name"]
         full_image_name_tag = container.as_h["image"].as_s.rpartition(":")
         image_name = full_image_name_tag[0]
@@ -122,15 +126,14 @@ task "rollback" do |_, args|
         # compare cnf_testsuite.yml container list with the current container name
         config_container = container_names.find{|x| x["name"] == container_name } if container_names
         unless config_container && config_container["rollback_from_tag"]? && !config_container["rollback_from_tag"].empty?
-          puts "Please add the container name #{container.as_h["name"]} and a corresponding rollback_from_tag into your cnf-testsuite.yml under container names".colorize(:red)
+          stdout_failure("Please add the container name #{container.as_h["name"]} and a corresponding rollback_from_tag into your cnf-testsuite.yml under container names")
           version_change_applied = false
         end
         if version_change_applied && config_container
           rollback_from_tag = config_container["rollback_from_tag"]
 
           if rollback_from_tag == image_tag
-            fail_msg = "✖️  FAILED: please specify a different version than the helm chart default image.tag for 'rollback_from_tag' "
-            puts fail_msg.colorize(:red)
+            stdout_failure("✖️  FAILED: please specify a different version than the helm chart default image.tag for 'rollback_from_tag' ")
             version_change_applied=false
           end
 
@@ -139,20 +142,21 @@ task "rollback" do |_, args|
           version_change_applied = KubectlClient::Set.image(deployment_name,
                                                             container_name,
                                                             image_name,
-                                                            rollback_from_tag)
+                                                            rollback_from_tag,
+                                                            namespace: namespace)
         end
 
         LOGGING.info "rollback version change successful? #{version_change_applied}"
 
         VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
-        rollout_status = KubectlClient::Rollout.status(deployment_name, timeout="180s")
+        rollout_status = KubectlClient::Rollout.status(deployment_name, namespace: namespace, timeout: "180s")
         if  rollout_status == false
-          puts "Rolling update failed on resource: #{deployment_name} and container: #{container_name}".colorize(:red)
+          stdout_failure("Rolling update failed on resource: #{deployment_name} and container: #{container_name}")
         end
 
         # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision
         VERBOSE_LOGGING.debug "rollback: rolling back to old version" if check_verbose(args)
-        rollback_status = KubectlClient::Rollout.undo(deployment_name)
+        rollback_status = KubectlClient::Rollout.undo(deployment_name, namespace: namespace)
 
     end
 
@@ -284,17 +288,17 @@ task "decrease_capacity" do |_, args|
   puts "hi: #{hi}"
 end
 
+
 def change_capacity(base_replicas, target_replica_count, args, config, resource = {kind: "", 
                                                                                    metadata: {name: ""}})
-  VERBOSE_LOGGING.info "change_capacity" if check_verbose(args)
+
+  Log.for("change_capacity:resource").info { "#{resource["kind"]}/#{resource["metadata"]["name"]}; namespace: #{resource["metadata"]["namespace"]}" }
+  Log.for("change_capacity:capacity").info { "Base replicas: #{base_replicas}; Target replicas: #{target_replica_count}" }
+
   VERBOSE_LOGGING.debug "increase_capacity args.raw: #{args.raw}" if check_verbose(args)
   VERBOSE_LOGGING.debug "increase_capacity args.named: #{args.named}" if check_verbose(args)
-  VERBOSE_LOGGING.info "base replicas: #{base_replicas}" if check_verbose(args)
-  LOGGING.debug "resource: #{resource}"
 
   initialization_time = base_replicas.to_i * 10
-  VERBOSE_LOGGING.info "resource: #{resource["metadata"]["name"]}" if check_verbose(args)
-
   scale_cmd = ""
 
   case resource["kind"].as_s.downcase
@@ -305,6 +309,9 @@ def change_capacity(base_replicas, target_replica_count, args, config, resource 
   else #TODO what else can be scaled?
     scale_cmd = "#{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{base_replicas}"
   end
+
+  namespace = resource.dig("metadata", "namespace")
+  scale_cmd = "#{scale_cmd} -n #{namespace}"
   KubectlClient::Scale.command(scale_cmd)
 
   initialized_count = wait_for_scaling(resource, base_replicas, args)
@@ -325,6 +332,9 @@ def change_capacity(base_replicas, target_replica_count, args, config, resource 
   else #TODO what else can be scaled?
     scale_cmd = "#{resource["kind"]}.v1.apps/#{resource["metadata"]["name"]} --replicas=#{target_replica_count}"
   end
+
+  namespace = resource.dig("metadata", "namespace")
+  scale_cmd = "#{scale_cmd} -n #{namespace}"
   KubectlClient::Scale.command(scale_cmd)
 
   current_replicas = wait_for_scaling(resource, target_replica_count, args)
@@ -342,6 +352,9 @@ def wait_for_scaling(resource, target_replica_count, args)
   second_count = 0
   current_replicas = "0"
   replicas_cmd = "kubectl get #{resource["kind"]} #{resource["metadata"]["name"]} -o=jsonpath='{.status.readyReplicas}'"
+
+  namespace = resource.dig("metadata", "namespace")
+  replicas_cmd = "#{replicas_cmd} -n #{namespace}"
   Process.run(
     replicas_cmd,
     shell: true,
