@@ -4,6 +4,7 @@ release_name: coredns
 helm_repository:
   name: stable 
   repo_url: https://cncf.gitlab.io/stable
+helm_install_namespace: cnfspace
 allowlist_helm_chart_container_names: []
 container_names: 
   - name: coredns 

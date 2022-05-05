@@ -1045,9 +1045,12 @@ module CNFManager
     helm_namespace_option = ""
     if !helm_install_namespace.empty?
       helm_namespace_option = "-n #{helm_install_namespace}"
-      ensure_namespace_exists!(helm_install_namespace)
+      ensure_namespace_exists!(helm_install_namespace, kubeconfig: kubeconfig)
+    else
+      Log.for("cnf_to_new_cluster").info { "helm_install_namespace option is empty" }
     end
 
+    Log.for("cnf_to_new_cluster").info { "Install method: #{install_method[0]}" }
     case install_method[0]
     when Helm::InstallMethod::ManifestDirectory
       KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", kubeconfig: kubeconfig)
@@ -1065,7 +1068,6 @@ module CNFManager
       end
     when Helm::InstallMethod::HelmDirectory
       begin
-
         helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_warning "Release name #{release_name} has already been setup."
@@ -1169,11 +1171,11 @@ module CNFManager
     ret
   end
 
-  def self.ensure_namespace_exists!(name)
-    KubectlClient::Create.namespace(name)
-    Log.info { "Created kubernetes namespace #{name} for the CNF install" }
+  def self.ensure_namespace_exists!(name, kubeconfig : String | Nil = nil)
+    KubectlClient::Create.namespace(name, kubeconfig: kubeconfig)
+    Log.for("ensure_namespace_exists").info { "Created kubernetes namespace #{name} for the CNF install" }
   rescue e : KubectlClient::Create::AlreadyExistsError
-    Log.info { "Kubernetes namespace #{name} already exists for the CNF install" }
+    Log.for("ensure_namespace_exists").info { "Kubernetes namespace #{name} already exists for the CNF install" }
   end
 
   class HelmDirectoryMissingError < Exception
