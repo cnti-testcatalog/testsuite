@@ -84,7 +84,7 @@ module LitmusManager
   end
 
   ## wait_for_test will wait for the completion of litmus test
-  def self.wait_for_test(test_name, namespace, chaos_experiment_name,total_chaos_duration,args, namespace : String = "default")
+  def self.wait_for_test(test_name, chaos_experiment_name,total_chaos_duration,args, namespace : String = "default")
     ## Maximum wait time is TCD (total chaos duration) + 60s (additional wait time)
     delay=2
     timeout="#{total_chaos_duration}".to_i + 60
