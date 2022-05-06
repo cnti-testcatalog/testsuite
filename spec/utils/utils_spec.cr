@@ -253,7 +253,7 @@ describe "Utils" do
   end
 
   it "'logger' or verbose output should be shown when verbose flag is set", tags: ["logger"] do
-    response_s = `./cnf-testsuite helm_deploy verbose`
+    response_s = `./cnf-testsuite -l info helm_deploy verbose`
     LOGGING.info response_s
     puts response_s
     $?.success?.should be_true
