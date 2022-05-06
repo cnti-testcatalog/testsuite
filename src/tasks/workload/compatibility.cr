@@ -151,7 +151,7 @@ task "rollback" do |_, args|
         VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
         rollout_status = KubectlClient::Rollout.status(deployment_name, namespace: namespace, timeout: "180s")
         if  rollout_status == false
-          stdout_failure("Rolling update failed on resource: #{deployment_name} and container: #{container_name}")
+          stdout_failure("Rollback failed on resource: #{deployment_name} and container: #{container_name}")
         end
 
         # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision
@@ -396,17 +396,10 @@ end
 
 desc "Will the CNF install using helm with helm_deploy?"
 task "helm_deploy" do |_, args|
-  unless check_destructive(args)
-    Log.info { "skipping helm_deploy: not in destructive mode" }
-    puts "⏭️  SKIPPED: Helm Deploy".colorize(:yellow)
-    next
-  end
-  Log.info { "Running helm_deploy in destructive mode!" }
-  Log.for("verbose").info { "helm_deploy" } if check_verbose(args)
-  Log.info { "helm_deploy args: #{args.inspect}" }
+  Log.for("helm_deploy").info { "Starting test" }
+  Log.info { "helm_deploy args: #{args.inspect}" } if check_verbose(args)
   if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
     CNFManager::Task.task_runner(args) do |args, config|
-      
       emoji_helm_deploy="⎈🚀"
       helm_chart = config.cnf_config[:helm_chart]
       helm_directory = config.cnf_config[:helm_directory]

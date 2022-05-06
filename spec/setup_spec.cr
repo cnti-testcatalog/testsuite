@@ -34,11 +34,7 @@ describe "Setup" do
     end
     LOGGING.debug "test yaml: #{yaml}"
     LOGGING.info `cat ./cnf-testsuite-test.yml`
-    (yaml["container_names"][0]["name"] == "coredns").should be_true
-    (yaml["container_names"][0]["rolling_update_test_tag"] == "1.7.1").should be_true
-    (yaml["container_names"][0]["rolling_downgrade_test_tag"] == "1.7.1").should be_true
-    (yaml["container_names"][0]["rolling_version_change_test_tag"] == "1.7.1").should be_true
-    (yaml["container_names"][0]["rollback_from_tag"] == "1.7.1").should be_true
+    (yaml["helm_chart"] == "stable/coredns").should be_true
   ensure
     `rm ./cnf-testsuite-test.yml`
   end
@@ -55,8 +51,7 @@ describe "Setup" do
     end
     LOGGING.debug "test yaml: #{yaml}"
     LOGGING.info `cat ./cnf-testsuite-test.yml`
-    (yaml["container_names"][0]["name"] == "sidecar-container1").should be_true
-    (yaml["container_names"][1]["name"] == "sidecar-container2").should be_true
+    (yaml["helm_directory"] == "sample-cnfs/k8s-sidecar-container-pattern/chart").should be_true
   ensure
     `rm ./cnf-testsuite-test.yml`
   end
@@ -73,8 +68,7 @@ describe "Setup" do
     end
     LOGGING.debug "test yaml: #{yaml}"
     LOGGING.info `cat ./cnf-testsuite-test.yml`
-    (yaml["container_names"][0]["name"] == "sidecar-container1").should be_true
-    (yaml["container_names"][1]["name"] == "sidecar-container2").should be_true
+    (yaml["manifest_directory"] == "sample-cnfs/k8s-non-helm/manifests").should be_true
   ensure
     `rm ./cnf-testsuite-test.yml`
   end

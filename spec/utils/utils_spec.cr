@@ -253,11 +253,11 @@ describe "Utils" do
   end
 
   it "'logger' or verbose output should be shown when verbose flag is set", tags: ["logger"] do
-    response_s = `./cnf-testsuite helm_deploy destructive verbose`
+    response_s = `./cnf-testsuite -l info helm_deploy verbose`
     LOGGING.info response_s
     puts response_s
     $?.success?.should be_true
-    (/INFO -- cnf-testsuite-verbose: helm_deploy/ =~ response_s).should_not be_nil
+    (/helm_deploy args/ =~ response_s).should_not be_nil
   end
 
   it "'#update_yml' should update the value for a key in a yml file", tags: ["logger"]  do
