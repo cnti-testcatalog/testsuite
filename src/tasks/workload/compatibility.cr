@@ -396,17 +396,10 @@ end
 
 desc "Will the CNF install using helm with helm_deploy?"
 task "helm_deploy" do |_, args|
-  unless check_destructive(args)
-    Log.info { "skipping helm_deploy: not in destructive mode" }
-    puts "⏭️  SKIPPED: Helm Deploy".colorize(:yellow)
-    next
-  end
-  Log.info { "Running helm_deploy in destructive mode!" }
-  Log.for("verbose").info { "helm_deploy" } if check_verbose(args)
-  Log.info { "helm_deploy args: #{args.inspect}" }
+  Log.for("helm_deploy").info { "Starting test" }
+  Log.info { "helm_deploy args: #{args.inspect}" } if check_verbose(args)
   if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
     CNFManager::Task.task_runner(args) do |args, config|
-      
       emoji_helm_deploy="⎈🚀"
       helm_chart = config.cnf_config[:helm_chart]
       helm_directory = config.cnf_config[:helm_directory]

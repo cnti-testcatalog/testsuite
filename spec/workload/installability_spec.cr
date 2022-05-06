@@ -10,7 +10,7 @@ describe CnfTestSuite do
 
 	it "'helm_deploy' should fail on a bad helm chart", tags: ["helm"] do
     LOGGING.info `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-bad-helm-deploy-repo verbose`
-    response_s = `./cnf-testsuite helm_deploy destructive verbose`
+    response_s = `./cnf-testsuite helm_deploy verbose`
     LOGGING.info response_s
     $?.success?.should be_true
     (/FAILED: Helm deploy failed/ =~ response_s).should_not be_nil
@@ -19,7 +19,7 @@ describe CnfTestSuite do
   end
 
   it "'helm_deploy' should fail if command is not supplied cnf-config argument", tags: ["helm"] do
-    response_s = `./cnf-testsuite helm_deploy destructive`
+    response_s = `./cnf-testsuite helm_deploy`
     LOGGING.info response_s
     $?.success?.should be_true
     (/No cnf_testsuite.yml found! Did you run the setup task/ =~ response_s).should_not be_nil
