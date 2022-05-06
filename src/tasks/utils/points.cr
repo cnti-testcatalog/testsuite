@@ -303,11 +303,13 @@ module CNFManager
       result_items = result_items.reject do |x|
         x["name"] == task
       end
-
-      result_items << YAML.parse "{name: #{task}, status: #{status}, points: #{points}}"
+      cmd = "#{Process.executable_path} #{ARGV.join(" ")}"
+      Log.info {"cmd: #{cmd}"}
+      result_items << YAML.parse "{name: #{task}, status: #{status}, type: #{task_type_by_task(task)}, points: #{points}}"
       File.open("#{Results.file}", "w") do |f|
         YAML.dump({name: results["name"],
                    status: results["status"],
+                   command: cmd,
                    points: results["points"],
                    exit_code: results["exit_code"],
                    items: result_items}, f)
@@ -386,6 +388,39 @@ module CNFManager
           acc
         end
       end
+    end
+
+    def self.tags_by_task(task)
+      points =points_yml.find {|x| x["name"] == task}
+      Log.warn { "****Warning**** task #{task} not found in points.yml".colorize(:yellow) } unless points
+      Log.info { "points: #{points}" }
+      if points && points["tags"]?
+          Log.debug { "points tags: #{points["tags"]?}" }
+        resp = points["tags"].as_s.split(",").map{|x| x.strip}
+      else
+        resp = [] of String
+      end
+          Log.info { "resp: #{resp}" }
+      resp
+    end
+
+    def self.task_type_by_task(task)
+      task_type = tags_by_task(task).reduce("") do |acc, x|
+        if x == "cert"
+          acc = "cert"
+        end
+        if x == "bonus"
+          acc = "bonus"
+        end
+        if x == "normal"
+          acc = "normal"
+        end
+        if x == "essential"
+          acc = "essential"
+        end
+      end
+      Log.info { "task_type: #{task_type}" }
+      task_type
     end
 
     def self.all_result_test_names(results_file)
