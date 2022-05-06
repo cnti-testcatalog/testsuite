@@ -396,8 +396,8 @@ end
 
 desc "Will the CNF install using helm with helm_deploy?"
 task "helm_deploy" do |_, args|
-  Log.for("helm_deploy").info { "Starting test" } if check_verbose(args)
-  Log.info { "helm_deploy args: #{args.inspect}" }
+  Log.for("helm_deploy").info { "Starting test" }
+  Log.info { "helm_deploy args: #{args.inspect}" } if check_verbose(args)
   if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
     CNFManager::Task.task_runner(args) do |args, config|
       emoji_helm_deploy="⎈🚀"
