@@ -151,7 +151,7 @@ task "rollback" do |_, args|
         VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
         rollout_status = KubectlClient::Rollout.status(deployment_name, namespace: namespace, timeout: "180s")
         if  rollout_status == false
-          stdout_failure("Rolling update failed on resource: #{deployment_name} and container: #{container_name}")
+          stdout_failure("Rollback failed on resource: #{deployment_name} and container: #{container_name}")
         end
 
         # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision
