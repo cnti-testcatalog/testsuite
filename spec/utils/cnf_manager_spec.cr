@@ -181,7 +181,7 @@ describe "SampleUtils" do
   it "'CNFManager::Points.results_by_tag' should return a list of results by tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
-    (CNFManager::Points.results_by_tag("resilience")).should eq([{"name" => "liveness", "status" => "passed", "tags" => "resilience", "dynamic" => nil, "workload" => nil, "cert" => nil, "points" => 100}])
+    (CNFManager::Points.results_by_tag("resilience")).should eq([{"name" => "liveness", "status" => "passed", "type" => "essential", "points" => 100}])
     (CNFManager::Points.results_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
