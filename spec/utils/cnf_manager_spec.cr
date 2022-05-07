@@ -135,6 +135,12 @@ describe "SampleUtils" do
      find{|x| x=="worker_reboot_recovery"}).should be_nil
   end
 
+  it "'CNFManager::Points.tags_by_task' should return tags for a task ", tags: ["points"] do
+    CNFManager::Points.clean_results_yml
+    (CNFManager::Points.tags_by_task("latest_tag").
+     find{|x| x=="cert"}).should_not be_nil
+  end
+
   it "'CNFManager::Points.all_task_test_names' should return all tasks names", tags: ["points"] do
     CNFManager::Points.clean_results_yml
     tags = ["database_persistence","versioned_tag", "cni_compatible", "reasonable_image_size",
@@ -175,7 +181,7 @@ describe "SampleUtils" do
   it "'CNFManager::Points.results_by_tag' should return a list of results by tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
-    (CNFManager::Points.results_by_tag("resilience")).should eq([{"name" => "liveness", "status" => "passed", "points" => 100}])
+    (CNFManager::Points.results_by_tag("resilience")).should eq([{"name" => "liveness", "status" => "passed", "type" => "essential", "points" => 100}])
     (CNFManager::Points.results_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
 
