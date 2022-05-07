@@ -405,18 +405,19 @@ module CNFManager
     end
 
     def self.task_type_by_task(task)
+      Log.info {"task_type_by_task"}
       task_type = tags_by_task(task).reduce("") do |acc, x|
-        if x == "cert"
-          acc = "cert"
-        end
-        if x == "bonus"
-          acc = "bonus"
-        end
-        if x == "normal"
-          acc = "normal"
-        end
+        Log.info { "task_type x: #{x} acc: #{acc}" }
         if x == "essential"
           acc = "essential"
+        elsif x == "normal" && acc != "essential"
+          acc = "normal"
+        elsif x == "bonus" && acc != "essential" && acc != "normal"
+          acc = "bonus"
+        elsif x == "cert" && acc != "bonus" && acc != "essential" && acc != "normal"
+          acc = "cert"
+        else
+          acc
         end
       end
       Log.info { "task_type: #{task_type}" }
