@@ -159,7 +159,7 @@
 
 - name: volume_hostpath_not_found
   tags: state, dynamic, workload
-- name: no_local_volume_configuration, bonus 
+- name: no_local_volume_configuration
   tags: state, dynamic, workload, cert, normal
 - name: elastic_volumes 
   tags: state, dynamic, workload, cert, bonus
