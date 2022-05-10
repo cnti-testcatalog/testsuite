@@ -89,6 +89,7 @@ module CNFManager
     helm_install_namespace = config.cnf_config[:helm_install_namespace]
     test_passed = true
 
+    default_namespace = "default"
     install_method = self.cnf_installation_method(config)
     Log.debug { "install_method: #{install_method}" }
     template_ymls = [] of YAML::Any
@@ -100,16 +101,15 @@ module CNFManager
                                             manifest_file_path,
                                             helm_install_namespace)
       template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
+      if !helm_install_namespace.empty?
+        default_namespace = config.cnf_config[:helm_install_namespace]
+      end
     when Helm::InstallMethod::ManifestDirectory
     # if release_name.empty? # no helm chart
       template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
     # else
     end
 
-    default_namespace = "default"
-    if !helm_install_namespace.empty?
-      default_namespace = config.cnf_config[:helm_install_namespace]
-    end
     resource_ymls = Helm.all_workload_resources(template_ymls, default_namespace)
     resource_resp = resource_ymls.map do | resource |
       resp = yield resource
@@ -799,6 +799,8 @@ module CNFManager
     helm_install = {status: "", output: "", error: ""}
     helm_error = false
 
+    default_namespace = "default"
+
     match = JaegerManager.match()
     if match[:found]
       baselines = JaegerManager.unique_services_total
@@ -806,6 +808,7 @@ module CNFManager
     end
     # todo separate out install methods into a module/function that accepts a block
     liveness_time = 0
+    Log.for("sample_setup:install_method").info { "#{install_method[0]}" }
     elapsed_time = Time.measure do
       case install_method[0]
       when Helm::InstallMethod::ManifestDirectory
@@ -829,6 +832,9 @@ module CNFManager
         end
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
       when Helm::InstallMethod::HelmChart
+        if !helm_install_namespace.empty?
+          default_namespace = config.cnf_config[:helm_install_namespace]
+        end
         if input_file && !input_file.empty?
           tar_info = AirGap.tar_info_by_config_src(config.cnf_config[:helm_chart])
           # prepare a helm_chart tar file for deployment into an airgapped environment, put in airgap module
@@ -867,6 +873,9 @@ module CNFManager
         end
         export_published_chart(config, cli_args)
       when Helm::InstallMethod::HelmDirectory
+        if !helm_install_namespace.empty?
+          default_namespace = config.cnf_config[:helm_install_namespace]
+        end
         Log.for("verbose").info { "deploying with helm directory" } if verbose
         # prepare a helm directory for deployment into an airgapped environment, put in airgap module
         if input_file && !input_file.empty?
@@ -904,10 +913,6 @@ module CNFManager
         resource
       end
 
-      default_namespace = "default"
-      if !helm_install_namespace.empty?
-        default_namespace = config.cnf_config[:helm_install_namespace]
-      end
       resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace)
       #TODO move to kubectlclient and make resource_install_and_wait_for_all function
 
@@ -1109,23 +1114,6 @@ module CNFManager
     parsed_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
     Log.for("verbose").info { "cleanup config: #{config.inspect}" } if verbose
 
-    helm_install_namespace = parsed_config.cnf_config[:helm_install_namespace]
-    helm_namespace_option = ""
-    if !helm_install_namespace.empty?
-      helm_namespace_option = "-n #{helm_install_namespace}"
-      ensure_namespace_exists!(helm_install_namespace)
-    end
-
-    resource_ymls = cnf_workload_resources(nil, parsed_config) do |resource_yml|
-      resource_yml
-    end
-
-    default_namespace = "default"
-    if !helm_install_namespace.empty?
-      default_namespace = helm_install_namespace
-    end
-    resources = Helm.workload_resource_kind_names(resource_ymls, default_namespace: default_namespace)
-
     config_maps_dir = "#{destination_cnf_dir}/config_maps"
     if Dir.exists?(config_maps_dir)
       Dir.entries(config_maps_dir).each do |config_map|
@@ -1133,42 +1121,46 @@ module CNFManager
         KubectlClient::Delete.file("#{destination_cnf_dir}/config_maps/#{config_map}")
       end
     end
-    release_name = "#{config.get("release_name").as_s?}"
-    manifest_directory = destination_cnf_dir + "/" + "#{config["manifest_directory"]? && config["manifest_directory"].as_s?}"
-    Log.info { "manifest_directory: #{manifest_directory}" }
 
-    Log.info { "helm path: #{BinarySingleton.helm}" }
+    # Strips all the helm options from the release name option in config
+    release_name = "#{config.get("release_name").as_s?}"
+    release_name = release_name.split(" ")[0]
+
+    Log.for("sample_cleanup:helm_path").info { BinarySingleton.helm }
     helm = BinarySingleton.helm
     dir_exists = File.directory?(destination_cnf_dir)
-    ret = true
-    Log.info { "destination_cnf_dir: #{destination_cnf_dir}" }
-    # todo use install_from_config_src to determine installation method
-    if dir_exists || force == true
-      if installed_from_manifest
-        ret = KubectlClient::Delete.file("#{manifest_directory}", wait: true)
-        # Log.for("verbose").info { kubectl_delete } if verbose
-        # TODO put more safety around this
-        FileUtils.rm_rf(destination_cnf_dir)
-        if ret
-          stdout_success "Successfully cleaned up #{manifest_directory} directory"
-        end
-      else
-        helm_uninstall = Helm.uninstall(release_name.split(" ")[0] + " #{helm_namespace_option}")
-        ret = helm_uninstall[:status].success?
-        Log.for("verbose").info { helm_uninstall[:output].to_s } if verbose
-        if ret
-          stdout_success "Successfully cleaned up #{release_name.split(" ")[0]}"
-        else
-          helm_uninstall = Helm.uninstall(release_name + " #{helm_namespace_option}")
-          if helm_uninstall[:status].success?
-            stdout_success "Successfully cleaned up #{release_name.split(" ")[0]}"
-          end
-        end
-        FileUtils.rm_rf(destination_cnf_dir)
-      end
+    if !dir_exists && force != true
+      Log.for("sample_cleanup").info { "Destination dir #{destination_cnf_dir} does not exist and force option not passed. Exiting." }
+      return false
+    elsif dir_exists
+      Log.for("sample_cleanup").info { "Destination dir #{destination_cnf_dir} exists" }
     end
 
-    ret
+    default_namespace = "default"
+    install_method = self.cnf_installation_method(parsed_config)
+    Log.for("sample_cleanup:install_method").info { install_method }
+    case install_method[0]
+    when Helm::InstallMethod::HelmChart, Helm::InstallMethod::HelmDirectory
+      helm_install_namespace = parsed_config.cnf_config[:helm_install_namespace]
+      if helm_install_namespace != nil && helm_install_namespace != ""
+        default_namespace = helm_install_namespace
+        helm_namespace_option = "-n #{helm_install_namespace}"
+      end
+      result = Helm.uninstall(release_name + " #{helm_namespace_option}")
+      Log.for("sample_cleanup:helm_uninstall").info { result[:output].to_s } if verbose
+      if result[:status].success?
+        stdout_success "Successfully cleaned up #{release_name}"
+      end
+      FileUtils.rm_rf(destination_cnf_dir)
+      return result[:status].success?
+    when Helm::InstallMethod::ManifestDirectory
+      manifest_directory = destination_cnf_dir + "/" + "#{config["manifest_directory"]? && config["manifest_directory"].as_s?}"
+      Log.for("cnf_cleanup:manifest_directory").info { manifest_directory }
+      result = KubectlClient::Delete.file("#{manifest_directory}", wait: true)
+      FileUtils.rm_rf(destination_cnf_dir)
+      stdout_success "Successfully cleaned up #{manifest_directory} directory"
+      return true
+    end
   end
 
   def self.ensure_namespace_exists!(name, kubeconfig : String | Nil = nil)
