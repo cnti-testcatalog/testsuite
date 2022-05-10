@@ -808,6 +808,7 @@ module CNFManager
     end
     # todo separate out install methods into a module/function that accepts a block
     liveness_time = 0
+    Log.for("sample_setup:install_method").info { "#{install_method[0]}" }
     elapsed_time = Time.measure do
       case install_method[0]
       when Helm::InstallMethod::ManifestDirectory
