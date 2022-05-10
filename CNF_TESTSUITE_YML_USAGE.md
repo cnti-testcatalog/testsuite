@@ -1,11 +1,7 @@
 # Test Suite Configuration Usage: cnf-testsuite.yml
 ### What is the cnf-testsuite.yml and why is it required?:
 
-The cnf-testsuite.yml is used by `cnf_setup` in order to install the CNF to be tested onto an existing K8s cluster. 
-
-
-The information in the cnf-testsuite.yml is also used for additional configuration of some tests e.g. `allowlist_helm_chart_container_names` is used for exculding containers from the [privileged](https://github.com/cncf/cnf-testsuite/blob/main/src/tasks/workload/security.cr#L196) container test.
-
+The cnf-testsuite.yml is used by `cnf_setup` in order to install the CNF to be tested onto an existing K8s cluster and for additional configuration of some tests.
 
 ### Table of Contents
 
