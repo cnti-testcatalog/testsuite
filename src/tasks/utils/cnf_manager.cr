@@ -89,6 +89,7 @@ module CNFManager
     helm_install_namespace = config.cnf_config[:helm_install_namespace]
     test_passed = true
 
+    default_namespace = "default"
     install_method = self.cnf_installation_method(config)
     Log.debug { "install_method: #{install_method}" }
     template_ymls = [] of YAML::Any
@@ -100,16 +101,15 @@ module CNFManager
                                             manifest_file_path,
                                             helm_install_namespace)
       template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
+      if !helm_install_namespace.empty?
+        default_namespace = config.cnf_config[:helm_install_namespace]
+      end
     when Helm::InstallMethod::ManifestDirectory
     # if release_name.empty? # no helm chart
       template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
     # else
     end
 
-    default_namespace = "default"
-    if !helm_install_namespace.empty?
-      default_namespace = config.cnf_config[:helm_install_namespace]
-    end
     resource_ymls = Helm.all_workload_resources(template_ymls, default_namespace)
     resource_resp = resource_ymls.map do | resource |
       resp = yield resource
