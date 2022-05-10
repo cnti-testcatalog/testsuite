@@ -1113,10 +1113,6 @@ module CNFManager
     parsed_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
     Log.for("verbose").info { "cleanup config: #{config.inspect}" } if verbose
 
-    resource_ymls = cnf_workload_resources(nil, parsed_config) do |resource_yml|
-      resource_yml
-    end
-
     config_maps_dir = "#{destination_cnf_dir}/config_maps"
     if Dir.exists?(config_maps_dir)
       Dir.entries(config_maps_dir).each do |config_map|
@@ -1129,28 +1125,28 @@ module CNFManager
     release_name = "#{config.get("release_name").as_s?}"
     release_name = release_name.split(" ")[0]
 
-    Log.info { "helm path: #{BinarySingleton.helm}" }
+    Log.for("sample_cleanup:helm_path").info { BinarySingleton.helm }
     helm = BinarySingleton.helm
     dir_exists = File.directory?(destination_cnf_dir)
-    Log.info { "destination_cnf_dir: #{destination_cnf_dir}" }
     if !dir_exists && force != true
-      Log.for("cnf_cleanup").info { "Destination dir #{destination_cnf_dir} does not exist and force option not passed. Exiting." }
+      Log.for("sample_cleanup").info { "Destination dir #{destination_cnf_dir} does not exist and force option not passed. Exiting." }
       return false
+    elsif dir_exists
+      Log.for("sample_cleanup").info { "Destination dir #{destination_cnf_dir} exists" }
     end
 
     default_namespace = "default"
     install_method = self.cnf_installation_method(parsed_config)
-    Log.debug { "install_method: #{install_method}" }
+    Log.for("sample_cleanup:install_method").info { install_method }
     case install_method[0]
-    when Helm::InstallMethod::HelmChart
-    when Helm::InstallMethod::HelmDirectory
+    when Helm::InstallMethod::HelmChart, Helm::InstallMethod::HelmDirectory
       helm_install_namespace = parsed_config.cnf_config[:helm_install_namespace]
       if helm_install_namespace != nil && helm_install_namespace != ""
         default_namespace = helm_install_namespace
         helm_namespace_option = "-n #{helm_install_namespace}"
       end
       result = Helm.uninstall(release_name + " #{helm_namespace_option}")
-      Log.for("cnf_cleanup:helm_uninstall").info { result[:output].to_s } if verbose
+      Log.for("sample_cleanup:helm_uninstall").info { result[:output].to_s } if verbose
       if result[:status].success?
         stdout_success "Successfully cleaned up #{release_name}"
       end
@@ -1161,10 +1157,8 @@ module CNFManager
       Log.for("cnf_cleanup:manifest_directory").info { manifest_directory }
       result = KubectlClient::Delete.file("#{manifest_directory}", wait: true)
       FileUtils.rm_rf(destination_cnf_dir)
-      if result[:status]
-        stdout_success "Successfully cleaned up #{manifest_directory} directory"
-      end
-      return result[:status].success?
+      stdout_success "Successfully cleaned up #{manifest_directory} directory"
+      return true
     end
   end
 
