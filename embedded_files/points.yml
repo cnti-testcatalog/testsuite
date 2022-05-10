@@ -87,7 +87,7 @@
 - name: disk_fill
   tags: resilience, dynamic, workload, cert, normal  
 - name: pod_dns_error
-  tags: resilience, dynamic, workload, cert, normal  
+  tags: resilience, dynamic, workload, cert, bonus
 #- name: external_retry 
 #  tags: scalability, dynamic, workload
 
@@ -128,7 +128,7 @@
   pass: 5
   fail: 0 
 - name: immutable_configmap
-  tags: configuration, dynamic, workload, cert, normal
+  tags: configuration, dynamic, workload, cert, bonus
   pass: 1
   fail: 0 
 
@@ -160,7 +160,7 @@
 - name: volume_hostpath_not_found
   tags: state, dynamic, workload
 - name: no_local_volume_configuration
-  tags: state, dynamic, workload, cert, normal
+  tags: state, dynamic, workload, cert, bonus
 - name: elastic_volumes 
   tags: state, dynamic, workload, cert, bonus
   pass: 5 
@@ -219,7 +219,7 @@
   tags: security, dynamic, workload, cert, bonus
 
 - name: resource_policies
-  tags: security, dynamic, workload, cert, normal
+  tags: security, dynamic, workload, cert, essential
   pass: 100
 
 - name: immutable_file_systems
@@ -268,7 +268,7 @@
   pass: 100
 
 - name: require_labels
-  tags: configuration, dynamic, workload, cert
+  tags: configuration, dynamic, workload, cert, normal
 
 - name: helm_tiller
   tags: platform, platform:security, dynamic
