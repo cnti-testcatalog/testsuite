@@ -1133,7 +1133,10 @@ module CNFManager
     helm = BinarySingleton.helm
     dir_exists = File.directory?(destination_cnf_dir)
     Log.info { "destination_cnf_dir: #{destination_cnf_dir}" }
-    return false if !dir_exists && force != true
+    if !dir_exists && force != true
+      Log.for("cnf_cleanup").info { "Destination dir #{destination_cnf_dir} does not exist and force option not passed. Exiting." }
+      return false
+    end
 
     default_namespace = "default"
     install_method = self.cnf_installation_method(parsed_config)
