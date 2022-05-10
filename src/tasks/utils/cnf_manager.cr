@@ -1113,22 +1113,9 @@ module CNFManager
     parsed_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
     Log.for("verbose").info { "cleanup config: #{config.inspect}" } if verbose
 
-    helm_install_namespace = parsed_config.cnf_config[:helm_install_namespace]
-    helm_namespace_option = ""
-    if !helm_install_namespace.empty?
-      helm_namespace_option = "-n #{helm_install_namespace}"
-      ensure_namespace_exists!(helm_install_namespace)
-    end
-
     resource_ymls = cnf_workload_resources(nil, parsed_config) do |resource_yml|
       resource_yml
     end
-
-    default_namespace = "default"
-    if !helm_install_namespace.empty?
-      default_namespace = helm_install_namespace
-    end
-    resources = Helm.workload_resource_kind_names(resource_ymls, default_namespace: default_namespace)
 
     config_maps_dir = "#{destination_cnf_dir}/config_maps"
     if Dir.exists?(config_maps_dir)
@@ -1137,42 +1124,45 @@ module CNFManager
         KubectlClient::Delete.file("#{destination_cnf_dir}/config_maps/#{config_map}")
       end
     end
+
+    # Strips all the helm options from the release name option in config
     release_name = "#{config.get("release_name").as_s?}"
-    manifest_directory = destination_cnf_dir + "/" + "#{config["manifest_directory"]? && config["manifest_directory"].as_s?}"
-    Log.info { "manifest_directory: #{manifest_directory}" }
+    release_name = release_name.split(" ")[0]
 
     Log.info { "helm path: #{BinarySingleton.helm}" }
     helm = BinarySingleton.helm
     dir_exists = File.directory?(destination_cnf_dir)
-    ret = true
     Log.info { "destination_cnf_dir: #{destination_cnf_dir}" }
-    # todo use install_from_config_src to determine installation method
-    if dir_exists || force == true
-      if installed_from_manifest
-        ret = KubectlClient::Delete.file("#{manifest_directory}", wait: true)
-        # Log.for("verbose").info { kubectl_delete } if verbose
-        # TODO put more safety around this
-        FileUtils.rm_rf(destination_cnf_dir)
-        if ret
-          stdout_success "Successfully cleaned up #{manifest_directory} directory"
-        end
-      else
-        helm_uninstall = Helm.uninstall(release_name.split(" ")[0] + " #{helm_namespace_option}")
-        ret = helm_uninstall[:status].success?
-        Log.for("verbose").info { helm_uninstall[:output].to_s } if verbose
-        if ret
-          stdout_success "Successfully cleaned up #{release_name.split(" ")[0]}"
-        else
-          helm_uninstall = Helm.uninstall(release_name + " #{helm_namespace_option}")
-          if helm_uninstall[:status].success?
-            stdout_success "Successfully cleaned up #{release_name.split(" ")[0]}"
-          end
-        end
-        FileUtils.rm_rf(destination_cnf_dir)
-      end
-    end
+    return false if !dir_exists && force != true
 
-    ret
+    default_namespace = "default"
+    install_method = self.cnf_installation_method(parsed_config)
+    Log.debug { "install_method: #{install_method}" }
+    case install_method[0]
+    when Helm::InstallMethod::HelmChart
+    when Helm::InstallMethod::HelmDirectory
+      helm_install_namespace = parsed_config.cnf_config[:helm_install_namespace]
+      if helm_install_namespace != nil && helm_install_namespace != ""
+        default_namespace = helm_install_namespace
+        helm_namespace_option = "-n #{helm_install_namespace}"
+      end
+      result = Helm.uninstall(release_name + " #{helm_namespace_option}")
+      Log.for("cnf_cleanup:helm_uninstall").info { result[:output].to_s } if verbose
+      if result[:status].success?
+        stdout_success "Successfully cleaned up #{release_name}"
+      end
+      FileUtils.rm_rf(destination_cnf_dir)
+      return result[:status].success?
+    when Helm::InstallMethod::ManifestDirectory
+      manifest_directory = destination_cnf_dir + "/" + "#{config["manifest_directory"]? && config["manifest_directory"].as_s?}"
+      Log.for("cnf_cleanup:manifest_directory").info { manifest_directory }
+      result = KubectlClient::Delete.file("#{manifest_directory}", wait: true)
+      FileUtils.rm_rf(destination_cnf_dir)
+      if result[:status]
+        stdout_success "Successfully cleaned up #{manifest_directory} directory"
+      end
+      return result[:status].success?
+    end
   end
 
   def self.ensure_namespace_exists!(name, kubeconfig : String | Nil = nil)
