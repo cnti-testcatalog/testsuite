@@ -799,6 +799,8 @@ module CNFManager
     helm_install = {status: "", output: "", error: ""}
     helm_error = false
 
+    default_namespace = "default"
+
     match = JaegerManager.match()
     if match[:found]
       baselines = JaegerManager.unique_services_total
@@ -829,6 +831,9 @@ module CNFManager
         end
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
       when Helm::InstallMethod::HelmChart
+        if !helm_install_namespace.empty?
+          default_namespace = config.cnf_config[:helm_install_namespace]
+        end
         if input_file && !input_file.empty?
           tar_info = AirGap.tar_info_by_config_src(config.cnf_config[:helm_chart])
           # prepare a helm_chart tar file for deployment into an airgapped environment, put in airgap module
@@ -867,6 +872,9 @@ module CNFManager
         end
         export_published_chart(config, cli_args)
       when Helm::InstallMethod::HelmDirectory
+        if !helm_install_namespace.empty?
+          default_namespace = config.cnf_config[:helm_install_namespace]
+        end
         Log.for("verbose").info { "deploying with helm directory" } if verbose
         # prepare a helm directory for deployment into an airgapped environment, put in airgap module
         if input_file && !input_file.empty?
@@ -904,10 +912,6 @@ module CNFManager
         resource
       end
 
-      default_namespace = "default"
-      if !helm_install_namespace.empty?
-        default_namespace = config.cnf_config[:helm_install_namespace]
-      end
       resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace)
       #TODO move to kubectlclient and make resource_install_and_wait_for_all function
 
