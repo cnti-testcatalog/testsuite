@@ -351,6 +351,10 @@ def stdout_score(test_name)
   stdout_score(test_name, test_name)
 end
 
+def stdout_score(test_name : String, full_name)
+  stdout_score([test_name], full_name)
+end
+
 def stdout_score(test_names : Array(String), full_name)
   total = CNFManager::Points.total_points(test_names)
   max_points = CNFManager::Points.total_max_points(test_names)
@@ -374,32 +378,6 @@ STRING
   end
 end
   
-def stdout_score(test_name : String, full_name)
-  total = CNFManager::Points.total_points(test_name)
-  max_points = CNFManager::Points.total_max_points(test_name)
-  total_passed = CNFManager::Points.total_passed(test_name)
-  max_passed = CNFManager::Points.total_max_passed(test_name)
-  pretty_test_name = full_name.split(/:|_/).map(&.capitalize).join(" ")
-  test_log_msg = 
-<<-STRING
-#{pretty_test_name} results: #{total_passed} of #{max_passed} tests passed
-
-STRING
-# <<-STRING
-# #{pretty_test_name} final score: #{total} of #{max_points}
-#
-# STRING
-
-  update_yml("#{CNFManager::Points::Results.file}", "points", total)
-  update_yml("#{CNFManager::Points::Results.file}", "maximum_points", max_points)
-
-  if total > 0
-    stdout_success test_log_msg
-  else
-    stdout_failure test_log_msg
-  end
-end
-
 
 # this method extracts a string value from a config section if it exists
 # if the value is an integer it will be converted to a string before extraction
