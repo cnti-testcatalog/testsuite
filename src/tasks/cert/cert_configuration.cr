@@ -28,7 +28,8 @@ task "cert_configuration", [
 #     "require_labels",
 #     "default_namespace"
 #   ] do |_, args|
-  stdout_score("configuration", "configuration")
+  # stdout_score("configuration", "configuration")
+  stdout_score(["configuration", "cert"], "configuration")
 end
 
 task "cert_configuration_title" do |_, args|

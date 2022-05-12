@@ -144,6 +144,35 @@ module CNFManager
       end
     end
 
+    def self.total_points(tags : Array(String) = [] of String)
+      if !tags.empty?
+        tasks = tags.reduce([] of String) do |acc, t| 
+          if acc.empty?
+            acc = tasks_by_tag(t)
+          else
+            acc = acc & tasks_by_tag(t)
+          end
+        end
+      else
+        tasks = all_task_test_names
+      end
+      yaml = File.open("#{Results.file}") do |file|
+        YAML.parse(file)
+      end
+      Log.debug { "total_points: #{tags}, found tasks: #{tasks}" }
+      total = yaml["items"].as_a.reduce(0) do |acc, i|
+        Log.debug { "total_points: #{tags}, #{i["name"].as_s} = #{i["points"].as_i}" }
+        if i["points"].as_i? && i["name"].as_s? &&
+            tasks.find{|x| x == i["name"]}
+          (acc + i["points"].as_i)
+        else
+          acc
+        end
+      end
+      Log.info { "total_points: #{tags} = #{total}" }
+      total
+    end
+
     # Gets the total assigned points for a tag (or all total points) from the results file
     # Usesful for calculation categories total
     def self.total_points(tag=nil)
@@ -169,6 +198,36 @@ module CNFManager
       total
     end
 
+    def self.total_passed(tags : Array(String) = [] of String)
+      Log.debug { "total_passed: #{tags}" }
+      if !tags.empty?
+        tasks = tags.reduce([] of String) do |acc, t| 
+          if acc.empty?
+            acc = tasks_by_tag(t)
+          else
+            acc = acc & tasks_by_tag(t)
+          end
+        end
+      else
+        tasks = all_task_test_names
+      end
+      yaml = File.open("#{Results.file}") do |file|
+        YAML.parse(file)
+      end
+      Log.debug { "total_points: #{tags}, found tasks: #{tasks}" }
+      total = yaml["items"].as_a.reduce(0) do |acc, i|
+        Log.debug { "total_points: #{tags}, #{i["name"].as_s} = #{i["points"].as_i}" }
+        if i["points"].as_i? && i["points"].as_i > 0 && i["name"].as_s? &&
+            tasks.find{|x| x == i["name"]}
+          # (acc + i["points"].as_i)
+          (acc + 1)
+        else
+          acc
+        end
+      end
+      Log.info { "total_passed: #{tags} = #{total}" }
+      total
+    end
     def self.total_passed(tag=nil)
       Log.debug { "total_passed: #{tag}" }
       if tag
@@ -206,6 +265,53 @@ module CNFManager
       end
       Log.info { "assigned: #{assigned}" }
       assigned 
+    end
+
+    # Calculates the total potential points
+    def self.total_max_points(tags : Array(String) = [] of String)
+      Log.debug { "total_max_points tag: #{tags}" }
+      if !tags.empty?
+        tasks = tags.reduce([] of String) do |acc, t| 
+          if acc.empty?
+            acc = tasks_by_tag(t)
+          else
+            acc = acc & tasks_by_tag(t)
+          end
+        end
+      else
+        tasks = all_task_test_names
+      end
+
+      results_yaml = File.open("#{Results.file}") do |file|
+        YAML.parse(file)
+      end
+
+      skipped_tests = results_yaml["items"].as_a.reduce([] of String) do |acc, test_info|
+        if test_info["status"] == "skipped"
+          acc + [test_info["name"].as_s]
+        else
+          acc
+        end
+      end
+
+      max = tasks.reduce(0) do |acc, x|
+        #TODO remove, from the potential points, the actually assigned points that are assigned to 'na' in the results.yml
+        if na_assigned?(x)
+          Log.info { "na_assigned for #{x}" }
+          acc
+        elsif skipped_tests.includes?(x)
+          acc
+        else
+          points = task_points(x)
+          if points
+            acc + points
+          else
+            acc
+          end
+        end
+      end
+      Log.info { "total_max_points: #{tags} = #{max}" }
+      max
     end
 
     # Calculates the total potential points
@@ -248,6 +354,54 @@ module CNFManager
         end
       end
       Log.info { "total_max_points: #{tag} = #{max}" }
+      max
+    end
+
+    def self.total_max_passed(tags : Array(String) = [] of String)
+      Log.debug { "total_max_passed tag: #{tags}" }
+      if !tags.empty?
+        tasks = tags.reduce([] of String) do |acc, t| 
+          Log.info { "total_max_passed acc: #{acc}" }
+          if acc.empty?
+            acc = tasks_by_tag(t)
+          else
+            acc = acc & tasks_by_tag(t)
+          end
+        end
+      else
+        tasks = all_task_test_names
+      end
+      Log.info { "total_max_passed tasks: #{tasks}" }
+
+      results_yaml = File.open("#{Results.file}") do |file|
+        YAML.parse(file)
+      end
+
+      skipped_tests = results_yaml["items"].as_a.reduce([] of String) do |acc, test_info|
+        if test_info["status"] == "skipped"
+          acc + [test_info["name"].as_s]
+        else
+          acc
+        end
+      end
+
+      max = tasks.reduce(0) do |acc, x|
+        # skipped counted against max score (not reduced), na not counted (reduced)
+        if na_assigned?(x)
+          Log.info { "na_assigned for #{x}" }
+          acc
+        elsif skipped_tests.includes?(x)
+          acc + 1 
+        else
+          points = task_points(x)
+          if points
+            acc + 1 
+          else
+            acc
+          end
+        end
+      end
+      Log.info { "total_max_passed: #{tags} = #{max}" }
       max
     end
 
