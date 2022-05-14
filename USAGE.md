@@ -1457,11 +1457,11 @@ crystal src/cnf-testsuite.cr protected_access
 <details> <summary>Details for hostport not used</summary>
 <p>
 
-<b>Hostport not used:</b> 
+<b>hostport_not_used: The hostport not used test will look through all containers defined in the installed cnf to see if the hostPort configuration field is in use. If the field is found it will mark the cnf as failed for this test. </b> 
 
 <b>Read the [rationale](RATIONALE.md#to-test-if-there-are-host-ports-used-in-the-service-configuration) behind this test.</b>
 
-<b>Remediation:</b> TBD
+<b>Remediation:</b> Review all Helm Charts & Kubernetes Manifest files for the CNF and remove all occurrences of the hostPort field in you configuration. Alternatively, configure a service or use another mechanism for exposing your contianer.
 </p>
 
 </details>
