@@ -1457,11 +1457,11 @@ crystal src/cnf-testsuite.cr protected_access
 <details> <summary>Details for hostport not used</summary>
 <p>
 
-<b>Hostport not used:</b> 
+<b>hostport_not_used: The hostport not used test will look through all containers defined in the installed cnf to see if the hostPort configuration field is in use. If the field is found it will mark the cnf as failed for this test. </b> 
 
 <b>Read the [rationale](RATIONALE.md#to-test-if-there-are-host-ports-used-in-the-service-configuration) behind this test.</b>
 
-<b>Remediation:</b> TBD
+<b>Remediation:</b> Review all Helm Charts & Kubernetes Manifest files for the CNF and remove all occurrences of the hostPort field in you configuration. Alternatively, configure a service or use another mechanism for exposing your contianer.
 </p>
 
 </details>
@@ -1471,16 +1471,17 @@ crystal src/cnf-testsuite.cr protected_access
 ```
 
 ##### :heavy_check_mark: To test if there are any (non-declarative) hardcoded IP addresses or subnet masks in the K8s runtime configuration
+
 <details> <summary>Details for hardcoded ip address in k8s runtime config</summary>
 <p>
-
-<b>hardcoded ip addresses in k8s runtime conf:</b> 
+  
+<b>hardcoded_ip_addresses_in_k8s_runtime_configuration:</b> The hardcoded ip address test will scan all the Kubernetes resources of the installed cnf to ensure that no stacic, hardcoded ip addresses are being used in the configuration.
 
 <b>Read the [rationale](RATIONALE.md#to-test-if-there-are-any-non-declarative-hardcoded-ip-addresses-or-subnet-masks-in-the-k8s-runtime-configuration) behind this test.</b>
 
-<b>Remediation:</b> TBD
+<b>Remediation: Review all Helm Charts & Kubernetes Manifest files of the cnf and look for any hardcoded usage of ip addresses. If any are found, you will need to use an operator or some other method to abstract the IP management out of your configuration in order to pass this test. </b>
+  
 </p>
-
 </details>
 
 ```
