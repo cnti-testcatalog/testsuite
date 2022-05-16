@@ -216,6 +216,10 @@ In order to prevent illegitimate escalation by processes and restrict a processe
 
 > *Due to CVE-2021-25741, subPath or subPathExpr volume mounts can be [used to gain unauthorised access](https://hub.armo.cloud/docs/c-0058) to files and directories anywhere on the host filesystem. In order to follow a best-practice security standard and prevent unauthorised data access, there should be no active CVEs affecting either the container or underlying platform.*
 
+#### *To check if the cnf performs a CRI socket mount*: [container_sock_mounts](USAGE.md#heavy_check_mark-to-check-if-a-cnf-is-using-container-socket-mounts)
+
+> *[Container daemon socket bind mounts](https://kyverno.io/policies/best-practices/disallow_cri_sock_mount/disallow_cri_sock_mount/) allows access to the container engine on the node. This access can be used for privilege escalation and to manage containers outside of Kubernetes, and hence should not be allowed..*
+
 #### *To check if there is a host network attached to a pod*: [host_network](USAGE.md#heavy_check_mark-to-check-if-there-is-a-host-network-attached-to-a-pod)
 
 > *When a container has the [hostNetwork](https://hub.armo.cloud/docs/c-0041) feature turned on, the container has direct access to the underlying hostNetwork. Hackers frequently exploit this feature to [facilitate a container breakout](https://media.defense.gov/2021/Aug/03/2002820425/-1/-1/1/CTR_KUBERNETES%20HARDENING%20GUIDANCE.PDF) and gain access to the underlying host network, data and other integral resources.*
