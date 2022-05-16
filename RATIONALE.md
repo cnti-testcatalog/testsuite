@@ -254,6 +254,9 @@ Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley
 #### *To check if security services are being used to harden containers*: [linux_hardening](USAGE.md#heavy_check_mark-to-check-if-security-services-are-being-used-to-harden-containers)
 > In order to reduce the attack surface, it is recommend, when it is possible, to harden your application using [security services](https://hub.armo.cloud/docs/c-0055) such as SELinux®, AppArmor®, and seccomp. Starting from Kubernetes version 1.22, SELinux is enabled by default.
 
+#### *To check if selinux has been configured properly*: [selinux_options](USAGE.md#heavy_check_mark-to-check-if-cnf-resources-use-custom-selinux-options-that-allow-privilege-escalation)
+> If [SELinux options](https://kyverno.io/policies/pod-security/baseline/disallow-selinux/disallow-selinux/) is configured improperly it can be used to escalate privileges and should not be allowed.
+
 #### *To check if containers have resource limits defined*: [resource_policies](USAGE.md#heavy_check_mark-to-check-if-containers-have-resource-limits-defined)
 > CPU and memory [resources should have a limit](https://hub.armo.cloud/docs/c-0009) set for every container or a namespace to prevent resource exhaustion. This control identifies all the Pods without resource limit definitions by checking thier yaml definition file as well as their namespace LimitRange objects. It is also recommended to use ResourceQuota object to restrict overall namespace resources, but this is not verified by this control.
 
