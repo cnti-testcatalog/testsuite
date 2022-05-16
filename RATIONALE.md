@@ -80,7 +80,7 @@ it forces the two services to upgrade in lock step
 
 ## State Tests
 
-#### If infrastructure is immutable, it is easily reproduced, consistent, disposable, will have a repeatable deployment process, and will not have configuration or artifacts that are modifiable in place.  This ensures that all *configuration* is stateless.  Any *data* that is persistent should be managed by K8s statefulsets.
+#### If infrastructure is immutable, it is easily reproduced, consistent, disposable, will have a repeatable deployment process, and will not have configuration or artifacts that are modifiable in place.  This ensures that all *configuration* is stateless.  Any [*data* that is persistent](https://vmblog.com/archive/2022/05/16/stateful-cnfs.aspx) should be managed by K8s statefulsets.
 ***
 
 #### *To test if the CNF uses a volume host path*: [volume_hostpath_not_found](USAGE.md#heavy_check_mark-to-test-if-the-cnf-uses-a-volume-host-path)
@@ -216,6 +216,10 @@ In order to prevent illegitimate escalation by processes and restrict a processe
 
 > *Due to CVE-2021-25741, subPath or subPathExpr volume mounts can be [used to gain unauthorised access](https://hub.armo.cloud/docs/c-0058) to files and directories anywhere on the host filesystem. In order to follow a best-practice security standard and prevent unauthorised data access, there should be no active CVEs affecting either the container or underlying platform.*
 
+#### *To check if the cnf performs a CRI socket mount*: [container_sock_mounts](USAGE.md#heavy_check_mark-to-check-if-a-cnf-is-using-container-socket-mounts)
+
+> *[Container daemon socket bind mounts](https://kyverno.io/policies/best-practices/disallow_cri_sock_mount/disallow_cri_sock_mount/) allows access to the container engine on the node. This access can be used for privilege escalation and to manage containers outside of Kubernetes, and hence should not be allowed..*
+
 #### *To check if there is a host network attached to a pod*: [host_network](USAGE.md#heavy_check_mark-to-check-if-there-is-a-host-network-attached-to-a-pod)
 
 > *When a container has the [hostNetwork](https://hub.armo.cloud/docs/c-0041) feature turned on, the container has direct access to the underlying hostNetwork. Hackers frequently exploit this feature to [facilitate a container breakout](https://media.defense.gov/2021/Aug/03/2002820425/-1/-1/1/CTR_KUBERNETES%20HARDENING%20GUIDANCE.PDF) and gain access to the underlying host network, data and other integral resources.*
@@ -254,6 +258,9 @@ Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley
 #### *To check if security services are being used to harden containers*: [linux_hardening](USAGE.md#heavy_check_mark-to-check-if-security-services-are-being-used-to-harden-containers)
 > In order to reduce the attack surface, it is recommend, when it is possible, to harden your application using [security services](https://hub.armo.cloud/docs/c-0055) such as SELinux®, AppArmor®, and seccomp. Starting from Kubernetes version 1.22, SELinux is enabled by default.
 
+#### *To check if selinux has been configured properly*: [selinux_options](USAGE.md#heavy_check_mark-to-check-if-cnf-resources-use-custom-selinux-options-that-allow-privilege-escalation)
+> If [SELinux options](https://kyverno.io/policies/pod-security/baseline/disallow-selinux/disallow-selinux/) is configured improperly it can be used to escalate privileges and should not be allowed.
+
 #### *To check if containers have resource limits defined*: [resource_policies](USAGE.md#heavy_check_mark-to-check-if-containers-have-resource-limits-defined)
 > CPU and memory [resources should have a limit](https://hub.armo.cloud/docs/c-0009) set for every container or a namespace to prevent resource exhaustion. This control identifies all the Pods without resource limit definitions by checking thier yaml definition file as well as their namespace LimitRange objects. It is also recommended to use ResourceQuota object to restrict overall namespace resources, but this is not verified by this control.
 
@@ -266,24 +273,24 @@ Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley
 ## Configuration Tests 
 #### Declarative APIs for an immutable infrastructure are anything that configures the infrastructure element. This declaration can come in the form of a YAML file or a script, as long as the configuration designates the desired outcome, not how to achieve said outcome. *"Because it describes the state of the world, declarative configuration does not have to be executed to be understood. Its impact is concretely declared. Since the effects of declarative configuration can be understood before they are executed, declarative configuration is far less error-prone. " --Hightower, Kelsey; Burns, Brendan; Beda, Joe. Kubernetes: Up and Running: Dive into the Future of Infrastructure (Kindle Locations 183-186). Kindle Edition*
 
-#### *To test if there are versioned tags on all images using OPA Gatekeeper*
+#### *To test if there are versioned tags on all images using OPA Gatekeeper*: [latest_tag](USAGE.md#heavy_check_mark-to-check-if-pods-in-the-cnf-use-container-images-with-the-latest-tag)
 
 > *"You should [avoid using the :latest tag](https://kubernetes.io/docs/concepts/containers/images/)
 when deploying containers in production as it is harder to track which version of the image 
 is running and more difficult to roll back properly."*
 
-#### *To test if there are node ports used in the service configuration*
+#### *To test if there are node ports used in the service configuration*: [nodeport_not_used](USAGE.md#heavy_check_mark-to-test-if-there-are-node-ports-used-in-the-service-configuration)
 
 
 > Using node ports ties the CNF to a specific node and therefore makes the CNF less
 portable and scalable
 
-#### *To test if there are host ports used in the service configuration*
+#### *To test if there are host ports used in the service configuration*: [hostport_not_used](USAGE.md#heavy_check_mark-to-test-if-there-are-host-ports-used-in-the-service-configuration)
 
 > Using host ports ties the CNF to a specific node and therefore makes the CNF less
 portable and scalable
 
-#### *To test if there are any (non-declarative) hardcoded IP addresses or subnet masks in the K8s runtime configuration*
+#### *To test if there are any (non-declarative) hardcoded IP addresses or subnet masks in the K8s runtime configuration*: [hardcoded_ip_addresses_in_k8s_runtime_configuration](USAGE.md#heavy_check_mark-to-test-if-there-are-any-non-declarative-hardcoded-ip-addresses-or-subnet-masks-in-the-k8s-runtime-configuration)
 
 > Using a hard coded IP in a CNF's configuration designates *how* (imperative) a CNF should 
 achieve a goal, not *what* (declarative) goal the CNF should achieve
