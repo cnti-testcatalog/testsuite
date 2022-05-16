@@ -80,7 +80,7 @@ it forces the two services to upgrade in lock step
 
 ## State Tests
 
-#### If infrastructure is immutable, it is easily reproduced, consistent, disposable, will have a repeatable deployment process, and will not have configuration or artifacts that are modifiable in place.  This ensures that all *configuration* is stateless.  Any *data* that is persistent should be managed by K8s statefulsets.
+#### If infrastructure is immutable, it is easily reproduced, consistent, disposable, will have a repeatable deployment process, and will not have configuration or artifacts that are modifiable in place.  This ensures that all *configuration* is stateless.  Any [*data* that is persistent](https://vmblog.com/archive/2022/05/16/stateful-cnfs.aspx) should be managed by K8s statefulsets.
 ***
 
 #### *To test if the CNF uses a volume host path*: [volume_hostpath_not_found](USAGE.md#heavy_check_mark-to-test-if-the-cnf-uses-a-volume-host-path)
@@ -266,24 +266,24 @@ Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley
 ## Configuration Tests 
 #### Declarative APIs for an immutable infrastructure are anything that configures the infrastructure element. This declaration can come in the form of a YAML file or a script, as long as the configuration designates the desired outcome, not how to achieve said outcome. *"Because it describes the state of the world, declarative configuration does not have to be executed to be understood. Its impact is concretely declared. Since the effects of declarative configuration can be understood before they are executed, declarative configuration is far less error-prone. " --Hightower, Kelsey; Burns, Brendan; Beda, Joe. Kubernetes: Up and Running: Dive into the Future of Infrastructure (Kindle Locations 183-186). Kindle Edition*
 
-#### *To test if there are versioned tags on all images using OPA Gatekeeper*
+#### *To test if there are versioned tags on all images using OPA Gatekeeper*: [latest_tag](USAGE.md#heavy_check_mark-to-check-if-pods-in-the-cnf-use-container-images-with-the-latest-tag)
 
 > *"You should [avoid using the :latest tag](https://kubernetes.io/docs/concepts/containers/images/)
 when deploying containers in production as it is harder to track which version of the image 
 is running and more difficult to roll back properly."*
 
-#### *To test if there are node ports used in the service configuration*
+#### *To test if there are node ports used in the service configuration*: [nodeport_not_used](USAGE.md#heavy_check_mark-to-test-if-there-are-node-ports-used-in-the-service-configuration)
 
 
 > Using node ports ties the CNF to a specific node and therefore makes the CNF less
 portable and scalable
 
-#### *To test if there are host ports used in the service configuration*
+#### *To test if there are host ports used in the service configuration*: [hostport_not_used](USAGE.md#heavy_check_mark-to-test-if-there-are-host-ports-used-in-the-service-configuration)
 
 > Using host ports ties the CNF to a specific node and therefore makes the CNF less
 portable and scalable
 
-#### *To test if there are any (non-declarative) hardcoded IP addresses or subnet masks in the K8s runtime configuration*
+#### *To test if there are any (non-declarative) hardcoded IP addresses or subnet masks in the K8s runtime configuration*: [hardcoded_ip_addresses_in_k8s_runtime_configuration](USAGE.md#heavy_check_mark-to-test-if-there-are-any-non-declarative-hardcoded-ip-addresses-or-subnet-masks-in-the-k8s-runtime-configuration)
 
 > Using a hard coded IP in a CNF's configuration designates *how* (imperative) a CNF should 
 achieve a goal, not *what* (declarative) goal the CNF should achieve
