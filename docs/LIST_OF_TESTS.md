@@ -400,7 +400,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 ## [Latest tag](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L) 
 - Expectation: Checks if a CNF is using 'latest' tag instead of a version.
 
-**What's tested:** TBD
+**What's tested:** Checks all of the CNF's container image names for versioned tags
 
 ## [Require labels](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L18) 
 - :heavy_check_mark: Added to CNF Test Suite in release v0.27.0
