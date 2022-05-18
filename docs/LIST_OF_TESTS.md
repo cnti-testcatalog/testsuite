@@ -426,7 +426,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 ## [hostPort not used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L166) 
 - Expectation: Checks for configured host ports in the service configuration.
 
-**What's tested:** TBD
+**What's tested:** The hostport not used test will look through all containers defined in the installed cnf to see if the hostPort configuration field is in use.
 
 ## [Hardcoded IP addresses in K8s runtime configuration](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L213) 
 - Expectation: Checks for hardcoded IP addresses or subnet masks in the K8s runtime configuration.
