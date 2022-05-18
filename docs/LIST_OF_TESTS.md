@@ -431,7 +431,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 ## [Hardcoded IP addresses in K8s runtime configuration](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L213) 
 - Expectation: Checks for hardcoded IP addresses or subnet masks in the K8s runtime configuration.
 
-**What's tested:** TBD
+**What's tested:** The hardcoded ip address test will scan all the Kubernetes resources of the installed cnf to ensure that no static, hardcoded ip addresses are being used in the configuration.
 
 ## [Secrets used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L257) 
 - Expectation: Checks for K8s secrets.
