@@ -1475,11 +1475,11 @@ crystal src/cnf-testsuite.cr protected_access
 <details> <summary>Details for hardcoded ip address in k8s runtime config</summary>
 <p>
   
-<b>hardcoded_ip_addresses_in_k8s_runtime_configuration:</b> The hardcoded ip address test will scan all the Kubernetes resources of the installed cnf to ensure that no stacic, hardcoded ip addresses are being used in the configuration.
+<b>hardcoded_ip_addresses_in_k8s_runtime_configuration:</b> The hardcoded ip address test will scan all the Kubernetes resources of the installed cnf to ensure that no static, hardcoded ip addresses are being used in the configuration.
 
 <b>Read the [rationale](RATIONALE.md#to-test-if-there-are-any-non-declarative-hardcoded-ip-addresses-or-subnet-masks-in-the-k8s-runtime-configuration) behind this test.</b>
 
-<b>Remediation: Review all Helm Charts & Kubernetes Manifest files of the cnf and look for any hardcoded usage of ip addresses. If any are found, you will need to use an operator or some other method to abstract the IP management out of your configuration in order to pass this test. </b>
+<b>Remediation: Review all Helm Charts & Kubernetes Manifest files of the CNF and look for any hardcoded usage of ip addresses. If any are found, you will need to use an operator or some other method to abstract the IP management out of your configuration in order to pass this test. </b>
   
 </p>
 </details>
