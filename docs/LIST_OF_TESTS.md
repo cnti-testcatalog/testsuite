@@ -55,6 +55,9 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 **What's tested:** After `increase_capacity` increases the replicas to 3, it decreases back to 1.
 
+[**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#to-test-the-increasing-and-decreasing-of-capacity-increase_decrease_capacity)
+
+
 ## [Helm chart published](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L406)
 - Expectation: The helm chart is found in a remote repository when running a [`helm search`](https://helm.sh/docs/helm/helm_search_repo/).
 
