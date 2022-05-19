@@ -59,18 +59,22 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 
 ## [Helm chart published](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L406)
-- Expectation: The helm chart is found in a remote repository when running a [`helm search`](https://helm.sh/docs/helm/helm_search_repo/).
+- Expectation: The Helm chart is published in a Helm Repsitory.
 
-**What's tested:** Checks if a Helm chart is published in a Helm Repsitory.
+**What's tested:** Checks if the helm chart is found in a remote repository when running [`helm search`](https://helm.sh/docs/helm/helm_search_repo/).
+
 
 [**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#test-if-the-helm-chart-is-valid-helm_chart_valid)
 
 
 ## [Helm chart valid](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L449)
-- Test if the [Helm chart is valid](https://github.com/helm/chart-testing)
-- Expectation: tbd
+- Expectation: No syntax or validation problems are found in the chart.
 
-**What's tested:** This runs `helm lint` against the helm chart being tested. You can read more about the helm lint command at [helm.sh](https://helm.sh/docs/helm/helm_lint/)
+**What's tested:** Checks the syntax & validity of the chart using [`helm lint`](https://helm.sh/docs/helm/helm_lint/)
+
+[**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#test-if-the-helm-chart-is-valid-helm_chart_valid)
+
+
 
 ## [Helm deploy](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L339)
 - Expectation: tbd
