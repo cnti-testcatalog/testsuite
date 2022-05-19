@@ -76,10 +76,12 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 
 
-## [Helm deploy](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L339)
-- Expectation: tbd
+## [Helm deploy](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#helm-deploy)
+- Expectation: The CNF was installed using Helm.
 
-**What's tested:** TBD
+**What's tested:** Checks if the CNF is installed by using a Helm Chart.
+
+[**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#test-if-the-helm-deploys-helm_deploy)
 
 ## [Install script Helm v3](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L372)
 - Expectation: Test if the install script uses [Helm v3](https://github.com/helm/)
