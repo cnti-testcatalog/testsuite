@@ -83,11 +83,6 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#test-if-the-helm-deploys-helm_deploy)
 
-## [Install script Helm v3](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L372)
-- Expectation: Test if the install script uses [Helm v3](https://github.com/helm/)
-
-**What's tested:** This checks if helm v3 or greater is used by the helm charts.
-
 ## [Rolling update](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
 - Expectation: test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/)
 
