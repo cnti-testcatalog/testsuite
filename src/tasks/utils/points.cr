@@ -248,6 +248,8 @@ module CNFManager
         tasks = all_task_test_names
       end
 
+      Log.debug { "tasks - bonus tasks: #{tasks.size}" }
+
       results_yaml = File.open("#{Results.file}") do |file|
         YAML.parse(file)
       end
@@ -260,12 +262,35 @@ module CNFManager
         end
       end
 
+      Log.info { "skipped tests #{skipped_tests}" }
+
+      failed_tests = results_yaml["items"].as_a.reduce([] of String) do |acc, test_info|
+        if test_info["status"] == "failed"
+          acc + [test_info["name"].as_s]
+        else
+          acc
+        end
+      end
+
+      Log.info { "failed tests #{failed_tests}" }
+
+      bonus_tasks = tasks_by_tag("bonus")
+      Log.info { "bonus tasks #{bonus_tasks}" }
+
       max = tasks.reduce(0) do |acc, x|
-        #TODO remove, from the potential points, the actually assigned points that are assigned to 'na' in the results.yml
+        Log.info { "task reduce x: #{x}" }
+        Log.info { "bonus_tasks.includes?(x) #{bonus_tasks.includes?(x)}" }
+        Log.info { "skipped_tests.includes?(x) #{skipped_tests.includes?(x)}" }
+        Log.info { "failed_tests.includes?(x) #{failed_tests.includes?(x)}" }
+        Log.info { "na_assigned?(x) #{na_assigned?(x)}" }
         if na_assigned?(x)
           Log.info { "na_assigned for #{x}" }
           acc
-        elsif skipped_tests.includes?(x)
+        # elsif skipped_tests.includes?(x)
+        #   acc
+        elsif bonus_tasks.includes?(x) && (failed_tests.includes?(x) || skipped_tests.includes?(x) || na_assigned?(x))
+          Log.info { "bonus not counted in maximum #{x}" }
+          #don't count failed tests that are bonus tests #1465
           acc
         else
           points = task_points(x)
@@ -312,10 +337,27 @@ module CNFManager
         end
       end
 
+      failed_tests = results_yaml["items"].as_a.reduce([] of String) do |acc, test_info|
+        if test_info["status"] == "failed"
+          acc + [test_info["name"].as_s]
+        else
+          acc
+        end
+      end
+
+      Log.info { "failed tests #{failed_tests}" }
+
+      bonus_tasks = tasks_by_tag("bonus")
+      Log.info { "bonus tasks #{bonus_tasks}" }
+
       max = tasks.reduce(0) do |acc, x|
         # skipped counted against max score (not reduced), na not counted (reduced)
         if na_assigned?(x)
           Log.info { "na_assigned for #{x}" }
+          acc
+        elsif bonus_tasks.includes?(x) && (failed_tests.includes?(x) || skipped_tests.includes?(x) || na_assigned?(x))
+          Log.info { "bonus not counted in maximum #{x}" }
+          #don't count failed tests that are bonus tests #1465
           acc
         elsif skipped_tests.includes?(x)
           acc + 1 
