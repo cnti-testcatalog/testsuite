@@ -163,20 +163,18 @@ crystal bin/ameba.cr
 ./cnf-testsuite compatibility
 ```
 
-##### :heavy_check_mark: To test the [increasing and decreasing of capacity]
-
-## [Increase decrease capacity:](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L168)
+## [Increase decrease capacity:](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#increase-decrease-capacity)
 ##### To run both increase and decrease tests, you can use the alias command that calls them both:
 ```
 ./cnf-testsuite increase_decrease_capacity
 ```
 
-### [Increase capacity](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L184)
+### [Increase capacity](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#increase-capacity)
 ##### Or, they can be called individually using the following commands:
 ```
 ./cnf-testsuite increase_capacity
 ```
-### [Decrease capacity](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L213)
+### [Decrease capacity](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#decrease-capacity)
 
 ```
 ./cnf-testsuite decrease_capacity
@@ -192,23 +190,19 @@ Also here is some info about [things that could cause failures.](https://kuberne
 
 
 
-##### :heavy_check_mark: Test if the Helm chart is published
+## [Helm chart published](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#helm-chart-published)
 
-<details><summary>Details on helm_chart_published:</summary>
-<p>
-
-<b>helm_chart_published description:</b> Best practice for published helm charts allow management from the registry and client tools rather than manually from source.
-
-<b>Read the [rationale](RATIONALE.md#test-if-the-helm-chart-is-published-helm_chart_published) behind this test.</b>
-
-<b>Remediation:</b> Make sure your CNF helm charts are published.
-
-</p>
-</details>
-
+##### To run Helm chart publised test, you can use the following command:
 ```
 ./cnf-testsuite helm_chart_published
 ```
+
+<b>Remediation for failing this test:</b>
+
+Make sure your CNF helm charts are published in a Helm Repository.
+
+</b>
+
 
 ##### :heavy_check_mark: Check if the [Helm chart is valid](https://github.com/helm/chart-testing)
 
