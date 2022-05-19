@@ -163,19 +163,24 @@ crystal bin/ameba.cr
 ./cnf-testsuite compatibility
 ```
 
-##### :heavy_check_mark: To test the [increasing and decreasing of capacity](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
+##### :heavy_check_mark: To test the [increasing and decreasing of capacity]
 
-<details> <summary>Details for increasing and decreasing of capacity</summary>
-<p>
+## [Increase decrease capacity:](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L168)
+##### To run both increase and decrease tests, you can use the alias command that calls them both:
+```
+./cnf-testsuite increase_decrease_capacity
+```
 
-<b>increase_decrease_capacity test:</b> HPA (horizonal pod autoscale) will autoscale replicas to accommodate when there is an increase of CPU, memory or other configured metrics to prevent disruption by allowing more requests 
-by balancing out the utilisation across all of the pods.
+### [Increase capacity](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L184)
+##### Or, they can be called individually using the following commands:
+```
+./cnf-testsuite increase_capacity
+```
+### [Decrease capacity](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L213)
 
-Decreasing replicas works the same as increase but rather scale down the number of replicas when the traffic decreases to the number of pods that can handle the requests.
-
-You can read more about horizonal pod autoscaling to create replicas [here](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/).
-
-<b>Read about the [rationale](RATIONALE.md#to-test-the-increasing-and-decreasing-of-capacity-increase_decrease_capacity) on why this gets tested.</b>
+```
+./cnf-testsuite decrease_capacity
+```
 
 <b>Remediation for failing this test:</b>
 
@@ -183,25 +188,9 @@ Check out the kubectl docs for how to [manually scale your cnf.](https://kuberne
 
 Also here is some info about [things that could cause failures.](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#failed-deployment)
 
-</p>
-</details>
+</b>
 
-##### To run the increase_capacity test individually:
 
-```
-./cnf-testsuite increase_capacity
-```
-
-##### To run the decrease_capacity test individually:
-
-```
-./cnf-testsuite decrease_capacity
-```
-
-##### To run both increase and decrease tests, you can use the alias command that calls them both:
-```
-./cnf-testsuite increase_decrease_capacity
-```
 
 ##### :heavy_check_mark: Test if the Helm chart is published
 
