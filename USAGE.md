@@ -190,9 +190,9 @@ Also here is some info about [things that could cause failures.](https://kuberne
 
 
 
-## [Helm chart published](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#helm-chart-published)
+## [Helm chart published](docs/LIST_OF_TESTS.md#helm-chart-published)
 
-##### To run Helm chart publised test, you can use the following command:
+##### To run Helm chart published test, you can use the following command:
 ```
 ./cnf-testsuite helm_chart_published
 ```
@@ -204,50 +204,33 @@ Make sure your CNF helm charts are published in a Helm Repository.
 </b>
 
 
-##### :heavy_check_mark: Check if the [Helm chart is valid](https://github.com/helm/chart-testing)
+## [Helm chart is valid](docs/LIST_OF_TESTS.md#helm-chart-valid)
 
-<details><summary>Details on helm_chart_valid test:</summary>
-<p>
-
-<b>helm_chart_valid description:</b> Best practice is to ensure that helm charts are in valid formats.
-
-<b>Read the [rationale](RATIONALE.md#test-if-the-helm-chart-is-valid-helm_chart_valid) behind this test.</b>
-
-<b>Remediation:</b> Make sure your helm charts pass lint tests.
-
-</p>
-</details>
-
+##### To run Helm chart vaild test, you can use the following command:
 ```
 ./cnf-testsuite helm_chart_valid
 ```
 
-##### :heavy_check_mark: Test if the Helm deploys
+<b>Remediation for failing this test:</b> 
 
-<details><summary>Details on helm_deploy:</summary>
-<p>
+Make sure your helm charts pass lint tests.
 
-<b>helm_deploy description:</b> All helm charts should be deployable.
+</b>
 
-<b>Read the [rationale](RATIONALE.md#test-if-the-helm-deploys-helm_deploy) behind this test.</b>
 
-<b>Remediation:</b> Make sure your helm charts are valid and can be deployed to clusters.
+## [Helm deploy](docs/LIST_OF_TESTS.md#helm-deploy)
 
-</p>
-</details>
-
-Use a cnf-testsuite.yml to manually call helm_deploy, e.g.:
-Copy your CNF into the `cnfs` directory:
-
+##### To run Helm deploy test, you can use the following command:
 ```
-cp -rf <your-cnf-directory> cnfs/<your-cnf-directory>
+./cnf-testsuite helm_deploy
 ```
 
-Now run the test:
+<b>Remediation for failing this test:</b> 
 
-```
-./cnf-testsuite helm_deploy destructive cnfs/<your-cnf-directory>/cnf-testsuite.yml
-```
+Make sure your helm charts are valid and can be deployed to clusters.
+
+</b>
+
 
 ##### :heavy_check_mark: To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/)
 
