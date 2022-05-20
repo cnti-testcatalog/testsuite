@@ -83,25 +83,39 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#test-if-the-helm-deploys-helm_deploy)
 
-## [Rolling update](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
-- Expectation: test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/)
+## [Rollback:](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L87)
+- Expectation: The CNF Software version can be successfully incremented, then rolled back.
 
-**What's tested:** TBD
+**What's tested:** Checks if the Pod can be upgraded to a new software version, then restored back to the orginal software version by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) & [Kubectl Rollout Undo](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#rollout) commands.
 
-## [Rolling version change](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
-- Expectation: tbd
+[**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#to-check-if-a-cnf-version-can-be-rolled-back-rollback)
 
-**What's tested:** TBD
 
-## [Rolling downgrade](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
-- Expectation: tbd
+### [Rolling update](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
+- Expectation: The CNF Software version can be successfully incremented.
 
-**What's tested:** TBD
+**What's tested:** Checks if the Pod can be upgraded to a new software version by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-)
 
-## [Rollback](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L87)
-- Expectation: tbd
+[**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#to-test-if-the-cnf-can-perform-a-rolling-update-rolling_update)
 
-**What's tested:** TBD
+
+### [Rolling version change](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
+- Expectation: The CNF Software version is successfully rolled back to its original version.
+
+**What's tested:** Checks if the Pod can be rolled back to the original software version by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) to preform a rollback.
+
+[**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_version_change-rolling_version_change)
+
+
+### [Rolling downgrade](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
+- Expectation: The CNF Software version is successfully downgraded to a software version older than the orginal installation version.
+
+**What's tested:** Checks if the Pod can be rolled back older software version(Older than the original software version) by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) to perform a downgrade.
+
+[**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_downgrade-rolling_downgrade)
+
+
+
 
 ## [CNI compatible](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L588)
 - Expectation: CNF should be compatible with multiple and different CNIs
