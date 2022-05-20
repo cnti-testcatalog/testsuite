@@ -55,7 +55,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 **What's tested:** After `increase_capacity` increases the replicas to 3, it decreases back to 1.
 
-[**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#to-test-the-increasing-and-decreasing-of-capacity-increase_decrease_capacity)
+[**Rational & Reasoning**](../RATIONALE.md#to-test-the-increasing-and-decreasing-of-capacity-increase_decrease_capacity)
 
 
 ## [Helm chart published](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L406)
@@ -64,7 +64,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 **What's tested:** Checks if the helm chart is found in a remote repository when running [`helm search`](https://helm.sh/docs/helm/helm_search_repo/).
 
 
-[**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#test-if-the-helm-chart-is-valid-helm_chart_valid)
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-helm-chart-is-valid-helm_chart_valid)
 
 
 ## [Helm chart valid](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L449)
@@ -72,23 +72,23 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 **What's tested:** Checks the syntax & validity of the chart using [`helm lint`](https://helm.sh/docs/helm/helm_lint/)
 
-[**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#test-if-the-helm-chart-is-valid-helm_chart_valid)
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-helm-chart-is-valid-helm_chart_valid)
 
 
 
-## [Helm deploy](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#helm-deploy)
+## [Helm deploy](../USAGE.md#helm-deploy)
 - Expectation: The CNF was installed using Helm.
 
 **What's tested:** Checks if the CNF is installed by using a Helm Chart.
 
-[**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#test-if-the-helm-deploys-helm_deploy)
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-helm-deploys-helm_deploy)
 
 ## [Rollback:](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L87)
 - Expectation: The CNF Software version can be successfully incremented, then rolled back.
 
 **What's tested:** Checks if the Pod can be upgraded to a new software version, then restored back to the orginal software version by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) & [Kubectl Rollout Undo](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#rollout) commands.
 
-[**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#to-check-if-a-cnf-version-can-be-rolled-back-rollback)
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-can-be-rolled-back-rollback)
 
 
 ### [Rolling update](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
@@ -96,7 +96,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 **What's tested:** Checks if the Pod can be upgraded to a new software version by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-)
 
-[**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#to-test-if-the-cnf-can-perform-a-rolling-update-rolling_update)
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-can-perform-a-rolling-update-rolling_update)
 
 
 ### [Rolling version change](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
@@ -104,7 +104,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 **What's tested:** Checks if the Pod can be rolled back to the original software version by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) to preform a rollback.
 
-[**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_version_change-rolling_version_change)
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_version_change-rolling_version_change)
 
 
 ### [Rolling downgrade](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
@@ -112,7 +112,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 **What's tested:** Checks if the Pod can be rolled back older software version(Older than the original software version) by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) to perform a downgrade.
 
-[**Rational & Reasoning**](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_downgrade-rolling_downgrade)
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_downgrade-rolling_downgrade)
 
 
 
