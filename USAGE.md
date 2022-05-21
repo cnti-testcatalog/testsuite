@@ -192,7 +192,7 @@ Also here is some info about [things that could cause failures.](https://kuberne
 
 ## [Helm chart published](docs/LIST_OF_TESTS.md#helm-chart-published)
 
-##### To run Helm chart published test, you can use the following command:
+##### To run the Helm chart published test, you can use the following command:
 ```
 ./cnf-testsuite helm_chart_published
 ```
@@ -206,7 +206,7 @@ Make sure your CNF helm charts are published in a Helm Repository.
 
 ## [Helm chart is valid](docs/LIST_OF_TESTS.md#helm-chart-valid)
 
-##### To run Helm chart vaild test, you can use the following command:
+##### To run the Helm chart vaild test, you can use the following command:
 ```
 ./cnf-testsuite helm_chart_valid
 ```
@@ -220,7 +220,7 @@ Make sure your helm charts pass lint tests.
 
 ## [Helm deploy](docs/LIST_OF_TESTS.md#helm-deploy)
 
-##### To run Helm deploy test, you can use the following command:
+##### To run the Helm deploy test, you can use the following command:
 ```
 ./cnf-testsuite helm_deploy
 ```
@@ -232,77 +232,60 @@ Make sure your helm charts are valid and can be deployed to clusters.
 </b>
 
 
-##### :heavy_check_mark: To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/)
+## [Rollback](docs/LIST_OF_TESTS.md#rollback)
 
-<details><summary>Details on rolling_update:</summary>
-<p>
+##### To run the Rollback test, you can use the following command:
+```
+./cnf-testsuite rollback
+```
+<b>Remediation for failing this test:</b> 
 
-<b>rolling_update description:</b> Rollling updates allow for applications to be updated and promoted between environments without downtime.
+Ensure that you can upgrade your CNF using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) command, then rollback the upgrade using the [Kubectl Rollout Undo](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#rollout) command.
 
-<b>Read the [rationale](RATIONALE.md#to-test-if-the-cnf-can-perform-a-rolling-update-rolling_update) behind this test.</b>
+</b>
 
-<b>Remediation:</b> Best practice should allow your CNF and applications should be able to perform rolling updates without downtime.
 
-</p>
-</details>
+### [Rolling update](docs/LIST_OF_TESTS.md#rolling-update)
 
+##### To run the Rolling update test, you can use the following command:
 ```
 ./cnf-testsuite rolling_update
 ```
 
-##### :heavy_check_mark: To check if a CNF version can be downgraded through a rolling_version_change
+<b>Remediation for failing this test:</b> 
 
-<details><summary>Details for rolling_version_change:</summary>
-<p>
+Ensure that you can successfuly perform a rolling upgrade of your CNF using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) command.
 
-<b>rolling_version_change description:</b>
+</b>
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_version_change-rolling_version_change) for this test.<b/>
 
-<b>Remediation:</b> Applications or CNFs should have the ability to downgrade based on the version tag. 
 
-</p>
-</details>
+### [Rolling version change](docs/LIST_OF_TESTS.md#rolling-version-change)
 
+##### To run the Rolling version change test, you can use the following command:
 ```
 ./cnf-testsuite rolling_version_change
 ```
 
-##### :heavy_check_mark: To check if a CNF version can be downgraded through a rolling_downgrade
+<b>Remediation for failing this test:</b> 
 
-<details><summary>Details on rolling_downgrade:</summary>
-<p>
+Ensure that you can successfuly rollback the software version of your CNF by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) command.
 
-<b>rolling_downgrade description:</b> Rolling downgrade allows for applications to be downgraded in the event that the newest or latest version encounters issues, eg bug, incompatiblility, etc.
+</b>
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_downgrade-rolling_downgrade) behind this test.</b>
 
-<b>Remediation:</b> Best practice should allow your CNF and applications should be able to perform rolling downgradse without downtime.
+### [Rolling downgrade](docs/LIST_OF_TESTS.md#rolling-downgrade)
 
-</p>
-</details>
-
+##### To run the Rolling downgrade test, you can use the following command:
 ```
 ./cnf-testsuite rolling_downgrade
 ```
 
-##### :heavy_check_mark: To check if a CNF version can be rolled back [rollback](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment)
+<b>Remediation for failing this test:</b> 
 
-<details><summary>Details on rollback:</summary>
-<p>
+Ensure that you can successfuly change the software version of your CNF back to an older version by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) command.
 
-<b>rollback description:</b> Rollback allows for the rollback of an application when it becomes unstable, like crash looping, etc.
-
-<b>Read the [rationale](RATIONALE.md#to-check-if-a-cnf-version-can-be-rolled-back-rollback) behind this test.</b>
-
-<b>Remediation:</b> Best practice should allow your CNF and applications to perform automatic rollbacks.
-
-</p>
-</details>
-
-```
-./cnf-testsuite rollback
-```
+</b>
 
 ##### :heavy_check_mark: To check if the CNF is compatible with different CNIs
 <details> <summary>Details for CNI Compatibility Tests</summary>
