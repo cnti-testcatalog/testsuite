@@ -168,7 +168,6 @@ crystal bin/ameba.cr
 ```
 ./cnf-testsuite increase_decrease_capacity
 ```
-
 ### [Increase capacity](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#increase-capacity)
 ##### Or, they can be called individually using the following commands:
 ```
@@ -204,6 +203,7 @@ Make sure your CNF helm charts are published in a Helm Repository.
 </b>
 
 
+
 ## [Helm chart is valid](docs/LIST_OF_TESTS.md#helm-chart-valid)
 
 ##### To run the Helm chart vaild test, you can use the following command:
@@ -218,6 +218,7 @@ Make sure your helm charts pass lint tests.
 </b>
 
 
+
 ## [Helm deploy](docs/LIST_OF_TESTS.md#helm-deploy)
 
 ##### To run the Helm deploy test, you can use the following command:
@@ -230,6 +231,7 @@ Make sure your helm charts pass lint tests.
 Make sure your helm charts are valid and can be deployed to clusters.
 
 </b>
+
 
 
 ## [Rollback](docs/LIST_OF_TESTS.md#rollback)
@@ -287,42 +289,36 @@ Ensure that you can successfuly change the software version of your CNF back to 
 
 </b>
 
-##### :heavy_check_mark: To check if the CNF is compatible with different CNIs
-<details> <summary>Details for CNI Compatibility Tests</summary>
-<p>
 
-<b>CNI Compatible Tests:</b> Best practice states a good CNF should be compatible with multiple and different CNIs (Container Network Interface). The CNI handles the container network for the container network namespace, along with management of IP Addresses through IPAM plug-in among other networking needs and requirements. You can read more about CNIs for kubernetes with their list of [compatible CNIs](https://bit.ly/cni-compatible-k8s-doc). 
+## [CNF compatible](docs/LIST_OF_TESTS.md#cni-compatible)
 
-<b>What's Tested:</b> This test will install temporary kind clusters to test your CNF using Calico and Cilium CNIs.
-
-<b>Read the [rationale](RATIONALE.md#to-check-if-the-cnf-is-compatible-with-different-cnis-cni_compatibility) behind this test.</b>
-
-<b>Remediation:</b> To mitigate this issue, make sure your CNF is compatible with Calico, Cilium and other available CNIs.
-</p>
-
-</details>
-
+##### To run the CNI compatible test, you can use the following command:
 ```
 ./cnf-testsuite cni_compatible
 ```
 
-##### :bulb: (PoC) To check if a CNF uses Kubernetes alpha APIs
+<b>Remediation for failing this test:</b> 
 
-<details> <summary>Details for Kubernetes alpha APIs test</summary>
-<p>
+Ensure that your CNF is compatible with Calico, Cilium and other available CNIs.
 
-<b>Kubernetes alpha APIs:</b> It is considered a best-practice for resources to not use [Kubernetes alpha APIs](https://bit.ly/apisnoop).
+</b>
 
-<b>Read the [rationale](RATIONALE.md#poc-to-check-if-a-cnf-uses-kubernetes-alpha-apis-alpha_k8s_apis-alpha_k8s_apis) behind this test.</b>
 
-<b>Remediation Steps:</b> Make sure applications and CNFs are not using Kubernetes alpha APIs. You can learn more about Kubernetes API versioning [here](https://bit.ly/k8s_api).
-</p>
 
-</details>
+## [Kubernetes Alpha APIs](docs/LIST_OF_TESTS.md#kubernetes-alpha-apis---proof-of-concept)
 
+##### To run the Kubernetes Alpha APIs test, you can use the following command:
 ```
 ./cnf-testsuite alpha_k8s_apis
 ```
+
+<b>Remediation for failing this test:</b> 
+
+Make sure your CNFs are not utilizing any Kubernetes alpha APIs. You can learn more about Kubernetes API versioning [here](https://bit.ly/k8s_api).
+
+</b>
+
+
 
 <details> <summary>Details for Compatibility, Installability and Upgradability Tests To Do's</summary>
 <p>
