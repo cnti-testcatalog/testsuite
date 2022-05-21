@@ -122,11 +122,16 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 **What's tested:** This installs temporary kind clusters and will test the CNF against both Calico and Cilium CNIs. 
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-is-compatible-with-different-cnis-cni_compatibility)
+
+
 
 ## [Kubernetes Alpha APIs - Proof of Concept](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L499)
 - Expectation: CNF should not use Kubernetes alpha APIs
 
 **What's tested:** This checks if a CNF uses alpha or unstable versions of Kubernetes APIs
+
+[**Rational & Reasoning**](../RATIONALE.md#poc-to-check-if-a-cnf-uses-kubernetes-alpha-apis-alpha_k8s_apis-alpha_k8s_apis)
 
 
 # Microservice Category
