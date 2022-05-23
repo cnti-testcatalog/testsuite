@@ -163,19 +163,21 @@ crystal bin/ameba.cr
 ./cnf-testsuite compatibility
 ```
 
-##### :heavy_check_mark: To test the [increasing and decreasing of capacity](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources)
+## [Increase decrease capacity:](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#increase-decrease-capacity)
+##### To run both increase and decrease tests, you can use the alias command that calls them both:
+```
+./cnf-testsuite increase_decrease_capacity
+```
+### [Increase capacity](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#increase-capacity)
+##### Or, they can be called individually using the following commands:
+```
+./cnf-testsuite increase_capacity
+```
+### [Decrease capacity](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#decrease-capacity)
 
-<details> <summary>Details for increasing and decreasing of capacity</summary>
-<p>
-
-<b>increase_decrease_capacity test:</b> HPA (horizonal pod autoscale) will autoscale replicas to accommodate when there is an increase of CPU, memory or other configured metrics to prevent disruption by allowing more requests 
-by balancing out the utilisation across all of the pods.
-
-Decreasing replicas works the same as increase but rather scale down the number of replicas when the traffic decreases to the number of pods that can handle the requests.
-
-You can read more about horizonal pod autoscaling to create replicas [here](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/).
-
-<b>Read about the [rationale](RATIONALE.md#to-test-the-increasing-and-decreasing-of-capacity-increase_decrease_capacity) on why this gets tested.</b>
+```
+./cnf-testsuite decrease_capacity
+```
 
 <b>Remediation for failing this test:</b>
 
@@ -183,197 +185,140 @@ Check out the kubectl docs for how to [manually scale your cnf.](https://kuberne
 
 Also here is some info about [things that could cause failures.](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#failed-deployment)
 
-</p>
-</details>
+</b>
 
-##### To run the increase_capacity test individually:
 
-```
-./cnf-testsuite increase_capacity
-```
 
-##### To run the decrease_capacity test individually:
+## [Helm chart published](docs/LIST_OF_TESTS.md#helm-chart-published)
 
-```
-./cnf-testsuite decrease_capacity
-```
-
-##### To run both increase and decrease tests, you can use the alias command that calls them both:
-```
-./cnf-testsuite increase_decrease_capacity
-```
-
-##### :heavy_check_mark: Test if the Helm chart is published
-
-<details><summary>Details on helm_chart_published:</summary>
-<p>
-
-<b>helm_chart_published description:</b> Best practice for published helm charts allow management from the registry and client tools rather than manually from source.
-
-<b>Read the [rationale](RATIONALE.md#test-if-the-helm-chart-is-published-helm_chart_published) behind this test.</b>
-
-<b>Remediation:</b> Make sure your CNF helm charts are published.
-
-</p>
-</details>
-
+##### To run the Helm chart published test, you can use the following command:
 ```
 ./cnf-testsuite helm_chart_published
 ```
 
-##### :heavy_check_mark: Check if the [Helm chart is valid](https://github.com/helm/chart-testing)
+<b>Remediation for failing this test:</b>
 
-<details><summary>Details on helm_chart_valid test:</summary>
-<p>
+Make sure your CNF helm charts are published in a Helm Repository.
 
-<b>helm_chart_valid description:</b> Best practice is to ensure that helm charts are in valid formats.
+</b>
 
-<b>Read the [rationale](RATIONALE.md#test-if-the-helm-chart-is-valid-helm_chart_valid) behind this test.</b>
 
-<b>Remediation:</b> Make sure your helm charts pass lint tests.
 
-</p>
-</details>
+## [Helm chart is valid](docs/LIST_OF_TESTS.md#helm-chart-valid)
 
+##### To run the Helm chart vaild test, you can use the following command:
 ```
 ./cnf-testsuite helm_chart_valid
 ```
 
-##### :heavy_check_mark: Test if the Helm deploys
+<b>Remediation for failing this test:</b> 
 
-<details><summary>Details on helm_deploy:</summary>
-<p>
+Make sure your helm charts pass lint tests.
 
-<b>helm_deploy description:</b> All helm charts should be deployable.
+</b>
 
-<b>Read the [rationale](RATIONALE.md#test-if-the-helm-deploys-helm_deploy) behind this test.</b>
 
-<b>Remediation:</b> Make sure your helm charts are valid and can be deployed to clusters.
 
-</p>
-</details>
+## [Helm deploy](docs/LIST_OF_TESTS.md#helm-deploy)
 
-Use a cnf-testsuite.yml to manually call helm_deploy, e.g.:
-Copy your CNF into the `cnfs` directory:
-
+##### To run the Helm deploy test, you can use the following command:
 ```
-cp -rf <your-cnf-directory> cnfs/<your-cnf-directory>
+./cnf-testsuite helm_deploy
 ```
 
-Now run the test:
+<b>Remediation for failing this test:</b> 
 
+Make sure your helm charts are valid and can be deployed to clusters.
+
+</b>
+
+
+
+## [Rollback](docs/LIST_OF_TESTS.md#rollback)
+
+##### To run the Rollback test, you can use the following command:
 ```
-./cnf-testsuite helm_deploy destructive cnfs/<your-cnf-directory>/cnf-testsuite.yml
+./cnf-testsuite rollback
 ```
+<b>Remediation for failing this test:</b> 
 
-##### :heavy_check_mark: To test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/)
+Ensure that you can upgrade your CNF using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) command, then rollback the upgrade using the [Kubectl Rollout Undo](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#rollout) command.
 
-<details><summary>Details on rolling_update:</summary>
-<p>
+</b>
 
-<b>rolling_update description:</b> Rollling updates allow for applications to be updated and promoted between environments without downtime.
 
-<b>Read the [rationale](RATIONALE.md#to-test-if-the-cnf-can-perform-a-rolling-update-rolling_update) behind this test.</b>
+### [Rolling update](docs/LIST_OF_TESTS.md#rolling-update)
 
-<b>Remediation:</b> Best practice should allow your CNF and applications should be able to perform rolling updates without downtime.
-
-</p>
-</details>
-
+##### To run the Rolling update test, you can use the following command:
 ```
 ./cnf-testsuite rolling_update
 ```
 
-##### :heavy_check_mark: To check if a CNF version can be downgraded through a rolling_version_change
+<b>Remediation for failing this test:</b> 
 
-<details><summary>Details for rolling_version_change:</summary>
-<p>
+Ensure that you can successfuly perform a rolling upgrade of your CNF using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) command.
 
-<b>rolling_version_change description:</b>
+</b>
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_version_change-rolling_version_change) for this test.<b/>
 
-<b>Remediation:</b> Applications or CNFs should have the ability to downgrade based on the version tag. 
 
-</p>
-</details>
+### [Rolling version change](docs/LIST_OF_TESTS.md#rolling-version-change)
 
+##### To run the Rolling version change test, you can use the following command:
 ```
 ./cnf-testsuite rolling_version_change
 ```
 
-##### :heavy_check_mark: To check if a CNF version can be downgraded through a rolling_downgrade
+<b>Remediation for failing this test:</b> 
 
-<details><summary>Details on rolling_downgrade:</summary>
-<p>
+Ensure that you can successfuly rollback the software version of your CNF by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) command.
 
-<b>rolling_downgrade description:</b> Rolling downgrade allows for applications to be downgraded in the event that the newest or latest version encounters issues, eg bug, incompatiblility, etc.
+</b>
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_downgrade-rolling_downgrade) behind this test.</b>
 
-<b>Remediation:</b> Best practice should allow your CNF and applications should be able to perform rolling downgradse without downtime.
+### [Rolling downgrade](docs/LIST_OF_TESTS.md#rolling-downgrade)
 
-</p>
-</details>
-
+##### To run the Rolling downgrade test, you can use the following command:
 ```
 ./cnf-testsuite rolling_downgrade
 ```
 
-##### :heavy_check_mark: To check if a CNF version can be rolled back [rollback](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment)
+<b>Remediation for failing this test:</b> 
 
-<details><summary>Details on rollback:</summary>
-<p>
+Ensure that you can successfuly change the software version of your CNF back to an older version by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) command.
 
-<b>rollback description:</b> Rollback allows for the rollback of an application when it becomes unstable, like crash looping, etc.
+</b>
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-a-cnf-version-can-be-rolled-back-rollback) behind this test.</b>
 
-<b>Remediation:</b> Best practice should allow your CNF and applications to perform automatic rollbacks.
+## [CNF compatible](docs/LIST_OF_TESTS.md#cni-compatible)
 
-</p>
-</details>
-
-```
-./cnf-testsuite rollback
-```
-
-##### :heavy_check_mark: To check if the CNF is compatible with different CNIs
-<details> <summary>Details for CNI Compatibility Tests</summary>
-<p>
-
-<b>CNI Compatible Tests:</b> Best practice states a good CNF should be compatible with multiple and different CNIs (Container Network Interface). The CNI handles the container network for the container network namespace, along with management of IP Addresses through IPAM plug-in among other networking needs and requirements. You can read more about CNIs for kubernetes with their list of [compatible CNIs](https://bit.ly/cni-compatible-k8s-doc). 
-
-<b>What's Tested:</b> This test will install temporary kind clusters to test your CNF using Calico and Cilium CNIs.
-
-<b>Read the [rationale](RATIONALE.md#to-check-if-the-cnf-is-compatible-with-different-cnis-cni_compatibility) behind this test.</b>
-
-<b>Remediation:</b> To mitigate this issue, make sure your CNF is compatible with Calico, Cilium and other available CNIs.
-</p>
-
-</details>
-
+##### To run the CNI compatible test, you can use the following command:
 ```
 ./cnf-testsuite cni_compatible
 ```
 
-##### :bulb: (PoC) To check if a CNF uses Kubernetes alpha APIs
+<b>Remediation for failing this test:</b> 
 
-<details> <summary>Details for Kubernetes alpha APIs test</summary>
-<p>
+Ensure that your CNF is compatible with Calico, Cilium and other available CNIs.
 
-<b>Kubernetes alpha APIs:</b> It is considered a best-practice for resources to not use [Kubernetes alpha APIs](https://bit.ly/apisnoop).
+</b>
 
-<b>Read the [rationale](RATIONALE.md#poc-to-check-if-a-cnf-uses-kubernetes-alpha-apis-alpha_k8s_apis-alpha_k8s_apis) behind this test.</b>
 
-<b>Remediation Steps:</b> Make sure applications and CNFs are not using Kubernetes alpha APIs. You can learn more about Kubernetes API versioning [here](https://bit.ly/k8s_api).
-</p>
 
-</details>
+## [Kubernetes Alpha APIs](docs/LIST_OF_TESTS.md#kubernetes-alpha-apis---proof-of-concept)
 
+##### To run the Kubernetes Alpha APIs test, you can use the following command:
 ```
 ./cnf-testsuite alpha_k8s_apis
 ```
+
+<b>Remediation for failing this test:</b> 
+
+Make sure your CNFs are not utilizing any Kubernetes alpha APIs. You can learn more about Kubernetes API versioning [here](https://bit.ly/k8s_api).
+
+</b>
+
+
 
 <details> <summary>Details for Compatibility, Installability and Upgradability Tests To Do's</summary>
 <p>

@@ -55,57 +55,83 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 **What's tested:** After `increase_capacity` increases the replicas to 3, it decreases back to 1.
 
-## [Helm chart published](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L406)
-- Expectation: tbd
+[**Rational & Reasoning**](../RATIONALE.md#to-test-the-increasing-and-decreasing-of-capacity-increase_decrease_capacity)
 
-**What's tested:** Checks if a Helm chart is published
+
+## [Helm chart published](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L406)
+- Expectation: The Helm chart is published in a Helm Repsitory.
+
+**What's tested:** Checks if the helm chart is found in a remote repository when running [`helm search`](https://helm.sh/docs/helm/helm_search_repo/).
+
+
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-helm-chart-is-valid-helm_chart_valid)
+
 
 ## [Helm chart valid](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L449)
-- Test if the [Helm chart is valid](https://github.com/helm/chart-testing)
-- Expectation: tbd
+- Expectation: No syntax or validation problems are found in the chart.
 
-**What's tested:** This runs `helm lint` against the helm chart being tested. You can read more about the helm lint command at [helm.sh](https://helm.sh/docs/helm/helm_lint/)
+**What's tested:** Checks the syntax & validity of the chart using [`helm lint`](https://helm.sh/docs/helm/helm_lint/)
 
-## [Helm deploy](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L339)
-- Expectation: tbd
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-helm-chart-is-valid-helm_chart_valid)
 
-**What's tested:** TBD
 
-## [Install script Helm v3](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L372)
-- Expectation: Test if the install script uses [Helm v3](https://github.com/helm/)
 
-**What's tested:** This checks if helm v3 or greater is used by the helm charts.
+## [Helm deploy](../USAGE.md#helm-deploy)
+- Expectation: The CNF was installed using Helm.
 
-## [Rolling update](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
-- Expectation: test if the CNF can perform a [rolling update](https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/)
+**What's tested:** Checks if the CNF is installed by using a Helm Chart.
 
-**What's tested:** TBD
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-helm-deploys-helm_deploy)
 
-## [Rolling version change](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
-- Expectation: tbd
+## [Rollback:](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L87)
+- Expectation: The CNF Software version can be successfully incremented, then rolled back.
 
-**What's tested:** TBD
+**What's tested:** Checks if the Pod can be upgraded to a new software version, then restored back to the orginal software version by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) & [Kubectl Rollout Undo](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#rollout) commands.
 
-## [Rolling downgrade](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
-- Expectation: tbd
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-can-be-rolled-back-rollback)
 
-**What's tested:** TBD
 
-## [Rollback](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L87)
-- Expectation: tbd
+### [Rolling update](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
+- Expectation: The CNF Software version can be successfully incremented.
 
-**What's tested:** TBD
+**What's tested:** Checks if the Pod can be upgraded to a new software version by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-)
+
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-can-perform-a-rolling-update-rolling_update)
+
+
+### [Rolling version change](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
+- Expectation: The CNF Software version is successfully rolled back to its original version.
+
+**What's tested:** Checks if the Pod can be rolled back to the original software version by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) to perform a rollback.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_version_change-rolling_version_change)
+
+
+### [Rolling downgrade](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
+- Expectation: The CNF Software version is successfully downgraded to a software version older than the orginal installation version.
+
+**What's tested:** Checks if the Pod can be rolled back older software version(Older than the original software version) by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) to perform a downgrade.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_downgrade-rolling_downgrade)
+
+
+
 
 ## [CNI compatible](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L588)
 - Expectation: CNF should be compatible with multiple and different CNIs
 
 **What's tested:** This installs temporary kind clusters and will test the CNF against both Calico and Cilium CNIs. 
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-is-compatible-with-different-cnis-cni_compatibility)
+
+
 
 ## [Kubernetes Alpha APIs - Proof of Concept](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L499)
 - Expectation: CNF should not use Kubernetes alpha APIs
 
 **What's tested:** This checks if a CNF uses alpha or unstable versions of Kubernetes APIs
+
+[**Rational & Reasoning**](../RATIONALE.md#poc-to-check-if-a-cnf-uses-kubernetes-alpha-apis-alpha_k8s_apis-alpha_k8s_apis)
 
 
 # Microservice Category
