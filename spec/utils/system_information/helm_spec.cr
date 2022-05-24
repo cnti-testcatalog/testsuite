@@ -8,7 +8,9 @@ require "sam"
 
 describe "Helm" do
   before_all do
-    result = ShellCmd.run("./cnf-testsuite helm_local_install", "helm_local_setup", force_output: true)
+    # If the environment has a good global helm version then local install is skipped.
+    # We need the local helm to be able to run the test. So we are force installing it.
+    result = ShellCmd.run("force_install=true ./cnf-testsuite helm_local_install", "helm_local_setup", force_output: true)
     result[:status].success?.should be_true
   end
 
