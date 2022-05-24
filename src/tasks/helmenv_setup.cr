@@ -10,12 +10,15 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
   Log.for("verbose").info { "helm_local_install" } if check_verbose(args)
   # check if helm is installed
   # if proper version of helm installed, don't install
-  if SystemInfo::Helm.global_helm_installed? || ENV["force_install"] != nil
-    Log.for("verbose").info { "Globally installed helm satisfies required version. Skipping local helm install." }
+  if SystemInfo::Helm.global_helm_installed? && ENV["force_install"] == nil
+    Log.info { "Globally installed helm satisfies required version. Skipping local helm install." }
   else
-    current_dir = FileUtils.pwd 
+    current_dir = FileUtils.pwd
     Log.for("verbose").debug { current_dir } if check_verbose(args)
-    unless Dir.exists?("#{current_dir}/#{TOOLS_DIR}/helm")
+    arch = "linux-amd64"
+
+    FileUtils.mkdir_p("#{current_dir}/#{TOOLS_DIR}/helm")
+    unless File.exists?("#{current_dir}/#{TOOLS_DIR}/helm/#{arch}/helm")
       begin
         if check_verbose(args)
           Log.for("verbose").debug { "pwd? : #{current_dir}" }
@@ -23,12 +26,11 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
           Log.for("verbose").debug { "full path?: #{current_dir.to_s}/#{TOOLS_DIR}/helm" }
         end
 
-        FileUtils.mkdir_p("#{current_dir}/#{TOOLS_DIR}/helm") 
-        HTTP::Client.get("https://get.helm.sh/helm-v3.1.1-linux-amd64.tar.gz") do |response| 
-          File.write("#{current_dir}/#{TOOLS_DIR}/helm/helm-v3.1.1-linux-amd64.tar.gz", response.body_io)
+        HTTP::Client.get("https://get.helm.sh/helm-v3.1.1-#{arch}.tar.gz") do |response|
+          File.write("#{current_dir}/#{TOOLS_DIR}/helm/helm-v3.1.1-#{arch}.tar.gz", response.body_io)
         end
         TarClient.untar(
-          "#{current_dir}/#{TOOLS_DIR}/helm/helm-v3.1.1-linux-amd64.tar.gz",
+          "#{current_dir}/#{TOOLS_DIR}/helm/helm-v3.1.1-#{arch}.tar.gz",
           "#{current_dir}/#{TOOLS_DIR}/helm"
         )
 
