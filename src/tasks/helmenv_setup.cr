@@ -10,7 +10,9 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
   Log.for("verbose").info { "helm_local_install" } if check_verbose(args)
   # check if helm is installed
   # if proper version of helm installed, don't install
-  unless SystemInfo::Helm.global_helm_installed?
+  if SystemInfo::Helm.global_helm_installed?
+    Log.for("verbose").info { "Globally installed helm satisfies required version. Skipping local helm install." }
+  else
     current_dir = FileUtils.pwd 
     Log.for("verbose").debug { current_dir } if check_verbose(args)
     unless Dir.exists?("#{current_dir}/#{TOOLS_DIR}/helm")
