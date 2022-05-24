@@ -18,10 +18,12 @@ describe "Helm" do
   end
 
   it "'helm_local_response()' should return the information about the helm installation", tags: ["helm-utils"]  do
+    ShellCmd.run("ls -R tools/helm", "helm_dir_check", force_output: true)
     (helm_local_response(true)).should contain("\"v3.")
   end
 
   it "'helm_version()' should return the information about the helm version", tags: ["helm-utils"]  do
+    ShellCmd.run("ls -R tools/helm", "helm_dir_check", force_output: true)
     (helm_version(helm_local_response)).should contain("v3.")
   end
 
