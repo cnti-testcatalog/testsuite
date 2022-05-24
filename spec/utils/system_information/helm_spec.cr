@@ -8,8 +8,8 @@ require "sam"
 
 describe "Helm" do
   before_all do
-    `./cnf-testsuite helm_local_install`
-    $?.success?.should be_true
+    result = ShellCmd.run("./cnf-testsuite helm_local_install", "helm_local_setup", force_output: true)
+    result[:status].success?.should be_true
   end
 
   it "'helm_global_response()' should return the information about the helm installation", tags: ["helm-utils"]  do
