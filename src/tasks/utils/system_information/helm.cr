@@ -51,7 +51,7 @@ end
 
 def helm_local_response(verbose=false)
   helm = BinarySingleton.local_helm_path
-  result = ShellCmd.run("#{helm} version", "helm_local_version", force_output: true)
+  result = ShellCmd.run("#{helm} version", "helm_local_version", force_output: verbose)
   result[:output]
 end
 
