@@ -7,6 +7,10 @@ require "file_utils"
 require "sam"
 
 describe "Helm" do
+  before_all do
+    `./cnf-testsuite helm_local_install`
+    $?.success?.should be_true
+  end
 
   it "'helm_global_response()' should return the information about the helm installation", tags: ["helm-utils"]  do
     # TODO make global response be a regex of v. or nil?
