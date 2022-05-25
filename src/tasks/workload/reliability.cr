@@ -89,7 +89,7 @@ end
 desc "Does the CNF crash when network latency occurs"
 task "pod_network_latency", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    test_name = "disk_fill"
+    test_name = "pod_network_latency"
     Log.for(test_name).info { "Starting test" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
     #TODO tests should fail if cnf not installed
