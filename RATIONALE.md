@@ -101,6 +101,7 @@ to the node that it is on.
  the database to use a persistent identifier that it maintains across any rescheduling. 
  Persistent Pod identifiers make it easier to match existing volumes to the new Pods that 
  have been rescheduled. https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+Any database in K8s should at least use elastic volumes to achieve a minimum level of resilience regardless of whether a statefulset is used.  Statefulsets without elastic volumes is not recommended, especially if it explicitly uses local storage.  The least optimal storage configuration for a database managed by K8s is local storage and no statefulsets, as this is not tolerant to node failure.
  
 #### *Test if the CNF crashes when node drain occurs*: [node_drain](USAGE.md#heavy_check_mark-test-if-the-cnf-crashes-when-node-drain-and-rescheduling-occurs--all-configuration-should-be-stateless)
 
