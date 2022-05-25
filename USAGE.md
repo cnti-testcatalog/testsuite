@@ -483,98 +483,81 @@ Make sure that your CNFs containers are not shareing the same [database](https:/
 
 #### State Tests
 
-##### :heavy_check_mark: To run all of the state tests
+##### To run all of the state tests:
 
 ```
 ./cnf-testsuite state
 ```
 
-##### :heavy_check_mark: Test if the CNF is available when node drain and rescheduling occurs.  All configuration should be stateless.
-<details> <summary>Details for node drain</summary>
-<p>
+## [Node drain](docs/LIST_OF_TESTS.md#node-drain)
 
-<b>Node drain:</b> 
-
-<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-node-drain-occurs-node_drain) behind this test.</b>
-
-<b>Remediation:</b> TBD
-</p>
-
-</details>
+##### To run the Node drain test, you can use the following command:
 
 ```
 ./cnf-testsuite node_drain
 ```
 
+<b>Remediation for failing this test</b> 
+Ensure that your CNF can be successfully rescheduled when a node fails or is [drained](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/)
+</b>
 
-##### :heavy_check_mark: To test if the CNF uses a volume host path
-<details> <summary>Details for volume hostpath not found</summary>
-<p>
 
-<b>Volume hostpath not found:</b> 
 
-<b>Read the [rationale](RATIONALE.md#to-test-if-the-cnf-uses-a-volume-host-path-volume_hostpath_not_found) behind this test.</b>
 
-<b>Remediation:</b> TBD
-</p>
+## [Volume hostpath not found](docs/LIST_OF_TESTS.md#volume-hostpath-not-found)
 
-</details>
+##### To run the Volume hostpath not found test, you can use the following command:
 
 ```
 ./cnf-testsuite volume_hostpath_not_found
 ```
 
-##### :heavy_check_mark: To test if the CNF uses local storage
-<details> <summary>Details for no local volume configuration</summary>
-<p>
+<b>Remediation for failing this test:</b> 
+Ensure that none of the containers in your CNFs are using ["hostPath"] to mount volumes.
+</b>
 
-<b>No local volume configurattion:</b> 
 
-<b>Read the [rationale](RATIONALE.md#to-test-if-the-cnf-uses-local-storage-no_local_volume_configuration) behind this test.</b>
 
-<b>Remediation:</b> TBD
-</p>
+## [No local volume configuration](docs/LIST_OF_TESTS.md#no-local-volume-configuration)
 
-</details>
+##### To run the No local volume configuration test, you can use the following command:
 
 ```
 ./cnf-testsuite no_local_volume_configuration
 ```
 
-##### :heavy_check_mark: To test if the CNF uses elastic volumes
-<details> <summary>Details for elastic volume</summary>
-<p>
+<b>Remediation for failing this test:</b>
+Ensure that your CNF isn't using any persistent volumes that use a ["local"] mount point.
+</b>
 
-<b>Elastic Volume Details:</b> It's considered best practice to use elastic volumes for storage. Instead of local storage, the CNF should use elastic persistent volumes, which are available to all nodes (based on policy).
 
-<b>Read the [rationale](RATIONALE.md#to-test-if-the-cnf-uses-elastic-volumes-elastic_volumes) behind this test.</b>
 
-<b>Remediation Steps:</b> Setup and use elastic persistent volumes instead of local storage.
-</p>
+## [Elastic volumes](docs/LIST_OF_TESTS.md#no-local-volume-configuration)
 
-</details>
-
+##### To run the Elastic volume test, you can use the following command:
 
 ```
 ./cnf-testsuite elastic_volume
 ```
-##### :heavy_check_mark: To test if the CNF uses a database with either statefulsets, elastic volumes, or both
-<details> <summary>Details for Database Persistence</summary>
 
-<p><b>Database Persistence:</b> A database may use statefulsets along with elastic volumes to achieve a high level of resiliency.  Any database in K8s should at least use elastic volumes to achieve a minimum level of resilience regardless of whether a statefulset is used.  Statefulsets without elastic volumes is not recommended, especially if it explicitly uses local storage.  The least optimal storage configuration for a database managed by K8s is local storage and no statefulsets, as this is not tolerant to node failure. 
+<b>Remediation for failing this test:</b> 
+Setup and use elastic persistent volumes instead of local storage.
+</b>
 
-<b>Read the [rationale](RATIONALE.md#to-test-if-the-cnf-uses-a-database-with-either-statefulsets-elastic-volumes-or-both-database_persistence) behind this test.</b>
 
-<b>Remediation:</b> Select a database configuration that uses statefulsets and elastic storage volumes.
 
-See more at [OpenEBS Storage Concepts](https://openebs.io/docs/concepts/basics)
+## [Database persistence](docs/LIST_OF_TESTS.md#database-persistence)
 
-</p>
-</details>
+##### To run the Database persistence test, you can use the following command:
 
 ```
 ./cnf-testsuite database_persistence 
 ```
+
+<b>Remediation for failing this test:</b> 
+Select a database configuration that uses statefulsets and elastic storage volumes.
+</b>
+
 
 #### Reliability, Resilience and Availability
 
