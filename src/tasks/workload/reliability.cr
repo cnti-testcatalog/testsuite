@@ -130,7 +130,7 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         test_name = "#{resource["name"]}-#{Random.rand(99)}"
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
-        spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h
+        spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
         Log.for("#{test_name}:spec_labels").info { "Spec labels for chaos template. Key: #{spec_labels.first_key}; Value: #{spec_labels.first_value}" }
         template = ChaosTemplates::PodNetworkLatency.new(
           test_name,
