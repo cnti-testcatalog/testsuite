@@ -449,41 +449,37 @@ Ensure that there is only one process type within a container. This does not cou
 
 
 
-#### :heavy_check_mark: To check if the CNF exposes any of its containers as a service
+## [Service discovery](docs/LIST_OF_TESTS.md#service-discovery)
 
-<details> <summary>Details for the service discovery test</summary>
-<p>
-
-<b>Service discovery:</b> For microservices to be accessible to other applications in the cluster, they should be exposed via a Service.
-
-<b>Read the [rationale](RATIONALE.md#to-check-if-the-cnf-exposes-any-of-its-containers-as-a-service-service_discovery-service_discovery) behind this test.</b>
-
-<b>Remediation Steps:</b> Make sure the CNF exposes any of its containers as a Kubernetes Service. You can learn more about Kubernetes Service [here](https://kubernetes.io/docs/concepts/services-networking/service/).
-</p>
-
-</details>
+##### To run the Service discovery test, you can use the following command:
 
 ```
 ./cnf-testsuite service_discovery
 ```
 
-#### :heavy_check_mark: To check if the CNF has multiple microservices that share a database 
+<b>Remediation for failing this test:</b> 
+  
+Make sure the CNF exposes any of its containers as a Kubernetes Service. You can learn more about Kubernetes Service [here](https://kubernetes.io/docs/concepts/services-networking/service/).
+  
+</b>
 
-<details> <summary>Details for the shared database test</summary>
-<p>
 
-<b>Shared Database:</b> Microservices should not share a database with one another.
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-the-cnf-uses-a-shared-database-shared_database) behind this test.</b>
+## [Shared database](docs/LIST_OF_TESTS.md#shared-database)
 
-<b>Remediation Steps:</b> Make sure the CNF microservices do not share a database [here](https://martinfowler.com/bliki/IntegrationDatabase.html).
-</p>
+##### To run the Shared database test, you can use the following command:
 
-</details>
 
 ```
 ./cnf-testsuite shared_database 
 ```
+
+<b>Remediation for failing this test:</b> 
+
+Make sure that your CNFs containers are not shareing the same [database](https://martinfowler.com/bliki/IntegrationDatabase.html).
+</b>
+
+
 
 #### State Tests
 
