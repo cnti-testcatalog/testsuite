@@ -157,7 +157,7 @@ crystal bin/ameba.cr
 
 #### Compatibility, Installability, and Upgradability Tests
 
-##### :heavy_check_mark: To run all of the compatibility tests
+##### To run all of the compatibility tests
 
 ```
 ./cnf-testsuite compatibility
@@ -396,62 +396,58 @@ crystal src/cnf-testsuite.cr external_retry
 
 #### Microservice Tests
 
-##### :heavy_check_mark: To run all of the microservice tests
+##### To run all of the microservice tests
 
 ```
 ./cnf-testsuite microservice
 ```
 
-##### :heavy_check_mark: To check if the CNF has a reasonable image size
-<details> <summary>Details for reasonable image size</summary>
-<p>
+## [Reasonable Image Size](docs/LIST_OF_TESTS.md#reasonable-image-size)
 
-<b>Reasonable Image Size:</b> 
-
-<b>Read the [rationale](RATIONALE.md#to-check-if-the-cnf-has-a-reasonable-image-size-reasonable_image_size) behind this test.</b>
-
-<b>Remediation:</b> TBD
-</p>
-
-</details>
-
+##### To run the Reasonable image size, you can use the following command:
 ```
 ./cnf-testsuite reasonable_image_size
 ```
 
-##### :heavy_check_mark: To check if the CNF have a reasonable startup time
-<details> <summary>Details for reasonable startup time</summary>
-<p>
+<b>Remediation for failing this test:</b> 
 
-<b>Reasonable Startup Time:</b> 
+Enure your CNFs image size is under 5GB.
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-the-cnf-have-a-reasonable-startup-time-reasonable_startup_time) behind this test.</b>
+</b>
 
-<b>Remediation:</b> TBD
-</p>
 
-</details>
 
-```
+## [Reasonable startup time](docs/LIST_OF_TESTS.md#reasonable-startup-time)
+
+##### To run the Reasonable startup time test, you can use the following command:
+
+ ```
 ./cnf-testsuite reasonable_startup_time
 ```
 
-##### :heavy_check_mark: To check if the CNF is using only a single process type per container
-<details> <summary>Details for single process type</summary>
-<p>
+<b>Remediation for failing this test:</b> 
 
-<b>Single process type:</b> 
+Ensure that your CNF gets into a running state within 30 seconds.
 
-<b>Read the [rationale](https://github.com/cncf/cnf-testsuite/blob/main/RATIONALE.md#to-check-if-the-cnf-has-multiple-process-types-within-one-container-single_process_type) behind this test.</b>
+</b>
 
-<b>Remediation:</b> TBD
-</p>
 
-</details>
+## [Single process type in one container](docs/LIST_OF_TESTS.md#single-process-type-in-one-container)
+
+##### To run the Single process type test, you can use the following command:
 
 ```
 ./cnf-testsuite single_process_type
 ```
+
+<b>Remediation for failing this test:</b> 
+
+Ensure that there is only one process type within a container. This does not count against child processes, e.g. nginx or httpd could be a parent process with 10 child processes and pass this test, but if both nginx and httpd were running, this test would fail.
+
+</b>
+
+
+
 
 #### :heavy_check_mark: To check if the CNF exposes any of its containers as a service
 
