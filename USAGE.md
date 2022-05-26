@@ -153,9 +153,7 @@ crystal bin/ameba.cr
 ```
 
 ---
-### Workload Tests
-
-#### Compatibility, Installability, and Upgradability Tests
+# Compatibility, Installability, and Upgradability Tests
 
 ##### To run all of the compatibility tests
 
@@ -394,7 +392,7 @@ crystal src/cnf-testsuite.cr external_retry
 </details>
 
 
-#### Microservice Tests
+# Microservice Tests
 
 ##### To run all of the microservice tests
 
@@ -421,7 +419,7 @@ Enure your CNFs image size is under 5GB.
 
 ##### To run the Reasonable startup time test, you can use the following command:
 
- ```
+```
 ./cnf-testsuite reasonable_startup_time
 ```
 
@@ -481,7 +479,7 @@ Make sure that your CNFs containers are not shareing the same [database](https:/
 
 
 
-#### State Tests
+# State Tests
 
 ##### To run all of the state tests:
 
@@ -559,53 +557,38 @@ Select a database configuration that uses statefulsets and elastic storage volum
 </b>
 
 
-#### Reliability, Resilience and Availability
+# Reliability, Resilience and Availability
 
-##### :heavy_check_mark: To run all resilience tests
-
+##### To run all of the resilience tests
 ```
 ./cnf-testsuite resilience
 ```
 
-##### :heavy_check_mark: Test if the CNF crashes when network latency occurs
+## [CNF network latency](docs/LIST_OF_TESTS.md#cnf-under-network-latency)
 
-<details> <summary>Details for litmus pod network latency experiment</summary>
-<p>
-
-<b>Pod Network Latency:</b> As we know network latency can have a significant impact on the overall performance of the application the network outages can cause a range of failures for applications that can severely impact user/customers with downtime. This chaos experiment allows you to see the impact of latency traffic to your application using the traffic control (tc) process with netem rules to add egress delays and test how your service behaves when you are unable to reach one of your dependencies, internal or external.
-
-[This experiment](https://docs.litmuschaos.io/docs/pod-network-latency/) causes network degradation without the pod being marked unhealthy/unworthy of traffic by kube-proxy (unless you have a liveness probe of sorts that measures latency and restarts/crashes the container). The idea of this experiment is to simulate issues within your pod network OR microservice communication across services in different availability zones/regions etc.
-
-Mitigation (in this case keep the timeout i.e., access latency low) could be via some middleware that can switch traffic based on some SLOs m parameters. If such an arrangement is not available the next best thing would be to verify if such degradation is highlighted via notification/alerts etc, so the admin/SRE has the opportunity to investigate and fix things. Another utility of the test would be to see the extent of impact caused to the end-user OR the last point in the app stack on account of degradation in access to a downstream/dependent microservice. Whether it is acceptable OR breaks the system to an unacceptable degree. The experiment provides DESTINATION_IPS or DESTINATION_HOSTS so that you can control the chaos against specific services within or outside the cluster.
-
-The applications may stall or get corrupted while they wait endlessly for a packet. The experiment limits the impact (blast radius) to only the traffic you want to test by specifying IP addresses or application information. This experiment will help to improve the resilience of your services over time.
-
-<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-network-latency-occurs-pod_network_latency) behind this test.</b>
-
-</p>
-</details>
+##### To run the CNF network latency test, you can use the following command:
 
 ```
 ./cnf-testsuite pod_network_latency
 ```
 
-##### :heavy_check_mark: Test if the CNF crashes when disk fill occurs
+<b>Remediation for failing this test:</b> 
+Ensure that your CNF doesn't stall or get into a corrupted state when network degradation occurs.
+A mitigation stagagy(in this case keep the timeout i.e., access latency low) could be via some middleware that can switch traffic based on some SLOs parameters.
+</b>
 
-<details> <summary> Details for litmus disk fill experiment</summary>
-<p>
+## [CNF disk fill](docs/LIST_OF_TESTS.md#cnf-under-network-latency)
 
-<b>Disk-Fill(Stress-Chaos):</b> Disk Pressure is another very common and frequent scenario we find in Kubernetes applications that can result in the eviction of the application replica and impact its delivery. Such scenarios can still occur despite whatever availability aids K8s provides. These problems are generally referred to as "Noisy Neighbour" problems.
-
-[Stressing the disk](https://litmuschaos.github.io/litmus/experiments/categories/pods/disk-fill/) with continuous and heavy IO for example can cause degradation in reads written by other microservices that use this shared disk for example modern storage solutions for Kubernetes to use the concept of storage pools out of which virtual volumes/devices are carved out. Another issue is the amount of scratch space eaten up on a node which leads to the lack of space for newer containers to get scheduled (Kubernetes too gives up by applying an "eviction" taint like "disk-pressure") and causes a wholesale movement of all pods to other nodes. Similarly with CPU chaos, by injecting a rogue process into a target container, we starve the main microservice process (typically PID 1) of the resources allocated to it (where limits are defined) causing slowness in application traffic or in other cases unrestrained use can cause the node to exhaust resources leading to the eviction of all pods. So this category of chaos experiment helps to build the immunity on the application undergoing any such stress scenario.
-
-<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-disk-fill-occurs-disk_fill) behind this test.</b>
-
-</p>
-</details>
+##### To run the CNF disk fill test, you can use the following command:
 
 ```
 ./cnf-testsuite disk_fill
 ```
+
+<b>Remediation for failing this test:</b> 
+Ensure that your CNF is resilient and doesn't stall when heavy IO causes a degradation in storage resource availability. 
+</b>
+
 
 ##### :heavy_check_mark: Test if the CNF crashes when pod delete occurs
 
