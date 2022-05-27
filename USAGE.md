@@ -590,42 +590,32 @@ Ensure that your CNF is resilient and doesn't stall when heavy IO causes a degra
 </b>
 
 
-##### :heavy_check_mark: Test if the CNF crashes when pod delete occurs
+## [Pod delete](docs/LIST_OF_TESTS.md#pod-delete)
 
-<details> <summary>Details for litmus pod delete experiment</summary> 
-<p>
-
-<b>Pod Delete:</b> In a distributed system like Kubernetes, likely, your application replicas may not be sufficient to manage the traffic (indicated by SLIs) when some of the replicas are unavailable due to any failure (can be system or application) the application needs to meet the SLO(service level objectives) for this, we need to make sure that the applications have a minimum number of available replicas. One of the common application failures is when the pressure on other replicas increases then to how the horizontal pod autoscaler scales based on observed resource utilization and also how much PV mount takes time upon rescheduling. The other important aspects to test are the MTTR for the application replica, re-elections of leader or follower like in Kafka application the selection of broker leader, validating minimum quorum to run the application for example in applications like percona, resync/redistribution of data.
-
-[This experiment](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-delete/) helps to simulate such a scenario with forced/graceful pod failure on specific or random replicas of an application resource and checks the deployment sanity (replica availability & uninterrupted service) and recovery workflow of the application.
-
-<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-pod-delete-occurs-pod_delete) behind this test.</b>
-
-</p>
-</details>
-
+##### To run the CNF Pod delete test, you can use the following command:
 ```
 ./cnf-testsuite pod_delete
 ```
-
-##### :heavy_check_mark: Test if the CNF crashes when pod memory hog occurs
-
-<details> <summary>Details for litmus pod memory hog experiment</summary>
-<p>
-
-Memory usage within containers is subject to various constraints in Kubernetes. If the limits are specified in their spec, exceeding them can cause termination of the container (due to OOMKill of the primary process, often pid 1) - the restart of the container by kubelet, subject to the policy specified. For containers with no limits placed, the memory usage is uninhibited until such time as the Node level OOM Behaviour takes over. In this case, containers on the node can be killed based on their oom_score and the QoS class a given pod belongs to (bestEffort ones are first to be targeted). This eval is extended to all pods running on the node - thereby causing a bigger blast radius. 
-
-The [pod-memory hog](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-memory-hog/) experiment launches a stress process within the target container - which can cause either the primary process in the container to be resource constrained in cases where the limits are enforced OR eat up available system memory on the node in cases where the limits are not specified. 
-
-<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-pod-memory-hog-occurs-pod_memory_hog) behind this test.</b>
-
-</p>
-</details>
+<b>Remediation for failing this test:</b> 
+Ensure that your CNF is resilient and doesn't fail on a forced/graceful pod failure on specific or random replicas of an application. 
+</b>
 
 
+## [Memory hog](docs/LIST_OF_TESTS.md#memory-hog)
+
+##### To run the CNF Pod delete test, you can use the following command:
 ```
 ./cnf-testsuite pod_memory_hog
 ```
+
+<b>Remediation for failing this test:</b> 
+Ensure that your CNF is resilient to heavy memory usage and can maintain some level of avaliabliy. 
+</b>
+
+Memory usage within containers is subject to various constraints in Kubernetes. If the limits are specified in their spec, exceeding them can cause termination of the container (due to OOMKill of the primary process, often pid 1) - the restart of the container by kubelet, subject to the policy specified. For containers with no limits placed, the memory usage is uninhibited until such time as the Node level OOM Behaviour takes over. In this case, containers on the node can be killed based on their oom_score and the QoS class a given pod belongs to (bestEffort ones are first to be targeted). This eval is extended to all pods running on the node - thereby causing a bigger blast radius. 
+
+
+
 
 ##### :heavy_check_mark: Test if the CNF crashes when pod io stress occurs
 
