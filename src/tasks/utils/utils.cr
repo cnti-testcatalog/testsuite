@@ -360,6 +360,8 @@ def stdout_score(test_names : Array(String), full_name)
   max_points = CNFManager::Points.total_max_points(test_names)
   total_passed = CNFManager::Points.total_passed(test_names)
   max_passed = CNFManager::Points.total_max_passed(test_names)
+  essential_total_passed = CNFManager::Points.total_passed("essential")
+  essential_max_passed = CNFManager::Points.total_max_passed("essential")
 
   pretty_test_name = full_name.split(/:|_/).map(&.capitalize).join(" ")
   test_log_msg = 
@@ -370,6 +372,8 @@ STRING
 
   update_yml("#{CNFManager::Points::Results.file}", "points", total)
   update_yml("#{CNFManager::Points::Results.file}", "maximum_points", max_points)
+  update_yml("#{CNFManager::Points::Results.file}", "total_passed", "#{total_passed} of #{max_passed}")
+  update_yml("#{CNFManager::Points::Results.file}", "essential_passed", "#{essential_total_passed} of #{essential_max_passed}")
 
   if total > 0
     stdout_success test_log_msg
