@@ -128,9 +128,7 @@ traffic on the CNF.
 
 #### *Test if the CNF crashes when pod memory hog occurs*: [pod_memory_hog](USAGE.md#heavy_check_mark-test-if-the-cnf-crashes-when-pod-memory-hog-occurs)
 
-> A CNF can fail due to running out of memory.  This can be mitigated by using two levels of memory policies (pod level and node level) 
-in K8s.  If the memory policies for a CNF are not fine grained enough, the CNFs out-of-memory failure blast radius will result in 
-using all of the system memory on the node.
+> If the memory policies for a CNF are not set and fine grained enough, containers on the node can be killed based on their oom_score and the QoS class a given pod belongs to (bestEffort ones are first to be targeted). This eval is extended to all pods running on the node - thereby causing a bigger blast radius. 
 
 #### *Test if the CNF crashes when pod io stress occurs*: [pod_io_stress](USAGE.md#heavy_check_mark-test-if-the-cnf-crashes-when-pod-io-stress-occurs)
 
