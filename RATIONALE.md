@@ -123,9 +123,8 @@ traffic on the CNF.
 
 #### *Test if the CNF crashes when pod delete occurs*: [pod_delete](USAGE.md#heavy_check_mark-test-if-the-cnf-crashes-when-pod-delete-occurs)
 
-> The CNF should recreate the minimum number of replicas when a pod fails. This experiment helps to simulate such a scenario with forced/graceful pod 
-failure on specific or random replicas of an application resource.  It then checks the deployment sanity (replica availability & uninterrupted service) 
-and recovery workflow of the application.
+> In a distributed system like Kubernetes, likely, your application replicas may not be sufficient to manage the traffic (indicated by SLIs) when some of the replicas are unavailable due to any failure (can be system or application) the application needs to meet the SLO(service level objectives) for this. It's imperative that your application has defences aginst this sort of failure to ensure that the application always has a minimum number of available replicas. 
+
 
 #### *Test if the CNF crashes when pod memory hog occurs*: [pod_memory_hog](USAGE.md#heavy_check_mark-test-if-the-cnf-crashes-when-pod-memory-hog-occurs)
 
