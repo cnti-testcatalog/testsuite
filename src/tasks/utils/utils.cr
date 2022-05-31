@@ -358,8 +358,8 @@ end
 def stdout_score(test_names : Array(String), full_name)
   total = CNFManager::Points.total_points(test_names)
   max_points = CNFManager::Points.total_max_points(test_names)
-  total_passed = CNFManager::Points.total_passed(test_names)
-  max_passed = CNFManager::Points.total_max_passed(test_names)
+  total_passed = CNFManager::Points.total_passed("cert")
+  max_passed = CNFManager::Points.total_max_passed("cert")
   essential_total_passed = CNFManager::Points.total_passed("essential")
   essential_max_passed = CNFManager::Points.total_max_passed("essential")
 
