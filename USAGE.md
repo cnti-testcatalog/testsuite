@@ -676,64 +676,51 @@ Ensure that your CNF has a [Readiness Probe](https://kubernetes.io/docs/tasks/co
 </b>
 
 
-#### Observability and Diagnostic Tests
+# Observability and Diagnostic Tests
 
-##### :heavy_check_mark: To run all observability tests
+##### To run all observability tests, you can use the following command:
 
 ```
 ./cnf-testsuite observability
 ```
 
-##### :heavy_check_mark: To check if logs are being sent to stdout/stderr
-<details> <summary>Details for Log Output test</summary>
-<p>
+## [Use stdout/stderr for logs](docs/LIST_OF_TESTS.md#use-stdoutstderr-for-logs)
 
-<b>Log Output Details:</b> It's considered a best-practice for containers and pods to output logs to STDOUT/STDERR so that commands return useful debug or other information about the application.
-
-For example, running `kubectl get logs` returns useful information for diagnosing or troubleshooting issues. 
-
-<b>Read the [rationale](RATIONALE.md#to-check-if-logs-are-being-sent-to-stdoutstderr-standard-out-standard-error-instead-of-a-log-file-log_output) behind this test.</b>
-
-<b>Remediation Steps:</b> Make sure applications and CNF's are sending log output to STDOUT and or STDERR.
-</p>
-
-</details>
+##### To run the stdout/stderr logging test, you can use the following command:
 
 ```
 ./cnf-testsuite log_output
 ``` 
-##### :heavy_check_mark: To check if prometheus is installed and configured for the cnf 
-<details> <summary>Details for prometheus traffic test</summary>
-<p>
 
-<b>Prometheus Traffic Details:</b> It's considered a best-practice for CNFs to actively expose metrics.
+<b>Remediation for failing this test:</b> 
+Make sure applications and CNF's are sending log output to STDOUT and or STDERR.
+</b>
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-prometheus-is-installed-and-configured-for-the-cnf-prometheus_traffic) behind this test.</b>
 
-<b>Remediation Steps:</b> Install and configure Prometheus for your CNF.
-</p>
+## [Prometheus installed](docs/LIST_OF_TESTS.md#use-stdoutstderr-for-logs)
 
-</details>
-
+##### To run the Prometheus installed test, you can use the following command:
 ```
 ./cnf-testsuite prometheus_traffic 
 ``` 
-##### :heavy_check_mark: To check if logs and data are being routed through fluentd
-<details> <summary>Details for fluentd routed logging</summary>
-<p>
 
-<b>Routed Logs Details:</b> It's considered a best-practice for CNFs to route logs and data through programs like fluentd to analyze and better understand data. This test will check if your CNF is using fluentd.
+<b>Remediation for failing this test:</b> 
+Install and configure Prometheus for your CNF.
+</b>
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-logs-and-data-are-being-routed-through-fluentd-routed_logs) behind this test.</b>
 
-<b>Remediation Steps:</b> Install and configure fluentd to collect data and logs. See more at [fluentd.org](https://bit.ly/fluentd).
-</p>
 
-</details>
+## [Fluentd logs](docs/LIST_OF_TESTS.md#fluentd-logs)
 
+##### To run the Fluentd logs test, you can use the following command:
 ```
 ./cnf-testsuite routed_logs
 ```
+
+<b>Remediation for failing this test:</b> 
+Install and configure fluentd to collect data and logs. See more at [fluentd.org](https://bit.ly/fluentd).
+</b>
+
 
 ##### :heavy_check_mark: To check if OpenMetrics is being used and or compatible.
 <details> <summary>Details for OpenMetrics</summary>
