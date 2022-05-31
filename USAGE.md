@@ -596,6 +596,7 @@ Ensure that your CNF is resilient and doesn't stall when heavy IO causes a degra
 ```
 ./cnf-testsuite pod_delete
 ```
+
 <b>Remediation for failing this test:</b> 
 Ensure that your CNF is resilient and doesn't fail on a forced/graceful pod failure on specific or random replicas of an application. 
 </b>
@@ -612,97 +613,68 @@ Ensure that your CNF is resilient and doesn't fail on a forced/graceful pod fail
 Ensure that your CNF is resilient to heavy memory usage and can maintain some level of avaliabliy. 
 </b>
 
-Memory usage within containers is subject to various constraints in Kubernetes. If the limits are specified in their spec, exceeding them can cause termination of the container (due to OOMKill of the primary process, often pid 1) - the restart of the container by kubelet, subject to the policy specified. For containers with no limits placed, the memory usage is uninhibited until such time as the Node level OOM Behaviour takes over. In this case, containers on the node can be killed based on their oom_score and the QoS class a given pod belongs to (bestEffort ones are first to be targeted). This eval is extended to all pods running on the node - thereby causing a bigger blast radius. 
 
+## [IO Stress](docs/LIST_OF_TESTS.md#io-stress)
 
-
-
-##### :heavy_check_mark: Test if the CNF crashes when pod io stress occurs
-
-<details> <summary>Details for litmus pod io stress experiment</summary>
-<p>
-
-Sressing the disk with continuous and heavy IO can cause degradation in reads/ writes byt other microservices that use this shared disk.  For example modern storage solutions for Kubernetes use the concept of storage pools out of which virtual volumes/devices are carved out.  Another issue is the amount of scratch space eaten up on a node which leads to  the lack of space for newer containers to get scheduled (kubernetes too gives up by applying an "eviction" taint like "disk-pressure") and causes a wholesale movement of all pods to other nodes.
-
-[This experiment](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-io-stress/) is also useful in determining the performance of the storage device used.  
-
-<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-pod-io-stress-occurs-pod_io_stress) behind this test.</b>
-
-</p>
-</details>
-
+##### To run the IO Stress test, you can use the following command:
 ```
 ./cnf-testsuite pod_io_stress
 ```
 
-##### :heavy_check_mark: Test if the CNF crashes when pod network corruption occurs
-<details> <summary>Details for pod network corruption </summary>
-<p>
+<b>Remediation for failing this test:</b> 
+Ensure that your CNF is resilient to continuous and heavy disk IO load and can maintain some level of avaliabliy
+</b>
 
-<b>Pod Network Corruption:</b> 
+## [Network corruption](docs/LIST_OF_TESTS.md#network-corruption)
 
-<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-pod-network-corruption-occurs-pod_network_corruption) behind this test.</b>
-
-<b>Remediation:</b> TBD
-</p>
-
-</details>
-
-
+##### To run the Network corruption test, you can use the following command:
 ```
 ./cnf-testsuite pod_network_corruption
 ```
 
-##### :heavy_check_mark: Test if the CNF crashes when pod network duplication occurs
-<details> <summary>Details for network duplication</summary>
-<p>
+<b>Remediation for failing this test:</b> 
+Ensure that your CNF is resilient to a lossy/flaky network and can maintain a level of avaliabliy.
+</b>
 
-<b>Network Duplication:</b> 
 
-<b>Read the [rationale](RATIONALE.md#test-if-the-cnf-crashes-when-pod-network-duplication-occurs-pod_network_duplication) behind this test.</b>
 
-<b>Remediation:</b> TBD
-</p>
+## [Network duplication](docs/LIST_OF_TESTS.md#network-duplication)
 
-</details>
-
+##### To run the Network duplication test, you can use the following command:
 ```
 ./cnf-testsuite pod_network_duplication
 ```
 
-##### :heavy_check_mark: To test if there is a liveness entry in the Helm chart
-<details> <summary>Details for liveness</summary>
-<p>
+<b>Remediation for failing this test:</b> 
+Ensure that your CNF is resilient to erroneously duplicated packets and can maintain a level of avaliabliy.
+</b>
 
-<b>Liveness:</b> 
 
-<b>Read the [rationale](RATIONALE.md#to-test-if-there-is-a-liveness-entry-in-the-helm-chart-liveness) behind this test.</b>
+## [Helm chart liveness entry](docs/LIST_OF_TESTS.md#helm-chart-liveness-entry)
 
-<b>Remediation:</b> TBD
-</p>
-
-</details>
-
+##### To run the Helm chart liveness entry test, you can use the following command:
+  
 ```
 ./cnf-testsuite liveness
 ```
 
-##### :heavy_check_mark: To test if there is a readiness entry in the Helm chart
-<details> <summary>Details for readiness</summary>
-<p>
+<b>Remediation for failing this test:</b> 
+Ensure that your CNF has a [Liveness Probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) configured.
+</b>
 
-<b>Readiness:</b> 
 
-<b>Read the [rationale](RATIONALE.md#to-test-if-there-is-a-readiness-entry-in-the-helm-chart-readiness) behind this test.</b>
 
-<b>Remediation:</b> TBD
-</p>
+## [Helm chart readiness entry](docs/LIST_OF_TESTS.md#helm-chart-readiness-entry)
 
-</details>
+##### To run the Helm chart readiness entry test, you can use the following command:
 
 ```
 ./cnf-testsuite readiness
 ```
+<b>Remediation for failing this test:</b> 
+Ensure that your CNF has a [Readiness Probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) configured.
+</b>
+
 
 #### Observability and Diagnostic Tests
 
