@@ -184,7 +184,7 @@ the maintainer of a cluster of hundreds or thousands of services the ability to 
 such as those that will eventually cause a failure.
 
 #### *To check if logs and data are being routed through fluentd*: [routed_logs](USAGE.md#heavy_check_mark-to-check-if-logs-and-data-are-being-routed-through-fluentd)
-> A CNF should have logs managed by a [unified logging layer](https://www.fluentd.org/why)
+> A CNF should have logs managed by a [unified logging layer](https://www.fluentd.org/why) It's considered a best-practice for CNFs to route logs and data through programs like fluentd to analyze and better understand data.
 
 #### *To check if OpenMetrics is being used and or compatible.*: [open_metrics](USAGE.md#heavy_check_mark-to-check-if-open-metrics-is-being-used-and-or-compatible)
 > A CNF should expose metrics that are [OpenMetrics compatible](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md)
