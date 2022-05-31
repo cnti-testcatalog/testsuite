@@ -391,13 +391,21 @@ end
 
 # compare 2 SemVer strings and return true if v1 is less than v2
 def version_less_than(v1str, v2str)
-  # NOTES: This is why the below code attempts to strip the plus sign from the versions.
-  # Versions for microk8s look like this: "1.20+". As a result, the input args to this function may be "1.20+.0"
-  # This results in bad input to the semantic version parser.
-  # To allow microk8s, we strip the plus sign from the versions.
+  # k3s verisons look like this (valid semantic version): 1.23.6+k3s1
+  #
+  # microk8s verisons look like this (invalid semantic version): 1.20+.0
+  #
+  # microk8s version strings are bad input to the semantic version parser.
+  # To allow microk8s, we strip the plus sign from the minor version.
+  # The below code block performs that cleanup.
 
-  v1 = SemanticVersion.parse(v1str.gsub("+", ""))
-  v2 = SemanticVersion.parse(v2str.gsub("+", ""))
+  v1str = v1str.split(".").map {|i| i.ends_with?("+") ? i.gsub("+", "") : i}
+  v1str = v1str.join(".")
+  v2str = v2str.split(".").map {|i| i.ends_with?("+") ? i.gsub("+", "") : i}
+  v2str = v2str.join(".")
+
+  v1 = SemanticVersion.parse(v1str)
+  v2 = SemanticVersion.parse(v2str)
   less_than = (v1 <=> v2) == -1
   LOGGING.debug "version_less_than: #{v1} < #{v2}: #{less_than}"
   less_than
