@@ -243,8 +243,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 # Observability and Diagnostic Category
 
-## Use stdout/stderr for logs
-#(https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L13)
+## [Use stdout/stderr for logs](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L13)
 - Expectation: Resource output logs should be sent to STDOUT/STDERR
 
 **What's tested: TBD** This checks and verifies that STDOUT/STDERR is configured for logging.
