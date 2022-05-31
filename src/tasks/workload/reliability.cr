@@ -89,16 +89,19 @@ end
 desc "Does the CNF crash when network latency occurs"
 task "pod_network_latency", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "pod_network_latency" } if check_verbose(args)
+    test_name = "pod_network_latency"
+    Log.for(test_name).info { "Starting test" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
     #TODO tests should fail if cnf not installed
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       Log.info { "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}" }
-      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0 && resource["kind"] == "Deployment"
+      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
+      if spec_labels.as_h? && spec_labels.as_h.size > 0 && resource["kind"] == "Deployment"
         test_passed = true
       else
-        puts "Resource is not a Deployment or no resource label was found for resource: #{resource["name"]}".colorize(:red)
+        stdout_failure("Resource is not a Deployment or no resource label was found for resource: #{resource["name"]}")
         test_passed = false
       end
       if test_passed
@@ -108,27 +111,39 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/lat-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/lat-rbac.yaml")
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-network-latency/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-network-latency/rbac.yaml")
+          experiment_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-network-latency/experiment.yaml"
+          rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-network-latency/rbac.yaml"
+
+          experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+          KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
+
+          rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+          rbac_yaml = File.read(rbac_path)
+          rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
+          File.write(rbac_path, rbac_yaml)
+          KubectlClient::Apply.file(rbac_path)
         end
-        KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
+        KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-network-latency"
         total_chaos_duration = "60"
         test_name = "#{resource["name"]}-#{Random.rand(99)}"
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
+        spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
+        Log.for("#{test_name}:spec_labels").info { "Spec labels for chaos template. Key: #{spec_labels.first_key}; Value: #{spec_labels.first_value}" }
         template = ChaosTemplates::PodNetworkLatency.new(
           test_name,
           "#{chaos_experiment_name}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}",
+          app_namespace,
+          "#{spec_labels.first_key}",
+          "#{spec_labels.first_value}",
           total_chaos_duration
         ).to_s
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
-        test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
+        test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
       end
     end
     if task_response

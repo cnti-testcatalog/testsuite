@@ -44,7 +44,8 @@ task "cert_security", [
 #     "external_ips",
 #     "sysctls"
 #   ] do |_, args|
-  stdout_score("security")
+  # stdout_score("security")
+  stdout_score(["security", "cert"], "security")
 end
 
 task "cert_security_title" do |_, args|

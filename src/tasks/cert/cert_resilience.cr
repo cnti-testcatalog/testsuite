@@ -22,7 +22,8 @@ desc "The CNF test suite checks to see if the CNFs are resilient to failures."
   Log.for("verbose").info {  "resilience" } if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
   VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
-  stdout_score("resilience", "Reliability, Resilience, and Availability")
+  # stdout_score("resilience", "Reliability, Resilience, and Availability")
+  stdout_score(["resilience", "cert"], "Reliability, Resilience, and Availability")
 end
 
 task "cert_resilience_title" do |_, args|
