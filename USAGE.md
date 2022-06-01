@@ -722,40 +722,31 @@ Install and configure fluentd to collect data and logs. See more at [fluentd.org
 </b>
 
 
-##### :heavy_check_mark: To check if OpenMetrics is being used and or compatible.
-<details> <summary>Details for OpenMetrics</summary>
+## [OpenMetrics compatible](docs/LIST_OF_TESTS.md#openmetrics-compatible)
 
-<p>
-
-<b>OpenMetics Details:</b> OpenMetrics specifies the de-facto standard for transmitting cloud-native metrics at scale, with support for both text representation and Protocol Buffers and brings it into an Internet Engineering Task Force (IETF) standard. It supports both pull and push-based data collection. Sourced from [OpenMetrics Readme](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md)
-
-<b>Read the [rationale](RATIONALE.md#to-check-if-openmetrics-is-being-used-and-or-compatible-open_metrics) behind this test.</b>
-
-<b>Remediation Steps:</b> Ensure your CNF is OpenMetrics compatible.
-</p>
-
-</details>
-
+##### To run the OpenMetrics compatible test, you can use the following command:
 ```
 ./cnf-testsuite open_metrics
 ```
-##### :heavy_check_mark: To check if tracing is being used with Jaeger.
-<details> <summary>Details for tracing with Jaeger</summary>
 
-<p>
+<b>Remediation for failing this test:</b> 
+Ensure that your CNF is publishing OpenMetrics compatible metrics.
+</b>
 
-<b>Tracing Details:</b> Jaeger uses distributed tracing to follow the path of a request through different microservices. Rather than guessing, we can see a visual representation of the call flows. Sourced from [Red Hat's blog on Jaeger](https://www.redhat.com/en/topics/microservices/what-is-jaeger)
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-tracing-is-being-used-with-jaeger-tracing) behind this test.</b>
 
-<b>Remediation Steps:</b> Ensure your CNF is using tracing.
-</p>
+## [Jaeger tracing](docs/LIST_OF_TESTS.md#jaeger-tracing)
 
-</details>
-
+##### To run the Jaeger tracing test, you can use the following command:
 ```
 ./cnf-testsuite tracing
 ```
+
+<b>Remediation for failing this test:</b> 
+Ensure that your CNF is both using & publishing traces to Jaeger.
+</b>
+
+
 
 #### Security Tests
 
