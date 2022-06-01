@@ -237,6 +237,9 @@ container nearly all the same access to the host as processes running outside co
 host.” In other words, you should rarely, if ever, use this switch on your container command line.*
 Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley. Kindle Edition. 
 
+#### *To check if any pods in the CNF use sysctls with restricted values*:
+> Sysctls can disable security mechanisms or affect all containers on a host, and should be disallowed except for an allowed "safe" subset. A sysctl is considered safe if it is namespaced in the container or the Pod, and it is isolated from other Pods or processes on the same Node. This test ensures that only those "safe" subsets are specified in a Pod.
+
 #### *To check for insecure capabilities*: [insecure_capabilities](USAGE.md#heavy_check_mark-to-check-for-insecure-capabilities)
 > Giving [insecure](https://hub.armo.cloud/docs/c-0046) and unnecessary capabilities for a container can increase the impact of a container compromise.
 
