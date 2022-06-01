@@ -750,41 +750,35 @@ Ensure that your CNF is both using & publishing traces to Jaeger.
 
 #### Security Tests
 
-##### :heavy_check_mark: To run all of the security tests
+##### To run all of the security tests, you can use the following command:
 
 ```
 ./cnf-testsuite security
 ```
 
-##### :heavy_check_mark: To check if a CNF is using container socket mounts
-<details> <summary>Details for container socket mounts</summary>
-<p>
+## [Container socket mounts](docs/LIST_OF_TESTS.md#container-socket-mounts)
 
-<b>Container Socker Mounts Details:</b> Container daemon socket bind mounts allows access to the container engine on the node. This access can be used for privilege escalation and to manage containers outside of Kubernetes, and hence should not be allowed
-
-<b>Remediation Steps:</b> Make sure to not mount `/var/run/docker.sock`, `/var/run/containerd.sock` or `/var/run/crio.sock` on the containers
-</p>
-
-</details>
+##### To run the Container socket mount test, you can use the following command:
 
 ```
 ./cnf-testsuite container_sock_mounts
 ```
 
-##### :heavy_check_mark: To check if any containers are running in [privileged mode](https://github.com/open-policy-agent/gatekeeper)
-<details> <summary>Details for privileged mode</summary>
-<p>
+<b>Remediation for failing this test:</b> 
+Make sure your CNF doesn't mount `/var/run/docker.sock`, `/var/run/containerd.sock` or `/var/run/crio.sock` on any containers.
+</b>
 
-<b>Privileged mode:</b> 
+## [Privileged Mode](docs/LIST_OF_TESTS.md#privileged-mode)
 
-<b>Remediation:</b> TBD
-</p>
-
-</details>
+##### To run the Privileged mode test, you can use the following command:
 
 ```
 ./cnf-testsuite privileged
 ```
+
+<b>Remediation for failing this test:</b> 
+Make sure that your CNF doesn't have the spec.securityContext.privileged: true flag set.
+</b>
 
 ##### :heavy_check_mark: To check if any pods in the CNF use sysctls with restricted values
 <details>
