@@ -345,7 +345,7 @@ See more at [ARMO-C0012](https://bit.ly/C0012_application_credentials)
 **What's tested:** Checks Ingress and Egress traffic policy
 
 
-## [Privilege container](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L156) 
+## [Privileged container](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L156) 
 - Expectation: Containers should not have privileged capabilities enabled.
 
 **What's tested:** Checks if any containers have privileged capabilities. Read more at [ARMO-C0057](https://bit.ly/31iGng3)
