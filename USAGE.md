@@ -780,72 +780,44 @@ Make sure your CNF doesn't mount `/var/run/docker.sock`, `/var/run/containerd.so
 Make sure that your CNF doesn't have the spec.securityContext.privileged: true flag set.
 </b>
 
-##### :heavy_check_mark: To check if any pods in the CNF use sysctls with restricted values
-<details>
-  <summary>Details for sysctls test</summary>
-  <p>
-    <b>Details:</b> Sysctls can disable security mechanisms or affect all containers on a host, and should be disallowed except for an allowed "safe" subset. A sysctl is considered safe if it is namespaced in the container or the Pod, and it is isolated from other Pods or processes on the same Node. This test ensures that only those "safe" subsets are specified in a Pod.
-  </p>
-  <p>
-    <b>Remediation Steps:</b> Setting additional sysctls above the allowed type is disallowed. The field spec.securityContext.sysctls must be unset or not use any other names than kernel.shm_rmid_forced, net.ipv4.ip_local_port_range, net.ipv4.ip_unprivileged_port_start, net.ipv4.tcp_syncookies and net.ipv4.ping_group_range.
-  </p>
-</details>
 
-```
-./cnf-testsuite sysctls
-```
+## [External IPs](docs/LIST_OF_TESTS.md#external-ips)
 
-##### :heavy_check_mark: To check if a CNF is running services with external IPs
-<details> <summary>Details for external IPs</summary>
-<p>
-
-<b>External IP's Details:</b> Service externalIPs can be used for a MITM attack (CVE-2020-8554). Restrict externalIPs or limit to a known set of addresses. See: https://github.com/kyverno/kyverno/issues/1367
-
-<b>Remediation Steps:</b> Make sure to not define external IPs in your kubernetes service configuration
-</p>
-
-</details>
-
+##### To run the External IPs test, you can use the following command:
 ```
 ./cnf-testsuite external_ips
 ```
 
+<b>Remediation for failing this test:</b> 
+Make sure to not define external IPs in your kubernetes service configuration
+</b>
 
-##### :heavy_check_mark: To check if any containers are running as a [root user](https://github.com/cncf/cnf-wg/blob/main/cbpps/0002-no-root-in-containers.md)
-<details> <summary>Details for non root user</summary>
-<p>
 
-<b>Non root user:</b> 
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-any-containers-are-running-as-a-root-user-checks-the-user-outside-the-container-that-is-running-dockerd-non_root_user) behind this test.</b>
+## [Root user](docs/LIST_OF_TESTS.md#root-user)
 
-<b>Remediation:</b> TBD
-</p>
-
-</details>
-
+##### To run the Root user test, you can use the following command:
 ```
 ./cnf-testsuite non_root_user
 ```
 
-##### :heavy_check_mark: To check if any containers allow for [privilege escalation](https://bit.ly/C0016_privilege_escalation)
-<details> <summary>Details for Privilege Escalation</summary>
-<p>
+<b>Remediation for failing this test:</b> 
+Ensure that none of the containers in your CNF are running processes as root.
+</b>
 
-<b>Privilege Escalation:</b> Check that the allowPrivilegeEscalation field in securityContext of container is set to false.
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-any-containers-allow-for-privilege-escalation-privilege_escalation) behind this test.</b>
+## [Privilege escalation](docs/LIST_OF_TESTS.md#privilege-escalation)
 
-<b>Remediation:</b> If your application does not need it, make sure the allowPrivilegeEscalation field of the securityContext is set to false.
-
-See more at [ARMO-C0016](https://bit.ly/C0016_privilege_escalation)
-
-</p>
-</details>
-
+##### To run the Privilege escalation test, you can use the following command:
 ```
 ./cnf-testsuite privilege_escalation
 ```
+
+<b>Remediation for failing this test:</b> 
+If your application does not need it, make sure the allowPrivilegeEscalation field of the securityContext is set to false. See more at [ARMO-C0016](https://bit.ly/C0016_privilege_escalation)
+
+</b>
+
 
 ##### :heavy_check_mark: To check if an attacker can use a [symlink](https://bit.ly/C0058_symlink_filesystem) for arbitrary host file system access
 <details> <summary>Details for Symlink Filesystem Access</summary>
