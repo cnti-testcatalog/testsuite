@@ -819,117 +819,85 @@ If your application does not need it, make sure the allowPrivilegeEscalation fie
 </b>
 
 
-##### :heavy_check_mark: To check if an attacker can use a [symlink](https://bit.ly/C0058_symlink_filesystem) for arbitrary host file system access
-<details> <summary>Details for Symlink Filesystem Access</summary>
-<p>
+## [Symlink file system](docs/LIST_OF_TESTS.md#symlink-file-system)
 
-<b>CVE-2021-25741 Symlink Host Access:</b> A user may be able to create a container with subPath or subPathExpr volume mounts to access files & directories anywhere on the host filesystem. Following Kubernetes versions are affected: v1.22.0 - v1.22.1, v1.21.0 - v1.21.4, v1.20.0 - v1.20.10, version v1.19.14 and lower. This control checks the vulnerable versions and the actual usage of the subPath feature in all Pods in the cluster.
-
-<b>Read the [rationale](RATIONALE.md#to-check-if-an-attacker-can-use-a-symlink-for-arbitrary-host-file-system-access-cve-2021-25741-symlink_file_system) behind this test.</b>
-
-<b>Remediation:</b> To mitigate this vulnerability without upgrading kubelet, you can disable the VolumeSubpath feature gate on kubelet and kube-apiserver, or remove any existing Pods using subPath or subPathExpr feature.
-
-See more at [ARMO-C0058](https://bit.ly/C0058_symlink_filesystem)
-
-</p>
-</details>
-
+##### To run the Symlink file test, you can use the following command:
 ```
 ./cnf-testsuite symlink_file_system
 ```
 
-##### :heavy_check_mark: To check if there are [application credentials stored in configuration or environment variables](https://bit.ly/C0012_application_credentials)
-<details> <summary>Details for Service Application Credentials</summary>
-<p>
+<b>Remediation for failing this test:</b> 
+To mitigate this vulnerability without upgrading kubelet, you can disable the VolumeSubpath feature gate on kubelet and kube-apiserver, or remove any existing Pods using subPath or subPathExpr feature.
+</b>
 
-<b>Application Credentials:</b> Developers store secrets in the Kubernetes configuration files, such as environment variables in the pod configuration. Such behavior is commonly seen in clusters that are monitored by Azure Security Center. Attackers who have access to those configurations, by querying the API server or by accessing those files on the developer’s endpoint, can steal the stored secrets and use them.
 
-Check if the pod has sensitive information in environment variables, by using list of known sensitive key names. Check if there are configmaps with sensitive information.
+## [Application credentials](docs/LIST_OF_TESTS.md#application-credentials)
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-there-are-service-accounts-that-are-automatically-mapped-application_credentials) behind this test.</b>
-
-<b>Remediation:</b> Use Kubernetes secrets or Key Management Systems to store credentials.
-
-See more at [ARMO-C0012](https://bit.ly/C0012_application_credentials)
-
-</p>
-</details>
-
+##### To run the Application credentials test, you can use the following command:
 ```
 ./cnf-testsuite application_credentials
 ```
 
+<b>Remediation for failing this test:</b> 
+Use Kubernetes secrets or Key Management Systems to store credentials.
+</b>
 
-##### :heavy_check_mark: To check if there is a [host network attached to a pod](https://bit.ly/C0041_hostNetwork)
-<details> <summary>Details for hostNetwork</summary>
-<p>
 
-<b>hostNetwork:</b> PODs should not have access to the host systems network.
+## [Host network](docs/LIST_OF_TESTS.md#host-network)
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-there-is-a-host-network-attached-to-a-pod-host_network) behind this test.</b>
-
-<b>Remediation:</b> Only connect PODs to hostNetwork when it is necessary. If not, set the hostNetwork field of the pod spec to false, or completely remove it (false is the default). Whitelist only those PODs that must have access to host network by design.
-
-See more at [ARMO-C0041](https://bit.ly/C0041_hostNetwork)
-
-</p>
-</details>
-
+##### To run the Host network credentials test, you can use the following command:
 ```
 ./cnf-testsuite host_network
 ``` 
 
-##### :heavy_check_mark: To check if there are [service accounts that are automatically mapped](https://bit.ly/C0034_service_account_mapping)
-<details> <summary>Details for Service Account Mapping</summary>
-<p>
+<b>Remediation for failing this test:</b> 
+Only connect PODs to the hostNetwork when it is necessary. If not, set the hostNetwork field of the pod spec to false, or completely remove it (false is the default). Allow only those PODs that must have access to host network by design.
+</b>
 
-<b>Service Account Mapping:</b> The automatic mounting of service account tokens should be disabled.
 
-<b>Remediation:</b> Disable automatic mounting of service account tokens to PODs either at the service account level or at the individual POD level, by specifying the automountServiceAccountToken: false. Note that POD level takes precedence.
 
-See more at [ARMO-C0034](https://bit.ly/C0034_service_account_mapping)
 
-</p>
-</details>
+## [Service account mapping](docs/LIST_OF_TESTS.md#service-account-mapping)
 
+##### To run the Service account mapping test, you can use the following command:
 ```
 ./cnf-testsuite service_account_mapping
 ```
 
-##### :heavy_check_mark: To check if there is an [ingress and egress policy defined](https://bit.ly/3bhT10s).
-<details> <summary>Details for ingress_egress_blocked test</summary>
-<p>
+<b>Remediation for failing this test:</b> 
+Disable automatic mounting of service account tokens to PODs either at the service account level or at the individual POD level, by specifying the automountServiceAccountToken: false. Note that POD level takes precedence.
+</b>
 
-<b>Ingress Egress Blocked: </b> Network policies control traffic flow between Pods, namespaces, and external IP addresses. By default, no network policies are applied to Pods or namespaces, resulting in unrestricted ingress and egress traffic within the Pod network. Pods become isolated through a network policy that applies to the Pod or the Pod’s namespace. Once a Pod is selected in a network policy, it rejects any connections that are not specifically allowed by any applicable policy object.Administrators should use a default policy selecting all Pods to deny all ingress and egress traffic and ensure any unselected Pods are isolated. Additional policies could then relax these restrictions for permissible connections.(For ARMO runtime needs to add exception). See more at [Armo's C-0030 doc on ingress egress blocked details](https://bit.ly/3bhT10s).
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-there-is-an-ingress-and-egress-policy-defined-ingress_egress_blocked) behind this test.</b>
+## [Ingress and Egress blocked](docs/LIST_OF_TESTS.md#ingress-and-egress-blocked)
 
-<b>Remediation Steps: </b> By default, you should disable or restrict Ingress and Egress traffic on all pods.
-
-</details>
-
+##### To run the Ingress and Egress test, you can use the following command:
 ```
 ./cnf-testsuite ingress_egress_blocked
 ```
-##### :heavy_check_mark: To check if there are any privileged containers
 
-<details> <summary>Details for Privileged Containers</summary>
-<p>
+<b>Remediation for failing this test: </b> 
 
-<b>Privileged Containers:</b> A privileged container is a container that has all the capabilities of the host machine, which lifts all the limitations regular containers have. This means that privileged containers can do almost every action that can be performed directly on the host. Attackers who gain access to a privileged container or have permissions to create a new privileged container (by using the compromised pod’s service account, for example), can get access to the host’s resources.
+By default, you should disable or restrict Ingress and Egress traffic on all pods.
+</b>
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-there-are-any-privileged-containers-kubscape-version-privileged_containers) behind this test.</b>
-    
-<b>Remediation:</b> Change the deployment and/or pod definition to unprivileged. The securityContext.privileged should be false.
-    
-Read more at [ARMO-C0057](https://bit.ly/31iGng3)
-    
-</p>
-</details>
+
+## [Privilege container](docs/LIST_OF_TESTS.md#privileged-container)
+
+##### To run the Privilege container test, you can use the following command:
 
 ```
 ./cnf-testsuite privileged_containers
 ```
+
+    
+<b>Remediation for failing this test:</b> 
+
+Remove privileged capabilities by setting the securityContext.privileged to false. If you must deploy a Pod as privileged, add other restriction to it, such as network policy, Seccomp etc and still remove all unnecessary capabilities.
+        
+</b>
+
+
 
 ##### :heavy_check_mark: To check for insecure capabilities
 <details> <summary>Details for Insecure Capabilities</summary>
