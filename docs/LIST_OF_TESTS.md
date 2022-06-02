@@ -345,7 +345,7 @@ See more at [ARMO-C0012](https://bit.ly/C0012_application_credentials)
 **What's tested:** Checks Ingress and Egress traffic policy
 
 
-## [Privilege escalation, Kubescape](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L156) 
+## [Privilege escalation](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L156) 
 - Expectation: Containers should not allow privilege escalation
 
 **What's tested:** Checks if any containers are running in privileged mode. Read more at [ARMO-C0057](https://bit.ly/31iGng3)
