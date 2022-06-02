@@ -28,6 +28,8 @@ task "cert", ["cert_compatibility", "cert_state", "cert_security", "cert_configu
 
   update_yml("#{CNFManager::Points::Results.file}", "points", total)
   update_yml("#{CNFManager::Points::Results.file}", "maximum_points", max_points)
+  update_yml("#{CNFManager::Points::Results.file}", "total_passed", "#{total_passed} of #{max_passed}")
+  update_yml("#{CNFManager::Points::Results.file}", "essential_passed", "#{essential_total_passed} of #{essential_max_passed}")
 
   if CNFManager::Points.failed_required_tasks.size > 0
     stdout_failure "Test Suite failed!"
