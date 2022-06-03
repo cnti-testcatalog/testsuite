@@ -748,7 +748,7 @@ Ensure that your CNF is both using & publishing traces to Jaeger.
 
 
 
-#### Security Tests
+# Security Tests
 
 ##### To run all of the security tests, you can use the following command:
 
@@ -1074,7 +1074,7 @@ crystal src/cnf-testsuite.cr protected_access
 </p>
 </details>
 
-#### Configuration Tests
+# Configuration Tests
 
 ##### :heavy_check_mark: To run all of the configuration and lifecycle tests
 
