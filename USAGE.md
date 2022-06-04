@@ -1076,61 +1076,49 @@ crystal src/cnf-testsuite.cr protected_access
 
 # Configuration Tests
 
-##### :heavy_check_mark: To run all of the configuration and lifecycle tests
+##### To run all Configuration tests, you can use the following command:
 
 ```
 ./cnf-testsuite configuration_lifecycle
 ```
 
-##### :heavy_check_mark: To check if resources of the CNF are not in the default namespace
-<details>
-<summary>Details for default namespace</summary>
-<p>
+## [Default namespaces](docs/LIST_OF_TESTS.md#default-namespaces)
 
-<b>Kubernetes Namespaces:</b> Default namespces provide a way to segment and isolate cluster resources across multiple applications and users. As a best practice, workloads should be isolated with Namespaces.
-
-<b>Remediation steps:</b> Namespaces should be required and the default (empty) Namespace should not be used. This policy validates that Pods specify a Namespace name other than `default`.
-
-</p>
-</details>
-
+##### To run the Default namespace test, you can use the following command:
 ```
 ./cnf-testsuite default_namespace
 ```
 
+<b>Remediation for failing this test:</b> 
+Ensure that your CNF is configured to use a Namespace and is not using the default namespace. 
 
-##### :heavy_check_mark: To check if Pods in the CNF use container images with the latest tag
-<details>
-<summary>Details for `latest_tag`</summary>
-<p>
+</b>
 
-<b>Latest tag:</b> The `:latest` tag is mutable and can lead to unexpected errors if the image changes. Even when a tag is not specified, the `:latest` tag is used by default.
 
-<b>Read the [rationale](RATIONALE.md#to-test-if-there-are-versioned-tags-on-all-images-using-opa-gatekeeper) behind this test.</b>
 
-<b>Remediation steps:</b> When specifying container images, always specify a tag and ensure to use an immutable tag that maps to a specific version of an application Pod. Avoid using the `latest` tag, as it is not guaranteed to be always point to the same version of the image.
+## [Latest tag](docs/LIST_OF_TESTS.md#latest-tag)
 
-</p>
-</details>
-
+##### To run the Latest tag test, you can use the following command:
 ```
 ./cnf-testsuite latest_tag
 ```
 
-##### :heavy_check_mark: To check if pods are using the `app.kubernetes.io/name` label
-<details> <summary>Details for labels test</summary>
-<p>
+<b>Remediation for failing this test:</b>
+When specifying container images, always specify a tag and ensure to use an immutable tag that maps to a specific version of an application Pod. Remove any usage of the `latest` tag, as it is not guaranteed to be always point to the same version of the image.
 
-<b>Labels Details:</b> Defining and using labels help to identify semantic attributes of your application or Deployment. A common set of labels allows tools to work collaboratively, describing objects in a common manner that all tools can understand. The recommended labels describe applications in a way that can be queried
+</b>
 
-<b>Remediation Steps:</b> Make sure to define `app.kubernetes.io/name` label under metadata
-</p>
 
-</details>
+## [Require labels](docs/LIST_OF_TESTS.md#require-labels)
 
+##### To run the require labels test, you can use the following command:
 ```
 ./cnf-testsuite require_labels
 ```
+
+<b>Remediation for failing this test:</b> 
+Make sure to define `app.kubernetes.io/name` label under metadata for your CNF.
+</b>
 
 
 ##### :heavy_check_mark: To test if there are versioned tags on all images using OPA Gatekeeper
