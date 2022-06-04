@@ -315,3 +315,6 @@ to their data has the following advantages:*
 - *improves performance of your cluster by significantly reducing load on kube-apiserver, by 
 closing watches for ConfigMaps marked as immutable.*"
 
+#### *To check if a CNF is using the default namespace*: [default_namespace](USAGE.md#default-namespace)
+> *Namespces provide a way to segment and isolate cluster resources across multiple applications and users. As a best practice, workloads should be isolated with Namespaces and not use the default namespace. 
+
