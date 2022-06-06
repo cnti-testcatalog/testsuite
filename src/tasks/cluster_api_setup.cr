@@ -32,7 +32,13 @@ task "cluster_api_setup" do |_, args|
 
   Log.info { "Completed downloading clusterctl" }
 
-  cluster_init_cmd = "CLUSTER_TOPOLOGY=true; clusterctl init --infrastructure docker"
+  clusterctl = Path["~/.cluster-api"].expand(home: true)
+
+  FileUtils.mkdir_p("#{clusterctl}")
+
+  File.write("#{clusterctl}/clusterctl.yaml", "CLUSTER_TOPOLOGY: \"true\"")
+
+  cluster_init_cmd = "clusterctl init --infrastructure docker"
   stdout = IO::Memory.new
   Process.run(cluster_init_cmd, shell: true, output: stdout, error: stdout)
   Log.for("clusterctl init").info { stdout }
