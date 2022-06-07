@@ -532,12 +532,12 @@ task "pod_io_stress", ["install_litmus"] do |_, args|
         chaos_experiment_name = "pod-io-stress"
         total_chaos_duration = "120"
         target_pod_name = ""
-        test_name = "#{resource["name"]}-#{Random.rand(99)}" 
-        chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
+        chaos_test_name = "#{resource["name"]}-#{Random.rand(99)}" 
+        chaos_result_name = "#{chaos_test_name}-#{chaos_experiment_name}"
 
         spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
         template = ChaosTemplates::PodIoStress.new(
-          test_name,
+          chaos_test_name,
           "#{chaos_experiment_name}",
           app_namespace,
           "#{spec_labels.first_key}",
@@ -548,7 +548,7 @@ task "pod_io_stress", ["install_litmus"] do |_, args|
 
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
+        LitmusManager.wait_for_test(chaos_test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
       end
     end
