@@ -495,14 +495,17 @@ end
 desc "Does the CNF crash when pod-io-stress occurs"
 task "pod_io_stress", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "pod_io_stress" } if check_verbose(args)
+    test_name = "pod_io_stress"
+    Log.for(test_name).info { "Starting test" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      if KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h? && KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.size > 0
+      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
+      if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
       else
-        puts "No resource label found for pod_io_stress test for resource: #{resource["name"]}".colorize(:red)
+        stdout_failure("No resource label found for #{test_name} test for resource: #{resource["name"]} in #{resource["namespace"]}")
         test_passed = false
       end
       if test_passed
@@ -512,10 +515,19 @@ task "pod_io_stress", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-io-stress-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/pod-io-stress-rbac.yaml")
         else
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-io-stress/experiment.yaml")
-          KubectlClient::Apply.file("https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-io-stress/rbac.yaml")
+          experiment_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-io-stress/experiment.yaml"
+          rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-io-stress/rbac.yaml"
+
+          experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+          KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
+
+          rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+          rbac_yaml = File.read(rbac_path)
+          rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
+          File.write(rbac_path, rbac_yaml)
+          KubectlClient::Apply.file(rbac_path)
         end
-        KubectlClient::Annotate.run("--overwrite deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
+        KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-io-stress"
         total_chaos_duration = "120"
@@ -523,25 +535,27 @@ task "pod_io_stress", ["install_litmus"] do |_, args|
         test_name = "#{resource["name"]}-#{Random.rand(99)}" 
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
+        spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
         template = ChaosTemplates::PodIoStress.new(
           test_name,
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_key}",
-          "#{KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"]).as_h.first_value}",
           "#{chaos_experiment_name}",
+          app_namespace,
+          "#{spec_labels.as_h.first_key}",
+          "#{spec_labels.as_h.first_value}",
           total_chaos_duration,
           target_pod_name
         ).to_s
 
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args)
-        test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args)
+        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
+        test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
       end
     end
     if task_response
-      resp = upsert_passed_task("pod_io_stress","✔️  PASSED: pod_io_stress chaos test passed 🗡️💀♻️")
+      resp = upsert_passed_task(test_name,"✔️  PASSED: #{test_name} chaos test passed 🗡️💀♻️")
     else
-      resp = upsert_failed_task("pod_io_stress","✖️  FAILED: pod_io_stress chaos test failed 🗡️💀♻️")
+      resp = upsert_failed_task(test_name,"✖️  FAILED: #{test_name} chaos test failed 🗡️💀♻️")
     end
   end
 ensure
