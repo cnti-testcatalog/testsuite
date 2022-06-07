@@ -8,6 +8,11 @@ describe "Cluster API" do
     `./cnf-testsuite setup`
     $?.success?.should be_true
   end
+  after_each do
+    response_s = `./cnf-testsuite cluster_api_cleanup`
+    $?.success?.should be_true
+    Log.info { "#{response_s}" }
+  end
 
   it "'clusterapi_enabled' should pass if cluster api is installed", tags: ["cluster-api"] do
     begin
@@ -19,14 +24,19 @@ describe "Cluster API" do
       (/Cluster API is enabled/ =~ response_s).should_not be_nil
     ensure
       Log.info { "Running Cleanup" }
-      Log.info { `./cnf-testsuite cluster_api_cleanup` }
+      `./cnf-testsuite cluster_api_cleanup` 
     end
   end
   
   it "'clusterapi_enabled' should fail if cluster api is not installed", tags: ["cluster-api"] do
-    response_s = `./cnf-testsuite clusterapi_enabled poc`
-    LOGGING.info response_s
-    (/Cluster API NOT enabled/ =~ response_s).should_not be_nil
+    begin
+      response_s = `./cnf-testsuite clusterapi_enabled poc`
+      LOGGING.info response_s
+      (/Cluster API NOT enabled/ =~ response_s).should_not be_nil
+    ensure
+      Log.info { "Running Cleanup" }
+      `./cnf-testsuite cluster_api_cleanup`
+    end
   end
 end
 
