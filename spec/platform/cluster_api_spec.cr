@@ -9,11 +9,6 @@ describe "Cluster API" do
     $?.success?.should be_true
   end
 
-  after_all do
-    # cleanup cluster api stuff
-    # `./cnf-testsuite cluster_api_cleanup`
-  end
-
   it "'clusterapi_enabled' should pass if cluster api is installed", tags: ["cluster-api"] do
     begin
       LOGGING.info `./cnf-testsuite cluster_api_setup`
@@ -23,7 +18,8 @@ describe "Cluster API" do
       LOGGING.info response_s
       (/Cluster API is enabled/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cluster_api_cleanup`
+      Log.info { "Running Cleanup" }
+      Log.info { `./cnf-testsuite cluster_api_cleanup` }
     end
   end
   
