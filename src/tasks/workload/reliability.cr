@@ -540,8 +540,8 @@ task "pod_io_stress", ["install_litmus"] do |_, args|
           test_name,
           "#{chaos_experiment_name}",
           app_namespace,
-          "#{spec_labels.as_h.first_key}",
-          "#{spec_labels.as_h.first_value}",
+          "#{spec_labels.first_key}",
+          "#{spec_labels.first_value}",
           total_chaos_duration,
           target_pod_name
         ).to_s
