@@ -106,13 +106,13 @@ describe "Microservice" do
 
   it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"]  do
     begin
-      Log.info {`./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`}
+      ShellCmd.run("./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns", "cnf_setup", force_output=true)
       response_s = `./cnf-testsuite reasonable_startup_time verbose`
       Log.info { response_s }
       
       (/PASSED: CNF had a reasonable startup time/ =~ response_s).should_not be_nil
     ensure
-      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns` }
+      ShellCmd.run("./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns", "cnf_cleanup", force_output=true)
       $?.success?.should be_true
     end
   end
@@ -158,26 +158,26 @@ end
 
 it "'service_discovery' should pass if any containers in the cnf are exposed as a service", tags: ["service_discovery"]  do
   begin
-    Log.info { `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns` }
+    ShellCmd.run("./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns", "cnf_setup", force_output=true)
     response_s = `./cnf-testsuite service_discovery verbose`
     Log.info { response_s }
     $?.success?.should be_true
     (/PASSED: Some containers exposed as a service/ =~ response_s).should_not be_nil
   ensure
-    Log.info { `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns` }
+    ShellCmd.run("./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns", "cnf_cleanup", force_output=true)
     $?.success?.should be_true
   end
 end
 
 it "'service_discovery' should fail if no containers in the cnf are exposed as a service", tags: ["service_discovery"]  do
   begin
-    Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-ndn-privileged` }
+    ShellCmd.run("./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-ndn-privileged", "cnf_setup", force_output=true)
     response_s = `./cnf-testsuite service_discovery verbose`
     Log.info { response_s }
     $?.success?.should be_true
     (/FAILED: No containers exposed as a service/ =~ response_s).should_not be_nil
   ensure
-    Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-ndn-privileged` }
+    ShellCmd.run("./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-ndn-privileged", "cnf_cleanup", force_output=true)
     $?.success?.should be_true
   end
 end
