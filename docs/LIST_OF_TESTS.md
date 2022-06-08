@@ -456,25 +456,25 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 **What's tested:**  The hostport not used test will look through all containers defined in the installed cnf to see if the hostPort configuration field is in use.
 
 ## [Hardcoded IP addresses in K8s runtime configuration](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L213) 
-- Expectation: Checks for hardcoded IP addresses or subnet masks in the K8s runtime configuration.
+- Expectation: That no hardcoded IP addresses or subnet masks are found in the Kubernetes resources for the CNF.
 
-**What's tested:** TBD
+**What's tested:** The hardcoded ip address test will scan all the Kubernetes resources of the installed cnf to ensure that no static, hardcoded ip addresses are being used in the configuration.
 
 ## [Secrets used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L257) 
-- Expectation: Checks for K8s secrets.
+- Expectation: The CNF is using K8s secrets for the management of sensitive data.
 
-**What's tested:** TBD
+**What's tested:** The secrets used test will scan all the Kubernetes workload resources to see if K8s secrets are being used.
 
 ## [Immutable configmap](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L362) 
-- Expectation: Checks for K8s version and if immutable configmaps are enabled.
+- Expectation: Immutable configmaps are being used for non-mutable data.
 
-**What's tested:** TBD
+**What's tested:** The immutable configmap test will scan the Kubernetes resources for the CNF and see if immutable configmaps are being used.
 
 ## [Pod DNS errors](https://github.com/cncf/cnf-testsuite/blob/v0.26.0/src/tasks/workload/reliability.cr#L604)
 - :heavy_check_mark: Added to CNF Test Suite in release v0.26.0
-- Expectation: Test if the CNF crashes when pod dns error occurs
+- Expectation: That the CNF dosen't crash and maintains some level of availability.
 
-**What's tested:** TBD
+**What's tested:** This test injects chaos to disrupt dns resolution in kubernetes pods and causes loss of access to services by blocking dns resolution of hostnames/domains.
 
 
 
