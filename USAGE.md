@@ -1243,25 +1243,39 @@ Ensure that your CNF is resilient to DNS/resolution failures can maintain a leve
 
 
 
-### Platform Tests
+# Platform Tests
 
-##### :heavy_check_mark: Run all platform tests
+##### To run all Platform tests, you can use the following command:
 
 ```
 ./cnf-testsuite platform
 ```
 
-##### :heavy_check_mark: Run the K8s conformance tests
+## [K8s Conformance](docs/LIST_OF_TESTS.md#k8s-conformance)
+
+##### To run the K8s Conformance test, you can use the following command:
 
 ```
 ./cnf-testsuite k8s_conformance
 ```
 
-##### :heavy_check_mark: To test if Cluster API is enabled on the platform and manages a node
+<b>Remediation for failing this test:</b> 
+Check that [Sonobuoy](https://github.com/vmware-tanzu/sonobuoy) can be successfully run and passes without failure on your platform. Any failures found by Sonobuoy will provide debug and remediation steps required to get your K8s cluster into a conformant state.
+</b>
+
+
+## [ClusterAPI enabled](docs/LIST_OF_TESTS.md#k8s-conformance)
+
+##### To run the ClusterAPI enabled test, you can use the following command:
 
 ```
 ./cnf-testsuite clusterapi_enabled
 ```
+
+<b>Remediation for failing this test:</b> 
+Enable ClusterAPI and start using it to manage the provisioning and lifecycle of your Kubernetes clusters.
+</b>
+
 
 ##### :heavy_check_mark: Run All platform harware and scheduling tests
 
@@ -1275,11 +1289,6 @@ Ensure that your CNF is resilient to DNS/resolution failures can maintain a leve
 ./cnf-testsuite platform:oci_compliant
 ```
 
-##### :bulb: (PoC) Run All platform observability tests
-
-```
-./cnf-testsuite platform:observability poc
-```
 
 ##### :bulb: (PoC) Run All platform resilience tests
 
@@ -1287,12 +1296,10 @@ Ensure that your CNF is resilient to DNS/resolution failures can maintain a leve
 ./cnf-testsuite platform:resilience poc
 ```
 
-##### :x: :bulb: (PoC) Run node failure test. WARNING this is a destructive test and will reboot your _host_ node!
-
-##### Do not run this unless you have completely separate cluster, e.g. development or test cluster.
+##### WARNING this is a destructive test and will reboot your _host_ node! Do not run this unless you have completely separate cluster, e.g. development or test cluster.
 
 ```
-./cnf-testsuite platform:node_failure poc destructive
+./cnf-testsuite platform:worker_reboot_recovery poc destructive
 ```
 
 ##### :heavy_check_mark: Run All platform security tests
