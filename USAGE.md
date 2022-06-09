@@ -1090,6 +1090,7 @@ crystal src/cnf-testsuite.cr protected_access
 ```
 
 <b>Remediation for failing this test:</b> 
+
 Ensure that your CNF is configured to use a Namespace and is not using the default namespace. 
 
 </b>
@@ -1104,6 +1105,7 @@ Ensure that your CNF is configured to use a Namespace and is not using the defau
 ```
 
 <b>Remediation for failing this test:</b>
+
 When specifying container images, always specify a tag and ensure to use an immutable tag that maps to a specific version of an application Pod. Remove any usage of the `latest` tag, as it is not guaranteed to be always point to the same version of the image.
 
 </b>
@@ -1117,138 +1119,129 @@ When specifying container images, always specify a tag and ensure to use an immu
 ```
 
 <b>Remediation for failing this test:</b> 
+
 Make sure to define `app.kubernetes.io/name` label under metadata for your CNF.
+
 </b>
 
 
-##### :heavy_check_mark: To test if there are versioned tags on all images using OPA Gatekeeper
-<details> <summary>Details for versioned tag</summary>
-<p>
+## [Versioned tag](docs/LIST_OF_TESTS.md#versioned-tag) 
 
-<b>Versioned tag:</b> 
-
-<b>Remediation:</b> TBD
-</p>
-
-</details>
-
+##### To run the versioned tag test, you can use the following command:
 ```
 ./cnf-testsuite versioned_tag
 ```
 
-##### :heavy_check_mark: To test if there are any (non-declarative) hardcoded IP addresses or subnet masks
-<details> <summary>Details for IP Addresses</summary>
-<p>
+<b>Remediation for failing this test:</b>
 
-<b>IP Addresses:</b> 
+When specifying container images, always specify a tag and ensure to use an immutable tag that maps to a specific version of an application Pod. Remove any usage of the `latest` tag, as it is not guaranteed to be always point to the same version of the image.
 
-<b>Remediation:</b> TBD
-</p>
+</b>
 
-</details>
 
+## [IP addresses](docs/LIST_OF_TESTS.md#ip-addresses)
+
+##### To run the IP addresses test, you can use the following command:
 ```
 ./cnf-testsuite ip_addresses
 ```
 
-##### :heavy_check_mark: To test if there are node ports used in the service configuration
-<details> <summary>Details for nodeports not used</summary>
-<p>
+<b>Remediation for failing this test:</b> 
 
-<b>Nodeports in use:</b> 
+Remove any usage of hardcoded ip addresses in CNF's Helm Chart & Manifiest files.
 
-<b>Read the [rationale](RATIONALE.md#to-test-if-there-are-node-ports-used-in-the-service-configuration) behind this test.</b>
+</b>
 
-<b>Remediation:</b> TBD
-</p>
 
-</details>
 
+## [nodePort not used](docs/LIST_OF_TESTS.md#ip-addresses)
+
+##### To run the nodePort not used test, you can use the following command:
 ```
 ./cnf-testsuite nodeport_not_used
 ```
 
-##### :heavy_check_mark: To test if there are host ports used in the service configuration
-<details> <summary>Details for hostport not used</summary>
-<p>
+<b>Remediation for failing this test:</b> 
 
-<b>hostport_not_used: The hostport not used test will look through all containers defined in the installed cnf to see if the hostPort configuration field is in use. If the field is found it will mark the cnf as failed for this test. </b> 
+Review all Helm Charts & Kubernetes Manifest files for the CNF and remove all occurrences of the nostPort field in you configuration. Alternatively, configure a service or use another mechanism for exposing your contianer.
 
-<b>Read the [rationale](RATIONALE.md#to-test-if-there-are-host-ports-used-in-the-service-configuration) behind this test.</b>
+</b>
 
-<b>Remediation:</b> Review all Helm Charts & Kubernetes Manifest files for the CNF and remove all occurrences of the hostPort field in you configuration. Alternatively, configure a service or use another mechanism for exposing your contianer.
-</p>
 
-</details>
+## [hostPort not used](docs/LIST_OF_TESTS.md#ip-addresses)
+
+##### To run the hodePort not used test, you can use the following command:
 
 ```
 ./cnf-testsuite hostport_not_used
 ```
 
-##### :heavy_check_mark: To test if there are any (non-declarative) hardcoded IP addresses or subnet masks in the K8s runtime configuration
+<b>Remediation for failing this test:</b> 
 
-<details> <summary>Details for hardcoded ip address in k8s runtime config</summary>
-<p>
-  
-<b>hardcoded_ip_addresses_in_k8s_runtime_configuration:</b> The hardcoded ip address test will scan all the Kubernetes resources of the installed cnf to ensure that no static, hardcoded ip addresses are being used in the configuration.
+Review all Helm Charts & Kubernetes Manifest files for the CNF and remove all occurrences of the hostPort field in you configuration. Alternatively, configure a service or use another mechanism for exposing your contianer.
+</b>
 
-<b>Read the [rationale](RATIONALE.md#to-test-if-there-are-any-non-declarative-hardcoded-ip-addresses-or-subnet-masks-in-the-k8s-runtime-configuration) behind this test.</b>
 
-<b>Remediation: Review all Helm Charts & Kubernetes Manifest files of the CNF and look for any hardcoded usage of ip addresses. If any are found, you will need to use an operator or some other method to abstract the IP management out of your configuration in order to pass this test. </b>
-  
-</p>
-</details>
+
+
+## [Hardcoded IP addresses in K8s runtime configuration](docs/LIST_OF_TESTS.md#Hardcoded-ip-addresses-in-k8s-runtime-configuration)
+
+##### To run the Hardcoded IP addresses test, you can use the following command:
 
 ```
 ./cnf-testsuite hardcoded_ip_addresses_in_k8s_runtime_configuration
 ```
 
-##### :heavy_check_mark: To check if a CNF uses K8s secrets
-<details> <summary>Additional Information</summary>
-<p>
+<b>Remediation for failing this test:</b> 
 
-<b>Rules for the test:</b> The whole test passes if _any_ workload resource in the cnf uses a (non-exempt) secret. If no workload resources use a (non-exempt) secret, the test is skipped.
+Review all Helm Charts & Kubernetes Manifest files of the CNF and look for any hardcoded usage of ip addresses. If any are found, you will need to use an operator or some other method to abstract the IP management out of your configuration in order to pass this test.   
+</b>
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-a-cnf-uses-k8s-secrets-secrets_used) behind this test.</b>
-    
-</p>
-</details>
 
+
+## [Secrets used](docs/LIST_OF_TESTS.md#secrets-used)
+
+##### To run the Secrets used test, you can use the following command:
 ```
 ./cnf-testsuite secrets_used
 ```
 
-##### :heavy_check_mark: To check if a CNF version uses [immutable configmaps](https://kubernetes.io/docs/concepts/configuration/configmap/#configmap-immutable)
-<details> <summary>Details for immutable configmap</summary>
-<p>
+<b>Rules for the test:</b> The whole test passes if _any_ workload resource in the cnf uses a (non-exempt) secret. If no workload resources use a (non-exempt) secret, the test is skipped.
 
-<b>Immutable configmap:</b> 
+<b>Remediation for failing this test:</b> 
 
-<b>Read the [rationale](RATIONALE.md#to-check-if-a-cnf-version-uses-immutable-configmaps-immutable_configmap) behind this test.</b>
+Remove any sensitive data stored in configmaps, environment variables and instead utilize K8s Secrets for storing such data.  Alternatively, you can use an operator or some other method to abstract hardcoded sensitive data out of your configuration.   
+</b>
 
-<b>Remediation:</b> TBD
-</p>
 
-</details>
 
+## [immutable configmaps](docs/LIST_OF_TESTS.md#immutable-configmaps)
+
+##### To run the immutable configmap test, you can use the following command:
 ```
 ./cnf-testsuite immutable_configmap
 ```
 
-#### :heavy_check_mark: Test if the CNF crashes when pod dns error occurs
-<details> <summary>Details for pod DNS error</summary>
-<p>
+<b>Remediation for failing this test:</b> 
+Use immutable configmaps for any non-mutable configuration data.
+</b>
 
-<b>Pod DNS Error:</b> 
 
-<b>Remediation:</b> TBD
-</p>
 
-</details>
 
+## [Pod DNS errors](docs/LIST_OF_TESTS.md#immutable-configmaps)
+
+##### To run the Pod DNS error test, you can use the following command:
 ```
 ./cnf-testsuite pod_dns_error
 ```
+
+<b>Remediation for failing this test:</b> 
+Ensure that your CNF is resilient to DNS/resolution failures can maintain a level of avaliabliy.
+
+</b>
+
+
 
 ### Platform Tests
 
