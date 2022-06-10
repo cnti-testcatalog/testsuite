@@ -1328,61 +1328,57 @@ Reboot the Worker nodes for your Kubernetes cluster virify that all node survive
 ./cnf-testsuite platform:cluster_admin
 ```
 
-<b>Remediation for failing this test:</b> You should apply least privilege principle. Make sure cluster admin permissions are granted only when it is absolutely necessary. Don't use subjects with high privileged permissions for daily operations.
+<b>Remediation for failing this test:</b> 
+You should apply least privilege principle. Make sure cluster admin permissions are granted only when it is absolutely necessary. Don't use subjects with high privileged permissions for daily operations.
 
 See more at [ARMO-C0035](https://bit.ly/C0035_cluster_admin)
 
 </b>
 
 
-##### :heavy_check_mark: To check if [the control plane is hardened](https://bit.ly/C0005_Control_Plane)
-<details> <summary>Details for Control Plane Hardening</summary>
+## [Control plane hardening](docs/LIST_OF_TESTS.md#control-plane-harding)
 
-<p><b>Control Plane Hardening:</b> The control plane is the core of Kubernetes and gives users the ability to view containers, schedule new Pods, read Secrets, and execute commands in the cluster. Therefore, it should be protected. It is recommended to avoid control plane exposure to the Internet or to an untrusted network. The API server runs on ports 6443 and 8080. We recommend to block them in the firewall. Note that port 8080, when accessed through the local machine, does not require TLS encryption, and the requests bypass authentication and authorization modules.
-
-Checks if the insecure-port flag is set (in case of cloud vendor hosted Kubernetes service this verification will not be effective).
-
-<b>Remediation:</b> Set the insecure-port flag of the API server to zero.
-
-See more at [ARMO-C0005](https://bit.ly/C0005_Control_Plane)
-
-</p>
-</details>
+##### To run the Control plane hardening test, you can use the following command:
 
 ```
 ./cnf-testsuite platform:control_plane_hardening
 ```
 
-##### :heavy_check_mark: To check if dashboard is exposed
+<b>Remediation for failing this test:</b> 
 
-<details> <summary>Details for platform:exposed_dashboard</summary>
-<p>
+Set the insecure-port flag of the API server to zero.
 
-<b>Exposed Dashboard:</b> If Kubernetes dashboard is exposed externally in Dashboard versions before 2.01, it will allow unauthenticated remote management of the cluster. By default, the dashboard exposes an internal endpoint (ClusterIP service). While the [NSA and CISA’s K8s Hardening guide](https://bit.ly/3zUimHR) does not directly address the dashboard exposure it does go over related areas like the Control plane API. See more details in Kubescape documentation: [C-0047 - Exposed dashboard](https://hub.armo.cloud/docs/c-0047)
+See more at [ARMO-C0005](https://bit.ly/C0005_Control_Plane)
+
+</b>
+
+```
+./cnf-testsuite platform:control_plane_hardening
+```
+
+## [Dashboard exposed](docs/LIST_OF_TESTS.md#dashboard-exposed)
+
+##### To run the Dashboard exposed test, you can use the following command:
+```
+./cnf-testsuite platform:exposed_dashboard
+```
 
 <b>Remediation for failing this test: </b>
 
 Update dashboard version to v2.0.1 or above.
 
-</p>
-</details>
+</b>
 
-```
-./cnf-testsuite platform:exposed_dashboard
-```
 
-##### :heavy_check_mark: To check if containers are using any tiller images
-<details> <summary>Details for tiller images</summary>
-<p>
+## [Tiller images](docs/LIST_OF_TESTS.md#tiller-images)
 
-<b>Tiller Images Details:</b> Tiller, found in Helm v2, has known security challenges. It requires administrative privileges and acts as a shared resource accessible to any authenticated user. Tiller can lead to privilege escalation as restricted users can impact other users. It is recommend to use Helm v3+ which does not contain Tiller for these reasons
-
-<b>Remediation Steps:</b> Make sure not to pull any images with name tiller in them
-</p>
-
-</details>
-
+##### To run the Tiller images test, you can use the following command:
 ```
 ./cnf-testsuite platform:helm_tiller
 ```
+
+<b>Remediation for failing this test:</b> 
+Switch to using Helm v3+ and make sure not to pull any images with name tiller in them
+</b>
+
 
