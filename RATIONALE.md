@@ -321,3 +321,7 @@ closing watches for ConfigMaps marked as immutable.*"
 #### *To check if a CNF is using the default namespace*: [default_namespace](USAGE.md#default-namespace)
 > *Namespces provide a way to segment and isolate cluster resources across multiple applications and users. As a best practice, workloads should be isolated with Namespaces and not use the default namespace. 
 
+## Platform Tests
+
+#### *To check if the plateform has a default Cluster admin role*: [cluster-admin](USAGE.md#cluster-admin)
+> *Role-based access control (RBAC) is a key security feature in Kubernetes. RBAC can restrict the allowed actions of the various identities in the cluster. Cluster-admin is a built-in high privileged role in Kubernetes. Attackers who have permissions to create bindings and cluster-bindings in the cluster can create a binding to the cluster-admin ClusterRole or to other high privileges roles. As a best practice, a principle of least privilege should be followed and cluster-admin privilege should only be used on an as-needed basis.
