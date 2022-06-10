@@ -1277,53 +1277,63 @@ Enable ClusterAPI and start using it to manage the provisioning and lifecycle of
 </b>
 
 
-##### :heavy_check_mark: Run All platform harware and scheduling tests
-
+##### To run all platform harware and scheduling tests, you can use the following command:
 ```
 ./cnf-testsuite  platform:hardware_and_scheduling
 ```
 
-##### :heavy_check_mark: Run runtime compliance test
+## [OCI Compliant](docs/LIST_OF_TESTS.md#oci-compliant)
+
+##### To run the OCI Compliant test, you can use the following command:
 
 ```
 ./cnf-testsuite platform:oci_compliant
 ```
+<b>Remediation for failing this test:</b> 
+
+Check if your Kuberentes Platform is using an [OCI Compliant Runtime](https://opencontainers.org/). If you platform is not using an OCI Compliant Runtime, you'll need to switch to a new runtitme that is OCI Compliant in order to pass this test.
+
+</b>
 
 
-##### :bulb: (PoC) Run All platform resilience tests
+##### (PoC) To run All platform resilience tests, you can use the following command:
 
 ```
 ./cnf-testsuite platform:resilience poc
 ```
 
-##### WARNING this is a destructive test and will reboot your _host_ node! Do not run this unless you have completely separate cluster, e.g. development or test cluster.
+## [Worker reboot recovery](docs/LIST_OF_TESTS.md#worker-reboot-recovery)
+
+##### To run the Worker reboot recovery test, you can use the following command:
 
 ```
 ./cnf-testsuite platform:worker_reboot_recovery poc destructive
 ```
+<b>Remediation for failing this test:</b> 
+
+Reboot the Worker nodes for your Kubernetes cluster virify that all node survive a reboot and can successfully reschedule workloads. 
+</b>
+
+
 
 ##### :heavy_check_mark: Run All platform security tests
 
 ```
 ./cnf-testsuite platform:security 
 ```
-##### :heavy_check_mark: To check if [cluster admin is bound to a pod](https://bit.ly/C0035_cluster_admin)
-<details> <summary>Details for Cluster Admin Binding</summary>
-
-<p><b>Cluster Admin Binding:</b> Role-based access control (RBAC) is a key security feature in Kubernetes. RBAC can restrict the allowed actions of the various identities in the cluster. Cluster-admin is a built-in high privileged role in Kubernetes. Attackers who have permissions to create bindings and cluster-bindings in the cluster can create a binding to the cluster-admin ClusterRole or to other high privileges roles.
-
-Check which subjects have cluster-admin RBAC permissions – either by being bound to the cluster-admin clusterrole, or by having equivalent high privileges.
-
-<b>Remediation:</b> You should apply least privilege principle. Make sure cluster admin permissions are granted only when it is absolutely necessary. Don't use subjects with high privileged permissions for daily operations.
-
-See more at [ARMO-C0035](https://bit.ly/C0035_cluster_admin)
-
-</p>
-</details>
+## [Cluster admin](docs/LIST_OF_TESTS.md#cluster-admin)
+##### To run the Cluster admin test, you can use the following command:
 
 ```
 ./cnf-testsuite platform:cluster_admin
 ```
+
+<b>Remediation for failing this test:</b> You should apply least privilege principle. Make sure cluster admin permissions are granted only when it is absolutely necessary. Don't use subjects with high privileged permissions for daily operations.
+
+See more at [ARMO-C0035](https://bit.ly/C0035_cluster_admin)
+
+</b>
+
 
 ##### :heavy_check_mark: To check if [the control plane is hardened](https://bit.ly/C0005_Control_Plane)
 <details> <summary>Details for Control Plane Hardening</summary>
