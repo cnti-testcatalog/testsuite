@@ -331,3 +331,6 @@ closing watches for ConfigMaps marked as immutable.*"
 
 #### *Check if the Dashboard is exposed externally*: [Dashboard exposed](USAGE.md#dashboard-exposed)
 > * If Kubernetes dashboard is exposed externally in Dashboard versions before 2.01, it will allow unauthenticated remote management of the cluster. It's best practive not expose the K8s Dashboard, or any management planes if they're unsecured.
+
+#### *Check if Tiller is being used on the plaform*: [Tiller images](USAGE.md#tiller-images)
+> *Tiller, found in Helm v2, has known security challenges. It requires administrative privileges and acts as a shared resource accessible to any authenticated user. Tiller can lead to privilege escalation as restricted users can impact other users. It is recommend to use Helm v3+ which does not contain Tiller for these reasons
