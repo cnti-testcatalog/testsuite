@@ -325,3 +325,6 @@ closing watches for ConfigMaps marked as immutable.*"
 
 #### *To check if the plateform has a default Cluster admin role*: [cluster-admin](USAGE.md#cluster-admin)
 > *Role-based access control (RBAC) is a key security feature in Kubernetes. RBAC can restrict the allowed actions of the various identities in the cluster. Cluster-admin is a built-in high privileged role in Kubernetes. Attackers who have permissions to create bindings and cluster-bindings in the cluster can create a binding to the cluster-admin ClusterRole or to other high privileges roles. As a best practice, a principle of least privilege should be followed and cluster-admin privilege should only be used on an as-needed basis.
+
+#### *Check if the plateform is using insecure ports for the API server*: [Control_plane_hardening](USAGE.md#control-plane-harding)
+> *The control plane is the core of Kubernetes and gives users the ability to view containers, schedule new Pods, read Secrets, and execute commands in the cluster. Therefore, it should be protected. It is recommended to avoid control plane exposure to the Internet or to an untrusted network and require TLS encryption.
