@@ -187,7 +187,7 @@ such as those that will eventually cause a failure.
 > A CNF should have logs managed by a [unified logging layer](https://www.fluentd.org/why) It's considered a best-practice for CNFs to route logs and data through programs like fluentd to analyze and better understand data.
 
 #### *To check if OpenMetrics is being used and or compatible.*: [open_metrics](USAGE.md#heavy_check_mark-to-check-if-open-metrics-is-being-used-and-or-compatible)
-> OpenMetrics is the de-facto standard for transmitting cloud-native metrics at scale, with support for both text representation and Protocol Buffers and brings it into an Internet Engineering Task Force (IETF) standard. A CNF should expose metrics that are [OpenMetrics compatible](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md)
+> OpenMetrics is the de facto standard for transmitting cloud native metrics at scale, with support for both text representation and Protocol Buffers and brings it into an Internet Engineering Task Force (IETF) standard. A CNF should expose metrics that are [OpenMetrics compatible](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md)
 
 #### *To check if tracing is being used with Jaeger.*: [tracing](USAGE.md#heavy_check_mark-to-check-if-tracing-is-being-used-with-jaeger)
 > A CNF should provide tracing that conforms to the [open telemetry tracing specification](https://opentelemetry.io/docs/reference/specification/trace/api/)
