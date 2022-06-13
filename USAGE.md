@@ -973,7 +973,7 @@ If your application does not need root privileges, make sure to define the runAs
 
 <b>Remediation for failing this test:</b> 
 
-Apply least privilege principle and remove hostPID and hostIPC from the yaml file(s) privileges unless they are absolutely necessary.
+Apply least privilege principle and remove hostPID and hostIPC from the yaml configuration privileges unless they are absolutely necessary.
  
 </b>
 
