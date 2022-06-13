@@ -1237,7 +1237,7 @@ Use immutable configmaps for any non-mutable configuration data.
 ```
 
 <b>Remediation for failing this test:</b> 
-Ensure that your CNF is resilient to DNS/resolution failures can maintain a level of avaliabliy.
+Ensure that your CNF is resilient to DNS resolution failures can maintain a level of availability.
 
 </b>
 
