@@ -290,7 +290,7 @@ is running and more difficult to roll back properly."*
 portable and scalable
 
 #### *To test if the recommended labels are being used to describe resources*: [required_labels](USAGE.md#required-labels)
-> Defining and using labels help to identify semantic attributes of your application or Deployment. A common set of labels allows tools to work collaboratively, describing objects in a common manner that all tools can understand. You should use recommended labels describe applications in a way that can be queried.
+> Defining and using labels help identify semantic attributes of your application or Deployment. A common set of labels allows tools to work collaboratively, while describing objects in a common manner that all tools can understand. You should use recommended labels to describe applications in a way that can be queried.
 
 #### *To test if there are host ports used in the service configuration*: [hostport_not_used](USAGE.md#heavy_check_mark-to-test-if-there-are-host-ports-used-in-the-service-configuration)
 
