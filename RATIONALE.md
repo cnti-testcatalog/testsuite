@@ -128,7 +128,7 @@ traffic on the CNF.
 
 #### *Test if the CNF crashes when pod memory hog occurs*: [pod_memory_hog](USAGE.md#heavy_check_mark-test-if-the-cnf-crashes-when-pod-memory-hog-occurs)
 
-> If the memory policies for a CNF are not set and fine grained enough, containers on the node can be killed based on their oom_score and the QoS class a given pod belongs to (bestEffort ones are first to be targeted). This eval is extended to all pods running on the node - thereby causing a bigger blast radius. 
+> If the memory policies for a CNF are not set and granular, containers on the node can be killed based on their oom_score and the QoS class a given pod belongs to (best-effort ones are first to be targeted). This eval is extended to all pods running on the node, thereby causing a bigger blast radius. 
 
 #### *Test if the CNF crashes when pod io stress occurs*: [pod_io_stress](USAGE.md#heavy_check_mark-test-if-the-cnf-crashes-when-pod-io-stress-occurs)
 
