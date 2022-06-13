@@ -152,9 +152,9 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 **What's tested:** This verifies that there is only one process type within one container. This does not count against child processes. Example would be nginx or httpd could have a parent process and then 10 child processes but if both nginx and httpd were running, this test would fail.
 
 ## [Service discovery](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L413)
-- Expectation: CNFs should not expose their containers as a service
+- Expectation: CNFs accessible to other applications should be exposed via a Service.
 
-**What's tested:** This tests and checks if a container for the CNF has services exposed. Application access for microservices within a cluster should be exposed via a Service. Read more about K8s Service [here](https://kubernetes.io/docs/concepts/services-networking/service/).
+**What's tested:** This tests and checks if the containers within a CNF have services exposed via a Kubernetes Service resource. Application access for microservices within a cluster should be exposed via a Service. Read more about K8s Service [here](https://kubernetes.io/docs/concepts/services-networking/service/).
 
   
 ## [Shared database](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L19)  
@@ -345,10 +345,10 @@ See more at [ARMO-C0012](https://bit.ly/C0012_application_credentials)
 **What's tested:** Checks Ingress and Egress traffic policy
 
 
-## [Privilege escalation, Kubescape](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L156) 
-- Expectation: Containers should not allow privilege escalation
+## [Privileged container](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L156) 
+- Expectation: Containers should not have privileged capabilities enabled.
 
-**What's tested:** Checks if any containers are running in privileged mode. Read more at [ARMO-C0057](https://bit.ly/31iGng3)
+**What's tested:** Checks if any containers have privileged capabilities. Read more at [ARMO-C0057](https://bit.ly/31iGng3)
 
 
 
@@ -445,35 +445,36 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 **What's tested:** TBD
 
 ## [nodePort not used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L131) 
-- Expectation: Checks for configured node ports in the service configuration.
+- Expectation: The nodePort configuration field is not found in any of the defined containers.
 
-**What's tested:** TBD
+**What's tested:** The nodePort not used test will look through all containers defined in the installed cnf to see if the nodePort configuration field is in use.
+
 
 ## [hostPort not used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L166) 
-- Expectation: Checks for configured host ports in the service configuration.
+- Expectation: The hostPort configuration field is not found in any of the defined containers. 
 
-**What's tested:** TBD
+**What's tested:**  The hostport not used test will look through all containers defined in the installed cnf to see if the hostPort configuration field is in use.
 
 ## [Hardcoded IP addresses in K8s runtime configuration](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L213) 
-- Expectation: Checks for hardcoded IP addresses or subnet masks in the K8s runtime configuration.
+- Expectation: That no hardcoded IP addresses or subnet masks are found in the Kubernetes resources for the CNF.
 
-**What's tested:** TBD
+**What's tested:** The hardcoded ip address test will scan all the Kubernetes resources of the installed cnf to ensure that no static, hardcoded ip addresses are being used in the configuration.
 
 ## [Secrets used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L257) 
-- Expectation: Checks for K8s secrets.
+- Expectation: The CNF is using K8s secrets for the management of sensitive data.
 
-**What's tested:** TBD
+**What's tested:** The secrets used test will scan all the Kubernetes workload resources to see if K8s secrets are being used.
 
 ## [Immutable configmap](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L362) 
-- Expectation: Checks for K8s version and if immutable configmaps are enabled.
+- Expectation: Immutable configmaps are being used for non-mutable data.
 
-**What's tested:** TBD
+**What's tested:** The immutable configmap test will scan the Kubernetes resources for the CNF and see if immutable configmaps are being used.
 
 ## [Pod DNS errors](https://github.com/cncf/cnf-testsuite/blob/v0.26.0/src/tasks/workload/reliability.cr#L604)
 - :heavy_check_mark: Added to CNF Test Suite in release v0.26.0
-- Expectation: Test if the CNF crashes when pod dns error occurs
+- Expectation: That the CNF dosen't crash and maintains some level of availability.
 
-**What's tested:** TBD
+**What's tested:** This test injects chaos to disrupt dns resolution in kubernetes pods and causes loss of access to services by blocking dns resolution of hostnames/domains.
 
 
 

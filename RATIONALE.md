@@ -123,15 +123,12 @@ traffic on the CNF.
 
 #### *Test if the CNF crashes when pod delete occurs*: [pod_delete](USAGE.md#heavy_check_mark-test-if-the-cnf-crashes-when-pod-delete-occurs)
 
-> The CNF should recreate the minimum number of replicas when a pod fails. This experiment helps to simulate such a scenario with forced/graceful pod 
-failure on specific or random replicas of an application resource.  It then checks the deployment sanity (replica availability & uninterrupted service) 
-and recovery workflow of the application.
+> In a distributed system like Kubernetes, application replicas may not be sufficient to manage the traffic (indicated by SLIs) when some replicas are unavailable due to any failure (can be system or application). The application needs to meet the SLO (service level objectives) for this. It's imperative that the application has defenses against this sort of failure to ensure that the application always has a minimum number of available replicas. 
+
 
 #### *Test if the CNF crashes when pod memory hog occurs*: [pod_memory_hog](USAGE.md#heavy_check_mark-test-if-the-cnf-crashes-when-pod-memory-hog-occurs)
 
-> A CNF can fail due to running out of memory.  This can be mitigated by using two levels of memory policies (pod level and node level) 
-in K8s.  If the memory policies for a CNF are not fine grained enough, the CNFs out-of-memory failure blast radius will result in 
-using all of the system memory on the node.
+> If the memory policies for a CNF are not set and granular, containers on the node can be killed based on their oom_score and the QoS class a given pod belongs to (best-effort ones are first to be targeted). This eval is extended to all pods running on the node, thereby causing a bigger blast radius. 
 
 #### *Test if the CNF crashes when pod io stress occurs*: [pod_io_stress](USAGE.md#heavy_check_mark-test-if-the-cnf-crashes-when-pod-io-stress-occurs)
 
@@ -187,10 +184,10 @@ the maintainer of a cluster of hundreds or thousands of services the ability to 
 such as those that will eventually cause a failure.
 
 #### *To check if logs and data are being routed through fluentd*: [routed_logs](USAGE.md#heavy_check_mark-to-check-if-logs-and-data-are-being-routed-through-fluentd)
-> A CNF should have logs managed by a [unified logging layer](https://www.fluentd.org/why)
+> A CNF should have logs managed by a [unified logging layer](https://www.fluentd.org/why) It's considered a best-practice for CNFs to route logs and data through programs like fluentd to analyze and better understand data.
 
 #### *To check if OpenMetrics is being used and or compatible.*: [open_metrics](USAGE.md#heavy_check_mark-to-check-if-open-metrics-is-being-used-and-or-compatible)
-> A CNF should expose metrics that are [OpenMetrics compatible](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md)
+> OpenMetrics is the de facto standard for transmitting cloud native metrics at scale, with support for both text representation and Protocol Buffers and brings it into an Internet Engineering Task Force (IETF) standard. A CNF should expose metrics that are [OpenMetrics compatible](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md)
 
 #### *To check if tracing is being used with Jaeger.*: [tracing](USAGE.md#heavy_check_mark-to-check-if-tracing-is-being-used-with-jaeger)
 > A CNF should provide tracing that conforms to the [open telemetry tracing specification](https://opentelemetry.io/docs/reference/specification/trace/api/)
@@ -240,6 +237,13 @@ container nearly all the same access to the host as processes running outside co
 host.” In other words, you should rarely, if ever, use this switch on your container command line.*
 Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley. Kindle Edition. 
 
+#### *To check if External IPS are used*:
+
+> Service externalIPs can be used for a MITM attack (CVE-2020-8554). Restrict externalIPs or limit to a known set of addresses. See: https://github.com/kyverno/kyverno/issues/1367
+
+#### *To check if any pods in the CNF use sysctls with restricted values*:
+> Sysctls can disable security mechanisms or affect all containers on a host, and should be disallowed except for an allowed "safe" subset. A sysctl is considered safe if it is namespaced in the container or the Pod, and it is isolated from other Pods or processes on the same Node. This test ensures that only those "safe" subsets are specified in a Pod.
+
 #### *To check for insecure capabilities*: [insecure_capabilities](USAGE.md#heavy_check_mark-to-check-for-insecure-capabilities)
 > Giving [insecure](https://hub.armo.cloud/docs/c-0046) and unnecessary capabilities for a container can increase the impact of a container compromise.
 
@@ -265,7 +269,7 @@ Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley
 > CPU and memory [resources should have a limit](https://hub.armo.cloud/docs/c-0009) set for every container or a namespace to prevent resource exhaustion. This control identifies all the Pods without resource limit definitions by checking thier yaml definition file as well as their namespace LimitRange objects. It is also recommended to use ResourceQuota object to restrict overall namespace resources, but this is not verified by this control.
 
 #### *To check if containers have immutable file systems*: [immutable_file_systems](USAGE.md#heavy_check_mark-to-check-if-containers-have-immutable-file-systems)
-> By default, containers are permitted mostly unrestricted execution within their own context. An attacker who has access to a container, [can create files](https://hub.armo.cloud/docs/c-0017) and download scripts as he wishes, and modify the underlying application running on the container.
+> Mutable container filesystem can be abused to gain malicious code and data injection into containers. By default, containers are permitted unrestricted execution within their own context. An attacker who has access to a container, [can create files](https://hub.armo.cloud/docs/c-0017) and download scripts as they wish, and modify the underlying application running on the container.
 
 #### *To check if containers have hostPath mounts (check: is this a duplicate of state test - ./cnf-testsuite volume_hostpath_not_found)*: [hostpath_mounts](USAGE.md#heavy_check_mark-to-check-if-containers-have-hostpath-mounts)
 > [hostPath mount](https://hub.armo.cloud/docs/c-0006) can be used by attackers to get access to the underlying host and thus break from the container to the host. (See “3: Writable hostPath mount” for details).
@@ -284,6 +288,9 @@ is running and more difficult to roll back properly."*
 
 > Using node ports ties the CNF to a specific node and therefore makes the CNF less
 portable and scalable
+
+#### *To test if the recommended labels are being used to describe resources*: [required_labels](USAGE.md#required-labels)
+> Defining and using labels help identify semantic attributes of your application or Deployment. A common set of labels allows tools to work collaboratively, while describing objects in a common manner that all tools can understand. You should use recommended labels to describe applications in a way that can be queried.
 
 #### *To test if there are host ports used in the service configuration*: [hostport_not_used](USAGE.md#heavy_check_mark-to-test-if-there-are-host-ports-used-in-the-service-configuration)
 
@@ -311,3 +318,19 @@ to their data has the following advantages:*
 - *improves performance of your cluster by significantly reducing load on kube-apiserver, by 
 closing watches for ConfigMaps marked as immutable.*"
 
+#### *To check if a CNF is using the default namespace*: [default_namespace](USAGE.md#default-namespace)
+> *Namespces provide a way to segment and isolate cluster resources across multiple applications and users. As a best practice, workloads should be isolated with Namespaces and not use the default namespace. 
+
+## Platform Tests
+
+#### *To check if the plateform has a default Cluster admin role*: [cluster-admin](USAGE.md#cluster-admin)
+> *Role-based access control (RBAC) is a key security feature in Kubernetes. RBAC can restrict the allowed actions of the various identities in the cluster. Cluster-admin is a built-in high privileged role in Kubernetes. Attackers who have permissions to create bindings and cluster-bindings in the cluster can create a binding to the cluster-admin ClusterRole or to other high privileges roles. As a best practice, a principle of least privilege should be followed and cluster-admin privilege should only be used on an as-needed basis.
+
+#### *Check if the plateform is using insecure ports for the API server*: [Control_plane_hardening](USAGE.md#control-plane-harding)
+> *The control plane is the core of Kubernetes and gives users the ability to view containers, schedule new Pods, read Secrets, and execute commands in the cluster. Therefore, it should be protected. It is recommended to avoid control plane exposure to the Internet or to an untrusted network and require TLS encryption.
+
+#### *Check if the Dashboard is exposed externally*: [Dashboard exposed](USAGE.md#dashboard-exposed)
+> * If Kubernetes dashboard is exposed externally in Dashboard versions before 2.01, it will allow unauthenticated remote management of the cluster. It's best practice to not expose the K8s Dashboard or any management planes if they're unsecured.
+
+#### *Check if Tiller is being used on the plaform*: [Tiller images](USAGE.md#tiller-images)
+> *Tiller, found in Helm v2, has known security challenges. It requires administrative privileges and acts as a shared resource accessible to any authenticated user. Tiller can lead to privilege escalation as restricted users can impact other users. It is recommend to use Helm v3+ which does not contain Tiller for these reasons
