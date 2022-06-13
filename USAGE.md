@@ -1311,7 +1311,7 @@ Check if your Kuberentes Platform is using an [OCI Compliant Runtime](https://op
 ```
 <b>Remediation for failing this test:</b> 
 
-Reboot the Worker nodes for your Kubernetes cluster virify that all node survive a reboot and can successfully reschedule workloads. 
+Reboot a worker node in your Kubernetes cluster verify that the node can recover and re-join the cluster in a schedulable state. Workloads should also be rescheduled to the node once it's back online. 
 </b>
 
 
