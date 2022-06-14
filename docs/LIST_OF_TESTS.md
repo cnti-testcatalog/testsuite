@@ -179,29 +179,43 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 # State Category
 
 ## [Node drain](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/state.cr#L209) 
-- Expectation: A node will be drained and rescheduled onto other available node(s).
+- Expectation: All workload resources are successfully rescheduled onto other available node(s).
 
-**What's tested:** A node is drained and rescheduled to another node, passing with a liveness and readiness check. This will skip when the cluster only has a single node.
+**What's tested:** A node is drained and workload resources rescheduled to another node, passing with a liveness and readiness check. This will skip when the cluster only has a single node.
+
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-node-drain-occurs-node_drain)
+
 
 ## [Volume hostpath not found](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/state.cr#L419) 
 - Expectation: Volume host path configurations should not be used.
 
 **What's tested:** This tests if volume host paths are configured and used by the CNF.
 
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-a-volume-host-path-volume_hostpath_not_found)
+
+
 ## [No local volume configuration](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/state.cr#L457) 
 - Expectation: Local storage should not be used or configured.
 
 **What's tested:** This tests if local volumes are being used for the CNF.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-local-storage-no_local_volume_configuration)
+
 
 ## [Elastic volumes](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/state.cr#L321) 
 - Expectation: Elastic persistent volumes should be configured for statefulness.
 
 **What's tested:** This checks for elastic persistent volumes in use by the CNF.
 
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-elastic-volumes-elastic_volumes)
+
+
 ## [Database persistence](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/state.cr#L358)
 - Expectation: Elastic volumes and or statefulsets should be used for databases to maintain a minimum resilience level in K8s clusters.
 
 **What's tested:** This checks if elastic volumes and stateful sets are used for MySQL databases. If no MySQL database is found, the test is skipped.
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-a-database-with-either-statefulsets-elastic-volumes-or-both-database_persistence)
+
 
 # Reliability, Resilience and Availability Category
 
@@ -212,11 +226,16 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 The applications may stall or get corrupted while they wait endlessly for a packet. The experiment limits the impact (blast radius) to only the traffic you want to test by specifying IP addresses or application information. This experiment will help to improve the resilience of your services over time.
 
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-network-latency-occurs-pod_network_latency)
+
+
 
 ## [CNF with host disk fill](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L390)
-- Expectation: The CNF should continue to function when disk fill occurs
+- Expectation: The CNF should continue to function when disk fill occurs and pods should not be evicted to another node.
 
-**What's tested:** [Stressing the disk](https://litmuschaos.github.io/litmus/experiments/categories/pods/disk-fill/) with continuous and heavy IO for example can cause degradation in reads written by other microservices that use this shared disk for example modern storage solutions for Kubernetes to use the concept of storage pools out of which virtual volumes/devices are carved out. Another issue is the amount of scratch space eaten up on a node which leads to the lack of space for newer containers to get scheduled (Kubernetes too gives up by applying an "eviction" taint like "disk-pressure") and causes a wholesale movement of all pods to other nodes. Similarly with CPU chaos, by injecting a rogue process into a target container, we starve the main microservice process (typically PID 1) of the resources allocated to it (where limits are defined) causing slowness in application traffic or in other cases unrestrained use can cause the node to exhaust resources leading to the eviction of all pods. So this category of chaos experiment helps to build the immunity on the application undergoing any such stress scenario.
+**What's tested:** [This experiment](https://litmuschaos.github.io/litmus/experiments/categories/pods/disk-fill/) stresses the disk with continuous and heavy IO to cause degradation in the shared disk. This experiment also reduces the amount of scratch space available on a node which can lead to a lack of space for newer containers to get scheduled. This can cause (Kubernetes gives up by applying an "eviction" taint like "disk-pressure") a wholesale movement of all pods to other nodes. 
+
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-disk-fill-occurs-disk_fill)
 
 
 ##  [Pod delete](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L441)
@@ -224,26 +243,42 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 **What's tested:** [This experiment](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-delete/) helps to simulate such a scenario with forced/graceful pod failure on specific or random replicas of an application resource and checks the deployment sanity (replica availability & uninterrupted service) and recovery workflow of the application.
 
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-delete-occurs-pod_delete)
+
+
 ## [Memory hog](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L495)
 - Expectation: The CNF should continue to function when pod memory hog occurs
 
 **What's tested:** The [pod-memory hog](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-memory-hog/) experiment launches a stress process within the target container - which can cause either the primary process in the container to be resource constrained in cases where the limits are enforced OR eat up available system memory on the node in cases where the limits are not specified.  
 
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-memory-hog-occurs-pod_memory_hog)
+
+
 
 ## [IO Stress](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L549)
 - Expectation: The CNF should continue to function when pod io stress occurs
 
-**What's tested:** This test stresses the disk with with continuous and heavy IO to cause degradation in reads/ writes by other microservices that use this shared disk. 
+**What's tested:** This test stresses the disk with continuous and heavy IO to cause degradation in reads/ writes by other microservices that use this shared disk.
+
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-io-stress-occurs-pod_io_stress)
+
+
 
 ## [Network corruption](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L284)
-- Expectation: The CNF should continue to function when pod network corruption occurs
+- Expectation: The CNF should be resilient to a lossy/flaky network and should continue to provide some level of availability.
 
-**What's tested: TBD**
+**What's tested:** It injects packet corruption on the CNF by starting a traffic control (tc) process with netem rules to add egress packet corruption.
+
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-network-corruption-occurs-pod_network_corruption)
+
 
 ## [Network duplication](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L337)
-- Expectation: The CNF should continue to function when pod network duplication occurs
+- Expectation: The CNF should continue to function and be resilient to a duplicate network.
 
-**What's tested: TBD**
+**What's tested:** This test injects network duplication into the CNF by starting a traffic control (tc) process with netem rules to add egress delays. 
+
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-network-duplication-occurs-pod_network_duplication)
+
 
 ## [Helm chart liveness entry](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L15)
 -  Expectation: The Helm chart should have a liveness probe
