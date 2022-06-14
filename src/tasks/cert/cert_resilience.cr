@@ -24,6 +24,10 @@ desc "The CNF test suite checks to see if the CNFs are resilient to failures."
   VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
   # stdout_score("resilience", "Reliability, Resilience, and Availability")
   stdout_score(["resilience", "cert"], "Reliability, Resilience, and Availability")
+  case "#{ARGV.join(" ")}" 
+  when /cert_resilience/
+    stdout_info "Results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+  end
 end
 
 task "cert_resilience_title" do |_, args|

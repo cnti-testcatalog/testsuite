@@ -10,6 +10,10 @@ rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rol
 desc "The CNF test suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
 task "compatibility", ["helm_chart_valid", "helm_chart_published", "helm_deploy", "cni_compatible", "increase_decrease_capacity", "rollback"].concat(rolling_version_change_test_names) do |_, args|
   stdout_score("compatibility", "Compatibility, Installability, and Upgradeability")
+  case "#{ARGV.join(" ")}" 
+  when /compatibility/
+    stdout_info "Results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+  end
 
 end
 rolling_version_change_test_names.each do |tn|

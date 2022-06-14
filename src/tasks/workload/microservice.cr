@@ -12,6 +12,10 @@ require "totem"
 desc "The CNF test suite checks to see if CNFs follows microservice principles"
 task "microservice", ["reasonable_image_size", "reasonable_startup_time", "single_process_type", "service_discovery", "shared_database"] do |_, args|
   stdout_score("microservice")
+  case "#{ARGV.join(" ")}" 
+  when /microservice/
+    stdout_info "Results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+  end
 end
 
 REASONABLE_STARTUP_BUFFER = 10.0
