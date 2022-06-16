@@ -221,9 +221,9 @@ In order to prevent illegitimate escalation by processes and restrict a processe
 
 > *When a container has the [hostNetwork](https://hub.armo.cloud/docs/c-0041) feature turned on, the container has direct access to the underlying hostNetwork. Hackers frequently exploit this feature to [facilitate a container breakout](https://media.defense.gov/2021/Aug/03/2002820425/-1/-1/1/CTR_KUBERNETES%20HARDENING%20GUIDANCE.PDF) and gain access to the underlying host network, data and other integral resources.*
 
-#### *To check if there are service accounts that are automatically mapped*: [application_credentials](USAGE.md#heavy_check_mark-to-check-if-there-are-service-accounts-that-are-automatically-mapped)
+#### *To check if there are applications credentials in configuration files*: [application_credentials](USAGE.md#application-credentials)
 
-> *When a pod gets created and a service account wasn't specified, then the default service account will be used. Service accounts assigned in this way can unintentionally give third-party applications root access to the K8s APIs and other applicaton services. In order to follow a zero-trust / fine-grained security methodology, this functionality will need to be [explicitly disabled](https://hub.armo.cloud/docs/c-0034) by using the [automountServiceAccountToken: false](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#use-the-default-service-account-to-access-the-api-server) flag. In addition, if RBAC is not enabled, the SA has unlimited permissions in the cluster.*
+> *Developers store secrets in the Kubernetes configuration files, such as environment variables in the pod configuration. Such behavior is commonly seen in clusters that are monitored by Azure Security Center. Attackers who have access to those configurations, by querying the API server or by accessing those files on the developer’s endpoint, can steal the stored secrets and use them.*
 
 #### *To check if there is an ingress and egress policy defined.*: [ingress_egress_blocked](USAGE.md#heavy_check_mark-to-check-if-there-is-an-ingress-and-egress-policy-defined)
 
