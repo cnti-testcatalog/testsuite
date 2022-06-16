@@ -301,30 +301,39 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 ## [Use stdout/stderr for logs](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L13)
 - Expectation: Resource output logs should be sent to STDOUT/STDERR
 
-**What's tested: TBD** This checks and verifies that STDOUT/STDERR is configured for logging.
+**What's tested:** This checks and verifies that STDOUT/STDERR logging is configured for the CNF.
 
-For example, running `kubectl get logs` returns useful information for diagnosing or troubleshooting issues. 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-logs-are-being-sent-to-stdoutstderr-standard-out-standard-error-instead-of-a-log-file-log_output)
 
 ## [Prometheus installed](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L42)
-- Expectation: Prometheus is being used for the cluster and CNF for metrics.
+- Expectation: The CNF is configured and sending metrics to a Prometheus server.
 
-**What's tested: TBD** Tests for the presence of [Prometheus](https://prometheus.io/) or if the CNF emit prometheus traffic.
+**What's tested:** Tests for the presence of [Prometheus](https://prometheus.io/) and if the CNF configured to sent metrics to the prometheus server.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-prometheus-is-installed-and-configured-for-the-cnf-prometheus_traffic)
+
 
 ## [Fluentd logs](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L170)
-- Expectation: Fluentd is capturing logs.
+- Expectation: Fluentd is install and capturing logs for the CNF.
 
-**What's tested:** Checks for fluentd presence and if logs are being captured for fluentd.
+**What's tested:** Checks for fluentd presence and if the CNFs logs are being captured by fluentd.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-logs-and-data-are-being-routed-through-fluentd-routed_logs)
 
 
 ## [OpenMetrics compatible](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L146)
 - Expectation: CNF should emit OpenMetrics compatible traffic.
 
-**What's tested:** Checks if OpenMetrics is being used and or compatible.
+**What's tested:** Checks if the CNFs metrics are [OpenMetrics](https://openmetrics.io/) compliant.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-openmetrics-is-being-used-and-or-compatible-open_metrics)
 
 ## [Jaeger tracing](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L203)
-- Expectation: The CNF uses tracing.
+- Expectation: The CNF is sending traces to Jaeger.
 
-**What's tested:** Checks if Jaeger is configured and tracing is being used.
+**What's tested:** Checks if Jaeger installed and the CNF is configured and sending traces to the Jaeger Server.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-tracing-is-being-used-with-jaeger-tracing)
 
 
 # Security Category
