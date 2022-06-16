@@ -4,7 +4,7 @@
 | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | [![Build Status](https://github.com/cncf/cnf-testsuite/workflows/Crystal%20Specs/badge.svg)](https://github.com/cncf/cnf-testsuite/actions) |
 
-The CNF Test Suite is a tool that makes it possible to validate telco applications, aka [Cloud Native Network Functions (CNFs)](https://github.com/cncf/cnf-testsuite/blob/main/EXAMPLE-CNFS.md), and the underlying Telecom platforms adherence to Cloud native principles and best practices.
+The CNF Test Suite is a tool that validates telco application's (i.e. [Cloud Native Network Functions - CNFs)](https://github.com/cncf/cnf-testsuite/blob/main/EXAMPLE-CNFS.md) adherence to [cloud native principles](https://networking.cloud-native-principles.org/) and best practices.
 
 This Test Suite initiative works closely with the [CNF WG](cnf-wg/README.md) which determines requirements for the CNF Test Suite program.
 
