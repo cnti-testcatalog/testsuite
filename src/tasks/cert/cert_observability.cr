@@ -10,6 +10,10 @@ task "cert_observability", ["cert_observability_title", "log_output", "prometheu
 # task "cert_observability", ["cert_observability_title", "prometheus_traffic", "open_metrics", "routed_logs", "tracing"] do |_, args|
   # stdout_score("observability", "Observability and Diagnostics")
   stdout_score(["observability", "cert"], "Observability and Diagnostics")
+  case "#{ARGV.join(" ")}" 
+  when /cert_observability/
+    stdout_info "Results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+  end
 end
 
 task "cert_observability_title" do |_, args|

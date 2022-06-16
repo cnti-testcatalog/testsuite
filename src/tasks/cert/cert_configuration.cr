@@ -30,6 +30,10 @@ task "cert_configuration", [
 #   ] do |_, args|
   # stdout_score("configuration", "configuration")
   stdout_score(["configuration", "cert"], "configuration")
+  case "#{ARGV.join(" ")}" 
+  when /cert_configuration/
+    stdout_info "Results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+  end
 end
 
 task "cert_configuration_title" do |_, args|

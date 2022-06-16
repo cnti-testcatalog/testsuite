@@ -31,6 +31,10 @@ task "security", [
     "application_credentials"
   ] do |_, args|
   stdout_score("security")
+  case "#{ARGV.join(" ")}" 
+  when /security/
+    stdout_info "Results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+  end
 end
 
 desc "Check if pods in the CNF use sysctls with restricted values"

@@ -11,6 +11,10 @@ task "cert_state", ["cert_state_title", "no_local_volume_configuration", "elasti
 # task "cert_state", ["cert_state_title", "no_local_volume_configuration", "elastic_volumes" ] do |_, args|
   # stdout_score("state")
   stdout_score(["state", "cert"], "state")
+  case "#{ARGV.join(" ")}" 
+  when /cert_state/
+    stdout_info "Results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+  end
 end
 
 task "cert_state_title" do |_, args|

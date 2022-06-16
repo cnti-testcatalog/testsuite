@@ -46,6 +46,10 @@ task "cert_security", [
 #   ] do |_, args|
   # stdout_score("security")
   stdout_score(["security", "cert"], "security")
+  case "#{ARGV.join(" ")}" 
+  when /cert_security/
+    stdout_info "Results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+  end
 end
 
 task "cert_security_title" do |_, args|

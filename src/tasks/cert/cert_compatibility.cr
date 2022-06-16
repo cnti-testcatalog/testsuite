@@ -10,6 +10,10 @@ task "cert_compatibility", ["cert_compatibility_title", "helm_chart_valid", "hel
 # task "cert_compatibility", ["cert_compatibility_title", "helm_chart_valid", "helm_chart_published", "helm_deploy", "cni_compatible", "increase_decrease_capacity", "rollback"] do |_, args|
   # stdout_score("compatibility", "Compatibility, Installability, and Upgradeability")
   stdout_score(["compatibility", "cert"], "Compatibility, Installability, and Upgradeability")
+  case "#{ARGV.join(" ")}" 
+  when /cert_compatibility/
+    stdout_info "Results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+  end
 
 end
 

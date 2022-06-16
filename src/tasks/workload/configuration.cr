@@ -24,6 +24,10 @@ task "configuration", [
     "versioned_tag"
   ] do |_, args|
   stdout_score("configuration", "configuration")
+  case "#{ARGV.join(" ")}" 
+  when /configuration/
+    stdout_info "Results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+  end
 end
 
 desc "Check if the CNF is running containers with labels configured?"

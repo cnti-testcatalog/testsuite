@@ -14,6 +14,10 @@ task "cert_microservice", ["cert_microservice_title","reasonable_image_size", "r
 # task "cert_microservice", ["cert_microservice_title", "reasonable_image_size", "reasonable_startup_time", "service_discovery"] do |_, args|
   # stdout_score("microservice")
   stdout_score(["microservice", "cert"], "microservice")
+  case "#{ARGV.join(" ")}" 
+  when /cert_microservice/
+    stdout_info "Results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+  end
 end
 
 task "cert_microservice_title" do |_, args|
