@@ -281,14 +281,20 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 
 ## [Helm chart liveness entry](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L15)
--  Expectation: The Helm chart should have a liveness probe
+-  Expectation: The Helm chart should have a liveness probe configured.
 
-**What's tested: TBD**
+**What's tested:** This test scans all of the CNFs workload resources and check if a Liveness Probe has been configuered for each container.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-is-a-liveness-entry-in-the-helm-chart-liveness)
+
 
 ## [Helm chart readiness entry](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L45)
-- Expectation: The Helm chart should have a readiness probe
+- Expectation: The Helm chart should have a readiness probe configured.
 
-**What's tested: TBD**
+**What's tested:** This test scans all of the CNFs workload resources and check if a Readiness Probe has been configuered for each container.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-is-a-readiness-entry-in-the-helm-chart-readiness)
+
 
 # Observability and Diagnostic Category
 
