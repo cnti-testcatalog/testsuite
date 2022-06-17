@@ -340,17 +340,17 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 ## [Container socket mounts](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L51)
 - :heavy_check_mark: Added to CNF Test Suite in release v0.27.0
-- Expectation: Container engine daemon sockets should not be mounted as volumes
+- Expectation: Container runtime sockets should not be mounted as volumes
 
-**What's tested**
-<b>Container Socket Mounts Details:</b> Container daemon socket bind mounts allows access to the container engine on the node. This access can be used for privilege escalation and to manage containers outside of Kubernetes, and hence should not be allowed.
+**What's tested** This test checks all of the CNFs containers and looks to see if any of them have access a container runtime socket from the host.
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-performs-a-cri-socket-mount-container_sock_mounts)
 
 
-
-## [Privileged Mode](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L125)
+## [Privileged Mode](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L420)
 - Expectation: Containers should not run in privileged mode
 
-**What's tested:** Checks if any containers are running in privileged mode (using [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper) Policy Controller for Kubernetes)
+**What's tested:** Checks if any containers are running in privileged mode (using [Kubescape](https://hub.armo.cloud/docs/c-0057))
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-are-any-privileged-containers-kubscape-version-privileged_containers)
 
 
 ## [External IPs](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L31)
@@ -359,61 +359,69 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 **What's tested:** Checks if the CNF has services with external IPs configured
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-external-ips-are-used)
+
 
 ## [Root user](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L71)
 - Expectation: Containers should not run as a [root user](https://github.com/cncf/cnf-wg/blob/best-practice-no-root-in-containers/cbpps/0002-no-root-in-containers.md)
 
-**What's tested:** Checks if any containers are running as root user
+**What's tested:** Checks if any containers are running with a root user.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-any-containers-are-running-as-a-root-user-checks-the-user-outside-the-container-that-is-running-dockerd-non_root_user)
+
 
 ## [Privilege escalation](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L156)
-- Expectation: Containers should not allow for [privilege escalation](https://bit.ly/C0016_privilege_escalation)
+- Expectation: Containers should not allow [privilege escalation](https://bit.ly/C0016_privilege_escalation)
 
-**What's tested: TBD** <b>Privilege Escalation:</b> Check that the allowPrivilegeEscalation field in securityContext of container is set to false.
+**What's tested:** Check that the allowPrivilegeEscalation field in the securityContext of each container is set to false.
 
-See more at [ARMO-C0016](https://bit.ly/C0016_privilege_escalation)
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-any-containers-allow-for-privilege-escalation-privilege_escalation)
 
 
 ## [Symlink file system](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L175)
-- Expectation: No containers allow a [symlink](https://bit.ly/C0058_symlink_filesystem) attack
+- Expectation: No vulnerable K8s version being used in conjunction with the [subPath](https://bit.ly/C0058_symlink_filesystem) feature.
 
-**What's tested:**
-This control checks the vulnerable versions and the actual usage of the subPath feature in all Pods in the cluster.
+**What's tested:** This test checks for vulnerable K8s versions and the actual usage of the subPath feature for all Pods in the CNF.
 
-See more at [ARMO-C0058](https://bit.ly/C0058_symlink_filesystem)
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-an-attacker-can-use-a-symlink-for-arbitrary-host-file-system-access-cve-2021-25741-symlink_file_system)
+
 
 ## [Application credentials](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L194)
-- Exepectation: Application credentials should not be found in configuration files
+- Exepectation: Application credentials should not be found in the CNFs configuration files
 
-**What's tested:**
-Check if the pod has sensitive information in environment variables, by using list of known sensitive key names. Check if there are configmaps with sensitive information.
+**What's tested:** Checks the CNF for sensitive information in environment variables, by using list of known sensitive key names. Also checks for configmaps with sensitive information.
 
-See more at [ARMO-C0012](https://bit.ly/C0012_application_credentials)
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-are-applications-credentials-in-configuration-files-application_credentials)
 
 
 ## [Host network](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L213)
-- Expectation: PODs should not have access to the host systems network.
+- Expectation: The CNF should not have access to the host systems network.
 
-**What's tested:** Checks if there is a [host network attached to a pod](https://bit.ly/C0041_hostNetwork). See more at [ARMO-C0041](https://bit.ly/C0041_hostNetwork)
+**What's tested:** Checks if there is a [host network](https://bit.ly/C0041_hostNetwork) attached to any of the Pods in the CNF. 
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-is-a-host-network-attached-to-a-pod-host_network)
 
 
 ## [Service account mapping](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L232)
 - Expectation: The [automatic mapping](https://bit.ly/C0034_service_account_mapping) of service account tokens should be disabled. 
 
-**What's tested:** Check if service accounts are automatically mapped. See more at [ARMO-C0034](https://bit.ly/C0034_service_account_mapping).
+**What's tested:** Check if the CNF is using service accounts that are automatically mapped. 
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-is-automatic-mapping-of-service-accounts-service_account_mapping)
 
 
 ## [Ingress and Egress blocked](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L335)
 - Expectation: [Ingress and Egress traffic should be blocked on Pods](https://bit.ly/3bhT10s).
 
-**What's tested:** Checks Ingress and Egress traffic policy
+**What's tested:** Checks each Pod in the CNF for a defined ingress and egress policy.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-is-an-ingress-and-egress-policy-defined-ingress_egress_blocked)
 
 
 ## [Privileged container](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L156) 
 - Expectation: Containers should not have privileged capabilities enabled.
 
 **What's tested:** Checks if any containers have privileged capabilities. Read more at [ARMO-C0057](https://bit.ly/31iGng3)
-
 
 
 ## [Insecure capabilities](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L272)
