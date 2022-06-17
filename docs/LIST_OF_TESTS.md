@@ -418,41 +418,36 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 [**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-is-an-ingress-and-egress-policy-defined-ingress_egress_blocked)
 
 
-## [Privileged container](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L156) 
-- Expectation: Containers should not have privileged capabilities enabled.
-
-**What's tested:** Checks if any containers have privileged capabilities. Read more at [ARMO-C0057](https://bit.ly/31iGng3)
-
-
 ## [Insecure capabilities](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L272)
-- Expectation: Containers should not have insecure capabilities enabled
+- Expectation: Containers should not have insecure capabilities enabled.
 
-**What's tested:** Checks for insecure capabilities. See more at [ARMO-C0046](https://bit.ly/C0046_Insecure_Capabilities)
-
-This test checks against a [blacklist of insecure capabilities](https://github.com/FairwindsOps/polaris/blob/master/checks/insecureCapabilities.yaml).
+**What's tested:** Checks the CNF for any usage of insecure capabilities using the following [deny list](https://man7.org/linux/man-pages/man7/capabilities.7.html)
     
+[**Rational & Reasoning**](../RATIONALE.md#to-check-for-insecure-capabilities-insecure_capabilities)
+
 
 ## [Dangerous capabilities](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L293)
 - Expectation: Containers should not have dangerous capabilities enabled
 
-**What's tested:**
-This test checks against a [denylist of dangerous capabilities](https://github.com/FairwindsOps/polaris/blob/master/checks/dangerousCapabilities.yaml).
+**What's tested:** Checks the CNF for any usage of dangerous capabilities using the following [deny list](https://github.com/FairwindsOps/polaris/blob/master/checks/dangerousCapabilities.yaml).
 
-See more at [ARMO-C0028](https://bit.ly/C0028_Dangerous_Capabilities)
+[**Rational & Reasoning**](../RATIONALE.md#to-check-for-dangerous-capabilities-dangerous_capabilities)
 
 
 ## [Network policies](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L398)
 - Expectation: Namespaces should have network policies defined
 
-**What's tested:** Checks if network policies are defined for namespaces. Read more at [ARMO-C0011](https://bit.ly/2ZEwb0A).
+**What's tested:** Checks if network policies are defined for namespaces. 
 
-### NOTE: only in usage
-<b>Remediation:</b> Define network policies or use similar network protection mechanisms.
-    
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-namespaces-have-network-policies-defined-network_policies)
+
+
 ## [Non-root containers](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L377)
-- Expectation: Containers should run with non-root user with non-root group membership
+- Expectation: Containers should run with non-root user and allowPrivilegeEscalation should be set to false.
 
-**What's tested:** Checks if containers are running with non-root user with non-root membership. Read more at [ARMO-C0013](https://bit.ly/2Zzlts3)
+**What's tested:** Checks if the CNF has runAsUser and runAsGroup set to a user id greater than 999. Also checks that the allowPrivilegeEscalation field is set to false for the CNF. Read more at [ARMO-C0013](https://bit.ly/2Zzlts3)
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-are-running-with-non-root-user-with-non-root-membership-non_root_containers)
 
 
 ## [Host PID/IPC privileges](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L356)
@@ -460,33 +455,43 @@ See more at [ARMO-C0028](https://bit.ly/C0028_Dangerous_Capabilities)
 
 **What's tested:** Checks if containers are running with hostPID or hostIPC privileges. Read more at [ARMO-C0038](https://bit.ly/3nGvpIQ)
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-are-running-with-hostpid-or-hostipc-privileges-host_pid_ipc_privileges)
+
 
 ## [Linux hardening](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L251)
-- Expectation: Security services are being used to harden application
+- Expectation: Security services are being used to harden application.
 
-**What's tested:** Checks if security services are being used to harden the application. Read more at [ARMO-C0055](https://bit.ly/2ZKOjpJ)
+**What's tested:** Check if there are AppArmor, Seccomp, SELinux or Capabilities defined in the securityContext of the CNF's containers and pods. Read more at [ARMO-C0055](https://bit.ly/2ZKOjpJ)
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-security-services-are-being-used-to-harden-containers-linux_hardening)
+
+
 
 ## [Resource policies](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L314)
 - Expectation: Containers should have resource limits defined
 
-**What's tested:**
-Check for each container if there is a ‘limits’ field defined. Check for each limitrange/resourcequota if there is a max/hard field defined, respectively. Read more at [ARMO-C0009](https://bit.ly/3Ezxkps).
+**What's tested:** Check if there is a ‘limits’ field defined for the CNF. Check for each limitrange/resourcequota if there is a max/hard field defined, respectively. Read more at [ARMO-C0009](https://bit.ly/3Ezxkps).
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-have-resource-limits-defined-resource_policies)
 
 
 ## [Immutable File Systems](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L441)
-- Expectation: Containers should have immutable file system
+- Expectation: Containers should use an immutable file system when possible.
 
 **What's tested:**
 Checks whether the readOnlyRootFilesystem field in the SecurityContext is set to true. Read more at [ARMO-C0017](https://bit.ly/3pSMtxK)
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-have-immutable-file-systems-immutable_file_systems)
 
 
 ## [HostPath Mounts](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L462) 
 - Expectation: Containers should not have hostPath mounts 
 
-**What's tested:** TBD
+**What's tested:** Checks the CNF's POD spec for any hostPath volumes, if found it checks the volume for the field mount.readOnly == false (or if it doesn’t exist).
 Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-have-hostpath-mounts-check-is-this-a-duplicate-of-state-test---cnf-testsuite-volume_hostpath_not_found-hostpath_mounts)
+
 
 # Configuration Category
 
