@@ -495,10 +495,13 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 
 # Configuration Category
 
-## [Default namespaces](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L) 
-- Expectation: To check if resources of the CNF are not in the default namespace
+## [Default namespaces](https://github.com/cncf/cnf-testsuite/blob/v0.30.0/src/tasks/workload/configuration.cr#L56) 
+- Expectation: Resources should not be deployed in the default namespace.
 
-**What's tested:** TBD
+**What's tested:** Checks if any of the CNF's resources are deployed in the default namespace.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-is-using-the-default-namespace-default_namespace)
+
 
 ## [Latest tag](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L) 
 - Expectation: Checks if a CNF is using 'latest' tag instead of a version.
