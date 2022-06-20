@@ -146,6 +146,10 @@ starting a traffic control (tc) process with netem rules to add egress packet co
 > A higher quality CNF should be resilient to erroneously duplicated packets. This test injects network duplication on the specified container 
 by starting a traffic control (tc) process with netem rules to add egress delays.
 
+#### *Test if the CNF crashes when DNS errors occur*: [pod_dns_errors](USAGE.md#pod-dns-errors)
+
+> A CNF should be resilient to dns and resolution distruptions within the kuberntes pod. This ensures that at least some application availability will be maintained if DNS resolution fails.
+
 #### *To test if there is a liveness entry in the Helm chart*: [liveness](USAGE.md#heavy_check_mark-to-test-if-there-is-a-liveness-entry-in-the-helm-chart)
 
 > A cloud native principle is that application developers understand their own 
