@@ -279,6 +279,14 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-network-duplication-occurs-pod_network_duplication)
 
+## [Pod DNS errors](https://github.com/cncf/cnf-testsuite/blob/v0.26.0/src/tasks/workload/reliability.cr#L604)
+- :heavy_check_mark: Added to CNF Test Suite in release v0.26.0
+- Expectation: That the CNF dosen't crash is resilient to DNS resolution failures.
+
+**What's tested:** This test injects chaos to disrupt dns resolution in kubernetes pods and causes loss of access to services by blocking dns resolution of hostnames/domains.
+
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-dns-errors-occur-pod_dns_errors)
+
 
 ## [Helm chart liveness entry](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L15)
 -  Expectation: The Helm chart should have a liveness probe configured.
@@ -503,58 +511,67 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 [**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-is-using-the-default-namespace-default_namespace)
 
 
-## [Latest tag](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L) 
-- Expectation: Checks if a CNF is using 'latest' tag instead of a version.
+## [Latest tag](https://github.com/cncf/cnf-testsuite/blob/v0.30.0/src/tasks/workload/configuration.cr#L79) 
 
-**What's tested:** TBD
+- Expectation: The CNF should use an immutable tag that maps to a symantic version of the application.
+
+**What's tested:** Checks if the CNF is using a 'latest' tag instead of a semantic version.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-is-using-the-default-namespace-default_namespace)
+
 
 ## [Require labels](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L18) 
 - :heavy_check_mark: Added to CNF Test Suite in release v0.27.0
 - Expectation: Checks if pods are using the 'app.kubernetes.io/name' label
 
-**What's tested:** TBD
+**What's tested:** Checks if the CNF validates that the label `app.kubernetes.io/name` is specified with some value.
 
 ## [Versioned tag](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L80) 
-- Expectation: Checks for versioned tags on all images using OPA Gatekeeper
+- Expectation: The CNF should use an immutable tag that maps to a symantic version of the application.
 
-**What's tested:** TBD
+**What's tested:** Checks if the CNF is using a 'latest' tag instead of a semantic version using OPA Gatekeeper.
 
-## [IP addresses](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L39) 
-- Expectation: Checks for hardcoded IP addresses or subnet masks.
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-are-versioned-tags-on-all-images-using-opa-gatekeeper)
 
-**What's tested:** TBD
 
 ## [nodePort not used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L131) 
-- Expectation: The nodePort configuration field is not found in any of the defined containers.
+- Expectation: The nodePort configuration field is not found in any of the CNF's services.
 
-**What's tested:** The nodePort not used test will look through all containers defined in the installed cnf to see if the nodePort configuration field is in use.
+**What's tested:** Checks the CNF for any associated K8s Services that configured to expose the CNF by using a nodePort.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-are-node-ports-used-in-the-service-configuration-nodeport_not_used)
 
 
 ## [hostPort not used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L166) 
 - Expectation: The hostPort configuration field is not found in any of the defined containers. 
 
-**What's tested:**  The hostport not used test will look through all containers defined in the installed cnf to see if the hostPort configuration field is in use.
+**What's tested:**  Checks the CNF's workload resources for any containers using the hostPort configuration field to expose the application.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-are-host-ports-used-in-the-service-configuration-hostport_not_used)
+
 
 ## [Hardcoded IP addresses in K8s runtime configuration](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L213) 
-- Expectation: That no hardcoded IP addresses or subnet masks are found in the Kubernetes resources for the CNF.
+- Expectation: That no hardcoded IP addresses or subnet masks are found in the Kubernetes workload resources for the CNF.
 
-**What's tested:** The hardcoded ip address test will scan all the Kubernetes resources of the installed cnf to ensure that no static, hardcoded ip addresses are being used in the configuration.
+**What's tested:** The hardcoded ip address test will scan all of the CNF's workload resources and check for any static, hardcoded ip addresses being used in the configuration.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-are-any-non-declarative-hardcoded-ip-addresses-or-subnet-masks-in-the-k8s-runtime-configuration-hardcoded_ip_addresses_in_k8s_runtime_configuration)
+
 
 ## [Secrets used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L257) 
 - Expectation: The CNF is using K8s secrets for the management of sensitive data.
 
 **What's tested:** The secrets used test will scan all the Kubernetes workload resources to see if K8s secrets are being used.
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-uses-k8s-secrets-secrets_used)
+
+
 ## [Immutable configmap](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L362) 
 - Expectation: Immutable configmaps are being used for non-mutable data.
 
-**What's tested:** The immutable configmap test will scan the Kubernetes resources for the CNF and see if immutable configmaps are being used.
+**What's tested:** The immutable configmap test will scan the CNF's workload resources and see if immutable configmaps are being used.
 
-## [Pod DNS errors](https://github.com/cncf/cnf-testsuite/blob/v0.26.0/src/tasks/workload/reliability.cr#L604)
-- :heavy_check_mark: Added to CNF Test Suite in release v0.26.0
-- Expectation: That the CNF dosen't crash and maintains some level of availability.
-
-**What's tested:** This test injects chaos to disrupt dns resolution in kubernetes pods and causes loss of access to services by blocking dns resolution of hostnames/domains.
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-uses-immutable-configmaps-immutable_configmap)
 
 
 
