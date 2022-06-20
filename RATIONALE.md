@@ -277,20 +277,27 @@ Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley
 ## Configuration Tests 
 #### Declarative APIs for an immutable infrastructure are anything that configures the infrastructure element. This declaration can come in the form of a YAML file or a script, as long as the configuration designates the desired outcome, not how to achieve said outcome. *"Because it describes the state of the world, declarative configuration does not have to be executed to be understood. Its impact is concretely declared. Since the effects of declarative configuration can be understood before they are executed, declarative configuration is far less error-prone. " --Hightower, Kelsey; Burns, Brendan; Beda, Joe. Kubernetes: Up and Running: Dive into the Future of Infrastructure (Kindle Locations 183-186). Kindle Edition*
 
-#### *To test if there are versioned tags on all images using OPA Gatekeeper*: [latest_tag](USAGE.md#heavy_check_mark-to-check-if-pods-in-the-cnf-use-container-images-with-the-latest-tag)
+#### *To check if a CNF is using the default namespace*: [default_namespace](USAGE.md#default-namespace)
+> *Namespces provide a way to segment and isolate cluster resources across multiple applications and users. As a best practice, workloads should be isolated with Namespaces and not use the default namespace. 
+
+#### *To test if mutable tags being used for image versioning(Using Kyverno)*: [latest_tag](USAGE.md#heavy_check_mark-to-check-if-pods-in-the-cnf-use-container-images-with-the-latest-tag)
+
+> *"You should [avoid using the :latest tag](https://kubernetes.io/docs/concepts/containers/images/)
+when deploying containers in production as it is harder to track which version of the image 
+is running and more difficult to roll back properly."*
+
+#### *To test if the recommended labels are being used to describe resources*: [required_labels](USAGE.md#required-labels)
+> Defining and using labels help identify semantic attributes of your application or Deployment. A common set of labels allows tools to work collaboratively, while describing objects in a common manner that all tools can understand. You should use recommended labels to describe applications in a way that can be queried.
+
+#### *To test if there are versioned tags on all images using OPA Gatekeeper*: [versioned_tag](USAGE.md#heavy_check_mark-to-check-if-pods-in-the-cnf-use-container-images-with-the-latest-tag)
 
 > *"You should [avoid using the :latest tag](https://kubernetes.io/docs/concepts/containers/images/)
 when deploying containers in production as it is harder to track which version of the image 
 is running and more difficult to roll back properly."*
 
 #### *To test if there are node ports used in the service configuration*: [nodeport_not_used](USAGE.md#heavy_check_mark-to-test-if-there-are-node-ports-used-in-the-service-configuration)
-
-
 > Using node ports ties the CNF to a specific node and therefore makes the CNF less
 portable and scalable
-
-#### *To test if the recommended labels are being used to describe resources*: [required_labels](USAGE.md#required-labels)
-> Defining and using labels help identify semantic attributes of your application or Deployment. A common set of labels allows tools to work collaboratively, while describing objects in a common manner that all tools can understand. You should use recommended labels to describe applications in a way that can be queried.
 
 #### *To test if there are host ports used in the service configuration*: [hostport_not_used](USAGE.md#heavy_check_mark-to-test-if-there-are-host-ports-used-in-the-service-configuration)
 
@@ -317,9 +324,6 @@ to their data has the following advantages:*
 - *protects you from accidental (or unwanted) updates that could cause applications outages*
 - *improves performance of your cluster by significantly reducing load on kube-apiserver, by 
 closing watches for ConfigMaps marked as immutable.*"
-
-#### *To check if a CNF is using the default namespace*: [default_namespace](USAGE.md#default-namespace)
-> *Namespces provide a way to segment and isolate cluster resources across multiple applications and users. As a best practice, workloads should be isolated with Namespaces and not use the default namespace. 
 
 ## Platform Tests
 
