@@ -339,7 +339,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 ## [Jaeger tracing](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L203)
 - Expectation: The CNF is sending traces to Jaeger.
 
-**What's tested:** Checks if Jaeger installed and the CNF is configured and sending traces to the Jaeger Server.
+**What's tested:** Checks if Jaeger is installed and the CNF is configured to send traces to the Jaeger Server.
 
 [**Rational & Reasoning**](../RATIONALE.md#to-check-if-tracing-is-being-used-with-jaeger-tracing)
 
