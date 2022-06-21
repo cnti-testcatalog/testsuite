@@ -283,7 +283,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 - :heavy_check_mark: Added to CNF Test Suite in release v0.26.0
 - Expectation: That the CNF dosen't crash is resilient to DNS resolution failures.
 
-**What's tested:** This test injects chaos to disrupt dns resolution in kubernetes pods and causes loss of access to services by blocking dns resolution of hostnames/domains.
+**What's tested:** This test injects chaos to disrupt DNS resolution in kubernetes pods and causes loss of access to services by blocking DNS resolution of hostnames/domains.
 
 [**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-dns-errors-occur-pod_dns_errors)
 
