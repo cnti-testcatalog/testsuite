@@ -138,4 +138,18 @@ module Kyverno
     end
   end
 
+  def self.filter_failures_for_cnf_resources(resource_keys, failures)
+    filtered = failures.map do |failure|
+      failed_resources = failure.resources.select do |resource|
+        CNFManager.resources_includes?(resource_keys, resource.kind, resource.name, resource.namespace)
+      end
+      PolicyAudit::PolicyFailure.new(failure.message, failed_resources)
+    end
+    filtered = filtered.select do |failure|
+      failure.resources.size > 0
+    end
+
+    filtered
+  end
+
 end
