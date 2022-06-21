@@ -456,7 +456,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 **What's tested:** Checks if the CNF has runAsUser and runAsGroup set to a user id greater than 999. Also checks that the allowPrivilegeEscalation field is set to false for the CNF. Read more at [ARMO-C0013](https://bit.ly/2Zzlts3)
 
 [**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-are-running-with-non-root-user-with-non-root-membership-non_root_containers)
-
+to-test-if-the-recommended-labels-are-being-used-to-describe-resources-required_labels
 
 ## [Host PID/IPC privileges](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L356)
 - Expectation: Containers should not have hostPID and hostIPC privileges
@@ -526,6 +526,9 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 
 **What's tested:** Checks if the CNF validates that the label `app.kubernetes.io/name` is specified with some value.
 
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-recommended-labels-are-being-used-to-describe-resources-required_labels)
+
+
 ## [Versioned tag](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L80) 
 - Expectation: The CNF should use an immutable tag that maps to a symantic version of the application.
 
@@ -584,50 +587,67 @@ List of Platform Tests
 ## [K8s Conformance](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/platform.cr#L21)
 - Expectation: The K8s cluster passes the K8s conformance tests
 
-**What's tested:** 
-The K8s conformance test runs against the cluster.  See  https://github.com/cncf/k8s-conformance for details on what is tested.
+**What's tested:** Check if your platform passes the K8s conformance test. See  https://github.com/cncf/k8s-conformance for details on what is tested.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-uses-immutable-configmaps-immutable_configmap)
+
 
 ## [ClusterAPI enabled](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/platform.cr#L88)
 - Expectation: The cluster has Cluster API enabled which manages at least one Node.
 
-**What's tested:** TBD
+**What's tested:** Checks the platforms Kubernetes Nodes to see if they were instansiated by ClusterAPI.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-plateform-is-being-managed-by-clusterapi-clusterapi-enabled)
+
 
 ## [OCI Compliant](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/hardware_and_scheduling.cr#L15)
-- Expectation: The platform passes OCI compliance
+- Expectation: All worker nodes are using an OCI compliant run-time.
 
-**What's tested:** TBD
+**What's tested:** Inspects all worker nodes and checks if the run-time being used for scheduling is OCI compliant.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-plateform-is-using-an-oci-compliant-runtime-oci-compliant)
+
 
 ## (PoC) [Worker reboot recovery](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/resilience.cr#L15)
 - Expectation: Pods should reschedule after a node failure.
 - **WARNING**: this is a destructive test and will reboot your _host_ node! Do not run this unless you have completely separate cluster, e.g. development or test cluster.
 
-**What's tested:**
-Run node failure test which forces a reboot of the Node ("host system"). The Pods on that node should be rescheduled to a new Node.
+**What's tested:** Run node failure test which forces a reboot of the Node ("host system"). The Pods on that node should be rescheduled to a new Node.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-workloads-are-rescheduled-on-node-failure-worker-reboot-recovery)
+
 
 
 ## [Cluster admin](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/security.cr#L33)
 - Expectation: The [cluster admin role should not be bound to a Pod](https://bit.ly/C0035_cluster_admin)
 
-**What's tested:**
-Check which subjects have cluster-admin RBAC permissions – either by being bound to the cluster-admin clusterrole, or by having equivalent high privileges.
+**What's tested:** Check which subjects have cluster-admin RBAC permissions – either by being bound to the cluster-admin clusterrole, or by having equivalent high privileges.
 
-   
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-plateform-has-a-default-cluster-admin-role-cluster-admin)
+
 
 ## [Control plane hardening](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/security.cr#L13)
-- Expectation: Verify that the [the k8s control plane is hardened](https://bit.ly/C0005_Control_Plane)
+- Expectation: That the the k8s control plane is secure and not hosted on an [insecure port](https://bit.ly/C0005_Control_Plane)
 
-**What's tested: TBD**
-See https://bit.ly/C0005_Control_Plane
+**What's tested:** Checks if the insecure-port flag is set for the K8s API Server.
+
+[**Rational & Reasoning**](../RATIONALE.md#check-if-the-plateform-is-using-insecure-ports-for-the-api-server-control_plane_hardening)
 
 
 ## [Dashboard exposed](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/security.cr#L54)
-- Expectation: The K8s dashboard should not exposed to the public internet
+- Expectation: The K8s dashboard should not exposed to the public internet when the software version is older than v2.0.1
 
-**What's tested: TBD**
-See more details in Kubescape documentation: [C-0047 - Exposed dashboard](https://hub.armo.cloud/docs/c-0047)
+**What's tested:** Checks if Kubernetes dashboard exists and exposed externally as a service (nodeport/loadbalancer) and if the software version of the container image is older than v2.0.1.
+
+[**Rational & Reasoning**](../RATIONALE.md#check-if-the-dashboard-is-exposed-externally-dashboard-exposed)
+
+
 
 ## [Tiller images](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/security.cr#L75) 
 - Added in release v0.27.0
-- Expectation: Containers should not use tiller images
+- Expectation: The platform should be using Helm v3+ without Tiller.
 
-**What's tested:** Checks if containers are using any tiller images
+**What's tested:** Checks if a Helm v2 / Tiller image is deployed and used on the platform.
+
+[**Rational & Reasoning**](../RATIONALE.md#check-if-tiller-is-being-used-on-the-plaform-tiller-images)
+
