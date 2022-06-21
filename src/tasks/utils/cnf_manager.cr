@@ -1170,6 +1170,21 @@ module CNFManager
     Log.for("ensure_namespace_exists").info { "Kubernetes namespace #{name} already exists for the CNF install" }
   end
 
+  def self.workload_resource_keys(args, config)
+    resource_keys = CNFManager.cnf_workload_resources(args, config) do |resource|
+      namespace = resource.dig?("metadata", "namespace") || config.cnf_config[:helm_install_namespace]
+      kind = resource.dig?("kind")
+      name = resource.dig?("metadata", "name")
+      "#{namespace},#{kind}/#{name}".downcase
+    end
+    resource_keys
+  end
+
+  def self.resources_includes?(resource_keys, kind, name, namespace)
+    resource_key = "#{namespace},#{kind}/#{name}".downcase
+    resource_keys.includes?(resource_key)
+  end
+
   class HelmDirectoryMissingError < Exception
     property helm_directory : String = ""
 

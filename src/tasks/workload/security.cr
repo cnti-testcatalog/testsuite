@@ -47,6 +47,9 @@ task "sysctls" do |_, args|
     policy_path = Kyverno.policy_path("pod-security/baseline/restrict-sysctls/restrict-sysctls.yaml")
     failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
+
     if failures.size == 0
       resp = upsert_passed_task("sysctls", "✔️  PASSED: No restricted values found for sysctls #{emoji_security}")
     else
