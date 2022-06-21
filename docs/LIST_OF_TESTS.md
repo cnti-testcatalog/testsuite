@@ -258,7 +258,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 ## [IO Stress](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L549)
 - Expectation: The CNF should continue to function when pod io stress occurs
 
-**What's tested:** This test stresses the disk with continuous and heavy IO to cause degradation in reads/ writes by other microservices that use this shared disk.
+**What's tested:** This test stresses the disk with continuous and heavy IO to cause degradation in reads/writes by other microservices that use this shared disk.
 
 [**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-io-stress-occurs-pod_io_stress)
 
