@@ -141,20 +141,31 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 **What's tested:** Checks the size of the image used.
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-has-a-reasonable-image-size-reasonable_image_size)
+
+
 ## [Reasonable startup time](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L183)
 - Expectation: CNF starts up under one minute 
 
-**What's tested:** TBD
+**What's tested:** Checks how long the it takes for the CNF to pass a Readiness Probe and reach a ready/running state.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-have-a-reasonable-startup-time-reasonable_startup_time)
+
 
 ## [Single process type in one container](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L359)
 - Expectation: CNF container has one process type
 
 **What's tested:** This verifies that there is only one process type within one container. This does not count against child processes. Example would be nginx or httpd could have a parent process and then 10 child processes but if both nginx and httpd were running, this test would fail.
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-has-multiple-process-types-within-one-container-single_process_type)
+
+
 ## [Service discovery](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L413)
 - Expectation: CNFs accessible to other applications should be exposed via a Service.
 
 **What's tested:** This tests and checks if the containers within a CNF have services exposed via a Kubernetes Service resource. Application access for microservices within a cluster should be exposed via a Service. Read more about K8s Service [here](https://kubernetes.io/docs/concepts/services-networking/service/).
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-exposes-any-of-its-containers-as-a-service-service_discovery-service_discovery)
 
   
 ## [Shared database](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L19)  
@@ -162,32 +173,49 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 **What's tested:** This tests if multiple CNFs are using the same database.
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-uses-a-shared-database-shared_database)
+
+
 # State Category
 
 ## [Node drain](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/state.cr#L209) 
-- Expectation: A node will be drained and rescheduled onto other available node(s).
+- Expectation: All workload resources are successfully rescheduled onto other available node(s).
 
-**What's tested:** A node is drained and rescheduled to another node, passing with a liveness and readiness check. This will skip when the cluster only has a single node.
+**What's tested:** A node is drained and workload resources rescheduled to another node, passing with a liveness and readiness check. This will skip when the cluster only has a single node.
+
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-node-drain-occurs-node_drain)
+
 
 ## [Volume hostpath not found](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/state.cr#L419) 
 - Expectation: Volume host path configurations should not be used.
 
 **What's tested:** This tests if volume host paths are configured and used by the CNF.
 
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-a-volume-host-path-volume_hostpath_not_found)
+
+
 ## [No local volume configuration](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/state.cr#L457) 
 - Expectation: Local storage should not be used or configured.
 
 **What's tested:** This tests if local volumes are being used for the CNF.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-local-storage-no_local_volume_configuration)
+
 
 ## [Elastic volumes](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/state.cr#L321) 
 - Expectation: Elastic persistent volumes should be configured for statefulness.
 
 **What's tested:** This checks for elastic persistent volumes in use by the CNF.
 
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-elastic-volumes-elastic_volumes)
+
+
 ## [Database persistence](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/state.cr#L358)
 - Expectation: Elastic volumes and or statefulsets should be used for databases to maintain a minimum resilience level in K8s clusters.
 
 **What's tested:** This checks if elastic volumes and stateful sets are used for MySQL databases. If no MySQL database is found, the test is skipped.
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-a-database-with-either-statefulsets-elastic-volumes-or-both-database_persistence)
+
 
 # Reliability, Resilience and Availability Category
 
@@ -198,11 +226,16 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 The applications may stall or get corrupted while they wait endlessly for a packet. The experiment limits the impact (blast radius) to only the traffic you want to test by specifying IP addresses or application information. This experiment will help to improve the resilience of your services over time.
 
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-network-latency-occurs-pod_network_latency)
+
+
 
 ## [CNF with host disk fill](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L390)
-- Expectation: The CNF should continue to function when disk fill occurs
+- Expectation: The CNF should continue to function when disk fill occurs and pods should not be evicted to another node.
 
-**What's tested:** [Stressing the disk](https://litmuschaos.github.io/litmus/experiments/categories/pods/disk-fill/) with continuous and heavy IO for example can cause degradation in reads written by other microservices that use this shared disk for example modern storage solutions for Kubernetes to use the concept of storage pools out of which virtual volumes/devices are carved out. Another issue is the amount of scratch space eaten up on a node which leads to the lack of space for newer containers to get scheduled (Kubernetes too gives up by applying an "eviction" taint like "disk-pressure") and causes a wholesale movement of all pods to other nodes. Similarly with CPU chaos, by injecting a rogue process into a target container, we starve the main microservice process (typically PID 1) of the resources allocated to it (where limits are defined) causing slowness in application traffic or in other cases unrestrained use can cause the node to exhaust resources leading to the eviction of all pods. So this category of chaos experiment helps to build the immunity on the application undergoing any such stress scenario.
+**What's tested:** [This experiment](https://litmuschaos.github.io/litmus/experiments/categories/pods/disk-fill/) stresses the disk with continuous and heavy IO to cause degradation in the shared disk. This experiment also reduces the amount of scratch space available on a node which can lead to a lack of space for newer containers to get scheduled. This can cause (Kubernetes gives up by applying an "eviction" taint like "disk-pressure") a wholesale movement of all pods to other nodes. 
+
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-disk-fill-occurs-disk_fill)
 
 
 ##  [Pod delete](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L441)
@@ -210,83 +243,122 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 **What's tested:** [This experiment](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-delete/) helps to simulate such a scenario with forced/graceful pod failure on specific or random replicas of an application resource and checks the deployment sanity (replica availability & uninterrupted service) and recovery workflow of the application.
 
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-delete-occurs-pod_delete)
+
+
 ## [Memory hog](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L495)
 - Expectation: The CNF should continue to function when pod memory hog occurs
 
 **What's tested:** The [pod-memory hog](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-memory-hog/) experiment launches a stress process within the target container - which can cause either the primary process in the container to be resource constrained in cases where the limits are enforced OR eat up available system memory on the node in cases where the limits are not specified.  
 
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-memory-hog-occurs-pod_memory_hog)
+
+
 
 ## [IO Stress](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L549)
 - Expectation: The CNF should continue to function when pod io stress occurs
 
-**What's tested:** This test stresses the disk with with continuous and heavy IO to cause degradation in reads/ writes by other microservices that use this shared disk. 
+**What's tested:** This test stresses the disk with continuous and heavy IO to cause degradation in reads/writes by other microservices that use this shared disk.
+
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-io-stress-occurs-pod_io_stress)
+
+
 
 ## [Network corruption](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L284)
-- Expectation: The CNF should continue to function when pod network corruption occurs
+- Expectation: The CNF should be resilient to a lossy/flaky network and should continue to provide some level of availability.
 
-**What's tested: TBD**
+**What's tested:** It injects packet corruption on the CNF by starting a traffic control (tc) process with netem rules to add egress packet corruption.
+
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-network-corruption-occurs-pod_network_corruption)
+
 
 ## [Network duplication](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L337)
-- Expectation: The CNF should continue to function when pod network duplication occurs
+- Expectation: The CNF should continue to function and be resilient to a duplicate network.
 
-**What's tested: TBD**
+**What's tested:** This test injects network duplication into the CNF by starting a traffic control (tc) process with netem rules to add egress delays. 
+
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-network-duplication-occurs-pod_network_duplication)
+
+## [Pod DNS errors](https://github.com/cncf/cnf-testsuite/blob/v0.26.0/src/tasks/workload/reliability.cr#L604)
+- :heavy_check_mark: Added to CNF Test Suite in release v0.26.0
+- Expectation: That the CNF dosen't crash is resilient to DNS resolution failures.
+
+**What's tested:** This test injects chaos to disrupt DNS resolution in kubernetes pods and causes loss of access to services by blocking DNS resolution of hostnames/domains.
+
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-dns-errors-occur-pod_dns_errors)
+
 
 ## [Helm chart liveness entry](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L15)
--  Expectation: The Helm chart should have a liveness probe
+-  Expectation: The Helm chart should have a liveness probe configured.
 
-**What's tested: TBD**
+**What's tested:** This test scans all of the CNFs workload resources and check if a Liveness Probe has been configuered for each container.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-is-a-liveness-entry-in-the-helm-chart-liveness)
+
 
 ## [Helm chart readiness entry](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L45)
-- Expectation: The Helm chart should have a readiness probe
+- Expectation: The Helm chart should have a readiness probe configured.
 
-**What's tested: TBD**
+**What's tested:** This test scans all of the CNFs workload resources and check if a Readiness Probe has been configuered for each container.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-is-a-readiness-entry-in-the-helm-chart-readiness)
+
 
 # Observability and Diagnostic Category
 
 ## [Use stdout/stderr for logs](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L13)
 - Expectation: Resource output logs should be sent to STDOUT/STDERR
 
-**What's tested: TBD** This checks and verifies that STDOUT/STDERR is configured for logging.
+**What's tested:** This checks and verifies that STDOUT/STDERR logging is configured for the CNF.
 
-For example, running `kubectl get logs` returns useful information for diagnosing or troubleshooting issues. 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-logs-are-being-sent-to-stdoutstderr-standard-out-standard-error-instead-of-a-log-file-log_output)
 
 ## [Prometheus installed](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L42)
-- Expectation: Prometheus is being used for the cluster and CNF for metrics.
+- Expectation: The CNF is configured and sending metrics to a Prometheus server.
 
-**What's tested: TBD** Tests for the presence of [Prometheus](https://prometheus.io/) or if the CNF emit prometheus traffic.
+**What's tested:** Tests for the presence of [Prometheus](https://prometheus.io/) and if the CNF configured to sent metrics to the prometheus server.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-prometheus-is-installed-and-configured-for-the-cnf-prometheus_traffic)
+
 
 ## [Fluentd logs](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L170)
-- Expectation: Fluentd is capturing logs.
+- Expectation: Fluentd is install and capturing logs for the CNF.
 
-**What's tested:** Checks for fluentd presence and if logs are being captured for fluentd.
+**What's tested:** Checks for fluentd presence and if the CNFs logs are being captured by fluentd.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-logs-and-data-are-being-routed-through-fluentd-routed_logs)
 
 
 ## [OpenMetrics compatible](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L146)
 - Expectation: CNF should emit OpenMetrics compatible traffic.
 
-**What's tested:** Checks if OpenMetrics is being used and or compatible.
+**What's tested:** Checks if the CNFs metrics are [OpenMetrics](https://openmetrics.io/) compliant.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-openmetrics-is-being-used-and-or-compatible-open_metrics)
 
 ## [Jaeger tracing](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L203)
-- Expectation: The CNF uses tracing.
+- Expectation: The CNF is sending traces to Jaeger.
 
-**What's tested:** Checks if Jaeger is configured and tracing is being used.
+**What's tested:** Checks if Jaeger is installed and the CNF is configured to send traces to the Jaeger Server.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-tracing-is-being-used-with-jaeger-tracing)
 
 
 # Security Category
 
 ## [Container socket mounts](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L51)
 - :heavy_check_mark: Added to CNF Test Suite in release v0.27.0
-- Expectation: Container engine daemon sockets should not be mounted as volumes
+- Expectation: Container runtime sockets should not be mounted as volumes
 
-**What's tested**
-<b>Container Socket Mounts Details:</b> Container daemon socket bind mounts allows access to the container engine on the node. This access can be used for privilege escalation and to manage containers outside of Kubernetes, and hence should not be allowed.
+**What's tested** This test checks all of the CNFs containers and looks to see if any of them have access a container runtime socket from the host.
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-performs-a-cri-socket-mount-container_sock_mounts)
 
 
-
-## [Privileged Mode](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L125)
+## [Privileged Mode](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L420)
 - Expectation: Containers should not run in privileged mode
 
-**What's tested:** Checks if any containers are running in privileged mode (using [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper) Policy Controller for Kubernetes)
+**What's tested:** Checks if any containers are running in privileged mode (using [Kubescape](https://hub.armo.cloud/docs/c-0057))
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-are-any-privileged-containers-kubscape-version-privileged_containers)
 
 
 ## [External IPs](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L31)
@@ -295,186 +367,214 @@ For example, running `kubectl get logs` returns useful information for diagnosin
 
 **What's tested:** Checks if the CNF has services with external IPs configured
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-external-ips-are-used)
+
 
 ## [Root user](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L71)
 - Expectation: Containers should not run as a [root user](https://github.com/cncf/cnf-wg/blob/best-practice-no-root-in-containers/cbpps/0002-no-root-in-containers.md)
 
-**What's tested:** Checks if any containers are running as root user
+**What's tested:** Checks if any containers are running with a root user.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-any-containers-are-running-as-a-root-user-checks-the-user-outside-the-container-that-is-running-dockerd-non_root_user)
+
 
 ## [Privilege escalation](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L156)
-- Expectation: Containers should not allow for [privilege escalation](https://bit.ly/C0016_privilege_escalation)
+- Expectation: Containers should not allow [privilege escalation](https://bit.ly/C0016_privilege_escalation)
 
-**What's tested: TBD** <b>Privilege Escalation:</b> Check that the allowPrivilegeEscalation field in securityContext of container is set to false.
+**What's tested:** Check that the allowPrivilegeEscalation field in the securityContext of each container is set to false.
 
-See more at [ARMO-C0016](https://bit.ly/C0016_privilege_escalation)
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-any-containers-allow-for-privilege-escalation-privilege_escalation)
 
 
 ## [Symlink file system](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L175)
-- Expectation: No containers allow a [symlink](https://bit.ly/C0058_symlink_filesystem) attack
+- Expectation: No vulnerable K8s version being used in conjunction with the [subPath](https://bit.ly/C0058_symlink_filesystem) feature.
 
-**What's tested:**
-This control checks the vulnerable versions and the actual usage of the subPath feature in all Pods in the cluster.
+**What's tested:** This test checks for vulnerable K8s versions and the actual usage of the subPath feature for all Pods in the CNF.
 
-See more at [ARMO-C0058](https://bit.ly/C0058_symlink_filesystem)
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-an-attacker-can-use-a-symlink-for-arbitrary-host-file-system-access-cve-2021-25741-symlink_file_system)
+
 
 ## [Application credentials](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L194)
-- Exepectation: Application credentials should not be found in configuration files
+- Exepectation: Application credentials should not be found in the CNFs configuration files
 
-**What's tested:**
-Check if the pod has sensitive information in environment variables, by using list of known sensitive key names. Check if there are configmaps with sensitive information.
+**What's tested:** Checks the CNF for sensitive information in environment variables, by using list of known sensitive key names. Also checks for configmaps with sensitive information.
 
-See more at [ARMO-C0012](https://bit.ly/C0012_application_credentials)
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-are-applications-credentials-in-configuration-files-application_credentials)
 
 
 ## [Host network](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L213)
-- Expectation: PODs should not have access to the host systems network.
+- Expectation: The CNF should not have access to the host systems network.
 
-**What's tested:** Checks if there is a [host network attached to a pod](https://bit.ly/C0041_hostNetwork). See more at [ARMO-C0041](https://bit.ly/C0041_hostNetwork)
+**What's tested:** Checks if there is a [host network](https://bit.ly/C0041_hostNetwork) attached to any of the Pods in the CNF. 
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-is-a-host-network-attached-to-a-pod-host_network)
 
 
 ## [Service account mapping](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L232)
 - Expectation: The [automatic mapping](https://bit.ly/C0034_service_account_mapping) of service account tokens should be disabled. 
 
-**What's tested:** Check if service accounts are automatically mapped. See more at [ARMO-C0034](https://bit.ly/C0034_service_account_mapping).
+**What's tested:** Check if the CNF is using service accounts that are automatically mapped. 
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-is-automatic-mapping-of-service-accounts-service_account_mapping)
 
 
 ## [Ingress and Egress blocked](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L335)
 - Expectation: [Ingress and Egress traffic should be blocked on Pods](https://bit.ly/3bhT10s).
 
-**What's tested:** Checks Ingress and Egress traffic policy
+**What's tested:** Checks each Pod in the CNF for a defined ingress and egress policy.
 
-
-## [Privileged container](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L156) 
-- Expectation: Containers should not have privileged capabilities enabled.
-
-**What's tested:** Checks if any containers have privileged capabilities. Read more at [ARMO-C0057](https://bit.ly/31iGng3)
-
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-is-an-ingress-and-egress-policy-defined-ingress_egress_blocked)
 
 
 ## [Insecure capabilities](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L272)
-- Expectation: Containers should not have insecure capabilities enabled
+- Expectation: Containers should not have insecure capabilities enabled.
 
-**What's tested:** Checks for insecure capabilities. See more at [ARMO-C0046](https://bit.ly/C0046_Insecure_Capabilities)
-
-This test checks against a [blacklist of insecure capabilities](https://github.com/FairwindsOps/polaris/blob/master/checks/insecureCapabilities.yaml).
+**What's tested:** Checks the CNF for any usage of insecure capabilities using the following [deny list](https://man7.org/linux/man-pages/man7/capabilities.7.html)
     
+[**Rational & Reasoning**](../RATIONALE.md#to-check-for-insecure-capabilities-insecure_capabilities)
+
 
 ## [Dangerous capabilities](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L293)
 - Expectation: Containers should not have dangerous capabilities enabled
 
-**What's tested:**
-This test checks against a [denylist of dangerous capabilities](https://github.com/FairwindsOps/polaris/blob/master/checks/dangerousCapabilities.yaml).
+**What's tested:** Checks the CNF for any usage of dangerous capabilities using the following [deny list](https://github.com/FairwindsOps/polaris/blob/master/checks/dangerousCapabilities.yaml).
 
-See more at [ARMO-C0028](https://bit.ly/C0028_Dangerous_Capabilities)
+[**Rational & Reasoning**](../RATIONALE.md#to-check-for-dangerous-capabilities-dangerous_capabilities)
 
 
 ## [Network policies](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L398)
 - Expectation: Namespaces should have network policies defined
 
-**What's tested:** Checks if network policies are defined for namespaces. Read more at [ARMO-C0011](https://bit.ly/2ZEwb0A).
+**What's tested:** Checks if network policies are defined for namespaces. 
 
-### NOTE: only in usage
-<b>Remediation:</b> Define network policies or use similar network protection mechanisms.
-    
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-namespaces-have-network-policies-defined-network_policies)
+
+
 ## [Non-root containers](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L377)
-- Expectation: Containers should run with non-root user with non-root group membership
+- Expectation: Containers should run with non-root user and allowPrivilegeEscalation should be set to false.
 
-**What's tested:** Checks if containers are running with non-root user with non-root membership. Read more at [ARMO-C0013](https://bit.ly/2Zzlts3)
+**What's tested:** Checks if the CNF has runAsUser and runAsGroup set to a user id greater than 999. Also checks that the allowPrivilegeEscalation field is set to false for the CNF. Read more at [ARMO-C0013](https://bit.ly/2Zzlts3)
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-are-running-with-non-root-user-with-non-root-membership-non_root_containers)
+to-test-if-the-recommended-labels-are-being-used-to-describe-resources-required_labels
 
 ## [Host PID/IPC privileges](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L356)
 - Expectation: Containers should not have hostPID and hostIPC privileges
 
 **What's tested:** Checks if containers are running with hostPID or hostIPC privileges. Read more at [ARMO-C0038](https://bit.ly/3nGvpIQ)
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-are-running-with-hostpid-or-hostipc-privileges-host_pid_ipc_privileges)
+
 
 ## [Linux hardening](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L251)
-- Expectation: Security services are being used to harden application
+- Expectation: Security services are being used to harden application.
 
-**What's tested:** Checks if security services are being used to harden the application. Read more at [ARMO-C0055](https://bit.ly/2ZKOjpJ)
+**What's tested:** Check if there are AppArmor, Seccomp, SELinux or Capabilities defined in the securityContext of the CNF's containers and pods. Read more at [ARMO-C0055](https://bit.ly/2ZKOjpJ)
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-security-services-are-being-used-to-harden-containers-linux_hardening)
+
+
 
 ## [Resource policies](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L314)
 - Expectation: Containers should have resource limits defined
 
-**What's tested:**
-Check for each container if there is a ‘limits’ field defined. Check for each limitrange/resourcequota if there is a max/hard field defined, respectively. Read more at [ARMO-C0009](https://bit.ly/3Ezxkps).
+**What's tested:** Check if there is a ‘limits’ field defined for the CNF. Check for each limitrange/resourcequota if there is a max/hard field defined, respectively. Read more at [ARMO-C0009](https://bit.ly/3Ezxkps).
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-have-resource-limits-defined-resource_policies)
 
 
 ## [Immutable File Systems](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L441)
-- Expectation: Containers should have immutable file system
+- Expectation: Containers should use an immutable file system when possible.
 
 **What's tested:**
 Checks whether the readOnlyRootFilesystem field in the SecurityContext is set to true. Read more at [ARMO-C0017](https://bit.ly/3pSMtxK)
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-have-immutable-file-systems-immutable_file_systems)
 
 
 ## [HostPath Mounts](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L462) 
 - Expectation: Containers should not have hostPath mounts 
 
-**What's tested:** TBD
+**What's tested:** Checks the CNF's POD spec for any hostPath volumes, if found it checks the volume for the field mount.readOnly == false (or if it doesn’t exist).
 Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-have-hostpath-mounts-check-is-this-a-duplicate-of-state-test---cnf-testsuite-volume_hostpath_not_found-hostpath_mounts)
+
 
 # Configuration Category
 
-## [Default namespaces](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L) 
-- Expectation: To check if resources of the CNF are not in the default namespace
+## [Default namespaces](https://github.com/cncf/cnf-testsuite/blob/v0.30.0/src/tasks/workload/configuration.cr#L56) 
+- Expectation: Resources should not be deployed in the default namespace.
 
-**What's tested:** TBD
+**What's tested:** Checks if any of the CNF's resources are deployed in the default namespace.
 
-## [Latest tag](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L) 
-- Expectation: Checks if a CNF is using 'latest' tag instead of a version.
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-is-using-the-default-namespace-default_namespace)
 
-**What's tested:** TBD
+
+## [Latest tag](https://github.com/cncf/cnf-testsuite/blob/v0.30.0/src/tasks/workload/configuration.cr#L79) 
+
+- Expectation: The CNF should use an immutable tag that maps to a symantic version of the application.
+
+**What's tested:** Checks if the CNF is using a 'latest' tag instead of a semantic version.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-is-using-the-default-namespace-default_namespace)
+
 
 ## [Require labels](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L18) 
 - :heavy_check_mark: Added to CNF Test Suite in release v0.27.0
 - Expectation: Checks if pods are using the 'app.kubernetes.io/name' label
 
-**What's tested:** TBD
+**What's tested:** Checks if the CNF validates that the label `app.kubernetes.io/name` is specified with some value.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-recommended-labels-are-being-used-to-describe-resources-required_labels)
+
 
 ## [Versioned tag](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L80) 
-- Expectation: Checks for versioned tags on all images using OPA Gatekeeper
+- Expectation: The CNF should use an immutable tag that maps to a symantic version of the application.
 
-**What's tested:** TBD
+**What's tested:** Checks if the CNF is using a 'latest' tag instead of a semantic version using OPA Gatekeeper.
 
-## [IP addresses](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L39) 
-- Expectation: Checks for hardcoded IP addresses or subnet masks.
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-are-versioned-tags-on-all-images-using-opa-gatekeeper)
 
-**What's tested:** TBD
 
 ## [nodePort not used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L131) 
-- Expectation: The nodePort configuration field is not found in any of the defined containers.
+- Expectation: The nodePort configuration field is not found in any of the CNF's services.
 
-**What's tested:** The nodePort not used test will look through all containers defined in the installed cnf to see if the nodePort configuration field is in use.
+**What's tested:** Checks the CNF for any associated K8s Services that configured to expose the CNF by using a nodePort.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-are-node-ports-used-in-the-service-configuration-nodeport_not_used)
 
 
 ## [hostPort not used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L166) 
 - Expectation: The hostPort configuration field is not found in any of the defined containers. 
 
-**What's tested:**  The hostport not used test will look through all containers defined in the installed cnf to see if the hostPort configuration field is in use.
+**What's tested:**  Checks the CNF's workload resources for any containers using the hostPort configuration field to expose the application.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-are-host-ports-used-in-the-service-configuration-hostport_not_used)
+
 
 ## [Hardcoded IP addresses in K8s runtime configuration](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L213) 
-- Expectation: That no hardcoded IP addresses or subnet masks are found in the Kubernetes resources for the CNF.
+- Expectation: That no hardcoded IP addresses or subnet masks are found in the Kubernetes workload resources for the CNF.
 
-**What's tested:** The hardcoded ip address test will scan all the Kubernetes resources of the installed cnf to ensure that no static, hardcoded ip addresses are being used in the configuration.
+**What's tested:** The hardcoded ip address test will scan all of the CNF's workload resources and check for any static, hardcoded ip addresses being used in the configuration.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-are-any-non-declarative-hardcoded-ip-addresses-or-subnet-masks-in-the-k8s-runtime-configuration-hardcoded_ip_addresses_in_k8s_runtime_configuration)
+
 
 ## [Secrets used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L257) 
 - Expectation: The CNF is using K8s secrets for the management of sensitive data.
 
 **What's tested:** The secrets used test will scan all the Kubernetes workload resources to see if K8s secrets are being used.
 
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-uses-k8s-secrets-secrets_used)
+
+
 ## [Immutable configmap](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L362) 
 - Expectation: Immutable configmaps are being used for non-mutable data.
 
-**What's tested:** The immutable configmap test will scan the Kubernetes resources for the CNF and see if immutable configmaps are being used.
+**What's tested:** The immutable configmap test will scan the CNF's workload resources and see if immutable configmaps are being used.
 
-## [Pod DNS errors](https://github.com/cncf/cnf-testsuite/blob/v0.26.0/src/tasks/workload/reliability.cr#L604)
-- :heavy_check_mark: Added to CNF Test Suite in release v0.26.0
-- Expectation: That the CNF dosen't crash and maintains some level of availability.
-
-**What's tested:** This test injects chaos to disrupt dns resolution in kubernetes pods and causes loss of access to services by blocking dns resolution of hostnames/domains.
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-uses-immutable-configmaps-immutable_configmap)
 
 
 
@@ -487,50 +587,67 @@ List of Platform Tests
 ## [K8s Conformance](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/platform.cr#L21)
 - Expectation: The K8s cluster passes the K8s conformance tests
 
-**What's tested:** 
-The K8s conformance test runs against the cluster.  See  https://github.com/cncf/k8s-conformance for details on what is tested.
+**What's tested:** Check if your platform passes the K8s conformance test. See  https://github.com/cncf/k8s-conformance for details on what is tested.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-uses-immutable-configmaps-immutable_configmap)
+
 
 ## [ClusterAPI enabled](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/platform.cr#L88)
 - Expectation: The cluster has Cluster API enabled which manages at least one Node.
 
-**What's tested:** TBD
+**What's tested:** Checks the platforms Kubernetes Nodes to see if they were instansiated by ClusterAPI.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-plateform-is-being-managed-by-clusterapi-clusterapi-enabled)
+
 
 ## [OCI Compliant](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/hardware_and_scheduling.cr#L15)
-- Expectation: The platform passes OCI compliance
+- Expectation: All worker nodes are using an OCI compliant run-time.
 
-**What's tested:** TBD
+**What's tested:** Inspects all worker nodes and checks if the run-time being used for scheduling is OCI compliant.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-plateform-is-using-an-oci-compliant-runtime-oci-compliant)
+
 
 ## (PoC) [Worker reboot recovery](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/resilience.cr#L15)
 - Expectation: Pods should reschedule after a node failure.
 - **WARNING**: this is a destructive test and will reboot your _host_ node! Do not run this unless you have completely separate cluster, e.g. development or test cluster.
 
-**What's tested:**
-Run node failure test which forces a reboot of the Node ("host system"). The Pods on that node should be rescheduled to a new Node.
+**What's tested:** Run node failure test which forces a reboot of the Node ("host system"). The Pods on that node should be rescheduled to a new Node.
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-workloads-are-rescheduled-on-node-failure-worker-reboot-recovery)
+
 
 
 ## [Cluster admin](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/security.cr#L33)
 - Expectation: The [cluster admin role should not be bound to a Pod](https://bit.ly/C0035_cluster_admin)
 
-**What's tested:**
-Check which subjects have cluster-admin RBAC permissions – either by being bound to the cluster-admin clusterrole, or by having equivalent high privileges.
+**What's tested:** Check which subjects have cluster-admin RBAC permissions – either by being bound to the cluster-admin clusterrole, or by having equivalent high privileges.
 
-   
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-plateform-has-a-default-cluster-admin-role-cluster-admin)
+
 
 ## [Control plane hardening](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/security.cr#L13)
-- Expectation: Verify that the [the k8s control plane is hardened](https://bit.ly/C0005_Control_Plane)
+- Expectation: That the the k8s control plane is secure and not hosted on an [insecure port](https://bit.ly/C0005_Control_Plane)
 
-**What's tested: TBD**
-See https://bit.ly/C0005_Control_Plane
+**What's tested:** Checks if the insecure-port flag is set for the K8s API Server.
+
+[**Rational & Reasoning**](../RATIONALE.md#check-if-the-plateform-is-using-insecure-ports-for-the-api-server-control_plane_hardening)
 
 
 ## [Dashboard exposed](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/security.cr#L54)
-- Expectation: The K8s dashboard should not exposed to the public internet
+- Expectation: The K8s dashboard should not exposed to the public internet when the software version is older than v2.0.1
 
-**What's tested: TBD**
-See more details in Kubescape documentation: [C-0047 - Exposed dashboard](https://hub.armo.cloud/docs/c-0047)
+**What's tested:** Checks if Kubernetes dashboard exists and exposed externally as a service (nodeport/loadbalancer) and if the software version of the container image is older than v2.0.1.
+
+[**Rational & Reasoning**](../RATIONALE.md#check-if-the-dashboard-is-exposed-externally-dashboard-exposed)
+
+
 
 ## [Tiller images](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/security.cr#L75) 
 - Added in release v0.27.0
-- Expectation: Containers should not use tiller images
+- Expectation: The platform should be using Helm v3+ without Tiller.
 
-**What's tested:** Checks if containers are using any tiller images
+**What's tested:** Checks if a Helm v2 / Tiller image is deployed and used on the platform.
+
+[**Rational & Reasoning**](../RATIONALE.md#check-if-tiller-is-being-used-on-the-plaform-tiller-images)
+

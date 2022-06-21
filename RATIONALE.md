@@ -146,6 +146,10 @@ starting a traffic control (tc) process with netem rules to add egress packet co
 > A higher quality CNF should be resilient to erroneously duplicated packets. This test injects network duplication on the specified container 
 by starting a traffic control (tc) process with netem rules to add egress delays.
 
+#### *Test if the CNF crashes when DNS errors occur*: [pod_dns_errors](USAGE.md#pod-dns-errors)
+
+> A CNF should be resilient to name resolution (DNS) disruptions within the kubernetes pod. This ensures that at least some application availability will be maintained if DNS resolution fails.
+
 #### *To test if there is a liveness entry in the Helm chart*: [liveness](USAGE.md#heavy_check_mark-to-test-if-there-is-a-liveness-entry-in-the-helm-chart)
 
 > A cloud native principle is that application developers understand their own 
@@ -221,9 +225,14 @@ In order to prevent illegitimate escalation by processes and restrict a processe
 
 > *When a container has the [hostNetwork](https://hub.armo.cloud/docs/c-0041) feature turned on, the container has direct access to the underlying hostNetwork. Hackers frequently exploit this feature to [facilitate a container breakout](https://media.defense.gov/2021/Aug/03/2002820425/-1/-1/1/CTR_KUBERNETES%20HARDENING%20GUIDANCE.PDF) and gain access to the underlying host network, data and other integral resources.*
 
-#### *To check if there are service accounts that are automatically mapped*: [application_credentials](USAGE.md#heavy_check_mark-to-check-if-there-are-service-accounts-that-are-automatically-mapped)
+#### *To check if there are applications credentials in configuration files*: [application_credentials](USAGE.md#application-credentials)
 
-> *When a pod gets created and a service account wasn't specified, then the default service account will be used. Service accounts assigned in this way can unintentionally give third-party applications root access to the K8s APIs and other applicaton services. In order to follow a zero-trust / fine-grained security methodology, this functionality will need to be [explicitly disabled](https://hub.armo.cloud/docs/c-0034) by using the [automountServiceAccountToken: false](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#use-the-default-service-account-to-access-the-api-server) flag. In addition, if RBAC is not enabled, the SA has unlimited permissions in the cluster.*
+> *Developers store secrets in the Kubernetes configuration files, such as environment variables in the pod configuration. Such behavior is commonly seen in clusters that are monitored by Azure Security Center. Attackers who have access to those configurations, by querying the API server or by accessing those files on the developer’s endpoint, can steal the stored secrets and use them.*
+
+#### *To check if there is automatic mapping of service accounts*: [service_account_mapping](USAGE.md#service-account-mapping)
+
+> *When a pod gets created and a service account wasn't specified, then the default service account will be used. Service accounts assigned in this way can unintentionally give third-party applications root access to the K8s APIs and other applicaton services. In order to follow a zero-trust / fine-grained security methodology, this functionality will need to be explicitly disabled by using the automountServiceAccountToken: false flag. In addition, if RBAC is not enabled, the SA has unlimited permissions in the cluster.*
+
 
 #### *To check if there is an ingress and egress policy defined.*: [ingress_egress_blocked](USAGE.md#heavy_check_mark-to-check-if-there-is-an-ingress-and-egress-policy-defined)
 
@@ -277,7 +286,20 @@ Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley
 ## Configuration Tests 
 #### Declarative APIs for an immutable infrastructure are anything that configures the infrastructure element. This declaration can come in the form of a YAML file or a script, as long as the configuration designates the desired outcome, not how to achieve said outcome. *"Because it describes the state of the world, declarative configuration does not have to be executed to be understood. Its impact is concretely declared. Since the effects of declarative configuration can be understood before they are executed, declarative configuration is far less error-prone. " --Hightower, Kelsey; Burns, Brendan; Beda, Joe. Kubernetes: Up and Running: Dive into the Future of Infrastructure (Kindle Locations 183-186). Kindle Edition*
 
-#### *To test if there are versioned tags on all images using OPA Gatekeeper*: [latest_tag](USAGE.md#heavy_check_mark-to-check-if-pods-in-the-cnf-use-container-images-with-the-latest-tag)
+#### *To check if a CNF is using the default namespace*: [default_namespace](USAGE.md#default-namespace)
+> *Namespces provide a way to segment and isolate cluster resources across multiple applications and users. As a best practice, workloads should be isolated with Namespaces and not use the default namespace. 
+
+#### *To test if mutable tags being used for image versioning(Using Kyverno): latest_tag*: [latest_tag](USAGE.md#heavy_check_mark-to-check-if-pods-in-the-cnf-use-container-images-with-the-latest-tag)
+
+> *"You should [avoid using the :latest tag](https://kubernetes.io/docs/concepts/containers/images/)
+when deploying containers in production as it is harder to track which version of the image 
+is running and more difficult to roll back properly."*
+
+#### *To test if the recommended labels are being used to describe resources*: [required_labels](USAGE.md#required-labels)
+> Defining and using labels help identify semantic attributes of your application or Deployment. A common set of labels allows tools to work collaboratively, while describing objects in a common manner that all tools can understand. You should use recommended labels to describe applications in a way that can be queried.
+
+
+#### *To test if there are versioned tags on all images (using OPA Gatekeeper)*: [versioned_tag](USAGE.md#versioned-tag)
 
 > *"You should [avoid using the :latest tag](https://kubernetes.io/docs/concepts/containers/images/)
 when deploying containers in production as it is harder to track which version of the image 
@@ -285,12 +307,8 @@ is running and more difficult to roll back properly."*
 
 #### *To test if there are node ports used in the service configuration*: [nodeport_not_used](USAGE.md#heavy_check_mark-to-test-if-there-are-node-ports-used-in-the-service-configuration)
 
-
 > Using node ports ties the CNF to a specific node and therefore makes the CNF less
 portable and scalable
-
-#### *To test if the recommended labels are being used to describe resources*: [required_labels](USAGE.md#required-labels)
-> Defining and using labels help identify semantic attributes of your application or Deployment. A common set of labels allows tools to work collaboratively, while describing objects in a common manner that all tools can understand. You should use recommended labels to describe applications in a way that can be queried.
 
 #### *To test if there are host ports used in the service configuration*: [hostport_not_used](USAGE.md#heavy_check_mark-to-test-if-there-are-host-ports-used-in-the-service-configuration)
 
@@ -318,13 +336,22 @@ to their data has the following advantages:*
 - *improves performance of your cluster by significantly reducing load on kube-apiserver, by 
 closing watches for ConfigMaps marked as immutable.*"
 
-#### *To check if a CNF is using the default namespace*: [default_namespace](USAGE.md#default-namespace)
-> *Namespces provide a way to segment and isolate cluster resources across multiple applications and users. As a best practice, workloads should be isolated with Namespaces and not use the default namespace. 
-
 ## Platform Tests
+
+#### *To check if the plateform passes K8s Conformance tests*: [k8s-conformance](USAGE.md#k8s-conformance)
+> * A Vendor's Kubernetes Platform should pass[Kubernetes Conformance](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/conformance-tests.md). This ensures that the platform offering meets the same required APIs, features & interoperability expectations as in open source community versions of K8s. Applications that can operate on a [Certified Kubernetes](https://www.cncf.io/certification/software-conformance/) should be cross-compatible with any other Certified Kubernetes platform.
+
+#### *To check if the plateform is being managed by ClusterAPI*: [clusterapi-enabled](USAGE.md#clusterapi-enabled)
+> * A Kubernetes Platform should leverage [Cluster API](https://cluster-api.sigs.k8s.io/) to ensure that best-practices are followed for both bootstrapping & cluster lifecycle management. Kubernetes is a complex system that relies on several components being configured correctly, maintaining an in-house lifecycle management system for kubernetes is unlikey to meet best practice guideline unless significant resources are deticated to it.
 
 #### *To check if the plateform has a default Cluster admin role*: [cluster-admin](USAGE.md#cluster-admin)
 > *Role-based access control (RBAC) is a key security feature in Kubernetes. RBAC can restrict the allowed actions of the various identities in the cluster. Cluster-admin is a built-in high privileged role in Kubernetes. Attackers who have permissions to create bindings and cluster-bindings in the cluster can create a binding to the cluster-admin ClusterRole or to other high privileges roles. As a best practice, a principle of least privilege should be followed and cluster-admin privilege should only be used on an as-needed basis.
+
+#### *To check if the plateform is using an OCI compliant runtime*: [oci-compliant](USAGE.md#oci-compliant)
+> *The [OCI Initiative](https://opencontainers.org/) was created to ensure that runtimes conform  to both the runtime-spec and image-spec. These two specifications outline how a “filesystem bundle” is unpacked on disk and that the image itself contains sufficient information to launch the application on the target platform. As a best practice, your platform must use an OCI compliant runtime, this ensures that the runtime used is cross-compatible and supports interoperability with other runtimes. This means that workloads can be freely moved to other runtimes and prevents vendor lock in.
+
+#### *To check if workloads are rescheduled on node failure*: [worker-reboot-recovery](USAGE.md#worker-reboot-recovery)
+> *Cloud native systems should be self-healing. To follow cloud-native best practices your platform should be  resiliant and reschedule all workloads when such node failures occur.
 
 #### *Check if the plateform is using insecure ports for the API server*: [Control_plane_hardening](USAGE.md#control-plane-harding)
 > *The control plane is the core of Kubernetes and gives users the ability to view containers, schedule new Pods, read Secrets, and execute commands in the cluster. Therefore, it should be protected. It is recommended to avoid control plane exposure to the Internet or to an untrusted network and require TLS encryption.
