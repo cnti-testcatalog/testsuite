@@ -57,11 +57,15 @@ desc "Check if the CNF installs resources in the default namespace"
 task "default_namespace" do |_, args|
   Log.for("verbose").info { "default_namespace" }
   Kyverno.install
+  emoji_passed = "🏷️✔️"
+  emoji_failed = "🏷️❌"
+  policy_path = Kyverno.best_practice_policy("disallow_default_namespace/disallow_default_namespace.yaml")
+  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+
   CNFManager::Task.task_runner(args) do |args, config|
-    emoji_passed = "🏷️✔️"
-    emoji_failed = "🏷️❌"
-    policy_path = Kyverno.best_practice_policy("disallow_default_namespace/disallow_default_namespace.yaml")
-    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
 
     if failures.size == 0
       resp = upsert_passed_task("default_namespace", "✔️  PASSED: default namespace is not being used #{emoji_passed}")
@@ -70,7 +74,7 @@ task "default_namespace" do |_, args|
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
-        end
+      end
       end
     end
   end
