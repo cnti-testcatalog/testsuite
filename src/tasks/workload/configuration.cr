@@ -84,6 +84,7 @@ desc "Check if the CNF uses container images with the latest tag"
 task "latest_tag" do |_, args|
   Log.for("verbose").info { "latest_tag" }
   Kyverno.install
+
   emoji_passed = "🏷️✔️"
   emoji_failed = "🏷️❌"
   policy_path = Kyverno.best_practice_policy("disallow_latest_tag/disallow_latest_tag.yaml")
