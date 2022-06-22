@@ -80,18 +80,25 @@ desc "Check if the CNF uses container images with the latest tag"
 task "latest_tag" do |_, args|
   Log.for("verbose").info { "latest_tag" }
   Kyverno.install
+
   emoji_passed = "🏷️✔️"
   emoji_failed = "🏷️❌"
   policy_path = Kyverno.best_practice_policy("disallow_latest_tag/disallow_latest_tag.yaml")
   failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
-  if failures.size == 0
-    resp = upsert_passed_task("latest_tag", "✔️  🏆 PASSED: Container images are not using the latest tag #{emoji_passed}")
-  else
-    resp = upsert_failed_task("latest_tag", "✖️  🏆 FAILED: Container images are using the latest tag #{emoji_failed}")
-    failures.each do |failure|
-      failure.resources.each do |resource|
-        puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+  CNFManager::Task.task_runner(args) do |args, config|
+
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
+
+    if failures.size == 0
+      resp = upsert_passed_task("latest_tag", "✔️  🏆 PASSED: Container images are not using the latest tag #{emoji_passed}")
+    else
+      resp = upsert_failed_task("latest_tag", "✖️  🏆 FAILED: Container images are using the latest tag #{emoji_failed}")
+      failures.each do |failure|
+        failure.resources.each do |resource|
+          puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+        end
       end
     end
   end
