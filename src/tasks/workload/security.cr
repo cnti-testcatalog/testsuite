@@ -67,11 +67,15 @@ desc "Check if the CNF has services with external IPs configured"
 task "external_ips" do |_, args|
   Log.for("verbose").info { "external_ips" }
   Kyverno.install
-  CNFManager::Task.task_runner(args) do |args, config|
-    emoji_security = "🔓🔑"
-    policy_path = Kyverno.best_practice_policy("restrict-service-external-ips/restrict-service-external-ips.yaml")
-    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+ emoji_security = "🔓🔑"
+  policy_path = Kyverno.best_practice_policy("restrict-service-external-ips/restrict-service-external-ips.yaml")
+  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
+  CNFManager::Task.task_runner(args) do |args, config|
+
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
+    
     if failures.size == 0
       resp = upsert_passed_task("external_ips", "✔️  PASSED: Services are not using external IPs #{emoji_security}")
     else
