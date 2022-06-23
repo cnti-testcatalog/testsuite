@@ -42,11 +42,11 @@ task "sysctls" do |_, args|
   Log.for("verbose").info { "sysctls" }
   Kyverno.install
 
-  CNFManager::Task.task_runner(args) do |args, config|
-    emoji_security = "🔓🔑"
-    policy_path = Kyverno.policy_path("pod-security/baseline/restrict-sysctls/restrict-sysctls.yaml")
-    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+  emoji_security = "🔓🔑"
+  policy_path = Kyverno.policy_path("pod-security/baseline/restrict-sysctls/restrict-sysctls.yaml")
+  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
+  CNFManager::Task.task_runner(args) do |args, config|
     resource_keys = CNFManager.workload_resource_keys(args, config)
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
 
