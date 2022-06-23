@@ -363,7 +363,7 @@ crystal src/cnf-testsuite.cr network_chaos
 crystal src/cnf-testsuite.cr external_retry
 ```
     
-    #### :memo: (To Do) To test small scale autoscaling
+#### :memo: (To Do) To test small scale autoscaling
 
 ```
 crystal src/cnf-testsuite.cr small_autoscaling
@@ -647,6 +647,19 @@ Ensure that your CNF is resilient to a lossy/flaky network and can maintain a le
 
 <b>Remediation for failing this test:</b> 
 Ensure that your CNF is resilient to erroneously duplicated packets and can maintain a level of avaliabliy.
+</b>
+
+
+## [Pod DNS errors](docs/LIST_OF_TESTS.md#immutable-configmaps)
+
+##### To run the Pod DNS error test, you can use the following command:
+```
+./cnf-testsuite pod_dns_error
+```
+
+<b>Remediation for failing this test:</b> 
+Ensure that your CNF is resilient to DNS resolution failures can maintain a level of availability.
+
 </b>
 
 
@@ -1225,22 +1238,6 @@ Remove any sensitive data stored in configmaps, environment variables and instea
 <b>Remediation for failing this test:</b> 
 Use immutable configmaps for any non-mutable configuration data.
 </b>
-
-
-
-
-## [Pod DNS errors](docs/LIST_OF_TESTS.md#immutable-configmaps)
-
-##### To run the Pod DNS error test, you can use the following command:
-```
-./cnf-testsuite pod_dns_error
-```
-
-<b>Remediation for failing this test:</b> 
-Ensure that your CNF is resilient to DNS resolution failures can maintain a level of availability.
-
-</b>
-
 
 
 # Platform Tests
