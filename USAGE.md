@@ -844,6 +844,18 @@ To mitigate this vulnerability without upgrading kubelet, you can disable the Vo
 </b>
 
 
+## [Sysctls](docs/LIST_OF_TESTS.md#sysctls)
+
+##### To run the Sysctls test, you can use the following command:
+```
+./cnf-testsuite sysctls
+```
+
+<b>Remediation for failing this test:</b> 
+The spec.securityContext.sysctls field must be unset or not use. 
+</b>
+
+
 ## [Application credentials](docs/LIST_OF_TESTS.md#application-credentials)
 
 ##### To run the Application credentials test, you can use the following command:
