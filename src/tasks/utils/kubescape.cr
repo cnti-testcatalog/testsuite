@@ -36,6 +36,7 @@ module Kubescape
 
   def self.test_by_test_name(results_json, test_name)
     Log.info { "kubescape test_by_test_name" }
+
     resp= results_json.as_a.find {|test|test["name"]==test_name}
     if resp
       resp
@@ -112,21 +113,23 @@ module Kubescape
 
     test_json["ruleReports"].as_a.map do |rule_report|
       rule_name = rule_report["name"].as_s
-      rule_report.as_h["ruleResponses"].as_a.map do |rule_response|
-        alert_message = rule_response.dig?("alertMessage")
-        k8s_objects = rule_response.dig("alertObject", "k8sApiObjects")
-        if k8s_objects == nil
-          nil
-        else
-          k8s_objects.as_a.map do |k8s_obj|
-            test_resource = TestResource.new(
-              rule_name: rule_name,
-              kind: k8s_obj["kind"].as_s,
-              name: k8s_obj.dig("metadata", "name").as_s,
-              namespace: k8s_obj.dig("metadata", "namespace").as_s,
-              alert_message: alert_message ? alert_message.as_s : alert_message
-            )
-            test_resources << test_resource
+     unless rule_report["ruleResponses"] == nil
+        rule_report.as_h["ruleResponses"].as_a.map do |rule_response|
+          alert_message = rule_response.dig?("alertMessage")
+          k8s_objects = rule_response.dig("alertObject", "k8sApiObjects")
+          if k8s_objects == nil
+            nil
+          else
+            k8s_objects.as_a.map do |k8s_obj|
+              test_resource = TestResource.new(
+                rule_name: rule_name,
+                kind: k8s_obj["kind"].as_s,
+                name: k8s_obj.dig("metadata", "name").as_s,
+                namespace: k8s_obj.dig("metadata", "namespace").as_s,
+                alert_message: alert_message ? alert_message.as_s : alert_message
+              )
+              test_resources << test_resource
+            end
           end
         end
       end
