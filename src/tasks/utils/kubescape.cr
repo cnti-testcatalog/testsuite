@@ -91,19 +91,10 @@ module Kubescape
   end
 
   def self.alerts_by_test(test_json)
-    puts "...TEST JSON"
-    puts test_json.as_h.keys
-
     if test_json && test_json["ruleReports"]?
       resp = test_json["ruleReports"].as_a.map { |rep|
       if rep["ruleResponses"]? && rep["ruleResponses"]? != nil  
-        puts "...RULE REPORT"
-        puts rep.as_h.keys
-        puts rep["remediation"]
         rep["ruleResponses"].as_a.map do |res|
-          puts "...RULE RESPONSE"
-          puts res.as_h.keys
-          puts res["alertMessage"]
           res["alertMessage"]
         end
       end
