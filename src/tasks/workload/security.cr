@@ -409,8 +409,6 @@ task "ingress_egress_blocked", ["kubescape_scan"] do |_, args|
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
-    pp test_report
-
     emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
       upsert_passed_task("ingress_egress_blocked", "✔️  PASSED: Ingress and Egress traffic blocked on pods #{emoji_security}")
