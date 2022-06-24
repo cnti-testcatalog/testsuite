@@ -34,11 +34,15 @@ desc "Check if the CNF is running containers with labels configured?"
 task "require_labels" do |_, args|
   Log.for("verbose").info { "require-labels" }
   Kyverno.install
+  emoji_passed = "🏷️✔️"
+  emoji_failed = "🏷️❌"
+  policy_path = Kyverno.best_practice_policy("require_labels/require_labels.yaml")
+  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+
   CNFManager::Task.task_runner(args) do |args, config|
-    emoji_passed = "🏷️✔️"
-    emoji_failed = "🏷️❌"
-    policy_path = Kyverno.best_practice_policy("require_labels/require_labels.yaml")
-    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
 
     if failures.size == 0
       resp = upsert_passed_task("require_labels", "✔️  PASSED: Pods have the app.kubernetes.io/name label #{emoji_passed}")
