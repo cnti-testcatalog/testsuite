@@ -511,15 +511,18 @@ task "privileged_containers", ["kubescape_scan" ] do |_, args|
     Log.for("verbose").info { "privileged_containers" } if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Privileged container")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security = "🔓🔑"
     #todo whitelist
-    if Kubescape.test_passed?(test_json)
+    if test_report.failed_resources.size == 0
       upsert_passed_task("privileged_containers", "✔️  🏆 PASSED: No privileged containers were found #{emoji_security}")
     else
       resp = upsert_failed_task("privileged_containers", "✖️  🏆 FAILED: Found privileged containers #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
