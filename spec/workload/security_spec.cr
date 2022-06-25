@@ -147,18 +147,18 @@ describe "Security" do
     end
   end
 
-  # it "'application_credentials' should fail on a cnf that allows applications credentials in configuration files", tags: ["security"] do
-  #   begin
-  #     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
-  #     $?.success?.should be_true
-  #     response_s = `./cnf-testsuite application_credentials`
-  #     LOGGING.info response_s
-  #     $?.success?.should be_true
-  #     (/FAILED: Found applications credentials in configuration files/ =~ response_s).should_not be_nil
-  #   ensure
-  #     `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
-  #   end
-  # end
+  it "'application_credentials' should fail on a cnf that allows applications credentials in configuration files", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-appliciation-credentials/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite application_credentials`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Found applications credentials in configuration files/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-appliciation-credentials/cnf-testsuite.yml`
+    end
+  end
 
   it "'host_network' should pass on a cnf that does not have a host network attached to pod", tags: ["security"] do
     begin
