@@ -310,7 +310,7 @@ task "host_network", ["uninstall_cluster_tools", "kubescape_scan"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "host_network" if check_verbose(args)
     results_json = Kubescape.parse
-    test_json = Kubescape.test_by_test_name(results_json, "hostNetwork access")
+    test_json = Kubescape.test_by_test_name(results_json, "HostNetwork access")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
