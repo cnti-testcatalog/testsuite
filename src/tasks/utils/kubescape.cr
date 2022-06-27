@@ -113,7 +113,7 @@ module Kubescape
 
     test_json["ruleReports"].as_a.map do |rule_report|
       rule_name = rule_report["name"].as_s
-     unless rule_report["ruleResponses"] == nil
+      unless rule_report["ruleResponses"] == nil
         rule_report.as_h["ruleResponses"].as_a.map do |rule_response|
           alert_message = rule_response.dig?("alertMessage")
           k8s_objects = rule_response.dig("alertObject", "k8sApiObjects")
@@ -121,11 +121,21 @@ module Kubescape
             nil
           else
             k8s_objects.as_a.map do |k8s_obj|
+              name = ""
+              namespace = nil
+              if k8s_obj.dig?("metadata", "namespace")
+                namespace = k8s_obj.dig("metadata", "namespace").as_s
+              end
+              if k8s_obj.dig?("name")
+                name = k8s_obj.dig("name").as_s
+              else
+                name = k8s_obj.dig("metadata", "name").as_s
+              end
               test_resource = TestResource.new(
                 rule_name: rule_name,
                 kind: k8s_obj["kind"].as_s,
-                name: k8s_obj.dig("metadata", "name").as_s,
-                namespace: k8s_obj.dig("metadata", "namespace").as_s,
+                name: name,
+                namespace: namespace,
                 alert_message: alert_message ? alert_message.as_s : alert_message
               )
               test_resources << test_resource
@@ -168,7 +178,7 @@ module Kubescape
     property namespace
     property alert_message
 
-    def initialize(@rule_name : String, @kind : String, @name : String, @namespace : String, @alert_message : String | Nil)
+    def initialize(@rule_name : String, @kind : String, @name : String, @namespace : String | Nil, @alert_message : String | Nil)
     end
   end
 
