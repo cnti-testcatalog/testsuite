@@ -93,23 +93,27 @@ desc "Check if the CNF or the cluster resources have custom SELinux options"
 task "selinux_options" do |_, args|
   Log.for("verbose").info { "selinux_options" }
   Kyverno.install
+
+  emoji_security = "🔓🔑"
+  check_policy_path = Kyverno::CustomPolicies::SELinuxEnabled.new.policy_path
+  check_failures = Kyverno::PolicyAudit.run(check_policy_path, EXCLUDE_NAMESPACES)
+
+  disallow_policy_path = Kyverno.policy_path("pod-security/baseline/disallow-selinux/disallow-selinux.yaml")
+  disallow_failures = Kyverno::PolicyAudit.run(disallow_policy_path, EXCLUDE_NAMESPACES)
+
   CNFManager::Task.task_runner(args) do |args, config|
-    emoji_security = "🔓🔑"
-
-    policy_path = Kyverno.custom_policy_path("check-selinux-enabled.yaml")
-    policy_path = Kyverno::CustomPolicies::SELinuxEnabled.new.policy_path
-    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
-
     #TODO check for AppArmor as well, and the cnf should have either selinux or apparmor
     # IF SELinux is not enabled, skip this test
     # Else check for SELinux options
-    if failures.size == 0
+
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    check_failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, check_failures)
+
+    if check_failures.size == 0
       # upsert_skipped_task("selinux_options", "⏭️  🏆 SKIPPED: Pods are not using SELinux options #{emoji_security}")
       upsert_na_task("selinux_options", "⏭️  🏆 N/A: Pods are not using SELinux #{emoji_security}")
     else
-
-      policy_path = Kyverno.policy_path("pod-security/baseline/disallow-selinux/disallow-selinux.yaml")
-      failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+      failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, disallow_failures)
 
       if failures.size == 0
         resp = upsert_passed_task("selinux_options", "✔️  🏆 PASSED: Pods are not using custom SELinux options that can be used for privilege escalations #{emoji_security}")
