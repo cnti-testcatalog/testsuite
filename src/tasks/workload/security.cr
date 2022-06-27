@@ -248,7 +248,7 @@ task "privilege_escalation", ["kubescape_scan"] do |_, args|
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security="🔓🔑"
-    if if test_report.failed_resources.size == 0 
+    if test_report.failed_resources.size == 0 
       upsert_passed_task("privilege_escalation", "✔️  PASSED: No containers that allow privilege escalation were found #{emoji_security}")
     else
       resp = upsert_failed_task("privilege_escalation", "✖️  FAILED: Found containers that allow privilege escalation #{emoji_security}")
@@ -314,7 +314,7 @@ task "host_network", ["uninstall_cluster_tools", "kubescape_scan"] do |_, args|
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security="🔓🔑"
-    if if test_report.failed_resources.size == 0
+    if test_report.failed_resources.size == 0
       upsert_passed_task("host_network", "✔️  PASSED: No host network attached to pod #{emoji_security}")
     else
       resp = upsert_failed_task("host_network", "✖️  FAILED: Found host network attached to pod #{emoji_security}")
