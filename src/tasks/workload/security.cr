@@ -391,14 +391,17 @@ task "dangerous_capabilities", ["kubescape_scan"] do |_, args|
     Log.for("verbose").info { "dangerous_capabilities" } if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Dangerous capabilities")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security = "🔓🔑"
-    if Kubescape.test_passed?(test_json)
+    if test_report.failed_resources.size == 0
       upsert_passed_task("dangerous_capabilities", "✔️  PASSED: Containers with dangerous capabilities were not found #{emoji_security}")
     else
       resp = upsert_failed_task("dangerous_capabilities", "✖️  FAILED: Found containers with dangerous capabilities #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
