@@ -215,12 +215,7 @@
 
 - name: privileged_containers
   tags: security, dynamic, workload, essential, cert
-  pass: 100
-
-- name: network_policies
-  tags: security, dynamic, workload, cert, bonus
-  pass: 1 
-  fail: 0 
+  pass: 100 
 
 - name: non_root_containers
   tags: security, dynamic, workload, essential, cert
@@ -253,9 +248,6 @@
   fail: 0 
 
 - name: insecure_capabilities
-  tags: security, dynamic, workload, cert, normal
-
-- name: dangerous_capabilities
   tags: security, dynamic, workload, cert, normal
 
 - name: sysctls
