@@ -134,32 +134,6 @@ describe "Security" do
   #   end
   # end
 
-  it "'dangerous_capabilities' should pass on a cnf that does not have containers with dangerous capabilities", tags: ["capabilities"] do
-    begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite dangerous_capabilities`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/PASSED: Containers with dangerous capabilities were not found/ =~ response_s).should_not be_nil
-    ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-    end
-  end
-
-  # it "'dangerous_capabilities' should fail on a cnf that has containers with dangerous capabilities", tags: ["security"] do
-  #   begin
-  #     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
-  #     $?.success?.should be_true
-  #     response_s = `./cnf-testsuite dangerous_capabilities`
-  #     LOGGING.info response_s
-  #     $?.success?.should be_true
-  #     (/PASSED: Containers with dangerous capabilities were not found/ =~ response_s).should be_nil
-  #   ensure
-  #     `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-dangerous-capabilities/cnf-testsuite.yml`
-  #   end
-  # end
-
   it "'linux_hardening' should fail on a cnf that does not make use of security services", tags: ["capabilities"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
@@ -259,19 +233,6 @@ describe "Security" do
       LOGGING.info response_s
       $?.success?.should be_true
       (/FAILED: Found containers running with root user or user with root group membership/ =~ response_s).should be_nil
-    ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
-    end
-  end
-
-  it "'network_policies' should fail when namespaces do not have network policies defined", tags: ["security"] do
-    begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite network_policies`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/PASSED: Namespaces have network policies defined/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
     end
