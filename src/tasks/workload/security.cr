@@ -427,14 +427,17 @@ task "resource_policies", ["kubescape_scan"] do |_, args|
     Log.for("verbose").info { "resource_policies" } if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Resource policies")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security = "🔓🔑"
-    if Kubescape.test_passed?(test_json)
+    if test_report.failed_resources.size == 0
       upsert_passed_task("resource_policies", "✔️  🏆 PASSED: Containers have resource limits defined #{emoji_security}")
     else
       resp = upsert_failed_task("resource_policies", "✖️  🏆 FAILED: Found containers without resource limits defined #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
