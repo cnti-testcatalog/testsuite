@@ -434,22 +434,6 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 [**Rational & Reasoning**](../RATIONALE.md#to-check-for-insecure-capabilities-insecure_capabilities)
 
 
-## [Dangerous capabilities](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L293)
-- Expectation: Containers should not have dangerous capabilities enabled
-
-**What's tested:** Checks the CNF for any usage of dangerous capabilities using the following [deny list](https://github.com/FairwindsOps/polaris/blob/master/checks/dangerousCapabilities.yaml).
-
-[**Rational & Reasoning**](../RATIONALE.md#to-check-for-dangerous-capabilities-dangerous_capabilities)
-
-
-## [Network policies](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L398)
-- Expectation: Namespaces should have network policies defined
-
-**What's tested:** Checks if network policies are defined for namespaces. 
-
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-namespaces-have-network-policies-defined-network_policies)
-
-
 ## [Non-root containers](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L377)
 - Expectation: Containers should run with non-root user and allowPrivilegeEscalation should be set to false.
 

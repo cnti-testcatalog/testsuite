@@ -160,7 +160,7 @@ describe "SampleUtils" do
             "node_drain", "helm_chart_valid",
             "helm_chart_published", "volume_hostpath_not_found",
             "no_local_volume_configuration", "service_account_mapping",
-            "privileged_containers", "network_policies",
+            "privileged_containers",
             "non_root_containers", "host_pid_ipc_privileges",
             "linux_hardening", "resource_policies",
             "immutable_file_systems", "hostpath_mounts", "log_output",

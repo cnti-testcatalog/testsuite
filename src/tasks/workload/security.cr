@@ -18,7 +18,6 @@ task "security", [
     "host_pid_ipc_privileges",
     "non_root_containers",
     "privileged_containers",
-    "network_policies",
     "immutable_file_systems",
     "hostpath_mounts",
     "container_sock_mounts",
@@ -483,30 +482,6 @@ task "non_root_containers", ["kubescape_scan"] do |_, args|
       upsert_passed_task("non_root_containers", "✔️  🏆 PASSED: Containers are running with non-root user with non-root group membership #{emoji_security}")
     else
       resp = upsert_failed_task("non_root_containers", "✖️  🏆 FAILED: Found containers running with root user or user with root group membership #{emoji_security}")
-      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
-      stdout_failure("Remediation: #{test_report.remediation}")
-      resp
-    end
-  end
-end
-
-desc "Check if network policies are defined for namespaces"
-task "network_policies", ["kubescape_scan"] do |_, args|
-  next if args.named["offline"]?
-
-  CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "network_policies" } if check_verbose(args)
-    results_json = Kubescape.parse
-    test_json = Kubescape.test_by_test_name(results_json, "Network policies")
-    test_report = Kubescape.parse_test_report(test_json)
-    resource_keys = CNFManager.workload_resource_keys(args, config)
-    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
-
-    emoji_security = "🔓🔑"
-    if test_report.failed_resources.size == 0
-      upsert_passed_task("network_policies", "✔️  PASSED: Namespaces have network policies defined #{emoji_security}")
-    else
-      resp = upsert_failed_task("network_policies", "✖️  FAILED: Found namespaces which do not have network policies defined #{emoji_security}")
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp

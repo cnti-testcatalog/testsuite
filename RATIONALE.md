@@ -256,9 +256,6 @@ Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley
 #### *To check for insecure capabilities*: [insecure_capabilities](USAGE.md#heavy_check_mark-to-check-for-insecure-capabilities)
 > Giving [insecure](https://hub.armo.cloud/docs/c-0046) and unnecessary capabilities for a container can increase the impact of a container compromise.
 
-#### *To check if namespaces have network policies defined*: [network_policies](USAGE.md#heavy_check_mark-to-check-if-namespaces-have-network-policies-defined)
-> [MITRE check](https://hub.armo.cloud/docs/c-0011) that fails if there are no policies defined for a specific namespace (cluster internal networking)
-
 #### *To check if containers are running with non-root user with non-root membership*: [non_root_containers](USAGE.md#heavy_check_mark-to-check-if-containers-are-running-with-non-root-user-with-non-root-membership)
    > Container engines allow containers to run applications as a non-root user with non-root group membership. Typically, this non-default setting is configured when the container image is built. . Alternatively, Kubernetes can load containers into a Pod with SecurityContext:runAsUser specifying a non-zero user. While the runAsUser directive effectively forces non-root execution at deployment, [NSA and CISA encourage developers](https://hub.armo.cloud/docs/c-0013) to build container applications to execute as a non-root user. Having non-root execution integrated at build time provides better assurance that applications will function correctly without root privileges.
 
