@@ -915,21 +915,6 @@ Remove all insecure capabilities which aren’t necessary for the container.
 </b>
 
 
-## [Dangerous capabilities](docs/LIST_OF_TESTS.md#dangerous-capabilities)
-
-##### To run the Dangerous capabilities test, you can use the following command:
-
-```
-./cnf-testsuite dangerous_capabilities
-```
-
-<b>Remediation for failing this test:</b>
-
-Check and remove all unnecessary capabilities from the POD security context of the containers and use the exception mechanism to remove warnings where these capabilities are necessary.
-
-</b>
-
-
 ## [Network policies](docs/LIST_OF_TESTS.md#network-policies)
 
 ##### To run the Network polices test, you can use the following command:

@@ -256,9 +256,6 @@ Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley
 #### *To check for insecure capabilities*: [insecure_capabilities](USAGE.md#heavy_check_mark-to-check-for-insecure-capabilities)
 > Giving [insecure](https://hub.armo.cloud/docs/c-0046) and unnecessary capabilities for a container can increase the impact of a container compromise.
 
-#### *To check for dangerous capabilities*: [dangerous_capabilities](USAGE.md#heavy_check_mark-to-check-for-dangerous-capabilities)
-> Giving [dangerous](https://hub.armo.cloud/docs/c-0028) and unnecessary capabilities for a container can increase the impact of a container compromise.
-
 #### *To check if namespaces have network policies defined*: [network_policies](USAGE.md#heavy_check_mark-to-check-if-namespaces-have-network-policies-defined)
 > [MITRE check](https://hub.armo.cloud/docs/c-0011) that fails if there are no policies defined for a specific namespace (cluster internal networking)
 

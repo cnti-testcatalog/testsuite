@@ -255,9 +255,6 @@
 - name: insecure_capabilities
   tags: security, dynamic, workload, cert, normal
 
-- name: dangerous_capabilities
-  tags: security, dynamic, workload, cert, normal
-
 - name: sysctls
   tags: security, dynamic, workload, cert, normal
 

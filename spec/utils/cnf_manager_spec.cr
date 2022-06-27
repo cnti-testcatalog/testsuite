@@ -165,7 +165,7 @@ describe "SampleUtils" do
             "linux_hardening", "resource_policies",
             "immutable_file_systems", "hostpath_mounts", "log_output",
             "prometheus_traffic", "open_metrics",
-            "ingress_egress_blocked", "dangerous_capabilities", "insecure_capabilities",
+            "ingress_egress_blocked", "insecure_capabilities",
             "routed_logs", "tracing", "elastic_volumes", "alpha_k8s_apis", 
             "service_discovery", "shared_database", "pod_dns_error",
             "external_ips", "container_sock_mounts", "require_labels", "default_namespace", 

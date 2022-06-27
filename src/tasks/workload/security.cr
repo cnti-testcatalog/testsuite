@@ -12,7 +12,6 @@ task "security", [
     "symlink_file_system",
     "privilege_escalation",
     "insecure_capabilities",
-    "dangerous_capabilities",
     "resource_policies",
     "linux_hardening",
     "ingress_egress_blocked",
@@ -388,30 +387,6 @@ task "insecure_capabilities", ["kubescape_scan"] do |_, args|
       upsert_passed_task("insecure_capabilities", "✔️  PASSED: Containers with insecure capabilities were not found #{emoji_security}")
     else
       resp = upsert_failed_task("insecure_capabilities", "✖️  FAILED: Found containers with insecure capabilities #{emoji_security}")
-      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
-      stdout_failure("Remediation: #{test_report.remediation}")
-      resp
-    end
-  end
-end
-
-desc "Check if the containers have dangerous capabilities."
-task "dangerous_capabilities", ["kubescape_scan"] do |_, args|
-  next if args.named["offline"]?
-
-  CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "dangerous_capabilities" } if check_verbose(args)
-    results_json = Kubescape.parse
-    test_json = Kubescape.test_by_test_name(results_json, "Dangerous capabilities")
-    test_report = Kubescape.parse_test_report(test_json)
-    resource_keys = CNFManager.workload_resource_keys(args, config)
-    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
-
-    emoji_security = "🔓🔑"
-    if test_report.failed_resources.size == 0
-      upsert_passed_task("dangerous_capabilities", "✔️  PASSED: Containers with dangerous capabilities were not found #{emoji_security}")
-    else
-      resp = upsert_failed_task("dangerous_capabilities", "✖️  FAILED: Found containers with dangerous capabilities #{emoji_security}")
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
