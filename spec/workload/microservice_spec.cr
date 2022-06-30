@@ -65,6 +65,29 @@ describe "Microservice" do
     end
   end
 
+  it "'shared_database' should pass if two services on the cluster connect to the same database but they are not in the helm chart of the cnf", tags: ["shared_database"]  do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
+      Helm.install("multi-db sample-cnfs/ndn-multi-db-connections-fail/wordpress/")
+      KubectlClient::Get.resource_wait_for_install(kind="Deployment", resource_nome="multi-db-wordpress", wait_count=180, namespace="default")
+      KubectlClient::Get.resource_wait_for_install(kind="Deployment", resource_nome="multi-db-wordpress2", wait_count=180, namespace="default")
+      # todo kubctl appy of all resourcesin ndn-multi-db-connections-fail
+      # todo cnf_setup of coredns
+      # todo run shared_database (should pass)
+      # todo kubectl delete on ndn resourcws
+      # toto cnf_cleanup on coredns
+      response_s = `./cnf-testsuite shared_database`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: No shared database found/ =~ response_s).should_not be_nil
+    ensure
+      Helm.delete("multi-db")
+      KubectlClient::Delete.command("pvc data-multi-db-mariadb-0")
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/ndn-multi-db-connections-fail/cnf-testsuite.yml`
+      $?.success?.should be_true
+    end
+  end
+
   it "'single_process_type' should pass if the containers in the cnf have only one process type", tags: ["process_check"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
