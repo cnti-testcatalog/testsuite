@@ -352,13 +352,13 @@ module Helm
     helm_chart_repo.split("/").last
   end
 
-  def self.template(release_name, helm_chart_or_directory, output_file : String = "cnfs/temp_template.yml", namespace : String | Nil = nil)
+  def self.template(release_name, helm_chart_or_directory, output_file : String = "cnfs/temp_template.yml", namespace : String | Nil = nil, values : String | Nil = nil)
     helm = BinarySingleton.helm
     cmd = "#{helm} template"
     if namespace != nil
       cmd = "#{cmd} -n #{namespace}"
     end
-    cmd = "#{cmd} #{release_name} #{helm_chart_or_directory} > #{output_file}"
+    cmd = "#{cmd} #{release_name} #{values} #{helm_chart_or_directory} > #{output_file}"
 
     Log.info { "helm command: #{cmd}" }
     status = Process.run(cmd,
@@ -368,6 +368,19 @@ module Helm
     Log.info { "Helm.template output: #{output.to_s}" }
     Log.info { "Helm.template stderr: #{stderr.to_s}" }
     {status: status, output: output, error: stderr}
+  end
+
+  def self.install(release_name : String, helm_chart : String, namespace = nil, values = nil)
+    # the way values current work is they are combined with the chart 
+    # (e.g. coredns --values FILENAME.yaml 
+    # or
+    # coredns --set test.value.test=new_value --set test.value.anothertest=new_value)
+
+    # status = Process.run("#{helm} install #{cli}",
+    #                      shell: true,
+    #                      output: output = IO::Memory.new,
+    #                      error: stderr = IO::Memory.new)
+    install("#{release_name} #{values} #{helm_chart} #{namespace}")
   end
 
   def self.install(cli)
