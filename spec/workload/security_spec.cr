@@ -277,6 +277,19 @@ describe "Security" do
     end
   end
 
+  it "'immutable_file_systems' should pass when the cnf containers with immutable file systems", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-immutable-fs`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite immutable_file_systems`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Containers have immutable file systems/ =~ response_s).should_no be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-immutable-fs`
+    end
+  end
+
   it "'hostpath_mounts' should pass when the cnf has no containers with hostPath mounts", tags: ["security"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
