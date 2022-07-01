@@ -318,6 +318,21 @@ describe "Security" do
     end
   end
 
+  it "'hostpath_mounts' should fail when the cnf has containers with hostPath mounts", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-hostpath`
+      $?.success?.should be_true
+      ClusterTools.uninstall
+      response_s = `./cnf-testsuite hostpath_mounts`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Found containers with hostPath mounts/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-hostpath`
+      ClusterTools.install
+    end
+  end
+
   it "'container_sock_mounts' should pass if a cnf has no pods that mount container engine socket", tags: ["container_sock_mounts"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
