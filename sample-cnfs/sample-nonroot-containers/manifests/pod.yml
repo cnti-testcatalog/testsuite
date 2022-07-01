@@ -5,7 +5,6 @@ metadata:
 spec:
   securityContext:
     runAsNonRoot: true
-    allowPrivilegeEscalation: false
 
   containers:
   - image: bitnami/nginx:1.20
@@ -13,6 +12,8 @@ spec:
     command:
       - /opt/bitnami/scripts/nginx/entrypoint.sh
       - /opt/bitnami/scripts/nginx/run.sh
+    securityContext:
+      allowPrivilegeEscalation: false
     livenessProbe:
       tcpSocket:
         port: 8080
