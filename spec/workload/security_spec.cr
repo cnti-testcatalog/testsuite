@@ -95,6 +95,19 @@ describe "Security" do
     end
   end
 
+  it "'privilege_escalation' should pass on a cnf that does not have escalated privileges", tags: ["privileged"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-nonroot-containers/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite privilege_escalation`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: No containers that allow privilege escalation were found/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-nonroot-containers/cnf-testsuite.yml`
+    end
+  end
+
   it "'symlink_file_system' should pass on a cnf that does not allow a symlink attack", tags: ["capabilities"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
