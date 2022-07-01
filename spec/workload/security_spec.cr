@@ -121,18 +121,18 @@ describe "Security" do
     end
   end
 
-  # it "'insecure_capabilities' should fail on a cnf that has containers with insecure capabilities", tags: ["security"] do
-  #   begin
-  #     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml`
-  #     $?.success?.should be_true
-  #     response_s = `./cnf-testsuite insecure_capabilities`
-  #     LOGGING.info response_s
-  #     $?.success?.should be_true
-  #     (/PASSED: Containers with insecure capabilities were not found/ =~ response_s).should be_nil
-  #   ensure
-  #     `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml`
-  #   end
-  # end
+  it "'insecure_capabilities' should fail on a cnf that has containers with insecure capabilities", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite insecure_capabilities`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Containers with insecure capabilities were not found/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml`
+    end
+  end
 
   it "'linux_hardening' should fail on a cnf that does not make use of security services", tags: ["capabilities"] do
     begin
