@@ -297,7 +297,7 @@ describe "Security" do
       response_s = `./cnf-testsuite immutable_file_systems`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Containers have immutable file systems/ =~ response_s).should_no be_nil
+      (/PASSED: Containers have immutable file systems/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-immutable-fs`
     end
