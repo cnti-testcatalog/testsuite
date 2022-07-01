@@ -29,9 +29,6 @@ data:
     {
       "coresPerReplica": {{ .Values.autoscaler.coresPerReplica | float64 }},
       "nodesPerReplica": {{ .Values.autoscaler.nodesPerReplica | float64 }},
-      "preventSinglePointFailure": {{ .Values.autoscaler.preventSinglePointFailure }},
-      "min": {{ .Values.autoscaler.min | int }},
-      "max": {{ .Values.autoscaler.max | int }},
-      "includeUnschedulableNodes": {{ .Values.autoscaler.includeUnschedulableNodes }}
+      "preventSinglePointFailure": true
     }
 {{- end }}

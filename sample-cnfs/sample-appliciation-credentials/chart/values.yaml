@@ -4,14 +4,8 @@
 
 image:
   repository: coredns/coredns
-  tag: "1.8.4"
+  tag: "1.6.7"
   pullPolicy: IfNotPresent
-  ## Optionally specify an array of imagePullSecrets.
-  ## Secrets must be manually created in the namespace.
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-  ##
-  # pullSecrets:
-  #   - myRegistryKeySecretName
 
 replicaCount: 1
 
@@ -23,42 +17,9 @@ resources:
     cpu: 100m
     memory: 128Mi
 
-## Create HorizontalPodAutoscaler object.
-##
-# autoscaling:
-#   minReplicas: 1
-#   maxReplicas: 10
-#   metrics:
-#   - type: Resource
-#     resource:
-#       name: cpu
-#       targetAverageUtilization: 60
-#   - type: Resource
-#     resource:
-#       name: memory
-#       targetAverageUtilization: 60
-
-rollingUpdate:
-  maxUnavailable: 1
-  maxSurge: 25%
-
-# Under heavy load it takes more that standard time to remove Pod endpoint from a cluster.
-# This will delay termination of our pod by `preStopSleep`. To make sure kube-proxy has
-# enough time to catch up.
-# preStopSleep: 5
-terminationGracePeriodSeconds: 30
-
-podAnnotations: {}
-#  cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
-
 serviceType: "ClusterIP"
 
 prometheus:
-  service:
-    enabled: false
-    annotations:
-      prometheus.io/scrape: "true"
-      prometheus.io/port: "9153"
   monitor:
     enabled: false
     additionalLabels: {}
@@ -67,19 +28,16 @@ prometheus:
 service:
 # clusterIP: ""
 # loadBalancerIP: ""
-# externalIPs: []
 # externalTrafficPolicy: ""
-  # The name of the Service
-  # If not set, a name is generated using the fullname template
-  name: ""
-  annotations: {}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9153"
 
 serviceAccount:
   create: false
   # The name of the ServiceAccount to use
   # If not set and create is true, a name is generated using the fullname template
-  name: ""
-  annotations: {}
+  name:
 
 rbac:
   # If true, create & use RBAC resources
@@ -144,23 +102,6 @@ servers:
 #       hello world
 #       foo bar
 
-# To use the livenessProbe, the health plugin needs to be enabled in CoreDNS' server config
-livenessProbe:
-  enabled: true
-  initialDelaySeconds: 60
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 5
-  successThreshold: 1
-# To use the readinessProbe, the ready plugin needs to be enabled in CoreDNS' server config
-readinessProbe:
-  enabled: true
-  initialDelaySeconds: 30
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 5
-  successThreshold: 1
-
 # expects input structure as per specification https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/#affinity-v1-core
 # for example:
 #   affinity:
@@ -201,15 +142,6 @@ zoneFiles: []
 #      example.com.   IN A   192.168.99.102
 #      *.example.com. IN A   192.168.99.102
 
-# optional array of extra volumes to create
-extraVolumes: []
-# - name: some-volume-name
-#   emptyDir: {}
-# optional array of mount points for extraVolumes
-extraVolumeMounts: []
-# - name: some-volume-name
-#   mountPath: /etc/wherever
-
 # optional array of secrets to mount inside coredns container
 # possible usecase: need for secure connection with etcd backend
 extraSecrets: []
@@ -218,16 +150,8 @@ extraSecrets: []
 # - name: some-fancy-secret
 #   mountPath: /etc/wherever
 
-# Custom labels to apply to Deployment, Pod, Configmap, Service, ServiceMonitor. Including autoscaler if enabled.
+# Custom labels to apply to Deployment, Pod, Service, ServiceMonitor. Including autoscaler if enabled.
 customLabels: {}
-
-## Alternative configuration for HPA deployment if wanted
-#
-hpa:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 2
-  metrics: {}
 
 ## Configue a cluster-proportional-autoscaler for coredns
 # See https://github.com/kubernetes-incubator/cluster-proportional-autoscaler
@@ -239,25 +163,11 @@ autoscaler:
   coresPerReplica: 256
   # Number of nodes in the cluster per coredns replica
   nodesPerReplica: 16
-  # Min size of replicaCount
-  min: 0
-  # Max size of replicaCount (default of 0 is no max)
-  max: 0
-  # Whether to include unschedulable nodes in the nodes/cores calculations - this requires version 1.8.0+ of the autoscaler
-  includeUnschedulableNodes: false
-  # If true does not allow single points of failure to form
-  preventSinglePointFailure: true
 
   image:
     repository: k8s.gcr.io/cluster-proportional-autoscaler-amd64
-    tag: "1.8.1"
+    tag: "1.7.1"
     pullPolicy: IfNotPresent
-    ## Optionally specify an array of imagePullSecrets.
-    ## Secrets must be manually created in the namespace.
-    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-    ##
-    # pullSecrets:
-    #   - myRegistryKeySecretName
 
   # Optional priority class to be used for the autoscaler pods. priorityClassName used if not set.
   priorityClassName: ""
@@ -286,16 +196,3 @@ autoscaler:
     ## Annotations for the coredns-autoscaler configmap
     # i.e. strategy.spinnaker.io/versioned: "false" to ensure configmap isn't renamed
     annotations: {}
-
-  # Enables the livenessProbe for cluster-proportional-autoscaler - this requires version 1.8.0+ of the autoscaler
-  livenessProbe:
-    enabled: true
-    initialDelaySeconds: 10
-    periodSeconds: 5
-    timeoutSeconds: 5
-    failureThreshold: 3
-    successThreshold: 1
-
-deployment:
-  enabled: true
-  name: ""

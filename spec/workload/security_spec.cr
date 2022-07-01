@@ -95,6 +95,19 @@ describe "Security" do
     end
   end
 
+  it "'privilege_escalation' should pass on a cnf that does not have escalated privileges", tags: ["privileged"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-nonroot-containers/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite privilege_escalation`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: No containers that allow privilege escalation were found/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-nonroot-containers/cnf-testsuite.yml`
+    end
+  end
+
   it "'symlink_file_system' should pass on a cnf that does not allow a symlink attack", tags: ["capabilities"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
@@ -121,18 +134,18 @@ describe "Security" do
     end
   end
 
-  # it "'insecure_capabilities' should fail on a cnf that has containers with insecure capabilities", tags: ["security"] do
-  #   begin
-  #     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml`
-  #     $?.success?.should be_true
-  #     response_s = `./cnf-testsuite insecure_capabilities`
-  #     LOGGING.info response_s
-  #     $?.success?.should be_true
-  #     (/PASSED: Containers with insecure capabilities were not found/ =~ response_s).should be_nil
-  #   ensure
-  #     `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml`
-  #   end
-  # end
+  it "'insecure_capabilities' should fail on a cnf that has containers with insecure capabilities", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite insecure_capabilities`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Containers with insecure capabilities were not found/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml`
+    end
+  end
 
   it "'linux_hardening' should fail on a cnf that does not make use of security services", tags: ["capabilities"] do
     begin
@@ -147,18 +160,18 @@ describe "Security" do
     end
   end
 
-  # it "'application_credentials' should fail on a cnf that allows applications credentials in configuration files", tags: ["security"] do
-  #   begin
-  #     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
-  #     $?.success?.should be_true
-  #     response_s = `./cnf-testsuite application_credentials`
-  #     LOGGING.info response_s
-  #     $?.success?.should be_true
-  #     (/FAILED: Found applications credentials in configuration files/ =~ response_s).should_not be_nil
-  #   ensure
-  #     `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
-  #   end
-  # end
+  it "'application_credentials' should fail on a cnf that allows applications credentials in configuration files", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-appliciation-credentials/cnf-testsuite.yml`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite application_credentials`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Found applications credentials in configuration files/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-appliciation-credentials/cnf-testsuite.yml`
+    end
+  end
 
   it "'host_network' should pass on a cnf that does not have a host network attached to pod", tags: ["security"] do
     begin
@@ -175,14 +188,14 @@ describe "Security" do
 
   it "'service_account_mapping' should fail on a cnf that automatically maps the service account", tags: ["security"] do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-service-accounts/cnf-testsuite.yml`
       $?.success?.should be_true
       response_s = `./cnf-testsuite service_account_mapping`
       LOGGING.info response_s
       $?.success?.should be_true
       (/FAILED: Service accounts automatically mapped/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-service-accounts/cnf-testsuite.yml`
     end
   end
 
@@ -227,12 +240,25 @@ describe "Security" do
 
   it "'non_root_containers' should pass on a cnf that does not have containers running with root user or user with root group memberships", tags: ["security"] do
     begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-nonroot-containers`
       $?.success?.should be_true
       response_s = `./cnf-testsuite non_root_containers`
       LOGGING.info response_s
       $?.success?.should be_true
       (/FAILED: Found containers running with root user or user with root group membership/ =~ response_s).should be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-nonroot-containers`
+    end
+  end
+
+  it "'non_root_containers' should fail on a cnf that has containers running with root user or user with root group memberships", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite non_root_containers`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Containers are running with non-root user with non-root group membership/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
     end
@@ -264,6 +290,19 @@ describe "Security" do
     end
   end
 
+  it "'immutable_file_systems' should pass when the cnf containers with immutable file systems", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-immutable-fs`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite immutable_file_systems`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Containers have immutable file systems/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-immutable-fs`
+    end
+  end
+
   it "'hostpath_mounts' should pass when the cnf has no containers with hostPath mounts", tags: ["security"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
@@ -275,6 +314,21 @@ describe "Security" do
       (/FAILED: Found containers with hostPath mounts/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      ClusterTools.install
+    end
+  end
+
+  it "'hostpath_mounts' should fail when the cnf has containers with hostPath mounts", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-hostpath`
+      $?.success?.should be_true
+      ClusterTools.uninstall
+      response_s = `./cnf-testsuite hostpath_mounts`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/FAILED: Found containers with hostPath mounts/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-hostpath`
       ClusterTools.install
     end
   end

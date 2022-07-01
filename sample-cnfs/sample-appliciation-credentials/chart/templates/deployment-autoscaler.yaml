@@ -1,4 +1,4 @@
-{{- if and (.Values.autoscaler.enabled) (not .Values.hpa.enabled) }}
+{{- if .Values.autoscaler.enabled }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -67,23 +67,11 @@ spec:
         imagePullPolicy: {{ .Values.autoscaler.image.pullPolicy }}
         resources:
 {{ toYaml .Values.autoscaler.resources | indent 10 }}
-        {{- if .Values.autoscaler.livenessProbe.enabled }}
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8080
-            scheme: HTTP
-          initialDelaySeconds: {{ .Values.autoscaler.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.autoscaler.livenessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.autoscaler.livenessProbe.timeoutSeconds }}
-          successThreshold: {{ .Values.autoscaler.livenessProbe.successThreshold }}
-          failureThreshold: {{ .Values.autoscaler.livenessProbe.failureThreshold }}
-        {{- end }}
         command:
           - /cluster-proportional-autoscaler
           - --namespace={{ .Release.Namespace }}
           - --configmap={{ template "coredns.fullname" . }}-autoscaler
-          - --target=Deployment/{{ default (include "coredns.fullname" .) .Values.deployment.name }}
+          - --target=Deployment/{{ template "coredns.fullname" . }}
           - --logtostderr=true
           - --v=2
 {{- end }}
