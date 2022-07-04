@@ -341,7 +341,7 @@ closing watches for ConfigMaps marked as immutable.*"
 ## Platform Tests
 
 #### *To check if the plateform passes K8s Conformance tests*: [k8s-conformance](docs/LIST_OF_TESTS.md#k8s-conformance)
-> * A Vendor's Kubernetes Platform should pass[Kubernetes Conformance](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/conformance-tests.md). This ensures that the platform offering meets the same required APIs, features & interoperability expectations as in open source community versions of K8s. Applications that can operate on a [Certified Kubernetes](https://www.cncf.io/certification/software-conformance/) should be cross-compatible with any other Certified Kubernetes platform.
+> * A Vendor's Kubernetes Platform should pass [Kubernetes Conformance](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/conformance-tests.md). This ensures that the platform offering meets the same required APIs, features & interoperability expectations as in open source community versions of K8s. Applications that can operate on a [Certified Kubernetes](https://www.cncf.io/certification/software-conformance/) should be cross-compatible with any other Certified Kubernetes platform.
 
 #### *To check if the plateform is being managed by ClusterAPI*: [clusterapi-enabled](docs/LIST_OF_TESTS.md#clusterapi-enabled)
 > * A Kubernetes Platform should leverage [Cluster API](https://cluster-api.sigs.k8s.io/) to ensure that best-practices are followed for both bootstrapping & cluster lifecycle management. Kubernetes is a complex system that relies on several components being configured correctly, maintaining an in-house lifecycle management system for kubernetes is unlikey to meet best practice guideline unless significant resources are deticated to it.
@@ -349,7 +349,7 @@ closing watches for ConfigMaps marked as immutable.*"
 #### *To check if the plateform is using an OCI compliant runtime*: [oci-compliant](docs/LIST_OF_TESTS.md#oci-compliant)
 > *The [OCI Initiative](https://opencontainers.org/) was created to ensure that runtimes conform  to both the runtime-spec and image-spec. These two specifications outline how a “filesystem bundle” is unpacked on disk and that the image itself contains sufficient information to launch the application on the target platform. As a best practice, your platform must use an OCI compliant runtime, this ensures that the runtime used is cross-compatible and supports interoperability with other runtimes. This means that workloads can be freely moved to other runtimes and prevents vendor lock in.
 
-#### *To check if workloads are rescheduled on node failure*: [worker-reboot-recovery](docs/LIST_OF_TESTS.md#worker-reboot-recovery)
+#### *To check if workloads are rescheduled on node failure*: [worker-reboot-recovery](docs/LIST_OF_TESTS.md#poc-worker-reboot-recovery)
 > *Cloud native systems should be self-healing. To follow cloud-native best practices your platform should be  resiliant and reschedule all workloads when such node failures occur.
 
 #### *To check if the plateform has a default Cluster admin role*: [cluster-admin](docs/LIST_OF_TESTS.md#cluster-admin)
