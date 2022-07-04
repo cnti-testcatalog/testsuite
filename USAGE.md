@@ -288,7 +288,7 @@ Ensure that you can successfuly change the software version of your CNF back to 
 </b>
 
 
-## [CNF compatible](docs/LIST_OF_TESTS.md#cni-compatible)
+## [CNI compatible](docs/LIST_OF_TESTS.md#cni-compatible)
 
 ##### To run the CNI compatible test, you can use the following command:
 ```
