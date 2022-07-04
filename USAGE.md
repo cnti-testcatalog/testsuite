@@ -650,7 +650,7 @@ Ensure that your CNF is resilient to erroneously duplicated packets and can main
 </b>
 
 
-## [Pod DNS errors](docs/LIST_OF_TESTS.md#immutable-configmaps)
+## [Pod DNS errors](docs/LIST_OF_TESTS.md#pod-dns-errors)
 
 ##### To run the Pod DNS error test, you can use the following command:
 ```
