@@ -235,8 +235,8 @@ In order to prevent illegitimate escalation by processes and restrict a processe
 
 > *Due to CVE-2021-25741, subPath or subPathExpr volume mounts can be [used to gain unauthorised access](https://hub.armo.cloud/docs/c-0058) to files and directories anywhere on the host filesystem. In order to follow a best-practice security standard and prevent unauthorised data access, there should be no active CVEs affecting either the container or underlying platform.*
 
-#### *To check if any pods in the CNF use selinux options to escalate privileges*: [selinux_options](docs/LIST_OF_TESTS.md#selinux-options)
-> SELinux options can be used to escalate privileges and should not be allowed. This policy ensures that the `seLinuxOptions` field is undefined.
+#### *To check if selinux has been configured properly*: [selinux_options](docs/LIST_OF_TESTS.md#selinux-options)
+> If [SELinux options](https://kyverno.io/policies/pod-security/baseline/disallow-selinux/disallow-selinux/) is configured improperly it can be used to escalate privileges and should not be allowed.
 
 #### *To check if any pods in the CNF use sysctls with restricted values*: [sysctls](docs/LIST_OF_TESTS.md#sysctls)
 > Sysctls can disable security mechanisms or affect all containers on a host, and should be disallowed except for an allowed "safe" subset. A sysctl is considered safe if it is namespaced in the container or the Pod, and it is isolated from other Pods or processes on the same Node. This test ensures that only those "safe" subsets are specified in a Pod.
@@ -284,8 +284,6 @@ In order to prevent illegitimate escalation by processes and restrict a processe
 #### *To check if containers have hostPath mounts (check: is this a duplicate of state test - ./cnf-testsuite volume_hostpath_not_found)*: [hostpath_mounts](docs/LIST_OF_TESTS.md#hostpath-mounts)
 > [hostPath mount](https://hub.armo.cloud/docs/c-0006) can be used by attackers to get access to the underlying host and thus break from the container to the host. (See “3: Writable hostPath mount” for details).
 
-#### *To check if selinux has been configured properly*: [selinux_options](docs/LIST_OF_TESTS.md#host-pidipc-privileges)
-> If [SELinux options](https://kyverno.io/policies/pod-security/baseline/disallow-selinux/disallow-selinux/) is configured improperly it can be used to escalate privileges and should not be allowed.
 
 ## Configuration Tests 
 #### Declarative APIs for an immutable infrastructure are anything that configures the infrastructure element. This declaration can come in the form of a YAML file or a script, as long as the configuration designates the desired outcome, not how to achieve said outcome. *"Because it describes the state of the world, declarative configuration does not have to be executed to be understood. Its impact is concretely declared. Since the effects of declarative configuration can be understood before they are executed, declarative configuration is far less error-prone. " --Hightower, Kelsey; Burns, Brendan; Beda, Joe. Kubernetes: Up and Running: Dive into the Future of Infrastructure (Kindle Locations 183-186). Kindle Edition*
