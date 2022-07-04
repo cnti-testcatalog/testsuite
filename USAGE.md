@@ -577,7 +577,7 @@ Ensure that your CNF doesn't stall or get into a corrupted state when network de
 A mitigation stagagy(in this case keep the timeout i.e., access latency low) could be via some middleware that can switch traffic based on some SLOs parameters.
 </b>
 
-## [CNF disk fill](docs/LIST_OF_TESTS.md#cnf-under-network-latency)
+## [CNF disk fill](docs/LIST_OF_TESTS.md#cnf-with-host-disk-fill)
 
 ##### To run the CNF disk fill test, you can use the following command:
 
