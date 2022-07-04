@@ -430,7 +430,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 **What's tested:** Checks if any containers are running in privileged mode (using [Kubescape](https://hub.armo.cloud/docs/c-0057))
 
-[**Usage**](../USAGE.md#privileged-mode)
+[**Usage**](../USAGE.md#privileged-containers)
 
 [**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-are-any-privileged-containers-kubscape-version-privileged_containers)
 
