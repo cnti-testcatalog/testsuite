@@ -629,7 +629,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 
 [**Usage**](../USAGE.md#latest-tag)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-is-using-the-default-namespace-default_namespace)
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-mutable-tags-being-used-for-image-versioningusing-kyverno-latest_tag-latest_tag)
 
 
 ## [Require labels](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L18) 
