@@ -71,7 +71,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#helm-chart-published)
 
-[**Rational & Reasoning**](../RATIONALE.md#test-if-the-helm-chart-is-valid-helm_chart_valid)
+[**Rational & Reasoning**](../RATIONALE.md#test-if-the-helm-chart-is-published-helm_chart_published)
 
 
 ## [Helm chart valid](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L449)
