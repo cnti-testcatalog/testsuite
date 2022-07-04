@@ -530,7 +530,7 @@ Ensure that your CNF isn't using any persistent volumes that use a ["local"] mou
 
 
 
-## [Elastic volumes](docs/LIST_OF_TESTS.md#no-local-volume-configuration)
+## [Elastic volumes](docs/LIST_OF_TESTS.md#elastic-volumes)
 
 ##### To run the Elastic volume test, you can use the following command:
 
