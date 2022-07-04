@@ -554,7 +554,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 [**Usage**](../USAGE.md#non-root-containers)
 
 [**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-are-running-with-non-root-user-with-non-root-membership-non_root_containers)
-to-test-if-the-recommended-labels-are-being-used-to-describe-resources-required_labels
+
 
 ## [Host PID/IPC privileges](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L356)
 - Expectation: Containers should not have hostPID and hostIPC privileges
