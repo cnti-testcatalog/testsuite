@@ -79,7 +79,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 **What's tested:** Checks the syntax & validity of the chart using [`helm lint`](https://helm.sh/docs/helm/helm_lint/)
 
-[**Usage**](../USAGE.md#helm-chart-valid)
+[**Usage**](../USAGE.md#helm-chart-is-valid)
 
 [**Rational & Reasoning**](../RATIONALE.md#test-if-the-helm-chart-is-valid-helm_chart_valid)
 
