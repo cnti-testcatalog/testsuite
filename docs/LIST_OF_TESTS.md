@@ -432,7 +432,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#privileged-containers)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-are-any-privileged-containers-kubscape-version-privileged_containers)
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-are-any-privileged-containers-privileged_containers)
 
 
 ## [External IPs](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L31)
