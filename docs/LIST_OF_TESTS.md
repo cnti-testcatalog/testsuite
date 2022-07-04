@@ -443,7 +443,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#external-ips)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-external-ips-are-used)
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-external-ips-are-used-for-services-external_ips)
 
 
 ## [Selinux Options](https://github.com/cncf/cnf-testsuite/blob/v0.30.1/src/tasks/workload/security.cr#L91)
