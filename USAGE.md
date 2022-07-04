@@ -1164,21 +1164,6 @@ When specifying container images, always specify a tag and ensure to use an immu
 </b>
 
 
-## [IP addresses](docs/LIST_OF_TESTS.md#ip-addresses)
-
-##### To run the IP addresses test, you can use the following command:
-```
-./cnf-testsuite ip_addresses
-```
-
-<b>Remediation for failing this test:</b> 
-
-Remove any usage of hardcoded ip addresses in CNF's Helm Chart & Manifiest files.
-
-</b>
-
-
-
 ## [nodePort not used](docs/LIST_OF_TESTS.md#ip-addresses)
 
 ##### To run the nodePort not used test, you can use the following command:
