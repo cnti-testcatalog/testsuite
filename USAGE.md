@@ -808,17 +808,6 @@ Remove privileged capabilities by setting the securityContext.privileged to fals
         
 </b>
 
-## [Root user](docs/LIST_OF_TESTS.md#root-user)
-
-##### To run the Root user test, you can use the following command:
-```
-./cnf-testsuite non_root_user
-```
-
-<b>Remediation for failing this test:</b> 
-Ensure that none of the containers in your CNF are running processes as root.
-</b>
-
 
 ## [Privilege escalation](docs/LIST_OF_TESTS.md#privilege-escalation)
 
@@ -957,7 +946,7 @@ Define network policies or use similar network protection mechanisms.
 ./cnf-testsuite network_policies
 ```
 
-## [Non-root containers](docs/LIST_OF_TESTS.md#network-policies)
+## [Non Root containers](docs/LIST_OF_TESTS.md#network-policies)
 
 ##### To run the Non-root containers test, you can use the following command:
 
