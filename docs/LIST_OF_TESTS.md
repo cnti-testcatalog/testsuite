@@ -551,7 +551,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 **What's tested:** Checks if the CNF has runAsUser and runAsGroup set to a user id greater than 999. Also checks that the allowPrivilegeEscalation field is set to false for the CNF. Read more at [ARMO-C0013](https://bit.ly/2Zzlts3)
 
-[**Usage**](../USAGE.md#non---root-containers)
+[**Usage**](../USAGE.md#non-root-containers)
 
 [**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-are-running-with-non-root-user-with-non-root-membership-non_root_containers)
 to-test-if-the-recommended-labels-are-being-used-to-describe-resources-required_labels
