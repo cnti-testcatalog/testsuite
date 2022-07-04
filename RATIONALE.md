@@ -205,7 +205,7 @@ such as those that will eventually cause a failure.
 
 > *[Container daemon socket bind mounts](https://kyverno.io/policies/best-practices/disallow_cri_sock_mount/disallow_cri_sock_mount/) allows access to the container engine on the node. This access can be used for privilege escalation and to manage containers outside of Kubernetes, and hence should not be allowed..*
 
-#### *To check if there are any privileged containers*: [privileged](docs/LIST_OF_TESTS.md#privileged-mode)
+#### *To check if there are any privileged containers*: [privileged_containers](docs/LIST_OF_TESTS.md#privileged-containers)
 
 > *... docs describe Privileged mode as essentially enabling “…access to all devices on the host 
 as well as [having the ability to] set some configuration in AppArmor or SElinux to allow the 
@@ -255,15 +255,7 @@ In order to prevent illegitimate escalation by processes and restrict a processe
 
 #### *To check if there is an ingress and egress policy defined.*: [ingress_egress_blocked](docs/LIST_OF_TESTS.md#ingress-and-egress-blocked)
 
-> *By default, [no network policies are applied](https://hub.armo.cloud/docs/c-0030) to Pods or namespaces, resulting in unrestricted ingress and egress traffic within the Pod network. In order to [prevent lateral movement](https://media.defense.gov/2021/Aug/03/2002820425/-1/-1/1/CTR_KUBERNETES%20HARDENING%20GUIDANCE.PDF) or escalation on a compromised cluster, administrators should implement a default policy to deny all ingress and egress traffic. This will ensure that all Pods are isolated by default and further policies could then be used to specifically relax these restrictions on a case-by-case basis.*
-
-#### *To check if there are any privileged containers (kubscape version)*: [privileged_container](docs/LIST_OF_TESTS.md#privileged-container)
-
-> *... docs describe Privileged mode as essentially enabling “…access to all devices on the host 
-as well as [having the ability to] set some configuration in AppArmor or SElinux to allow the 
-container nearly all the same access to the host as processes running outside containers on the 
-host.” In other words, you should rarely, if ever, use this switch on your container command line.*
-Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley. Kindle Edition. 
+> *By default, [no network policies are applied](https://hub.armo.cloud/docs/c-0030) to Pods or namespaces, resulting in unrestricted ingress and egress traffic within the Pod network. In order to [prevent lateral movement](https://media.defense.gov/2021/Aug/03/2002820425/-1/-1/1/CTR_KUBERNETES%20HARDENING%20GUIDANCE.PDF) or escalation on a compromised cluster, administrators should implement a default policy to deny all ingress and egress traffic. This will ensure that all Pods are isolated by default and further policies could then be used to specifically relax these restrictions on a case-by-case basis.* 
 
 
 #### *To check for insecure capabilities*: [insecure_capabilities](docs/LIST_OF_TESTS.md#insecure-capabilities)
