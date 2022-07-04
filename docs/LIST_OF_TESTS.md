@@ -650,7 +650,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 
 [**Usage**](../USAGE.md#versioned-tag)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-are-versioned-tags-on-all-images-using-opa-gatekeeper)
+[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-are-versioned-tags-on-all-images-using-opa-gatekeeper-versioned_tag)
 
 
 ## [nodePort not used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L131) 
