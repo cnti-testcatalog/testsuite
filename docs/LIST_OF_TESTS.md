@@ -466,16 +466,6 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 [**Rational & Reasoning**](../RATIONALE.md#to-check-if-any-pods-in-the-cnf-use-sysctls-with-restricted-values-sysctls)
 
 
-## [Root user](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L71)
-- Expectation: Containers should not run as a [root user](https://github.com/cncf/cnf-wg/blob/best-practice-no-root-in-containers/cbpps/0002-no-root-in-containers.md)
-
-**What's tested:** Checks if any containers are running with a root user.
-
-[**Usage**](../USAGE.md#root-user)
-
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-any-containers-are-running-as-a-root-user-checks-the-user-outside-the-container-that-is-running-dockerd-non_root_user)
-
-
 ## [Privilege escalation](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L156)
 - Expectation: Containers should not allow [privilege escalation](https://bit.ly/C0016_privilege_escalation)
 
