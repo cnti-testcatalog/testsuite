@@ -781,18 +781,6 @@ Ensure that your CNF is both using & publishing traces to Jaeger.
 Make sure your CNF doesn't mount `/var/run/docker.sock`, `/var/run/containerd.sock` or `/var/run/crio.sock` on any containers.
 </b>
 
-## [Privileged Mode](docs/LIST_OF_TESTS.md#privileged-mode)
-
-##### To run the Privileged mode test, you can use the following command:
-
-```
-./cnf-testsuite privileged
-```
-
-<b>Remediation for failing this test:</b> 
-Make sure that your CNF doesn't have the spec.securityContext.privileged: true flag set.
-</b>
-
 
 ## [External IPs](docs/LIST_OF_TESTS.md#external-ips)
 
@@ -805,7 +793,20 @@ Make sure that your CNF doesn't have the spec.securityContext.privileged: true f
 Make sure to not define external IPs in your kubernetes service configuration
 </b>
 
+## [Privileged containers](docs/LIST_OF_TESTS.md#privileged-container)
 
+##### To run the Privilege container test, you can use the following command:
+
+```
+./cnf-testsuite privileged_containers
+```
+
+    
+<b>Remediation for failing this test:</b> 
+
+Remove privileged capabilities by setting the securityContext.privileged to false. If you must deploy a Pod as privileged, add other restriction to it, such as network policy, Seccomp etc and still remove all unnecessary capabilities.
+        
+</b>
 
 ## [Root user](docs/LIST_OF_TESTS.md#root-user)
 
@@ -905,23 +906,6 @@ Disable automatic mounting of service account tokens to PODs either at the servi
 
 By default, you should disable or restrict Ingress and Egress traffic on all pods.
 </b>
-
-
-## [Privilege container](docs/LIST_OF_TESTS.md#privileged-container)
-
-##### To run the Privilege container test, you can use the following command:
-
-```
-./cnf-testsuite privileged_containers
-```
-
-    
-<b>Remediation for failing this test:</b> 
-
-Remove privileged capabilities by setting the securityContext.privileged to false. If you must deploy a Pod as privileged, add other restriction to it, such as network policy, Seccomp etc and still remove all unnecessary capabilities.
-        
-</b>
-
 
 
 ## [Insecure capabilities](docs/LIST_OF_TESTS.md#insecure-capabilities)
