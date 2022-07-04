@@ -235,9 +235,11 @@ In order to prevent illegitimate escalation by processes and restrict a processe
 
 > *Due to CVE-2021-25741, subPath or subPathExpr volume mounts can be [used to gain unauthorised access](https://hub.armo.cloud/docs/c-0058) to files and directories anywhere on the host filesystem. In order to follow a best-practice security standard and prevent unauthorised data access, there should be no active CVEs affecting either the container or underlying platform.*
 
-#### *To check if any pods in the CNF use sysctls with restricted values*: [sysctls](USAGE.md#sysctls)
-> Sysctls can disable security mechanisms or affect all containers on a host, and should be disallowed except for an allowed "safe" subset. A sysctl is considered safe if it is namespaced in the container or the Pod, and it is isolated from other Pods or processes on the same Node. This test ensures that only those "safe" subsets are specified in a Pod.
+#### *To check if any pods in the CNF use selinux options to escalate privileges*: [selinux_options](docs/LIST_OF_TESTS.md#selinux-options)
+> SELinux options can be used to escalate privileges and should not be allowed. This policy ensures that the `seLinuxOptions` field is undefined.
 
+#### *To check if any pods in the CNF use sysctls with restricted values*: [sysctls](docs/LIST_OF_TESTS.md#sysctls)
+> Sysctls can disable security mechanisms or affect all containers on a host, and should be disallowed except for an allowed "safe" subset. A sysctl is considered safe if it is namespaced in the container or the Pod, and it is isolated from other Pods or processes on the same Node. This test ensures that only those "safe" subsets are specified in a Pod.
 
 #### *To check if there are applications credentials in configuration files*: [application_credentials](docs/LIST_OF_TESTS.md#application-credentials)
 
