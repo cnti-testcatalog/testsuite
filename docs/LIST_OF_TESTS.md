@@ -698,7 +698,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 
 **What's tested:** The immutable configmap test will scan the CNF's workload resources and see if immutable configmaps are being used.
 
-[**Usage**](../USAGE.md#immutable-configmap)
+[**Usage**](../USAGE.md#immutable-configmaps)
 
 [**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-uses-immutable-configmaps-immutable_configmap)
 
