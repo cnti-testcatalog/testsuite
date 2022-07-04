@@ -369,7 +369,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 **What's tested:** This checks and verifies that STDOUT/STDERR logging is configured for the CNF.
 
-[**Usage**](../USAGE.md#use-stdout/stderr-for-logs)
+[**Usage**](../USAGE.md#use-stdoutstderr-for-logs)
 
 [**Rational & Reasoning**](../RATIONALE.md#to-check-if-logs-are-being-sent-to-stdoutstderr-standard-out-standard-error-instead-of-a-log-file-log_output)
 
