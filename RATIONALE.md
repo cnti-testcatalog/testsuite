@@ -181,7 +181,7 @@ Environment . O'Reilly Media. Kindle Edition.
 ["logs will be treated like event streams"](https://12factor.net/) as recommended by 12 
 factor apps principles.
 
-#### *To check if prometheus is installed and configured for the cnf*: [prometheus_traffic](docs/LIST_OF_TESTS.md#use-stdoutstderr-for-logs)
+#### *To check if prometheus is installed and configured for the cnf*: [prometheus_traffic](docs/LIST_OF_TESTS.md#prometheus-installed)
 
 > Recording metrics within a cloud native deployment is important because it gives 
 the maintainer of a cluster of hundreds or thousands of services the ability to pinpoint 
