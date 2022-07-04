@@ -561,7 +561,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 **What's tested:** Checks if containers are running with hostPID or hostIPC privileges. Read more at [ARMO-C0038](https://bit.ly/3nGvpIQ)
 
-[**Usage**](../USAGE.md#host-pid/ipc-privileges)
+[**Usage**](../USAGE.md#host-pidipc-privileges)
 
 [**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-are-running-with-hostpid-or-hostipc-privileges-host_pid_ipc_privileges)
 
