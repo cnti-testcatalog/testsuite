@@ -1183,7 +1183,7 @@ Remove any sensitive data stored in configmaps, environment variables and instea
 
 
 
-## [immutable configmaps](docs/LIST_OF_TESTS.md#immutable-configmaps)
+## [Immutable configmaps](docs/LIST_OF_TESTS.md#immutable-configmaps)
 
 ##### To run the immutable configmap test, you can use the following command:
 ```
