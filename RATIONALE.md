@@ -307,12 +307,6 @@ is running and more difficult to roll back properly."*
 when deploying containers in production as it is harder to track which version of the image 
 is running and more difficult to roll back properly."*
 
-#### *To test if there are any (non-declarative) hardcoded IP addresses or subnet masks in the Helm Chart*: [ip_addresses](docs/LIST_OF_TESTS.md#ip-addresses)
-
-> Using a hard coded IP in a CNF's configuration designates *how* (imperative) a CNF should 
-achieve a goal, not *what* (declarative) goal the CNF should achieve
-
-
 #### *To test if there are node ports used in the service configuration*: [nodeport_not_used](docs/LIST_OF_TESTS.md#nodeport-not-used)
 
 > Using node ports ties the CNF to a specific node and therefore makes the CNF less
