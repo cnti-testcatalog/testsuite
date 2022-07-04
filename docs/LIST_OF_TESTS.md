@@ -446,6 +446,26 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 [**Rational & Reasoning**](../RATIONALE.md#to-check-if-external-ips-are-used)
 
 
+## [Selinux_Options](https://github.com/cncf/cnf-testsuite/blob/v0.30.1/src/tasks/workload/security.cr#L91)
+- Expectation: A CNF should not have any 'seLinuxOptions' configured that allow privilege escalation.
+
+**What's tested:** Checks if the CNF has escalatory seLinuxOptions configured. 
+
+[**Usage**](../USAGE.md#selinux-options)
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-selinux-has-been-configured-properly-selinux_options)
+
+
+## [Sysctls](https://github.com/cncf/cnf-testsuite/blob/v0.30.1/src/tasks/workload/security.cr#L39)
+- Expectation: The CNF should only have "safe" sysctls mechanisms configured, that are isolated from other Pods.
+
+**What's tested:** Checks the CNF for usage of non-namespaced sysctls mechanisms that can affect the entire host. 
+
+[**Usage**](../USAGE.md#sysctls)
+
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-any-pods-in-the-cnf-use-sysctls-with-restricted-values-sysctls)
+
+
 ## [Root user](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L71)
 - Expectation: Containers should not run as a [root user](https://github.com/cncf/cnf-wg/blob/best-practice-no-root-in-containers/cbpps/0002-no-root-in-containers.md)
 
