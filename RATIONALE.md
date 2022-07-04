@@ -329,7 +329,7 @@ variables or configmaps, there is [less risk of the Secret (and its data) being
 exposed](https://kubernetes.io/docs/concepts/configuration/secret/) during the 
 workflow of creating, viewing, and editing Pods
 
-#### *To check if a CNF version uses immutable configmaps*: [immutable_configmap](docs/LIST_OF_TESTS.md#immutable-configmaps)
+#### *To check if a CNF version uses immutable configmaps*: [immutable_configmap](docs/LIST_OF_TESTS.md#immutable-configmap)
 
 > *"For clusters that extensively use ConfigMaps (at least tens of thousands of unique ConfigMap to Pod mounts), 
 [preventing changes](https://kubernetes.io/docs/concepts/configuration/configmap/#configmap-immutable)
