@@ -260,7 +260,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 ## [CNF under network latency](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L231)
 - Expectation: The CNF should continue to function when network latency occurs
 
-**What's tested:** [This experiment](https://docs.litmuschaos.io/docs/pod-network-latency/) causes network degradation without the pod being marked unhealthy/unworthy of traffic by kube-proxy (unless you have a liveness probe of sorts that measures latency and restarts/crashes the container). The idea of this experiment is to simulate issues within your pod network OR microservice communication across services in different availability zones/regions etc.
+**What's tested:** [This experiment](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-network-latency/) causes network degradation without the pod being marked unhealthy/unworthy of traffic by kube-proxy (unless you have a liveness probe of sorts that measures latency and restarts/crashes the container). The idea of this experiment is to simulate issues within your pod network OR microservice communication across services in different availability zones/regions etc.
 
 The applications may stall or get corrupted while they wait endlessly for a packet. The experiment limits the impact (blast radius) to only the traffic you want to test by specifying IP addresses or application information. This experiment will help to improve the resilience of your services over time.
 
@@ -304,7 +304,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 ## [IO Stress](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L549)
 - Expectation: The CNF should continue to function when pod io stress occurs
 
-**What's tested:** This test stresses the disk with continuous and heavy IO to cause degradation in reads/writes by other microservices that use this shared disk.
+**What's tested:** The [pod-io stress](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-io-stress/) experiment the disk with continuous and heavy IO to cause degradation in reads/writes by other microservices that use this shared disk.
 
 [**Usage**](../USAGE.md#io-stress)
 
@@ -315,7 +315,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 ## [Network corruption](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L284)
 - Expectation: The CNF should be resilient to a lossy/flaky network and should continue to provide some level of availability.
 
-**What's tested:** It injects packet corruption on the CNF by starting a traffic control (tc) process with netem rules to add egress packet corruption.
+**What's tested:** The [pod-network corruption](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-network-corruption/) experiment injects packet corruption on the CNF by starting a traffic control (tc) process with netem rules to add egress packet corruption.
 
 [**Usage**](../USAGE.md#network-corruption)
 
@@ -325,7 +325,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 ## [Network duplication](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L337)
 - Expectation: The CNF should continue to function and be resilient to a duplicate network.
 
-**What's tested:** This test injects network duplication into the CNF by starting a traffic control (tc) process with netem rules to add egress delays. 
+**What's tested:** The [pod-network duplication](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-network-duplication/) experiment injects network duplication into the CNF by starting a traffic control (tc) process with netem rules to add egress delays. 
 
 [**Usage**](../USAGE.md#network-duplication)
 
@@ -335,7 +335,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 - :heavy_check_mark: Added to CNF Test Suite in release v0.26.0
 - Expectation: That the CNF dosen't crash is resilient to DNS resolution failures.
 
-**What's tested:** This test injects chaos to disrupt DNS resolution in kubernetes pods and causes loss of access to services by blocking DNS resolution of hostnames/domains.
+**What's tested:** The [pod-dns error](https://litmuschaos.github.io/litmus/experiments/categories/pods/pod-dns-error/) experiment injects chaos to disrupt DNS resolution in kubernetes pods and causes loss of access to services by blocking DNS resolution of hostnames/domains.
 
 [**Usage**](../USAGE.md#pod-dns-errors)
 
