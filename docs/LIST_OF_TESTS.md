@@ -446,7 +446,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 [**Rational & Reasoning**](../RATIONALE.md#to-check-if-external-ips-are-used)
 
 
-## [Selinux_Options](https://github.com/cncf/cnf-testsuite/blob/v0.30.1/src/tasks/workload/security.cr#L91)
+## [Selinux Options](https://github.com/cncf/cnf-testsuite/blob/v0.30.1/src/tasks/workload/security.cr#L91)
 - Expectation: A CNF should not have any 'seLinuxOptions' configured that allow privilege escalation.
 
 **What's tested:** Checks if the CNF has escalatory seLinuxOptions configured. 
