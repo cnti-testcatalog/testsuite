@@ -1254,7 +1254,7 @@ Check if your Kuberentes Platform is using an [OCI Compliant Runtime](https://op
 ./cnf-testsuite platform:resilience poc
 ```
 
-## [Worker reboot recovery](docs/LIST_OF_TESTS.md#worker-reboot-recovery)
+## [Worker reboot recovery](docs/LIST_OF_TESTS.md#poc-worker-reboot-recovery)
 
 ##### To run the Worker reboot recovery test, you can use the following command:
 
