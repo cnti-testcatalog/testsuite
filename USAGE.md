@@ -793,7 +793,7 @@ Make sure your CNF doesn't mount `/var/run/docker.sock`, `/var/run/containerd.so
 Make sure to not define external IPs in your kubernetes service configuration
 </b>
 
-## [Privileged containers](docs/LIST_OF_TESTS.md#privileged-container)
+## [Privileged containers](docs/LIST_OF_TESTS.md#privileged-containers)
 
 ##### To run the Privilege container test, you can use the following command:
 
