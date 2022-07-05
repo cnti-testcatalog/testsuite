@@ -1288,7 +1288,7 @@ See more at [ARMO-C0035](https://bit.ly/C0035_cluster_admin)
 </b>
 
 
-## [Control plane hardening](docs/LIST_OF_TESTS.md#control-plane-harding)
+## [Control plane hardening](docs/LIST_OF_TESTS.md#control-plane-hardening)
 
 ##### To run the Control plane hardening test, you can use the following command:
 
