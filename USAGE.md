@@ -710,7 +710,7 @@ Make sure applications and CNF's are sending log output to STDOUT and or STDERR.
 </b>
 
 
-## [Prometheus installed](docs/LIST_OF_TESTS.md#use-stdoutstderr-for-logs)
+## [Prometheus installed](docs/LIST_OF_TESTS.md#prometheus-installed)
 
 ##### To run the Prometheus installed test, you can use the following command:
 ```
