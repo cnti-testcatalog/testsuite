@@ -479,6 +479,21 @@ describe "SampleUtils" do
     end
   end
 
+  it "Helm_values should be used during the installation of a cnf", tags: ["cnf-config"]  do
+    begin
+      # fails because doesn't have a service
+      install = `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_coredns_values` 
+      Log.info { install }
+      deployment_containers = KubectlClient::Get.deployment_containers("coredns-coredns")
+      image_tags = KubectlClient::Get.container_image_tags(deployment_containers) 
+      Log.info { "image_tags: #{image_tags}"}
+      (/1.6.9/ =~ image_tags[0][:tag]).should_not be_nil
+      # Log.info { response_s }
+    ensure
+      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_coredns_values` }
+    end
+  end
+
 end
 
 
