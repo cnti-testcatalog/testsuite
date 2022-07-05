@@ -1019,7 +1019,7 @@ Refrain from using a hostPath mount.
 </b>
 
 
-## [SELinux options](docs/LIST_OF_TESTS.md#host-pidipc-privileges)
+## [SELinux options](docs/LIST_OF_TESTS.md#selinux-options)
 
 ##### To run the SELinux options test, you can use the following command:
 ```
