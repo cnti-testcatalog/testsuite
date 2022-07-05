@@ -1216,7 +1216,7 @@ Check that [Sonobuoy](https://github.com/vmware-tanzu/sonobuoy) can be successfu
 </b>
 
 
-## [ClusterAPI enabled](docs/LIST_OF_TESTS.md#k8s-conformance)
+## [ClusterAPI enabled](docs/LIST_OF_TESTS.md#clusterapi-enabled)
 
 ##### To run the ClusterAPI enabled test, you can use the following command:
 
