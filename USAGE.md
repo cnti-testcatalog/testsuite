@@ -1122,7 +1122,7 @@ When specifying container images, always specify a tag and ensure to use an immu
 </b>
 
 
-## [nodePort not used](docs/LIST_OF_TESTS.md#ip-addresses)
+## [nodePort not used](docs/LIST_OF_TESTS.md#nodeport-not-used)
 
 ##### To run the nodePort not used test, you can use the following command:
 ```
@@ -1136,7 +1136,7 @@ Review all Helm Charts & Kubernetes Manifest files for the CNF and remove all oc
 </b>
 
 
-## [hostPort not used](docs/LIST_OF_TESTS.md#ip-addresses)
+## [hostPort not used](docs/LIST_OF_TESTS.md#hostport-not-used)
 
 ##### To run the hodePort not used test, you can use the following command:
 
