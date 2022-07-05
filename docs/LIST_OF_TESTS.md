@@ -536,16 +536,6 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 [**Rational & Reasoning**](../RATIONALE.md#to-check-for-insecure-capabilities-insecure_capabilities)
 
 
-## [Network policies](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L398)
-- Expectation: Namespaces should have network policies defined
-
-**What's tested:** Checks if network policies are defined for namespaces. 
-
-[**Usage**](../USAGE.md#network-policies)
-
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-namespaces-have-network-policies-defined-network_policies)
-
-
 ## [Non-root containers](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L377)
 - Expectation: Containers should run with non-root user and allowPrivilegeEscalation should be set to false.
 

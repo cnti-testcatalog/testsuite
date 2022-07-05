@@ -12,14 +12,12 @@ task "security", [
     "symlink_file_system",
     "privilege_escalation",
     "insecure_capabilities",
-    "dangerous_capabilities",
     "resource_policies",
     "linux_hardening",
     "ingress_egress_blocked",
     "host_pid_ipc_privileges",
     "non_root_containers",
     "privileged_containers",
-    "network_policies",
     "immutable_file_systems",
     "hostpath_mounts",
     "container_sock_mounts",
@@ -93,23 +91,27 @@ desc "Check if the CNF or the cluster resources have custom SELinux options"
 task "selinux_options" do |_, args|
   Log.for("verbose").info { "selinux_options" }
   Kyverno.install
+
+  emoji_security = "🔓🔑"
+  check_policy_path = Kyverno::CustomPolicies::SELinuxEnabled.new.policy_path
+  check_failures = Kyverno::PolicyAudit.run(check_policy_path, EXCLUDE_NAMESPACES)
+
+  disallow_policy_path = Kyverno.policy_path("pod-security/baseline/disallow-selinux/disallow-selinux.yaml")
+  disallow_failures = Kyverno::PolicyAudit.run(disallow_policy_path, EXCLUDE_NAMESPACES)
+
   CNFManager::Task.task_runner(args) do |args, config|
-    emoji_security = "🔓🔑"
-
-    policy_path = Kyverno.custom_policy_path("check-selinux-enabled.yaml")
-    policy_path = Kyverno::CustomPolicies::SELinuxEnabled.new.policy_path
-    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
-
     #TODO check for AppArmor as well, and the cnf should have either selinux or apparmor
     # IF SELinux is not enabled, skip this test
     # Else check for SELinux options
-    if failures.size == 0
+
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    check_failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, check_failures)
+
+    if check_failures.size == 0
       # upsert_skipped_task("selinux_options", "⏭️  🏆 SKIPPED: Pods are not using SELinux options #{emoji_security}")
       upsert_na_task("selinux_options", "⏭️  🏆 N/A: Pods are not using SELinux #{emoji_security}")
     else
-
-      policy_path = Kyverno.policy_path("pod-security/baseline/disallow-selinux/disallow-selinux.yaml")
-      failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
+      failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, disallow_failures)
 
       if failures.size == 0
         resp = upsert_passed_task("selinux_options", "✔️  🏆 PASSED: Pods are not using custom SELinux options that can be used for privilege escalations #{emoji_security}")
@@ -243,14 +245,17 @@ task "privilege_escalation", ["kubescape_scan"] do |_, args|
     VERBOSE_LOGGING.info "privilege_escalation" if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Allow privilege escalation")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security="🔓🔑"
-    if Kubescape.test_passed?(test_json) 
+    if test_report.failed_resources.size == 0 
       upsert_passed_task("privilege_escalation", "✔️  PASSED: No containers that allow privilege escalation were found #{emoji_security}")
     else
       resp = upsert_failed_task("privilege_escalation", "✖️  FAILED: Found containers that allow privilege escalation #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
@@ -262,14 +267,17 @@ task "symlink_file_system", ["kubescape_scan"] do |_, args|
     VERBOSE_LOGGING.info "symlink_file_system" if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "CVE-2021-25741 - Using symlink for arbitrary host file system access.")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security="🔓🔑"
-    if Kubescape.test_passed?(test_json) 
+    if test_report.failed_resources.size == 0
       upsert_passed_task("symlink_file_system", "✔️  PASSED: No containers allow a symlink attack #{emoji_security}")
     else
       resp = upsert_failed_task("symlink_file_system", "✖️  FAILED: Found containers that allow a symlink attack #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
@@ -281,14 +289,17 @@ task "application_credentials", ["kubescape_scan"] do |_, args|
     VERBOSE_LOGGING.info "application_credentials" if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Applications credentials in configuration files")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security="🔓🔑"
-    if Kubescape.test_passed?(test_json) 
+    if test_report.failed_resources.size == 0
       upsert_passed_task("application_credentials", "✔️  PASSED: No applications credentials in configuration files #{emoji_security}")
     else
       resp = upsert_failed_task("application_credentials", "✖️  FAILED: Found applications credentials in configuration files #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
@@ -299,15 +310,18 @@ task "host_network", ["uninstall_cluster_tools", "kubescape_scan"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "host_network" if check_verbose(args)
     results_json = Kubescape.parse
-    test_json = Kubescape.test_by_test_name(results_json, "hostNetwork access")
+    test_json = Kubescape.test_by_test_name(results_json, "HostNetwork access")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security="🔓🔑"
-    if Kubescape.test_passed?(test_json) 
+    if test_report.failed_resources.size == 0
       upsert_passed_task("host_network", "✔️  PASSED: No host network attached to pod #{emoji_security}")
     else
       resp = upsert_failed_task("host_network", "✖️  FAILED: Found host network attached to pod #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
@@ -319,14 +333,17 @@ task "service_account_mapping", ["kubescape_scan"] do |_, args|
     VERBOSE_LOGGING.info "service_account_mapping" if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Automatic mapping of service account")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security="🔓🔑"
-    if Kubescape.test_passed?(test_json) 
+    if test_report.failed_resources.size == 0 
       upsert_passed_task("service_account_mapping", "✔️  PASSED: No service accounts automatically mapped #{emoji_security}")
     else
       resp = upsert_failed_task("service_account_mapping", "✖️  FAILED: Service accounts automatically mapped #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
@@ -340,14 +357,17 @@ task "linux_hardening", ["kubescape_scan"] do |_, args|
     Log.for("verbose").info { "linux_hardening" } if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Linux hardening")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security = "🔓🔑"
-    if Kubescape.test_passed?(test_json)
+    if test_report.failed_resources.size == 0
       upsert_passed_task("linux_hardening", "✔️  PASSED: Security services are being used to harden applications #{emoji_security}")
     else
       resp = upsert_failed_task("linux_hardening", "✖️  FAILED: Found resources that do not use security services #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+        test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+        stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
@@ -361,35 +381,17 @@ task "insecure_capabilities", ["kubescape_scan"] do |_, args|
     Log.for("verbose").info { "insecure_capabilities" } if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Insecure capabilities")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security = "🔓🔑"
-    if Kubescape.test_passed?(test_json)
+    if test_report.failed_resources.size == 0
       upsert_passed_task("insecure_capabilities", "✔️  PASSED: Containers with insecure capabilities were not found #{emoji_security}")
     else
       resp = upsert_failed_task("insecure_capabilities", "✖️  FAILED: Found containers with insecure capabilities #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
-      resp
-    end
-  end
-end
-
-desc "Check if the containers have dangerous capabilities."
-task "dangerous_capabilities", ["kubescape_scan"] do |_, args|
-  next if args.named["offline"]?
-
-  CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "dangerous_capabilities" } if check_verbose(args)
-    results_json = Kubescape.parse
-    test_json = Kubescape.test_by_test_name(results_json, "Dangerous capabilities")
-
-    emoji_security = "🔓🔑"
-    if Kubescape.test_passed?(test_json)
-      upsert_passed_task("dangerous_capabilities", "✔️  PASSED: Containers with dangerous capabilities were not found #{emoji_security}")
-    else
-      resp = upsert_failed_task("dangerous_capabilities", "✖️  FAILED: Found containers with dangerous capabilities #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
@@ -403,14 +405,17 @@ task "resource_policies", ["kubescape_scan"] do |_, args|
     Log.for("verbose").info { "resource_policies" } if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Resource policies")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security = "🔓🔑"
-    if Kubescape.test_passed?(test_json)
+    if test_report.failed_resources.size == 0
       upsert_passed_task("resource_policies", "✔️  🏆 PASSED: Containers have resource limits defined #{emoji_security}")
     else
       resp = upsert_failed_task("resource_policies", "✖️  🏆 FAILED: Found containers without resource limits defined #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
@@ -424,14 +429,17 @@ task "ingress_egress_blocked", ["kubescape_scan"] do |_, args|
     Log.for("verbose").info { "ingress_egress_blocked" } if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Ingress and Egress blocked")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security = "🔓🔑"
-    if Kubescape.test_passed?(test_json)
+    if test_report.failed_resources.size == 0
       upsert_passed_task("ingress_egress_blocked", "✔️  PASSED: Ingress and Egress traffic blocked on pods #{emoji_security}")
     else
       resp = upsert_failed_task("ingress_egress_blocked", "✖️  FAILED: Ingress and Egress traffic not blocked on pods #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
@@ -445,14 +453,17 @@ task "host_pid_ipc_privileges", ["kubescape_scan"] do |_, args|
     Log.for("verbose").info { "host_pid_ipc_privileges" } if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Host PID/IPC privileges")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security = "🔓🔑"
-    if Kubescape.test_passed?(test_json)
+    if test_report.failed_resources.size == 0
       upsert_passed_task("host_pid_ipc_privileges", "✔️  PASSED: No containers with hostPID and hostIPC privileges #{emoji_security}")
     else
       resp = upsert_failed_task("host_pid_ipc_privileges", "✖️  FAILED: Found containers with hostPID and hostIPC privileges #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
@@ -466,35 +477,17 @@ task "non_root_containers", ["kubescape_scan"] do |_, args|
     Log.for("verbose").info { "non_root_containers" } if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Non-root containers")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security = "🔓🔑"
-    if Kubescape.test_passed?(test_json)
+    if test_report.failed_resources.size == 0
       upsert_passed_task("non_root_containers", "✔️  🏆 PASSED: Containers are running with non-root user with non-root group membership #{emoji_security}")
     else
       resp = upsert_failed_task("non_root_containers", "✖️  🏆 FAILED: Found containers running with root user or user with root group membership #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
-      resp
-    end
-  end
-end
-
-desc "Check if network policies are defined for namespaces"
-task "network_policies", ["kubescape_scan"] do |_, args|
-  next if args.named["offline"]?
-
-  CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "network_policies" } if check_verbose(args)
-    results_json = Kubescape.parse
-    test_json = Kubescape.test_by_test_name(results_json, "Network policies")
-
-    emoji_security = "🔓🔑"
-    if Kubescape.test_passed?(test_json)
-      upsert_passed_task("network_policies", "✔️  PASSED: Namespaces have network policies defined #{emoji_security}")
-    else
-      resp = upsert_failed_task("network_policies", "✖️  FAILED: Found namespaces which do not have network policies defined #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
@@ -508,15 +501,18 @@ task "privileged_containers", ["kubescape_scan" ] do |_, args|
     Log.for("verbose").info { "privileged_containers" } if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Privileged container")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security = "🔓🔑"
     #todo whitelist
-    if Kubescape.test_passed?(test_json)
+    if test_report.failed_resources.size == 0
       upsert_passed_task("privileged_containers", "✔️  🏆 PASSED: No privileged containers were found #{emoji_security}")
     else
       resp = upsert_failed_task("privileged_containers", "✖️  🏆 FAILED: Found privileged containers #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
@@ -530,14 +526,17 @@ task "immutable_file_systems", ["kubescape_scan"] do |_, args|
     Log.for("verbose").info { "immutable_file_systems" } if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Immutable container filesystem")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security = "🔓🔑"
-    if Kubescape.test_passed?(test_json)
+    if test_report.failed_resources.size == 0
       upsert_passed_task("immutable_file_systems", "✔️  PASSED: Containers have immutable file systems #{emoji_security}")
     else
       resp = upsert_failed_task("immutable_file_systems", "✖️  FAILED: Found containers with mutable file systems #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end
@@ -551,14 +550,17 @@ task "hostpath_mounts", ["kubescape_scan"] do |_, args|
     Log.for("verbose").info { "hostpath_mounts" } if check_verbose(args)
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Allowed hostPath")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     emoji_security = "🔓🔑"
-    if Kubescape.test_passed?(test_json)
+    if test_report.failed_resources.size == 0
       upsert_passed_task("hostpath_mounts", "✔️  PASSED: Containers do not have hostPath mounts #{emoji_security}")
     else
       resp = upsert_failed_task("hostpath_mounts", "✖️  FAILED: Found containers with hostPath mounts #{emoji_security}")
-      Kubescape.alerts_by_test(test_json).map{|t| puts "\n#{t}".colorize(:red)}
-      puts "Remediation: #{Kubescape.remediation(test_json)}\n".colorize(:red)
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
       resp
     end
   end

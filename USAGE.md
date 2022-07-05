@@ -913,24 +913,6 @@ Remove all insecure capabilities which aren’t necessary for the container.
 </b>
 
 
-## [Network policies](docs/LIST_OF_TESTS.md#network-policies)
-
-##### To run the Network polices test, you can use the following command:
-
-```
-./cnf-testsuite network_policies
-```
-
-<b>Remediation for failing this test:</b> 
-
-Define network policies or use similar network protection mechanisms.
-
-</b>
-
-```
-./cnf-testsuite network_policies
-```
-
 ## [Non Root containers](docs/LIST_OF_TESTS.md#non-root-containers)
 
 ##### To run the Non-root containers test, you can use the following command:

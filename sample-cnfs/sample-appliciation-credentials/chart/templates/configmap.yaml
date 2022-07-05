@@ -1,5 +1,3 @@
-{{- if .Values.deployment.enabled }}
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -14,9 +12,6 @@ metadata:
     kubernetes.io/name: "CoreDNS"
     {{- end }}
     app.kubernetes.io/name: {{ template "coredns.name" . }}
-{{- if .Values.customLabels }}
-{{ toYaml .Values.customLabels | indent 4 }}
-{{- end }}
 data:
   Corefile: |-
     {{ range .Values.servers }}
@@ -33,4 +28,3 @@ data:
   {{- range .Values.zoneFiles }}
   {{ .filename }}: {{ toYaml .contents | indent 4 }}
   {{- end }}
-{{- end }}

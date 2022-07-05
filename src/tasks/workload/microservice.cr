@@ -65,8 +65,8 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
 
     resource_pod_ips = [] of Array(JSON::Any)
     # CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
-    resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
-    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+    # resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
+    # resource_names = Helm.workload_resource_kind_names(resource_ymls)
     # resource_names.each do |resource_name|
     #   resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name])
     #   pods = KubectlClient::Get.pods_by_resource(resource)
@@ -78,6 +78,28 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
     # Log.info { "cnf IPs: #{cnf_ips}"}
 
     cnf_services = KubectlClient::Get.services(all_namespaces: true)
+    Log.info { "first cnf_services: #{cnf_services}"}
+
+
+    # get services from helm chart
+    # todo check to see if new cnf_services is in same format as line 80
+    # cnf_services = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
+    #   namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
+    #   Log.info { "resource[kind]: #{resource["kind"]}"}
+    #   if resource["kind"] == "service"
+    #     full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace) 
+    #   end
+    #   full_resource
+    # end
+    # Log.info { "second cnf_services: #{cnf_services}"}
+
+    # helm_chart_cnf_services = CNFManager.cnf_workload_resources(nil, config) do |resource|
+    #   resource
+    #   resource_ymls = cnf_workload_resources(nil, config) do |resource|
+    # end
+
+
+
     # cnf_services = resource_names.map { |resource_name|
     #   case resource_name[:kind].as_s.downcase
     #   when "service"
@@ -86,11 +108,11 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
     # }.compact 
 
     #todo get all pod_ips by first cnf service that is not the database service
-    service_pod_ips = [] of Array(NamedTuple(service_group_id: Int32, pod_ips: Array(JSON::Any)))
+    all_service_pod_ips = [] of Array(NamedTuple(service_group_id: Int32, pod_ips: Array(JSON::Any)))
     cnf_services["items"].as_a.each_with_index do |cnf_service, index|
       service_pods = KubectlClient::Get.pods_by_service(cnf_service)
       if service_pods
-        service_pod_ips << service_pods.map { |pod|
+        all_service_pod_ips << service_pods.map { |pod|
           {
             service_group_id: index,
             pod_ips: pod.dig("status", "podIPs").as_a.select{|ip|
@@ -102,8 +124,51 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
       end
     end
 
-    service_pod_ips = service_pod_ips.compact.flatten
-    Log.info { "service_pod_ips: #{service_pod_ips}"}
+    all_service_pod_ips = all_service_pod_ips.compact.flatten
+    Log.info { "all_service_pod_ips: #{all_service_pod_ips}"}
+
+    resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
+    resource_names = Helm.workload_resource_kind_names(resource_ymls)
+    helm_chart_cnf_services : Array(JSON::Any)
+    # namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
+    # Log.info { "namespace: #{namespace}"}
+    helm_chart_cnf_services = resource_names.map do |resource_name|
+      Log.info { "helm_chart_cnf_services resource_name: #{resource_name}"}
+      if resource_name[:kind].downcase == "service"
+        #todo check for namespace
+        resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name], resource_name[:namespace])
+      end
+      resource
+    end.flatten.compact
+
+    # helm_chart_cnf_services = CNFManager.cnf_workload_resources(nil, config) do |resource|
+    #   kind = resource["kind"].as_s.downcase
+    #   if kind == "service"
+    #     KubectlClient::Get.resource(kind, resource["name"].as_s)
+    #   end
+    # end.flatten.compact
+    Log.info { "helm_chart_cnf_services: #{helm_chart_cnf_services}"}
+
+    cnf_service_pod_ips = [] of Array(NamedTuple(service_group_id: Int32, pod_ips: Array(JSON::Any)))
+    helm_chart_cnf_services.each_with_index do |helm_cnf_service, index|
+      service_pods = KubectlClient::Get.pods_by_service(helm_cnf_service)
+      if service_pods
+        cnf_service_pod_ips << service_pods.map { |pod|
+          {
+            service_group_id: index,
+            pod_ips: pod.dig("status", "podIPs").as_a.select{|ip|
+              db_pod_ips.select{|dbip| dbip["ip"].as_s != ip["ip"].as_s}
+            }
+          }
+
+        }.flatten.compact
+      end
+    end
+
+    #todo create cluster network inspection tool
+
+    cnf_service_pod_ips = cnf_service_pod_ips.compact.flatten
+    Log.info { "cnf_service_pod_ips: #{cnf_service_pod_ips}"}
 
     integrated_database_found = false
     Log.info { "Container Statuses: #{database_container_statuses}" }
@@ -150,7 +215,7 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
 
 
 
-         ignored_ip = service_pod_ips[0]["pod_ips"].find{|i| x[:foreign_address].includes?(i["ip"].as_s)}
+         ignored_ip = all_service_pod_ips[0]["pod_ips"].find{|i| x[:foreign_address].includes?(i["ip"].as_s)}
          if ignored_ip 
            Log.info { "dont add: #{x[:foreign_address]}"}
            acc
@@ -163,7 +228,7 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
         Log.info { "filtered_foreign_addresses: #{filtered_foreign_addresses}"}
         #todo if count on uniq foreign ip addresses > 1 then fail
         # only count violators if they are part of any service, cluster wide
-        violators = service_pod_ips.reduce([] of Array(JSON::Any)) do |acc, service_group|
+        violators = all_service_pod_ips.reduce([] of Array(JSON::Any)) do |acc, service_group|
           acc << service_group["pod_ips"].select do |spip| 
             Log.info { " service ip: #{spip["ip"].as_s}"}
             filtered_foreign_addresses.find do |f|
@@ -172,8 +237,16 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
           end 
         end
         violators = violators.flatten.compact
-        if violators.size > 1
-        # if filtered_foreign_address.size > 1
+        Log.info { "violators: #{violators}"}
+        Log.info { "cnf_service_pod_ips: #{cnf_service_pod_ips}"}
+        cnf_violators = violators.find do |violator|
+          cnf_service_pod_ips.find do |service|
+            service["pod_ips"].find do |ip|
+              violator["ip"].as_s.includes?(ip["ip"].as_s)
+            end
+          end
+        end
+        if violators.size > 1 && cnf_violators
           puts "Found multiple pod ips from different services that connect to the same database: #{violators}".colorize(:red)
           integrated_database_found = true 
         end
