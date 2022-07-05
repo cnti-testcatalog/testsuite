@@ -288,7 +288,7 @@ Ensure that you can successfuly change the software version of your CNF back to 
 </b>
 
 
-## [CNF compatible](docs/LIST_OF_TESTS.md#cni-compatible)
+## [CNI compatible](docs/LIST_OF_TESTS.md#cni-compatible)
 
 ##### To run the CNI compatible test, you can use the following command:
 ```
@@ -363,7 +363,7 @@ crystal src/cnf-testsuite.cr network_chaos
 crystal src/cnf-testsuite.cr external_retry
 ```
     
-    #### :memo: (To Do) To test small scale autoscaling
+#### :memo: (To Do) To test small scale autoscaling
 
 ```
 crystal src/cnf-testsuite.cr small_autoscaling
@@ -530,7 +530,7 @@ Ensure that your CNF isn't using any persistent volumes that use a ["local"] mou
 
 
 
-## [Elastic volumes](docs/LIST_OF_TESTS.md#no-local-volume-configuration)
+## [Elastic volumes](docs/LIST_OF_TESTS.md#elastic-volumes)
 
 ##### To run the Elastic volume test, you can use the following command:
 
@@ -577,7 +577,7 @@ Ensure that your CNF doesn't stall or get into a corrupted state when network de
 A mitigation stagagy(in this case keep the timeout i.e., access latency low) could be via some middleware that can switch traffic based on some SLOs parameters.
 </b>
 
-## [CNF disk fill](docs/LIST_OF_TESTS.md#cnf-under-network-latency)
+## [CNF disk fill](docs/LIST_OF_TESTS.md#cnf-with-host-disk-fill)
 
 ##### To run the CNF disk fill test, you can use the following command:
 
@@ -650,6 +650,19 @@ Ensure that your CNF is resilient to erroneously duplicated packets and can main
 </b>
 
 
+## [Pod DNS errors](docs/LIST_OF_TESTS.md#pod-dns-errors)
+
+##### To run the Pod DNS error test, you can use the following command:
+```
+./cnf-testsuite pod_dns_error
+```
+
+<b>Remediation for failing this test:</b> 
+Ensure that your CNF is resilient to DNS resolution failures can maintain a level of availability.
+
+</b>
+
+
 ## [Helm chart liveness entry](docs/LIST_OF_TESTS.md#helm-chart-liveness-entry)
 
 ##### To run the Helm chart liveness entry test, you can use the following command:
@@ -697,7 +710,7 @@ Make sure applications and CNF's are sending log output to STDOUT and or STDERR.
 </b>
 
 
-## [Prometheus installed](docs/LIST_OF_TESTS.md#use-stdoutstderr-for-logs)
+## [Prometheus installed](docs/LIST_OF_TESTS.md#prometheus-installed)
 
 ##### To run the Prometheus installed test, you can use the following command:
 ```
@@ -768,18 +781,6 @@ Ensure that your CNF is both using & publishing traces to Jaeger.
 Make sure your CNF doesn't mount `/var/run/docker.sock`, `/var/run/containerd.sock` or `/var/run/crio.sock` on any containers.
 </b>
 
-## [Privileged Mode](docs/LIST_OF_TESTS.md#privileged-mode)
-
-##### To run the Privileged mode test, you can use the following command:
-
-```
-./cnf-testsuite privileged
-```
-
-<b>Remediation for failing this test:</b> 
-Make sure that your CNF doesn't have the spec.securityContext.privileged: true flag set.
-</b>
-
 
 ## [External IPs](docs/LIST_OF_TESTS.md#external-ips)
 
@@ -792,17 +793,19 @@ Make sure that your CNF doesn't have the spec.securityContext.privileged: true f
 Make sure to not define external IPs in your kubernetes service configuration
 </b>
 
+## [Privileged containers](docs/LIST_OF_TESTS.md#privileged-containers)
 
+##### To run the Privilege container test, you can use the following command:
 
-## [Root user](docs/LIST_OF_TESTS.md#root-user)
-
-##### To run the Root user test, you can use the following command:
 ```
-./cnf-testsuite non_root_user
+./cnf-testsuite privileged_containers
 ```
 
+    
 <b>Remediation for failing this test:</b> 
-Ensure that none of the containers in your CNF are running processes as root.
+
+Remove privileged capabilities by setting the securityContext.privileged to false. If you must deploy a Pod as privileged, add other restriction to it, such as network policy, Seccomp etc and still remove all unnecessary capabilities.
+        
 </b>
 
 
@@ -828,6 +831,18 @@ If your application does not need it, make sure the allowPrivilegeEscalation fie
 
 <b>Remediation for failing this test:</b> 
 To mitigate this vulnerability without upgrading kubelet, you can disable the VolumeSubpath feature gate on kubelet and kube-apiserver, or remove any existing Pods using subPath or subPathExpr feature.
+</b>
+
+
+## [Sysctls](docs/LIST_OF_TESTS.md#sysctls)
+
+##### To run the Sysctls test, you can use the following command:
+```
+./cnf-testsuite sysctls
+```
+
+<b>Remediation for failing this test:</b> 
+The spec.securityContext.sysctls field must be unset or not use. 
 </b>
 
 
@@ -882,23 +897,6 @@ By default, you should disable or restrict Ingress and Egress traffic on all pod
 </b>
 
 
-## [Privilege container](docs/LIST_OF_TESTS.md#privileged-container)
-
-##### To run the Privilege container test, you can use the following command:
-
-```
-./cnf-testsuite privileged_containers
-```
-
-    
-<b>Remediation for failing this test:</b> 
-
-Remove privileged capabilities by setting the securityContext.privileged to false. If you must deploy a Pod as privileged, add other restriction to it, such as network policy, Seccomp etc and still remove all unnecessary capabilities.
-        
-</b>
-
-
-
 ## [Insecure capabilities](docs/LIST_OF_TESTS.md#insecure-capabilities)
 
 ##### To run the Insecure capabilities test, you can use the following command:
@@ -915,7 +913,7 @@ Remove all insecure capabilities which aren’t necessary for the container.
 </b>
 
 
-## [Non-root containers](docs/LIST_OF_TESTS.md#network-policies)
+## [Non Root containers](docs/LIST_OF_TESTS.md#non-root-containers)
 
 ##### To run the Non-root containers test, you can use the following command:
 
@@ -1003,7 +1001,7 @@ Refrain from using a hostPath mount.
 </b>
 
 
-## [SELinux options](docs/LIST_OF_TESTS.md#host-pidipc-privileges)
+## [SELinux options](docs/LIST_OF_TESTS.md#selinux-options)
 
 ##### To run the SELinux options test, you can use the following command:
 ```
@@ -1106,22 +1104,7 @@ When specifying container images, always specify a tag and ensure to use an immu
 </b>
 
 
-## [IP addresses](docs/LIST_OF_TESTS.md#ip-addresses)
-
-##### To run the IP addresses test, you can use the following command:
-```
-./cnf-testsuite ip_addresses
-```
-
-<b>Remediation for failing this test:</b> 
-
-Remove any usage of hardcoded ip addresses in CNF's Helm Chart & Manifiest files.
-
-</b>
-
-
-
-## [nodePort not used](docs/LIST_OF_TESTS.md#ip-addresses)
+## [nodePort not used](docs/LIST_OF_TESTS.md#nodeport-not-used)
 
 ##### To run the nodePort not used test, you can use the following command:
 ```
@@ -1135,7 +1118,7 @@ Review all Helm Charts & Kubernetes Manifest files for the CNF and remove all oc
 </b>
 
 
-## [hostPort not used](docs/LIST_OF_TESTS.md#ip-addresses)
+## [hostPort not used](docs/LIST_OF_TESTS.md#hostport-not-used)
 
 ##### To run the hodePort not used test, you can use the following command:
 
@@ -1182,7 +1165,7 @@ Remove any sensitive data stored in configmaps, environment variables and instea
 
 
 
-## [immutable configmaps](docs/LIST_OF_TESTS.md#immutable-configmaps)
+## [Immutable configmaps](docs/LIST_OF_TESTS.md#immutable-configmap)
 
 ##### To run the immutable configmap test, you can use the following command:
 ```
@@ -1192,22 +1175,6 @@ Remove any sensitive data stored in configmaps, environment variables and instea
 <b>Remediation for failing this test:</b> 
 Use immutable configmaps for any non-mutable configuration data.
 </b>
-
-
-
-
-## [Pod DNS errors](docs/LIST_OF_TESTS.md#immutable-configmaps)
-
-##### To run the Pod DNS error test, you can use the following command:
-```
-./cnf-testsuite pod_dns_error
-```
-
-<b>Remediation for failing this test:</b> 
-Ensure that your CNF is resilient to DNS resolution failures can maintain a level of availability.
-
-</b>
-
 
 
 # Platform Tests
@@ -1231,7 +1198,7 @@ Check that [Sonobuoy](https://github.com/vmware-tanzu/sonobuoy) can be successfu
 </b>
 
 
-## [ClusterAPI enabled](docs/LIST_OF_TESTS.md#k8s-conformance)
+## [ClusterAPI enabled](docs/LIST_OF_TESTS.md#clusterapi-enabled)
 
 ##### To run the ClusterAPI enabled test, you can use the following command:
 
@@ -1269,7 +1236,7 @@ Check if your Kuberentes Platform is using an [OCI Compliant Runtime](https://op
 ./cnf-testsuite platform:resilience poc
 ```
 
-## [Worker reboot recovery](docs/LIST_OF_TESTS.md#worker-reboot-recovery)
+## [Worker reboot recovery](docs/LIST_OF_TESTS.md#poc-worker-reboot-recovery)
 
 ##### To run the Worker reboot recovery test, you can use the following command:
 
@@ -1303,7 +1270,7 @@ See more at [ARMO-C0035](https://bit.ly/C0035_cluster_admin)
 </b>
 
 
-## [Control plane hardening](docs/LIST_OF_TESTS.md#control-plane-harding)
+## [Control plane hardening](docs/LIST_OF_TESTS.md#control-plane-hardening)
 
 ##### To run the Control plane hardening test, you can use the following command:
 
