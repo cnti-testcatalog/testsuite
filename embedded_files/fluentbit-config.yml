@@ -1,0 +1,6 @@
+config:
+  outputs: |
+    [OUTPUT]
+        Name file
+        Format template
+        Path /testdata

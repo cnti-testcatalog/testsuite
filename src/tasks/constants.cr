@@ -41,6 +41,7 @@ EmbeddedFileManager.enforce_image_tag
 EmbeddedFileManager.constraint_template
 EmbeddedFileManager.disable_cni
 EmbeddedFileManager.fluentd_values
+EmbeddedFileManager.fluentbit_values
 
 # BinarySingleton = CNFGlobals.new
 # class CNFGlobals

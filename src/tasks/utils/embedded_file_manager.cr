@@ -43,6 +43,9 @@ module EmbeddedFileManager
   macro fluentd_values 
     FLUENTD_VALUES = Base64.decode_string("{{ `cat ./embedded_files/fluentd-values.yml  | base64`}}")
   end
+  macro fluentbit_values 
+    FLUENTBIT_VALUES = Base64.decode_string("{{ `cat ./embedded_files/fluentbit-config.yml | base64`}}")
+  end
   def self.points_yml_write_file
     File.write("points.yml", POINTSFILE)
   end
