@@ -58,6 +58,7 @@ module CNFManager
                                             service_name: "",
                                             helm_repository: {name: "", repo_url: ""},
                                             helm_chart: "",
+                                            helm_values: "",
                                             helm_install_namespace: "",
                                             rolling_update_tag: "",
                                             container_names: [{"name" =>  "", "rolling_update_test_tag" => ""}],

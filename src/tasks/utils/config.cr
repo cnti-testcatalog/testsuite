@@ -27,6 +27,7 @@ module CNFManager
                                      service_name:  String,
                                      helm_repository: NamedTuple(name:  String, repo_url:  String) | Nil,
                                      helm_chart:  String,
+                                     helm_values:  String,
                                      helm_install_namespace: String,
                                      rolling_update_tag: String,
                                      container_names: Array(Hash(String, String )) | Nil,
@@ -61,6 +62,7 @@ module CNFManager
         helm_repo_url = ""
       end
       helm_chart = optional_key_as_string(config, "helm_chart")
+      helm_values = optional_key_as_string(config, "helm_values")
       release_name = optional_key_as_string(config, "release_name")
       service_name = optional_key_as_string(config, "service_name")
       helm_directory = optional_key_as_string(config, "helm_directory")
@@ -107,6 +109,7 @@ module CNFManager
          }]
       end
 
+      # if you change this, change instantiation in task.cr/single_task_runner as well
       new({ destination_cnf_dir: destination_cnf_dir,
                                source_cnf_file: source_cnf_file,
                                source_cnf_dir: source_cnf_dir,
@@ -121,6 +124,7 @@ module CNFManager
                                service_name: service_name,
                                helm_repository: {name: helm_repo_name, repo_url: helm_repo_url},
                                helm_chart: helm_chart,
+                               helm_values: helm_values,
                                helm_install_namespace: helm_install_namespace,
                                rolling_update_tag: "",
                                container_names: container_names,

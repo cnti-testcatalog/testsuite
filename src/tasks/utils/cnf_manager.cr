@@ -759,6 +759,7 @@ module CNFManager
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
     helm_directory = config.cnf_config[:helm_directory]
+    helm_values = config.cnf_config[:helm_values]
     manifest_directory = config.cnf_config[:manifest_directory]
     helm_repository = config.cnf_config[:helm_repository]
     helm_repo_name = "#{helm_repository && helm_repository["name"]}"
@@ -851,7 +852,7 @@ module CNFManager
           Helm.helm_repo_add(helm_repo_name, helm_repo_url)
         end
         Log.for("verbose").info { "deploying with chart repository" } if verbose
-        Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml")
+        Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml", values=helm_values)
         yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
 
         if input_file && !input_file.empty?
@@ -861,7 +862,8 @@ module CNFManager
         end
  
         begin
-          helm_install = Helm.install("#{release_name} #{helm_chart} #{helm_namespace_option}")
+          helm_install = Helm.install(release_name, helm_chart, helm_namespace_option, helm_values)
+          # helm_install = Helm.install("#{release_name} #{helm_chart} #{helm_namespace_option}")
         rescue e : Helm::InstallationFailed
           stdout_failure "Helm installation failed"
           stdout_failure "\t#{e.message}"
@@ -885,7 +887,7 @@ module CNFManager
         #TODO Add helm options into cnf-testsuite yml
         #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
         # Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
-        Helm.template(release_name, "#{destination_cnf_dir}/#{helm_directory}", output_file="cnfs/temp_template.yml", helm_install_namespace)
+        Helm.template(release_name, "#{destination_cnf_dir}/#{helm_directory}", output_file="cnfs/temp_template.yml", namespace=helm_install_namespace, values=helm_values)
         yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
         
         if input_file && !input_file.empty?
@@ -895,7 +897,8 @@ module CNFManager
         end
 
         begin
-          helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} #{helm_namespace_option}")
+          # helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} #{helm_namespace_option}")
+          helm_install = Helm.install(release_name, "#{destination_cnf_dir}/#{helm_directory}", helm_namespace_option, helm_values)
         rescue e : Helm::InstallationFailed
           stdout_failure "Helm installation failed"
           stdout_failure "\t#{e.message}"

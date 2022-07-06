@@ -1058,7 +1058,7 @@ module KubectlClient
     end
 
     def self.container_image_tags(deployment_containers) : Array(NamedTuple(image: String,
-                                                                            tag: String | Nil))
+                                                                            tag: String))
       image_tags = deployment_containers.as_a.map do |container|
         Log.debug { "container (should have image and tag): #{container}" }
         {image: container.as_h["image"].as_s.rpartition(":")[0],
