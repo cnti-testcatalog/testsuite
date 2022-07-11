@@ -386,11 +386,11 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 ## [Routed logs](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L170)
 - Expectation: Fluentd or FluentBit is install and capturing logs for the CNF.
 
-**What's tested:** Checks for presence of fluentd or fluentbit and if the CNFs logs are being captured by fluentd or fluentbit.
+**What's tested:** Checks for presence of a Unified Logging Layer and if the CNFs logs are being captured by the Unified Logging Layer. fluentd and fluentbit are currently supported.
 
 [**Usage**](../USAGE.md#routed-logs)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-logs-and-data-are-being-routed-through-fluentd-or-fluentbit-routed_logs)
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-logs-and-data-are-being-routed-through-a-unified-logging-layer-routed_logs)
 
 
 ## [OpenMetrics compatible](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L146)
