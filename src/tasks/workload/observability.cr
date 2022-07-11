@@ -181,17 +181,24 @@ task "routed_logs" do |_, args|
   next if args.named["offline"]?
     emoji_observability="📶☠️"
   task_response = CNFManager::Task.task_runner(args) do |args, config|
-    match = FluentD.match()
-    Log.info { "fluentd match: #{match}" }
-    if match[:found]
+    fluentd_match = FluentD.match()
+    fluentbit_match = FluentBit.match()
+    Log.info { "fluentd match: #{fluentd_match}" }
+    Log.info { "fluentbit match: #{fluentbit_match}" }
+    if fluentd_match[:found] || fluentbit_match[:found]
         all_resourced_logged = CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
           resource_logged = true 
           resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name], resource_name[:namespace])
           pods = KubectlClient::Get.pods_by_resource(resource, namespace: resource_name[:namespace])
           pods.each do |pod|
-            # if any pod/container is not monitored by fluentd, fail
+            # if any pod/container is not monitored by fluentd or fluentbit, fail
             if resource_logged
-              resource_logged = FluentD.app_tailed_by_fluentd?(pod.dig("metadata", "name"), match)
+              if fluentd_match[:found]
+                resource_logged = FluentD.app_tailed_by_fluentd?(pod.dig("metadata", "name"), fluentd_match)
+              end
+              if fluentbit_match[:found]
+                resource_logged = FluentBit.app_tailed?(pod.dig("metadata", "name"), fluentbit_match)
+              end
             end
           end
           resource_logged
@@ -203,7 +210,7 @@ task "routed_logs" do |_, args|
           upsert_failed_task("routed_logs", "✖️  FAILED: Your cnf's logs are not being captured #{emoji_observability}")
         end
     else
-      upsert_skipped_task("routed_logs", "⏭️  SKIPPED: Fluentd not configured #{emoji_observability}")
+      upsert_skipped_task("routed_logs", "⏭️  SKIPPED: Fluentd or FluentBit not configured #{emoji_observability}")
     end
   end
 end

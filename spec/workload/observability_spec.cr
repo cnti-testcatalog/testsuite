@@ -1,6 +1,7 @@
 require "../spec_helper"
 require "colorize"
 require "../../src/tasks/utils/utils.cr"
+require "../../src/tasks/utils/fluentbit.cr"
 require "../../src/tasks/jaeger_setup.cr"
 
 describe "Observability" do
@@ -136,7 +137,7 @@ describe "Observability" do
     $?.success?.should be_true
   end
 
-  it "'routed_logs' should pass if cnfs logs are captured", tags: ["observability"] do
+  it "'routed_logs' should pass if cnfs logs are captured by fluentd", tags: ["observability"] do
     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
     resp = `./cnf-testsuite install_fluentd`
     LOGGING.info resp
@@ -147,6 +148,18 @@ describe "Observability" do
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
     resp = `./cnf-testsuite uninstall_fluentd`
     LOGGING.info resp
+    $?.success?.should be_true
+  end
+
+  it "'routed_logs' should pass if cnfs logs are captured by fluentbit", tags: ["observability"] do
+    LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-fluentbit`
+    FluentBit.install
+    response_s = `./cnf-testsuite routed_logs`
+    LOGGING.info response_s
+    (/PASSED: Your cnf's logs are being captured/ =~ response_s).should_not be_nil
+  ensure
+    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-fluentbit`
+    FluentBit.uninstall
     $?.success?.should be_true
   end
 
