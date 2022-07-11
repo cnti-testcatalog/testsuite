@@ -4,11 +4,15 @@ module FluentBit
     #chart
     Log.info {"Installing FluentBit daemonset "}
     File.write("fluentbit-config.yml", FLUENTBIT_VALUES)
-    Helm.helm_repo_add("fluent","https://fluent.github.io/helm-charts")
+    Helm.helm_repo_add("fluent", "https://fluent.github.io/helm-charts")
 
     # Install fluent-bit in the cnf-testsuite namespace
-    Helm.install("--values ./fluentbit-config.yml -n #{TESTSUITE_NAMESPACE} fluent-bit fluent/fluent-bit")
-    KubectlClient::Get.resource_wait_for_install("Daemonset", "fluent-bit", namespace: TESTSUITE_NAMESPACE)
+    begin
+      Helm.install("--values ./fluentbit-config.yml -n #{TESTSUITE_NAMESPACE} fluent-bit fluent/fluent-bit")
+      KubectlClient::Get.resource_wait_for_install("Daemonset", "fluent-bit", namespace: TESTSUITE_NAMESPACE)
+    rescue Helm::CannotReuseReleaseNameError
+      Log.info { "Falco already installed" }
+    end
   end
 
   def self.uninstall
