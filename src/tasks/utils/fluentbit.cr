@@ -11,7 +11,7 @@ module FluentBit
       Helm.install("--values ./fluentbit-config.yml -n #{TESTSUITE_NAMESPACE} fluent-bit fluent/fluent-bit")
       KubectlClient::Get.resource_wait_for_install("Daemonset", "fluent-bit", namespace: TESTSUITE_NAMESPACE)
     rescue Helm::CannotReuseReleaseNameError
-      Log.info { "Falco already installed" }
+      Log.info { "FluentBit already installed" }
     end
   end
 
