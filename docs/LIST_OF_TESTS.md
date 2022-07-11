@@ -384,7 +384,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 
 ## [Routed logs](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L170)
-- Expectation: Fluentd or FluentBit is install and capturing logs for the CNF.
+- Expectation: Fluentd or FluentBit is installed and capturing logs for the CNF.
 
 **What's tested:** Checks for presence of a Unified Logging Layer and if the CNFs logs are being captured by the Unified Logging Layer. fluentd and fluentbit are currently supported.
 
