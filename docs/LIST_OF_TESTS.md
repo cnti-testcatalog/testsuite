@@ -383,14 +383,14 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 [**Rational & Reasoning**](../RATIONALE.md#to-check-if-prometheus-is-installed-and-configured-for-the-cnf-prometheus_traffic)
 
 
-## [Fluentd logs](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L170)
-- Expectation: Fluentd is install and capturing logs for the CNF.
+## [Routed logs](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L170)
+- Expectation: Fluentd or FluentBit is install and capturing logs for the CNF.
 
-**What's tested:** Checks for fluentd presence and if the CNFs logs are being captured by fluentd.
+**What's tested:** Checks for presence of fluentd or fluentbit and if the CNFs logs are being captured by fluentd or fluentbit.
 
-[**Usage**](../USAGE.md#fluentd-logs)
+[**Usage**](../USAGE.md#routed-logs)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-logs-and-data-are-being-routed-through-fluentd-routed_logs)
+[**Rational & Reasoning**](../RATIONALE.md#to-check-if-logs-and-data-are-being-routed-through-fluentd-or-fluentbit-routed_logs)
 
 
 ## [OpenMetrics compatible](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L146)

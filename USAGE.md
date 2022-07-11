@@ -723,15 +723,15 @@ Install and configure Prometheus for your CNF.
 
 
 
-## [Fluentd logs](docs/LIST_OF_TESTS.md#fluentd-logs)
+## [Routed logs](docs/LIST_OF_TESTS.md#routed-logs)
 
-##### To run the Fluentd logs test, you can use the following command:
+##### To run the routed logs test, you can use the following command:
 ```
 ./cnf-testsuite routed_logs
 ```
 
 <b>Remediation for failing this test:</b> 
-Install and configure fluentd to collect data and logs. See more at [fluentd.org](https://bit.ly/fluentd).
+Install and configure fluentd or fluentbit to collect data and logs. See more at [fluentd.org](https://bit.ly/fluentd) for fluentd or [fluentbit.io](https://fluentbit.io/) for fluentbit.
 </b>
 
 
