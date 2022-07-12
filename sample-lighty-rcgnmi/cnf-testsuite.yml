@@ -1,0 +1,6 @@
+---
+release_name: lighty
+helm_repository:
+  name: pantheontech
+  repo_url: "https://pantheontech.github.io/helm-charts"
+helm_chart: "pantheontech/lighty-rcgnmi-app-helm"
