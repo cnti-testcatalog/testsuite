@@ -18,8 +18,12 @@ dependencies:
   totem:
     github: icyleaf/totem
     version: ~> 0.7.0
+  # tar:
+  #   path: utils/tar
   tar:
-    path: utils/tar
+    github: cnf-testsuite/tar
+    # version: ~> 0.1.0
+    branch: main
   helm:
     path: utils/helm
   kubectl_client:

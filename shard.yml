@@ -35,7 +35,9 @@ dependencies:
     github: Sija/retriable.cr
     version: ~> 0.2.4
   tar:
-    path: utils/tar
+    github: cnf-testsuite/tar
+    # version: ~> 0.1.0
+    branch: main
   docker_client:
     path: utils/docker_client
   git_client:
