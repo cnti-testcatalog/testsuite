@@ -30,7 +30,10 @@ dependencies:
     path: utils/kubectl_client
   docker_client:
     path: utils/docker_client
+  # find:
+  #   path: utils/find
   find:
-    path: utils/find
+    github: cnf-testsuite/find
+    branch: main
 
 license: MIT

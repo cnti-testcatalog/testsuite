@@ -38,6 +38,9 @@ dependencies:
     github: cnf-testsuite/tar
     # version: ~> 0.1.0
     branch: main
+  find:
+    github: cnf-testsuite/find
+    branch: main
   docker_client:
     path: utils/docker_client
   git_client:
