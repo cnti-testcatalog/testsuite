@@ -61,7 +61,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 [**Usage**](../USAGE.md#increase-decrease-capacity)
 
 
-[**Rational & Reasoning**](../RATIONALE.md#to-test-the-increasing-and-decreasing-of-capacity-increase_decrease_capacity)
+[**Rationale & Reasoning**](../RATIONALE.md#to-test-the-increasing-and-decreasing-of-capacity-increase_decrease_capacity)
 
 
 ## [Helm chart published](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L406)
@@ -71,7 +71,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#helm-chart-published)
 
-[**Rational & Reasoning**](../RATIONALE.md#test-if-the-helm-chart-is-published-helm_chart_published)
+[**Rationale & Reasoning**](../RATIONALE.md#test-if-the-helm-chart-is-published-helm_chart_published)
 
 
 ## [Helm chart valid](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L449)
@@ -81,7 +81,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#helm-chart-is-valid)
 
-[**Rational & Reasoning**](../RATIONALE.md#test-if-the-helm-chart-is-valid-helm_chart_valid)
+[**Rationale & Reasoning**](../RATIONALE.md#test-if-the-helm-chart-is-valid-helm_chart_valid)
 
 
 
@@ -92,7 +92,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#helm-deploy)
 
-[**Rational & Reasoning**](../RATIONALE.md#test-if-the-helm-deploys-helm_deploy)
+[**Rationale & Reasoning**](../RATIONALE.md#test-if-the-helm-deploys-helm_deploy)
 
 ## [Rollback:](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L87)
 - Expectation: The CNF Software version can be successfully incremented, then rolled back.
@@ -101,7 +101,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#rollback)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-can-be-rolled-back-rollback)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-can-be-rolled-back-rollback)
 
 
 ### [Rolling update](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
@@ -109,7 +109,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 **What's tested:** Checks if the Pod can be upgraded to a new software version by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-can-perform-a-rolling-update-rolling_update)
+[**Rationale & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-can-perform-a-rolling-update-rolling_update)
 
 
 ### [Rolling version change](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
@@ -117,7 +117,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 **What's tested:** Checks if the Pod can be rolled back to the original software version by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) to perform a rollback.
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_version_change-rolling_version_change)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_version_change-rolling_version_change)
 
 
 ### [Rolling downgrade](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/compatibility.cr#L8)
@@ -125,7 +125,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 **What's tested:** Checks if the Pod can be rolled back older software version(Older than the original software version) by using the [Kubectl Set Image](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-image-em-) to perform a downgrade.
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_downgrade-rolling_downgrade)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-can-be-downgraded-through-a-rolling_downgrade-rolling_downgrade)
 
 
 
@@ -137,7 +137,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#cni-compatible)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-is-compatible-with-different-cnis-cni_compatibility)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-is-compatible-with-different-cnis-cni_compatibility)
 
 
 
@@ -148,7 +148,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#kubernetes-alpha-apis)
 
-[**Rational & Reasoning**](../RATIONALE.md#poc-to-check-if-a-cnf-uses-kubernetes-alpha-apis-alpha_k8s_apis-alpha_k8s_apis)
+[**Rationale & Reasoning**](../RATIONALE.md#poc-to-check-if-a-cnf-uses-kubernetes-alpha-apis-alpha_k8s_apis-alpha_k8s_apis)
 
 
 # Microservice Category
@@ -160,7 +160,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#reasonable-image-size)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-has-a-reasonable-image-size-reasonable_image_size)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-has-a-reasonable-image-size-reasonable_image_size)
 
 
 ## [Reasonable startup time](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L183)
@@ -170,7 +170,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#reasonable-startup-time)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-have-a-reasonable-startup-time-reasonable_startup_time)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-have-a-reasonable-startup-time-reasonable_startup_time)
 
 
 ## [Single process type in one container](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L359)
@@ -180,7 +180,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#single-process-type-in-one-container)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-has-multiple-process-types-within-one-container-single_process_type)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-has-multiple-process-types-within-one-container-single_process_type)
 
 
 ## [Service discovery](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L413)
@@ -190,7 +190,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#service-discovery)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-exposes-any-of-its-containers-as-a-service-service_discovery-service_discovery)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-exposes-any-of-its-containers-as-a-service-service_discovery-service_discovery)
 
   
 ## [Shared database](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L19)  
@@ -200,7 +200,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#shared-database)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-uses-a-shared-database-shared_database)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-uses-a-shared-database-shared_database)
 
 
 # State Category
@@ -212,7 +212,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#node-drain)
 
-[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-node-drain-occurs-node_drain)
+[**Rationale & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-node-drain-occurs-node_drain)
 
 
 ## [Volume hostpath not found](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/state.cr#L419) 
@@ -222,7 +222,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#volume-hostpath-not-found)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-a-volume-host-path-volume_hostpath_not_found)
+[**Rationale & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-a-volume-host-path-volume_hostpath_not_found)
 
 
 ## [No local volume configuration](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/state.cr#L457) 
@@ -232,7 +232,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#no-local-volume-configuration)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-local-storage-no_local_volume_configuration)
+[**Rationale & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-local-storage-no_local_volume_configuration)
 
 
 ## [Elastic volumes](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/state.cr#L321) 
@@ -242,7 +242,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#elastic-volumes)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-elastic-volumes-elastic_volumes)
+[**Rationale & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-elastic-volumes-elastic_volumes)
 
 
 ## [Database persistence](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/state.cr#L358)
@@ -252,7 +252,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Usage**](../USAGE.md#database-persistence)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-a-database-with-either-statefulsets-elastic-volumes-or-both-database_persistence)
+[**Rationale & Reasoning**](../RATIONALE.md#to-test-if-the-cnf-uses-a-database-with-either-statefulsets-elastic-volumes-or-both-database_persistence)
 
 
 # Reliability, Resilience and Availability Category
@@ -266,7 +266,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#cnf-network-latency)
 
-[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-network-latency-occurs-pod_network_latency)
+[**Rationale & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-network-latency-occurs-pod_network_latency)
 
 
 
@@ -277,7 +277,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#cnf-disk-fill)
 
-[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-disk-fill-occurs-disk_fill)
+[**Rationale & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-disk-fill-occurs-disk_fill)
 
 
 ##  [Pod delete](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L441)
@@ -287,7 +287,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#pod-delete)
 
-[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-delete-occurs-pod_delete)
+[**Rationale & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-delete-occurs-pod_delete)
 
 
 ## [Memory hog](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L495)
@@ -297,7 +297,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#memory-hog)
 
-[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-memory-hog-occurs-pod_memory_hog)
+[**Rationale & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-memory-hog-occurs-pod_memory_hog)
 
 
 
@@ -308,7 +308,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#io-stress)
 
-[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-io-stress-occurs-pod_io_stress)
+[**Rationale & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-io-stress-occurs-pod_io_stress)
 
 
 
@@ -319,7 +319,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#network-corruption)
 
-[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-network-corruption-occurs-pod_network_corruption)
+[**Rationale & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-network-corruption-occurs-pod_network_corruption)
 
 
 ## [Network duplication](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L337)
@@ -329,7 +329,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#network-duplication)
 
-[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-network-duplication-occurs-pod_network_duplication)
+[**Rationale & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-pod-network-duplication-occurs-pod_network_duplication)
 
 ## [Pod DNS errors](https://github.com/cncf/cnf-testsuite/blob/v0.26.0/src/tasks/workload/reliability.cr#L604)
 - :heavy_check_mark: Added to CNF Test Suite in release v0.26.0
@@ -339,7 +339,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#pod-dns-errors)
 
-[**Rational & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-dns-errors-occur-pod_dns_errors)
+[**Rationale & Reasoning**](../RATIONALE.md#test-if-the-cnf-crashes-when-dns-errors-occur-pod_dns_errors)
 
 
 ## [Helm chart liveness entry](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L15)
@@ -349,7 +349,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#helm-chart-liveness-entry)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-is-a-liveness-entry-in-the-helm-chart-liveness)
+[**Rationale & Reasoning**](../RATIONALE.md#to-test-if-there-is-a-liveness-entry-in-the-helm-chart-liveness)
 
 
 ## [Helm chart readiness entry](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/reliability.cr#L45)
@@ -359,7 +359,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#helm-chart-readiness-entry)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-is-a-readiness-entry-in-the-helm-chart-readiness)
+[**Rationale & Reasoning**](../RATIONALE.md#to-test-if-there-is-a-readiness-entry-in-the-helm-chart-readiness)
 
 
 # Observability and Diagnostic Category
@@ -371,7 +371,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#use-stdoutstderr-for-logs)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-logs-are-being-sent-to-stdoutstderr-standard-out-standard-error-instead-of-a-log-file-log_output)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-logs-are-being-sent-to-stdoutstderr-standard-out-standard-error-instead-of-a-log-file-log_output)
 
 ## [Prometheus installed](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L42)
 - Expectation: The CNF is configured and sending metrics to a Prometheus server.
@@ -380,7 +380,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#prometheus-installed)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-prometheus-is-installed-and-configured-for-the-cnf-prometheus_traffic)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-prometheus-is-installed-and-configured-for-the-cnf-prometheus_traffic)
 
 
 ## [Routed logs](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L170)
@@ -390,7 +390,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#routed-logs)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-logs-and-data-are-being-routed-through-a-unified-logging-layer-routed_logs)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-logs-and-data-are-being-routed-through-a-unified-logging-layer-routed_logs)
 
 
 ## [OpenMetrics compatible](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L146)
@@ -400,7 +400,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#openmetrics-compatible)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-openmetrics-is-being-used-and-or-compatible-open_metrics)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-openmetrics-is-being-used-and-or-compatible-open_metrics)
 
 ## [Jaeger tracing](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/observability.cr#L203)
 - Expectation: The CNF is sending traces to Jaeger.
@@ -409,7 +409,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#jaeger-tracing)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-tracing-is-being-used-with-jaeger-tracing)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-tracing-is-being-used-with-jaeger-tracing)
 
 
 # Security Category
@@ -422,7 +422,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#container-socket-mounts)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-performs-a-cri-socket-mount-container_sock_mounts)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-performs-a-cri-socket-mount-container_sock_mounts)
 
 
 ## [Privileged Containers](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L420)
@@ -432,7 +432,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#privileged-containers)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-are-any-privileged-containers-privileged_containers)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-there-are-any-privileged-containers-privileged_containers)
 
 
 ## [External IPs](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L31)
@@ -443,7 +443,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#external-ips)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-external-ips-are-used-for-services-external_ips)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-external-ips-are-used-for-services-external_ips)
 
 
 ## [Selinux Options](https://github.com/cncf/cnf-testsuite/blob/v0.30.1/src/tasks/workload/security.cr#L91)
@@ -453,7 +453,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#selinux-options)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-selinux-has-been-configured-properly-selinux_options)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-selinux-has-been-configured-properly-selinux_options)
 
 
 ## [Sysctls](https://github.com/cncf/cnf-testsuite/blob/v0.30.1/src/tasks/workload/security.cr#L39)
@@ -463,7 +463,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#sysctls)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-any-pods-in-the-cnf-use-sysctls-with-restricted-values-sysctls)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-any-pods-in-the-cnf-use-sysctls-with-restricted-values-sysctls)
 
 
 ## [Privilege escalation](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L156)
@@ -473,7 +473,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#privilege-escalation)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-any-containers-allow-for-privilege-escalation-privilege_escalation)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-any-containers-allow-for-privilege-escalation-privilege_escalation)
 
 
 ## [Symlink file system](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L175)
@@ -483,7 +483,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#symlink-file-system)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-an-attacker-can-use-a-symlink-for-arbitrary-host-file-system-access-cve-2021-25741-symlink_file_system)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-an-attacker-can-use-a-symlink-for-arbitrary-host-file-system-access-cve-2021-25741-symlink_file_system)
 
 
 ## [Application credentials](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L194)
@@ -493,7 +493,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#application-credentials)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-are-applications-credentials-in-configuration-files-application_credentials)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-there-are-applications-credentials-in-configuration-files-application_credentials)
 
 
 ## [Host network](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L213)
@@ -503,7 +503,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#host-network)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-is-a-host-network-attached-to-a-pod-host_network)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-there-is-a-host-network-attached-to-a-pod-host_network)
 
 
 ## [Service account mapping](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L232)
@@ -513,7 +513,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#service-account-mapping)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-is-automatic-mapping-of-service-accounts-service_account_mapping)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-there-is-automatic-mapping-of-service-accounts-service_account_mapping)
 
 
 ## [Ingress and Egress blocked](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L335)
@@ -523,7 +523,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#ingress-and-egress-blocked)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-there-is-an-ingress-and-egress-policy-defined-ingress_egress_blocked)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-there-is-an-ingress-and-egress-policy-defined-ingress_egress_blocked)
 
 
 ## [Insecure capabilities](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L272)
@@ -533,7 +533,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
     
 [**Usage**](../USAGE.md#insecure-capabilities)
     
-[**Rational & Reasoning**](../RATIONALE.md#to-check-for-insecure-capabilities-insecure_capabilities)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-for-insecure-capabilities-insecure_capabilities)
 
 
 ## [Non-root containers](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L377)
@@ -543,7 +543,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#non-root-containers)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-are-running-with-non-root-user-with-non-root-membership-non_root_containers)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-containers-are-running-with-non-root-user-with-non-root-membership-non_root_containers)
 
 
 ## [Host PID/IPC privileges](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L356)
@@ -553,7 +553,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#host-pidipc-privileges)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-are-running-with-hostpid-or-hostipc-privileges-host_pid_ipc_privileges)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-containers-are-running-with-hostpid-or-hostipc-privileges-host_pid_ipc_privileges)
 
 
 ## [Linux hardening](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L251)
@@ -563,7 +563,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#linux-hardening)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-security-services-are-being-used-to-harden-containers-linux_hardening)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-security-services-are-being-used-to-harden-containers-linux_hardening)
 
 
 
@@ -574,7 +574,7 @@ The applications may stall or get corrupted while they wait endlessly for a pack
 
 [**Usage**](../USAGE.md#resource-policies)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-have-resource-limits-defined-resource_policies)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-containers-have-resource-limits-defined-resource_policies)
 
 
 ## [Immutable File Systems](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L441)
@@ -585,7 +585,7 @@ Checks whether the readOnlyRootFilesystem field in the SecurityContext is set to
 
 [**Usage**](../USAGE.md#immutable-file-systems)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-have-immutable-file-systems-immutable_file_systems)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-containers-have-immutable-file-systems-immutable_file_systems)
 
 
 ## [HostPath Mounts](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/security.cr#L462) 
@@ -596,7 +596,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 
 [**Usage**](../USAGE.md#hostpath-mounts)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-containers-have-hostpath-mounts-check-is-this-a-duplicate-of-state-test---cnf-testsuite-volume_hostpath_not_found-hostpath_mounts)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-containers-have-hostpath-mounts-check-is-this-a-duplicate-of-state-test---cnf-testsuite-volume_hostpath_not_found-hostpath_mounts)
 
 
 # Configuration Category
@@ -608,7 +608,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 
 [**Usage**](../USAGE.md#default-namespaces)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-is-using-the-default-namespace-default_namespace)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-is-using-the-default-namespace-default_namespace)
 
 
 ## [Latest tag](https://github.com/cncf/cnf-testsuite/blob/v0.30.0/src/tasks/workload/configuration.cr#L79) 
@@ -619,7 +619,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 
 [**Usage**](../USAGE.md#latest-tag)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-test-if-mutable-tags-being-used-for-image-versioningusing-kyverno-latest_tag-latest_tag)
+[**Rationale & Reasoning**](../RATIONALE.md#to-test-if-mutable-tags-being-used-for-image-versioningusing-kyverno-latest_tag-latest_tag)
 
 
 ## [Require labels](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L18) 
@@ -630,7 +630,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 
 [**Usage**](../USAGE.md#require-labels)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-test-if-the-recommended-labels-are-being-used-to-describe-resources-required_labels)
+[**Rationale & Reasoning**](../RATIONALE.md#to-test-if-the-recommended-labels-are-being-used-to-describe-resources-required_labels)
 
 
 ## [Versioned tag](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L80) 
@@ -640,7 +640,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 
 [**Usage**](../USAGE.md#versioned-tag)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-are-versioned-tags-on-all-images-using-opa-gatekeeper-versioned_tag)
+[**Rationale & Reasoning**](../RATIONALE.md#to-test-if-there-are-versioned-tags-on-all-images-using-opa-gatekeeper-versioned_tag)
 
 
 ## [nodePort not used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L131) 
@@ -650,7 +650,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 
 [**Usage**](../USAGE.md#nodeport-not-used)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-are-node-ports-used-in-the-service-configuration-nodeport_not_used)
+[**Rationale & Reasoning**](../RATIONALE.md#to-test-if-there-are-node-ports-used-in-the-service-configuration-nodeport_not_used)
 
 
 ## [hostPort not used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L166) 
@@ -660,7 +660,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 
 [**Usage**](../USAGE.md#hostport-not-used)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-are-host-ports-used-in-the-service-configuration-hostport_not_used)
+[**Rationale & Reasoning**](../RATIONALE.md#to-test-if-there-are-host-ports-used-in-the-service-configuration-hostport_not_used)
 
 
 ## [Hardcoded IP addresses in K8s runtime configuration](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L213) 
@@ -670,7 +670,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 
 [**Usage**](../USAGE.md#hardcoded-ip-addresses-in-k8s-runtime-configuration)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-test-if-there-are-any-non-declarative-hardcoded-ip-addresses-or-subnet-masks-in-the-k8s-runtime-configuration-hardcoded_ip_addresses_in_k8s_runtime_configuration)
+[**Rationale & Reasoning**](../RATIONALE.md#to-test-if-there-are-any-non-declarative-hardcoded-ip-addresses-or-subnet-masks-in-the-k8s-runtime-configuration-hardcoded_ip_addresses_in_k8s_runtime_configuration)
 
 
 ## [Secrets used](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L257) 
@@ -680,7 +680,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 
 [**Usage**](../USAGE.md#secrets-used)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-uses-k8s-secrets-secrets_used)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-uses-k8s-secrets-secrets_used)
 
 
 ## [Immutable configmap](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/configuration.cr#L362) 
@@ -690,7 +690,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 
 [**Usage**](../USAGE.md#immutable-configmaps)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-uses-immutable-configmaps-immutable_configmap)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-uses-immutable-configmaps-immutable_configmap)
 
 
 
@@ -707,7 +707,7 @@ List of Platform Tests
 
 [**Usage**](../USAGE.md#k8s-conformance)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-uses-immutable-configmaps-immutable_configmap)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-uses-immutable-configmaps-immutable_configmap)
 
 
 ## [ClusterAPI enabled](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/platform.cr#L88)
@@ -717,7 +717,7 @@ List of Platform Tests
 
 [**Usage**](../USAGE.md#clusterapi-enabled)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-plateform-is-being-managed-by-clusterapi-clusterapi-enabled)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-plateform-is-being-managed-by-clusterapi-clusterapi-enabled)
 
 
 ## [OCI Compliant](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/hardware_and_scheduling.cr#L15)
@@ -727,7 +727,7 @@ List of Platform Tests
 
 [**Usage**](../USAGE.md#oci-compliant)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-plateform-is-using-an-oci-compliant-runtime-oci-compliant)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-plateform-is-using-an-oci-compliant-runtime-oci-compliant)
 
 
 ## (PoC) [Worker reboot recovery](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/resilience.cr#L15)
@@ -738,7 +738,7 @@ List of Platform Tests
 
 [**Usage**](../USAGE.md#worker-reboot-recovery)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-workloads-are-rescheduled-on-node-failure-worker-reboot-recovery)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-workloads-are-rescheduled-on-node-failure-worker-reboot-recovery)
 
 
 
@@ -749,7 +749,7 @@ List of Platform Tests
 
 [**Usage**](../USAGE.md#cluster-admin)
 
-[**Rational & Reasoning**](../RATIONALE.md#to-check-if-the-plateform-has-a-default-cluster-admin-role-cluster-admin)
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-plateform-has-a-default-cluster-admin-role-cluster-admin)
 
 
 ## [Control plane hardening](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/security.cr#L13)
@@ -759,7 +759,7 @@ List of Platform Tests
 
 [**Usage**](../USAGE.md#control-plane-hardening)
 
-[**Rational & Reasoning**](../RATIONALE.md#check-if-the-plateform-is-using-insecure-ports-for-the-api-server-control_plane_hardening)
+[**Rationale & Reasoning**](../RATIONALE.md#check-if-the-plateform-is-using-insecure-ports-for-the-api-server-control_plane_hardening)
 
 
 ## [Dashboard exposed](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/platform/security.cr#L54)
@@ -769,7 +769,7 @@ List of Platform Tests
 
 [**Usage**](../USAGE.md#dashboard-exposed)
 
-[**Rational & Reasoning**](../RATIONALE.md#check-if-the-dashboard-is-exposed-externally-dashboard-exposed)
+[**Rationale & Reasoning**](../RATIONALE.md#check-if-the-dashboard-is-exposed-externally-dashboard-exposed)
 
 
 
@@ -781,5 +781,5 @@ List of Platform Tests
 
 [**Usage**](../USAGE.md#tiller-images)
 
-[**Rational & Reasoning**](../RATIONALE.md#check-if-tiller-is-being-used-on-the-plaform-tiller-images)
+[**Rationale & Reasoning**](../RATIONALE.md#check-if-tiller-is-being-used-on-the-plaform-tiller-images)
 
