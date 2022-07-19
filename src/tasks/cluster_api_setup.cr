@@ -12,7 +12,7 @@ desc "Install Cluster API for Kind"
 task "cluster_api_setup" do |_, args|
   current_dir = FileUtils.pwd
 
-  Halite.follow.get("https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.1.3/clusterctl-linux-amd64") do |response|
+  Halite.follow.get("https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.2.0/clusterctl-linux-amd64") do |response|
     Log.info { "clusterctl response: #{response}" }
     File.write("clusterctl", response.body_io)
   end
@@ -45,7 +45,7 @@ task "cluster_api_setup" do |_, args|
 
   create_cluster_file = "#{current_dir}/capi.yaml"
 
-  create_cluster_cmd = "clusterctl generate cluster capi-quickstart   --kubernetes-version v1.23.3   --control-plane-machine-count=3 --worker-machine-count=3  --flavor development > #{create_cluster_file} "
+  create_cluster_cmd = "clusterctl generate cluster capi-quickstart   --kubernetes-version v1.24.0   --control-plane-machine-count=3 --worker-machine-count=3  --flavor development > #{create_cluster_file} "
 
   Process.run(
     create_cluster_cmd,
@@ -63,6 +63,7 @@ end
 desc "Cleanup Cluster API"
 task "cluster_api_cleanup" do |_, args|
   current_dir = FileUtils.pwd 
+  #KubectlClient::Delete.command("cluster capi-quickstart")
   delete_cluster_file = "#{current_dir}/capi.yaml"
   KubectlClient::Delete.file("#{delete_cluster_file}")
 
