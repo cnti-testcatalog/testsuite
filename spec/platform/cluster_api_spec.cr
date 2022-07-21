@@ -28,7 +28,7 @@ describe "Cluster API" do
     end
   end
   
-  it "'clusterapi_enabled' should fail if cluster api is not installed", tags: ["cluster-api"] do
+  it "'clusterapi_enabled' should fail if cluster api is not installed", tags: ["cluster-api-fail"] do
     begin
       response_s = `./cnf-testsuite clusterapi_enabled poc`
       LOGGING.info response_s

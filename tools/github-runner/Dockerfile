@@ -30,7 +30,7 @@ RUN wget -O /tmp/kustomize.tar.gz "https://github.com/kubernetes-sigs/kustomize/
     chmod +x /tmp/kustomize && \
     mv /tmp/kustomize /usr/local/bin/
 
-RUN curl -Lo ./kind "https://kind.sigs.k8s.io/dl/v0.11.1/kind-$(uname)-amd64" && \
+RUN curl -Lo ./kind "https://kind.sigs.k8s.io/dl/v0.14.0/kind-$(uname)-amd64" && \
     chmod +x ./kind && \
     mv ./kind /usr/local/bin
 
