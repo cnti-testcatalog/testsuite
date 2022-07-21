@@ -5,7 +5,7 @@ require "totem"
 require "./utils/utils.cr"
 require "http/client"
 
-desc "Sets up helm 3.1.1"
+desc "Sets up helm 3.8.2"
 task "helm_local_install", ["cnf_directory_setup"] do |_, args|
   Log.for("verbose").info { "helm_local_install" } if check_verbose(args)
   # check if helm is installed
@@ -26,11 +26,11 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
           Log.for("verbose").debug { "full path?: #{current_dir.to_s}/#{TOOLS_DIR}/helm" }
         end
 
-        HTTP::Client.get("https://get.helm.sh/helm-v3.1.1-#{arch}.tar.gz") do |response|
-          File.write("#{current_dir}/#{TOOLS_DIR}/helm/helm-v3.1.1-#{arch}.tar.gz", response.body_io)
+        HTTP::Client.get("https://get.helm.sh/helm-v3.8.2-#{arch}.tar.gz") do |response|
+          File.write("#{current_dir}/#{TOOLS_DIR}/helm/helm-v3.8.2-#{arch}.tar.gz", response.body_io)
         end
         TarClient.untar(
-          "#{current_dir}/#{TOOLS_DIR}/helm/helm-v3.1.1-#{arch}.tar.gz",
+          "#{current_dir}/#{TOOLS_DIR}/helm/helm-v3.8.2-#{arch}.tar.gz",
           "#{current_dir}/#{TOOLS_DIR}/helm"
         )
 
@@ -52,7 +52,7 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
   # `#{BinarySingleton.helm} repo add stable https://cncf.gitlab.io/stable`
 end
 
-desc "Cleans up helm 3.1.1"
+desc "Cleans up helm 3.8.2"
 task "helm_local_cleanup"do |_, args|
   Log.for("verbose").info { "helm_local_cleanup" } if check_verbose(args)
   current_dir = FileUtils.pwd 
