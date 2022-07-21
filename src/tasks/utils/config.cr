@@ -31,7 +31,9 @@ module CNFManager
                                      helm_install_namespace: String,
                                      rolling_update_tag: String,
                                      container_names: Array(Hash(String, String )) | Nil,
-                                     white_list_container_names: Array(String)) 
+                                     white_list_container_names: Array(String),
+                                     prometheus_endpoint: String | Nil,
+                                    )
 
     def self.parse_config_yml(config_yml_path : String, airgapped=false, generate_tar_mode=false) : CNFManager::Config
       LOGGING.debug "parse_config_yml config_yml_path: #{config_yml_path}"
@@ -128,7 +130,8 @@ module CNFManager
                                helm_install_namespace: helm_install_namespace,
                                rolling_update_tag: "",
                                container_names: container_names,
-                               white_list_container_names: white_list_container_names })
+                               prometheus_endpoint: nil,
+                               white_list_container_names: white_list_container_names})
 
     end
     def self.install_method_by_config_file(config_file) : Helm::InstallMethod

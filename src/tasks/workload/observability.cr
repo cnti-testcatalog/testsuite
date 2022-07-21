@@ -59,22 +59,15 @@ task "prometheus_traffic" do |_, args|
     emoji_observability="📶☠️"
 
     Retriable.retry(on_retry: do_this_on_each_retry, times: 3, base_interval: 1.second) do
-      resp = Halite.get("https://quay.io/api/v1/repository/prometheus/prometheus/tag/?onlyActiveTags=true&limit=100")
-      prometheus_server_releases = resp.body
-      sha_list = named_sha_list(prometheus_server_releases)
-      imageids = KubectlClient::Get.all_container_repo_digests
-      match = DockerClient::K8s.local_digest_match(sha_list, imageids)
-      if match[:found]
-        service = KubectlClient::Get.service_by_digest(match[:digest])
-        service_url = service.dig("metadata", "name")
-        service_namespace = "default"
-        if service.dig?("metadata", "namespace")
-          service_namespace = service.dig("metadata", "namespace")
-        end
+      prometheus_endpoint = prometheus_endpoint_from_config(config)
+      if prometheus_endpoint == nil
+        prometheus_endpoint = identify_prometheus_endpoint_from_image_digest()
+      end
 
-        Log.info { "service_url: #{service_url}"}
+      if prometheus_endpoint != nil
         ClusterTools.install
-        prom_api_resp = ClusterTools.exec_k8s("curl http://#{service_url}.#{service_namespace}.svc.cluster.local/api/v1/targets?state=active")
+        prometheus_targets_url = "#{prometheus_endpoint}/api/v1/targets?state=active"
+        prom_api_resp = ClusterTools.exec_k8s("curl #{prometheus_targets_url}")
 
         Log.debug { "prom_api_resp: #{prom_api_resp}"}
         prom_json = JSON.parse(prom_api_resp[:output])
@@ -146,6 +139,7 @@ task "prometheus_traffic" do |_, args|
         end
       else
         upsert_skipped_task("prometheus_traffic", "⏭️  SKIPPED: Prometheus server not found #{emoji_observability}")
+        stdout_warning("If the cluster has Prometheus running, please set the prometheus_endpoint option in the testsuite configuration.")
       end
     end
   end
@@ -249,3 +243,34 @@ task "tracing" do |_, args|
   end
 end
 
+def prometheus_endpoint_from_config(config) : String | Nil
+  prometheus_endpoint = config.cnf_config[:prometheus_endpoint]
+  prometheus_endpoint = "#{prometheus_endpoint}"
+
+  return nil if prometheus_endpoint.size == 0
+
+  if !prometheus_endpoint.starts_with?("http")
+    return "http://#{prometheus_endpoint}"
+  end
+  return prometheus_endpoint
+end
+
+def identify_prometheus_endpoint_from_image_digest() : String | Nil
+  resp = Halite.get("https://quay.io/api/v1/repository/prometheus/prometheus/tag/?onlyActiveTags=true&limit=100")
+  prometheus_server_releases = resp.body
+  sha_list = named_sha_list(prometheus_server_releases)
+  imageids = KubectlClient::Get.all_container_repo_digests
+  match = DockerClient::K8s.local_digest_match(sha_list, imageids)
+
+  return nil if !match[:found]
+
+  service = KubectlClient::Get.service_by_digest(match[:digest])
+  service_url = service.dig("metadata", "name")
+  service_namespace = "default"
+  if service.dig?("metadata", "namespace")
+    service_namespace = service.dig("metadata", "namespace")
+  end
+
+  Log.info { "service_url: #{service_url}"}
+  return "http://#{service_url}.#{service_namespace}.svc.cluster.local"
+end

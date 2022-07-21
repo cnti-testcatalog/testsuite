@@ -41,6 +41,8 @@ class CnfTestSuiteYmlType
   property allowlist_helm_chart_container_names : Array(String)?
 
   # property container_names : Array(Hash(String,String))
+
+  property prometheus_endpoint : String | Nil
 end
 
 class HelmRepositoryType

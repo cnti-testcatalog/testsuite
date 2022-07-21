@@ -62,7 +62,9 @@ module CNFManager
                                             helm_install_namespace: "",
                                             rolling_update_tag: "",
                                             container_names: [{"name" =>  "", "rolling_update_test_tag" => ""}],
-                                            white_list_container_names: [""]} )
+                                            white_list_container_names: [""],
+                                            prometheus_endpoint: nil}
+                                          )
         end
         ret = yield args, config
         #todo lax mode, never returns 1
