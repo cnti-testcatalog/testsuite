@@ -319,7 +319,8 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
 
     ip_search = File.read_lines("#{destination_cnf_dir}/helm_chart.yml").take_while{|x| x.match(/NOTES:/) == nil}.reduce([] of String) do |acc, x|
       (x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/) &&
-       x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/).try &.[0] != "0.0.0.0") ? acc << x : acc
+       x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/).try &.[0] != "0.0.0.0" &&
+       x.match(/([0-9]{1,3}[\.]){3}[0-9]{1,3}/).try &.[0] != "127.0.0.1") ? acc << x : acc
     end
 
     VERBOSE_LOGGING.info "IPs: #{ip_search}" if check_verbose(args)
