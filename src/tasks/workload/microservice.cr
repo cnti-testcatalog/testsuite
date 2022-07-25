@@ -446,6 +446,26 @@ task "reasonable_image_size" do |_, args|
 end
 
 desc "Do the containers in a pod have only one process type?"
+task "process_search" do |_, args|
+  pods = KubectlClient::Get.pods
+  Log.info { "Pods: #{pods}" }
+  pods["items"].as_a.map do |pod|
+    pod_name = pod.dig("metadata", "name")
+    pod_namespace = pod.dig("metadata", "namespace")
+    containers = KubectlClient::Get.resource_containers("pod", "#{pod_name}", "#{pod_namespace}")
+    containers.as_a.map do |container|
+      container_name = container.dig("name")
+      previous_process_type = "initial_name"
+      statuses = KernelIntrospection::K8s.status_by_proc("#{pod_name}", "#{container_name}", "#{pod_namespace}")
+      statuses.map do |status|
+        puts "Proccess Name: #{status["cmdline"]}" 
+      end
+    end
+  end
+end
+
+
+desc "Do the containers in a pod have only one process type?"
 task "single_process_type" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
     Log.for("verbose").info { "single_process_type" } if check_verbose(args)
@@ -458,7 +478,6 @@ task "single_process_type" do |_, args|
       when  "deployment","statefulset","pod","replicaset", "daemonset"
         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
         pods = KubectlClient::Get.pods_by_resource(resource_yaml)
-       
         containers = KubectlClient::Get.resource_containers(kind, resource[:name], resource[:namespace])
         pods.map do |pod|
           pod_name = pod.dig("metadata", "name")
