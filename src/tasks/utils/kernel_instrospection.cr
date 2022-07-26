@@ -67,11 +67,15 @@ module KernelIntrospection
       Log.debug { "Pods: #{pods}" }
       pods["items"].as_a.map do |pod|
         pod_name = pod.dig("metadata", "name")
+        Log.info { "pod_name: #{pod_name}" }
         pod_namespace = pod.dig("metadata", "namespace")
+        Log.info { "pod_namespace: #{pod_namespace}" }
         containers = KubectlClient::Get.resource_containers("pod", "#{pod_name}", "#{pod_namespace}")
         containers.as_a.map do |container|
           container_name = container.dig("name")
           previous_process_type = "initial_name"
+          Log.info { "container_name: #{container_name}" }
+          Log.info { "pod_namespace: #{pod_namespace}" }
           statuses = KernelIntrospection::K8s.status_by_proc("#{pod_name}", "#{container_name}", "#{pod_namespace}")
           statuses.map do |status|
             Log.info {"Proccess Name: #{status["cmdline"]}" }
