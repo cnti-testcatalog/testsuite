@@ -447,21 +447,9 @@ end
 
 desc "Do the containers in a pod have only one process type?"
 task "process_search" do |_, args|
-  pods = KubectlClient::Get.pods
-  Log.info { "Pods: #{pods}" }
-  pods["items"].as_a.map do |pod|
-    pod_name = pod.dig("metadata", "name")
-    pod_namespace = pod.dig("metadata", "namespace")
-    containers = KubectlClient::Get.resource_containers("pod", "#{pod_name}", "#{pod_namespace}")
-    containers.as_a.map do |container|
-      container_name = container.dig("name")
-      previous_process_type = "initial_name"
-      statuses = KernelIntrospection::K8s.status_by_proc("#{pod_name}", "#{container_name}", "#{pod_namespace}")
-      statuses.map do |status|
-        puts "Proccess Name: #{status["cmdline"]}" 
-      end
-    end
-  end
+  pod_info = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::PROMETHEUS_PROCESS)
+  puts "pod_info: #{pod_info}"
+
 end
 
 

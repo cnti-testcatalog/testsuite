@@ -59,5 +59,33 @@ module KernelIntrospection
         stat_cmdline.merge({"cmdline" => cmdline(pod_name, container_name, pid, namespace)}) if stat_cmdline
       }.compact
     end
+
+    #todo overload with regex
+    def self.find_first_process(process_name) : (Hash(Symbol, Hash(String | Nil, String) | Hash(String, String) | JSON::Any | String) | Nil) 
+      ret = nil
+      pods = KubectlClient::Get.pods
+      Log.debug { "Pods: #{pods}" }
+      pods["items"].as_a.map do |pod|
+        pod_name = pod.dig("metadata", "name")
+        pod_namespace = pod.dig("metadata", "namespace")
+        containers = KubectlClient::Get.resource_containers("pod", "#{pod_name}", "#{pod_namespace}")
+        containers.as_a.map do |container|
+          container_name = container.dig("name")
+          previous_process_type = "initial_name"
+          statuses = KernelIntrospection::K8s.status_by_proc("#{pod_name}", "#{container_name}", "#{pod_namespace}")
+          statuses.map do |status|
+            Log.info {"Proccess Name: #{status["cmdline"]}" }
+            if status["cmdline"] =~ /#{process_name}/
+              ret = {:pod => pod, :container => container, :status => status, :cmdline => status["cmdline"]}
+              Log.info { "status found: #{ret}" }
+              break 
+            end
+          end
+          break if ret
+        end
+        break if ret
+      end
+      ret
+    end
   end
 end
