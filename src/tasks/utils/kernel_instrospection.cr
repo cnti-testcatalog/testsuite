@@ -36,12 +36,14 @@ module KernelIntrospection
 
   module K8s
     def self.proc(pod_name, container_name, namespace : String | Nil = nil)
+      Log.info { "proc namespace: #{namespace}" }
       # todo if container_name nil, dont use container (assume one container)
       resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- ls /proc/", namespace: namespace)
       KernelIntrospection.parse_proc(resp[:output].to_s)
     end
 
     def self.cmdline(pod_name, container_name, pid, namespace : String | Nil = nil)
+      Log.info { "cmdline namespace: #{namespace}" }
       # todo if container_name nil, dont use container (assume one container)
       resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- cat /proc/#{pid}/cmdline")
       resp[:output].to_s.strip
@@ -49,11 +51,13 @@ module KernelIntrospection
 
     def self.status(pod_name, container_name, pid, namespace : String | Nil = nil)
       # todo if container_name nil, dont use container (assume one container)
+      Log.info { "status namespace: #{namespace}" }
       resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- cat /proc/#{pid}/status", namespace: namespace)
       KernelIntrospection.parse_status(resp[:output].to_s)
     end
 
     def self.status_by_proc(pod_name, container_name, namespace : String | Nil = nil)
+      Log.info { "status_by_proc namespace: #{namespace}" }
       proc(pod_name, container_name, namespace).map { |pid|
         stat_cmdline = status(pod_name, container_name, pid, namespace)
         stat_cmdline.merge({"cmdline" => cmdline(pod_name, container_name, pid, namespace)}) if stat_cmdline
@@ -85,7 +89,9 @@ module KernelIntrospection
               break 
             end
           end
+          break if ret
         end
+        break if ret
       end
       ret
     end
