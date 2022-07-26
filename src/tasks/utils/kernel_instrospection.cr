@@ -45,7 +45,7 @@ module KernelIntrospection
     def self.cmdline(pod_name, container_name, pid, namespace : String | Nil = nil)
       Log.info { "cmdline namespace: #{namespace}" }
       # todo if container_name nil, dont use container (assume one container)
-      resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- cat /proc/#{pid}/cmdline")
+      resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- cat /proc/#{pid}/cmdline", namespace: namespace)
       resp[:output].to_s.strip
     end
 
