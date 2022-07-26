@@ -85,9 +85,7 @@ module KernelIntrospection
               break 
             end
           end
-          break if ret
         end
-        break if ret
       end
       ret
     end
