@@ -34,8 +34,8 @@ describe "KernelInstrospection" do
     end
   end
 
-  it "'#status_by_proc' should return all statuses for all containers in a pod", tags: ["kernel-introspection"]  do
-    AirGap.bootstrap_cluster()
+  it "'#find_first_process' should return all statuses for all containers in a pod", tags: ["kernel-introspection"]  do
+    Dockerd.install
     pod_info = KernelIntrospection::K8s.find_first_process("dockerd")
     Log.info { "pod_info: #{pod_info}"}
     (pod_info).should_not be_nil
