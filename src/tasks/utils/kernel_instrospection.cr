@@ -36,28 +36,64 @@ module KernelIntrospection
 
   module K8s
     def self.proc(pod_name, container_name, namespace : String | Nil = nil)
+      Log.info { "proc namespace: #{namespace}" }
       # todo if container_name nil, dont use container (assume one container)
       resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- ls /proc/", namespace: namespace)
       KernelIntrospection.parse_proc(resp[:output].to_s)
     end
 
     def self.cmdline(pod_name, container_name, pid, namespace : String | Nil = nil)
+      Log.info { "cmdline namespace: #{namespace}" }
       # todo if container_name nil, dont use container (assume one container)
-      resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- cat /proc/#{pid}/cmdline")
+      resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- cat /proc/#{pid}/cmdline", namespace: namespace)
       resp[:output].to_s.strip
     end
 
     def self.status(pod_name, container_name, pid, namespace : String | Nil = nil)
       # todo if container_name nil, dont use container (assume one container)
+      Log.info { "status namespace: #{namespace}" }
       resp = KubectlClient.exec("-ti #{pod_name} --container #{container_name} -- cat /proc/#{pid}/status", namespace: namespace)
       KernelIntrospection.parse_status(resp[:output].to_s)
     end
 
     def self.status_by_proc(pod_name, container_name, namespace : String | Nil = nil)
+      Log.info { "status_by_proc namespace: #{namespace}" }
       proc(pod_name, container_name, namespace).map { |pid|
         stat_cmdline = status(pod_name, container_name, pid, namespace)
         stat_cmdline.merge({"cmdline" => cmdline(pod_name, container_name, pid, namespace)}) if stat_cmdline
       }.compact
+    end
+
+    #todo overload with regex
+    def self.find_first_process(process_name) : (Hash(Symbol, Hash(String | Nil, String) | Hash(String, String) | JSON::Any | String) | Nil) 
+      ret = nil
+      pods = KubectlClient::Get.pods
+      Log.debug { "Pods: #{pods}" }
+      pods["items"].as_a.map do |pod|
+        pod_name = pod.dig("metadata", "name")
+        Log.info { "pod_name: #{pod_name}" }
+        pod_namespace = pod.dig("metadata", "namespace")
+        Log.info { "pod_namespace: #{pod_namespace}" }
+        containers = KubectlClient::Get.resource_containers("pod", "#{pod_name}", "#{pod_namespace}")
+        containers.as_a.map do |container|
+          container_name = container.dig("name")
+          previous_process_type = "initial_name"
+          Log.info { "container_name: #{container_name}" }
+          Log.info { "pod_namespace: #{pod_namespace}" }
+          statuses = KernelIntrospection::K8s.status_by_proc("#{pod_name}", "#{container_name}", "#{pod_namespace}")
+          statuses.map do |status|
+            Log.info {"Proccess Name: #{status["cmdline"]}" }
+            if status["cmdline"] =~ /#{process_name}/
+              ret = {:pod => pod, :container => container, :status => status, :cmdline => status["cmdline"]}
+              Log.info { "status found: #{ret}" }
+              break 
+            end
+          end
+          break if ret
+        end
+        break if ret
+      end
+      ret
     end
   end
 end
