@@ -66,6 +66,7 @@ task "prometheus_traffic" do |_, args|
     #   match = DockerClient::K8s.local_digest_match(sha_list, imageids)
     match = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::PROMETHEUS_PROCESS)
     if match
+      Log.info { "Match Pod: #{match}"}
       # service = KubectlClient::Get.service_by_digest(match[:digest])
       service = KubectlClient::Get.service_by_pod(match[:pod])
       service_url = service.dig("metadata", "name")

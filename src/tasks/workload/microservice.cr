@@ -469,6 +469,8 @@ task "single_process_type" do |_, args|
         containers = KubectlClient::Get.resource_containers(kind, resource[:name], resource[:namespace])
         pods.map do |pod|
           pod_name = pod.dig("metadata", "name")
+          generated_name = pod.dig?("metadata", "generateName")
+          next if (generated_name == "cluster-tools-" || generated_name == "cluster-tools-k8s-")
           containers.as_a.map do |container|
             container_name = container.dig("name")
             previous_process_type = "initial_name"

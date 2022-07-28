@@ -75,6 +75,8 @@ module KernelIntrospection
       Log.debug { "Pods: #{pods}" }
       pods["items"].as_a.map do |pod|
         pod_name = pod.dig("metadata", "name")
+        generated_name = pod.dig?("metadata", "generateName")
+        next if (generated_name == "cluster-tools-" || generated_name == "cluster-tools-k8s-")
         Log.info { "pod_name: #{pod_name}" }
         pod_namespace = pod.dig("metadata", "namespace")
         Log.info { "pod_namespace: #{pod_namespace}" }
