@@ -590,6 +590,29 @@ module KubectlClient
       matched_service
     end
 
+    def self.service_by_pod(pod : (JSON::Any | Hash(String | Nil, String)))
+      Log.info { "service_by_pod pod: #{pod}" }
+      services = KubectlClient::Get.services
+      matched_service = JSON.parse(%({}))
+      services["items"].as_a.each do |service|
+        Log.debug { "service_by_digest service: #{service}" }
+        service_labels = service.dig?("spec", "selector")
+        next unless service_labels
+        pods = KubectlClient::Get.pods
+        service_pods = KubectlClient::Get.pods_by_labels(pods["items"].as_a, service_labels.as_h)
+        service_pods.each do |service_pod|
+          Log.debug { "service_by_pod service_pod: #{service_pod}" }
+          service_name = service_pod.dig("metadata", "name")
+          Log.info { "service_by_pod service_name: #{service_name}" }
+          pod_name = pod.dig("metadata", "name")
+          Log.info { "service_by_pod pod_name: #{pod_name}" }
+          matched_service = service if service_name == pod_name
+        end
+      end
+      Log.info { "service_by_pod matched_service: #{matched_service}" }
+      matched_service
+    end
+
     def self.pods_by_service(service)
       Log.info { "pods_by_service service: #{service}" }
       service_labels = service.dig?("spec", "selector")
