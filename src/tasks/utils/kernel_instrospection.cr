@@ -65,12 +65,18 @@ module KernelIntrospection
     end
 
     #todo overload with regex
-    def self.find_first_process(process_name) : (Hash(Symbol, Hash(String | Nil, String) | Hash(String, String) | JSON::Any | String) | Nil) 
+    # def self.find_first_process(process_name) : (Hash(Symbol, Hash(String | Nil, String) | Hash(String, String) | JSON::Any | String) | Nil) 
+    def self.find_first_process(process_name) : (NamedTuple(pod: JSON::Any, 
+                                                            container: JSON::Any, 
+                                                            status: Hash(String | Nil, String) | Hash(String, String), 
+                                                            cmdline: String) | Nil) 
       ret = nil
       pods = KubectlClient::Get.pods
       Log.debug { "Pods: #{pods}" }
       pods["items"].as_a.map do |pod|
         pod_name = pod.dig("metadata", "name")
+        generated_name = pod.dig?("metadata", "generateName")
+        next if (generated_name == "cluster-tools-" || generated_name == "cluster-tools-k8s-")
         Log.info { "pod_name: #{pod_name}" }
         pod_namespace = pod.dig("metadata", "namespace")
         Log.info { "pod_namespace: #{pod_namespace}" }
@@ -84,7 +90,8 @@ module KernelIntrospection
           statuses.map do |status|
             Log.info {"Proccess Name: #{status["cmdline"]}" }
             if status["cmdline"] =~ /#{process_name}/
-              ret = {:pod => pod, :container => container, :status => status, :cmdline => status["cmdline"]}
+              # ret = {:pod => pod, :container => container, :status => status, :cmdline => status["cmdline"]}
+              ret = {pod: pod, container: container, status: status, cmdline: status["cmdline"]}
               Log.info { "status found: #{ret}" }
               break 
             end
