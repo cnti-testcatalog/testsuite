@@ -495,6 +495,8 @@ Make sure that your CNFs containers are not shareing the same [database](https:/
 ./cnf-testsuite node_drain
 ```
 
+Please note, that this test requires a cluster with atleast two schedulable nodes.
+
 <b>Remediation for failing this test</b> 
 Ensure that your CNF can be successfully rescheduled when a node fails or is [drained](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/)
 </b>

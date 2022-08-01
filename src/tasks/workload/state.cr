@@ -331,7 +331,7 @@ task "node_drain", ["install_litmus"] do |t, args|
     end
     if skipped
       Log.for("verbose").warn{"The node_drain test needs minimum 2 schedulable nodes, current number of nodes: #{KubectlClient::Get.schedulable_nodes_list.size}"} if check_verbose(args)
-      resp = upsert_skipped_task("node_drain","⏭️  🏆 SKIPPED: node_drain chaos test skipped 🗡️💀♻️")
+      resp = upsert_skipped_task("node_drain","⏭️  🏆 SKIPPED: node_drain chaos test requires the cluster to have atleast two schedulable nodes 🗡️💀♻️")
     elsif task_response
       resp = upsert_passed_task("node_drain","✔️  🏆 PASSED: node_drain chaos test passed 🗡️💀♻️")
     else
