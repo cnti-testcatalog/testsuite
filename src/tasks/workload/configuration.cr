@@ -137,8 +137,13 @@ task "ip_addresses" do |_, args|
       Dir.cd(cdir)
       parsed_resp = response.to_s
       if parsed_resp.size > 0
-        puts "HARD CODED IP ADDRESSES".colorize(:red)
-        puts parsed_resp
+        stdout_failure("Lines with hard-coded IP addresses:")
+        parsed_resp.each do |line|
+          line_parts = line.split(":")
+          file_name = line_parts.shift()
+          matching_line = line_parts.join(":").strip()
+          stdout_failure("  * In file: #{file_name}: #{matching_line}")
+        end
         resp = upsert_failed_task("ip_addresses","✖️  FAILED: IP addresses found")
       else
         resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
