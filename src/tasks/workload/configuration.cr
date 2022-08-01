@@ -135,7 +135,7 @@ task "ip_addresses" do |_, args|
         end
       end
       Dir.cd(cdir)
-      parsed_resp = response.to_s
+      parsed_resp = response.to_s.split("\n")
       if parsed_resp.size > 0
         stdout_failure("Lines with hard-coded IP addresses:")
         parsed_resp.each do |line|
