@@ -22,7 +22,7 @@ describe "Resilience Node Drain Chaos" do
       if KubectlClient::Get.schedulable_nodes_list.size > 1
         (/PASSED: node_drain chaos test passed/ =~ response_s).should_not be_nil
       else
-        (/SKIPPED: node_drain chaos test skipped/ =~ response_s).should_not be_nil
+        (/SKIPPED: node_drain chaos test requires the cluster to have atleast two/ =~ response_s).should_not be_nil
       end
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
