@@ -58,95 +58,97 @@ task "prometheus_traffic" do |_, args|
 
     emoji_observability="📶☠️"
 
-    Retriable.retry(on_retry: do_this_on_each_retry, times: 3, base_interval: 1.second) do
-      resp = Halite.get("https://quay.io/api/v1/repository/prometheus/prometheus/tag/?onlyActiveTags=true&limit=100")
-      prometheus_server_releases = resp.body
-      sha_list = named_sha_list(prometheus_server_releases)
-      imageids = KubectlClient::Get.all_container_repo_digests
-      match = DockerClient::K8s.local_digest_match(sha_list, imageids)
-      if match[:found]
-        service = KubectlClient::Get.service_by_digest(match[:digest])
-        service_url = service.dig("metadata", "name")
-        service_namespace = "default"
-        if service.dig?("metadata", "namespace")
-          service_namespace = service.dig("metadata", "namespace")
-        end
+    # Retriable.retry(on_retry: do_this_on_each_retry, times: 3, base_interval: 1.second) do
+    #   resp = Halite.get("https://quay.io/api/v1/repository/prometheus/prometheus/tag/?onlyActiveTags=true&limit=100")
+    #   prometheus_server_releases = resp.body
+    #   sha_list = named_sha_list(prometheus_server_releases)
+    #   imageids = KubectlClient::Get.all_container_repo_digests
+    #   match = DockerClient::K8s.local_digest_match(sha_list, imageids)
+    match = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::PROMETHEUS_PROCESS)
+    if match
+      Log.info { "Match Pod: #{match}"}
+      # service = KubectlClient::Get.service_by_digest(match[:digest])
+      service = KubectlClient::Get.service_by_pod(match[:pod])
+      service_url = service.dig("metadata", "name")
+      service_namespace = "default"
+      if service.dig?("metadata", "namespace")
+        service_namespace = service.dig("metadata", "namespace")
+      end
 
-        Log.info { "service_url: #{service_url}"}
-        ClusterTools.install
-        prom_api_resp = ClusterTools.exec_k8s("curl http://#{service_url}.#{service_namespace}.svc.cluster.local/api/v1/targets?state=active")
+      Log.info { "service_url: #{service_url}"}
+      ClusterTools.install
+      prom_api_resp = ClusterTools.exec_k8s("curl http://#{service_url}.#{service_namespace}.svc.cluster.local/api/v1/targets?state=active")
 
-        Log.debug { "prom_api_resp: #{prom_api_resp}"}
-        prom_json = JSON.parse(prom_api_resp[:output])
-        matched_target = false
-        active_targets = prom_json.dig("data", "activeTargets")
-        Log.debug { "active_targets: #{active_targets}"}
-        prom_target_urls = active_targets.as_a.reduce([] of String) do |acc, target|
-          acc << target.dig("scrapeUrl").as_s
-          acc << target.dig("globalUrl").as_s
-        end
-        Log.info { "prom_target_urls: #{prom_target_urls}"}
-        prom_cnf_match = CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
-          ip_match = false
-          resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name], resource_name[:namespace])
-          pods = KubectlClient::Get.pods_by_resource(resource)
-          pods.each do |pod|
-            pod_ips = pod.dig("status", "podIPs")
-            Log.info { "pod_ips: #{pod_ips}"}
-            pod_ips.as_a.each do |ip|
-              prom_target_urls.each do |url|
-                Log.info { "checking: #{url} against #{ip.dig("ip").as_s}"}
-                if url.includes?(ip.dig("ip").as_s)
-                  msg = Prometheus.open_metric_validator(url)
-                  # Immutable config maps are only supported in Kubernetes 1.19+
-                  immutable_configmap = true
+      Log.debug { "prom_api_resp: #{prom_api_resp}"}
+      prom_json = JSON.parse(prom_api_resp[:output])
+      matched_target = false
+      active_targets = prom_json.dig("data", "activeTargets")
+      Log.debug { "active_targets: #{active_targets}"}
+      prom_target_urls = active_targets.as_a.reduce([] of String) do |acc, target|
+        acc << target.dig("scrapeUrl").as_s
+        acc << target.dig("globalUrl").as_s
+      end
+      Log.info { "prom_target_urls: #{prom_target_urls}"}
+      prom_cnf_match = CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
+        ip_match = false
+        resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name], resource_name[:namespace])
+        pods = KubectlClient::Get.pods_by_resource(resource)
+        pods.each do |pod|
+          pod_ips = pod.dig("status", "podIPs")
+          Log.info { "pod_ips: #{pod_ips}"}
+          pod_ips.as_a.each do |ip|
+            prom_target_urls.each do |url|
+              Log.info { "checking: #{url} against #{ip.dig("ip").as_s}"}
+              if url.includes?(ip.dig("ip").as_s)
+                msg = Prometheus.open_metric_validator(url)
+                # Immutable config maps are only supported in Kubernetes 1.19+
+                immutable_configmap = true
 
-                  if version_less_than(KubectlClient.server_version, "1.19.0")
-                    immutable_configmap = false
-                  end
-                  if msg[:status].success?
-                    metrics_config_map = Prometheus::OpenMetricConfigMapTemplate.new(
-                      "cnf-testsuite-#{release_name}-open-metrics",
-                      true,
-                      "",
-                      immutable_configmap
-                    ).to_s
-                  else
-                    Log.info { "Openmetrics failure reason: #{msg[:output]}"}
-                    metrics_config_map = Prometheus::OpenMetricConfigMapTemplate.new(
-                      "cnf-testsuite-#{release_name}-open-metrics",
-                      false,
-                      msg[:output],
-                      immutable_configmap
-                    ).to_s
-                  end
-
-                  Log.debug { "metrics_config_map : #{metrics_config_map}" }
-                  configmap_path = "#{destination_cnf_dir}/config_maps/metrics_configmap.yml"
-                  File.write(configmap_path, "#{metrics_config_map}")
-                  KubectlClient::Delete.file(configmap_path)
-                  KubectlClient::Apply.file(configmap_path)
-                  ip_match = true
+                if version_less_than(KubectlClient.server_version, "1.19.0")
+                  immutable_configmap = false
                 end
+                if msg[:status].success?
+                  metrics_config_map = Prometheus::OpenMetricConfigMapTemplate.new(
+                    "cnf-testsuite-#{release_name}-open-metrics",
+                    true,
+                    "",
+                    immutable_configmap
+                  ).to_s
+                else
+                  Log.info { "Openmetrics failure reason: #{msg[:output]}"}
+                  metrics_config_map = Prometheus::OpenMetricConfigMapTemplate.new(
+                    "cnf-testsuite-#{release_name}-open-metrics",
+                    false,
+                    msg[:output],
+                    immutable_configmap
+                  ).to_s
+                end
+
+                Log.debug { "metrics_config_map : #{metrics_config_map}" }
+                configmap_path = "#{destination_cnf_dir}/config_maps/metrics_configmap.yml"
+                File.write(configmap_path, "#{metrics_config_map}")
+                KubectlClient::Delete.file(configmap_path)
+                KubectlClient::Apply.file(configmap_path)
+                ip_match = true
               end
             end
           end
-          ip_match 
         end
-
-        # todo 1) check if scrape_url is ip address that directly matches cnf
-        # todo 2) check if scrape_url is ip address that maps to service
-        #  -- get ip address for the service
-        #  -- match ip address to cnf ip addresses
-        # todo check if scrape_url is not an ip, assume it is a service, then do task (2)
-        if prom_cnf_match
-          upsert_passed_task("prometheus_traffic","✔️  PASSED: Your cnf is sending prometheus traffic #{emoji_observability}")
-        else
-          upsert_failed_task("prometheus_traffic", "✖️  FAILED: Your cnf is not sending prometheus traffic #{emoji_observability}")
-        end
-      else
-        upsert_skipped_task("prometheus_traffic", "⏭️  SKIPPED: Prometheus server not found #{emoji_observability}")
+        ip_match 
       end
+
+      # todo 1) check if scrape_url is ip address that directly matches cnf
+      # todo 2) check if scrape_url is ip address that maps to service
+      #  -- get ip address for the service
+      #  -- match ip address to cnf ip addresses
+      # todo check if scrape_url is not an ip, assume it is a service, then do task (2)
+      if prom_cnf_match
+        upsert_passed_task("prometheus_traffic","✔️  PASSED: Your cnf is sending prometheus traffic #{emoji_observability}")
+      else
+        upsert_failed_task("prometheus_traffic", "✖️  FAILED: Your cnf is not sending prometheus traffic #{emoji_observability}")
+      end
+    else
+      upsert_skipped_task("prometheus_traffic", "⏭️  SKIPPED: Prometheus server not found #{emoji_observability}")
     end
   end
 end

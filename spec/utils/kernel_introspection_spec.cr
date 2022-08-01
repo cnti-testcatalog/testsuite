@@ -34,6 +34,14 @@ describe "KernelInstrospection" do
     end
   end
 
+  it "'#find_first_process' should return all statuses for all containers in a pod", tags: ["kernel-introspection"]  do
+    KubectlClient::Create.namespace(TESTSUITE_NAMESPACE)
+    Dockerd.install
+    pod_info = KernelIntrospection::K8s.find_first_process("dockerd")
+    Log.info { "pod_info: #{pod_info}"}
+    (pod_info).should_not be_nil
+  end
+
 
 end
 
