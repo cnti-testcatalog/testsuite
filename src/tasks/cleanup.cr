@@ -43,7 +43,20 @@ task "samples_cleanup" do  |_, args|
 end
 
 desc "Cleans up the CNF Test Suite helper tools and containers"
-task "tools_cleanup", ["helm_local_cleanup", "sonobuoy_cleanup", "uninstall_chaosmesh","uninstall_litmus", "uninstall_dockerd", "uninstall_kubescape","uninstall_cluster_tools", "uninstall_opa"] do  |_, args|
+task "tools_cleanup", [
+    "sonobuoy_cleanup",
+    "uninstall_chaosmesh",
+    "uninstall_litmus",
+    "uninstall_dockerd",
+    "uninstall_kubescape",
+    "uninstall_cluster_tools",
+    "uninstall_opa",
+    "uninstall_falco",
+ 
+    # Helm needs to be uninstalled last to allow other uninstalls to use helm if necessary.
+    # Check this issue for details - https://github.com/cncf/cnf-testsuite/issues/1586
+    "helm_local_cleanup"
+  ] do  |_, args|
 end
 
 desc "Cleans up the CNF Test Suite sample projects, helper tools, and containers"
