@@ -13,7 +13,9 @@ describe "Platform Observability" do
 
       LOGGING.info "Installing kube_state_metrics" 
       helm = BinarySingleton.helm
-      resp = `#{helm} install kube-state-metrics stable/kube-state-metrics`
+      `#{helm} repo add prometheus-community https://prometheus-community.github.io/helm-charts`
+      `#{help} repo update`
+      resp = `#{helm} install kube-state-metrics prometheus-community/kube-state-metrics`
       LOGGING.info resp
       KubectlClient::Get.wait_for_install("kube-state-metrics")
 
@@ -78,7 +80,7 @@ describe "Platform Observability" do
     helm = BinarySingleton.helm
     begin
       Helm.helm_repo_add("metrics-server","https://kubernetes-sigs.github.io/metrics-server/")
-      result = Helm.install("--set image.repository=docker.io/bitnami/metrics-server --set image.tag=0.6.1 --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server")
+      result = Helm.install("metrics-server metrics-server/metrics-server")
       Log.info { "Metrics Server installed" }
     rescue e : Helm::CannotReuseReleaseNameError
       Log.info { "Metrics Server already installed" }
