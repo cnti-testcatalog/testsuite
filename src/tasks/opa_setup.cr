@@ -31,7 +31,7 @@ end
 desc "Uninstall OPA"
 task "uninstall_opa" do |_, args|
   Log.for("verbose").info { "uninstall_opa" } if check_verbose(args)
-  Helm.delete("opa-gatekeeper")
+  Helm.delete("opa-gatekeeper -n #{TESTSUITE_NAMESPACE}")
   KubectlClient::Delete.file("enforce-image-tag.yml")
   KubectlClient::Delete.file("constraint_template.yml")
 end
