@@ -8,7 +8,7 @@ require "./utils/utils.cr"
 OPA_OFFLINE_DIR = "#{TarClient::TAR_REPOSITORY_DIR}/gatekeeper_gatekeeper"
 
 desc "Sets up OPA in the K8s Cluster"
-task "install_opa" do |_, args|
+task "install_opa", ["helm_local_install", "create_namespace"] do |_, args|
   if args.named["offline"]?
     LOGGING.info "Intalling OPA Gatekeeper in Offline Mode"
     chart = Dir.entries(OPA_OFFLINE_DIR).first
