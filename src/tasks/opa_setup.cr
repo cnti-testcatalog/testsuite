@@ -8,15 +8,15 @@ require "./utils/utils.cr"
 OPA_OFFLINE_DIR = "#{TarClient::TAR_REPOSITORY_DIR}/gatekeeper_gatekeeper"
 
 desc "Sets up OPA in the K8s Cluster"
-task "install_opa" do |_, args|
+task "install_opa", ["helm_local_install", "create_namespace"] do |_, args|
   if args.named["offline"]?
     LOGGING.info "Intalling OPA Gatekeeper in Offline Mode"
     chart = Dir.entries(OPA_OFFLINE_DIR).first
-    Helm.install("--set auditInterval=1 --set postInstall.labelNamespace.enabled=false opa-gatekeeper #{OPA_OFFLINE_DIR}/#{chart}")
+    Helm.install("--set auditInterval=1 --set postInstall.labelNamespace.enabled=false opa-gatekeeper #{OPA_OFFLINE_DIR}/#{chart} -n #{TESTSUITE_NAMESPACE}")
   else
     Helm.helm_repo_add("gatekeeper", "https://open-policy-agent.github.io/gatekeeper/charts")
     begin
-      Helm.install("--set auditInterval=1 --set postInstall.labelNamespace.enabled=false opa-gatekeeper gatekeeper/gatekeeper")
+      Helm.install("--set auditInterval=1 --set postInstall.labelNamespace.enabled=false opa-gatekeeper gatekeeper/gatekeeper -n #{TESTSUITE_NAMESPACE}")
     rescue e : Helm::CannotReuseReleaseNameError
       stdout_warning "gatekeeper already installed"
     end
@@ -31,7 +31,7 @@ end
 desc "Uninstall OPA"
 task "uninstall_opa" do |_, args|
   Log.for("verbose").info { "uninstall_opa" } if check_verbose(args)
-  Helm.delete("opa-gatekeeper")
+  Helm.delete("opa-gatekeeper -n #{TESTSUITE_NAMESPACE}")
   KubectlClient::Delete.file("enforce-image-tag.yml")
   KubectlClient::Delete.file("constraint_template.yml")
 end
