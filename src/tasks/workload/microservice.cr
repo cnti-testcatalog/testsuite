@@ -447,11 +447,13 @@ end
 
 desc "Do the containers in a pod have only one process type?"
 task "process_search" do |_, args|
-  pod_info = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::PROMETHEUS_PROCESS)
+  # pod_info = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::PROMETHEUS_PROCESS)
+  pod_info = KernelIntrospection::K8s.find_first_process("tini")
   puts "pod_info: #{pod_info}"
+  proctree = KernelIntrospection::K8s::Node.proctree_by_pid(pod_info[:pid], pod_info[:node]) if pod_info
+  puts "proctree: #{proctree}"
 
 end
-
 
 desc "Do the containers in a pod have only one process type?"
 task "single_process_type" do |_, args|
@@ -469,27 +471,44 @@ task "single_process_type" do |_, args|
         containers = KubectlClient::Get.resource_containers(kind, resource[:name], resource[:namespace])
         pods.map do |pod|
           pod_name = pod.dig("metadata", "name")
-          generated_name = pod.dig?("metadata", "generateName")
-          next if (generated_name == "cluster-tools-" || generated_name == "cluster-tools-k8s-")
-          containers.as_a.map do |container|
-            container_name = container.dig("name")
+          # generated_name = pod.dig?("metadata", "generateName")
+          # next if (generated_name == "cluster-tools-" || generated_name == "cluster-tools-k8s-")
+          # containers.as_a.map do |container|
+          #   container_name = container.dig("name")
+          #   previous_process_type = "initial_name"
+          #   statuses = KernelIntrospection::K8s.status_by_proc(pod_name, container_name, resource[:namespace])
+
+          status = pod["status"]
+          if status["containerStatuses"]?
+              container_statuses = status["containerStatuses"].as_a
+            Log.debug { "container_statuses: #{container_statuses}" }
+            nodes = KubectlClient::Get.nodes_by_resource(pod)
+            node = nodes.first
+            container_statuses.map do |container_status|
+            container_name = container_status.dig("name")
             previous_process_type = "initial_name"
-            statuses = KernelIntrospection::K8s.status_by_proc(pod_name, container_name, resource[:namespace])
-            statuses.map do |status|
-              Log.debug { "status: #{status}" }
-              Log.info { "status name: #{status["cmdline"]}" }
-              Log.info { "previous status name: #{previous_process_type}" }
-              # Fail if more than one process type
-              if status["Name"] != previous_process_type && 
-                  previous_process_type != "initial_name"
-                fail_msg = "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{statuses.map{|x|x["cmdline"]?}.compact.uniq.join(", ")})"
-                unless fail_msgs.find{|x| x== fail_msg}
-                  puts fail_msg.colorize(:red)
-                  fail_msgs << fail_msg
+              container_id = container_status.dig("containerID").as_s
+            # statuses = KernelIntrospection::K8s::Node.statuses_by_pid(pod_name, container_name, resource[:namespace])
+              pid = ClusterTools.node_pid_by_container_id(container_id, node)
+              statuses = KernelIntrospection::K8s::Node.proctree_by_pid(pid, node)
+
+              statuses.map do |status|
+                Log.debug { "status: #{status}" }
+                Log.info { "status name: #{status["cmdline"]}" }
+                Log.info { "previous status name: #{previous_process_type}" }
+                # Fail if more than one process type
+                #todo make work if processes out of order
+                if status["Name"] != previous_process_type && 
+                    previous_process_type != "initial_name"
+                  fail_msg = "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{statuses.map{|x|x["cmdline"]?}.compact.uniq.join(", ")})"
+                  unless fail_msgs.find{|x| x== fail_msg}
+                    puts fail_msg.colorize(:red)
+                    fail_msgs << fail_msg
+                  end
+                  test_passed=false
                 end
-                test_passed=false
+                previous_process_type = status["cmdline"]
               end
-              previous_process_type = status["cmdline"]
             end
           end
         end

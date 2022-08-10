@@ -417,7 +417,7 @@ module KubectlClient
       # Get.nodes seems to have failures sometimes
       until (nodes != empty_json_any) || retries > retry_limit
         nodes = KubectlClient::Get.resource_select(KubectlClient::Get.nodes) do |item, metadata|
-          item.dig?("metadata", "name") == resourc.dig?("metadata", "name")
+          item.dig?("metadata", "name") == resource.dig?("metadata", "name")
         end
       end
       if nodes == empty_json_any
