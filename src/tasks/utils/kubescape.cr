@@ -45,67 +45,10 @@ module Kubescape
     end
   end
 
-  def self.description(test_json)
-    if test_json && test_json["description"]?
-      test_json["description"]
-    else
-      EMPTY_JSON
-    end
-  end
-
-  def self.remediation(test_json)
-    if test_json && test_json["remediation"]?
-      test_json["remediation"]
-    else
-      EMPTY_JSON
-    end
-  end
-
-  def self.parse_test_report(test_json)
-    test_json = test_json.as_h
-    test_resources = [] of TestResource
-
-    test_json["ruleReports"].as_a.map do |rule_report|
-      rule_name = rule_report["name"].as_s
-      unless rule_report["ruleResponses"] == nil
-        rule_report.as_h["ruleResponses"].as_a.map do |rule_response|
-          alert_message = rule_response.dig?("alertMessage")
-          k8s_objects = rule_response.dig("alertObject", "k8sApiObjects")
-          if k8s_objects == nil
-            nil
-          else
-            k8s_objects.as_a.map do |k8s_obj|
-              name = ""
-              namespace = nil
-              if k8s_obj.dig?("metadata", "namespace")
-                namespace = k8s_obj.dig("metadata", "namespace").as_s
-              end
-              if k8s_obj.dig?("name")
-                name = k8s_obj.dig("name").as_s
-              else
-                name = k8s_obj.dig("metadata", "name").as_s
-              end
-              test_resource = TestResource.new(
-                rule_name: rule_name,
-                kind: k8s_obj["kind"].as_s,
-                name: name,
-                namespace: namespace,
-                alert_message: alert_message ? alert_message.as_s : alert_message
-              )
-              test_resources << test_resource
-            end
-          end
-        end
-      end
-    end
-
-    remediation = test_json.dig?("remediation")
-    test_report = TestReport.new(
-      name: test_json.dig("name").as_s,
-      remediation: remediation ? remediation.as_s : remediation,
-      failed_resources: test_resources
-    )
-    test_report
+  def self.parse_test_report(test_json : JSON::Any)
+    # Abstracted this function into a different class below.
+    test_report = TestReportParser.new(report_json: test_json)
+    test_report.parse()
   end
 
   def self.filter_cnf_resources(test_report : TestReport, resource_keys : Array(String)) : TestReport
@@ -114,6 +57,107 @@ module Kubescape
     end
     test_report.failed_resources = failed_resources
     test_report
+  end
+
+  class TestReportParser
+    def initialize(report_json : JSON::Any)
+      @report_json = report_json
+      @test_resources = [] of TestResource
+    end
+
+    def parse
+      test_json = @report_json.as_h
+
+      test_json["ruleReports"].as_a.map do |rule_report|
+        rule_name = rule_report["name"].as_s
+        unless rule_report["ruleResponses"] == nil
+          rule_report.as_h["ruleResponses"].as_a.map do |rule_response|
+            parse_rule_response(rule_response, rule_name)
+          end
+        end
+      end
+
+      remediation = test_json.dig?("remediation")
+      test_report = TestReport.new(
+        name: test_json.dig("name").as_s,
+        remediation: remediation ? remediation.as_s : remediation,
+        failed_resources: @test_resources
+      )
+
+      return test_report
+    end
+
+    def parse_rule_response(rule_response : JSON::Any, rule_name : String)
+      k8s_objects = rule_response.dig("alertObject", "k8sApiObjects")
+
+      return if k8s_objects == nil
+  
+      alert_message = rule_response.dig?("alertMessage")
+      k8s_objects.as_a.map do |k8s_obj|
+        test_resource = parse_rule_response_k8s_object(k8s_obj, rule_name: rule_name, response_alert: alert_message)
+        @test_resources.push(test_resource)
+      end
+    end
+
+    def parse_rule_response_k8s_object(k8s_obj : JSON::Any, rule_name : String, response_alert : (JSON::Any | Nil)) : TestResource
+      kind = k8s_obj["kind"].as_s
+
+      # If object is a cluster-wide resource then name is directly under root key.
+      name = parse_k8s_object_name(
+        k8s_obj.dig("name"),
+        k8s_obj.dig("metadata", "name")
+      )
+
+      namespace = parse_k8s_object_namespace(k8s_obj.dig?("metadata", "namespace"))
+
+      alert_message = nil
+      if response_alert.responds_to?(:as_s?) && response_alert.as_s.size > 0
+        alert_message = response_alert.as_s
+      else
+        alert_message = get_alert_message(name: name, kind: kind, namespace: namespace)
+      end
+
+      TestResource.new(
+        rule_name: rule_name,
+        kind: kind,
+        name: name,
+        namespace: namespace,
+        alert_message: alert_message
+      )
+    end
+
+    ###
+    # Construct custom alert message
+    # Used if rule response alert message is an empty string
+
+    def get_alert_message(name : String, kind : String, namespace : Nil)
+      "Failed resource: #{kind} #{name} in #{namespace}"
+    end
+
+    def get_alert_message(name : String, kind : String, namespace : String)
+      "Failed resource: #{kind} #{name} in #{namespace}"
+    end
+
+    def parse_k8s_object_name(name : Nil, metadata_name : JSON::Any) : String
+      metadata_name.as_s
+    end
+
+    def parse_k8s_object_name(name : JSON::Any, metadata_name : Nil) : String
+      name.as_s
+    end
+
+    # Use empty string if name and metadata_name are not valid values
+    def parse_k8s_object_name(name, metadata_name) : String
+      ""
+    end
+
+    def parse_k8s_object_namespace(namespace : JSON::Any)
+      namespace.as_s
+    end
+
+    def parse_k8s_object_namespace(namespace : Nil)
+      nil
+    end
   end
 
   struct TestReport
