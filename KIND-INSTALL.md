@@ -15,9 +15,21 @@ mv ./kind /some-dir-in-your-PATH/kind
 ```
 
 ### Create a cluster
+It's recommended you setup a multi-node cluster (some tests depend on two schedulable nodes). In order to do this, you can setup a kind config to create multiple worker nodes, eg.:
 
+Create a file named 2node.kindconfig and add the following to it:
 ```
-kind create cluster
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+- role: worker
+- role: worker
+```
+
+Now you can create the cluster and use that config:
+```
+kind create cluster --config 2node.kindconfig
 ```
 
 ### Wait until Kubernetes Nodes are ready
@@ -28,7 +40,7 @@ for node in $(kind get nodes); do
 done
 ```
 
-## Install Multus and CNI plugins to Kind cluster
+## Install Multus and CNI plugins to Kind cluster (optional)
 
 Start by installing Multus in the cluster:
 
