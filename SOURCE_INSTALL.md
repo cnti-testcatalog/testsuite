@@ -16,10 +16,10 @@ This INSTALL guide will detail the minimum requirements needed for cnf-testsuite
 
 #### Requirements
 
-- **kubernetes cluster** _(Working k8s cluster, see [supported k8s and installation details](#Details-on-supported-k8s-clusters-and-installation) on installation._
+- **kubernetes multi-node cluster** _(Working k8s cluster, see [supported k8s and installation details](#Details-on-supported-k8s-clusters-and-installation) on installation._
 - **kubectl** _(run commands against k8 clusters, see [installing kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for more details._
 - **curl**
-- **helm 3.1.1** _or newer_ _(cnf-testsuite installs if not found locally)_
+- **helm 3.8.2** _or newer_ _(cnf-testsuite installs if not found locally)_
 - **git** _(used to check out code from github)_
 - **crystal-lang** version 1.0.0 _(to compile the source and build the binary, see [crystal installation](https://crystal-lang.org/install/)) for more information._
 - **shards** ([dependency manager](https://github.com/crystal-lang/shards) for crystal-lang)
@@ -38,6 +38,7 @@ This INSTALL guide will detail the minimum requirements needed for cnf-testsuite
 
 - [Access](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/) to a working [Certified K8s](https://cncf.io/ck) cluster via [KUBECONFIG environment variable](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/#set-the-kubeconfig-environment-variable). (See [K8s Getting started guide](https://kubernetes.io/docs/setup/) for options)
 - Follow the optional instructions below if you don't already have a K8s cluster setup
+- Multi-node cluster with at least 2 schedulable nodes
 
 ##### Kind
 
