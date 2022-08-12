@@ -104,8 +104,8 @@ module Kubescape
 
       # If object is a cluster-wide resource then name is directly under root key.
       name = parse_k8s_object_name(
-        k8s_obj.dig("name"),
-        k8s_obj.dig("metadata", "name")
+        k8s_obj.dig?("name"),
+        k8s_obj.dig?("metadata", "name")
       )
 
       namespace = parse_k8s_object_namespace(k8s_obj.dig?("metadata", "namespace"))
