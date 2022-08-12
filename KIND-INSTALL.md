@@ -17,7 +17,7 @@ mv ./kind /some-dir-in-your-PATH/kind
 ### Create a cluster
 It's recommended you setup a multi-node cluster (some tests depend on two schedulable nodes). In order to do this, you can setup a kind config to create multiple worker nodes, eg.:
 
-Create a file named 2node.kindconfig and add the following to it:
+Create a file named `2node.kindconfig` and add the following to it:
 ```
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
