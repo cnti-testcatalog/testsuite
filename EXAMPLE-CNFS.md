@@ -22,8 +22,7 @@ This is a preliminary list of CNF samples for each layer in the [OSI model](http
 
 ## [Layer 5 - Session](https://en.wikipedia.org/wiki/Session_layer)
 
-- [Netifi](https://www.netifi.com/getstarted-kubernetes)
-  - uses [Rsocket](https://github.com/rsocket/rsocket-go), a [layer 5/6](https://medium.com/netifi/differences-between-grpc-and-rsocket-e736c954e60) binary protocol
+- [Rsocket](https://github.com/rsocket/rsocket-go), a [layer 5/6](https://medium.com/netifi/differences-between-grpc-and-rsocket-e736c954e60) binary protocol
 
 ## [Layer 4 - Transport](https://en.wikipedia.org/wiki/Transport_layer)
 
