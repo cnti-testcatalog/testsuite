@@ -131,11 +131,11 @@ module Kubescape
     # Used if rule response alert message is an empty string
 
     def get_alert_message(name : String, kind : String, namespace : Nil)
-      "Failed resource: #{kind} #{name} in #{namespace}"
+      "Failed resource: #{kind} #{name}"
     end
 
     def get_alert_message(name : String, kind : String, namespace : String)
-      "Failed resource: #{kind} #{name} in #{namespace}"
+      "Failed resource: #{kind} #{name} in #{namespace} namespace"
     end
 
     def parse_k8s_object_name(name : Nil, metadata_name : JSON::Any) : String
