@@ -609,13 +609,11 @@ end
 desc "CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements."
 task "cni_compatible" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-
     Log.for("verbose").info { "cni_compatible" } if check_verbose(args)
-
     emoji_security="🔓🔑"
 
-    docker_condition = docker_installation.includes?("docker found") 
-    if docker_condition
+    docker_version = docker_version_info()
+    if docker_version.installed?
       ensure_kubeconfig!
       kubeconfig_orig = ENV["KUBECONFIG"]
 

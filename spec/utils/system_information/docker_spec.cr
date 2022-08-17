@@ -21,7 +21,9 @@ describe "Docker" do
     (docker_version(docker_local_response)).should contain("")
   end
 
-  it "'docker_installations()' should return the information about the docker installation", tags: ["docker-prereq"]  do
-    (docker_installation(true)).should contain("docker found")
+  it "'docker_version_info()' should return the information about the docker installation", tags: ["docker-prereq"]  do
+    docker_version = docker_version_info()
+    typeof(docker_version).should eq(DockerVersion)
+    typeof(docker_version.installed?).should eq(Bool)
   end
 end
