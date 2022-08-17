@@ -174,6 +174,16 @@ module KubectlClient
       result = ShellCmd.run(cmd, "KubectlClient::Apply.validate")
       result[:status].success?
     end
+
+    def self.namespace(name : String, kubeconfig : String | Nil = nil)
+      cmd = "kubectl create namespace #{name} --dry-run=client -o yaml | kubectl apply -f -"
+      if kubeconfig
+        cmd = "kubectl create namespace #{name} --kubeconfig #{kubeconfig} --dry-run=client -o yaml | kubectl apply --kubeconfig #{kubeconfig} -f -"
+        # cmd = "#{cmd} --kubeconfig #{kubeconfig}"
+      end
+      result = ShellCmd.run(cmd, "KubectlClient::Apply.namespace")
+      result[:status].success?
+    end
   end
 
   module Patch
