@@ -16,9 +16,9 @@ describe "Docker" do
     (docker_local_response(true)).should eq("") 
   end
 
-  it "'docker_version()' should return the information about the docker version", tags: ["docker-prereq"]  do
-    (docker_version(docker_global_response)).should match(/(([0-9]{1,3}[\.]){1,2}[0-9]{1,3})/)
-    (docker_version(docker_local_response)).should contain("")
+  it "'parse_docker_version()' should return the information about the docker version", tags: ["docker-prereq"]  do
+    (parse_docker_version(docker_global_response)).should match(/(([0-9]{1,3}[\.]){1,2}[0-9]{1,3})/)
+    (parse_docker_version(docker_local_response)).should contain("")
   end
 
   it "'docker_version_info()' should return the information about the docker installation", tags: ["docker-prereq"]  do
