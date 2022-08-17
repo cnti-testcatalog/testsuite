@@ -447,8 +447,7 @@ end
 
 desc "Do the containers in a pod have only one process type?"
 task "process_search" do |_, args|
-  # pod_info = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::PROMETHEUS_PROCESS)
-  pod_info = KernelIntrospection::K8s.find_first_process("tini")
+  pod_info = KernelIntrospection::K8s.find_first_process("sleep 30000")
   puts "pod_info: #{pod_info}"
   proctree = KernelIntrospection::K8s::Node.proctree_by_pid(pod_info[:pid], pod_info[:node]) if pod_info
   puts "proctree: #{proctree}"
@@ -461,6 +460,9 @@ task "single_process_type" do |_, args|
     Log.for("verbose").info { "single_process_type" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
     fail_msgs = [] of String
+    all_node_proc_statuses = [] of NamedTuple(node_name: String,
+                                              proc_statuses: Array(String))
+
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
       kind = resource["kind"].downcase
@@ -471,43 +473,73 @@ task "single_process_type" do |_, args|
         containers = KubectlClient::Get.resource_containers(kind, resource[:name], resource[:namespace])
         pods.map do |pod|
           pod_name = pod.dig("metadata", "name")
-          # generated_name = pod.dig?("metadata", "generateName")
-          # next if (generated_name == "cluster-tools-" || generated_name == "cluster-tools-k8s-")
-          # containers.as_a.map do |container|
-          #   container_name = container.dig("name")
-          #   previous_process_type = "initial_name"
-          #   statuses = KernelIntrospection::K8s.status_by_proc(pod_name, container_name, resource[:namespace])
+          Log.info { "pod_name: #{pod_name}" }
 
           status = pod["status"]
           if status["containerStatuses"]?
               container_statuses = status["containerStatuses"].as_a
-            Log.debug { "container_statuses: #{container_statuses}" }
-            nodes = KubectlClient::Get.nodes_by_resource(pod)
+            Log.info { "container_statuses: #{container_statuses}" }
+            Log.info { "pod_name: #{pod_name}" }
+            nodes = KubectlClient::Get.nodes_by_pod(pod)
+            Log.info { "nodes_by_resource done" }
             node = nodes.first
             container_statuses.map do |container_status|
-            container_name = container_status.dig("name")
-            previous_process_type = "initial_name"
+              container_name = container_status.dig("name")
+              previous_process_type = "initial_name"
               container_id = container_status.dig("containerID").as_s
-            # statuses = KernelIntrospection::K8s::Node.statuses_by_pid(pod_name, container_name, resource[:namespace])
+              ready = container_status.dig("ready").as_bool
+              next unless ready 
+              Log.info { "containerStatuses container_id #{container_id}" }
+
               pid = ClusterTools.node_pid_by_container_id(container_id, node)
-              statuses = KernelIntrospection::K8s::Node.proctree_by_pid(pid, node)
+              Log.info { "node pid (should never be pid 1): #{pid}" }
+
+              next unless pid
+
+              node_name = node.dig("metadata", "name").as_s
+              Log.info { "node name : #{node_name}" }
+              filtered_proc_statuses = all_node_proc_statuses.find {|x| x[:node_name] == node_name}
+              proc_statuses = filtered_proc_statuses ? filtered_proc_statuses[:proc_statuses] : nil
+              Log.debug { "node statuses : #{proc_statuses}" }
+              unless proc_statuses 
+                Log.info { "node statuses not found" }
+                pids = KernelIntrospection::K8s::Node.pids(node) 
+                Log.info { "proctree_by_pid pids: #{pids}" }
+                proc_statuses = KernelIntrospection::K8s::Node.all_statuses_by_pids(pids, node)
+                all_node_proc_statuses << {node_name: node_name,
+                                     proc_statuses:  proc_statuses} 
+
+              end
+              statuses = KernelIntrospection::K8s::Node.proctree_by_pid(pid, 
+                                                                          node, 
+                                                                          proc_statuses)
 
               statuses.map do |status|
                 Log.debug { "status: #{status}" }
-                Log.info { "status name: #{status["cmdline"]}" }
+                Log.info { "status cmdline: #{status["cmdline"]}" }
+                status_name = status["Name"].strip
+                ppid = status["PPid"].strip
+                Log.info { "status name: #{status_name}" }
                 Log.info { "previous status name: #{previous_process_type}" }
                 # Fail if more than one process type
                 #todo make work if processes out of order
-                if status["Name"] != previous_process_type && 
+                if status_name != previous_process_type && 
                     previous_process_type != "initial_name"
-                  fail_msg = "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{statuses.map{|x|x["cmdline"]?}.compact.uniq.join(", ")})"
-                  unless fail_msgs.find{|x| x== fail_msg}
-                    puts fail_msg.colorize(:red)
-                    fail_msgs << fail_msg
+                    
+                  verified = KernelIntrospection::K8s::Node.verify_single_proc_tree(ppid, 
+                                                                                    status_name, 
+                                                                                    statuses)
+                  unless verified  
+                    Log.info { "multiple proc types detected verified: #{verified}" }
+                    fail_msg = "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{statuses.map{|x|x["cmdline"]?}.compact.uniq.join(", ")})"
+                    unless fail_msgs.find{|x| x== fail_msg}
+                      puts fail_msg.colorize(:red)
+                      fail_msgs << fail_msg
+                    end
+                    test_passed=false
                   end
-                  test_passed=false
                 end
-                previous_process_type = status["cmdline"]
+                previous_process_type = status_name
               end
             end
           end

@@ -25,41 +25,6 @@ module ClusterTools
     KubectlClient.exec(cmd, namespace: TESTSUITE_NAMESPACE)
   end
 
-  # def self.exec_k8s(cli : String)
-  #   # todo change to get all pods, schedulable nodes is slow
-  #
-  #   # pods_by_nodes internally use KubectlClient::Get.pods which uses --all-namespaces option.
-  #   # So they do not have to be passed the namespace to perform operations.
-  #   pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-  #   pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools-k8s")
-  #
-  #   cluster_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
-  #   Log.info { "cluster_tools_pod_name: #{cluster_tools_pod_name}"}
-  #
-  #   full_cli = "-ti #{cluster_tools_pod_name} -- #{cli}"
-  #   Log.info { "ClusterTools exec full cli: #{full_cli}" }
-  #   KubectlClient.exec(full_cli, namespace: TESTSUITE_NAMESPACE)
-  # end
-  #
-  # def self.exec_k8s_all_nodes(cli : String)
-  #   # todo change to get all pods, schedulable nodes is slow
-  #
-  #   # pods_by_nodes internally use KubectlClient::Get.pods which uses --all-namespaces option.
-  #   # So they do not have to be passed the namespace to perform operations.
-  #   pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-  #   pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools-k8s")
-  #
-  #   resp = pods.map do |cluster_tool_pod|
-  #     cluster_tools_pod_name = cluster_tool_pod.dig?("metadata", "name") 
-  #     Log.info { "cluster_tools_pod_name: #{cluster_tools_pod_name}"}
-  #
-  #     full_cli = "-ti #{cluster_tools_pod_name} -- #{cli}"
-  #     Log.info { "ClusterTools exec full cli: #{full_cli}" }
-  #     KubectlClient.exec(full_cli, namespace: TESTSUITE_NAMESPACE)
-  #   end
-  #   Log.debug { "ClusterTools exec k8s all resp: #{resp}" }
-  #   resp
-  # end
 
   def self.exec_by_node(cli : String, node)
     # todo change to get all pods, schedulable nodes is slow
@@ -71,10 +36,10 @@ module ClusterTools
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
 
     cluster_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
-    Log.info { "cluster_tools_pod_name: #{cluster_tools_pod_name}"}
+    Log.debug { "cluster_tools_pod_name: #{cluster_tools_pod_name}"}
 
     full_cli = "-ti #{cluster_tools_pod_name} -- #{cli}"
-    Log.info { "ClusterTools exec full cli: #{full_cli}" }
+    Log.debug { "ClusterTools exec full cli: #{full_cli}" }
     exec = KubectlClient.exec(full_cli, namespace: TESTSUITE_NAMESPACE)
     Log.debug { "ClusterTools exec: #{exec}" }
     exec
@@ -90,12 +55,17 @@ module ClusterTools
     end
   end
 
-  def self.node_pid_by_container_id(container_id, node)
+  def self.node_pid_by_container_id(container_id, node) : String | Nil
     Log.info {"node_pid_by_container_id container_id: #{container_id}" }
     short_container_id = parse_container_id(container_id)
     inspect = ClusterTools.exec_by_node("crictl inspect #{short_container_id}", node)
-    Log.info {"node_pid_by_container_id inspect: #{inspect[:output]}" }
-    pid = JSON.parse(inspect[:output]).dig?("info", "pid")
+    Log.debug {"node_pid_by_container_id inspect: #{inspect[:output]}" }
+    if inspect[:status].success?
+      pid = "#{JSON.parse(inspect[:output]).dig?("info", "pid")}"
+    else
+      Log.error {"container_id not found for: #{container_id}" }
+      pid = nil
+    end
     Log.info {"node_pid_by_container_id pid: #{pid}" }
     pid 
   end
