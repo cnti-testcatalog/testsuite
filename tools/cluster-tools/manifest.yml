@@ -12,6 +12,7 @@ spec:
         name: cluster-tools
     spec:
       hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: cluster-tools
           image: conformance/cluster-tools:v1.0.0
