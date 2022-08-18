@@ -49,13 +49,12 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
     Log.info { "db_pod_ips: #{db_pod_ips}" }
 
     database_container_statuses = pod_statuses.map do |statuses| 
-      # filterd_statuses : Array(JSON::Any)
       filterd_statuses = statuses["statuses"].as_a.select{ |x|
+        x.dig("ready").as_bool &&
         x && x.dig("imageID").as_s.includes?("#{db_match[:digest]}")
       }
       resp : NamedTuple("nodeName": String, "ids" : Array(String)) = 
       {
-        # this is the worst part of crystal
         "nodeName": statuses["nodeName"].as_s, 
        "ids": filterd_statuses.map{ |s| s.dig("containerID").as_s.gsub("containerd://", "")[0..12]}
       }
@@ -64,48 +63,10 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
     end.compact.flatten
 
     resource_pod_ips = [] of Array(JSON::Any)
-    # CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
-    # resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
-    # resource_names = Helm.workload_resource_kind_names(resource_ymls)
-    # resource_names.each do |resource_name|
-    #   resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name])
-    #   pods = KubectlClient::Get.pods_by_resource(resource)
-    #   resource_pod_ips << pods.map { |pod|
-    #     pod.dig("status", "podIPs").as_a
-    #   }.flatten.compact
-    # end
-    # cnf_ips = resource_pod_ips.compact.flatten
-    # Log.info { "cnf IPs: #{cnf_ips}"}
 
     cnf_services = KubectlClient::Get.services(all_namespaces: true)
     Log.info { "first cnf_services: #{cnf_services}"}
 
-
-    # get services from helm chart
-    # todo check to see if new cnf_services is in same format as line 80
-    # cnf_services = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
-    #   namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
-    #   Log.info { "resource[kind]: #{resource["kind"]}"}
-    #   if resource["kind"] == "service"
-    #     full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace) 
-    #   end
-    #   full_resource
-    # end
-    # Log.info { "second cnf_services: #{cnf_services}"}
-
-    # helm_chart_cnf_services = CNFManager.cnf_workload_resources(nil, config) do |resource|
-    #   resource
-    #   resource_ymls = cnf_workload_resources(nil, config) do |resource|
-    # end
-
-
-
-    # cnf_services = resource_names.map { |resource_name|
-    #   case resource_name[:kind].as_s.downcase
-    #   when "service"
-    #     resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name])
-    #   end
-    # }.compact 
 
     #todo get all pod_ips by first cnf service that is not the database service
     all_service_pod_ips = [] of Array(NamedTuple(service_group_id: Int32, pod_ips: Array(JSON::Any)))
@@ -141,12 +102,6 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
       resource
     end.flatten.compact
 
-    # helm_chart_cnf_services = CNFManager.cnf_workload_resources(nil, config) do |resource|
-    #   kind = resource["kind"].as_s.downcase
-    #   if kind == "service"
-    #     KubectlClient::Get.resource(kind, resource["name"].as_s)
-    #   end
-    # end.flatten.compact
     Log.info { "helm_chart_cnf_services: #{helm_chart_cnf_services}"}
 
     cnf_service_pod_ips = [] of Array(NamedTuple(service_group_id: Int32, pod_ips: Array(JSON::Any)))
