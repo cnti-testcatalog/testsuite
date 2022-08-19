@@ -21,30 +21,26 @@ module CNFManager
 
       @@file : String
       @@file = CNFManager::Points.create_final_results_yml_name
-      Log.debug { "Results.file" }
-      continue = false
-      # LOGGING.info "file exists?:#{File.exists?(@@file)}"
-      if File.exists?("#{@@file}")
-        stdout_info "Do you wish to overwrite the #{@@file} file? If so, your previous results.yml will be lost."
-        print "(Y/N) (Default N): > "
-        if ENV["CRYSTAL_ENV"]? == "TEST"
-          continue = true
-        else
-          user_input = gets
-          if user_input == "Y" || user_input == "y"
-            continue = true
-          end
-        end
-      else
-        continue = true
-      end
-      if continue
+
+      def self.create_results_file_if_not_exists!()
+        return if File.exists?("#{@@file}")
         File.open("#{@@file}", "w") do |f|
-          YAML.dump(CNFManager::Points.template_results_yml, f)
+          YAML.dump(results_file_template, f)
         end
       end
+
       def self.file
         @@file
+      end
+
+      def self.results_file_template
+        {
+          name: "cnf testsuite",
+          status: nil,
+          exit_code: 0,
+          points: nil,
+          items: [] of YAML::Any
+        }
       end
     end
 
@@ -147,9 +143,7 @@ module CNFManager
       else
         tasks = all_task_test_names
       end
-      yaml = File.open("#{Results.file}") do |file|
-        YAML.parse(file)
-      end
+      yaml = parse_results_file()
       Log.debug { "total_points: #{tags}, found tasks: #{tasks}" }
       total = yaml["items"].as_a.reduce(0) do |acc, i|
         Log.debug { "total_points: #{tags}, #{i["name"].as_s} = #{i["points"].as_i}" }
@@ -181,9 +175,7 @@ module CNFManager
       else
         tasks = all_task_test_names
       end
-      yaml = File.open("#{Results.file}") do |file|
-        YAML.parse(file)
-      end
+      yaml = parse_results_file()
       Log.debug { "total_points: #{tags}, found tasks: #{tasks}" }
       total = yaml["items"].as_a.reduce(0) do |acc, i|
         Log.debug { "total_points: #{tags}, #{i["name"].as_s} = #{i["points"].as_i}" }
@@ -200,9 +192,7 @@ module CNFManager
     end
 
     def self.na_assigned?(task)
-      yaml = File.open("#{Results.file}") do |file|
-        YAML.parse(file)
-      end
+      yaml = parse_results_file()
       assigned = yaml["items"].as_a.find do |i|
         Log.debug { "total_points: #{task}, #{i["name"].as_s} = #{i["points"].as_i} status = #{i["status"]}" }
         if i["name"].as_s? && i["name"].as_s == task && i["status"].as_s? && i["status"] == NA 
@@ -235,9 +225,7 @@ module CNFManager
 
       Log.debug { "tasks - bonus tasks: #{tasks.size}" }
 
-      results_yaml = File.open("#{Results.file}") do |file|
-        YAML.parse(file)
-      end
+      results_yaml = parse_results_file()
 
       skipped_tests = results_yaml["items"].as_a.reduce([] of String) do |acc, test_info|
         if test_info["status"] == "skipped"
@@ -310,9 +298,7 @@ module CNFManager
       end
       Log.info { "total_max_passed tasks: #{tasks}" }
 
-      results_yaml = File.open("#{Results.file}") do |file|
-        YAML.parse(file)
-      end
+      results_yaml = parse_results_file()
 
       skipped_tests = results_yaml["items"].as_a.reduce([] of String) do |acc, test_info|
         if test_info["status"] == "skipped"
@@ -359,11 +345,17 @@ module CNFManager
       max
     end
 
-
-    def self.upsert_task(task, status, points)
+    def self.parse_results_file()
       results = File.open("#{Results.file}") do |f|
         YAML.parse(f)
       end
+
+      results
+    end
+
+    def self.upsert_task(task, status, points)
+      Results.create_results_file_if_not_exists!()
+      results = parse_results_file()
 
       result_items = results["items"].as_a
       # remove the existing entry
@@ -385,9 +377,7 @@ module CNFManager
     end
 
     def self.failed_required_tasks
-      yaml = File.open("#{Results.file}") do |file|
-        YAML.parse(file)
-      end
+      yaml = parse_results_file()
       yaml["items"].as_a.reduce([] of String) do |acc, i|
         if i["status"].as_s == "failed" &&
             i["name"].as_s? &&
@@ -477,9 +467,7 @@ module CNFManager
     end
 
     def self.all_result_test_names(results_file)
-      results = File.open(results_file) do |f|
-        YAML.parse(f)
-      end
+      results = parse_results_file()
       result_items = results["items"].as_a.reduce([] of String) do |acc, x|
         acc << x["name"].as_s
       end
@@ -487,10 +475,7 @@ module CNFManager
 
     def self.results_by_tag(tag)
       task_list = tasks_by_tag(tag)
-
-      results = File.open("#{Results.file}") do |f|
-        YAML.parse(f)
-      end
+      results = parse_results_file()
 
       found = false
       result_items = results["items"].as_a.reduce([] of YAML::Any) do |acc, x|
@@ -500,17 +485,6 @@ module CNFManager
           acc
         end
       end
-    end
-
-    def self.template_results_yml
-  #TODO add tags for category summaries
-  YAML.parse <<-END
-name: cnf testsuite
-status:
-points:
-exit_code: 0
-items: []
-END
     end
 
     def self.final_cnf_results_yml
