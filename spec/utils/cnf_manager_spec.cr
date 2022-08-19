@@ -80,7 +80,7 @@ describe "SampleUtils" do
   # end
 
   it "'upsert_task' insert task in the results file", tags: ["tasks"]  do
-    CNFManager::Points.clean_results_yml
+    TestUtils.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
@@ -90,7 +90,7 @@ describe "SampleUtils" do
   end
 
   it "'upsert_task' should find and update an existing task in the file", tags: ["tasks"]  do
-    CNFManager::Points.clean_results_yml
+    TestUtils.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
@@ -102,13 +102,13 @@ describe "SampleUtils" do
   end
 
   it "'CNFManager::Points.total_points' should sum the total amount of points in the results", tags: ["points"] do
-    CNFManager::Points.clean_results_yml
+    TestUtils.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
     (CNFManager::Points.total_points).should eq(100)
   end
 
   it "'CNFManager::Points.total_max_points' should not include na in the total potential points", tags: ["points"] do
-    CNFManager::Points.clean_results_yml
+    TestUtils.clean_results_yml
       upsert_passed_task("liveness", "✔️  PASSED: CNF had a reasonable startup time ")
     resp1 = CNFManager::Points.total_max_points
       upsert_na_task("readiness", "✔️  NA")
@@ -119,7 +119,7 @@ describe "SampleUtils" do
   end
 
   it "'CNFManager::Points.tasks_by_tag' should return the tasks assigned to a tag", tags: ["points"] do
-    CNFManager::Points.clean_results_yml
+    TestUtils.clean_results_yml
     tags = [
       "alpha_k8s_apis", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "hostport_not_used",
       "immutable_configmap", "ip_addresses", "nodeport_not_used", "secrets_used", "versioned_tag",
@@ -130,19 +130,19 @@ describe "SampleUtils" do
   end
 
   it "'CNFManager::Points.tasks_by_tag' should only return the tasks that are within their category ", tags: ["points"] do
-    CNFManager::Points.clean_results_yml
+    TestUtils.clean_results_yml
     (CNFManager::Points.tasks_by_tag("resilience").
      find{|x| x=="worker_reboot_recovery"}).should be_nil
   end
 
   it "'CNFManager::Points.tags_by_task' should return tags for a task ", tags: ["points"] do
-    CNFManager::Points.clean_results_yml
+    TestUtils.clean_results_yml
     (CNFManager::Points.tags_by_task("latest_tag").
      find{|x| x=="cert"}).should_not be_nil
   end
 
   it "'CNFManager::Points.all_task_test_names' should return all tasks names", tags: ["points"] do
-    CNFManager::Points.clean_results_yml
+    TestUtils.clean_results_yml
     tags = ["database_persistence","versioned_tag", "cni_compatible", "reasonable_image_size",
             "reasonable_startup_time", "single_process_type",
             "privileged", "non_root_user", "privilege_escalation",
@@ -174,12 +174,12 @@ describe "SampleUtils" do
   end
 
   it "'CNFManager::Points.all_result_test_names' should return the tasks assigned to a tag", tags: ["points"] do
-    CNFManager::Points.clean_results_yml
+    TestUtils.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
     (CNFManager::Points.all_result_test_names(CNFManager::Points::Results.file)).should eq(["liveness"])
   end
   it "'CNFManager::Points.results_by_tag' should return a list of results by tag", tags: ["points"] do
-    CNFManager::Points.clean_results_yml
+    TestUtils.clean_results_yml
    CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
     (CNFManager::Points.results_by_tag("resilience")).should eq([{"name" => "liveness", "status" => "passed", "type" => "essential", "points" => 100}])
     (CNFManager::Points.results_by_tag("does-not-exist")).should eq([] of YAML::Any) 
@@ -187,7 +187,7 @@ describe "SampleUtils" do
 
 
   it "'#CNFManager::Points::Results.file' should return the name of the current yaml file", tags: ["points"]  do
-    CNFManager::Points.clean_results_yml
+    TestUtils.clean_results_yml
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end

@@ -1,9 +1,9 @@
 require "spec"
 require "colorize"
 require "../src/cnf_testsuite"
+require "../src/test_utils"
 
 ENV["CRYSTAL_ENV"] = "TEST" 
-
 
 LOGGING.info "Building ./cnf-testsuite".colorize(:green)
 `crystal build --warnings none src/cnf-testsuite.cr`

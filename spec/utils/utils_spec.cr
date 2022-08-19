@@ -57,7 +57,7 @@ describe "Utils" do
  
 
   it "'upsert_skipped_task' should put a 0 in the results file", tags: ["task_runner"]  do
-    CNFManager::Points.clean_results_yml
+    TestUtils.clean_results_yml
     resp = upsert_skipped_task("ip_addresses","✖️  FAILED: IP addresses found")
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
@@ -113,7 +113,7 @@ describe "Utils" do
   end
 
   it "'single_task_runner' should put a 1 in the results file if it has an exception", tags: ["task_runner"]  do
-    CNFManager::Points.clean_results_yml
+    TestUtils.clean_results_yml
     args = Sam::Args.new(["cnf-config=./cnf-testsuite.yml"])
     task_response = CNFManager::Task.single_task_runner(args) do
       cdir = FileUtils.pwd()

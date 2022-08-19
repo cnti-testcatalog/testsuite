@@ -63,21 +63,6 @@ module CNFManager
       "results/cnf-testsuite-results-" + Time.local.to_s("%Y%m%d-%H%M%S-%L") + ".yml"
     end
 
-    def self.clean_results_yml(verbose=false)
-      if File.exists?("#{Results.file}")
-        results = File.open("#{Results.file}") do |f|
-          YAML.parse(f)
-        end
-        File.open("#{Results.file}", "w") do |f|
-          YAML.dump({name: results["name"],
-                     status: results["status"],
-                     exit_code: results["exit_code"],
-                     points: results["points"],
-                     items: [] of YAML::Any}, f)
-        end
-      end
-    end
-
     def self.dynamic_task_points(task, status_name)
       points =points_yml.find {|x| x["name"] == task}
       Log.warn { "****Warning**** task #{task} not found in points.yml".colorize(:yellow) } unless points
