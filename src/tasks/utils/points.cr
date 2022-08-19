@@ -399,21 +399,6 @@ module CNFManager
       Log.info { "upsert_task: task: #{task} has status: #{status} and is awarded: #{points} points" }
     end
 
-    def self.failed_task(task, msg)
-      upsert_task(task, FAILED, task_points(task, false))
-      stdout_failure "#{msg}"
-    end
-
-    def self.passed_task(task, msg)
-      upsert_task(task, PASSED, task_points(task))
-      stdout_success "#{msg}"
-    end
-
-    def self.skipped_task(task, msg)
-      upsert_task(task, SKIPPED, task_points(task))
-      stdout_success "#{msg}"
-    end
-
     def self.failed_required_tasks
       yaml = File.open("#{Results.file}") do |file|
         YAML.parse(file)
