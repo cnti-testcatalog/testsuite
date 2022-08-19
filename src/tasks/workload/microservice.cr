@@ -139,7 +139,7 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
         # get multiple call for a larger sample
         parsed_netstat = (1..10).map {
           sleep 10
-          netstat = KubectlClient.exec("#{cluster_tools} -t -- nsenter -t #{pid} -n netstat", namespace: TESTSUITE_NAMESPACE)
+          netstat = KubectlClient.exec("#{cluster_tools} -t -- nsenter -t #{pid} -n netstat -n", namespace: TESTSUITE_NAMESPACE)
           Log.info { "Container Netstat: #{netstat}"}
           Netstat.parse(netstat[:output])
         }.flatten.compact
@@ -188,6 +188,10 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
             Log.info { " service ip: #{spip["ip"].as_s}"}
             filtered_foreign_addresses.find do |f|
               f[:foreign_address].includes?(spip["ip"].as_s)
+              # f[:foreign_address].includes?(spip["ip"].as_s) ||
+              #   # 10-244-0-8.test-w:34702
+              #   f[:foreign_address].includes?(spip["ip"].as_s.gsub(".","-"))
+
             end
           end 
         end
