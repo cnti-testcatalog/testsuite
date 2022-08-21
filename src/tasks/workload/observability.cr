@@ -77,7 +77,8 @@ task "prometheus_traffic" do |_, args|
 
       Log.info { "service_url: #{service_url}"}
       ClusterTools.install
-      prom_api_resp = ClusterTools.exec_k8s("curl http://#{service_url}.#{service_namespace}.svc.cluster.local/api/v1/targets?state=active")
+      # prom_api_resp = ClusterTools.exec_k8s("curl http://#{service_url}.#{service_namespace}.svc.cluster.local/api/v1/targets?state=active")
+      prom_api_resp = ClusterTools.exec("curl http://#{service_url}.#{service_namespace}.svc.cluster.local/api/v1/targets?state=active")
 
       Log.debug { "prom_api_resp: #{prom_api_resp}"}
       prom_json = JSON.parse(prom_api_resp[:output])

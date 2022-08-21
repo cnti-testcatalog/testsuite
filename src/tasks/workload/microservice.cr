@@ -49,13 +49,12 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
     Log.info { "db_pod_ips: #{db_pod_ips}" }
 
     database_container_statuses = pod_statuses.map do |statuses| 
-      # filterd_statuses : Array(JSON::Any)
       filterd_statuses = statuses["statuses"].as_a.select{ |x|
+        x.dig("ready").as_bool &&
         x && x.dig("imageID").as_s.includes?("#{db_match[:digest]}")
       }
       resp : NamedTuple("nodeName": String, "ids" : Array(String)) = 
       {
-        # this is the worst part of crystal
         "nodeName": statuses["nodeName"].as_s, 
        "ids": filterd_statuses.map{ |s| s.dig("containerID").as_s.gsub("containerd://", "")[0..12]}
       }
@@ -64,48 +63,10 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
     end.compact.flatten
 
     resource_pod_ips = [] of Array(JSON::Any)
-    # CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
-    # resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
-    # resource_names = Helm.workload_resource_kind_names(resource_ymls)
-    # resource_names.each do |resource_name|
-    #   resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name])
-    #   pods = KubectlClient::Get.pods_by_resource(resource)
-    #   resource_pod_ips << pods.map { |pod|
-    #     pod.dig("status", "podIPs").as_a
-    #   }.flatten.compact
-    # end
-    # cnf_ips = resource_pod_ips.compact.flatten
-    # Log.info { "cnf IPs: #{cnf_ips}"}
 
     cnf_services = KubectlClient::Get.services(all_namespaces: true)
     Log.info { "first cnf_services: #{cnf_services}"}
 
-
-    # get services from helm chart
-    # todo check to see if new cnf_services is in same format as line 80
-    # cnf_services = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
-    #   namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
-    #   Log.info { "resource[kind]: #{resource["kind"]}"}
-    #   if resource["kind"] == "service"
-    #     full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace) 
-    #   end
-    #   full_resource
-    # end
-    # Log.info { "second cnf_services: #{cnf_services}"}
-
-    # helm_chart_cnf_services = CNFManager.cnf_workload_resources(nil, config) do |resource|
-    #   resource
-    #   resource_ymls = cnf_workload_resources(nil, config) do |resource|
-    # end
-
-
-
-    # cnf_services = resource_names.map { |resource_name|
-    #   case resource_name[:kind].as_s.downcase
-    #   when "service"
-    #     resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name])
-    #   end
-    # }.compact 
 
     #todo get all pod_ips by first cnf service that is not the database service
     all_service_pod_ips = [] of Array(NamedTuple(service_group_id: Int32, pod_ips: Array(JSON::Any)))
@@ -141,12 +102,6 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
       resource
     end.flatten.compact
 
-    # helm_chart_cnf_services = CNFManager.cnf_workload_resources(nil, config) do |resource|
-    #   kind = resource["kind"].as_s.downcase
-    #   if kind == "service"
-    #     KubectlClient::Get.resource(kind, resource["name"].as_s)
-    #   end
-    # end.flatten.compact
     Log.info { "helm_chart_cnf_services: #{helm_chart_cnf_services}"}
 
     cnf_service_pod_ips = [] of Array(NamedTuple(service_group_id: Int32, pod_ips: Array(JSON::Any)))
@@ -184,7 +139,7 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
         # get multiple call for a larger sample
         parsed_netstat = (1..10).map {
           sleep 10
-          netstat = KubectlClient.exec("#{cluster_tools} -t -- nsenter -t #{pid} -n netstat", namespace: TESTSUITE_NAMESPACE)
+          netstat = KubectlClient.exec("#{cluster_tools} -t -- nsenter -t #{pid} -n netstat -n", namespace: TESTSUITE_NAMESPACE)
           Log.info { "Container Netstat: #{netstat}"}
           Netstat.parse(netstat[:output])
         }.flatten.compact
@@ -233,6 +188,10 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
             Log.info { " service ip: #{spip["ip"].as_s}"}
             filtered_foreign_addresses.find do |f|
               f[:foreign_address].includes?(spip["ip"].as_s)
+              # f[:foreign_address].includes?(spip["ip"].as_s) ||
+              #   # 10-244-0-8.test-w:34702
+              #   f[:foreign_address].includes?(spip["ip"].as_s.gsub(".","-"))
+
             end
           end 
         end
@@ -447,11 +406,12 @@ end
 
 desc "Do the containers in a pod have only one process type?"
 task "process_search" do |_, args|
-  pod_info = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::PROMETHEUS_PROCESS)
+  pod_info = KernelIntrospection::K8s.find_first_process("sleep 30000")
   puts "pod_info: #{pod_info}"
+  proctree = KernelIntrospection::K8s::Node.proctree_by_pid(pod_info[:pid], pod_info[:node]) if pod_info
+  puts "proctree: #{proctree}"
 
 end
-
 
 desc "Do the containers in a pod have only one process type?"
 task "single_process_type" do |_, args|
@@ -459,6 +419,9 @@ task "single_process_type" do |_, args|
     Log.for("verbose").info { "single_process_type" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
     fail_msgs = [] of String
+    all_node_proc_statuses = [] of NamedTuple(node_name: String,
+                                              proc_statuses: Array(String))
+
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
       kind = resource["kind"].downcase
@@ -469,27 +432,74 @@ task "single_process_type" do |_, args|
         containers = KubectlClient::Get.resource_containers(kind, resource[:name], resource[:namespace])
         pods.map do |pod|
           pod_name = pod.dig("metadata", "name")
-          generated_name = pod.dig?("metadata", "generateName")
-          next if (generated_name == "cluster-tools-" || generated_name == "cluster-tools-k8s-")
-          containers.as_a.map do |container|
-            container_name = container.dig("name")
-            previous_process_type = "initial_name"
-            statuses = KernelIntrospection::K8s.status_by_proc(pod_name, container_name, resource[:namespace])
-            statuses.map do |status|
-              Log.debug { "status: #{status}" }
-              Log.info { "status name: #{status["cmdline"]}" }
-              Log.info { "previous status name: #{previous_process_type}" }
-              # Fail if more than one process type
-              if status["Name"] != previous_process_type && 
-                  previous_process_type != "initial_name"
-                fail_msg = "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{statuses.map{|x|x["cmdline"]?}.compact.uniq.join(", ")})"
-                unless fail_msgs.find{|x| x== fail_msg}
-                  puts fail_msg.colorize(:red)
-                  fail_msgs << fail_msg
-                end
-                test_passed=false
+          Log.info { "pod_name: #{pod_name}" }
+
+          status = pod["status"]
+          if status["containerStatuses"]?
+              container_statuses = status["containerStatuses"].as_a
+            Log.info { "container_statuses: #{container_statuses}" }
+            Log.info { "pod_name: #{pod_name}" }
+            nodes = KubectlClient::Get.nodes_by_pod(pod)
+            Log.info { "nodes_by_resource done" }
+            node = nodes.first
+            container_statuses.map do |container_status|
+              container_name = container_status.dig("name")
+              previous_process_type = "initial_name"
+              container_id = container_status.dig("containerID").as_s
+              ready = container_status.dig("ready").as_bool
+              next unless ready 
+              Log.info { "containerStatuses container_id #{container_id}" }
+
+              pid = ClusterTools.node_pid_by_container_id(container_id, node)
+              Log.info { "node pid (should never be pid 1): #{pid}" }
+
+              next unless pid
+
+              node_name = node.dig("metadata", "name").as_s
+              Log.info { "node name : #{node_name}" }
+              filtered_proc_statuses = all_node_proc_statuses.find {|x| x[:node_name] == node_name}
+              proc_statuses = filtered_proc_statuses ? filtered_proc_statuses[:proc_statuses] : nil
+              Log.debug { "node statuses : #{proc_statuses}" }
+              unless proc_statuses 
+                Log.info { "node statuses not found" }
+                pids = KernelIntrospection::K8s::Node.pids(node) 
+                Log.info { "proctree_by_pid pids: #{pids}" }
+                proc_statuses = KernelIntrospection::K8s::Node.all_statuses_by_pids(pids, node)
+                all_node_proc_statuses << {node_name: node_name,
+                                     proc_statuses:  proc_statuses} 
+
               end
-              previous_process_type = status["cmdline"]
+              statuses = KernelIntrospection::K8s::Node.proctree_by_pid(pid, 
+                                                                          node, 
+                                                                          proc_statuses)
+
+              statuses.map do |status|
+                Log.debug { "status: #{status}" }
+                Log.info { "status cmdline: #{status["cmdline"]}" }
+                status_name = status["Name"].strip
+                ppid = status["PPid"].strip
+                Log.info { "status name: #{status_name}" }
+                Log.info { "previous status name: #{previous_process_type}" }
+                # Fail if more than one process type
+                #todo make work if processes out of order
+                if status_name != previous_process_type && 
+                    previous_process_type != "initial_name"
+                    
+                  verified = KernelIntrospection::K8s::Node.verify_single_proc_tree(ppid, 
+                                                                                    status_name, 
+                                                                                    statuses)
+                  unless verified  
+                    Log.info { "multiple proc types detected verified: #{verified}" }
+                    fail_msg = "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{statuses.map{|x|x["cmdline"]?}.compact.uniq.join(", ")})"
+                    unless fail_msgs.find{|x| x== fail_msg}
+                      puts fail_msg.colorize(:red)
+                      fail_msgs << fail_msg
+                    end
+                    test_passed=false
+                  end
+                end
+                previous_process_type = status_name
+              end
             end
           end
         end

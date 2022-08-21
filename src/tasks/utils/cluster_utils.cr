@@ -25,26 +25,55 @@ module ClusterTools
     KubectlClient.exec(cmd, namespace: TESTSUITE_NAMESPACE)
   end
 
-  def self.exec_k8s(cli : String)
+
+  def self.exec_by_node(cli : String, node)
     # todo change to get all pods, schedulable nodes is slow
 
     # pods_by_nodes internally use KubectlClient::Get.pods which uses --all-namespaces option.
     # So they do not have to be passed the namespace to perform operations.
-    pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-    pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools-k8s")
+    pods = KubectlClient::Get.pods_by_nodes([node])
+    # pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools-k8s")
+    pods = KubectlClient::Get.pods_by_label(pods, "name", "cluster-tools")
 
     cluster_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
-    Log.info { "cluster_tools_pod_name: #{cluster_tools_pod_name}"}
+    Log.debug { "cluster_tools_pod_name: #{cluster_tools_pod_name}"}
 
     full_cli = "-ti #{cluster_tools_pod_name} -- #{cli}"
-    Log.info { "ClusterTools exec full cli: #{full_cli}" }
-    KubectlClient.exec(full_cli, namespace: TESTSUITE_NAMESPACE)
+    Log.debug { "ClusterTools exec full cli: #{full_cli}" }
+    exec = KubectlClient.exec(full_cli, namespace: TESTSUITE_NAMESPACE)
+    Log.debug { "ClusterTools exec: #{exec}" }
+    exec
+  end
+
+  # todo make compatible with other runtimes
+  def self.parse_container_id(container_id : String)
+    Log.info { "parse_container_id container_id: #{container_id}" }
+    if container_id =~ /containerd/
+      container_id.gsub("containerd://", "")[0..13] 
+    else
+      container_id
+    end
+  end
+
+  def self.node_pid_by_container_id(container_id, node) : String | Nil
+    Log.info {"node_pid_by_container_id container_id: #{container_id}" }
+    short_container_id = parse_container_id(container_id)
+    inspect = ClusterTools.exec_by_node("crictl inspect #{short_container_id}", node)
+    Log.debug {"node_pid_by_container_id inspect: #{inspect[:output]}" }
+    if inspect[:status].success?
+      pid = "#{JSON.parse(inspect[:output]).dig?("info", "pid")}"
+    else
+      Log.error {"container_id not found for: #{container_id}" }
+      pid = nil
+    end
+    Log.info {"node_pid_by_container_id pid: #{pid}" }
+    pid 
   end
 
   def self.wait_for_cluster_tools
     Log.info { "ClusterTools wait_for_cluster_tools" }
     KubectlClient::Get.resource_wait_for_install("Daemonset", "cluster-tools", namespace: TESTSUITE_NAMESPACE)
-    KubectlClient::Get.resource_wait_for_install("Daemonset", "cluster-tools-k8s", namespace: TESTSUITE_NAMESPACE)
+    # KubectlClient::Get.resource_wait_for_install("Daemonset", "cluster-tools-k8s", namespace: TESTSUITE_NAMESPACE)
   end
 
   # https://windsock.io/explaining-docker-image-ids/
