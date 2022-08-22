@@ -13,6 +13,25 @@ namespace "platform" do
     stdout_score("platform:observability")
   end
 
+  desc "Do the containers in a pod have only one process type?"
+  task "process_search" do |_, args|
+    pods = KubectlClient::Get.pods
+    Log.info { "Pods: #{pods}" }
+    pods["items"].as_a.map do |pod|
+      pod_name = pod.dig("metadata", "name")
+      pod_namespace = pod.dig("metadata", "namespace")
+      containers = KubectlClient::Get.resource_containers("pod", "#{pod_name}", "#{pod_namespace}")
+      containers.as_a.map do |container|
+        container_name = container.dig("name")
+        previous_process_type = "initial_name"
+        statuses = KernelIntrospection::K8s.status_by_proc("#{pod_name}", "#{container_name}", "#{pod_namespace}")
+        statuses.map do |status|
+          puts "Proccess Name: #{status["cmdline"]}" 
+        end
+      end
+    end
+  end
+
   desc "Does the Platform have Kube State Metrics installed"
   task "kube_state_metrics" do |_, args|
     unless check_poc(args)
@@ -26,30 +45,33 @@ namespace "platform" do
       next
     end
     Log.info { "Running POC: kube_state_metrics" }
-    Retriable.retry do
-      task_response = CNFManager::Task.task_runner(args) do |args|
-        current_dir = FileUtils.pwd
+    found = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::STATE_METRICS_PROCESS)
+    Log.info { "Found Pod: #{found}" }
+     # Retriable.retry do
+    #   task_response = CNFManager::Task.task_runner(args) do |args|
+    #     current_dir = FileUtils.pwd
 
-        # state_metric_releases is available at the url below
-        # curl -L -s https://quay.io/api/v1/repository/coreos/kube-state-metrics/tag/?limit=100
-        resp = Halite.get("https://quay.io/api/v1/repository/coreos/kube-state-metrics/tag/?limit=100")
-        state_metric_releases = resp.body
+    #     # state_metric_releases is available at the url below
+    #     # curl -L -s https://quay.io/api/v1/repository/coreos/kube-state-metrics/tag/?limit=100
+    #     resp = Halite.get("https://quay.io/api/v1/repository/coreos/kube-state-metrics/tag/?limit=100")
+    #     state_metric_releases = resp.body
 
-        # Get the sha hash for the kube-state-metrics container
-        sha_list = named_sha_list(state_metric_releases)
-        Log.debug { "sha_list: #{sha_list}" }
+    #     # Get the sha hash for the kube-state-metrics container
+    #     sha_list = named_sha_list(state_metric_releases)
+    #     Log.debug { "sha_list: #{sha_list}" }
 
-        # find hash for image
-        imageids = KubectlClient::Get.all_container_repo_digests
-        Log.debug { "imageids: #{imageids}" }
-        found = false
-        release_name = ""
-        sha_list.each do |x|
-          if imageids.find{|i| i.includes?(x["manifest_digest"])}
-            found = true
-            release_name = x["name"]
-          end
-        end
+    #     # find hash for image
+    #     imageids = KubectlClient::Get.all_container_repo_digests
+    #     Log.debug { "imageids: #{imageids}" }
+    #     found = false
+    #     release_name = ""
+    #     sha_list.each do |x|
+    #       if imageids.find{|i| i.includes?(x["manifest_digest"])}
+    #         found = true
+    #         release_name = x["name"]
+    #       end
+    #     end
+    release_name = "test"
         if found
           emoji_kube_state_metrics="📶☠️"
           upsert_passed_task("kube_state_metrics","✔️  PASSED: Your platform is using the #{release_name} release for kube state metrics #{emoji_kube_state_metrics}")
@@ -58,8 +80,6 @@ namespace "platform" do
           upsert_failed_task("kube_state_metrics", "✖️  FAILED: Your platform does not have kube state metrics installed #{emoji_kube_state_metrics}")
         end
       end
-    end
-  end
 
   desc "Does the Platform have a Node Exporter installed"
   task "node_exporter" do |_, args|
