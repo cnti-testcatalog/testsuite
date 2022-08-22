@@ -13,25 +13,6 @@ namespace "platform" do
     stdout_score("platform:observability")
   end
 
-  desc "Do the containers in a pod have only one process type?"
-  task "process_search" do |_, args|
-    pods = KubectlClient::Get.pods
-    Log.info { "Pods: #{pods}" }
-    pods["items"].as_a.map do |pod|
-      pod_name = pod.dig("metadata", "name")
-      pod_namespace = pod.dig("metadata", "namespace")
-      containers = KubectlClient::Get.resource_containers("pod", "#{pod_name}", "#{pod_namespace}")
-      containers.as_a.map do |container|
-        container_name = container.dig("name")
-        previous_process_type = "initial_name"
-        statuses = KernelIntrospection::K8s.status_by_proc("#{pod_name}", "#{container_name}", "#{pod_namespace}")
-        statuses.map do |status|
-          puts "Proccess Name: #{status["cmdline"]}" 
-        end
-      end
-    end
-  end
-
   desc "Does the Platform have Kube State Metrics installed"
   task "kube_state_metrics" do |_, args|
     unless check_poc(args)
@@ -47,30 +28,7 @@ namespace "platform" do
     Log.info { "Running POC: kube_state_metrics" }
     found = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::STATE_METRICS_PROCESS)
     Log.info { "Found Pod: #{found}" }
-     # Retriable.retry do
-    #   task_response = CNFManager::Task.task_runner(args) do |args|
-    #     current_dir = FileUtils.pwd
 
-    #     # state_metric_releases is available at the url below
-    #     # curl -L -s https://quay.io/api/v1/repository/coreos/kube-state-metrics/tag/?limit=100
-    #     resp = Halite.get("https://quay.io/api/v1/repository/coreos/kube-state-metrics/tag/?limit=100")
-    #     state_metric_releases = resp.body
-
-    #     # Get the sha hash for the kube-state-metrics container
-    #     sha_list = named_sha_list(state_metric_releases)
-    #     Log.debug { "sha_list: #{sha_list}" }
-
-    #     # find hash for image
-    #     imageids = KubectlClient::Get.all_container_repo_digests
-    #     Log.debug { "imageids: #{imageids}" }
-    #     found = false
-    #     release_name = ""
-    #     sha_list.each do |x|
-    #       if imageids.find{|i| i.includes?(x["manifest_digest"])}
-    #         found = true
-    #         release_name = x["name"]
-    #       end
-    #     end
     release_name = "test"
         if found
           emoji_kube_state_metrics="📶☠️"
@@ -268,89 +226,90 @@ end
     Retriable.retry do
       task_response = CNFManager::Task.task_runner(args) do |args|
 
+        found = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::METRICS_SERVER)
         #Select the first node that isn't a master and is also schedulable
         #worker_nodes = `kubectl get nodes --selector='!node-role.kubernetes.io/master' -o 'go-template={{range .items}}{{$taints:=""}}{{range .spec.taints}}{{if eq .effect "NoSchedule"}}{{$taints = print $taints .key ","}}{{end}}{{end}}{{if not $taints}}{{.metadata.name}}{{ "\\n"}}{{end}}{{end}}'`
         #worker_node = worker_nodes.split("\n")[0]
 
         # Install and find CRI Tools name
-        ClusterTools.install
-        cluster_tools_pod = ClusterTools.pod_name
-        Log.debug { "cluster_tools_pod: #{cluster_tools_pod}" }
-
-        # Fetch id sha256 sums for all repo_digests https://github.com/docker/distribution/issues/1662
-        repo_digest_list = KubectlClient::Get.all_container_repo_digests
-        Log.info { "container_repo_digests: #{repo_digest_list}" }
-        id_sha256_list = repo_digest_list.reduce([] of String) do |acc, repo_digest|
-          Log.debug { "repo_digest: #{repo_digest}" }
-          cricti = KubectlClient.exec("-ti #{cluster_tools_pod} -- crictl inspecti #{repo_digest}", namespace: TESTSUITE_NAMESPACE)
-          begin
-            parsed_json = JSON.parse(cricti[:output])
-            acc << parsed_json["status"]["id"].as_s
-          rescue
-            Log.error { "cricti not valid json: #{cricti[:output]}" }
-            acc
-          end
-        end
-        Log.info { "id_sha256_list: #{id_sha256_list}" }
-
-        # Fetch image id sha256sums available for all upstream node-exporter releases
-        resp = Halite.get("https://registry.hub.docker.com/v2/repositories/bitnami/metrics-server/tags?page=1")
-        metrics_server_releases = resp.body
-        tag_list = named_sha_list(metrics_server_releases)
-        Log.info { "tag_list: #{tag_list}" }
-        if ENV["DOCKERHUB_USERNAME"]? && ENV["DOCKERHUB_PASSWORD"]?
-            target_ns_repo = "bitnami/metrics-server"
-          params = "service=registry.docker.io&scope=repository:#{target_ns_repo}:pull"
-
-          # token is available at the url below
-          # curl --user "#{ENV["DOCKERHUB_USERNAME"]}:#{ENV["DOCKERHUB_PASSWORD"]}" "https://auth.docker.io/token?#{params}"
-          resp = Halite.basic_auth(user: ENV["DOCKERHUB_USERNAME"], pass: ENV["DOCKERHUB_PASSWORD"]).
-            get("https://auth.docker.io/token?#{params}")
-          token = resp.body
-          if token =~ /incorrect username/
-            Log.error { "error: #{token}" }
-          end
-          parsed_token = JSON.parse(token)
-          release_id_list = tag_list.reduce([] of Hash(String, String)) do |acc, tag|
-            Log.debug { "tag: #{tag}" }
-            tag = tag["name"]
-
-            # image_id is available at the url below
-            #
-            # curl -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-            #      -H "Authorization:Bearer #{parsed_token["token"].as_s}" \
-            #      "https://registry-1.docker.io/v2/#{target_ns_repo}/manifests/#{tag}"
-            #
-            resp = Halite.auth("Bearer #{parsed_token["token"].as_s}").
-              get("https://registry-1.docker.io/v2/#{target_ns_repo}/manifests/#{tag}", 
-                  headers: {Accept: "application/vnd.docker.distribution.manifest.v2+json"})
-            image_id = resp.body
-            parsed_image = JSON.parse(image_id)
-
-            Log.debug { "parsed_image config digest #{parsed_image["config"]["digest"]}" }
-            if parsed_image["config"]["digest"]?
-                acc << {"name" => tag, "digest"=> parsed_image["config"]["digest"].as_s}
-            else
-              acc
-            end
-          end
-        else
-          puts "DOCKERHUB_USERNAME & DOCKERHUB_PASSWORD Must be set."
-          exit 1
-        end
-        Log.info { "Release id sha256sum list: #{release_id_list}" }
-
-        found = false
+        # ClusterTools.install
+        # cluster_tools_pod = ClusterTools.pod_name
+        # Log.debug { "cluster_tools_pod: #{cluster_tools_pod}" }
+        #
+        # # Fetch id sha256 sums for all repo_digests https://github.com/docker/distribution/issues/1662
+        # repo_digest_list = KubectlClient::Get.all_container_repo_digests
+        # Log.info { "container_repo_digests: #{repo_digest_list}" }
+        # id_sha256_list = repo_digest_list.reduce([] of String) do |acc, repo_digest|
+        #   Log.debug { "repo_digest: #{repo_digest}" }
+        #   cricti = KubectlClient.exec("-ti #{cluster_tools_pod} -- crictl inspecti #{repo_digest}", namespace: TESTSUITE_NAMESPACE)
+        #   begin
+        #     parsed_json = JSON.parse(cricti[:output])
+        #     acc << parsed_json["status"]["id"].as_s
+        #   rescue
+        #     Log.error { "cricti not valid json: #{cricti[:output]}" }
+        #     acc
+        #   end
+        # end
+        # Log.info { "id_sha256_list: #{id_sha256_list}" }
+        #
+        # # Fetch image id sha256sums available for all upstream node-exporter releases
+        # resp = Halite.get("https://registry.hub.docker.com/v2/repositories/bitnami/metrics-server/tags?page=1")
+        # metrics_server_releases = resp.body
+        # tag_list = named_sha_list(metrics_server_releases)
+        # Log.info { "tag_list: #{tag_list}" }
+        # if ENV["DOCKERHUB_USERNAME"]? && ENV["DOCKERHUB_PASSWORD"]?
+        #     target_ns_repo = "bitnami/metrics-server"
+        #   params = "service=registry.docker.io&scope=repository:#{target_ns_repo}:pull"
+        #
+        #   # token is available at the url below
+        #   # curl --user "#{ENV["DOCKERHUB_USERNAME"]}:#{ENV["DOCKERHUB_PASSWORD"]}" "https://auth.docker.io/token?#{params}"
+        #   resp = Halite.basic_auth(user: ENV["DOCKERHUB_USERNAME"], pass: ENV["DOCKERHUB_PASSWORD"]).
+        #     get("https://auth.docker.io/token?#{params}")
+        #   token = resp.body
+        #   if token =~ /incorrect username/
+        #     Log.error { "error: #{token}" }
+        #   end
+        #   parsed_token = JSON.parse(token)
+        #   release_id_list = tag_list.reduce([] of Hash(String, String)) do |acc, tag|
+        #     Log.debug { "tag: #{tag}" }
+        #     tag = tag["name"]
+        #
+        #     # image_id is available at the url below
+        #     #
+        #     # curl -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+        #     #      -H "Authorization:Bearer #{parsed_token["token"].as_s}" \
+        #     #      "https://registry-1.docker.io/v2/#{target_ns_repo}/manifests/#{tag}"
+        #     #
+        #     resp = Halite.auth("Bearer #{parsed_token["token"].as_s}").
+        #       get("https://registry-1.docker.io/v2/#{target_ns_repo}/manifests/#{tag}", 
+        #           headers: {Accept: "application/vnd.docker.distribution.manifest.v2+json"})
+        #     image_id = resp.body
+        #     parsed_image = JSON.parse(image_id)
+        #
+        #     Log.debug { "parsed_image config digest #{parsed_image["config"]["digest"]}" }
+        #     if parsed_image["config"]["digest"]?
+        #         acc << {"name" => tag, "digest"=> parsed_image["config"]["digest"].as_s}
+        #     else
+        #       acc
+        #     end
+        #   end
+        # else
+        #   puts "DOCKERHUB_USERNAME & DOCKERHUB_PASSWORD Must be set."
+        #   exit 1
+        # end
+        # Log.info { "Release id sha256sum list: #{release_id_list}" }
+        #
+        # found = false
         release_name = ""
-        release_id_list.each do |x|
-          if id_sha256_list.find{|i| i.includes?(x["digest"])}
-            found = true
-            release_name = x["name"]
-          end
-        end
+        # release_id_list.each do |x|
+        #   if id_sha256_list.find{|i| i.includes?(x["digest"])}
+        #     found = true
+        #     release_name = x["name"]
+        #   end
+        # end
         if found
           emoji_metrics_server="📶☠️"
-          upsert_passed_task("metrics_server","✔️  PASSED: Your platform is using the #{release_name} release for the metrics server #{emoji_metrics_server}")
+          upsert_passed_task("metrics_server","✔️  PASSED: Your platform is using the metrics server #{emoji_metrics_server}")
         else
           emoji_metrics_server="📶☠️"
           upsert_failed_task("metrics_server", "✖️  FAILED: Your platform does not have the metrics server installed #{emoji_metrics_server}")

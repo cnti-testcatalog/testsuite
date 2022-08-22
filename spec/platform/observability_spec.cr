@@ -14,7 +14,7 @@ describe "Platform Observability" do
       LOGGING.info "Installing kube_state_metrics" 
       helm = BinarySingleton.helm
       `#{helm} repo add prometheus-community https://prometheus-community.github.io/helm-charts`
-      `#{help} repo update`
+      `#{helm} repo update`
       resp = `#{helm} install kube-state-metrics prometheus-community/kube-state-metrics`
       LOGGING.info resp
       KubectlClient::Get.wait_for_install("kube-state-metrics")
@@ -80,7 +80,7 @@ describe "Platform Observability" do
     helm = BinarySingleton.helm
     begin
       Helm.helm_repo_add("metrics-server","https://kubernetes-sigs.github.io/metrics-server/")
-      result = Helm.install("metrics-server metrics-server/metrics-server")
+      result = Helm.install("metrics-server -f spec/fixtures/metrics_values.yml metrics-server/metrics-server")
       Log.info { "Metrics Server installed" }
     rescue e : Helm::CannotReuseReleaseNameError
       Log.info { "Metrics Server already installed" }
@@ -89,7 +89,7 @@ describe "Platform Observability" do
 		  KubectlClient::Get.wait_for_install(deployment_name: "metrics-server")
       response_s = `./cnf-testsuite platform:metrics_server poc`
       LOGGING.info response_s
-      (/(PASSED){1}.*(Your platform is using the){1}.*(release for the metrics server){1}/ =~ response_s).should_not be_nil
+      (/(PASSED){1}.*(Your platform is using the metrics server){1}/ =~ response_s).should_not be_nil
   ensure
       resp = Helm.uninstall("metrics-server")
       LOGGING.info resp
