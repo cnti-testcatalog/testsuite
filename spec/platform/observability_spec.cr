@@ -46,7 +46,7 @@ describe "Platform Observability" do
       response_s = `./cnf-testsuite platform:node_exporter poc`
       LOGGING.info response_s
       if check_containerd
-        (/(PASSED){1}.*(Your platform is using the){1}.*(release for the node exporter){1}/ =~ response_s).should_not be_nil
+        (/(PASSED){1}.*(Your platform is using the node exporter){1}/ =~ response_s).should_not be_nil
       else
         (/skipping node_exporter: This test only supports the Containerd Runtime./ =~ response_s).should_not be_nil
       end
@@ -70,7 +70,7 @@ describe "Platform Observability" do
 
     response_s = `./cnf-testsuite platform:prometheus_adapter poc`
     Log.info { response_s }
-    (/(PASSED){1}.*(Your platform is using the){1}.*(release for the prometheus adapter){1}/ =~ response_s).should_not be_nil
+    (/(PASSED){1}.*(Your platform is using the prometheus adapter){1}/ =~ response_s).should_not be_nil
   ensure
     resp = Helm.uninstall("prometheus-adapter")
   end
