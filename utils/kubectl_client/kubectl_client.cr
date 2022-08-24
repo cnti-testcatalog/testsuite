@@ -174,6 +174,16 @@ module KubectlClient
       result = ShellCmd.run(cmd, "KubectlClient::Apply.validate")
       result[:status].success?
     end
+
+    def self.namespace(name : String, kubeconfig : String | Nil = nil)
+      cmd = "kubectl create namespace #{name} --dry-run=client -o yaml | kubectl apply -f -"
+      if kubeconfig
+        cmd = "kubectl create namespace #{name} --kubeconfig #{kubeconfig} --dry-run=client -o yaml | kubectl apply --kubeconfig #{kubeconfig} -f -"
+        # cmd = "#{cmd} --kubeconfig #{kubeconfig}"
+      end
+      result = ShellCmd.run(cmd, "KubectlClient::Apply.namespace")
+      result[:status].success?
+    end
   end
 
   module Patch
@@ -365,6 +375,26 @@ module KubectlClient
       end
     end
 
+    def self.resource_select(&block)
+      Log.info { "resource_select" }
+      if nodes["items"]?
+          Log.info { "nodes size: #{nodes["items"].size}" }
+          Log.info { "nodes : #{nodes}" }
+        items = nodes["items"].as_a.select do |item|
+          if nodes["metadata"]?
+            metadata = nodes["metadata"]
+          else
+            metadata = JSON.parse(%({}))
+          end
+          yield item, metadata
+        end
+        Log.debug { "resource_map items : #{items}" }
+        items
+      else
+         [] of JSON::Any
+      end
+    end
+
     # todo put this in a manifest module
     def self.resource_select(k8s_manifest, &block)
       if nodes["items"]?
@@ -410,15 +440,40 @@ module KubectlClient
     end
 
     def self.nodes_by_resource(resource) : Array(JSON::Any)
+      Log.info { "nodes_by_resource resource name: #{resource.dig?("metadata", "name")}" }
       retry_limit = 50
       retries = 1
       empty_json_any = [] of JSON::Any
       nodes = empty_json_any
       # Get.nodes seems to have failures sometimes
       until (nodes != empty_json_any) || retries > retry_limit
-        nodes = KubectlClient::Get.resource_select(KubectlClient::Get.nodes) do |item, metadata|
-          item.dig?("metadata", "name") == resourc.dig?("metadata", "name")
+        # nodes = KubectlClient::Get.resource_select(KubectlClient::Get.nodes) do |item, metadata|
+        nodes = KubectlClient::Get.resource_select() do |item, metadata|
+          item.dig?("metadata", "name") == resource.dig?("metadata", "name")
         end
+        retries = retries + 1
+      end
+      if nodes == empty_json_any
+        Log.error { "nodes empty: #{nodes}" }
+      end
+      Log.debug { "nodes: #{nodes}" }
+      nodes
+    end
+
+    def self.nodes_by_pod(pod) : Array(JSON::Any)
+      Log.info { "nodes_by_pod pod name: #{pod.dig?("metadata", "name")}" }
+      # retry_limit = 50
+      retry_limit = 3 
+      retries = 1
+      empty_json_any = [] of JSON::Any
+      nodes = empty_json_any
+      # Get.nodes seems to have failures sometimes
+      until (nodes != empty_json_any) || retries > retry_limit
+        # nodes = KubectlClient::Get.resource_select(KubectlClient::Get.nodes) do |item, metadata|
+        nodes = KubectlClient::Get.resource_select() do |item, metadata|
+          item.dig?("metadata", "name") == pod.dig?("spec", "nodeName")
+        end
+        retries = retries + 1
       end
       if nodes == empty_json_any
         Log.error { "nodes empty: #{nodes}" }
@@ -428,9 +483,9 @@ module KubectlClient
     end
 
     def self.pods_by_nodes(nodes_json : Array(JSON::Any))
-      Log.info { "pods_by_node" }
+      Log.debug { "pods_by_node" }
       nodes_json.map { |item|
-        Log.info { "items labels: #{item.dig?("metadata", "labels")}" }
+        Log.debug { "items labels: #{item.dig?("metadata", "labels")}" }
         node_name = item.dig?("metadata", "labels", "kubernetes.io/hostname")
         Log.debug { "NodeName: #{node_name}" }
         pods = KubectlClient::Get.pods.as_h["items"].as_a.select do |pod|
@@ -472,7 +527,7 @@ module KubectlClient
     end
 
     def self.pods_by_labels(pods_json : Array(JSON::Any), labels : Hash(String, JSON::Any))
-      Log.info { "pods_by_label labels: #{labels}" }
+      Log.debug { "pods_by_label labels: #{labels}" }
       pods_json.select do |pod|
         if labels == Hash(String, JSON::Any).new
           match = false
@@ -494,7 +549,7 @@ module KubectlClient
     end
 
     def self.pods_by_label(pods_json : Array(JSON::Any), label_key, label_value)
-      Log.info { "pods_by_label" }
+      Log.debug { "pods_by_label" }
       pods_json.select do |pod|
         if pod.dig?("metadata", "labels", label_key) == label_value
           Log.debug { "pod: #{pod}" }

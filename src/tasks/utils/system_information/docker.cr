@@ -4,50 +4,36 @@ require "totem"
 
 # todo collection in modules similar to ohai:
 # https://github.com/chef/ohai
-def docker_installation(verbose=false)
-  gmsg = "No Global docker version found"
-  lmsg = "No Local docker version found"
-  gdocker = docker_global_response(verbose)
-  VERBOSE_LOGGING.info gdocker if verbose
-  
-  global_docker_version = docker_version(gdocker, verbose)
-   
-  if !global_docker_version.empty?
-    gmsg = "Global docker found. Version: #{global_docker_version}"
-    stdout_success gmsg
-  else
-    stdout_warning gmsg
+
+class DockerVersion
+  property global_version
+  getter global_version
+
+  property local_version
+  getter local_version
+
+  def initialize(@global_version : String, @local_version : String)
   end
+
+  def installed? : Bool
+    if local_version.empty? && global_version.empty?
+      return false
+    end
+    return true
+  end
+end
+
+def docker_version_info(verbose=false) : DockerVersion
+  gdocker = docker_global_response(verbose)
+  Log.for("verbose:global_docker_version").info { gdocker } if verbose
+  global_version = parse_docker_version(gdocker, verbose)
 
   ldocker = docker_local_response(verbose)
-  VERBOSE_LOGGING.info ldocker if verbose
-  
-  local_docker_version = docker_version(ldocker, verbose)
-   
-  if !local_docker_version.empty?
-    lmsg = "Local docker found. Version: #{local_docker_version}"
-    stdout_success lmsg
-  else
-    stdout_warning lmsg
-  end
+  Log.for("verbose:local_docker_version").info { ldocker } if verbose
+  local_version = parse_docker_version(ldocker, verbose)
 
-  # uncomment to fail the installation check
-  # global_docker_version = nil
-  # local_docker_version = nil
-  # gmsg = "No Global docker version found"
-  # lmsg = "No Local docker version found"
-  if global_docker_version.empty? && local_docker_version.empty?
-    stdout_failure "docker not found"
-    stdout_failure %Q(
-    Linux installation instructions for docker can be found here: https://docs.docker.com/engine/install 
-
-    Test to ensure the version you installed is up-to-date:
-
-      docker version
-    )
-  end
-  "#{lmsg} #{gmsg}"
-end 
+  DockerVersion.new(global_version, local_version)
+end
 
 def docker_global_response(verbose=false)
   docker_response = `docker version`
@@ -66,7 +52,7 @@ def docker_local_response(verbose=false)
   docker_response.to_s
 end
 
-def docker_version(docker_response, verbose=false)
+def parse_docker_version(docker_response, verbose=false)
   resp = docker_response.match /Version: .*([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3})/
   VERBOSE_LOGGING.info resp if verbose
   if resp

@@ -609,39 +609,36 @@ end
 desc "CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements."
 task "cni_compatible" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-
     Log.for("verbose").info { "cni_compatible" } if check_verbose(args)
-
     emoji_security="🔓🔑"
 
-    docker_condition = docker_installation.includes?("docker found") 
-    if docker_condition
+    docker_version = docker_version_info()
+    if docker_version.installed?
+      ensure_kubeconfig!
+      kubeconfig_orig = ENV["KUBECONFIG"]
 
-    ensure_kubeconfig!
-    kubeconfig_orig = ENV["KUBECONFIG"]
+      if args.named["offline"]? && args.named["offline"]? != "false"
+        offline = true
+      else
+        offline = false
+      end
 
-    if args.named["offline"]? && args.named["offline"]? != "false"
-      offline = true
-    else
-      offline = false
-    end
+      calico_cluster = setup_calico_cluster("calico-test", offline)
+      Log.info { "calico kubeconfig: #{calico_cluster.kubeconfig}" }
+      calico_cnf_passed = CNFManager.cnf_to_new_cluster(config, calico_cluster.kubeconfig, offline)
+      Log.info { "calico_cnf_passed: #{calico_cnf_passed}" }
+      puts "CNF failed to install on Calico CNI cluster".colorize(:red) unless calico_cnf_passed
 
-    calico_cluster = setup_calico_cluster("calico-test", offline)
-    Log.info { "calico kubeconfig: #{calico_cluster.kubeconfig}" }
-    calico_cnf_passed = CNFManager.cnf_to_new_cluster(config, calico_cluster.kubeconfig, offline)
-    Log.info { "calico_cnf_passed: #{calico_cnf_passed}" }
-    puts "CNF failed to install on Calico CNI cluster".colorize(:red) unless calico_cnf_passed
+      cilium_cluster = setup_cilium_cluster("cilium-test", offline)
+      cilium_cnf_passed = CNFManager.cnf_to_new_cluster(config, cilium_cluster.kubeconfig, offline)
+      Log.info { "cilium_cnf_passed: #{cilium_cnf_passed}" }
+      puts "CNF failed to install on Cilium CNI cluster".colorize(:red) unless cilium_cnf_passed
 
-    cilium_cluster = setup_cilium_cluster("cilium-test", offline)
-    cilium_cnf_passed = CNFManager.cnf_to_new_cluster(config, cilium_cluster.kubeconfig, offline)
-    Log.info { "cilium_cnf_passed: #{cilium_cnf_passed}" }
-    puts "CNF failed to install on Cilium CNI cluster".colorize(:red) unless cilium_cnf_passed
-
-    if calico_cnf_passed && cilium_cnf_passed
-      upsert_passed_task("cni_compatible", "✔️  PASSED: CNF compatible with both Calico and Cilium #{emoji_security}")
-    else
-      upsert_failed_task("cni_compatible", "✖️  FAILED: CNF not compatible with either Calico or Cillium #{emoji_security}")
-    end
+      if calico_cnf_passed && cilium_cnf_passed
+        upsert_passed_task("cni_compatible", "✔️  PASSED: CNF compatible with both Calico and Cilium #{emoji_security}")
+      else
+        upsert_failed_task("cni_compatible", "✖️  FAILED: CNF not compatible with either Calico or Cillium #{emoji_security}")
+      end
     else
       upsert_skipped_task("cni_compatible", "✖️  SKIPPED: Docker not installed #{emoji_security}")
     end

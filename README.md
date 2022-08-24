@@ -52,21 +52,21 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
 - Join the conversation on [CNCF's Slack](https://slack.cncf.io/) channels
   - [#cnf-testsuite](https://cloud-native.slack.com/archives/C01V28MLYEP)
   - [#cnf-testsuite-dev](https://cloud-native.slack.com/archives/C014TNCEX8R)
-- Join the weekly developer meetings
+- Join the weekly Office Hours meeting
 
   - Meetings every Thursday at 14:15 - 15:00 UTC (during Daylight Savings Time)
   - Meeting minutes are [here](https://docs.google.com/document/d/1IbrgjqIkOCvrrSG0DRE6X62UUZpBq-818Mn8q0nkkd0/edit)
 
-- Join the weekly [CNF Working Group meetings](https://github.com/cncf/cnf-wg#recurring-meetings)
+- Join the weekly [CNF Working Group meeting](https://github.com/cncf/cnf-wg#recurring-meetings)
 
   - Meetings on Mondays at 16:00 - 17:00 UTC
   - Meeting minutes are [here](https://docs.google.com/document/d/1YFimQftjkTUsxNGTsKdakvP7cJtJgCTqViH2kwJOrsc/edit)
 
-- Join the monthly [Telecom User Group meetings](https://github.com/cncf/telecom-user-group#meeting-time)
+- Join the monthly [Telecom User Group meeting](https://github.com/cncf/telecom-user-group#meeting-time)
   - Meetings on the 1st Mondays of the month
   - Meeting minutes are [here](https://docs.google.com/document/d/1yhtI7aiwpdAiRBKyUX6mOJDHAbjOog2mI4Ur2k27D7s/edit)
 
-- Request an Intro to the CNF Test Suite [here](https://calendly.com/cnftestsuite)
+- Request an Intro to the CNF Certification [here](https://calendly.com/cnfcertification/intro)
 
 ## Presentations
 

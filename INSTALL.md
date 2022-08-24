@@ -14,11 +14,11 @@ This INSTALL guide will detail the minimum requirements needed for cnf-testsuite
 This will detail the required minimum requirements needed in order to support cnf-testsuite.
 
 #### Minimum Requirements
-* **Kubernetes cluster** *(See [supported K8s and installation details](#Details-on-supported-k8s-clusters-and-installation) on installation.)*
+* **Kubernetes multi-node cluster** *(2 schedulable nodes minimum as a few tests require this. See [supported K8s and installation details](#Details-on-supported-k8s-clusters-and-installation) on installation.)*
 * **containerd runtime** - for K8s cluster running the CNF to be tested
 * **kubectl** *(run commands against K8s clusters, see [installing kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) for more details.)*
 * **curl**
-* **helm 3.1.1** *or newer* *(cnf-testsuite installs if not found locally)*
+* **helm 3.8.2* *or newer* *(cnf-testsuite installs if not found locally)*
 * **docker**  *(needed for the cni_compatibility test)*
 
 #### Requirements for source installation
@@ -38,12 +38,13 @@ This will detail the required minimum requirements needed in order to support cn
 <p>
 
 ##### Supported K8s Clusters
-- [Access](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/) to a working [Certified K8s](https://cncf.io/ck) cluster via [KUBECONFIG environment variable](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/#set-the-kubeconfig-environment-variable). (See [K8s Getting started guide](https://kubernetes.io/docs/setup/) for options)
+- [Access](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/) to a working [Certified K8s](https://cncf.io/ck) multi-node cluster via [KUBECONFIG environment variable](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/#set-the-kubeconfig-environment-variable). (See [K8s Getting started guide](https://kubernetes.io/docs/setup/) for options)
 -  Follow the optional instructions below if you don't already have a K8s cluster setup
+-  Minimum of 2 schedulable nodes as some tests will require more than one node to run.
 
 ##### Kind
 
-- Follow the [kind install](KIND-INSTALL.md) instructions to setup a cluster in [kind](https://kind.sigs.k8s.io/)
+- Follow the [kind install](KIND-INSTALL.md) instructions to setup a cluster in [kind](https://kind.sigs.k8s.io/).
 
 ##### CNF-Testbed
 
