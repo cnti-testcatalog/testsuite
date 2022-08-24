@@ -1,4 +1,4 @@
-FROM myoung34/github-runner:2.294.0-ubuntu-bionic
+FROM myoung34/github-runner:2.295.0-ubuntu-bionic
 
 ARG CRYSTAL_VERSION=1.0.0
 ARG CRYSTAL_URL=https://github.com/crystal-lang/crystal/releases/download
@@ -30,7 +30,7 @@ RUN wget -O /tmp/kustomize.tar.gz "https://github.com/kubernetes-sigs/kustomize/
     chmod +x /tmp/kustomize && \
     mv /tmp/kustomize /usr/local/bin/
 
-RUN curl -Lo ./kind "https://kind.sigs.k8s.io/dl/v0.14.0/kind-$(uname)-amd64" && \
+RUN curl -Lo ./kind "https://kind.sigs.k8s.io/dl/v0.13.0/kind-$(uname)-amd64" && \
     chmod +x ./kind && \
     mv ./kind /usr/local/bin
 
