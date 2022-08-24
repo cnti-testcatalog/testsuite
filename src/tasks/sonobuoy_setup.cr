@@ -41,9 +41,27 @@ task "install_sonobuoy" do |_, args|
       write_file = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz"
       Log.info { "url: #{url}" }
       Log.info { "write_file: #{write_file}" }
-      resp = Halite.follow.get("#{url}") do |response| 
+      # todo change this to work with rel 
+      # todo I think http get doesn't do follows and thats why we use halite here, that's sad. Shouldn't need to do a follow to download a file though?
+       #  i think any url can do a redirect  ....
+      # it could be that http.get 'just works' now.  keyword just
+
+
+      if KernelIntrospection.os_release_id =~ "rhel" ||
+          KernelIntrospection.os_release_id =~ "centos"
+        context = OpenSSL::SSL::Context::Client.insecure
+      else
+        context = OpenSSL::SSL::Context::Client.new 
+      end
+
+      resp = HTTP::Client.get("#{url}", tls: context) do |response|
         File.write("#{write_file}", response.body_io)
-      end 
+      end
+
+
+      # resp = Halite.follow.get("#{url}") do |response| 
+      #   File.write("#{write_file}", response.body_io)
+      # end 
       Log.info { "resp: #{resp}" }
       # VERBOSE_LOGGING.debug curl if check_verbose(args)
       `tar -xzf #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz -C #{current_dir}/#{TOOLS_DIR}/sonobuoy/ && \

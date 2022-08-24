@@ -26,9 +26,17 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
           Log.for("verbose").debug { "full path?: #{current_dir.to_s}/#{TOOLS_DIR}/helm" }
         end
 
-        HTTP::Client.get("https://get.helm.sh/helm-v3.8.2-#{arch}.tar.gz") do |response|
+        if KernelIntrospection.os_release_id =~ "rhel" ||
+            KernelIntrospection.os_release_id =~ "centos"
+          context = OpenSSL::SSL::Context::Client.insecure
+        else
+          context = OpenSSL::SSL::Context::Client.new 
+        end
+
+        HTTP::Client.get("https://get.helm.sh/helm-v3.8.2-#{arch}.tar.gz", tls: context) do |response|
           File.write("#{current_dir}/#{TOOLS_DIR}/helm/helm-v3.8.2-#{arch}.tar.gz", response.body_io)
         end
+
         TarClient.untar(
           "#{current_dir}/#{TOOLS_DIR}/helm/helm-v3.8.2-#{arch}.tar.gz",
           "#{current_dir}/#{TOOLS_DIR}/helm"

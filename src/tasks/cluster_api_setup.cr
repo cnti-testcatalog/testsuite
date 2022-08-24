@@ -12,10 +12,30 @@ desc "Install Cluster API for Kind"
 task "cluster_api_setup" do |_, args|
   current_dir = FileUtils.pwd
 
-  Halite.follow.get("https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.2.0/clusterctl-linux-amd64") do |response|
-    Log.info { "clusterctl response: #{response}" }
-    File.write("clusterctl", response.body_io)
+  if KernelIntrospection.os_release_id =~ "rhel" ||
+      KernelIntrospection.os_release_id =~ "centos"
+    context = OpenSSL::SSL::Context::Client.insecure
+  else
+    context = OpenSSL::SSL::Context::Client.new 
   end
+
+  HTTP::Client.get("https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.2.0/clusterctl-linux-amd64", tls: context) do |response|
+    if response.status_code == 302
+      redirect_url = response.headers["Location"]
+      HTTP::Client.get(redirect_url, tls: context) do |response|
+        Log.info { "clusterctl response: #{response}" }
+        File.write("clusterctl", response.body_io)
+      end
+    else
+      Log.info { "clusterctl response: #{response}" }
+      File.write("clusterctl", response.body_io)
+    end
+  end
+
+  # Halite.follow.get("https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.2.0/clusterctl-linux-amd64") do |response|
+  #   Log.info { "clusterctl response: #{response}" }
+  #   File.write("clusterctl", response.body_io)
+  # end
 
   Process.run(
     "sudo chmod +x ./clusterctl",
