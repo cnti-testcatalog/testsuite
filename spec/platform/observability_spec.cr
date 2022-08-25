@@ -13,7 +13,9 @@ describe "Platform Observability" do
 
       LOGGING.info "Installing kube_state_metrics" 
       helm = BinarySingleton.helm
-      resp = `#{helm} install kube-state-metrics stable/kube-state-metrics`
+      `#{helm} repo add prometheus-community https://prometheus-community.github.io/helm-charts`
+      `#{helm} repo update`
+      resp = `#{helm} install kube-state-metrics prometheus-community/kube-state-metrics`
       LOGGING.info resp
       KubectlClient::Get.wait_for_install("kube-state-metrics")
 
@@ -44,7 +46,7 @@ describe "Platform Observability" do
       response_s = `./cnf-testsuite platform:node_exporter poc`
       LOGGING.info response_s
       if check_containerd
-        (/(PASSED){1}.*(Your platform is using the){1}.*(release for the node exporter){1}/ =~ response_s).should_not be_nil
+        (/(PASSED){1}.*(Your platform is using the node exporter){1}/ =~ response_s).should_not be_nil
       else
         (/skipping node_exporter: This test only supports the Containerd Runtime./ =~ response_s).should_not be_nil
       end
@@ -68,7 +70,7 @@ describe "Platform Observability" do
 
     response_s = `./cnf-testsuite platform:prometheus_adapter poc`
     Log.info { response_s }
-    (/(PASSED){1}.*(Your platform is using the){1}.*(release for the prometheus adapter){1}/ =~ response_s).should_not be_nil
+    (/(PASSED){1}.*(Your platform is using the prometheus adapter){1}/ =~ response_s).should_not be_nil
   ensure
     resp = Helm.uninstall("prometheus-adapter")
   end
@@ -78,7 +80,7 @@ describe "Platform Observability" do
     helm = BinarySingleton.helm
     begin
       Helm.helm_repo_add("metrics-server","https://kubernetes-sigs.github.io/metrics-server/")
-      result = Helm.install("--set image.repository=docker.io/bitnami/metrics-server --set image.tag=0.6.1 --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server")
+      result = Helm.install("metrics-server -f spec/fixtures/metrics_values.yml metrics-server/metrics-server")
       Log.info { "Metrics Server installed" }
     rescue e : Helm::CannotReuseReleaseNameError
       Log.info { "Metrics Server already installed" }
@@ -87,7 +89,7 @@ describe "Platform Observability" do
 		  KubectlClient::Get.wait_for_install(deployment_name: "metrics-server")
       response_s = `./cnf-testsuite platform:metrics_server poc`
       LOGGING.info response_s
-      (/(PASSED){1}.*(Your platform is using the){1}.*(release for the metrics server){1}/ =~ response_s).should_not be_nil
+      (/(PASSED){1}.*(Your platform is using the metrics server){1}/ =~ response_s).should_not be_nil
   ensure
       resp = Helm.uninstall("metrics-server")
       LOGGING.info resp
