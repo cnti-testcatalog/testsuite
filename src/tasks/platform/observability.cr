@@ -14,7 +14,7 @@ namespace "platform" do
   end
 
   desc "Does the Platform have Kube State Metrics installed"
-  task "kube_state_metrics" do |_, args|
+  task "kube_state_metrics", ["install_cluster_tools"] do |_, args|
     unless check_poc(args)
       Log.info { "skipping kube_state_metrics: not in poc mode" }
       puts "SKIPPED: Kube State Metrics".colorize(:yellow)
@@ -39,7 +39,7 @@ namespace "platform" do
   end
 
   desc "Does the Platform have a Node Exporter installed"
-  task "node_exporter" do |_, args|
+  task "node_exporter", ["install_cluster_tools"] do |_, args|
     unless check_poc(args)
       Log.info { "skipping node_exporter: not in poc mode" }
       puts "SKIPPED: Node Exporter".colorize(:yellow)
@@ -65,7 +65,7 @@ namespace "platform" do
 
 
   desc "Does the Platform have the prometheus adapter installed"
-  task "prometheus_adapter" do |_, args|
+  task "prometheus_adapter", ["install_cluster_tools"] do |_, args|
     unless check_poc(args)
       Log.info { "skipping prometheus_adapter: not in poc mode" }
       puts "SKIPPED: Prometheus Adapter".colorize(:yellow)
@@ -90,7 +90,7 @@ namespace "platform" do
   end
 
   desc "Does the Platform have the K8s Metrics Server installed"
-  task "metrics_server" do |_, args|
+  task "metrics_server", ["install_cluster_tools"] do |_, args|
     unless check_poc(args)
       Log.info { "skipping metrics_server: not in poc mode" }
       puts "SKIPPED: Metrics Server".colorize(:yellow)
