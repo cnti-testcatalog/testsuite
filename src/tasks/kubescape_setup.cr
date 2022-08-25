@@ -27,14 +27,37 @@ task "install_kubescape", ["kubescape_framework_download"] do |_, args|
       url = "https://github.com/armosec/kubescape/releases/download/v#{KUBESCAPE_VERSION}/kubescape-ubuntu-latest"
       Log.info { "url: #{url}" }
       Retriable.retry do
-        resp = Halite.follow.get("#{url}") do |response| 
-          File.write("#{write_file}", response.body_io)
-        end 
-        Log.debug {"resp: #{resp}"}
-        case resp.status_code
-        when 403, 404
-          raise "Unable to download: #{url}" 
+
+        if KernelIntrospection.os_release_id =~ "rhel" ||
+            KernelIntrospection.os_release_id =~ "centos"
+          context = OpenSSL::SSL::Context::Client.insecure
+        else
+          context = OpenSSL::SSL::Context::Client.new 
         end
+
+        HTTP::Client.get(url, tls: context) do |response|
+          if response.status_code == 302
+            redirect_url = response.headers["Location"]
+            HTTP::Client.get(redirect_url, tls: context) do |response|
+              File.write("#{write_file}", response.body_io)
+            end
+          else
+            File.write("#{write_file}", response.body_io)
+          end
+          case response.status_code
+          when 403, 404
+            raise "Unable to download: #{url}" 
+          end
+        end
+
+        # resp = Halite.follow.get("#{url}") do |response| 
+        #   File.write("#{write_file}", response.body_io)
+        # end 
+        # Log.debug {"resp: #{resp}"}
+        # case resp.status_code
+        # when 403, 404
+        #   raise "Unable to download: #{url}" 
+        # end
         stderr = IO::Memory.new
         status = Process.run("chmod +x #{write_file}", shell: true, output: stderr, error: stderr)
         success = status.success?

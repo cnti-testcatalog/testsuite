@@ -28,14 +28,37 @@ task "install_kind" do |_, args|
           Log.info { "#{ex.class}: '#{ex.message}' - #{attempt} attempt in #{elapsed_time} seconds and #{next_interval} seconds until the next try."}
       end
       Retriable.retry(on_retry: do_this_on_each_retry, times: 3, base_interval: 1.second) do
-        resp = Halite.follow.get("#{url}") do |response| 
-          File.write("#{write_file}", response.body_io)
-        end 
-        Log.debug {"resp: #{resp}"}
-        case resp.status_code
-        when 403, 404
-          raise "Unable to download: #{url}" 
+        if KernelIntrospection.os_release_id =~ "rhel" ||
+            KernelIntrospection.os_release_id =~ "centos"
+          context = OpenSSL::SSL::Context::Client.insecure
+        else
+          context = OpenSSL::SSL::Context::Client.new 
         end
+
+        HTTP::Client.get("#{url}", tls: context) do |response|
+          if response.status_code == 302
+            redirect_url = response.headers["Location"]
+            HTTP::Client.get(redirect_url, tls: context) do |response|
+              File.write("#{write_file}", response.body_io)
+            end
+          else
+            File.write("#{write_file}", response.body_io)
+          end
+          Log.debug {"response: #{response}"}
+          case response.status_code
+          when 403, 404
+            raise "Unable to download: #{url}" 
+          end
+        end
+
+        # resp = Halite.follow.get("#{url}") do |response| 
+        #   File.write("#{write_file}", response.body_io)
+        # end 
+        # Log.debug {"resp: #{resp}"}
+        # case resp.status_code
+        # when 403, 404
+        #   raise "Unable to download: #{url}" 
+        # end
         stderr = IO::Memory.new
         status = Process.run("chmod +x #{write_file}", shell: true, output: stderr, error: stderr)
         success = status.success?

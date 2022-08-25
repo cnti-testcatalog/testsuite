@@ -159,9 +159,28 @@ module LitmusManager
 
   def self.download_template(url, filename)
     filepath = "#{chaos_manifests_path}/#{filename}"
-    resp = Halite.follow.get(url) do |response| 
-      File.write(filepath, response.body_io)
+
+    if KernelIntrospection.os_release_id =~ "rhel" ||
+        KernelIntrospection.os_release_id =~ "centos"
+      context = OpenSSL::SSL::Context::Client.insecure
+    else
+      context = OpenSSL::SSL::Context::Client.new 
     end
+
+    HTTP::Client.get(url, tls: context) do |response|
+      if response.status_code == 302
+        redirect_url = response.headers["Location"]
+        HTTP::Client.get(redirect_url, tls: context) do |response|
+          File.write(filename, response.body_io)
+        end
+      else
+        File.write(filename, response.body_io)
+      end
+    end
+
+    # resp = halite.follow.get(url) do |response| 
+    #   file.write(filepath, response.body_io)
+    # end
     filepath
   end
 end
