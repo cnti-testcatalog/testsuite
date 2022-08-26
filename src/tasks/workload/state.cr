@@ -280,23 +280,10 @@ task "node_drain", ["install_litmus"] do |t, args|
               context = OpenSSL::SSL::Context::Client.new 
             end
 
-            HTTP::Client.get("#{LitmusManager::ONLINE_LITMUS_OPERATOR}", tls: context) do |response|
-              if response.status_code == 302
-                redirect_url = response.headers["Location"]
-                HTTP::Client.get(redirect_url, tls: context) do |response|
-                  Log.info { "Litmus Response: #{response}" }
-                  File.write("#{LitmusManager::DOWNLOADED_LITMUS_FILE}", response.body_io)
-                end
-              else
-                Log.info { "Litmus Response: #{response}" }
-                File.write("#{LitmusManager::DOWNLOADED_LITMUS_FILE}", response.body_io)
-              end
+            Halite.follow.get("#{LitmusManager::ONLINE_LITMUS_OPERATOR}", tls: context) do |response|
+              File.write("#{LitmusManager::DOWNLOADED_LITMUS_FILE}", response.body_io)
             end
 
-            # Halite.follow.get("#{LitmusManager::ONLINE_LITMUS_OPERATOR}") do |response|
-            #   Log.info { "Litmus Response: #{response}" }
-            #   File.write("#{LitmusManager::DOWNLOADED_LITMUS_FILE}", response.body_io)
-            # end
             if args.named["offline"]?
                  Log.info {"Re-Schedule Litmus in offline mode"}
                  LitmusManager.add_node_selector(litmus_nodes[0], airgap=true)

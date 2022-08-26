@@ -167,20 +167,10 @@ module LitmusManager
       context = OpenSSL::SSL::Context::Client.new 
     end
 
-    HTTP::Client.get(url, tls: context) do |response|
-      if response.status_code == 302
-        redirect_url = response.headers["Location"]
-        HTTP::Client.get(redirect_url, tls: context) do |response|
-          File.write(filename, response.body_io)
-        end
-      else
-        File.write(filename, response.body_io)
-      end
+    Halite.follow.get(url, tls: context) do |response|
+      File.write(filename, response.body_io)
     end
 
-    # resp = halite.follow.get(url) do |response| 
-    #   file.write(filepath, response.body_io)
-    # end
     filepath
   end
 end

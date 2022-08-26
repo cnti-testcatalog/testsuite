@@ -54,7 +54,7 @@ task "install_sonobuoy" do |_, args|
         context = OpenSSL::SSL::Context::Client.new 
       end
 
-      resp = HTTP::Client.get("#{url}", tls: context) do |response|
+      Halite.follow.get("#{url}", tls: context) do |response|
         File.write("#{write_file}", response.body_io)
       end
 
@@ -62,7 +62,7 @@ task "install_sonobuoy" do |_, args|
       # resp = Halite.follow.get("#{url}") do |response| 
       #   File.write("#{write_file}", response.body_io)
       # end 
-      Log.info { "resp: #{resp}" }
+      # Log.info { "resp: #{resp}" }
       # VERBOSE_LOGGING.debug curl if check_verbose(args)
       `tar -xzf #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz -C #{current_dir}/#{TOOLS_DIR}/sonobuoy/ && \
        chmod +x #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy && \

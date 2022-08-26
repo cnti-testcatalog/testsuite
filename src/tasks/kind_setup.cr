@@ -35,30 +35,15 @@ task "install_kind" do |_, args|
           context = OpenSSL::SSL::Context::Client.new 
         end
 
-        HTTP::Client.get("#{url}", tls: context) do |response|
-          if response.status_code == 302
-            redirect_url = response.headers["Location"]
-            HTTP::Client.get(redirect_url, tls: context) do |response|
-              File.write("#{write_file}", response.body_io)
-            end
-          else
-            File.write("#{write_file}", response.body_io)
-          end
-          Log.debug {"response: #{response}"}
-          case response.status_code
-          when 403, 404
-            raise "Unable to download: #{url}" 
-          end
+        resp = Halite.follow.get("#{url}", tls: context) do |response|
+          File.write("#{write_file}", response.body_io)
         end
 
-        # resp = Halite.follow.get("#{url}") do |response| 
-        #   File.write("#{write_file}", response.body_io)
-        # end 
-        # Log.debug {"resp: #{resp}"}
-        # case resp.status_code
-        # when 403, 404
-        #   raise "Unable to download: #{url}" 
-        # end
+        Log.debug {"resp: #{resp}"}
+        case resp.status_code
+        when 403, 404
+          raise "Unable to download: #{url}" 
+        end
         stderr = IO::Memory.new
         status = Process.run("chmod +x #{write_file}", shell: true, output: stderr, error: stderr)
         success = status.success?

@@ -3,6 +3,7 @@ require "kubectl_client"
 
 module KernelIntrospection
   def self.os_release
+      Log.info { "KernelIntrospection.os_release" }
     # todo use silent call out
     # os_release = `cat /etc/os-release`
     Process.run(
@@ -30,6 +31,7 @@ module KernelIntrospection
   end
 
   def self.os_release_id
+    Log.info { "KernelIntrospection.os_release_id" }
     osr = os_release
     if osr 
       osr["ID"]

@@ -33,7 +33,7 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
           context = OpenSSL::SSL::Context::Client.new 
         end
 
-        HTTP::Client.get("https://get.helm.sh/helm-v3.8.2-#{arch}.tar.gz", tls: context) do |response|
+        Halite.follow.get("https://get.helm.sh/helm-v3.8.2-#{arch}.tar.gz", tls: context) do |response|
           File.write("#{current_dir}/#{TOOLS_DIR}/helm/helm-v3.8.2-#{arch}.tar.gz", response.body_io)
         end
 

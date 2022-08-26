@@ -19,18 +19,8 @@ module Kyverno
       context = OpenSSL::SSL::Context::Client.new 
     end
 
-    HTTP::Client.get(download_url, tls: context) do |response|
-      # heres how to handle the redirect! Akash doing work!
-      # if there is not a 302 this thing never does the file.write! ...
-      # this makes me sad
-      if response.status_code == 302
-        redirect_url = response.headers["Location"]
-        HTTP::Client.get(redirect_url, tls: context) do |response|
-          File.write(tempfile.path, response.body_io)
-        end
-      else
-        File.write(tempfile.path, response.body_io)
-      end
+    Halite.follow.get(download_url, tls: context) do |response|
+      File.write(tempfile.path, response.body_io)
     end
 
     result = TarClient.untar(tempfile.path, tools_path)
