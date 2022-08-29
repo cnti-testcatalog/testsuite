@@ -34,10 +34,13 @@ module KernelIntrospection
     Log.info { "KernelIntrospection.os_release_id" }
     osr = os_release
     if osr 
-      osr["ID"]
+     id = osr["ID"]
     else
-      nil
+     id =  nil
     end
+    Log.info { "os_release: #{osr}" }
+    Log.info { "release_id: #{id}" }
+    id
   end
 
   def self.parse_proc(ps_output)
