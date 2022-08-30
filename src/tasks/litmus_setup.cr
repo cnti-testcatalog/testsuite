@@ -177,7 +177,7 @@ module LitmusManager
       Log.info {"response status: #{response.status_code}"}
       body = response.body_io.gets_to_end
       Log.info {"response response.body: #{body}"}
-      File.write(filename, body)
+      File.write(filepath, body)
     end
 
     filepath
