@@ -235,11 +235,6 @@ jobs:
         libz-dev \
         ./crystal.deb \
         && sudo rm -rf /var/lib/apt/lists/*
-    - name: Add Let's Encrypt Root CA
-      run: |
-         wget -O letsencrypt.pem https://letsencrypt.org/certs/isrg-root-x1-cross-signed.pem 
-         sudo cp letsencrypt.pem /usr/local/share/ca-certificates/letsencrypt.pem
-         sudo update-ca-certificates
     - name: Setup CNF-Conformance
       run: |
         helm repo add stable https://cncf.gitlab.io/stable
