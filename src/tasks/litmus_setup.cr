@@ -175,8 +175,9 @@ module LitmusManager
 
     Halite.follow.get(url, tls: context) do |response|
       Log.info {"response status: #{response.status_code}"}
-      Log.info {"response response.body: #{response.body}"}
-      File.write(filename, response.body_io)
+      body = response.body_io.gets_to_end
+      Log.info {"response response.body: #{body}"}
+      File.write(filename, body)
     end
 
     filepath
