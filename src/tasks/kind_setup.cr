@@ -31,11 +31,6 @@ task "install_kind" do |_, args|
 
         HttpHelper.download("#{url}","#{write_file}")
 
-        Log.debug {"resp: #{resp}"}
-        case resp.status_code
-        when 403, 404
-          raise "Unable to download: #{url}" 
-        end
         stderr = IO::Memory.new
         status = Process.run("chmod +x #{write_file}", shell: true, output: stderr, error: stderr)
         success = status.success?

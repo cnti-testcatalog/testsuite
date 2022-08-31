@@ -17,7 +17,6 @@ task "cluster_api_setup" do |_, args|
   Process.run(
     "sudo chmod +x ./clusterctl",
     shell: true,
-    A
     output: stdout = IO::Memory.new,
     error: stderr = IO::Memory.new
   )
