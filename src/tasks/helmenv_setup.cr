@@ -26,11 +26,13 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
           Log.for("verbose").debug { "full path?: #{current_dir.to_s}/#{TOOLS_DIR}/helm" }
         end
 
-        if KernelIntrospection.os_release_id =~ "rhel" ||
-            KernelIntrospection.os_release_id =~ "centos"
+        if KernelIntrospection.os_release_id =~ /rhel/ ||
+            KernelIntrospection.os_release_id =~ /centos/
           context = OpenSSL::SSL::Context::Client.insecure
+          Log.info { "Using Insecure Mode for TLS: #{KernelIntrospection.os_release_id}" }
         else
           context = OpenSSL::SSL::Context::Client.new 
+          Log.info { "Using Secure Mode for TLS: #{KernelIntrospection.os_release_id}" }
         end
 
         Halite.follow.get("https://get.helm.sh/helm-v3.8.2-#{arch}.tar.gz", tls: context) do |response|
