@@ -28,26 +28,8 @@ task "install_kubescape", ["kubescape_framework_download"] do |_, args|
       Log.info { "url: #{url}" }
       Retriable.retry do
 
-        if KernelIntrospection.os_release_id =~ "rhel" ||
-            KernelIntrospection.os_release_id =~ "centos"
-          Log.info { "KernelIntrospection.os_release_id: #{KernelIntrospection.os_release_id}" }
-          context = OpenSSL::SSL::Context::Client.insecure
-        else
-          context = OpenSSL::SSL::Context::Client.new 
-        end
+        HttpHelper.download("#{url}","#{write_file}")
 
-        Halite.follow.get("#{url}", tls: context) do |response|
-          File.write("#{write_file}", response.body_io)
-        end
-
-        # resp = Halite.follow.get("#{url}") do |response| 
-        #   File.write("#{write_file}", response.body_io)
-        # end 
-        # Log.debug {"resp: #{resp}"}
-        # case resp.status_code
-        # when 403, 404
-        #   raise "Unable to download: #{url}" 
-        # end
         stderr = IO::Memory.new
         status = Process.run("chmod +x #{write_file}", shell: true, output: stderr, error: stderr)
         success = status.success?
@@ -68,8 +50,8 @@ task "kubescape_framework_download" do |_, args|
   unless File.exists?(framework_path)
     asset_url = "https://github.com/armosec/regolibrary/releases/download/v#{KUBESCAPE_FRAMEWORK_VERSION}/nsa"
 
-    if KernelIntrospection.os_release_id =~ "rhel" ||
-        KernelIntrospection.os_release_id =~ "centos"
+    if KernelIntrospection.os_release_id =~ /rhel/ ||
+        KernelIntrospection.os_release_id =~ /centos/
       Log.info { "KernelIntrospection.os_release_id: #{KernelIntrospection.os_release_id}" }
       context = OpenSSL::SSL::Context::Client.insecure
     else

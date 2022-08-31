@@ -164,21 +164,7 @@ module LitmusManager
     filepath = "#{cmp}/#{filename}"
     Log.info {"filepath: #{filepath}"}
 
-    if KernelIntrospection.os_release_id =~ "rhel" ||
-        KernelIntrospection.os_release_id =~ "centos"
-      Log.info {"rhel ssl"}
-      context = OpenSSL::SSL::Context::Client.insecure
-    else
-      Log.info {"non-rhel ssl"}
-      context = OpenSSL::SSL::Context::Client.new 
-    end
-
-    Halite.follow.get(url, tls: context) do |response|
-      Log.info {"response status: #{response.status_code}"}
-      body = response.body_io.gets_to_end
-      Log.info {"response response.body: #{body}"}
-      File.write(filepath, body)
-    end
+    HttpHelper.download(url, filepath)
 
     filepath
   end
