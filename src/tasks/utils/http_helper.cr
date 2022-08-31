@@ -18,7 +18,7 @@ module HttpHelper
       Log.info {"response status: #{response.status_code}"}
       # body = response.body_io.gets_to_end # this is going to be a problem
       # Log.info {"response response.body: #{body}"}
-      File.write(filename, body_io)
+      File.write(filename, response.body_io)
     end
 
     resp 
