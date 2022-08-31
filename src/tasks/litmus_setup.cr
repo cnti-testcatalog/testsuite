@@ -150,6 +150,7 @@ module LitmusManager
   end
 
   def self.chaos_manifests_path
+    Log.info {"chaos_manifests_path"}
     chaos_manifests = "#{FileUtils.pwd}/#{TOOLS_DIR}/chaos-experiments"
     if !Dir.exists?(chaos_manifests)
       FileUtils.mkdir_p(chaos_manifests)
@@ -158,10 +159,27 @@ module LitmusManager
   end
 
   def self.download_template(url, filename)
-    filepath = "#{chaos_manifests_path}/#{filename}"
-    resp = Halite.follow.get(url) do |response| 
-      File.write(filepath, response.body_io)
+    Log.info {"download_template url, filename: #{url}, #{filename}"}
+    cmp = chaos_manifests_path()
+    filepath = "#{cmp}/#{filename}"
+    Log.info {"filepath: #{filepath}"}
+
+    if KernelIntrospection.os_release_id =~ "rhel" ||
+        KernelIntrospection.os_release_id =~ "centos"
+      Log.info {"rhel ssl"}
+      context = OpenSSL::SSL::Context::Client.insecure
+    else
+      Log.info {"non-rhel ssl"}
+      context = OpenSSL::SSL::Context::Client.new 
     end
+
+    Halite.follow.get(url, tls: context) do |response|
+      Log.info {"response status: #{response.status_code}"}
+      body = response.body_io.gets_to_end
+      Log.info {"response response.body: #{body}"}
+      File.write(filepath, body)
+    end
+
     filepath
   end
 end

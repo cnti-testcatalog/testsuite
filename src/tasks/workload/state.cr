@@ -272,10 +272,18 @@ task "node_drain", ["install_litmus"] do |t, args|
             Log.info { "Schedulable Node Names: #{node_names}" }
             litmus_nodes = node_names - ["#{litmus_nodeName}"]
             Log.info { "Schedulable Litmus Nodes: #{litmus_nodes}" }
-            Halite.follow.get("#{LitmusManager::ONLINE_LITMUS_OPERATOR}") do |response|
-              Log.info { "Litmus Response: #{response}" }
+
+            if KernelIntrospection.os_release_id =~ "rhel" ||
+                KernelIntrospection.os_release_id =~ "centos"
+              context = OpenSSL::SSL::Context::Client.insecure
+            else
+              context = OpenSSL::SSL::Context::Client.new 
+            end
+
+            Halite.follow.get("#{LitmusManager::ONLINE_LITMUS_OPERATOR}", tls: context) do |response|
               File.write("#{LitmusManager::DOWNLOADED_LITMUS_FILE}", response.body_io)
             end
+
             if args.named["offline"]?
                  Log.info {"Re-Schedule Litmus in offline mode"}
                  LitmusManager.add_node_selector(litmus_nodes[0], airgap=true)

@@ -12,13 +12,15 @@ module Kyverno
     return true if File.exists?(cli_path)
     tempfile = File.tempfile("kyverno", ".tar.gz")
 
-    HTTP::Client.get(download_url) do |response|
-      if response.status_code == 302
-        redirect_url = response.headers["Location"]
-        HTTP::Client.get(redirect_url) do |response|
-          File.write(tempfile.path, response.body_io)
-        end
-      end
+    if KernelIntrospection.os_release_id =~ "rhel" ||
+        KernelIntrospection.os_release_id =~ "centos"
+      context = OpenSSL::SSL::Context::Client.insecure
+    else
+      context = OpenSSL::SSL::Context::Client.new 
+    end
+
+    Halite.follow.get(download_url, tls: context) do |response|
+      File.write(tempfile.path, response.body_io)
     end
 
     result = TarClient.untar(tempfile.path, tools_path)

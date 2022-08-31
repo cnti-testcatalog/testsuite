@@ -27,14 +27,27 @@ task "install_kubescape", ["kubescape_framework_download"] do |_, args|
       url = "https://github.com/armosec/kubescape/releases/download/v#{KUBESCAPE_VERSION}/kubescape-ubuntu-latest"
       Log.info { "url: #{url}" }
       Retriable.retry do
-        resp = Halite.follow.get("#{url}") do |response| 
-          File.write("#{write_file}", response.body_io)
-        end 
-        Log.debug {"resp: #{resp}"}
-        case resp.status_code
-        when 403, 404
-          raise "Unable to download: #{url}" 
+
+        if KernelIntrospection.os_release_id =~ "rhel" ||
+            KernelIntrospection.os_release_id =~ "centos"
+          Log.info { "KernelIntrospection.os_release_id: #{KernelIntrospection.os_release_id}" }
+          context = OpenSSL::SSL::Context::Client.insecure
+        else
+          context = OpenSSL::SSL::Context::Client.new 
         end
+
+        Halite.follow.get("#{url}", tls: context) do |response|
+          File.write("#{write_file}", response.body_io)
+        end
+
+        # resp = Halite.follow.get("#{url}") do |response| 
+        #   File.write("#{write_file}", response.body_io)
+        # end 
+        # Log.debug {"resp: #{resp}"}
+        # case resp.status_code
+        # when 403, 404
+        #   raise "Unable to download: #{url}" 
+        # end
         stderr = IO::Memory.new
         status = Process.run("chmod +x #{write_file}", shell: true, output: stderr, error: stderr)
         success = status.success?
@@ -46,6 +59,7 @@ end
 
 desc "Kubescape framework download"
 task "kubescape_framework_download" do |_, args|
+  Log.info { "kubescape_framework_download" }
   current_dir = FileUtils.pwd 
   # Download framework file using Github token if the GITHUB_TOKEN env var is present
 
@@ -53,8 +67,18 @@ task "kubescape_framework_download" do |_, args|
   framework_path = "#{current_dir}/#{TOOLS_DIR}/kubescape/nsa.json"
   unless File.exists?(framework_path)
     asset_url = "https://github.com/armosec/regolibrary/releases/download/v#{KUBESCAPE_FRAMEWORK_VERSION}/nsa"
+
+    if KernelIntrospection.os_release_id =~ "rhel" ||
+        KernelIntrospection.os_release_id =~ "centos"
+      Log.info { "KernelIntrospection.os_release_id: #{KernelIntrospection.os_release_id}" }
+      context = OpenSSL::SSL::Context::Client.insecure
+    else
+      Log.info { "KernelIntrospection.os_release_id not rhel or centos" }
+      context = OpenSSL::SSL::Context::Client.new 
+    end
+
     if ENV.has_key?("GITHUB_TOKEN")
-      Halite.auth("Bearer #{ENV["GITHUB_TOKEN"]}").get(asset_url) do |response|
+      Halite.auth("Bearer #{ENV["GITHUB_TOKEN"]}").get(asset_url, tls: context) do |response|
         File.write(framework_path, response.body_io)
       end
     else

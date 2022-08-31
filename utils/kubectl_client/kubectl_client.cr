@@ -332,6 +332,7 @@ module KubectlClient
       # TODO should this be all namespaces?
       cmd = "kubectl get nodes -o json"
       result = ShellCmd.run(cmd, "KubectlClient::Get.nodes")
+      #todo check for success/fail
       JSON.parse(result[:output])
     end
 

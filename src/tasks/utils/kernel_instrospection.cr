@@ -2,6 +2,47 @@ require "colorize"
 require "kubectl_client"
 
 module KernelIntrospection
+  def self.os_release
+      Log.info { "KernelIntrospection.os_release" }
+    # todo use silent call out
+    # os_release = `cat /etc/os-release`
+    Process.run(
+      "sudo chmod +x ./clusterctl",
+      shell: true,
+      output: stdout = IO::Memory.new,
+      error: stderr = IO::Memory.new
+    )
+    os_release = stdout.to_s
+    Log.debug { "os-release: #{os_release}" }
+    multiline_os_release = os_release.split("\n")
+    parsed_os_release = multiline_os_release.reduce(Hash(String, String).new) do |acc,x|  
+      if x.empty? 
+        acc 
+      else
+       acc.merge({"#{x.split("=")[0]}" =>"#{x.split("=")[1]}"})
+      end
+    end
+
+    if parsed_os_release == Hash(String, String).new
+      nil
+    else
+      parsed_os_release
+    end
+  end
+
+  def self.os_release_id
+    Log.info { "KernelIntrospection.os_release_id" }
+    osr = os_release
+    if osr 
+     id = osr["ID"]
+    else
+     id =  nil
+    end
+    Log.info { "os_release: #{osr}" }
+    Log.info { "release_id: #{id}" }
+    id
+  end
+
   def self.parse_proc(ps_output)
     ps_output.split("\n").map{|x| x.to_i?}.compact
   end

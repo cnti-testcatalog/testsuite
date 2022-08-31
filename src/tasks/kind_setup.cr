@@ -28,9 +28,17 @@ task "install_kind" do |_, args|
           Log.info { "#{ex.class}: '#{ex.message}' - #{attempt} attempt in #{elapsed_time} seconds and #{next_interval} seconds until the next try."}
       end
       Retriable.retry(on_retry: do_this_on_each_retry, times: 3, base_interval: 1.second) do
-        resp = Halite.follow.get("#{url}") do |response| 
+        if KernelIntrospection.os_release_id =~ "rhel" ||
+            KernelIntrospection.os_release_id =~ "centos"
+          context = OpenSSL::SSL::Context::Client.insecure
+        else
+          context = OpenSSL::SSL::Context::Client.new 
+        end
+
+        resp = Halite.follow.get("#{url}", tls: context) do |response|
           File.write("#{write_file}", response.body_io)
-        end 
+        end
+
         Log.debug {"resp: #{resp}"}
         case resp.status_code
         when 403, 404

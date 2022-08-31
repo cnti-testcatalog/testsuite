@@ -12,7 +12,14 @@ desc "Install Cluster API for Kind"
 task "cluster_api_setup" do |_, args|
   current_dir = FileUtils.pwd
 
-  Halite.follow.get("https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.2.0/clusterctl-linux-amd64") do |response|
+  if KernelIntrospection.os_release_id =~ "rhel" ||
+      KernelIntrospection.os_release_id =~ "centos"
+    context = OpenSSL::SSL::Context::Client.insecure
+  else
+    context = OpenSSL::SSL::Context::Client.new 
+  end
+
+  Halite.follow.get("https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.2.0/clusterctl-linux-amd64", tls: context) do |response|
     Log.info { "clusterctl response: #{response}" }
     File.write("clusterctl", response.body_io)
   end
