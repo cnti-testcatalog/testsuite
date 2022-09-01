@@ -64,7 +64,7 @@ task "kubescape_framework_download" do |_, args|
         File.write(framework_path, response.body_io)
       end
     else
-      Halite.get(asset_url) do |response|
+      Halite.get(asset_url, tls: context) do |response|
         File.write(framework_path, response.body_io)
       end
     end
