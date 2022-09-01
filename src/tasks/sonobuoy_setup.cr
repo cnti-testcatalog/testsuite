@@ -47,23 +47,7 @@ task "install_sonobuoy" do |_, args|
       # it could be that http.get 'just works' now.  keyword just
 
 
-      if KernelIntrospection.os_release_id =~ "rhel" ||
-          KernelIntrospection.os_release_id =~ "centos"
-        context = OpenSSL::SSL::Context::Client.insecure
-      else
-        context = OpenSSL::SSL::Context::Client.new 
-      end
-
-      Halite.follow.get("#{url}", tls: context) do |response|
-        File.write("#{write_file}", response.body_io)
-      end
-
-
-      # resp = Halite.follow.get("#{url}") do |response| 
-      #   File.write("#{write_file}", response.body_io)
-      # end 
-      # Log.info { "resp: #{resp}" }
-      # VERBOSE_LOGGING.debug curl if check_verbose(args)
+      HttpHelper.download("#{url}","#{write_file}")
       `tar -xzf #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz -C #{current_dir}/#{TOOLS_DIR}/sonobuoy/ && \
        chmod +x #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy && \
        rm #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz`

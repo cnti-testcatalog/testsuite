@@ -58,12 +58,6 @@ task "prometheus_traffic" do |_, args|
 
     emoji_observability="📶☠️"
 
-    # Retriable.retry(on_retry: do_this_on_each_retry, times: 3, base_interval: 1.second) do
-    #   resp = Halite.get("https://quay.io/api/v1/repository/prometheus/prometheus/tag/?onlyActiveTags=true&limit=100")
-    #   prometheus_server_releases = resp.body
-    #   sha_list = named_sha_list(prometheus_server_releases)
-    #   imageids = KubectlClient::Get.all_container_repo_digests
-    #   match = DockerClient::K8s.local_digest_match(sha_list, imageids)
     match = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::PROMETHEUS_PROCESS)
     if match
       Log.info { "Match Pod: #{match}"}
@@ -77,7 +71,6 @@ task "prometheus_traffic" do |_, args|
 
       Log.info { "service_url: #{service_url}"}
       ClusterTools.install
-      # prom_api_resp = ClusterTools.exec_k8s("curl http://#{service_url}.#{service_namespace}.svc.cluster.local/api/v1/targets?state=active")
       prom_api_resp = ClusterTools.exec("curl http://#{service_url}.#{service_namespace}.svc.cluster.local/api/v1/targets?state=active")
 
       Log.debug { "prom_api_resp: #{prom_api_resp}"}

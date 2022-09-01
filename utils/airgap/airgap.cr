@@ -56,11 +56,15 @@ module AirGap
     manifest_full_path = manifest_path + manifest_name 
     Log.info { "manifest_name: #{manifest_name}" }
     Log.info { "manifest_full_path: #{manifest_full_path}" }
-    Halite.get("#{url}") do |response| 
-       File.open("/tmp/" + manifest_full_path, "w") do |file| 
-         IO.copy(response.body_io, file)
-       end
-    end
+    download_path = "/tmp/" + manifest_full_path
+    HttpHelper.download("#{url}", "#{download_path}")
+
+    # Halite.get("#{url}") do |response| 
+    #    File.open("/tmp/" + manifest_full_path, "w") do |file| 
+    #      IO.copy(response.body_io, file)
+    #    end
+    # end
+
     TarClient.append(output_file, "/tmp", manifest_full_path)
   ensure
     FileUtils.rm_rf("/tmp/#{manifest_path}")

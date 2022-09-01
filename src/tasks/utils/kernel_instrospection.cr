@@ -7,7 +7,8 @@ module KernelIntrospection
     # todo use silent call out
     # os_release = `cat /etc/os-release`
     Process.run(
-      "sudo chmod +x ./clusterctl",
+      # "sudo chmod +x ./clusterctl",
+         "cat /etc/os-release",
       shell: true,
       output: stdout = IO::Memory.new,
       error: stderr = IO::Memory.new
