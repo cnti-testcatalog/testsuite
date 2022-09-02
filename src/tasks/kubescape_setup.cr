@@ -50,24 +50,7 @@ task "kubescape_framework_download" do |_, args|
   unless File.exists?(framework_path)
     asset_url = "https://github.com/armosec/regolibrary/releases/download/v#{KUBESCAPE_FRAMEWORK_VERSION}/nsa"
 
-    if KernelIntrospection.os_release_id =~ /rhel/ ||
-        KernelIntrospection.os_release_id =~ /centos/
-      Log.info { "KernelIntrospection.os_release_id: #{KernelIntrospection.os_release_id}" }
-      context = OpenSSL::SSL::Context::Client.insecure
-    else
-      Log.info { "KernelIntrospection.os_release_id not rhel or centos" }
-      context = OpenSSL::SSL::Context::Client.new 
-    end
-
-    if ENV.has_key?("GITHUB_TOKEN")
-      Halite.auth("Bearer #{ENV["GITHUB_TOKEN"]}").get(asset_url, tls: context) do |response|
-        File.write(framework_path, response.body_io)
-      end
-    else
-      Halite.get(asset_url, tls: context) do |response|
-        File.write(framework_path, response.body_io)
-      end
-    end
+    HttpHelper.download_auth(asset_url, framework_path)
   end
 end
 
