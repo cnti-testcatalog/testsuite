@@ -71,3 +71,4 @@ falco_rule.yaml
 /tools/kyverno
 tools/custom-kyverno-policies/
 tools/chaos-experiments
+/tools/kubescape
