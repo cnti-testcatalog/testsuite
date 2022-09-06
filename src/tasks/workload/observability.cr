@@ -172,7 +172,7 @@ task "open_metrics", ["prometheus_traffic"] do |_, args|
 end
 
 desc "Are the CNF's logs captured by a logging system"
-task "routed_logs" do |_, args|
+task "routed_logs", ["install_cluster_tools"] do |_, args|
   Log.info { "Running: routed_logs" }
   next if args.named["offline"]?
     emoji_observability="📶☠️"
