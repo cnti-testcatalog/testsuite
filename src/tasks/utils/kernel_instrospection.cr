@@ -205,7 +205,7 @@ module KernelIntrospection
           end
         end
         Log.info { "proctree_by_node final proctree: #{proctree}" }
-        proctree.each{|x| puts "name: #{x["Name"]}, pid: #{x["Pid"]}, ppid: #{x["PPid"]}"} 
+        proctree.each{|x| Log.info { "Process name: #{x["Name"]}, pid: #{x["Pid"]}, ppid: #{x["PPid"]}" } }
         proctree
       end
     end
