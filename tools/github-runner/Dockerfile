@@ -3,6 +3,12 @@ FROM myoung34/github-runner:2.296.1-ubuntu-bionic
 ARG CRYSTAL_VERSION=1.0.0
 ARG CRYSTAL_URL=https://github.com/crystal-lang/crystal/releases/download
 
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg --output /usr/share/keyrings/githubcli-archive-keyring.gpg && \
+    sudo gpg --dearmor /usr/share/keyrings/githubcli-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list && \
+    chmod 644 /usr/share/keyrings/githubcli-archive-keyring.gpg && \
+    chmod 644 /etc/apt/sources.list.d/github-cli.list
+
 RUN wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga && \
     apt update && \
     apt install -y --no-install-recommends \
