@@ -6,7 +6,6 @@ require "./utils/system_information/helm.cr"
 # require "./utils/system_information/wget.cr"
 # require "./utils/system_information/curl.cr"
 require "./utils/system_information/kubectl.cr"
-require "./utils/system_information/git.cr"
 require "./utils/system_information/clusterctl.cr"
 
 task "prereqs" do |_, args|
@@ -27,7 +26,7 @@ task "prereqs" do |_, args|
 
   # git installation is optional for offline mode
   if !args.named["offline"]?
-    checks << git_installation.includes?("git found")
+    checks << GitClient.installation_found?
   end
 
   if checks.includes?(false)

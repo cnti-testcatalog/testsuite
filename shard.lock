@@ -22,7 +22,7 @@ shards:
 
   git:
     git: https://github.com/cnf-testsuite/git.git
-    version: 0.1.0+git.commit.a697f872a5c4498db9160532e84a4b8161932090
+    version: 0.1.0+git.commit.1882793edfa68e18117be62f3948e7bd001d63a7
 
   halite:
     git: https://github.com/icyleaf/halite.git
