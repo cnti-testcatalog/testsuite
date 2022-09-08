@@ -1,4 +1,8 @@
 ---
 release_name: linkerd 
-helm_chart: linkerd/linkerd2
-allowlist_helm_chart_container_names: [falco, nginx, linkerd, calico-node, kube-proxy, nginx-proxy, node-cache]
+helm_values: "--set-file identityTrustAnchorsPEM=$(pwd)/ca.crt --set-file identity.issuer.tls.crtPEM=$(pwd)/issuer.crt --set-file identity.issuer.tls.keyPEM=$(pwd)/issuer-private.pem"
+helm_repository:
+    name: linkerd 
+    repo_url: https://helm.linkerd.io/stable
+helm_chart: linkerd/linkerd-control-plane
+#helm_install_namespace: linkerd
