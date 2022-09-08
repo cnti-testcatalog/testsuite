@@ -192,16 +192,17 @@ jobs:
       matrix:
         tag: ["pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill", "pod_network_corruption", "pod_network_duplication"]
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: "Install kind v0.14 as a temporary workaround"
       run: |
         wget https://github.com/kubernetes-sigs/kind/releases/download/v0.14.0/kind-linux-amd64 && \
         mkdir kind && \
         mv kind-linux-amd64 kind/kind && \
-        echo "$PWD/kind" >> $GITHUB_PATH
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+        echo "Current PATH is: $PATH" && \
+        echo "${GITHUB_WORKSPACE}/kind" >> $GITHUB_PATH
     - name: Create Kind Cluster 
       run: |
         cat << EOF > /tmp/cluster.yml
@@ -262,6 +263,7 @@ jobs:
       run: |
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        echo "Current PATH is: $PATH"
         echo "///--- Get kind version"
         kind --version
         echo "///--- Get kind path"
