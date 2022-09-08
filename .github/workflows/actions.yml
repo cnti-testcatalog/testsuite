@@ -199,8 +199,8 @@ jobs:
     - name: "Install kind v0.14 as a temporary workaround"
       run: |
         wget https://github.com/kubernetes-sigs/kind/releases/download/v0.14.0/kind-linux-amd64 && \
-        mkdir kind && \
-        mv kind-linux-amd64 kind/kind && \
+        mkdir ${GITHUB_WORKSPACE}/kind && \
+        mv kind-linux-amd64 ${GITHUB_WORKSPACE}/kind/kind && \
         echo "Current PATH is: $PATH" && \
         echo "${GITHUB_WORKSPACE}/kind" >> $GITHUB_PATH
     - name: Create Kind Cluster 
@@ -263,6 +263,8 @@ jobs:
       run: |
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        echo "///--- Check for kind binary"
+        ls ${GITHUB_WORKSPACE}/kind
         echo "Current PATH is: $PATH"
         echo "///--- Get kind version"
         kind --version
