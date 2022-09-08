@@ -242,6 +242,16 @@ jobs:
         git fetch --all --tags --force
         shards install  
         echo "RUNNER: $RUNNER_NAME"
+    - name: Debug task
+      run: |
+        source cluster.env
+        export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        echo "///--- WILL WAIT FOR KINDNET"
+        until [[ $(kubectl get pods -l app=kindnet --namespace=kube-system -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
+            echo "Waiting for kindnet"
+            sleep 1
+        done
+        echo "///--- WAIT TASK COMPLETE"
     - name: Run Crystal Spec
       run: |
         source cluster.env
@@ -250,7 +260,15 @@ jobs:
             echo "Waiting for kindnet"
             sleep 1
         done
+        echo "///--- WILL WAIT FOR KINDNET"
         LOCAL_PATH_STORAGE_POD=$(kubectl get pods -l app=kindnet --namespace=kube-system -o jsonpath='{range .items[*]}{.metadata.name}')
+        echo "///--- CHECK OS VERSION"
+        $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=kube-system -- cat /etc/os-release
+        echo "///--- CHECK CONTAINER"
+        $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=kube-system -- ls
+        echo "///--- which apt"
+        $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=kube-system -- which apt
+        echo "///--- WILL ATTEMPT TO UPDATE REPOS"
         until [[ $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=kube-system -- apt update) ]]; do
             echo "Failed to update repositories, retrying"
             sleep 1
