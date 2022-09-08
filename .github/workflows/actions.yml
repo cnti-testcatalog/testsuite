@@ -264,11 +264,11 @@ jobs:
         echo "///--- Local storage pod"
         echo $LOCAL_PATH_STORAGE_POD
         echo "///--- CHECK OS VERSION"
-        $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=kube-system -- cat /etc/os-release
+        kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=kube-system -- cat /etc/os-release
         echo "///--- CHECK CONTAINER"
-        $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=kube-system -- ls
+        kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=kube-system -- ls
         echo "///--- which apt"
-        $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=kube-system -- which apt
+        kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=kube-system -- which apt
         echo "///--- WILL ATTEMPT TO UPDATE REPOS"
     - name: Run Crystal Spec
       run: |
