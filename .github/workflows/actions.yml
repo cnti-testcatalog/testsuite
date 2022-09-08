@@ -201,6 +201,7 @@ jobs:
         wget https://github.com/kubernetes-sigs/kind/releases/download/v0.14.0/kind-linux-amd64 && \
         mkdir ${GITHUB_WORKSPACE}/kind && \
         mv kind-linux-amd64 ${GITHUB_WORKSPACE}/kind/kind && \
+        chmod +x ${GITHUB_WORKSPACE}/kind/kind && \
         echo "Current PATH is: $PATH" && \
         echo "${GITHUB_WORKSPACE}/kind" >> $GITHUB_PATH
     - name: Create Kind Cluster 
