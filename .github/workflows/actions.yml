@@ -256,7 +256,13 @@ jobs:
       run: |
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        echo "///--- Get pods"
+        kubectl get pods --namespace=kube-system
+        echo "///--- Get pods with app=kindnet"
+        kubectl get pods -l app=kindnet --namespace=kube-system
         LOCAL_PATH_STORAGE_POD=$(kubectl get pods -l app=kindnet --namespace=kube-system -o jsonpath='{range .items[*]}{.metadata.name}')
+        echo "///--- Local storage pod"
+        echo $LOCAL_PATH_STORAGE_POD
         echo "///--- CHECK OS VERSION"
         $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=kube-system -- cat /etc/os-release
         echo "///--- CHECK CONTAINER"
