@@ -258,6 +258,8 @@ jobs:
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         echo "///--- Get kind version"
         kind --version
+        echo "///--- Get kind path"
+        which kind
         echo "///--- Get pods"
         kubectl get pods --namespace=kube-system
         echo "///--- Get pods with app=kindnet"
