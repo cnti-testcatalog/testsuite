@@ -251,7 +251,7 @@ jobs:
             sleep 1
         done
 
-        CLUSTER_RATE_LIMIT=$(kubectl run -i tmp-shell --restart=Never --rm --image ubuntu -- /bin/bash -c "apt update && apt install -y curl jq; export BEARER_TOKEN=\$(curl \"https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull\" | jq -r .token); echo \"Cluster token: \$BEARER_TOKEN"; curl --head -H \"Authorization: Bearer \$BEARER_TOKEN\" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest" | grep ratelimit-remaining || true)
+        CLUSTER_RATE_LIMIT=$(kubectl run -i tmp-shell --restart=Never --rm --image ubuntu -- /bin/bash -c "apt update && apt install -y curl jq; export BEARER_TOKEN=\$(curl \"https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull\" | jq -r .token); curl --head -H \"Authorization: Bearer \$BEARER_TOKEN\" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest" | grep ratelimit-remaining || true)
 
         TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token || true)
         ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
