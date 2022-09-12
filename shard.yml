@@ -41,10 +41,11 @@ dependencies:
   find:
     github: cnf-testsuite/find
     branch: main
+  git:
+    github: cnf-testsuite/git
+    branch: main
   docker_client:
     path: utils/docker_client
-  git_client:
-    path: utils/git_client
   kubectl_client:
     path: utils/kubectl_client
   helm:
