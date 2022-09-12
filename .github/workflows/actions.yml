@@ -196,14 +196,6 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: "Install kind v0.14 as a temporary workaround"
-      run: |
-        wget https://github.com/kubernetes-sigs/kind/releases/download/v0.14.0/kind-linux-amd64 && \
-        mkdir ${GITHUB_WORKSPACE}/kind && \
-        mv kind-linux-amd64 ${GITHUB_WORKSPACE}/kind/kind && \
-        chmod +x ${GITHUB_WORKSPACE}/kind/kind && \
-        echo "Current PATH is: $PATH" && \
-        echo "${GITHUB_WORKSPACE}/kind" >> $GITHUB_PATH
     - name: Create Kind Cluster 
       run: |
         cat << EOF > /tmp/cluster.yml
@@ -269,7 +261,7 @@ jobs:
             sleep 1
         done
 
-        CLUSTER_RATE_LIMIT=$(kubectl run tmp-shell --restart=Never --rm -i --tty --image ubuntu -- /bin/bash -c "apt update && apt install -y curl jq; export BEARER_TOKEN=\$(curl \"https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull\" | jq -r .token); echo \$BEARER_TOKEN; curl --head -H \"Authorization: Bearer \$BEARER_TOKEN\" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest" | grep ratelimit-remaining || true)
+        CLUSTER_RATE_LIMIT=$(kubectl run -it tmp-shell --restart=Never --rm --image ubuntu -- /bin/bash -c "apt update -y && apt install -y curl jq; export BEARER_TOKEN=\$(curl \"https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull\" | jq -r .token); echo \$BEARER_TOKEN; curl --head -H \"Authorization: Bearer \$BEARER_TOKEN\" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest" | grep ratelimit-remaining || true)
 
         TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token || true)
         ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
