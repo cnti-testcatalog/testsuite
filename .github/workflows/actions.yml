@@ -258,6 +258,7 @@ jobs:
             echo "Waiting for kindnet"
             sleep 1
         done
+
         LOCAL_PATH_STORAGE_POD=$(kubectl get pods -l app=kindnet --namespace=kube-system -o jsonpath='{range .items[*]}{.metadata.name}')
         until [[ $(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=kube-system -- apt update) ]]; do
             echo "Failed to update repositories, retrying"
@@ -267,14 +268,16 @@ jobs:
             echo "Failed to install packages, retrying"
             sleep 1
         done
-        CLUSTER_RATE_LIMIT=$(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=kube-system -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || true)
+
+        CLUSTER_RATE_LIMIT=$(kubectl run tmp-shell --restart=Never --rm -i --tty --image ubuntu -- /bin/bash -c "apt update && apt install -y curl jq; export BEARER_TOKEN=\$(curl \"https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull\" | jq -r .token); echo \$BEARER_TOKEN; curl --head -H \"Authorization: Bearer \$BEARER_TOKEN\" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest" | grep ratelimit-remaining || true)
+
         TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token || true)
         ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
         TOKEN=$(curl --user "$DOCKERHUB_USERNAME:$DOCKERHUB_PASSWORD" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
         AUTH_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Authenticated Rate Limit Exceeded")
         echo "RUNNER RATE LIMIT: $ANONYMOUS_RUNNER_RATE_LIMIT"
-        echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
-        echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
+        echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT"
+        echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT"
         LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.tag }} -v
   # chaos-airgapped:
   #   name: Chaos Tests Airgapped
