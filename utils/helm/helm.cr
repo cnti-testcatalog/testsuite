@@ -100,7 +100,7 @@ module Helm
     def self.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
       Log.info { "parse_manifest_as_ymls template_file_name: #{template_file_name}" }
       templates = File.read(template_file_name)
-      split_template = templates.split(/^---/)
+      split_template = templates.split(/(\s|^)---(\s|$)/)
       ymls = split_template.map { | template |
         #TODO strip out NOTES
         YAML.parse(template)

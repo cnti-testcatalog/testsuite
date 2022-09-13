@@ -5,4 +5,4 @@ helm_repository:
     name: linkerd 
     repo_url: https://helm.linkerd.io/stable
 helm_chart: linkerd/linkerd-control-plane
-#helm_install_namespace: linkerd
+helm_install_namespace: linkerd
