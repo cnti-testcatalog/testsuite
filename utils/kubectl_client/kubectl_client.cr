@@ -646,10 +646,10 @@ module KubectlClient
       matched_service
     end
 
-    def self.service_by_pod(pod : (JSON::Any | Hash(String | Nil, String)))
+    def self.service_by_pod(pod : JSON::Any | Nil)
       Log.info { "service_by_pod pod: #{pod}" }
       services = KubectlClient::Get.services(all_namespaces: true)
-      matched_service = JSON.parse(%({}))
+      matched_service : JSON::Any | Nil = nil
       services["items"].as_a.each do |service|
         Log.debug { "service_by_digest service: #{service}" }
         service_labels = service.dig?("spec", "selector")

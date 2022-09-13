@@ -71,6 +71,8 @@ task "prometheus_traffic" do |_, args|
       Log.for("prometheus_traffic:service_url").info { "Checking process: #{process_info}"}
 
       service = KubectlClient::Get.service_by_pod(process_info[:pod])
+      next if service.nil?
+
       service_name = service.dig("metadata", "name")
       service_namespace = "default"
       if service.dig?("metadata", "namespace")
