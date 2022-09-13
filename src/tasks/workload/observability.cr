@@ -62,9 +62,10 @@ task "prometheus_traffic" do |_, args|
 
     # Find list of matching processes
     first_process = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::PROMETHEUS_ADAPTER)
-    Log.for("prometheus_traffic").info { "first_process: #{first_process}" }
+    Log.for("prometheus_traffic:first_matching_process").info { "Process info: #{first_process}" }
 
     matching_processes = KernelIntrospection::K8s.find_matching_processes(CloudNativeIntrospection::PROMETHEUS_ADAPTER)
+    Log.for("prometheus_traffic:process_search").info { "Found #{matching_processes.size} matching processes for prometheus" }
 
     prom_json : JSON::Any | Nil = nil
     matching_processes.map do |process_info|
