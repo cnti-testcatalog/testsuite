@@ -58,14 +58,17 @@ task "prometheus_traffic" do |_, args|
 
     emoji_observability="📶☠️"
 
-    # Find list of matching processes
-    matching_processes = KernelIntrospection::K8s.find_matching_processes(CloudNativeIntrospection::PROMETHEUS_ADAPTER)
-
     ClusterTools.install
+
+    # Find list of matching processes
+    first_process = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::PROMETHEUS_ADAPTER)
+    Log.for("prometheus_traffic").info { "first_process: #{first_process}" }
+
+    matching_processes = KernelIntrospection::K8s.find_matching_processes(CloudNativeIntrospection::PROMETHEUS_ADAPTER)
 
     prom_json : JSON::Any | Nil = nil
     matching_processes.map do |process_info|
-      Log.info { "Checking process: #{process_info}"}
+      Log.for("prometheus_traffic:service_url").info { "Checking process: #{process_info}"}
 
       service = KubectlClient::Get.service_by_pod(process_info[:pod])
       service_name = service.dig("metadata", "name")
@@ -74,7 +77,7 @@ task "prometheus_traffic" do |_, args|
         service_namespace = service.dig("metadata", "namespace")
       end
 
-      Log.info { "Checking ports on service_name: #{service_name}"}
+      Log.for("prometheus_traffic:service_url").info { "Checking ports on service_name: #{service_name}"}
       service_ports = service.dig("spec", "ports")
       port_result = service_ports.as_a.map do |service_port|
         port = service_port.dig("port")
@@ -90,10 +93,10 @@ task "prometheus_traffic" do |_, args|
           prom_api_resp = ClusterTools.exec("curl #{service_url}/api/v1/targets?state=active")
           Log.debug { "prom_api_resp: #{prom_api_resp}"}
           prom_json = JSON.parse(prom_api_resp[:output])
-          Log.info { "Prometheus service_url: #{service_url}" }
+          Log.for("prometheus_traffic:service_url").info { "Prometheus service_url: #{service_url}" }
           break
         rescue ex
-          Log.info { "Failed prometheus service_url: #{service_url}" }
+          Log.for("prometheus_traffic:service_url").info { "Failed prometheus service_url: #{service_url}" }
         end
       end
     end
