@@ -4,11 +4,11 @@ require "colorize"
 # require "./tar.cr"
 require "tar"
 require "find"
-# require "./docker_client.cr"
 require "docker_client"
 require "kubectl_client"
 # require "./airgap_utils.cr"
 require "file_utils"
+require "ecr"
 
 class CriToolsTemplate
   def initialize(@name : String, @image : String)

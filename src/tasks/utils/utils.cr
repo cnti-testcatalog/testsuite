@@ -11,6 +11,7 @@ require "semantic_version"
 require "./dockerd.cr"
 require "./kyverno.cr"
 require "./http_helper.cr"
+require "ecr"
 
 module ShellCmd
   def self.run(cmd, log_prefix, force_output=false)
