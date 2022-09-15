@@ -97,8 +97,8 @@ module CNFManager
     when Helm::InstallMethod::HelmChart, Helm::InstallMethod::HelmDirectory
       Log.info { "EXPORTED CHART PATH: #{helm_chart_path}" } 
       Helm.generate_manifest_from_templates(release_name,
-                                            # helm_chart_path,
-                                            helm_directory,
+                                            helm_chart_path,
+                                            #helm_directory,
                                             manifest_file_path,
                                             helm_install_namespace)
       template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
