@@ -97,7 +97,8 @@ module CNFManager
     when Helm::InstallMethod::HelmChart, Helm::InstallMethod::HelmDirectory
       Log.info { "EXPORTED CHART PATH: #{helm_chart_path}" } 
       Helm.generate_manifest_from_templates(release_name,
-                                            helm_chart_path,
+                                            # helm_chart_path,
+                                            helm_directory,
                                             manifest_file_path,
                                             helm_install_namespace)
       template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
@@ -409,10 +410,10 @@ module CNFManager
     Log.info { "manifest_directory: #{manifest_directory}" }
     #todo did this ever work? should be full path to destination.  This is not 
     # even the relative path
-    if Dir.exists?(helm_directory) 
-      Log.info { "Change helm_directory relative path into full path" }
-      full_helm_directory = Path[helm_directory].expand.to_s
-    elsif Dir.exists?(manifest_directory)
+    # if Dir.exists?(helm_directory) 
+    #   Log.info { "Change helm_directory relative path into full path" }
+    #   full_helm_directory = Path[helm_directory].expand.to_s
+    if Dir.exists?(manifest_directory)
       Log.info { "Change manifest_directory relative path into full path" }
       full_manifest_directory = Path[manifest_directory].expand.to_s
     else
