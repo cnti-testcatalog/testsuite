@@ -58,23 +58,41 @@ task "prometheus_traffic" do |_, args|
 
     emoji_observability="📶☠️"
 
-    match = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::PROMETHEUS_PROCESS)
-    if match
-      Log.info { "Match Pod: #{match}"}
-      # service = KubectlClient::Get.service_by_digest(match[:digest])
-      service = KubectlClient::Get.service_by_pod(match[:pod])
-      service_url = service.dig("metadata", "name")
+    matching_processes = KernelIntrospection::K8s.find_matching_processes(CloudNativeIntrospection::PROMETHEUS_PROCESS)
+    Log.for("prometheus_traffic:process_search").info { "Found #{matching_processes.size} matching processes for prometheus" }
+
+    prom_json : JSON::Any | Nil = nil
+    matching_processes.map do |process_info|
+      Log.for("prometheus_traffic:service_for_pod").info { "Checking process: #{process_info[:pid]}"}
+      service = KubectlClient::Get.service_by_pod(process_info[:pod])
+      next if service.nil?
+      service_name = service.dig("metadata", "name")
       service_namespace = "default"
       if service.dig?("metadata", "namespace")
         service_namespace = service.dig("metadata", "namespace")
       end
 
-      Log.info { "service_url: #{service_url}"}
-      ClusterTools.install
-      prom_api_resp = ClusterTools.exec("curl http://#{service_url}.#{service_namespace}.svc.cluster.local/api/v1/targets?state=active")
+      Log.for("prometheus_traffic:service_url").info { "Checking ports on service_name: #{service_name}"}
+      service_ports = service.dig("spec", "ports")
+      port_result = service_ports.as_a.map do |service_port|
+        port = service_port.dig("port")
+        protocol = service_port.dig("protocol")
+        next if protocol != "TCP"
+        protocol = port == 443 ? "https" : "http"
+        service_url = "#{protocol}://#{service_name}.#{service_namespace}.svc.cluster.local:#{port}"
+        begin
+          prom_api_resp = ClusterTools.exec("curl #{service_url}/api/v1/targets?state=active")
+          Log.debug { "prom_api_resp: #{prom_api_resp}"}
+          prom_json = JSON.parse(prom_api_resp[:output])
+          Log.for("prometheus_traffic:service_url_pass").info { "Prometheus service_url: #{service_url}" }
+          break
+        rescue ex
+          Log.for("prometheus_traffic:service_url_fail").info { "Failed prometheus service_url: #{service_url}" }
+        end
+      end
+    end
 
-      Log.debug { "prom_api_resp: #{prom_api_resp}"}
-      prom_json = JSON.parse(prom_api_resp[:output])
+    if !prom_json.nil?
       matched_target = false
       active_targets = prom_json.dig("data", "activeTargets")
       Log.debug { "active_targets: #{active_targets}"}
