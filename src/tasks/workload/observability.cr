@@ -69,7 +69,7 @@ task "prometheus_traffic" do |_, args|
 
     prom_json : JSON::Any | Nil = nil
     matching_processes.map do |process_info|
-      Log.for("prometheus_traffic:service_url").info { "Checking process: #{process_info}"}
+      Log.for("prometheus_traffic:service_url").info { "Checking process: #{process_info.dig?("pid")}"}
 
       service = KubectlClient::Get.service_by_pod(process_info[:pod])
       next if service.nil?
