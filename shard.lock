@@ -13,8 +13,8 @@ shards:
     version: 0.4.0
 
   docker_client:
-    path: utils/docker_client
-    version: 0.1.0
+    git: https://github.com/cnf-testsuite/docker_client.git
+    version: 0.1.0+git.commit.e3891217923bfd61ff0eb3c3d8f9bc471a1f2ca6
 
   find:
     git: https://github.com/cnf-testsuite/find.git

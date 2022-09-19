@@ -3,6 +3,7 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
+require "docker_client"
 require "../utils/utils.cr"
 
 rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
@@ -612,7 +613,7 @@ task "cni_compatible" do |_, args|
     Log.for("verbose").info { "cni_compatible" } if check_verbose(args)
     emoji_security="🔓🔑"
 
-    docker_version = docker_version_info()
+    docker_version = DockerClient.version_info()
     if docker_version.installed?
       ensure_kubeconfig!
       kubeconfig_orig = ENV["KUBECONFIG"]
