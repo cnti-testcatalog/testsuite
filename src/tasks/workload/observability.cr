@@ -93,7 +93,8 @@ task "prometheus_traffic" do |_, args|
         service_url = "#{protocol}://#{service_name}.#{service_namespace}.svc.cluster.local:#{port}"
 
         begin
-          prom_api_resp = ClusterTools.exec("curl #{service_url}/api/v1/targets?state=active")
+          # Use a 2 second timeout to ensure the curl calls are not blocked for a long time.
+          prom_api_resp = ClusterTools.exec("curl -m 2 #{service_url}/api/v1/targets?state=active")
           Log.debug { "prom_api_resp: #{prom_api_resp}"}
           prom_json = JSON.parse(prom_api_resp[:output])
           Log.for("prometheus_traffic:service_url").info { "Prometheus service_url: #{service_url}" }
