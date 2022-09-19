@@ -7,7 +7,7 @@ Linkerd is a service mesh, designed to give platform-wide observability, reliabi
 Follow [Pre-req steps](../../INSTALL.md#pre-requisites), including
 Set the KUBECONFIG environment to point to the remote K8s cluster
 
-### Automated Envoy installation
+### Automated Linkerd installation
 
 Run cnf-testsuite setup
 
@@ -18,7 +18,13 @@ crystal src/cnf-testsuite.cr setup
 Install linkerd
 
 ```
-crystal src/cnf-testsuite.cr cnf_setup cnf-path=example-cnfs/linkerd
+./linkerd_install.sh
+
+helm repo add linkerd https://helm.linkerd.io/stable
+
+helm install linkerd-crds linkerd/linkerd-crds -n linkerd --create-namespace 
+
+crystal src/cnf-testsuite.cr cnf_setup cnf-path=example-cnfs/linkerd2
 ```
 
 Run the test suite:
@@ -30,5 +36,5 @@ crystal src/cnf-testsuite.cr all
 linkerd cleanup
 
 ```
-crystal src/cnf-testsuite.cr cnf_cleanup cnf-path=example-cnfs/linkerd
+crystal src/cnf-testsuite.cr cnf_cleanup cnf-path=example-cnfs/linkerd2
 ```
