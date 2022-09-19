@@ -81,7 +81,7 @@ module CNFManager
     Log.info { "cnf_workload_resources" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     yml_file_path = config.cnf_config[:yml_file_path]
-    helm_directory = config.cnf_config[:helm_directory]
+    helm_directory = sandbox_helm_directory(config.cnf_config[:helm_directory])
     manifest_directory = config.cnf_config[:manifest_directory]
     release_name = config.cnf_config[:release_name]
     helm_chart_path = config.cnf_config[:helm_chart_path]
@@ -350,7 +350,6 @@ module CNFManager
     end
   end
 
-  # todo move this to the helm module and use the helm enumeration
   def self.install_method_by_config_src(config_src : String, airgapped=false, generate_tar_mode=false)
     Log.info { "install_method_by_config_src" }
     Log.info { "config_src: #{config_src}" }
@@ -395,6 +394,9 @@ module CNFManager
     split["directory"]
   end
 
+  def self.sandbox_helm_directory(cnf_testsuite_helm_directory)
+    cnf_testsuite_helm_directory.split("/")[-1]
+  end
   #Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
   def self.cnf_installation_method(config : Totem::Config) : Tuple(Helm::InstallMethod, String)
     Log.info { "cnf_installation_method" }
@@ -413,14 +415,14 @@ module CNFManager
     # even the relative path
     if Dir.exists?(helm_directory) 
       Log.info { "Change helm_directory relative path into full path" }
-      full_helm_directory = Path[helm_directory].expand.to_s
+      full_helm_directory = Path[sandbox_helm_directory(helm_directory)].expand.to_s
     elsif Dir.exists?(manifest_directory)
       Log.info { "Change manifest_directory relative path into full path" }
       full_manifest_directory = Path[manifest_directory].expand.to_s
     else
       Log.info { "Building helm_directory and manifest_directory full paths" }
-      full_helm_directory = Path[CNF_DIR + "/" + release_name + "/" + helm_directory].expand.to_s
-      full_manifest_directory = Path[CNF_DIR + "/" + release_name + "/" + manifest_directory].expand.to_s
+      full_helm_directory = Path[CNF_DIR + "/" + release_name + "/" + sandbox_helm_directory(helm_directory)].expand.to_s
+      full_manifest_directory = Path[CNF_DIR + "/" + release_name + "/" + sandbox_helm_directory(manifest_directory)].expand.to_s
     end
 
     Log.info { "full_helm_directory: #{full_helm_directory} exists? #{Dir.exists?(full_helm_directory)}" }
@@ -760,6 +762,7 @@ module CNFManager
 
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
+    Log.info { "install_method #{install_method}" }
     helm_directory = config.cnf_config[:helm_directory]
     helm_values = config.cnf_config[:helm_values]
     manifest_directory = config.cnf_config[:manifest_directory]
@@ -812,6 +815,7 @@ module CNFManager
     # todo separate out install methods into a module/function that accepts a block
     liveness_time = 0
     Log.for("sample_setup:install_method").info { "#{install_method[0]}" }
+    Log.for("sample_setup:install_method").info { "#{install_method[1]}" }
     elapsed_time = Time.measure do
       case install_method[0]
       when Helm::InstallMethod::ManifestDirectory
@@ -896,7 +900,7 @@ module CNFManager
         #TODO Add helm options into cnf-testsuite yml
         #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
         # Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
-        Helm.template(release_name, "#{destination_cnf_dir}/#{helm_directory}", output_file="cnfs/temp_template.yml", namespace=helm_install_namespace, values=helm_values)
+        Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml", namespace=helm_install_namespace, values=helm_values)
         yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
         
         if input_file && !input_file.empty?
@@ -907,7 +911,7 @@ module CNFManager
 
         begin
           # helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} #{helm_namespace_option}")
-          helm_install = Helm.install(release_name, "#{destination_cnf_dir}/#{helm_directory}", helm_namespace_option, helm_values)
+          helm_install = Helm.install(release_name, "#{install_method[1]}", helm_namespace_option, helm_values)
         rescue e : Helm::InstallationFailed
           stdout_failure "Helm installation failed"
           stdout_failure "\t#{e.message}"

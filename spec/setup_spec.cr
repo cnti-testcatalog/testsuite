@@ -116,4 +116,18 @@ describe "Setup" do
       (/Successfully cleaned up/ =~ response_s).should_not be_nil
     end
   end
+
+  it "'cnf_setup/cnf_cleanup' should install/cleanup with helm_directory that descends multiple directories", tags: ["setup"] do
+    begin
+      response_s = `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/multi_helm_directories/cnf-testsuite.yml`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/Successfully setup coredns/ =~ response_s).should_not be_nil
+    ensure
+      response_s = `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/multi_helm_directories/cnf-testsuite.yml`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/Successfully cleaned up/ =~ response_s).should_not be_nil
+    end
+  end
 end
