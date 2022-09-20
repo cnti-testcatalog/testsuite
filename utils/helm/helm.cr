@@ -100,7 +100,7 @@ module Helm
     def self.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
       Log.info { "parse_manifest_as_ymls template_file_name: #{template_file_name}" }
       templates = File.read(template_file_name)
-      split_template = templates.split("---")
+      split_template = templates.split(/(\s|^)---(\s|$)/)
       ymls = split_template.map { | template |
         #TODO strip out NOTES
         YAML.parse(template)
@@ -148,20 +148,19 @@ module Helm
 
   # Use helm to apply the helm values file to the helm chart templates to create a complete manifest
   # Helm uses manifest files that can be jinja templates
-  def self.generate_manifest_from_templates(release_name, helm_chart, output_file="cnfs/temp_template.yml", namespace : String | Nil = nil)
+  def self.generate_manifest_from_templates(release_name, helm_chart, output_file="cnfs/temp_template.yml", namespace : String | Nil = nil, helm_values = nil)
     # namespace can be an empty string. So verify and set it to nil.
     if !namespace.nil? && namespace.empty?
       namespace = nil
     end
 
     Log.debug { "generate_manifest_from_templates" }
-    # todo remove my guilt 
     helm = BinarySingleton.helm
     Log.info { "Helm::generate_manifest_from_templates command: #{helm} template #{release_name} #{helm_chart} > #{output_file}" }
 
     ShellCmd.run("ls -alR #{helm_chart}", "before generate")
     ShellCmd.run("ls -alR cnfs", "before generate")
-    resp = Helm.template(release_name, helm_chart, output_file, namespace)
+    resp = Helm.template(release_name, helm_chart, output_file, namespace, helm_values)
     ShellCmd.run("ls -alR #{helm_chart}", "after generate")
     ShellCmd.run("ls -alR cnfs", "after generate")
 

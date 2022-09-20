@@ -3,7 +3,7 @@ require "totem"
 require "colorize"
 require "./types/cnf_testsuite_yml_type.cr"
 require "helm"
-require "git_client"
+require "git"
 require "uuid"
 require "./points.cr"
 require "./task.cr"
@@ -87,6 +87,7 @@ module CNFManager
     helm_chart_path = config.cnf_config[:helm_chart_path]
     manifest_file_path = config.cnf_config[:manifest_file_path]
     helm_install_namespace = config.cnf_config[:helm_install_namespace]
+    helm_values = config.cnf_config[:helm_values]
     test_passed = true
 
     default_namespace = "default"
@@ -99,7 +100,8 @@ module CNFManager
       Helm.generate_manifest_from_templates(release_name,
                                             helm_chart_path,
                                             manifest_file_path,
-                                            helm_install_namespace)
+                                            helm_install_namespace,
+                                            helm_values)
       template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
       if !helm_install_namespace.empty?
         default_namespace = config.cnf_config[:helm_install_namespace]
@@ -834,7 +836,10 @@ module CNFManager
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
       when Helm::InstallMethod::HelmChart
         if !helm_install_namespace.empty?
-          default_namespace = config.cnf_config[:helm_install_namespace]
+          # default_namespace = config.cnf_config[:helm_install_namespace]
+          helm_install_namespace = config.cnf_config[:helm_install_namespace]
+        else
+          helm_install_namespace = default_namespace
         end
         if input_file && !input_file.empty?
           tar_info = AirGap.tar_info_by_config_src(config.cnf_config[:helm_chart])
@@ -852,7 +857,8 @@ module CNFManager
           Helm.helm_repo_add(helm_repo_name, helm_repo_url)
         end
         Log.for("verbose").info { "deploying with chart repository" } if verbose
-        Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml", values=helm_values)
+        # Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml", values=helm_values)
+        Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml", namespace=helm_install_namespace, values=helm_values)
         yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
 
         if input_file && !input_file.empty?
@@ -876,7 +882,10 @@ module CNFManager
         export_published_chart(config, cli_args)
       when Helm::InstallMethod::HelmDirectory
         if !helm_install_namespace.empty?
-          default_namespace = config.cnf_config[:helm_install_namespace]
+          # default_namespace = config.cnf_config[:helm_install_namespace]
+          helm_install_namespace = config.cnf_config[:helm_install_namespace]
+        else
+          helm_install_namespace = default_namespace
         end
         Log.for("verbose").info { "deploying with helm directory" } if verbose
         # prepare a helm directory for deployment into an airgapped environment, put in airgap module
