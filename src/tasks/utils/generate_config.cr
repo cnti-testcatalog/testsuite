@@ -12,12 +12,14 @@ module CNFManager
 
     def self.export_manifest(config_src, output_file="./cnf-testsuite.yml", airgapped=false, generate_tar_mode=false)
       LOGGING.info "export_manifest"
+      LOGGING.info "export_manifest config_src: #{config_src}"
       LOGGING.info "airgapped: #{airgapped}"
       LOGGING.info "generate_tar_mode: #{generate_tar_mode}"
       generate_initial_testsuite_yml(config_src, output_file)
       CNFManager.generate_and_set_release_name(output_file, 
                                                airgapped: airgapped, 
-                                               generate_tar_mode: generate_tar_mode)
+                                               generate_tar_mode: generate_tar_mode,
+                                               src_mode: true)
       config = CNFManager.parsed_config_file(output_file)
       release_name = optional_key_as_string(config, "release_name")
       install_method = CNFManager.install_method_by_config_src(config_src)

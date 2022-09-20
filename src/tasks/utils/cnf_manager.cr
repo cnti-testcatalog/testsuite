@@ -482,7 +482,7 @@ module CNFManager
   end
 
 
-  def self.generate_and_set_release_name(config_yml_path, airgapped=false, generate_tar_mode=false)
+  def self.generate_and_set_release_name(config_yml_path, airgapped=false, generate_tar_mode=false, src_mode=false)
     Log.info { "generate_and_set_release_name" }
     Log.info { "generate_and_set_release_name config_yml_path: #{config_yml_path}" }
     Log.info { "airgapped mode: #{airgapped}" }
@@ -495,6 +495,8 @@ module CNFManager
     config = CNFManager.parsed_config_file(yml_file)
 
     predefined_release_name = optional_key_as_string(config, "release_name")
+    src_helm_directory = optional_key_as_string(config, "helm_directory")
+    Log.info { "src_helm_directory: #{src_helm_directory}" }
     Log.debug { "predefined_release_name: #{predefined_release_name}" }
     if predefined_release_name.empty?
       install_method = self.cnf_installation_method(config)
@@ -510,7 +512,11 @@ module CNFManager
         # todo if in airgapped mode, get the release name
         # todo get the release name by looking through everything under /tmp/repositories
         Log.info { "generate_and_set_release_name helm_chart_or_directory: #{install_method[1]}" }
-        release_name = helm_chart_template_release_name("#{install_method[1]}", airgapped: airgapped)
+        if src_mode
+          release_name = helm_chart_template_release_name("#{src_helm_directory}", airgapped: airgapped)
+        else
+          release_name = helm_chart_template_release_name("#{install_method[1]}", airgapped: airgapped)
+        end
       when Helm::InstallMethod::ManifestDirectory
         Log.debug { "manifest_directory install method" }
         release_name = UUID.random.to_s
