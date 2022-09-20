@@ -29,7 +29,8 @@ dependencies:
   kubectl_client:
     path: utils/kubectl_client
   docker_client:
-    path: utils/docker_client
+    github: cnf-testsuite/docker_client
+    branch: main
   # find:
   #   path: utils/find
   find:
