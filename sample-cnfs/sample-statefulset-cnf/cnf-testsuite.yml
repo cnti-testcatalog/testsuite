@@ -1,5 +1,6 @@
 ---
-release_name: test --set mariadb.primary.persistence.enabled=false --set persistence.enabled=false 
+release_name: test
+helm_values: "--set mariadb.primary.persistence.enabled=false --set persistence.enabled=false"
 service_name: 
 helm_repository:
   name: bitnami 
