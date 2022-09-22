@@ -5,7 +5,6 @@ require "totem"
 require "./utils/system_information/helm.cr"
 # require "./utils/system_information/wget.cr"
 # require "./utils/system_information/curl.cr"
-require "./utils/system_information/kubectl.cr"
 require "./utils/system_information/clusterctl.cr"
 
 task "prereqs" do |_, args|
@@ -14,10 +13,8 @@ task "prereqs" do |_, args|
 
   verbose = check_verbose(args)
   helm_condition = helm_installation(verbose).includes?("helm found") && !Helm.helm_gives_k8s_warning?(true)
-  kubectl_checks_output = kubectl_installation(verbose, offline_mode)
 
-  # Should be true if kubectl is found
-  kubectl_existance = kubectl_checks_output.includes?("kubectl found")
+  kubectl_existance = KubectlClient.installation_found?
 
   checks = [
     helm_condition,
