@@ -1,4 +1,5 @@
 ---
 helm_directory: wordpress 
-release_name: test --set mariadb.primary.persistence.enabled=false --set persistence.enabled=false 
+helm_values: "--set mariadb.primary.persistence.enabled=false --set persistence.enabled=false"
+release_name: test 
 allowlist_helm_chart_container_names: []

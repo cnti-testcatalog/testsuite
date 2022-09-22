@@ -74,12 +74,13 @@ module CNFManager
       else
         # todo separate parameters from helm directory
         # TODO Fix bug with helm_directory for arguments, it creates an invalid path
-        helm_directory = source_helm_directory.split("/")[0] + " " + source_helm_directory.split(" ")[1..-1].join(" ")
+        # # we don't handle arguments anymore
+        # helm_directory = source_helm_directory.split("/")[0] + " " + source_helm_directory.split(" ")[1..-1].join(" ")
         # helm_directory = optional_key_as_string(config, "helm_directory")
         working_chart_directory = helm_directory
         Log.info { "NOT USING EXPORTED CHART PATH" } 
       end
-      helm_chart_path = destination_cnf_dir + "/" + working_chart_directory 
+      helm_chart_path = destination_cnf_dir + "/" + CNFManager.sandbox_helm_directory(working_chart_directory)
       helm_chart_path = Path[helm_chart_path].expand.to_s
       manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
       white_list_container_names = optional_key_as_string(config, "allowlist_helm_chart_container_names")

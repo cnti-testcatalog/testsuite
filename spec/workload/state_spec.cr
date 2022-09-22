@@ -108,7 +108,7 @@ describe "State" do
     begin
       # update the helm parameter with a schedulable node for the pv chart
       schedulable_nodes = KubectlClient::Get.schedulable_nodes
-      update_yml("sample-cnfs/sample-local-storage/cnf-testsuite.yml", "release_name", "coredns --set worker_node='#{schedulable_nodes[0]}'")
+      update_yml("sample-cnfs/sample-local-storage/cnf-testsuite.yml", "helm_values", "--set worker_node='#{schedulable_nodes[0]}'")
       `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-local-storage/cnf-testsuite.yml verbose`
       $?.success?.should be_true
       response_s = `./cnf-testsuite no_local_volume_configuration verbose`
@@ -116,7 +116,7 @@ describe "State" do
       (/FAILED: local storage configuration volumes found/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-local-storage/cnf-testsuite.yml deploy_with_chart=false`
-      update_yml("sample-cnfs/sample-local-storage/cnf-testsuite.yml", "release_name", "coredns")
+      update_yml("sample-cnfs/sample-local-storage/cnf-testsuite.yml", "helm_values", "")
       $?.success?.should be_true
     end
   end
