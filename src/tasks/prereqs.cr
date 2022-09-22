@@ -14,7 +14,7 @@ task "prereqs" do |_, args|
   verbose = check_verbose(args)
   helm_condition = helm_installation(verbose).includes?("helm found") && !Helm.helm_gives_k8s_warning?(true)
 
-  kubectl_existance = KubectlClient.installation_found?
+  kubectl_existance = KubectlClient.installation_found?(verbose, offline_mode)
 
   checks = [
     helm_condition,
@@ -22,7 +22,7 @@ task "prereqs" do |_, args|
   ]
 
   # git installation is optional for offline mode
-  if !args.named["offline"]?
+  if !offline_mode
     checks << GitClient.installation_found?
   end
 
