@@ -37,8 +37,8 @@ shards:
     version: 0.9.0+git.commit.f62bfcdfbe65ee31c46c3d9951cee08ac2e0bee0
 
   kubectl_client:
-    path: utils/kubectl_client
-    version: 0.1.0
+    git: https://github.com/cnf-testsuite/kubectl_client.git
+    version: 0.1.0+git.commit.f268404a77a7dc7f15cc0071d9cc2de221cf41fe
 
   popcorn:
     git: https://github.com/icyleaf/popcorn.git
