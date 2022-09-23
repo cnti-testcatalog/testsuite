@@ -28,6 +28,7 @@ helm_repository: # CONFIGURATION OF HELM REPO - ONLY NEEDED WHEN USING helm_char
 #helm_directory: coredns # PATH_TO_CNFS_HELM_CHART ; or
 #manifest_directory: coredns # PATH_TO_DIRECTORY_OF_CNFS_MANIFEST_FILES ; or
 release_name: coredns # DESIRED_HELM_RELEASE_NAME
+helm_values: --versions 16.2.0 --set persistence.enabled=false
 
 
 ```
@@ -116,15 +117,25 @@ Example Setting:
 
 #### release_name
 
-This is the release name of the CNF.(Optional)
+This is the release name of the CNF. (Optional)
 
 When cnf_setup runs this argument is used forfilesystem path version, so the testsuite is able to track what cnfs are currently installed on the cluster. It is also used for the helm release version, when either the [helm_chart](#helm_chart) or [helm_directory](#helm_directory) arguments are in use. Some tests also use this argument for finding and interacting with cluster reasouces for the installed CNF.
 
 This MAY be set. If release_name is not set, a release name will be generated.
 
-
 Example setting:
 
 `release_name: privileged-coredns`
+
+#### helm_values
+
+This is for any helm argument. (Optional)
+
+When installing from helm, there are helm arguments (e.g. --version 1234 ) and helm values (e.g. --set myvalue=42).  Both of these will be passed on to the underlying helm installation command when it is run.  
+
+
+Example setting:
+
+`--set myvalue=42`
 
 
