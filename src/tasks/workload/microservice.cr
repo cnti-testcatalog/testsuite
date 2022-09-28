@@ -567,9 +567,9 @@ task "service_discovery" do |_, args|
     emoji_big="🦖"
 
     if test_passed
-      upsert_passed_task("service_discovery", "✔️  PASSED: Some containers exposed as a service #{emoji_small} #{emoji_image_size}")
+      upsert_passed_task("service_discovery", "✔️  ✨PASSED: Some containers exposed as a service #{emoji_small} #{emoji_image_size}")
     else
-      upsert_failed_task("service_discovery", "✖️  FAILED: No containers exposed as a service #{emoji_big} #{emoji_image_size}")
+      upsert_failed_task("service_discovery", "✖️  ✨FAILED: No containers exposed as a service #{emoji_big} #{emoji_image_size}")
     end
   end
 end

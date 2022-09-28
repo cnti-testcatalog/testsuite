@@ -151,9 +151,9 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
       end
     end
     if task_response
-      resp = upsert_passed_task("pod_network_latency","✔️  PASSED: pod_network_latency chaos test passed 🗡️💀♻️")
+      resp = upsert_passed_task("pod_network_latency","✔️  ✨PASSED: pod_network_latency chaos test passed 🗡️💀♻️")
     else
-      resp = upsert_failed_task("pod_network_latency","✖️  FAILED: pod_network_latency chaos test failed 🗡️💀♻️")
+      resp = upsert_failed_task("pod_network_latency","✖️  ✨FAILED: pod_network_latency chaos test failed 🗡️💀♻️")
     end
   end
 end
@@ -218,9 +218,9 @@ task "pod_network_corruption", ["install_litmus"] do |_, args|
       end
     end
     if task_response
-      resp = upsert_passed_task("pod_network_corruption","✔️  PASSED: pod_network_corruption chaos test passed 🗡️💀♻️")
+      resp = upsert_passed_task("pod_network_corruption","✔️  ✨PASSED: pod_network_corruption chaos test passed 🗡️💀♻️")
     else
-      resp = upsert_failed_task("pod_network_corruption","✖️  FAILED: pod_network_corruption chaos test failed 🗡️💀♻️")
+      resp = upsert_failed_task("pod_network_corruption","✖️  ✨FAILED: pod_network_corruption chaos test failed 🗡️💀♻️")
     end
   end
 end
@@ -285,9 +285,9 @@ task "pod_network_duplication", ["install_litmus"] do |_, args|
       end
     end
     if task_response
-      resp = upsert_passed_task("pod_network_duplication","✔️  PASSED: pod_network_duplication chaos test passed 🗡️💀♻️")
+      resp = upsert_passed_task("pod_network_duplication","✔️  ✨PASSED: pod_network_duplication chaos test passed 🗡️💀♻️")
     else
-      resp = upsert_failed_task("pod_network_duplication","✖️  FAILED: pod_network_duplication chaos test failed 🗡️💀♻️")
+      resp = upsert_failed_task("pod_network_duplication","✖️  ✨FAILED: pod_network_duplication chaos test failed 🗡️💀♻️")
     end
   end
 end
@@ -557,9 +557,9 @@ task "pod_io_stress", ["install_litmus"] do |_, args|
       end
     end
     if task_response
-      resp = upsert_passed_task(test_name,"✔️  PASSED: #{test_name} chaos test passed 🗡️💀♻️")
+      resp = upsert_passed_task(test_name,"✔️  ✨PASSED: #{test_name} chaos test passed 🗡️💀♻️")
     else
-      resp = upsert_failed_task(test_name,"✖️  FAILED: #{test_name} chaos test failed 🗡️💀♻️")
+      resp = upsert_failed_task(test_name,"✖️  ✨FAILED: #{test_name} chaos test failed 🗡️💀♻️")
     end
   end
 ensure
@@ -632,9 +632,9 @@ task "pod_dns_error", ["install_litmus"] do |_, args|
         end
       end
       if task_response
-        resp = upsert_passed_task("pod_dns_error","✔️  PASSED: pod_dns_error chaos test passed 🗡️💀♻️")
+        resp = upsert_passed_task("pod_dns_error","✔️  ✨PASSED: pod_dns_error chaos test passed 🗡️💀♻️")
       else
-        resp = upsert_failed_task("pod_dns_error","✖️  FAILED: pod_dns_error chaos test failed 🗡️💀♻️")
+        resp = upsert_failed_task("pod_dns_error","✖️  ✨FAILED: pod_dns_error chaos test failed 🗡️💀♻️")
       end
     else
       resp = upsert_skipped_task("pod_dns_error","⏭️  SKIPPED: pod_dns_error docker runtime not found 🗡️💀♻️")

@@ -434,9 +434,9 @@ task "secrets_used" do |_, args|
       test_passed
     end
     if task_response
-      resp = upsert_passed_task("secrets_used","✔️  PASSED: Secrets defined and used #{emoji_probe}")
+      resp = upsert_passed_task("secrets_used","✔️  ✨PASSED: Secrets defined and used #{emoji_probe}")
     else
-      resp = upsert_skipped_task("secrets_used","⏭  #{secrets_used_skipped_msg(emoji_probe)}")
+      resp = upsert_skipped_task("secrets_used","⏭  ✨#{secrets_used_skipped_msg(emoji_probe)}")
     end
     resp
   end
@@ -621,10 +621,10 @@ task "immutable_configmap" do |_, args|
       end
 
       if cnf_manager_workload_resource_task_response
-        resp = "✔️  PASSED: All volume or container mounted configmaps immutable #{emoji_probe}".colorize(:green)
+        resp = "✔️  ✨PASSED: All volume or container mounted configmaps immutable #{emoji_probe}".colorize(:green)
         upsert_passed_task("immutable_configmap", resp)
       elsif immutable_configmap_supported
-        resp = "✖️  FAILED: Found mutable configmap(s) #{emoji_probe}".colorize(:red)
+        resp = "✖️  ✨FAILED: Found mutable configmap(s) #{emoji_probe}".colorize(:red)
         upsert_failed_task("immutable_configmap", resp)
 
         # Print out any mutable configmaps mounted as volumes
