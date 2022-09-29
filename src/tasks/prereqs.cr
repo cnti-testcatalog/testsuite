@@ -13,7 +13,7 @@ task "prereqs" do |_, args|
 
   verbose = check_verbose(args)
   
-  helm_condition = Helm::BinarySingleton.installation_found? && !Helm.helm_gives_k8s_warning?(true)
+  helm_condition = Helm::SystemInfo.helm_installation_info(verbose) && !Helm.helm_gives_k8s_warning?(true)
 
   kubectl_existance = KubectlClient.installation_found?(verbose, offline_mode)
 

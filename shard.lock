@@ -30,7 +30,7 @@ shards:
 
   helm:
     git: https://github.com/cnf-testsuite/helm.git
-    version: 0.1.0+git.commit.de1186340c8ba0195420f22af287aa3e97679a7d
+    version: 0.1.0+git.commit.12b1152fcb8d55806d6c5949716a1ff116c4d3d2
 
   icr:
     git: https://github.com/crystal-community/icr.git
