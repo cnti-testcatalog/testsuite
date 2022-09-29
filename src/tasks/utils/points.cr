@@ -359,7 +359,7 @@ module CNFManager
         if na_assigned?(x)
           Log.info { "na_assigned for #{x}" }
           acc
-        elsif bonus_tasks.includes?(x) && failed_tests.includes?(x)
+        elsif bonus_tasks.includes?(x) && (failed_tests.includes?(x) || skipped_tests.includes?(x))
           Log.info { "bonus not counted in maximum #{x}" }
           #don't count failed tests that are bonus tests #1465
           acc
