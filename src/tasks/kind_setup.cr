@@ -66,7 +66,7 @@ class KindManager
 
   def initialize
     @project_root = FileUtils.pwd
-    @helm = BinarySingleton.helm
+    @helm = Helm::BinarySingleton.helm
     @kind = "#{project_root}/#{TOOLS_DIR}/kind/kind"
     Log.for("kind_project_root").info { project_root }
   end

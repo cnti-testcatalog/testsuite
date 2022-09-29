@@ -2,7 +2,7 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
-require "./utils/system_information/helm.cr"
+require "helm"
 # require "./utils/system_information/wget.cr"
 # require "./utils/system_information/curl.cr"
 require "./utils/system_information/clusterctl.cr"
@@ -12,7 +12,8 @@ task "prereqs" do |_, args|
   offline_mode = true if args.named["offline"]?
 
   verbose = check_verbose(args)
-  helm_condition = helm_installation(verbose).includes?("helm found") && !Helm.helm_gives_k8s_warning?(true)
+  
+  helm_condition = Helm::BinarySingleton.installation_found? && !Helm.helm_gives_k8s_warning?(true)
 
   kubectl_existance = KubectlClient.installation_found?(verbose, offline_mode)
 
