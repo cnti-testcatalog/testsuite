@@ -8,7 +8,7 @@ FALCO_OFFLINE_DIR = "#{TarClient::TAR_REPOSITORY_DIR}/falcosecurity_falco"
 
 desc "Install Falco"
 task "install_falco" do |_, args|
-  # helm = BinarySingleton.helm
+  # helm = Helm::BinarySingleton.helm
   File.write("falco_rule.yaml", FALCO_RULES)
   if ENV["FALCO_ENV"]? == "CI"
     image_arg = "--set image.repository=conformance/falco"

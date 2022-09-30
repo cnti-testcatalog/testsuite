@@ -25,7 +25,8 @@ dependencies:
     # version: ~> 0.1.0
     branch: main
   helm:
-    path: utils/helm
+    github: cnf-testsuite/helm
+    branch: main
   kubectl_client:
     github: cnf-testsuite/kubectl_client
     branch: main

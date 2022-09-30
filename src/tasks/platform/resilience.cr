@@ -22,7 +22,7 @@ namespace "platform" do
     Log.info { "Running POC in destructive mode!" }
     task_response = CNFManager::Task.task_runner(args) do |args|
       current_dir = FileUtils.pwd
-      helm = BinarySingleton.helm
+      helm = Helm::BinarySingleton.helm
 
       #Select the first node that isn't a master and is also schedulable
       worker_nodes = KubectlClient::Get.worker_nodes
