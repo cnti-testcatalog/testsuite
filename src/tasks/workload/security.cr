@@ -159,7 +159,7 @@ task "non_root_user", ["install_falco"] do |_, args|
     node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
 
-    # Handle scenario when pod is not avaible when Falco is not installed.
+    # Handle scenario when pod is not available when Falco is not installed.
     if pods.size > 0
       falco_pod_name = pods[0].dig("metadata", "name").as_s
       Log.info { "Falco Pod Name: #{falco_pod_name}" }
