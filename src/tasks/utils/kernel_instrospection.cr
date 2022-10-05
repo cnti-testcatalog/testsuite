@@ -262,9 +262,9 @@ module KernelIntrospection
               container_statuses = status["containerStatuses"].as_a
             Log.debug { "container_statuses: #{container_statuses}" }
             container_statuses.map do |container_status|
-              container_id = container_status.dig("containerID").as_s
               ready = container_status.dig("ready").as_bool
-              next unless ready 
+              next unless ready
+              container_id = container_status.dig("containerID").as_s
               pid = ClusterTools.node_pid_by_container_id(container_id, node)
               # there are some nodes that wont have a proc with this pid in it
               # e.g. a stand alone pod gets installed on only one node
@@ -299,9 +299,9 @@ module KernelIntrospection
             container_statuses = status["containerStatuses"].as_a
             Log.debug { "container_statuses: #{container_statuses}" }
             container_statuses.map do |container_status|
-              container_id = container_status.dig("containerID").as_s
               ready = container_status.dig("ready").as_bool
-              next unless ready 
+              next unless ready
+              container_id = container_status.dig("containerID").as_s
               pid = ClusterTools.node_pid_by_container_id(container_id, node)
               # there are some nodes that wont have a proc with this pid in it
               # e.g. a stand alone pod gets installed on only one node
