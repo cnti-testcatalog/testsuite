@@ -50,6 +50,9 @@ dependencies:
   kubectl_client:
     github: cnf-testsuite/kubectl_client
     branch: main
+  cluster_tools:
+    github: cnf-testsuite/cluster_tools
+    branch: main
   helm:
     github: cnf-testsuite/helm
     branch: main

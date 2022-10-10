@@ -1,4 +1,4 @@
-require "./cluster_utils.cr"
+require "cluster_tools"
 module Mariadb
   MYSQL_PORT = "3306" 
   def self.match()
