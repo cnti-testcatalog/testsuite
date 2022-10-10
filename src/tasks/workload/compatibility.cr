@@ -263,7 +263,7 @@ end
 
 desc "Test decrease capacity by setting replicas to 3 and then decreasing to 1"
 task "decrease_capacity" do |_, args|
-  hi = CNFManager::Task.task_runner(args) do |args, config|
+  CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "decrease_capacity" if check_verbose(args)
     target_replicas = "1"
     base_replicas = "3"
@@ -290,7 +290,6 @@ task "decrease_capacity" do |_, args|
     puts "1 ret: #{ret}"
     ret
   end
-  puts "hi: #{hi}"
 end
 
 
