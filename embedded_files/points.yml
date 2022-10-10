@@ -58,14 +58,6 @@
 - name: increase_decrease_capacity 
   tags: compatibility, dynamic, workload, essential, cert
   pass: 100
-- name: increase_capacity 
-  tags: compatibility, dynamic, workload
-  pass: 10
-  fail: 0 
-- name: decrease_capacity 
-  tags: compatibility, dynamic, workload
-  pass: 10
-  fail: 0 
 #- name: small_autoscaling 
 #  tags: compatibility, dynamic, workload
 #- name: large_autoscaling 
