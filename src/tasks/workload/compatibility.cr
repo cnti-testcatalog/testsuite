@@ -175,7 +175,6 @@ task "rollback" do |_, args|
 end
 
 desc "Test increasing/decreasing capacity"
-# task "increase_decrease_capacity", ["increase_capacity", "decrease_capacity"] do |t, args|
 task "increase_decrease_capacity" do |t, args|
   VERBOSE_LOGGING.info "increase_decrease_capacity" if check_verbose(args)
   CNFManager::Task.task_runner(args) do |args, config|
@@ -232,66 +231,66 @@ Learn more on remediation by viewing our USAGE.md doc at https://bit.ly/capacity
 TEMPLATE
 end
 
-desc "Test increasing capacity by setting replicas to 1 and then increasing to 3"
-task "increase_capacity" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "increase_capacity" if check_verbose(args)
-    emoji_increase_capacity="📦📈"
+# desc "Test increasing capacity by setting replicas to 1 and then increasing to 3"
+# task "increase_capacity" do |_, args|
+#   CNFManager::Task.task_runner(args) do |args, config|
+#     VERBOSE_LOGGING.info "increase_capacity" if check_verbose(args)
+#     emoji_increase_capacity="📦📈"
 
-    target_replicas = "3"
-    base_replicas = "1"
-    # TODO scale replicatsets separately
-    # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset
-    # resource["kind"].as_s.downcase == "replicaset"
-    task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
-      if resource["kind"].as_s.downcase == "deployment" ||
-          resource["kind"].as_s.downcase == "statefulset"
-        final_count = change_capacity(base_replicas, target_replicas, args, config, resource)
-        target_replicas == final_count
-      else
-        true
-      end
-    end
-    # if target_replicas == final_count 
-    if task_response.none?(false) 
-      upsert_passed_task("increase_capacity", "✔️  PASSED: Replicas increased to #{target_replicas} #{emoji_increase_capacity}")
-    else
-      upsert_failed_task("increase_capacity", increase_decrease_capacity_failure_msg(target_replicas, emoji_increase_capacity))
-    end
-  end
-end
+#     target_replicas = "3"
+#     base_replicas = "1"
+#     # TODO scale replicatsets separately
+#     # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset
+#     # resource["kind"].as_s.downcase == "replicaset"
+#     task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
+#       if resource["kind"].as_s.downcase == "deployment" ||
+#           resource["kind"].as_s.downcase == "statefulset"
+#         final_count = change_capacity(base_replicas, target_replicas, args, config, resource)
+#         target_replicas == final_count
+#       else
+#         true
+#       end
+#     end
+#     # if target_replicas == final_count 
+#     if task_response.none?(false) 
+#       upsert_passed_task("increase_capacity", "✔️  PASSED: Replicas increased to #{target_replicas} #{emoji_increase_capacity}")
+#     else
+#       upsert_failed_task("increase_capacity", increase_decrease_capacity_failure_msg(target_replicas, emoji_increase_capacity))
+#     end
+#   end
+# end
 
-desc "Test decrease capacity by setting replicas to 3 and then decreasing to 1"
-task "decrease_capacity" do |_, args|
-  hi = CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "decrease_capacity" if check_verbose(args)
-    target_replicas = "1"
-    base_replicas = "3"
-    task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
-      # TODO scale replicatsets separately
-      # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset
-      # resource["kind"].as_s.downcase == "replicaset"
-      if resource["kind"].as_s.downcase == "deployment" ||
-          resource["kind"].as_s.downcase == "statefulset"
-        final_count = change_capacity(base_replicas, target_replicas, args, config, resource)
-        target_replicas == final_count
-      else
-        true
-      end
-    end
-    emoji_decrease_capacity="📦📉"
+# desc "Test decrease capacity by setting replicas to 3 and then decreasing to 1"
+# task "decrease_capacity" do |_, args|
+#   hi = CNFManager::Task.task_runner(args) do |args, config|
+#     VERBOSE_LOGGING.info "decrease_capacity" if check_verbose(args)
+#     target_replicas = "1"
+#     base_replicas = "3"
+#     task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
+#       # TODO scale replicatsets separately
+#       # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset
+#       # resource["kind"].as_s.downcase == "replicaset"
+#       if resource["kind"].as_s.downcase == "deployment" ||
+#           resource["kind"].as_s.downcase == "statefulset"
+#         final_count = change_capacity(base_replicas, target_replicas, args, config, resource)
+#         target_replicas == final_count
+#       else
+#         true
+#       end
+#     end
+#     emoji_decrease_capacity="📦📉"
 
-    # if target_replicas == final_count 
-    if task_response.none?(false) 
-      ret = upsert_passed_task("decrease_capacity", "✔️  PASSED: Replicas decreased to #{target_replicas} #{emoji_decrease_capacity}")
-    else
-      ret = upsert_failed_task("decrease_capacity", increase_decrease_capacity_failure_msg(target_replicas, emoji_decrease_capacity))
-    end
-    puts "1 ret: #{ret}"
-    ret
-  end
-  puts "hi: #{hi}"
-end
+#     # if target_replicas == final_count 
+#     if task_response.none?(false) 
+#       ret = upsert_passed_task("decrease_capacity", "✔️  PASSED: Replicas decreased to #{target_replicas} #{emoji_decrease_capacity}")
+#     else
+#       ret = upsert_failed_task("decrease_capacity", increase_decrease_capacity_failure_msg(target_replicas, emoji_decrease_capacity))
+#     end
+#     puts "1 ret: #{ret}"
+#     ret
+#   end
+#   puts "hi: #{hi}"
+# end
 
 
 def change_capacity(base_replicas, target_replica_count, args, config, resource = {kind: "", 

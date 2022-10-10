@@ -51,7 +51,7 @@ describe "SampleUtils" do
     # default
     (CNFManager::Points.task_points("liveness")).should eq(100)
     # assigned
-    (CNFManager::Points.task_points("increase_capacity")).should eq(10)
+    (CNFManager::Points.task_points("increase_capacity")).should eq(5)
   end
 
   it  "'task_points(, false)' should return the amount of points for a failing test", tags: ["points"]  do
@@ -147,8 +147,7 @@ describe "SampleUtils" do
             "reasonable_startup_time", "single_process_type",
             "privileged", "non_root_user", "privilege_escalation",
             "symlink_file_system", "application_credentials",
-            "host_network", "increase_capacity",
-            "decrease_capacity","pod_network_latency",
+            "host_network","pod_network_latency",
             "pod_network_corruption", "pod_network_duplication",
             "pod_delete", "pod_io_stress", "pod_memory_hog",
             "disk_fill", "ip_addresses", "liveness", "readiness",
