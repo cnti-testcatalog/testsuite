@@ -286,9 +286,7 @@ module CNFManager
         if na_assigned?(x)
           Log.info { "na_assigned for #{x}" }
           acc
-        # elsif skipped_tests.includes?(x)
-        #   acc
-        elsif bonus_tasks.includes?(x) && (failed_tests.includes?(x) || skipped_tests.includes?(x) || na_assigned?(x))
+        elsif bonus_tasks.includes?(x) && (failed_tests.includes?(x) || skipped_tests.includes?(x))
           Log.info { "bonus not counted in maximum #{x}" }
           #don't count failed tests that are bonus tests #1465
           acc
@@ -330,6 +328,7 @@ module CNFManager
       end
 
       skipped_tests = results_yaml["items"].as_a.reduce([] of String) do |acc, test_info|
+        Log.info { "skipped test_info status: #{test_info["status"]}" }
         if test_info["status"] == "skipped"
           acc + [test_info["name"].as_s]
         else
@@ -351,15 +350,21 @@ module CNFManager
       Log.info { "bonus tasks #{bonus_tasks}" }
 
       max = tasks.reduce(0) do |acc, x|
+        Log.info { "bonus_tasks.includes?(x) #{bonus_tasks.includes?(x)}" }
+        Log.info { "skipped_tests.includes?(x) #{skipped_tests.includes?(x)}" }
+        Log.info { "failed_tests.includes?(x) #{failed_tests.includes?(x)}" }
+        Log.info { "na_assigned?(x) #{na_assigned?(x)}" }
+        Log.info { "tasks x: #{x}" }
         # skipped counted against max score (not reduced), na not counted (reduced)
         if na_assigned?(x)
           Log.info { "na_assigned for #{x}" }
           acc
-        elsif bonus_tasks.includes?(x) && (failed_tests.includes?(x) || skipped_tests.includes?(x) || na_assigned?(x))
+        elsif bonus_tasks.includes?(x) && (failed_tests.includes?(x) || skipped_tests.includes?(x))
           Log.info { "bonus not counted in maximum #{x}" }
           #don't count failed tests that are bonus tests #1465
           acc
         elsif skipped_tests.includes?(x)
+          Log.info { "skipped_assigned for: #{x}" }
           acc + 1 
         else
           points = task_points(x)

@@ -365,9 +365,9 @@ task "linux_hardening", ["kubescape_scan"] do |_, args|
 
     emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task("linux_hardening", "✔️  PASSED: Security services are being used to harden applications #{emoji_security}")
+      upsert_passed_task("linux_hardening", "✔️  ✨PASSED: Security services are being used to harden applications #{emoji_security}")
     else
-      resp = upsert_failed_task("linux_hardening", "✖️  FAILED: Found resources that do not use security services #{emoji_security}")
+      resp = upsert_failed_task("linux_hardening", "✖️  ✨FAILED: Found resources that do not use security services #{emoji_security}")
         test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
         stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -437,9 +437,9 @@ task "ingress_egress_blocked", ["kubescape_scan"] do |_, args|
 
     emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task("ingress_egress_blocked", "✔️  PASSED: Ingress and Egress traffic blocked on pods #{emoji_security}")
+      upsert_passed_task("ingress_egress_blocked", "✔️  ✨PASSED: Ingress and Egress traffic blocked on pods #{emoji_security}")
     else
-      resp = upsert_failed_task("ingress_egress_blocked", "✖️  FAILED: Ingress and Egress traffic not blocked on pods #{emoji_security}")
+      resp = upsert_failed_task("ingress_egress_blocked", "✖️  ✨FAILED: Ingress and Egress traffic not blocked on pods #{emoji_security}")
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -534,9 +534,9 @@ task "immutable_file_systems", ["kubescape_scan"] do |_, args|
 
     emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task("immutable_file_systems", "✔️  PASSED: Containers have immutable file systems #{emoji_security}")
+      upsert_passed_task("immutable_file_systems", "✔️  ✨PASSED: Containers have immutable file systems #{emoji_security}")
     else
-      resp = upsert_failed_task("immutable_file_systems", "✖️  FAILED: Found containers with mutable file systems #{emoji_security}")
+      resp = upsert_failed_task("immutable_file_systems", "✖️  ✨FAILED: Found containers with mutable file systems #{emoji_security}")
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp

@@ -367,11 +367,11 @@ task "elastic_volumes" do |_, args|
 
     Log.for("elastic_volumes:result").info { "Volumes used: #{volumes_used}; Elastic?: #{elastic_volumes_used}" }
     if volumes_used == false
-      resp = upsert_skipped_task("elastic_volumes","⏭️  SKIPPED: No volumes used #{emoji_probe}")
+      resp = upsert_skipped_task("elastic_volumes","⏭️  ✨SKIPPED: No volumes used #{emoji_probe}")
     elsif elastic_volumes_used
-      resp = upsert_passed_task("elastic_volumes","✔️  PASSED: Elastic Volumes Used #{emoji_probe}")
+      resp = upsert_passed_task("elastic_volumes","✔️  ✨PASSED: Elastic Volumes Used #{emoji_probe}")
     else
-      resp = upsert_failed_task("elastic_volumes","✔️  FAILED: Volumes used are not elastic volumes #{emoji_probe}")
+      resp = upsert_failed_task("elastic_volumes","✔️  ✨FAILED: Volumes used are not elastic volumes #{emoji_probe}")
     end
     resp
   end
@@ -546,9 +546,9 @@ task "no_local_volume_configuration" do |_, args|
     end
 
     if task_response.any?(false) 
-      upsert_failed_task("no_local_volume_configuration","✖️  FAILED: local storage configuration volumes found #{failed_emoji}")
+      upsert_failed_task("no_local_volume_configuration","✖️  ✨FAILED: local storage configuration volumes found #{failed_emoji}")
     else
-      upsert_passed_task("no_local_volume_configuration","✔️  PASSED: local storage configuration volumes not found #{passed_emoji}")
+      upsert_passed_task("no_local_volume_configuration","✔️  ✨PASSED: local storage configuration volumes not found #{passed_emoji}")
     end
   end
 end
