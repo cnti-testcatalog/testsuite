@@ -3,7 +3,7 @@ require "colorize"
 require "../src/tasks/utils/utils.cr"
 require "airgap"
 require "kubectl_client"
-require "../src/tasks/utils/system_information/helm.cr"
+require "helm"
 require "file_utils"
 require "sam"
 

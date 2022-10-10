@@ -36,7 +36,7 @@ describe "Observability" do
 
   it "'prometheus_traffic' should pass if there is prometheus traffic", tags: ["observability"] do
     ShellCmd.run("./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml", "spec_sample_setup", force_output: true)
-    helm = BinarySingleton.helm
+    helm = Helm::BinarySingleton.helm
 
     Log.info { "Add prometheus helm repo" }
     ShellCmd.run("#{helm} repo add prometheus-community https://prometheus-community.github.io/helm-charts", "helm_repo_add_prometheus", force_output: true)
@@ -59,7 +59,7 @@ describe "Observability" do
   it "'prometheus_traffic' should skip if there is no prometheus installed", tags: ["observability"] do
 
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-      helm = BinarySingleton.helm
+      helm = Helm::BinarySingleton.helm
       resp = `#{helm} delete prometheus`
       LOGGING.info resp
 
@@ -74,7 +74,7 @@ describe "Observability" do
 
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       Log.info { "Installing prometheus server" }
-      helm = BinarySingleton.helm
+      helm = Helm::BinarySingleton.helm
       LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
       # resp = `#{helm} install prometheus prometheus-community/prometheus`
       resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
@@ -97,7 +97,7 @@ describe "Observability" do
     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
     LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
     Log.info { "Installing prometheus server" }
-    helm = BinarySingleton.helm
+    helm = Helm::BinarySingleton.helm
     # resp = `#{helm} install prometheus prometheus-community/prometheus`
     resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
     LOGGING.info resp
@@ -119,7 +119,7 @@ describe "Observability" do
     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-openmetrics/cnf-testsuite.yml`
     LOGGING.info `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
     LOGGING.info "Installing prometheus server"
-    helm = BinarySingleton.helm
+    helm = Helm::BinarySingleton.helm
     # resp = `#{helm} install prometheus prometheus-community/prometheus`
     resp = `#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus`
     LOGGING.info resp

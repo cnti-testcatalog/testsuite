@@ -12,7 +12,7 @@ describe "Platform Observability" do
   it "'kube_state_metrics' should return some json", tags: ["platform:observability"] do
 
       LOGGING.info "Installing kube_state_metrics" 
-      helm = BinarySingleton.helm
+      helm = Helm::BinarySingleton.helm
       `#{helm} repo add prometheus-community https://prometheus-community.github.io/helm-charts`
       `#{helm} repo update`
       resp = `#{helm} install kube-state-metrics prometheus-community/kube-state-metrics`
@@ -31,7 +31,7 @@ describe "Platform Observability" do
   it "'node_exporter' should detect the named release of the installed node_exporter", tags: ["platform:observability"] do
 
 		  LOGGING.info "Installing prometheus-node-exporter" 
-      helm = BinarySingleton.helm
+      helm = Helm::BinarySingleton.helm
 		  resp = `#{helm} install node-exporter stable/prometheus-node-exporter`
 		  LOGGING.info resp
 
@@ -58,7 +58,7 @@ describe "Platform Observability" do
 
   it "'prometheus_adapter' should detect the named release of the installed prometheus_adapter", tags: ["platform:observability"] do
     Log.info { "Installing prometheus-adapter" }
-    helm = BinarySingleton.helm
+    helm = Helm::BinarySingleton.helm
     begin
       Helm.helm_repo_add("prometheus-community","https://prometheus-community.github.io/helm-charts")
       result = Helm.install("prometheus-adapter prometheus-community/prometheus-adapter")
@@ -77,7 +77,7 @@ describe "Platform Observability" do
 
   it "'metrics_server' should detect the named release of the installed metrics_server", tags: ["platform:observability"] do
     Log.info { "Installing metrics-server" }
-    helm = BinarySingleton.helm
+    helm = Helm::BinarySingleton.helm
     begin
       Helm.helm_repo_add("metrics-server","https://kubernetes-sigs.github.io/metrics-server/")
       result = Helm.install("metrics-server -f spec/fixtures/metrics_values.yml metrics-server/metrics-server")

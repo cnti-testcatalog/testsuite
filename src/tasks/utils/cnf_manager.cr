@@ -451,7 +451,7 @@ module CNFManager
   def self.helm_template_header(helm_chart_or_directory : String, template_file="/tmp/temp_template.yml", airgapped=false)
     Log.info { "helm_template_header" }
     Log.info { "helm_template_header helm_chart_or_directory: #{helm_chart_or_directory}" }
-    helm = BinarySingleton.helm
+    helm = Helm::BinarySingleton.helm
     # generate helm chart release name
     # use --dry-run to generate yml file
     Log.info { "airgapped mode: #{airgapped}" }
@@ -562,8 +562,8 @@ module CNFManager
       # config = get_parsed_cnf_testsuite_yml(args)
       # config = parsed_config_file(ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
       config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
-      Log.info { "helm path: #{BinarySingleton.helm}" }
-      helm = BinarySingleton.helm
+      Log.info { "helm path: #{Helm::BinarySingleton.helm}" }
+      helm = Helm::BinarySingleton.helm
       # helm_repo_name = config.get("helm_repository.name").as_s?
       helm_repository = config.cnf_config[:helm_repository]
       helm_repo_name = "#{helm_repository && helm_repository["name"]}"
@@ -801,8 +801,8 @@ module CNFManager
       stdout_warning "helm directory at #{e.helm_directory} is missing"
     end
 
-    helm = BinarySingleton.helm
-    Log.info { "helm path: #{BinarySingleton.helm}" }
+    helm = Helm::BinarySingleton.helm
+    Log.info { "helm path: #{Helm::BinarySingleton.helm}" }
 
     # This is to indicate if the release has already been setup.
     # Set it to false by default to indicate a new release is being setup
@@ -1148,8 +1148,8 @@ module CNFManager
     release_name = "#{config.get("release_name").as_s?}"
     release_name = release_name.split(" ")[0]
 
-    Log.for("sample_cleanup:helm_path").info { BinarySingleton.helm }
-    helm = BinarySingleton.helm
+    Log.for("sample_cleanup:helm_path").info { Helm::BinarySingleton.helm }
+    helm = Helm::BinarySingleton.helm
     dir_exists = File.directory?(destination_cnf_dir)
     if !dir_exists && force != true
       Log.for("sample_cleanup").info { "Destination dir #{destination_cnf_dir} does not exist and force option not passed. Exiting." }

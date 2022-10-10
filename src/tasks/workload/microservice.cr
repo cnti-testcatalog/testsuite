@@ -235,7 +235,7 @@ task "reasonable_startup_time" do |_, args|
     install_method = config.cnf_config[:install_method]
 
     current_dir = FileUtils.pwd
-    helm = BinarySingleton.helm
+    helm = Helm::BinarySingleton.helm
     Log.for("verbose").info {helm} if check_verbose(args)
 
     configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")

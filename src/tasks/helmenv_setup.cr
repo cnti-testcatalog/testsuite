@@ -10,7 +10,7 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
   Log.for("verbose").info { "helm_local_install" } if check_verbose(args)
   # check if helm is installed
   # if proper version of helm installed, don't install
-  if SystemInfo::Helm.global_helm_installed? && !ENV.has_key?("force_install")
+  if Helm::SystemInfo.global_helm_installed? && !ENV.has_key?("force_install")
     Log.info { "Globally installed helm satisfies required version. Skipping local helm install." }
   else
     current_dir = FileUtils.pwd
@@ -33,7 +33,7 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
           "#{current_dir}/#{TOOLS_DIR}/helm"
         )
 
-        helm = BinarySingleton.helm
+        helm = Helm::BinarySingleton.helm
         if check_verbose(args)
           stdout = IO::Memory.new
           status = Process.run("#{helm} version", output: stdout, error: stdout)
@@ -48,7 +48,7 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
       end
     end
   end
-  # `#{BinarySingleton.helm} repo add stable https://cncf.gitlab.io/stable`
+  # `#{Helm::BinarySingleton.helm} repo add stable https://cncf.gitlab.io/stable`
 end
 
 desc "Cleans up helm 3.8.2"

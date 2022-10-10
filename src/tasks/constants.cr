@@ -1,4 +1,3 @@
-require "./utils/system_information/helm.cr"
 require "./utils/embedded_file_manager.cr"
 
 ESSENTIAL_PASSING_SCORE = 1000
@@ -42,17 +41,6 @@ EmbeddedFileManager.constraint_template
 EmbeddedFileManager.disable_cni
 EmbeddedFileManager.fluentd_values
 EmbeddedFileManager.fluentbit_values
-
-# BinarySingleton = CNFGlobals.new
-# class CNFGlobals
-#   CNF_DIR = "cnfs"
-#   @helm: String?
-#   # Get helm directory
-#   def helm
-#     @helm ||= global_helm_installed? ? "helm" : Helm.local_helm_path
-#   end
-# end
-
 
 EXCLUDE_NAMESPACES = [
   "kube-system",

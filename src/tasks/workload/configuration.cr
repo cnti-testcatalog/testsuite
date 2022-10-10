@@ -307,7 +307,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     release_name = config.cnf_config[:release_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     current_dir = FileUtils.pwd
-    helm = BinarySingleton.helm
+    helm = Helm::BinarySingleton.helm
     VERBOSE_LOGGING.info "Helm Path: #{helm}" if check_verbose(args)
 
     KubectlClient::Create.command("namespace hardcoded-ip-test")
