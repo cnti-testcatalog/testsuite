@@ -32,14 +32,13 @@ end
 
 desc "Check if the CNF is running containers with labels configured?"
 task "require_labels" do |_, args|
-  Log.for("verbose").info { "require-labels" }
-  Kyverno.install
-  emoji_passed = "🏷️✔️"
-  emoji_failed = "🏷️❌"
-  policy_path = Kyverno.best_practice_policy("require_labels/require_labels.yaml")
-  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
-
   CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "require-labels" }
+    Kyverno.install
+    emoji_passed = "🏷️✔️"
+    emoji_failed = "🏷️❌"
+    policy_path = Kyverno.best_practice_policy("require_labels/require_labels.yaml")
+    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
     resource_keys = CNFManager.workload_resource_keys(args, config)
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
@@ -59,14 +58,13 @@ end
 
 desc "Check if the CNF installs resources in the default namespace"
 task "default_namespace" do |_, args|
-  Log.for("verbose").info { "default_namespace" }
-  Kyverno.install
-  emoji_passed = "🏷️✔️"
-  emoji_failed = "🏷️❌"
-  policy_path = Kyverno.best_practice_policy("disallow_default_namespace/disallow_default_namespace.yaml")
-  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
-
   CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "default_namespace" }
+    Kyverno.install
+    emoji_passed = "🏷️✔️"
+    emoji_failed = "🏷️❌"
+    policy_path = Kyverno.best_practice_policy("disallow_default_namespace/disallow_default_namespace.yaml")
+    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
     resource_keys = CNFManager.workload_resource_keys(args, config)
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
@@ -86,15 +84,14 @@ end
 
 desc "Check if the CNF uses container images with the latest tag"
 task "latest_tag" do |_, args|
-  Log.for("verbose").info { "latest_tag" }
-  Kyverno.install
-
-  emoji_passed = "🏷️✔️"
-  emoji_failed = "🏷️❌"
-  policy_path = Kyverno.best_practice_policy("disallow_latest_tag/disallow_latest_tag.yaml")
-  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
-
   CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "latest_tag" }
+    Kyverno.install
+
+    emoji_passed = "🏷️✔️"
+    emoji_failed = "🏷️❌"
+    policy_path = Kyverno.best_practice_policy("disallow_latest_tag/disallow_latest_tag.yaml")
+    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
     resource_keys = CNFManager.workload_resource_keys(args, config)
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)

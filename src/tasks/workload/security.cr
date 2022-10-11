@@ -37,14 +37,13 @@ end
 
 desc "Check if pods in the CNF use sysctls with restricted values"
 task "sysctls" do |_, args|
-  Log.for("verbose").info { "sysctls" }
-  Kyverno.install
-
-  emoji_security = "🔓🔑"
-  policy_path = Kyverno.policy_path("pod-security/baseline/restrict-sysctls/restrict-sysctls.yaml")
-  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
-
   CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "sysctls" }
+    Kyverno.install
+
+    emoji_security = "🔓🔑"
+    policy_path = Kyverno.policy_path("pod-security/baseline/restrict-sysctls/restrict-sysctls.yaml")
+    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
 
@@ -63,13 +62,12 @@ end
 
 desc "Check if the CNF has services with external IPs configured"
 task "external_ips" do |_, args|
-  Log.for("verbose").info { "external_ips" }
-  Kyverno.install
- emoji_security = "🔓🔑"
-  policy_path = Kyverno.best_practice_policy("restrict-service-external-ips/restrict-service-external-ips.yaml")
-  failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
-
   CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "external_ips" }
+    Kyverno.install
+    emoji_security = "🔓🔑"
+    policy_path = Kyverno.best_practice_policy("restrict-service-external-ips/restrict-service-external-ips.yaml")
+    failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
     resource_keys = CNFManager.workload_resource_keys(args, config)
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
@@ -89,17 +87,17 @@ end
 
 desc "Check if the CNF or the cluster resources have custom SELinux options"
 task "selinux_options" do |_, args|
-  Log.for("verbose").info { "selinux_options" }
-  Kyverno.install
-
-  emoji_security = "🔓🔑"
-  check_policy_path = Kyverno::CustomPolicies::SELinuxEnabled.new.policy_path
-  check_failures = Kyverno::PolicyAudit.run(check_policy_path, EXCLUDE_NAMESPACES)
-
-  disallow_policy_path = Kyverno.policy_path("pod-security/baseline/disallow-selinux/disallow-selinux.yaml")
-  disallow_failures = Kyverno::PolicyAudit.run(disallow_policy_path, EXCLUDE_NAMESPACES)
-
   CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "selinux_options" }
+    Kyverno.install
+
+    emoji_security = "🔓🔑"
+    check_policy_path = Kyverno::CustomPolicies::SELinuxEnabled.new.policy_path
+    check_failures = Kyverno::PolicyAudit.run(check_policy_path, EXCLUDE_NAMESPACES)
+
+    disallow_policy_path = Kyverno.policy_path("pod-security/baseline/disallow-selinux/disallow-selinux.yaml")
+    disallow_failures = Kyverno::PolicyAudit.run(disallow_policy_path, EXCLUDE_NAMESPACES)
+
     #TODO check for AppArmor as well, and the cnf should have either selinux or apparmor
     # IF SELinux is not enabled, skip this test
     # Else check for SELinux options
@@ -131,9 +129,9 @@ end
 
 desc "Check if the CNF is running containers with container sock mounts"
 task "container_sock_mounts" do |_, args|
-  Log.for("verbose").info { "container_sock_mounts" }
-  Kyverno.install
   CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "container_sock_mounts" }
+    Kyverno.install
     emoji_security = "🔓🔑"
     policy_path = Kyverno.best_practice_policy("disallow_cri_sock_mount/disallow_cri_sock_mount.yaml")
     failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
