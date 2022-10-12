@@ -41,8 +41,8 @@ shards:
     version: 0.9.0+git.commit.f62bfcdfbe65ee31c46c3d9951cee08ac2e0bee0
 
   kernel_introspection:
-    path: ../kernel_introspection
-    version: 0.1.0
+    git: https://github.com/cnf-testsuite/kernel_introspection.git
+    version: 0.1.0+git.commit.d086c7efd8b89da33886cb49527282bef537ffde
 
   kubectl_client:
     git: https://github.com/cnf-testsuite/kubectl_client.git

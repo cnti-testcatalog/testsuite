@@ -54,7 +54,8 @@ dependencies:
     github: cnf-testsuite/cluster_tools
     branch: main
   kernel_introspection:
-    path: "../kernel_introspection"
+    github: cnf-testsuite/kernel_introspection
+    branch: main
   helm:
     github: cnf-testsuite/helm
     branch: main
