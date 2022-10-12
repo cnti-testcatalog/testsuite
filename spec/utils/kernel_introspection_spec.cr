@@ -4,6 +4,7 @@ require "kubectl_client"
 require "../../src/tasks/utils/kernel_instrospection.cr"
 require "file_utils"
 require "sam"
+require "kernel_introspection"
 
 describe "KernelInstrospection" do
 

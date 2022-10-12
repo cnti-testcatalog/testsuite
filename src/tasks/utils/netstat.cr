@@ -1,5 +1,6 @@
 require "colorize"
 require "kubectl_client"
+require "kernel_introspection"
 
 module Netstat 
 # kubectl exec cluster-tools-lhwkk -t -- nsenter -t 743858 -n netstat

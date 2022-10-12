@@ -7,6 +7,7 @@ require "docker_client"
 require "halite"
 require "totem"
 require "k8s_netstat"
+require "kernel_introspection"
 require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if CNFs follows microservice principles"
