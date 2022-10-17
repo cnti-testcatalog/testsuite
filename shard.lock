@@ -8,13 +8,17 @@ shards:
     git: https://github.com/crystal-ameba/ameba.git
     version: 0.14.4
 
+  cluster_tools:
+    git: https://github.com/cnf-testsuite/cluster_tools.git
+    version: 0.1.0+git.commit.9ce3f8ad995089b75f0d03550eadf0814281c0f0
+
   commander:
     git: https://github.com/mrrooijen/commander.git
     version: 0.4.0
 
   docker_client:
     git: https://github.com/cnf-testsuite/docker_client.git
-    version: 0.1.0+git.commit.e3891217923bfd61ff0eb3c3d8f9bc471a1f2ca6
+    version: 0.1.0+git.commit.32dacefbc3dfcf98c8126ff793c97a3038e9b122
 
   find:
     git: https://github.com/cnf-testsuite/find.git
@@ -39,10 +43,6 @@ shards:
   kubectl_client:
     git: https://github.com/cnf-testsuite/kubectl_client.git
     version: 0.1.0+git.commit.12cad24a372469e34e0f64019b10e1b3dc82a124
-  
-  cluster_tools:
-    git: https://github.com/cnf-testsuite/cluster_tools.git
-    version: 0.1.0+git.commit.9ac57afc9fd583e567f1d1174838323db43f1e20
 
   popcorn:
     git: https://github.com/icyleaf/popcorn.git
@@ -66,7 +66,7 @@ shards:
 
   tar:
     git: https://github.com/cnf-testsuite/tar.git
-    version: 0.1.0+git.commit.14ff6ae8e3cb7dafb31a3d9678a31b4925e0d376
+    version: 0.1.0+git.commit.ae9bbea1402eded7b411368336653e4ad822003a
 
   totem:
     git: https://github.com/icyleaf/totem.git
