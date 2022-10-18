@@ -254,10 +254,9 @@ task "tracing" do |_, args|
         else
           upsert_failed_task("tracing", "✖️  ✨FAILED: Tracing not used #{emoji_tracing_deploy}")
         end
+      else
+        upsert_skipped_task("tracing", "⏭️  ✨SKIPPED: Jaeger not configured #{emoji_tracing_deploy}")
       end
-
-    else
-      upsert_skipped_task("tracing", "⏭️  ✨SKIPPED: Jaeger not configured #{emoji_tracing_deploy}")
     end
   else
     upsert_failed_task("tracing", "✖️  ✨FAILED: No cnf_testsuite.yml found! Did you run the setup task?")
