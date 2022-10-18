@@ -795,7 +795,9 @@ jobs:
         wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
         ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
         export FALCO_ENV="CI"
-        LOG_LEVEL=info ./cnf-testsuite all ~compatibility ~resilience ~reasonable_startup_time ~reasonable_image_size ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose
+    #    LOG_LEVEL=info ./cnf-testsuite all ~compatibility ~resilience ~reasonable_startup_time ~reasonable_image_size ~platform ~volume_hostpath_not_found ~privileged ~increase_capacity ~decrease_capacity ~install_script_helm ~helm_chart_valid ~helm_chart_published verbose
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
