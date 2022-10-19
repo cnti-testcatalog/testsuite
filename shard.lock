@@ -10,7 +10,7 @@ shards:
 
   cluster_tools:
     git: https://github.com/cnf-testsuite/cluster_tools.git
-    version: 0.1.0+git.commit.548d7cd175a9def988bf1d1f69598d5ee921134d
+    version: 0.1.0+git.commit.2182bfc37fc745e0afc132dc8eb7eb8ea395c592
 
   commander:
     git: https://github.com/mrrooijen/commander.git
