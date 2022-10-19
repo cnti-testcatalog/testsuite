@@ -234,13 +234,13 @@ task "tracing" do |_, args|
   Log.for("verbose").info { "tracing" } if check_verbose(args)
   Log.info { "tracing args: #{args.inspect}" }
   next if args.named["offline"]?
-  match = JaegerManager.match()
-  Log.info { "jaeger match: #{match}" }
-  emoji_tracing_deploy="⎈🚀"
-  if match[:found]
-    if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
-      CNFManager::Task.task_runner(args) do |args, config|
+   emoji_tracing_deploy="⎈🚀"
 
+  if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
+    CNFManager::Task.task_runner(args) do |args, config|
+      match = JaegerManager.match()
+      Log.info { "jaeger match: #{match}" }
+      if match[:found]
         helm_chart = config.cnf_config[:helm_chart]
         helm_directory = config.cnf_config[:helm_directory]
         release_name = config.cnf_config[:release_name]
@@ -254,12 +254,12 @@ task "tracing" do |_, args|
         else
           upsert_failed_task("tracing", "✖️  ✨FAILED: Tracing not used #{emoji_tracing_deploy}")
         end
+      else
+        upsert_skipped_task("tracing", "⏭️  ✨SKIPPED: Jaeger not configured #{emoji_tracing_deploy}")
       end
-    else
-      upsert_failed_task("tracing", "✖️  ✨FAILED: No cnf_testsuite.yml found! Did you run the setup task?")
     end
   else
-    upsert_skipped_task("tracing", "⏭️  ✨SKIPPED: Jaeger not configured #{emoji_tracing_deploy}")
+    upsert_failed_task("tracing", "✖️  ✨FAILED: No cnf_testsuite.yml found! Did you run the setup task?")
   end
 end
 
