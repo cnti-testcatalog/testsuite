@@ -52,7 +52,7 @@ dependencies:
     branch: main
   cluster_tools:
     github: cnf-testsuite/cluster_tools
-    branch: main
+    branch: bug/1687
   helm:
     github: cnf-testsuite/helm
     branch: main
