@@ -778,6 +778,7 @@ jobs:
             endpoint = ["http://localhost:5000"]
         EOF
         export CLUSTER=$(uuidgen)
+        echo "export CLUSTER=$CLUSTER"
         echo "export CLUSTER=$CLUSTER" > cluster.env
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
         export KUBECONFIG=/tmp/$CLUSTER.conf
@@ -789,6 +790,7 @@ jobs:
         export KUBECONFIG=/tmp/$CLUSTER.conf
         helm repo add stable https://cncf.gitlab.io/stable
         export DIR=$(uuidgen)
+        echo "Shared DIR: /shared/$DIR"
         mkdir /shared/$DIR
         mv cnf-testsuite /shared/$DIR 
         cd /shared/$DIR
