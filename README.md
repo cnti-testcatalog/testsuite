@@ -57,14 +57,7 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
   - Meetings every Tuesday at 14:15 - 15:00 UTC (during Daylight Savings Time)
   - Meeting minutes are [here](https://docs.google.com/document/d/1IbrgjqIkOCvrrSG0DRE6X62UUZpBq-818Mn8q0nkkd0/edit)
 
-- Join the weekly [CNF Working Group meeting](https://github.com/cncf/cnf-wg#recurring-meetings)
-
-  - Meetings on Mondays at 16:00 - 17:00 UTC
-  - Meeting minutes are [here](https://docs.google.com/document/d/1YFimQftjkTUsxNGTsKdakvP7cJtJgCTqViH2kwJOrsc/edit)
-
-- Join the monthly [Telecom User Group meeting](https://github.com/cncf/telecom-user-group#meeting-time)
-  - Meetings on the 1st Mondays of the month
-  - Meeting minutes are [here](https://docs.google.com/document/d/1yhtI7aiwpdAiRBKyUX6mOJDHAbjOog2mI4Ur2k27D7s/edit)
+- Join the weekly [CNF Working Group meeting](https://github.com/cncf/cnf-wg#recurring-meetings) on Mondays.
 
 - Request an Intro to the CNF Certification [here](https://calendly.com/cnfcertification/intro)
 
