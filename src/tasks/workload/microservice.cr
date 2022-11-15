@@ -3,10 +3,11 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
-require "../utils/utils.cr"
 require "docker_client"
 require "halite"
 require "totem"
+require "k8s_netstat"
+require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if CNFs follows microservice principles"
 task "microservice", ["reasonable_image_size", "reasonable_startup_time", "single_process_type", "service_discovery", "shared_database"] do |_, args|
@@ -24,68 +25,12 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
   Log.info { "Running shared_database test" }
   CNFManager::Task.task_runner(args) do |args, config|
     # todo loop through local resources and see if db match found
-    db_match = Mariadb.match
+    db_match = Netstat::Mariadb.match
+    
     if db_match[:found] == false
       upsert_skipped_task("shared_database", "⏭️  SKIPPED: [shared_database] No MariaDB containers were found")
       next
     end
-
-    Log.info { "DB Digest: #{db_match[:digest]}" }
-
-    #todo find offical database ip
-    db_pods = KubectlClient::Get.pods_by_digest(db_match[:digest])
-    Log.info { "DB Pods: #{db_pods}" }
-
-    db_pod_ips = [] of Array(JSON::Any)
-    pod_statuses = db_pods.map { |i|
-      db_pod_ips << i.dig("status", "podIPs").as_a
-      {
-        "statuses" => i.dig("status", "containerStatuses"),
-       "nodeName" => i.dig("spec", "nodeName")}
-    }.compact
-    db_pod_ips = db_pod_ips.compact.flatten
-    Log.info { "Pod Statuses: #{pod_statuses}" }
-    Log.info { "db_pod_ips: #{db_pod_ips}" }
-
-    database_container_statuses = pod_statuses.map do |statuses| 
-      filterd_statuses = statuses["statuses"].as_a.select{ |x|
-        x.dig("ready").as_bool &&
-        x && x.dig("imageID").as_s.includes?("#{db_match[:digest]}")
-      }
-      resp : NamedTuple("nodeName": String, "ids" : Array(String)) = 
-      {
-        "nodeName": statuses["nodeName"].as_s, 
-       "ids": filterd_statuses.map{ |s| s.dig("containerID").as_s.gsub("containerd://", "")[0..12]}
-      }
-
-      resp
-    end.compact.flatten
-
-    resource_pod_ips = [] of Array(JSON::Any)
-
-    cnf_services = KubectlClient::Get.services(all_namespaces: true)
-    Log.info { "first cnf_services: #{cnf_services}"}
-
-
-    #todo get all pod_ips by first cnf service that is not the database service
-    all_service_pod_ips = [] of Array(NamedTuple(service_group_id: Int32, pod_ips: Array(JSON::Any)))
-    cnf_services["items"].as_a.each_with_index do |cnf_service, index|
-      service_pods = KubectlClient::Get.pods_by_service(cnf_service)
-      if service_pods
-        all_service_pod_ips << service_pods.map { |pod|
-          {
-            service_group_id: index,
-            pod_ips: pod.dig("status", "podIPs").as_a.select{|ip|
-              db_pod_ips.select{|dbip| dbip["ip"].as_s != ip["ip"].as_s}
-            }
-          }
-
-        }.flatten.compact
-      end
-    end
-
-    all_service_pod_ips = all_service_pod_ips.compact.flatten
-    Log.info { "all_service_pod_ips: #{all_service_pod_ips}"}
 
     resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
     resource_names = Helm.workload_resource_kind_names(resource_ymls)
@@ -103,6 +48,10 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
 
     Log.info { "helm_chart_cnf_services: #{helm_chart_cnf_services}"}
 
+    db_pod_ips = Netstat::K8s.get_all_db_pod_ips
+
+    ## TODO: seprate out code that needs to enumerate all of the resources in the cnf from teh heml helm_chart
+    ## then get what else you need from k8s netsta
     cnf_service_pod_ips = [] of Array(NamedTuple(service_group_id: Int32, pod_ips: Array(JSON::Any)))
     helm_chart_cnf_services.each_with_index do |helm_cnf_service, index|
       service_pods = KubectlClient::Get.pods_by_service(helm_cnf_service)
@@ -119,96 +68,29 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
       end
     end
 
-    #todo create cluster network inspection tool
-
     cnf_service_pod_ips = cnf_service_pod_ips.compact.flatten
     Log.info { "cnf_service_pod_ips: #{cnf_service_pod_ips}"}
 
-    integrated_database_found = false
-    Log.info { "Container Statuses: #{database_container_statuses}" }
-    database_container_statuses.each do |status|
-      Log.info { "Container Info: #{status}"}
-      # get network information on the node for each database pod
-      cluster_tools = ClusterTools.pod_by_node("#{status["nodeName"]}")
-      Log.info { "Container Tools Pod: #{cluster_tools}"}
-      pids = status["ids"].map do |id| 
-        inspect = KubectlClient.exec("#{cluster_tools} -t -- crictl inspect #{id}", namespace: TESTSUITE_NAMESPACE)
-        pid = JSON.parse(inspect[:output]).dig("info", "pid")
-        Log.info { "Container PID: #{pid}"}
-        # get multiple call for a larger sample
-        parsed_netstat = (1..10).map {
-          sleep 10
-          netstat = KubectlClient.exec("#{cluster_tools} -t -- nsenter -t #{pid} -n netstat -n", namespace: TESTSUITE_NAMESPACE)
-          Log.info { "Container Netstat: #{netstat}"}
-          Netstat.parse(netstat[:output])
-        }.flatten.compact
-        # Log.info { "Container Netstat: #{netstat}"}
-        # parsed_netstat = Netstat.parse(netstat[:output])
-        # Log.info { "Container Netstat: #{parsed_netstat}"}
-        #todo filter for 3306 in local_address
-        filtered_local_address = parsed_netstat.reduce([] of NamedTuple(proto: String, 
-                                                                         recv: String, 
-                                                                         send: String, 
-                                                                         local_address: String, 
-                                                                         foreign_address: String, 
-                                                                         state: String)) do |acc,x|
-          if x[:local_address].includes?("3306")
-            acc << x
-          else
-            acc
-          end
-         end
-        Log.info { "filtered_local_address: #{filtered_local_address}"}
-        #todo filter for ips that belong to the cnf
-        filtered_foreign_addresses = filtered_local_address.reduce([] of NamedTuple(proto: String, 
-                                                                         recv: String, 
-                                                                         send: String, 
-                                                                         local_address: String, 
-                                                                         foreign_address: String, 
-                                                                         state: String)) do |acc,x|
+
+    violators = Netstat::K8s.get_multiple_pods_connected_to_mariadb_violators
+    
+    Log.info { "violators: #{violators}"}
+    Log.info { "cnf_service_pod_ips: #{cnf_service_pod_ips}"}
 
 
-
-         ignored_ip = all_service_pod_ips[0]["pod_ips"].find{|i| x[:foreign_address].includes?(i["ip"].as_s)}
-         if ignored_ip 
-           Log.info { "dont add: #{x[:foreign_address]}"}
-           acc
-         else
-           Log.info { " add: #{x[:foreign_address]}"}
-           acc << x
-         end
-         acc
-        end
-        Log.info { "filtered_foreign_addresses: #{filtered_foreign_addresses}"}
-        #todo if count on uniq foreign ip addresses > 1 then fail
-        # only count violators if they are part of any service, cluster wide
-        violators = all_service_pod_ips.reduce([] of Array(JSON::Any)) do |acc, service_group|
-          acc << service_group["pod_ips"].select do |spip| 
-            Log.info { " service ip: #{spip["ip"].as_s}"}
-            filtered_foreign_addresses.find do |f|
-              f[:foreign_address].includes?(spip["ip"].as_s)
-              # f[:foreign_address].includes?(spip["ip"].as_s) ||
-              #   # 10-244-0-8.test-w:34702
-              #   f[:foreign_address].includes?(spip["ip"].as_s.gsub(".","-"))
-
-            end
-          end 
-        end
-        violators = violators.flatten.compact
-        Log.info { "violators: #{violators}"}
-        Log.info { "cnf_service_pod_ips: #{cnf_service_pod_ips}"}
-        cnf_violators = violators.find do |violator|
-          cnf_service_pod_ips.find do |service|
-            service["pod_ips"].find do |ip|
-              violator["ip"].as_s.includes?(ip["ip"].as_s)
-            end
-          end
-        end
-        if violators.size > 1 && cnf_violators
-          puts "Found multiple pod ips from different services that connect to the same database: #{violators}".colorize(:red)
-          integrated_database_found = true 
+    cnf_violators = violators.find do |violator|
+      cnf_service_pod_ips.find do |service|
+        service["pod_ips"].find do |ip|
+          violator["ip"].as_s.includes?(ip["ip"].as_s)
         end
       end
+    end
+
+    integrated_database_found = false
+
+    if violators.size > 1 && cnf_violators
+      puts "Found multiple pod ips from different services that connect to the same database: #{violators}".colorize(:red)
+      integrated_database_found = true 
     end
 
     failed_emoji = "(ভ_ভ) ރ 💾"
