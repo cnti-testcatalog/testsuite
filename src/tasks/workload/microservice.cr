@@ -50,8 +50,6 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
 
     db_pod_ips = Netstat::K8s.get_all_db_pod_ips
 
-    ## TODO: seprate out code that needs to enumerate all of the resources in the cnf from teh heml helm_chart
-    ## then get what else you need from k8s netsta
     cnf_service_pod_ips = [] of Array(NamedTuple(service_group_id: Int32, pod_ips: Array(JSON::Any)))
     helm_chart_cnf_services.each_with_index do |helm_cnf_service, index|
       service_pods = KubectlClient::Get.pods_by_service(helm_cnf_service)
@@ -85,6 +83,8 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
         end
       end
     end
+    
+    Log.info { "cnf_violators: #{cnf_violators}"}
 
     integrated_database_found = false
 
