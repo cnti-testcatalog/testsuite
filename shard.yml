@@ -56,6 +56,9 @@ dependencies:
   helm:
     github: cnf-testsuite/helm
     branch: main
+  k8s_netstat:
+    github: cnf-testsuite/k8s_netstat
+    branch: main
   airgap:
     path: utils/airgap
   retriable:
