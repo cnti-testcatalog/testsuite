@@ -40,6 +40,10 @@ shards:
     git: https://github.com/crystal-community/icr.git
     version: 0.9.0+git.commit.f62bfcdfbe65ee31c46c3d9951cee08ac2e0bee0
 
+  k8s_kernel_introspection:
+    git: https://github.com/cnf-testsuite/k8s_kernel_introspection.git
+    version: 0.1.0+git.commit.c167b740dc6ae771640a46d574749126854bbdd4
+
   k8s_netstat:
     git: https://github.com/cnf-testsuite/k8s_netstat.git
     version: 0.1.0+git.commit.5fb198ea9230311ca571d75c5901a0568b20921a
