@@ -19,7 +19,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite shared_database`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/SKIPPED: \[shared_database\] No MariaDB containers were found/ =~ response_s).should_not be_nil
+      (/N\/A: \[shared_database\] No MariaDB containers were found/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns/cnf-testsuite.yml`
       $?.success?.should be_true
