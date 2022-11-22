@@ -30,7 +30,7 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
     db_match = Netstat::Mariadb.match
     
     if db_match[:found] == false
-      upsert_skipped_task("shared_database", "⏭️  SKIPPED: [shared_database] No MariaDB containers were found")
+      upsert_na_task("shared_database", "⏭️  N/A: [shared_database] No MariaDB containers were found")
       next
     end
 
