@@ -13,16 +13,30 @@ describe "Operator" do
     Helm.install("operator operator-lifecycle-manager/deploy/chart/")
   end
 
-  it "'elastic_volume' should pass if the cnf uses an elastic volume", tags: ["elastic_volume"]  do
+  it "'operator_test' test if operator is being used", tags: ["operator_test"]  do
     begin
-      LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
+      LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-path=./sample-cnfs/sample_coredns`
       $?.success?.should be_true
-      response_s = `./cnf-testsuite -l info elastic_volumes verbose`
-      LOGGING.info "Status:  #{response_s}"
-      (/PASSED: Elastic Volumes Used/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
       $?.success?.should be_true
+      Helm.uninstall("operator")
+
+      `kubectl get namespaces operators -o json > operator.json`
+      `kubectl get namespaces operator-lifecycle-manager -o json > manager.json`
+      json = File.open("operator.json") do |file|
+        JSON.parse(file)
+      end
+      json.as_h.delete("spec")
+      File.write("operatorupdate.json", "#{json.to_json}")
+
+      json = File.open("manager.json") do |file|
+        JSON.parse(file)
+      end
+      json.as_h.delete("spec")
+      File.write("managerupdate.json", "#{json.to_json}")
+      kubectl replace --raw "/api/v1/namespaces/operators/finalize" -f ./operators.json
+      kubectl replace --raw "/api/v1/namespaces/operator-lifecycle-manager/finalize" -f ./operator-lifecycle-manager.json
     end
   end
 end
