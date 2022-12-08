@@ -71,6 +71,11 @@ module CNFManager
     { valid, warning_output }
   end
 
+  #TODO define cnf_resources
+  # add all code from cnf_workload resources and the reject from the helm.workload_resource_by_kind
+  # (removes helm test annotations)
+  # return all the resources
+  # make cnf_workload_resources call cnf_resoures with a block that calls the extra filter (all_workload_resources)
 
   # Applies a block to each cnf resource
   #

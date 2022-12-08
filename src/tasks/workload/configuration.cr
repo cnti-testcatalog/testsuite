@@ -724,3 +724,34 @@ To address this issue please see the USAGE.md documentation
 
 TEMPLATE
 end
+
+desc "Does the CNF install an Operator with OLM?"
+task "operator_installed" do |_, args|
+  CNFManager::Task.task_runner(args) do |args,config|
+    Log.for("verbose").info { "operator_installed" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+
+      yml_file_path = config.cnf_config[:yml_file_path]
+
+      Log.info { "Resource Kind: #{resource[:kind]}" }
+
+      if resource["kind"].downcase == "subscription" 
+        sub_name = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace]).dig?("metadata", "name")
+        Log.info { "Subscription Name: #{sub_name}" }
+        test_passed = true
+      end
+      test_passed
+    end
+
+    emoji_image_size="⚖️👀"
+    emoji_small="🐜"
+    emoji_big="🦖"
+
+    if task_response
+      upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good #{emoji_small} #{emoji_image_size}")
+    else
+      upsert_failed_task("reasonable_image_size", "✖️  FAILED: Image size too large #{emoji_big} #{emoji_image_size}")
+    end
+  end
+end

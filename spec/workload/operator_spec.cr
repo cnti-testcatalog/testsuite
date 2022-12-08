@@ -23,20 +23,16 @@ describe "Operator" do
 
   it "'operator_test' test if operator is being used", tags: ["operator_test"]  do
     begin
-      LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-path=./sample-cnfs/sample_coredns`
+      LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-path=./sample-cnfs/sample_operator`
       $?.success?.should be_true
+      LOGGING.info `./cnf-testsuite -l info operator_installed`
     ensure
-      LOGGING.info `./cnf-testsuite -l info cnf_cleanup cnf-path=./sample-cnfs/sample_coredns`
+      LOGGING.info `./cnf-testsuite -l info cnf_cleanup cnf-path=./sample-cnfs/sample_operator`
       $?.success?.should be_true
       pods = KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("catalog-operator", "operator-lifecycle-manager"), "operator-lifecycle-manager") + KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("olm-operator", "operator-lifecycle-manager"), "operator-lifecycle-manager") + KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("packageserver", "operator-lifecycle-manager"), "operator-lifecycle-manager")
 
       Helm.uninstall("operator")
 
-#      sleep 20
-
-      # Log.info { KubectlClient::Get.resource_wait_for_uninstall("deployment", "catalog-operator", 180, "operator-lifecycle-manager") }
-      # Log.info { KubectlClient::Get.resource_wait_for_uninstall("deployment", "olm-operator", 180, "operator-lifecycle-manager") }
-      # Log.info { KubectlClient::Get.resource_wait_for_uninstall("deployment", "packageserver", 180, "operator-lifecycle-manager") }
       pods.map do |pod| 
         pod_name = pod.dig("metadata", "name")
         pod_namespace = pod.dig("metadata", "namespace")
@@ -59,6 +55,6 @@ describe "Operator" do
       json.as_h.delete("spec")
       File.write("manager.json", "#{json.to_json}")
       KubectlClient::Replace.command("--raw '/api/v1/namespaces/operator-lifecycle-manager/finalize' -f ./manager.json")
-    end
+     end
   end
 end
