@@ -68,6 +68,10 @@ shards:
     git: https://github.com/crystal-lang/crystal-readline.git
     version: 0.1.1+git.commit.add6679775d59c164e2db04f5116557180d04ad9
 
+  release_manager:
+    git: https://github.com/cnf-testsuite/release_manager.git
+    version: 0.1.0+git.commit.f8925fa288e2a25bc711e3a5bff759e1115ee174
+
   retriable:
     git: https://github.com/sija/retriable.cr.git
     version: 0.2.4
