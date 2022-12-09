@@ -71,19 +71,8 @@ module CNFManager
     { valid, warning_output }
   end
 
-  #TODO define cnf_resources
-  # add all code from cnf_workload resources and the reject from the helm.workload_resource_by_kind
-  # (removes helm test annotations)
-  # return all the resources
-  # make cnf_workload_resources call cnf_resoures with a block that calls the extra filter (all_workload_resources)
-
-  # Applies a block to each cnf resource
-  #
-  # ```
-  # CNFManager.cnf_workload_resources(args, config) {|cnf_config, resource| #your code}
-  # ```
-  def self.cnf_workload_resources(args, config, &block)
-    Log.info { "cnf_workload_resources" }
+  def self.cnf_resource_ymls(args, config)
+    Log.info { "cnf_resource_ymls" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     yml_file_path = config.cnf_config[:yml_file_path]
     helm_directory = sandbox_helm_directory(config.cnf_config[:helm_directory])
@@ -117,6 +106,75 @@ module CNFManager
     # else
     end
 
+    template_ymls = template_ymls.reject! {|x|
+      # reject resources that contain the 'helm.sh/hook: test' annotation
+      x.dig?("metadata","annotations","helm.sh/hook")
+    }
+    Log.debug { "template_ymls: #{template_ymls}" }
+    template_ymls 
+  end
+
+  def self.cnf_resources(args, config, &block)
+    template_ymls = cnf_resource_ymls(args, config)
+    resource_resp = resource_ymls.map do | resource |
+      resp = yield resource
+      Log.debug { "cnf_workload_resource yield resp: #{resp}" }
+      resp
+    end
+    resource_resp
+  end
+
+  #TODO define cnf_resources
+  # add all code from cnf_workload resources and the reject from the helm.workload_resource_by_kind
+  # (removes helm test annotations)
+  # return all the resources
+  # make cnf_workload_resources call cnf_resoures with a block that calls the extra filter (all_workload_resources)
+
+  # Applies a block to each cnf resource
+  #
+  # ```
+  # CNFManager.cnf_workload_resources(args, config) {|cnf_config, resource| #your code}
+  # ```
+  def self.cnf_workload_resources(args, config, &block)
+    # Log.info { "cnf_workload_resources" }
+    # destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    # yml_file_path = config.cnf_config[:yml_file_path]
+    # helm_directory = sandbox_helm_directory(config.cnf_config[:helm_directory])
+    # manifest_directory = config.cnf_config[:manifest_directory]
+    # release_name = config.cnf_config[:release_name]
+    # helm_chart_path = config.cnf_config[:helm_chart_path]
+    # manifest_file_path = config.cnf_config[:manifest_file_path]
+    helm_install_namespace = config.cnf_config[:helm_install_namespace]
+    # helm_values = config.cnf_config[:helm_values]
+    # test_passed = true
+    #
+    default_namespace = "default"
+    if !helm_install_namespace.empty?
+      default_namespace = config.cnf_config[:helm_install_namespace]
+    end
+    # install_method = self.cnf_installation_method(config)
+    # Log.debug { "install_method: #{install_method}" }
+    # template_ymls = [] of YAML::Any
+    # case install_method[0]
+    # when Helm::InstallMethod::HelmChart, Helm::InstallMethod::HelmDirectory
+    #   Log.info { "EXPORTED CHART PATH: #{helm_chart_path}" } 
+    #   Helm.generate_manifest_from_templates(release_name,
+    #                                         helm_chart_path,
+    #                                         manifest_file_path,
+    #                                         helm_install_namespace,
+    #                                         helm_values)
+    #   template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
+    #   if !helm_install_namespace.empty?
+    #     default_namespace = config.cnf_config[:helm_install_namespace]
+    #   end
+    # when Helm::InstallMethod::ManifestDirectory
+    # # if release_name.empty? # no helm chart
+    #   template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
+    # # else
+    # end
+
+    template_ymls = cnf_resource_ymls(args, config)
+    # call cnf cnf_resources to get unfiltered yml
     resource_ymls = Helm.all_workload_resources(template_ymls, default_namespace)
     resource_resp = resource_ymls.map do | resource |
       resp = yield resource
