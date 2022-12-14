@@ -6,6 +6,6 @@ RUN apk add --update --no-cache --force-overwrite \
       libxml2-dev openssl-dev openssl-libs-static \
       tzdata yaml-dev zlib-static \
       make git \
-      llvm10-dev llvm10-static g++
+      llvm11-dev llvm11-static g++
 
 CMD ["/bin/sh"]
