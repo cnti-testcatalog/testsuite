@@ -8,4 +8,6 @@ RUN apk add --update --no-cache --force-overwrite \
       make git \
       llvm11-dev llvm11-static g++
 
+RUN git config --global --add safe.directory /workspace
+
 CMD ["/bin/sh"]
