@@ -116,7 +116,7 @@ module CNFManager
 
   def self.cnf_resources(args, config, &block)
     template_ymls = cnf_resource_ymls(args, config)
-    resource_resp = resource_ymls.map do | resource |
+    resource_resp = template_ymls.map do | resource |
       resp = yield resource
       Log.debug { "cnf_workload_resource yield resp: #{resp}" }
       resp

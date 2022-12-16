@@ -730,25 +730,73 @@ task "operator_installed" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
     Log.for("verbose").info { "operator_installed" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
-    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
-      yml_file_path = config.cnf_config[:yml_file_path]
-
-      Log.info { "Resource Kind: #{resource[:kind]}" }
-
-      if resource["kind"].downcase == "subscription" 
-        sub_name = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace]).dig?("metadata", "name")
-        Log.info { "Subscription Name: #{sub_name}" }
-        test_passed = true
+    subscription_names = CNFManager.cnf_resources(args, config) do |resource|
+      kind = resource.dig("kind").as_s
+      if kind && kind.downcase == "subscription"
+        { "name" => resource.dig("metadata", "name"), "namespace" => resource.dig("metadata", "namespace") }
       end
-      test_passed
+    end.compact
+
+    Log.info { "Subscription Names: #{subscription_names}" }
+
+
+    csv_names = subscription_names.map do |subscription|
+      second_count = 0
+      wait_count = 120
+      csv_created = nil
+      resource_created = false
+      until (csv_created.nil? != true && resource_created == true) || second_count > wait_count.to_i
+        sleep 3
+        sub = KubectlClient::Get.resource("sub", "#{subscription["name"]}", "#{subscription["namespace"]}")
+        Log.info { "Subscription: #{sub}" }
+        Log.info { "installedCSV?: #{sub.dig?("status", "installedCSV")}" }
+        if sub.dig?("status", "installedCSV")
+          resource_created=true
+        end
+        second_count = second_count + 1 
+      end
+      installed_csv = KubectlClient::Get.resource("sub", "#{subscription["name"]}", "#{subscription["namespace"]}")
+      if installed_csv.dig?("status", "installedCSV")
+        { "name" => installed_csv.dig("status", "installedCSV"), "namespace" => installed_csv.dig("metadata", "namespace") }
+      end
+    end.compact
+
+    Log.info { "CSV Names: #{csv_names}" }
+
+
+    succeeded = csv_names.map do |csv| 
+      second_count = 0
+      wait_count = 120
+      csv_succeeded = false
+      until (csv_succeeded == true) || second_count > wait_count.to_i
+        sleep 3
+        csv_get = KubectlClient::Get.resource("csv", "#{csv["name"]}", "#{csv["namespace"]}")
+        Log.info { "CSV Get: #{csv_get}" }
+        Log.info { "CSV Phase?: #{csv_get.dig?("status", "reason")}" }
+        Log.info { "CSV Status?: #{csv_get.dig?("status", "phase")}" }
+        if csv_get.dig?("status", "reason") == "InstallSucceeded" && csv_get.dig?("status", "phase") == "Succeeded"
+          csv_succeeded=true
+        end
+        second_count = second_count + 1 
+      end
+      csv_succeeded
     end
 
-    emoji_image_size="⚖️👀"
+    Log.info { "Succeeded CSV Names: #{succeeded}" }
+
+      # if resource["kind"].downcase == "subscription" 
+      #   sub_name = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace]).dig?("metadata", "name")
+      #   Log.info { "Subscription Name: #{sub_name}" }
+      test_passed = true
+      # end
+      test_passed
+
+   emoji_image_size="⚖️👀"
     emoji_small="🐜"
     emoji_big="🦖"
 
-    if task_response
+    if test_passed
       upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good #{emoji_small} #{emoji_image_size}")
     else
       upsert_failed_task("reasonable_image_size", "✖️  FAILED: Image size too large #{emoji_big} #{emoji_image_size}")
