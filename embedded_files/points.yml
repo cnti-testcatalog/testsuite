@@ -101,6 +101,8 @@
   pass: 0
   fail: -1 
   tags: configuration, static, workload
+- name: operator_installed
+  tags: configuration, dynamic, workload, cert, bonus
 - name: liveness
   tags: resilience, dynamic, workload, essential, cert
   pass: 100

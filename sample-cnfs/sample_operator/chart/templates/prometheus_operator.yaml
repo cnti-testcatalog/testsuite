@@ -1,0 +1,11 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: prometheus
+  namespace: default
+spec:
+  channel: beta
+  installPlanApproval: Automatic
+  name: prometheus
+  source: operatorhubio-catalog
+  sourceNamespace: operator-lifecycle-manager

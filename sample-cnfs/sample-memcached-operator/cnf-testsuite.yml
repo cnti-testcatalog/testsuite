@@ -1,0 +1,3 @@
+---
+release_name: memcached-operator
+helm_directory: bundle/manifests

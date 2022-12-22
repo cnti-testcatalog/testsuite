@@ -21,6 +21,7 @@ task "configuration", [
     "require_labels",
     "latest_tag",
     "default_namespace",
+    "operator_installed",
     "versioned_tag"
   ] do |_, args|
   stdout_score("configuration", "configuration")
@@ -723,4 +724,68 @@ SKIPPED: Secrets not used #{emoji}
 To address this issue please see the USAGE.md documentation
 
 TEMPLATE
+end
+
+desc "Does the CNF install an Operator with OLM?"
+task "operator_installed" do |_, args|
+  CNFManager::Task.task_runner(args) do |args,config|
+    Log.for("verbose").info { "operator_installed" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
+
+    subscription_names = CNFManager.cnf_resources(args, config) do |resource|
+      kind = resource.dig("kind").as_s
+      if kind && kind.downcase == "subscription"
+        { "name" => resource.dig("metadata", "name"), "namespace" => resource.dig("metadata", "namespace") }
+      end
+    end.compact
+
+    Log.info { "Subscription Names: #{subscription_names}" }
+
+
+    #TODO Warn if csv is not found for a subscription.
+    csv_names = subscription_names.map do |subscription|
+      second_count = 0
+      wait_count = 120
+      csv_created = nil
+      resource_created = false
+
+      KubectlClient::Get.wait_for_resource_key_value("sub", "#{subscription["name"]}", {"status", "installedCSV"}, namespace: subscription["namespace"].as_s)
+
+      installed_csv = KubectlClient::Get.resource("sub", "#{subscription["name"]}", "#{subscription["namespace"]}")
+      if installed_csv.dig?("status", "installedCSV")
+        { "name" => installed_csv.dig("status", "installedCSV"), "namespace" => installed_csv.dig("metadata", "namespace") }
+      end
+    end.compact
+
+    Log.info { "CSV Names: #{csv_names}" }
+
+
+    succeeded = csv_names.map do |csv| 
+      if KubectlClient::Get.wait_for_resource_key_value("csv", "#{csv["name"]}", {"status", "reason"}, namespace: csv["namespace"].as_s, value: "InstallSucceeded" ) && KubectlClient::Get.wait_for_resource_key_value("csv", "#{csv["name"]}", {"status", "phase"}, namespace: csv["namespace"].as_s, value: "Succeeded" )
+        csv_succeeded=true
+      end
+      csv_succeeded
+    end
+
+    Log.info { "Succeeded CSV Names: #{succeeded}" }
+
+    test_passed = false
+
+    if succeeded.size > 0 && succeeded.all?(true)
+      Log.info { "Succeeded All True?" }
+      test_passed = true
+    end
+
+    test_passed
+
+    emoji_image_size="⚖️👀"
+    emoji_small="🐜"
+    emoji_big="🦖"
+
+    if test_passed
+      upsert_passed_task("operator_installed", "✔️  PASSED: Operator is installed: #{emoji_small} #{emoji_image_size}")
+    else
+      upsert_na_task("operator_installed", "✖️  NA: No Operators Found #{emoji_big} #{emoji_image_size}")
+    end
+  end
 end
