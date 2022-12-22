@@ -123,7 +123,7 @@ describe "SampleUtils" do
     tags = [
       "alpha_k8s_apis", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "hostport_not_used",
       "immutable_configmap", "ip_addresses", "nodeport_not_used", "secrets_used", "versioned_tag",
-      "require_labels", "default_namespace", "latest_tag"
+      "require_labels", "default_namespace", "latest_tag", "operator_installed"
     ]
     (CNFManager::Points.tasks_by_tag("configuration")).sort.should eq(tags.sort)
     (CNFManager::Points.tasks_by_tag("does-not-exist")).should eq([] of YAML::Any) 
@@ -168,7 +168,7 @@ describe "SampleUtils" do
             "routed_logs", "tracing", "elastic_volumes", "alpha_k8s_apis", 
             "service_discovery", "shared_database", "pod_dns_error",
             "external_ips", "container_sock_mounts", "require_labels", "default_namespace", 
-            "selinux_options", "latest_tag", "sysctls", "increase_decrease_capacity"]
+            "selinux_options", "latest_tag", "sysctls", "increase_decrease_capacity", "operator_installed"]
     (CNFManager::Points.all_task_test_names()).sort.should eq(tags.sort)
   end
 
