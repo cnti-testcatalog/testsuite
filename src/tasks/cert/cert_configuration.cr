@@ -19,6 +19,7 @@ task "cert_configuration", [
     "require_labels",
     "latest_tag",
     "default_namespace",
+    "operator_installed",
   ] do |_, args|
 # task "cert_configuration", [
 #     "cert_configuration_title",
