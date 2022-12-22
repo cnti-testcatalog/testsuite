@@ -1,7 +1,6 @@
 require "totem"
 require "colorize"
 require "./cnf_manager.cr"
-require "./release_manager.cr"
 require "./embedded_file_manager.cr"
 require "log"
 require "file_utils"

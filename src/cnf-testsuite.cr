@@ -1,8 +1,8 @@
 require "sam"
+require "release_manager"
 require "./proto/**"
 require "./tasks/**"
 require "./tasks/utils/utils.cr"
-require "./tasks/utils/release_manager.cr"
 require "./cnf_testsuite.cr"
 
 
@@ -81,7 +81,10 @@ end
 
 task "upsert_release" do |_, args|
   LOGGING.info "upserting release on: #{CnfTestSuite::VERSION}"
-  release, asset = ReleaseManager::GithubReleaseManager.upsert_release
+
+  ghrm = ReleaseManager::GithubReleaseManager.new("cncf/cnf-testsuite")
+
+  release, asset = ghrm.upsert_release(version=CnfTestSuite::VERSION)
   if release
     puts "Created a release for: #{CnfTestSuite::VERSION}".colorize(:green)
   else

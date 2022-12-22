@@ -10,7 +10,7 @@ targets:
   cnf_testsuite:
     main: src/cnf_testsuite.cr
 
-crystal: '>= 1.0.0'
+crystal: '>= 1.6.0'
 
 dependencies:
   sam:
@@ -53,8 +53,20 @@ dependencies:
   cluster_tools:
     github: cnf-testsuite/cluster_tools
     branch: main
+  kernel_introspection:
+    github: cnf-testsuite/kernel_introspection
+    branch: main
+  k8s_kernel_introspection:
+    github: cnf-testsuite/k8s_kernel_introspection
+    branch: main
   helm:
     github: cnf-testsuite/helm
+    branch: main
+  k8s_netstat:
+    github: cnf-testsuite/k8s_netstat
+    branch: main
+  release_manager:
+    github: cnf-testsuite/release_manager
     branch: main
   airgap:
     path: utils/airgap

@@ -186,7 +186,7 @@ jobs:
   chaos:
     name: Chaos Tests
     needs: [tests]
-    runs-on: [ubuntu-latest]
+    runs-on: [ubuntu-18.04]
     strategy:
       fail-fast: false
       matrix:
@@ -222,20 +222,9 @@ jobs:
         restore-keys: |
           lib-
     - name: Install Crystal
-      env:
-        CRYSTAL_VERSION: 1.0.0
-        CRYSTAL_URL: https://github.com/crystal-lang/crystal/releases/download
-      run: |
-        wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga; 
-        sudo apt install -y --no-install-recommends \
-        git \
-        libssl-dev \
-        libxml2-dev \
-        libyaml-dev \
-        libgmp-dev \
-        libz-dev \
-        ./crystal.deb \
-        && sudo rm -rf /var/lib/apt/lists/*
+      uses: crystal-lang/install-crystal@v1
+      with:
+        crystal: 1.6.2
     - name: Setup CNF-Conformance
       run: |
         helm repo add stable https://cncf.gitlab.io/stable
@@ -346,7 +335,7 @@ jobs:
     name: Build Release
     runs-on: ubuntu-latest
     env:
-      CRYSTAL_IMAGE: "conformance/crystal:1.2.2-alpine"
+      CRYSTAL_IMAGE: "conformance/crystal:1.6.2-alpine"
     steps: 
     - name: Checkout code
       uses: actions/checkout@v2
