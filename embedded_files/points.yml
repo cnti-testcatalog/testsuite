@@ -12,7 +12,7 @@
 - name: reasonable_startup_time 
   tags: microservice, dynamic, workload, cert, normal
 - name: single_process_type 
-  tags: microservice, dynamic, workload, essential, cert
+  tags: microservice, dynamic, workload, cert
   pass: 100
 - name: service_discovery
   tags: microservice, dynamic, workload, cert, bonus
