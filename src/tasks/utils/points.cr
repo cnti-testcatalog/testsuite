@@ -70,6 +70,7 @@ module CNFManager
         end
         File.open("#{Results.file}", "w") do |f|
           YAML.dump({name: results["name"],
+                     testsuite_version: CnfTestSuite::VERSION,
                      status: results["status"],
                      exit_code: results["exit_code"],
                      points: results["points"],
@@ -395,6 +396,7 @@ module CNFManager
       result_items << YAML.parse "{name: #{task}, status: #{status}, type: #{task_type_by_task(task)}, points: #{points}}"
       File.open("#{Results.file}", "w") do |f|
         YAML.dump({name: results["name"],
+                   testsuite_version: CnfTestSuite::VERSION,
                    status: results["status"],
                    command: cmd,
                    points: results["points"],
@@ -541,6 +543,7 @@ module CNFManager
   #TODO add tags for category summaries
   YAML.parse <<-END
 name: cnf testsuite
+testsuite_version: <%= CnfTestSuite::VERSION %>
 status:
 points:
 exit_code: 0
