@@ -22,6 +22,13 @@ end
 
 REASONABLE_STARTUP_BUFFER = 10.0
 
+desc "To check if the CNF uses a specialized init system"
+task "specialized_init_system", ["install_cluster_tools"] do |_, args|
+  test_name = "specialized_init_system"
+  Log.info { "Running #{test_name} test" }
+
+end
+
 desc "To check if the CNF has multiple microservices that share a database"
 task "shared_database", ["install_cluster_tools"] do |_, args|
   Log.info { "Running shared_database test" }
