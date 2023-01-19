@@ -27,6 +27,25 @@ task "specialized_init_system", ["install_cluster_tools"] do |_, args|
   test_name = "specialized_init_system"
   Log.info { "Running #{test_name} test" }
 
+  nodes = KubectlClient::Get.schedulable_nodes_list
+  nodes.map do |node|
+    pods = KubectlClient::Get.pods_by_nodes([node])
+    pods.map do |pod|
+      containers = pod.dig("status", "containerStatuses")
+      pod_name = pod.dig("metadata", "name")
+      containers.as_a.each do |container|
+        container_id = container["containerID"]
+        container_id = ClusterTools.parse_container_id(container_id.as_s)
+        pid = ClusterTools.node_pid_by_container_id(container_id, node)
+        if pid != nil
+          result = KernelIntrospection::K8s::Node.cmdline_by_pid(pid.not_nil!, node)
+          # TODO match the binary name before the \u0000
+          result[:output]
+        end
+      end
+    end
+  end
+
 end
 
 desc "To check if the CNF has multiple microservices that share a database"
