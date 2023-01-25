@@ -177,30 +177,50 @@ describe "Microservice" do
   ensure
     `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/ndn-reasonable-image-size force=true`
   end
+
+  it "'service_discovery' should pass if any containers in the cnf are exposed as a service", tags: ["service_discovery"]  do
+    begin
+      Log.info { `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns` }
+      response_s = `./cnf-testsuite service_discovery verbose`
+      Log.info { response_s }
+      $?.success?.should be_true
+      (/PASSED: Some containers exposed as a service/ =~ response_s).should_not be_nil
+    ensure
+      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns` }
+      $?.success?.should be_true
+    end
+  end
+
+  it "'service_discovery' should fail if no containers in the cnf are exposed as a service", tags: ["service_discovery"]  do
+    begin
+      Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-ndn-privileged` }
+      response_s = `./cnf-testsuite service_discovery verbose`
+      Log.info { response_s }
+      $?.success?.should be_true
+      (/FAILED: No containers exposed as a service/ =~ response_s).should_not be_nil
+    ensure
+      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-ndn-privileged` }
+      $?.success?.should be_true
+    end
+  end
+
+  it "'sig_term_handled' should pass if SIGTERM detected in child processes", tags: ["service_discovery"]  do
+    begin
+      #todo 1. Watch for signals for the containers pid one process, and the tree of all child processes ity manages
+      #todo 2. Kill PID one / Uninstall the CNF
+      #todo 3. Collect all signals sent, if SIGKILL is captured, application fails test because it doesn't exit child processes cleanly
+      #todo 3. Collect all signals sent, if SIGTERM is captured, application pass test because it  exits child processes cleanly
+      #todo 4. Make sure that threads are not counted as new processes.  A thread does not get a signal (sigterm or sigkill)
+      Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_good_signal_handling` }
+      response_s = `./cnf-testsuite sig_term_handled verbose`
+      Log.info { response_s }
+      $?.success?.should be_true
+      (/PASSED: SIGTERM handled/ =~ response_s).should_not be_nil
+    ensure
+      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_good_signal_handling` }
+      $?.success?.should be_true
+    end
+  end
+
 end
 
-it "'service_discovery' should pass if any containers in the cnf are exposed as a service", tags: ["service_discovery"]  do
-  begin
-    Log.info { `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns` }
-    response_s = `./cnf-testsuite service_discovery verbose`
-    Log.info { response_s }
-    $?.success?.should be_true
-    (/PASSED: Some containers exposed as a service/ =~ response_s).should_not be_nil
-  ensure
-    Log.info { `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns` }
-    $?.success?.should be_true
-  end
-end
-
-it "'service_discovery' should fail if no containers in the cnf are exposed as a service", tags: ["service_discovery"]  do
-  begin
-    Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-ndn-privileged` }
-    response_s = `./cnf-testsuite service_discovery verbose`
-    Log.info { response_s }
-    $?.success?.should be_true
-    (/FAILED: No containers exposed as a service/ =~ response_s).should_not be_nil
-  ensure
-    Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-ndn-privileged` }
-    $?.success?.should be_true
-  end
-end

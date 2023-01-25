@@ -17,7 +17,6 @@ image:
   tag: v1.11.1
   pullPolicy: IfNotPresent
 
-
 ## Args template allows you to use Chart template expressions to dynamically generate args
 # argsTemplate: |-
 #   - -c
