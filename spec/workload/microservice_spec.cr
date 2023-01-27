@@ -179,7 +179,7 @@ describe "Microservice" do
   end
 
   it "'specialized_init_system' should fail if pods do not use specialized init systems", tags: ["specialized_init_system"] do
-    `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-cnfs/sample-coredns-cnf`
+    `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-coredns-cnf`
     response_s = `./cnf-testsuite specialized_init_system`
     LOGGING.info response_s
     $?.success?.should be_true
@@ -189,7 +189,7 @@ describe "Microservice" do
   end
 
   it "'specialized_init_system' should pass if pods use specialized init systems", tags: ["specialized_init_system"] do
-    `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-cnfs/sample-init-systems`
+    `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-init-systems`
     response_s = `./cnf-testsuite specialized_init_system`
     LOGGING.info response_s
     $?.success?.should be_true
