@@ -12,7 +12,7 @@ require "k8s_kernel_introspection"
 require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if CNFs follows microservice principles"
-task "microservice", ["reasonable_image_size", "reasonable_startup_time", "single_process_type", "service_discovery", "shared_database"] do |_, args|
+task "microservice", ["reasonable_image_size", "reasonable_startup_time", "single_process_type", "service_discovery", "shared_database", "specialized_init_system"] do |_, args|
   stdout_score("microservice")
   case "#{ARGV.join(" ")}" 
   when /microservice/
@@ -25,27 +25,27 @@ REASONABLE_STARTUP_BUFFER = 10.0
 desc "To check if the CNF uses a specialized init system"
 task "specialized_init_system", ["install_cluster_tools"] do |_, args|
   test_name = "specialized_init_system"
-  Log.info { "Running #{test_name} test" }
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.info { "Running #{test_name} test" }
 
-  nodes = KubectlClient::Get.schedulable_nodes_list
-  nodes.map do |node|
-    pods = KubectlClient::Get.pods_by_nodes([node])
-    pods.map do |pod|
-      containers = pod.dig("status", "containerStatuses")
-      pod_name = pod.dig("metadata", "name")
-      containers.as_a.each do |container|
-        container_id = container["containerID"]
-        container_id = ClusterTools.parse_container_id(container_id.as_s)
-        pid = ClusterTools.node_pid_by_container_id(container_id, node)
-        if pid != nil
-          result = KernelIntrospection::K8s::Node.cmdline_by_pid(pid.not_nil!, node)
-          # TODO match the binary name before the \u0000
-          result[:output]
-        end
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+
+    # Only scan CNF resources. So pass resource_keys to InitSystems.scan
+    failed_cnf_resources = InitSystems.scan(resource_keys)
+
+    failed_emoji = "(ভ_ভ) ރ 🚀"
+    passed_emoji = "🖥️  🚀"
+
+    if failed_cnf_resources.size > 0
+      upsert_failed_task(test_name, "✖️  FAILED: Containers do not use specialized init systems #{failed_emoji}")
+      failed_cnf_resources.each do |init_info|
+        stdout_failure "#{init_info.kind}/#{init_info.name} has container '#{init_info.container}' with #{init_info.init_cmd} as init process"
       end
+    else
+      upsert_passed_task(test_name, "✔️  PASSED: Containers use specialized init systems #{passed_emoji}")
     end
-  end
 
+  end
 end
 
 desc "To check if the CNF has multiple microservices that share a database"
