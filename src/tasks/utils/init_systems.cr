@@ -48,7 +48,9 @@ module InitSystems
         end
 
         # Continue scan for this resource only if the resource is part of the CNF
-        if CNFManager.resources_includes?(resource_keys, "pod", pod_name, resource_namespace)
+        if !CNFManager.resources_includes?(resource_keys, "pod", pod_name, resource_namespace)
+          Log.for("InitSystems.scan").info { "Skipping pod '#{pod_name}' in #{resource_namespace} namespace because it is not part of the CNF" }
+        else
           containers = pod.dig("status", "containerStatuses")
 
           containers.as_a.each do |container|
