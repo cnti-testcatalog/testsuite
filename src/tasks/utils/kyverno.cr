@@ -1,7 +1,7 @@
 require "http/client"
 
 module Kyverno
-  VERSION = "1.6.1"
+  VERSION = "1.8.4"
 
   def self.binary_path
     "#{tools_path}/kyverno"
