@@ -132,7 +132,7 @@ module LitmusManager
   end
 
   ## check_chaos_verdict will check the verdict of chaosexperiment
-  def self.check_chaos_verdict(chaos_result_name, chaos_experiment_name, args, namespace : String = "default"): Bool
+  def self.check_chaos_verdict(chaos_result_name, chaos_experiment_name, args, namespace : String = "default") : Bool
     verdict_cmd = "kubectl get chaosresults.litmuschaos.io #{chaos_result_name} -n #{namespace} -o jsonpath='{.status.experimentStatus.verdict}'"
     Log.for("check_chaos_verdict").info { "Checking experiment verdict #{verdict_cmd}" } if check_verbose(args)
     status_code = Process.run("#{verdict_cmd}", shell: true, output: verdict_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
