@@ -28,10 +28,19 @@ task "specialized_init_system", ["install_cluster_tools"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     Log.info { "Running #{test_name} test" }
 
-    resource_keys = CNFManager.workload_resource_keys(args, config)
-
-    # Only scan CNF resources. So pass resource_keys to InitSystems.scan
-    failed_cnf_resources = InitSystems.scan(resource_keys)
+    failed_cnf_resources = [] of InitSystemInfo
+    CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      kind = resource["kind"].downcase
+      case kind 
+      when  "deployment","statefulset","pod","replicaset", "daemonset"
+        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
+        pods = KubectlClient::Get.pods_by_resource(resource_yaml)
+        pods.each do |pod|
+          results = InitSystems.scan(pod)
+          failed_cnf_resources = failed_cnf_resources + results
+        end
+      end
+    end
 
     failed_emoji = "(ভ_ভ) ރ 🚀"
     passed_emoji = "🖥️  🚀"

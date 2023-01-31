@@ -34,46 +34,40 @@ module InitSystems
     return false
   end
 
-  def self.scan(resource_keys : Array(String)) : Array(InitSystemInfo)
-    nodes = KubectlClient::Get.schedulable_nodes_list
+  def self.scan(pod : JSON::Any) : Array(InitSystemInfo)
     failed_resources = [] of InitSystemInfo
 
-    nodes.map do |node|
-      pods = KubectlClient::Get.pods_by_nodes([node])
-      pods.map do |pod|
-        pod_name = pod.dig("metadata", "name")
-        resource_namespace = "default"
-        if pod.dig?("metadata", "namespace")
-          resource_namespace = pod.dig("metadata", "namespace").as_s
-        end
+    KubectlClient::Get.nodes_by_pod(pod)
+    if nodes.length == 0
+      Log.for("InitSystems.scan").info { "No nodes found for pod '#{pod_name}' in #{resource_namespace} namespace" }
+      return failed_resources
+    end
 
-        # Continue scan for this resource only if the resource is part of the CNF
-        if !CNFManager.resources_includes?(resource_keys, "pod", pod_name, resource_namespace)
-          Log.for("InitSystems.scan").info { "Skipping pod '#{pod_name}' in #{resource_namespace} namespace because it is not part of the CNF" }
-        else
-          containers = pod.dig("status", "containerStatuses")
+    pod_node = nodes[0]
+    pod_name = pod.dig("metadata", "name")
+    resource_namespace = "default"
+    if pod.dig?("metadata", "namespace")
+      resource_namespace = pod.dig("metadata", "namespace").as_s
+    end
 
-          containers.as_a.each do |container|
-            container_id = container["containerID"]
-            init_cmd = get_container_init_cmd(node, container_id)
-            if init_cmd != nil
-              container_name = container["name"]
-              container_init_cmd = init_cmd.not_nil!
-              init_info = InitSystems::InitSystemInfo.new(
-                "pod",
-                resource_namespace,
-                pod_name.as_s,
-                container_name.as_s,
-                container_init_cmd
-              )
-              Log.for("InitSystems.scan").info { "#{init_info.kind}/#{init_info.name} has container '#{init_info.container}' with #{init_info.init_cmd} as init process" }
-        
-              if !InitSystems.is_specialized_init_system?(container_init_cmd)
-                failed_resources << init_info
-              end
-            end            
-
-          end
+    containers = pod.dig("status", "containerStatuses")
+    containers.as_a.each do |container|
+      container_id = container["containerID"]
+      init_cmd = get_container_init_cmd(pod_node, container_id)
+      if init_cmd != nil
+        container_name = container["name"]
+        container_init_cmd = init_cmd.not_nil!
+        init_info = InitSystems::InitSystemInfo.new(
+          "pod",
+          resource_namespace,
+          pod_name.as_s,
+          container_name.as_s,
+          container_init_cmd
+        )
+        Log.for("InitSystems.scan").info { "#{init_info.kind}/#{init_info.name} has container '#{init_info.container}' with #{init_info.init_cmd} as init process" }
+  
+        if !InitSystems.is_specialized_init_system?(container_init_cmd)
+          failed_resources << init_info
         end
       end
     end
