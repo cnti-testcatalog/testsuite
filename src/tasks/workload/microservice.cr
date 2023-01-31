@@ -28,7 +28,7 @@ task "specialized_init_system", ["install_cluster_tools"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     Log.info { "Running #{test_name} test" }
 
-    failed_cnf_resources = [] of InitSystemInfo
+    failed_cnf_resources = [] of InitSystems::InitSystemInfo
     CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       kind = resource["kind"].downcase
       case kind 

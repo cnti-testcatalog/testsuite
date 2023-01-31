@@ -37,19 +37,19 @@ module InitSystems
   def self.scan(pod : JSON::Any) : Array(InitSystemInfo)
     failed_resources = [] of InitSystemInfo
 
-    KubectlClient::Get.nodes_by_pod(pod)
-    if nodes.length == 0
-      Log.for("InitSystems.scan").info { "No nodes found for pod '#{pod_name}' in #{resource_namespace} namespace" }
-      return failed_resources
-    end
-
-    pod_node = nodes[0]
+    nodes = KubectlClient::Get.nodes_by_pod(pod)
     pod_name = pod.dig("metadata", "name")
     resource_namespace = "default"
     if pod.dig?("metadata", "namespace")
       resource_namespace = pod.dig("metadata", "namespace").as_s
     end
 
+    if nodes.size == 0
+      Log.for("InitSystems.scan").info { "No nodes found for pod '#{pod_name}' in #{resource_namespace} namespace" }
+      return failed_resources
+    end
+
+    pod_node = nodes[0]
     containers = pod.dig("status", "containerStatuses")
     containers.as_a.each do |container|
       container_id = container["containerID"]
