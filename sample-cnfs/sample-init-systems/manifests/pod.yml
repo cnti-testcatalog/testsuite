@@ -7,7 +7,7 @@ spec:
   dnsPolicy: Default
 
   containers:
-  - image: hashnuke/cnf-testsuite-specialized-init-sample:0.2
+  - image: conformance/specialized-init:0.1
     name: nginx
     command: ["/tini", "--"]
     args: ["nginx", "-g", "daemon off;"]
@@ -32,7 +32,7 @@ spec:
   dnsPolicy: Default
 
   containers:
-  - image: hashnuke/cnf-testsuite-specialized-init-sample:0.2
+  - image: conformance/specialized-init:0.1
     name: nginx-dumb-init
     command: ["/usr/bin/dumb-init", "--"]
     args: ["nginx", "-g", "daemon off;"]
@@ -57,7 +57,7 @@ spec:
   dnsPolicy: Default
 
   containers:
-  - image: hashnuke/cnf-testsuite-specialized-init-sample:0.2
+  - image: conformance/specialized-init:0.1
     name: nginx-dumb-init
     command: ["/init"]
     args: ["nginx", "-g", "daemon off;"]
