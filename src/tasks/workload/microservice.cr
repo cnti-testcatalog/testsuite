@@ -33,8 +33,10 @@ task "specialized_init_system", ["install_cluster_tools"] do |_, args|
       kind = resource["kind"].downcase
       case kind 
       when  "deployment","statefulset","pod","replicaset", "daemonset"
+        Log.for(test_name).info { "Checking resource #{resource[:kind]}/#{resource[:name]} in #{resource[:namespace]}" }
         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
         pods = KubectlClient::Get.pods_by_resource(resource_yaml)
+        Log.for(test_name).info { "Pod count for resource #{resource[:kind]}/#{resource[:name]} in #{resource[:namespace]}: #{pods.size}" }
         pods.each do |pod|
           results = InitSystems.scan(pod)
           failed_cnf_resources = failed_cnf_resources + results
