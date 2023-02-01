@@ -9,6 +9,8 @@
 
 - name: reasonable_image_size
   tags: microservice, dynamic, workload, cert, normal
+- name: specialized_init_system
+  tags: microservice, dynamic, workload
 - name: reasonable_startup_time 
   tags: microservice, dynamic, workload, cert, normal
 - name: single_process_type 
