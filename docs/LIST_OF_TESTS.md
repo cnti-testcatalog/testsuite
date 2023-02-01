@@ -203,6 +203,11 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 [**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-uses-a-shared-database-shared_database)
 
 ## [Specialized Init Systems](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L462)
+- Expectation: Container images should use specialized init systems for containers.
+
+**What's tested:** This tests if containers in pods have dumb-init, tini or s6-overlay as init processes.
+
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-uses-a-shared-database-shared_database)
 
 # State Category
 

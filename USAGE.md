@@ -474,10 +474,20 @@ Make sure the CNF exposes any of its containers as a Kubernetes Service. You can
 
 <b>Remediation for failing this test:</b> 
 
-Make sure that your CNFs containers are not shareing the same [database](https://martinfowler.com/bliki/IntegrationDatabase.html).
+Make sure that your CNFs containers are not sharing the same [database](https://martinfowler.com/bliki/IntegrationDatabase.html).
 </b>
 
+## [Specialized Init System](docs/LIST_OF_TESTS.md#specialized-init-system)
 
+##### To run the Specialized Init System test, you can use the following command:
+
+```
+./cnf-testsuite specialized_init_system
+```
+
+<b>Remediation for failing this test:</b> 
+
+Use init systems that are purpose-built for containers like tini, dumb-init, s6-overlay.
 
 # State Tests
 
