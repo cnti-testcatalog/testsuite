@@ -153,7 +153,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 # Microservice Category
 
-## [Reasonable image size](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L268) 
+## [Reasonable image size](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L200)
 - Expectation: CNF image size is under 5 gigs
 
 **What's tested:** Checks the size of the image used.
@@ -163,7 +163,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 [**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-has-a-reasonable-image-size-reasonable_image_size)
 
 
-## [Reasonable startup time](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L183)
+## [Reasonable startup time](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L109)
 - Expectation: CNF starts up under one minute 
 
 **What's tested:** Checks how long the it takes for the CNF to pass a Readiness Probe and reach a ready/running state.
@@ -173,7 +173,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 [**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-have-a-reasonable-startup-time-reasonable_startup_time)
 
 
-## [Single process type in one container](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L359)
+## [Single process type in one container](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L300)
 - Expectation: CNF container has one process type
 
 **What's tested:** This verifies that there is only one process type within one container. This does not count against child processes. Example would be nginx or httpd could have a parent process and then 10 child processes but if both nginx and httpd were running, this test would fail.
@@ -183,7 +183,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 [**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-has-multiple-process-types-within-one-container-single_process_type)
 
 
-## [Service discovery](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L413)
+## [Service discovery](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L405)
 - Expectation: CNFs accessible to other applications should be exposed via a Service.
 
 **What's tested:** This tests and checks if the containers within a CNF have services exposed via a Kubernetes Service resource. Application access for microservices within a cluster should be exposed via a Service. Read more about K8s Service [here](https://kubernetes.io/docs/concepts/services-networking/service/).
@@ -193,7 +193,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 [**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-exposes-any-of-its-containers-as-a-service-service_discovery-service_discovery)
 
   
-## [Shared database](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L19)  
+## [Shared database](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L26)
 - Expectation: Multiple microservices should not share the same database.
 
 **What's tested:** This tests if multiple CNFs are using the same database.
@@ -202,6 +202,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-uses-a-shared-database-shared_database)
 
+## [Specialized Init Systems](https://github.com/cncf/cnf-testsuite/blob/v0.27.0/src/tasks/workload/microservice.cr#L462)
 
 # State Category
 
