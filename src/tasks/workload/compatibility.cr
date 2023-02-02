@@ -216,16 +216,16 @@ task "increase_decrease_capacity" do |t, args|
       pass_msg = "✔️  PASSED: Replicas increased to #{increase_test_target_replicas} and decreased to #{decrease_test_target_replicas} #{emoji_capacity}"
       upsert_passed_task("increase_decrease_capacity", pass_msg)
     else
-      upsert_failed_task("increase_decrease_capacity", "✖️  FAILURE: Capacity change test failed #{emoji_capacity}")
+      upsert_failed_task("increase_decrease_capacity", "✖️  FAILURE: Capacity change failed #{emoji_capacity}")
 
       # If increased capacity failed
       if increase_task_response.any?(false)
-        stdout_failure("Failed to increase capacity from #{increase_test_base_replicas} to #{increase_test_target_replicas}")
+        stdout_failure("Failed to increase replicas from #{increase_test_base_replicas} to #{increase_test_target_replicas}")
       end
 
       # If decrease capacity failed
       if decrease_task_response.any?(false)
-        stdout_failure("Failed to decrease capacity from #{decrease_test_base_replicas} to #{decrease_test_target_replicas}")
+        stdout_failure("Failed to decrease replicas from #{decrease_test_base_replicas} to #{decrease_test_target_replicas}")
       end
 
       stdout_failure(increase_decrease_remedy_msg())
