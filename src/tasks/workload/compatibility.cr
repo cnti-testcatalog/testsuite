@@ -220,7 +220,7 @@ task "increase_decrease_capacity" do |t, args|
 
       # If increased capacity failed
       if increase_task_response.any?(false)
-        stdout_failure("Failed to increase capacity from #{increase_base_target_replicas} to #{increase_test_target_replicas}")
+        stdout_failure("Failed to increase capacity from #{increase_test_base_replicas} to #{increase_test_target_replicas}")
       end
 
       # If decrease capacity failed
