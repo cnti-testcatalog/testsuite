@@ -59,7 +59,7 @@ rolling_version_change_test_names.each do |tn|
           resp = KubectlClient::Set.image(
             resource["kind"],
             resource["name"],
-            container.as_h["name"],
+            container.as_h["name"].as_s,
             # split out image name from version tag
             container.as_h["image"].as_s.rpartition(":")[0],
             config_container["#{tn}_test_tag"],
@@ -117,7 +117,7 @@ task "rollback" do |_, args|
         resource_kind = resource["kind"]
         resource_name = resource["name"]
         namespace = resource["namespace"] || config.cnf_config[:helm_install_namespace]
-        container_name = container.as_h["name"]
+        container_name = container.as_h["name"].as_s
         full_image_name_tag = container.as_h["image"].as_s.rpartition(":")
         image_name = full_image_name_tag[0]
         image_tag = full_image_name_tag[2]
