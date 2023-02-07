@@ -7,3 +7,8 @@ helm_repository:
   repo_url: https://charts.bitnami.com/bitnami 
 helm_chart: bitnami/wordpress 
 allowlist_helm_chart_container_names: [falco, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
+container_names:
+  - name: wordpress
+    rollback_from_tag: 6.0.1-debian-11-r21
+  - name: mariadb
+    rollback_from_tag: 10.6.8-debian-11-r2
