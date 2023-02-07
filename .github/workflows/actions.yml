@@ -186,7 +186,7 @@ jobs:
   chaos:
     name: Chaos Tests
     needs: [tests]
-    runs-on: [ubuntu-18.04]
+    runs-on: [ubuntu-22.04]
     strategy:
       fail-fast: false
       matrix:
