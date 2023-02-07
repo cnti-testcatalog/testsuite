@@ -114,15 +114,15 @@ task "rollback" do |_, args|
     end
 
     task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-
-        deployment_name = resource["name"]
+        resource_kind = resource["kind"]
+        resource_name = resource["name"]
         namespace = resource["namespace"] || config.cnf_config[:helm_install_namespace]
         container_name = container.as_h["name"]
         full_image_name_tag = container.as_h["image"].as_s.rpartition(":")
         image_name = full_image_name_tag[0]
         image_tag = full_image_name_tag[2]
 
-        VERBOSE_LOGGING.debug "deployment_name: #{deployment_name}" if check_verbose(args)
+        VERBOSE_LOGGING.debug "resource: #{resource_kind}/#{resource_name}" if check_verbose(args)
         VERBOSE_LOGGING.debug "container_name: #{container_name}" if check_verbose(args)
         VERBOSE_LOGGING.debug "image_name: #{image_name}" if check_verbose(args)
         VERBOSE_LOGGING.debug "image_tag: #{image_tag}" if check_verbose(args)
@@ -144,13 +144,16 @@ task "rollback" do |_, args|
             version_change_applied=false
           end
 
-          VERBOSE_LOGGING.debug "rollback: update deployment: #{deployment_name}, container: #{container_name}, image: #{image_name}, tag: #{rollback_from_tag}" if check_verbose(args)
+          VERBOSE_LOGGING.debug "rollback: update #{resource_kind}/#{resource_name}, container: #{container_name}, image: #{image_name}, tag: #{rollback_from_tag}" if check_verbose(args)
           # set a temporary image/tag, so that we can rollback to the current (original) tag later
-          version_change_applied = KubectlClient::Set.image(deployment_name,
-                                                            container_name,
-                                                            image_name,
-                                                            rollback_from_tag,
-                                                            namespace: namespace)
+          version_change_applied = KubectlClient::Set.image(
+            resource_kind,
+            resource_name,
+            container_name,
+            image_name,
+            rollback_from_tag,
+            namespace: namespace
+          )
         end
 
         LOGGING.info "rollback version change successful? #{version_change_applied}"
