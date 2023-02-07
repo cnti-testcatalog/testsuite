@@ -56,13 +56,15 @@ rolling_version_change_test_names.each do |tn|
         VERBOSE_LOGGING.debug "#{tn}: #{container} valid_cnf_testsuite_yml=#{valid_cnf_testsuite_yml}" if check_verbose(args)
         VERBOSE_LOGGING.debug "#{tn}: #{container} config_container=#{config_container}" if check_verbose(args)
         if valid_cnf_testsuite_yml && config_container
-          resp = KubectlClient::Set.image(resource["name"],
-                                          container.as_h["name"],
-                                          # split out image name from version tag
-                                          container.as_h["image"].as_s.rpartition(":")[0],
-                                          config_container["#{tn}_test_tag"],
-                                          namespace: namespace
-                                        )
+          resp = KubectlClient::Set.image(
+            resource["kind"],
+            resource["name"],
+            container.as_h["name"],
+            # split out image name from version tag
+            container.as_h["image"].as_s.rpartition(":")[0],
+            config_container["#{tn}_test_tag"],
+            namespace: namespace
+          )
         else
           resp = false
         end
