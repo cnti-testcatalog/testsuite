@@ -1,8 +1,8 @@
 ---
 release_name: jenkins
-service_name: jenkins 
+service_name: jenkins
 helm_repository:
-  name: jenkins 
+  name: jenkins
   repo_url: https://charts.jenkins.io
 helm_chart: jenkins/jenkins
 helm_install_namespace: cnfspace
