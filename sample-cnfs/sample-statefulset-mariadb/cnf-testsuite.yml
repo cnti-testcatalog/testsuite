@@ -18,7 +18,7 @@ allowlist_helm_chart_container_names: []
 container_names:
   # Default container image registry.k8s.io/nginx-slim:0.8
   - name: nginx
-    rollback_from_tag: 0.7
-    rolling_update_test_tag: 0.9
-    rolling_downgrade_test_tag: 0.7
-    rolling_version_change_test_tag: 0.9
+    rollback_from_tag: "0.7"
+    rolling_update_test_tag: "0.9"
+    rolling_downgrade_test_tag: "0.7"
+    rolling_version_change_test_tag: "0.9"
