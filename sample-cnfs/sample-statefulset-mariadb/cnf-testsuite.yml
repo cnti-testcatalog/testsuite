@@ -16,9 +16,9 @@ allowlist_helm_chart_container_names: []
 # 3. rolling_downgrade
 # 4. rolling_version_change
 container_names:
-  # Default container image bitnami/mariadb:10.6.9-debian-11-r0
+  # Default container image registry.k8s.io/nginx-slim:0.8
   - name: nginx
-    rollback_from_tag: 10.6.8-debian-11-r2
-    rolling_update_test_tag: 10.6.9-debian-11-r0
-    rolling_downgrade_test_tag: 10.6.8-debian-11-r2
-    rolling_version_change_test_tag: 10.6.9-debian-11-r0
+    rollback_from_tag: 0.7
+    rolling_update_test_tag: 0.9
+    rolling_downgrade_test_tag: 0.7
+    rolling_version_change_test_tag: 0.9
