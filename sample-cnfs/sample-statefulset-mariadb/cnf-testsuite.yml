@@ -11,7 +11,7 @@ allowlist_helm_chart_container_names: [falco, nginx, coredns, calico-node, kube-
 # The below configuration for the rolling tests
 # refer to container image versions that are
 # one version behind the images used in the specific chart version.
-helm_values: "--version 11.3.0 --set mariadb.primary.persistence.enabled=false --set persistence.enabled=false"
+helm_values: "--version 11.3.0  --set mariadb.primary.persistence.enabled=false --set persistence.enabled=false --set mariadb.architecture=standalone --set mariadb.auth.rootPassword=123 --set mariadb.auth.database=hello --set mariadb.auth.username=world --set mariadb.auth.password=123"
 
 # Order of tests:
 # 1. rollback
