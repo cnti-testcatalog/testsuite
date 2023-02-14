@@ -42,7 +42,7 @@ jobs:
         JSON="$JSON]}"
 
         echo "TESTS: $JSON"
-        echo "::set-output name=matrix::$JSON"
+        echo "matrix=$JSON" >> $GITHUB_OUTPUT
 
   spec:
     name: Crystal Specs
