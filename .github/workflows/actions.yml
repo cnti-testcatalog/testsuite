@@ -16,7 +16,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - id: set-matrix
@@ -42,7 +42,7 @@ jobs:
         JSON="$JSON]}"
 
         echo "TESTS: $JSON"
-        echo "::set-output name=matrix::$JSON"
+        echo "matrix=$JSON" >> $GITHUB_OUTPUT
 
   spec:
     name: Crystal Specs
@@ -56,7 +56,7 @@ jobs:
       run: |
         sudo rm -rf /tmp/*
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Mirror Setup
@@ -110,7 +110,7 @@ jobs:
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         kubectl get nodes 
     - name: Cache crystal shards
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         cache-name: cache-crystal-shards
       with:
@@ -193,7 +193,7 @@ jobs:
         tag: ["pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill", "pod_network_corruption", "pod_network_duplication"]
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Create Kind Cluster 
@@ -213,7 +213,7 @@ jobs:
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         kubectl get nodes 
     - name: Cache crystal shards
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         cache-name: cache-crystal-shards
       with:
@@ -270,11 +270,11 @@ jobs:
   #       remove-android: 'true'
   #       remove-haskell: 'true'
   #   - name: Checkout code
-  #     uses: actions/checkout@v2
+  #     uses: actions/checkout@v3
   #     with:
   #       fetch-depth: 0
   #   - name: Cache crystal shards
-  #     uses: actions/cache@v2
+  #     uses: actions/cache@v3
   #     env:
   #       cache-name: cache-crystal-shards
   #     with:
@@ -298,7 +298,7 @@ jobs:
   #       ./crystal.deb \
   #       && sudo rm -rf /var/lib/apt/lists/*
   #   - name: Cache airgapped.tar.gz
-  #     uses: actions/cache@v2
+  #     uses: actions/cache@v3
   #     env:
   #       cache-name: cache-airgapped-tar
   #     with:
@@ -338,11 +338,11 @@ jobs:
       CRYSTAL_IMAGE: "conformance/crystal:1.6.2-alpine"
     steps: 
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Cache crystal shards
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         cache-name: cache-crystal-shards
       with:
@@ -356,7 +356,7 @@ jobs:
         docker run --rm -v $PWD:/workspace -w /workspace $CRYSTAL_IMAGE shards install
         docker run --rm -v $PWD:/workspace -w /workspace $CRYSTAL_IMAGE crystal build --warnings none src/cnf-testsuite.cr --release --static --link-flags '-lxml2 -llzma'
     - name: upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: release
         path: cnf-testsuite
@@ -373,14 +373,14 @@ jobs:
   #     run: |
   #       sudo rm -rf /tmp/*
   #   - name: Checkout code
-  #     uses: actions/checkout@v2
+  #     uses: actions/checkout@v3
   #     with:
   #       fetch-depth: 0
   #   - name: Print Runner Name
   #     run: |
   #       echo "RUNNER: $RUNNER_NAME"
   #   - name: Cache crystal shards
-  #     uses: actions/cache@v2
+  #     uses: actions/cache@v3
   #     env:
   #       cache-name: cache-crystal-shards
   #     with:
@@ -389,7 +389,7 @@ jobs:
   #       restore-keys: |
   #         lib-
   #   - name: Cache airgapped.tar.gz
-  #     uses: actions/cache@v2
+  #     uses: actions/cache@v3
   #     env:
   #       cache-name: setup-airgapped-tar
   #     with:
@@ -446,11 +446,11 @@ jobs:
   #     run: |
   #       sudo rm -rf /tmp/*
   #   - name: Checkout code
-  #     uses: actions/checkout@v2
+  #     uses: actions/checkout@v3
   #     with:
   #       fetch-depth: 0
   #   - name: Cache crystal shards
-  #     uses: actions/cache@v2
+  #     uses: actions/cache@v3
   #     env:
   #       cache-name: cache-crystal-shards
   #     with:
@@ -459,7 +459,7 @@ jobs:
   #       restore-keys: |
   #         lib-
   #   - name: Cache airgapped.tar.gz
-  #     uses: actions/cache@v2
+  #     uses: actions/cache@v3
   #     env:
   #       cache-name: cache-airgapped-tar
   #     with:
@@ -521,11 +521,11 @@ jobs:
   #     run: |
   #       sudo rm -rf /tmp/*
   #   - name: Checkout code
-  #     uses: actions/checkout@v2
+  #     uses: actions/checkout@v3
   #     with:
   #       fetch-depth: 0
   #   - name: Cache crystal shards
-  #     uses: actions/cache@v2
+  #     uses: actions/cache@v3
   #     env:
   #       cache-name: cache-crystal-shards
   #     with:
@@ -534,7 +534,7 @@ jobs:
   #       restore-keys: |
   #         lib-
   #   - name: Cache airgapped.tar.gz
-  #     uses: actions/cache@v2
+  #     uses: actions/cache@v3
   #     env:
   #       cache-name: cache-airgapped-tar
   #     with:
@@ -596,11 +596,11 @@ jobs:
   #     run: |
   #       sudo rm -rf /tmp/*
   #   - name: Checkout code
-  #     uses: actions/checkout@v2
+  #     uses: actions/checkout@v3
   #     with:
   #       fetch-depth: 0
   #   - name: Cache crystal shards
-  #     uses: actions/cache@v2
+  #     uses: actions/cache@v3
   #     env:
   #       cache-name: cache-crystal-shards
   #     with:
@@ -609,7 +609,7 @@ jobs:
   #       restore-keys: |
   #         lib-
   #   - name: Cache airgapped.tar.gz
-  #     uses: actions/cache@v2
+  #     uses: actions/cache@v3
   #     env:
   #       cache-name: cache-airgapped-tar
   #     with:
@@ -669,11 +669,11 @@ jobs:
   #     run: |
   #       sudo rm -rf /tmp/*
   #   - name: Checkout code
-  #     uses: actions/checkout@v2
+  #     uses: actions/checkout@v3
   #     with:
   #       fetch-depth: 0
   #   - name: Cache crystal shards
-  #     uses: actions/cache@v2
+  #     uses: actions/cache@v3
   #     env:
   #       cache-name: cache-crystal-shards
   #     with:
@@ -682,7 +682,7 @@ jobs:
   #       restore-keys: |
   #         lib-
   #   - name: Cache airgapped.tar.gz
-  #     uses: actions/cache@v2
+  #     uses: actions/cache@v3
   #     env:
   #       cache-name: cache-airgapped-tar
   #     with:
@@ -740,11 +740,11 @@ jobs:
       run: |
         sudo rm -rf /tmp/*
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Cache crystal shards
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         cache-name: cache-crystal-shards
       with:
@@ -805,11 +805,11 @@ jobs:
       run: |
         sudo rm -rf /tmp/*
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Cache crystal shards
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         cache-name: cache-crystal-shards
       with:
@@ -863,11 +863,11 @@ jobs:
       run: |
         sudo rm -rf /tmp/*
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Cache crystal shards
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         cache-name: cache-crystal-shards
       with:
@@ -920,11 +920,11 @@ jobs:
     runs-on: ubuntu-latest
     steps: 
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Download artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: release
     - name: Make release executable
