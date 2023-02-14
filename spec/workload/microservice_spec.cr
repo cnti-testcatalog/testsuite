@@ -177,6 +177,26 @@ describe "Microservice" do
   ensure
     `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/ndn-reasonable-image-size force=true`
   end
+
+  it "'specialized_init_system' should fail if pods do not use specialized init systems", tags: ["specialized_init_system"] do
+    `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-coredns-cnf`
+    response_s = `./cnf-testsuite specialized_init_system`
+    LOGGING.info response_s
+    $?.success?.should be_true
+    (/Containers do not use specialized init systems/ =~ response_s).should_not be_nil
+  ensure
+    `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-coredns-cnf force=true`
+  end
+
+  it "'specialized_init_system' should pass if pods use specialized init systems", tags: ["specialized_init_system"] do
+    `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-init-systems`
+    response_s = `./cnf-testsuite specialized_init_system`
+    LOGGING.info response_s
+    $?.success?.should be_true
+    (/Containers use specialized init systems/ =~ response_s).should_not be_nil
+  ensure
+    `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-init-systems force=true`
+  end
 end
 
 it "'service_discovery' should pass if any containers in the cnf are exposed as a service", tags: ["service_discovery"]  do
