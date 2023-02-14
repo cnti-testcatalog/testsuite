@@ -55,7 +55,7 @@ shards:
 
   kubectl_client: # Overridden
     git: https://github.com/cnf-testsuite/kubectl_client.git
-    version: 0.1.1+git.commit.7e6eedae9ac3efc94b00a049e76f8414c02b7249
+    version: 0.1.1+git.commit.00a121f69dee356f4365b0051a16b69d6d5642de
 
   popcorn:
     git: https://github.com/icyleaf/popcorn.git
