@@ -10,7 +10,7 @@ shards:
 
   cluster_tools:
     git: https://github.com/cnf-testsuite/cluster_tools.git
-    version: 0.1.1+git.commit.3fd0225720b7e2eac2d3293d71e45507523ea814
+    version: 0.1.1+git.commit.9e6d206ae7c07027c341c355017692496df7923f
 
   commander:
     git: https://github.com/mrrooijen/commander.git
@@ -54,7 +54,7 @@ shards:
 
   kubectl_client:
     git: https://github.com/cnf-testsuite/kubectl_client.git
-    version: 0.1.1+git.commit.643ff756f8156a642581f5cbbdc7fb1d071d027f
+    version: 0.1.1+git.commit.0edf9638738303dcee1285105cc27cb8a0193e23
 
   popcorn:
     git: https://github.com/icyleaf/popcorn.git
@@ -70,7 +70,7 @@ shards:
 
   release_manager:
     git: https://github.com/cnf-testsuite/release_manager.git
-    version: 0.1.0+git.commit.f8925fa288e2a25bc711e3a5bff759e1115ee174
+    version: 0.1.0+git.commit.a1d7b3568d3112f737ab3ff4a7bae69a6b86970a
 
   retriable:
     git: https://github.com/sija/retriable.cr.git

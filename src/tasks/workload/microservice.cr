@@ -494,7 +494,7 @@ task "sig_term_handled" do |_, args|
                 #Watch strace
                 #todo 2.2.1 try writing to a file or live?
                 pid_log_name = "/tmp/#{current_pid}-strace"
-                ClusterTools.exec_by_node("strace -p #{current_pid} -e 'trace=!all' > #{pid_log_name} &", node, background: true)
+                ClusterTools.exec_by_node_bg("strace -p #{current_pid} -e 'trace=!all' 2>&1 | tee #{pid_log_name}", node)
                 pid_log_names << pid_log_name
 
 
@@ -504,31 +504,32 @@ task "sig_term_handled" do |_, args|
                 # --- SIGTERM {si_signo=SIGTERM, si_code=SI_USER, si_pid=0, si_uid=0} ---
                 #todo 2.2 wait for 30 seconds
               end
-              sleep 10
-              ClusterTools.exec_by_node("kill #{pid}", node)
+              ClusterTools.exec_by_node("bash -c 'sleep 15 && kill #{pid}'", node)
               Log.info { "pid_log_names: #{pid_log_names}" }
               #todo 2.3 parse the logs 
               #todo get the log
+              sleep 5
               sig_term_found = pid_log_names.all? do |pid_name|
                 Log.info { "pid_name: #{pid_name}" }
-                resp = ClusterTools.exec_by_node("cat #{pid_name}", node)
-                if resp[:status].success?
-                  Log.debug { "resp[:output]: #{resp[:output]}" }
-                  if resp[:output] =~ /SIGTERM/ 
+                resp = File.read("#{pid_name}")
+                if resp
+                  Log.info { "resp: #{resp}" }
+                  if resp =~ /SIGTERM/ 
                     true
                   else
-                    Log.info { "resp[:output]: #{resp[:output]}" }
+                    Log.info { "resp: #{resp}" }
                     false
                   end
                 else
                   false
                 end
               end
+              Log.info { "SigTerm Found: #{sig_term_found}" }
+              sig_term_found
               # todo save off all directory/filenames into a hash
               #todo make a clustertools that gets a files contents
               #todo 3. Collect all signals sent, if SIGKILL is captured, application fails test because it doesn't exit child processes cleanly
               #todo 4. Collect all signals sent, if SIGTERM is captured, application pass test because it  exits child processes cleanly
-
             end
           end 
         end
