@@ -356,7 +356,7 @@ jobs:
         docker run --rm -v $PWD:/workspace -w /workspace $CRYSTAL_IMAGE shards install
         docker run --rm -v $PWD:/workspace -w /workspace $CRYSTAL_IMAGE crystal build --warnings none src/cnf-testsuite.cr --release --static --link-flags '-lxml2 -llzma'
     - name: upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: release
         path: cnf-testsuite
