@@ -504,7 +504,7 @@ task "sig_term_handled" do |_, args|
                 # --- SIGTERM {si_signo=SIGTERM, si_code=SI_USER, si_pid=0, si_uid=0} ---
                 #todo 2.2 wait for 30 seconds
               end
-              ClusterTools.exec_by_node("bash -c 'sleep 15 && kill #{pid}'", node)
+              ClusterTools.exec_by_node("bash -c 'sleep 10 && kill #{pid} && sleep 5 && kill -9 #{pid}'", node)
               Log.info { "pid_log_names: #{pid_log_names}" }
               #todo 2.3 parse the logs 
               #todo get the log
