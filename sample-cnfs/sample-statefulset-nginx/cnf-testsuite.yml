@@ -1,0 +1,24 @@
+---
+release_name: test-ss
+manifest_directory: manifests
+helm_repository:
+  name:
+  repo_url:
+allowlist_helm_chart_container_names: []
+
+# The below configuration for the rolling tests
+# refer to container image versions that are
+# one version behind the images used in the specific chart version.
+
+# Order of tests:
+# 1. rollback
+# 2. rolling_update
+# 3. rolling_downgrade
+# 4. rolling_version_change
+container_names:
+  # Default container image registry.k8s.io/nginx-slim:0.8
+  - name: nginx
+    rollback_from_tag: "0.7"
+    rolling_update_test_tag: "0.9"
+    rolling_downgrade_test_tag: "0.7"
+    rolling_version_change_test_tag: "0.9"
