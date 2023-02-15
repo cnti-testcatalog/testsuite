@@ -168,7 +168,7 @@ describe "SampleUtils" do
             "routed_logs", "tracing", "elastic_volumes", "alpha_k8s_apis", 
             "service_discovery", "shared_database", "pod_dns_error",
             "external_ips", "container_sock_mounts", "require_labels", "default_namespace", 
-            "selinux_options", "latest_tag", "sysctls", "increase_decrease_capacity", "operator_installed"]
+            "selinux_options", "latest_tag", "sysctls", "increase_decrease_capacity", "operator_installed", "sig_term_handled"]
     (CNFManager::Points.all_task_test_names()).sort.should eq(tags.sort)
   end
 

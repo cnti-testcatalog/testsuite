@@ -20,6 +20,8 @@
   fail: 0
 - name: shared_database
   tags: microservice, dynamic, workload, cert, normal 
+- name: sig_term_handled 
+  tags: microservice, dynamic, workload, cert, normal 
 
 - name: cni_compatible
   tags: compatibility, dynamic, workload, cert, normal

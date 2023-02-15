@@ -222,7 +222,7 @@ describe "Microservice" do
     end
   end
 
-  it "'sig_term_handled' should fail if SIGTERM isn't handeled by child processes", tags: ["sig_term"]  do
+  it "'sig_term_handled' should fail if SIGTERM isn't handled by child processes", tags: ["sig_term"]  do
     begin
       #todo 1. Watch for signals for the containers pid one process, and the tree of all child processes ity manages
       #todo 2. Kill PID one / Uninstall the CNF
@@ -240,5 +240,22 @@ describe "Microservice" do
     end
   end
 
+  it "'sig_term_handled' should pass if SIGTERM is passed through to child processes by a supervisor (tini)", tags: ["sig_term"]  do
+    begin
+      #todo 1. Watch for signals for the containers pid one process, and the tree of all child processes ity manages
+      #todo 2. Kill PID one / Uninstall the CNF
+      #todo 3. Collect all signals sent, if SIGKILL is captured, application fails test because it doesn't exit child processes cleanly
+      #todo 3. Collect all signals sent, if SIGTERM is captured, application pass test because it  exits child processes cleanly
+      #todo 4. Make sure that threads are not counted as new processes.  A thread does not get a signal (sigterm or sigkill)
+      Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_good_signal_handling_tini/` }
+      response_s = `./cnf-testsuite sig_term_handled verbose`
+      Log.info { response_s }
+      $?.success?.should be_true
+      (/PASSED: Sig Term handled/ =~ response_s).should_not be_nil
+    ensure
+      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_good_signal_handling_tini/` }
+      $?.success?.should be_true
+    end
+  end
 end
 
