@@ -78,6 +78,10 @@ handle service discovery and load balancing for the cluster.
 > A K8s microservice should not share a database with another K8s database because
 it forces the two services to upgrade in lock step
 
+#### *To check if the CNF uses container images with specialized init systems*: [specialized_init_systems](docs/LIST_OF_TESTS.md#specialized-init-systems)
+
+> There are proper init systems and sophisticated supervisors that can be run inside of a container. Both of these systems properly reap and pass signals. Sophisticated supervisors are considered overkill because they take up too many resources and are sometimes too complicated. Some examples of sophisticated supervisors are: supervisord, monit, and runit. Proper init systems are smaller than sophisticated supervisors and therefore suitable for containers. Some of the proper container init systems are tini, dumb-init, and s6-overlay.
+
 ## State Tests
 
 #### If infrastructure is immutable, it is easily reproduced, consistent, disposable, will have a repeatable deployment process, and will not have configuration or artifacts that are modifiable in place.  This ensures that all *configuration* is stateless.  Any [*data* that is persistent](https://vmblog.com/archive/2022/05/16/stateful-cnfs.aspx) should be managed by K8s statefulsets.

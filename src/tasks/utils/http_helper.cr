@@ -40,7 +40,8 @@ module HttpHelper
       if KernelIntrospection.os_release_id =~ /rhel/ ||
           KernelIntrospection.os_release_id =~ /centos/ ||
           KernelIntrospection.os_release_id =~ /fedora/ ||
-          KernelIntrospection.os_release_id =~ /amzn/ 
+          KernelIntrospection.os_release_id =~ /amzn/ ||
+          KernelIntrospection.os_release_id =~ /rocky/
         context = OpenSSL::SSL::Context::Client.insecure
       else
         context = OpenSSL::SSL::Context::Client.new 

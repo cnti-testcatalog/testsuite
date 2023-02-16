@@ -56,20 +56,22 @@ rolling_version_change_test_names.each do |tn|
         VERBOSE_LOGGING.debug "#{tn}: #{container} valid_cnf_testsuite_yml=#{valid_cnf_testsuite_yml}" if check_verbose(args)
         VERBOSE_LOGGING.debug "#{tn}: #{container} config_container=#{config_container}" if check_verbose(args)
         if valid_cnf_testsuite_yml && config_container
-          resp = KubectlClient::Set.image(resource["name"],
-                                          container.as_h["name"],
-                                          # split out image name from version tag
-                                          container.as_h["image"].as_s.rpartition(":")[0],
-                                          config_container["#{tn}_test_tag"],
-                                          namespace: namespace
-                                        )
+          resp = KubectlClient::Set.image(
+            resource["kind"],
+            resource["name"],
+            container.as_h["name"].as_s,
+            # split out image name from version tag
+            container.as_h["image"].as_s.rpartition(":")[0],
+            config_container["#{tn}_test_tag"],
+            namespace: namespace
+          )
         else
           resp = false
         end
         # If any containers dont have an update applied, fail
         test_passed = false if resp == false
 
-        rollout_status = KubectlClient::Rollout.resource_status(resource["kind"], resource["name"], namespace: namespace, timeout: "100s")
+        rollout_status = KubectlClient::Rollout.status(resource["kind"], resource["name"], namespace: namespace, timeout: "100s")
         unless rollout_status
           Log.info { "Rollout failed for #{resource["kind"]}/#{resource["name"]} in #{namespace} namespace" }
           KubectlClient.describe(resource["kind"], resource["name"], namespace: resource["namespace"], force_output: true)
@@ -112,15 +114,15 @@ task "rollback" do |_, args|
     end
 
     task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-
-        deployment_name = resource["name"]
+        resource_kind = resource["kind"]
+        resource_name = resource["name"]
         namespace = resource["namespace"] || config.cnf_config[:helm_install_namespace]
-        container_name = container.as_h["name"]
+        container_name = container.as_h["name"].as_s
         full_image_name_tag = container.as_h["image"].as_s.rpartition(":")
         image_name = full_image_name_tag[0]
         image_tag = full_image_name_tag[2]
 
-        VERBOSE_LOGGING.debug "deployment_name: #{deployment_name}" if check_verbose(args)
+        VERBOSE_LOGGING.debug "resource: #{resource_kind}/#{resource_name}" if check_verbose(args)
         VERBOSE_LOGGING.debug "container_name: #{container_name}" if check_verbose(args)
         VERBOSE_LOGGING.debug "image_name: #{image_name}" if check_verbose(args)
         VERBOSE_LOGGING.debug "image_tag: #{image_tag}" if check_verbose(args)
@@ -142,26 +144,29 @@ task "rollback" do |_, args|
             version_change_applied=false
           end
 
-          VERBOSE_LOGGING.debug "rollback: update deployment: #{deployment_name}, container: #{container_name}, image: #{image_name}, tag: #{rollback_from_tag}" if check_verbose(args)
+          VERBOSE_LOGGING.debug "rollback: update #{resource_kind}/#{resource_name}, container: #{container_name}, image: #{image_name}, tag: #{rollback_from_tag}" if check_verbose(args)
           # set a temporary image/tag, so that we can rollback to the current (original) tag later
-          version_change_applied = KubectlClient::Set.image(deployment_name,
-                                                            container_name,
-                                                            image_name,
-                                                            rollback_from_tag,
-                                                            namespace: namespace)
+          version_change_applied = KubectlClient::Set.image(
+            resource_kind,
+            resource_name,
+            container_name,
+            image_name,
+            rollback_from_tag,
+            namespace: namespace
+          )
         end
 
         LOGGING.info "rollback version change successful? #{version_change_applied}"
 
         VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
-        rollout_status = KubectlClient::Rollout.status(deployment_name, namespace: namespace, timeout: "180s")
-        if  rollout_status == false
-          stdout_failure("Rollback failed on resource: #{deployment_name} and container: #{container_name}")
+        rollout_status = KubectlClient::Rollout.status(resource_kind, resource_name, namespace: namespace, timeout: "180s")
+        if rollout_status == false
+          stdout_failure("Rollback failed on resource: #{resource_kind}/#{resource_name} and container: #{container_name}")
         end
 
         # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision
         VERBOSE_LOGGING.debug "rollback: rolling back to old version" if check_verbose(args)
-        rollback_status = KubectlClient::Rollout.undo(deployment_name, namespace: namespace)
+        rollback_status = KubectlClient::Rollout.undo(resource_kind, resource_name, namespace: namespace)
 
     end
 
@@ -179,55 +184,66 @@ task "increase_decrease_capacity" do |t, args|
   VERBOSE_LOGGING.info "increase_decrease_capacity" if check_verbose(args)
   CNFManager::Task.task_runner(args) do |args, config|
     VERBOSE_LOGGING.info "increase_capacity" if check_verbose(args)
-    emoji_increase_capacity="📦📈"
 
-    increased_replicas = "3"
-    base_replicas = "1"
+    increase_test_base_replicas = "1"
+    increase_test_target_replicas = "3"
     # TODO scale replicatsets separately
     # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset
     # resource["kind"].as_s.downcase == "replicaset"
     increase_task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
       if resource["kind"].as_s.downcase == "deployment" ||
           resource["kind"].as_s.downcase == "statefulset"
-        final_count = change_capacity(base_replicas, increased_replicas, args, config, resource)
-        increased_replicas == final_count
+        final_count = change_capacity(increase_test_base_replicas, increase_test_target_replicas, args, config, resource)
+        increase_test_target_replicas == final_count
       else
         true
       end
     end
 
-    target_replicas = "1"
-    base_replicas = "3"
-    task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
+    decrease_test_base_replicas = "3"
+    decrease_test_target_replicas = "1"
+    decrease_task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
       # TODO scale replicatsets separately
       # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset
       # resource["kind"].as_s.downcase == "replicaset"
       if resource["kind"].as_s.downcase == "deployment" ||
           resource["kind"].as_s.downcase == "statefulset"
-        final_count = change_capacity(base_replicas, target_replicas, args, config, resource)
-        target_replicas == final_count
+        final_count = change_capacity(decrease_test_base_replicas, decrease_test_target_replicas, args, config, resource)
+        decrease_test_target_replicas == final_count
       else
         true
       end
     end
-    emoji_decrease_capacity="📦📉"
 
-    if increase_task_response.none?(false) && task_response.none?(false) 
-      ret = upsert_passed_task("increase_decrease_capacity", "✔️  PASSED: Replicas increased to #{increased_replicas} and decreased to #{target_replicas} #{emoji_decrease_capacity}")
+    emoji_capacity = "📦📈📉"
+
+    if increase_task_response.none?(false) && decrease_task_response.none?(false)
+      pass_msg = "✔️  PASSED: Replicas increased to #{increase_test_target_replicas} and decreased to #{decrease_test_target_replicas} #{emoji_capacity}"
+      upsert_passed_task("increase_decrease_capacity", pass_msg)
     else
-      ret = upsert_failed_task("increase_decrease_capacity", increase_decrease_capacity_failure_msg(target_replicas, emoji_decrease_capacity))
+      upsert_failed_task("increase_decrease_capacity", "✖️  FAILURE: Capacity change failed #{emoji_capacity}")
+
+      # If increased capacity failed
+      if increase_task_response.any?(false)
+        stdout_failure("Failed to increase replicas from #{increase_test_base_replicas} to #{increase_test_target_replicas}")
+      end
+
+      # If decrease capacity failed
+      if decrease_task_response.any?(false)
+        stdout_failure("Failed to decrease replicas from #{decrease_test_base_replicas} to #{decrease_test_target_replicas}")
+      end
+
+      stdout_failure(increase_decrease_remedy_msg())
     end
   end
 end
 
 
-def increase_decrease_capacity_failure_msg(target_replicas, emoji)
+def increase_decrease_remedy_msg()
 <<-TEMPLATE
-✖️  FAILURE: Replicas did not reach #{target_replicas} #{emoji}
 
 Replica failure can be due to insufficent permissions, image pull errors and other issues.
 Learn more on remediation by viewing our USAGE.md doc at https://bit.ly/capacity_remedy
-
 TEMPLATE
 end
 

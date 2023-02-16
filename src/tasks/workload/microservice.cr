@@ -12,7 +12,7 @@ require "k8s_kernel_introspection"
 require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if CNFs follows microservice principles"
-task "microservice", ["reasonable_image_size", "reasonable_startup_time", "single_process_type", "service_discovery", "shared_database", "sig_term_handled"] do |_, args|
+task "microservice", ["reasonable_image_size", "reasonable_startup_time", "single_process_type", "service_discovery", "shared_database", "specialized_init_system", "sig_term_handled"] do |_, args|
   stdout_score("microservice")
   case "#{ARGV.join(" ")}" 
   when /microservice/
@@ -628,5 +628,43 @@ task "service_discovery" do |_, args|
     else
       upsert_failed_task("service_discovery", "✖️  ✨FAILED: No containers exposed as a service #{emoji_big} #{emoji_image_size}")
     end
+  end
+end
+
+desc "To check if the CNF uses a specialized init system"
+task "specialized_init_system", ["install_cluster_tools"] do |_, args|
+  test_name = "specialized_init_system"
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.info { "Running #{test_name} test" }
+
+    failed_cnf_resources = [] of InitSystems::InitSystemInfo
+    CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      kind = resource["kind"].downcase
+      case kind 
+      when  "deployment","statefulset","pod","replicaset", "daemonset"
+        namespace = resource[:namespace]
+        Log.for(test_name).info { "Checking resource #{resource[:kind]}/#{resource[:name]} in #{namespace}" }
+        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
+        pods = KubectlClient::Get.pods_by_resource(resource_yaml, namespace)
+        Log.for(test_name).info { "Pod count for resource #{resource[:kind]}/#{resource[:name]} in #{namespace}: #{pods.size}" }
+        pods.each do |pod|
+          results = InitSystems.scan(pod)
+          failed_cnf_resources = failed_cnf_resources + results
+        end
+      end
+    end
+
+    failed_emoji = "(ভ_ভ) ރ 🚀"
+    passed_emoji = "🖥️  🚀"
+
+    if failed_cnf_resources.size > 0
+      upsert_failed_task(test_name, "✖️  FAILED: Containers do not use specialized init systems #{failed_emoji}")
+      failed_cnf_resources.each do |init_info|
+        stdout_failure "#{init_info.kind}/#{init_info.name} has container '#{init_info.container}' with #{init_info.init_cmd} as init process"
+      end
+    else
+      upsert_passed_task(test_name, "✔️  PASSED: Containers use specialized init systems #{passed_emoji}")
+    end
+
   end
 end
