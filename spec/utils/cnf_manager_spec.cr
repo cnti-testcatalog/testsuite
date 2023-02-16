@@ -168,7 +168,7 @@ describe "SampleUtils" do
             "routed_logs", "tracing", "elastic_volumes", "alpha_k8s_apis", 
             "service_discovery", "shared_database", "pod_dns_error",
             "external_ips", "container_sock_mounts", "require_labels", "default_namespace", 
-            "selinux_options", "latest_tag", "sysctls", "increase_decrease_capacity", "operator_installed", "specialized_init_system"]
+            "selinux_options", "latest_tag", "sysctls", "increase_decrease_capacity", "operator_installed", "specialized_init_system", "sig_term_handled"]
     (CNFManager::Points.all_task_test_names()).sort.should eq(tags.sort)
   end
 
@@ -464,7 +464,7 @@ describe "SampleUtils" do
     (resp).should be_false 
   end
 
-  it "bonus tests should not decrease the maximum points when a failure occurs", tags: ["cnf-config"]  do
+  it "bonus tests should not be includded in the maximum points when a failure occurs", tags: ["cnf-config"]  do
     begin
       # fails because doesn't have a service
       install = `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-ndn-privileged` 

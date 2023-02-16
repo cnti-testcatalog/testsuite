@@ -52,7 +52,7 @@ dependencies:
     branch: main
   cluster_tools:
     github: cnf-testsuite/cluster_tools
-    branch: main
+    branch: main 
   kernel_introspection:
     github: cnf-testsuite/kernel_introspection
     branch: main

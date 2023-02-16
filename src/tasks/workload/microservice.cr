@@ -12,7 +12,7 @@ require "k8s_kernel_introspection"
 require "../utils/utils.cr"
 
 desc "The CNF test suite checks to see if CNFs follows microservice principles"
-task "microservice", ["reasonable_image_size", "reasonable_startup_time", "single_process_type", "service_discovery", "shared_database", "specialized_init_system"] do |_, args|
+task "microservice", ["reasonable_image_size", "reasonable_startup_time", "single_process_type", "service_discovery", "shared_database", "specialized_init_system", "sig_term_handled"] do |_, args|
   stdout_score("microservice")
   case "#{ARGV.join(" ")}" 
   when /microservice/
@@ -340,18 +340,18 @@ task "single_process_type" do |_, args|
 
               node_name = node.dig("metadata", "name").as_s
               Log.info { "node name : #{node_name}" }
-              filtered_proc_statuses = all_node_proc_statuses.find {|x| x[:node_name] == node_name}
-              proc_statuses = filtered_proc_statuses ? filtered_proc_statuses[:proc_statuses] : nil
-              Log.debug { "node statuses : #{proc_statuses}" }
-              unless proc_statuses 
-                Log.info { "node statuses not found" }
+#              filtered_proc_statuses = all_node_proc_statuses.find {|x| x[:node_name] == node_name}
+#              proc_statuses = filtered_proc_statuses ? filtered_proc_statuses[:proc_statuses] : nil
+#              Log.debug { "node statuses : #{proc_statuses}" }
+#              unless proc_statuses 
+#                Log.info { "node statuses not found" }
                 pids = KernelIntrospection::K8s::Node.pids(node) 
                 Log.info { "proctree_by_pid pids: #{pids}" }
                 proc_statuses = KernelIntrospection::K8s::Node.all_statuses_by_pids(pids, node)
-                all_node_proc_statuses << {node_name: node_name,
-                                     proc_statuses:  proc_statuses} 
+#                all_node_proc_statuses << {node_name: node_name,
+#                                     proc_statuses:  proc_statuses} 
 
-              end
+ #             end
               statuses = KernelIntrospection::K8s::Node.proctree_by_pid(pid, 
                                                                           node, 
                                                                           proc_statuses)
@@ -397,6 +397,179 @@ task "single_process_type" do |_, args|
       upsert_passed_task("single_process_type", "✔️  🏆 PASSED: Only one process type used #{emoji_small} #{emoji_image_size}")
     else
       upsert_failed_task("single_process_type", "✖️  🏆 FAILED: More than one process type used #{emoji_big} #{emoji_image_size}")
+    end
+  end
+end
+
+desc "Are the SIGTERM signals handled?"
+task "sig_term_handled" do |_, args|
+  CNFManager::Task.task_runner(args) do |args,config|
+    Log.for("verbose").info { "sig_term_handled" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
+    fail_msgs = [] of String
+    all_node_proc_statuses = [] of NamedTuple(node_name: String,
+                                              proc_statuses: Array(String))
+    #todo get the first pod
+
+    task_response = CNFManager.workload_resource_test(args, config, check_containers:false ) do |resource, container, initialized|
+      test_passed = true
+      kind = resource["kind"].downcase
+      case kind 
+      when  "deployment","statefulset","pod","replicaset", "daemonset"
+        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
+        #todo needs namespace
+        pods = KubectlClient::Get.pods_by_resource(resource_yaml, resource[:namespace])
+        containers = KubectlClient::Get.resource_containers(kind, resource[:name], resource[:namespace])
+        #todo loop through containers (we only need to process each image per deployment.  skip images that were already processed)
+        # --- skipped because could have same image but started with different startup commands which would instantiate different processes
+        # sig_term_found = false
+        pid_log_names  = [] of String
+        pod_sig_terms = pods.map do |pod|
+          #todo get the host pid from the container pid
+          pod_name = pod.dig("metadata", "name")
+          Log.info { "pod_name: #{pod_name}" }
+
+          status = pod["status"]
+          if status["containerStatuses"]?
+              container_statuses = status["containerStatuses"].as_a
+            Log.info { "container_statuses: #{container_statuses}" }
+            Log.info { "pod_name: #{pod_name}" }
+            nodes = KubectlClient::Get.nodes_by_pod(pod)
+            Log.info { "nodes_by_resource done" }
+            node = nodes.first
+            sig_result = container_statuses.map do |container_status|
+              container_name = container_status.dig("name")
+              previous_process_type = "initial_name"
+              container_id = container_status.dig("containerID").as_s
+              Log.info { "before ready containerStatuses container_id #{container_id}" }
+              ready = container_status.dig("ready").as_bool
+              if !ready
+                Log.info { "container status: #{container_status} "}
+                Log.info { "not ready! skipping: containerStatuses container_id #{container_id}" }
+                false
+                next
+              end
+              # next unless ready 
+              Log.info { "containerStatuses container_id #{container_id}" }
+
+              pid = "#{ClusterTools.node_pid_by_container_id(container_id, node)}"
+              if pid.empty?
+                Log.info { "no pid for (skipping): containerStatuses container_id #{container_id}" }
+                false
+                next
+              end
+
+              # next if pid.empty?
+              Log.info { "node pid (should never be pid 1): #{pid}" }
+
+              # need to do the next line.  how to kill the current cnf?
+              # this was one of the reason why we did stuff like this durring the cnf install and saved it as a configmap
+              #todo 1. Kill PID one in container/ send term signal
+              #Kill Container, with top level pid
+              #todo 2.2.1 kill 1 
+            #  ClusterTools.exec("kill #{pid}")
+              #todo  1.1 get in container
+              #todo 2. Watch for signals for the containers pid one process, and the tree of all child processes ity manages
+              #todo 2.1 loop through all child processes that are not threads (only include proceses where tgid = pid)
+              #todo 2.1.1 ignore the parent pid (we are on the host so it wont be pid 1)
+              node_name = node.dig("metadata", "name").as_s
+              Log.info { "node name : #{node_name}" }
+              pids = KernelIntrospection::K8s::Node.pids(node) 
+              Log.info { "proctree_by_pid pids: #{pids}" }
+              proc_statuses = KernelIntrospection::K8s::Node.all_statuses_by_pids(pids, node)
+
+              statuses = KernelIntrospection::K8s::Node.proctree_by_pid(pid, node, proc_statuses)
+
+              non_thread_statuses = statuses.reduce([] of Hash(String, String)) do |acc, i|
+                current_pid = i["Pid"].strip
+                tgid = i["Tgid"].strip # check if 'g' is uppercase
+                Log.info { "#{tgid} && #{tgid} != #{current_pid}: #{tgid && tgid != current_pid}" }
+                if tgid && tgid == current_pid
+                  acc << i
+                elsif tgid.empty?
+                  acc << i
+                else
+                  acc
+                end
+              end
+              non_thread_statuses.map do |status|
+                Log.debug { "status: #{status}" }
+                Log.info { "status cmdline: #{status["cmdline"]}" }
+                status_name = status["Name"].strip
+                ppid = status["PPid"].strip
+                current_pid = status["Pid"].strip
+                tgid = status["Tgid"].strip # check if 'g' is uppercase
+                Log.info { "Pid: #{current_pid}" }
+                Log.info { "Tgid: #{tgid}" }
+                Log.info { "status name: #{status_name}" }
+                Log.info { "previous status name: #{previous_process_type}" }
+                # do not count the top pid if there are children
+                if non_thread_statuses.size > 1 && pid == current_pid 
+                  next
+                end
+                #todo 5. Make sure that threads are not counted as new processes.  A thread does not get a signal (sigterm or sigkill)
+                # Log.info { "#{tgid} && #{tgid} != #{current_pid}: #{tgid && tgid != current_pid}" }
+                # next if tgid && tgid != current_pid
+                #todo 2.2 strace -p <pid> -e 'trace=!all'
+                #Watch strace
+                #todo 2.2.1 try writing to a file or live?
+                pid_log_name = "/tmp/#{current_pid}-strace"
+                ClusterTools.exec_by_node_bg("strace -p #{current_pid} -e 'trace=!all' 2>&1 | tee #{pid_log_name}", node)
+                pid_log_names << pid_log_name
+
+
+                # todo save off all directory/filenames into a hash
+                #strace: Process 94273 attached
+                # ---SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=1, si_uid=0} ---
+                # --- SIGTERM {si_signo=SIGTERM, si_code=SI_USER, si_pid=0, si_uid=0} ---
+                #todo 2.2 wait for 30 seconds
+              end
+              ClusterTools.exec_by_node("bash -c 'sleep 10 && kill #{pid} && sleep 5 && kill -9 #{pid}'", node)
+              Log.info { "pid_log_names: #{pid_log_names}" }
+              #todo 2.3 parse the logs 
+              #todo get the log
+              sleep 5
+              sig_term_found = pid_log_names.map do |pid_name|
+                Log.info { "pid_name: #{pid_name}" }
+                resp = File.read("#{pid_name}")
+                if resp
+                  Log.info { "resp: #{resp}" }
+                  if resp =~ /SIGTERM/ 
+                    true
+                  else
+                    Log.info { "resp: #{resp}" }
+                    false
+                  end
+                else
+                  false
+                end
+              end
+              Log.info { "SigTerm Found: #{sig_term_found}" }
+              # per all containers
+              sig_term_found.all?(true)
+              # todo save off all directory/filenames into a hash
+              #todo make a clustertools that gets a files contents
+              #todo 3. Collect all signals sent, if SIGKILL is captured, application fails test because it doesn't exit child processes cleanly
+              #todo 4. Collect all signals sent, if SIGTERM is captured, application pass test because it  exits child processes cleanly
+            end
+            sig_result.all?(true)
+          else
+            false
+          end 
+        end
+        pod_sig_terms.all?(true)
+      else
+        true # non "deployment","statefulset","pod","replicaset", and "daemonset" don't need a sigterm check
+      end
+    end	
+    emoji_image_size="⚖️👀"
+    emoji_small="🐜"
+    emoji_big="🦖"
+
+    if task_response
+      upsert_passed_task("sig_term_handled", "✔️  🏆 PASSED: Sig Term handled #{emoji_small} #{emoji_image_size}")
+    else
+      upsert_failed_task("sig_term_handled", "✖️  🏆 FAILED: Sig Term not handled #{emoji_big} #{emoji_image_size}")
     end
   end
 end

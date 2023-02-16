@@ -11,7 +11,7 @@ shards:
 
   cluster_tools:
     git: https://github.com/cnf-testsuite/cluster_tools.git
-    version: 0.1.1+git.commit.3fd0225720b7e2eac2d3293d71e45507523ea814
+    version: 0.1.1+git.commit.db15e70c77d5327e6fcc893777ecb707edbe9f35
 
   commander:
     git: https://github.com/mrrooijen/commander.git
@@ -71,7 +71,7 @@ shards:
 
   release_manager:
     git: https://github.com/cnf-testsuite/release_manager.git
-    version: 0.1.0+git.commit.f8925fa288e2a25bc711e3a5bff759e1115ee174
+    version: 0.1.0+git.commit.a1d7b3568d3112f737ab3ff4a7bae69a6b86970a
 
   retriable:
     git: https://github.com/sija/retriable.cr.git
