@@ -464,7 +464,7 @@ describe "SampleUtils" do
     (resp).should be_false 
   end
 
-  it "bonus tests should not decrease the maximum points when a failure occurs", tags: ["cnf-config"]  do
+  it "bonus tests should not be includded in the maximum points when a failure occurs", tags: ["cnf-config"]  do
     begin
       # fails because doesn't have a service
       install = `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-ndn-privileged` 
