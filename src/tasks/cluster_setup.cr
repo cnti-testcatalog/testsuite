@@ -1,6 +1,7 @@
 require "sam"
 require "file_utils"
 require "colorize"
+require "cluster_tools"
 require "totem"
 require "./utils/utils.cr"
 
@@ -10,10 +11,19 @@ require "./utils/utils.cr"
 desc "Install CNF Test Suite Cluster Tools"
 task "install_cluster_tools" do |_, args|
   Log.info { "install_cluster_tools" }
-  ClusterTools.install
+
+  begin
+    ClusterTools.install
+  rescue e : ClusterTools::NamespaceDoesNotExistException 
+    raise "#{e.message}. please run cnf-testsuite setup!"
+  end
 end
 
 desc "Uninstall CNF Test Suite Cluster Tools"
 task "uninstall_cluster_tools" do |_, args|
-  ClusterTools.uninstall
+  begin
+    ClusterTools.uninstall
+  rescue e : ClusterTools::NamespaceDoesNotExistException 
+    raise "#{e.message}. please run cnf-testsuite setup!"
+  end
 end
