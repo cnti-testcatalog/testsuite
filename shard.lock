@@ -9,9 +9,9 @@ shards:
     git: https://github.com/crystal-ameba/ameba.git
     version: 0.14.4
 
-  cluster_tools:
+  cluster_tools: # Overridden
     git: https://github.com/cnf-testsuite/cluster_tools.git
-    version: 0.1.1+git.commit.db15e70c77d5327e6fcc893777ecb707edbe9f35
+    version: 0.1.1+git.commit.325ca30c2b9e68de3505f28fd1c866c0f8863d5d
 
   commander:
     git: https://github.com/mrrooijen/commander.git
