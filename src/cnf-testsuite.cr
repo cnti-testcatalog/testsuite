@@ -68,10 +68,7 @@ end
 
 desc "Makes sure a cnf is in the cnf directory"
 task "ensure_cnf_installed" do |_, args|
-  unless CNFManager.cnf_installed?
-    puts "You must install a CNF first.".colorize(:yellow)
-    exit 1
-  end
+  CNFManager::Task.ensure_cnf_installed!
 end
 
 task "version" do |_, args|

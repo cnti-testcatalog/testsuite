@@ -87,7 +87,7 @@ end
 
 desc "Is Cluster Api available and managing a cluster?"
 task "clusterapi_enabled" do |_, args|
-  CNFManager::Task.task_runner(args) do
+  CNFManager::Task.task_runner(args, check_cnf_installed=false) do
     unless check_poc(args)
       Log.info { "skipping clusterapi_enabled: not in poc mode" }
       puts "SKIPPED: ClusterAPI Enabled".colorize(:yellow)
