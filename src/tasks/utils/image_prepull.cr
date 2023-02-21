@@ -3,6 +3,7 @@ require "airgap"
 
 # todo put this in bootstrap utils
 def self.image_pull(yml, offline)
+  Log.info { "image_pull func" }
   containers  = yml.map { |y|
     mc = Helm::Manifest.manifest_containers(y)
     mc.as_a? if mc
