@@ -75,20 +75,23 @@ task "ensure_cnf_installed" do |_, args|
 end
 
 task "version" do |_, args|
-  LOGGING.info "VERSION: #{CnfTestSuite::VERSION}"
-  puts "CNF TestSuite version: #{CnfTestSuite::VERSION}".colorize(:green)
+  # LOGGING.info "VERSION: #{ReleaseManager::VERSION}"
+  LOGGING.info "VERSION: #{ReleaseManager::VERSION}"
+  # puts "CNF TestSuite version: #{ReleaseManager::VERSION}".colorize(:green)
+  puts "CNF TestSuite version: #{ReleaseManager::VERSION}".colorize(:green)
 end
 
 task "upsert_release" do |_, args|
-  LOGGING.info "upserting release on: #{CnfTestSuite::VERSION}"
+  # LOGGING.info "upserting release on: #{ReleaseManager::VERSION}"
+  LOGGING.info "upserting release on: #{ReleaseManager::VERSION}"
 
   ghrm = ReleaseManager::GithubReleaseManager.new("cncf/cnf-testsuite")
 
-  release, asset = ghrm.upsert_release(version=CnfTestSuite::VERSION)
+  release, asset = ghrm.upsert_release(version=ReleaseManager::VERSION)
   if release
-    puts "Created a release for: #{CnfTestSuite::VERSION}".colorize(:green)
+    puts "Created a release for: #{ReleaseManager::VERSION}".colorize(:green)
   else
-    puts "Not creating a release for: #{CnfTestSuite::VERSION}".colorize(:red)
+    puts "Not creating a release for: #{ReleaseManager::VERSION}".colorize(:red)
   end
 end
 
