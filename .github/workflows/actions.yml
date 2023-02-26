@@ -106,6 +106,7 @@ jobs:
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
         echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
+        kind --version
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         kubectl get nodes 
@@ -209,6 +210,7 @@ jobs:
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
         echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
+        kind --version
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         kubectl get nodes 
@@ -769,6 +771,7 @@ jobs:
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER"
         echo "export CLUSTER=$CLUSTER" > cluster.env
+        kind --version
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
         export KUBECONFIG=/tmp/$CLUSTER.conf
         kubectl get nodes 
@@ -833,6 +836,7 @@ jobs:
         EOF
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
+        kind --version
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
         export KUBECONFIG=/tmp/$CLUSTER.conf
         kubectl get nodes 
@@ -891,6 +895,7 @@ jobs:
         EOF
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
+        kind --version
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
         export KUBECONFIG=/tmp/$CLUSTER.conf
         kubectl get nodes 
