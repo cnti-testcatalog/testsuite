@@ -12,7 +12,7 @@ namespace "platform" do
 
   desc "Is the platform control plane hardened"
   task "control_plane_hardening", ["kubescape_scan"] do |_, args|
-    task_response = CNFManager::Task.task_runner(args) do |args|
+    task_response = CNFManager::Task.task_runner(args, check_cnf_installed=false) do |args|
       VERBOSE_LOGGING.info "control_plane_hardening" if check_verbose(args)
       results_json = Kubescape.parse
       test_json = Kubescape.test_by_test_name(results_json, "Control plane hardening")
@@ -33,7 +33,7 @@ namespace "platform" do
   desc "Attackers who have Cluster-admin permissions (can perform any action on any resource), can take advantage of their high privileges for malicious intentions. Determines which subjects have cluster admin permissions."
   task "cluster_admin", ["kubescape_scan"] do |_, args|
     next if args.named["offline"]?
-    CNFManager::Task.task_runner(args) do |args, config|
+    CNFManager::Task.task_runner(args, check_cnf_installed=false) do |args, config|
       VERBOSE_LOGGING.info "cluster_admin" if check_verbose(args)
       results_json = Kubescape.parse
       test_json = Kubescape.test_by_test_name(results_json, "Cluster-admin binding")
@@ -55,7 +55,7 @@ namespace "platform" do
   task "exposed_dashboard", ["kubescape_scan"] do |_, args|
     next if args.named["offline"]?
 
-    CNFManager::Task.task_runner(args) do |args, config|
+    CNFManager::Task.task_runner(args, check_cnf_installed=false) do |args, config|
       Log.for("verbose").info { "exposed_dashboard" } if check_verbose(args)
       results_json = Kubescape.parse
       test_json = Kubescape.test_by_test_name(results_json, "Exposed dashboard")
@@ -79,7 +79,7 @@ namespace "platform" do
     Log.for("verbose").info { "platform:helm_tiller" }
     Kyverno.install
 
-    CNFManager::Task.task_runner(args) do |args, config|
+    CNFManager::Task.task_runner(args, check_cnf_installed=false) do |args, config|
       policy_path = Kyverno.best_practice_policy("disallow_helm_tiller/disallow_helm_tiller.yaml")
       failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 

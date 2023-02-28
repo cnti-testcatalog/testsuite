@@ -11,8 +11,25 @@ module CNFManager
     FAILURE = 1
     CRITICAL_FAILURE = 2
 
-    def self.task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
+    def self.ensure_cnf_installed!
+
+      cnf_installed = CNFManager.cnf_installed?
+
+      LOGGING.info("ensure_cnf_installed?  #{cnf_installed}")
+      
+      unless cnf_installed
+        puts "You must install a CNF first.".colorize(:yellow)
+        exit 1
+      end
+    end
+
+    def self.task_runner(args, check_cnf_installed=true, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
       LOGGING.info("task_runner args: #{args.inspect}")
+
+      if check_cnf_installed
+        ensure_cnf_installed!
+      end
+
       if check_cnf_config(args)
         single_task_runner(args, &block)
       else
@@ -40,6 +57,7 @@ module CNFManager
     # TODO give example for calling
     def self.single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
       LOGGING.debug("single_task_runner args: #{args.inspect}")
+
       begin
         if args.named["cnf-config"]? # platform tests don't have a cnf-config
             config = CNFManager::Config.parse_config_yml(args.named["cnf-config"].as(String))    
