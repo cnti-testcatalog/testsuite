@@ -1,10 +1,18 @@
-FROM buildpack-deps:latest
+FROM buildpack-deps:20.04
+
+RUN apt-get update && apt-get install -y psmisc strace
+
+COPY ./init.c /init.c
 
 COPY ./zombie.c /zombie.c
 
-COPY ./test /test
+RUN gcc init.c -static -o /init
 
-RUN gcc zombie.c -o /zombie
+RUN gcc zombie.c -static -o /zombie
 
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+COPY ./entrypoint.sh /entrypoint.sh
+
+#ENTRYPOINT ["/bin/sleep", "infinity"]
+
+ENTRYPOINT ["/entrypoint.sh"]
 
