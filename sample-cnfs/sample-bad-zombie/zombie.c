@@ -1,30 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <unistd.h>
-#include <errno.h>
- 
 
+int main()
+{
+    pid_t pid = fork();  // create a child process
 
-int main(int argc, char ** argv) {
-  sleep(20);
-   /* main process */
-  pid_t pid = fork();
-   /* second process */
-  if (pid == 0) {
-    sleep(10);
-    pid = fork();
-     /* third process */
-    if (pid == 0) {
-      sleep(10);
-      printf("got pid %d about to exit\n", pid);
-      exit(0);
+    if (pid == -1) {
+        perror("fork");
+        exit(EXIT_FAILURE);
     }
-    sleep(3);
-    printf("got pid %d about to exit\n", pid);
-    exit(0);
-  }
-  printf("got pid %d and exited\n", pid);
-  sleep(100);
+
+    if (pid == 0) {  // child process
+        execl("/sleep", "sleep", NULL);  // run sleep command for 10 seconds
+        perror("exec");
+        exit(EXIT_FAILURE);
+    }
+
+    // parent process
+    printf("Sleeping...\n");
+
+    return 0;
 }

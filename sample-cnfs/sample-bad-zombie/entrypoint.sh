@@ -1,4 +1,3 @@
 #!/bin/bash
+sleep 5 &
 
-/zombie &
-exec /init
