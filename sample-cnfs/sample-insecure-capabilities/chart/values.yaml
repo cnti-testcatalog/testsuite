@@ -249,7 +249,7 @@ autoscaler:
   preventSinglePointFailure: true
 
   image:
-    repository: k8s.gcr.io/cluster-proportional-autoscaler-amd64
+    repository: registry.k8s.io/cluster-proportional-autoscaler-amd64
     tag: "1.8.1"
     pullPolicy: IfNotPresent
     ## Optionally specify an array of imagePullSecrets.
