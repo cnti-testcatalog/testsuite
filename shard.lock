@@ -11,7 +11,7 @@ shards:
 
   cluster_tools:
     git: https://github.com/cnf-testsuite/cluster_tools.git
-    version: 0.1.1+git.commit.bb918898577d166175d24a1a090d2354be663f73
+    version: 0.1.1+git.commit.eaf1a3d48b29099a55a3c79ff8fd6d97d2415159
 
   commander:
     git: https://github.com/mrrooijen/commander.git
@@ -55,7 +55,7 @@ shards:
 
   kubectl_client: # Overridden
     git: https://github.com/cnf-testsuite/kubectl_client.git
-    version: 0.1.1+git.commit.a59a4ae02bd948eea19f40d30184b4698217d53d
+    version: 0.1.1+git.commit.7cddc7c58175bc57c168916ffb69e0840bccecc4
 
   popcorn:
     git: https://github.com/icyleaf/popcorn.git

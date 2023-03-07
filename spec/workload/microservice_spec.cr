@@ -277,5 +277,50 @@ describe "Microservice" do
       $?.success?.should be_true
     end
   end
+
+  it "'zombie_handled' should pass if a zomb is succesfully reaped by PID 1", tags: ["sig_term"]  do
+    begin
+      # todo 1. install a cnf (that should reap zombies) /   Start a container called test with a pid 1 not capable of doing process reaping                     
+      # `docker run --name test -d debian:latest tail -f /dev/null`
+			# todo 2. Spawn a background/disowned process in the already running container off the pid 1 namespace / as a child of pid 1.
+			# todo 3. Use runc to find the contaniner id of the "test" contanier started earlier 
+			#     `sudo runc --root /run/docker/runtime-runc/moby  list`
+			#     on k8s `runc --root /run/containerd/runc/k8s.io/ list`
+			# todo 4. Use runc to find the "bundle" path of the "test" container 
+			#     `sudo runc --root /run/docker/runtime-runc/moby state 390b94c933ff65172aa42367a7c39a3922e293e340165582878af767b1745985`
+			# ```output    
+			#     {
+			#       "ociVersion": "1.0.2-dev",
+			#       "id": "390b94c933ff65172aa42367a7c39a3922e293e340165582878af767b1745985",
+			#       "pid": 2346117,
+			#       "status": "running",
+			#       "bundle":  "/run/containerd/io.containerd.runtime.v2.task/moby/390b94c933ff65172aa42367a7c39a3922e293e34016 5582878af767b1745985",
+			#       "rootfs": "/var/lib/docker/overlay2/0f41eeb165a130de86856e85a1c2de7f31bddf63be27c4c11512c11d4639d6d9/merged",
+			#       "created": "2023-03-03T23:58:24.196535569Z",
+			#       "owner": ""    
+			# ```
+			# todo 5. Copy sleep & zombie binarys into the cnf
+			# ```nerdctl --namespace=k8s.io cp /zombie 390b94c933ff:/home/zombie```
+			# ```nerdctl --namespace=k8s.io cp /sleep 390b94c933ff:/home/sleep```
+			# todo 5. Use runc to spawn a disowned process off pid 1 
+			# `sudo runc --root /run/docker/runtime-runc/moby exec --pid-file /run/containerd/io.containerd.runtime.v2.task/moby/390b94c933ff65172aa42367a7c39a3922e293e340165582878af767b1745985/init.pid 390b94c933ff65172aa42367a7c39a3922e293e340165582878af767b1745985 /entrypoint.sh`
+			#     ```entrypoint.sh
+			#     cat /entrypoint.sh
+			#     #!/bin/bash
+			#     sleep 5 &
+			#     exit 0
+			#     ```
+			# todo 6. Sleep will become a defunct zombie proccess after sleep exits, if pid 1 isn't capabile of reaping. . 
+
+      Log.info { `./cnf-testsuite cnf_setup cnf-path=./example-cnfs/envoy/` }
+      response_s = `./cnf-testsuite zombie_handled verbose`
+      Log.info { response_s }
+      $?.success?.should be_true
+      (/PASSED: Zombie handled/ =~ response_s).should_not be_nil
+    ensure
+      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./example-cnfs/envoy/` }
+      $?.success?.should be_true
+    end
+  end
 end
 
