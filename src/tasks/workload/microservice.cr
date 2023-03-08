@@ -402,6 +402,171 @@ task "single_process_type" do |_, args|
 end
 
 desc "Are the SIGTERM signals handled?"
+task "zombie_handled" do |_, args|
+  CNFManager::Task.task_runner(args) do |args,config|
+    Log.for("verbose").info { "zombie_handled" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
+    fail_msgs = [] of String
+    all_node_proc_statuses = [] of NamedTuple(node_name: String,
+                                              proc_statuses: Array(String))
+    #todo get the first pod
+
+    task_response = CNFManager.workload_resource_test(args, config, check_containers:false ) do |resource, container, initialized|
+      test_passed = true
+      # todo Clustertools.each_container_by_resource(resource, namespace) do | container_id, container_pid_on_node, node, container_proctree_statuses, container_status| 
+      kind = resource["kind"].downcase
+      case kind 
+      when  "deployment","statefulset","pod","replicaset", "daemonset"
+        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
+        pods = KubectlClient::Get.pods_by_resource(resource_yaml, resource[:namespace])
+        pid_log_names  = [] of String
+        pod_sig_terms = pods.map do |pod|
+          pod_name = pod.dig("metadata", "name")
+          Log.info { "pod_name: #{pod_name}" }
+
+          status = pod["status"]
+          if status["containerStatuses"]?
+              container_statuses = status["containerStatuses"].as_a
+            Log.info { "container_statuses: #{container_statuses}" }
+            Log.info { "pod_name: #{pod_name}" }
+            nodes = KubectlClient::Get.nodes_by_pod(pod)
+            Log.info { "nodes_by_resource done" }
+            node = nodes.first # there should only be one node returned for one pod
+            sig_result = container_statuses.map do |container_status|
+              container_name = container_status.dig("name")
+              previous_process_type = "initial_name"
+              prefix_container_id = container_status.dig("containerID").as_s
+              container_id = prefix_container_id.gsub("containerd://", "")
+              Log.info { "before ready containerStatuses container_id #{container_id}" }
+              ready = container_status.dig("ready").as_bool
+              if !ready
+                Log.info { "container status: #{container_status} "}
+                Log.info { "not ready! skipping: containerStatuses container_id #{container_id}" }
+                false
+                next
+              end
+              # next unless ready 
+              Log.info { "containerStatuses container_id #{container_id}" }
+              resp = ClusterTools.exec_by_node("runc --root /run/containerd/runc/k8s.io/ state #{container_id}", node)
+              Log.info { "resp[:output] #{resp[:output]}" }
+              bundle_path = JSON.parse(resp[:output].to_s)
+              Log.info { "bundle path: #{bundle_path["bundle"]} "}
+              ClusterTools.exec_by_node("nerdctl --namespace=k8s.io cp /zombie #{container_id}:/zombie", node)
+              ClusterTools.exec_by_node("nerdctl --namespace=k8s.io cp /sleep #{container_id}:/sleep", node)
+              ClusterTools.exec_by_node("runc --root /run/containerd/runc/k8s.io/ exec --pid-file #{bundle_path["bundle"]}/init.pid #{container_id} /zombie", node)
+
+            end
+          end
+        end
+      end
+      true
+    end
+
+    sleep 10.0
+
+    task_response = CNFManager.workload_resource_test(args, config, check_containers:false ) do |resource, container, initialized|
+      test_passed = true
+      # todo Clustertools.each_container_by_resource(resource, namespace) do | container_id, container_pid_on_node, node, container_proctree_statuses, container_status| 
+      kind = resource["kind"].downcase
+      case kind 
+      when  "deployment","statefulset","pod","replicaset", "daemonset"
+        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
+        pods = KubectlClient::Get.pods_by_resource(resource_yaml, resource[:namespace])
+        pid_log_names  = [] of String
+        pod_zombies = pods.map do |pod|
+          pod_name = pod.dig("metadata", "name")
+          Log.info { "pod_name: #{pod_name}" }
+
+          status = pod["status"]
+          if status["containerStatuses"]?
+              container_statuses = status["containerStatuses"].as_a
+            Log.info { "container_statuses: #{container_statuses}" }
+            Log.info { "pod_name: #{pod_name}" }
+            nodes = KubectlClient::Get.nodes_by_pod(pod)
+            Log.info { "nodes_by_resource done" }
+            node = nodes.first # there should only be one node returned for one pod
+            zombie_container_status_result = container_statuses.map do |container_status|
+              container_name = container_status.dig("name")
+              previous_process_type = "initial_name"
+              prefix_container_id = container_status.dig("containerID").as_s
+              container_id = prefix_container_id.gsub("containerd://", "")
+              Log.info { "before ready containerStatuses container_id #{container_id}" }
+              ready = container_status.dig("ready").as_bool
+              if !ready
+                Log.info { "container status: #{container_status} "}
+                Log.info { "not ready! skipping: containerStatuses container_id #{container_id}" }
+                false
+                next
+              end
+              # next unless ready 
+              Log.info { "containerStatuses container_id #{container_id}" }
+
+              #get container id's pid on the node (different from inside the container)
+              pid = "#{ClusterTools.node_pid_by_container_id(container_id, node)}"
+              if pid.empty?
+                Log.info { "no pid for (skipping): containerStatuses container_id #{container_id}" }
+                false
+                next
+              end
+
+              # next if pid.empty?
+              Log.info { "node pid (should never be pid 1): #{pid}" }
+
+              node_name = node.dig("metadata", "name").as_s
+              Log.info { "node name : #{node_name}" }
+              pids = KernelIntrospection::K8s::Node.pids(node) 
+              Log.info { "proctree_by_pid pids: #{pids}" }
+              proc_statuses = KernelIntrospection::K8s::Node.all_statuses_by_pids(pids, node)
+
+              statuses = KernelIntrospection::K8s::Node.proctree_by_pid(pid, node, proc_statuses)
+
+              zombies = statuses.map do |status|
+                Log.debug { "status: #{status}" }
+                Log.info { "status cmdline: #{status["cmdline"]}" }
+                status_name = status["Name"].strip
+                current_pid = status["Pid"].strip
+                state = status["State"].strip
+                Log.info { "pid: #{current_pid}" }
+                Log.info { "status name: #{status_name}" }
+                Log.info { "state: #{state}" }
+                Log.info { "(state =~ /zombie/): #{(state =~ /zombie/)}" }
+                if (state =~ /zombie/) != nil
+                  puts "Process #{status_name} has a state of #{state}".colorize(:red)
+                  true
+                else 
+                  nil
+                end
+              end
+              Log.info { "zombies.all?(nil): #{zombies.all?(nil)}" }
+              zombies.all?(nil)
+            end
+            Log.info { "zombie_container_status_result.all?(true): #{zombie_container_status_result.all?(true)}" }
+            zombie_container_status_result.all?(true)
+          else
+            false
+          end
+        end
+        Log.info { "pod_zombies.all?(true): #{pod_zombies.all?(true)}" }
+        pod_zombies.all?(true)
+      else
+        true # non "deployment","statefulset","pod","replicaset", and "daemonset" don't need a sigterm check
+      end
+    end
+
+    emoji_image_size="⚖️👀"
+    emoji_small="🐜"
+    emoji_big="🦖"
+
+    if task_response
+      upsert_passed_task("zombie_handled", "✔️  🏆 PASSED: Zombie handled #{emoji_small} #{emoji_image_size}")
+    else
+      upsert_failed_task("zombie_handled", "✖️  🏆 FAILED: Zombie not handled #{emoji_big} #{emoji_image_size}")
+    end
+  end
+
+end
+
+desc "Are the SIGTERM signals handled?"
 task "sig_term_handled" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
     Log.for("verbose").info { "sig_term_handled" } if check_verbose(args)
@@ -413,13 +578,14 @@ task "sig_term_handled" do |_, args|
 
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false ) do |resource, container, initialized|
       test_passed = true
+      # todo Clustertools.each_container_by_resource(resource, namespace) do | container_id, container_pid_on_node, node, container_proctree_statuses, container_status| 
       kind = resource["kind"].downcase
       case kind 
       when  "deployment","statefulset","pod","replicaset", "daemonset"
         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
         #todo needs namespace
         pods = KubectlClient::Get.pods_by_resource(resource_yaml, resource[:namespace])
-        containers = KubectlClient::Get.resource_containers(kind, resource[:name], resource[:namespace])
+        # containers = KubectlClient::Get.resource_containers(kind, resource[:name], resource[:namespace])
         #todo loop through containers (we only need to process each image per deployment.  skip images that were already processed)
         # --- skipped because could have same image but started with different startup commands which would instantiate different processes
         # sig_term_found = false
@@ -436,7 +602,7 @@ task "sig_term_handled" do |_, args|
             Log.info { "pod_name: #{pod_name}" }
             nodes = KubectlClient::Get.nodes_by_pod(pod)
             Log.info { "nodes_by_resource done" }
-            node = nodes.first
+            node = nodes.first # there should only be one node returned for one pod
             sig_result = container_statuses.map do |container_status|
               container_name = container_status.dig("name")
               previous_process_type = "initial_name"
@@ -452,6 +618,7 @@ task "sig_term_handled" do |_, args|
               # next unless ready 
               Log.info { "containerStatuses container_id #{container_id}" }
 
+              #get container id's pid on the node (different from inside the container)
               pid = "#{ClusterTools.node_pid_by_container_id(container_id, node)}"
               if pid.empty?
                 Log.info { "no pid for (skipping): containerStatuses container_id #{container_id}" }
