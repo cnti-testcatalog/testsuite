@@ -278,7 +278,7 @@ describe "Microservice" do
     end
   end
 
-  it "'zombie_handled' should pass if a zombie is succesfully reaped by PID 1", tags: ["sig_term"]  do
+  it "'zombie_handled' should pass if a zombie is succesfully reaped by PID 1", tags: ["zombie"]  do
     begin
 
       Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_good_zombie_handling/` }
@@ -291,7 +291,7 @@ describe "Microservice" do
       $?.success?.should be_true
     end
   end
-  it "'zombie_handled' should failed if a zombie is not succesfully reaped by PID 1", tags: ["sig_term"]  do
+  it "'zombie_handled' should failed if a zombie is not succesfully reaped by PID 1", tags: ["zombie"]  do
     begin
 
       Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-bad-zombie/` }

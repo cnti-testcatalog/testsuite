@@ -1,7 +1,9 @@
 ---
-manifest_directory: manifests
-release_name: zombie
+release_name: coredns
+service_name: coredns-coredns 
 helm_repository:
-  name: 
-  repo_url:
-allowlist_helm_chart_container_names: []
+  name: stable 
+  repo_url: https://cncf.gitlab.io/stable
+helm_chart: stable/coredns
+helm_install_namespace: cnfspace
+allowlist_helm_chart_container_names: [falco, node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]

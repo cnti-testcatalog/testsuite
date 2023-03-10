@@ -415,6 +415,7 @@ task "zombie_handled" do |_, args|
         Log.info { "bundle path: #{bundle_path["bundle"]} "}
         ClusterTools.exec_by_node("nerdctl --namespace=k8s.io cp /zombie #{container_id}:/zombie", node)
         ClusterTools.exec_by_node("nerdctl --namespace=k8s.io cp /sleep #{container_id}:/sleep", node)
+        # ClusterTools.exec_by_node("ctools --bundle_path <bundle_path > --container_id <container_id>")
         ClusterTools.exec_by_node("runc --root /run/containerd/runc/k8s.io/ exec --pid-file #{bundle_path["bundle"]}/init.pid #{container_id} /zombie", node)
       end
     end
