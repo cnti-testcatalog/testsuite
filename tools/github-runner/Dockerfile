@@ -10,9 +10,9 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg --o
     chmod 644 /etc/apt/sources.list.d/github-cli.list
 
 RUN wget -O /tmp/crystal.tar.gz "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal-$CRYSTAL_VERSION-1-linux-x86_64.tar.gz" --progress=dot:giga && \
-    tar -xvf /tmp/crystal.tar.gz -C /tmp && \
-    chmod +x /tmp/crystal && \
-    mv /tmp/crystal /usr/local/bin/
+    tar -xf /tmp/crystal.tar.gz -C /tmp && \
+    chmod +x /tmp/crystal-${CRYSTAL_VERSION}-1 && \
+    mv /tmp/crystal-${CRYSTAL_VERSION}-1 /usr/local/bin/crystal
 
 RUN apt update && \
     apt install -y --no-install-recommends \
@@ -21,8 +21,7 @@ RUN apt update && \
     libxml2-dev \
     libyaml-dev \
     libgmp-dev \
-    libz-dev \
-    ./crystal.deb && \
+    libz-dev && \
     rm -rf /var/lib/apt/lists/*
 
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
