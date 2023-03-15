@@ -9,8 +9,12 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg --o
     chmod 644 /usr/share/keyrings/githubcli-archive-keyring.gpg && \
     chmod 644 /etc/apt/sources.list.d/github-cli.list
 
-RUN wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga && \
-    apt update && \
+RUN wget -O /tmp/crystal.tar.gz "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal-$CRYSTAL_VERSION-1-linux-x86_64.tar.gz" --progress=dot:giga && \
+    tar -xvf /tmp/crystal.tar.gz -C /tmp && \
+    chmod +x /tmp/crystal && \
+    mv /tmp/crystal /usr/local/bin/
+
+RUN apt update && \
     apt install -y --no-install-recommends \
     git \
     libssl-dev \
