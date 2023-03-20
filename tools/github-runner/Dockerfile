@@ -24,6 +24,7 @@ RUN apt update && \
     libxml2-dev \
     libyaml-dev \
     libgmp-dev \
+    libevent-dev \
     libz-dev && \
     rm -rf /var/lib/apt/lists/*
 
