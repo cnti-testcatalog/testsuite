@@ -29,7 +29,7 @@ VIPS=(
 
 RUNNER_COUNT=0
 for node in "${!RUNNERS[@]}"; do
-    export RUNNER_IMAGE="conformance/github-runner:v2.303.0-2" # don't forget the v
+    export RUNNER_IMAGE="conformance/github-runner:v2.303.0-3" # don't forget the v
     ssh root@${RUNNERS[$node]} "docker pull $RUNNER_IMAGE"
     RUNNERS_PER_NODE=4
     until [ $RUNNERS_PER_NODE -eq 0 ]; do

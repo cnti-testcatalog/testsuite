@@ -9,12 +9,13 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg --o
     chmod 644 /usr/share/keyrings/githubcli-archive-keyring.gpg && \
     chmod 644 /etc/apt/sources.list.d/github-cli.list
 
-RUN wget -O /tmp/crystal.tar.gz "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal-$CRYSTAL_VERSION-1-linux-x86_64.tar.gz" --progress=dot:giga && \
-    tar -xf /tmp/crystal.tar.gz -C /tmp && \
-    chmod +x /tmp/crystal-${CRYSTAL_VERSION}-1/bin/crystal && \
-    chmod +x /tmp/crystal-${CRYSTAL_VERSION}-1/bin/shards && \
-    mv /tmp/crystal-${CRYSTAL_VERSION}-1/bin/crystal /usr/local/bin/crystal && \
-    mv /tmp/crystal-${CRYSTAL_VERSION}-1/bin/shards /usr/local/bin/shards
+RUN mkdir /crystal && \
+    wget -O /crystal/crystal.tar.gz "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal-$CRYSTAL_VERSION-1-linux-x86_64.tar.gz" --progress=dot:giga && \
+    tar -xf /crystal/crystal.tar.gz -C /tmp && \
+    chmod +x /crystal/crystal-${CRYSTAL_VERSION}-1/bin/crystal && \
+    chmod +x /crystal/crystal-${CRYSTAL_VERSION}-1/bin/shards && \
+    ln -s /crystal/crystal-${CRYSTAL_VERSION}-1/bin/crystal /usr/local/bin/crystal && \
+    ln -s /crystal/crystal-${CRYSTAL_VERSION}-1/bin/shards /usr/local/bin/shards
 
 RUN apt update && \
     apt install -y --no-install-recommends \
