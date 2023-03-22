@@ -26,13 +26,13 @@ dependencies:
     branch: main
   helm:
     github: cnf-testsuite/helm
-    branch: main
+    version: ~> 1.0.1
   kubectl_client:
     github: cnf-testsuite/kubectl_client
-    branch: main
+    version: ~> 1.0.1
   docker_client:
     github: cnf-testsuite/docker_client
-    branch: main
+    version: ~> 1.0.0
   # find:
   #   path: utils/find
   find:
