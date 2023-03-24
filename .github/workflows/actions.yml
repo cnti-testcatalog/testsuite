@@ -64,6 +64,9 @@ jobs:
         cat << EOF > /tmp/cluster.yml
         kind: Cluster
         apiVersion: kind.x-k8s.io/v1alpha4
+        nodes:
+        - role: control-plane
+          image: kindest/node:v1.23.13@sha256:e7968cda1b4ff790d5b0b5b0c29bda0404cdb825fd939fe50fd5accc43e3a730
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
@@ -83,6 +86,7 @@ jobs:
         # Enabled additional unsafe sysctls to support the negative spec test for sysctls
         nodes:
         - role: control-plane
+          image: kindest/node:v1.23.13@sha256:e7968cda1b4ff790d5b0b5b0c29bda0404cdb825fd939fe50fd5accc43e3a730
           kubeadmConfigPatches:
           - |
             kind: KubeletConfiguration
@@ -94,6 +98,9 @@ jobs:
         cat << EOF > /tmp/cluster.yml
         kind: Cluster
         apiVersion: kind.x-k8s.io/v1alpha4
+        nodes:
+        - role: control-plane
+          image: kindest/node:v1.23.13@sha256:e7968cda1b4ff790d5b0b5b0c29bda0404cdb825fd939fe50fd5accc43e3a730
         containerdConfigPatches:
           - |-
             [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
@@ -202,6 +209,9 @@ jobs:
         cat << EOF > /tmp/cluster.yml
         kind: Cluster
         apiVersion: kind.x-k8s.io/v1alpha4
+        nodes:
+        - role: control-plane
+          image: kindest/node:v1.23.13@sha256:e7968cda1b4ff790d5b0b5b0c29bda0404cdb825fd939fe50fd5accc43e3a730
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
@@ -761,6 +771,9 @@ jobs:
         cat << EOF > /tmp/cluster.yml
         kind: Cluster
         apiVersion: kind.x-k8s.io/v1alpha4
+        nodes:
+        - role: control-plane
+          image: kindest/node:v1.23.13@sha256:e7968cda1b4ff790d5b0b5b0c29bda0404cdb825fd939fe50fd5accc43e3a730
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
