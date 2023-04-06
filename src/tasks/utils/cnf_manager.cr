@@ -245,26 +245,6 @@ module CNFManager
     initialized && test_passed
   end
 
-  def self.cnf_installed?
-    Log.info { "cnf_config_list" }
-    find_cmd = "find #{CNF_DIR}/* -name '#{CONFIG_FILE}'"
-    Log.info { "find: #{find_cmd}" }
-    Process.run(
-      find_cmd,
-      shell: true,
-      output: find_stdout = IO::Memory.new,
-      error: find_stderr = IO::Memory.new
-    )
-
-    cnf_testsuite = find_stdout.to_s.split("\n").select{ |x| x.empty? == false }
-    Log.info { "find response: #{cnf_testsuite}" }
-    if cnf_testsuite.size == 0
-      false
-    else
-      true
-    end
-  end
-
   def self.cnf_config_list(silent=false)
     Log.info { "cnf_config_list" }
     find_cmd = "find #{CNF_DIR}/* -name \"#{CONFIG_FILE}\""
@@ -282,6 +262,16 @@ module CNFManager
       raise "No cnf_testsuite.yml found! Did you run the setup task?"
     end
     cnf_testsuite
+  end
+  
+  def self.cnf_installed?
+    cnf_configs = self.cnf_config_list(silent=true)
+    
+    if cnf_configs.size == 0
+      false
+    else
+      true
+    end
   end
 
   def self.destination_cnfs_exist?

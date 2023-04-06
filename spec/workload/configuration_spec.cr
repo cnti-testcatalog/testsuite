@@ -463,6 +463,19 @@ describe CnfTestSuite do
     end
   end
 
+  it "'latest_tag' should require a cnf be installed to run", tags: ["latest_tag"] do
+    begin
+      # LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_nonroot`
+      # NOTE: Purposefully not installing a CNF to test
+      response_s = `./cnf-testsuite latest_tag verbose`
+      LOGGING.info response_s
+      $?.success?.should be_false
+      (/You must install a CNF first./ =~ response_s).should_not be_nil
+    ensure
+      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot`
+    end
+  end
+
   # Commenting because the test has now been marked as a POC
   #
   # it "'alpha_k8s_apis' should pass with a CNF that does not make use of alpha k8s APIs", tags: ["apisnoop"] do

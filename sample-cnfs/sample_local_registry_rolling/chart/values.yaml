@@ -165,7 +165,7 @@ autoscaler:
   nodesPerReplica: 16
 
   image:
-    repository: k8s.gcr.io/cluster-proportional-autoscaler-amd64
+    repository: registry.k8s.io/cluster-proportional-autoscaler-amd64
     tag: "1.7.1"
     pullPolicy: IfNotPresent
 

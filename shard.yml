@@ -43,28 +43,28 @@ dependencies:
     branch: main
   git:
     github: cnf-testsuite/git
-    branch: main
+    version: ~> 1.0.0
   docker_client:
     github: cnf-testsuite/docker_client
-    branch: main
+    version: ~> 1.0.0
   kubectl_client:
     github: cnf-testsuite/kubectl_client
-    branch: main
+    version: ~> 1.0.1
   cluster_tools:
     github: cnf-testsuite/cluster_tools
-    branch: main 
+    version: ~> 1.0.0
   kernel_introspection:
     github: cnf-testsuite/kernel_introspection
-    branch: main
+    version: ~> 0.1.0
   k8s_kernel_introspection:
     github: cnf-testsuite/k8s_kernel_introspection
-    branch: main
+    version: ~> 1.0.0
   helm:
     github: cnf-testsuite/helm
-    branch: main
+    version: ~> 1.0.1
   k8s_netstat:
     github: cnf-testsuite/k8s_netstat
-    branch: main
+    version: ~> 1.0.0
   release_manager:
     github: cnf-testsuite/release_manager
     branch: main
@@ -78,6 +78,6 @@ dependencies:
 development_dependencies:
   ameba:
     github: crystal-ameba/ameba
-    version: ~> 0.14.3
+    version: ~> 1.3.1
 
 license: MIT

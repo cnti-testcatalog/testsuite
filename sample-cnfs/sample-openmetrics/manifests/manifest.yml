@@ -25,15 +25,6 @@ data:
     temperature_sum{room="bathroom"} 234.387663039796
     temperature_count{room="bathroom"} 11
     temperature_created{room="bathroom"} 1604597246.08967
-    temperature_bucket{room="kitchen",le="10.0"} 0
-    temperature_bucket{room="kitchen",le="15.0"} 0
-    temperature_bucket{room="kitchen",le="20.0"} 1
-    temperature_bucket{room="kitchen",le="22.0"} 4
-    temperature_bucket{room="kitchen",le="25.0"} 9
-    temperature_bucket{room="kitchen",le="+Inf"} 9
-    temperature_sum{room="kitchen"} 198.854388891071
-    temperature_count{room="kitchen"} 9
-    temperature_created{room="kitchen"} 1604597246.08957
     # EOF
 ---
 apiVersion: v1

@@ -1,6 +1,6 @@
-FROM myoung34/github-runner:2.299.1-ubuntu-bionic
+FROM myoung34/github-runner:2.303.0-ubuntu-bionic
 
-ARG CRYSTAL_VERSION=1.0.0
+ARG CRYSTAL_VERSION=1.6.2
 ARG CRYSTAL_URL=https://github.com/crystal-lang/crystal/releases/download
 
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg --output /usr/share/keyrings/githubcli-archive-keyring.gpg && \
@@ -9,16 +9,23 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg --o
     chmod 644 /usr/share/keyrings/githubcli-archive-keyring.gpg && \
     chmod 644 /etc/apt/sources.list.d/github-cli.list
 
-RUN wget -O crystal.deb "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal_$CRYSTAL_VERSION-1_amd64.deb" --progress=dot:giga && \
-    apt update && \
+RUN mkdir /crystal && \
+    wget -O /crystal/crystal.tar.gz "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal-$CRYSTAL_VERSION-1-linux-x86_64.tar.gz" --progress=dot:giga && \
+    tar -xf /crystal/crystal.tar.gz -C /tmp && \
+    chmod +x /crystal/crystal-${CRYSTAL_VERSION}-1/bin/crystal && \
+    chmod +x /crystal/crystal-${CRYSTAL_VERSION}-1/bin/shards && \
+    ln -s /crystal/crystal-${CRYSTAL_VERSION}-1/bin/crystal /usr/local/bin/crystal && \
+    ln -s /crystal/crystal-${CRYSTAL_VERSION}-1/bin/shards /usr/local/bin/shards
+
+RUN apt update && \
     apt install -y --no-install-recommends \
     git \
     libssl-dev \
     libxml2-dev \
     libyaml-dev \
     libgmp-dev \
-    libz-dev \
-    ./crystal.deb && \
+    libevent-dev \
+    libz-dev && \
     rm -rf /var/lib/apt/lists/*
 
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
