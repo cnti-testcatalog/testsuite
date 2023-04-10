@@ -62,7 +62,7 @@ module Kyverno
 
   def self.download_policies_repo
     url = "https://github.com/kyverno/policies.git"
-    result = GitClient.clone("#{url} #{policies_repo_path}")
+    result = GitClient.clone("--branch release-1.9 #{url} #{policies_repo_path}")
     result[:status].success?
   end
 
