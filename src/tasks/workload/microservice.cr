@@ -402,6 +402,65 @@ task "single_process_type" do |_, args|
 end
 
 desc "Are the SIGTERM signals handled?"
+task "zombie_handled" do |_, args|
+  CNFManager::Task.task_runner(args) do |args,config|
+    Log.for("verbose").info { "zombie_handled" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
+
+    task_response = CNFManager.workload_resource_test(args, config, check_containers:false ) do |resource, container, initialized|
+      ClusterTools.all_containers_by_resource?(resource, resource[:namespace]) do | container_id, container_pid_on_node, node, container_proctree_statuses, container_status| 
+        resp = ClusterTools.exec_by_node("runc --root /run/containerd/runc/k8s.io/ state #{container_id}", node)
+        Log.info { "resp[:output] #{resp[:output]}" }
+        bundle_path = JSON.parse(resp[:output].to_s)
+        Log.info { "bundle path: #{bundle_path["bundle"]} "}
+        ClusterTools.exec_by_node("nerdctl --namespace=k8s.io cp /zombie #{container_id}:/zombie", node)
+        ClusterTools.exec_by_node("nerdctl --namespace=k8s.io cp /sleep #{container_id}:/sleep", node)
+        # ClusterTools.exec_by_node("ctools --bundle_path <bundle_path > --container_id <container_id>")
+        ClusterTools.exec_by_node("runc --root /run/containerd/runc/k8s.io/ exec --pid-file #{bundle_path["bundle"]}/init.pid #{container_id} /zombie", node)
+      end
+    end
+
+    sleep 10.0
+
+    task_response = CNFManager.workload_resource_test(args, config, check_containers:false ) do |resource, container, initialized|
+      ClusterTools.all_containers_by_resource?(resource, resource[:namespace]) do | container_id, container_pid_on_node, node, container_proctree_statuses, container_status| 
+
+        zombies = container_proctree_statuses.map do |status|
+          Log.debug { "status: #{status}" }
+          Log.info { "status cmdline: #{status["cmdline"]}" }
+          status_name = status["Name"].strip
+          current_pid = status["Pid"].strip
+          state = status["State"].strip
+          Log.info { "pid: #{current_pid}" }
+          Log.info { "status name: #{status_name}" }
+          Log.info { "state: #{state}" }
+          Log.info { "(state =~ /zombie/): #{(state =~ /zombie/)}" }
+          if (state =~ /zombie/) != nil
+            puts "Process #{status_name} has a state of #{state}".colorize(:red)
+            true
+          else 
+            nil
+          end
+        end
+        Log.info { "zombies.all?(nil): #{zombies.all?(nil)}" }
+        zombies.all?(nil)
+      end
+    end
+
+    emoji_image_size="⚖️👀"
+    emoji_small="🐜"
+    emoji_big="🦖"
+
+    if task_response
+      upsert_passed_task("zombie_handled", "✔️  🏆 PASSED: Zombie handled #{emoji_small} #{emoji_image_size}")
+    else
+      upsert_failed_task("zombie_handled", "✖️  🏆 FAILED: Zombie not handled #{emoji_big} #{emoji_image_size}")
+    end
+  end
+
+end
+
+desc "Are the SIGTERM signals handled?"
 task "sig_term_handled" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
     Log.for("verbose").info { "sig_term_handled" } if check_verbose(args)
@@ -413,13 +472,14 @@ task "sig_term_handled" do |_, args|
 
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false ) do |resource, container, initialized|
       test_passed = true
+      # todo Clustertools.each_container_by_resource(resource, namespace) do | container_id, container_pid_on_node, node, container_proctree_statuses, container_status| 
       kind = resource["kind"].downcase
       case kind 
       when  "deployment","statefulset","pod","replicaset", "daemonset"
         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
         #todo needs namespace
         pods = KubectlClient::Get.pods_by_resource(resource_yaml, resource[:namespace])
-        containers = KubectlClient::Get.resource_containers(kind, resource[:name], resource[:namespace])
+        # containers = KubectlClient::Get.resource_containers(kind, resource[:name], resource[:namespace])
         #todo loop through containers (we only need to process each image per deployment.  skip images that were already processed)
         # --- skipped because could have same image but started with different startup commands which would instantiate different processes
         # sig_term_found = false
@@ -436,7 +496,7 @@ task "sig_term_handled" do |_, args|
             Log.info { "pod_name: #{pod_name}" }
             nodes = KubectlClient::Get.nodes_by_pod(pod)
             Log.info { "nodes_by_resource done" }
-            node = nodes.first
+            node = nodes.first # there should only be one node returned for one pod
             sig_result = container_statuses.map do |container_status|
               container_name = container_status.dig("name")
               previous_process_type = "initial_name"
@@ -452,6 +512,7 @@ task "sig_term_handled" do |_, args|
               # next unless ready 
               Log.info { "containerStatuses container_id #{container_id}" }
 
+              #get container id's pid on the node (different from inside the container)
               pid = "#{ClusterTools.node_pid_by_container_id(container_id, node)}"
               if pid.empty?
                 Log.info { "no pid for (skipping): containerStatuses container_id #{container_id}" }

@@ -33,6 +33,7 @@ jobs:
         TEST_ARRAY=("${TEST_ARRAY[@]/pod_io_stress/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/pod_memory_hog/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/pod_network_latency/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/zombie/}")
         TEST_LIST=$(for i in ${TEST_ARRAY[@]}
         do
                  echo "{\"spec\":\"$i\"}," | tr -d '\n'
@@ -198,7 +199,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tag: ["pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill", "pod_network_corruption", "pod_network_duplication"]
+        tag: ["pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill", "pod_network_corruption", "pod_network_duplication", "zombie"]
     steps:
     - name: Checkout code
       uses: actions/checkout@v3

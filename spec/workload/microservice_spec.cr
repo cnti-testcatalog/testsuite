@@ -277,5 +277,32 @@ describe "Microservice" do
       $?.success?.should be_true
     end
   end
+
+  it "'zombie_handled' should pass if a zombie is succesfully reaped by PID 1", tags: ["zombie"]  do
+    begin
+
+      Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_good_zombie_handling/` }
+      response_s = `./cnf-testsuite zombie_handled verbose`
+      Log.info { response_s }
+      $?.success?.should be_true
+      (/PASSED: Zombie handled/ =~ response_s).should_not be_nil
+    ensure
+      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_good_zombie_handling/` }
+      $?.success?.should be_true
+    end
+  end
+  it "'zombie_handled' should failed if a zombie is not succesfully reaped by PID 1", tags: ["zombie"]  do
+    begin
+
+      Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-bad-zombie/` }
+      response_s = `./cnf-testsuite zombie_handled verbose`
+      Log.info { response_s }
+      $?.success?.should be_true
+      (/FAILED: Zombie not handled/ =~ response_s).should_not be_nil
+    ensure
+      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-bad-zombie/` }
+      $?.success?.should be_true
+    end
+  end
 end
 
