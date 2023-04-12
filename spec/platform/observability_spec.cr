@@ -15,7 +15,7 @@ describe "Platform Observability" do
       helm = Helm::BinarySingleton.helm
       `#{helm} repo add prometheus-community https://prometheus-community.github.io/helm-charts`
       `#{helm} repo update`
-      resp = `#{helm} install kube-state-metrics prometheus-community/kube-state-metrics`
+      resp = `#{helm} install --version 5.3.0 kube-state-metrics prometheus-community/kube-state-metrics`
       LOGGING.info resp
       KubectlClient::Get.wait_for_install("kube-state-metrics")
 
