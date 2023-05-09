@@ -327,9 +327,17 @@ def upsert_dynamic_task(task, status : CNFManager::Points::Results::ResultStatus
   message
 end
 
+def testsuite_resources_dir
+  default_dir = "#{ENV["HOME"]}/.cnf-testsuite"
+  testsuite_dir = ENV.fetch("CNF_TESTSUITE_DIR", default_dir)
+  FileUtils.mkdir_p(testsuite_dir) if !Dir.exists?(testsuite_dir)
+  return testsuite_dir
+end
+
 def tools_path
-  current_path = File.dirname(File.real_path(PROGRAM_NAME))
-  "#{current_path}/tools"
+  value = "#{testsuite_resources_dir}/tools"
+  FileUtils.mkdir_p(value) if !Dir.exists?(value)
+  value
 end
 
 def stdout_info(msg)
