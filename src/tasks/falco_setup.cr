@@ -10,20 +10,16 @@ desc "Install Falco"
 task "install_falco" do |_, args|
   # helm = Helm::BinarySingleton.helm
   File.write("falco_rule.yaml", FALCO_RULES)
-  if ENV["FALCO_ENV"]? == "CI"
-    image_arg = "--set image.repository=conformance/falco"
-    image_tag = "--set image.tag=0.29.1"
-    chart_version = "--version 1.15.7"
-  end
+  chart_version = "--version 3.1.5"
   begin
     if args.named["offline"]?
       Log.info { "install falco offline mode" }
       helm_chart = Dir.entries(FALCO_OFFLINE_DIR).first
-      Helm.install("falco --set ebpf.enabled=true #{chart_version} #{image_arg} #{image_tag} -f ./falco_rule.yaml -n #{TESTSUITE_NAMESPACE} #{FALCO_OFFLINE_DIR}/#{helm_chart}")
+      Helm.install("falco --set driver.kind=ebpf #{chart_version} -f ./falco_rule.yaml -n #{TESTSUITE_NAMESPACE} #{FALCO_OFFLINE_DIR}/#{helm_chart}")
     else
       Helm.helm_repo_add("falcosecurity","https://falcosecurity.github.io/charts")
       # needs ebpf parameter for precompiled module
-      Helm.install("falco --set ebpf.enabled=true #{chart_version} #{image_arg} #{image_tag} -f ./falco_rule.yaml -n #{TESTSUITE_NAMESPACE} falcosecurity/falco")
+      Helm.install("falco --set driver.kind=ebpf #{chart_version} -f ./falco_rule.yaml -n #{TESTSUITE_NAMESPACE} falcosecurity/falco")
     end
   rescue Helm::CannotReuseReleaseNameError
     Log.info { "Falco already installed" }
