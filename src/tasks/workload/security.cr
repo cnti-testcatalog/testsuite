@@ -150,56 +150,30 @@ task "container_sock_mounts" do |_, args|
 end
 
 desc "Check if any containers are running in as root"
-task "non_root_user", ["install_falco"] do |_, args|
-   CNFManager::Task.task_runner(args) do |args,config|
+task "non_root_user" do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    Log.for("verbose").info { "non_root_user" }
+    Kyverno.install
 
-     unless KubectlClient::Get.resource_wait_for_install("Daemonset", "falco", namespace: TESTSUITE_NAMESPACE)
-       Log.info { "Falco Failed to Start" }
-       upsert_skipped_task("non_root_user", "⏭️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).")
-       node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-       pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
+    emoji_security = "🔓🔑"
+    policy_path = Kyverno.policy_path("pod-security/restricted/require-run-as-non-root-user/require-run-as-non-root-user.yaml")
+    policy_failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
-       # Handle scenario when pod is not available when Falco is not installed.
-       if pods.size > 0
-         falco_pod_name = pods[0].dig("metadata", "name").as_s
-         Log.info { "Falco Pod Name: #{falco_pod_name}" }
-         KubectlClient.logs(falco_pod_name, namespace: TESTSUITE_NAMESPACE)
-       end
-       next
-     end
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, policy_failures)
 
-     Log.for("verbose").info { "non_root_user" } if check_verbose(args)
-     Log.debug { "cnf_config: #{config}" }
-     fail_msgs = [] of String
-     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-       test_passed = true
-       Log.info { "Falco is Running" }
-       kind = resource["kind"].downcase
-       case kind 
-       when  "deployment","statefulset","pod","replicaset", "daemonset"
-         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
-         pods = KubectlClient::Get.pods_by_resource(resource_yaml)
-         # containers = KubectlClient::Get.resource_containers(kind, resource[:name]) 
-         pods.map do |pod|
-           # containers.as_a.map do |container|
-           #   container_name = container.dig("name")
-           pod_name = pod.dig("metadata", "name").as_s
-           # if Falco.find_root_pod(pod_name, container_name)
-           if Falco.find_root_pod(pod_name)
-             fail_msg = "resource: #{resource} and pod #{pod_name} uses a root user"
-             unless fail_msgs.find{|x| x== fail_msg}
-               puts fail_msg.colorize(:red)
-               fail_msgs << fail_msg
-             end
-             test_passed=false
-           end
-         end
-       end
-       test_passed
-     end
-     emoji_no_root="🚫√"
-     emoji_root="√"
+    if check_failures.size == 0
+      resp = upsert_passed_task("non_root_user", "✔️  🏆 PASSED: No pods using root user #{emoji_security}")
+    else
+      resp = upsert_failed_task("non_root_user", "✖️  🏆 FAILED: Found pods using root user #{emoji_security}")
+      failures.each do |failure|
+        failure.resources.each do |resource|
+          puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
+        end
+      end
+    end
 
+  end
      if task_response
        upsert_passed_task("non_root_user", "✔️  PASSED: Root user not found #{emoji_no_root}")
      else
