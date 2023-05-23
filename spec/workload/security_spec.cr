@@ -10,9 +10,11 @@ describe "Security" do
       response_s = `./cnf-testsuite non_root_user verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/No pods using root user/ =~ response_s).should_not be_nil
+      (/Root user not found/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_nonroot/cnf-testsuite.yml`
+      LOGGING.debug `./cnf-testsuite uninstall_falco`
+      KubectlClient::Get.resource_wait_for_uninstall("DaemonSet", "falco")
     end
   end
 
@@ -22,9 +24,11 @@ describe "Security" do
       response_s = `./cnf-testsuite non_root_user verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/Found pods using root user/ =~ response_s).should_not be_nil
+      (/Root user found/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/k8s-non-helm/cnf-testsuite.yml`
+      LOGGING.debug `./cnf-testsuite uninstall_falco`
+      KubectlClient::Get.resource_wait_for_uninstall("DaemonSet", "falco")
     end
   end
 
@@ -34,9 +38,11 @@ describe "Security" do
       response_s = `./cnf-testsuite non_root_user verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/Found pods using root user/ =~ response_s).should_not be_nil
+      (/Root user found/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/ndn-non-root-user/cnf-testsuite.yml`
+      LOGGING.debug `./cnf-testsuite uninstall_falco`
+      KubectlClient::Get.resource_wait_for_uninstall("DaemonSet", "falco")
     end
   end
 
