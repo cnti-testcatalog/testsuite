@@ -174,6 +174,12 @@ task "non_root_user" do |_, args|
     end
 
   end
+     if task_response
+       upsert_passed_task("non_root_user", "✔️  PASSED: Root user not found #{emoji_no_root}")
+     else
+       upsert_failed_task("non_root_user", "✖️  FAILED: Root user found #{emoji_root}")
+     end
+   end
 end
 
 desc "Check if any containers are running in privileged mode"
