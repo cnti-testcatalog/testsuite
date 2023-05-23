@@ -18,8 +18,13 @@ task "install_falco" do |_, args|
 
   # Use different helm chart version for CI
   if ENV["FALCO_ENV"]? == "CI"
-    helm_options = "#{helm_options} --set image.repository=conformance/falco --set image.tag=0.29.1"
     chart_version = "--version 1.15.7"
+
+    # 1. Because the CI uses an old version the helm key values are different too.
+    # 2. CI does not need support for FALCO_HELM_OPTS env var.
+    helm_options = "ebpf.enabled=true"
+    helm_options = "#{helm_options} --set image.repository=conformance/falco"
+    helm_options = "#{helm_options} --set image.tag=0.29.1"
   end
 
   begin
