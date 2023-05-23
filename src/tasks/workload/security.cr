@@ -162,7 +162,7 @@ task "non_root_user" do |_, args|
     resource_keys = CNFManager.workload_resource_keys(args, config)
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, policy_failures)
 
-    if policy_failures.size == 0
+    if check_failures.size == 0
       resp = upsert_passed_task("non_root_user", "✔️  🏆 PASSED: No pods using root user #{emoji_security}")
     else
       resp = upsert_failed_task("non_root_user", "✖️  🏆 FAILED: Found pods using root user #{emoji_security}")
