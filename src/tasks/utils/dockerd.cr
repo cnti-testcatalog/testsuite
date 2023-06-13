@@ -20,7 +20,7 @@ module Dockerd
   end
 
   def self.manifest_file
-    manifest_path = "./#{TOOLS_DIR}/dockerd-manifest.yml"
+    manifest_path = "#{tools_path}/dockerd-manifest.yml"
     unless File.exists?(manifest_path)
       File.write(manifest_path, DOCKERD_MANIFEST)
     end

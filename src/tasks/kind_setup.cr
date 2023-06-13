@@ -9,9 +9,9 @@ desc "Install Kind"
 task "install_kind" do |_, args|
   Log.info {"install_kind"}
   current_dir = FileUtils.pwd 
-  unless Dir.exists?("#{current_dir}/#{TOOLS_DIR}/kind")
-    FileUtils.mkdir_p("#{current_dir}/#{TOOLS_DIR}/kind") 
-    write_file = "#{current_dir}/#{TOOLS_DIR}/kind/kind"
+  unless Dir.exists?("#{tools_path}/kind")
+    FileUtils.mkdir_p("#{tools_path}/kind")
+    write_file = "#{tools_path}/kind/kind"
     Log.info { "write_file: #{write_file}" }
     if args.named["offline"]?
         Log.info { "install kind offline mode" }
@@ -44,7 +44,7 @@ desc "Uninstall Kind"
 task "uninstall_kind" do |_, args|
   current_dir = FileUtils.pwd 
   Log.for("verbose").info { "uninstall_kind" } if check_verbose(args)
-  FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/kind")
+  FileUtils.rm_rf("#{tools_path}/kind")
 end
 
 # USAGE:
@@ -55,9 +55,6 @@ end
 #     kind_manager.create_cluster("hello", nil, false)
 #
 class KindManager
-  # Project root based on which tools dir would be determined
-  property project_root : String
-
   # Path to helm
   property helm : String
 
@@ -65,9 +62,8 @@ class KindManager
   property kind : String
 
   def initialize
-    @project_root = FileUtils.pwd
     @helm = Helm::BinarySingleton.helm
-    @kind = "#{project_root}/#{TOOLS_DIR}/kind/kind"
+    @kind = "#{tools_path}/kind/kind"
     Log.for("kind_project_root").info { project_root }
   end
 
@@ -75,7 +71,7 @@ class KindManager
 
   def create_cluster(name : String, kind_config : String?, offline : Bool, k8s_version = "1.21.1") : KindManager::Cluster?
     Log.info { "Creating Kind Cluster" }
-    kubeconfig = "#{project_root}/#{TOOLS_DIR}/kind/#{name}_admin.conf"
+    kubeconfig = "#{tools_path}/kind/#{name}_admin.conf"
     Log.for("kind_kubeconfig").info { kubeconfig }
 
     kind_config_opt = ""
@@ -102,15 +98,14 @@ class KindManager
     Log.info {"Deleting Kind Cluster: #{name}"}
     ShellCmd.run("#{kind} delete cluster --name #{name}", "KindManager#delete_cluster")
 
-    if File.exists? "#{project_root}/#{TOOLS_DIR}/kind/#{name}_admin.conf"
+    if File.exists? "#{tools_path}/kind/#{name}_admin.conf"
       Log.info {"Deleting kubeconfig for kind cluster: #{name}"}
-      File.delete "#{project_root}/#{TOOLS_DIR}/kind/#{name}_admin.conf"
+      File.delete "#{tools_path}/kind/#{name}_admin.conf"
     end
   end
 
   def self.disable_cni_config
-    project_root = FileUtils.pwd
-    kind_config = "#{project_root}/#{TOOLS_DIR}/kind/disable_cni.yml"
+    kind_config = "#{tools_path}/kind/disable_cni.yml"
     unless File.exists?(kind_config)
       File.write(kind_config, DISABLE_CNI)
     end

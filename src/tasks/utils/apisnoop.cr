@@ -6,7 +6,7 @@ class ApiSnoop
   end
 
   def install_path
-    install_dir = "#{project_root}/#{TOOLS_DIR}/apisnoop"
+    install_dir = "#{tools_path}/apisnoop"
   end
 
   def install
