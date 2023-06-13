@@ -64,7 +64,6 @@ class KindManager
   def initialize
     @helm = Helm::BinarySingleton.helm
     @kind = "#{tools_path}/kind/kind"
-    Log.for("kind_project_root").info { project_root }
   end
 
   #totod make a create cluster with flannel

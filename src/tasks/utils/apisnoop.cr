@@ -1,8 +1,6 @@
 class ApiSnoop
 
-  property project_root : String
-
-  def initialize(@project_root : String)    
+  def initialize()
   end
 
   def install_path
