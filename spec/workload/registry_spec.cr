@@ -7,11 +7,15 @@ require "../../src/tasks/dockerd_setup.cr"
 require "file_utils"
 require "sam"
 
+def registry_manifest_path
+  Path[__DIR__].parent.parent / "tools/registry/manifest.yml"
+end
+
 describe "Private Registry: Image" do
   before_all do
     `./cnf-testsuite setup`
     Dockerd.install
-    install_registry = KubectlClient::Apply.file("#{tools_path}/registry/manifest.yml")
+    install_registry = KubectlClient::Apply.file(registry_manifest_path)
     KubectlClient::Get.resource_wait_for_install("Pod", "registry")
 
     Dockerd.exec("apk add curl", force_output: true)
@@ -60,7 +64,7 @@ describe "Private Registry: Image" do
   end
 
   after_all do
-    delete_registry = KubectlClient::Delete.file("#{tools_path}/registry/manifest.yml")
+    delete_registry = KubectlClient::Delete.file(registry_manifest_path)
     Dockerd.uninstall
   end	
 end
@@ -69,7 +73,7 @@ describe "Private Registry: Rolling" do
   before_all do
     `./cnf-testsuite setup`
     Dockerd.install
-    install_registry = KubectlClient::Apply.file("#{tools_path}/registry/manifest.yml")
+    install_registry = KubectlClient::Apply.file(registry_manifest_path)
     KubectlClient::Get.resource_wait_for_install("Pod", "registry")
 
     Dockerd.exec("apk add curl", force_output: true)
@@ -128,7 +132,7 @@ describe "Private Registry: Rolling" do
   end  
 
   after_all do
-    delete_registry = KubectlClient::Delete.file("#{tools_path}/registry/manifest.yml")
+    delete_registry = KubectlClient::Delete.file(registry_manifest_path)
     Dockerd.uninstall
   end	
 end
