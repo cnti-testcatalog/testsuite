@@ -34,6 +34,7 @@ describe "Operator" do
       pods = KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("catalog-operator", "operator-lifecycle-manager"), "operator-lifecycle-manager") + KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("olm-operator", "operator-lifecycle-manager"), "operator-lifecycle-manager") + KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("packageserver", "operator-lifecycle-manager"), "operator-lifecycle-manager")
 
       Helm.uninstall("operator")
+      # TODO: get the correct operator version from whatever file or api so we can delete it properly
       KubectlClient::Delete.command("csv prometheusoperator.0.47.0")
 
       pods.map do |pod| 

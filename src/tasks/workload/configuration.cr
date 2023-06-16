@@ -5,6 +5,7 @@ require "colorize"
 require "totem"
 require "json"
 require "../utils/utils.cr"
+require "../../../utils/operator.cr"
 
 rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
@@ -732,51 +733,25 @@ task "operator_installed" do |_, args|
     Log.for("verbose").info { "operator_installed" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
 
-    subscription_names = CNFManager.cnf_resources(args, config) do |resource|
-      kind = resource.dig("kind").as_s
-      if kind && kind.downcase == "subscription"
-        { "name" => resource.dig("metadata", "name"), "namespace" => resource.dig("metadata", "namespace") }
-      end
-    end.compact
+    subscription_names = Operator::OLM.get_all_subscription_names
 
     Log.info { "Subscription Names: #{subscription_names}" }
 
 
-    #TODO Warn if csv is not found for a subscription.
-    csv_names = subscription_names.map do |subscription|
-      second_count = 0
-      wait_count = 120
-      csv_created = nil
-      resource_created = false
-
-      KubectlClient::Get.wait_for_resource_key_value("sub", "#{subscription["name"]}", {"status", "installedCSV"}, namespace: subscription["namespace"].as_s)
-
-      installed_csv = KubectlClient::Get.resource("sub", "#{subscription["name"]}", "#{subscription["namespace"]}")
-      if installed_csv.dig?("status", "installedCSV")
-        { "name" => installed_csv.dig("status", "installedCSV"), "namespace" => installed_csv.dig("metadata", "namespace") }
-      end
-    end.compact
+    csv_names = Operator::OLM.get_all_csv_names_from_subscription_names(subscription_names)
 
     Log.info { "CSV Names: #{csv_names}" }
 
-
-    succeeded = csv_names.map do |csv| 
-      if KubectlClient::Get.wait_for_resource_key_value("csv", "#{csv["name"]}", {"status", "reason"}, namespace: csv["namespace"].as_s, value: "InstallSucceeded" ) && KubectlClient::Get.wait_for_resource_key_value("csv", "#{csv["name"]}", {"status", "phase"}, namespace: csv["namespace"].as_s, value: "Succeeded" )
-        csv_succeeded=true
-      end
-      csv_succeeded
-    end
+    csv_with_wait_for_resource_status = Operator::OLMs.get_all_csv_wait_for_resource_statuses_from_csv_names(csv_names)
 
     Log.info { "Succeeded CSV Names: #{succeeded}" }
 
     test_passed = false
 
-    if succeeded.size > 0 && succeeded.all?(true)
+    if succeeded.size > 0 && csvs_with_wait_for_resource_status.all? { |csv_with_wait| csv_with_wait["wait_for_resource_status"] == "success" }
       Log.info { "Succeeded All True?" }
       test_passed = true
     end
-
-    test_passed
 
     emoji_image_size="⚖️👀"
     emoji_small="🐜"
@@ -786,6 +761,46 @@ task "operator_installed" do |_, args|
       upsert_passed_task("operator_installed", "✔️  PASSED: Operator is installed: #{emoji_small} #{emoji_image_size}", Time.utc)
     else
       upsert_na_task("operator_installed", "✖️  NA: No Operators Found #{emoji_big} #{emoji_image_size}", Time.utc)
+    end
+  end
+end
+
+
+desc "Does the CNF install an Operator with privileged rights?"
+task "operator_privileged" do |_, args|
+  CNFManager::Task.task_runner(args) do |args,config|
+    Log.for("verbose").info { "operator_installed" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
+
+    installed_csvs = Operator::OLM.get_all_successfully_installed_csvs
+
+    Log.info { "Installed CSVs: #{installed_csvs}" }
+
+    pods = installed_csvs.flat_map do |csv|
+      Operator::OLM.get_all_pods_from_installed_csv(csv)
+    end
+
+    Log.info { "Pods from Installed CSVs: #{pods}" }
+
+    test_passed = true
+
+    pods.each do |pod|
+      privileged = pod.dig?("spec", "securityContext", "privileged")
+
+      if privileged && privileged == "true"
+        Log.info { "Pod #{pod["metadata"]["name"]} is running with privileged rights" }
+        test_passed = false
+      end
+    end
+
+    emoji_image_size="⚖️👀"
+    emoji_small="🐜"
+    emoji_big="🦖"
+
+    if test_passed
+      upsert_passed_task("operator_installed", "✔️  PASSED: Operator is NOT running with privileged rights: #{emoji_small} #{emoji_image_size}")
+    else
+      upsert_failed_task("operator_privileged", "✖️  FAILED: Operator is running with privileged rights #{emoji_small} #{emoji_image_size}")
     end
   end
 end
