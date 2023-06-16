@@ -733,22 +733,21 @@ task "operator_installed" do |_, args|
     Log.for("verbose").info { "operator_installed" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
 
-    subscription_names = Operator::OLM.get_all_subscription_names
+    subscription_names = Operator::OLM.get_all_subscription_names(args, config)
 
     Log.info { "Subscription Names: #{subscription_names}" }
-
 
     csv_names = Operator::OLM.get_all_csv_names_from_subscription_names(subscription_names)
 
     Log.info { "CSV Names: #{csv_names}" }
 
-    csv_with_wait_for_resource_status = Operator::OLMs.get_all_csv_wait_for_resource_statuses_from_csv_names(csv_names)
+    csvs_with_wait_for_resource_status = Operator::OLM.get_all_csv_wait_for_resource_statuses_from_csv_names(csv_names)
 
-    Log.info { "Succeeded CSV Names: #{succeeded}" }
+    Log.info { "CSV Names with status: #{csvs_with_wait_for_resource_status}" }
 
     test_passed = false
 
-    if succeeded.size > 0 && csvs_with_wait_for_resource_status.all? { |csv_with_wait| csv_with_wait["wait_for_resource_status"] == "success" }
+    if csvs_with_wait_for_resource_status.size > 0 && csvs_with_wait_for_resource_status.all? { |csv_with_wait| csv_with_wait["wait_for_resource_status"] == "success" }
       Log.info { "Succeeded All True?" }
       test_passed = true
     end
@@ -765,14 +764,14 @@ task "operator_installed" do |_, args|
   end
 end
 
-
+# TODO: write a spec test for this
 desc "Does the CNF install an Operator with privileged rights?"
 task "operator_privileged" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
     Log.for("verbose").info { "operator_installed" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
 
-    installed_csvs = Operator::OLM.get_all_successfully_installed_csvs
+    installed_csvs = Operator::OLM.get_all_successfully_installed_csvs(args, config)
 
     Log.info { "Installed CSVs: #{installed_csvs}" }
 

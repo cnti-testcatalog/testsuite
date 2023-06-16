@@ -1,8 +1,9 @@
-require "../task/utils/utils.cr"
+require "../src/tasks/utils/utils.cr"
 
 module Operator
   module OLM
-    def self.get_all_subscription_names
+    def self.get_all_subscription_names(args, config)
+	  #TODO: just pass the resource list and then we can remove the CNFManager dependency and only need the KubectlClient
       subscription_names = CNFManager.cnf_resources(args, config) do |resource|
         kind = resource.dig("kind").as_s
         if kind && kind.downcase == "subscription"
@@ -28,23 +29,23 @@ module Operator
       end.compact
     end
 
-    def self.get_all_csv_names
-      self.get_all_csv_names_from_subscription_names(self.get_all_subscription_names)
+    def self.get_all_csv_names(args, config)
+      self.get_all_csv_names_from_subscription_names(self.get_all_subscription_names(args, config))
     end
 
     def self.get_all_csv_wait_for_resource_statuses_from_csv_names(csv_names)
       csv_with_wait_for_resource_status = csv_names.map do |csv|
         if KubectlClient::Get.wait_for_resource_key_value("csv", "#{csv["name"]}", {"status", "reason"}, namespace: csv["namespace"].as_s, value: "InstallSucceeded") && KubectlClient::Get.wait_for_resource_key_value("csv", "#{csv["name"]}", {"status", "phase"}, namespace: csv["namespace"].as_s, value: "Succeeded")
-          csv["wait_for_resource_status"] = "success"
+          csv["wait_for_resource_status"] = JSON::Any.new("success")
         else
-          csv["wait_for_resource_status"] = "failure"
+          csv["wait_for_resource_status"] = JSON::Any.new("failure")
         end
         csv
       end
     end
 
-    def self.get_all_successfully_installed_csvs
-	  self.get_all_csv_wait_for_resource_statuses_from_csv_names(self.get_all_csv_names).select do |csv|
+    def self.get_all_successfully_installed_csvs(args, config)
+	  self.get_all_csv_wait_for_resource_statuses_from_csv_names(self.get_all_csv_names(args, config)).select do |csv|
 		csv["wait_for_resource_status"] == "success"
 	  end
 	end	
@@ -54,7 +55,7 @@ module Operator
 
       deployments = csv_resource.dig("install", "deployments")
 
-      deployment_names = deployments.map do |deployment|
+      deployment_names = deployments.as_a.map do |deployment|
         deployment.dig("name")
       end
 
