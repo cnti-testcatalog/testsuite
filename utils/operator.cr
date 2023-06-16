@@ -1,10 +1,9 @@
-require "../src/tasks/utils/utils.cr"
+require "kubectl_client"
 
 module Operator
   module OLM
-    def self.get_all_subscription_names(args, config)
-	  #TODO: just pass the resource list and then we can remove the CNFManager dependency and only need the KubectlClient
-      subscription_names = CNFManager.cnf_resources(args, config) do |resource|
+    def self.get_all_subscription_names(resources)
+      subscription_names = resources.map do |resource|
         kind = resource.dig("kind").as_s
         if kind && kind.downcase == "subscription"
           {"name" => resource.dig("metadata", "name"), "namespace" => resource.dig("metadata", "namespace")}
@@ -29,8 +28,8 @@ module Operator
       end.compact
     end
 
-    def self.get_all_csv_names(args, config)
-      self.get_all_csv_names_from_subscription_names(self.get_all_subscription_names(args, config))
+    def self.get_all_csv_names(resources)
+      self.get_all_csv_names_from_subscription_names(self.get_all_subscription_names(resources))
     end
 
     def self.get_all_csv_wait_for_resource_statuses_from_csv_names(csv_names)
@@ -44,8 +43,8 @@ module Operator
       end
     end
 
-    def self.get_all_successfully_installed_csvs(args, config)
-	  self.get_all_csv_wait_for_resource_statuses_from_csv_names(self.get_all_csv_names(args, config)).select do |csv|
+    def self.get_all_successfully_installed_csvs(resources)
+	  self.get_all_csv_wait_for_resource_statuses_from_csv_names(self.get_all_csv_names(resources)).select do |csv|
 		csv["wait_for_resource_status"] == "success"
 	  end
 	end	

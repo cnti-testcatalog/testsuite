@@ -733,7 +733,9 @@ task "operator_installed" do |_, args|
     Log.for("verbose").info { "operator_installed" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
 
-    subscription_names = Operator::OLM.get_all_subscription_names(args, config)
+    resources = CNFManager.cnf_resources(args, config) { |resource| resource }
+
+    subscription_names = Operator::OLM.get_all_subscription_names(resources)
 
     Log.info { "Subscription Names: #{subscription_names}" }
 
@@ -771,7 +773,10 @@ task "operator_privileged" do |_, args|
     Log.for("verbose").info { "operator_installed" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
 
-    installed_csvs = Operator::OLM.get_all_successfully_installed_csvs(args, config)
+
+    resources = CNFManager.cnf_resources(args, config) { |resource| resource }
+
+    installed_csvs = Operator::OLM.get_all_successfully_installed_csvs(resources)
 
     Log.info { "Installed CSVs: #{installed_csvs}" }
 
