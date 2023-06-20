@@ -200,7 +200,7 @@ desc "Does the CNF have a reasonable container image size (< 5GB)?"
 task "reasonable_image_size" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
     docker_insecure_registries = [] of String
-    if !config.cnf_config[:docker_insecure_registries].empty?
+    if config.cnf_config[:docker_insecure_registries]? && !config.cnf_config[:docker_insecure_registries].nil?
       docker_insecure_registries = config.cnf_config[:docker_insecure_registries]
     end
     unless Dockerd.install(docker_insecure_registries)
@@ -228,7 +228,7 @@ task "reasonable_image_size" do |_, args|
 
         # If FQDN mapping is available for the registry,
         # replace the host in the fqdn_image
-        if !config.cnf_config[:image_registry_fqdns].empty?
+        if config.cnf_config[:image_registry_fqdns]? && !config.cnf_config[:image_registry_fqdns].nil?
           image_registry_fqdns = config.cnf_config[:image_registry_fqdns]
           if image_registry_fqdns[image_host]?
             image_url_parts[0] = image_registry_fqdns[image_host]

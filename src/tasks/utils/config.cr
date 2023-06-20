@@ -32,7 +32,7 @@ module CNFManager
                                      rolling_update_tag: String,
                                      container_names: Array(Hash(String, String )) | Nil,
                                      white_list_container_names: Array(String),
-                                     docker_insecure_registries: Array(String),
+                                     docker_insecure_registries: Array(String) | Nil,
                                      image_registry_fqdns: Hash(String, String ) | Nil)
 
     def self.parse_config_yml(config_yml_path : String, airgapped=false, generate_tar_mode=false) : CNFManager::Config
@@ -113,16 +113,16 @@ module CNFManager
       end
 
       docker_insecure_registries = [] of String
-      if config["docker_insecure_registries"]?
+      if config["docker_insecure_registries"]? && !config["docker_insecure_registries"].nil?
         docker_insecure_registries = config["docker_insecure_registries"].as_a.map do |c|
           "#{c.as_s?}"
         end
       end
 
       image_registry_fqdns = Hash(String, String).new
-      if config["image_registry_fqdns"]?
-        config["docker_insecure_registries"].each do |key, value|
-          image_registry_fqdns[key] = value
+      if config["image_registry_fqdns"]? && !config["image_registry_fqdns"].nil?
+        config["image_registry_fqdns"].as_h.each do |key, value|
+          image_registry_fqdns[key] = value.as_s
         end
       end
 
