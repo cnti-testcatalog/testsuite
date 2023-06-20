@@ -199,7 +199,11 @@ end
 desc "Does the CNF have a reasonable container image size (< 5GB)?"
 task "reasonable_image_size" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
-    unless Dockerd.install
+    docker_insecure_registries = []
+    if !config.cnf_config[:docker_insecure_registries].empty?
+      docker_insecure_registries = config.cnf_config[:docker_insecure_registries]
+    end
+    unless Dockerd.install(docker_insecure_registries)
       upsert_skipped_task("reasonable_image_size", "⏭️  SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install")
       next
     end
