@@ -2,15 +2,16 @@ module Dockerd
   def self.install(insecure_registries : Array(String) = [] of String)
     # These are default values to help speed up the cluster setup for the CNF
     insecure_registries_default = ["registry:5000", "registry.default.svc.cluster.local:5000"]
-    if !insecure_registries.empty?
+    if insecure_registries.empty?
       insecure_registries = insecure_registries_default
     end
 
     # If configmaps/docker-config is not present, create one using the default template.
     docker_config_check = KubectlClient::Get.resource("configmaps", "docker-config", TESTSUITE_NAMESPACE)
-    if docker_config_check["kind"].nil?
+    if !docker_config_check["kind"]?
       Log.info { "Install dockerd from manifest" }
-      KubectlClient::Apply.file(docker_config_manifest_file, namespace: TESTSUITE_NAMESPACE)
+      KubectlClient::Apply.file(docker_config_manifest_file(insecure_registries), namespace: TESTSUITE_NAMESPACE)
+      KubectlClient::Get.resource_wait_for_install("configmap", "docker-config", 180, TESTSUITE_NAMESPACE)
     else
       Log.info { "Skipping docker-config. ConfigMap exists." }
     end
