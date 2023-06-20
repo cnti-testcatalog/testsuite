@@ -201,7 +201,7 @@ task "reasonable_image_size" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
     docker_insecure_registries = [] of String
     if config.cnf_config[:docker_insecure_registries]? && !config.cnf_config[:docker_insecure_registries].nil?
-      docker_insecure_registries = config.cnf_config[:docker_insecure_registries]
+      docker_insecure_registries = config.cnf_config[:docker_insecure_registries].not_nil!
     end
     unless Dockerd.install(docker_insecure_registries)
       upsert_skipped_task("reasonable_image_size", "⏭️  SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install")
@@ -229,7 +229,7 @@ task "reasonable_image_size" do |_, args|
         # If FQDN mapping is available for the registry,
         # replace the host in the fqdn_image
         if config.cnf_config[:image_registry_fqdns]? && !config.cnf_config[:image_registry_fqdns].nil?
-          image_registry_fqdns = config.cnf_config[:image_registry_fqdns]
+          image_registry_fqdns = config.cnf_config[:image_registry_fqdns].not_nil!
           if image_registry_fqdns[image_host]?
             image_url_parts[0] = image_registry_fqdns[image_host]
             fqdn_image = image_url_parts.join("/")
