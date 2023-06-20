@@ -1,8 +1,8 @@
 module Dockerd
-  def self.install(insecure_registries : Array(String) = [])
+  def self.install(insecure_registries : Array(String) = [] of String)
     # These are default values to help speed up the cluster setup for the CNF
     insecure_registries_default = ["registry:5000", "registry.default.svc.cluster.local:5000"]
-    if insecure_registries != []
+    if !insecure_registries.empty?
       insecure_registries = insecure_registries_default
     end
 
@@ -47,7 +47,7 @@ module Dockerd
   end
 
   # Ignore existing file and overwrite everytime to ensure latest config is present
-  def self.docker_config_manifest_file(insecure_registries : Array(String) = [])
+  def self.docker_config_manifest_file(insecure_registries : Array(String) = [] of String)
     insecure_registries_str = insecure_registries.join(",")
     manifest_path = "./#{TOOLS_DIR}/docker-config-manifest.yml"
     template = DockerConfigManifest.new(insecure_registries_str).to_s

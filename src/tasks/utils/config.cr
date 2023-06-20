@@ -31,7 +31,8 @@ module CNFManager
                                      helm_install_namespace: String,
                                      rolling_update_tag: String,
                                      container_names: Array(Hash(String, String )) | Nil,
-                                     white_list_container_names: Array(String)) 
+                                     white_list_container_names: Array(String),
+                                     docker_insecure_registries: Array(String))
 
     def self.parse_config_yml(config_yml_path : String, airgapped=false, generate_tar_mode=false) : CNFManager::Config
       LOGGING.debug "parse_config_yml config_yml_path: #{config_yml_path}"
@@ -110,6 +111,13 @@ module CNFManager
          }]
       end
 
+      docker_insecure_registries = [] of String
+      if config["docker_insecure_registries"]?
+        docker_insecure_registries = config["docker_insecure_registries"].as_a.map do |c|
+          "#{c.as_s?}"
+        end
+      end
+
       # if you change this, change instantiation in task.cr/single_task_runner as well
       new({ destination_cnf_dir: destination_cnf_dir,
                                source_cnf_file: source_cnf_file,
@@ -129,7 +137,8 @@ module CNFManager
                                helm_install_namespace: helm_install_namespace,
                                rolling_update_tag: "",
                                container_names: container_names,
-                               white_list_container_names: white_list_container_names })
+                               white_list_container_names: white_list_container_names,
+                               docker_insecure_registries: docker_insecure_registries})
 
     end
     def self.install_method_by_config_file(config_file) : Helm::InstallMethod
