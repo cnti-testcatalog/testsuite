@@ -11,7 +11,6 @@ module Dockerd
     if !docker_config_check["kind"]?
       Log.info { "Install dockerd from manifest" }
       KubectlClient::Apply.file(docker_config_manifest_file(insecure_registries), namespace: TESTSUITE_NAMESPACE)
-      KubectlClient::Get.resource_wait_for_install("configmap", "docker-config", 180, TESTSUITE_NAMESPACE)
     else
       Log.info { "Skipping docker-config. ConfigMap exists." }
     end
@@ -49,7 +48,7 @@ module Dockerd
 
   # Ignore existing file and overwrite everytime to ensure latest config is present
   def self.docker_config_manifest_file(insecure_registries : Array(String) = [] of String)
-    insecure_registries_str = insecure_registries.join(",")
+    insecure_registries_str = insecure_registries.map {|i| "\"#{i}\""}.join(",")
     manifest_path = "./#{TOOLS_DIR}/docker-config-manifest.yml"
     template = DockerConfigManifest.new(insecure_registries_str).to_s
     File.write(manifest_path, template)
