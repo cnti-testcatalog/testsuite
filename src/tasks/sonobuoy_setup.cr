@@ -23,22 +23,21 @@ task "install_sonobuoy" do |_, args|
   Log.for("verbose").debug { SONOBUOY_K8S_VERSION } if check_verbose(args)
   current_dir = FileUtils.pwd 
   Log.for("verbose").debug { current_dir } if check_verbose(args)
-  unless Dir.exists?("#{current_dir}/#{TOOLS_DIR}/sonobuoy")
-    Log.for("verbose").debug { "pwd? : #{current_dir}" } if check_verbose(args)
-    Log.for("verbose").debug { "toolsdir : #{TOOLS_DIR}" } if check_verbose(args)
-    Log.for("verbose").debug { "full path?: #{current_dir.to_s}/#{TOOLS_DIR}/sonobuoy" } if check_verbose(args)
-    FileUtils.mkdir_p("#{current_dir}/#{TOOLS_DIR}/sonobuoy") 
-    # curl = `VERSION="#{LITMUS_K8S_VERSION}" OS=linux ; curl -L "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_amd64.tar.gz" --output #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz`
+  unless Dir.exists?("#{tools_path}/sonobuoy")
+    Log.for("verbose").debug { "toolsdir : #{tools_path}" } if check_verbose(args)
+    Log.for("verbose").debug { "full path?: #{tools_path}/sonobuoy" } if check_verbose(args)
+    FileUtils.mkdir_p("#{tools_path}/sonobuoy")
+    # curl = `VERSION="#{LITMUS_K8S_VERSION}" OS=linux ; curl -L "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_amd64.tar.gz" --output #{tools_path}/sonobuoy/sonobuoy.tar.gz`
     # os="linux"
     if args.named["offline"]?
       Log.info { "install sonobuoy offline mode" }
-      `tar -xzf #{TarClient::TAR_DOWNLOAD_DIR}/sonobuoy.tar.gz -C #{current_dir}/#{TOOLS_DIR}/sonobuoy/ && \
-       chmod +x #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy`
-      sonobuoy = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy"
+      `tar -xzf #{TarClient::TAR_DOWNLOAD_DIR}/sonobuoy.tar.gz -C #{tools_path}/sonobuoy/ && \
+       chmod +x #{tools_path}/sonobuoy/sonobuoy`
+      sonobuoy = "#{tools_path}/sonobuoy/sonobuoy"
       sonobuoy_details(sonobuoy) if check_verbose(args)
     else
       url = "https://github.com/vmware-tanzu/sonobuoy/releases/download/v#{SONOBUOY_K8S_VERSION}/sonobuoy_#{SONOBUOY_K8S_VERSION}_#{SONOBUOY_OS}_amd64.tar.gz"
-      write_file = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz"
+      write_file = "#{tools_path}/sonobuoy/sonobuoy.tar.gz"
       Log.info { "url: #{url}" }
       Log.info { "write_file: #{write_file}" }
       # todo change this to work with rel 
@@ -48,10 +47,10 @@ task "install_sonobuoy" do |_, args|
 
 
       HttpHelper.download("#{url}","#{write_file}")
-      `tar -xzf #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz -C #{current_dir}/#{TOOLS_DIR}/sonobuoy/ && \
-       chmod +x #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy && \
-       rm #{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy.tar.gz`
-      sonobuoy = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy"
+      `tar -xzf #{tools_path}/sonobuoy/sonobuoy.tar.gz -C #{tools_path}/sonobuoy/ && \
+       chmod +x #{tools_path}/sonobuoy/sonobuoy && \
+       rm #{tools_path}/sonobuoy/sonobuoy.tar.gz`
+      sonobuoy = "#{tools_path}/sonobuoy/sonobuoy"
       sonobuoy_details(sonobuoy) if check_verbose(args)
     end
   end
@@ -60,7 +59,7 @@ end
 desc "Cleans up Sonobuoy"
 task "sonobuoy_cleanup" do |_, args|
   current_dir = FileUtils.pwd 
-  sonobuoy = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy"
+  sonobuoy = "#{tools_path}/sonobuoy/sonobuoy"
   status = Process.run(
     "#{sonobuoy} delete --wait 2>&1",
     shell: true,
@@ -68,6 +67,6 @@ task "sonobuoy_cleanup" do |_, args|
     error: stderr = IO::Memory.new
   )
   Log.for("verbose").info { stdout } if check_verbose(args)
-  FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/sonobuoy")
+  FileUtils.rm_rf("#{tools_path}/sonobuoy")
 end
 

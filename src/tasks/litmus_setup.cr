@@ -151,7 +151,7 @@ module LitmusManager
 
   def self.chaos_manifests_path
     Log.info {"chaos_manifests_path"}
-    chaos_manifests = "#{FileUtils.pwd}/#{TOOLS_DIR}/chaos-experiments"
+    chaos_manifests = "#{tools_path}/chaos-experiments"
     if !Dir.exists?(chaos_manifests)
       FileUtils.mkdir_p(chaos_manifests)
     end

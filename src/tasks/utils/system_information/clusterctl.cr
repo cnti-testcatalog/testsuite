@@ -70,7 +70,7 @@ end
 def clusterctl_local_response(verbose=false)
   current_dir = FileUtils.pwd 
   VERBOSE_LOGGING.info current_dir if verbose 
-  clusterctl = "#{current_dir}/#{TOOLS_DIR}/clusterctl/linux-amd64/clusterctl"
+  clusterctl = "#{tools_path}/clusterctl/linux-amd64/clusterctl"
   # clusterctl_response = `#{clusterctl} version`
   status = Process.run("#{clusterctl} version", shell: true, output: clusterctl_response = IO::Memory.new, error: stderr = IO::Memory.new)
 
