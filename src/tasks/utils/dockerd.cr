@@ -49,7 +49,7 @@ module Dockerd
   # Ignore existing file and overwrite everytime to ensure latest config is present
   def self.docker_config_manifest_file(insecure_registries : Array(String) = [] of String)
     insecure_registries_str = insecure_registries.map {|i| "\"#{i}\""}.join(",")
-    manifest_path = "./#{TOOLS_DIR}/docker-config-manifest.yml"
+    manifest_path = "./#{tools_path}/docker-config-manifest.yml"
     template = DockerConfigManifest.new(insecure_registries_str).to_s
     File.write(manifest_path, template)
     manifest_path
