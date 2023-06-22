@@ -153,6 +153,7 @@ jobs:
         DOCKERHUB_PASSWORDS: ${{ secrets.DOCKERHUB_PASSWORDS }}
         DOCKERHUB_EMAIL: ${{ secrets.DOCKERHUB_EMAIL }}
         IMAGE_REPO: ${{ secrets.IMAGE_REPO }}
+        CNF_TESTSUITE_DIR: "/tmp/cnf-testsuite-home"
       run: |
         USERNAME_ARRAY=($DOCKERHUB_USERNAMES)
         PASSWORD_ARRAY=($DOCKERHUB_PASSWORDS)
