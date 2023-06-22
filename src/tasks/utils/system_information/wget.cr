@@ -52,7 +52,7 @@ end
 def wget_local_response(verbose=false)
   current_dir = FileUtils.pwd
   Log.for("verbose").info { current_dir } if verbose
-  wget = "#{current_dir}/#{TOOLS_DIR}/wget/linux-amd64/wget"
+  wget = "#{tools_path}/wget/linux-amd64/wget"
   status = Process.run("#{wget} --version", shell: true, output: wget_response = IO::Memory.new, error: stderr = IO::Memory.new)
   Log.info { wget_response.to_s } if verbose
   wget_response.to_s

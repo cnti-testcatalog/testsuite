@@ -38,7 +38,7 @@ module Dockerd
   end
 
   def self.dockerd_manifest_file
-    manifest_path = "./#{TOOLS_DIR}/dockerd-manifest.yml"
+    manifest_path = "#{tools_path}/dockerd-manifest.yml"
     unless File.exists?(manifest_path)
       template = DockerdManifest.new.to_s
       File.write(manifest_path, template)

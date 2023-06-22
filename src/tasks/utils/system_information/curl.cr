@@ -47,7 +47,7 @@ end
 def curl_local_response(verbose=false)
   current_dir = FileUtils.pwd
   Log.for("verbose").info { current_dir } if verbose
-  curl = "#{current_dir}/#{TOOLS_DIR}/curl/linux-amd64/curl"
+  curl = "#{tools_path}/curl/linux-amd64/curl"
   status = Process.run("#{curl} --version", shell: true, output: curl_response = IO::Memory.new, error: stderr = IO::Memory.new)
   Log.for("verbose").info { curl_response.to_s } if verbose
   curl_response.to_s

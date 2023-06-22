@@ -12,7 +12,7 @@ describe "Operator" do
 
   it "'operator_test' test if operator is being used", tags: ["operator_test"]  do
     current_dir = FileUtils.pwd
-    install_dir = "#{current_dir}/#{TOOLS_DIR}/olm"
+    install_dir = "#{tools_path}/olm"
     if Dir.exists?("#{install_dir}/olm/.git")
       Log.info { "OLM already installed. Skipping git clone for OLM." }
     else
