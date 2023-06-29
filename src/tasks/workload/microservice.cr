@@ -199,7 +199,11 @@ end
 desc "Does the CNF have a reasonable container image size (< 5GB)?"
 task "reasonable_image_size" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
-    unless Dockerd.install
+    docker_insecure_registries = [] of String
+    if config.cnf_config[:docker_insecure_registries]? && !config.cnf_config[:docker_insecure_registries].nil?
+      docker_insecure_registries = config.cnf_config[:docker_insecure_registries].not_nil!
+    end
+    unless Dockerd.install(docker_insecure_registries)
       upsert_skipped_task("reasonable_image_size", "⏭️  SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install")
       next
     end
@@ -215,8 +219,22 @@ task "reasonable_image_size" do |_, args|
           resource["kind"].downcase == "replicaset"
 				test_passed = true
 
-				fqdn_image = container.as_h["image"].as_s
-        # parsed_image = DockerClient.parse_image(fqdn_image)
+				image_url = container.as_h["image"].as_s
+        image_url_parts = image_url.split("/")
+        image_host = image_url_parts[0]
+
+        # Set default FQDN value
+        fqdn_image = image_url
+
+        # If FQDN mapping is available for the registry,
+        # replace the host in the fqdn_image
+        if config.cnf_config[:image_registry_fqdns]? && !config.cnf_config[:image_registry_fqdns].nil?
+          image_registry_fqdns = config.cnf_config[:image_registry_fqdns].not_nil!
+          if image_registry_fqdns[image_host]?
+            image_url_parts[0] = image_registry_fqdns[image_host]
+            fqdn_image = image_url_parts.join("/")
+          end
+        end
 
         image_pull_secrets = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace]).dig?("spec", "template", "spec", "imagePullSecrets")
         if image_pull_secrets

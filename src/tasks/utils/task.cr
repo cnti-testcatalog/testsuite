@@ -80,11 +80,13 @@ module CNFManager
                                             helm_install_namespace: "",
                                             rolling_update_tag: "",
                                             container_names: [{"name" =>  "", "rolling_update_test_tag" => ""}],
-                                            white_list_container_names: [""]} )
+                                            white_list_container_names: [""],
+                                            docker_insecure_registries: [] of String,
+                                            image_registry_fqdns: Hash(String, String).new} )
         end
         ret = yield args, config
         #todo lax mode, never returns 1
-        if args.raw.includes? "strict" 
+        if args.raw.includes? "strict"
           if CNFManager::Points.failed_required_tasks.size > 0
             stdout_failure "Test Suite failed in strict mode. Stopping executing."
             stdout_failure "Failed required tasks: #{CNFManager::Points.failed_required_tasks.inspect}"
