@@ -676,7 +676,7 @@ task "alpha_k8s_apis" do |_, args|
     cluster_name = "apisnooptest"
     # Ensure any old cluster is deleted
     KindManager.new.delete_cluster(cluster_name)
-    apisnoop = ApiSnoop.new(FileUtils.pwd)
+    apisnoop = ApiSnoop.new()
     # FileUtils.cp("apisnoop-kind.yaml", "tools/apisnoop/kind/kind+apisnoop.yaml")
     cluster = apisnoop.setup_kind_cluster(cluster_name, k8s_server_version)
     Log.info { "apisnoop cluster kubeconfig: #{cluster.kubeconfig}" }

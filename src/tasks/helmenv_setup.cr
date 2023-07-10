@@ -17,20 +17,18 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
     Log.for("verbose").debug { current_dir } if check_verbose(args)
     arch = "linux-amd64"
 
-    FileUtils.mkdir_p("#{current_dir}/#{TOOLS_DIR}/helm")
-    unless File.exists?("#{current_dir}/#{TOOLS_DIR}/helm/#{arch}/helm")
+    FileUtils.mkdir_p("#{tools_path}/helm")
+    unless File.exists?("#{tools_path}/helm/#{arch}/helm")
       begin
         if check_verbose(args)
-          Log.for("verbose").debug { "pwd? : #{current_dir}" }
-          Log.for("verbose").debug { "toolsdir : #{TOOLS_DIR}" }
-          Log.for("verbose").debug { "full path?: #{current_dir.to_s}/#{TOOLS_DIR}/helm" }
+          Log.for("verbose").debug { "full path?: #{tools_path}/helm" }
         end
 
-        HttpHelper.download("https://get.helm.sh/helm-v3.8.2-#{arch}.tar.gz","#{current_dir}/#{TOOLS_DIR}/helm/helm-v3.8.2-#{arch}.tar.gz")
+        HttpHelper.download("https://get.helm.sh/helm-v3.8.2-#{arch}.tar.gz","#{tools_path}/helm/helm-v3.8.2-#{arch}.tar.gz")
 
         TarClient.untar(
-          "#{current_dir}/#{TOOLS_DIR}/helm/helm-v3.8.2-#{arch}.tar.gz",
-          "#{current_dir}/#{TOOLS_DIR}/helm"
+          "#{tools_path}/helm/helm-v3.8.2-#{arch}.tar.gz",
+          "#{tools_path}/helm"
         )
 
         helm = Helm::BinarySingleton.helm
@@ -52,8 +50,8 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
 end
 
 desc "Cleans up helm 3.8.2"
-task "helm_local_cleanup"do |_, args|
+task "helm_local_cleanup" do |_, args|
   Log.for("verbose").info { "helm_local_cleanup" } if check_verbose(args)
   current_dir = FileUtils.pwd 
-  FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/helm")
+  FileUtils.rm_rf("#{tools_path}/helm")
 end

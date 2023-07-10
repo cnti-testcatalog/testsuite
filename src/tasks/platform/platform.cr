@@ -24,7 +24,7 @@ task "k8s_conformance" do |_, args|
   begin
     current_dir = FileUtils.pwd
     VERBOSE_LOGGING.debug current_dir if check_verbose(args)
-    sonobuoy = "#{current_dir}/#{TOOLS_DIR}/sonobuoy/sonobuoy"
+    sonobuoy = "#{tools_path}/sonobuoy/sonobuoy"
 
     # Clean up old results
     delete_cmd = "#{sonobuoy} delete --all --wait"

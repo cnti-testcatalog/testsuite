@@ -151,3 +151,29 @@ Example setting:
 `--set myvalue=42`
 
 
+#### `image_registry_fqdns`
+
+When using a private registry hosted on the cluster, the image references in the CNF's helm chart may refer to the registry host with the Kubernetes service name alone. The CNF Testsuite runs a docker daemon in a separate `cnf-testsuite` namespace on the Kubernetes cluster. So it is required for the testsuite to be aware of the FQDN of the service, along with the port.
+
+Use this option to configure FQDNs of image registries for the testsuite to access.
+
+If the CNF's helm charts use the image url `foobar:5000/hello:latest`, then please use the configuration in below in `cnf-testsuite.yml` to provide the FQDN mapping for the image registry.
+
+```yaml
+image_registry_fqdns:
+    "foobar:5000": "foobar.default.svc.cluster.local:5000"
+```
+
+> *The above example assumes that the `foobar` registry service is running on the `default` namespace.*
+
+#### `docker_insecure_registries`
+
+The docker client expects the image registries to be using an HTTPS API endpoint. This option is used to configure insecure registries that the docker client should be allowed to access.
+
+Please use this option to configure Docker to use HTTP to access the registry API.
+
+For an image registry service named `foobar`, running in `default` namespace, on port `5000`, the following would be the expected configuration.
+
+```yaml
+docker_insecure_registries: ["foobar.default.svc.cluster.local:5000"]
+```

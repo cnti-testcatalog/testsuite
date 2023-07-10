@@ -9,15 +9,14 @@ desc "Sets up Kubescape in the K8s Cluster"
 task "install_kubescape", ["kubescape_framework_download"] do |_, args|
   Log.info {"install_kubescape"}
   # version = `curl --silent "https://api.github.com/repos/armosec/kubescape/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'`
-  current_dir = FileUtils.pwd 
-  FileUtils.mkdir_p("#{current_dir}/#{TOOLS_DIR}/kubescape") 
-  unless File.exists?("#{current_dir}/#{TOOLS_DIR}/kubescape/kubescape")
-    write_file = "#{current_dir}/#{TOOLS_DIR}/kubescape/kubescape"
+  FileUtils.mkdir_p("#{tools_path}/kubescape")
+  unless File.exists?("#{tools_path}/kubescape/kubescape")
+    write_file = "#{tools_path}/kubescape/kubescape"
     Log.info { "write_file: #{write_file}" }
     if args.named["offline"]?
         Log.info { "kubescape install offline mode" }
       `cp #{TarClient::TAR_DOWNLOAD_DIR}/kubescape-ubuntu-latest #{write_file}`
-      `cp #{TarClient::TAR_DOWNLOAD_DIR}/nsa.json #{current_dir}/#{TOOLS_DIR}/kubescape/`
+      `cp #{TarClient::TAR_DOWNLOAD_DIR}/nsa.json #{tools_path}/kubescape/`
       stderr = IO::Memory.new
       status = Process.run("chmod +x #{write_file}", shell: true, output: stderr, error: stderr)
       success = status.success?
@@ -45,8 +44,8 @@ task "kubescape_framework_download" do |_, args|
   current_dir = FileUtils.pwd 
   # Download framework file using Github token if the GITHUB_TOKEN env var is present
 
-  FileUtils.mkdir_p("#{current_dir}/#{TOOLS_DIR}/kubescape") 
-  framework_path = "#{current_dir}/#{TOOLS_DIR}/kubescape/nsa.json"
+  FileUtils.mkdir_p("#{tools_path}/kubescape")
+  framework_path = "#{tools_path}/kubescape/nsa.json"
   unless File.exists?(framework_path)
     asset_url = "https://github.com/armosec/regolibrary/releases/download/v#{KUBESCAPE_FRAMEWORK_VERSION}/nsa"
 
@@ -63,5 +62,5 @@ desc "Uninstall Kubescape"
 task "uninstall_kubescape" do |_, args|
   current_dir = FileUtils.pwd 
   Log.for("verbose").info { "uninstall_kubescape" } if check_verbose(args)
-  FileUtils.rm_rf("#{current_dir}/#{TOOLS_DIR}/kubescape")
+  FileUtils.rm_rf("#{tools_path}/kubescape")
 end

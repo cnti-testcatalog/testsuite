@@ -3,7 +3,6 @@ require "./utils/embedded_file_manager.cr"
 ESSENTIAL_PASSING_SCORE = 1000
 CNF_DIR = "cnfs"
 CONFIG_FILE = "cnf-testsuite.yml"
-TOOLS_DIR = "tools"
 BASE_CONFIG = "./config.yml"
 OFFLINE_MANIFESTS_PATH = "/tmp/manifests"
 PASSED = "passed"
@@ -27,7 +26,6 @@ TESTSUITE_NAMESPACE = "cnf-testsuite"
 
 #Embedded global text variables
 EmbeddedFileManager.node_failure_values
-EmbeddedFileManager.dockerd_manifest
 EmbeddedFileManager.falco_rules
 EmbeddedFileManager.reboot_daemon
 EmbeddedFileManager.chaos_network_loss
