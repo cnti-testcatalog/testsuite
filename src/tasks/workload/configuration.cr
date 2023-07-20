@@ -45,9 +45,9 @@ task "require_labels" do |_, args|
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
 
     if failures.size == 0
-      resp = upsert_passed_task("require_labels", "✔️  PASSED: Pods have the app.kubernetes.io/name label #{emoji_passed}")
+      resp = upsert_passed_task("require_labels", "✔️  PASSED: Pods have the app.kubernetes.io/name label #{emoji_passed}", Time.utc)
     else
-      resp = upsert_failed_task("require_labels", "✖️  FAILED: Pods should have the app.kubernetes.io/name label. #{emoji_failed}")
+      resp = upsert_failed_task("require_labels", "✖️  FAILED: Pods should have the app.kubernetes.io/name label. #{emoji_failed}", Time.utc)
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -71,9 +71,9 @@ task "default_namespace" do |_, args|
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
 
     if failures.size == 0
-      resp = upsert_passed_task("default_namespace", "✔️  PASSED: default namespace is not being used #{emoji_passed}")
+      resp = upsert_passed_task("default_namespace", "✔️  PASSED: default namespace is not being used #{emoji_passed}", Time.utc)
     else
-      resp = upsert_failed_task("default_namespace", "✖️  FAILED: Resources are created in the default namespace #{emoji_failed}")
+      resp = upsert_failed_task("default_namespace", "✖️  FAILED: Resources are created in the default namespace #{emoji_failed}", Time.utc)
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -98,9 +98,9 @@ task "latest_tag" do |_, args|
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
 
     if failures.size == 0
-      resp = upsert_passed_task("latest_tag", "✔️  🏆 PASSED: Container images are not using the latest tag #{emoji_passed}")
+      resp = upsert_passed_task("latest_tag", "✔️  🏆 PASSED: Container images are not using the latest tag #{emoji_passed}", Time.utc)
     else
-      resp = upsert_failed_task("latest_tag", "✖️  🏆 FAILED: Container images are using the latest tag #{emoji_failed}")
+      resp = upsert_failed_task("latest_tag", "✖️  🏆 FAILED: Container images are using the latest tag #{emoji_failed}", Time.utc)
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -143,16 +143,16 @@ task "ip_addresses" do |_, args|
           matching_line = line_parts.join(":").strip()
           stdout_failure("  * In file #{file_name}: #{matching_line}")
         end
-        resp = upsert_failed_task("ip_addresses","✖️  FAILED: IP addresses found")
+        resp = upsert_failed_task("ip_addresses","✖️  FAILED: IP addresses found", Time.utc)
       else
-        resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
+        resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found", Time.utc)
       end
       resp
     else
       # TODO If no helm chart directory, exit with 0 points
       # ADD SKIPPED tag for points.yml to allow for 0 points
       Dir.cd(cdir)
-      resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
+      resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found", Time.utc)
     end
   end
 end
@@ -204,9 +204,9 @@ task "versioned_tag", ["install_opa"] do |_, args|
     emoji_non_versioned_tag="🏷️❌"
 
     if task_response
-      upsert_passed_task("versioned_tag", "✔️  PASSED: Container images use versioned tags #{emoji_versioned_tag}")
+      upsert_passed_task("versioned_tag", "✔️  PASSED: Container images use versioned tags #{emoji_versioned_tag}", Time.utc)
     else
-      upsert_failed_task("versioned_tag", "✖️  FAILED: Container images do not use versioned tags #{emoji_non_versioned_tag}")
+      upsert_failed_task("versioned_tag", "✖️  FAILED: Container images do not use versioned tags #{emoji_non_versioned_tag}", Time.utc)
       fail_msgs.each do |msg|
         stdout_failure(msg)
       end
@@ -242,9 +242,9 @@ task "nodeport_not_used" do |_, args|
       end
     end
     if task_response
-      upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used")
+      upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used", Time.utc)
     else
-      upsert_failed_task("nodeport_not_used", "✖️  FAILED: NodePort is being used")
+      upsert_failed_task("nodeport_not_used", "✖️  FAILED: NodePort is being used", Time.utc)
     end
   end
 end
@@ -289,9 +289,9 @@ task "hostport_not_used" do |_, args|
       test_passed
     end
     if task_response
-      upsert_passed_task("hostport_not_used", "✔️  🏆 PASSED: HostPort is not used")
+      upsert_passed_task("hostport_not_used", "✔️  🏆 PASSED: HostPort is not used", Time.utc)
     else
-      upsert_failed_task("hostport_not_used", "✖️  🏆 FAILED: HostPort is being used")
+      upsert_failed_task("hostport_not_used", "✖️  🏆 FAILED: HostPort is being used", Time.utc)
     end
   end
 end
@@ -330,12 +330,12 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     VERBOSE_LOGGING.info "IPs: #{ip_search}" if check_verbose(args)
 
     if ip_search.empty?
-      upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✔️  🏆 PASSED: No hard-coded IP addresses found in the runtime K8s configuration")
+      upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✔️  🏆 PASSED: No hard-coded IP addresses found in the runtime K8s configuration", Time.utc)
     else
-      upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  🏆 FAILED: Hard-coded IP addresses found in the runtime K8s configuration")
+      upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  🏆 FAILED: Hard-coded IP addresses found in the runtime K8s configuration", Time.utc)
     end
   rescue
-    upsert_skipped_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "⏭️  🏆 SKIPPED: unknown exception")
+    upsert_skipped_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "⏭️  🏆 SKIPPED: unknown exception", Time.utc)
   ensure
     KubectlClient::Delete.command("namespace hardcoded-ip-test --force --grace-period 0")
   end
@@ -432,9 +432,9 @@ task "secrets_used" do |_, args|
       test_passed
     end
     if task_response
-      resp = upsert_passed_task("secrets_used","✔️  ✨PASSED: Secrets defined and used #{emoji_probe}")
+      resp = upsert_passed_task("secrets_used","✔️  ✨PASSED: Secrets defined and used #{emoji_probe}", Time.utc)
     else
-      resp = upsert_skipped_task("secrets_used","⏭  ✨#{secrets_used_skipped_msg(emoji_probe)}")
+      resp = upsert_skipped_task("secrets_used","⏭  ✨#{secrets_used_skipped_msg(emoji_probe)}", Time.utc)
     end
     resp
   end
@@ -583,10 +583,10 @@ task "immutable_configmap" do |_, args|
       k8s_ver = KubectlClient.server_version
       if version_less_than(k8s_ver, "1.19.0")
         resp = " ⏭️  SKIPPED: immmutable configmaps are not supported in this k8s cluster.".colorize(:yellow)
-        upsert_skipped_task("immutable_configmap", resp)
+        upsert_skipped_task("immutable_configmap", resp, Time.utc)
       else
         resp = "✖️  FAILED: immmutable configmaps are not enabled in this k8s cluster.".colorize(:red)
-        upsert_failed_task("immutable_configmap", resp)
+        upsert_failed_task("immutable_configmap", resp, Time.utc)
       end
     else
 
@@ -620,10 +620,10 @@ task "immutable_configmap" do |_, args|
 
       if cnf_manager_workload_resource_task_response
         resp = "✔️  ✨PASSED: All volume or container mounted configmaps immutable #{emoji_probe}".colorize(:green)
-        upsert_passed_task("immutable_configmap", resp)
+        upsert_passed_task("immutable_configmap", resp, Time.utc)
       elsif immutable_configmap_supported
         resp = "✖️  ✨FAILED: Found mutable configmap(s) #{emoji_probe}".colorize(:red)
-        upsert_failed_task("immutable_configmap", resp)
+        upsert_failed_task("immutable_configmap", resp, Time.utc)
 
         # Print out any mutable configmaps mounted as volumes
         volumes_test_results.each do |result|
@@ -663,7 +663,7 @@ task "alpha_k8s_apis" do |_, args|
 
     # No offline support for this task for now
     if args.named["offline"]? && args.named["offline"]? != "false"
-      upsert_skipped_task("alpha_k8s_apis","⏭️  SKIPPED: alpha_k8s_apis chaos test skipped #{emoji}")
+      upsert_skipped_task("alpha_k8s_apis","⏭️  SKIPPED: alpha_k8s_apis chaos test skipped #{emoji}", Time.utc)
       next
     end
 
@@ -687,7 +687,7 @@ task "alpha_k8s_apis" do |_, args|
     # CNF setup failed on kind cluster. Inform in test output.
     unless cnf_setup_complete
       puts "CNF failed to install on apisnoop cluster".colorize(:red)
-      upsert_failed_task("alpha_k8s_apis", "✖️  FAILED: Could not check CNF for usage of Kubernetes alpha APIs #{emoji}")
+      upsert_failed_task("alpha_k8s_apis", "✖️  FAILED: Could not check CNF for usage of Kubernetes alpha APIs #{emoji}", Time.utc)
       next
     end
 
@@ -704,9 +704,9 @@ task "alpha_k8s_apis" do |_, args|
     api_count = result[:output].split("\n")[2].to_i
 
     if api_count == 0
-      upsert_passed_task("alpha_k8s_apis", "✔️  PASSED: CNF does not use Kubernetes alpha APIs #{emoji}")
+      upsert_passed_task("alpha_k8s_apis", "✔️  PASSED: CNF does not use Kubernetes alpha APIs #{emoji}", Time.utc)
     else
-      upsert_failed_task("alpha_k8s_apis", "✖️  FAILED: CNF uses Kubernetes alpha APIs #{emoji}")
+      upsert_failed_task("alpha_k8s_apis", "✖️  FAILED: CNF uses Kubernetes alpha APIs #{emoji}", Time.utc)
     end
   ensure
     if cluster_name != nil
@@ -783,9 +783,9 @@ task "operator_installed" do |_, args|
     emoji_big="🦖"
 
     if test_passed
-      upsert_passed_task("operator_installed", "✔️  PASSED: Operator is installed: #{emoji_small} #{emoji_image_size}")
+      upsert_passed_task("operator_installed", "✔️  PASSED: Operator is installed: #{emoji_small} #{emoji_image_size}", Time.utc)
     else
-      upsert_na_task("operator_installed", "✖️  NA: No Operators Found #{emoji_big} #{emoji_image_size}")
+      upsert_na_task("operator_installed", "✖️  NA: No Operators Found #{emoji_big} #{emoji_image_size}", Time.utc)
     end
   end
 end

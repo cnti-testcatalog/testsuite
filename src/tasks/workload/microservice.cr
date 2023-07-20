@@ -30,7 +30,7 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
     db_match = Netstat::Mariadb.match
     
     if db_match[:found] == false
-      upsert_na_task("shared_database", "⏭️  N/A: [shared_database] No MariaDB containers were found")
+      upsert_na_task("shared_database", "⏭️  N/A: [shared_database] No MariaDB containers were found", Time.utc)
       next
     end
 
@@ -98,9 +98,9 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
     failed_emoji = "(ভ_ভ) ރ 💾"
     passed_emoji = "🖥️  💾"
     if integrated_database_found 
-      upsert_failed_task("shared_database", "✖️  FAILED: Found a shared database #{failed_emoji}")
+      upsert_failed_task("shared_database", "✖️  FAILED: Found a shared database #{failed_emoji}", Time.utc)
     else
-      upsert_passed_task("shared_database", "✔️  PASSED: No shared database found #{passed_emoji}")
+      upsert_passed_task("shared_database", "✔️  PASSED: No shared database found #{passed_emoji}", Time.utc)
     end
   end
 end
@@ -181,9 +181,9 @@ task "reasonable_startup_time" do |_, args|
     Log.info { "startup_time: #{startup_time.to_i}" }
 
     if startup_time.to_i <= startup_time_limit
-      upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time #{emoji_fast}")
+      upsert_passed_task("reasonable_startup_time", "✔️  PASSED: CNF had a reasonable startup time #{emoji_fast}", Time.utc)
     else
-      upsert_failed_task("reasonable_startup_time", "✖️  FAILED: CNF had a startup time of #{startup_time} seconds #{emoji_slow}")
+      upsert_failed_task("reasonable_startup_time", "✖️  FAILED: CNF had a startup time of #{startup_time} seconds #{emoji_slow}", Time.utc)
     end
 
   end
@@ -204,7 +204,7 @@ task "reasonable_image_size" do |_, args|
       docker_insecure_registries = config.cnf_config[:docker_insecure_registries].not_nil!
     end
     unless Dockerd.install(docker_insecure_registries)
-      upsert_skipped_task("reasonable_image_size", "⏭️  SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install")
+      upsert_skipped_task("reasonable_image_size", "⏭️  SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install", Time.utc)
       next
     end
     Log.for("verbose").info { "reasonable_image_size" } if check_verbose(args)
@@ -298,9 +298,9 @@ task "reasonable_image_size" do |_, args|
     emoji_big="🦖"
 
     if task_response
-      upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good #{emoji_small} #{emoji_image_size}")
+      upsert_passed_task("reasonable_image_size", "✔️  PASSED: Image size is good #{emoji_small} #{emoji_image_size}", Time.utc)
     else
-      upsert_failed_task("reasonable_image_size", "✖️  FAILED: Image size too large #{emoji_big} #{emoji_image_size}")
+      upsert_failed_task("reasonable_image_size", "✖️  FAILED: Image size too large #{emoji_big} #{emoji_image_size}", Time.utc)
     end
   end
 end
@@ -412,9 +412,9 @@ task "single_process_type" do |_, args|
     emoji_big="🦖"
 
     if task_response
-      upsert_passed_task("single_process_type", "✔️  🏆 PASSED: Only one process type used #{emoji_small} #{emoji_image_size}")
+      upsert_passed_task("single_process_type", "✔️  🏆 PASSED: Only one process type used #{emoji_small} #{emoji_image_size}", Time.utc)
     else
-      upsert_failed_task("single_process_type", "✖️  🏆 FAILED: More than one process type used #{emoji_big} #{emoji_image_size}")
+      upsert_failed_task("single_process_type", "✖️  🏆 FAILED: More than one process type used #{emoji_big} #{emoji_image_size}", Time.utc)
     end
   end
 end
@@ -470,9 +470,9 @@ task "zombie_handled" do |_, args|
     emoji_big="🦖"
 
     if task_response
-      upsert_passed_task("zombie_handled", "✔️  🏆 PASSED: Zombie handled #{emoji_small} #{emoji_image_size}")
+      upsert_passed_task("zombie_handled", "✔️  🏆 PASSED: Zombie handled #{emoji_small} #{emoji_image_size}", Time.utc)
     else
-      upsert_failed_task("zombie_handled", "✖️  🏆 FAILED: Zombie not handled #{emoji_big} #{emoji_image_size}")
+      upsert_failed_task("zombie_handled", "✖️  🏆 FAILED: Zombie not handled #{emoji_big} #{emoji_image_size}", Time.utc)
     end
   end
 
@@ -646,9 +646,9 @@ task "sig_term_handled" do |_, args|
     emoji_big="🦖"
 
     if task_response
-      upsert_passed_task("sig_term_handled", "✔️  🏆 PASSED: Sig Term handled #{emoji_small} #{emoji_image_size}")
+      upsert_passed_task("sig_term_handled", "✔️  🏆 PASSED: Sig Term handled #{emoji_small} #{emoji_image_size}", Time.utc)
     else
-      upsert_failed_task("sig_term_handled", "✖️  🏆 FAILED: Sig Term not handled #{emoji_big} #{emoji_image_size}")
+      upsert_failed_task("sig_term_handled", "✖️  🏆 FAILED: Sig Term not handled #{emoji_big} #{emoji_image_size}", Time.utc)
     end
   end
 end
@@ -703,9 +703,9 @@ task "service_discovery" do |_, args|
     emoji_big="🦖"
 
     if test_passed
-      upsert_passed_task("service_discovery", "✔️  ✨PASSED: Some containers exposed as a service #{emoji_small} #{emoji_image_size}")
+      upsert_passed_task("service_discovery", "✔️  ✨PASSED: Some containers exposed as a service #{emoji_small} #{emoji_image_size}", Time.utc)
     else
-      upsert_failed_task("service_discovery", "✖️  ✨FAILED: No containers exposed as a service #{emoji_big} #{emoji_image_size}")
+      upsert_failed_task("service_discovery", "✖️  ✨FAILED: No containers exposed as a service #{emoji_big} #{emoji_image_size}", Time.utc)
     end
   end
 end
@@ -737,12 +737,12 @@ task "specialized_init_system", ["install_cluster_tools"] do |_, args|
     passed_emoji = "🖥️  🚀"
 
     if failed_cnf_resources.size > 0
-      upsert_failed_task(test_name, "✖️  FAILED: Containers do not use specialized init systems #{failed_emoji}")
+      upsert_failed_task(test_name, "✖️  FAILED: Containers do not use specialized init systems #{failed_emoji}", Time.utc)
       failed_cnf_resources.each do |init_info|
         stdout_failure "#{init_info.kind}/#{init_info.name} has container '#{init_info.container}' with #{init_info.init_cmd} as init process"
       end
     else
-      upsert_passed_task(test_name, "✔️  PASSED: Containers use specialized init systems #{passed_emoji}")
+      upsert_passed_task(test_name, "✔️  PASSED: Containers use specialized init systems #{passed_emoji}", Time.utc)
     end
 
   end

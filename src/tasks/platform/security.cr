@@ -20,9 +20,9 @@ namespace "platform" do
 
       emoji_security="🔓🔑"
       if test_report.failed_resources.size == 0
-        upsert_passed_task("control_plane_hardening", "✔️  PASSED: Control plane hardened #{emoji_security}")
+        upsert_passed_task("control_plane_hardening", "✔️  PASSED: Control plane hardened #{emoji_security}", Time.utc)
       else
-        resp = upsert_failed_task("control_plane_hardening", "✖️  FAILED: Control plane not hardened #{emoji_security}")
+        resp = upsert_failed_task("control_plane_hardening", "✖️  FAILED: Control plane not hardened #{emoji_security}", Time.utc)
         test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
         stdout_failure("Remediation: #{test_report.remediation}")
         resp
@@ -41,9 +41,9 @@ namespace "platform" do
 
       emoji_security="🔓🔑"
       if test_report.failed_resources.size == 0
-        upsert_passed_task("cluster_admin", "✔️  PASSED: No users with cluster admin role found #{emoji_security}")
+        upsert_passed_task("cluster_admin", "✔️  PASSED: No users with cluster admin role found #{emoji_security}", Time.utc)
       else
-        resp = upsert_failed_task("cluster_admin", "✖️  FAILED: Users with cluster admin role found #{emoji_security}")
+        resp = upsert_failed_task("cluster_admin", "✖️  FAILED: Users with cluster admin role found #{emoji_security}", Time.utc)
         test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
         stdout_failure("Remediation: #{test_report.remediation}")
         resp
@@ -63,9 +63,9 @@ namespace "platform" do
 
       emoji_security = "🔓🔑"
       if test_report.failed_resources.size == 0
-        upsert_passed_task("exposed_dashboard", "✔️  PASSED: No exposed dashboard found in the cluster #{emoji_security}")
+        upsert_passed_task("exposed_dashboard", "✔️  PASSED: No exposed dashboard found in the cluster #{emoji_security}", Time.utc)
       else
-        resp = upsert_failed_task("exposed_dashboard", "✖️  FAILED: Found exposed dashboard in the cluster #{emoji_security}")
+        resp = upsert_failed_task("exposed_dashboard", "✖️  FAILED: Found exposed dashboard in the cluster #{emoji_security}", Time.utc)
         test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
         stdout_failure("Remediation: #{test_report.remediation}")
         resp
@@ -84,9 +84,9 @@ namespace "platform" do
       failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
       if failures.size == 0
-        resp = upsert_passed_task("helm_tiller", "✔️  PASSED: No Helm Tiller containers are running #{emoji_security}")
+        resp = upsert_passed_task("helm_tiller", "✔️  PASSED: No Helm Tiller containers are running #{emoji_security}", Time.utc)
       else
-        resp = upsert_failed_task("helm_tiller", "✖️  FAILED: Containers with the Helm Tiller image are running #{emoji_security}")
+        resp = upsert_failed_task("helm_tiller", "✖️  FAILED: Containers with the Helm Tiller image are running #{emoji_security}", Time.utc)
         failures.each do |failure|
           failure.resources.each do |resource|
             puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)

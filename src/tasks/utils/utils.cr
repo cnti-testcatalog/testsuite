@@ -289,32 +289,32 @@ def update_yml(yml_file, top_level_key, value)
   end
 end
 
-def upsert_failed_task(task, message)
- CNFManager::Points.upsert_task(task, FAILED, CNFManager::Points.task_points(task, false))
+def upsert_failed_task(task, message, start_time)
+ CNFManager::Points.upsert_task(task, FAILED, CNFManager::Points.task_points(task, false), start_time)
   stdout_failure message
   message
 end
 
-def upsert_passed_task(task, message)
- CNFManager::Points.upsert_task(task, PASSED, CNFManager::Points.task_points(task))
+def upsert_passed_task(task, message, start_time)
+ CNFManager::Points.upsert_task(task, PASSED, CNFManager::Points.task_points(task), start_time)
   stdout_success message
   message
 end
 
-def upsert_skipped_task(task, message)
- CNFManager::Points.upsert_task(task, SKIPPED, CNFManager::Points.task_points(task, CNFManager::Points::Results::ResultStatus::Skipped))
+def upsert_skipped_task(task, message, start_time)
+ CNFManager::Points.upsert_task(task, SKIPPED, CNFManager::Points.task_points(task, CNFManager::Points::Results::ResultStatus::Skipped), start_time)
   stdout_warning message
   message
 end
 
-def upsert_na_task(task, message)
- CNFManager::Points.upsert_task(task, NA, CNFManager::Points.task_points(task, CNFManager::Points::Results::ResultStatus::NA))
+def upsert_na_task(task, message, start_time)
+ CNFManager::Points.upsert_task(task, NA, CNFManager::Points.task_points(task, CNFManager::Points::Results::ResultStatus::NA), start_time)
   stdout_warning message
   message
 end
 
-def upsert_dynamic_task(task, status : CNFManager::Points::Results::ResultStatus, message)
-  CNFManager::Points.upsert_task(task, status.to_s.downcase, CNFManager::Points.task_points(task, status))
+def upsert_dynamic_task(task, status : CNFManager::Points::Results::ResultStatus, message, start_time)
+  CNFManager::Points.upsert_task(task, status.to_s.downcase, CNFManager::Points.task_points(task, status), start_time)
   case status.to_s.downcase 
   when /pass/
     stdout_success message

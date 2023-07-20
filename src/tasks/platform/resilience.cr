@@ -43,7 +43,7 @@ namespace "platform" do
           pod_ready = KubectlClient::Get.pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[2]
           pod_ready_timeout = pod_ready_timeout - 1
           if pod_ready_timeout == 0
-            upsert_failed_task("worker_reboot_recovery", "✖️  FAILED: Failed to install reboot daemon")
+            upsert_failed_task("worker_reboot_recovery", "✖️  FAILED: Failed to install reboot daemon", Time.utc)
             exit 1
           end
           sleep 1
@@ -67,7 +67,7 @@ namespace "platform" do
           Log.info { "Node Ready Status: #{node_ready}" }
           node_failure_timeout = node_failure_timeout - 1
           if node_failure_timeout == 0
-            upsert_failed_task("worker_reboot_recovery", "✖️  FAILED: Node failed to go offline")
+            upsert_failed_task("worker_reboot_recovery", "✖️  FAILED: Node failed to go offline", Time.utc)
             exit 1
           end
           sleep 1
@@ -85,14 +85,14 @@ namespace "platform" do
           Log.info { "Node Ready Status: #{node_ready}" }
           node_online_timeout = node_online_timeout - 1
           if node_online_timeout == 0
-            upsert_failed_task("worker_reboot_recovery", "✖️  FAILED: Node failed to come back online")
+            upsert_failed_task("worker_reboot_recovery", "✖️  FAILED: Node failed to come back online", Time.utc)
             exit 1
           end
           sleep 1
         end
 
         emoji_worker_reboot_recovery=""
-        resp = upsert_passed_task("worker_reboot_recovery","✔️  PASSED: Node came back online #{emoji_worker_reboot_recovery}")
+        resp = upsert_passed_task("worker_reboot_recovery","✔️  PASSED: Node came back online #{emoji_worker_reboot_recovery}", Time.utc)
 
 
       ensure

@@ -382,7 +382,7 @@ module CNFManager
     end
 
 
-    def self.upsert_task(task, status, points)
+    def self.upsert_task(task, status, points, start_time)
       results = File.open("#{Results.file}") do |f|
         YAML.parse(f)
       end
@@ -394,6 +394,8 @@ module CNFManager
       end
       cmd = "#{Process.executable_path} #{ARGV.join(" ")}"
       Log.info {"cmd: #{cmd}"}
+      end_time = Time.utc
+      task_runtime = (end_time - start_time).seconds
       result_items << YAML.parse "{name: #{task}, status: #{status}, type: #{task_type_by_task(task)}, points: #{points}}"
       File.open("#{Results.file}", "w") do |f|
         YAML.dump({name: results["name"],
@@ -403,23 +405,26 @@ module CNFManager
                    command: cmd,
                    points: results["points"],
                    exit_code: results["exit_code"],
+                   start_time: start_time,
+                   end_time: end_time,
+                   task_runtime_seconds: task_runtime,
                    items: result_items}, f)
       end
-      Log.info { "upsert_task: task: #{task} has status: #{status} and is awarded: #{points} points" }
+      Log.info { "upsert_task: task: #{task} has status: #{status} and is awarded: #{points} points. Runtime: #{task_runtime} seconds" }
     end
 
     def self.failed_task(task, msg)
-      upsert_task(task, FAILED, task_points(task, false))
+      upsert_task(task, FAILED, task_points(task, false), start_time)
       stdout_failure "#{msg}"
     end
 
     def self.passed_task(task, msg)
-      upsert_task(task, PASSED, task_points(task))
+      upsert_task(task, PASSED, task_points(task), start_time)
       stdout_success "#{msg}"
     end
 
     def self.skipped_task(task, msg)
-      upsert_task(task, SKIPPED, task_points(task))
+      upsert_task(task, SKIPPED, task_points(task), start_time)
       stdout_success "#{msg}"
     end
 

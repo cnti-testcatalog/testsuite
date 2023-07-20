@@ -48,9 +48,9 @@ task "sysctls" do |_, args|
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
 
     if failures.size == 0
-      resp = upsert_passed_task("sysctls", "✔️  PASSED: No restricted values found for sysctls #{emoji_security}")
+      resp = upsert_passed_task("sysctls", "✔️  PASSED: No restricted values found for sysctls #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("sysctls", "✖️  FAILED: Restricted values for are being used for sysctls #{emoji_security}")
+      resp = upsert_failed_task("sysctls", "✖️  FAILED: Restricted values for are being used for sysctls #{emoji_security}", Time.utc)
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -73,9 +73,9 @@ task "external_ips" do |_, args|
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
     
     if failures.size == 0
-      resp = upsert_passed_task("external_ips", "✔️  PASSED: Services are not using external IPs #{emoji_security}")
+      resp = upsert_passed_task("external_ips", "✔️  PASSED: Services are not using external IPs #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("external_ips", "✖️  FAILED: Services are using external IPs #{emoji_security}")
+      resp = upsert_failed_task("external_ips", "✖️  FAILED: Services are using external IPs #{emoji_security}", Time.utc)
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -106,15 +106,15 @@ task "selinux_options" do |_, args|
     check_failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, check_failures)
 
     if check_failures.size == 0
-      # upsert_skipped_task("selinux_options", "⏭️  🏆 SKIPPED: Pods are not using SELinux options #{emoji_security}")
-      upsert_na_task("selinux_options", "⏭️  🏆 N/A: Pods are not using SELinux #{emoji_security}")
+      # upsert_skipped_task("selinux_options", "⏭️  🏆 SKIPPED: Pods are not using SELinux options #{emoji_security}", Time.utc)
+      upsert_na_task("selinux_options", "⏭️  🏆 N/A: Pods are not using SELinux #{emoji_security}", Time.utc)
     else
       failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, disallow_failures)
 
       if failures.size == 0
-        resp = upsert_passed_task("selinux_options", "✔️  🏆 PASSED: Pods are not using custom SELinux options that can be used for privilege escalations #{emoji_security}")
+        resp = upsert_passed_task("selinux_options", "✔️  🏆 PASSED: Pods are not using custom SELinux options that can be used for privilege escalations #{emoji_security}", Time.utc)
       else
-        resp = upsert_failed_task("selinux_options", "✖️  🏆 FAILED: Pods are using custom SELinux options that can be used for privilege escalations #{emoji_security}")
+        resp = upsert_failed_task("selinux_options", "✖️  🏆 FAILED: Pods are using custom SELinux options that can be used for privilege escalations #{emoji_security}", Time.utc)
         failures.each do |failure|
           failure.resources.each do |resource|
             puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -137,9 +137,9 @@ task "container_sock_mounts" do |_, args|
     failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
     if failures.size == 0
-      resp = upsert_passed_task("container_sock_mounts", "✔️  🏆 PASSED: Container engine daemon sockets are not mounted as volumes #{emoji_security}")
+      resp = upsert_passed_task("container_sock_mounts", "✔️  🏆 PASSED: Container engine daemon sockets are not mounted as volumes #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("container_sock_mounts", "✖️  🏆 FAILED: Container engine daemon sockets are mounted as volumes #{emoji_security}")
+      resp = upsert_failed_task("container_sock_mounts", "✖️  🏆 FAILED: Container engine daemon sockets are mounted as volumes #{emoji_security}", Time.utc)
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -155,7 +155,7 @@ task "non_root_user", ["install_falco"] do |_, args|
 
      unless KubectlClient::Get.resource_wait_for_install("Daemonset", "falco", namespace: TESTSUITE_NAMESPACE)
        Log.info { "Falco Failed to Start" }
-       upsert_skipped_task("non_root_user", "⏭️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).")
+       upsert_skipped_task("non_root_user", "⏭️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).", Time.utc)
        node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
        pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
 
@@ -201,9 +201,9 @@ task "non_root_user", ["install_falco"] do |_, args|
      emoji_root="√"
 
      if task_response
-       upsert_passed_task("non_root_user", "✔️  PASSED: Root user not found #{emoji_no_root}")
+       upsert_passed_task("non_root_user", "✔️  PASSED: Root user not found #{emoji_no_root}", Time.utc)
      else
-       upsert_failed_task("non_root_user", "✖️  FAILED: Root user found #{emoji_root}")
+       upsert_failed_task("non_root_user", "✖️  FAILED: Root user found #{emoji_root}", Time.utc)
      end
    end
 end
@@ -232,9 +232,9 @@ task "privileged" do |_, args|
     LOGGING.debug "violator list: #{violation_list.flatten}"
     emoji_security="🔓🔑"
     if task_response 
-      upsert_passed_task("privileged", "✔️  PASSED: No privileged containers #{emoji_security}")
+      upsert_passed_task("privileged", "✔️  PASSED: No privileged containers #{emoji_security}", Time.utc)
     else
-      upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers #{emoji_security}")
+      upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers #{emoji_security}", Time.utc)
       violation_list.each do |violation|
         stdout_failure("Privileged container #{violation[:container]} in #{violation[:kind]}/#{violation[:name]} in the #{violation[:namespace]} namespace")
       end
@@ -254,9 +254,9 @@ task "privilege_escalation", ["kubescape_scan"] do |_, args|
 
     emoji_security="🔓🔑"
     if test_report.failed_resources.size == 0 
-      upsert_passed_task("privilege_escalation", "✔️  PASSED: No containers that allow privilege escalation were found #{emoji_security}")
+      upsert_passed_task("privilege_escalation", "✔️  PASSED: No containers that allow privilege escalation were found #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("privilege_escalation", "✖️  FAILED: Found containers that allow privilege escalation #{emoji_security}")
+      resp = upsert_failed_task("privilege_escalation", "✖️  FAILED: Found containers that allow privilege escalation #{emoji_security}", Time.utc)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -276,9 +276,9 @@ task "symlink_file_system", ["kubescape_scan"] do |_, args|
 
     emoji_security="🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task("symlink_file_system", "✔️  PASSED: No containers allow a symlink attack #{emoji_security}")
+      upsert_passed_task("symlink_file_system", "✔️  PASSED: No containers allow a symlink attack #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("symlink_file_system", "✖️  FAILED: Found containers that allow a symlink attack #{emoji_security}")
+      resp = upsert_failed_task("symlink_file_system", "✖️  FAILED: Found containers that allow a symlink attack #{emoji_security}", Time.utc)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -298,9 +298,9 @@ task "application_credentials", ["kubescape_scan"] do |_, args|
 
     emoji_security="🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task("application_credentials", "✔️  PASSED: No applications credentials in configuration files #{emoji_security}")
+      upsert_passed_task("application_credentials", "✔️  PASSED: No applications credentials in configuration files #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("application_credentials", "✖️  FAILED: Found applications credentials in configuration files #{emoji_security}")
+      resp = upsert_failed_task("application_credentials", "✖️  FAILED: Found applications credentials in configuration files #{emoji_security}", Time.utc)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -320,9 +320,9 @@ task "host_network", ["kubescape_scan"] do |_, args|
 
     emoji_security="🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task("host_network", "✔️  PASSED: No host network attached to pod #{emoji_security}")
+      upsert_passed_task("host_network", "✔️  PASSED: No host network attached to pod #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("host_network", "✖️  FAILED: Found host network attached to pod #{emoji_security}")
+      resp = upsert_failed_task("host_network", "✖️  FAILED: Found host network attached to pod #{emoji_security}", Time.utc)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -342,9 +342,9 @@ task "service_account_mapping", ["kubescape_scan"] do |_, args|
 
     emoji_security="🔓🔑"
     if test_report.failed_resources.size == 0 
-      upsert_passed_task("service_account_mapping", "✔️  PASSED: No service accounts automatically mapped #{emoji_security}")
+      upsert_passed_task("service_account_mapping", "✔️  PASSED: No service accounts automatically mapped #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("service_account_mapping", "✖️  FAILED: Service accounts automatically mapped #{emoji_security}")
+      resp = upsert_failed_task("service_account_mapping", "✖️  FAILED: Service accounts automatically mapped #{emoji_security}", Time.utc)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -366,9 +366,9 @@ task "linux_hardening", ["kubescape_scan"] do |_, args|
 
     emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task("linux_hardening", "✔️  ✨PASSED: Security services are being used to harden applications #{emoji_security}")
+      upsert_passed_task("linux_hardening", "✔️  ✨PASSED: Security services are being used to harden applications #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("linux_hardening", "✖️  ✨FAILED: Found resources that do not use security services #{emoji_security}")
+      resp = upsert_failed_task("linux_hardening", "✖️  ✨FAILED: Found resources that do not use security services #{emoji_security}", Time.utc)
         test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
         stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -390,9 +390,9 @@ task "insecure_capabilities", ["kubescape_scan"] do |_, args|
 
     emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task("insecure_capabilities", "✔️  PASSED: Containers with insecure capabilities were not found #{emoji_security}")
+      upsert_passed_task("insecure_capabilities", "✔️  PASSED: Containers with insecure capabilities were not found #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("insecure_capabilities", "✖️  FAILED: Found containers with insecure capabilities #{emoji_security}")
+      resp = upsert_failed_task("insecure_capabilities", "✖️  FAILED: Found containers with insecure capabilities #{emoji_security}", Time.utc)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -414,9 +414,9 @@ task "resource_policies", ["kubescape_scan"] do |_, args|
 
     emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task("resource_policies", "✔️  🏆 PASSED: Containers have resource limits defined #{emoji_security}")
+      upsert_passed_task("resource_policies", "✔️  🏆 PASSED: Containers have resource limits defined #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("resource_policies", "✖️  🏆 FAILED: Found containers without resource limits defined #{emoji_security}")
+      resp = upsert_failed_task("resource_policies", "✖️  🏆 FAILED: Found containers without resource limits defined #{emoji_security}", Time.utc)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -438,9 +438,9 @@ task "ingress_egress_blocked", ["kubescape_scan"] do |_, args|
 
     emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task("ingress_egress_blocked", "✔️  ✨PASSED: Ingress and Egress traffic blocked on pods #{emoji_security}")
+      upsert_passed_task("ingress_egress_blocked", "✔️  ✨PASSED: Ingress and Egress traffic blocked on pods #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("ingress_egress_blocked", "✖️  ✨FAILED: Ingress and Egress traffic not blocked on pods #{emoji_security}")
+      resp = upsert_failed_task("ingress_egress_blocked", "✖️  ✨FAILED: Ingress and Egress traffic not blocked on pods #{emoji_security}", Time.utc)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -462,9 +462,9 @@ task "host_pid_ipc_privileges", ["kubescape_scan"] do |_, args|
 
     emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task("host_pid_ipc_privileges", "✔️  PASSED: No containers with hostPID and hostIPC privileges #{emoji_security}")
+      upsert_passed_task("host_pid_ipc_privileges", "✔️  PASSED: No containers with hostPID and hostIPC privileges #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("host_pid_ipc_privileges", "✖️  FAILED: Found containers with hostPID and hostIPC privileges #{emoji_security}")
+      resp = upsert_failed_task("host_pid_ipc_privileges", "✖️  FAILED: Found containers with hostPID and hostIPC privileges #{emoji_security}", Time.utc)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -486,9 +486,9 @@ task "non_root_containers", ["kubescape_scan"] do |_, args|
 
     emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task("non_root_containers", "✔️  🏆 PASSED: Containers are running with non-root user with non-root group membership #{emoji_security}")
+      upsert_passed_task("non_root_containers", "✔️  🏆 PASSED: Containers are running with non-root user with non-root group membership #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("non_root_containers", "✖️  🏆 FAILED: Found containers running with root user or user with root group membership #{emoji_security}")
+      resp = upsert_failed_task("non_root_containers", "✖️  🏆 FAILED: Found containers running with root user or user with root group membership #{emoji_security}", Time.utc)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -511,9 +511,9 @@ task "privileged_containers", ["kubescape_scan" ] do |_, args|
     emoji_security = "🔓🔑"
     #todo whitelist
     if test_report.failed_resources.size == 0
-      upsert_passed_task("privileged_containers", "✔️  🏆 PASSED: No privileged containers were found #{emoji_security}")
+      upsert_passed_task("privileged_containers", "✔️  🏆 PASSED: No privileged containers were found #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("privileged_containers", "✖️  🏆 FAILED: Found privileged containers #{emoji_security}")
+      resp = upsert_failed_task("privileged_containers", "✖️  🏆 FAILED: Found privileged containers #{emoji_security}", Time.utc)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -535,9 +535,9 @@ task "immutable_file_systems", ["kubescape_scan"] do |_, args|
 
     emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task("immutable_file_systems", "✔️  ✨PASSED: Containers have immutable file systems #{emoji_security}")
+      upsert_passed_task("immutable_file_systems", "✔️  ✨PASSED: Containers have immutable file systems #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("immutable_file_systems", "✖️  ✨FAILED: Found containers with mutable file systems #{emoji_security}")
+      resp = upsert_failed_task("immutable_file_systems", "✖️  ✨FAILED: Found containers with mutable file systems #{emoji_security}", Time.utc)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -559,9 +559,9 @@ task "hostpath_mounts", ["kubescape_scan"] do |_, args|
 
     emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task("hostpath_mounts", "✔️  PASSED: Containers do not have hostPath mounts #{emoji_security}")
+      upsert_passed_task("hostpath_mounts", "✔️  PASSED: Containers do not have hostPath mounts #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("hostpath_mounts", "✖️  FAILED: Found containers with hostPath mounts #{emoji_security}")
+      resp = upsert_failed_task("hostpath_mounts", "✖️  FAILED: Found containers with hostPath mounts #{emoji_security}", Time.utc)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp

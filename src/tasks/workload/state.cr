@@ -329,11 +329,11 @@ task "node_drain", ["install_litmus"] do |t, args|
     end
     if skipped
       Log.for("verbose").warn{"The node_drain test needs minimum 2 schedulable nodes, current number of nodes: #{KubectlClient::Get.schedulable_nodes_list.size}"} if check_verbose(args)
-      resp = upsert_skipped_task("node_drain","⏭️  🏆 SKIPPED: node_drain chaos test requires the cluster to have atleast two schedulable nodes 🗡️💀♻️")
+      resp = upsert_skipped_task("node_drain","⏭️  🏆 SKIPPED: node_drain chaos test requires the cluster to have atleast two schedulable nodes 🗡️💀♻️", Time.utc)
     elsif task_response
-      resp = upsert_passed_task("node_drain","✔️  🏆 PASSED: node_drain chaos test passed 🗡️💀♻️")
+      resp = upsert_passed_task("node_drain","✔️  🏆 PASSED: node_drain chaos test passed 🗡️💀♻️", Time.utc)
     else
-      resp = upsert_failed_task("node_drain","✖️  🏆 FAILED: node_drain chaos test failed 🗡️💀♻️")
+      resp = upsert_failed_task("node_drain","✖️  🏆 FAILED: node_drain chaos test failed 🗡️💀♻️", Time.utc)
     end
   end
 end
@@ -367,11 +367,11 @@ task "elastic_volumes" do |_, args|
 
     Log.for("elastic_volumes:result").info { "Volumes used: #{volumes_used}; Elastic?: #{elastic_volumes_used}" }
     if volumes_used == false
-      resp = upsert_skipped_task("elastic_volumes","⏭️  ✨SKIPPED: No volumes used #{emoji_probe}")
+      resp = upsert_skipped_task("elastic_volumes","⏭️  ✨SKIPPED: No volumes used #{emoji_probe}", Time.utc)
     elsif elastic_volumes_used
-      resp = upsert_passed_task("elastic_volumes","✔️  ✨PASSED: Elastic Volumes Used #{emoji_probe}")
+      resp = upsert_passed_task("elastic_volumes","✔️  ✨PASSED: Elastic Volumes Used #{emoji_probe}", Time.utc)
     else
-      resp = upsert_failed_task("elastic_volumes","✔️  ✨FAILED: Volumes used are not elastic volumes #{emoji_probe}")
+      resp = upsert_failed_task("elastic_volumes","✔️  ✨FAILED: Volumes used are not elastic volumes #{emoji_probe}", Time.utc)
     end
     resp
   end
@@ -426,17 +426,17 @@ task "database_persistence" do |_, args|
       end
       failed_emoji = "(ভ_ভ) ރ 💾"
       if elastic_statefulset
-        resp = upsert_dynamic_task("database_persistence",CNFManager::Points::Results::ResultStatus::Pass5, "✔️  PASSED: Elastic Volumes and Statefulsets Used #{emoji_probe}")
+        resp = upsert_dynamic_task("database_persistence",CNFManager::Points::Results::ResultStatus::Pass5, "✔️  PASSED: Elastic Volumes and Statefulsets Used #{emoji_probe}", Time.utc)
       elsif elastic_volume_used 
-        resp = upsert_dynamic_task("database_persistence",CNFManager::Points::Results::ResultStatus::Pass3,"✔️  PASSED: Elastic Volumes Used #{emoji_probe}")
+        resp = upsert_dynamic_task("database_persistence",CNFManager::Points::Results::ResultStatus::Pass3,"✔️  PASSED: Elastic Volumes Used #{emoji_probe}", Time.utc)
       elsif statefulset_exists
-        resp = upsert_dynamic_task("database_persistence",CNFManager::Points::Results::ResultStatus::Neutral, "✖️  FAILED: Statefulset used without an elastic volume #{failed_emoji}")
+        resp = upsert_dynamic_task("database_persistence",CNFManager::Points::Results::ResultStatus::Neutral, "✖️  FAILED: Statefulset used without an elastic volume #{failed_emoji}", Time.utc)
       else
-        resp = upsert_failed_task("database_persistence","✖️  FAILED: Elastic Volumes Not Used #{failed_emoji}")
+        resp = upsert_failed_task("database_persistence","✖️  FAILED: Elastic Volumes Not Used #{failed_emoji}", Time.utc)
       end
 
     else
-      resp = upsert_skipped_task("database_persistence", "⏭️  SKIPPED: Mysql not installed #{emoji_probe}")
+      resp = upsert_skipped_task("database_persistence", "⏭️  SKIPPED: Mysql not installed #{emoji_probe}", Time.utc)
     end
     resp
   end
@@ -482,9 +482,9 @@ task "volume_hostpath_not_found" do |_, args|
     end
 
     if task_response.any?(false)
-      upsert_failed_task("volume_hostpath_not_found","✖️  FAILED: hostPath volumes found #{failed_emoji}")
+      upsert_failed_task("volume_hostpath_not_found","✖️  FAILED: hostPath volumes found #{failed_emoji}", Time.utc)
     else
-      upsert_passed_task("volume_hostpath_not_found","✔️  PASSED: hostPath volumes not found #{passed_emoji}")
+      upsert_passed_task("volume_hostpath_not_found","✔️  PASSED: hostPath volumes not found #{passed_emoji}", Time.utc)
     end
   end
 end
@@ -546,9 +546,9 @@ task "no_local_volume_configuration" do |_, args|
     end
 
     if task_response.any?(false) 
-      upsert_failed_task("no_local_volume_configuration","✖️  ✨FAILED: local storage configuration volumes found #{failed_emoji}")
+      upsert_failed_task("no_local_volume_configuration","✖️  ✨FAILED: local storage configuration volumes found #{failed_emoji}", Time.utc)
     else
-      upsert_passed_task("no_local_volume_configuration","✔️  ✨PASSED: local storage configuration volumes not found #{passed_emoji}")
+      upsert_passed_task("no_local_volume_configuration","✔️  ✨PASSED: local storage configuration volumes not found #{passed_emoji}", Time.utc)
     end
   end
 end
