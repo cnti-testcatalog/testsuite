@@ -8,6 +8,9 @@ require "file_utils"
 require "sam"
 require "json"
 
+OPERATOR_JSON_FILE = "operator.json"
+MANAGER_JSON_FILE = "manager.json"
+
 describe "Operator" do
 
   describe "pre OLM install" do
@@ -42,9 +45,6 @@ describe "Operator" do
 
     after_all do
       # uninstall OLM
-      OPERATOR_JSON_FILE = "operator.json"
-      MANAGER_JSON_FILE = "manager.json"
-      
       pods = KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("catalog-operator", "operator-lifecycle-manager"), "operator-lifecycle-manager") + KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("olm-operator", "operator-lifecycle-manager"), "operator-lifecycle-manager") + KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("packageserver", "operator-lifecycle-manager"), "operator-lifecycle-manager")
 
       Helm.uninstall("operator")
@@ -110,7 +110,7 @@ describe "Operator" do
       end
     end
 
-    it "'operator_privileged' test privileged operator NOT being used", tags: ["operator_test","operator_privileged"] do
+    it "'operator_privileged' test privileged operator NOT being used", tags: ["operator_privileged"] do
       begin
         LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-path=./sample-cnfs/sample_operator`
         $?.success?.should be_true
@@ -123,7 +123,7 @@ describe "Operator" do
       end
     end
 
-    it "'operator_privileged' test if a privileged operator is being used", tags: ["operator_test", "operator_privileged"] do
+    it "'operator_privileged' test if a privileged operator is being used", tags: ["operator_privileged"] do
       begin
         LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-path=./sample-cnfs/sample_privileged_operator`
         $?.success?.should be_true
