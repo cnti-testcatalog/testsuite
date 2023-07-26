@@ -1,0 +1,4 @@
+---
+release_name: simple-privileged-operator
+helm_directory: /chart
+helm_install_namespace: simple-privileged-operator

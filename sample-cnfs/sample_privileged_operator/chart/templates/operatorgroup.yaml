@@ -1,0 +1,8 @@
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: operatorgroup
+  namespace: simple-privileged-operator
+spec:
+  targetNamespaces:
+  - simple-privileged-operator
