@@ -27,7 +27,7 @@ describe "Operator" do
 
   describe "post OLM install" do
     install_dir = "#{tools_path}/olm"
-    
+
     before_all do
       # Install OLM
       if Dir.exists?("#{install_dir}/olm/.git")
@@ -42,10 +42,14 @@ describe "Operator" do
 
     after_all do
       # uninstall OLM
+      OPERATOR_JSON_FILE = "operator.json"
+      MANAGER_JSON_FILE = "manager.json"
+      
       pods = KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("catalog-operator", "operator-lifecycle-manager"), "operator-lifecycle-manager") + KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("olm-operator", "operator-lifecycle-manager"), "operator-lifecycle-manager") + KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("packageserver", "operator-lifecycle-manager"), "operator-lifecycle-manager")
 
       Helm.uninstall("operator")
       # TODO: get the correct operator version from whatever file or api so we can delete it properly
+      # will require updating KubectlClient::Get to support custom resources
       KubectlClient::Delete.command("csv prometheusoperator.0.47.0")
 
       pods.map do |pod|
@@ -59,14 +63,14 @@ describe "Operator" do
       wait_count = 20
       delete = false
       until delete || second_count > wait_count.to_i
-        File.write("operator.json", "#{KubectlClient::Get.namespaces("operators").to_json}")
-        json = File.open("operator.json") do |file|
+        File.write(OPERATOR_JSON_FILE, "#{KubectlClient::Get.namespaces("operators").to_json}")
+        json = File.open(OPERATOR_JSON_FILE) do |file|
           JSON.parse(file)
         end
         json.as_h.delete("spec")
-        File.write("operator.json", "#{json.to_json}")
-        Log.info { "Uninstall Namespace Finalizer" }
-        if KubectlClient::Replace.command("--raw '/api/v1/namespaces/operators/finalize' -f ./operator.json")[:status].success?
+        File.write(OPERATOR_JSON_FILE, "#{json.to_json}")
+        Log.info { `Uninstall Namespace Finalizer #{OPERATOR_JSON_FILE}` }
+        if KubectlClient::Replace.command(`--raw '/api/v1/namespaces/operators/finalize' -f #{OPERATOR_JSON_FILE}`)[:status].success?
           delete = true
         end
         sleep 3
@@ -76,18 +80,21 @@ describe "Operator" do
       wait_count = 20
       delete = false
       until delete || second_count > wait_count.to_i
-        File.write("manager.json", "#{KubectlClient::Get.namespaces("operator-lifecycle-manager").to_json}")
-        json = File.open("manager.json") do |file|
+        File.write(MANAGER_JSON_FILE, "#{KubectlClient::Get.namespaces("operator-lifecycle-manager").to_json}")
+        json = File.open(MANAGER_JSON_FILE) do |file|
           JSON.parse(file)
         end
         json.as_h.delete("spec")
-        File.write("manager.json", "#{json.to_json}")
-        Log.info { "Uninstall Namespace Finalizer" }
-        if KubectlClient::Replace.command("--raw '/api/v1/namespaces/operator-lifecycle-manager/finalize' -f ./manager.json")[:status].success?
+        File.write(MANAGER_JSON_FILE, "#{json.to_json}")
+        Log.info { `Uninstall Namespace Finalizer #{MANAGER_JSON_FILE}` }
+        if KubectlClient::Replace.command(`--raw '/api/v1/namespaces/operator-lifecycle-manager/finalize' -f #{MANAGER_JSON_FILE}`)[:status].success?
           delete = true
         end
         sleep 3
       end
+
+      File.delete(OPERATOR_JSON_FILE)
+      File.delete(MANAGER_JSON_FILE)
     end
 
     it "'operator_test' test if operator is being used", tags: ["operator_test"] do
@@ -103,7 +110,7 @@ describe "Operator" do
       end
     end
 
-    it "'operator_privileged' test privileged operator NOT being used", tags: ["operator_test"] do
+    it "'operator_privileged' test privileged operator NOT being used", tags: ["operator_test","operator_privileged"] do
       begin
         LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-path=./sample-cnfs/sample_operator`
         $?.success?.should be_true
@@ -116,15 +123,15 @@ describe "Operator" do
       end
     end
 
-    it "'operator_privileged' test if a privileged operator is being used", tags: ["operator_test"] do
+    it "'operator_privileged' test if a privileged operator is being used", tags: ["operator_test", "operator_privileged"] do
       begin
-        LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-path=./sample-cnfs/sample_operator_privileged`
+        LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-path=./sample-cnfs/sample_privileged_operator`
         $?.success?.should be_true
         resp = `./cnf-testsuite -l info operator_privileged`
         Log.info { "#{resp}" }
         (/FAILED: Operator is running with privileged rights/ =~ resp).should_not be_nil
       ensure
-        LOGGING.info `./cnf-testsuite -l info cnf_cleanup cnf-path=./sample-cnfs/sample_operator_privileged`
+        LOGGING.info `./cnf-testsuite -l info cnf_cleanup cnf-path=./sample-cnfs/sample_privileged_operator`
         $?.success?.should be_true
       end
     end
