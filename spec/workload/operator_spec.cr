@@ -103,7 +103,7 @@ describe "Operator" do
       end
     end
 
-    it "'operator_privileged' test privileged operator NOT being used" do
+    it "'operator_privileged' test privileged operator NOT being used", tags: ["operator_test"] do
       begin
         LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-path=./sample-cnfs/sample_operator`
         $?.success?.should be_true
@@ -116,7 +116,7 @@ describe "Operator" do
       end
     end
 
-    it "'operator_privileged' test if a privileged operator is being used" do
+    it "'operator_privileged' test if a privileged operator is being used", tags: ["operator_test"] do
       begin
         LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-path=./sample-cnfs/sample_operator_privileged`
         $?.success?.should be_true
