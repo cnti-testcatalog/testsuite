@@ -7,36 +7,8 @@ require "helm"
 require "file_utils"
 require "sam"
 require "json"
+require "../../utils/operator.cr"
 
-def clear_namespaces(namespaces)
-  install_dir = "#{tools_path}/olm"
-  namespaces.each do |namespace|
-    namespace_file_name = "#{install_dir}/#{namespace}-namespace-k8s-api-output.json"
-
-    second_count = 0
-    wait_count = 20
-    delete = false
-    until delete || second_count > wait_count.to_i
-      File.write(namespace_file_name, "#{KubectlClient::Get.namespaces(namespace).to_json}")
-      json = File.open(namespace_file_name) do |file|
-        JSON.parse(file)
-      end
-      json.as_h.delete("spec")
-      File.write(namespace_file_name, "#{json.to_json}")
-      Log.info { `Uninstall Namespace Finalizer #{namespace_file_name}` }
-      if KubectlClient::Replace.command(`--raw '/api/v1/namespaces/operators/finalize' -f #{namespace_file_name}`)[:status].success?
-        delete = true
-      end
-
-      if second_count == wait_count.to_i
-        Log.error { "Failed to remove finalizer delete #{namespace} namespace please remove manually" }
-      end
-
-      second_count += 1
-      sleep 3
-    end
-  end
-end
 
 describe "Operator" do
   describe "pre OLM install" do
@@ -54,23 +26,25 @@ describe "Operator" do
     end
   end
 
-  describe "post OLM install" do
-    install_dir = "#{tools_path}/olm"
-    before_all do
-      # Install OLM
-      if Dir.exists?("#{install_dir}/olm/.git")
-        Log.info { "OLM already installed. Skipping git clone for OLM." }
-      else
-        GitClient.clone("https://github.com/operator-framework/operator-lifecycle-manager.git #{install_dir}")
-        `cd #{install_dir} && git fetch -a && git checkout tags/v0.22.0 && cd -`
-      end
-      
+  describe "OLM" do
+   it "install", tags: ["operator_setup"]  do
+      Operator::OLM.install
+    end
 
-      begin
-        Helm.install("operator --set olm.image.ref=quay.io/operator-framework/olm:v0.22.0 --set catalog.image.ref=quay.io/operator-framework/olm:v0.22.0 --set package.image.ref=quay.io/operator-framework/olm:v0.22.0 #{install_dir}/deploy/chart/")
-      rescue e : Helm::CannotReuseReleaseNameError
-        Log.info { "operator-lifecycle-manager already installed" }
-      end
+    it "cleans up", tags: ["operator_setup"]  do
+      # uninstall OLM
+      Operator::OLM.cleanup
+    end
+  end
+
+  describe "post OLM install" do
+    before_all do
+      Operator::OLM.install
+    end
+
+    after_all do
+      # uninstall OLM
+      Operator::OLM.cleanup
     end
 
     it "'operator_test' test if operator is being used", tags: ["operator_test"] do
@@ -111,22 +85,5 @@ describe "Operator" do
         $?.success?.should be_true
       end
     end
-  ensure
-    # uninstall OLM
-    pods = KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("catalog-operator", "operator-lifecycle-manager"), "operator-lifecycle-manager") + KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("olm-operator", "operator-lifecycle-manager"), "operator-lifecycle-manager") + KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("packageserver", "operator-lifecycle-manager"), "operator-lifecycle-manager")
-
-    Helm.uninstall("operator")
-    # TODO: get the correct operator version from whatever file or api so we can delete it properly
-    # will require updating KubectlClient::Get to support custom resources
-    KubectlClient::Delete.command("csv prometheusoperator.0.47.0")
-
-    pods.map do |pod|
-      pod_name = pod.dig("metadata", "name")
-      pod_namespace = pod.dig("metadata", "namespace")
-      Log.info { "Wait for Uninstall on Pod Name: #{pod_name}, Namespace: #{pod_namespace}" }
-      KubectlClient::Get.resource_wait_for_uninstall("Pod", "#{pod_name}", 180, "operator-lifecycle-manager")
-    end
-
-    clear_namespaces(["operators", "operator-lifecycle-manager"])
   end
 end
