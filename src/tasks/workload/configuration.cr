@@ -766,11 +766,10 @@ task "operator_installed" do |_, args|
   end
 end
 
-# TODO: write a spec test for this
 desc "Does the CNF install an Operator with privileged rights?"
 task "operator_privileged" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
-    Log.for("verbose").info { "operator_installed" } if check_verbose(args)
+    Log.for("verbose").info { "operator_privileged" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
 
 
