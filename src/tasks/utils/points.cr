@@ -395,7 +395,7 @@ module CNFManager
       cmd = "#{Process.executable_path} #{ARGV.join(" ")}"
       Log.info {"cmd: #{cmd}"}
       end_time = Time.utc
-      task_runtime = (end_time - start_time).seconds
+      task_runtime = (end_time - start_time).milliseconds
 
       # The task result info has to be appeneded to an array of YAML::Any
       # So encode it into YAML and parse it back again to assign it.
@@ -406,7 +406,7 @@ module CNFManager
         points: points,
         start_time: start_time,
         end_time: end_time,
-        task_runtime_seconds: task_runtime
+        task_runtime_milliseconds: task_runtime
       }.to_yaml
       result_items << YAML.parse(task_result_info)
       File.open("#{Results.file}", "w") do |f|
