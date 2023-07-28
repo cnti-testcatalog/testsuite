@@ -396,7 +396,16 @@ module CNFManager
       Log.info {"cmd: #{cmd}"}
       end_time = Time.utc
       task_runtime = (end_time - start_time).seconds
-      result_items << YAML.parse "{name: #{task}, status: #{status}, type: #{task_type_by_task(task)}, points: #{points}}"
+      task_result_info = {
+        name: task,
+        status: status,
+        type: task_type_by_task(task),
+        points: points,
+        start_time: start_time,
+        end_time: end_time,
+        task_runtime_seconds: task_runtime
+      }
+      result_items << task_result_info
       File.open("#{Results.file}", "w") do |f|
         YAML.dump({name: results["name"],
                    # testsuite_version: CnfTestSuite::VERSION,
@@ -405,9 +414,6 @@ module CNFManager
                    command: cmd,
                    points: results["points"],
                    exit_code: results["exit_code"],
-                   start_time: start_time,
-                   end_time: end_time,
-                   task_runtime_seconds: task_runtime,
                    items: result_items}, f)
       end
       Log.info { "upsert_task: task: #{task} has status: #{status} and is awarded: #{points} points. Runtime: #{task_runtime} seconds" }
