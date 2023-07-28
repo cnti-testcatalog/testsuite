@@ -399,19 +399,29 @@ module CNFManager
 
       # The task result info has to be appeneded to an array of YAML::Any
       # So encode it into YAML and parse it back again to assign it.
-      task_result_info = {
-        name: task,
-        status: status,
-        type: task_type_by_task(task),
-        points: points
-      }
-
+      #
+      # Only add task timestamps if the env var is set.
       if ENV.has_key?("TASK_TIMESTAMPS")
-        task_result_info[:start_time] = start_time
-        task_result_info[:end_time] = end_time
-        task_result_info[:task_runtime_milliseconds] = task_runtime
+        task_result_info = {
+          name: task,
+          status: status,
+          type: task_type_by_task(task),
+          points: points,
+          start_time: start_time,
+          end_time: end_time,
+          task_runtime_milliseconds: task_runtime
+        }
+        result_items << YAML.parse(task_result_info.to_yaml)
+      else
+        task_result_info = {
+          name: task,
+          status: status,
+          type: task_type_by_task(task),
+          points: points
+        }
+        result_items << YAML.parse(task_result_info.to_yaml)
       end
-      result_items << YAML.parse(task_result_info.to_yaml)
+
       File.open("#{Results.file}", "w") do |f|
         YAML.dump({name: results["name"],
                    # testsuite_version: CnfTestSuite::VERSION,
