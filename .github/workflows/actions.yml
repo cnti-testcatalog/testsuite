@@ -113,9 +113,8 @@ jobs:
         KIND_VERSION: v0.17.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
-        kind --version
-        which kind
-        sudo rm $(which kind)
+        echo "Existing kind binary path: $(which kind)"
+        if [[ -s $(which kind) ]]; then sudo rm $(which kind); fi
         wget -O kind "$KIND_URL/$KIND_VERSION/kind-linux-amd64" --progress=dot:giga; 
         chmod +x ./kind
         sudo mv ./kind /usr/local/bin/kind
@@ -222,9 +221,8 @@ jobs:
         KIND_VERSION: v0.17.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
-        kind --version
-        which kind
-        sudo rm $(which kind)
+        echo "Existing kind binary path: $(which kind)"
+        if [[ -s $(which kind) ]]; then sudo rm $(which kind); fi
         wget -O kind "$KIND_URL/$KIND_VERSION/kind-linux-amd64" --progress=dot:giga; 
         chmod +x ./kind
         sudo mv ./kind /usr/local/bin/kind
@@ -794,9 +792,8 @@ jobs:
         KIND_VERSION: v0.17.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
-        kind --version
-        which kind
-        sudo rm $(which kind)
+        echo "Existing kind binary path: $(which kind)"
+        if [[ -s $(which kind) ]]; then sudo rm $(which kind); fi
         wget -O kind "$KIND_URL/$KIND_VERSION/kind-linux-amd64" --progress=dot:giga; 
         chmod +x ./kind
         sudo mv ./kind /usr/local/bin/kind
@@ -875,9 +872,8 @@ jobs:
         KIND_VERSION: v0.17.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
-        kind --version
-        which kind
-        sudo rm $(which kind)
+        echo "Existing kind binary path: $(which kind)"
+        if [[ -s $(which kind) ]]; then sudo rm $(which kind); fi
         wget -O kind "$KIND_URL/$KIND_VERSION/kind-linux-amd64" --progress=dot:giga; 
         chmod +x ./kind
         sudo mv ./kind /usr/local/bin/kind
@@ -946,9 +942,8 @@ jobs:
         KIND_VERSION: v0.17.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
-        kind --version
-        which kind
-        sudo rm $(which kind)
+        echo "Existing kind binary path: $(which kind)"
+        if [[ -s $(which kind) ]]; then sudo rm $(which kind); fi
         wget -O kind "$KIND_URL/$KIND_VERSION/kind-linux-amd64" --progress=dot:giga; 
         chmod +x ./kind
         sudo mv ./kind /usr/local/bin/kind
