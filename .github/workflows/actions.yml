@@ -113,8 +113,7 @@ jobs:
         KIND_VERSION: v0.17.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
-        kind --version
-        which kind
+        echo $(which kind)
         sudo rm $(which kind)
         wget -O kind "$KIND_URL/$KIND_VERSION/kind-linux-amd64" --progress=dot:giga; 
         chmod +x ./kind
@@ -222,8 +221,7 @@ jobs:
         KIND_VERSION: v0.17.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
-        kind --version
-        which kind
+        echo $(which kind)
         sudo rm $(which kind)
         wget -O kind "$KIND_URL/$KIND_VERSION/kind-linux-amd64" --progress=dot:giga; 
         chmod +x ./kind
@@ -794,8 +792,7 @@ jobs:
         KIND_VERSION: v0.17.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
-        kind --version
-        which kind
+        echo $(which kind)
         sudo rm $(which kind)
         wget -O kind "$KIND_URL/$KIND_VERSION/kind-linux-amd64" --progress=dot:giga; 
         chmod +x ./kind
@@ -875,8 +872,7 @@ jobs:
         KIND_VERSION: v0.17.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
-        kind --version
-        which kind
+        echo $(which kind)
         sudo rm $(which kind)
         wget -O kind "$KIND_URL/$KIND_VERSION/kind-linux-amd64" --progress=dot:giga; 
         chmod +x ./kind
@@ -946,8 +942,7 @@ jobs:
         KIND_VERSION: v0.17.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
-        kind --version
-        which kind
+        echo $(which kind)
         sudo rm $(which kind)
         wget -O kind "$KIND_URL/$KIND_VERSION/kind-linux-amd64" --progress=dot:giga; 
         chmod +x ./kind
