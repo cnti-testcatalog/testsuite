@@ -396,6 +396,9 @@ module CNFManager
       Log.info {"cmd: #{cmd}"}
       end_time = Time.utc
       task_runtime = (end_time - start_time).seconds
+
+      # The task result info has to be appeneded to an array of YAML::Any
+      # So encode it into YAML and parse it back again to assign it.
       task_result_info = {
         name: task,
         status: status,
@@ -404,8 +407,8 @@ module CNFManager
         start_time: start_time,
         end_time: end_time,
         task_runtime_seconds: task_runtime
-      }
-      result_items << task_result_info
+      }.to_yaml
+      result_items << YAML.parse(task_result_info)
       File.open("#{Results.file}", "w") do |f|
         YAML.dump({name: results["name"],
                    # testsuite_version: CnfTestSuite::VERSION,
