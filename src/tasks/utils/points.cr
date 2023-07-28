@@ -403,12 +403,15 @@ module CNFManager
         name: task,
         status: status,
         type: task_type_by_task(task),
-        points: points,
-        start_time: start_time,
-        end_time: end_time,
-        task_runtime_milliseconds: task_runtime
-      }.to_yaml
-      result_items << YAML.parse(task_result_info)
+        points: points
+      }
+
+      if ENV.has_key?("TASK_TIMESTAMPS")
+        task_result_info[:start_time] = start_time
+        task_result_info[:end_time] = end_time
+        task_result_info[:task_runtime_milliseconds] = task_runtime
+      end
+      result_items << YAML.parse(task_result_info.to_yaml)
       File.open("#{Results.file}", "w") do |f|
         YAML.dump({name: results["name"],
                    # testsuite_version: CnfTestSuite::VERSION,
