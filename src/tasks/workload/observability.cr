@@ -38,9 +38,9 @@ task "log_output" do |_, args|
     emoji_observability="📶☠️"
 
     if task_response
-      upsert_passed_task("log_output", "✔️  🏆 PASSED: Resources output logs to stdout and stderr #{emoji_observability}")
+      upsert_passed_task("log_output", "✔️  🏆 PASSED: Resources output logs to stdout and stderr #{emoji_observability}", Time.utc)
     else
-      upsert_failed_task("log_output", "✖️  🏆 FAILED: Resources do not output logs to stdout and stderr #{emoji_observability}")
+      upsert_failed_task("log_output", "✖️  🏆 FAILED: Resources do not output logs to stdout and stderr #{emoji_observability}", Time.utc)
     end
   end
 end
@@ -157,12 +157,12 @@ task "prometheus_traffic" do |_, args|
       #  -- match ip address to cnf ip addresses
       # todo check if scrape_url is not an ip, assume it is a service, then do task (2)
       if prom_cnf_match
-        upsert_passed_task("prometheus_traffic","✔️  ✨PASSED: Your cnf is sending prometheus traffic #{emoji_observability}")
+        upsert_passed_task("prometheus_traffic","✔️  ✨PASSED: Your cnf is sending prometheus traffic #{emoji_observability}", Time.utc)
       else
-        upsert_failed_task("prometheus_traffic", "✖️  ✨FAILED: Your cnf is not sending prometheus traffic #{emoji_observability}")
+        upsert_failed_task("prometheus_traffic", "✖️  ✨FAILED: Your cnf is not sending prometheus traffic #{emoji_observability}", Time.utc)
       end
     else
-      upsert_skipped_task("prometheus_traffic", "⏭️  ✨SKIPPED: Prometheus server not found #{emoji_observability}")
+      upsert_skipped_task("prometheus_traffic", "⏭️  ✨SKIPPED: Prometheus server not found #{emoji_observability}", Time.utc)
     end
   end
 end
@@ -179,14 +179,14 @@ task "open_metrics", ["prometheus_traffic"] do |_, args|
       open_metrics_validated = configmap["data"].as_h["open_metrics_validated"].as_s
 
       if open_metrics_validated == "true"
-        upsert_passed_task("open_metrics","✔️  ✨PASSED: Your cnf's metrics traffic is OpenMetrics compatible #{emoji_observability}")
+        upsert_passed_task("open_metrics","✔️  ✨PASSED: Your cnf's metrics traffic is OpenMetrics compatible #{emoji_observability}", Time.utc)
       else
         open_metrics_response = configmap["data"].as_h["open_metrics_response"].as_s
         puts "OpenMetrics Failed: #{open_metrics_response}".colorize(:red)
-        upsert_failed_task("open_metrics", "✖️  ✨FAILED: Your cnf's metrics traffic is not OpenMetrics compatible #{emoji_observability}")
+        upsert_failed_task("open_metrics", "✖️  ✨FAILED: Your cnf's metrics traffic is not OpenMetrics compatible #{emoji_observability}", Time.utc)
       end
     else
-      upsert_skipped_task("open_metrics", "⏭️  ✨SKIPPED: Prometheus traffic not configured #{emoji_observability}")
+      upsert_skipped_task("open_metrics", "⏭️  ✨SKIPPED: Prometheus traffic not configured #{emoji_observability}", Time.utc)
     end
   end
 end
@@ -221,12 +221,12 @@ task "routed_logs", ["install_cluster_tools"] do |_, args|
         end
         Log.info { "all_resourced_logged: #{all_resourced_logged}" }
         if all_resourced_logged 
-          upsert_passed_task("routed_logs","✔️  ✨PASSED: Your cnf's logs are being captured #{emoji_observability}")
+          upsert_passed_task("routed_logs","✔️  ✨PASSED: Your cnf's logs are being captured #{emoji_observability}", Time.utc)
         else
-          upsert_failed_task("routed_logs", "✖️  ✨FAILED: Your cnf's logs are not being captured #{emoji_observability}")
+          upsert_failed_task("routed_logs", "✖️  ✨FAILED: Your cnf's logs are not being captured #{emoji_observability}", Time.utc)
         end
     else
-      upsert_skipped_task("routed_logs", "⏭️  ✨SKIPPED: Fluentd or FluentBit not configured #{emoji_observability}")
+      upsert_skipped_task("routed_logs", "⏭️  ✨SKIPPED: Fluentd or FluentBit not configured #{emoji_observability}", Time.utc)
     end
   end
 end
@@ -252,16 +252,16 @@ task "tracing" do |_, args|
         tracing_used = configmap["data"].as_h["tracing_used"].as_s
 
         if tracing_used == "true" 
-          upsert_passed_task("tracing", "✔️  ✨PASSED: Tracing used #{emoji_tracing_deploy}")
+          upsert_passed_task("tracing", "✔️  ✨PASSED: Tracing used #{emoji_tracing_deploy}", Time.utc)
         else
-          upsert_failed_task("tracing", "✖️  ✨FAILED: Tracing not used #{emoji_tracing_deploy}")
+          upsert_failed_task("tracing", "✖️  ✨FAILED: Tracing not used #{emoji_tracing_deploy}", Time.utc)
         end
       else
-        upsert_skipped_task("tracing", "⏭️  ✨SKIPPED: Jaeger not configured #{emoji_tracing_deploy}")
+        upsert_skipped_task("tracing", "⏭️  ✨SKIPPED: Jaeger not configured #{emoji_tracing_deploy}", Time.utc)
       end
     end
   else
-    upsert_failed_task("tracing", "✖️  ✨FAILED: No cnf_testsuite.yml found! Did you run the setup task?")
+    upsert_failed_task("tracing", "✖️  ✨FAILED: No cnf_testsuite.yml found! Did you run the setup task?", Time.utc)
   end
 end
 

@@ -58,7 +58,7 @@ describe "Utils" do
 
   it "'upsert_skipped_task' should put a 0 in the results file", tags: ["task_runner"]  do
     CNFManager::Points.clean_results_yml
-    resp = upsert_skipped_task("ip_addresses","✖️  FAILED: IP addresses found")
+    resp = upsert_skipped_task("ip_addresses","✖️  FAILED: IP addresses found", Time.utc)
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end
@@ -100,9 +100,9 @@ describe "Utils" do
       Log.debug { "violator list: #{violation_list.flatten}" }
       emoji_security=""
       if resource_response 
-        resp = upsert_passed_task("privileged", "✔️  PASSED: No privileged containers")
+        resp = upsert_passed_task("privileged", "✔️  PASSED: No privileged containers", Time.utc)
       else
-        resp = upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect}")
+        resp = upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect}", Time.utc)
       end
       Log.info { resp }
       resp
@@ -129,14 +129,14 @@ describe "Utils" do
         end
         Dir.cd(cdir)
         if response.to_s.size > 0
-          resp = upsert_failed_task("ip_addresses","✖️  FAILED: IP addresses found")
+          resp = upsert_failed_task("ip_addresses","✖️  FAILED: IP addresses found", Time.utc)
         else
-          resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
+          resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found", Time.utc)
         end
         resp
       else
         Dir.cd(cdir)
-        resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found")
+        resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found", Time.utc)
       end
     end
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
@@ -174,9 +174,9 @@ describe "Utils" do
       LOGGING.debug "violator list: #{violation_list.flatten}"
       emoji_security=""
       if resource_response 
-        resp = upsert_passed_task("privileged", "✔️  PASSED: No privileged containers")
+        resp = upsert_passed_task("privileged", "✔️  PASSED: No privileged containers", Time.utc)
       else
-        resp = upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect}")
+        resp = upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect}", Time.utc)
       end
       resp
     end

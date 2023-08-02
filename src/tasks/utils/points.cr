@@ -382,7 +382,7 @@ module CNFManager
     end
 
 
-    def self.upsert_task(task, status, points)
+    def self.upsert_task(task, status, points, start_time)
       results = File.open("#{Results.file}") do |f|
         YAML.parse(f)
       end
@@ -394,7 +394,34 @@ module CNFManager
       end
       cmd = "#{Process.executable_path} #{ARGV.join(" ")}"
       Log.info {"cmd: #{cmd}"}
-      result_items << YAML.parse "{name: #{task}, status: #{status}, type: #{task_type_by_task(task)}, points: #{points}}"
+      end_time = Time.utc
+      task_runtime = (end_time - start_time).milliseconds
+
+      # The task result info has to be appeneded to an array of YAML::Any
+      # So encode it into YAML and parse it back again to assign it.
+      #
+      # Only add task timestamps if the env var is set.
+      if ENV.has_key?("TASK_TIMESTAMPS")
+        task_result_info = {
+          name: task,
+          status: status,
+          type: task_type_by_task(task),
+          points: points,
+          start_time: start_time,
+          end_time: end_time,
+          task_runtime_milliseconds: task_runtime
+        }
+        result_items << YAML.parse(task_result_info.to_yaml)
+      else
+        task_result_info = {
+          name: task,
+          status: status,
+          type: task_type_by_task(task),
+          points: points
+        }
+        result_items << YAML.parse(task_result_info.to_yaml)
+      end
+
       File.open("#{Results.file}", "w") do |f|
         YAML.dump({name: results["name"],
                    # testsuite_version: CnfTestSuite::VERSION,
@@ -405,21 +432,21 @@ module CNFManager
                    exit_code: results["exit_code"],
                    items: result_items}, f)
       end
-      Log.info { "upsert_task: task: #{task} has status: #{status} and is awarded: #{points} points" }
+      Log.info { "upsert_task: task: #{task} has status: #{status} and is awarded: #{points} points. Runtime: #{task_runtime} seconds" }
     end
 
     def self.failed_task(task, msg)
-      upsert_task(task, FAILED, task_points(task, false))
+      upsert_task(task, FAILED, task_points(task, false), start_time)
       stdout_failure "#{msg}"
     end
 
     def self.passed_task(task, msg)
-      upsert_task(task, PASSED, task_points(task))
+      upsert_task(task, PASSED, task_points(task), start_time)
       stdout_success "#{msg}"
     end
 
     def self.skipped_task(task, msg)
-      upsert_task(task, SKIPPED, task_points(task))
+      upsert_task(task, SKIPPED, task_points(task), start_time)
       stdout_success "#{msg}"
     end
 

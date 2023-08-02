@@ -83,9 +83,9 @@ rolling_version_change_test_names.each do |tn|
       end
       VERBOSE_LOGGING.debug "#{tn}: task_response=#{task_response}" if check_verbose(args)
       if task_response
-        resp = upsert_passed_task("#{tn}","✔️  PASSED: CNF for #{pretty_test_name_capitalized} Passed" )
+        resp = upsert_passed_task("#{tn}","✔️  PASSED: CNF for #{pretty_test_name_capitalized} Passed", Time.utc)
       else
-        resp = upsert_failed_task("#{tn}", "✖️  FAILED: CNF for #{pretty_test_name_capitalized} Failed")
+        resp = upsert_failed_task("#{tn}", "✖️  FAILED: CNF for #{pretty_test_name_capitalized} Failed", Time.utc)
       end
       resp
       # TODO should we roll the image back to original version in an ensure?
@@ -172,9 +172,9 @@ task "rollback" do |_, args|
 
 
     if task_response && version_change_applied && rollout_status && rollback_status
-      upsert_passed_task("rollback","✔️  PASSED: CNF Rollback Passed" )
+      upsert_passed_task("rollback","✔️  PASSED: CNF Rollback Passed", Time.utc)
     else
-      upsert_failed_task("rollback", "✖️  FAILED: CNF Rollback Failed")
+      upsert_failed_task("rollback", "✖️  FAILED: CNF Rollback Failed", Time.utc)
     end
   end
 end
@@ -219,9 +219,9 @@ task "increase_decrease_capacity" do |t, args|
 
     if increase_task_response.none?(false) && decrease_task_response.none?(false)
       pass_msg = "✔️  🏆 PASSED: Replicas increased to #{increase_test_target_replicas} and decreased to #{decrease_test_target_replicas} #{emoji_capacity}"
-      upsert_passed_task("increase_decrease_capacity", pass_msg)
+      upsert_passed_task("increase_decrease_capacity", pass_msg, Time.utc)
     else
-      upsert_failed_task("increase_decrease_capacity", "✖️  FAILURE: Capacity change failed #{emoji_capacity}")
+      upsert_failed_task("increase_decrease_capacity", "✖️  FAILURE: Capacity change failed #{emoji_capacity}", Time.utc)
 
       # If increased capacity failed
       if increase_task_response.any?(false)
@@ -430,13 +430,13 @@ task "helm_deploy" do |_, args|
       helm_used = configmap["data"].as_h["helm_used"].as_s
 
       if helm_used == "true"
-        upsert_passed_task("helm_deploy", "✔️  PASSED: Helm deploy successful #{emoji_helm_deploy}")
+        upsert_passed_task("helm_deploy", "✔️  PASSED: Helm deploy successful #{emoji_helm_deploy}", Time.utc)
       else
-        upsert_failed_task("helm_deploy", "✖️  FAILED: Helm deploy failed #{emoji_helm_deploy}")
+        upsert_failed_task("helm_deploy", "✖️  FAILED: Helm deploy failed #{emoji_helm_deploy}", Time.utc)
       end
     end
   else
-    upsert_failed_task("helm_deploy", "✖️  FAILED: No cnf_testsuite.yml found! Did you run the setup task?")
+    upsert_failed_task("helm_deploy", "✖️  FAILED: No cnf_testsuite.yml found! Did you run the setup task?", Time.utc)
   end
 end
 
@@ -470,15 +470,15 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
         helm_search = helm_search_stdout.to_s
         Log.for("verbose").debug { "#{helm_search}" } if check_verbose(args)
         unless helm_search =~ /No results found/
-          upsert_passed_task("helm_chart_published", "✔️  PASSED: Published Helm Chart Found #{emoji_published_helm_chart}")
+          upsert_passed_task("helm_chart_published", "✔️  PASSED: Published Helm Chart Found #{emoji_published_helm_chart}", Time.utc)
         else
-          upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found #{emoji_published_helm_chart}")
+          upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found #{emoji_published_helm_chart}", Time.utc)
         end
       else
-        upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found #{emoji_published_helm_chart}")
+        upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found #{emoji_published_helm_chart}", Time.utc)
       end
     else
-      upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found #{emoji_published_helm_chart}")
+      upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found #{emoji_published_helm_chart}", Time.utc)
     end
   end
 end
@@ -526,9 +526,9 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     Log.for("verbose").debug { "helm_lint: #{helm_lint}" } if check_verbose(args)
 
     if helm_lint_status.success?
-      upsert_passed_task("helm_chart_valid", "✔️  PASSED: Helm Chart #{working_chart_directory} Lint Passed #{emoji_helm_lint}")
+      upsert_passed_task("helm_chart_valid", "✔️  PASSED: Helm Chart #{working_chart_directory} Lint Passed #{emoji_helm_lint}", Time.utc)
     else
-      upsert_failed_task("helm_chart_valid", "✖️  FAILED: Helm Chart #{working_chart_directory} Lint Failed #{emoji_helm_lint}")
+      upsert_failed_task("helm_chart_valid", "✖️  FAILED: Helm Chart #{working_chart_directory} Lint Failed #{emoji_helm_lint}", Time.utc)
     end
   end
 end
@@ -650,9 +650,9 @@ task "cni_compatible" do |_, args|
         puts "CNF failed to install on Cilium CNI cluster".colorize(:red) unless cilium_cnf_passed
 
         if calico_cnf_passed && cilium_cnf_passed
-          upsert_passed_task("cni_compatible", "✔️  PASSED: CNF compatible with both Calico and Cilium #{emoji_security}")
+          upsert_passed_task("cni_compatible", "✔️  PASSED: CNF compatible with both Calico and Cilium #{emoji_security}", Time.utc)
         else
-          upsert_failed_task("cni_compatible", "✖️  FAILED: CNF not compatible with either Calico or Cillium #{emoji_security}")
+          upsert_failed_task("cni_compatible", "✖️  FAILED: CNF not compatible with either Calico or Cillium #{emoji_security}", Time.utc)
         end
       ensure
         kind_manager = KindManager.new
@@ -661,7 +661,7 @@ task "cni_compatible" do |_, args|
         ENV["KUBECONFIG"]="#{kubeconfig_orig}"
       end
     else
-      upsert_skipped_task("cni_compatible", "✖️  SKIPPED: Docker not installed #{emoji_security}")
+      upsert_skipped_task("cni_compatible", "✖️  SKIPPED: Docker not installed #{emoji_security}", Time.utc)
     end
   end
 end

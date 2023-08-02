@@ -70,10 +70,10 @@ task "k8s_conformance" do |_, args|
 
     failed_count = ((results.match(/Failed: (.*)/)).try &.[1]) 
     if failed_count.to_s.to_i > 0 
-      upsert_failed_task("k8s_conformance", "✖️  FAILED: K8s conformance test has #{failed_count} failure(s)!")
+      upsert_failed_task("k8s_conformance", "✖️  FAILED: K8s conformance test has #{failed_count} failure(s)!", Time.utc)
 
     else
-      upsert_passed_task("k8s_conformance", "✔️  PASSED: K8s conformance test has no failures")
+      upsert_passed_task("k8s_conformance", "✔️  PASSED: K8s conformance test has no failures", Time.utc)
     end
   rescue ex
     Log.error { ex.message }
@@ -134,9 +134,9 @@ task "clusterapi_enabled" do |_, args|
     emoji_control="✨"
 
     if clusterapi_namespaces_json["items"]? && clusterapi_namespaces_json["items"].as_a.size > 0 && clusterapi_control_planes_json["items"]? && clusterapi_control_planes_json["items"].as_a.size > 0
-      resp = upsert_passed_task("clusterapi_enabled", "✔️ Cluster API is enabled #{emoji_control}")
+      resp = upsert_passed_task("clusterapi_enabled", "✔️ Cluster API is enabled #{emoji_control}", Time.utc)
     else
-      resp = upsert_failed_task("clusterapi_enabled", "✖️ Cluster API NOT enabled #{emoji_control}")
+      resp = upsert_failed_task("clusterapi_enabled", "✖️ Cluster API NOT enabled #{emoji_control}", Time.utc)
     end
 
     resp

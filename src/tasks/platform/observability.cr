@@ -32,10 +32,10 @@ namespace "platform" do
 
     if found
       emoji_kube_state_metrics="📶☠️"
-      upsert_passed_task("kube_state_metrics","✔️  PASSED: Your platform is using the release for kube state metrics #{emoji_kube_state_metrics}")
+      upsert_passed_task("kube_state_metrics","✔️  PASSED: Your platform is using the release for kube state metrics #{emoji_kube_state_metrics}", Time.utc)
     else
       emoji_kube_state_metrics="📶☠️"
-      upsert_failed_task("kube_state_metrics", "✖️  FAILED: Your platform does not have kube state metrics installed #{emoji_kube_state_metrics}")
+      upsert_failed_task("kube_state_metrics", "✖️  FAILED: Your platform does not have kube state metrics installed #{emoji_kube_state_metrics}", Time.utc)
     end
   end
 
@@ -57,10 +57,10 @@ namespace "platform" do
     Log.info { "Found Process: #{found}" }
     if found
       emoji_node_exporter="📶☠️"
-      upsert_passed_task("node_exporter","✔️  PASSED: Your platform is using the node exporter #{emoji_node_exporter}")
+      upsert_passed_task("node_exporter","✔️  PASSED: Your platform is using the node exporter #{emoji_node_exporter}", Time.utc)
     else
       emoji_node_exporter="📶☠️"
-      upsert_failed_task("node_exporter", "✖️  FAILED: Your platform does not have the node exporter installed #{emoji_node_exporter}")
+      upsert_failed_task("node_exporter", "✖️  FAILED: Your platform does not have the node exporter installed #{emoji_node_exporter}", Time.utc)
     end
   end
 
@@ -83,10 +83,10 @@ namespace "platform" do
 
     if found
       emoji_prometheus_adapter="📶☠️"
-      upsert_passed_task("prometheus_adapter","✔️  PASSED: Your platform is using the prometheus adapter #{emoji_prometheus_adapter}")
+      upsert_passed_task("prometheus_adapter","✔️  PASSED: Your platform is using the prometheus adapter #{emoji_prometheus_adapter}", Time.utc)
     else
       emoji_prometheus_adapter="📶☠️"
-      upsert_failed_task("prometheus_adapter", "✖️  FAILED: Your platform does not have the prometheus adapter installed #{emoji_prometheus_adapter}")
+      upsert_failed_task("prometheus_adapter", "✖️  FAILED: Your platform does not have the prometheus adapter installed #{emoji_prometheus_adapter}", Time.utc)
     end
   end
 
@@ -108,10 +108,10 @@ namespace "platform" do
       found = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::METRICS_SERVER)
       if found
         emoji_metrics_server="📶☠️"
-        upsert_passed_task("metrics_server","✔️  PASSED: Your platform is using the metrics server #{emoji_metrics_server}")
+        upsert_passed_task("metrics_server","✔️  PASSED: Your platform is using the metrics server #{emoji_metrics_server}", Time.utc)
       else
         emoji_metrics_server="📶☠️"
-        upsert_failed_task("metrics_server", "✖️  FAILED: Your platform does not have the metrics server installed #{emoji_metrics_server}")
+        upsert_failed_task("metrics_server", "✖️  FAILED: Your platform does not have the metrics server installed #{emoji_metrics_server}", Time.utc)
       end
     end
   end

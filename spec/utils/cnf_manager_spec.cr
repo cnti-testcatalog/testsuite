@@ -81,7 +81,7 @@ describe "SampleUtils" do
 
   it "'upsert_task' insert task in the results file", tags: ["tasks"]  do
     CNFManager::Points.clean_results_yml
-   CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
+   CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"), Time.utc)
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end
@@ -91,8 +91,8 @@ describe "SampleUtils" do
 
   it "'upsert_task' should find and update an existing task in the file", tags: ["tasks"]  do
     CNFManager::Points.clean_results_yml
-   CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
-   CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
+   CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"), Time.utc)
+   CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"), Time.utc)
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end
@@ -103,15 +103,15 @@ describe "SampleUtils" do
 
   it "'CNFManager::Points.total_points' should sum the total amount of points in the results", tags: ["points"] do
     CNFManager::Points.clean_results_yml
-   CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
+   CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"), Time.utc)
     (CNFManager::Points.total_points).should eq(100)
   end
 
   it "'CNFManager::Points.total_max_points' should not include na in the total potential points", tags: ["points"] do
     CNFManager::Points.clean_results_yml
-      upsert_passed_task("liveness", "✔️  PASSED: CNF had a reasonable startup time ")
+      upsert_passed_task("liveness", "✔️  PASSED: CNF had a reasonable startup time ", Time.utc)
     resp1 = CNFManager::Points.total_max_points
-      upsert_na_task("readiness", "✔️  NA")
+      upsert_na_task("readiness", "✔️  NA", Time.utc)
     resp2 = CNFManager::Points.total_max_points
    
     LOGGING.info "readiness points: #{CNFManager::Points.task_points("readiness").not_nil!.to_i}"
@@ -174,12 +174,12 @@ describe "SampleUtils" do
 
   it "'CNFManager::Points.all_result_test_names' should return the tasks assigned to a tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
-   CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
+   CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"), Time.utc)
     (CNFManager::Points.all_result_test_names(CNFManager::Points::Results.file)).should eq(["liveness"])
   end
   it "'CNFManager::Points.results_by_tag' should return a list of results by tag", tags: ["points"] do
     CNFManager::Points.clean_results_yml
-   CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"))
+   CNFManager::Points.upsert_task("liveness", PASSED, CNFManager::Points.task_points("liveness"), Time.utc)
     (CNFManager::Points.results_by_tag("resilience")).should eq([{"name" => "liveness", "status" => "passed", "type" => "essential", "points" => 100}])
     (CNFManager::Points.results_by_tag("does-not-exist")).should eq([] of YAML::Any) 
   end
