@@ -38,6 +38,7 @@ EmbeddedFileManager.constraint_template
 EmbeddedFileManager.disable_cni
 EmbeddedFileManager.fluentd_values
 EmbeddedFileManager.fluentbit_values
+EmbeddedFileManager.ues_values
 
 EXCLUDE_NAMESPACES = [
   "kube-system",
