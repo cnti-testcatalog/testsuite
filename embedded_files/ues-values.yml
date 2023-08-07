@@ -1,0 +1,19 @@
+amf:
+  hostname: open5gs-amf-ngap
+
+mcc: '999'
+mnc: '70'
+sst: 1
+sd: "0x111111"
+tac: '0001'
+
+ues:
+  enabled: true
+  count: 1
+  initialMSISDN: '0000000001'
+
+image:
+  registry: docker.io
+  repository: conformance/ueransim
+  tag: latest
+
