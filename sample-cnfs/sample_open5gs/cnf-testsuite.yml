@@ -1,0 +1,4 @@
+---
+helm_directory: open5gs
+release_name: open5gs
+allowlist_helm_chart_container_names: []
