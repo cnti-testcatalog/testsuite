@@ -1,0 +1,18 @@
+---
+helm_directory: "chf-standalone"
+release_name: "cnf"
+helm_install_namespace: "matrixx"
+helm_values: "--values /home/dwilmes/.mtx/konstruxx/working/values-784450778.yaml\
+  \ --devel"
+allowlist_helm_chart_container_names: []
+container_names:
+  - name: "chf"
+    rollback_from_tag: "5242"
+    rolling_update_test_tag: "5270-SNAPSHOT"
+    rolling_downgrade_test_tag: "5270-SNAPSHOT"
+    rolling_version_change_test_tag: "5270-SNAPSHOT"
+  - name: "chf-leader-elect"
+    rollback_from_tag: "5242"
+    rolling_update_test_tag: "5270-SNAPSHOT"
+    rolling_downgrade_test_tag: "5270-SNAPSHOT"
+    rolling_version_change_test_tag: "5270-SNAPSHOT"

@@ -1,0 +1,114 @@
+global:
+  image:
+    registry:
+      createSecret: false
+  monitoring:
+    enabled: true
+  development: true
+  configurationSources:
+    examplePricing:
+      docker:
+        image: example-pricing-sideloader:5270-SNAPSHOT
+  topology:
+    networkEnabler:
+      # Single Network Enabler defined for the Domain
+      totalPodCount: 1
+    domains:
+      - pricing:
+          configurationSource:
+            refName: examplePricing
+          fileName: mtx_pricing_matrixxOne.xml
+        subdomains:
+          - engines:
+              - processing:
+                  replicaCount: 1
+                  tralb:
+                    replicaCount: 1
+                publishing:
+                  replicaCount: 1
+                  tralb:
+                    replicaCount: 1
+                checkpointing:
+                  replicaCount: 1
+tra:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: .2
+      memory: 1024Mi
+activemq:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: .5
+      memory: 2G
+gateway-proxy:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: .2
+      memory: 512Mi
+rsgateway:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 1.5
+      memory: 2048Mi
+  ingress:
+    enabled: true
+    rules:
+      - path: "/"
+payment-service:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 1.2
+      memory: 2048Mi
+pricing-controller:
+  resources:
+    limits:
+      cpu: 0.2
+      memory: 1024Mi
+event-streamer:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: .7
+      memory: 512Mi
+notifier:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 1
+      memory: 512Mi
+snmp-exporter:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 1
+      memory: 512Mi
+matrixxbct:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: .2
+      memory: 1024Mi
+mymatrixx:
+  enabled: false
+engine:
+  operatorV2:
+    topologyOperator:
+      resources:
+        limits:
+          cpu: .2
+          memory: 1024Mi
+    topologyManager:
+      resources:
+        limits:
+          cpu: .2
+          memory: 1024Mi
+    topologyAgent:
+      resources:
+        limits:
+          cpu: .2
+          memory: 1024Mi

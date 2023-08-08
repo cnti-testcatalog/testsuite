@@ -1,0 +1,37 @@
+cdr-asn1-streamer:
+  resources: 
+    limits:
+      cpu: .5
+      memory: 1024Mi
+cdr-kafka-router:
+  resources: 
+    limits:
+      cpu: .5
+      memory: 1024Mi
+asn1-sftp-sink:
+  resources: 
+    limits:
+      cpu: .5
+      memory: 1024Mi
+message-broker:
+  host: konstruxx-kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local
+  topics:
+    router:
+      inbound: cdr.from.chf
+    asn1:
+      - inbound: routed.cdr
+        outbound: asn1.to.sftp
+    sftp:
+      - inbound: asn1.to.sftp
+        outbound: upload
+        isDefault: true
+sftp:
+  host: acme-sftp
+  uploadDirectory: upload
+  credentials:
+    username: mtxsftpuser
+    password: bXR4MTIzCg==
+mapping:
+  trace: true
+monitoring:
+  enabled: true

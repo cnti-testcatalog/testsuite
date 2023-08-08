@@ -1,0 +1,27 @@
+chf:
+  expose:
+    externalUri: "http://localhost:9089"
+  configuration:
+    sources:
+      - path: "/opt/mtx/conf"
+        configmap:
+          name: chf-config-one
+  deploy:
+    containers:
+      chf:
+        resources:
+          limits:
+            cpu: .5
+            memory: 1024Mi
+      leaderelect:
+        resources:
+          limits:
+            cpu: .5
+            memory: 1024Mi
+monitoring:
+  enabled: true
+tracing:
+  enabled: true
+  openTelemetry:
+    endpoint:
+      host: otel-collector-opentelemetry-collector.open-telemetry

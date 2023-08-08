@@ -1,0 +1,17 @@
+resources:
+  limits:
+     memory: 1024Mi
+     cpu: 0.2
+env:
+  LOG_LEVEL: DEBUG
+  engine.host: matrixx.engine
+  engine.port: 4060
+  http.instances: 4
+  http.oauth2.enable: false
+  http.oauth2.clientId: my-client
+  http.oauth2.clientSecret: secret
+  http.oauth2.site: http://hydra:4445
+  http.oauth2.introspectionPath: /oauth2/introspect
+  http.serviceUrl: http://tmf-service:8080
+monitoring:
+  enabled: true

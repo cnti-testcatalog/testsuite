@@ -1,0 +1,26 @@
+---
+helm_directory: "sba-5gc-events"
+release_name: "cnf"
+helm_install_namespace: "matrixx"
+helm_values: "--values /home/dwilmes/.mtx/konstruxx/working/values-939239483.yaml\
+  \ --devel"
+allowlist_helm_chart_container_names:
+- "falco"
+- "promtail"
+- "prometheus"
+container_names:
+- name: "asn1-sftp-sink"
+  rollback_from_tag: "5261"
+  rolling_update_test_tag: "5270-SNAPSHOT"
+  rolling_downgrade_test_tag: "5270-SNAPSHOT"
+  rolling_version_change_test_tag: "5270-SNAPSHOT"
+- name: "cdr-asn1-streamer"
+  rollback_from_tag: "5261"
+  rolling_update_test_tag: "5270-SNAPSHOT"
+  rolling_downgrade_test_tag: "5270-SNAPSHOT"
+  rolling_version_change_test_tag: "5270-SNAPSHOT"
+- name: "cdr-kafka-router"
+  rollback_from_tag: "5261"
+  rolling_update_test_tag: "5270-SNAPSHOT"
+  rolling_downgrade_test_tag: "5270-SNAPSHOT"
+  rolling_version_change_test_tag: "5270-SNAPSHOT"
