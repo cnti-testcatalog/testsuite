@@ -58,7 +58,7 @@ dependencies:
     version: ~> 0.1.0
   k8s_kernel_introspection:
     github: cnf-testsuite/k8s_kernel_introspection
-    version: ~> 1.0.0
+    branch: 1812
   helm:
     github: cnf-testsuite/helm
     version: ~> 1.0.1
