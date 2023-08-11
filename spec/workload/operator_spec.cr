@@ -9,22 +9,22 @@ require "sam"
 require "json"
 require "../../src/tasks/utils/operator.cr"
 
-def run_test_with_cleanup(cnf_path : String, cleanup : Proc)
+def run_test_with_cleanup(cnf_path : String, &test)
   begin
     LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-path=#{cnf_path}`
     $?.success?.should be_true
+    test.call
   ensure
     LOGGING.info `./cnf-testsuite -l info cnf_cleanup cnf-path=#{cnf_path}`
-    $?.success?.should be_true
     Operator::OLM.cleanup
-    cleanup.call
+    $?.success?.should be_true
   end
 end
 
 describe "Operator" do
   describe "pre OLM install" do
     it "'operator_test' operator should not be found", tags: ["operator_test"] do
-      run_test_with_cleanup("sample-cnfs/sample_coredns", -> {}) do
+      run_test_with_cleanup("sample-cnfs/sample_coredns") do
         resp = `./cnf-testsuite -l info operator_installed`
         Log.info { "#{resp}" }
         (/NA: No Operators Found/ =~ resp).should_not be_nil
@@ -54,15 +54,15 @@ describe "Operator" do
     end
 
     it "'operator_test' test if operator is being used", tags: ["operator_test"] do
-      run_test_with_cleanup("./sample-cnfs/sample_operator", -> {}) do
+      run_test_with_cleanup("./sample-cnfs/sample_operator") do
         resp = `./cnf-testsuite -l info operator_installed`
         Log.info { "#{resp}" }
         (/PASSED: Operator is installed/ =~ resp).should_not be_nil
       end
     end
 
-    it "'operator_privileged' test privileged operator NOT being used", tags: ["operator_privileged"] do
-      run_test_with_cleanup("./sample-cnfs/sample_operator", -> {}) do
+    it "'operator_privileged' test privileged operator NOT being used", tags: ["operator_test"] do
+      run_test_with_cleanup("./sample-cnfs/sample_operator") do
         resp = `./cnf-testsuite -l info operator_privileged`
         Log.info { "#{resp}" }
         (/PASSED: Operator is NOT running with privileged rights/ =~ resp).should_not be_nil
@@ -70,7 +70,7 @@ describe "Operator" do
     end
 
     it "'operator_privileged' test if a privileged operator is being used", tags: ["operator_privileged"] do
-      run_test_with_cleanup("./sample-cnfs/sample_privileged_operator", -> {}) do
+      run_test_with_cleanup("./sample-cnfs/sample_privileged_operator") do
         resp = `./cnf-testsuite -l info operator_privileged`
         Log.info { "#{resp}" }
         (/FAILED: Operator is running with privileged rights/ =~ resp).should_not be_nil
