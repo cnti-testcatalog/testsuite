@@ -2,7 +2,7 @@ require "log"
 require "kubectl_client"
 require "helm"
 require "file_utils"
-require "../src/tasks/utils/utils.cr"
+require "./utils.cr"
 
 module Operator
   module OLM
@@ -56,10 +56,28 @@ module Operator
         KubectlClient::Get.resource_wait_for_uninstall("Pod", "#{pod_name}", 180, "operator-lifecycle-manager")
       end
 
-      self.clear_namespaces(["operators", "operator-lifecycle-manager", "simple-privileged-operator"])
+      namespace_clear_results = self.clear_namespaces(["operators", "operator-lifecycle-manager", "simple-privileged-operator"])
+
+      Log.info { "namespace_clear_results: #{namespace_clear_results}" }
+
+      # check if each namespace is removed
+      all_namespaces_cleared = true
+
+      namespace_clear_results.each do |namespace, result|
+        if result[:status].success?
+          Log.info { "Namespace #{namespace} removed successfully" }
+        else
+          Log.error { "Namespace #{namespace} failed to remove" }
+          all_namespaces_cleared = false
+        end
+      end
+
+      all_namespaces_cleared
     end
 
     def self.clear_namespaces(namespaces)
+      results = {} of String => {status: Process::Status, output: String, error: String}
+
       namespaces.each do |namespace|
         namespace_file_name = "#{self.tmp_dir}/#{namespace}-namespace-k8s-api-output.json"
         Log.info { "namespace_file : #{namespace_file_name}" }
@@ -76,6 +94,14 @@ module Operator
             JSON.parse(file)
           end
 
+          # check if json empty
+          if json.as_h.empty?
+            Log.warn { "Namespace #{namespace} json response empty. Likely already removed" }
+            results[namespace] = {status: Process::Status.new(0), output: "", error: ""} #empty result
+            delete = true
+            break
+          end
+
           json.as_h.delete("spec")
 
           Log.info { "#{json.to_json}" }
@@ -83,7 +109,10 @@ module Operator
           File.write(namespace_file_name, "#{json.to_json}")
           Log.info { "Uninstall Namespace Finalizer #{namespace_file_name}" }
           
-          result = KubectlClient::Replace.command("--raw \"/api/v1/namespace/#{namespace}/finalize\" -f #{namespace_file_name}")
+          result = KubectlClient::Replace.command("--raw \"/api/v1/namespaces/#{namespace}/finalize\" -f #{namespace_file_name}")
+          results[namespace] = result
+
+          # TODO: figure out a way to distuguish between NotFound because of missplled namespace and NotFound because the namespace was deleted
           if result[:status].success? || result[:error].includes?("NotFound")
             delete = true
           end
@@ -98,9 +127,8 @@ module Operator
 
         File.delete(namespace_file_name)
       end
-    end
 
-    def cleanup_olm
+      results
     end
 
     def self.get_all_subscription_names(resources)

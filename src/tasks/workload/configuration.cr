@@ -5,7 +5,6 @@ require "colorize"
 require "totem"
 require "json"
 require "../utils/utils.cr"
-require "../../../utils/operator.cr"
 
 rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
