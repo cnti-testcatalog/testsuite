@@ -15,8 +15,8 @@ def run_test_with_cleanup(cnf_path : String, &test)
     $?.success?.should be_true
     test.call
   ensure
-    LOGGING.info `./cnf-testsuite -l info cnf_cleanup cnf-path=#{cnf_path}`
     Operator::OLM.cleanup
+    LOGGING.info `./cnf-testsuite -l info cnf_cleanup cnf-path=#{cnf_path}`
     $?.success?.should be_true
   end
 end
