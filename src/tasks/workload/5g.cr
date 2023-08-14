@@ -16,7 +16,7 @@ task "suci_enabled" do |_, args|
     #todo use sane defaults (i.e. search for amf, upf, etc in pod names) if no 5gcore labels are present
     #todo get 5gcore pods
     all_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-    pods = KubectlClient::Get.pods_by_label(all_pods, "app.kubernetes.io/core", "5gcore")
+    pods = KubectlClient::Get.pods_by_label(all_pods, "app.kubernetes.io/instance", "open5gs")
     fivegpod = pods[0]?
     Log.info { "fivegpod: #{fivegpod}" }
     if fivegpod && fivegpod.dig?("metadata", "name")
@@ -66,7 +66,7 @@ task "suci_enabled" do |_, args|
       #todo 2.2 wait for 30 seconds
 
       # ClusterTools.exec_by_node("bash -c 'sleep 10 && kill #{pid} && sleep 5 && kill -9 #{pid}'", node)
-      sleep 10.0
+      sleep 20.0
       Log.info { "tshark_log_name: #{tshark_log_name}" }
       resp = File.read("#{tshark_log_name}")
       Log.info { "tshark_log_name resp: #{resp}" }
