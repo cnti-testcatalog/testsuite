@@ -40,8 +40,8 @@ module EmbeddedFileManager
   macro fluentbit_values
     FLUENTBIT_VALUES = Base64.decode_string("{{ `cat ./embedded_files/fluentbit-config.yml | base64`}}")
   end
-  macro ues_values
-    UES_VALUES = Base64.decode_string("{{ `cat ./embedded_files/ues-values.yml | base64`}}")
+  macro ueransim_helmconfig
+    UERANSIM_HELMCONFIG = Base64.decode_string("{{ `cat ./embedded_files/ue.yaml | base64`}}")
   end
   def self.points_yml_write_file
     File.write("points.yml", POINTSFILE)

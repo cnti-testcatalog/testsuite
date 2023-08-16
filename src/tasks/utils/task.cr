@@ -82,6 +82,7 @@ module CNFManager
                                             container_names: [{"name" =>  "", "rolling_update_test_tag" => ""}],
                                             white_list_container_names: [""],
                                             docker_insecure_registries: [] of String,
+                                            core: "",
                                             image_registry_fqdns: Hash(String, String).new} )
         end
         ret = yield args, config
