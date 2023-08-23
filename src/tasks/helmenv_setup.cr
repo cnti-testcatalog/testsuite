@@ -5,6 +5,20 @@ require "totem"
 require "./utils/utils.cr"
 require "http/client"
 
+def helm_arch
+  "linux-amd64"
+end
+
+def helm_local_install_dir
+  "#{tools_path}/helm/#{helm_arch}"
+end
+
+# This env var is to ensure that the helm shard is aware of the local helm.
+#
+# TODO: Instead of requiring this env var to be set,
+# refactor the helm shard to use instance-based helpers instead of class methods.
+ENV["CUSTOM_HELM_PATH"] = "#{helm_local_install_dir}/helm"
+
 desc "Sets up helm 3.8.2"
 task "helm_local_install", ["cnf_directory_setup"] do |_, args|
   Log.for("verbose").info { "helm_local_install" } if check_verbose(args)
@@ -18,16 +32,16 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
     arch = "linux-amd64"
 
     FileUtils.mkdir_p("#{tools_path}/helm")
-    unless File.exists?("#{tools_path}/helm/#{arch}/helm")
+    unless File.exists?("#{helm_local_install_dir}/helm")
       begin
         if check_verbose(args)
           Log.for("verbose").debug { "full path?: #{tools_path}/helm" }
         end
 
-        HttpHelper.download("https://get.helm.sh/helm-v3.8.2-#{arch}.tar.gz","#{tools_path}/helm/helm-v3.8.2-#{arch}.tar.gz")
+        HttpHelper.download("https://get.helm.sh/helm-v3.8.2-#{helm_arch}.tar.gz","#{tools_path}/helm/helm-v3.8.2-#{helm_arch}.tar.gz")
 
         TarClient.untar(
-          "#{tools_path}/helm/helm-v3.8.2-#{arch}.tar.gz",
+          "#{tools_path}/helm/helm-v3.8.2-#{helm_arch}.tar.gz",
           "#{tools_path}/helm"
         )
 
