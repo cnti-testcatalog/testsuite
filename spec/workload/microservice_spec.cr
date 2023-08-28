@@ -9,7 +9,8 @@ require "sam"
 
 describe "Microservice" do
   before_all do
-    `./cnf-testsuite setup`
+    Log.info { "Running testsuite setup" }
+    Log.info { `./cnf-testsuite setup` }
     $?.success?.should be_true
   end
 
