@@ -220,6 +220,11 @@ jobs:
       run: |
         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
         sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+        echo "Current path: $(echo pwd)"
+        echo "Kubectl path: $(which kubectl)"
+        echo "Listing current dir files"
+        ls
+        echo "--- end of listing ---"
     - name: Install Latest Kind
       env:
         KIND_VERSION: v0.17.0
@@ -272,6 +277,11 @@ jobs:
         echo "RUNNER: $RUNNER_NAME"
     - name: Run Crystal Spec
       run: |
+        echo "Current path: $(echo pwd)"
+        echo "Kubectl path: $(which kubectl)"
+        echo "Listing current dir files"
+        ls
+        echo "--- end of listing ---"
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         until [[ $(kubectl get pods -l app=kindnet --namespace=kube-system -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
