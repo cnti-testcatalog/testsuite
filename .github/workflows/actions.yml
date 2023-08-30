@@ -280,7 +280,7 @@ jobs:
         echo "Current path: $(echo pwd)"
         echo "Kubectl path: $(which kubectl)"
         echo "Listing current dir files"
-        kubectl version
+        kubectl version || echo 0
         ls
         echo "--- end of listing ---"
         source cluster.env
