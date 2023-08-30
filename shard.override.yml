@@ -1,5 +1,5 @@
 dependencies:
-  kubectl:
+  kubectl_client:
     github: 'cnf-testsuite/kubectl_client'
     branch: 'kubectl-detection'
 
