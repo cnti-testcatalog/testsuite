@@ -8,7 +8,8 @@ module K8sTshark
 
   def self.log_of_tshark_by_label(command, label_key, label_value, duration="120") : String
       all_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-      pods = KubectlClient::Get.pods_by_label(all_pods, label_key, label_value) first_labeled_pod = pods[0]?
+      pods = KubectlClient::Get.pods_by_label(all_pods, label_key, label_value) 
+      first_labeled_pod = pods[0]?
       Log.info { "first_labeled_pod: #{first_labeled_pod}" }
       if first_labeled_pod && first_labeled_pod.dig?("metadata", "name")
         Log.info { "first_labeled_pod #{first_labeled_pod} metadata name: #{first_labeled_pod.dig?("metadata", "name")}" }

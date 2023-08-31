@@ -73,3 +73,5 @@ tools/custom-kyverno-policies/
 tools/chaos-experiments
 /tools/kubescape
 ueransim-gnb/
+gnb-ues-values.yaml
+.icr*
