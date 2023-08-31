@@ -70,6 +70,7 @@ task "suci_enabled" do |_, args|
 
         Log.info { "ueran_pods: #{ueran_pods}" }
         unless ueran_pods[0]? == nil
+          Log.info { "Found ueransim ... deleting" }
           Helm.delete("ueransim")
         end
         Helm.fetch("openverso/ueransim-gnb --version 0.2.5 --untar")
@@ -144,6 +145,7 @@ task "suci_enabled" do |_, args|
             suci_found = false
           end
         else
+          Log.info { "no response found for tshark_log_name" }
           suci_found = false
         end
         Log.info { "found nas_5gs.mm.type_id: 1: #{suci_found}" }
@@ -169,6 +171,10 @@ task "suci_enabled" do |_, args|
       resp = upsert_failed_task("suci_enabled", "✖️  FAILED: Core does not use SUCI 5g authentication")
     end
     resp
+  ensure
+    Helm.delete("ueransim")
+    ClusterTools.uninstall
+    ClusterTools.install
   end
 
 end
