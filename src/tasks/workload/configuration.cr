@@ -800,9 +800,9 @@ task "operator_privileged" do |_, args|
     emoji_big="🦖"
 
     if test_passed
-      upsert_passed_task("operator_privileged", "✔️  PASSED: Operator is NOT running with privileged rights: #{emoji_small} #{emoji_image_size}")
+      upsert_passed_task("operator_privileged", "✔️  PASSED: Operator is NOT running with privileged rights: #{emoji_small} #{emoji_image_size}", Time.utc)
     else
-      upsert_failed_task("operator_privileged", "✖️  FAILED: Operator is running with privileged rights #{emoji_small} #{emoji_image_size}")
+      upsert_failed_task("operator_privileged", "✖️  FAILED: Operator is running with privileged rights #{emoji_small} #{emoji_image_size}", Time.utc)
     end
   end
 end
