@@ -10,6 +10,8 @@ module Operator
       "#{tools_path}/olm"
     end
 
+    VERSION = "v0.25.0"
+
     def self.tmp_dir
       "#{FileUtils.pwd}/tmp"
     end
@@ -21,16 +23,25 @@ module Operator
         Log.info { "OLM already installed. Skipping git clone for OLM." }
       else
         GitClient.clone("https://github.com/operator-framework/operator-lifecycle-manager.git #{self.install_dir}")
-        `cd #{install_dir} && git fetch -a && git checkout tags/v0.22.0 && cd -`
       end
+      
+      Log.info { "Checking out OLM version tag #{Operator::OLM::VERSION}" }
+
+      ShellCmd.run("cd #{install_dir} && git fetch -a && git checkout tags/#{Operator::OLM::VERSION} && cd -", "git_co_#{Operator::OLM::VERSION}")
 
       begin
-        Helm.install("operator --set olm.image.ref=quay.io/operator-framework/olm:v0.22.0 --set catalog.image.ref=quay.io/operator-framework/olm:v0.22.0 --set package.image.ref=quay.io/operator-framework/olm:v0.22.0 #{install_dir}/deploy/chart/")
+        Helm.install("operator --set olm.image.ref=quay.io/operator-framework/olm:#{Operator::OLM::VERSION} --set catalog.image.ref=quay.io/operator-framework/olm:#{Operator::OLM::VERSION} --set package.image.ref=quay.io/operator-framework/olm:#{Operator::OLM::VERSION} #{install_dir}/deploy/chart/")
       rescue e : Helm::CannotReuseReleaseNameError
         Log.info { "operator-lifecycle-manager already installed" }
       end
     end
 
+    # this is still not cleaning up everything
+    # you can test it out with their binary
+    # https://sdk.operatorframework.io/docs/installation/#install-from-github-release
+    # move the binary to ./tools/operator_sdk/operator-sdk_linux_amd64
+    # ./tools/operator_sdk/operator-sdk_linux_amd64 olm status --version Operator::OLM::VERSION
+    # i.e. ./tools/operator_sdk/operator-sdk_linux_amd64 olm status --version v0.25.0
     def self.cleanup
       pods = [] of Hash(String, String)
 
@@ -45,9 +56,8 @@ module Operator
       end
       
       Helm.uninstall("operator")
-      # TODO: get the correct operator version from whatever file or api so we can delete it properly
-      # will require updating KubectlClient::Get to support custom resources
-      KubectlClient::Delete.command("csv prometheusoperator.0.47.0")
+
+      # TODO: remove all of the resources that are created by OLM. via the operator-sdk cli tool
 
       pods.map do |pod|
         pod_name = pod.dig("metadata", "name")
@@ -56,7 +66,7 @@ module Operator
         KubectlClient::Get.resource_wait_for_uninstall("Pod", "#{pod_name}", 180, "operator-lifecycle-manager")
       end
 
-      namespace_clear_results = self.clear_namespaces(["operators", "operator-lifecycle-manager", "simple-privileged-operator"])
+      namespace_clear_results = self.clear_namespaces(["operators", "operator-lifecycle-manager", "simple-privileged-operator", "olm"])
 
       Log.info { "namespace_clear_results: #{namespace_clear_results}" }
 
@@ -148,7 +158,9 @@ module Operator
         csv_created = nil
         resource_created = false
 
-        KubectlClient::Get.wait_for_resource_key_value("sub", "#{subscription["name"]}", {"status", "installedCSV"}, namespace: subscription["namespace"].as_s)
+        Log.info { "wait_for_resource_key_value #{subscription["name"]} , {'status', 'installedCSV'}, " }
+
+        KubectlClient::Get.wait_for_resource_key_value("sub", "#{subscription["name"]}", {"status", "installedCSV"}, wait_count: wait_count, namespace: subscription["namespace"].as_s)
 
         installed_csv = KubectlClient::Get.resource("sub", "#{subscription["name"]}", "#{subscription["namespace"]}")
         if installed_csv.dig?("status", "installedCSV")

@@ -33,3 +33,9 @@ end
 desc "Uninstall and Cleanup Operator Lifecycle Manager"
 task "uninstall_olm", ["cleanup_olm"] do |_, args|
 end
+
+# clear simple-privileged-operator namespace
+desc "Clear simple-privileged-operator namespace"
+task "clear_namespace_privileged_operator" do |_, args|
+  Operator::OLM.clear_namespaces(["operators", "operator-lifecycle-manager", "simple-privileged-operator", "olm"])
+end
