@@ -9,8 +9,12 @@ require "sam"
 
 describe "Microservice" do
   before_all do
-    `./cnf-testsuite setup`
-    $?.success?.should be_true
+    Log.info { "Running testsuite setup" }
+    Log.info { `./cnf-testsuite setup` }
+    Log.info { `./cnf-testsuite setup` }
+    process_result = $?.success?
+    Log.info(&.emit("Testsuite setup process result", process_result: process_result))
+    process_result.should be_true
   end
 
   it "'shared_database' should be skipped no MariaDB containers are found", tags: ["shared_database"]  do

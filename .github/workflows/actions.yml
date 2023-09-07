@@ -227,6 +227,8 @@ jobs:
         chmod +x ./kind
         sudo mv ./kind /usr/local/bin/kind
         kind --version
+    - name: Install kubectl
+      uses: azure/setup-kubectl@v3
     - name: Create Kind Cluster 
       run: |
         cat << EOF > /tmp/cluster.yml
@@ -268,6 +270,7 @@ jobs:
         echo "RUNNER: $RUNNER_NAME"
     - name: Run Crystal Spec
       run: |
+        echo "Current path: $(echo pwd)"
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         until [[ $(kubectl get pods -l app=kindnet --namespace=kube-system -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
