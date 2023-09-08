@@ -23,7 +23,6 @@ jobs:
       run: |
         JSON="{\"include\":["
         TEST_ARRAY=$(grep -roP --no-filename 'tags: \K(\[|")(.*)(\]|")' spec/ | tr -d '[],' | tr -s '\n' ' ' | xargs -n1 | sort -u | xargs)
-        TEST_ARRAY=$(echo sig_term)
         TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-config-lifecycle/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-microservice/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-all/}")
