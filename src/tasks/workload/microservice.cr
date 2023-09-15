@@ -496,7 +496,7 @@ task "sig_term_handled" do |_, args|
       pod: String,
       container: String,
       test_status: String,
-      test_reason: String
+      test_reason: String | Nil
     )
 
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false ) do |resource, container, initialized|
@@ -664,7 +664,8 @@ task "sig_term_handled" do |_, args|
                   namespace: pod_namespace,
                   pod: pod_name,
                   container: container_name,
-                  test_status: "failed"
+                  test_status: "failed",
+                  test_reason: nil
                 }
               end
 
@@ -699,6 +700,7 @@ task "sig_term_handled" do |_, args|
         end
         stdout_failure resource_output
       end
+      nil
     end
   end
 end
