@@ -520,12 +520,9 @@ task "sig_term_handled" do |_, args|
             sig_result = container_statuses.map do |container_status|
               container_name = container_status.dig("name")
               previous_process_type = "initial_name"
-              if container_status.as_h.has_key?("containerID")
-                Log.for("sigterm_fail_dbg_pass").info { container_status.inspect }
-              else
-                Log.for("sigterm_fail_dbg_fail").info { container_status.inspect }
-              end
 
+              # Check if the container status is ready.
+              # If this container is not ready, move on to next.
               container_name = container_status.dig("name").as_s
               Log.info { "before ready containerStatuses pod:#{pod_name} container:#{container_name}" }
               ready = container_status.dig("ready").as_bool
@@ -535,8 +532,8 @@ task "sig_term_handled" do |_, args|
                 false
                 next
               end
+
               container_id = container_status.dig("containerID").as_s
-              # next unless ready 
               Log.info { "containerStatuses container_id #{container_id}" }
 
               #get container id's pid on the node (different from inside the container)
