@@ -504,10 +504,12 @@ task "sig_term_handled" do |_, args|
         pid_log_names  = [] of String
         pod_sig_terms = pods.map do |pod|
           #todo get the host pid from the container pid
-          pod_name = pod.dig("metadata", "name")
+          pod_name = pod.dig("metadata", "name").as_s
+          pod_namespace = pod.dig("metadata", "namespace").as_s
           Log.info { "pod_name: #{pod_name}" }
 
           status = pod["status"]
+          KubectlClient::Get.wait_for_resource_availability("pod", pod_name, pod_namespace)
           if status["containerStatuses"]?
               container_statuses = status["containerStatuses"].as_a
             Log.info { "container_statuses: #{container_statuses}" }
