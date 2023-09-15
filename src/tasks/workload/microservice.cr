@@ -525,15 +525,17 @@ task "sig_term_handled" do |_, args|
               else
                 Log.for("sigterm_fail_dbg_fail").info { container_status.inspect }
               end
-              container_id = container_status.dig("containerID").as_s
-              Log.info { "before ready containerStatuses container_id #{container_id}" }
+
+              container_name = container_status.dig("name").as_s
+              Log.info { "before ready containerStatuses pod:#{pod_name} container:#{container_name}" }
               ready = container_status.dig("ready").as_bool
               if !ready
                 Log.info { "container status: #{container_status} "}
-                Log.info { "not ready! skipping: containerStatuses container_id #{container_id}" }
+                Log.info { "not ready! skipping: containerStatuses pod:#{pod_name} container:#{container_name}" }
                 false
                 next
               end
+              container_id = container_status.dig("containerID").as_s
               # next unless ready 
               Log.info { "containerStatuses container_id #{container_id}" }
 
