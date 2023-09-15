@@ -519,8 +519,10 @@ task "sig_term_handled" do |_, args|
           pod_namespace = pod.dig("metadata", "namespace").as_s
           Log.info { "pod_name: #{pod_name}" }
 
+          # Wait for a pod to be available. Only wait for 20 seconds.
+          KubectlClient::Get.wait_for_resource_availability("pod", pod_name, pod_namespace, 20)
+
           status = pod["status"]
-          KubectlClient::Get.wait_for_resource_availability("pod", pod_name, pod_namespace)
           if status["containerStatuses"]?
               container_statuses = status["containerStatuses"].as_a
             Log.info { "container_statuses: #{container_statuses}" }
