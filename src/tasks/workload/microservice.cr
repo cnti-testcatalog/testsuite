@@ -520,7 +520,7 @@ task "sig_term_handled" do |_, args|
           Log.info { "pod_name: #{pod_name}" }
 
           # Wait for a pod to be available. Only wait for 20 seconds.
-          KubectlClient::Get.wait_for_resource_availability("pod", pod_name, pod_namespace, 20)
+          KubectlClient::Get.wait_for_resource_availability("pod", pod_name, pod_namespace, 60)
 
           status = pod["status"]
           if status["containerStatuses"]?
