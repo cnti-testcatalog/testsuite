@@ -272,6 +272,10 @@ describe "Microservice" do
       #todo 3. Collect all signals sent, if SIGTERM is captured, application pass test because it  exits child processes cleanly
       #todo 4. Make sure that threads are not counted as new processes.  A thread does not get a signal (sigterm or sigkill)
       Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_good_signal_handling_tini/` }
+
+      # Workaround to wait using kubectl because Jenkins pod takes a LONG time to start.
+      Log.info { `kubectl wait --for=condition=ready=True pod/jenkins-0 -n cnfspace --timeout=500s` }
+
       response_s = `./cnf-testsuite sig_term_handled verbose`
       Log.info { response_s }
       $?.success?.should be_true

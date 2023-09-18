@@ -478,15 +478,26 @@ task "zombie_handled" do |_, args|
 
 end
 
+
+
 desc "Are the SIGTERM signals handled?"
 task "sig_term_handled" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
     Log.for("verbose").info { "sig_term_handled" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
-    fail_msgs = [] of String
-    all_node_proc_statuses = [] of NamedTuple(node_name: String,
-                                              proc_statuses: Array(String))
-    #todo get the first pod
+
+    # test_status can be "skipped" or "failed".
+    #   Only collecting containers that failed or were skipped.
+    #
+    # test_reason can be "No Node PID found" or "Not ready".
+    #   Only available when when test is skipped.
+    failed_containers = [] of NamedTuple(
+      namespace: String,
+      pod: String,
+      container: String,
+      test_status: String,
+      test_reason: String | Nil
+    )
 
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false ) do |resource, container, initialized|
       test_passed = true
@@ -504,8 +515,12 @@ task "sig_term_handled" do |_, args|
         pid_log_names  = [] of String
         pod_sig_terms = pods.map do |pod|
           #todo get the host pid from the container pid
-          pod_name = pod.dig("metadata", "name")
+          pod_name = pod.dig("metadata", "name").as_s
+          pod_namespace = pod.dig("metadata", "namespace").as_s
           Log.info { "pod_name: #{pod_name}" }
+
+          # Wait for a pod to be available. Only wait for 20 seconds.
+          KubectlClient::Get.wait_for_resource_availability("pod", pod_name, pod_namespace, 60)
 
           status = pod["status"]
           if status["containerStatuses"]?
@@ -518,22 +533,40 @@ task "sig_term_handled" do |_, args|
             sig_result = container_statuses.map do |container_status|
               container_name = container_status.dig("name")
               previous_process_type = "initial_name"
-              container_id = container_status.dig("containerID").as_s
-              Log.info { "before ready containerStatuses container_id #{container_id}" }
+
+              # Check if the container status is ready.
+              # If this container is not ready, move on to next.
+              container_name = container_status.dig("name").as_s
+              Log.info { "before ready containerStatuses pod:#{pod_name} container:#{container_name}" }
               ready = container_status.dig("ready").as_bool
               if !ready
                 Log.info { "container status: #{container_status} "}
-                Log.info { "not ready! skipping: containerStatuses container_id #{container_id}" }
+                Log.info { "not ready! skipping: containerStatuses pod:#{pod_name} container:#{container_name}" }
+                failed_containers << {
+                  namespace: pod_namespace,
+                  pod: pod_name,
+                  container: container_name,
+                  test_status: "skipped",
+                  test_reason: "Not ready"
+                }
                 false
                 next
               end
-              # next unless ready 
+
+              container_id = container_status.dig("containerID").as_s
               Log.info { "containerStatuses container_id #{container_id}" }
 
               #get container id's pid on the node (different from inside the container)
               pid = "#{ClusterTools.node_pid_by_container_id(container_id, node)}"
               if pid.empty?
                 Log.info { "no pid for (skipping): containerStatuses container_id #{container_id}" }
+                failed_containers << {
+                  namespace: pod_namespace,
+                  pod: pod_name,
+                  container: container_name,
+                  test_status: "skipped",
+                  test_reason: "No Node PID found"
+                }
                 false
                 next
               end
@@ -625,7 +658,18 @@ task "sig_term_handled" do |_, args|
               end
               Log.info { "SigTerm Found: #{sig_term_found}" }
               # per all containers
-              sig_term_found.all?(true)
+              container_sig_term_check = sig_term_found.all?(true)
+              if container_sig_term_check == false
+                failed_containers << {
+                  namespace: pod_namespace,
+                  pod: pod_name,
+                  container: container_name,
+                  test_status: "failed",
+                  test_reason: nil
+                }
+              end
+
+              container_sig_term_check
               # todo save off all directory/filenames into a hash
               #todo make a clustertools that gets a files contents
               #todo 3. Collect all signals sent, if SIGKILL is captured, application fails test because it doesn't exit child processes cleanly
@@ -649,6 +693,14 @@ task "sig_term_handled" do |_, args|
       upsert_passed_task("sig_term_handled", "✔️  🏆 PASSED: Sig Term handled #{emoji_small} #{emoji_image_size}", Time.utc)
     else
       upsert_failed_task("sig_term_handled", "✖️  🏆 FAILED: Sig Term not handled #{emoji_big} #{emoji_image_size}", Time.utc)
+      failed_containers.map do |failure_info|
+        resource_output = "Pod: #{failure_info["pod"]}, Container: #{failure_info["container"]}, Result: #{failure_info["test_status"]}"
+        if failure_info["test_status"] == "skipped"
+          resource_output = "#{resource_output}, Reason: #{failure_info["test_reason"]}"
+        end
+        stdout_failure resource_output
+      end
+      nil
     end
   end
 end
