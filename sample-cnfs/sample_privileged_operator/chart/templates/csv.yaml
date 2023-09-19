@@ -7,6 +7,15 @@ spec:
   displayName: Simple Operator
   provider:
     name: Example
+  installModes:
+    - type: OwnNamespace
+      supported: true
+    - type: SingleNamespace
+      supported: false
+    - type: MultiNamespace
+      supported: false
+    - type: AllNamespaces
+      supported: false
   install:
     strategy: deployment
     spec:
