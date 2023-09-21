@@ -1,0 +1,25 @@
+---
+helm_directory: open5gs
+release_name: open5gs
+allowlist_helm_chart_container_names: []
+#optional 5gcore tag
+core: app.kubernetes.io/name=amf
+amf_pod_name: open5gs-amf-ngap
+mmc: '999'
+mnc: '70'
+sst: 1 
+sd: '0x111111'
+tac: '0001'
+protectionScheme: 1 
+publicKey: 0ac95ceeb93308df01be82ff9994d8330e38804ece1700ee4b972d8028796275
+publicKeyId: 1 
+routingIndicator: '0000'
+enabled: true
+count: 1
+initialMSISDN: '0000000001'
+key: 465B5CE8B199B49FAA5F0A2EE238A6BC
+op: E8ED289DEBA952E4283B54E88E6183CA
+opType: OPC
+type: 'IPv4'
+apn: 'internet'
+emergency: false
