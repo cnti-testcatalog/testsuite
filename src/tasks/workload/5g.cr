@@ -52,9 +52,9 @@ task "suci_enabled" do |_, args|
 
 
     if suci_found 
-      resp = upsert_passed_task("suci_enabled","✔️  PASSED: Core uses SUCI 5g authentication" )
+      resp = upsert_passed_task("suci_enabled","✔️  PASSED: Core uses SUCI 5g authentication", Time.utc)
     else
-      resp = upsert_failed_task("suci_enabled", "✖️  FAILED: Core does not use SUCI 5g authentication")
+      resp = upsert_failed_task("suci_enabled", "✖️  FAILED: Core does not use SUCI 5g authentication", Time.utc)
     end
     resp
   ensure
