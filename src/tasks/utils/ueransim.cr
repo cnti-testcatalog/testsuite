@@ -51,6 +51,7 @@ module UERANSIM
         Log.info { "Found ueransim ... deleting" }
         Helm.delete("ueransim")
       end
+      Helm.helm_repo_add("openverso","https://gradiant.github.io/openverso-charts/")
       Helm.fetch("openverso/ueransim-gnb --version 0.2.5 --untar")
 
       protectionScheme = config.cnf_config[:fiveG_core][:protectionScheme]
@@ -94,7 +95,6 @@ module UERANSIM
       File.write("gnb-ues-values.yaml", ue_values)
       # File.write("gnb-ues-values.yaml", UES_VALUES)
       File.write("#{Dir.current}/ueransim-gnb/resources/ue.yaml", UERANSIM_HELMCONFIG)
-      Helm.helm_repo_add("openverso","https://gradiant.github.io/openverso-charts/")
       Helm.install("ueransim #{Dir.current}/ueransim-gnb --values ./gnb-ues-values.yaml")
       Log.info { "after helm install" }
       KubectlClient::Get.resource_wait_for_install("Pod", "ueransim")
