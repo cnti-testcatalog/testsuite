@@ -12,11 +12,11 @@ module UERANSIM
   end
 
   # todo make this work without having the test-suite src
-  def self.install
-    Log.info {"Installing ueransim "}
-    Helm.install("ueransim")
-    KubectlClient::Get.resource_wait_for_install("Pod", "ueransim")
-  end
+  # def self.install
+  #   Log.info {"Installing ueransim "}
+  #   Helm.install("ueransim")
+  #   KubectlClient::Get.resource_wait_for_install("Pod", "ueransim")
+  # end
 
   def self.install(config)
     Log.info {"Installing ueransim with 5g config"}
@@ -94,6 +94,7 @@ module UERANSIM
       File.write("gnb-ues-values.yaml", ue_values)
       # File.write("gnb-ues-values.yaml", UES_VALUES)
       File.write("#{Dir.current}/ueransim-gnb/resources/ue.yaml", UERANSIM_HELMCONFIG)
+      Helm.helm_repo_add("openverso","https://gradiant.github.io/openverso-charts/")
       Helm.install("ueransim #{Dir.current}/ueransim-gnb --values ./gnb-ues-values.yaml")
       Log.info { "after helm install" }
       KubectlClient::Get.resource_wait_for_install("Pod", "ueransim")
