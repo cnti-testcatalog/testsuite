@@ -23,6 +23,7 @@ module K8sTshark
         tshark_log_name = "/tmp/tshark-#{name_id}.json"
         Log.info { "tshark_log_name #{tshark_log_name}" }
 
+        #tshark -ni any  -Y nas_5gs.mm.type_id -T json 2>&1 | tee hi.log 
         #command= -ni any  -Y nas_5gs.mm.type_id -T json
         #todo check if tshark running already to keep from saturating network
         #todo play with reducing default duration
