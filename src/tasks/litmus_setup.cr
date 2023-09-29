@@ -19,6 +19,7 @@ task "install_litmus" do |_, args|
     #todo apply modified litmus file
     Log.info { "install litmus online mode" }
     Log.info { "install litmus operator"}
+    KubectlClient::Create.namespace(LitmusManager::LITMUS_NAMESPACE)
     KubectlClient::Apply.file(LitmusManager::ONLINE_LITMUS_OPERATOR)
     Log.info { "install chaos operator"}
     KubectlClient::Apply.file("https://raw.githubusercontent.com/litmuschaos/chaos-operator/master/deploy/chaos_crds.yaml")
@@ -50,10 +51,13 @@ module LitmusManager
   Version = "v2.14.x"
   NODE_LABEL = "kubernetes.io/hostname"
   OFFLINE_LITMUS_OPERATOR = "#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v#{LitmusManager::Version}.yaml"
-  ONLINE_LITMUS_OPERATOR = "https://litmuschaos.github.io/litmus/litmus-operator-v#{LitmusManager::Version}.yaml"
+  #https://raw.githubusercontent.com/litmuschaos/chaos-operator/v2.14.x/deploy/operator.yaml
+  # ONLINE_LITMUS_OPERATOR = "https://litmuschaos.github.io/litmus/litmus-operator-v#{LitmusManager::Version}.yaml"
+  ONLINE_LITMUS_OPERATOR = "https://raw.githubusercontent.com/litmuschaos/chaos-operator/#{LitmusManager::Version}/deploy/operator.yaml"
   # for node drain
   DOWNLOADED_LITMUS_FILE = "litmus-operator-downloaded.yaml"
   MODIFIED_LITMUS_FILE = "litmus-operator-modified.yaml"
+  LITMUS_NAMESPACE = "litmus"
 
 
 
