@@ -3,7 +3,7 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
-jequire "./utils/utils.cr"
+require "./utils/utils.cr"
 
 desc "Install LitmusChaos"
 task "install_litmus" do |_, args|
