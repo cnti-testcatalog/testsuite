@@ -3,7 +3,7 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
-require "./utils/utils.cr"
+jequire "./utils/utils.cr"
 
 desc "Install LitmusChaos"
 task "install_litmus" do |_, args|
@@ -19,7 +19,7 @@ task "install_litmus" do |_, args|
     #todo apply modified litmus file
     Log.info { "install litmus online mode" }
     Log.info { "install litmus operator"}
-    KubectlClient::Create.namespace(LitmusManager::LITMUS_NAMESPACE)
+    KubectlClient::Apply.namespace(LitmusManager::LITMUS_NAMESPACE) 
     KubectlClient::Apply.file(LitmusManager::ONLINE_LITMUS_OPERATOR)
   end
 end
