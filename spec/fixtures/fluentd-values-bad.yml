@@ -1,15 +1,30 @@
-fileConfigs:
-  04_outputs.conf: |-
-    <label @OUTPUT>
-      <match **>
-        @type file
-        path "/testdata"
-      </match>
-    </label>
-
-volumeMounts:
-- name: etcfluentd-main
-  mountPath: /etc/fluent
-- name: etcfluentd-config
-  mountPath: /etc/fluent/config.d/
-
+aggregator:
+  enabled: false
+forwarder:
+  configMapFiles:
+    fluentd-inputs.conf: |
+      # HTTP input for the liveness and readiness probes
+      <source>
+        @type http
+        port 9880
+      </source>
+      # Get the logs from the containers running in the node
+      <source>
+        @type tail
+        # exclude Fluentd logs
+        path /tmp/*
+        exclude_path /var/log/containers/*
+        exclude_path /var/log/containers/*fluentd*.log
+        pos_file /opt/bitnami/fluentd/logs/buffers/fluentd-docker.pos
+        tag kubernetes.*
+        read_from_head true
+        <parse>
+          @type json
+          time_key time
+          time_format %Y-%m-%dT%H:%M:%S.%NZ
+        </parse>
+      </source>
+      # enrich with kubernetes metadata
+      <filter kubernetes.**>
+        @type kubernetes_metadata
+      </filter>

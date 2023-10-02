@@ -291,8 +291,12 @@ task "node_drain", ["install_litmus"] do |t, args|
             KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
             KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-rbac.yaml")
           else
-            experiment_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/experiment.yaml"
-            rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/rbac.yaml"
+            # experiment_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/experiment.yaml"
+            # https://raw.githubusercontent.com/litmuschaos/chaos-charts/v2.14.x/charts/generic/pod-network-latency/experiment.yaml
+            # https://raw.githubusercontent.com/litmuschaos/chaos-charts/v2.14.x/charts/generic/node-drain/experiment.yaml 
+            experiment_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/charts/generic/node-drain/experiment.yaml"
+            # rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/rbac.yaml"
+            rbac_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/charts/generic/node-drain/rbac.yaml"
 
             experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
             KubectlClient::Apply.file(experiment_path, namespace: app_namespace)

@@ -199,9 +199,12 @@ task "routed_logs", ["install_cluster_tools"] do |_, args|
   task_response = CNFManager::Task.task_runner(args) do |args, config|
     fluentd_match = FluentD.match()
     fluentbit_match = FluentBit.match()
+    fluentbitBitnami_match = FluentDBitnami.match()
+
     Log.info { "fluentd match: #{fluentd_match}" }
     Log.info { "fluentbit match: #{fluentbit_match}" }
-    if fluentd_match[:found] || fluentbit_match[:found]
+    Log.info { "fluentbitBitnami_match match: #{fluentbitBitnami_match}" }
+    if fluentd_match[:found] || fluentbit_match[:found] || fluentbitBitnami_match[:found]
         all_resourced_logged = CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
           resource_logged = true 
           resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name], resource_name[:namespace])
@@ -214,6 +217,9 @@ task "routed_logs", ["install_cluster_tools"] do |_, args|
               end
               if fluentbit_match[:found]
                 resource_logged = FluentBit.app_tailed?(pod.dig("metadata", "name"), fluentbit_match)
+              end
+              if fluentbitBitnami_match[:found]
+                resource_logged = FluentDBitnami.app_tailed_by_fluentd?(pod.dig("metadata", "name"), fluentbitBitnami_match)
               end
             end
           end

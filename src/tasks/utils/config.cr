@@ -13,6 +13,7 @@ module CNFManager
       @cnf_config = cnf_config
       @airgapped = airgapped
     end
+    #when addeding to this you must add to task.cr's CNFManager::Config.new(
     property cnf_config : NamedTuple(destination_cnf_dir: String,
                                      source_cnf_file: String,
                                      source_cnf_dir: String,
@@ -33,6 +34,28 @@ module CNFManager
                                      container_names: Array(Hash(String, String )) | Nil,
                                      white_list_container_names: Array(String),
                                      docker_insecure_registries: Array(String) | Nil,
+                                     #todo change this to an array of labels that capture all of 5g core nodes
+                                     core_label: String,
+                                     fiveG_core: NamedTuple(amf_pod_name: String,
+                                                           mmc: String,
+                                                           mnc: String,
+                                                           sst: String,
+                                                           sd: String,
+                                                           tac: String,
+                                                           protectionScheme: String,
+                                                           publicKey: String,
+                                                           publicKeyId: String,
+                                                           routingIndicator: String,
+                                                           enabled: String,
+                                                           count: String,
+                                                           initialMSISDN: String,
+                                                           key: String,
+                                                           op: String,
+                                                           opType: String,
+                                                           type: String,
+                                                           apn: String,
+                                                           emergency: String
+                                                          ),
                                      image_registry_fqdns: Hash(String, String ) | Nil)
 
     def self.parse_config_yml(config_yml_path : String, airgapped=false, generate_tar_mode=false) : CNFManager::Config
@@ -70,6 +93,42 @@ module CNFManager
       helm_directory = optional_key_as_string(config, "helm_directory")
       source_helm_directory = optional_key_as_string(config, "helm_directory")
       helm_install_namespace = optional_key_as_string(config, "helm_install_namespace")
+      if config["enabled"]?
+          core_enabled = config["enabled"].as_bool.to_s
+      else
+        core_enabled = "" 
+      end
+      if config["emergency"]?
+          core_emergency = config["emergency"].as_bool.to_s
+      else
+        core_emergency = "" 
+      end
+      if config["sd"]?
+          core_sd = config["sd"].as_s
+      else
+        core_sd = "" 
+      end
+      fiveG_core = {amf_pod_name: optional_key_as_string(config, "amf_pod_name"),
+      mmc: optional_key_as_string(config, "mmc"),
+      mnc:  optional_key_as_string(config, "mnc"),
+      sst:  optional_key_as_string(config, "sst"),
+      sd:  core_sd,
+      tac:  optional_key_as_string(config, "tac"),
+      protectionScheme:  optional_key_as_string(config, "protectionScheme"),
+      publicKey:  optional_key_as_string(config, "publicKey"),
+      publicKeyId:  optional_key_as_string(config, "publicKeyId"),
+      routingIndicator:  optional_key_as_string(config, "routingIndicator"),
+      enabled:  core_enabled,
+      count:  optional_key_as_string(config, "count"),
+      initialMSISDN:  optional_key_as_string(config, "initialMSISDN"),
+      key:  optional_key_as_string(config, "key"),
+      op:  optional_key_as_string(config, "op"),
+      opType:  optional_key_as_string(config, "opType"),
+      type:  optional_key_as_string(config, "type"),
+      apn:  optional_key_as_string(config, "apn"),
+      emergency:  core_emergency,
+      }
+      core  = optional_key_as_string(config, "core")
       if helm_directory.empty?
         working_chart_directory = "exported_chart"
         Log.info { "USING EXPORTED CHART PATH" } 
@@ -147,6 +206,8 @@ module CNFManager
                                container_names: container_names,
                                white_list_container_names: white_list_container_names,
                                docker_insecure_registries: docker_insecure_registries,
+                               core_label: core,
+                               fiveG_core: fiveG_core,
                                image_registry_fqdns: image_registry_fqdns,})
 
     end

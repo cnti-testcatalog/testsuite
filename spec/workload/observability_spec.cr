@@ -137,16 +137,31 @@ describe "Observability" do
     $?.success?.should be_true
   end
 
-  it "'routed_logs' should pass if cnfs logs are captured by fluentd", tags: ["observability"] do
+  #09/27/23 fluentd/fluentd seems to be failing upstream.  bitnami/fluentd works
+  # it "'routed_logs' should pass if cnfs logs are captured by fluentd", tags: ["observability"] do
+  #   LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+  #   resp = `./cnf-testsuite install_fluentd`
+  #   LOGGING.info resp
+  #   response_s = `./cnf-testsuite routed_logs`
+  #   LOGGING.info response_s
+  #   (/PASSED: Your cnf's logs are being captured/ =~ response_s).should_not be_nil
+  # ensure
+  #   LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+  #   resp = `./cnf-testsuite uninstall_fluentd`
+  #   LOGGING.info resp
+  #   $?.success?.should be_true
+  # end
+
+  it "'routed_logs' should pass if cnfs logs are captured by fluentd bitnami", tags: ["observability"] do
     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-    resp = `./cnf-testsuite install_fluentd`
+    resp = `./cnf-testsuite install_fluentdbitnami`
     LOGGING.info resp
     response_s = `./cnf-testsuite routed_logs`
     LOGGING.info response_s
     (/PASSED: Your cnf's logs are being captured/ =~ response_s).should_not be_nil
   ensure
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-    resp = `./cnf-testsuite uninstall_fluentd`
+    resp = `./cnf-testsuite uninstall_fluentdbitnami`
     LOGGING.info resp
     $?.success?.should be_true
   end
@@ -167,11 +182,11 @@ describe "Observability" do
   
     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
     # resp = `./cnf-testsuite install_fluentd`
-    Log.info {"Installing FluentD daemonset "}
-    Helm.helm_repo_add("fluent","https://fluent.github.io/helm-charts")
+    Helm.helm_repo_add("bitnami","oci://registry-1.docker.io/bitnamicharts")
     #todo  #helm install --values ./override.yml fluentd ./fluentd
-    Helm.install("--values ./spec/fixtures/fluentd-values-bad.yml fluentd fluent/fluentd")
-    KubectlClient::Get.resource_wait_for_install("Daemonset", "fluentd")
+    Helm.install("--values ./spec/fixtures/fluentd-values-bad.yml -n #{TESTSUITE_NAMESPACE} fluentd bitnami/fluentd")
+    Log.info {"Installing FluentD daemonset "}
+    KubectlClient::Get.resource_wait_for_install("Daemonset", "fluentd", namespace: TESTSUITE_NAMESPACE)
 
     response_s = `./cnf-testsuite routed_logs`
     LOGGING.info response_s

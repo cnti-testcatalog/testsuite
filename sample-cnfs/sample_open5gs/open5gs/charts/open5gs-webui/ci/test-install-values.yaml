@@ -1,0 +1,5 @@
+ingress:
+  enabled: false
+
+mongodb:
+  enabled: true
