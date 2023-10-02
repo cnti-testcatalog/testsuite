@@ -45,8 +45,9 @@ end
 
 module LitmusManager
 
-  # Version = "2.14.0"
-  Version = "1.13.8"
+  Version = "2.14.0"
+  # Version = "1.13.8"
+  # Version = "3.0.0-beta12"
   NODE_LABEL = "kubernetes.io/hostname"
   OFFLINE_LITMUS_OPERATOR = "#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v#{LitmusManager::Version}.yaml"
   #https://raw.githubusercontent.com/litmuschaos/chaos-operator/v2.14.x/deploy/operator.yaml
