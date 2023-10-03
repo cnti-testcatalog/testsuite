@@ -56,7 +56,7 @@ describe "Microservice" do
     end
   end
 
-  it "'shared_database' should fail if two services on the cluster connect to the same database", tags: ["shared_database"]  do
+  it "'shared_database' should fail if two services on the cluster connect to the same database", tags: ["shared_database2"]  do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/ndn-multi-db-connections-fail/cnf-testsuite.yml`
       response_s = `./cnf-testsuite shared_database`
