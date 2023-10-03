@@ -259,7 +259,7 @@ task "node_drain", ["install_litmus"] do |t, args|
           litmus_nodeName = litmusNodeName_response.to_s
           Log.info { "Workload Node Name: #{app_nodeName}" }
           Log.info { "Litmus Node Name: #{litmus_nodeName}" }
-          if litmus_nodeName == app_nodeName
+          if litmus_nodeName != app_nodeName
             Log.info { "Litmus and the workload are scheduled to the same node. Re-scheduling Litmus" }
             nodes = KubectlClient::Get.schedulable_nodes_list
             node_names = nodes.map { |item|
@@ -282,7 +282,7 @@ task "node_drain", ["install_litmus"] do |t, args|
                  LitmusManager.add_node_selector(litmus_nodes[0], airgap=false)
             end
             KubectlClient::Apply.file("#{LitmusManager::MODIFIED_LITMUS_FILE}")
-            KubectlClient::Get.resource_wait_for_install(kind="Deployment", resource_nome="litmus", wait_count=180, namespace="litmus")
+            KubectlClient::Get.resource_wait_for_install(kind="Deployment", resource_name="chaos-operator-ce", wait_count=180, namespace="litmus")
           end
 
           if args.named["offline"]?
