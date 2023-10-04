@@ -259,7 +259,7 @@ task "node_drain", ["install_litmus"] do |t, args|
           litmus_nodeName = litmusNodeName_response.to_s
           Log.info { "Workload Node Name: #{app_nodeName}" }
           Log.info { "Litmus Node Name: #{litmus_nodeName}" }
-          if litmus_nodeName != app_nodeName
+          if litmus_nodeName == app_nodeName
             Log.info { "Litmus and the workload are scheduled to the same node. Re-scheduling Litmus" }
             nodes = KubectlClient::Get.schedulable_nodes_list
             node_names = nodes.map { |item|
