@@ -347,17 +347,17 @@ task "node_drain", ["install_litmus"] do |t, args|
           LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
           test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
         end
-      end
 
-      # Uncordon the node.
-      result = KubectlClient::Uncordon.command("#{cordon_target_node_name}")
+        # Uncordon the node.
+        result = KubectlClient::Uncordon.command("#{cordon_target_node_name}")
 
-      # If uncordoning fails, log the error.
-      if result[:status].success?
-        Log.info { "Uncordoned node #{cordon_target_node_name} successfully." }
-      else
-        Log.error { "Uncordoning node #{cordon_target_node_name} failed." }
-        skipped = true
+        # If uncordoning fails, log the error.
+        if result[:status].success?
+          Log.info { "Uncordoned node #{cordon_target_node_name} successfully." }
+        else
+          Log.error { "Uncordoning node #{cordon_target_node_name} failed." }
+          skipped = true
+        end
       end
 
       test_passed
