@@ -16,6 +16,8 @@
 /tools/cluster-api
 /tools/airgapped_kind/kind_node/node.tar.gz
 /tools/dockerd-manifest.yml
+/tools/olm/
+/tools/operator_sdk/
 admin.conf
 cnf-testsuite
 results.yml

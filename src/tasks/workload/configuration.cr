@@ -774,6 +774,31 @@ task "operator_privileged" do |_, args|
 
     resources = CNFManager.cnf_resources(args, config) { |resource| resource }
 
+    # TODO:  REMOVE THIS NOTE!  
+    
+    # (10/9/2023)
+    # decided making subscriptions is the way to go
+    # so last time I figured out how to an properly created bundle into a repository
+    # now you need to create a catalog source https://olm.operatorframework.io/docs/tasks/creating-a-catalog/
+    # add the bundle to the catalog source and then you can install the operator from the catalog 
+    # see src/tasks/utils/operator.cr
+    # for more
+    
+    # (9/20-2023)
+    # so I think I figured out the answer here
+    # a lot of people are installing standardizedstuff from redhat and the csvs are built from subscriptions in that case
+    # and if you check sample_operator 
+    # sample-cnfs/sample_operator/chart/templates/prometheus_operator.yaml
+    # there is the subscripton. but there is no csv in the chart. 
+    # so i think we have to look for the subscription and then get the csvs from the subscription
+
+    # still not 100% sure but I think all the other resources in that chart are a distraction from just copy pasta ing our 
+    # standard example cnf and not deleting all the other stuff. so it installs core dns but the real operator is the prometheus
+    # seems like ther are a few other needed things too though https://operatorhub.io/how-to-install-an-operator
+
+    # (9-19-2023) I think the next quesiont here is do we have to bother with subscriptions at all?
+    # or can we just look for the CSVs and then look for the pods from the CSVs?
+
     installed_csvs = Operator::OLM.get_all_successfully_installed_csvs(resources)
 
     Log.info { "Installed CSVs: #{installed_csvs}" }

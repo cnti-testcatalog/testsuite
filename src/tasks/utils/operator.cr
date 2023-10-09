@@ -16,6 +16,7 @@ module Operator
       "#{FileUtils.pwd}/tmp"
     end
 
+
     def self.install
       # Install OLM
       FileUtils.mkdir_p(self.tmp_dir)
@@ -30,16 +31,40 @@ module Operator
       ShellCmd.run("cd #{install_dir} && git fetch -a && git checkout tags/#{Operator::OLM::VERSION} && cd -", "git_co_#{Operator::OLM::VERSION}")
 
       begin
+        #TODO: switch to using binary ./tools/operator_sdk/operator-sdk_linux_amd64 olm install --version v0.25.0
         Helm.install("operator --set olm.image.ref=quay.io/operator-framework/olm:#{Operator::OLM::VERSION} --set catalog.image.ref=quay.io/operator-framework/olm:#{Operator::OLM::VERSION} --set package.image.ref=quay.io/operator-framework/olm:#{Operator::OLM::VERSION} #{install_dir}/deploy/chart/")
       rescue e : Helm::CannotReuseReleaseNameError
         Log.info { "operator-lifecycle-manager already installed" }
       end
     end
 
-    # this is still not cleaning up everything
-    # you can test it out with their binary
+    # bundle explaination https://olm.operatorframework.io/docs/tasks/creating-operator-bundle/#bundle-images
     # https://sdk.operatorframework.io/docs/installation/#install-from-github-release
     # move the binary to ./tools/operator_sdk/operator-sdk_linux_amd64
+    def self.generate_bundle
+      # ./tools/olm/operator-sdk generate bundle --package simple-privileged-operator --input-dir sample-cnfs/sample_privileged_operator/opm_bundle_src/ --output-dir sample-cnfs/sample_privileged_operator/opm_bundle/ --verbose
+      # cp bundle.Dockerfile sample-cnfs/sample_privileged_operator/opm_bundle/bundle.Dockerfile
+      # docker build -f bundle.Dockerfile . -t simple-privileged-operator-bundle:v0.0.0
+    end
+
+    # https://olm.operatorframework.io/docs/tasks/creating-a-catalog/
+    # gonna need opm cli tool for this one
+    def self.setup_catalog
+    end
+
+    # TODO: finish this!
+    def self.setup_thing
+      # self.install # olm crds and stuff
+      # self.generate_bundle # this will generate the bundle and the docker image
+      # self.setup_catalog  # this will setup the catalog and push bundle 
+      # self.apply_subscription # here we need to wait for the csv to be installed
+      # then onces it all up and running we can run the tests with cnf_setup and procede as usual
+      # and just a note all cnf_setup will be doing is using the standard helm setup to apply the subscription
+    end
+
+    # TODO: fix this
+    # this is still not cleaning up everything
+    # you can test it out with their binary
     # ./tools/operator_sdk/operator-sdk_linux_amd64 olm status --version Operator::OLM::VERSION
     # i.e. ./tools/operator_sdk/operator-sdk_linux_amd64 olm status --version v0.25.0
     def self.cleanup

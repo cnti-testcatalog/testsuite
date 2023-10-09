@@ -1,21 +1,35 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: ClusterServiceVersion
 metadata:
-  name: simple-privileged-operator.v0.0.1
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+    createdAt: "2023-10-09T20:58:19Z"
+    operators.operatorframework.io/builder: operator-sdk-v1.28.0-ocp
+    operators.operatorframework.io/project_layout: unknown
+  name: simple-privileged-operator.v0.0.0
   namespace: simple-privileged-operator
 spec:
-  displayName: Simple Operator
-  provider:
-    name: Example
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - kind: Simple
+      name: simples.operator.tld
+      version: v1alpha1
+  description: Simple Privileged Operator description. TODO.
+  displayName: Simple Privileged Operator
+  icon:
+  - base64data: ""
+    mediatype: ""
   installModes:
-    - type: OwnNamespace
-      supported: true
-    - type: SingleNamespace
-      supported: false
-    - type: MultiNamespace
-      supported: false
-    - type: AllNamespaces
-      supported: false
+  - type: OwnNamespace
+    supported: true
+  - type: SingleNamespace
+    supported: false
+  - type: MultiNamespace
+    supported: false
+  - type: AllNamespaces
+    supported: false
   install:
     strategy: deployment
     spec:
@@ -62,12 +76,17 @@ spec:
                 command: ['sh', '-c', 'echo The app is running! && sleep 3600']
                 securityContext:
                   privileged: true
-  version: 0.0.1
-  apiservicedefinitions: {}
-  customresourcedefinitions:
-    owned:
-    - kind: Simple
-      name: simples.operator.tld
-      version: v1alpha1
-      displayName: Simple Operator
-      description: A simple operator
+  keywords:
+  - simple-privileged-operator
+  links:
+  - name: Simple Privileged Operator
+    url: https://simple-privileged-operator.domain
+  maintainers:
+  - email: will@vulk.coop
+    name: Vulk Coop
+  maturity: alpha
+  provider:
+    name: Vulk Coop
+    url: https://vulk.coop
+  version: 0.0.0
+
