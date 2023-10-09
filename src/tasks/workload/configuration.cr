@@ -787,11 +787,13 @@ task "operator_privileged" do |_, args|
     test_passed = true
 
     pods.each do |pod|
-      privileged = pod.dig?("spec", "securityContext", "privileged")
-
-      if privileged && privileged == "true"
-        Log.info { "Pod #{pod["metadata"]["name"]} is running with privileged rights" }
-        test_passed = false
+      containers = pod.dig?("spec", "containers")
+      containers && containers.as_a.each do |container|
+        privileged = container.dig?("securityContext", "privileged")
+        if privileged && privileged == "true"
+          Log.info { "Pod #{pod["metadata"]["name"]}  Container #{container["name"]} is running with privileged rights!" }
+          test_passed = false
+        end
       end
     end
 
