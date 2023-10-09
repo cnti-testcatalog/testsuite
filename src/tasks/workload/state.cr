@@ -229,10 +229,29 @@ task "node_drain", ["install_litmus"] do |t, args|
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
 
       schedulable_nodes_count=KubectlClient::Get.schedulable_nodes_list
+      cordon_deployment_label = "#{spec_labels.as_h.first_key}"
+      cordon_deployment_value = "#{spec_labels.as_h.first_value}"
+
+      # Declare this outside the block so that the name of the node can be used to uncordon later.
+      cordon_target_node_name = nil
+
       if schedulable_nodes_count.size > 1
-        LitmusManager.cordon_target_node("#{spec_labels.as_h.first_key}","#{spec_labels.as_h.first_value}", namespace: resource["namespace"])
+        # Identify cordon node target.
+        cordon_target_node_name = LitmusManager.get_target_node_to_cordon(cordon_deployment_label, cordon_deployment_value, namespace: app_namespace)
+        Log.info { "Found node to cordon #{cordon_target_node_name} using label #{cordon_deployment_label}='#{cordon_deployment_value}' in #{app_namespace} namespace." }
+
+        # Cordon the node.
+        result = KubectlClient::Cordon.command("#{cordon_target_node_name}")
+
+        # If cordoning fails, skip the test.
+        if result[:status].success?
+          Log.info { "Cordoned node #{cordon_target_node_name} successfully." }
+        else
+          Log.info { "Unable to cordon node #{cordon_target_node_name}." }
+          skipped = true
+        end
       else
-        Log.info { "The target node was unable to cordoned sucessfully" }
+        Log.info { "Skipping test. Scheduleable node count is not > 1." }
         skipped = true
       end
 
@@ -329,6 +348,18 @@ task "node_drain", ["install_litmus"] do |t, args|
           test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
         end
       end
+
+      # Uncordon the node.
+      result = KubectlClient::Uncordon.command("#{cordon_target_node_name}")
+
+      # If uncordoning fails, log the error.
+      if result[:status].success?
+        Log.info { "Uncordoned node #{cordon_target_node_name} successfully." }
+      else
+        Log.error { "Uncordoning node #{cordon_target_node_name} failed." }
+        skipped = true
+      end
+
       test_passed
     end
     if skipped
