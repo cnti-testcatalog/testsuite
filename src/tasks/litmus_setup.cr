@@ -76,15 +76,12 @@ module LitmusManager
     File.write(MODIFIED_LITMUS_FILE, output_file) unless output_file == nil
   end
 
-  def self.cordon_target_node(deployment_label, deployment_value, namespace)
+  def self.get_target_node_to_cordon(deployment_label, deployment_value, namespace)
     app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_value} -n #{namespace} -o=jsonpath='{.items[0].spec.nodeName}'"
     Log.info { "Getting the operator node name: #{app_nodeName_cmd}" }
     status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
     Log.for("verbose").info { "status_code: #{status_code}" } 
-    app_nodeName = appNodeName_response.to_s 
-    status_code = KubectlClient::Cordon.command("#{app_nodeName}")
-    Log.for("verbose").info { "status_code: #{status_code}" }
-    Log.info { "The target node has been cordoned sucessfully" }
+    appNodeName_response.to_s
   end
 
   ## wait_for_test will wait for the completion of litmus test
