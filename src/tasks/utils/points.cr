@@ -371,6 +371,10 @@ module CNFManager
 
 
     def self.upsert_task(task, status, points, start_time)
+      # In certain cases the results file might not exist.
+      # So create one.
+      CNFManager::Points::Results.ensure_results_file!
+
       results = File.open("#{Results.file}") do |f|
         YAML.parse(f)
       end
