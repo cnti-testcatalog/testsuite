@@ -130,15 +130,18 @@ begin
   puts `#{PROGRAM_NAME} help` if ARGV.empty?
   # See issue #426 for exit code requirement
   Sam.process_tasks(ARGV.clone)
-  yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
-    YAML.parse(file)
-  end
-  Log.info { "results yaml: #{yaml}" }
-  case (yaml["exit_code"])
-  when 1
-    exit 1
-  when 2
-    exit 2
+
+  if File.exists?("#{CNFManager::Points::Results.file}")
+    yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
+      YAML.parse(file)
+    end
+    Log.info { "results yaml: #{yaml}" }
+    case (yaml["exit_code"])
+    when 1
+      exit 1
+    when 2
+      exit 2
+    end
   end
 rescue e : Sam::NotFound
   puts e.message

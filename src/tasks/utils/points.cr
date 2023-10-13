@@ -21,30 +21,18 @@ module CNFManager
 
       @@file : String
       @@file = CNFManager::Points.create_final_results_yml_name
-      Log.debug { "Results.file" }
-      continue = false
-      # LOGGING.info "file exists?:#{File.exists?(@@file)}"
-      if File.exists?("#{@@file}")
-        stdout_info "Do you wish to overwrite the #{@@file} file? If so, your previous results.yml will be lost."
-        print "(Y/N) (Default N): > "
-        if ENV["CRYSTAL_ENV"]? == "TEST"
-          continue = true
-        else
-          user_input = gets
-          if user_input == "Y" || user_input == "y"
-            continue = true
-          end
-        end
-      else
-        continue = true
-      end
-      if continue
-        File.open("#{@@file}", "w") do |f|
-          YAML.dump(CNFManager::Points.template_results_yml, f)
-        end
-      end
+      Log.debug { "Results.file: #{Results.file}" }
+
       def self.file
         @@file
+      end
+
+      def self.ensure_results_file!
+        return true if File.exists?("#{file}")
+
+        File.open("#{file}", "w") do |f|
+          YAML.dump(CNFManager::Points.template_results_yml, f)
+        end
       end
     end
 
@@ -383,6 +371,10 @@ module CNFManager
 
 
     def self.upsert_task(task, status, points, start_time)
+      # In certain cases the results file might not exist.
+      # So create one.
+      CNFManager::Points::Results.ensure_results_file!
+
       results = File.open("#{Results.file}") do |f|
         YAML.parse(f)
       end
