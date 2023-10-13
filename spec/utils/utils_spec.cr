@@ -256,11 +256,16 @@ describe "Utils" do
   end
 
   it "'logger' or verbose output should be shown when verbose flag is set", tags: ["logger"] do
-    response_s = `./cnf-testsuite -l info helm_deploy verbose`
-    LOGGING.info response_s
-    puts response_s
-    $?.success?.should be_true
-    (/helm_deploy args/ =~ response_s).should_not be_nil
+    begin
+      `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample-coredns-cnf`
+      response_s = `./cnf-testsuite -l info helm_deploy verbose`
+      Log.info { response_s }
+      puts response_s
+      $?.success?.should be_true
+      (/helm_deploy args/ =~ response_s).should_not be_nil
+    ensure
+      CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-coredns-cnf", verbose: true)
+    end
   end
 
   it "'#update_yml' should update the value for a key in a yml file", tags: ["logger"]  do
