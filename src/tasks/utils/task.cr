@@ -26,6 +26,8 @@ module CNFManager
     def self.task_runner(args, check_cnf_installed=true, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
       LOGGING.info("task_runner args: #{args.inspect}")
 
+      CNFManager::Points::Results.ensure_results_file!
+
       if check_cnf_installed
         ensure_cnf_installed!
       end
