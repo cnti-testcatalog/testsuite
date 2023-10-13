@@ -12,6 +12,9 @@ describe "SampleUtils" do
     $?.success?.should be_true
     `./cnf-testsuite cleanup`
     $?.success?.should be_true
+
+    # Ensure a results file is present to test different scenarios
+    CNFManager::Points::Results.ensure_results_file!
   end
 
    # after_all do
@@ -494,6 +497,3 @@ describe "SampleUtils" do
   end
 
 end
-
-
-

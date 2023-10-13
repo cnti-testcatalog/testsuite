@@ -10,6 +10,9 @@ describe "Utils" do
   before_all do
     `./cnf-testsuite setup`
     $?.success?.should be_true
+
+    # Ensure a results file is present to test different scenarios
+    CNFManager::Points::Results.ensure_results_file!
   end
 
   before_each do
@@ -284,4 +287,3 @@ describe "Utils" do
   end
 
 end
-
