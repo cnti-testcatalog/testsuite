@@ -13,6 +13,7 @@ require "airgap"
 require "tar"
 require "./image_prepull.cr"
 require "./generate_config.cr"
+require "./oran_monitor.cr"
 require "log"
 require "ecr"
 
