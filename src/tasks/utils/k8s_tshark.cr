@@ -18,24 +18,40 @@ module K8sTshark
         nodes = KubectlClient::Get.nodes_by_pod(first_labeled_pod)
         node = nodes.first
         #create a unique name for the log
-        rnd = Random.new
-        name_id = rnd.next_int
-        tshark_log_name = "/tmp/tshark-#{name_id}.json"
-        Log.info { "tshark_log_name #{tshark_log_name}" }
-
-        #tshark -ni any  -Y nas_5gs.mm.type_id -T json 2>&1 | tee hi.log 
-        #command= -ni any  -Y nas_5gs.mm.type_id -T json
-        #todo check if tshark running already to keep from saturating network
-        #todo play with reducing default duration
-        ClusterTools.exec_by_node_bg("tshark #{command} -a duration:#{duration} 2>&1 | tee #{tshark_log_name}", node)
+        # rnd = Random.new
+        # name_id = rnd.next_int
+        # tshark_log_name = "/tmp/tshark-#{name_id}.json"
+        # Log.info { "tshark_log_name #{tshark_log_name}" }
+        #
+        # #tshark -ni any  -Y nas_5gs.mm.type_id -T json 2>&1 | tee hi.log 
+        # #command= -ni any  -Y nas_5gs.mm.type_id -T json
+        # #todo check if tshark running already to keep from saturating network
+        # #todo play with reducing default duration
+        # ClusterTools.exec_by_node_bg("tshark #{command} -a duration:#{duration} 2>&1 | tee #{tshark_log_name}", node)
         # ClusterTools.exec_by_node_bg("tshark -ni any -a duration:120 -Y nas_5gs.mm.type_id  -T json 2>&1 | tee #{tshark_log_name}", node)
-        Log.info { "after exec by node bg" }
-        resp = tshark_log_name
+        # Log.info { "after exec by node bg" }
+        # resp = tshark_log_name
+        resp = log_of_tshark_by_node(command, node, duration="120")
       else
         resp = "label key:#{label_key} value: #{label_value} not found"
       end
       Log.info { "resp #{resp}" }
       resp
+  end
+
+  def self.log_of_tshark_by_node(command, node, duration="120") : String
+    #create a unique name for the log
+    rnd = Random.new
+    name_id = rnd.next_int
+    tshark_log_name = "/tmp/tshark-#{name_id}.json"
+    Log.info { "tshark_log_name #{tshark_log_name}" }
+
+    #tshark -ni any  -Y nas_5gs.mm.type_id -T json 2>&1 | tee hi.log 
+    #command= -ni any  -Y nas_5gs.mm.type_id -T json
+    #todo check if tshark running already to keep from saturating network
+    ClusterTools.exec_by_node_bg("tshark #{command} -a duration:#{duration} 2>&1 | tee #{tshark_log_name}", node)
+    Log.info { "after exec by node bg" }
+    resp = tshark_log_name
   end
 
   def self.regex_tshark_log(regex, tshark_log_name)

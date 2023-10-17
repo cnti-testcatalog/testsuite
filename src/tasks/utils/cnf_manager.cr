@@ -21,7 +21,7 @@ module CNFManager
   class ElapsedTimeConfigMapTemplate
     # elapsed_time should be Int32 but it is being passed as string
     # So the old behaviour has been retained as is to prevent any breakages
-    def initialize(@release_name : String, @helm_used : Bool, @elapsed_time : String, @immutable : Bool, @tracing_used : Bool)
+    def initialize(@release_name : String, @helm_used : Bool, @elapsed_time : String, @immutable : Bool, @tracing_used : Bool, @e2_found : Bool)
     end
 
     ECR.def_to_s("src/templates/elapsed_time_configmap.yml.ecr")
@@ -836,11 +836,29 @@ module CNFManager
 
     default_namespace = "default"
 
+    # todo determine what the ric is/if there is a ric installed (labeling)
+    #option 1
+    # todo determine what pad/node the ric is in  (pod/node by label)
+    # todo start tshark capture of the e2 traffic 
+    # todo restart the ric pod when running the ric e2 test
+    # todo validate the e2 traffic
+    #option 2
+    # todo start tshark capture of the e2 traffic (on all nodes?)
+    # todo install the ric/xapp (the xapp should be installed last?)
+    # todo note which pad/node the ric is in  (what if cluster tools tshark was  not executed on the node with the ric?)
+    # todo alternative (capture on gnodeb node)
+    # todo validate the e2 traffic
+    # todo save off the result to a config map
+    # todo check the config map in the e2 test
+
     match = JaegerManager.match()
     if match[:found]
       baselines = JaegerManager.unique_services_total
       Log.info { "baselines: #{baselines}" }
     end
+    # todo start tshark monitoring the e2 traffic 
+    tshark_log_name = ORANMonitor.start_e2_capture?(config.cnf_config)
+
     # todo separate out install methods into a module/function that accepts a block
     liveness_time = 0
     Log.for("sample_setup:install_method").info { "#{install_method[0]}" }
@@ -1034,7 +1052,14 @@ module CNFManager
     else
       tracing_used = false
     end
+    if ORANMonitor.isCNFaRIC?(config.cnf_config)
+      sleep 30.0
+      e2_found = ORANMonitor.e2_session_established?(tshark_log_name)
+    else
+      e2_found = false
+    end
 
+    Log.info { "final e2_found: #{e2_found}" }
     Log.info { "final liveness_time: #{liveness_time}" }
     Log.info { "elapsed_time.seconds: #{elapsed_time.seconds}" }
     Log.info { "helm_install: #{helm_install}" }
@@ -1064,7 +1089,8 @@ module CNFManager
       # "#{elapsed_time.seconds}",
       "#{liveness_time}",
       immutable_configmap,
-      tracing_used
+      tracing_used,
+      e2_found
     ).to_s
     #TODO find a way to kubectlapply directly without a map
     Log.debug { "elapsed_time_template : #{elapsed_time_template}" }
@@ -1075,6 +1101,8 @@ module CNFManager
     #TODO call kubectl apply on file
     KubectlClient::Apply.file(configmap_path)
     # TODO when uninstalling, remove config map
+  ensure
+    #todo uninstall/reinstall clustertools because of tshark bug
   end
 
   def self.cnf_to_new_cluster(config, kubeconfig, offline=false)
