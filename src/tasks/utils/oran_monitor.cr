@@ -1,4 +1,5 @@
 require "cluster_tools"
+require "./k8s_tshark.cr"
 module ORANMonitor 
 
   def self.isCNFaRIC?(cnf_config)
