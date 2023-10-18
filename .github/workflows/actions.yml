@@ -228,6 +228,8 @@ jobs:
         kind --version
     - name: Install kubectl
       uses: azure/setup-kubectl@v3
+      with:
+         version: 'v1.25.15'
     - name: Create Kind Cluster 
       run: |
         cat << EOF > /tmp/cluster.yml
