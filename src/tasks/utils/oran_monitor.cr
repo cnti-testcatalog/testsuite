@@ -3,6 +3,7 @@ require "./k8s_tshark.cr"
 module ORANMonitor 
 
   def self.isCNFaRIC?(cnf_config)
+    Log.info { "isCNFaRIC?" }
     ric = cnf_config[:ric_label]? 
     Log.info { "ric: #{ric}" }
     ric_key : String  = ""
@@ -20,6 +21,7 @@ module ORANMonitor
   end
   
   def self.start_e2_capture?(cnf_config)
+    Log.info { "start_e2_capture" }
     ric_key : String  = ""
     ric_value : String = ""
     tshark_log_name : String | Nil
