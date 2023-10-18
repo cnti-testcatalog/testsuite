@@ -44,7 +44,7 @@ module K8sTshark
     Log.info { "log_of_tshark_by_node: command #{command}" }
     #create a unique name for the log
     rnd = Random.new
-    name_id = rnd.next_int
+    name_id = rnd.next_int.abs
     tshark_log_name = "/tmp/tshark-#{name_id}.json"
     Log.info { "log_of_tshark_by_node tshark_log_name #{tshark_log_name}" }
 
@@ -57,7 +57,7 @@ module K8sTshark
   end
 
   def self.regex_tshark_log(regex, tshark_log_name)
-    Log.info { "regex_tshark_log tshark_log_name: #{tshark_log_name}" }
+    Log.info { "regex_tshark_log regex tshark_log_name: #{regex} #{tshark_log_name}" }
     regex_found : Bool | Nil
     resp = File.read("#{tshark_log_name}")
     Log.info { "tshark_log_name resp: #{resp}" }
