@@ -1054,7 +1054,7 @@ module CNFManager
       tracing_used = false
     end
     if ORANMonitor.isCNFaRIC?(config.cnf_config)
-      sleep 30.0
+      sleep 120.0
       e2_found = ORANMonitor.e2_session_established?(tshark_log_name)
     else
       e2_found = false
