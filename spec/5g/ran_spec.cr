@@ -58,7 +58,7 @@ describe "5g" do
   #TODO ueransim library (w/setup command)
   #TODO Open5gs libary (w/setup command)
 
-  it "'oran_e2_connection' should pass if the ORAN enabled RAN connects to the RIC using the e2 standard", tags: ["5g"]  do
+  it "'oran_e2_connection' should pass if the ORAN enabled RAN connects to the RIC using the e2 standard", tags: ["oran"]  do
     begin
       Log.info {`./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_srsran_ueauth_open5gs/cnf-testsuite.yml`}
       $?.success?.should be_true
@@ -68,14 +68,14 @@ describe "5g" do
       Log.info {"response: #{response_s}"}
       (/PASSED: RAN connects to a RIC using the e2 standard interface/ =~ response_s).should_not be_nil
     ensure
-      Log.info {`./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_open5gs/cnf-testsuite.yml`}
-      $?.success?.should be_true
       Log.info {`./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-oran-ric/cnf-testsuite.yml`}
+      $?.success?.should be_true
+      Log.info {`./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_open5gs/cnf-testsuite.yml`}
       $?.success?.should be_true
     end
   end
 
-  it "'oran_e2_connection' should fail if the ORAN enabled RAN does not connect to the RIC using the e2 standard", tags: ["5g"]  do
+  it "'oran_e2_connection' should fail if the ORAN enabled RAN does not connect to the RIC using the e2 standard", tags: ["oran"]  do
     begin
       Log.info {`./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_srsran_ueauth_open5gs/cnf-testsuite.yml`}
       $?.success?.should be_true

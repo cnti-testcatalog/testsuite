@@ -34,6 +34,7 @@ jobs:
         TEST_ARRAY=("${TEST_ARRAY[@]/pod_memory_hog/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/pod_network_latency/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/zombie/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/oran/}")
         TEST_LIST=$(for i in ${TEST_ARRAY[@]}
         do
                  echo "{\"spec\":\"$i\"}," | tr -d '\n'
@@ -190,7 +191,7 @@ jobs:
         echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
         echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
 
-        #        LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
+        LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
 
 
     - name: Delete Cluster
@@ -202,13 +203,13 @@ jobs:
         docker volume prune -f || true
         
   chaos:
-    name: Chaos Tests
+    name: Chaos & Oran Tests
     needs: [tests]
     runs-on: [ubuntu-22.04]
     strategy:
       fail-fast: false
       matrix:
-        tag: ["pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill", "pod_network_corruption", "pod_network_duplication", "zombie"]
+        tag: ["pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill", "pod_network_corruption", "pod_network_duplication", "zombie", "oran"]
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -285,10 +286,8 @@ jobs:
         echo "RUNNER RATE LIMIT: $ANONYMOUS_RUNNER_RATE_LIMIT"
         echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT"
         echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT"
-        # LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.tag }} -v
+        LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.tag }} -v
 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3.14
   # chaos-airgapped:
   #   name: Chaos Tests Airgapped
   #   needs: [tests]
