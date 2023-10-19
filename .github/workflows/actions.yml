@@ -228,7 +228,7 @@ jobs:
         kind --version
     - name: Install kubectl
       run: |
-        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        wget -O kubectl "https://dl.k8s.io/release/v1.28.3/bin/linux/amd64/kubectl"
         ls -la
         sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
@@ -251,10 +251,7 @@ jobs:
         kind --version
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
-        #        kubectl get nodes 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-
+        kubectl get nodes 
 
     - name: Cache crystal shards
       uses: actions/cache@v3
