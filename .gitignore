@@ -75,3 +75,7 @@ tools/chaos-experiments
 ueransim-gnb/
 gnb-ues-values.yaml
 .icr*
+configadm.yml
+litmus-operator-downloaded.yaml
+litmus-operator-modified.yaml
+

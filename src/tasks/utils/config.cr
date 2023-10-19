@@ -36,6 +36,7 @@ module CNFManager
                                      docker_insecure_registries: Array(String) | Nil,
                                      #todo change this to an array of labels that capture all of 5g core nodes
                                      core_label: String,
+                                     ric_label: String,
                                      fiveG_core: NamedTuple(amf_pod_name: String,
                                                            mmc: String,
                                                            mnc: String,
@@ -128,7 +129,8 @@ module CNFManager
       apn:  optional_key_as_string(config, "apn"),
       emergency:  core_emergency,
       }
-      core  = optional_key_as_string(config, "core")
+      core  = optional_key_as_string(config, "core_label")
+      ric = optional_key_as_string(config, "ric_label")
       if helm_directory.empty?
         working_chart_directory = "exported_chart"
         Log.info { "USING EXPORTED CHART PATH" } 
@@ -207,6 +209,7 @@ module CNFManager
                                white_list_container_names: white_list_container_names,
                                docker_insecure_registries: docker_insecure_registries,
                                core_label: core,
+                               ric_label: ric,
                                fiveG_core: fiveG_core,
                                image_registry_fqdns: image_registry_fqdns,})
 

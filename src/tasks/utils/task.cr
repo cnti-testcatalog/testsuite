@@ -85,6 +85,7 @@ module CNFManager
                                             white_list_container_names: [""],
                                             docker_insecure_registries: [] of String,
                                             core_label: "",
+                                            ric_label: "",
                                             fiveG_core: {amf_pod_name:  "",
                                                            mmc:  "",
                                                            mnc:  "",

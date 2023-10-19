@@ -1,0 +1,4 @@
+---
+manifest_directory: manifests 
+release_name: oran-ric 
+ric_label: app.kubernetes.io/name=flexric 
