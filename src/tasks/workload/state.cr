@@ -330,7 +330,7 @@ task "node_drain", ["install_litmus"] do |t, args|
 
           chaos_experiment_name = "node-drain"
           total_chaos_duration = "90"
-          test_name = "#{resource["name"]}-#{Random.rand(99)}" 
+          test_name = "#{resource["name"]}-#{Random::Secure.hex(4)}"
           chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
           template = ChaosTemplates::NodeDrain.new(
@@ -342,6 +342,8 @@ task "node_drain", ["install_litmus"] do |t, args|
             total_chaos_duration,
             app_nodeName
           ).to_s
+          Log.for("node_drain").info { "Chaos test name: #{test_name}; Experiment name: #{chaos_experiment_name}; Label #{deployment_label}=#{deployment_label_value}; namespace: #{app_namespace}" }
+
           File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
           KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
           LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
