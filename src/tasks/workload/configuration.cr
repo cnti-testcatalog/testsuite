@@ -299,6 +299,8 @@ end
 desc "Does the CNF have hardcoded IPs in the K8s resource configuration"
 task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
   task_response = CNFManager::Task.task_runner(args) do |args, config|
+    testsuite_task = "hardcoded_ip_addresses_in_k8s_runtime_configuration"
+    Log.for(testsuite_task).info { "Starting test" }
     VERBOSE_LOGGING.info "Task Name: hardcoded_ip_addresses_in_k8s_runtime_configuration" if check_verbose(args)
     helm_chart = config.cnf_config[:helm_chart]
     helm_directory = config.cnf_config[:helm_directory]
@@ -330,12 +332,12 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     VERBOSE_LOGGING.info "IPs: #{ip_search}" if check_verbose(args)
 
     if ip_search.empty?
-      upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✔️  🏆 PASSED: No hard-coded IP addresses found in the runtime K8s configuration", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  🏆 PASSED: No hard-coded IP addresses found in the runtime K8s configuration", Time.utc)
     else
-      upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  🏆 FAILED: Hard-coded IP addresses found in the runtime K8s configuration", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  🏆 FAILED: Hard-coded IP addresses found in the runtime K8s configuration", Time.utc)
     end
   rescue
-    upsert_skipped_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "⏭️  🏆 SKIPPED: unknown exception", Time.utc)
+    upsert_skipped_task(testsuite_task, "⏭️  🏆 SKIPPED: unknown exception", Time.utc)
   ensure
     KubectlClient::Delete.command("namespace hardcoded-ip-test --force --grace-period 0")
   end
