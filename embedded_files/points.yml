@@ -107,6 +107,8 @@
   tags: configuration, static, workload
 - name: operator_installed
   tags: configuration, dynamic, workload, cert, bonus
+- name: operator_privileged
+  tags: configuration, dynamic, workload, cert, bonus
 - name: liveness
   tags: resilience, dynamic, workload, essential, cert
   pass: 100

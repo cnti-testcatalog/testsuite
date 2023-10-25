@@ -1,0 +1,92 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+    createdAt: "2023-10-09T20:58:19Z"
+    operators.operatorframework.io/builder: operator-sdk-v1.28.0-ocp
+    operators.operatorframework.io/project_layout: unknown
+  name: simple-privileged-operator.v0.0.0
+  namespace: simple-privileged-operator
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - kind: Simple
+      name: simples.operator.tld
+      version: v1alpha1
+  description: Simple Privileged Operator description. TODO.
+  displayName: Simple Privileged Operator
+  icon:
+  - base64data: ""
+    mediatype: ""
+  installModes:
+  - type: OwnNamespace
+    supported: true
+  - type: SingleNamespace
+    supported: false
+  - type: MultiNamespace
+    supported: false
+  - type: AllNamespaces
+    supported: false
+  install:
+    strategy: deployment
+    spec:
+      permissions:
+      - serviceAccountName: simple-privileged-operator
+        rules:
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          - services
+          - endpoints
+          - persistentvolumeclaims
+          - events
+          - configmaps
+          - secrets
+          verbs:
+          - '*'
+        - apiGroups:
+          - apps
+          resources:
+          - deployments
+          - daemonsets
+          - replicasets
+          - statefulsets
+          verbs:
+          - '*'
+      deployments:
+      - name: simple-privileged-operator
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              name: simple-privileged-operator
+          template:
+            metadata:
+              labels:
+                name: simple-privileged-operator
+            spec:
+              serviceAccountName: simple-privileged-operator
+              containers:
+              - name: simple-privileged-operator
+                image: busybox
+                command: ['sh', '-c', 'echo The app is running! && sleep 3600']
+                securityContext:
+                  privileged: true
+  keywords:
+  - simple-privileged-operator
+  links:
+  - name: Simple Privileged Operator
+    url: https://simple-privileged-operator.domain
+  maintainers:
+  - email: will@vulk.coop
+    name: Vulk Coop
+  maturity: alpha
+  provider:
+    name: Vulk Coop
+    url: https://vulk.coop
+  version: 0.0.0
+

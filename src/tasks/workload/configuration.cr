@@ -732,51 +732,26 @@ task "operator_installed" do |_, args|
     Log.for("verbose").info { "operator_installed" } if check_verbose(args)
     Log.debug { "cnf_config: #{config}" }
 
-    subscription_names = CNFManager.cnf_resources(args, config) do |resource|
-      kind = resource.dig("kind").as_s
-      if kind && kind.downcase == "subscription"
-        { "name" => resource.dig("metadata", "name"), "namespace" => resource.dig("metadata", "namespace") }
-      end
-    end.compact
+    resources = CNFManager.cnf_resources(args, config) { |resource| resource }
+
+    subscription_names = Operator::OLM.get_all_subscription_names(resources)
 
     Log.info { "Subscription Names: #{subscription_names}" }
 
-
-    #TODO Warn if csv is not found for a subscription.
-    csv_names = subscription_names.map do |subscription|
-      second_count = 0
-      wait_count = 120
-      csv_created = nil
-      resource_created = false
-
-      KubectlClient::Get.wait_for_resource_key_value("sub", "#{subscription["name"]}", {"status", "installedCSV"}, namespace: subscription["namespace"].as_s)
-
-      installed_csv = KubectlClient::Get.resource("sub", "#{subscription["name"]}", "#{subscription["namespace"]}")
-      if installed_csv.dig?("status", "installedCSV")
-        { "name" => installed_csv.dig("status", "installedCSV"), "namespace" => installed_csv.dig("metadata", "namespace") }
-      end
-    end.compact
+    csv_names = Operator::OLM.get_all_csv_names_from_subscription_names(subscription_names)
 
     Log.info { "CSV Names: #{csv_names}" }
 
+    csvs_with_wait_for_resource_status = Operator::OLM.get_all_csv_wait_for_resource_statuses_from_csv_names(csv_names)
 
-    succeeded = csv_names.map do |csv| 
-      if KubectlClient::Get.wait_for_resource_key_value("csv", "#{csv["name"]}", {"status", "reason"}, namespace: csv["namespace"].as_s, value: "InstallSucceeded" ) && KubectlClient::Get.wait_for_resource_key_value("csv", "#{csv["name"]}", {"status", "phase"}, namespace: csv["namespace"].as_s, value: "Succeeded" )
-        csv_succeeded=true
-      end
-      csv_succeeded
-    end
-
-    Log.info { "Succeeded CSV Names: #{succeeded}" }
+    Log.info { "CSV Names with status: #{csvs_with_wait_for_resource_status}" }
 
     test_passed = false
 
-    if succeeded.size > 0 && succeeded.all?(true)
+    if csvs_with_wait_for_resource_status.size > 0 && csvs_with_wait_for_resource_status.all? { |csv_with_wait| csv_with_wait["wait_for_resource_status"] == "success" }
       Log.info { "Succeeded All True?" }
       test_passed = true
     end
-
-    test_passed
 
     emoji_image_size="⚖️👀"
     emoji_small="🐜"
@@ -786,6 +761,75 @@ task "operator_installed" do |_, args|
       upsert_passed_task("operator_installed", "✔️  PASSED: Operator is installed: #{emoji_small} #{emoji_image_size}", Time.utc)
     else
       upsert_na_task("operator_installed", "✖️  NA: No Operators Found #{emoji_big} #{emoji_image_size}", Time.utc)
+    end
+  end
+end
+
+desc "Does the CNF install an Operator with privileged rights?"
+task "operator_privileged" do |_, args|
+  CNFManager::Task.task_runner(args) do |args,config|
+    Log.for("verbose").info { "operator_privileged" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
+
+
+    resources = CNFManager.cnf_resources(args, config) { |resource| resource }
+
+    # TODO:  REMOVE THIS NOTE!  
+    
+    # (10/9/2023)
+    # decided making subscriptions is the way to go
+    # so last time I figured out how to an properly created bundle into a repository
+    # now you need to create a catalog source https://olm.operatorframework.io/docs/tasks/creating-a-catalog/
+    # add the bundle to the catalog source and then you can install the operator from the catalog 
+    # see src/tasks/utils/operator.cr
+    # for more
+    
+    # (9/20-2023)
+    # so I think I figured out the answer here
+    # a lot of people are installing standardizedstuff from redhat and the csvs are built from subscriptions in that case
+    # and if you check sample_operator 
+    # sample-cnfs/sample_operator/chart/templates/prometheus_operator.yaml
+    # there is the subscripton. but there is no csv in the chart. 
+    # so i think we have to look for the subscription and then get the csvs from the subscription
+
+    # still not 100% sure but I think all the other resources in that chart are a distraction from just copy pasta ing our 
+    # standard example cnf and not deleting all the other stuff. so it installs core dns but the real operator is the prometheus
+    # seems like ther are a few other needed things too though https://operatorhub.io/how-to-install-an-operator
+
+    # (9-19-2023) I think the next quesiont here is do we have to bother with subscriptions at all?
+    # or can we just look for the CSVs and then look for the pods from the CSVs?
+
+    installed_csvs = Operator::OLM.get_all_successfully_installed_csvs(resources)
+
+    Log.info { "Installed CSVs: #{installed_csvs}" }
+
+    pods = installed_csvs.flat_map do |csv|
+      Operator::OLM.get_all_pods_from_installed_csv(csv)
+    end
+
+    Log.info { "Pods from Installed CSVs: #{pods}" }
+
+    test_passed = true
+
+    pods.each do |pod|
+      containers = pod.dig?("spec", "containers")
+      containers && containers.as_a.each do |container|
+        privileged = container.dig?("securityContext", "privileged")
+        if privileged && privileged == "true"
+          Log.info { "Pod #{pod["metadata"]["name"]}  Container #{container["name"]} is running with privileged rights!" }
+          test_passed = false
+        end
+      end
+    end
+
+    emoji_image_size="⚖️👀"
+    emoji_small="🐜"
+    emoji_big="🦖"
+
+    if test_passed
+      upsert_passed_task("operator_privileged", "✔️  PASSED: Operator is NOT running with privileged rights: #{emoji_small} #{emoji_image_size}", Time.utc)
+    else
+      upsert_failed_task("operator_privileged", "✖️  FAILED: Operator is running with privileged rights #{emoji_small} #{emoji_image_size}", Time.utc)
     end
   end
 end

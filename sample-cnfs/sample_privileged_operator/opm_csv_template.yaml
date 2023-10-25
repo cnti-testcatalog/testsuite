@@ -1,0 +1,79 @@
+# why does this exist?
+# as reference for the ClusterServiceVersion 
+# you can't put it inside of the opm_bundle_src because it will be cause a panic in operator-sdk
+# but there are configuations that are needed for the ClusterServiceVersion to work that you want to make sure to update
+# sample-cnfs/sample_privileged_operator/opm_bundle/manifests/simple-privileged-operator.clusterserviceversion.yaml
+# with
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  name: simple-privileged-operator.v0.0.1
+  namespace: simple-privileged-operator
+spec:
+  displayName: Simple Operator
+  provider:
+    name: Example
+  installModes:
+    - type: OwnNamespace
+      supported: true
+    - type: SingleNamespace
+      supported: false
+    - type: MultiNamespace
+      supported: false
+    - type: AllNamespaces
+      supported: false
+  install:
+    strategy: deployment
+    spec:
+      permissions:
+      - serviceAccountName: simple-privileged-operator
+        rules:
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          - services
+          - endpoints
+          - persistentvolumeclaims
+          - events
+          - configmaps
+          - secrets
+          verbs:
+          - '*'
+        - apiGroups:
+          - apps
+          resources:
+          - deployments
+          - daemonsets
+          - replicasets
+          - statefulsets
+          verbs:
+          - '*'
+      deployments:
+      - name: simple-privileged-operator
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              name: simple-privileged-operator
+          template:
+            metadata:
+              labels:
+                name: simple-privileged-operator
+            spec:
+              serviceAccountName: simple-privileged-operator
+              containers:
+              - name: simple-privileged-operator
+                image: busybox
+                command: ['sh', '-c', 'echo The app is running! && sleep 3600']
+                securityContext:
+                  privileged: true
+  version: 0.0.1
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - kind: Simple
+      name: simples.operator.tld
+      version: v1alpha1
+      displayName: Simple Operator
+      description: A simple operator
