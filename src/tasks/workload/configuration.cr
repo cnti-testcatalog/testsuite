@@ -34,7 +34,10 @@ end
 desc "Check if the CNF is running containers with labels configured?"
 task "require_labels" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "require-labels" }
+    task_start_time = Time.utc
+    testsuite_task = "require_labels"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Kyverno.install
     emoji_passed = "🏷️✔️"
     emoji_failed = "🏷️❌"
@@ -45,9 +48,9 @@ task "require_labels" do |_, args|
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
 
     if failures.size == 0
-      resp = upsert_passed_task("require_labels", "✔️  PASSED: Pods have the app.kubernetes.io/name label #{emoji_passed}", Time.utc)
+      resp = upsert_passed_task(testsuite_task, "✔️  PASSED: Pods have the app.kubernetes.io/name label #{emoji_passed}", task_start_time)
     else
-      resp = upsert_failed_task("require_labels", "✖️  FAILED: Pods should have the app.kubernetes.io/name label. #{emoji_failed}", Time.utc)
+      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Pods should have the app.kubernetes.io/name label. #{emoji_failed}", task_start_time)
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -60,7 +63,10 @@ end
 desc "Check if the CNF installs resources in the default namespace"
 task "default_namespace" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "default_namespace" }
+    task_start_time = Time.utc
+    testsuite_task = "default_namespace"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Kyverno.install
     emoji_passed = "🏷️✔️"
     emoji_failed = "🏷️❌"
@@ -71,9 +77,9 @@ task "default_namespace" do |_, args|
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
 
     if failures.size == 0
-      resp = upsert_passed_task("default_namespace", "✔️  PASSED: default namespace is not being used #{emoji_passed}", Time.utc)
+      resp = upsert_passed_task(testsuite_task, "✔️  PASSED: default namespace is not being used #{emoji_passed}", task_start_time)
     else
-      resp = upsert_failed_task("default_namespace", "✖️  FAILED: Resources are created in the default namespace #{emoji_failed}", Time.utc)
+      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Resources are created in the default namespace #{emoji_failed}", task_start_time)
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -86,7 +92,10 @@ end
 desc "Check if the CNF uses container images with the latest tag"
 task "latest_tag" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "latest_tag" }
+    task_start_time = Time.utc
+    testsuite_task = "latest_tag"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Kyverno.install
 
     emoji_passed = "🏷️✔️"
@@ -98,9 +107,9 @@ task "latest_tag" do |_, args|
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
 
     if failures.size == 0
-      resp = upsert_passed_task("latest_tag", "✔️  🏆 PASSED: Container images are not using the latest tag #{emoji_passed}", Time.utc)
+      resp = upsert_passed_task(testsuite_task, "✔️  🏆 PASSED: Container images are not using the latest tag #{emoji_passed}", task_start_time)
     else
-      resp = upsert_failed_task("latest_tag", "✖️  🏆 FAILED: Container images are using the latest tag #{emoji_failed}", Time.utc)
+      resp = upsert_failed_task(testsuite_task, "✖️  🏆 FAILED: Container images are using the latest tag #{emoji_failed}", task_start_time)
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
@@ -113,8 +122,10 @@ end
 desc "Does a search for IP addresses or subnets come back as negative?"
 task "ip_addresses" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "ip_addresses" if check_verbose(args)
-    LOGGING.info("ip_addresses args #{args.inspect}")
+    task_start_time = Time.utc
+    testsuite_task = "ip_addresses"
+    Log.for(testsuite_task).info { "Starting test" }
+
     cdir = FileUtils.pwd()
     response = String::Builder.new
     helm_directory = config.cnf_config[:helm_directory]
@@ -123,7 +134,7 @@ task "ip_addresses" do |_, args|
       # Switch to the helm chart directory
       Dir.cd(helm_chart_path)
       # Look for all ip addresses that are not comments
-      LOGGING.info "current directory: #{ FileUtils.pwd()}"
+      Log.for(testsuite_task).info { "current directory: #{ FileUtils.pwd()}" }
       # should catch comments (# // or /*) and ignore 0.0.0.0
       # note: grep wants * escaped twice
       Process.run("grep -r -P '^(?!.+0\.0\.0\.0)(?![[:space:]]*0\.0\.0\.0)(?!#)(?![[:space:]]*#)(?!\/\/)(?![[:space:]]*\/\/)(?!\/\\*)(?![[:space:]]*\/\\*)(.+([0-9]{1,3}[\.]){3}[0-9]{1,3})'  --exclude=*.txt", shell: true) do |proc|
@@ -143,16 +154,16 @@ task "ip_addresses" do |_, args|
           matching_line = line_parts.join(":").strip()
           stdout_failure("  * In file #{file_name}: #{matching_line}")
         end
-        resp = upsert_failed_task("ip_addresses","✖️  FAILED: IP addresses found", Time.utc)
+        resp = upsert_failed_task(testsuite_task,"✖️  FAILED: IP addresses found", task_start_time)
       else
-        resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found", Time.utc)
+        resp = upsert_passed_task(testsuite_task, "✔️  PASSED: No IP addresses found", task_start_time)
       end
       resp
     else
       # TODO If no helm chart directory, exit with 0 points
       # ADD SKIPPED tag for points.yml to allow for 0 points
       Dir.cd(cdir)
-      resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found", Time.utc)
+      resp = upsert_passed_task(testsuite_task, "✔️  PASSED: No IP addresses found", task_start_time)
     end
   end
 end
@@ -173,8 +184,11 @@ task "versioned_tag", ["install_opa"] do |_, args|
    # end
    #
   CNFManager::Task.task_runner(args) do |args,config|
-    VERBOSE_LOGGING.info "versioned_tag" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    task_start_time = Time.utc
+    testsuite_task = "versioned_tag"
+    Log.for(testsuite_task).info { "Starting test" }
+
+    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
     fail_msgs = [] of String
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
@@ -204,9 +218,9 @@ task "versioned_tag", ["install_opa"] do |_, args|
     emoji_non_versioned_tag="🏷️❌"
 
     if task_response
-      upsert_passed_task("versioned_tag", "✔️  PASSED: Container images use versioned tags #{emoji_versioned_tag}", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  PASSED: Container images use versioned tags #{emoji_versioned_tag}", task_start_time)
     else
-      upsert_failed_task("versioned_tag", "✖️  FAILED: Container images do not use versioned tags #{emoji_non_versioned_tag}", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  FAILED: Container images do not use versioned tags #{emoji_non_versioned_tag}", task_start_time)
       fail_msgs.each do |msg|
         stdout_failure(msg)
       end
@@ -218,20 +232,23 @@ desc "Does the CNF use NodePort"
 task "nodeport_not_used" do |_, args|
   # TODO rename task_runner to multi_cnf_task_runner
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "nodeport_not_used" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    task_start_time = Time.utc
+    testsuite_task = "nodeport_not_used"
+    Log.for(testsuite_task).info { "Starting test" }
+
+    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
+
     release_name = config.cnf_config[:release_name]
     service_name  = config.cnf_config[:service_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false, check_service: true) do |resource, container, initialized|
-      LOGGING.info "nodeport_not_used resource: #{resource}"
+      Log.for(testsuite_task).info { "nodeport_not_used resource: #{resource}" }
       if resource["kind"].downcase == "service"
-        LOGGING.info "resource kind: #{resource}"
+        Log.for(testsuite_task).info { "resource kind: #{resource}" }
         service = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
-        LOGGING.debug "service: #{service}"
+        Log.for(testsuite_task).debug { "service: #{service}" }
         service_type = service.dig?("spec", "type")
-        LOGGING.info "service_type: #{service_type}"
-        VERBOSE_LOGGING.debug service_type if check_verbose(args)
+        Log.for(testsuite_task).info { "service_type: #{service_type}" }
         if service_type == "NodePort"
           #TODO make a service selector and display the related resources
           # that are tied to this service
@@ -242,9 +259,9 @@ task "nodeport_not_used" do |_, args|
       end
     end
     if task_response
-      upsert_passed_task("nodeport_not_used", "✔️  PASSED: NodePort is not used", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  PASSED: NodePort is not used", task_start_time)
     else
-      upsert_failed_task("nodeport_not_used", "✖️  FAILED: NodePort is being used", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  FAILED: NodePort is being used", task_start_time)
     end
   end
 end
@@ -252,32 +269,35 @@ end
 desc "Does the CNF use HostPort"
 task "hostport_not_used" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "hostport_not_used" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    task_start_time = Time.utc
+    testsuite_task = "hostport_not_used"
+    Log.for(testsuite_task).info { "Starting test" }
+
+    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
     release_name = config.cnf_config[:release_name]
     service_name  = config.cnf_config[:service_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
 
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false, check_service: true) do |resource, container, initialized|
-      LOGGING.info "hostport_not_used resource: #{resource}"
+      Log.for(testsuite_task).info { "hostport_not_used resource: #{resource}" }
       test_passed=true
-      LOGGING.info "resource kind: #{resource}"
+      Log.for(testsuite_task).info { "resource kind: #{resource}" }
       k8s_resource = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
-      LOGGING.debug "resource: #{k8s_resource}"
+      Log.for(testsuite_task).debug { "resource: #{k8s_resource}" }
 
       # per examaple https://github.com/cncf/cnf-testsuite/issues/164#issuecomment-904890977
       containers = k8s_resource.dig?("spec", "template", "spec", "containers")
-      LOGGING.debug "containers: #{containers}"
+      Log.for(testsuite_task).debug { "containers: #{containers}" }
 
       containers && containers.as_a.each do |single_container|
         ports = single_container.dig?("ports")
 
         ports && ports.as_a.each do |single_port|
-          LOGGING.debug "single_port: #{single_port}"
+          Log.for(testsuite_task).debug { "single_port: #{single_port}" }
           
           hostport = single_port.dig?("hostPort")
 
-          LOGGING.debug "DAS hostPort: #{hostport}"
+          Log.for(testsuite_task).debug { "DAS hostPort: #{hostport}" }
 
           if hostport
             stdout_failure("Resource #{resource[:kind]}/#{resource[:name]} in #{resource[:namespace]} namespace is using a HostPort")
@@ -289,9 +309,9 @@ task "hostport_not_used" do |_, args|
       test_passed
     end
     if task_response
-      upsert_passed_task("hostport_not_used", "✔️  🏆 PASSED: HostPort is not used", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  🏆 PASSED: HostPort is not used", task_start_time)
     else
-      upsert_failed_task("hostport_not_used", "✖️  🏆 FAILED: HostPort is being used", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  🏆 FAILED: HostPort is being used", task_start_time)
     end
   end
 end
@@ -299,7 +319,10 @@ end
 desc "Does the CNF have hardcoded IPs in the K8s resource configuration"
 task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
   task_response = CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "Task Name: hardcoded_ip_addresses_in_k8s_runtime_configuration" if check_verbose(args)
+    task_start_time = Time.utc
+    testsuite_task = "hardcoded_ip_addresses_in_k8s_runtime_configuration"
+    Log.for(testsuite_task).info { "Starting test" }
+
     helm_chart = config.cnf_config[:helm_chart]
     helm_directory = config.cnf_config[:helm_directory]
     release_name = config.cnf_config[:release_name]
@@ -312,7 +335,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     unless helm_chart.empty?
       if args.named["offline"]?
         info = AirGap.tar_info_by_config_src(helm_chart)
-        LOGGING.info  "hardcoded_ip_addresses_in_k8s_runtime_configuration airgapped mode info: #{info}"
+        Log.for(testsuite_task).info { "airgapped mode info: #{info}" }
         helm_chart = info[:tar_name]
       end
       helm_install = Helm.install("--namespace hardcoded-ip-test hardcoded-ip-test #{helm_chart} --dry-run --debug > #{destination_cnf_dir}/helm_chart.yml")
@@ -330,12 +353,12 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
     VERBOSE_LOGGING.info "IPs: #{ip_search}" if check_verbose(args)
 
     if ip_search.empty?
-      upsert_passed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✔️  🏆 PASSED: No hard-coded IP addresses found in the runtime K8s configuration", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  🏆 PASSED: No hard-coded IP addresses found in the runtime K8s configuration", task_start_time)
     else
-      upsert_failed_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "✖️  🏆 FAILED: Hard-coded IP addresses found in the runtime K8s configuration", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  🏆 FAILED: Hard-coded IP addresses found in the runtime K8s configuration", task_start_time)
     end
   rescue
-    upsert_skipped_task("hardcoded_ip_addresses_in_k8s_runtime_configuration", "⏭️  🏆 SKIPPED: unknown exception", Time.utc)
+    upsert_skipped_task(testsuite_task, "⏭️  🏆 SKIPPED: unknown exception", Time.utc)
   ensure
     KubectlClient::Delete.command("namespace hardcoded-ip-test --force --grace-period 0")
   end
@@ -344,29 +367,33 @@ end
 desc "Does the CNF use K8s Secrets?"
 task "secrets_used" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.debug { "cnf_config: #{config}" }
-    Log.for("verbose").info { "secrets_used" } if check_verbose(args)
+    task_start_time = Time.utc
+    testsuite_task = "secrets_used"
+    Log.for(testsuite_task).info { "Starting test" }
+
+    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
+
     # Parse the cnf-testsuite.yml
     resp = ""
     emoji_probe="🧫"
     task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
-      Log.info { "resource: #{resource}" }
-      Log.info { "volumes: #{volumes}" }
+      Log.for(testsuite_task).info { "resource: #{resource}" }
+      Log.for(testsuite_task).info { "volumes: #{volumes}" }
 
       volume_test_passed = false
       container_secret_mounted = false
       # Check to see any volume secrets are actually used
       volumes.as_a.each do |secret_volume|
         if secret_volume["secret"]?
-          LOGGING.info "secret_volume: #{secret_volume["name"]}"
+          Log.for(testsuite_task).info { "secret_volume: #{secret_volume["name"]}" }
           container_secret_mounted = false
           containers.as_a.each do |container|
             if container["volumeMounts"]?
                 vmount = container["volumeMounts"].as_a
-              LOGGING.info "vmount: #{vmount}"
-              LOGGING.debug "container[env]: #{container["env"]}"
+              Log.for(testsuite_task).info { "vmount: #{vmount}" }
+              Log.for(testsuite_task).debug { "container[env]: #{container["env"]}" }
               if (vmount.find { |x| x["name"] == secret_volume["name"]? })
-                LOGGING.debug secret_volume["name"]
+                Log.for(testsuite_task).debug { secret_volume["name"] }
                 container_secret_mounted = true
                 volume_test_passed = true
               end
@@ -391,26 +418,26 @@ task "secrets_used" do |_, args|
         s_name = s["metadata"]["name"]
         s_type = s["type"]
         s_namespace = s.dig("metadata", "namespace")
-        Log.for("verbose").info {"secret name: #{s_name}, type: #{s_type}, namespace: #{s_namespace}"} if check_verbose(args)
+        Log.for(testsuite_task).info {"secret name: #{s_name}, type: #{s_type}, namespace: #{s_namespace}"} if check_verbose(args)
       end
       secret_keyref_found_and_not_ignored = false
       containers.as_a.each do |container|
         c_name = container["name"]
-        Log.for("verbose").info { "container: #{c_name} envs #{container["env"]?}" } if check_verbose(args)
+        Log.for(testsuite_task).info { "container: #{c_name} envs #{container["env"]?}" } if check_verbose(args)
         if container["env"]?
           Log.for("container_info").info { container["env"] }
           container["env"].as_a.find do |env|
-            Log.for("verbose").debug { "checking container: #{c_name}" } if check_verbose(args)
+            Log.for(testsuite_task).debug { "checking container: #{c_name}" } if check_verbose(args)
             secret_keyref_found_and_not_ignored = secrets["items"].as_a.find do |s|
               s_name = s["metadata"]["name"]
               if IGNORED_SECRET_TYPES.includes?(s["type"])
                 Log.for("verbose").info { "container: #{c_name} ignored secret: #{s_name}" } if check_verbose(args)
                 next
               end
-              Log.for("checking_secret").info { s_name }
+              Log.for(testsuite_task).info { "Checking secret: #{s_name}" }
               found = (s_name == env.dig?("valueFrom", "secretKeyRef", "name"))
               if found
-                Log.for("secret_reference_found").info { "container: #{c_name} found secret reference: #{s_name}" }
+                Log.for(testsuite_task).info { "secret_reference_found. container: #{c_name} found secret reference: #{s_name}" }
               end
               found
             end
@@ -432,9 +459,9 @@ task "secrets_used" do |_, args|
       test_passed
     end
     if task_response
-      resp = upsert_passed_task("secrets_used","✔️  ✨PASSED: Secrets defined and used #{emoji_probe}", Time.utc)
+      resp = upsert_passed_task(testsuite_task, "✔️  ✨PASSED: Secrets defined and used #{emoji_probe}", task_start_time)
     else
-      resp = upsert_skipped_task("secrets_used","⏭  ✨#{secrets_used_skipped_msg(emoji_probe)}", Time.utc)
+      resp = upsert_skipped_task(testsuite_task, "⏭  ✨#{secrets_used_skipped_msg(emoji_probe)}", task_start_time)
     end
     resp
   end
@@ -545,8 +572,11 @@ task "immutable_configmap" do |_, args|
   emoji_probe="⚖️"
 
   task_response = CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "immutable_configmap" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    task_start_time = Time.utc
+    testsuite_task = "immutable_configmap"
+    Log.for(testsuite_task).info { "Starting test" }
+
+    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
 
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
 
@@ -558,14 +588,14 @@ task "immutable_configmap" do |_, args|
     test_config_map_filename = "#{destination_cnf_dir}/config_maps/test_config_map.yml";
 
     template = ImmutableConfigMapTemplate.new("doesnt_matter").to_s
-    Log.debug { "test immutable_configmap template: #{template}" }
+    Log.for(testsuite_task).debug { "test immutable_configmap template: #{template}" }
     File.write(test_config_map_filename, template)
     KubectlClient::Apply.file(test_config_map_filename)
 
     # now we change then apply again
 
     template = ImmutableConfigMapTemplate.new("doesnt_matter_again").to_s
-    Log.debug { "test immutable_configmap change template: #{template}" }
+    Log.for(testsuite_task).debug { "test immutable_configmap change template: #{template}" }
     File.write(test_config_map_filename, template)
 
     immutable_configmap_supported = true
@@ -579,14 +609,14 @@ task "immutable_configmap" do |_, args|
     KubectlClient::Delete.file(test_config_map_filename)
 
     if apply_result[:status].success?
-      Log.info { "kubectl apply on immutable configmap succeeded for: #{test_config_map_filename}" }
+      Log.for(testsuite_task).info { "kubectl apply on immutable configmap succeeded for: #{test_config_map_filename}" }
       k8s_ver = KubectlClient.server_version
       if version_less_than(k8s_ver, "1.19.0")
         resp = " ⏭️  SKIPPED: immmutable configmaps are not supported in this k8s cluster.".colorize(:yellow)
-        upsert_skipped_task("immutable_configmap", resp, Time.utc)
+        upsert_skipped_task(testsuite_task, resp, task_start_time)
       else
         resp = "✖️  FAILED: immmutable configmaps are not enabled in this k8s cluster.".colorize(:red)
-        upsert_failed_task("immutable_configmap", resp, Time.utc)
+        upsert_failed_task(testsuite_task, resp, task_start_time)
       end
     else
 
@@ -594,8 +624,8 @@ task "immutable_configmap" do |_, args|
       envs_with_mutable_configmap = [] of MutableConfigMapsInEnvResult
 
       cnf_manager_workload_resource_task_response = CNFManager.workload_resource_test(args, config, check_containers=false, check_service=true) do |resource, containers, volumes, initialized|
-        Log.info { "resource: #{resource}" }
-        Log.info { "volumes: #{volumes}" }
+        Log.for(testsuite_task).info { "resource: #{resource}" }
+        Log.for(testsuite_task).info { "volumes: #{volumes}" }
 
         # If the install type is manifest, the namesapce would be in the manifest.
         # Else rely on config for helm-based install
@@ -620,10 +650,10 @@ task "immutable_configmap" do |_, args|
 
       if cnf_manager_workload_resource_task_response
         resp = "✔️  ✨PASSED: All volume or container mounted configmaps immutable #{emoji_probe}".colorize(:green)
-        upsert_passed_task("immutable_configmap", resp, Time.utc)
+        upsert_passed_task(testsuite_task, resp, task_start_time)
       elsif immutable_configmap_supported
         resp = "✖️  ✨FAILED: Found mutable configmap(s) #{emoji_probe}".colorize(:red)
-        upsert_failed_task("immutable_configmap", resp, Time.utc)
+        upsert_failed_task(testsuite_task, resp, task_start_time)
 
         # Print out any mutable configmaps mounted as volumes
         volumes_test_results.each do |result|
@@ -649,7 +679,9 @@ end
 desc "Check if CNF uses Kubernetes alpha APIs"
 task "alpha_k8s_apis" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "alpha_k8s_apis" } if check_verbose(args)
+    task_start_time = Time.utc
+    testsuite_task = "alpha_k8s_apis"
+    Log.for(testsuite_task).info { "Starting test" }
 
     unless check_poc(args)
       Log.info { "Skipping alpha_k8s_apis: not in poc mode" }
@@ -663,7 +695,7 @@ task "alpha_k8s_apis" do |_, args|
 
     # No offline support for this task for now
     if args.named["offline"]? && args.named["offline"]? != "false"
-      upsert_skipped_task("alpha_k8s_apis","⏭️  SKIPPED: alpha_k8s_apis chaos test skipped #{emoji}", Time.utc)
+      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: alpha_k8s_apis chaos test skipped #{emoji}", task_start_time)
       next
     end
 
@@ -687,7 +719,7 @@ task "alpha_k8s_apis" do |_, args|
     # CNF setup failed on kind cluster. Inform in test output.
     unless cnf_setup_complete
       puts "CNF failed to install on apisnoop cluster".colorize(:red)
-      upsert_failed_task("alpha_k8s_apis", "✖️  FAILED: Could not check CNF for usage of Kubernetes alpha APIs #{emoji}", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  FAILED: Could not check CNF for usage of Kubernetes alpha APIs #{emoji}", task_start_time)
       next
     end
 
@@ -704,9 +736,9 @@ task "alpha_k8s_apis" do |_, args|
     api_count = result[:output].split("\n")[2].to_i
 
     if api_count == 0
-      upsert_passed_task("alpha_k8s_apis", "✔️  PASSED: CNF does not use Kubernetes alpha APIs #{emoji}", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  PASSED: CNF does not use Kubernetes alpha APIs #{emoji}", task_start_time)
     else
-      upsert_failed_task("alpha_k8s_apis", "✖️  FAILED: CNF uses Kubernetes alpha APIs #{emoji}", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  FAILED: CNF uses Kubernetes alpha APIs #{emoji}", task_start_time)
     end
   ensure
     if cluster_name != nil
@@ -729,8 +761,11 @@ end
 desc "Does the CNF install an Operator with OLM?"
 task "operator_installed" do |_, args|
   CNFManager::Task.task_runner(args) do |args,config|
-    Log.for("verbose").info { "operator_installed" } if check_verbose(args)
-    Log.debug { "cnf_config: #{config}" }
+    task_start_time = Time.utc
+    testsuite_task = "operator_installed"
+    Log.for(testsuite_task).info { "Starting test" }
+
+    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
 
     subscription_names = CNFManager.cnf_resources(args, config) do |resource|
       kind = resource.dig("kind").as_s
@@ -739,7 +774,7 @@ task "operator_installed" do |_, args|
       end
     end.compact
 
-    Log.info { "Subscription Names: #{subscription_names}" }
+    Log.for(testsuite_task).info { "Subscription Names: #{subscription_names}" }
 
 
     #TODO Warn if csv is not found for a subscription.
@@ -757,7 +792,7 @@ task "operator_installed" do |_, args|
       end
     end.compact
 
-    Log.info { "CSV Names: #{csv_names}" }
+    Log.for(testsuite_task).info { "CSV Names: #{csv_names}" }
 
 
     succeeded = csv_names.map do |csv| 
@@ -767,12 +802,12 @@ task "operator_installed" do |_, args|
       csv_succeeded
     end
 
-    Log.info { "Succeeded CSV Names: #{succeeded}" }
+    Log.for(testsuite_task).info { "Succeeded CSV Names: #{succeeded}" }
 
     test_passed = false
 
     if succeeded.size > 0 && succeeded.all?(true)
-      Log.info { "Succeeded All True?" }
+      Log.for(testsuite_task).info { "Succeeded All True?" }
       test_passed = true
     end
 
@@ -783,9 +818,9 @@ task "operator_installed" do |_, args|
     emoji_big="🦖"
 
     if test_passed
-      upsert_passed_task("operator_installed", "✔️  PASSED: Operator is installed: #{emoji_small} #{emoji_image_size}", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  PASSED: Operator is installed: #{emoji_small} #{emoji_image_size}", task_start_time)
     else
-      upsert_na_task("operator_installed", "✖️  NA: No Operators Found #{emoji_big} #{emoji_image_size}", Time.utc)
+      upsert_na_task(testsuite_task, "✖️  NA: No Operators Found #{emoji_big} #{emoji_image_size}", task_start_time)
     end
   end
 end

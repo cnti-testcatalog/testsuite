@@ -30,29 +30,32 @@ end
 desc "Is there a liveness entry in the helm chart?"
 task "liveness" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("liveness").info { "Starting test" }
-    Log.for("liveness").debug { "cnf_config: #{config}" }
+    task_start_time = Time.utc
+    testsuite_task = "liveness"
+    Log.for(testsuite_task).info { "Starting test" }
+    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
+
     resp = ""
     emoji_probe="⎈🧫"
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
       resource_ref = "#{resource[:kind]}/#{resource[:name]}"
       begin
-        Log.for("liveness").debug { container.as_h["name"].as_s } if check_verbose(args)
+        Log.for(testsuite_task).debug { container.as_h["name"].as_s } if check_verbose(args)
         container.as_h["livenessProbe"].as_h
       rescue ex
-        Log.for("liveness").error { ex.message } if check_verbose(args)
+        Log.for(testsuite_task).error { ex.message } if check_verbose(args)
         test_passed = false
         stdout_failure("No livenessProbe found for container #{container.as_h["name"].as_s} part of #{resource_ref} in #{resource[:namespace]} namespace")
       end
-      Log.for("liveness").info { "Resource #{resource_ref} passed liveness?: #{test_passed}" }
+      Log.for(testsuite_task).info { "Resource #{resource_ref} passed liveness?: #{test_passed}" }
       test_passed
     end
-    Log.for("liveness").info { "Workload resource task response: #{task_response}" }
+    Log.for(testsuite_task).info { "Workload resource task response: #{task_response}" }
     if task_response
-      resp = upsert_passed_task("liveness","✔️  🏆 PASSED: Helm liveness probe found #{emoji_probe}", Time.utc)
+      resp = upsert_passed_task(testsuite_task,"✔️  🏆 PASSED: Helm liveness probe found #{emoji_probe}", task_start_time)
 		else
-			resp = upsert_failed_task("liveness","✖️  🏆 FAILED: No livenessProbe found #{emoji_probe}", Time.utc)
+			resp = upsert_failed_task(testsuite_task,"✖️  🏆 FAILED: No livenessProbe found #{emoji_probe}", task_start_time)
     end
     resp
   end
@@ -61,6 +64,10 @@ end
 desc "Is there a readiness entry in the helm chart?"
 task "readiness" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
+    task_start_time = Time.utc
+    testsuite_task = "readiness"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Log.for("readiness").info { "Starting test" }
     Log.for("readiness").debug { "cnf_config: #{config}" }
     resp = ""
@@ -69,21 +76,21 @@ task "readiness" do |_, args|
       test_passed = true
       resource_ref = "#{resource[:kind]}/#{resource[:name]}"
       begin
-        Log.for("readiness").debug { container.as_h["name"].as_s } if check_verbose(args)
+        Log.for(testsuite_task).debug { container.as_h["name"].as_s } if check_verbose(args)
         container.as_h["readinessProbe"].as_h
       rescue ex
-        Log.for("readiness").error { ex.message } if check_verbose(args)
+        Log.for(testsuite_task).error { ex.message } if check_verbose(args)
         test_passed = false
         stdout_failure("No readinessProbe found for container #{container.as_h["name"].as_s} part of #{resource_ref} in #{resource[:namespace]} namespace")
       end
-      Log.for("readiness").info { "Resource #{resource_ref} passed liveness?: #{test_passed}" }
+      Log.for(testsuite_task).info { "Resource #{resource_ref} passed liveness?: #{test_passed}" }
       test_passed
     end
-    Log.for("readiness").info { "Workload resource task response: #{task_response}" }
+    Log.for(testsuite_task).info { "Workload resource task response: #{task_response}" }
     if task_response
-      resp = upsert_passed_task("readiness","✔️  🏆 PASSED: Helm readiness probe found #{emoji_probe}", Time.utc)
+      resp = upsert_passed_task(testsuite_task,"✔️  🏆 PASSED: Helm readiness probe found #{emoji_probe}", task_start_time)
 		else
-      resp = upsert_failed_task("readiness","✖️  🏆 FAILED: No readinessProbe found #{emoji_probe}", Time.utc)
+      resp = upsert_failed_task(testsuite_task,"✖️  🏆 FAILED: No readinessProbe found #{emoji_probe}", task_start_time)
     end
     resp
   end
@@ -93,8 +100,10 @@ end
 desc "Does the CNF crash when network latency occurs"
 task "pod_network_latency", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    test_name = "pod_network_latency"
-    Log.for(test_name).info { "Starting test" } if check_verbose(args)
+    task_start_time = Time.utc
+    testsuite_task = "pod_network_latency"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Log.debug { "cnf_config: #{config}" }
     #TODO tests should fail if cnf not installed
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
@@ -121,10 +130,10 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
           #           https://raw.githubusercontent.com/litmuschaos/chaos-charts/v2.14.x/charts/generic/pod-network-latency/rbac.yaml 
           rbac_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/charts/generic/pod-network-latency/rbac.yaml"
 
-          experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+          experiment_path = LitmusManager.download_template(experiment_url, "#{testsuite_task}_experiment.yaml")
           KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
 
-          rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+          rbac_path = LitmusManager.download_template(rbac_url, "#{testsuite_task}_rbac.yaml")
           rbac_yaml = File.read(rbac_path)
           rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
           File.write(rbac_path, rbac_yaml)
@@ -134,11 +143,11 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
 
         chaos_experiment_name = "pod-network-latency"
         total_chaos_duration = "60"
-        test_name = "#{resource["name"]}-#{Random.rand(99)}"
+        test_name = "#{resource["name"]}-#{Random::Secure.hex(4)}"
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
         spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
-        Log.for("#{test_name}:spec_labels").info { "Spec labels for chaos template. Key: #{spec_labels.first_key}; Value: #{spec_labels.first_value}" }
+        Log.for("#{testsuite_task}:spec_labels").info { "Spec labels for chaos template. Key: #{spec_labels.first_key}; Value: #{spec_labels.first_value}" }
         template = ChaosTemplates::PodNetworkLatency.new(
           test_name,
           "#{chaos_experiment_name}",
@@ -154,9 +163,9 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
       end
     end
     if task_response
-      resp = upsert_passed_task("pod_network_latency","✔️  ✨PASSED: pod_network_latency chaos test passed 🗡️💀♻️", Time.utc)
+      resp = upsert_passed_task(testsuite_task,"✔️  ✨PASSED: pod_network_latency chaos test passed 🗡️💀♻️", task_start_time)
     else
-      resp = upsert_failed_task("pod_network_latency","✖️  ✨FAILED: pod_network_latency chaos test failed 🗡️💀♻️", Time.utc)
+      resp = upsert_failed_task(testsuite_task,"✖️  ✨FAILED: pod_network_latency chaos test failed 🗡️💀♻️", task_start_time)
     end
   end
 end
@@ -164,9 +173,11 @@ end
 desc "Does the CNF crash when network corruption occurs"
 task "pod_network_corruption", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    test_name = "pod_network_corruption"
-    Log.for(test_name).info { "Starting test" } if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    task_start_time = Time.utc
+    testsuite_task = "pod_network_corruption"
+    Log.for(testsuite_task).info { "Starting test" }
+
+    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
     #TODO tests should fail if cnf not installed
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
@@ -191,10 +202,10 @@ task "pod_network_corruption", ["install_litmus"] do |_, args|
           # rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-network-corruption/rbac.yaml"
           rbac_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/charts/generic/pod-network-corruption/rbac.yaml"
 
-          experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+          experiment_path = LitmusManager.download_template(experiment_url, "#{testsuite_task}_experiment.yaml")
           KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
 
-          rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+          rbac_path = LitmusManager.download_template(rbac_url, "#{testsuite_task}_rbac.yaml")
           rbac_yaml = File.read(rbac_path)
           rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
           File.write(rbac_path, rbac_yaml)
@@ -223,9 +234,9 @@ task "pod_network_corruption", ["install_litmus"] do |_, args|
       end
     end
     if task_response
-      resp = upsert_passed_task("pod_network_corruption","✔️  ✨PASSED: pod_network_corruption chaos test passed 🗡️💀♻️", Time.utc)
+      resp = upsert_passed_task(testsuite_task,"✔️  ✨PASSED: pod_network_corruption chaos test passed 🗡️💀♻️", task_start_time)
     else
-      resp = upsert_failed_task("pod_network_corruption","✖️  ✨FAILED: pod_network_corruption chaos test failed 🗡️💀♻️", Time.utc)
+      resp = upsert_failed_task(testsuite_task,"✖️  ✨FAILED: pod_network_corruption chaos test failed 🗡️💀♻️", task_start_time)
     end
   end
 end
@@ -233,9 +244,11 @@ end
 desc "Does the CNF crash when network duplication occurs"
 task "pod_network_duplication", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    test_name = "pod_network_duplication"
-    Log.for(test_name).info { "Starting test" } if check_verbose(args)
-    Log.debug { "cnf_config: #{config}" }
+    task_start_time = Time.utc
+    testsuite_task = "pod_network_duplication"
+    Log.for(testsuite_task).info { "Starting test" }
+
+    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
     #TODO tests should fail if cnf not installed
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
@@ -260,10 +273,10 @@ task "pod_network_duplication", ["install_litmus"] do |_, args|
           # rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-network-duplication/rbac.yaml"
           rbac_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/charts/generic/pod-network-duplication/rbac.yaml"
 
-          experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+          experiment_path = LitmusManager.download_template(experiment_url, "#{testsuite_task}_experiment.yaml")
           KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
 
-          rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+          rbac_path = LitmusManager.download_template(rbac_url, "#{testsuite_task}_rbac.yaml")
           rbac_yaml = File.read(rbac_path)
           rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
           File.write(rbac_path, rbac_yaml)
@@ -292,9 +305,9 @@ task "pod_network_duplication", ["install_litmus"] do |_, args|
       end
     end
     if task_response
-      resp = upsert_passed_task("pod_network_duplication","✔️  ✨PASSED: pod_network_duplication chaos test passed 🗡️💀♻️", Time.utc)
+      resp = upsert_passed_task(testsuite_task,"✔️  ✨PASSED: pod_network_duplication chaos test passed 🗡️💀♻️", task_start_time)
     else
-      resp = upsert_failed_task("pod_network_duplication","✖️  ✨FAILED: pod_network_duplication chaos test failed 🗡️💀♻️", Time.utc)
+      resp = upsert_failed_task(testsuite_task,"✖️  ✨FAILED: pod_network_duplication chaos test failed 🗡️💀♻️", task_start_time)
     end
   end
 end
@@ -302,9 +315,11 @@ end
 desc "Does the CNF crash when disk fill occurs"
 task "disk_fill", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    test_name = "disk_fill"
-    Log.for(test_name).info { "Starting test" } if check_verbose(args)
-    Log.debug { "cnf_config: #{config}" }
+    task_start_time = Time.utc
+    testsuite_task = "disk_fill"
+    Log.for(testsuite_task).info { "Starting test" }
+
+    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
@@ -312,7 +327,7 @@ task "disk_fill", ["install_litmus"] do |_, args|
       if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
       else
-        stdout_failure("No resource label found for #{test_name} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
+        stdout_failure("No resource label found for #{testsuite_task} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
         test_passed = false
       end
       if test_passed
@@ -327,10 +342,10 @@ task "disk_fill", ["install_litmus"] do |_, args|
           # rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/disk-fill/rbac.yaml"
           rbac_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/charts/generic/disk-fill/rbac.yaml"
 
-          experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+          experiment_path = LitmusManager.download_template(experiment_url, "#{testsuite_task}_experiment.yaml")
           KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
 
-          rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+          rbac_path = LitmusManager.download_template(rbac_url, "#{testsuite_task}_rbac.yaml")
           rbac_yaml = File.read(rbac_path)
           rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
           File.write(rbac_path, rbac_yaml)
@@ -361,9 +376,9 @@ task "disk_fill", ["install_litmus"] do |_, args|
       test_passed
     end
     if task_response 
-      resp = upsert_passed_task("disk_fill","✔️  PASSED: disk_fill chaos test passed 🗡️💀♻️", Time.utc)
+      resp = upsert_passed_task(testsuite_task,"✔️  PASSED: disk_fill chaos test passed 🗡️💀♻️", task_start_time)
     else
-      resp = upsert_failed_task("disk_fill","✖️  FAILED: disk_fill chaos test failed 🗡️💀♻️", Time.utc)
+      resp = upsert_failed_task(testsuite_task,"✖️  FAILED: disk_fill chaos test failed 🗡️💀♻️", task_start_time)
     end
   end
 end
@@ -371,8 +386,10 @@ end
 desc "Does the CNF crash when pod-delete occurs"
 task "pod_delete", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    test_name = "pod_delete"
-    Log.for(test_name).info { "Starting test" } if check_verbose(args)
+    task_start_time = Time.utc
+    testsuite_task = "pod_delete"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
@@ -381,7 +398,7 @@ task "pod_delete", ["install_litmus"] do |_, args|
       if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
       else
-        stdout_failure("No resource label found for #{test_name} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
+        stdout_failure("No resource label found for #{testsuite_task} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
         test_passed = false
       end
       if test_passed
@@ -393,11 +410,11 @@ task "pod_delete", ["install_litmus"] do |_, args|
         else
           # experiment_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-delete/experiment.yaml"
           experiment_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/charts/generic/pod-delete/experiment.yaml"
-          experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+          experiment_path = LitmusManager.download_template(experiment_url, "#{testsuite_task}_experiment.yaml")
 
           # rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-delete/rbac.yaml"
           rbac_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/charts/generic/pod-delete/rbac.yaml"
-          rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+          rbac_path = LitmusManager.download_template(rbac_url, "#{testsuite_task}_rbac.yaml")
           rbac_yaml = File.read(rbac_path)
           rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
           File.write(rbac_path, rbac_yaml)
@@ -431,9 +448,9 @@ task "pod_delete", ["install_litmus"] do |_, args|
       test_passed=LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
     end
     if task_response
-      resp = upsert_passed_task("pod_delete","✔️  PASSED: pod_delete chaos test passed 🗡️💀♻️", Time.utc)
+      resp = upsert_passed_task(testsuite_task,"✔️  PASSED: pod_delete chaos test passed 🗡️💀♻️", task_start_time)
     else
-      resp = upsert_failed_task("pod_delete","✖️  FAILED: pod_delete chaos test failed 🗡️💀♻️", Time.utc)
+      resp = upsert_failed_task(testsuite_task,"✖️  FAILED: pod_delete chaos test failed 🗡️💀♻️", task_start_time)
     end
   end
 end
@@ -441,8 +458,10 @@ end
 desc "Does the CNF crash when pod-memory-hog occurs"
 task "pod_memory_hog", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    test_name = "pod_memory_hog"
-    Log.for(test_name).info { "Starting test" } if check_verbose(args)
+    task_start_time = Time.utc
+    testsuite_task = "pod_memory_hog"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
@@ -451,7 +470,7 @@ task "pod_memory_hog", ["install_litmus"] do |_, args|
       if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
       else
-        stdout_failure("No resource label found for #{test_name} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
+        stdout_failure("No resource label found for #{testsuite_task} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
         test_passed = false
       end
       if test_passed
@@ -466,10 +485,10 @@ task "pod_memory_hog", ["install_litmus"] do |_, args|
           # rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-memory-hog/rbac.yaml"
           rbac_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/charts/generic/pod-memory-hog/rbac.yaml"
 
-          experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+          experiment_path = LitmusManager.download_template(experiment_url, "#{testsuite_task}_experiment.yaml")
           KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
 
-          rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+          rbac_path = LitmusManager.download_template(rbac_url, "#{testsuite_task}_rbac.yaml")
           rbac_yaml = File.read(rbac_path)
           rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
           File.write(rbac_path, rbac_yaml)
@@ -502,9 +521,9 @@ task "pod_memory_hog", ["install_litmus"] do |_, args|
       test_passed
     end
     if task_response
-      resp = upsert_passed_task("pod_memory_hog","✔️  PASSED: pod_memory_hog chaos test passed 🗡️💀♻️", Time.utc)
+      resp = upsert_passed_task(testsuite_task,"✔️  PASSED: pod_memory_hog chaos test passed 🗡️💀♻️", task_start_time)
     else
-      resp = upsert_failed_task("pod_memory_hog","✖️  FAILED: pod_memory_hog chaos test failed 🗡️💀♻️", Time.utc)
+      resp = upsert_failed_task(testsuite_task,"✖️  FAILED: pod_memory_hog chaos test failed 🗡️💀♻️", task_start_time)
     end
   end
 end
@@ -512,9 +531,11 @@ end
 desc "Does the CNF crash when pod-io-stress occurs"
 task "pod_io_stress", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    test_name = "pod_io_stress"
-    Log.for(test_name).info { "Starting test" } if check_verbose(args)
-    Log.debug { "cnf_config: #{config}" }
+    task_start_time = Time.utc
+    testsuite_task = "pod_io_stress"
+    Log.for(testsuite_task).info { "Starting test" }
+
+    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
@@ -522,7 +543,7 @@ task "pod_io_stress", ["install_litmus"] do |_, args|
       if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
       else
-        stdout_failure("No resource label found for #{test_name} test for resource: #{resource["name"]} in #{resource["namespace"]}")
+        stdout_failure("No resource label found for #{testsuite_task} test for resource: #{resource["name"]} in #{resource["namespace"]}")
         test_passed = false
       end
       if test_passed
@@ -537,10 +558,10 @@ task "pod_io_stress", ["install_litmus"] do |_, args|
           # rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-io-stress/rbac.yaml"
           rbac_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/charts/generic/pod-io-stress/rbac.yaml"
 
-          experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+          experiment_path = LitmusManager.download_template(experiment_url, "#{testsuite_task}_experiment.yaml")
           KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
 
-          rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+          rbac_path = LitmusManager.download_template(rbac_url, "#{testsuite_task}_rbac.yaml")
           rbac_yaml = File.read(rbac_path)
           rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
           File.write(rbac_path, rbac_yaml)
@@ -572,9 +593,9 @@ task "pod_io_stress", ["install_litmus"] do |_, args|
       end
     end
     if task_response
-      resp = upsert_passed_task(test_name,"✔️  ✨PASSED: #{test_name} chaos test passed 🗡️💀♻️", Time.utc)
+      resp = upsert_passed_task(testsuite_task,"✔️  ✨PASSED: #{testsuite_task} chaos test passed 🗡️💀♻️", task_start_time)
     else
-      resp = upsert_failed_task(test_name,"✖️  ✨FAILED: #{test_name} chaos test failed 🗡️💀♻️", Time.utc)
+      resp = upsert_failed_task(testsuite_task,"✖️  ✨FAILED: #{testsuite_task} chaos test failed 🗡️💀♻️", task_start_time)
     end
   end
 ensure
@@ -587,8 +608,10 @@ end
 desc "Does the CNF crash when pod-dns-error occurs"
 task "pod_dns_error", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    test_name = "pod_dns_error"
-    Log.for(test_name).info { "Starting test" } if check_verbose(args)
+    task_start_time = Time.utc
+    testsuite_task = "pod_dns_error"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     runtimes = KubectlClient::Get.container_runtimes
@@ -600,7 +623,7 @@ task "pod_dns_error", ["install_litmus"] do |_, args|
         if spec_labels.as_h? && spec_labels.as_h.size > 0
           test_passed = true
         else
-          stdout_failure("No resource label found for #{test_name} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
+          stdout_failure("No resource label found for #{testsuite_task} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
           test_passed = false
         end
         if test_passed
@@ -615,10 +638,10 @@ task "pod_dns_error", ["install_litmus"] do |_, args|
             # rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-dns-error/rbac.yaml"
             rbac_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/charts/generic/pod-dns-error/rbac.yaml"
 
-            experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+            experiment_path = LitmusManager.download_template(experiment_url, "#{testsuite_task}_experiment.yaml")
             KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
 
-            rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+            rbac_path = LitmusManager.download_template(rbac_url, "#{testsuite_task}_rbac.yaml")
             rbac_yaml = File.read(rbac_path)
             rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
             File.write(rbac_path, rbac_yaml)
@@ -649,12 +672,12 @@ task "pod_dns_error", ["install_litmus"] do |_, args|
         end
       end
       if task_response
-        resp = upsert_passed_task("pod_dns_error","✔️  ✨PASSED: pod_dns_error chaos test passed 🗡️💀♻️", Time.utc)
+        resp = upsert_passed_task(testsuite_task,"✔️  ✨PASSED: pod_dns_error chaos test passed 🗡️💀♻️", task_start_time)
       else
-        resp = upsert_failed_task("pod_dns_error","✖️  ✨FAILED: pod_dns_error chaos test failed 🗡️💀♻️", Time.utc)
+        resp = upsert_failed_task(testsuite_task,"✖️  ✨FAILED: pod_dns_error chaos test failed 🗡️💀♻️", task_start_time)
       end
     else
-      resp = upsert_skipped_task("pod_dns_error","⏭️   ✨SKIPPED: pod_dns_error docker runtime not found 🗡️💀♻️", Time.utc)
+      resp = upsert_skipped_task(testsuite_task,"⏭️   ✨SKIPPED: pod_dns_error docker runtime not found 🗡️💀♻️", task_start_time)
     end
   end
 end

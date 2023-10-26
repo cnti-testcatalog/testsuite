@@ -16,6 +16,10 @@ namespace "platform" do
 
   desc "Does the Platform have Kube State Metrics installed"
   task "kube_state_metrics", ["install_cluster_tools"] do |_, args|
+    task_start_time = Time.utc
+    testsuite_task = "kube_state_metrics"
+    Log.for(testsuite_task).info { "Starting test" }
+
     unless check_poc(args)
       Log.info { "skipping kube_state_metrics: not in poc mode" }
       puts "SKIPPED: Kube State Metrics".colorize(:yellow)
@@ -32,15 +36,19 @@ namespace "platform" do
 
     if found
       emoji_kube_state_metrics="📶☠️"
-      upsert_passed_task("kube_state_metrics","✔️  PASSED: Your platform is using the release for kube state metrics #{emoji_kube_state_metrics}", Time.utc)
+      upsert_passed_task(testsuite_task,"✔️  PASSED: Your platform is using the release for kube state metrics #{emoji_kube_state_metrics}", task_start_time)
     else
       emoji_kube_state_metrics="📶☠️"
-      upsert_failed_task("kube_state_metrics", "✖️  FAILED: Your platform does not have kube state metrics installed #{emoji_kube_state_metrics}", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  FAILED: Your platform does not have kube state metrics installed #{emoji_kube_state_metrics}", task_start_time)
     end
   end
 
   desc "Does the Platform have a Node Exporter installed"
   task "node_exporter", ["install_cluster_tools"] do |_, args|
+    task_start_time = Time.utc
+    testsuite_task = "node_exporter"
+    Log.for(testsuite_task).info { "Starting test" }
+
     unless check_poc(args)
       Log.info { "skipping node_exporter: not in poc mode" }
       puts "SKIPPED: Node Exporter".colorize(:yellow)
@@ -57,16 +65,20 @@ namespace "platform" do
     Log.info { "Found Process: #{found}" }
     if found
       emoji_node_exporter="📶☠️"
-      upsert_passed_task("node_exporter","✔️  PASSED: Your platform is using the node exporter #{emoji_node_exporter}", Time.utc)
+      upsert_passed_task(testsuite_task,"✔️  PASSED: Your platform is using the node exporter #{emoji_node_exporter}", task_start_time)
     else
       emoji_node_exporter="📶☠️"
-      upsert_failed_task("node_exporter", "✖️  FAILED: Your platform does not have the node exporter installed #{emoji_node_exporter}", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  FAILED: Your platform does not have the node exporter installed #{emoji_node_exporter}", task_start_time)
     end
   end
 
 
   desc "Does the Platform have the prometheus adapter installed"
   task "prometheus_adapter", ["install_cluster_tools"] do |_, args|
+    task_start_time = Time.utc
+    testsuite_task = "prometheus_adapter"
+    Log.for(testsuite_task).info { "Starting test" }
+
     unless check_poc(args)
       Log.info { "skipping prometheus_adapter: not in poc mode" }
       puts "SKIPPED: Prometheus Adapter".colorize(:yellow)
@@ -83,15 +95,19 @@ namespace "platform" do
 
     if found
       emoji_prometheus_adapter="📶☠️"
-      upsert_passed_task("prometheus_adapter","✔️  PASSED: Your platform is using the prometheus adapter #{emoji_prometheus_adapter}", Time.utc)
+      upsert_passed_task(testsuite_task,"✔️  PASSED: Your platform is using the prometheus adapter #{emoji_prometheus_adapter}", task_start_time)
     else
       emoji_prometheus_adapter="📶☠️"
-      upsert_failed_task("prometheus_adapter", "✖️  FAILED: Your platform does not have the prometheus adapter installed #{emoji_prometheus_adapter}", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  FAILED: Your platform does not have the prometheus adapter installed #{emoji_prometheus_adapter}", task_start_time)
     end
   end
 
   desc "Does the Platform have the K8s Metrics Server installed"
   task "metrics_server", ["install_cluster_tools"] do |_, args|
+    task_start_time = Time.utc
+    testsuite_task = "metrics_server"
+    Log.for(testsuite_task).info { "Starting test" }
+
     unless check_poc(args)
       Log.info { "skipping metrics_server: not in poc mode" }
       puts "SKIPPED: Metrics Server".colorize(:yellow)
@@ -108,10 +124,10 @@ namespace "platform" do
       found = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::METRICS_SERVER)
       if found
         emoji_metrics_server="📶☠️"
-        upsert_passed_task("metrics_server","✔️  PASSED: Your platform is using the metrics server #{emoji_metrics_server}", Time.utc)
+        upsert_passed_task(testsuite_task, "✔️  PASSED: Your platform is using the metrics server #{emoji_metrics_server}", task_start_time)
       else
         emoji_metrics_server="📶☠️"
-        upsert_failed_task("metrics_server", "✖️  FAILED: Your platform does not have the metrics server installed #{emoji_metrics_server}", Time.utc)
+        upsert_failed_task(testsuite_task, "✖️  FAILED: Your platform does not have the metrics server installed #{emoji_metrics_server}", task_start_time)
       end
     end
   end
