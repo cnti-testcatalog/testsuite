@@ -86,9 +86,9 @@ rolling_version_change_test_names.each do |tn|
       end
       VERBOSE_LOGGING.debug "#{tn}: task_response=#{task_response}" if check_verbose(args)
       if task_response
-        resp = upsert_passed_task("#{tn}","✔️  PASSED: CNF for #{pretty_test_name_capitalized} Passed", task_start_time)
+        resp = upsert_passed_task(testsuite_task, "✔️  PASSED: CNF for #{pretty_test_name_capitalized} Passed", task_start_time)
       else
-        resp = upsert_failed_task("#{tn}", "✖️  FAILED: CNF for #{pretty_test_name_capitalized} Failed", task_start_time)
+        resp = upsert_failed_task(testsuite_task, "✖️  FAILED: CNF for #{pretty_test_name_capitalized} Failed", task_start_time)
       end
       resp
       # TODO should we roll the image back to original version in an ensure?
