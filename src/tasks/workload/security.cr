@@ -65,7 +65,10 @@ end
 desc "Check if the CNF has services with external IPs configured"
 task "external_ips" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "external_ips" }
+    task_start_time = Time.utc
+    testsuite_task = "external_ips"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Kyverno.install
     emoji_security = "🔓🔑"
     policy_path = Kyverno.best_practice_policy("restrict-service-external-ips/restrict-service-external-ips.yaml")
@@ -75,9 +78,9 @@ task "external_ips" do |_, args|
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
     
     if failures.size == 0
-      resp = upsert_passed_task("external_ips", "✔️  PASSED: Services are not using external IPs #{emoji_security}", Time.utc)
+      resp = upsert_passed_task(testsuite_task, "✔️  PASSED: Services are not using external IPs #{emoji_security}", task_start_time)
     else
-      resp = upsert_failed_task("external_ips", "✖️  FAILED: Services are using external IPs #{emoji_security}", Time.utc)
+      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Services are using external IPs #{emoji_security}", task_start_time)
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
