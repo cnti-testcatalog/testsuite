@@ -115,7 +115,7 @@ task "selinux_options" do |_, args|
 
     if check_failures.size == 0
       # upsert_skipped_task("selinux_options", "⏭️  🏆 SKIPPED: Pods are not using SELinux options #{emoji_security}", Time.utc)
-      upsert_na_task("selinux_options", "⏭️  🏆 N/A: Pods are not using SELinux #{emoji_security}", Time.utc)
+      upsert_na_task(testsuite_task, "⏭️  🏆 N/A: Pods are not using SELinux #{emoji_security}", task_start_time)
     else
       failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, disallow_failures)
 
@@ -169,7 +169,7 @@ task "non_root_user", ["install_falco"] do |_, args|
     
     unless KubectlClient::Get.resource_wait_for_install("Daemonset", "falco", namespace: TESTSUITE_NAMESPACE)
       Log.info { "Falco Failed to Start" }
-      upsert_skipped_task("non_root_user", "⏭️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).", task_start_time)
+      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).", task_start_time)
       node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
       pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
 
