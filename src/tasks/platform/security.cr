@@ -85,7 +85,10 @@ namespace "platform" do
   desc "Check if the CNF is running containers with name tiller in their image name?"
   task "helm_tiller" do |_, args|
     emoji_security="🔓🔑"
-    Log.for("verbose").info { "platform:helm_tiller" }
+    task_start_time = Time.utc
+    testsuite_task = "helm_tiller"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Kyverno.install
 
     CNFManager::Task.task_runner(args, check_cnf_installed=false) do |args, config|
@@ -93,9 +96,9 @@ namespace "platform" do
       failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
       if failures.size == 0
-        resp = upsert_passed_task("helm_tiller", "✔️  PASSED: No Helm Tiller containers are running #{emoji_security}", Time.utc)
+        resp = upsert_passed_task(testsuite_task, "✔️  PASSED: No Helm Tiller containers are running #{emoji_security}", task_start_time)
       else
-        resp = upsert_failed_task("helm_tiller", "✖️  FAILED: Containers with the Helm Tiller image are running #{emoji_security}", Time.utc)
+        resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Containers with the Helm Tiller image are running #{emoji_security}", task_start_time)
         failures.each do |failure|
           failure.resources.each do |resource|
             puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
