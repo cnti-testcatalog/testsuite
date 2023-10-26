@@ -162,64 +162,64 @@ end
 
 desc "Check if any containers are running in as root"
 task "non_root_user", ["install_falco"] do |_, args|
-   CNFManager::Task.task_runner(args) do |args,config|
+  CNFManager::Task.task_runner(args) do |args,config|
     task_start_time = Time.utc
     testsuite_task = "non_root_user"
     Log.for(testsuite_task).info { "Starting test" }
     
-     unless KubectlClient::Get.resource_wait_for_install("Daemonset", "falco", namespace: TESTSUITE_NAMESPACE)
-       Log.info { "Falco Failed to Start" }
-       upsert_skipped_task("non_root_user", "⏭️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).", task_start_time)
-       node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-       pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
+    unless KubectlClient::Get.resource_wait_for_install("Daemonset", "falco", namespace: TESTSUITE_NAMESPACE)
+      Log.info { "Falco Failed to Start" }
+      upsert_skipped_task("non_root_user", "⏭️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).", task_start_time)
+      node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
+      pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
 
-       # Handle scenario when pod is not available when Falco is not installed.
-       if pods.size > 0
-         falco_pod_name = pods[0].dig("metadata", "name").as_s
-         Log.info { "Falco Pod Name: #{falco_pod_name}" }
-         KubectlClient.logs(falco_pod_name, namespace: TESTSUITE_NAMESPACE)
-       end
-       next
-     end
+      # Handle scenario when pod is not available when Falco is not installed.
+      if pods.size > 0
+        falco_pod_name = pods[0].dig("metadata", "name").as_s
+        Log.info { "Falco Pod Name: #{falco_pod_name}" }
+        KubectlClient.logs(falco_pod_name, namespace: TESTSUITE_NAMESPACE)
+      end
+      next
+    end
 
-     Log.for("verbose").info { "non_root_user" } if check_verbose(args)
-     Log.debug { "cnf_config: #{config}" }
-     fail_msgs = [] of String
-     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-       test_passed = true
-       Log.info { "Falco is Running" }
-       kind = resource["kind"].downcase
-       case kind 
-       when  "deployment","statefulset","pod","replicaset", "daemonset"
-         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
-         pods = KubectlClient::Get.pods_by_resource(resource_yaml)
-         # containers = KubectlClient::Get.resource_containers(kind, resource[:name]) 
-         pods.map do |pod|
-           # containers.as_a.map do |container|
-           #   container_name = container.dig("name")
-           pod_name = pod.dig("metadata", "name").as_s
-           # if Falco.find_root_pod(pod_name, container_name)
-           if Falco.find_root_pod(pod_name)
-             fail_msg = "resource: #{resource} and pod #{pod_name} uses a root user"
-             unless fail_msgs.find{|x| x== fail_msg}
-               puts fail_msg.colorize(:red)
-               fail_msgs << fail_msg
-             end
-             test_passed=false
-           end
-         end
-       end
-       test_passed
-     end
-     emoji_no_root="🚫√"
-     emoji_root="√"
+    Log.for("verbose").info { "non_root_user" } if check_verbose(args)
+    Log.debug { "cnf_config: #{config}" }
+    fail_msgs = [] of String
+    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+      test_passed = true
+      Log.info { "Falco is Running" }
+      kind = resource["kind"].downcase
+      case kind 
+      when  "deployment","statefulset","pod","replicaset", "daemonset"
+        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
+        pods = KubectlClient::Get.pods_by_resource(resource_yaml)
+        # containers = KubectlClient::Get.resource_containers(kind, resource[:name]) 
+        pods.map do |pod|
+          # containers.as_a.map do |container|
+          #   container_name = container.dig("name")
+          pod_name = pod.dig("metadata", "name").as_s
+          # if Falco.find_root_pod(pod_name, container_name)
+          if Falco.find_root_pod(pod_name)
+            fail_msg = "resource: #{resource} and pod #{pod_name} uses a root user"
+            unless fail_msgs.find{|x| x== fail_msg}
+              puts fail_msg.colorize(:red)
+              fail_msgs << fail_msg
+            end
+            test_passed=false
+          end
+        end
+      end
+      test_passed
+    end
+    emoji_no_root="🚫√"
+    emoji_root="√"
 
-     if task_response
-       upsert_passed_task(testsuite_task, "✔️  PASSED: Root user not found #{emoji_no_root}", task_start_time)
-     else
-       upsert_failed_task(testsuite_task, "✖️  FAILED: Root user found #{emoji_root}", task_start_time)
-     end
-   end
+    if task_response
+      upsert_passed_task(testsuite_task, "✔️  PASSED: Root user not found #{emoji_no_root}", task_start_time)
+    else
+      upsert_failed_task(testsuite_task, "✖️  FAILED: Root user found #{emoji_root}", task_start_time)
+    end
+  end
 end
 
 desc "Check if any containers are running in privileged mode"
