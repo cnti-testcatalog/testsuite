@@ -8,7 +8,10 @@ require "../utils/utils.cr"
 desc "Test if a 5G core supports SUCI Concealment"
 task "suci_enabled" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.info { "Running suci_enabled test" }
+    task_start_time = Time.utc
+    testsuite_task = "suci_enabled"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Log.debug { "cnf_config: #{config}" }
     suci_found : Bool | Nil
     core = config.cnf_config[:core_label]? 
@@ -52,9 +55,9 @@ task "suci_enabled" do |_, args|
 
 
     if suci_found 
-      resp = upsert_passed_task("suci_enabled","✔️  PASSED: Core uses SUCI 5g authentication", Time.utc)
+      resp = upsert_passed_task(testsuite_task,"✔️  PASSED: Core uses SUCI 5g authentication", task_start_time)
     else
-      resp = upsert_failed_task("suci_enabled", "✖️  FAILED: Core does not use SUCI 5g authentication", Time.utc)
+      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Core does not use SUCI 5g authentication", task_start_time)
     end
     resp
   ensure
@@ -68,7 +71,10 @@ end
 desc "Test if RAN uses the ORAN e2 interface"
 task "oran_e2_connection" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.info { "Running oran_e2_connection test" }
+    task_start_time = Time.utc
+    testsuite_task = "oran_e2_connection"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Log.debug { "cnf_config: #{config}" }
     release_name = config.cnf_config[:release_name]
     if ORANMonitor.isCNFaRIC?(config.cnf_config) 
@@ -77,13 +83,13 @@ task "oran_e2_connection" do |_, args|
 
 
       if e2_found  == "true"
-        resp = upsert_passed_task("oran_e2_connection","✔️  PASSED: RAN connects to a RIC using the e2 standard interface", Time.utc)
+        resp = upsert_passed_task(testsuite_task,"✔️  PASSED: RAN connects to a RIC using the e2 standard interface", task_start_time)
       else
-        resp = upsert_failed_task("e2_established", "✖️  FAILED: RAN does not connect to a RIC using the e2 standard interface", Time.utc)
+        resp = upsert_failed_task(testsuite_task, "✖️  FAILED: RAN does not connect to a RIC using the e2 standard interface", task_start_time)
       end
       resp
     else
-      upsert_na_task("oran_e2_connection", "⏭️  N/A: [oran_e2_connection] No ric designated in cnf_testsuite.yml", Time.utc)
+      upsert_na_task(testsuite_task, "⏭️  N/A: [oran_e2_connection] No ric designated in cnf_testsuite.yml", task_start_time)
       next
     end
   end
