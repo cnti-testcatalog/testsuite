@@ -285,7 +285,7 @@ task "tracing" do |_, args|
       end
     end
   else
-    upsert_failed_task(testsuite_task, "✖️  ✨FAILED: No cnf_testsuite.yml found! Did you run the setup task?", task_start_time)
+    upsert_failed_task(testsuite_task, "✖️  ✨FAILED: No cnf_testsuite.yml found! Did you run the setup task?", Time.utc)
   end
 end
 
