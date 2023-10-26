@@ -138,16 +138,19 @@ end
 desc "Check if the CNF is running containers with container sock mounts"
 task "container_sock_mounts" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "container_sock_mounts" }
+    task_start_time = Time.utc
+    testsuite_task = "container_sock_mounts"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Kyverno.install
     emoji_security = "🔓🔑"
     policy_path = Kyverno.best_practice_policy("disallow_cri_sock_mount/disallow_cri_sock_mount.yaml")
     failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
     if failures.size == 0
-      resp = upsert_passed_task("container_sock_mounts", "✔️  🏆 PASSED: Container engine daemon sockets are not mounted as volumes #{emoji_security}", Time.utc)
+      resp = upsert_passed_task(testsuite_task, "✔️  🏆 PASSED: Container engine daemon sockets are not mounted as volumes #{emoji_security}", task_start_time)
     else
-      resp = upsert_failed_task("container_sock_mounts", "✖️  🏆 FAILED: Container engine daemon sockets are mounted as volumes #{emoji_security}", Time.utc)
+      resp = upsert_failed_task(testsuite_task, "✖️  🏆 FAILED: Container engine daemon sockets are mounted as volumes #{emoji_security}", task_start_time)
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
