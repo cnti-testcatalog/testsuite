@@ -86,9 +86,9 @@ rolling_version_change_test_names.each do |tn|
       end
       VERBOSE_LOGGING.debug "#{tn}: task_response=#{task_response}" if check_verbose(args)
       if task_response
-        resp = upsert_passed_task("#{tn}","✔️  PASSED: CNF for #{pretty_test_name_capitalized} Passed", Time.utc)
+        resp = upsert_passed_task("#{tn}","✔️  PASSED: CNF for #{pretty_test_name_capitalized} Passed", task_start_time)
       else
-        resp = upsert_failed_task("#{tn}", "✖️  FAILED: CNF for #{pretty_test_name_capitalized} Failed", Time.utc)
+        resp = upsert_failed_task("#{tn}", "✖️  FAILED: CNF for #{pretty_test_name_capitalized} Failed", task_start_time)
       end
       resp
       # TODO should we roll the image back to original version in an ensure?
@@ -187,7 +187,7 @@ end
 
 desc "Test increasing/decreasing capacity"
 task "increase_decrease_capacity" do |t, args|
-  VERBOSE_LOGGING.info "increase_decrease_capacity" if check_verbose(args)
+
   CNFManager::Task.task_runner(args) do |args, config|
     task_start_time = Time.utc
     testsuite_task = "increase_decrease_capacity"
@@ -281,7 +281,7 @@ end
 #     if task_response.none?(false) 
 #       upsert_passed_task("increase_capacity", "✔️  PASSED: Replicas increased to #{target_replicas} #{emoji_increase_capacity}")
 #     else
-#       upsert_failed_task("increase_capacity", increase_decrease_capacity_failure_msg(target_replicas, emoji_increase_capacity))
+#       upsert_failed_task(testsuite_task, increase_decrease_capacity_failure_msg(target_replicas, emoji_increase_capacity))
 #     end
 #   end
 # end
@@ -310,7 +310,7 @@ end
 #     if task_response.none?(false) 
 #       ret = upsert_passed_task("decrease_capacity", "✔️  PASSED: Replicas decreased to #{target_replicas} #{emoji_decrease_capacity}")
 #     else
-#       ret = upsert_failed_task("decrease_capacity", increase_decrease_capacity_failure_msg(target_replicas, emoji_decrease_capacity))
+#       ret = upsert_failed_task(testsuite_task, increase_decrease_capacity_failure_msg(target_replicas, emoji_decrease_capacity))
 #     end
 #     puts "1 ret: #{ret}"
 #     ret
@@ -426,10 +426,15 @@ end
 
 desc "Will the CNF install using helm with helm_deploy?"
 task "helm_deploy" do |_, args|
-  Log.for("helm_deploy").info { "Starting test" }
-  Log.info { "helm_deploy args: #{args.inspect}" } if check_verbose(args)
+  testsuite_task = "helm_deploy"
+  Log.for(testsuite_task).info { "Running #{testsuite_task}" }
+  Log.for(testsuite_task).info { "helm_deploy args: #{args.inspect}" } if check_verbose(args)
+
   if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
     CNFManager::Task.task_runner(args) do |args, config|
+      task_start_time = Time.utc
+      Log.for(testsuite_task).info { "Starting test" }
+
       emoji_helm_deploy="⎈🚀"
       helm_chart = config.cnf_config[:helm_chart]
       helm_directory = config.cnf_config[:helm_directory]
@@ -440,20 +445,23 @@ task "helm_deploy" do |_, args|
       helm_used = configmap["data"].as_h["helm_used"].as_s
 
       if helm_used == "true"
-        upsert_passed_task("helm_deploy", "✔️  PASSED: Helm deploy successful #{emoji_helm_deploy}", Time.utc)
+        upsert_passed_task(testsuite_task, "✔️  PASSED: Helm deploy successful #{emoji_helm_deploy}", task_start_time)
       else
-        upsert_failed_task("helm_deploy", "✖️  FAILED: Helm deploy failed #{emoji_helm_deploy}", Time.utc)
+        upsert_failed_task(testsuite_task, "✖️  FAILED: Helm deploy failed #{emoji_helm_deploy}", task_start_time)
       end
     end
   else
-    upsert_failed_task("helm_deploy", "✖️  FAILED: No cnf_testsuite.yml found! Did you run the setup task?", Time.utc)
+    upsert_failed_task(testsuite_task, "✖️  FAILED: No cnf_testsuite.yml found! Did you run the setup task?", task_start_time)
   end
 end
 
 task "helm_chart_published", ["helm_local_install"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
+    task_start_time = Time.utc
+    testsuite_task = "helm_chart_published"
+    Log.for(testsuite_task).info { "Starting test" }
+
     if check_verbose(args)
-      Log.for("verbose").info { "helm_chart_published" }
       Log.for("verbose").debug { "helm_chart_published args.raw: #{args.raw}" }
       Log.for("verbose").debug { "helm_chart_published args.named: #{args.named}" }
     end
@@ -470,7 +478,7 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
     if CNFManager.helm_repo_add(args: args)
       unless helm_chart.empty?
         helm_search_cmd = "#{helm} search repo #{helm_chart}"
-        Log.info { "helm search command: #{helm_search_cmd}" }
+        Log.for(testsuite_task).info { "helm search command: #{helm_search_cmd}" }
         Process.run(
           helm_search_cmd,
           shell: true,
@@ -480,15 +488,15 @@ task "helm_chart_published", ["helm_local_install"] do |_, args|
         helm_search = helm_search_stdout.to_s
         Log.for("verbose").debug { "#{helm_search}" } if check_verbose(args)
         unless helm_search =~ /No results found/
-          upsert_passed_task("helm_chart_published", "✔️  PASSED: Published Helm Chart Found #{emoji_published_helm_chart}", Time.utc)
+          upsert_passed_task(testsuite_task, "✔️  PASSED: Published Helm Chart Found #{emoji_published_helm_chart}", task_start_time)
         else
-          upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found #{emoji_published_helm_chart}", Time.utc)
+          upsert_failed_task(testsuite_task, "✖️  FAILED: Published Helm Chart Not Found #{emoji_published_helm_chart}", task_start_time)
         end
       else
-        upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found #{emoji_published_helm_chart}", Time.utc)
+        upsert_failed_task(testsuite_task, "✖️  FAILED: Published Helm Chart Not Found #{emoji_published_helm_chart}", task_start_time)
       end
     else
-      upsert_failed_task("helm_chart_published", "✖️  FAILED: Published Helm Chart Not Found #{emoji_published_helm_chart}", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  FAILED: Published Helm Chart Not Found #{emoji_published_helm_chart}", task_start_time)
     end
   end
 end
