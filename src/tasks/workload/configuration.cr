@@ -358,7 +358,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |_, args|
       upsert_failed_task(testsuite_task, "✖️  🏆 FAILED: Hard-coded IP addresses found in the runtime K8s configuration", task_start_time)
     end
   rescue
-    upsert_skipped_task(testsuite_task, "⏭️  🏆 SKIPPED: unknown exception", task_start_time)
+    upsert_skipped_task(testsuite_task, "⏭️  🏆 SKIPPED: unknown exception", Time.utc)
   ensure
     KubectlClient::Delete.command("namespace hardcoded-ip-test --force --grace-period 0")
   end
@@ -595,7 +595,7 @@ task "immutable_configmap" do |_, args|
     # now we change then apply again
 
     template = ImmutableConfigMapTemplate.new("doesnt_matter_again").to_s
-    Log.for(testsuite_task)debug { "test immutable_configmap change template: #{template}" }
+    Log.for(testsuite_task).debug { "test immutable_configmap change template: #{template}" }
     File.write(test_config_map_filename, template)
 
     immutable_configmap_supported = true

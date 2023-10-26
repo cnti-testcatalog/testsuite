@@ -252,16 +252,17 @@ end
 
 desc "Does the CNF install use tracing?"
 task "tracing" do |_, args|
-  Log.for("verbose").info { "tracing" } if check_verbose(args)
-  Log.info { "tracing args: #{args.inspect}" }
+  testsuite_task = "tracing"
+  Log.for(testsuite_task).info { "Running test" }
+  Log.for(testsuite_task).info { "tracing args: #{args.inspect}" }
+
   next if args.named["offline"]?
-   emoji_tracing_deploy="⎈🚀"
+  emoji_tracing_deploy="⎈🚀"
 
   if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
     CNFManager::Task.task_runner(args) do |args, config|
       task_start_time = Time.utc
-      testsuite_task = "tracing"
-      Log.for(testsuite_task).info { "Starting test" }
+      Log.for(testsuite_task).info { "Starting test for CNF" }
 
       match = JaegerManager.match()
       Log.info { "jaeger match: #{match}" }

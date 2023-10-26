@@ -426,13 +426,13 @@ end
 
 desc "Will the CNF install using helm with helm_deploy?"
 task "helm_deploy" do |_, args|
+  task_start_time = Time.utc
   testsuite_task = "helm_deploy"
   Log.for(testsuite_task).info { "Running #{testsuite_task}" }
   Log.for(testsuite_task).info { "helm_deploy args: #{args.inspect}" } if check_verbose(args)
 
   if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
     CNFManager::Task.task_runner(args) do |args, config|
-      task_start_time = Time.utc
       Log.for(testsuite_task).info { "Starting test" }
 
       emoji_helm_deploy="⎈🚀"

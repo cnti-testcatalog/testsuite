@@ -389,7 +389,7 @@ module CNFManager
       end_time = Time.utc
       task_runtime = (end_time - start_time).milliseconds
 
-      Log.for(task).info { "task_runtime=#{task_runtime}; start_time=#{start_time}; end_time:#{end_time}" }
+      Log.for("#{task}").info { "task_runtime=#{task_runtime}; start_time=#{start_time}; end_time:#{end_time}" }
 
       # The task result info has to be appeneded to an array of YAML::Any
       # So encode it into YAML and parse it back again to assign it.
