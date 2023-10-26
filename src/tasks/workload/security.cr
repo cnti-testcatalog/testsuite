@@ -38,7 +38,9 @@ end
 desc "Check if pods in the CNF use sysctls with restricted values"
 task "sysctls" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "sysctls" }
+    task_start_time = Time.utc
+    testsuite_task = "sysctls"
+    Log.for(testsuite_task).info { "Starting test" }
     Kyverno.install
 
     emoji_security = "🔓🔑"
@@ -48,9 +50,9 @@ task "sysctls" do |_, args|
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
 
     if failures.size == 0
-      resp = upsert_passed_task("sysctls", "✔️  PASSED: No restricted values found for sysctls #{emoji_security}", Time.utc)
+      resp = upsert_passed_task(testsuite_task, "✔️  PASSED: No restricted values found for sysctls #{emoji_security}", task_start_time)
     else
-      resp = upsert_failed_task("sysctls", "✖️  FAILED: Restricted values for are being used for sysctls #{emoji_security}", Time.utc)
+      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Restricted values for are being used for sysctls #{emoji_security}", task_start_time)
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
