@@ -24,10 +24,13 @@ rolling_version_change_test_names.each do |tn|
   desc "Test if the CNF containers are loosely coupled by performing a #{pretty_test_name}"
   task "#{tn}" do |_, args|
     CNFManager::Task.task_runner(args) do |args, config|
-      LOGGING.debug "cnf_config: #{config}"
-      VERBOSE_LOGGING.info "#{tn}" if check_verbose(args)
+      task_start_time = Time.utc
+      testsuite_task = tn
+      Log.for(testsuite_task).info { "Starting test" }
+
+      Log.for(testsuite_task).debug { "cnf_config: #{config}" }
       container_names = config.cnf_config[:container_names]
-      LOGGING.debug "container_names: #{container_names}"
+      Log.for(testsuite_task).debug { "container_names: #{container_names}" }
       update_applied = true
       unless container_names
         puts "Please add a container names set of entries into your cnf-testsuite.yml".colorize(:red)
@@ -43,8 +46,8 @@ rolling_version_change_test_names.each do |tn|
         namespace = resource["namespace"] || config.cnf_config[:helm_install_namespace]
         test_passed = true
         valid_cnf_testsuite_yml = true
-        LOGGING.debug "#{tn} container: #{container}"
-        LOGGING.debug "container_names: #{container_names}"
+        Log.for(testsuite_task).debug { "container: #{container}" }
+        Log.for(testsuite_task).debug { "container_names: #{container_names}" }
         #todo use skopeo to get the next and previous versions of the cnf image dynamically
         config_container = container_names.find{|x| x["name"]==container.as_h["name"]} if container_names
         LOGGING.debug "config_container: #{config_container}"
@@ -97,11 +100,14 @@ end
 desc "Test if the CNF can perform a rollback"
 task "rollback" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "rollback" if check_verbose(args)
-    LOGGING.debug "cnf_config: #{config}"
+    task_start_time = Time.utc
+    testsuite_task = "rollback"
+    Log.for(testsuite_task).info { "Starting test" }
+
+    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
 
     container_names = config.cnf_config[:container_names]
-    LOGGING.debug "container_names: #{container_names}"
+    Log.for(testsuite_task).debug { "container_names: #{container_names}" }
 
     update_applied = true
     rollout_status = true
@@ -122,11 +128,9 @@ task "rollback" do |_, args|
         image_name = full_image_name_tag[0]
         image_tag = full_image_name_tag[2]
 
-        VERBOSE_LOGGING.debug "resource: #{resource_kind}/#{resource_name}" if check_verbose(args)
-        VERBOSE_LOGGING.debug "container_name: #{container_name}" if check_verbose(args)
-        VERBOSE_LOGGING.debug "image_name: #{image_name}" if check_verbose(args)
-        VERBOSE_LOGGING.debug "image_tag: #{image_tag}" if check_verbose(args)
-        LOGGING.debug "rollback: setting new version"
+        Log.for(testsuite_task).debug {
+          "Rollback: setting new version; resource=#{resource_kind}/#{resource_name}; container_name=#{container_name}; image_name=#{image_name}; image_tag: #{image_tag}"
+        }
         #do_update = `kubectl set image deployment/coredns-coredns coredns=coredns/coredns:latest --record`
 
         version_change_applied = true
@@ -144,7 +148,9 @@ task "rollback" do |_, args|
             version_change_applied=false
           end
 
-          VERBOSE_LOGGING.debug "rollback: update #{resource_kind}/#{resource_name}, container: #{container_name}, image: #{image_name}, tag: #{rollback_from_tag}" if check_verbose(args)
+          Log.for(testsuite_task).debug {
+            "rollback: update #{resource_kind}/#{resource_name}, container: #{container_name}, image: #{image_name}, tag: #{rollback_from_tag}"
+          }
           # set a temporary image/tag, so that we can rollback to the current (original) tag later
           version_change_applied = KubectlClient::Set.image(
             resource_kind,
@@ -156,25 +162,25 @@ task "rollback" do |_, args|
           )
         end
 
-        LOGGING.info "rollback version change successful? #{version_change_applied}"
+        Log.for(testsuite_task).info { "rollback version change successful? #{version_change_applied}" }
 
-        VERBOSE_LOGGING.debug "rollback: checking status new version" if check_verbose(args)
+        Log.for(testsuite_task).debug { "rollback: checking status new version" }
         rollout_status = KubectlClient::Rollout.status(resource_kind, resource_name, namespace: namespace, timeout: "180s")
         if rollout_status == false
           stdout_failure("Rollback failed on resource: #{resource_kind}/#{resource_name} and container: #{container_name}")
         end
 
         # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-to-a-previous-revision
-        VERBOSE_LOGGING.debug "rollback: rolling back to old version" if check_verbose(args)
+        Log.for(testsuite_task).debug { "rollback: rolling back to old version" }
         rollback_status = KubectlClient::Rollout.undo(resource_kind, resource_name, namespace: namespace)
 
     end
 
 
     if task_response && version_change_applied && rollout_status && rollback_status
-      upsert_passed_task("rollback","✔️  PASSED: CNF Rollback Passed", Time.utc)
+      upsert_passed_task(testsuite_task,"✔️  PASSED: CNF Rollback Passed", task_start_time)
     else
-      upsert_failed_task("rollback", "✖️  FAILED: CNF Rollback Failed", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  FAILED: CNF Rollback Failed", task_start_time)
     end
   end
 end
@@ -183,7 +189,11 @@ desc "Test increasing/decreasing capacity"
 task "increase_decrease_capacity" do |t, args|
   VERBOSE_LOGGING.info "increase_decrease_capacity" if check_verbose(args)
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "increase_capacity" if check_verbose(args)
+    task_start_time = Time.utc
+    testsuite_task = "increase_decrease_capacity"
+    Log.for(testsuite_task).info { "Starting test" }
+
+    Log.for(testsuite_task).info { "increase_capacity" }
 
     increase_test_base_replicas = "1"
     increase_test_target_replicas = "3"
@@ -219,9 +229,9 @@ task "increase_decrease_capacity" do |t, args|
 
     if increase_task_response.none?(false) && decrease_task_response.none?(false)
       pass_msg = "✔️  🏆 PASSED: Replicas increased to #{increase_test_target_replicas} and decreased to #{decrease_test_target_replicas} #{emoji_capacity}"
-      upsert_passed_task("increase_decrease_capacity", pass_msg, Time.utc)
+      upsert_passed_task(testsuite_task, pass_msg, task_start_time)
     else
-      upsert_failed_task("increase_decrease_capacity", "✖️  FAILURE: Capacity change failed #{emoji_capacity}", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  FAILURE: Capacity change failed #{emoji_capacity}", task_start_time)
 
       # If increased capacity failed
       if increase_task_response.any?(false)
@@ -485,8 +495,11 @@ end
 
 task "helm_chart_valid", ["helm_local_install"] do |_, args|
   CNFManager::Task.task_runner(args) do |args|
+    task_start_time = Time.utc
+    testsuite_task = "helm_chart_valid"
+    Log.for(testsuite_task).info { "Starting test" }
+
     if check_verbose(args)
-      Log.for("verbose").info { "helm_chart_valid" }
       Log.for("verbose").debug { "helm_chart_valid args.raw: #{args.raw}" }
       Log.for("verbose").debug { "helm_chart_valid args.named: #{args.named}" }
     end
@@ -509,7 +522,7 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
     Log.for("verbose").debug { "working_chart_directory: #{working_chart_directory}" } if check_verbose(args)
 
     current_dir = FileUtils.pwd
-    Log.for("verbose").debug { current_dir } if check_verbose(args)
+    Log.for(testsuite_task).debug { "current dir: #{current_dir}" }
     helm = Helm::BinarySingleton.helm
     emoji_helm_lint="⎈📝☑️"
 
@@ -523,12 +536,12 @@ task "helm_chart_valid", ["helm_local_install"] do |_, args|
       error: helm_link_stderr = IO::Memory.new
     )
     helm_lint = helm_lint_stdout.to_s
-    Log.for("verbose").debug { "helm_lint: #{helm_lint}" } if check_verbose(args)
+    Log.for(testsuite_task).debug { "helm_lint: #{helm_lint}" } if check_verbose(args)
 
     if helm_lint_status.success?
-      upsert_passed_task("helm_chart_valid", "✔️  PASSED: Helm Chart #{working_chart_directory} Lint Passed #{emoji_helm_lint}", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  PASSED: Helm Chart #{working_chart_directory} Lint Passed #{emoji_helm_lint}", task_start_time)
     else
-      upsert_failed_task("helm_chart_valid", "✖️  FAILED: Helm Chart #{working_chart_directory} Lint Failed #{emoji_helm_lint}", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  FAILED: Helm Chart #{working_chart_directory} Lint Failed #{emoji_helm_lint}", task_start_time)
     end
   end
 end
@@ -625,7 +638,10 @@ end
 desc "CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements."
 task "cni_compatible" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "cni_compatible" } if check_verbose(args)
+    task_start_time = Time.utc
+    testsuite_task = "cni_compatible"
+    Log.for(testsuite_task).info { "Starting test" }
+
     emoji_security="🔓🔑"
 
     docker_version = DockerClient.version_info()
@@ -650,9 +666,9 @@ task "cni_compatible" do |_, args|
         puts "CNF failed to install on Cilium CNI cluster".colorize(:red) unless cilium_cnf_passed
 
         if calico_cnf_passed && cilium_cnf_passed
-          upsert_passed_task("cni_compatible", "✔️  PASSED: CNF compatible with both Calico and Cilium #{emoji_security}", Time.utc)
+          upsert_passed_task(testsuite_task, "✔️  PASSED: CNF compatible with both Calico and Cilium #{emoji_security}", task_start_time)
         else
-          upsert_failed_task("cni_compatible", "✖️  FAILED: CNF not compatible with either Calico or Cillium #{emoji_security}", Time.utc)
+          upsert_failed_task(testsuite_task, "✖️  FAILED: CNF not compatible with either Calico or Cillium #{emoji_security}", task_start_time)
         end
       ensure
         kind_manager = KindManager.new
@@ -661,7 +677,7 @@ task "cni_compatible" do |_, args|
         ENV["KUBECONFIG"]="#{kubeconfig_orig}"
       end
     else
-      upsert_skipped_task("cni_compatible", "✖️  SKIPPED: Docker not installed #{emoji_security}", Time.utc)
+      upsert_skipped_task(testsuite_task, "✖️  SKIPPED: Docker not installed #{emoji_security}", task_start_time)
     end
   end
 end
