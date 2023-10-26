@@ -22,10 +22,10 @@ ELASTIC_PROVISIONING_DRIVERS_REGEX_SPEC = /kubernetes.io\/aws-ebs|kubernetes.io\
 
 module Volume
   def self.elastic_by_volumes?(volumes : Array(JSON::Any), namespace : String? = nil)
-    Log.info {"elastic_by_volumes"}
+    Log.info {"Volume.elastic_by_volumes"}
     storage_class_names = storage_class_by_volumes(volumes, namespace)
     elastic = StorageClass.elastic_by_storage_class?(storage_class_names)
-    Log.info {"elastic_by_volumes elastic: #{elastic}"}
+    Log.info {"Volume.elastic_by_volumes elastic: #{elastic}"}
     elastic
   end
   # def self.elastic?(volumes, namespace : String? = nil)
@@ -114,7 +114,7 @@ end
 module StorageClass
   def self.elastic_by_storage_class?(storage_class_names : Array(Hash(String, JSON::Any)), 
                                      namespace : String? = nil)
-    Log.info {"elastic_by_storage_class"}
+    Log.info {"StorageClass.elastic_by_storage_class"}
     Log.for("elastic_volumes:storage_class_names").info { storage_class_names }
 
     #todo elastic_by_storage_class?
@@ -153,7 +153,7 @@ end
 
 module VolumeClaimTemplate
   def self.pvc_name_by_vct_resource(resource) : String | Nil
-    Log.info {"vct_pvc_name"}
+    Log.info {"VolumeClaimTemplate.pvc_name_by_vct_resource"}
     resource_name = resource.dig("metadata", "name")
     vct = resource.dig?("spec", "volumeClaimTemplates")
     if vct && vct.size > 0
@@ -161,7 +161,7 @@ module VolumeClaimTemplate
       vct_name = vct[0].dig?("metadata", "name")
       name = "#{vct_name}-#{resource_name}-0"
     end
-    Log.info {"name: #{name}"}
+    Log.for("VolumeClaimTemplate.pvc_name_by_vct_resource").info {"name: #{name}"}
     name
   end
 
@@ -218,7 +218,10 @@ end
 desc "Does the CNF crash when node-drain occurs"
 task "node_drain", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    test_name = "pod_memory_hog"
+    task_start_time = Time.utc
+    testsuite_task = "node_drain"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Log.for(test_name).info { "Starting test" } if check_verbose(args)
     skipped = false
     Log.debug { "cnf_config: #{config}" }
@@ -259,7 +262,7 @@ task "node_drain", ["install_litmus"] do |t, args|
         if spec_labels.as_h.size > 0
           test_passed = true
         else
-          stdout_failure("No resource label found for #{test_name} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
+          stdout_failure("No resource label found for #{testsuite_task} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
           test_passed = false
         end
         if test_passed
@@ -365,12 +368,12 @@ task "node_drain", ["install_litmus"] do |t, args|
       test_passed
     end
     if skipped
-      Log.for("verbose").warn{"The node_drain test needs minimum 2 schedulable nodes, current number of nodes: #{KubectlClient::Get.schedulable_nodes_list.size}"} if check_verbose(args)
-      resp = upsert_skipped_task("node_drain","⏭️  🏆 SKIPPED: node_drain chaos test requires the cluster to have atleast two schedulable nodes 🗡️💀♻️", Time.utc)
+      Log.for(testsuite_task).warn{"The node_drain test needs minimum 2 schedulable nodes, current number of nodes: #{KubectlClient::Get.schedulable_nodes_list.size}"}
+      resp = upsert_skipped_task(testsuite_task,"⏭️  🏆 SKIPPED: node_drain chaos test requires the cluster to have atleast two schedulable nodes 🗡️💀♻️", task_start_time)
     elsif task_response
-      resp = upsert_passed_task("node_drain","✔️  🏆 PASSED: node_drain chaos test passed 🗡️💀♻️", Time.utc)
+      resp = upsert_passed_task(testsuite_task,"✔️  🏆 PASSED: node_drain chaos test passed 🗡️💀♻️", task_start_time)
     else
-      resp = upsert_failed_task("node_drain","✖️  🏆 FAILED: node_drain chaos test failed 🗡️💀♻️", Time.utc)
+      resp = upsert_failed_task(testsuite_task,"✖️  🏆 FAILED: node_drain chaos test failed 🗡️💀♻️", task_start_time)
     end
   end
 end
@@ -378,8 +381,12 @@ end
 desc "Does the CNF use an elastic persistent volume"
 task "elastic_volumes" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
+    task_start_time = Time.utc
+    testsuite_task = "elastic_volumes"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Log.info {"cnf_config: #{config}"}
-    Log.for("verbose").info { "elastic_volumes" } if check_verbose(args)
+
     emoji_probe="🧫"
     elastic_volumes_used = false
     volumes_used = false
@@ -396,7 +403,7 @@ task "elastic_volumes" do |_, args|
 
       full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
       elastic_result = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)
-      Log.for("elastic_volumes:elastic_result").info {elastic_result}
+      Log.for("#{testsuite_task}:elastic_result").info {elastic_result}
       if elastic_result
         elastic_volumes_used = true
       end
@@ -404,11 +411,11 @@ task "elastic_volumes" do |_, args|
 
     Log.for("elastic_volumes:result").info { "Volumes used: #{volumes_used}; Elastic?: #{elastic_volumes_used}" }
     if volumes_used == false
-      resp = upsert_skipped_task("elastic_volumes","⏭️  ✨SKIPPED: No volumes used #{emoji_probe}", Time.utc)
+      resp = upsert_skipped_task(testsuite_task,"⏭️  ✨SKIPPED: No volumes used #{emoji_probe}", task_start_time)
     elsif elastic_volumes_used
-      resp = upsert_passed_task("elastic_volumes","✔️  ✨PASSED: Elastic Volumes Used #{emoji_probe}", Time.utc)
+      resp = upsert_passed_task(testsuite_task,"✔️  ✨PASSED: Elastic Volumes Used #{emoji_probe}", task_start_time)
     else
-      resp = upsert_failed_task("elastic_volumes","✔️  ✨FAILED: Volumes used are not elastic volumes #{emoji_probe}", Time.utc)
+      resp = upsert_failed_task(testsuite_task,"✔️  ✨FAILED: Volumes used are not elastic volumes #{emoji_probe}", task_start_time)
     end
     resp
   end
@@ -426,8 +433,11 @@ end
 desc "Does the CNF use a database which uses perisistence in a cloud native way"
 task "database_persistence" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
+    task_start_time = Time.utc
+    testsuite_task = "database_persistence"
+    Log.for(testsuite_task).info { "Starting test" }
+
     Log.info {"cnf_config: #{config}"}
-    Log.info {"database_persistence"}
     # VERBOSE_LOGGING.info "database_persistence" if check_verbose(args)
     # todo K8s Database persistence test: if a mysql (or any popular database) image is installed:
     emoji_probe="🧫"
@@ -463,17 +473,17 @@ task "database_persistence" do |_, args|
       end
       failed_emoji = "(ভ_ভ) ރ 💾"
       if elastic_statefulset
-        resp = upsert_dynamic_task("database_persistence",CNFManager::Points::Results::ResultStatus::Pass5, "✔️  PASSED: Elastic Volumes and Statefulsets Used #{emoji_probe}", Time.utc)
+        resp = upsert_dynamic_task(testsuite_task,CNFManager::Points::Results::ResultStatus::Pass5, "✔️  PASSED: Elastic Volumes and Statefulsets Used #{emoji_probe}", task_start_time)
       elsif elastic_volume_used 
-        resp = upsert_dynamic_task("database_persistence",CNFManager::Points::Results::ResultStatus::Pass3,"✔️  PASSED: Elastic Volumes Used #{emoji_probe}", Time.utc)
+        resp = upsert_dynamic_task(testsuite_task,CNFManager::Points::Results::ResultStatus::Pass3,"✔️  PASSED: Elastic Volumes Used #{emoji_probe}", task_start_time)
       elsif statefulset_exists
-        resp = upsert_dynamic_task("database_persistence",CNFManager::Points::Results::ResultStatus::Neutral, "✖️  FAILED: Statefulset used without an elastic volume #{failed_emoji}", Time.utc)
+        resp = upsert_dynamic_task(testsuite_task,CNFManager::Points::Results::ResultStatus::Neutral, "✖️  FAILED: Statefulset used without an elastic volume #{failed_emoji}", task_start_time)
       else
-        resp = upsert_failed_task("database_persistence","✖️  FAILED: Elastic Volumes Not Used #{failed_emoji}", Time.utc)
+        resp = upsert_failed_task(testsuite_task,"✖️  FAILED: Elastic Volumes Not Used #{failed_emoji}", task_start_time)
       end
 
     else
-      resp = upsert_skipped_task("database_persistence", "⏭️  SKIPPED: Mysql not installed #{emoji_probe}", Time.utc)
+      resp = upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: Mysql not installed #{emoji_probe}", task_start_time)
     end
     resp
   end
@@ -491,7 +501,10 @@ end
 desc "Does the CNF use a non-cloud native data store: hostPath volume"
 task "volume_hostpath_not_found" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "volume_hostpath_not_found" if check_verbose(args)
+    task_start_time = Time.utc
+    testsuite_task = "volume_hostpath_not_found"
+    Log.for(testsuite_task).info { "Starting test" }
+
     failed_emoji = "(ভ_ভ) ރ 💾"
     passed_emoji = "🖥️  💾"
     LOGGING.debug "cnf_config: #{config}"
@@ -519,9 +532,9 @@ task "volume_hostpath_not_found" do |_, args|
     end
 
     if task_response.any?(false)
-      upsert_failed_task("volume_hostpath_not_found","✖️  FAILED: hostPath volumes found #{failed_emoji}", Time.utc)
+      upsert_failed_task(testsuite_task,"✖️  FAILED: hostPath volumes found #{failed_emoji}", task_start_time)
     else
-      upsert_passed_task("volume_hostpath_not_found","✔️  PASSED: hostPath volumes not found #{passed_emoji}", Time.utc)
+      upsert_passed_task(testsuite_task,"✔️  PASSED: hostPath volumes not found #{passed_emoji}", task_start_time)
     end
   end
 end
@@ -531,7 +544,9 @@ task "no_local_volume_configuration" do |_, args|
   failed_emoji = "(ভ_ভ) ރ 💾"
   passed_emoji = "🖥️  💾"
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "no_local_volume_configuration" if check_verbose(args)
+    task_start_time = Time.utc
+    testsuite_task = "no_local_volume_configuration"
+    Log.for(testsuite_task).info { "Starting test" }
 
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
@@ -545,7 +560,7 @@ task "no_local_volume_configuration" do |_, args|
         if resource["spec"].as_h["template"].as_h["spec"].as_h["volumes"]?
             volumes = resource["spec"].as_h["template"].as_h["spec"].as_h["volumes"].as_a 
         end
-        LOGGING.debug "volumes: #{volumes}"
+        Log.for(testsuite_task).debug "volumes: #{volumes}"
         persistent_volume_claim_names = volumes.map do |volume|
           # get persistent volume claim that matches persistent volume claim name
           if volume.as_h["persistentVolumeClaim"]? && volume.as_h["persistentVolumeClaim"].as_h["claimName"]?
@@ -554,7 +569,7 @@ task "no_local_volume_configuration" do |_, args|
             nil 
           end
         end.compact
-        LOGGING.debug "persistent volume claim names: #{persistent_volume_claim_names}"
+        Log.debug.for(testsuite_task) { "persistent volume claim names: #{persistent_volume_claim_names}" }
 
         # TODO (optional) check storage class of persistent volume claim
         # loop through all pvc names
@@ -569,13 +584,13 @@ task "no_local_volume_configuration" do |_, args|
                   local_storage_not_found = false 
               end
             rescue ex
-              LOGGING.info ex.message 
+              Log.for(testsuite_task).info { ex.message }
               local_storage_not_found = true 
             end
           end
         end
       rescue ex
-        VERBOSE_LOGGING.error ex.message if check_verbose(args)
+        Log.for(testsuite_task).error { ex.message } if check_verbose(args)
         puts "Rescued: On resource #{resource["metadata"]["name"]?} of kind #{resource["kind"]}, local storage configuration volumes not found #{passed_emoji}".colorize(:yellow)
         local_storage_not_found = true
       end
@@ -583,9 +598,9 @@ task "no_local_volume_configuration" do |_, args|
     end
 
     if task_response.any?(false) 
-      upsert_failed_task("no_local_volume_configuration","✖️  ✨FAILED: local storage configuration volumes found #{failed_emoji}", Time.utc)
+      upsert_failed_task(testsuite_task,"✖️  ✨FAILED: local storage configuration volumes found #{failed_emoji}", task_start_time)
     else
-      upsert_passed_task("no_local_volume_configuration","✔️  ✨PASSED: local storage configuration volumes not found #{passed_emoji}", Time.utc)
+      upsert_passed_task(testsuite_task,"✔️  ✨PASSED: local storage configuration volumes not found #{passed_emoji}", task_start_time)
     end
   end
 end
