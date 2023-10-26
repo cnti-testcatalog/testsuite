@@ -222,7 +222,6 @@ task "node_drain", ["install_litmus"] do |t, args|
     testsuite_task = "node_drain"
     Log.for(testsuite_task).info { "Starting test" }
 
-    Log.for(test_name).info { "Starting test" } if check_verbose(args)
     skipped = false
     Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
@@ -320,10 +319,10 @@ task "node_drain", ["install_litmus"] do |t, args|
             # rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/rbac.yaml"
             rbac_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/charts/generic/node-drain/rbac.yaml"
 
-            experiment_path = LitmusManager.download_template(experiment_url, "#{test_name}_experiment.yaml")
+            experiment_path = LitmusManager.download_template(experiment_url, "#{testsuite_task}_experiment.yaml")
             KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
   
-            rbac_path = LitmusManager.download_template(rbac_url, "#{test_name}_rbac.yaml")
+            rbac_path = LitmusManager.download_template(rbac_url, "#{testsuite_task}_rbac.yaml")
             rbac_yaml = File.read(rbac_path)
             rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
             File.write(rbac_path, rbac_yaml)
@@ -560,7 +559,7 @@ task "no_local_volume_configuration" do |_, args|
         if resource["spec"].as_h["template"].as_h["spec"].as_h["volumes"]?
             volumes = resource["spec"].as_h["template"].as_h["spec"].as_h["volumes"].as_a 
         end
-        Log.for(testsuite_task).debug "volumes: #{volumes}"
+        Log.for(testsuite_task).debug { "volumes: #{volumes}" }
         persistent_volume_claim_names = volumes.map do |volume|
           # get persistent volume claim that matches persistent volume claim name
           if volume.as_h["persistentVolumeClaim"]? && volume.as_h["persistentVolumeClaim"].as_h["claimName"]?
@@ -569,7 +568,7 @@ task "no_local_volume_configuration" do |_, args|
             nil 
           end
         end.compact
-        Log.debug.for(testsuite_task) { "persistent volume claim names: #{persistent_volume_claim_names}" }
+        Log.for(testsuite_task).debug { "persistent volume claim names: #{persistent_volume_claim_names}" }
 
         # TODO (optional) check storage class of persistent volume claim
         # loop through all pvc names
