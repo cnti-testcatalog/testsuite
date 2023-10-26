@@ -163,10 +163,13 @@ end
 desc "Check if any containers are running in as root"
 task "non_root_user", ["install_falco"] do |_, args|
    CNFManager::Task.task_runner(args) do |args,config|
-
+    task_start_time = Time.utc
+    testsuite_task = "non_root_user"
+    Log.for(testsuite_task).info { "Starting test" }
+    
      unless KubectlClient::Get.resource_wait_for_install("Daemonset", "falco", namespace: TESTSUITE_NAMESPACE)
        Log.info { "Falco Failed to Start" }
-       upsert_skipped_task("non_root_user", "⏭️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).", Time.utc)
+       upsert_skipped_task("non_root_user", "⏭️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).", task_start_time)
        node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
        pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
 
@@ -212,9 +215,9 @@ task "non_root_user", ["install_falco"] do |_, args|
      emoji_root="√"
 
      if task_response
-       upsert_passed_task("non_root_user", "✔️  PASSED: Root user not found #{emoji_no_root}", Time.utc)
+       upsert_passed_task(testsuite_task, "✔️  PASSED: Root user not found #{emoji_no_root}", task_start_time)
      else
-       upsert_failed_task("non_root_user", "✖️  FAILED: Root user found #{emoji_root}", Time.utc)
+       upsert_failed_task(testsuite_task, "✖️  FAILED: Root user found #{emoji_root}", task_start_time)
      end
    end
 end
