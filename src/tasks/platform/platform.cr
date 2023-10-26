@@ -20,10 +20,13 @@ end
 
 desc "Does the platform pass the K8s conformance tests?"
 task "k8s_conformance" do |_, args|
-  VERBOSE_LOGGING.info "k8s_conformance" if check_verbose(args)
+  task_start_time = Time.utc
+  testsuite_task = "k8s_conformance"
+  Log.for(testsuite_task).info { "Starting test" }
+
   begin
     current_dir = FileUtils.pwd
-    VERBOSE_LOGGING.debug current_dir if check_verbose(args)
+    Log.for(testsuite_task).debug { "current dir: #{current_dir}" }
     sonobuoy = "#{tools_path}/sonobuoy/sonobuoy"
 
     # Clean up old results
@@ -34,7 +37,7 @@ task "k8s_conformance" do |_, args|
       output: delete_stdout = IO::Memory.new,
       error: delete_stderr = IO::Memory.new
     )
-    Log.for("verbose").info { delete_stdout } if check_verbose(args)
+    Log.for(testsuite_task).debug { "sonobuoy delete output: #{delete_stdout}" }
 
     # Run the tests
     testrun_stdout = IO::Memory.new
@@ -70,10 +73,10 @@ task "k8s_conformance" do |_, args|
 
     failed_count = ((results.match(/Failed: (.*)/)).try &.[1]) 
     if failed_count.to_s.to_i > 0 
-      upsert_failed_task("k8s_conformance", "✖️  FAILED: K8s conformance test has #{failed_count} failure(s)!", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  FAILED: K8s conformance test has #{failed_count} failure(s)!", task_start_time)
 
     else
-      upsert_passed_task("k8s_conformance", "✔️  PASSED: K8s conformance test has no failures", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  PASSED: K8s conformance test has no failures", task_start_time)
     end
   rescue ex
     Log.error { ex.message }
@@ -88,6 +91,10 @@ end
 desc "Is Cluster Api available and managing a cluster?"
 task "clusterapi_enabled" do |_, args|
   CNFManager::Task.task_runner(args, check_cnf_installed=false) do
+    task_start_time = Time.utc
+    testsuite_task = "clusterapi_enabled"
+    Log.for(testsuite_task).info { "Starting test" }
+
     unless check_poc(args)
       Log.info { "skipping clusterapi_enabled: not in poc mode" }
       puts "SKIPPED: ClusterAPI Enabled".colorize(:yellow)
@@ -134,9 +141,9 @@ task "clusterapi_enabled" do |_, args|
     emoji_control="✨"
 
     if clusterapi_namespaces_json["items"]? && clusterapi_namespaces_json["items"].as_a.size > 0 && clusterapi_control_planes_json["items"]? && clusterapi_control_planes_json["items"].as_a.size > 0
-      resp = upsert_passed_task("clusterapi_enabled", "✔️ Cluster API is enabled #{emoji_control}", Time.utc)
+      resp = upsert_passed_task(testsuite_task, "✔️ Cluster API is enabled #{emoji_control}", task_start_time)
     else
-      resp = upsert_failed_task("clusterapi_enabled", "✖️ Cluster API NOT enabled #{emoji_control}", Time.utc)
+      resp = upsert_failed_task(testsuite_task, "✖️ Cluster API NOT enabled #{emoji_control}", task_start_time)
     end
 
     resp
