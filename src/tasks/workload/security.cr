@@ -246,7 +246,8 @@ end
 desc "Check if any containers are running in privileged mode"
 task "privilege_escalation", ["kubescape_scan"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "privilege_escalation" if check_verbose(args)
+    testsuite_task = "privilege_escalation"
+    Log.for(testsuite_task).info { "Starting test" }
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Allow privilege escalation")
     test_report = Kubescape.parse_test_report(test_json)
@@ -255,9 +256,9 @@ task "privilege_escalation", ["kubescape_scan"] do |_, args|
 
     emoji_security="🔓🔑"
     if test_report.failed_resources.size == 0 
-      upsert_passed_task("privilege_escalation", "✔️  PASSED: No containers that allow privilege escalation were found #{emoji_security}", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  PASSED: No containers that allow privilege escalation were found #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("privilege_escalation", "✖️  FAILED: Found containers that allow privilege escalation #{emoji_security}", Time.utc)
+      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Found containers that allow privilege escalation #{emoji_security}", Time.utc)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
