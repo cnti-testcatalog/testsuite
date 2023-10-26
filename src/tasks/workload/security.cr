@@ -211,7 +211,8 @@ end
 desc "Check if any containers are running in privileged mode"
 task "privileged" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    Log.for("verbose").info { "privileged" } if check_verbose(args)
+    testsuite_task = "privileged"
+    Log.for(testsuite_task).info { "Starting test" }
     white_list_container_names = config.cnf_config[:white_list_container_names]
     VERBOSE_LOGGING.info "white_list_container_names #{white_list_container_names.inspect}" if check_verbose(args)
     violation_list = [] of NamedTuple(kind: String, name: String, container: String, namespace: String)
@@ -229,12 +230,12 @@ task "privileged" do |_, args|
         true
       end
     end
-    LOGGING.debug "violator list: #{violation_list.flatten}"
+    Log.debug { "violator list: #{violation_list.flatten}" }
     emoji_security="🔓🔑"
     if task_response 
-      upsert_passed_task("privileged", "✔️  PASSED: No privileged containers #{emoji_security}", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  PASSED: No privileged containers #{emoji_security}", Time.utc)
     else
-      upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers #{emoji_security}", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  FAILED: Found #{violation_list.size} privileged containers #{emoji_security}", Time.utc)
       violation_list.each do |violation|
         stdout_failure("Privileged container #{violation[:container]} in #{violation[:kind]}/#{violation[:name]} in the #{violation[:namespace]} namespace")
       end
