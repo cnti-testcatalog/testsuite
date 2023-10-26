@@ -225,8 +225,10 @@ end
 desc "Check if any containers are running in privileged mode"
 task "privileged" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
+    task_start_time = Time.utc
     testsuite_task = "privileged"
     Log.for(testsuite_task).info { "Starting test" }
+
     white_list_container_names = config.cnf_config[:white_list_container_names]
     VERBOSE_LOGGING.info "white_list_container_names #{white_list_container_names.inspect}" if check_verbose(args)
     violation_list = [] of NamedTuple(kind: String, name: String, container: String, namespace: String)
@@ -247,9 +249,9 @@ task "privileged" do |_, args|
     Log.debug { "violator list: #{violation_list.flatten}" }
     emoji_security="🔓🔑"
     if task_response 
-      upsert_passed_task(testsuite_task, "✔️  PASSED: No privileged containers #{emoji_security}", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  PASSED: No privileged containers #{emoji_security}", task_start_time)
     else
-      upsert_failed_task(testsuite_task, "✖️  FAILED: Found #{violation_list.size} privileged containers #{emoji_security}", Time.utc)
+      upsert_failed_task(testsuite_task, "✖️  FAILED: Found #{violation_list.size} privileged containers #{emoji_security}", task_start_time)
       violation_list.each do |violation|
         stdout_failure("Privileged container #{violation[:container]} in #{violation[:kind]}/#{violation[:name]} in the #{violation[:namespace]} namespace")
       end
@@ -260,8 +262,10 @@ end
 desc "Check if any containers are running in privileged mode"
 task "privilege_escalation", ["kubescape_scan"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
+    task_start_time = Time.utc
     testsuite_task = "privilege_escalation"
     Log.for(testsuite_task).info { "Starting test" }
+
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Allow privilege escalation")
     test_report = Kubescape.parse_test_report(test_json)
@@ -270,9 +274,9 @@ task "privilege_escalation", ["kubescape_scan"] do |_, args|
 
     emoji_security="🔓🔑"
     if test_report.failed_resources.size == 0 
-      upsert_passed_task(testsuite_task, "✔️  PASSED: No containers that allow privilege escalation were found #{emoji_security}", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  PASSED: No containers that allow privilege escalation were found #{emoji_security}", task_start_time)
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Found containers that allow privilege escalation #{emoji_security}", Time.utc)
+      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Found containers that allow privilege escalation #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -283,8 +287,10 @@ end
 desc "Check if an attacker can use symlink for arbitrary host file system access."
 task "symlink_file_system", ["kubescape_scan"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
+    task_start_time = Time.utc
     testsuite_task = "symlink_file_system"
     Log.for(testsuite_task).info { "Starting test" }
+
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "CVE-2021-25741 - Using symlink for arbitrary host file system access.")
     test_report = Kubescape.parse_test_report(test_json)
@@ -293,9 +299,9 @@ task "symlink_file_system", ["kubescape_scan"] do |_, args|
 
     emoji_security="🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task(testsuite_task, "✔️  PASSED: No containers allow a symlink attack #{emoji_security}", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  PASSED: No containers allow a symlink attack #{emoji_security}", task_start_time)
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Found containers that allow a symlink attack #{emoji_security}", Time.utc)
+      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Found containers that allow a symlink attack #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
@@ -306,8 +312,10 @@ end
 desc "Check if applications credentials are in configuration files."
 task "application_credentials", ["kubescape_scan"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
+    task_start_time = Time.utc
     testsuite_task = "application_credentials"
     Log.for(testsuite_task).info { "Starting test" }
+
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Applications credentials in configuration files")
     test_report = Kubescape.parse_test_report(test_json)
@@ -316,9 +324,9 @@ task "application_credentials", ["kubescape_scan"] do |_, args|
 
     emoji_security="🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task(testsuite_task, "✔️  PASSED: No applications credentials in configuration files #{emoji_security}", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  PASSED: No applications credentials in configuration files #{emoji_security}", task_start_time)
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Found applications credentials in configuration files #{emoji_security}", Time.utc)
+      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Found applications credentials in configuration files #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
