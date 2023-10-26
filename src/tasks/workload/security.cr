@@ -292,7 +292,8 @@ end
 desc "Check if applications credentials are in configuration files."
 task "application_credentials", ["kubescape_scan"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
-    VERBOSE_LOGGING.info "application_credentials" if check_verbose(args)
+    testsuite_task = "application_credentials"
+    Log.for(testsuite_task).info { "Starting test" }
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Applications credentials in configuration files")
     test_report = Kubescape.parse_test_report(test_json)
@@ -301,9 +302,9 @@ task "application_credentials", ["kubescape_scan"] do |_, args|
 
     emoji_security="🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task("application_credentials", "✔️  PASSED: No applications credentials in configuration files #{emoji_security}", Time.utc)
+      upsert_passed_task(testsuite_task, "✔️  PASSED: No applications credentials in configuration files #{emoji_security}", Time.utc)
     else
-      resp = upsert_failed_task("application_credentials", "✖️  FAILED: Found applications credentials in configuration files #{emoji_security}", Time.utc)
+      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Found applications credentials in configuration files #{emoji_security}", Time.utc)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       resp
