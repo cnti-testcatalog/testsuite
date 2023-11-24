@@ -14,12 +14,12 @@ task "suci_enabled" do |_, args|
 
     Log.debug { "cnf_config: #{config}" }
     suci_found : Bool | Nil
-    core = config.cnf_config[:core_label]? 
+    core = config.cnf_config[:amf_label]? 
     Log.info { "core: #{core}" }
     core_key : String  = ""
     core_value : String = ""
-    core_key = config.cnf_config[:core_label].split("=").first if core
-    core_value = config.cnf_config[:core_label].split("=").last if core
+    core_key = config.cnf_config[:amf_label].split("=").first if core
+    core_value = config.cnf_config[:amf_label].split("=").last if core
     if core 
 
       command = "-ni any -Y nas_5gs.mm.type_id -T json"

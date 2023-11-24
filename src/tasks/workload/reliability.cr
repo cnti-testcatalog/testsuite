@@ -100,6 +100,7 @@ end
 desc "Does the CNF crash when network latency occurs"
 task "pod_network_latency", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
+    #todo if args has list of labels to perform test on, go into pod specific mode
     task_start_time = Time.utc
     testsuite_task = "pod_network_latency"
     Log.for(testsuite_task).info { "Starting test" }
@@ -110,13 +111,33 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       Log.info { "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}" }
       app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0 && resource["kind"] == "Deployment"
-        test_passed = true
+        test_passed = false
       else
         stdout_failure("Resource is not a Deployment or no resource label was found for resource: #{resource["name"]}")
         test_passed = false
       end
+
+      if args.named["pod_labels"]?
+        pod_label = args.named["pod_labels"]?
+        match_array = pod_label.to_s.split(",")
+
+        match_array.each do |key_value|
+          key, value = key_value.split("=")
+          if spec_labels.as_h.has_key?(key) && spec_labels[key] == value
+            puts "Match found for key: #{key} and value: #{value}"
+            test_passed = true
+          else
+            puts "Match not found for key: #{key} and value: #{value}"
+          end
+        end
+      end
+
+      Log.info { "Spec Hash: #{args.named["pod_labels"]?}" }
+      # company spec_hash with spec_labels
+      #todo if (test_passed && not pod specific mode e.g list empty) || (test_passed && current spec_labels in list of labels in args)
       if test_passed
         if args.named["offline"]?
           Log.info { "install resilience offline mode" }
@@ -139,6 +160,7 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
           File.write(rbac_path, rbac_yaml)
           KubectlClient::Apply.file(rbac_path)
         end
+        #TODO Use Labels to Annotate, not resource["name"]
         KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-network-latency"
@@ -162,11 +184,15 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
       end
     end
-    if task_response
-      resp = upsert_passed_task(testsuite_task,"✔️  ✨PASSED: pod_network_latency chaos test passed 🗡️💀♻️", task_start_time)
-    else
-      resp = upsert_failed_task(testsuite_task,"✖️  ✨FAILED: pod_network_latency chaos test failed 🗡️💀♻️", task_start_time)
+    unless args.named["pod_labels"]?
+        #todo if in pod specific mode, dont do upserts and resp = ""
+        if task_response
+          resp = upsert_passed_task(testsuite_task,"✔️  ✨PASSED: pod_network_latency chaos test passed 🗡️💀♻️", task_start_time)
+        else
+          resp = upsert_failed_task(testsuite_task,"✖️  ✨FAILED: pod_network_latency chaos test failed 🗡️💀♻️", task_start_time)
+        end
     end
+
   end
 end
 
