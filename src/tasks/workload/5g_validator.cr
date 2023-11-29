@@ -44,7 +44,8 @@ task "smf_upf_heartbeat" do |t, args|
       spawn do
         Log.info { "before invoke of pod delete" }
         args.named["pod_labels"]="#{smf},#{upf}"
-        t.invoke("pod_delete", args)
+   #     t.invoke("pod_delete", args)
+        t.invoke("pod_network_latency", args)
         Log.info { "after invoke of pod delete" }
         sync_channel.send(nil)
       end
@@ -72,12 +73,11 @@ task "smf_upf_heartbeat" do |t, args|
       Log.info { "Baseline matches: #{baseline_count}" }
 
       if chaos_count && baseline_count
-        difference = (chaos_count.to_i - baseline_count.to_i).abs
-        if difference <= 5
-          Log.info { "The integers are within a value of 5. Passing" }
+        if chaos_count.to_i >= baseline_count.to_i * 0.5 
+          Log.info { "Chaos service degradation is less than 50%. Passing" }
           heartbeat_found = true
         else
-          Log.info { "The integers are not within a value of 5. Failing" }
+          Log.info { "Chaos service degradation is more than 50%. Failing" }
           heartbeat_found = false
         end
       else
@@ -91,14 +91,10 @@ task "smf_upf_heartbeat" do |t, args|
     end
 
     if heartbeat_found 
-      resp = upsert_passed_task(testsuite_task,"✔️  PASSED: Core uses SUCI 5g authentication", task_start_time)
+      resp = upsert_passed_task(testsuite_task,"✔️  PASSED: Chaos service degradation is less than 50%.", task_start_time)
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Core does not use SUCI 5g authentication", task_start_time)
+      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Chaos service degradation is more that 50%.", task_start_time)
     end
     resp
-  ensure
-    Helm.delete("ueransim")
-    ClusterTools.uninstall
-    ClusterTools.install
   end
 end

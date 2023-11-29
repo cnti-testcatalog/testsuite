@@ -120,13 +120,17 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         test_passed = false
       end
 
+      current_pod_key = ""
+      current_pod_value = ""
       if args.named["pod_labels"]?
-        pod_label = args.named["pod_labels"]?
-        match_array = pod_label.to_s.split(",")
+          pod_label = args.named["pod_labels"]?
+          match_array = pod_label.to_s.split(",")
 
         test_passed = match_array.any? do |key_value|
           key, value = key_value.split("=")
           if spec_labels.as_h.has_key?(key) && spec_labels[key] == value
+            current_pod_key = key
+            current_pod_value = value
             puts "Match found for key: #{key} and value: #{value}"
             true
           else
@@ -135,6 +139,9 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
           end
         end
       end
+
+      Log.info { "Spec Hash: #{args.named["pod_labels"]?}" }
+
 
       if test_passed
         Log.info { "Running for: #{spec_labels}"}
@@ -168,16 +175,27 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         test_name = "#{resource["name"]}-#{Random::Secure.hex(4)}"
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
-        spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
-        Log.for("#{testsuite_task}:spec_labels").info { "Spec labels for chaos template. Key: #{spec_labels.first_key}; Value: #{spec_labels.first_value}" }
-        template = ChaosTemplates::PodNetworkLatency.new(
-          test_name,
-          "#{chaos_experiment_name}",
-          app_namespace,
-          "#{spec_labels.first_key}",
-          "#{spec_labels.first_value}",
-          total_chaos_duration
+        #spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
+        if args.named["pod_labels"]?
+            template = ChaosTemplates::PodNetworkLatency.new(
+              test_name,
+              "#{chaos_experiment_name}",
+              app_namespace,
+              "#{current_pod_key}",
+              "#{current_pod_value}",
+              total_chaos_duration
         ).to_s
+        else
+          template = ChaosTemplates::PodNetworkLatency.new(
+            test_name,
+            "#{chaos_experiment_name}",
+            app_namespace,
+            "#{spec_labels.as_h.first_key}",
+            "#{spec_labels.as_h.first_value}",
+            total_chaos_duration
+          ).to_s
+        end
+
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
         LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
