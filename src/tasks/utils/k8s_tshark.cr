@@ -111,9 +111,9 @@ module K8sTshark
   def self.regex_tshark_log_scan(regex, tshark_log_name)
     Log.info { "regex_tshark_log regex tshark_log_name: #{regex} #{tshark_log_name}" }
     resp = File.read("#{tshark_log_name}")
-    Log.info { "tshark_log_name resp: #{resp}" }
+    Log.debug { "tshark_log_name resp: #{resp}" }
     if resp
-      Log.info { "resp: #{resp}" }
+      Log.debug { "resp: #{resp}" }
       ret = resp.scan(regex) 
     else
       Log.info { "file empty" }

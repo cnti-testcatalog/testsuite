@@ -9,8 +9,7 @@ describe "Core" do
 
   before_all do
     `./cnf-testsuite setup`
-    $?.success?.should be_true
-  end
+    $?.success?.should be_true end
 
   it "'smf_upf_heartbeat' should pass if the smf_upf core is resilient to network latency", tags: ["core"]  do
     begin
@@ -29,7 +28,7 @@ describe "Core" do
     begin
       Log.info {`./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_open5gs/cnf-testsuite.yml`}
       $?.success?.should be_true
-      response_s = `./cnf-testsuite smf_upf_heartbeat verbose`
+      response_s = `./cnf-testsuite smf_upf_heartbeat verbose baseline_count=300`
       Log.info {"response: #{response_s}"}
       (/FAILED: Chaos service degradation is more than 50%/ =~ response_s).should_not be_nil
     ensure

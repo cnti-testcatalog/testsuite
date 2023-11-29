@@ -11,6 +11,13 @@ task "smf_upf_heartbeat" do |t, args|
     task_start_time = Time.utc
     testsuite_task = "suci_enabled"
     Log.for(testsuite_task).info { "Starting test" }
+    Log.for(testsuite_task).info { "named args: #{args.named}" }
+    baseline_count : Int32 | Float64 | String | Nil
+    if args.named["baseline_count"]?
+      baseline_count = args.named["baseline_count"].to_i
+    else
+      baseline_count = nil
+    end
 
     Log.debug { "cnf_config: #{config}" }
     suci_found : Bool | Nil
@@ -28,14 +35,17 @@ task "smf_upf_heartbeat" do |t, args|
       command = "-ni any -Y 'pfcp.msg_type == 1 or pfcp.msg_type == 2' -T json"
 
       #Baseline 
-      tshark_log_name = K8sTshark.log_of_tshark_by_label(command, smf_key, smf_value, duration="120")
-      if tshark_log_name && 
-          !tshark_log_name.empty? && 
-          (tshark_log_name =~ /not found/) == nil
-        scan = K8sTshark.regex_tshark_log_scan(/"pfcp\.msg_type": "(1|2)"/, tshark_log_name) 
-        if scan
-          baseline_count = scan.size
-          Log.info { "Baseline matches: #{baseline_count}" }
+      #todo pass in baseline count
+      unless baseline_count
+        tshark_log_name = K8sTshark.log_of_tshark_by_label(command, smf_key, smf_value, duration="120")
+        if tshark_log_name && 
+            !tshark_log_name.empty? && 
+            (tshark_log_name =~ /not found/) == nil
+          scan = K8sTshark.regex_tshark_log_scan(/"pfcp\.msg_type": "(1|2)"/, tshark_log_name) 
+          if scan
+            baseline_count = scan.size
+            Log.info { "Baseline matches: #{baseline_count}" }
+          end
         end
       end
 
@@ -93,7 +103,7 @@ task "smf_upf_heartbeat" do |t, args|
     if heartbeat_found 
       resp = upsert_passed_task(testsuite_task,"✔️  PASSED: Chaos service degradation is less than 50%.", task_start_time)
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Chaos service degradation is more that 50%.", task_start_time)
+      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Chaos service degradation is more than 50%.", task_start_time)
     end
     resp
   end
