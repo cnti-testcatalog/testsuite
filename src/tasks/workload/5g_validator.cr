@@ -6,10 +6,21 @@ require "totem"
 require "../utils/utils.cr"
 
 desc "Test if a 5G core has SMF/UPF heartbeat"
+task "smf_upf_core_validator" do |t, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    task_start_time = Time.utc
+    testsuite_task = "smf_upf_core_validator"
+    Log.for(testsuite_task).info { "Starting test" }
+    args.named["reslience_tests"]="pod_network_latency, pod_delete"
+    t.invoke("smf_upf_heartbeat", args)
+  end
+end
+
+desc "Test if a 5G core has SMF/UPF heartbeat"
 task "smf_upf_heartbeat" do |t, args|
   CNFManager::Task.task_runner(args) do |args, config|
     task_start_time = Time.utc
-    testsuite_task = "suci_enabled"
+    testsuite_task = "smf_upf_heartbeat"
     Log.for(testsuite_task).info { "Starting test" }
     Log.for(testsuite_task).info { "named args: #{args.named}" }
     baseline_count : Int32 | Float64 | String | Nil
@@ -32,10 +43,10 @@ task "smf_upf_heartbeat" do |t, args|
 
     if smf && upf 
 
+      #todo document 3gpp standard for heartbeat
       command = "-ni any -Y 'pfcp.msg_type == 1 or pfcp.msg_type == 2' -T json"
 
       #Baseline 
-      #todo pass in baseline count
       unless baseline_count
         tshark_log_name = K8sTshark.log_of_tshark_by_label(command, smf_key, smf_value, duration="120")
         if tshark_log_name && 
@@ -49,6 +60,9 @@ task "smf_upf_heartbeat" do |t, args|
         end
       end
 
+      #todo accept list of resilience tests
+      #todo loop through all resilience tests
+      #todo accumulate results (true/false) from loop and if false exits fail test
       #Chaos Matches
       sync_channel = Channel(Nil).new
       spawn do
@@ -84,13 +98,16 @@ task "smf_upf_heartbeat" do |t, args|
 
       if chaos_count && baseline_count
         if chaos_count.to_i >= baseline_count.to_i * 0.5 
+          #todo inject current resilienct test name in messages
           Log.info { "Chaos service degradation is less than 50%. Passing" }
           heartbeat_found = true
         else
+          #todo inject current resilienct test name in messages
           Log.info { "Chaos service degradation is more than 50%. Failing" }
           heartbeat_found = false
         end
       else
+          #todo inject current resilienct test name in messages
           Log.info { "Heartbeat not found" }
           heartbeat_found = false
       end
@@ -100,6 +117,7 @@ task "smf_upf_heartbeat" do |t, args|
       puts "no 5g labels".colorize(:red)
     end
 
+    #todo move this to validator code code
     if heartbeat_found 
       resp = upsert_passed_task(testsuite_task,"✔️  PASSED: Chaos service degradation is less than 50%.", task_start_time)
     else

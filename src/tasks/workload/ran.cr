@@ -5,6 +5,7 @@ require "colorize"
 require "totem"
 require "../utils/utils.cr"
 
+#todo move to 5g test files
 desc "Test if a 5G core supports SUCI Concealment"
 task "suci_enabled" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
