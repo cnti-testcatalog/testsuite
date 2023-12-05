@@ -37,7 +37,7 @@ module ORANMonitor
       resp = ClusterTools.exec_by_node("tshark --version", node)
       Log.info { "tshark must be version 4.0.3 or higher" }
       Log.info { "tshark output #{resp[:output]}" }
-      tshark_log_name = K8sTshark.log_of_tshark_by_node(command,node)
+      tshark_log_name = K8sTshark.log_of_tshark_by_node_bg(command,node)
     else
       tshark_log_name = nil
     end
