@@ -24,7 +24,7 @@ task "suci_enabled" do |_, args|
     if core 
 
       command = "-ni any -Y nas_5gs.mm.type_id -T json"
-      tshark_log_name = K8sTshark.log_of_tshark_by_label(command, core_key, core_value)
+      tshark_log_name = K8sTshark.log_of_tshark_by_label_bg(command, core_key, core_value)
       if tshark_log_name && 
           !tshark_log_name.empty? && 
           (tshark_log_name =~ /not found/) == nil
