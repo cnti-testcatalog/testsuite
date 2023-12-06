@@ -35,7 +35,9 @@ module CNFManager
                                      white_list_container_names: Array(String),
                                      docker_insecure_registries: Array(String) | Nil,
                                      #todo change this to an array of labels that capture all of 5g core nodes
-                                     core_label: String,
+                                     amf_label: String,
+                                     smf_label: String,
+                                     upf_label: String,
                                      ric_label: String,
                                      fiveG_core: NamedTuple(amf_pod_name: String,
                                                            mmc: String,
@@ -129,7 +131,9 @@ module CNFManager
       apn:  optional_key_as_string(config, "apn"),
       emergency:  core_emergency,
       }
-      core  = optional_key_as_string(config, "core_label")
+      core  = optional_key_as_string(config, "amf_label")
+      smf  = optional_key_as_string(config, "smf_label")
+      upf  = optional_key_as_string(config, "upf_label")
       ric = optional_key_as_string(config, "ric_label")
       if helm_directory.empty?
         working_chart_directory = "exported_chart"
@@ -208,7 +212,9 @@ module CNFManager
                                container_names: container_names,
                                white_list_container_names: white_list_container_names,
                                docker_insecure_registries: docker_insecure_registries,
-                               core_label: core,
+                               amf_label: core,
+                               smf_label: smf,
+                               upf_label: upf,
                                ric_label: ric,
                                fiveG_core: fiveG_core,
                                image_registry_fqdns: image_registry_fqdns,})

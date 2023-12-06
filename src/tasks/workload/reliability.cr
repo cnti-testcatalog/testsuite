@@ -100,6 +100,7 @@ end
 desc "Does the CNF crash when network latency occurs"
 task "pod_network_latency", ["install_litmus"] do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
+    #todo if args has list of labels to perform test on, go into pod specific mode
     task_start_time = Time.utc
     testsuite_task = "pod_network_latency"
     Log.for(testsuite_task).info { "Starting test" }
@@ -110,6 +111,7 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       Log.info { "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}" }
       app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0 && resource["kind"] == "Deployment"
         test_passed = true
@@ -117,9 +119,35 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         stdout_failure("Resource is not a Deployment or no resource label was found for resource: #{resource["name"]}")
         test_passed = false
       end
+
+      current_pod_key = ""
+      current_pod_value = ""
+      if args.named["pod_labels"]?
+          pod_label = args.named["pod_labels"]?
+          match_array = pod_label.to_s.split(",")
+
+        test_passed = match_array.any? do |key_value|
+          key, value = key_value.split("=")
+          if spec_labels.as_h.has_key?(key) && spec_labels[key] == value
+            current_pod_key = key
+            current_pod_value = value
+            puts "Match found for key: #{key} and value: #{value}"
+            true
+          else
+            puts "Match not found for key: #{key} and value: #{value}"
+            false
+          end
+        end
+      end
+
+      Log.info { "Spec Hash: #{args.named["pod_labels"]?}" }
+
+
       if test_passed
+        Log.info { "Running for: #{spec_labels}"}
+        Log.info { "Spec Hash: #{args.named["pod_labels"]?}" }
         if args.named["offline"]?
-          Log.info { "install resilience offline mode" }
+            Log.info { "install resilience offline mode" }
           AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/lat-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/lat-experiment.yaml")
           KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/lat-rbac.yaml")
@@ -139,6 +167,7 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
           File.write(rbac_path, rbac_yaml)
           KubectlClient::Apply.file(rbac_path)
         end
+        #TODO Use Labels to Annotate, not resource["name"]
         KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-network-latency"
@@ -146,27 +175,42 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
         test_name = "#{resource["name"]}-#{Random::Secure.hex(4)}"
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
-        spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
-        Log.for("#{testsuite_task}:spec_labels").info { "Spec labels for chaos template. Key: #{spec_labels.first_key}; Value: #{spec_labels.first_value}" }
-        template = ChaosTemplates::PodNetworkLatency.new(
-          test_name,
-          "#{chaos_experiment_name}",
-          app_namespace,
-          "#{spec_labels.first_key}",
-          "#{spec_labels.first_value}",
-          total_chaos_duration
+        #spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
+        if args.named["pod_labels"]?
+            template = ChaosTemplates::PodNetworkLatency.new(
+              test_name,
+              "#{chaos_experiment_name}",
+              app_namespace,
+              "#{current_pod_key}",
+              "#{current_pod_value}",
+              total_chaos_duration
         ).to_s
+        else
+          template = ChaosTemplates::PodNetworkLatency.new(
+            test_name,
+            "#{chaos_experiment_name}",
+            app_namespace,
+            "#{spec_labels.as_h.first_key}",
+            "#{spec_labels.as_h.first_value}",
+            total_chaos_duration
+          ).to_s
+        end
+
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
         LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
       end
     end
-    if task_response
-      resp = upsert_passed_task(testsuite_task,"✔️  ✨PASSED: pod_network_latency chaos test passed 🗡️💀♻️", task_start_time)
-    else
-      resp = upsert_failed_task(testsuite_task,"✖️  ✨FAILED: pod_network_latency chaos test failed 🗡️💀♻️", task_start_time)
+    unless args.named["pod_labels"]?
+        #todo if in pod specific mode, dont do upserts and resp = ""
+        if task_response
+          resp = upsert_passed_task(testsuite_task,"✔️  ✨PASSED: pod_network_latency chaos test passed 🗡️💀♻️", task_start_time)
+        else
+          resp = upsert_failed_task(testsuite_task,"✖️  ✨FAILED: pod_network_latency chaos test failed 🗡️💀♻️", task_start_time)
+        end
     end
+
   end
 end
 
@@ -392,6 +436,7 @@ task "pod_delete", ["install_litmus"] do |_, args|
 
     Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    #todo clear all annotations
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
@@ -401,7 +446,35 @@ task "pod_delete", ["install_litmus"] do |_, args|
         stdout_failure("No resource label found for #{testsuite_task} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
         test_passed = false
       end
+
+      current_pod_key = ""
+      current_pod_value = ""
+      if args.named["pod_labels"]?
+          pod_label = args.named["pod_labels"]?
+          match_array = pod_label.to_s.split(",")
+
+        test_passed = match_array.any? do |key_value|
+          key, value = key_value.split("=")
+          if spec_labels.as_h.has_key?(key) && spec_labels[key] == value
+            current_pod_key = key
+            current_pod_value = value
+            puts "Match found for key: #{key} and value: #{value}"
+            true
+          else
+            puts "Match not found for key: #{key} and value: #{value}"
+            false
+          end
+        end
+      end
+
+      Log.info { "Spec Hash: #{args.named["pod_labels"]?}" }
+
+
       if test_passed
+        Log.info { "Running for: #{spec_labels}"}
+        puts "Running for: #{spec_labels}"
+        Log.info { "Spec Hash: #{args.named["pod_labels"]?}" }
+        puts "Spec Hash: #{args.named["pod_labels"]?}" 
         if args.named["offline"]?
           Log.info { "install resilience offline mode" }
           AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-delete-experiment.yaml")
@@ -422,6 +495,8 @@ task "pod_delete", ["install_litmus"] do |_, args|
           KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
           KubectlClient::Apply.file(rbac_path)
         end
+
+        Log.info { "resource: #{resource["name"]}" }
         KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-delete"
@@ -430,16 +505,31 @@ task "pod_delete", ["install_litmus"] do |_, args|
         test_name = "#{resource["name"]}-#{Random.rand(99)}" 
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
-        spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
+        # spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"]).as_h
+      if args.named["pod_labels"]?
         template = ChaosTemplates::PodDelete.new(
           test_name,
           "#{chaos_experiment_name}",
           app_namespace,
-          "#{spec_labels.first_key}",
-          "#{spec_labels.first_value}",
+          "#{current_pod_key}",
+          "#{current_pod_value}",
           total_chaos_duration,
           target_pod_name
         ).to_s
+      else
+        template = ChaosTemplates::PodDelete.new(
+          test_name,
+          "#{chaos_experiment_name}",
+          app_namespace,
+          "#{spec_labels.as_h.first_key}",
+          "#{spec_labels.as_h.first_value}",
+          total_chaos_duration,
+          target_pod_name
+        ).to_s
+      end
+
+        puts "template: #{template}"
+        Log.info { "template: #{template}" }
 
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
@@ -447,10 +537,12 @@ task "pod_delete", ["install_litmus"] do |_, args|
       end
       test_passed=LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
     end
-    if task_response
-      resp = upsert_passed_task(testsuite_task,"✔️  PASSED: pod_delete chaos test passed 🗡️💀♻️", task_start_time)
-    else
-      resp = upsert_failed_task(testsuite_task,"✖️  FAILED: pod_delete chaos test failed 🗡️💀♻️", task_start_time)
+    unless args.named["pod_labels"]?
+        if task_response
+          resp = upsert_passed_task(testsuite_task,"✔️  PASSED: pod_delete chaos test passed 🗡️💀♻️", task_start_time)
+        else
+          resp = upsert_failed_task(testsuite_task,"✖️  FAILED: pod_delete chaos test failed 🗡️💀♻️", task_start_time)
+        end
     end
   end
 end

@@ -54,7 +54,7 @@ shards:
 
   kubectl_client:
     git: https://github.com/cnf-testsuite/kubectl_client.git
-    version: 1.0.4
+    version: 1.0.5
 
   popcorn:
     git: https://github.com/icyleaf/popcorn.git
@@ -66,7 +66,7 @@ shards:
 
   readline:
     git: https://github.com/crystal-lang/crystal-readline.git
-    version: 0.1.1+git.commit.add6679775d59c164e2db04f5116557180d04ad9
+    version: 0.1.1+git.commit.69ecf33d7cad5568d7d19333510cfd9d17cb1bbd
 
   release_manager:
     git: https://github.com/cnf-testsuite/release_manager.git
@@ -74,7 +74,7 @@ shards:
 
   retriable:
     git: https://github.com/sija/retriable.cr.git
-    version: 0.2.4
+    version: 0.2.5
 
   sam:
     git: https://github.com/vulk/sam.cr.git

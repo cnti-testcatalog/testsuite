@@ -20,7 +20,7 @@ module UERANSIM
 
   def self.install(config)
     Log.info {"Installing ueransim with 5g config"}
-    core = config.cnf_config[:core_label]? 
+    core = config.cnf_config[:amf_label]? 
     Log.info { "core: #{core}" }
     #todo use sane defaults (i.e. search for amf, upf, etc in pod names) if no 5gcore labels are present
     amf_pod_name = config.cnf_config[:fiveG_core][:amf_pod_name]? 
@@ -40,8 +40,8 @@ module UERANSIM
     emergency = config.cnf_config[:fiveG_core][:emergency]? 
     core_key : String  = ""
     core_value : String = ""
-    core_key = config.cnf_config[:core_label].split("=").first if core
-    core_value = config.cnf_config[:core_label].split("=").last if core
+    core_key = config.cnf_config[:amf_label].split("=").first if core
+    core_value = config.cnf_config[:amf_label].split("=").last if core
     if core 
       all_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
       ueran_pods = KubectlClient::Get.pods_by_label(all_pods, "app.kubernetes.io/name", "ueransim-gnb")
