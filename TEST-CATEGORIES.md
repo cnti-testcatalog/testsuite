@@ -41,7 +41,7 @@ The CNF Test Suite program validates interoperability of CNF **workloads** suppl
 
 - Checking volume hostpath is found or not.
 - Checks if no local volume is configured.
-- Check if the CNF is usin elastic persistent volumes
+- Check if the CNF is using elastic persistent volumes
 - Checks for k8s database persistence.
 
 ## Reliability, Resilience & Availability Tests
