@@ -658,7 +658,7 @@ Ensure that your CNF is resilient to a lossy/flaky network and can maintain a le
 ```
 
 <b>Remediation for failing this test:</b> 
-Ensure that your CNF is resilient to erroneously duplicated packets and can maintain a level of avaliabliy.
+Ensure that your CNF is resilient to erroneously duplicated packets and can maintain a level of availability.
 </b>
 
 
