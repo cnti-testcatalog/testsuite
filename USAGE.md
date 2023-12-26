@@ -14,6 +14,8 @@
   - [Observability and Diagnostic Tests](USAGE.md#observability-and-diagnostic-tests)
   - [Security Tests](USAGE.md#security-tests)
   - [Configuration Tests](USAGE.md#configuration-tests)
+  - [5g Tests](USAGE.md#5g-tests)
+  - [Ran Tests](USAGE.md#ran-tests)
 - [Platform Tests](USAGE.md#platform-tests)
 
 ### Overview
@@ -1188,6 +1190,45 @@ Remove any sensitive data stored in configmaps, environment variables and instea
 <b>Remediation for failing this test:</b> 
 Use immutable configmaps for any non-mutable configuration data.
 </b>
+
+# 5g Tests
+
+##### To run all 5g tests, you can use the following command:
+
+```
+./cnf-testsuite 5g
+```
+
+## [smf_upf_core_validator](docs/LIST_OF_TESTS.md#smf_upf_core_validator)
+
+##### To run the 5g core_validator test, you can use the following command:
+
+```
+./cnf-testsuite smf_upf_core_validator
+```
+## [suci_enabled](docs/LIST_OF_TESTS.md#suci_enabled)
+##### To run the 5g suci_enabled test, you can use the following command:
+
+```
+./cnf-testsuite suci_enabled
+```
+
+# RAN Tests
+
+##### To run all RAN tests, you can use the following command:
+
+```
+./cnf-testsuite ran
+```
+
+## [oran_e2_connection](docs/LIST_OF_TESTS.md#oran_e2_connection)
+
+##### To run the oran e2 connection test, you can use the following command:
+
+```
+./cnf-testsuite oran_e2_connection
+```
+
 
 
 # Platform Tests
