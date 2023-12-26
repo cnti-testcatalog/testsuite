@@ -699,6 +699,38 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 [**Rationale & Reasoning**](../RATIONALE.md#to-check-if-a-cnf-version-uses-immutable-configmaps-immutable_configmap)
 
 
+# 5g Category
+
+## [smf_upf_core_validator](https://github.com/cncf/cnf-testsuite/blob/v0.30.0/src/tasks/workload/5g_validator.cr#L9) 
+- Expectation: 5g core should continue to function during various CNF tests.
+
+**What's tested:** Checks the pfcp heartbeat between the smf and upf to make sure it remains close to baseline.
+
+[**Usage**](../USAGE.md#smf_upf_core_validator)
+
+[**Rationale & Reasoning**](../RATIONALE.md#to-validate-a-5g-core)
+
+## [suci_enabled](https://github.com/cncf/cnf-testsuite/blob/v0.30.0/src/tasks/workload/5g_validator.cr#L20) 
+- Expectation: 5g core should use suci concealment.
+
+**What's tested:** Checks to see if the 5g core support suci concealment.
+
+[**Usage**](../USAGE.md#suci_enabled)
+
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-for-5g-suci-concealment)
+
+
+# Ran Category
+
+## [oran_e2_connection](https://github.com/cncf/cnf-testsuite/blob/v0.30.0/src/tasks/workload/ran.cr#L10) 
+- Expectation: An ORAN RIC should use an e2 connection.
+
+**What's tested:** Checks if a RIC uses a oran compatible e2 connection.
+
+[**Usage**](../USAGE.md#oran_e2_connection)
+
+[**Rationale & Reasoning**](../RATIONALE.md#to-check-if-a-ric-uses-oran-compatible-e2-interface)
+
 
 ---
 
