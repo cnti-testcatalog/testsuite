@@ -713,7 +713,7 @@ Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
 ## [suci_enabled](https://github.com/cncf/cnf-testsuite/blob/v0.30.0/src/tasks/workload/5g_validator.cr#L20) 
 - Expectation: 5g core should use suci concealment.
 
-**What's tested:** Checks to see if the 5g core support suci concealment.
+**What's tested:** Checks to see if the 5g core supports suci concealment.
 
 [**Usage**](../USAGE.md#suci_enabled)
 
