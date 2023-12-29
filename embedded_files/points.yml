@@ -296,3 +296,12 @@
 - name: latest_tag
   tags: configuration, dynamic, workload, essential, cert
   pass: 100
+
+- name: smf_upf_heartbeat 
+  tags: 5g, dynamic 
+  
+- name: suci_enabled
+  tags: 5g, dynamic 
+
+- name: oran_e2_connection
+  tags: ran, dynamic 

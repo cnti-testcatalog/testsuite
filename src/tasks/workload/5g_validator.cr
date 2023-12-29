@@ -5,8 +5,18 @@ require "colorize"
 require "totem"
 require "../utils/utils.cr"
 
-desc "Test if a 5G core has SMF/UPF heartbeat"
+desc "The CNF test suite checks to see if 5g CNFs follow cloud native principles"
+task "5g", ["smf_upf_core_validator", "suci_enabled"] do |_, args|
+  stdout_score("5g")
+  case "#{ARGV.join(" ")}" 
+  when /5g/
+    stdout_info "Results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
+  end
+end
+
+desc "Test if a 5G core is valid"
 task "smf_upf_core_validator" do |t, args|
+  #todo change to 5g_core_validator
   CNFManager::Task.task_runner(args) do |args, config|
     task_start_time = Time.utc
     testsuite_task = "smf_upf_core_validator"
@@ -126,3 +136,68 @@ task "smf_upf_heartbeat" do |t, args|
     resp
   end
 end
+
+#todo move to 5g test files
+desc "Test if a 5G core supports SUCI Concealment"
+task "suci_enabled" do |_, args|
+  CNFManager::Task.task_runner(args) do |args, config|
+    task_start_time = Time.utc
+    testsuite_task = "suci_enabled"
+    Log.for(testsuite_task).info { "Starting test" }
+
+    Log.debug { "cnf_config: #{config}" }
+    suci_found : Bool | Nil
+    core = config.cnf_config[:amf_label]? 
+    Log.info { "core: #{core}" }
+    core_key : String  = ""
+    core_value : String = ""
+    core_key = config.cnf_config[:amf_label].split("=").first if core
+    core_value = config.cnf_config[:amf_label].split("=").last if core
+    if core 
+
+      command = "-ni any -Y nas_5gs.mm.type_id -T json"
+      tshark_log_name = K8sTshark.log_of_tshark_by_label_bg(command, core_key, core_value)
+      if tshark_log_name && 
+          !tshark_log_name.empty? && 
+          (tshark_log_name =~ /not found/) == nil
+
+        #todo put in prereq
+        UERANSIM.install(config)
+        sleep 30.0
+        #TODO 5g RAN (only) mobile traffic check ????
+        # use suci encyption but don't use a null encryption key
+        if K8sTshark.regex_tshark_log(/"nas_5gs.mm.type_id": "1"/, tshark_log_name) &&
+
+            !K8sTshark.regex_tshark_log(/"nas_5gs.mm.suci.scheme_id": "0"/, tshark_log_name) &&
+            !K8sTshark.regex_tshark_log(/"nas_5gs.mm.suci.pki": "0"/, tshark_log_name) 
+          suci_found = true
+        else
+          suci_found = false
+        end
+        Log.info { "found nas_5gs.mm.type_id: 1: #{suci_found}" }
+
+        #todo delete log file
+      else
+        suci_found = false
+        puts "no 5g labels".colorize(:red)
+      end
+    else
+      suci_found = false
+      puts "You must set the core label for you AMF node".colorize(:red)
+    end
+
+
+    if suci_found 
+      resp = upsert_passed_task(testsuite_task,"✔️  PASSED: Core uses SUCI 5g authentication", task_start_time)
+    else
+      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Core does not use SUCI 5g authentication", task_start_time)
+    end
+    resp
+  ensure
+    Helm.delete("ueransim")
+    ClusterTools.uninstall
+    ClusterTools.install
+  end
+
+end
+
