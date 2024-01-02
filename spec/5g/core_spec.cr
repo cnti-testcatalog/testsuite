@@ -37,4 +37,30 @@ describe "Core" do
     end
   end
 
+  it "'suci_enabled' should pass if the 5G core has suci enabled", tags: ["5g"]  do
+    begin
+      Log.info {`./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_open5gs/cnf-testsuite.yml`}
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite suci_enabled verbose`
+      Log.info {"response: #{response_s}"}
+      (/PASSED: Core uses SUCI 5g authentication/ =~ response_s).should_not be_nil
+    ensure
+      Log.info {`./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_open5gs/cnf-testsuite.yml`}
+      $?.success?.should be_true
+    end
+  end
+
+  it "'suci_enabled' should fail if the 5G core does not have suci enabled", tags: ["5g"]  do
+    begin
+      Log.info {`./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_open5gs_no_auth/cnf-testsuite.yml`}
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite suci_enabled verbose`
+      Log.info {"response: #{response_s}"}
+      (/FAILED: Core does not use SUCI 5g authentication/ =~ response_s).should_not be_nil
+    ensure
+      Log.info {`./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_open5gs_no_auth/cnf-testsuite.yml`}
+      $?.success?.should be_true
+    end
+  end
+
 end

@@ -146,32 +146,7 @@ describe "SampleUtils" do
 
   it "'CNFManager::Points.all_task_test_names' should return all tasks names", tags: ["points"] do
     CNFManager::Points.clean_results_yml
-    tags = ["database_persistence","versioned_tag", "cni_compatible", "reasonable_image_size",
-            "reasonable_startup_time", "single_process_type",
-            "privileged", "non_root_user", "privilege_escalation",
-            "symlink_file_system", "application_credentials",
-            "host_network","pod_network_latency",
-            "pod_network_corruption", "pod_network_duplication",
-            "pod_delete", "pod_io_stress", "pod_memory_hog",
-            "disk_fill", "ip_addresses", "liveness", "readiness",
-            "rolling_update", "rolling_downgrade",
-            "rolling_version_change", "rollback", "nodeport_not_used",
-            "hostport_not_used",
-            "hardcoded_ip_addresses_in_k8s_runtime_configuration",
-            "secrets_used", "immutable_configmap" , "helm_deploy",
-            "node_drain", "helm_chart_valid",
-            "helm_chart_published", "volume_hostpath_not_found",
-            "no_local_volume_configuration", "service_account_mapping",
-            "privileged_containers",
-            "non_root_containers", "host_pid_ipc_privileges",
-            "linux_hardening", "resource_policies",
-            "immutable_file_systems", "hostpath_mounts", "log_output",
-            "prometheus_traffic", "open_metrics",
-            "ingress_egress_blocked", "insecure_capabilities",
-            "routed_logs", "tracing", "elastic_volumes", "alpha_k8s_apis", 
-            "service_discovery", "shared_database", "pod_dns_error",
-            "external_ips", "container_sock_mounts", "require_labels", "default_namespace", 
-            "selinux_options", "latest_tag", "sysctls", "increase_decrease_capacity", "operator_installed", "specialized_init_system", "sig_term_handled"]
+		tags = ["alpha_k8s_apis", "application_credentials", "cni_compatible", "container_sock_mounts", "database_persistence", "default_namespace", "disk_fill", "elastic_volumes", "external_ips", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "helm_chart_published", "helm_chart_valid", "helm_deploy", "host_network", "host_pid_ipc_privileges", "hostpath_mounts", "hostport_not_used", "immutable_configmap", "immutable_file_systems", "increase_decrease_capacity", "ingress_egress_blocked", "insecure_capabilities", "ip_addresses", "latest_tag", "linux_hardening", "liveness", "log_output", "no_local_volume_configuration", "node_drain", "nodeport_not_used", "non_root_containers", "non_root_user", "open_metrics", "operator_installed", "oran_e2_connection", "pod_delete", "pod_dns_error", "pod_io_stress", "pod_memory_hog", "pod_network_corruption", "pod_network_duplication", "pod_network_latency", "privilege_escalation", "privileged", "privileged_containers", "prometheus_traffic", "readiness", "reasonable_image_size", "reasonable_startup_time", "require_labels", "resource_policies", "rollback", "rolling_downgrade", "rolling_update", "rolling_version_change", "routed_logs", "secrets_used", "selinux_options", "service_account_mapping", "service_discovery", "shared_database", "sig_term_handled", "single_process_type", "smf_upf_heartbeat", "specialized_init_system", "suci_enabled", "symlink_file_system", "sysctls", "tracing", "versioned_tag", "volume_hostpath_not_found"]
     (CNFManager::Points.all_task_test_names()).sort.should eq(tags.sort)
   end
 

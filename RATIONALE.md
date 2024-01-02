@@ -290,7 +290,7 @@ In order to prevent illegitimate escalation by processes and restrict a processe
 #### Declarative APIs for an immutable infrastructure are anything that configures the infrastructure element. This declaration can come in the form of a YAML file or a script, as long as the configuration designates the desired outcome, not how to achieve said outcome. *"Because it describes the state of the world, declarative configuration does not have to be executed to be understood. Its impact is concretely declared. Since the effects of declarative configuration can be understood before they are executed, declarative configuration is far less error-prone. " --Hightower, Kelsey; Burns, Brendan; Beda, Joe. Kubernetes: Up and Running: Dive into the Future of Infrastructure (Kindle Locations 183-186). Kindle Edition*
 
 #### *To check if a CNF is using the default namespace*: [default_namespace](docs/LIST_OF_TESTS.md#default-namespaces)
-> *Namespces provide a way to segment and isolate cluster resources across multiple applications and users. As a best practice, workloads should be isolated with Namespaces and not use the default namespace. 
+> *Namespaces provide a way to segment and isolate cluster resources across multiple applications and users. As a best practice, workloads should be isolated with Namespaces and not use the default namespace. 
 
 #### *To test if mutable tags being used for image versioning(Using Kyverno): latest_tag*: [latest_tag](docs/LIST_OF_TESTS.md#latest-tag)
 
@@ -338,6 +338,23 @@ to their data has the following advantages:*
 - *protects you from accidental (or unwanted) updates that could cause applications outages*
 - *improves performance of your cluster by significantly reducing load on kube-apiserver, by 
 closing watches for ConfigMaps marked as immutable.*"
+
+
+## 5g Tests 
+####  A 5g core is an important part of the service provider's telecommuncations offering. A cloud native 5g architecture uses immutable infrastructure, declarative configuration, and microservices when creating and hosting 5g cloud native network functions.
+
+#### *To check if the 5g core is resistant to chaos*: [smf_upf_core_validator](docs/LIST_OF_TESTS.md#smf_upf_core_validator)
+> *A 5g core's [SMF and UPF CNFs have a hearbeat](https://www.etsi.org/deliver/etsi_ts/123500_123599/123527/15.01.00_60/ts_123527v150100p.pdf), implemented use the PFCP protocol standard, which measures if the connection between the two CNFs is active.  After measure a baseline of the heartbeat a comparison between the baseline and the performance of the heartbeat while running test functions will expose the [cloud native resilience](https://www.cncf.io/blog/2021/09/23/cloud-native-chaos-and-telcos-enforcing-reliability-and-availability-for-telcos/) of the cloud native 5g core.
+
+#### *To check if the 5g core is using 5g authentication*: [suci_enabled](docs/LIST_OF_TESTS.md#suci_enabled)
+> *In order to [protect identifying information](https://nickvsnetworking.com/5g-subscriber-identifiers-suci-supi/) from being sent over the network as clear text, 5g cloud native cores should implement [SUPI and SUCI concealment](https://www.etsi.org/deliver/etsi_ts/133500_133599/133514/16.04.00_60/ts_133514v160400p.pdf)  
+
+
+## RAN Tests 
+#### A cloud native radio access network's (RAN) cloud native functions should use immutable infrastructure, declarative configuration, and microservices.  ORAN cloud native functions should adhere to cloud native principles while also complying with the [ORAN alliance's standards](https://www.o-ran.org/blog/o-ran-alliance-introduces-48-new-specifications-released-since-july-2021).
+
+#### *To check if an ORAN compliant RAN is using the e2 3gpp standard*: [oran_e2_connection](docs/LIST_OF_TESTS.md#oran_e2_connection)
+> *A near real-time RAN intelligent controler (RIC) uses the [E2 standard](https://wiki.o-ran-sc.org/display/RICP/E2T+Architecture) as an open, interoperable, interface to connect to [RAN-optimizated applications, onboarded as xApps](https://www.5gtechnologyworld.com/how-does-5gs-o-ran-e2-interface-work/). The xApps use platform services available in the near-RT RIC to communicate with the downstream network functions through the E2 interface.
 
 ## Platform Tests
 
