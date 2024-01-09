@@ -435,7 +435,7 @@ task "helm_deploy" do |_, args|
     CNFManager::Task.task_runner(args) do |args, config|
       Log.for(testsuite_task).info { "Starting test" }
 
-      emoji_helm_deploy="⎈🚀"
+      emoji_helm_deploy="⚙️🛠️⬆☁️"
       helm_chart = config.cnf_config[:helm_chart]
       helm_directory = config.cnf_config[:helm_directory]
       release_name = config.cnf_config[:release_name]
