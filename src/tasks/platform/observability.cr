@@ -18,16 +18,15 @@ namespace "platform" do
   task "kube_state_metrics", ["install_cluster_tools"] do |_, args|
     task_start_time = Time.utc
     testsuite_task = "kube_state_metrics"
+    emoji_kube_state_metrics="📶☠️"
     Log.for(testsuite_task).info { "Starting test" }
 
     unless check_poc(args)
-      Log.info { "skipping kube_state_metrics: not in poc mode" }
-      puts "SKIPPED: Kube State Metrics".colorize(:yellow)
+      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: Kube State Metrics not in poc mode #{emoji_kube_state_metrics}", task_start_time)
       next
     end
     if args.named["offline"]?
-        Log.info { "skipping kube_state_metrics: in offline mode" }
-      puts "SKIPPED: Kube State Metrics".colorize(:yellow)
+      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: Kube State Metrics in offline mode #{emoji_kube_state_metrics}", task_start_time)
       next
     end
     Log.info { "Running POC: kube_state_metrics" }
@@ -35,10 +34,8 @@ namespace "platform" do
     Log.info { "Found Pod: #{found}" }
 
     if found
-      emoji_kube_state_metrics="📶☠️"
       upsert_passed_task(testsuite_task,"✔️  PASSED: Your platform is using the release for kube state metrics #{emoji_kube_state_metrics}", task_start_time)
     else
-      emoji_kube_state_metrics="📶☠️"
       upsert_failed_task(testsuite_task, "✖️  FAILED: Your platform does not have kube state metrics installed #{emoji_kube_state_metrics}", task_start_time)
     end
   end
@@ -47,27 +44,24 @@ namespace "platform" do
   task "node_exporter", ["install_cluster_tools"] do |_, args|
     task_start_time = Time.utc
     testsuite_task = "node_exporter"
+    emoji_node_exporter="📶☠️"
     Log.for(testsuite_task).info { "Starting test" }
 
     unless check_poc(args)
-      Log.info { "skipping node_exporter: not in poc mode" }
-      puts "SKIPPED: Node Exporter".colorize(:yellow)
+      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: node exporter not in poc mode #{emoji_node_exporter}", task_start_time)
       next
     end
 
     if args.named["offline"]?
-        Log.info { "skipping node_exporter: in offline mode" }
-      puts "SKIPPED: Node Exporter".colorize(:yellow)
+      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: node exporter in offline mode #{emoji_node_exporter}", task_start_time)
       next
     end
     Log.info { "Running POC: node_exporter" }
     found = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::NODE_EXPORTER)
     Log.info { "Found Process: #{found}" }
     if found
-      emoji_node_exporter="📶☠️"
       upsert_passed_task(testsuite_task,"✔️  PASSED: Your platform is using the node exporter #{emoji_node_exporter}", task_start_time)
     else
-      emoji_node_exporter="📶☠️"
       upsert_failed_task(testsuite_task, "✖️  FAILED: Your platform does not have the node exporter installed #{emoji_node_exporter}", task_start_time)
     end
   end
@@ -77,16 +71,15 @@ namespace "platform" do
   task "prometheus_adapter", ["install_cluster_tools"] do |_, args|
     task_start_time = Time.utc
     testsuite_task = "prometheus_adapter"
+    emoji_prometheus_adapter="📶☠️"
     Log.for(testsuite_task).info { "Starting test" }
 
     unless check_poc(args)
-      Log.info { "skipping prometheus_adapter: not in poc mode" }
-      puts "SKIPPED: Prometheus Adapter".colorize(:yellow)
+      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: prometheus adapter not in poc mode #{emoji_prometheus_adapter}", task_start_time)
       next
     end
     if args.named["offline"]?
-      Log.info { "skipping prometheus_adapter: in offline mode" }
-      puts "SKIPPED: Prometheus Adapter".colorize(:yellow)
+      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: prometheus adapter in offline mode #{emoji_prometheus_adapter}", task_start_time)
       next
     end
     Log.info { "Running POC: prometheus_adapter" }
@@ -94,10 +87,8 @@ namespace "platform" do
     Log.info { "Found Process: #{found}" }
 
     if found
-      emoji_prometheus_adapter="📶☠️"
       upsert_passed_task(testsuite_task,"✔️  PASSED: Your platform is using the prometheus adapter #{emoji_prometheus_adapter}", task_start_time)
     else
-      emoji_prometheus_adapter="📶☠️"
       upsert_failed_task(testsuite_task, "✖️  FAILED: Your platform does not have the prometheus adapter installed #{emoji_prometheus_adapter}", task_start_time)
     end
   end
@@ -106,16 +97,15 @@ namespace "platform" do
   task "metrics_server", ["install_cluster_tools"] do |_, args|
     task_start_time = Time.utc
     testsuite_task = "metrics_server"
+    emoji_metrics_server="📶☠️"
     Log.for(testsuite_task).info { "Starting test" }
 
     unless check_poc(args)
-      Log.info { "skipping metrics_server: not in poc mode" }
-      puts "SKIPPED: Metrics Server".colorize(:yellow)
+      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: Metrics server not in poc mode #{emoji_metrics_server}", task_start_time)
       next
     end
     if args.named["offline"]?
-      Log.info { "skipping metrics_server: in offline mode" }
-      puts "SKIPPED: Metrics Server".colorize(:yellow)
+      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: Metrics server in offline mode #{emoji_metrics_server}", task_start_time)
       next
     end
     Log.info { "Running POC: metrics_server" }
@@ -123,10 +113,8 @@ namespace "platform" do
 
       found = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::METRICS_SERVER)
       if found
-        emoji_metrics_server="📶☠️"
         upsert_passed_task(testsuite_task, "✔️  PASSED: Your platform is using the metrics server #{emoji_metrics_server}", task_start_time)
       else
-        emoji_metrics_server="📶☠️"
         upsert_failed_task(testsuite_task, "✖️  FAILED: Your platform does not have the metrics server installed #{emoji_metrics_server}", task_start_time)
       end
     end

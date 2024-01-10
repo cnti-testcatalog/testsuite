@@ -93,11 +93,11 @@ task "clusterapi_enabled" do |_, args|
   CNFManager::Task.task_runner(args, check_cnf_installed=false) do
     task_start_time = Time.utc
     testsuite_task = "clusterapi_enabled"
+    emoji_control="✨"
     Log.for(testsuite_task).info { "Starting test" }
 
     unless check_poc(args)
-      Log.info { "skipping clusterapi_enabled: not in poc mode" }
-      puts "SKIPPED: ClusterAPI Enabled".colorize(:yellow)
+      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: Cluster API not in poc mode #{emoji_control}", task_start_time)
       next
     end
 
@@ -138,12 +138,10 @@ task "clusterapi_enabled" do |_, args|
     clusterapi_control_planes_json = proc_clusterapi_control_planes_json.call
     Log.info { "clusterapi_control_planes_json: #{clusterapi_control_planes_json}" }
 
-    emoji_control="✨"
-
     if clusterapi_namespaces_json["items"]? && clusterapi_namespaces_json["items"].as_a.size > 0 && clusterapi_control_planes_json["items"]? && clusterapi_control_planes_json["items"].as_a.size > 0
-      resp = upsert_passed_task(testsuite_task, "✔️ Cluster API is enabled #{emoji_control}", task_start_time)
+      resp = upsert_passed_task(testsuite_task, "✔️  PASSED: Cluster API is enabled #{emoji_control}", task_start_time)
     else
-      resp = upsert_failed_task(testsuite_task, "✖️ Cluster API NOT enabled #{emoji_control}", task_start_time)
+      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Cluster API NOT enabled #{emoji_control}", task_start_time)
     end
 
     resp

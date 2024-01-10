@@ -461,7 +461,7 @@ task "secrets_used" do |_, args|
     if task_response
       resp = upsert_passed_task(testsuite_task, "✔️  ✨PASSED: Secrets defined and used #{emoji_probe}", task_start_time)
     else
-      resp = upsert_skipped_task(testsuite_task, "⏭  ✨#{secrets_used_skipped_msg(emoji_probe)}", task_start_time)
+      resp = upsert_skipped_task(testsuite_task, "⏭️  ✨#{secrets_used_skipped_msg(emoji_probe)}", task_start_time)
     end
     resp
   end
@@ -681,17 +681,16 @@ task "alpha_k8s_apis" do |_, args|
   CNFManager::Task.task_runner(args) do |args, config|
     task_start_time = Time.utc
     testsuite_task = "alpha_k8s_apis"
+    emoji="⭕️🔍"
     Log.for(testsuite_task).info { "Starting test" }
 
     unless check_poc(args)
-      Log.info { "Skipping alpha_k8s_apis: not in poc mode" }
-      puts "⏭️  SKIPPED: alpha_k8s_apis".colorize(:yellow)
+      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: alpha_k8s_apis not in poc mode #{emoji}", task_start_time)
       next
     end
 
     ensure_kubeconfig!
     kubeconfig_orig = ENV["KUBECONFIG"]
-    emoji="⭕️🔍"
 
     # No offline support for this task for now
     if args.named["offline"]? && args.named["offline"]? != "false"
