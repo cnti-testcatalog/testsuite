@@ -685,7 +685,7 @@ task "cni_compatible" do |_, args|
         ENV["KUBECONFIG"]="#{kubeconfig_orig}"
       end
     else
-      upsert_skipped_task(testsuite_task, "✖️  SKIPPED: Docker not installed #{emoji_security}", task_start_time)
+      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: Docker not installed #{emoji_security}", task_start_time)
     end
   end
 end

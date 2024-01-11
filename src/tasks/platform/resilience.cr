@@ -16,11 +16,11 @@ namespace "platform" do
   task "worker_reboot_recovery" do |_, args|
     task_start_time = Time.utc
     testsuite_task = "worker_reboot_recovery"
+    emoji_worker_reboot_recovery=""
     Log.for(testsuite_task).info { "Starting test" }
 
     unless check_destructive(args)
-      Log.info { "skipping node_failure: not in destructive mode" }
-      puts "SKIPPED: Node Failure".colorize(:yellow)
+      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: Node not in destructive mode #{emoji_worker_reboot_recovery}", task_start_time)
       next
     end
     Log.info { "Running POC in destructive mode!" }
@@ -95,7 +95,6 @@ namespace "platform" do
           sleep 1
         end
 
-        emoji_worker_reboot_recovery=""
         resp = upsert_passed_task(testsuite_task,"✔️  PASSED: Node came back online #{emoji_worker_reboot_recovery}", task_start_time)
 
 
