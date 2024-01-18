@@ -64,7 +64,7 @@ task "cleanup_all", ["samples_cleanup", "tools_cleanup"] do  |_, args|
 end
 
 task "results_yml_cleanup" do |_, args|
-  if File.exists?("#{CNFManager::Points::Results.file}")
+  if CNFManager::Points::Results.file_exists?
     File.delete(CNFManager::Points::Results.file)
     Log.for("verbose").info { "Deleted results file at #{CNFManager::Points::Results.file}" } if check_verbose(args)
   end

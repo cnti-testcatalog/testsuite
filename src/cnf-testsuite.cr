@@ -131,7 +131,7 @@ begin
   # See issue #426 for exit code requirement
   Sam.process_tasks(ARGV.clone)
 
-  if File.exists?("#{CNFManager::Points::Results.file}")
+  if CNFManager::Points::Results.file_exists?
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end

@@ -19,19 +19,33 @@ module CNFManager
         Pass3
       end
 
-      @@file : String
-      @@file = CNFManager::Points.create_final_results_yml_name
-      Log.debug { "Results.file: #{Results.file}" }
+      @@file : String = ""
+      # @@file_used variable is needed to avoid recreation of the file
+      @@file_used : Bool = false
 
       def self.file
+        unless @@file_used || self.file_exists?
+          @@file = CNFManager::Points.create_final_results_yml_name
+          self._create_file
+          Log.debug { "Results.file created: #{@@file}" }
+        end
+        @@file_used = true
         @@file
       end
 
-      def self.ensure_results_file!
-        return true if File.exists?("#{file}")
+      def self.file_exists?
+        !@@file.blank? && File.exists?(@@file)
+      end
 
-        File.open("#{file}", "w") do |f|
+      def self._create_file
+        File.open(@@file, "w") do |f|
           YAML.dump(CNFManager::Points.template_results_yml, f)
+        end
+      end
+
+      def self.ensure_results_file!
+        unless File.exists?(self.file)
+          raise File::NotFoundError.new("ERROR: results file not found", file: self.file)
         end
       end
     end
@@ -42,12 +56,18 @@ module CNFManager
       end
       points.as_a
     end
+    
     def self.create_points_yml
       EmbeddedFileManager.points_yml_write_file
     end
 
     def self.create_final_results_yml_name
-      FileUtils.mkdir_p("results") unless Dir.exists?("results")
+      begin
+        FileUtils.mkdir_p("results") unless Dir.exists?("results")
+      rescue File::AccessDeniedError
+        Log.error {"ERROR: missing write permission in current directory"}
+        exit 1
+      end
       "results/cnf-testsuite-results-" + Time.local.to_s("%Y%m%d-%H%M%S-%L") + ".yml"
     end
 
