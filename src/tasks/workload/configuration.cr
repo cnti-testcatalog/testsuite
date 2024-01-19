@@ -128,6 +128,7 @@ task "ip_addresses" do |_, args|
 
     cdir = FileUtils.pwd()
     response = String::Builder.new
+    emoji_network_runtime = "📶🏃⏲️"
     helm_directory = config.cnf_config[:helm_directory]
     helm_chart_path = config.cnf_config[:helm_chart_path]
     if File.directory?(helm_chart_path)
@@ -154,16 +155,16 @@ task "ip_addresses" do |_, args|
           matching_line = line_parts.join(":").strip()
           stdout_failure("  * In file #{file_name}: #{matching_line}")
         end
-        resp = upsert_failed_task(testsuite_task,"✖️  FAILED: IP addresses found", task_start_time)
+        resp = upsert_failed_task(testsuite_task,"✖️  FAILED: IP addresses found #{emoji_network_runtime}", task_start_time)
       else
-        resp = upsert_passed_task(testsuite_task, "✔️  PASSED: No IP addresses found", task_start_time)
+        resp = upsert_passed_task(testsuite_task, "✔️  PASSED: No IP addresses found #{emoji_network_runtime}", task_start_time)
       end
       resp
     else
       # TODO If no helm chart directory, exit with 0 points
       # ADD SKIPPED tag for points.yml to allow for 0 points
       Dir.cd(cdir)
-      resp = upsert_passed_task(testsuite_task, "✔️  PASSED: No IP addresses found", task_start_time)
+      resp = upsert_passed_task(testsuite_task, "✔️  PASSED: No IP addresses found #{emoji_network_runtime}", task_start_time)
     end
   end
 end
