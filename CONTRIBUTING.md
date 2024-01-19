@@ -120,7 +120,7 @@ For general advice on how to submit a pull request, please see [Creating a pull 
 
 ## Community Meeting:
 
-The CNF Test Suite team meets once a week on Tuesdays at 7:15-8:00 AM Pacific Time
+The CNF Test Suite community meets weekly on Tuesdays at 8:00 - 9:00 AM Pacific Time
 
 - Meeting minutes are [here](https://docs.google.com/document/d/1IbrgjqIkOCvrrSG0DRE6X62UUZpBq-818Mn8q0nkkd0/edit#)
 
