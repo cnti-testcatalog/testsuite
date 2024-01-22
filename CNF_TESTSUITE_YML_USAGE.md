@@ -177,7 +177,7 @@ For an image registry service named `foobar`, running in `default` namespace, on
 ```yaml
 docker_insecure_registries: ["foobar.default.svc.cluster.local:5000"]
 ```
-### RAN cofiguration
+### RAN configuration
 
 #### `ric_label`
 
