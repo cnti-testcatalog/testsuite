@@ -67,7 +67,7 @@ describe "Utils" do
     end
     (yaml["items"].as_a.find {|x| 
       x["name"] == "ip_addresses" && 
-        x["points"] == CNFManager::Points.task_points("ip_addresses", CNFManager::Points::Results::ResultStatus::Skipped)
+        x["points"] == CNFManager::Points.task_points("ip_addresses", CNFManager::ResultStatus::Skipped)
     }).should be_truthy
 
     (yaml["items"].as_a.find {|x| x["name"] == "ip_addresses" && x["points"] == 0 }).should be_truthy

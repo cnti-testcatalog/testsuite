@@ -17,12 +17,8 @@ task "observability", ["log_output", "prometheus_traffic", "open_metrics", "rout
 end
 
 desc "Check if the CNF outputs logs to stdout or stderr"
-task "log_output" do |_, args|
-  CNFManager::Task.task_runner(args) do |args,config|
-    task_start_time = Time.utc
-    testsuite_task = "log_output"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "log_output" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args,config|
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = false
       case resource["kind"].downcase
@@ -35,35 +31,24 @@ task "log_output" do |_, args|
       end
       test_passed
     end
-
-    emoji_observability="📶☠️"
-    emoji_observability="📶☠️"
-
-    if task_response
-      upsert_passed_task(testsuite_task, "✔️  🏆 PASSED: Resources output logs to stdout and stderr #{emoji_observability}", task_start_time)
+    if task_response 
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Resources output logs to stdout and stderr")
     else
-      upsert_failed_task(testsuite_task, "✖️  🏆 FAILED: Resources do not output logs to stdout and stderr #{emoji_observability}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Resources do not output logs to stdout and stderr")
     end
   end
 end
 
 desc "Does the CNF emit prometheus traffic"
-task "prometheus_traffic" do |_, args|
-  Log.info { "Running: prometheus_traffic" }
+task "prometheus_traffic" do |t, args|
   next if args.named["offline"]?
-  task_response = CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "prometheus_traffic"
-    Log.for(testsuite_task).info { "Starting test" }
-
+  task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
     release_name = config.cnf_config[:release_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir] 
 
     do_this_on_each_retry = ->(ex : Exception, attempt : Int32, elapsed_time : Time::Span, next_interval : Time::Span) do
       Log.info { "#{ex.class}: '#{ex.message}' - #{attempt} attempt in #{elapsed_time} seconds and #{next_interval} seconds until the next try."}
     end
-
-    emoji_observability="📶☠️"
 
     matching_processes = KernelIntrospection::K8s.find_matching_processes(CloudNativeIntrospection::PROMETHEUS_PROCESS)
     Log.for("prometheus_traffic:process_search").info { "Found #{matching_processes.size} matching processes for prometheus" }
@@ -162,54 +147,42 @@ task "prometheus_traffic" do |_, args|
       #  -- match ip address to cnf ip addresses
       # todo check if scrape_url is not an ip, assume it is a service, then do task (2)
       if prom_cnf_match
-        upsert_passed_task(testsuite_task,"✔️  ✨PASSED: Your cnf is sending prometheus traffic #{emoji_observability}", task_start_time)
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Your cnf is sending prometheus traffic")
       else
-        upsert_failed_task(testsuite_task, "✖️  ✨FAILED: Your cnf is not sending prometheus traffic #{emoji_observability}", task_start_time)
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Your cnf is not sending prometheus traffic")
       end
     else
-      upsert_skipped_task(testsuite_task, "⏭️  ✨SKIPPED: Prometheus server not found #{emoji_observability}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Prometheus server not found")
     end
   end
 end
 
 desc "Does the CNF emit prometheus open metric compatible traffic"
-task "open_metrics", ["prometheus_traffic"] do |_, args|
-  Log.info { "Running: open_metrics" }
+task "open_metrics", ["prometheus_traffic"] do |t, args|
   next if args.named["offline"]?
-  task_response = CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "open_metrics"
-    Log.for(testsuite_task).info { "Starting test" }
-
+  task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
     release_name = config.cnf_config[:release_name]
     configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-open-metrics")
-    emoji_observability="📶☠️"
     if configmap != EMPTY_JSON
       open_metrics_validated = configmap["data"].as_h["open_metrics_validated"].as_s
 
       if open_metrics_validated == "true"
-        upsert_passed_task(testsuite_task,"✔️  ✨PASSED: Your cnf's metrics traffic is OpenMetrics compatible #{emoji_observability}", task_start_time)
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Your cnf's metrics traffic is OpenMetrics compatible")
       else
         open_metrics_response = configmap["data"].as_h["open_metrics_response"].as_s
         puts "OpenMetrics Failed: #{open_metrics_response}".colorize(:red)
-        upsert_failed_task(testsuite_task, "✖️  ✨FAILED: Your cnf's metrics traffic is not OpenMetrics compatible #{emoji_observability}", task_start_time)
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Your cnf's metrics traffic is not OpenMetrics compatible")
       end
     else
-      upsert_skipped_task(testsuite_task, "⏭️  ✨SKIPPED: Prometheus traffic not configured #{emoji_observability}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Prometheus traffic not configured")
     end
   end
 end
 
 desc "Are the CNF's logs captured by a logging system"
-task "routed_logs", ["install_cluster_tools"] do |_, args|
-  Log.info { "Running: routed_logs" }
+task "routed_logs", ["install_cluster_tools"] do |t, args|
   next if args.named["offline"]?
-    emoji_observability="📶☠️"
-  task_response = CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "routed_logs"
-    Log.for(testsuite_task).info { "Starting test" }
-
+  task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
     fluentd_match = FluentD.match()
     fluentbit_match = FluentBit.match()
     fluentbitBitnami_match = FluentDBitnami.match()
@@ -239,31 +212,27 @@ task "routed_logs", ["install_cluster_tools"] do |_, args|
           resource_logged
         end
         Log.info { "all_resourced_logged: #{all_resourced_logged}" }
-        if all_resourced_logged 
-          upsert_passed_task(testsuite_task,"✔️  ✨PASSED: Your cnf's logs are being captured #{emoji_observability}", task_start_time)
+        if all_resourced_logged
+          CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Your cnf's logs are being captured")
         else
-          upsert_failed_task(testsuite_task, "✖️  ✨FAILED: Your cnf's logs are not being captured #{emoji_observability}", task_start_time)
+          CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Your cnf's logs are not being captured")
         end
     else
-      upsert_skipped_task(testsuite_task, "⏭️  ✨SKIPPED: Fluentd or FluentBit not configured #{emoji_observability}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Fluentd or FluentBit not configured")
     end
   end
 end
 
 desc "Does the CNF install use tracing?"
-task "tracing" do |_, args|
-  testsuite_task = "tracing"
-  Log.for(testsuite_task).info { "Running test" }
-  Log.for(testsuite_task).info { "tracing args: #{args.inspect}" }
+task "tracing" do |t, args|
+  Log.for(t.name).info { "Running test" }
+  Log.for(t.name).info { "tracing args: #{args.inspect}" }
 
   next if args.named["offline"]?
-  emoji_tracing_deploy="⎈🚀"
 
-  if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
-    CNFManager::Task.task_runner(args) do |args, config|
-      task_start_time = Time.utc
-      Log.for(testsuite_task).info { "Starting test for CNF" }
-
+  cnf_config_ok = check_cnf_config(args) || CNFManager.destination_cnfs_exist?
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
+    if cnf_config_ok
       match = JaegerManager.match()
       Log.info { "jaeger match: #{match}" }
       if match[:found]
@@ -275,17 +244,17 @@ task "tracing" do |_, args|
         #TODO check if json is empty
         tracing_used = configmap["data"].as_h["tracing_used"].as_s
 
-        if tracing_used == "true" 
-          upsert_passed_task(testsuite_task, "✔️  ✨PASSED: Tracing used #{emoji_tracing_deploy}", task_start_time)
+        if tracing_used == "true"
+          CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Tracing used")
         else
-          upsert_failed_task(testsuite_task, "✖️  ✨FAILED: Tracing not used #{emoji_tracing_deploy}", task_start_time)
+          CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Tracing not used")
         end
       else
-        upsert_skipped_task(testsuite_task, "⏭️  ✨SKIPPED: Jaeger not configured #{emoji_tracing_deploy}", task_start_time)
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Jaeger not configured")
       end
+    else
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "No cnf_testsuite.yml found! Did you run the setup task?")
     end
-  else
-    upsert_failed_task(testsuite_task, "✖️  ✨FAILED: No cnf_testsuite.yml found! Did you run the setup task?", Time.utc)
   end
 end
 
