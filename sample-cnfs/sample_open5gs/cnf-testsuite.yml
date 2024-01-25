@@ -6,7 +6,7 @@ allowlist_helm_chart_container_names: []
 amf_label: app.kubernetes.io/name=amf
 smf_label: app.kubernetes.io/name=smf
 upf_label: app.kubernetes.io/name=upf
-amf_pod_name: open5gs-amf-ngap
+amf_service_name: open5gs-amf-ngap
 mmc: '999'
 mnc: '70'
 sst: 1 

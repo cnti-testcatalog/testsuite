@@ -23,7 +23,7 @@ module UERANSIM
     core = config.cnf_config[:amf_label]? 
     Log.info { "core: #{core}" }
     #todo use sane defaults (i.e. search for amf, upf, etc in pod names) if no 5gcore labels are present
-    amf_pod_name = config.cnf_config[:fiveG_core][:amf_pod_name]? 
+    amf_service_name = config.cnf_config[:fiveG_core][:amf_service_name]? 
     mmc = config.cnf_config[:fiveG_core][:mmc]? 
     mnc = config.cnf_config[:fiveG_core][:mnc]? 
     sst = config.cnf_config[:fiveG_core][:sst]? 
@@ -71,7 +71,7 @@ module UERANSIM
         routingIndicator = "routingIndicator: '#{config.cnf_config[:fiveG_core][:routingIndicator]}'"
       end
 
-      ue_values = UERANSIM::Template.new(amf_pod_name,
+      ue_values = UERANSIM::Template.new(amf_service_name,
                                          mmc,
                                          mnc,
                                          sst,
@@ -109,7 +109,7 @@ module UERANSIM
     # The argument for insecure_registries is a string
     # because the template only writes the content
     # and expects a list of comma separated strings.
-    def initialize(@amf_pod_name : String,
+    def initialize(@amf_service_name : String,
                    @mmc : String,
                    @mnc : String,
                    @sst : String,
