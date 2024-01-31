@@ -139,7 +139,7 @@ module AirGap
     cri_tools_pod_name = pods[0].dig?("metadata", "name") if pods[0]?
     if no_tar
       Log.info { "NO TAR POD, COPYING TAR FROM HOST" }
-      tar_path = AirGap.check_tar(cri_tools_pod_name, namespace="default", pod=false)
+      tar_path = AirGap.check_tar(cri_tools_pod_name, namespace: "default", pod: false)
       pods.map do |pod| 
         KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- cp #{tar_path} /usr/local/bin/")
         status = KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- /usr/local/bin/tar --version")

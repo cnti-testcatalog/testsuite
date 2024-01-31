@@ -105,7 +105,7 @@ module Kyverno
     def self.run(policy_path : String, exclude_namespaces : Array(String) = [] of String)
       cmd = "#{Kyverno.binary_path} apply #{policy_path} --cluster --policy-report"
       ShellCmd.run("ls #{policy_path}", "kyverno_policy_path", force_output: true)
-      result = ShellCmd.run(cmd, "Kyverno::PolicyAudit.run", force_output=true)
+      result = ShellCmd.run(cmd, "Kyverno::PolicyAudit.run", force_output: true)
       policy_report_yaml = result[:output].split("\n")[5..-1].join("\n")
       policy_report = YAML.parse(policy_report_yaml)
 

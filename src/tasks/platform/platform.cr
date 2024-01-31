@@ -90,7 +90,7 @@ end
 
 desc "Is Cluster Api available and managing a cluster?"
 task "clusterapi_enabled" do |_, args|
-  CNFManager::Task.task_runner(args, check_cnf_installed=false) do
+  CNFManager::Task.task_runner(args, check_cnf_installed: false) do
     task_start_time = Time.utc
     testsuite_task = "clusterapi_enabled"
     emoji_control="✨"

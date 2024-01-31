@@ -297,13 +297,13 @@ task "node_drain", ["install_litmus"] do |t, args|
             HttpHelper.download("#{LitmusManager::ONLINE_LITMUS_OPERATOR}","#{LitmusManager::DOWNLOADED_LITMUS_FILE}")
             if args.named["offline"]?
                  Log.info {"Re-Schedule Litmus in offline mode"}
-                 LitmusManager.add_node_selector(litmus_nodes[0], airgap=true)
+                 LitmusManager.add_node_selector(litmus_nodes[0], airgap: true)
                else
                  Log.info {"Re-Schedule Litmus in online mode"}
-                 LitmusManager.add_node_selector(litmus_nodes[0], airgap=false)
+                 LitmusManager.add_node_selector(litmus_nodes[0], airgap: false)
             end
             KubectlClient::Apply.file("#{LitmusManager::MODIFIED_LITMUS_FILE}")
-            KubectlClient::Get.resource_wait_for_install(kind="Deployment", resource_name="chaos-operator-ce", wait_count=180, namespace="litmus")
+            KubectlClient::Get.resource_wait_for_install(kind: "Deployment", resource_name: "chaos-operator-ce", wait_count: 180, namespace: "litmus")
           end
 
           if args.named["offline"]?
@@ -389,7 +389,7 @@ task "elastic_volumes" do |_, args|
     emoji_probe="🧫"
     elastic_volumes_used = false
     volumes_used = false
-    task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
+    task_response = CNFManager.workload_resource_test(args, config, check_containers: false) do |resource, containers, volumes, initialized|
       Log.for("elastic_volumes:test_resource").info { resource.inspect }
       Log.for("elastic_volumes:volumes").info { volumes.inspect }
 
@@ -452,7 +452,7 @@ task "database_persistence" do |_, args|
         default_namespace = config.cnf_config[:helm_install_namespace]
       end
       statefulset_exists = Helm.kind_exists?(args, config, "statefulset", default_namespace)
-      task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
+      task_response = CNFManager.workload_resource_test(args, config, check_containers: false) do |resource, containers, volumes, initialized|
         namespace = resource["namespace"] || default_namespace
         Log.info {"database_persistence namespace: #{namespace}"}
         Log.info {"database_persistence resource: #{resource}"}

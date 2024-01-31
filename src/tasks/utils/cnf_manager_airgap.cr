@@ -181,7 +181,7 @@ module CNFManager
       Helm.helm_repo_add("cilium","https://helm.cilium.io/")
       AirGap.tar_helm_repo("cilium/cilium --version 1.10.5", output_file)
       AirGap.tar_helm_repo("gatekeeper/gatekeeper --version 3.6.0", output_file)
-      AirGap.generate(output_file, append=true)
+      AirGap.generate(output_file, append: true)
     end
   end
 end
