@@ -4,7 +4,7 @@ release_name: open5gs
 allowlist_helm_chart_container_names: []
 #optional 5gcore tag
 core: app.kubernetes.io/name=amf
-amf_pod_name: open5gs-amf-ngap
+amf_service_name: open5gs-amf-ngap
 mmc: '999'
 mnc: '70'
 sst: 1 

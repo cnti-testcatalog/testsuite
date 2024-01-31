@@ -88,7 +88,7 @@ module CNFManager
                                             smf_label: "",
                                             upf_label: "",
                                             ric_label: "",
-                                            fiveG_core: {amf_pod_name:  "",
+                                            fiveG_core: {amf_service_name:  "",
                                                            mmc:  "",
                                                            mnc:  "",
                                                            sst:  "",
