@@ -39,7 +39,7 @@ module CNFManager
                                      smf_label: String,
                                      upf_label: String,
                                      ric_label: String,
-                                     fiveG_core: NamedTuple(amf_pod_name: String,
+                                     fiveG_core: NamedTuple(amf_service_name: String,
                                                            mmc: String,
                                                            mnc: String,
                                                            sst: String,
@@ -111,7 +111,7 @@ module CNFManager
       else
         core_sd = "" 
       end
-      fiveG_core = {amf_pod_name: optional_key_as_string(config, "amf_pod_name"),
+      fiveG_core = {amf_service_name: optional_key_as_string(config, "amf_service_name"),
       mmc: optional_key_as_string(config, "mmc"),
       mnc:  optional_key_as_string(config, "mnc"),
       sst:  optional_key_as_string(config, "sst"),
