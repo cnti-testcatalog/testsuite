@@ -17,13 +17,13 @@ docker build -t curl_install_tester_docker_setup --target base .
 
 docker run --rm -it curl_install_tester_docker_setup 
 
-source <(curl https://raw.githubusercontent.com/cnti-testcategory/testsuite/main/curl_install.sh)
+source <(curl https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/curl_install.sh)
 
 cd # to make sure you are in home dir
 
 ./cnf-testsuite setup
 
-wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cnti-testcategory/testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
+wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
 
 ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
 ```
