@@ -25,7 +25,7 @@ How you can learn more?
 
 * Read the [install guide](INSTALL.md), [usage guide](USAGE.md), [FAQ](FAQ.md), and other documentation
 * Request a live demonstration and introduction of the test suite ([book a time on Calendly](https://calendly.com/cnftestsuite))
-* Come chat with us in [Slack](https://cloud-native.slack.com/archives/C014TNCEX8R) or start a [discussion](https://github.com/cncf/cnf-testsuite/discussions)
+* Come chat with us in [Slack](https://cloud-native.slack.com/archives/C014TNCEX8R) or start a [discussion](https://github.com/cnti-testcataglog/testsuite/discussions)
 
 ## Community Participant
 
@@ -40,7 +40,7 @@ How you can be more involved and participate in the community:
 * Helping other users
 * Commenting on issues
 * Trying out new releases
-* Attending [community meetings](https://github.com/cncf/cnf-testsuite#communication-and-community-meetings) and events
+* Attending [community meetings](https://github.com/cnti-testcatalog/testsuite#communication-and-community-meetings) and events
 
 ## Contributor
 
