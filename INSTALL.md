@@ -76,7 +76,7 @@ cd tools/ && git clone https://github.com/crosscloudci/k8s-infra.git
 We support the following methods of installing the cnf-testsuite:
 
 - [Curl installation](#Curl-Binary-Installation) (via latest binary release)
-- [Latest Binary](https://github.com/cncf/cnf-testsuite/releases/latest) (manual download)
+- [Latest Binary](https://github.com/cnti-testcatalog/testsuite/releases/latest) (manual download)
 - From [**Source**](#Source-Install) on github.
 - [Air Gapped](#Air-Gapped)
 
@@ -88,7 +88,7 @@ There are two methods to install via curl, we prefer the first method (the other
 - This first command using curl will download, install, and export the path automatically (recommended method):
 
 ```
-source <(curl -s https://raw.githubusercontent.com/cncf/cnf-testsuite/main/curl_install.sh)
+source <(curl -s https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/curl_install.sh)
 ```
 
 <details><summary>Click here for the alternate curl and manual install method</summary>
@@ -96,12 +96,12 @@ source <(curl -s https://raw.githubusercontent.com/cncf/cnf-testsuite/main/curl_
 
 - The other curl method to download and install requires you to export the PATH to the location of the executable:
 ```
-curl -s https://raw.githubusercontent.com/cncf/cnf-testsuite/main/curl_install.sh | bash
+curl -s https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/curl_install.sh | bash
 ```
 
 - The Latest Binary (or you can select a previous release if desired) can be pulled down with wget, curl or you're own preferred method. Once downloaded you'll need to make the binary executable and manually add to your path:
 ```
-wget https://github.com/cncf/cnf-testsuite/releases/download/latest/latest.tar.gz
+wget https://github.com/cnti-testcatalog/testsuite/releases/download/latest/latest.tar.gz
 tar xzf latest.tar.gz
 cd cnf-testsuite
 chmod +x cnf-testsuite
@@ -120,7 +120,7 @@ This is a brief summary for source installations and [does have requirements](#R
 Follow these steps to checkout the source from github and compile a cnf-testsuite binary:
 
 ```
-git clone https://github.com/cncf/cnf-testsuite.git
+git clone https://github.com/cnti-testcatalog/testsuite.git
 cd cnf-testsuite/
 shards install
 crystal build src/cnf-testsuite.cr
@@ -209,14 +209,14 @@ Now cnf-testsuite is setup, we're ready to configure it to point at a CNF to tes
 - If you want to use an example CNF, you can download our CoreDNS example CNF by doing the following:
 
 ```
-wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
+wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
 ```
 - The wget gets a working config file, now tell cnf-testsuite to use it by doing the following:
 ```
 cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
 ```
 
-- There are other examples in the [examples-cnfs](https://github.com/cncf/cnf-testsuite/tree/master/example-cnfs) directory that can be used for testing as well.
+- There are other examples in the [examples-cnfs](https://github.com/cnti-testcatalog/testsuite/tree/master/example-cnfs) directory that can be used for testing as well.
 
 #### Bring Your Own CNF
 
