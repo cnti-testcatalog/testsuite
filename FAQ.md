@@ -79,7 +79,7 @@
 <details> <summary>How are points assigned for tests?</summary>
 <p>
 
-- Points are different for each test and workload but in general terms, pass defaults to 5 and fail is a -1. See [points.yml](https://github.com/cncf/cnf-testsuite/blob/main/embedded_files/points.yml) for more details on the different points for default scoring.
+- Points are different for each test and workload but in general terms, pass defaults to 5 and fail is a -1. See [points.yml](https://github.com/cnti-testcatalog/testsuite/blob/main/embedded_files/points.yml) for more details on the different points for default scoring.
 
 </p>
 </details>
