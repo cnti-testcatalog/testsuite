@@ -44,6 +44,11 @@ module EmbeddedFileManager
     UERANSIM_HELMCONFIG = Base64.decode_string("{{ `cat ./embedded_files/ue.yaml | base64`}}")
   end
   def self.points_yml_write_file
-    File.write("points.yml", POINTSFILE)
+    begin
+      File.write("points.yml", POINTSFILE)
+    rescue File::AccessDeniedError
+      Log.error {"ERROR: missing write permission in current directory"}
+      exit 1
+    end
   end
 end
