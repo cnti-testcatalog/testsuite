@@ -983,7 +983,7 @@ jobs:
         helm repo add stable https://cncf.gitlab.io/stable
         export DIR=$(uuidgen)
         ./cnf-testsuite setup
-        wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
+        wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
         ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
         export FALCO_ENV="CI"
         LOG_LEVEL=info ./cnf-testsuite all ~resilience ~platform ~ip_addresses ~liveness ~readiness ~rolling_update ~rolling_downgrade ~rolling_version_change ~nodeport_not_used ~hostport_not_used ~hardcoded_ip_addresses_in_k8s_runtime_configuration ~rollback ~secrets_used ~immutable_configmap ~reasonable_startup_time ~reasonable_image_size verbose
