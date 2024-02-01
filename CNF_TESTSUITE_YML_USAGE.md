@@ -4,7 +4,7 @@
 The cnf-testsuite.yml is used by `cnf_setup` in order to install the CNF to be tested onto an existing K8s cluster. 
 
 
-The information in the cnf-testsuite.yml is also used for additional configuration of some tests e.g. `allowlist_helm_chart_container_names` is used for exculding containers from the [privileged](https://github.com/cncf/cnf-testsuite/blob/main/src/tasks/workload/security.cr#L196) container test.
+The information in the cnf-testsuite.yml is also used for additional configuration of some tests e.g. `allowlist_helm_chart_container_names` is used for exculding containers from the [privileged](https://github.com/cnti-testcatalog/testsuite/blob/main/src/tasks/workload/security.cr#L196) container test.
 
 
 ### Table of Contents
@@ -16,7 +16,7 @@ The information in the cnf-testsuite.yml is also used for additional configurati
 
 ### Overview of all cnf-testsuite.yml
 
-The following is a basic working example cnf-testsuite.yml file that can be found in the cnf-testsuite respository: [cnf-testsuite.example.yml](https://github.com/cncf/cnf-testsuite/blob/CNF_TESTSUITE_YML%231357/example-cnfs/coredns/cnf-testsuite.yml)
+The following is a basic working example cnf-testsuite.yml file that can be found in the cnf-testsuite respository: [cnf-testsuite.example.yml](https://github.com/cnti-testcatalog/testsuite/blob/CNF_TESTSUITE_YML%231357/example-cnfs/coredns/cnf-testsuite.yml)
 
 ```yaml=
 ---
@@ -94,7 +94,7 @@ This is the path to the helm chart directory (relative to the location of the cn
  
 An example of a helm directory can be found [here](https://github.com/helm/charts/tree/master/stable/coredns).
 
-The PATH is also relative to the location of the cnf-testsuite.yml. So if the cnf-testsuite.yml is in the directory `sample-cnfs/sample_coredns/cnf-testsuite.yml` and helm_directory is set to `helm_directory: chart` the test suite would expect to find the chart under [`sample-cnfs/sample_coredns/chart`](https://github.com/cncf/cnf-testsuite/tree/main/sample-cnfs/sample_coredns/chart)
+The PATH is also relative to the location of the cnf-testsuite.yml. So if the cnf-testsuite.yml is in the directory `sample-cnfs/sample_coredns/cnf-testsuite.yml` and helm_directory is set to `helm_directory: chart` the test suite would expect to find the chart under [`sample-cnfs/sample_coredns/chart`](https://github.com/cnti-testcatalog/testsuite/tree/main/sample-cnfs/sample_coredns/chart)
 
 Example Setting:
 
@@ -117,9 +117,9 @@ Example Setting:
 This is the path to a directory of manifest files for installing the cnf (relative to the location of the cnf-testsuite.yml). This, or [helm_chart](#helm_chart), or [helm_directory](#helm_directory) must be set, but only one **(mutually exclusive)**. This argument is used by cnf_setup in order to deploy the CNF being tested onto an existing K8s cluster.
 
 
-An example of a manifest directory can be found [here](https://github.com/cncf/cnf-testsuite/tree/main/sample-cnfs/sample_nonroot/manifests).
+An example of a manifest directory can be found [here](https://github.com/cnti-testcatalog/testsuite/tree/main/sample-cnfs/sample_nonroot/manifests).
 
-The PATH is also relative to the location of the cnf-testsuite.yml. So if the cnf-testsuite.yml is in the directory `sample-cnfs/sample_nonroot/cnf-testsuite.yml` and manifest_directory is set to `manifest_directory: manifests` the test suite would expect to find the manifest files under [`sample-cnfs/sample_nonroot/manifests`](https://github.com/cncf/cnf-testsuite/tree/main/sample-cnfs/sample_nonroot/manifests)
+The PATH is also relative to the location of the cnf-testsuite.yml. So if the cnf-testsuite.yml is in the directory `sample-cnfs/sample_nonroot/cnf-testsuite.yml` and manifest_directory is set to `manifest_directory: manifests` the test suite would expect to find the manifest files under [`sample-cnfs/sample_nonroot/manifests`](https://github.com/cnti-testcatalog/testsuite/tree/main/sample-cnfs/sample_nonroot/manifests)
 
 Example Setting:
 
