@@ -27,10 +27,10 @@ Issues are used as the primary method for tracking items in the CNF Test Suite i
 ### Issue Templates
 
 **1. New Features:**
-To request an enhancement, please create a new issue using the [**Feature Request**](https://github.com/cncf/cnf-testsuite/issues/new?assignees=&labels=enhancement&template=feature-request.md&title=%5BFeature%5D) Template
+To request an enhancement, please create a new issue using the [**Feature Request**](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=enhancement&template=feature-request.md&title=%5BFeature%5D) Template
 
 **2. Report Bugs:**
-To report a bug, please create a new issue using the [**Bug Report**](https://github.com/cncf/cnf-testsuite/issues/new?assignees=&labels=bug&template=bug-report.md&title=%5BBUG%5D) Template. Check out [How to Report Bugs Effectively](https://www.chiark.greenend.org.uk/~sgtatham/bugs.html.).
+To report a bug, please create a new issue using the [**Bug Report**](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=bug&template=bug-report.md&title=%5BBUG%5D) Template. Check out [How to Report Bugs Effectively](https://www.chiark.greenend.org.uk/~sgtatham/bugs.html.).
 
 NOTE: To help with debugging, you can enable higher logging level output via the command line or env var
 
@@ -55,11 +55,11 @@ Check [usage documentation](USAGE.md) for more info about invoking commands and 
 
 **3. New CNF Test Suite Tests:**
 
-- To request a new workload test, please create a new issue using the [**New Workload Test**](https://github.com/cncf/cnf-testsuite/issues/new?assignees=&labels=workload&template=new-workload-test.md&title=%5BWorkload%5D) Template
-- To request a new platform test, please create a new issue using the [**New Platform Test**](https://github.com/cncf/cnf-testsuite/issues/new?assignees=&labels=platform&template=new-platform-test.md&title=%5BPlatform%5D) Template
+- To request a new workload test, please create a new issue using the [**New Workload Test**](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=workload&template=new-workload-test.md&title=%5BWorkload%5D) Template
+- To request a new platform test, please create a new issue using the [**New Platform Test**](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=platform&template=new-platform-test.md&title=%5BPlatform%5D) Template
 
 **4. New CNF Example:**
-To suggest a new CNF, please create a GitHub issue using the [New Example CNF template](https://github.com/cncf/cnf-testsuite/issues/new?assignees=&labels=example+CNF&template=new-example-cnf.md&title=%5BCNF%5D).
+To suggest a new CNF, please create a GitHub issue using the [New Example CNF template](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=example+CNF&template=new-example-cnf.md&title=%5BCNF%5D).
 
 To install the CNF Test Suite and run a CNF, follow instructions at:
 
@@ -75,7 +75,7 @@ The test framework and tests (using upstream tools) are written in the human rea
 
 Outline of what a contributor's workflow looks like:
 
-1. Fork it (https://github.com/cncf/cnf-testsuite/fork)
+1. Fork it (https://github.com/cnti-testcatalog/testsuite/fork)
 1. Create a branch from where you want to base your work (usually main). Example `git checkout -b my-new-feature)`
 1. Read the [INSTALL.md](install for build and test instructions)
 1. Make your changes and arrange them in readable commits.
@@ -109,7 +109,7 @@ For general advice on how to submit a pull request, please see [Creating a pull 
    `git clone git@github.com:<contributor-username>/cnf-testsuite.git`
    `cd cnf-testsuite`
 3. Add the original cnf-testsuite repo.
-   `git remote add cncf git@github.com:cncf/cnf-testsuite.git`
+   `git remote add cncf git@github.com:cnti-testcatalog/testsuite.git`
 4. Checkout the pull request's branch.
    `git checkout <pull-request's-branch-name>`
 5. Push the branch to the original cnf-testsuite repo.
