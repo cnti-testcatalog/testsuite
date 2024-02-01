@@ -163,17 +163,17 @@ crystal bin/ameba.cr
 ./cnf-testsuite compatibility
 ```
 
-## [Increase decrease capacity:](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#increase-decrease-capacity)
+## [Increase decrease capacity:](https://github.com/cnti-testcatalog/testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#increase-decrease-capacity)
 ##### To run both increase and decrease tests, you can use the alias command that calls them both:
 ```
 ./cnf-testsuite increase_decrease_capacity
 ```
-### [Increase capacity](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#increase-capacity)
+### [Increase capacity](https://github.com/cnti-testcatalog/testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#increase-capacity)
 ##### Or, they can be called individually using the following commands:
 ```
 ./cnf-testsuite increase_capacity
 ```
-### [Decrease capacity](https://github.com/cncf/cnf-testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#decrease-capacity)
+### [Decrease capacity](https://github.com/cnti-testcatalog/testsuite/blob/refactor_usage_doc%231371/docs/LIST_OF_TESTS.md#decrease-capacity)
 
 ```
 ./cnf-testsuite decrease_capacity
