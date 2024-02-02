@@ -492,7 +492,7 @@ module CNFManager
     def self.all_task_test_names
       result_items =points_yml.reduce([] of String) do |acc, x|
         if x["name"].as_s == "default_scoring" ||
-            x["tags"].as_s.split(",").find{|x|x=="platform"}
+            x["tags"].as_a.find{|x|x=="platform"}
           acc
         else
           acc << x["name"].as_s
@@ -501,14 +501,12 @@ module CNFManager
     end
 
     def self.tasks_by_tag(tag)
-      found = false
       result_items = points_yml.reduce([] of String) do |acc, x|
-        Log.debug { "tasks_by_tag: tag:#{tag}, points.name:#{x["name"].as_s?}, points.tags:#{x["tags"].as_s?}" }
-        if x["tags"].as_s? 
-          tags_list = x["tags"].as_s.split(",")
-          tag_match = tags_list.map { |parsed_tag|
+        Log.debug { "tasks_by_tag: tag:#{tag}, points.name:#{x["name"].as_s?}, points.tags:#{x["tags"].as_a?}" }
+        if x["tags"].as_a?
+          tag_match = x["tags"].as_a.map { |parsed_tag|
             Log.debug { "parsed_tag #{parsed_tag} tag: #{tag}" }
-            parsed_tag.strip if parsed_tag.strip == tag.strip
+            parsed_tag if parsed_tag == tag.strip
           }.uniq.compact
           Log.debug { "tag_match #{tag_match} name #{x["name"]}" }
           if !tag_match.empty?
@@ -528,7 +526,7 @@ module CNFManager
       Log.info { "points: #{points}" }
       if points && points["tags"]?
           Log.debug { "points tags: #{points["tags"]?}" }
-        resp = points["tags"].as_s.split(",").map{|x| x.strip}
+        resp = points["tags"].as_a
       else
         resp = [] of String
       end
