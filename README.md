@@ -1,4 +1,4 @@
-# CNF Test Suite is now part of the Cloud Native Telcom Initiatives Test Catalog @ https://github.com/cnti-testcatalog/testsuite 
+# CNF Test Suite is now part of the Cloud Native Telcom Initiative's test catalog focus area @ https://github.com/cnti-testcatalog/testsuite 
 
 The CNF Test Suite (as well as the CNF WG and CNF Certification) have moved to Linux Foundation Networking as part of the new Cloud Native Telecom Initiative.
 
