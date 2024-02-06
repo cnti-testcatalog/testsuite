@@ -21,7 +21,12 @@ task "smf_upf_core_validator" do |t, args|
     task_start_time = Time.utc
     testsuite_task = "smf_upf_core_validator"
     Log.for(testsuite_task).info { "Starting test" }
+
+		# todo add other resilience and compatiblity tests
+
     args.named["reslience_tests"]="pod_network_latency, pod_delete"
+
+		# todo find heartbeat for ran
     t.invoke("smf_upf_heartbeat", args)
   end
 end
