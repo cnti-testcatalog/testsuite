@@ -195,7 +195,7 @@ jobs:
 
 
     - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3 
+      uses: mxschmitt/action-tmate@v2
 
     - name: Delete Cluster
       if: ${{ always() }}
