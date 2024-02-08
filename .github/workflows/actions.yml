@@ -384,6 +384,8 @@ jobs:
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
         export KUBECONFIG=/tmp/$CLUSTER.conf
         kubectl get nodes 
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Run Test Suite without source(config_lifecycle)
       run: |
         source cluster.env
