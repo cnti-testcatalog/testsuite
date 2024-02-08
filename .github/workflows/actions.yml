@@ -384,8 +384,6 @@ jobs:
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
         export KUBECONFIG=/tmp/$CLUSTER.conf
         kubectl get nodes 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v2
     - name: Run Test Suite without source(config_lifecycle)
       run: |
         source cluster.env
@@ -395,6 +393,7 @@ jobs:
         export DIR=$(uuidgen)
         echo "Shared DIR: /shared/$DIR"
         mkdir /shared/$DIR
+        ls -la
         mv cnf-testsuite /shared/$DIR 
         cd /shared/$DIR
         ./cnf-testsuite setup
