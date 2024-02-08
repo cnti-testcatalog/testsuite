@@ -363,7 +363,7 @@ jobs:
     - name: Build cnf-testsuite & Create Kind Cluster 
       run: |
         shards install
-        crystal build src/cnf-testsuite.cr --warnings none &
+        crystal build src/cnf-testsuite.cr --warnings none 
         cat << EOF > /tmp/cluster.yml
         kind: Cluster
         apiVersion: kind.x-k8s.io/v1alpha4
@@ -393,7 +393,6 @@ jobs:
         export DIR=$(uuidgen)
         echo "Shared DIR: /shared/$DIR"
         mkdir /shared/$DIR
-        ls -la
         mv cnf-testsuite /shared/$DIR 
         cd /shared/$DIR
         ./cnf-testsuite setup
@@ -444,7 +443,7 @@ jobs:
     - name: Build cnf-testsuite & Create Kind Cluster 
       run: |
         shards install
-        crystal build src/cnf-testsuite.cr --warnings none &
+        crystal build src/cnf-testsuite.cr --warnings none 
         cat << EOF > /tmp/cluster.yml
         kind: Cluster
         apiVersion: kind.x-k8s.io/v1alpha4
@@ -466,6 +465,11 @@ jobs:
         source cluster.env
         export KUBECONFIG=/tmp/$CLUSTER.conf
         helm repo add stable https://cncf.gitlab.io/stable
+        export DIR=$(uuidgen)
+        echo "Shared DIR: /shared/$DIR"
+        mkdir /shared/$DIR
+        mv cnf-testsuite /shared/$DIR
+        cd /shared/$DIR
         ./cnf-testsuite setup
         wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
         ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
@@ -514,7 +518,7 @@ jobs:
     - name: Build cnf-testsuite & Create Kind Cluster 
       run: |
         shards install
-        crystal build src/cnf-testsuite.cr --warnings none &
+        crystal build src/cnf-testsuite.cr --warnings none 
         cat << EOF > /tmp/cluster.yml
         kind: Cluster
         apiVersion: kind.x-k8s.io/v1alpha4
@@ -537,6 +541,10 @@ jobs:
         export KUBECONFIG=/tmp/$CLUSTER.conf
         helm repo add stable https://cncf.gitlab.io/stable
         export DIR=$(uuidgen)
+        echo "Shared DIR: /shared/$DIR"
+        mkdir /shared/$DIR
+        mv cnf-testsuite /shared/$DIR
+        cd /shared/$DIR
         ./cnf-testsuite setup
         wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
         ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
