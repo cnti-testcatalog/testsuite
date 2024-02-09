@@ -36,8 +36,19 @@ module ShellCmd
 end
 
 def ensure_kubeconfig!
-  puts "KUBECONFIG is not set. Please set a KUBECONFIG, i.p 'export KUBECONFIG=path-to-your-kubeconfig'".colorize(:red) unless ENV.has_key?("KUBECONFIG")
-  raise "KUBECONFIG is not set. Please set a KUBECONFIG, i.p 'export KUBECONFIG=path-to-your-kubeconfig'" unless ENV.has_key?("KUBECONFIG")
+
+  kubeconfig_path = File.join(ENV["HOME"], ".kube", "config")
+  
+  if ENV.has_key?("KUBECONFIG") && File.exists?(ENV["KUBECONFIG"])
+    puts "KUBECONFIG is already set.".colorize(:green)
+  elsif File.exists?(kubeconfig_path)
+    ENV["KUBECONFIG"] = kubeconfig_path
+    puts "KUBECONFIG is set as #{ENV["KUBECONFIG"]}.".colorize(:green)
+  else
+    puts "KUBECONFIG is not set. Please set a KUBECONFIG, i.p 'export KUBECONFIG=path-to-your-kubeconfig'".colorize(:red)
+    raise "KUBECONFIG is not set. Please set a KUBECONFIG, i.p 'export KUBECONFIG=path-to-your-kubeconfig'"
+  end
+
 end
 
 def log_formatter
