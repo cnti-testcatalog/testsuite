@@ -49,15 +49,15 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
 
 ## Communication and community meetings
 
-- Join the conversation on [CNCF's Slack](https://slack.cncf.io/) channels
-  - [#cnf-testsuite](https://cloud-native.slack.com/archives/C01V28MLYEP)
-  - [#cnf-testsuite-dev](https://cloud-native.slack.com/archives/C014TNCEX8R)
+- Join the conversation on [LFN Tech's Slack](https://lfntech.slack.com/) channels
+  - [#cnti-testcatalog-testsuite](https://lfntech.slack.com/archives/C06GM6ZEPUP)
+  - [#cnti-testsuite-dev](https://lfntech.slack.com/archives/C06HQGWK4NL)
 - Join the weekly Office Hours meeting
 
-  - Meetings every Tuesday at 7:15am - 8am Pacific Time 
-  - Meeting minutes are [here](https://docs.google.com/document/d/1IbrgjqIkOCvrrSG0DRE6X62UUZpBq-818Mn8q0nkkd0/edit)
+  - Meetings every Tuesday at 8:00am - 9:00am Pacific Time 
+  - Meeting minutes are [here](https://docs.google.com/document/d/1yjL079TR0L1q__BRuhREeXfx5MtAmjPzbFZlZUeBsK4/edit)
 
-- Join the weekly [CNF Working Group meeting](https://github.com/cncf/cnf-wg#recurring-meetings) on Mondays.
+- Join the weekly [CNF Working Group meeting](https://github.com/lfn-cnti/bestpractices#recurring-meetings) on Mondays.
 
 - Request an Intro to the CNF Certification [here](https://calendly.com/cnfcertification/intro)
 
