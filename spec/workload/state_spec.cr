@@ -18,7 +18,7 @@ describe "State" do
       $?.success?.should be_true
       response_s = `./cnf-testsuite -l info elastic_volumes verbose`
       LOGGING.info "Status:  #{response_s}"
-      (/PASSED: Elastic Volumes Used/ =~ response_s).should_not be_nil
+      (/PASSED: At least one of the volumes is elastic/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -54,7 +54,7 @@ describe "State" do
       # KubectlClient::Get.resource_wait_for_install("Pod", "mycluster-2")
       response_s = `LOG_LEVEL=info ./cnf-testsuite database_persistence`
       Log.info {"Status:  #{response_s}"}
-      (/PASSED: Elastic Volumes and Statefulsets Used/ =~ response_s).should_not be_nil
+      (/PASSED: At least one statefulset uses elastic volume/ =~ response_s).should_not be_nil
     ensure
       # Mysql.uninstall
        # KubectlClient::Delete.file("https://raw.githubusercontent.com/mysql/mysql-operator/trunk/samples/sample-cluster.yaml  --wait=false")
@@ -71,7 +71,7 @@ describe "State" do
       $?.success?.should be_true
       response_s = `./cnf-testsuite -l info elastic_volumes verbose`
       LOGGING.info "Status:  #{response_s}"
-      (/FAILED: Volumes used are not elastic volumes/ =~ response_s).should_not be_nil
+      (/FAILED: None of the volumes are elastic/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true

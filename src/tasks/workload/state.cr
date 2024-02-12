@@ -412,9 +412,9 @@ task "elastic_volumes" do |_, args|
     if volumes_used == false
       resp = upsert_skipped_task(testsuite_task,"⏭️  ✨SKIPPED: No volumes used #{emoji_probe}", task_start_time)
     elsif elastic_volumes_used
-      resp = upsert_passed_task(testsuite_task,"✔️  ✨PASSED: Elastic Volumes Used #{emoji_probe}", task_start_time)
+      resp = upsert_passed_task(testsuite_task,"✔️  ✨PASSED: At least one of the volumes is elastic #{emoji_probe}", task_start_time)
     else
-      resp = upsert_failed_task(testsuite_task,"✔️  ✨FAILED: Volumes used are not elastic volumes #{emoji_probe}", task_start_time)
+      resp = upsert_failed_task(testsuite_task,"✖️  ✨FAILED: None of the volumes are elastic #{emoji_probe}", task_start_time)
     end
     resp
   end
@@ -472,13 +472,13 @@ task "database_persistence" do |_, args|
       end
       failed_emoji = "(ভ_ভ) ރ 💾"
       if elastic_statefulset
-        resp = upsert_dynamic_task(testsuite_task,CNFManager::Points::Results::ResultStatus::Pass5, "✔️  PASSED: Elastic Volumes and Statefulsets Used #{emoji_probe}", task_start_time)
-      elsif elastic_volume_used 
-        resp = upsert_dynamic_task(testsuite_task,CNFManager::Points::Results::ResultStatus::Pass3,"✔️  PASSED: Elastic Volumes Used #{emoji_probe}", task_start_time)
+        resp = upsert_dynamic_task(testsuite_task,CNFManager::Points::Results::ResultStatus::Pass5, "✔️  PASSED: At least one statefulset uses elastic volume #{emoji_probe}", task_start_time)
       elsif statefulset_exists
         resp = upsert_dynamic_task(testsuite_task,CNFManager::Points::Results::ResultStatus::Neutral, "✖️  FAILED: Statefulset used without an elastic volume #{failed_emoji}", task_start_time)
+      elsif elastic_volume_used 
+        resp = upsert_dynamic_task(testsuite_task,CNFManager::Points::Results::ResultStatus::Pass3,"✔️  PASSED: Statefulsets are not used, at least one volume is elastic #{emoji_probe}", task_start_time)
       else
-        resp = upsert_failed_task(testsuite_task,"✖️  FAILED: Elastic Volumes Not Used #{failed_emoji}", task_start_time)
+        resp = upsert_failed_task(testsuite_task,"✖️  FAILED: Statefulsets and elastic volumes are not used #{failed_emoji}", task_start_time)
       end
 
     else
