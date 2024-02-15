@@ -32,7 +32,8 @@ describe "Platform Observability" do
 
 		  LOGGING.info "Installing prometheus-node-exporter" 
       helm = Helm::BinarySingleton.helm
-		  resp = `#{helm} install node-exporter stable/prometheus-node-exporter`
+      Helm.helm_repo_add("prometheus-community","https://prometheus-community.github.io/helm-charts")
+		  resp = `#{helm} install node-exporter prometheus-community/prometheus-node-exporter`
 		  LOGGING.info resp
 
       pod_ready = ""

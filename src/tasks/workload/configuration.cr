@@ -131,6 +131,7 @@ task "ip_addresses" do |_, args|
     emoji_network_runtime = "📶🏃⏲️"
     helm_directory = config.cnf_config[:helm_directory]
     helm_chart_path = config.cnf_config[:helm_chart_path]
+    Log.info { "Path: #{helm_chart_path}" }
     if File.directory?(helm_chart_path)
       # Switch to the helm chart directory
       Dir.cd(helm_chart_path)
