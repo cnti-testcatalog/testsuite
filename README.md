@@ -2,7 +2,7 @@
 
 | Main                                                                                                                                        |
 | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| [![Build Status](https://github.com/cncf/cnf-testsuite/workflows/Crystal%20Specs/badge.svg)](https://github.com/cncf/cnf-testsuite/actions) |
+| [![Build Status](https://github.com/cnti-testcatalog/testsuite/workflows/Crystal%20Specs/badge.svg)](https://github.com/cnti-testcatalog/testsuite/actions) |
 
 The CNTI Test Catalog is a tool that validates telco application's adherence to [cloud native principles](https://networking.cloud-native-principles.org/) and best practices. 
 
@@ -16,9 +16,9 @@ To get the CNTI Test Catalog up and running, see the [Installation Guide](INSTAL
 
 Prereqs: kubernetes cluster, wget, curl, helm 3.1.1 or greater on your system already.
 
-1. Install the latest test suite binary: `source <(curl -s https://raw.githubusercontent.com/cncf/cnf-testsuite/main/curl_install.sh)`
+1. Install the latest test suite binary: `source <(curl -s https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/curl_install.sh)`
 2. Run `setup` to prepare the cnf-testsuite: `cnf-testsuite setup`
-3. Pull down an example CNF configuration to try: `curl -o cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml`
+3. Pull down an example CNF configuration to try: `curl -o cnf-testsuite.yml https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/example-cnfs/coredns/cnf-testsuite.yml`
 4. Initialize the test suite for using the CNF: `cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml`
 5. Run all of application/workload tests: `cnf-testsuite workload`
 
@@ -45,7 +45,7 @@ See the [Test Categories Documentation](TEST-CATEGORIES.md) for a complete overv
 Welcome! We gladly accept contributions on new tests, example CNFs, updates to documentation, enhancements, bug reports, and more.
 
 - [Contributing guide](CONTRIBUTING.md)
-- [Good first issues](https://github.com/cncf/cnf-testsuite/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+- [Good first issues](https://github.com/cnti-testcatalog/testsuite/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 ## Communication and community meetings
 
@@ -66,11 +66,11 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
 
 **CNF Test Suite Demo**
 - [Recording](https://drive.google.com/file/d/1SBHE5Dqx6Sa-m83WODbCEbbdiB2_l_U2/view?usp=sharing)
-- [Slides](https://github.com/cncf/cnf-testsuite/files/6857515/SHARED-COMMON.CNF.Test.Suite.Demo.and.CNF.initiatives.overview.2021-06-29.pdf) (PDF)
+- [Slides](https://github.com/cnti-testcatalog/testsuite/files/6857515/SHARED-COMMON.CNF.Test.Suite.Demo.and.CNF.initiatives.overview.2021-06-29.pdf) (PDF)
 
 **Crystal in the Cloud: A cloud native journey at Crystal 1.0 Conference**
 - [Recording](https://youtu.be/n8g60VglyUw)
-- [Slides](https://github.com/cncf/cnf-testsuite/files/6785788/Crystal.1.0.Crystal.in.the.Cloud_.CNF.Test.Suite.pdf) (PDF)
+- [Slides](https://github.com/cnti-testcatalog/testsuite/files/6785788/Crystal.1.0.Crystal.in.the.Cloud_.CNF.Test.Suite.pdf) (PDF)
 
 
 ## Implementation overview

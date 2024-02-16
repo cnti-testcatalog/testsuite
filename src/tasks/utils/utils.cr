@@ -212,7 +212,7 @@ def check_feature_level(args)
   end
 end
 
-# cncf/cnf-testsuite/issues/106
+# cnti-testcatalog/testsuite/issues/106
 # Requesting beta tests to run will both beta and ga flagged tests
 # Requesting alpha tests will run alpha, beta, and ga flagged tests
 # Requesting wip tests will run wip, poc, alpha, beta, and ga flagged tests

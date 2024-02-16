@@ -6,7 +6,7 @@ RUNNERS=(
     139.178.69.151)
 
 
-#TOKEN=$(curl  -XPOST -H "authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/cncf/cnf-testsuite/actions/runners/registration-token | jq -r .token)
+#TOKEN=$(curl  -XPOST -H "authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/cnti-testcatalog/testsuite/actions/runners/registration-token | jq -r .token)
 
 for node in "${RUNNERS[@]}"; do
     RUNNER_CONTAINERS=( $(ssh root@$node docker ps --filter "name=github-runner" --format '{{.Names}}' | xargs) )

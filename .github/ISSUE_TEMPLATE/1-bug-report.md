@@ -61,4 +61,4 @@ Also setting the verbose option for many tasks will add extra output to help wit
 crystal src/cnf-testsuite.cr test_name verbose
 ```
 
-Check [usage documentation](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md) for more info about invoking commands and logging
+Check [usage documentation](https://github.com/cnti-testcatalog/testsuite/blob/main/USAGE.md) for more info about invoking commands and logging

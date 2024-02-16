@@ -54,7 +54,7 @@ task "tools_cleanup", [
     "uninstall_falco",
  
     # Helm needs to be uninstalled last to allow other uninstalls to use helm if necessary.
-    # Check this issue for details - https://github.com/cncf/cnf-testsuite/issues/1586
+    # Check this issue for details - https://github.com/cnti-testcatalog/testsuite/issues/1586
     "helm_local_cleanup"
   ] do  |_, args|
 end

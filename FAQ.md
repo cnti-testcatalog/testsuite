@@ -37,7 +37,7 @@
 <details> <summary>If I found a bug or I think it's a bug, how do I report it?</summary>
 <p>
 
-- If you would like to report a bug, please create a [new issue](https://github.com/cncf/cnf-testsuite/issues/new?assignees=&labels=bug&template=bug-report.md&title=%5BBUG%5D) (using the **Bug Report** Template).
+- If you would like to report a bug, please create a [new issue](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=bug&template=bug-report.md&title=%5BBUG%5D) (using the **Bug Report** Template).
 
 </p>
 </details>
@@ -45,7 +45,7 @@
 <details> <summary>How do I request a new feature?</summary>
 <p>
 
-- If you would like to request an enhancement, please create a [new issue](https://github.com/cncf/cnf-testsuite/issues/new?assignees=&labels=enhancement&template=feature-request.md&title=%5BFeature%5D) (using the **Feature Request** Template).
+- If you would like to request an enhancement, please create a [new issue](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=enhancement&template=feature-request.md&title=%5BFeature%5D) (using the **Feature Request** Template).
 
 </p>
 </details>
@@ -53,7 +53,7 @@
 <details> <summary>Can I request a new workload or platform test for the CNF Test Suite?</summary>
 <p>
 
-- Yes. If you would like to request a new workload test, please create a [new issue](https://github.com/cncf/cnf-testsuite/issues/new?assignees=&labels=workload&template=new-workload-test.md&title=%5BWorkload%5D) (using the **New Workload Test** Template) or create a [new issue](https://github.com/cncf/cnf-testsuite/issues/new?assignees=&labels=platform&template=new-platform-test.md&title=%5BPlatform%5D) (using the **New Platform Test** Template).
+- Yes. If you would like to request a new workload test, please create a [new issue](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=workload&template=new-workload-test.md&title=%5BWorkload%5D) (using the **New Workload Test** Template) or create a [new issue](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=platform&template=new-platform-test.md&title=%5BPlatform%5D) (using the **New Platform Test** Template).
 
 </p>
 </details>
@@ -79,7 +79,7 @@
 <details> <summary>How are points assigned for tests?</summary>
 <p>
 
-- Points are different for each test and workload but in general terms, pass defaults to 5 and fail is a -1. See [points.yml](https://github.com/cncf/cnf-testsuite/blob/main/embedded_files/points.yml) for more details on the different points for default scoring.
+- Points are different for each test and workload but in general terms, pass defaults to 5 and fail is a -1. See [points.yml](https://github.com/cnti-testcatalog/testsuite/blob/main/embedded_files/points.yml) for more details on the different points for default scoring.
 
 </p>
 </details>

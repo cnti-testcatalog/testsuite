@@ -10,7 +10,7 @@ git push --tags
 ```
 
 - Wait for github actions to complete the build
-- Go to https://github.com/cncf/cnf-testsuite/releases
+- Go to https://github.com/cnti-testcatalog/testsuite/releases
 - Locate the draft release for the build
 - Modify the release notes to reflect the contents for the release
 - Mark the release as non-draft
@@ -66,7 +66,7 @@ _Note: this covers both workload (ie. application) and platform tests_
 **[Manually create builds]**
 based on [SOURCE_INSTALL.md#optional-build-binary](SOURCE_INSTALL.md#installation) and [Minimal instructions to run the tests from source (as of 2020-06-23)](https://hackmd.io/hcHoJEKaRWuyf_fZ7ITxLw)
 
-- Download source: `git clone https://github.com/cncf/cnf-testsuite.git`
+- Download source: `git clone https://github.com/cnti-testcatalog/testsuite.git`
 - `cd cnf-testsuite`
 - Install dependencies: `shards install`
 - Create a static binary: `crystal build src/cnf-testsuite.cr --release --static --link-flags "-lxml2 -llzma"`

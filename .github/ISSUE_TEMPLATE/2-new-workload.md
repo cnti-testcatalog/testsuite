@@ -15,7 +15,7 @@ assignees: ""
 - tbd
 
 **Test Category Name**
-- ADD CATEGORY_NAME (e.g. State, Security, etc from [README](https://github.com/cncf/cnf-testsuite/blob/main/README.md#cnf-testsuite))
+- ADD CATEGORY_NAME (e.g. State, Security, etc from [README](https://github.com/cnti-testcatalog/testsuite/blob/main/README.md#cnf-testsuite))
 
 **Type of test (static or runtime)**
 - tbd
@@ -23,9 +23,9 @@ assignees: ""
 ---
 
 ### Documentation tasks:
-- [ ] Update [installation instructions](https://github.com/cncf/cnf-testsuite/blob/main/install.md) if needed
-- [ ] Update [Test Categories md](https://github.com/cncf/cnf-testsuite/blob/main/TEST-CATEGORIES.md) if needed
-- [ ] Update [USAGE md](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md) if needed
+- [ ] Update [installation instructions](https://github.com/cnti-testcatalog/testsuite/blob/main/install.md) if needed
+- [ ] Update [Test Categories md](https://github.com/cnti-testcatalog/testsuite/blob/main/TEST-CATEGORIES.md) if needed
+- [ ] Update [USAGE md](https://github.com/cnti-testcatalog/testsuite/blob/main/USAGE.md) if needed
   - [ ] How to run
   - [ ] Description and details
     - [ ] What the best practice is
