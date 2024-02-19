@@ -82,7 +82,7 @@ task "upsert_release" do |_, args|
   # LOGGING.info "upserting release on: #{ReleaseManager::VERSION}"
   LOGGING.info "upserting release on: #{ReleaseManager::VERSION}"
 
-  ghrm = ReleaseManager::GithubReleaseManager.new("cncf/cnf-testsuite")
+  ghrm = ReleaseManager::GithubReleaseManager.new("cnti-testcatalog/testsuite")
 
   release, asset = ghrm.upsert_release(version=ReleaseManager::VERSION)
   if release
