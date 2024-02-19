@@ -1,4 +1,4 @@
-FROM myoung34/github-runner:2.303.0-ubuntu-bionic
+FROM myoung34/github-runner:2.313.0-ubuntu-bionic
 
 ARG CRYSTAL_VERSION=1.6.2
 ARG CRYSTAL_URL=https://github.com/crystal-lang/crystal/releases/download
@@ -11,7 +11,7 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg --o
 
 RUN mkdir /crystal && \
     wget -O /crystal/crystal.tar.gz "$CRYSTAL_URL/$CRYSTAL_VERSION/crystal-$CRYSTAL_VERSION-1-linux-x86_64.tar.gz" --progress=dot:giga && \
-    tar -xf /crystal/crystal.tar.gz -C /tmp && \
+    tar -xf /crystal/crystal.tar.gz -C /crystal && \
     chmod +x /crystal/crystal-${CRYSTAL_VERSION}-1/bin/crystal && \
     chmod +x /crystal/crystal-${CRYSTAL_VERSION}-1/bin/shards && \
     ln -s /crystal/crystal-${CRYSTAL_VERSION}-1/bin/crystal /usr/local/bin/crystal && \

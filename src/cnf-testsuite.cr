@@ -82,7 +82,7 @@ task "upsert_release" do |_, args|
   # LOGGING.info "upserting release on: #{ReleaseManager::VERSION}"
   LOGGING.info "upserting release on: #{ReleaseManager::VERSION}"
 
-  ghrm = ReleaseManager::GithubReleaseManager.new("cncf/cnf-testsuite")
+  ghrm = ReleaseManager::GithubReleaseManager.new("cnti-testcatalog/testsuite")
 
   release, asset = ghrm.upsert_release(version=ReleaseManager::VERSION)
   if release
@@ -131,7 +131,7 @@ begin
   # See issue #426 for exit code requirement
   Sam.process_tasks(ARGV.clone)
 
-  if File.exists?("#{CNFManager::Points::Results.file}")
+  if CNFManager::Points::Results.file_exists?
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
     end
