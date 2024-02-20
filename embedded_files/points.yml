@@ -44,8 +44,6 @@
 - name: privileged 
   tags: security, dynamic, workload
   # required: true
-- name: non_root_user 
-  tags: security, dynamic, workload
 - name: privilege_escalation 
   tags: security, dynamic, workload, cert, normal
 - name: symlink_file_system 
