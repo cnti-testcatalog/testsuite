@@ -1,16 +1,16 @@
-# CNF Test Suite
+# CNTI Test Catalog
 
 | Main                                                                                                                                        |
 | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | [![Build Status](https://github.com/cncf/cnf-testsuite/workflows/Crystal%20Specs/badge.svg)](https://github.com/cncf/cnf-testsuite/actions) |
 
-The CNF Test Suite is a tool that validates telco application's (i.e. [Cloud Native Network Functions - CNFs)](https://github.com/cncf/cnf-testsuite/blob/main/EXAMPLE-CNFS.md) adherence to [cloud native principles](https://networking.cloud-native-principles.org/) and best practices.
+The CNTI Test Catalog is a tool that validates telco application's adherence to [cloud native principles](https://networking.cloud-native-principles.org/) and best practices. 
 
-This Test Suite initiative works closely with the [CNF WG](https://github.com/cncf/cnf-wg) which determines requirements for the CNF Test Suite program.
+This Test Catalog focus area is one part of LF Networking's [Cloud Native Telecom Initiative (CNTI)](https://wiki.lfnetworking.org/pages/viewpage.action?pageId=113213592) and works closely with the [CNTI Best Practices](https://wiki.lfnetworking.org/display/LN/Best+Practices) and [CNTI Certification](https://wiki.lfnetworking.org/display/LN/Certification) focus areas.
 
 ## Installation and Usage
 
-To get the CNF Test Suite up and running, see the [Installation Guide](INSTALL.md).
+To get the CNTI Test Catalog up and running, see the [Installation Guide](INSTALL.md).
 
 #### To give it a try immediately you can use these quick install steps
 
@@ -28,7 +28,7 @@ Check out the [usage documentation](USAGE.md) for more info about invoking comma
 
 ## Cloud Native Categories
 
-The CNF Test Suite will inspect CNFs for the following characteristics:
+The CNTI Test Catalog will inspect CNFs for the following characteristics:
 
 - **Configuration** - The CNF's configuration should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces.
 - **Compatibility, Installability & Upgradability** - CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements while using standard, in-band deployment tools such as Helm (version 3) charts.
@@ -52,16 +52,17 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
 - Join the conversation on [LFN Tech's Slack](https://lfntech.slack.com/) channels
   - [#cnti-testcatalog-testsuite](https://lfntech.slack.com/archives/C06GM6ZEPUP)
   - [#cnti-testsuite-dev](https://lfntech.slack.com/archives/C06HQGWK4NL)
-- Join the weekly Office Hours meeting
+- Join the weekly CNTI Test Catalog meeting
 
   - Meetings every Tuesday at 8:00am - 9:00am Pacific Time 
   - Meeting minutes are [here](https://docs.google.com/document/d/1yjL079TR0L1q__BRuhREeXfx5MtAmjPzbFZlZUeBsK4/edit)
 
-- Join the weekly [CNF Working Group meeting](https://github.com/lfn-cnti/bestpractices#recurring-meetings) on Mondays.
+- Join the weekly [CNTI Best Practices meeting](https://wiki.lfnetworking.org/display/LN/Best+Practices) on Mondays at 8am PT.
+- Join the bi-weekly [CNTI Certification meeting](https://wiki.lfnetworking.org/display/LN/Certification) every other Thursday at 8am PT.
 
-- Request an Intro to the CNF Certification [here](https://calendly.com/cnfcertification/intro)
+- Request an Intro to the Cloud Native Telecom Initiative (CNTI) [here](https://calendly.com/cnti/intro))
 
-## Presentations
+## Past Presentations
 
 **CNF Test Suite Demo**
 - [Recording](https://drive.google.com/file/d/1SBHE5Dqx6Sa-m83WODbCEbbdiB2_l_U2/view?usp=sharing)
