@@ -196,15 +196,15 @@
 - name: k8s_conformance
   tags: [platform, dynamic]
 - name: worker_reboot_recovery 
-  tags: [platform, platform:resilience, dynamic]
+  tags: ["platform", "platform:resilience", dynamic]
 - name: oci_compliant
-  tags: [platform, platform:hardware_and_scheduling, dynamic]
+  tags: ["platform", "platform:hardware_and_scheduling", dynamic]
 - name: control_plane_hardening
-  tags: [platform, platform:security, dynamic]
+  tags: ["platform", "platform:security", "dynamic"]
 - name: cluster_admin
-  tags: [platform, platform:security, dynamic]
+  tags: ["platform", "platform:security", "dynamic"]
 - name: exposed_dashboard
-  tags: [platform, platform:security, dynamic]
+  tags: ["platform", "platform:security", "dynamic"]
 
 - name: service_account_mapping
   tags: [security, dynamic, workload, cert, normal]
@@ -279,7 +279,7 @@
   tags: [configuration, dynamic, workload, cert, normal]
 
 - name: helm_tiller
-  tags: [platform, platform:security, dynamic]
+  tags: ["platform", "platform:security", "dynamic"]
 
 - name: external_ips
   tags: [security, dynamic, workload, cert, normal]
