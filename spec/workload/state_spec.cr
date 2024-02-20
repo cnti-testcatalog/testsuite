@@ -12,13 +12,13 @@ describe "State" do
     `./cnf-testsuite configuration_file_setup`
   end
   
-  it "'elastic_volume' should pass if the cnf uses an elastic volume", tags: ["elastic_volume"]  do
+  it "'elastic_volumes' should pass if the cnf uses an elastic volume", tags: ["elastic_volume"]  do
     begin
       LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
       $?.success?.should be_true
       response_s = `./cnf-testsuite -l info elastic_volumes verbose`
       LOGGING.info "Status:  #{response_s}"
-      (/PASSED: Elastic Volumes Used/ =~ response_s).should_not be_nil
+      (/PASSED: All used volumes are elastic/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -27,7 +27,7 @@ describe "State" do
 
   #TODO This spec test should be for the skipped scenario instead.
   # This CNF does not use any volumes except the ones that Kubernetes might mount by default (like the service account token)
-  it "'elastic_volume' should fail if the cnf does not use any elastic volumes", tags: ["elastic_volume"]  do
+  it "'elastic_volumes' should fail if the cnf does not use any elastic volumes", tags: ["elastic_volume"]  do
     begin
       LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-config=./sample-cnfs/sample_nonroot`
       $?.success?.should be_true
@@ -65,13 +65,13 @@ describe "State" do
     end
   end
 
-  it "'elastic_volume' should fail if the cnf doesn't use an elastic volume", tags: ["elastic_volume"]  do
+  it "'elastic_volumes' should fail if the cnf doesn't use an elastic volume", tags: ["elastic_volume"]  do
     begin
       LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
       response_s = `./cnf-testsuite -l info elastic_volumes verbose`
       LOGGING.info "Status:  #{response_s}"
-      (/FAILED: Volumes used are not elastic volumes/ =~ response_s).should_not be_nil
+      (/FAILED: Some of the used volumes are not elastic/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
