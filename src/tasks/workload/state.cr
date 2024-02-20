@@ -387,7 +387,7 @@ task "elastic_volumes" do |_, args|
     Log.info {"cnf_config: #{config}"}
 
     emoji_probe="🧫"
-    elastic_volumes_used = false
+    all_volumes_elastic = true
     volumes_used = false
     task_response = CNFManager.workload_resource_test(args, config, check_containers: false) do |resource, containers, volumes, initialized|
       Log.for("elastic_volumes:test_resource").info { resource.inspect }
@@ -403,18 +403,18 @@ task "elastic_volumes" do |_, args|
       full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
       elastic_result = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)
       Log.for("#{testsuite_task}:elastic_result").info {elastic_result}
-      if elastic_result
-        elastic_volumes_used = true
+      unless elastic_result
+        all_volumes_elastic = false
       end
     end
 
-    Log.for("elastic_volumes:result").info { "Volumes used: #{volumes_used}; Elastic?: #{elastic_volumes_used}" }
+    Log.for("elastic_volumes:result").info { "Volumes used: #{volumes_used}; Elastic?: #{all_volumes_elastic}" }
     if volumes_used == false
-      resp = upsert_skipped_task(testsuite_task,"⏭️  ✨SKIPPED: No volumes used #{emoji_probe}", task_start_time)
-    elsif elastic_volumes_used
-      resp = upsert_passed_task(testsuite_task,"✔️  ✨PASSED: Elastic Volumes Used #{emoji_probe}", task_start_time)
+      resp = upsert_skipped_task(testsuite_task,"⏭️  ✨SKIPPED: No volumes are used #{emoji_probe}", task_start_time)
+    elsif all_volumes_elastic
+      resp = upsert_passed_task(testsuite_task,"✔️  ✨PASSED: All used volumes are elastic #{emoji_probe}", task_start_time)
     else
-      resp = upsert_failed_task(testsuite_task,"✔️  ✨FAILED: Volumes used are not elastic volumes #{emoji_probe}", task_start_time)
+      resp = upsert_failed_task(testsuite_task,"✖️  ✨FAILED: Some of the used volumes are not elastic #{emoji_probe}", task_start_time)
     end
     resp
   end
@@ -440,11 +440,8 @@ task "database_persistence" do |_, args|
     # VERBOSE_LOGGING.info "database_persistence" if check_verbose(args)
     # todo K8s Database persistence test: if a mysql (or any popular database) image is installed:
     emoji_probe="🧫"
-    elastic_statefulset = false
-    elastic_volume_used = false
-    statefulset_exists = false
+    all_mysql_elastic_statefulset = true
     match = Mysql.match
-    # VERBOSE_LOGGING.info "hithere" if check_verbose(args)
     Log.info {"database_persistence mysql: #{match}"}
     if match && match[:found]
       default_namespace = "default"
@@ -452,37 +449,41 @@ task "database_persistence" do |_, args|
         default_namespace = config.cnf_config[:helm_install_namespace]
       end
       statefulset_exists = Helm.kind_exists?(args, config, "statefulset", default_namespace)
-      task_response = CNFManager.workload_resource_test(args, config, check_containers: false) do |resource, containers, volumes, initialized|
-        namespace = resource["namespace"] || default_namespace
-        Log.info {"database_persistence namespace: #{namespace}"}
-        Log.info {"database_persistence resource: #{resource}"}
-        Log.info {"database_persistence volumes: #{volumes}"}
-        # elastic_volume = Volume.elastic_by_volumes?(volumes)
-        full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
-        elastic_volume = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)
-        Log.info {"database_persistence elastic_volume: #{elastic_volume}"}
-        if elastic_volume
-          elastic_volume_used = true
-        end
 
-        if resource["kind"].downcase == "statefulset" && elastic_volume
-          elastic_statefulset = true
-        end
+      unless statefulset_exists
+        all_mysql_elastic_statefulset = false
+      else
+        task_response = CNFManager.workload_resource_test(args, config, check_containers: false) do |resource, containers, volumes, initialized|
 
+          # Skip resources that do not have containers with mysql image
+          images = containers.as_a.map {|container| container["image"]}
+          next unless images.any? do |image| 
+            Mysql::MYSQL_IMAGES.any? do |mysql_image|
+              image.as_s.includes?(mysql_image) 
+            end
+          end
+
+          namespace = resource["namespace"] || default_namespace
+          Log.info {"database_persistence namespace: #{namespace}"}
+          Log.info {"database_persistence resource: #{resource}"}
+          Log.info {"database_persistence volumes: #{volumes}"}
+          full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
+          elastic_volume = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)
+          Log.info {"database_persistence elastic_volume: #{elastic_volume}"}
+
+          unless resource["kind"].downcase == "statefulset" && elastic_volume
+            all_mysql_elastic_statefulset = false
+          end
+        end
       end
       failed_emoji = "(ভ_ভ) ރ 💾"
-      if elastic_statefulset
-        resp = upsert_dynamic_task(testsuite_task,CNFManager::Points::Results::ResultStatus::Pass5, "✔️  PASSED: Elastic Volumes and Statefulsets Used #{emoji_probe}", task_start_time)
-      elsif elastic_volume_used 
-        resp = upsert_dynamic_task(testsuite_task,CNFManager::Points::Results::ResultStatus::Pass3,"✔️  PASSED: Elastic Volumes Used #{emoji_probe}", task_start_time)
-      elsif statefulset_exists
-        resp = upsert_dynamic_task(testsuite_task,CNFManager::Points::Results::ResultStatus::Neutral, "✖️  FAILED: Statefulset used without an elastic volume #{failed_emoji}", task_start_time)
+      if all_mysql_elastic_statefulset
+        resp = upsert_dynamic_task(testsuite_task,CNFManager::Points::Results::ResultStatus::Pass5, "✔️  PASSED: CNF uses database with cloud-native persistence #{emoji_probe}", task_start_time)
       else
-        resp = upsert_failed_task(testsuite_task,"✖️  FAILED: Elastic Volumes Not Used #{failed_emoji}", task_start_time)
+        resp = upsert_failed_task(testsuite_task,"✖️  FAILED: CNF uses database without cloud-native persistence #{failed_emoji}", task_start_time)
       end
-
     else
-      resp = upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: Mysql not installed #{emoji_probe}", task_start_time)
+      resp = upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: CNF does not use database #{emoji_probe}", task_start_time)
     end
     resp
   end

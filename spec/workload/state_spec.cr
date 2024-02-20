@@ -54,7 +54,7 @@ describe "State" do
       # KubectlClient::Get.resource_wait_for_install("Pod", "mycluster-2")
       response_s = `LOG_LEVEL=info ./cnf-testsuite database_persistence`
       Log.info {"Status:  #{response_s}"}
-      (/PASSED: Elastic Volumes and Statefulsets Used/ =~ response_s).should_not be_nil
+      (/PASSED: CNF uses database with cloud-native persistence/ =~ response_s).should_not be_nil
     ensure
       # Mysql.uninstall
        # KubectlClient::Delete.file("https://raw.githubusercontent.com/mysql/mysql-operator/trunk/samples/sample-cluster.yaml  --wait=false")

@@ -193,10 +193,14 @@ task "increase_decrease_capacity" do |t, args|
     testsuite_task = "increase_decrease_capacity"
     Log.for(testsuite_task).info { "Starting test" }
 
-    Log.for(testsuite_task).info { "increase_capacity" }
+    Log.for(testsuite_task).info { "increase_decrease_capacity" }
 
     increase_test_base_replicas = "1"
     increase_test_target_replicas = "3"
+
+    decrease_test_base_replicas = "3"
+    decrease_test_target_replicas = "1"
+
     # TODO scale replicatsets separately
     # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset
     # resource["kind"].as_s.downcase == "replicaset"
@@ -209,41 +213,39 @@ task "increase_decrease_capacity" do |t, args|
         true
       end
     end
+    increase_task_successful = increase_task_response.none?(false)
 
-    decrease_test_base_replicas = "3"
-    decrease_test_target_replicas = "1"
-    decrease_task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
-      # TODO scale replicatsets separately
-      # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset
-      # resource["kind"].as_s.downcase == "replicaset"
-      if resource["kind"].as_s.downcase == "deployment" ||
-          resource["kind"].as_s.downcase == "statefulset"
-        final_count = change_capacity(decrease_test_base_replicas, decrease_test_target_replicas, args, config, resource)
-        decrease_test_target_replicas == final_count
-      else
-        true
+    if increase_task_successful
+      decrease_task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
+        # TODO scale replicatsets separately
+        # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset
+        # resource["kind"].as_s.downcase == "replicaset"
+        if resource["kind"].as_s.downcase == "deployment" ||
+            resource["kind"].as_s.downcase == "statefulset"
+          final_count = change_capacity(decrease_test_base_replicas, decrease_test_target_replicas, args, config, resource)
+          decrease_test_target_replicas == final_count
+        else
+          true
+        end
       end
     end
+    decrease_task_successful = !decrease_task_response.nil? && decrease_task_response.none?(false)
 
     emoji_capacity = "📦📈📉"
-
-    if increase_task_response.none?(false) && decrease_task_response.none?(false)
-      pass_msg = "✔️  🏆 PASSED: Replicas increased to #{increase_test_target_replicas} and decreased to #{decrease_test_target_replicas} #{emoji_capacity}"
+    pass_msg = "✔️  🏆 PASSED: Replicas increased to #{increase_test_target_replicas} and decreased to #{decrease_test_target_replicas} #{emoji_capacity}"
+    fail_msg = "✖️  FAILURE: Capacity change failed #{emoji_capacity}"
+    
+    
+    if increase_task_successful && decrease_task_successful
       upsert_passed_task(testsuite_task, pass_msg, task_start_time)
     else
-      upsert_failed_task(testsuite_task, "✖️  FAILURE: Capacity change failed #{emoji_capacity}", task_start_time)
-
-      # If increased capacity failed
-      if increase_task_response.any?(false)
-        stdout_failure("Failed to increase replicas from #{increase_test_base_replicas} to #{increase_test_target_replicas}")
-      end
-
-      # If decrease capacity failed
-      if decrease_task_response.any?(false)
-        stdout_failure("Failed to decrease replicas from #{decrease_test_base_replicas} to #{decrease_test_target_replicas}")
-      end
-
+      upsert_failed_task(testsuite_task, fail_msg, task_start_time)
       stdout_failure(increase_decrease_remedy_msg())
+      unless increase_task_successful
+        stdout_failure("Failed to increase replicas from #{increase_test_base_replicas} to #{increase_test_target_replicas}")
+      else
+        stdout_failure("Failed to decrease replicas from #{decrease_test_base_replicas} to #{decrease_test_target_replicas}")
+      end  
     end
   end
 end
@@ -376,7 +378,7 @@ def wait_for_scaling(resource, target_replica_count, args)
   if args.named.keys.includes? "wait_count"
     wait_count_value = args.named["wait_count"]
   else
-    wait_count_value = "30"
+    wait_count_value = "45"
   end
   wait_count = wait_count_value.to_i
   second_count = 0

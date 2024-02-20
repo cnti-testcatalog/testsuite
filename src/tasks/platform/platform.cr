@@ -1,6 +1,6 @@
 # coding: utf-8
 desc "Platform Tests"
-task "platform", ["helm_local_install", "k8s_conformance", "platform:observability", "platform:resilience", "platform:hardware_and_scheduling"]  do |_, args|
+task "platform", ["helm_local_install", "k8s_conformance", "platform:observability", "platform:resilience", "platform:hardware_and_scheduling", "platform:security"]  do |_, args|
   VERBOSE_LOGGING.info "platform" if check_verbose(args)
 
   total = CNFManager::Points.total_points("platform")

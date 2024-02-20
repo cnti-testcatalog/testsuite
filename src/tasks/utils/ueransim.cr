@@ -51,8 +51,9 @@ module UERANSIM
         Log.info { "Found ueransim ... deleting" }
         Helm.delete("ueransim")
       end
-      Helm.helm_repo_add("openverso","https://gradiant.github.io/openverso-charts/")
-      Helm.fetch("openverso/ueransim-gnb --version 0.2.5 --untar")
+      #Helm.helm_repo_add("openverso","https://gradiant.github.io/openverso-charts/")
+      # Helm.fetch("openverso/ueransim-gnb --version 0.2.5 --untar")
+      Helm.fetch("oci://registry-1.docker.io/gradiant/ueransim-gnb --version 0.2.5 --untar")
 
       protectionScheme = config.cnf_config[:fiveG_core][:protectionScheme]
       unless protectionScheme.empty?
