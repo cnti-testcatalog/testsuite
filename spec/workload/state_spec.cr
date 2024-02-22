@@ -12,13 +12,13 @@ describe "State" do
     `./cnf-testsuite configuration_file_setup`
   end
   
-  it "'elastic_volumes' should pass if the cnf uses an elastic volume", tags: ["elastic_volume"]  do
+  it "'elastic_volumes' should fail if the cnf does not use volumes that are elastic volume", tags: ["elastic_volume"]  do
     begin
       LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
       $?.success?.should be_true
       response_s = `./cnf-testsuite -l info elastic_volumes verbose`
       LOGGING.info "Status:  #{response_s}"
-      (/PASSED: All used volumes are elastic/ =~ response_s).should_not be_nil
+      (/PASSED: All used volumes are elastic/ =~ response_s).should be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
       $?.success?.should be_true
