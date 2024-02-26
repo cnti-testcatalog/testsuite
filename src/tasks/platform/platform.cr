@@ -1,6 +1,6 @@
 # coding: utf-8
 desc "Platform Tests"
-task "platform", ["helm_local_install", "k8s_conformance", "platform:observability", "platform:resilience", "platform:hardware_and_scheduling"]  do |_, args|
+task "platform", ["helm_local_install", "k8s_conformance", "platform:observability", "platform:resilience", "platform:hardware_and_scheduling", "platform:security"]  do |_, args|
   VERBOSE_LOGGING.info "platform" if check_verbose(args)
 
   total = CNFManager::Points.total_points("platform")
@@ -90,7 +90,7 @@ end
 
 desc "Is Cluster Api available and managing a cluster?"
 task "clusterapi_enabled" do |_, args|
-  CNFManager::Task.task_runner(args, check_cnf_installed=false) do
+  CNFManager::Task.task_runner(args, check_cnf_installed: false) do
     task_start_time = Time.utc
     testsuite_task = "clusterapi_enabled"
     emoji_control="✨"

@@ -266,7 +266,7 @@ module CNFManager
   end
   
   def self.cnf_installed?
-    cnf_configs = self.cnf_config_list(silent=true)
+    cnf_configs = self.cnf_config_list(silent: true)
     
     if cnf_configs.size == 0
       false
@@ -276,7 +276,7 @@ module CNFManager
   end
 
   def self.destination_cnfs_exist?
-    cnf_config_list(silent=true).size > 0
+    cnf_config_list(silent: true).size > 0
   end
 
   def self.parsed_config_file(path)
@@ -878,7 +878,7 @@ module CNFManager
           template_files.map{|x| AirGap.image_pull_policy(x)}
         end
         Log.for("verbose").info { "deploying by manifest file" } if verbose
-        file_list = Helm::Manifest.manifest_file_list(install_method[1], silent=false)
+        file_list = Helm::Manifest.manifest_file_list(install_method[1], silent: false)
         yml = Helm::Manifest.manifest_ymls_from_file_list(file_list)
         if input_file && !input_file.empty?
           image_pull(yml, "offline=true")
@@ -909,9 +909,9 @@ module CNFManager
           Helm.helm_repo_add(helm_repo_name, helm_repo_url)
         end
         Log.for("verbose").info { "deploying with chart repository" } if verbose
-        # Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml", values=helm_values)
-        Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml", namespace=helm_install_namespace, values=helm_values)
-        yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
+        # Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml", values: helm_values)
+        Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml", namespace: helm_install_namespace, values: helm_values)
+        yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name: "cnfs/temp_template.yml")
 
         if input_file && !input_file.empty?
           image_pull(yml, "offline=true")
@@ -947,9 +947,9 @@ module CNFManager
         end
         #TODO Add helm options into cnf-testsuite yml
         #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
-        # Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml") 
-        Helm.template(release_name, install_method[1], output_file="cnfs/temp_template.yml", namespace=helm_install_namespace, values=helm_values)
-        yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
+        # Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml") 
+        Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml", namespace: helm_install_namespace, values: helm_values)
+        yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name: "cnfs/temp_template.yml")
         
         if input_file && !input_file.empty?
           image_pull(yml, "offline=true")

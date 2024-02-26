@@ -73,8 +73,8 @@ describe "Microservice" do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
       Helm.install("multi-db sample-cnfs/ndn-multi-db-connections-fail/wordpress/")
-      KubectlClient::Get.resource_wait_for_install(kind="Deployment", resource_nome="multi-db-wordpress", wait_count=180, namespace="default")
-      KubectlClient::Get.resource_wait_for_install(kind="Deployment", resource_nome="multi-db-wordpress2", wait_count=180, namespace="default")
+      KubectlClient::Get.resource_wait_for_install(kind: "Deployment", resource_name: "multi-db-wordpress", wait_count: 180, namespace: "default")
+      KubectlClient::Get.resource_wait_for_install(kind: "Deployment", resource_name: "multi-db-wordpress2", wait_count: 180, namespace: "default")
       # todo kubctl appy of all resourcesin ndn-multi-db-connections-fail
       # todo cnf_setup of coredns
       # todo run shared_database (should pass)

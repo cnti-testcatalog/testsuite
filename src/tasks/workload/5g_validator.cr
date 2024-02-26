@@ -58,7 +58,7 @@ task "smf_upf_heartbeat" do |t, args|
 
       #Baseline 
       unless baseline_count
-        tshark_log_name = K8sTshark.log_of_tshark_by_label(command, smf_key, smf_value, duration="120")
+        tshark_log_name = K8sTshark.log_of_tshark_by_label(command, smf_key, smf_value, duration: "120")
         if tshark_log_name && 
             !tshark_log_name.empty? && 
             (tshark_log_name =~ /not found/) == nil
@@ -86,7 +86,7 @@ task "smf_upf_heartbeat" do |t, args|
       Log.info { "Main pod delete thread continuing" }
 
 
-      tshark_log_name = K8sTshark.log_of_tshark_by_label(command, smf_key, smf_value, duration="120")
+      tshark_log_name = K8sTshark.log_of_tshark_by_label(command, smf_key, smf_value, duration: "120")
       if tshark_log_name && 
           !tshark_log_name.empty? && 
           (tshark_log_name =~ /not found/) == nil

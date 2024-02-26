@@ -66,7 +66,7 @@ module K8sTshark
       # ClusterTools.exec_by_node_bg("tshark -ni any -a duration:120 -Y nas_5gs.mm.type_id  -T json 2>&1 | tee #{tshark_log_name}", node)
       # Log.info { "after exec by node bg" }
       # resp = tshark_log_name
-      resp = log_of_tshark_by_node_bg(command, node, duration="120")
+      resp = log_of_tshark_by_node_bg(command, node, duration: "120")
     else
       resp = "label key:#{label_key} value: #{label_value} not found"
     end
