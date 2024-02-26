@@ -57,7 +57,7 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
   - Meetings every Tuesday at 8:00am - 9:00am Pacific Time 
   - Meeting minutes are [here](https://docs.google.com/document/d/1yjL079TR0L1q__BRuhREeXfx5MtAmjPzbFZlZUeBsK4/edit)
 
-- Join the weekly [CNTI Best Practices meeting](https://wiki.lfnetworking.org/display/LN/Best+Practices) on Mondays at 8am PT.
+- Join the bi-weekly [CNTI Best Practices meeting](https://wiki.lfnetworking.org/display/LN/Best+Practices) every other Monday at 8am PT.
 - Join the bi-weekly [CNTI Certification meeting](https://wiki.lfnetworking.org/display/LN/Certification) every other Thursday at 8am PT.
 
 - Request an Intro to the Cloud Native Telecom Initiative (CNTI) [here](https://calendly.com/cnti/intro))
