@@ -287,7 +287,7 @@ task "hostport_not_used" do |_, args|
       k8s_resource = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
       Log.for(testsuite_task).debug { "resource: #{k8s_resource}" }
 
-      # per examaple https://github.com/cncf/cnf-testsuite/issues/164#issuecomment-904890977
+      # per examaple https://github.com/cnti-testcatalog/testsuite/issues/164#issuecomment-904890977
       containers = k8s_resource.dig?("spec", "template", "spec", "containers")
       Log.for(testsuite_task).debug { "containers: #{containers}" }
 
@@ -585,7 +585,7 @@ task "immutable_configmap" do |_, args|
     # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
 
     # feature test to see if immutable_configmaps are enabled
-    # https://github.com/cncf/cnf-testsuite/issues/508#issuecomment-758438413
+    # https://github.com/cnti-testcatalog/testsuite/issues/508#issuecomment-758438413
 
     test_config_map_filename = "#{destination_cnf_dir}/config_maps/test_config_map.yml";
 

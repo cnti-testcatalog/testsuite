@@ -86,7 +86,7 @@ _NOTE: Currently Mac OS X users will need to ensure helm 3.1.1 or greater is ins
 - cnf-testsuite needs helm-3.1.1 or greater but is optional as the prerequisite checks will install if not found. You can install helm by checking their [installation methods](https://helm.sh/docs/helm/helm_install/).
 - Checkout the source code with git:
   ```
-  git clone git@github.com:cncf/cnf-testsuite.git
+  git clone git@github.com:cnti-testcatalog/testsuite.git
   ```
 - Change directory into the source:
   ```
@@ -173,7 +173,7 @@ To use CoreDNS as an example CNF. Download the testsuite configuration to test C
 
 - Make sure you are in your cnf-testsuite/ source repo checkout directory and do the following:
   ```
-  curl -o cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
+  curl -o cnf-testsuite.yml https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
   ```
 - Prepare the test suite to use the CNF by running:
   ```
@@ -218,7 +218,7 @@ The following would run only the platform tests:
 
 You can also run via `crystal` by replacing the `./cnf-testsuite` with `crystal spec src/cnf-testsuite.cr` and then the argument.
 
-#### More Example Usage (also see the [complete usage documentation](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md))
+#### More Example Usage (also see the [complete usage documentation](https://github.com/cnti-testcatalog/testsuite/blob/main/USAGE.md))
 
 ```
 # These assume you've already run the cnf_setup pointing at a cnf-testsuite.yml config above. You can always specify your config at the end of each command as well, eg:
@@ -276,7 +276,7 @@ protoc -I.  --crystal_out . openmetrics_data_model.proto
 
 ### Ready to Bring Your Own CNF?
 
-You can check out our [CNF_TESTSUITE_YML_USAGE.md](https://github.com/cncf/cnf-testsuite/blob/main/CNF_TESTSUITE_YML_USAGE.md) document on what is required to bring or use your own CNF.
+You can check out our [CNF_TESTSUITE_YML_USAGE.md](https://github.com/cnti-testcatalog/testsuite/blob/main/CNF_TESTSUITE_YML_USAGE.md) document on what is required to bring or use your own CNF.
 
 - Follow the [INSTALL](INSTALL.md) or [SOURCE-INSTALL](SOURCE-INSTALL.md) to build the binary.
-- Now head over to [CNF_TESTSUITE_YML_USAGE.md](https://github.com/cncf/cnf-testsuite/blob/main/CNF_TESTSUITE_YML_USAGE.md) for more detailed steps.
+- Now head over to [CNF_TESTSUITE_YML_USAGE.md](https://github.com/cnti-testcatalog/testsuite/blob/main/CNF_TESTSUITE_YML_USAGE.md) for more detailed steps.

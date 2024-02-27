@@ -10,6 +10,13 @@ VIPS=(
     147.75.108.64/28
     147.75.202.0/28)
 
+TOKEN=$1
+
+if [ -z "$1" ]; then
+     echo "USAGE: sh ./create_runners.sh <GITHUB_RUNNER_TOKEN>"
+     exit 1
+fi
+
 
 RUNNER_COUNT=0
 for node in "${!RUNNERS[@]}"; do
