@@ -1,22 +1,11 @@
 require "cluster_tools"
 module UERANSIM 
-  # MYSQL_PORT = "3306" 
-  # def self.match()
-  #   ClusterTools.local_match_by_image_name(["mysql/mysql-server","bitnami/mysql"])
-  #   # ClusterTools.local_match_by_image_name("bitnami/mysql")
-  # end
 
   def self.uninstall
     Log.for("verbose").info { "uninstall_ueransim" } 
     Helm.delete("ueransim")
   end
 
-  # todo make this work without having the test-suite src
-  # def self.install
-  #   Log.info {"Installing ueransim "}
-  #   Helm.install("ueransim")
-  #   KubectlClient::Get.resource_wait_for_install("Pod", "ueransim")
-  # end
 
   def self.install(config)
     Log.info {"Installing ueransim with 5g config"}
@@ -51,8 +40,9 @@ module UERANSIM
         Log.info { "Found ueransim ... deleting" }
         Helm.delete("ueransim")
       end
-      Helm.helm_repo_add("openverso","https://gradiant.github.io/openverso-charts/")
-      Helm.fetch("openverso/ueransim-gnb --version 0.2.5 --untar")
+      #Helm.helm_repo_add("openverso","https://gradiant.github.io/openverso-charts/")
+      # Helm.fetch("openverso/ueransim-gnb --version 0.2.5 --untar")
+      Helm.fetch("oci://registry-1.docker.io/gradiant/ueransim-gnb --version 0.2.5 --untar")
 
       protectionScheme = config.cnf_config[:fiveG_core][:protectionScheme]
       unless protectionScheme.empty?

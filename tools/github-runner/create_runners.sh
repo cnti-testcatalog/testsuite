@@ -1,26 +1,19 @@
 #!/bin/bash
 
 RUNNERS=(
-    136.144.55.87
-    136.144.55.243
-    139.178.69.151)
+       136.144.55.87
+       136.144.55.243
+       139.178.69.151)
 
 VIPS=(
-    147.75.202.1/28
-    147.75.108.65/28
-    147.75.89.177/28)
-
-TOKEN=$1
-
-if [ -z "$1" ]; then
-   echo "USAGE: sh ./create_runners.sh <GITHUB_RUNNER_TOKEN>"
-   exit 1
-fi
+    147.75.89.176/28
+    147.75.108.64/28
+    147.75.202.0/28)
 
 
 RUNNER_COUNT=0
 for node in "${!RUNNERS[@]}"; do
-    export RUNNER_IMAGE="conformance/github-runner:v2.303.0-4" # don't forget the v
+    export RUNNER_IMAGE="conformance/github-runner:v2.313.0" # don't forget the v
     ssh root@${RUNNERS[$node]} "docker pull $RUNNER_IMAGE"
     RUNNERS_PER_NODE=4
     until [ $RUNNERS_PER_NODE -eq 0 ]; do

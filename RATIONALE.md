@@ -222,14 +222,6 @@ Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . Wiley
 
 > Service externalIPs can be used for a MITM attack (CVE-2020-8554). Restrict externalIPs or limit to a known set of addresses. See: https://github.com/kyverno/kyverno/issues/1367
 
-#### *To check if any containers are running as a root user (checks the user outside the container that is running dockerd)*: [non_root_user](docs/LIST_OF_TESTS.md#root-user)
-
-> *Even with other security controls used within a Linux system running containers, 
-such as namespaces that segregate access between pods in Kubernetes and OpenShift or 
-containers within a runtime, it is highly advisable never to run a container as the 
-root user."* Binnie, Chris; McCune, Rory (2021-06-17T23:58:59). Cloud Native Security . 
-Wiley. Kindle Edition. 
-
 #### *To check if any containers allow for privilege escalation*: [privilege_escalation](docs/LIST_OF_TESTS.md#privilege-escalation)
 
 > *When [privilege escalation](https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation) is [enabled for a container](https://hub.armo.cloud/docs/c-0016), it will allow setuid binaries to change the effective user ID, allowing processes to turn on extra capabilities. 

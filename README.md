@@ -1,24 +1,24 @@
-# CNF Test Suite
+# CNTI Test Catalog
 
 | Main                                                                                                                                        |
 | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| [![Build Status](https://github.com/cnti-testcatalog/testsuite/workflows/Crystal%20Specs/badge.svg)](https://github.com/cnti-testcatalog/testsuite/actions) |
+| [![Build Status](https://github.com/cncf/cnf-testsuite/workflows/Crystal%20Specs/badge.svg)](https://github.com/cncf/cnf-testsuite/actions) |
 
-The CNF Test Suite is a tool that validates telco application's (i.e. [Cloud Native Network Functions - CNFs)](https://github.com/cnti-testcatalog/testsuite/blob/main/EXAMPLE-CNFS.md) adherence to [cloud native principles](https://networking.cloud-native-principles.org/) and best practices.
+The CNTI Test Catalog is a tool that validates telco application's adherence to [cloud native principles](https://networking.cloud-native-principles.org/) and best practices. 
 
-This Test Suite initiative works closely with the [CNF WG](https://github.com/cncf/cnf-wg) which determines requirements for the CNF Test Suite program.
+This Test Catalog focus area is one part of LF Networking's [Cloud Native Telecom Initiative (CNTI)](https://wiki.lfnetworking.org/pages/viewpage.action?pageId=113213592) and works closely with the [CNTI Best Practices](https://wiki.lfnetworking.org/display/LN/Best+Practices) and [CNTI Certification](https://wiki.lfnetworking.org/display/LN/Certification) focus areas.
 
 ## Installation and Usage
 
-To get the CNF Test Suite up and running, see the [Installation Guide](INSTALL.md).
+To get the CNTI Test Catalog up and running, see the [Installation Guide](INSTALL.md).
 
 #### To give it a try immediately you can use these quick install steps
 
 Prereqs: kubernetes cluster, wget, curl, helm 3.1.1 or greater on your system already.
 
-1. Install the latest test suite binary: `source <(curl -s https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/curl_install.sh)`
+1. Install the latest test suite binary: `source <(curl -s https://raw.githubusercontent.com/cncf/cnf-testsuite/main/curl_install.sh)`
 2. Run `setup` to prepare the cnf-testsuite: `cnf-testsuite setup`
-3. Pull down an example CNF configuration to try: `curl -o cnf-testsuite.yml https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/example-cnfs/coredns/cnf-testsuite.yml`
+3. Pull down an example CNF configuration to try: `curl -o cnf-testsuite.yml https://raw.githubusercontent.com/cncf/cnf-testsuite/main/example-cnfs/coredns/cnf-testsuite.yml`
 4. Initialize the test suite for using the CNF: `cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml`
 5. Run all of application/workload tests: `cnf-testsuite workload`
 
@@ -28,7 +28,7 @@ Check out the [usage documentation](USAGE.md) for more info about invoking comma
 
 ## Cloud Native Categories
 
-The CNF Test Suite will inspect CNFs for the following characteristics:
+The CNTI Test Catalog will inspect CNFs for the following characteristics:
 
 - **Configuration** - The CNF's configuration should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces.
 - **Compatibility, Installability & Upgradability** - CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements while using standard, in-band deployment tools such as Helm (version 3) charts.
@@ -45,31 +45,32 @@ See the [Test Categories Documentation](TEST-CATEGORIES.md) for a complete overv
 Welcome! We gladly accept contributions on new tests, example CNFs, updates to documentation, enhancements, bug reports, and more.
 
 - [Contributing guide](CONTRIBUTING.md)
-- [Good first issues](https://github.com/cnti-testcatalog/testsuite/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+- [Good first issues](https://github.com/cncf/cnf-testsuite/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 ## Communication and community meetings
 
-- Join the conversation on [CNCF's Slack](https://slack.cncf.io/) channels
-  - [#cnf-testsuite](https://cloud-native.slack.com/archives/C01V28MLYEP)
-  - [#cnf-testsuite-dev](https://cloud-native.slack.com/archives/C014TNCEX8R)
-- Join the weekly Office Hours meeting
+- Join the conversation on [LFN Tech's Slack](https://lfntech.slack.com/) channels
+  - [#cnti-testcatalog-testsuite](https://lfntech.slack.com/archives/C06GM6ZEPUP)
+  - [#cnti-testsuite-dev](https://lfntech.slack.com/archives/C06HQGWK4NL)
+- Join the weekly CNTI Test Catalog meeting
 
-  - Meetings every Tuesday at 7:15am - 8am Pacific Time 
-  - Meeting minutes are [here](https://docs.google.com/document/d/1IbrgjqIkOCvrrSG0DRE6X62UUZpBq-818Mn8q0nkkd0/edit)
+  - Meetings every Tuesday at 8:00am - 9:00am Pacific Time 
+  - Meeting minutes are [here](https://docs.google.com/document/d/1yjL079TR0L1q__BRuhREeXfx5MtAmjPzbFZlZUeBsK4/edit)
 
-- Join the weekly [CNF Working Group meeting](https://github.com/cncf/cnf-wg#recurring-meetings) on Mondays.
+- Join the bi-weekly [CNTI Best Practices meeting](https://wiki.lfnetworking.org/display/LN/Best+Practices) every other Monday at 8am PT.
+- Join the bi-weekly [CNTI Certification meeting](https://wiki.lfnetworking.org/display/LN/Certification) every other Thursday at 8am PT.
 
-- Request an Intro to the CNF Certification [here](https://calendly.com/cnfcertification/intro)
+- Request an Intro to the Cloud Native Telecom Initiative (CNTI) [here](https://calendly.com/cnti/intro))
 
-## Presentations
+## Past Presentations
 
 **CNF Test Suite Demo**
 - [Recording](https://drive.google.com/file/d/1SBHE5Dqx6Sa-m83WODbCEbbdiB2_l_U2/view?usp=sharing)
-- [Slides](https://github.com/cnti-testcatalog/testsuite/files/6857515/SHARED-COMMON.CNF.Test.Suite.Demo.and.CNF.initiatives.overview.2021-06-29.pdf) (PDF)
+- [Slides](https://github.com/cncf/cnf-testsuite/files/6857515/SHARED-COMMON.CNF.Test.Suite.Demo.and.CNF.initiatives.overview.2021-06-29.pdf) (PDF)
 
 **Crystal in the Cloud: A cloud native journey at Crystal 1.0 Conference**
 - [Recording](https://youtu.be/n8g60VglyUw)
-- [Slides](https://github.com/cnti-testcatalog/testsuite/files/6785788/Crystal.1.0.Crystal.in.the.Cloud_.CNF.Test.Suite.pdf) (PDF)
+- [Slides](https://github.com/cncf/cnf-testsuite/files/6785788/Crystal.1.0.Crystal.in.the.Cloud_.CNF.Test.Suite.pdf) (PDF)
 
 
 ## Implementation overview

@@ -109,7 +109,7 @@ namespace "platform" do
       next
     end
     Log.info { "Running POC: metrics_server" }
-    task_response = CNFManager::Task.task_runner(args, check_cnf_installed=false) do |args|
+    task_response = CNFManager::Task.task_runner(args, check_cnf_installed: false) do |args|
 
       found = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::METRICS_SERVER)
       if found

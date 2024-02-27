@@ -131,6 +131,7 @@ task "ip_addresses" do |_, args|
     emoji_network_runtime = "📶🏃⏲️"
     helm_directory = config.cnf_config[:helm_directory]
     helm_chart_path = config.cnf_config[:helm_chart_path]
+    Log.info { "Path: #{helm_chart_path}" }
     if File.directory?(helm_chart_path)
       # Switch to the helm chart directory
       Dir.cd(helm_chart_path)
@@ -242,7 +243,7 @@ task "nodeport_not_used" do |_, args|
     release_name = config.cnf_config[:release_name]
     service_name  = config.cnf_config[:service_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    task_response = CNFManager.workload_resource_test(args, config, check_containers:false, check_service: true) do |resource, container, initialized|
+    task_response = CNFManager.workload_resource_test(args, config, check_containers: false, check_service: true) do |resource, container, initialized|
       Log.for(testsuite_task).info { "nodeport_not_used resource: #{resource}" }
       if resource["kind"].downcase == "service"
         Log.for(testsuite_task).info { "resource kind: #{resource}" }
@@ -279,7 +280,7 @@ task "hostport_not_used" do |_, args|
     service_name  = config.cnf_config[:service_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
 
-    task_response = CNFManager.workload_resource_test(args, config, check_containers:false, check_service: true) do |resource, container, initialized|
+    task_response = CNFManager.workload_resource_test(args, config, check_containers: false, check_service: true) do |resource, container, initialized|
       Log.for(testsuite_task).info { "hostport_not_used resource: #{resource}" }
       test_passed=true
       Log.for(testsuite_task).info { "resource kind: #{resource}" }
@@ -377,7 +378,7 @@ task "secrets_used" do |_, args|
     # Parse the cnf-testsuite.yml
     resp = ""
     emoji_probe="🧫"
-    task_response = CNFManager.workload_resource_test(args, config, check_containers=false) do |resource, containers, volumes, initialized|
+    task_response = CNFManager.workload_resource_test(args, config, check_containers: false) do |resource, containers, volumes, initialized|
       Log.for(testsuite_task).info { "resource: #{resource}" }
       Log.for(testsuite_task).info { "volumes: #{volumes}" }
 
@@ -624,7 +625,7 @@ task "immutable_configmap" do |_, args|
       volumes_test_results = [] of MutableConfigMapsVolumesResult
       envs_with_mutable_configmap = [] of MutableConfigMapsInEnvResult
 
-      cnf_manager_workload_resource_task_response = CNFManager.workload_resource_test(args, config, check_containers=false, check_service=true) do |resource, containers, volumes, initialized|
+      cnf_manager_workload_resource_task_response = CNFManager.workload_resource_test(args, config, check_containers: false, check_service: true) do |resource, containers, volumes, initialized|
         Log.for(testsuite_task).info { "resource: #{resource}" }
         Log.for(testsuite_task).info { "volumes: #{volumes}" }
 
