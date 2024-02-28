@@ -66,7 +66,7 @@ describe "SampleUtils" do
 
   it  "'task_points(, skipped)' should return the amount of points for a skipped test", tags: ["points"]  do
     # default
-    (CNFManager::Points.task_points("liveness", CNFManager::Points::Results::ResultStatus::Skipped)).should eq(0)
+    (CNFManager::Points.task_points("liveness", CNFManager::ResultStatus::Skipped)).should eq(0)
   end
 
   # todo add mock test for testing require tests (privilege mode is no longer required)

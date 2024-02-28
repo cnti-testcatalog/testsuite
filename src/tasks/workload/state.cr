@@ -478,7 +478,7 @@ task "database_persistence" do |_, args|
       end
       failed_emoji = "(ভ_ভ) ރ 💾"
       if all_mysql_elastic_statefulset
-        resp = upsert_dynamic_task(testsuite_task,CNFManager::Points::Results::ResultStatus::Pass5, "✔️  PASSED: CNF uses database with cloud-native persistence #{emoji_probe}", task_start_time)
+        resp = upsert_dynamic_task(testsuite_task,CNFManager::ResultStatus::Pass5, "✔️  PASSED: CNF uses database with cloud-native persistence #{emoji_probe}", task_start_time)
       else
         resp = upsert_failed_task(testsuite_task,"✖️  FAILED: CNF uses database without cloud-native persistence #{failed_emoji}", task_start_time)
       end

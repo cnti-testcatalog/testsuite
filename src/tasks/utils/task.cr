@@ -23,7 +23,7 @@ module CNFManager
       end
     end
 
-    def self.task_runner(args, check_cnf_installed=true, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
+    def self.task_runner(args, task : Sam::Task|Nil=nil, check_cnf_installed=true, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | CNFManager::TestcaseResult | Nil)
       LOGGING.info("task_runner args: #{args.inspect}")
 
       CNFManager::Points::Results.ensure_results_file!
@@ -33,14 +33,14 @@ module CNFManager
       end
 
       if check_cnf_config(args)
-        single_task_runner(args, &block)
+        single_task_runner(args, task, &block)
       else
-        all_cnfs_task_runner(args, &block)
+        all_cnfs_task_runner(args, task, &block)
       end
     end
 
     # TODO give example for calling
-    def self.all_cnfs_task_runner(args, &block : Sam::Args, CNFManager::Config  -> String | Colorize::Object(String) | Nil)
+    def self.all_cnfs_task_runner(args, task : Sam::Task|Nil=nil, &block : Sam::Args, CNFManager::Config  -> String | Colorize::Object(String) | CNFManager::TestcaseResult | Nil)
       cnf_configs = CNFManager.cnf_config_list(silent: true)
       Log.info { "CNF configs found: #{cnf_configs.size}" }
 
@@ -51,13 +51,13 @@ module CNFManager
         cnf_configs.map do |x|
           new_args = Sam::Args.new(args.named, args.raw)
           new_args.named["cnf-config"] = x
-          single_task_runner(new_args, &block)
+          single_task_runner(new_args, task, &block)
         end
       end
     end
 
     # TODO give example for calling
-    def self.single_task_runner(args, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | Nil)
+    def self.single_task_runner(args, task : Sam::Task|Nil=nil, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | CNFManager::TestcaseResult | Nil)
       LOGGING.debug("single_task_runner args: #{args.inspect}")
 
       begin
@@ -110,7 +110,16 @@ module CNFManager
                                                           },
                                             image_registry_fqdns: Hash(String, String).new} )
         end
+        test_start_time = Time.utc
+        if task
+          test_name = task.as(Sam::Task).name.as(String)
+          Log.for(test_name).info { "Starting test" }
+          Log.for(test_name).debug { "cnf_config: #{config}" }
+        end
         ret = yield args, config
+        if ret.is_a?(CNFManager::TestcaseResult)
+          upsert_decorated_task(test_name, ret.state, ret.result_message, test_start_time)
+        end
         #todo lax mode, never returns 1
         if args.raw.includes? "strict"
           if CNFManager::Points.failed_required_tasks.size > 0

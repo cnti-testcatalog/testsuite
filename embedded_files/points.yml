@@ -250,21 +250,26 @@
   tags: [security, dynamic, workload, cert, normal]
 
 - name: log_output
+  emoji: "📶☠️"
   tags: [observability, dynamic, workload, essential, cert]
   pass: 100
-- name: prometheus_traffic 
+- name: prometheus_traffic
+  emoji: "📶☠️"
   tags: [observability, dynamic, workload, cert, bonus]
   pass: 1 
   fail: 0 
-- name: open_metrics 
+- name: open_metrics
+  emoji: "📶☠️"
   tags: [observability, dynamic, workload, cert, bonus]
   pass: 1 
   fail: 0 
-- name: routed_logs 
+- name: routed_logs
+  emoji: "📶☠️"
   tags: [observability, dynamic, workload, cert, bonus]
   pass: 1 
   fail: 0 
-- name: tracing 
+- name: tracing
+  emoji: "⎈🚀"
   tags: [observability, dynamic, workload, cert, bonus]
   pass: 1 
   fail: 0 
