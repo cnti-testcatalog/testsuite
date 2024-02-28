@@ -35,41 +35,31 @@ task "security", [
 end
 
 desc "Check if pods in the CNF use sysctls with restricted values"
-task "sysctls" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "sysctls"
-    Log.for(testsuite_task).info { "Starting test" }
+task "sysctls" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     Kyverno.install
-
-    emoji_security = "🔓🔑"
     policy_path = Kyverno.policy_path("pod-security/baseline/restrict-sysctls/restrict-sysctls.yaml")
     failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
 
     if failures.size == 0
-      resp = upsert_passed_task(testsuite_task, "✔️  PASSED: No restricted values found for sysctls #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No restricted values found for sysctls")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Restricted values for are being used for sysctls #{emoji_security}", task_start_time)
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
         end
       end
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Restricted values for are being used for sysctls")
     end
   end
 end
 
 desc "Check if the CNF has services with external IPs configured"
-task "external_ips" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "external_ips"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "external_ips" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     Kyverno.install
-    emoji_security = "🔓🔑"
     policy_path = Kyverno.best_practice_policy("restrict-service-external-ips/restrict-service-external-ips.yaml")
     failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
@@ -77,28 +67,22 @@ task "external_ips" do |_, args|
     failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, failures)
     
     if failures.size == 0
-      resp = upsert_passed_task(testsuite_task, "✔️  PASSED: Services are not using external IPs #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Services are not using external IPs")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Services are using external IPs #{emoji_security}", task_start_time)
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
         end
       end
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Services are using external IPs")
     end
   end
 end
 
 desc "Check if the CNF or the cluster resources have custom SELinux options"
-task "selinux_options" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "selinux_options"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "selinux_options" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     Kyverno.install
-
-    emoji_security = "🔓🔑"
     check_policy_path = Kyverno::CustomPolicies::SELinuxEnabled.new.policy_path
     check_failures = Kyverno::PolicyAudit.run(check_policy_path, EXCLUDE_NAMESPACES)
 
@@ -113,59 +97,47 @@ task "selinux_options" do |_, args|
     check_failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, check_failures)
 
     if check_failures.size == 0
-      # upsert_skipped_task("selinux_options", "⏭️  🏆 SKIPPED: Pods are not using SELinux options #{emoji_security}", Time.utc)
-      upsert_na_task(testsuite_task, "⏭️  🏆 N/A: Pods are not using SELinux #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::NA, "Pods are not using SELinux")
     else
       failures = Kyverno.filter_failures_for_cnf_resources(resource_keys, disallow_failures)
 
       if failures.size == 0
-        resp = upsert_passed_task(testsuite_task, "✔️  🏆 PASSED: Pods are not using custom SELinux options that can be used for privilege escalations #{emoji_security}", task_start_time)
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Pods are not using custom SELinux options that can be used for privilege escalations")
       else
-        resp = upsert_failed_task(testsuite_task, "✖️  🏆 FAILED: Pods are using custom SELinux options that can be used for privilege escalations #{emoji_security}", task_start_time)
         failures.each do |failure|
           failure.resources.each do |resource|
             puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
           end
         end
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Pods are using custom SELinux options that can be used for privilege escalations")
       end
-
     end
-
   end
 end
 
 desc "Check if the CNF is running containers with container sock mounts"
-task "container_sock_mounts" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "container_sock_mounts"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "container_sock_mounts" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     Kyverno.install
-    emoji_security = "🔓🔑"
     policy_path = Kyverno.best_practice_policy("disallow_cri_sock_mount/disallow_cri_sock_mount.yaml")
     failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 
     if failures.size == 0
-      resp = upsert_passed_task(testsuite_task, "✔️  🏆 PASSED: Container engine daemon sockets are not mounted as volumes #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Container engine daemon sockets are not mounted as volumes")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  🏆 FAILED: Container engine daemon sockets are mounted as volumes #{emoji_security}", task_start_time)
       failures.each do |failure|
         failure.resources.each do |resource|
           puts "#{resource.kind} #{resource.name} in #{resource.namespace} namespace failed. #{failure.message}".colorize(:red)
         end
       end
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Container engine daemon sockets are mounted as volumes")
     end
   end
 end
 
 desc "Check if any containers are running in privileged mode"
-task "privileged" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "privileged"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "privileged" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     white_list_container_names = config.cnf_config[:white_list_container_names]
     VERBOSE_LOGGING.info "white_list_container_names #{white_list_container_names.inspect}" if check_verbose(args)
     violation_list = [] of NamedTuple(kind: String, name: String, container: String, namespace: String)
@@ -184,383 +156,298 @@ task "privileged" do |_, args|
       end
     end
     Log.debug { "violator list: #{violation_list.flatten}" }
-    emoji_security="🔓🔑"
-    if task_response 
-      upsert_passed_task(testsuite_task, "✔️  PASSED: No privileged containers #{emoji_security}", task_start_time)
+    if task_response
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No privileged containers")
     else
-      upsert_failed_task(testsuite_task, "✖️  FAILED: Found #{violation_list.size} privileged containers #{emoji_security}", task_start_time)
       violation_list.each do |violation|
         stdout_failure("Privileged container #{violation[:container]} in #{violation[:kind]}/#{violation[:name]} in the #{violation[:namespace]} namespace")
       end
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found #{violation_list.size} privileged containers")
     end
   end
 end
 
 desc "Check if any containers are running in privileged mode"
-task "privilege_escalation", ["kubescape_scan"] do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "privilege_escalation"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "privilege_escalation", ["kubescape_scan"] do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Allow privilege escalation")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
-    emoji_security="🔓🔑"
-    if test_report.failed_resources.size == 0 
-      upsert_passed_task(testsuite_task, "✔️  PASSED: No containers that allow privilege escalation were found #{emoji_security}", task_start_time)
+    if test_report.failed_resources.size == 0
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No containers that allow privilege escalation were found")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Found containers that allow privilege escalation #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
-      resp
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found containers that allow privilege escalation")
     end
   end
 end
 
 desc "Check if an attacker can use symlink for arbitrary host file system access."
-task "symlink_file_system", ["kubescape_scan"] do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "symlink_file_system"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "symlink_file_system", ["kubescape_scan"] do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "CVE-2021-25741 - Using symlink for arbitrary host file system access.")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
-    emoji_security="🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task(testsuite_task, "✔️  PASSED: No containers allow a symlink attack #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No containers allow a symlink attack")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Found containers that allow a symlink attack #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
-      resp
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found containers that allow a symlink attack")
     end
   end
 end
 
 desc "Check if applications credentials are in configuration files."
-task "application_credentials", ["kubescape_scan"] do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "application_credentials"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "application_credentials", ["kubescape_scan"] do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Applications credentials in configuration files")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
-    emoji_security="🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task(testsuite_task, "✔️  PASSED: No applications credentials in configuration files #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No applications credentials in configuration files")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Found applications credentials in configuration files #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
-      resp
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found applications credentials in configuration files")
     end
   end
 end
 
 desc "Check if potential attackers may gain access to a POD and inherit access to the entire host network. For example, in AWS case, they will have access to the entire VPC."
-task "host_network", ["kubescape_scan"] do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "host_network"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "host_network", ["kubescape_scan"] do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "HostNetwork access")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
-    emoji_security="🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task(testsuite_task, "✔️  PASSED: No host network attached to pod #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No host network attached to pod")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Found host network attached to pod #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
-      resp
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found host network attached to pod")
     end
   end
 end
 
 desc "Potential attacker may gain access to a POD and steal its service account token. Therefore, it is recommended to disable automatic mapping of the service account tokens in service account configuration and enable it only for PODs that need to use them."
-task "service_account_mapping", ["kubescape_scan"] do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "service_account_mapping"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "service_account_mapping", ["kubescape_scan"] do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Automatic mapping of service account")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
-    emoji_security="🔓🔑"
-    if test_report.failed_resources.size == 0 
-      upsert_passed_task(testsuite_task, "✔️  PASSED: No service accounts automatically mapped #{emoji_security}", task_start_time)
+    if test_report.failed_resources.size == 0
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No service accounts automatically mapped")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Service accounts automatically mapped #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
-      resp
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Service accounts automatically mapped")
     end
   end
 end
 
 desc "Check if security services are being used to harden the application"
-task "linux_hardening", ["kubescape_scan"] do |_, args|
+task "linux_hardening", ["kubescape_scan"] do |t, args|
   next if args.named["offline"]?
 
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "linux_hardening"
-    Log.for(testsuite_task).info { "Starting test" }
-
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Linux hardening")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
-    emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task(testsuite_task, "✔️  ✨PASSED: Security services are being used to harden applications #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Security services are being used to harden applications")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  ✨FAILED: Found resources that do not use security services #{emoji_security}", task_start_time)
-        test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
-        stdout_failure("Remediation: #{test_report.remediation}")
-      resp
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found resources that do not use security services")
     end
   end
 end
 
 desc "Check if the containers have insecure capabilities."
-task "insecure_capabilities", ["kubescape_scan"] do |_, args|
+task "insecure_capabilities", ["kubescape_scan"] do |t, args|
   next if args.named["offline"]?
 
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "insecure_capabilities"
-    Log.for(testsuite_task).info { "Starting test" }
-
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Insecure capabilities")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
-    emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task(testsuite_task, "✔️  PASSED: Containers with insecure capabilities were not found #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Containers with insecure capabilities were not found")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Found containers with insecure capabilities #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
-      resp
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found containers with insecure capabilities")
     end
   end
 end
 
 desc "Check if the containers have resource limits defined."
-task "resource_policies", ["kubescape_scan"] do |_, args|
+task "resource_policies", ["kubescape_scan"] do |t, args|
   next if args.named["offline"]?
 
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "resource_policies"
-    Log.for(testsuite_task).info { "Starting test" }
-
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Resource policies")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
-    emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task(testsuite_task, "✔️  🏆 PASSED: Containers have resource limits defined #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Containers have resource limits defined")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  🏆 FAILED: Found containers without resource limits defined #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
-      resp
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found containers without resource limits defined")
     end
   end
 end
 
 desc "Check Ingress and Egress traffic policy"
-task "ingress_egress_blocked", ["kubescape_scan"] do |_, args|
+task "ingress_egress_blocked", ["kubescape_scan"] do |t, args|
   next if args.named["offline"]?
 
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "ingress_egress_blocked"
-    Log.for(testsuite_task).info { "Starting test" }
-
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Ingress and Egress blocked")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
-    emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task(testsuite_task, "✔️  ✨PASSED: Ingress and Egress traffic blocked on pods #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Ingress and Egress traffic blocked on pods")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  ✨FAILED: Ingress and Egress traffic not blocked on pods #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
-      resp
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Ingress and Egress traffic not blocked on pods")
     end
   end
 end
 
 desc "Check the Host PID/IPC privileges of the containers"
-task "host_pid_ipc_privileges", ["kubescape_scan"] do |_, args|
+task "host_pid_ipc_privileges", ["kubescape_scan"] do |t, args|
   next if args.named["offline"]?
 
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "host_pid_ipc_privileges"
-    Log.for(testsuite_task).info { "Starting test" }
-
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Host PID/IPC privileges")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
-    emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task(testsuite_task, "✔️  PASSED: No containers with hostPID and hostIPC privileges #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No containers with hostPID and hostIPC privileges")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Found containers with hostPID and hostIPC privileges #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
-      resp
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found containers with hostPID and hostIPC privileges")
     end
   end
 end
 
 desc "Check if the containers are running with non-root user with non-root group membership"
-task "non_root_containers", ["kubescape_scan"] do |_, args|
+task "non_root_containers", ["kubescape_scan"] do |t, args|
   next if args.named["offline"]?
 
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "non_root_containers"
-    Log.for(testsuite_task).info { "Starting test" }
-
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Non-root containers")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
-    emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task(testsuite_task, "✔️  🏆 PASSED: Containers are running with non-root user with non-root group membership #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Containers are running with non-root user with non-root group membership")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  🏆 FAILED: Found containers running with root user or user with root group membership #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
-      resp
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found containers running with root user or user with root group membership")
     end
   end
 end
 
 desc "Check that privileged containers are not used"
-task "privileged_containers", ["kubescape_scan" ] do |_, args|
+task "privileged_containers", ["kubescape_scan" ] do |t, args|
   next if args.named["offline"]?
 
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "privileged_containers"
-    Log.for(testsuite_task).info { "Starting test" }
-
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Privileged container")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
-    emoji_security = "🔓🔑"
     #todo whitelist
     if test_report.failed_resources.size == 0
-      upsert_passed_task(testsuite_task, "✔️  🏆 PASSED: No privileged containers were found #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No privileged containers were found")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  🏆 FAILED: Found privileged containers #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
-      resp
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found privileged containers")
     end
   end
 end
 
 desc "Check if containers have immutable file systems"
-task "immutable_file_systems", ["kubescape_scan"] do |_, args|
+task "immutable_file_systems", ["kubescape_scan"] do |t, args|
   next if args.named["offline"]?
 
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "immutable_file_systems"
-    Log.for(testsuite_task).info { "Starting test" }
-
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Immutable container filesystem")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
-    emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task(testsuite_task, "✔️  ✨PASSED: Containers have immutable file systems #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Containers have immutable file systems")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  ✨FAILED: Found containers with mutable file systems #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
-      resp
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found containers with mutable file systems")
     end
   end
 end
 
 desc "Check if containers have hostPath mounts"
-task "hostpath_mounts", ["kubescape_scan"] do |_, args|
+task "hostpath_mounts", ["kubescape_scan"] do |t, args|
   next if args.named["offline"]?
 
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "hostpath_mounts"
-    Log.for(testsuite_task).info { "Starting test" }
-
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Allowed hostPath")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
-    emoji_security = "🔓🔑"
     if test_report.failed_resources.size == 0
-      upsert_passed_task(testsuite_task, "✔️  PASSED: Containers do not have hostPath mounts #{emoji_security}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Containers do not have hostPath mounts")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Found containers with hostPath mounts #{emoji_security}", task_start_time)
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
-      resp
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found containers with hostPath mounts")
     end
   end
 end

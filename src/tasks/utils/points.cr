@@ -556,7 +556,7 @@ module CNFManager
         Log.debug { "task #{task} emoji: #{md["emoji"]?}" }
         resp = md["emoji"]
       else
-        resp = [] of String
+        resp = ""
       end
     end
 

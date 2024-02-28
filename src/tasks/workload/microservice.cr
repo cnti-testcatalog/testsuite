@@ -23,19 +23,13 @@ end
 REASONABLE_STARTUP_BUFFER = 10.0
 
 desc "To check if the CNF has multiple microservices that share a database"
-task "shared_database", ["install_cluster_tools"] do |_, args|
-
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "shared_database"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "shared_database", ["install_cluster_tools"] do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     # todo loop through local resources and see if db match found
     db_match = Netstat::Mariadb.match
     
     if db_match[:found] == false
-      upsert_na_task(testsuite_task, "⏭️  N/A: [shared_database] No MariaDB containers were found", task_start_time)
-      next
+      next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::NA, "[shared_database] No MariaDB containers were found")
     end
 
     resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
@@ -99,26 +93,17 @@ task "shared_database", ["install_cluster_tools"] do |_, args|
       integrated_database_found = true 
     end
 
-    failed_emoji = "(ভ_ভ) ރ 💾"
-    passed_emoji = "🖥️  💾"
-    if integrated_database_found 
-      upsert_failed_task(testsuite_task, "✖️  FAILED: Found a shared database #{failed_emoji}", task_start_time)
+    if integrated_database_found
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found a shared database (ভ_ভ) ރ")
     else
-      upsert_passed_task(testsuite_task, "✔️  PASSED: No shared database found #{passed_emoji}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No shared database found 🖥️")
     end
   end
 end
 
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
-task "reasonable_startup_time" do |_, args|
-  Log.info { "Running reasonable_startup_time test" }
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "reasonable_startup_time"
-    Log.for(testsuite_task).info { "Starting test" }
-
-    Log.for(testsuite_task).debug { "cnf_config: #{config.cnf_config}" }
-
+task "reasonable_startup_time" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     yml_file_path = config.cnf_config[:yml_file_path]
     helm_chart = config.cnf_config[:helm_chart]
     helm_directory = config.cnf_config[:helm_directory]
@@ -133,8 +118,6 @@ task "reasonable_startup_time" do |_, args|
     #TODO check if json is empty
     startup_time = configmap["data"].as_h["startup_time"].as_s
 
-    emoji_fast="🚀"
-    emoji_slow="🐢"
     # Correlation for a slow box vs a fast box 
     # sysbench base fast machine (disk), time in ms 0.16
     # sysbench base slow machine (disk), time in ms 6.55
@@ -188,11 +171,10 @@ task "reasonable_startup_time" do |_, args|
     Log.info { "startup_time: #{startup_time.to_i}" }
 
     if startup_time.to_i <= startup_time_limit
-      upsert_passed_task(testsuite_task, "✔️  PASSED: CNF had a reasonable startup time #{emoji_fast}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "CNF had a reasonable startup time 🚀")
     else
-      upsert_failed_task(testsuite_task, "✖️  FAILED: CNF had a startup time of #{startup_time} seconds #{emoji_slow}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "CNF had a startup time of #{startup_time} seconds 🐢")
     end
-
   end
 end
 
@@ -204,22 +186,17 @@ end
 #    CRYSTAL_ENV=TEST ./cnf-testsuite reasonable_image_size
 #
 desc "Does the CNF have a reasonable container image size (< 5GB)?"
-task "reasonable_image_size" do |_, args|
-  CNFManager::Task.task_runner(args) do |args,config|
-    task_start_time = Time.utc
-    testsuite_task = "reasonable_image_size"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "reasonable_image_size" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args,config|
     docker_insecure_registries = [] of String
     if config.cnf_config[:docker_insecure_registries]? && !config.cnf_config[:docker_insecure_registries].nil?
       docker_insecure_registries = config.cnf_config[:docker_insecure_registries].not_nil!
     end
     unless Dockerd.install(docker_insecure_registries)
-      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: Skipping reasonable_image_size: Dockerd tool failed to install", task_start_time)
-      next
+      next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Skipping reasonable_image_size: Dockerd tool failed to install")
     end
 
-    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
+    Log.for(t.name).debug { "cnf_config: #{config}" }
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
       yml_file_path = config.cnf_config[:yml_file_path]
@@ -295,7 +272,7 @@ task "reasonable_image_size" do |_, args|
             test_passed=false
           end
         rescue ex
-          Log.for(testsuite_task).error { "invalid compressed_size: #{fqdn_image} = '#{compressed_size.to_s}', #{ex.message}".colorize(:red) }
+          Log.for(t.name).error { "invalid compressed_size: #{fqdn_image} = '#{compressed_size.to_s}', #{ex.message}".colorize(:red) }
           test_passed = false
         end
       else
@@ -304,14 +281,10 @@ task "reasonable_image_size" do |_, args|
       test_passed
     end
 
-    emoji_image_size="⚖️👀"
-    emoji_small="🐜"
-    emoji_big="🦖"
-
     if task_response
-      upsert_passed_task(testsuite_task, "✔️  PASSED: Image size is good #{emoji_small} #{emoji_image_size}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Image size is good 🐜")
     else
-      upsert_failed_task(testsuite_task, "✖️  FAILED: Image size too large #{emoji_big} #{emoji_image_size}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Image size too large 🦖")
     end
   end
 end
@@ -326,13 +299,8 @@ task "process_search" do |_, args|
 end
 
 desc "Do the containers in a pod have only one process type?"
-task "single_process_type" do |_, args|
-  CNFManager::Task.task_runner(args) do |args,config|
-    task_start_time = Time.utc
-    testsuite_task = "single_process_type"
-    Log.for(testsuite_task).info { "Starting test" }
-
-    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
+task "single_process_type" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args,config|
     fail_msgs = [] of String
     all_node_proc_statuses = [] of NamedTuple(node_name: String,
                                               proc_statuses: Array(String))
@@ -347,15 +315,15 @@ task "single_process_type" do |_, args|
         containers = KubectlClient::Get.resource_containers(kind, resource[:name], resource[:namespace])
         pods.map do |pod|
           pod_name = pod.dig("metadata", "name")
-          Log.for(testsuite_task).info { "pod_name: #{pod_name}" }
+          Log.for(t.name).info { "pod_name: #{pod_name}" }
 
           status = pod["status"]
           if status["containerStatuses"]?
               container_statuses = status["containerStatuses"].as_a
-            Log.for(testsuite_task).info { "container_statuses: #{container_statuses}" }
-            Log.for(testsuite_task).info { "pod_name: #{pod_name}" }
+            Log.for(t.name).info { "container_statuses: #{container_statuses}" }
+            Log.for(t.name).info { "pod_name: #{pod_name}" }
             nodes = KubectlClient::Get.nodes_by_pod(pod)
-            Log.for(testsuite_task).info { "nodes_by_resource done" }
+            Log.for(t.name).info { "nodes_by_resource done" }
             node = nodes.first
             container_statuses.map do |container_status|
               container_name = container_status.dig("name")
@@ -363,15 +331,15 @@ task "single_process_type" do |_, args|
               container_id = container_status.dig("containerID").as_s
               ready = container_status.dig("ready").as_bool
               next unless ready 
-              Log.for(testsuite_task).info { "containerStatuses container_id #{container_id}" }
+              Log.for(t.name).info { "containerStatuses container_id #{container_id}" }
 
               pid = ClusterTools.node_pid_by_container_id(container_id, node)
-              Log.for(testsuite_task).info { "node pid (should never be pid 1): #{pid}" }
+              Log.for(t.name).info { "node pid (should never be pid 1): #{pid}" }
 
               next unless pid
 
               node_name = node.dig("metadata", "name").as_s
-              Log.for(testsuite_task).info { "node name : #{node_name}" }
+              Log.for(t.name).info { "node name : #{node_name}" }
 #              filtered_proc_statuses = all_node_proc_statuses.find {|x| x[:node_name] == node_name}
 #              proc_statuses = filtered_proc_statuses ? filtered_proc_statuses[:proc_statuses] : nil
 #              Log.debug { "node statuses : #{proc_statuses}" }
@@ -389,12 +357,12 @@ task "single_process_type" do |_, args|
                                                                           proc_statuses)
 
               statuses.map do |status|
-                Log.for(testsuite_task).debug { "status: #{status}" }
-                Log.for(testsuite_task).info { "status cmdline: #{status["cmdline"]}" }
+                Log.for(t.name).debug { "status: #{status}" }
+                Log.for(t.name).info { "status cmdline: #{status["cmdline"]}" }
                 status_name = status["Name"].strip
                 ppid = status["PPid"].strip
-                Log.for(testsuite_task).info { "status name: #{status_name}" }
-                Log.for(testsuite_task).info { "previous status name: #{previous_process_type}" }
+                Log.for(t.name).info { "status name: #{status_name}" }
+                Log.for(t.name).info { "previous status name: #{previous_process_type}" }
                 # Fail if more than one process type
                 #todo make work if processes out of order
                 if status_name != previous_process_type && 
@@ -404,7 +372,7 @@ task "single_process_type" do |_, args|
                                                                                     status_name, 
                                                                                     statuses)
                   unless verified  
-                    Log.for(testsuite_task).info { "multiple proc types detected verified: #{verified}" }
+                    Log.for(t.name).info { "multiple proc types detected verified: #{verified}" }
                     fail_msg = "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{statuses.map{|x|x["cmdline"]?}.compact.uniq.join(", ")})"
                     unless fail_msgs.find{|x| x== fail_msg}
                       puts fail_msg.colorize(:red)
@@ -421,33 +389,24 @@ task "single_process_type" do |_, args|
         test_passed
       end
     end
-    emoji_image_size="⚖️👀"
-    emoji_small="🐜"
-    emoji_big="🦖"
 
     if task_response
-      upsert_passed_task(testsuite_task, "✔️  🏆 PASSED: Only one process type used #{emoji_small} #{emoji_image_size}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Only one process type used")
     else
-      upsert_failed_task(testsuite_task, "✖️  🏆 FAILED: More than one process type used #{emoji_big} #{emoji_image_size}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "More than one process type used")
     end
   end
 end
 
 desc "Are the SIGTERM signals handled?"
-task "zombie_handled" do |_, args|
-  CNFManager::Task.task_runner(args) do |args,config|
-    task_start_time = Time.utc
-    testsuite_task = "zombie_handled"
-    Log.for(testsuite_task).info { "Starting test" }
-
-    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
-
+task "zombie_handled" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args,config|
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false ) do |resource, container, initialized|
       ClusterTools.all_containers_by_resource?(resource, resource[:namespace]) do | container_id, container_pid_on_node, node, container_proctree_statuses, container_status| 
         resp = ClusterTools.exec_by_node("runc --root /run/containerd/runc/k8s.io/ state #{container_id}", node)
-        Log.for(testsuite_task).info { "resp[:output] #{resp[:output]}" }
+        Log.for(t.name).info { "resp[:output] #{resp[:output]}" }
         bundle_path = JSON.parse(resp[:output].to_s)
-        Log.for(testsuite_task).info { "bundle path: #{bundle_path["bundle"]} "}
+        Log.for(t.name).info { "bundle path: #{bundle_path["bundle"]} "}
         ClusterTools.exec_by_node("nerdctl --namespace=k8s.io cp /zombie #{container_id}:/zombie", node)
         ClusterTools.exec_by_node("nerdctl --namespace=k8s.io cp /sleep #{container_id}:/sleep", node)
         # ClusterTools.exec_by_node("ctools --bundle_path <bundle_path > --container_id <container_id>")
@@ -461,15 +420,15 @@ task "zombie_handled" do |_, args|
       ClusterTools.all_containers_by_resource?(resource, resource[:namespace]) do | container_id, container_pid_on_node, node, container_proctree_statuses, container_status| 
 
         zombies = container_proctree_statuses.map do |status|
-          Log.for(testsuite_task).debug { "status: #{status}" }
-          Log.for(testsuite_task).info { "status cmdline: #{status["cmdline"]}" }
+          Log.for(t.name).debug { "status: #{status}" }
+          Log.for(t.name).info { "status cmdline: #{status["cmdline"]}" }
           status_name = status["Name"].strip
           current_pid = status["Pid"].strip
           state = status["State"].strip
-          Log.for(testsuite_task).info { "pid: #{current_pid}" }
-          Log.for(testsuite_task).info { "status name: #{status_name}" }
-          Log.for(testsuite_task).info { "state: #{state}" }
-          Log.for(testsuite_task).info { "(state =~ /zombie/): #{(state =~ /zombie/)}" }
+          Log.for(t.name).info { "pid: #{current_pid}" }
+          Log.for(t.name).info { "status name: #{status_name}" }
+          Log.for(t.name).info { "state: #{state}" }
+          Log.for(t.name).info { "(state =~ /zombie/): #{(state =~ /zombie/)}" }
           if (state =~ /zombie/) != nil
             puts "Process #{status_name} has a state of #{state}".colorize(:red)
             true
@@ -477,35 +436,24 @@ task "zombie_handled" do |_, args|
             nil
           end
         end
-        Log.for(testsuite_task).info { "zombies.all?(nil): #{zombies.all?(nil)}" }
+        Log.for(t.name).info { "zombies.all?(nil): #{zombies.all?(nil)}" }
         zombies.all?(nil)
       end
     end
 
-    emoji_image_size="⚖️👀"
-    emoji_small="🐜"
-    emoji_big="🦖"
-
     if task_response
-      upsert_passed_task(testsuite_task, "✔️  🏆 PASSED: Zombie handled #{emoji_small} #{emoji_image_size}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Zombie handled")
     else
-      upsert_failed_task(testsuite_task, "✖️  🏆 FAILED: Zombie not handled #{emoji_big} #{emoji_image_size}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Zombie not handled")
     end
   end
-
 end
 
 
 
 desc "Are the SIGTERM signals handled?"
-task "sig_term_handled" do |_, args|
-  CNFManager::Task.task_runner(args) do |args,config|
-    task_start_time = Time.utc
-    testsuite_task = "sig_term_handled"
-    Log.for(testsuite_task).info { "Starting test" }
-
-    Log.for(testsuite_task).debug { "cnf_config: #{config}" }
-
+task "sig_term_handled" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args,config|
     # test_status can be "skipped" or "failed".
     #   Only collecting containers that failed or were skipped.
     #
@@ -545,10 +493,10 @@ task "sig_term_handled" do |_, args|
           status = pod["status"]
           if status["containerStatuses"]?
               container_statuses = status["containerStatuses"].as_a
-            Log.for(testsuite_task).info { "container_statuses: #{container_statuses}" }
-            Log.for(testsuite_task).info { "pod_name: #{pod_name}" }
+            Log.for(t.name).info { "container_statuses: #{container_statuses}" }
+            Log.for(t.name).info { "pod_name: #{pod_name}" }
             nodes = KubectlClient::Get.nodes_by_pod(pod)
-            Log.for(testsuite_task).info { "nodes_by_resource done" }
+            Log.for(t.name).info { "nodes_by_resource done" }
             node = nodes.first # there should only be one node returned for one pod
             sig_result = container_statuses.map do |container_status|
               container_name = container_status.dig("name")
@@ -557,7 +505,7 @@ task "sig_term_handled" do |_, args|
               # Check if the container status is ready.
               # If this container is not ready, move on to next.
               container_name = container_status.dig("name").as_s
-              Log.for(testsuite_task).info { "before ready containerStatuses pod:#{pod_name} container:#{container_name}" }
+              Log.for(t.name).info { "before ready containerStatuses pod:#{pod_name} container:#{container_name}" }
               ready = container_status.dig("ready").as_bool
               if !ready
                 Log.info { "container status: #{container_status} "}
@@ -574,7 +522,7 @@ task "sig_term_handled" do |_, args|
               end
 
               container_id = container_status.dig("containerID").as_s
-              Log.for(testsuite_task).info { "containerStatuses container_id #{container_id}" }
+              Log.for(t.name).info { "containerStatuses container_id #{container_id}" }
 
               #get container id's pid on the node (different from inside the container)
               pid = "#{ClusterTools.node_pid_by_container_id(container_id, node)}"
@@ -592,7 +540,7 @@ task "sig_term_handled" do |_, args|
               end
 
               # next if pid.empty?
-              Log.for(testsuite_task).info { "node pid (should never be pid 1): #{pid}" }
+              Log.for(t.name).info { "node pid (should never be pid 1): #{pid}" }
 
               # need to do the next line.  how to kill the current cnf?
               # this was one of the reason why we did stuff like this durring the cnf install and saved it as a configmap
@@ -605,9 +553,9 @@ task "sig_term_handled" do |_, args|
               #todo 2.1 loop through all child processes that are not threads (only include proceses where tgid = pid)
               #todo 2.1.1 ignore the parent pid (we are on the host so it wont be pid 1)
               node_name = node.dig("metadata", "name").as_s
-              Log.for(testsuite_task).info { "node name : #{node_name}" }
+              Log.for(t.name).info { "node name : #{node_name}" }
               pids = KernelIntrospection::K8s::Node.pids(node) 
-              Log.for(testsuite_task).info { "proctree_by_pid pids: #{pids}" }
+              Log.for(t.name).info { "proctree_by_pid pids: #{pids}" }
               proc_statuses = KernelIntrospection::K8s::Node.all_statuses_by_pids(pids, node)
 
               statuses = KernelIntrospection::K8s::Node.proctree_by_pid(pid, node, proc_statuses)
@@ -625,16 +573,16 @@ task "sig_term_handled" do |_, args|
                 end
               end
               non_thread_statuses.map do |status|
-                Log.for(testsuite_task).debug { "status: #{status}" }
-                Log.for(testsuite_task).info { "status cmdline: #{status["cmdline"]}" }
+                Log.for(t.name).debug { "status: #{status}" }
+                Log.for(t.name).info { "status cmdline: #{status["cmdline"]}" }
                 status_name = status["Name"].strip
                 ppid = status["PPid"].strip
                 current_pid = status["Pid"].strip
                 tgid = status["Tgid"].strip # check if 'g' is uppercase
-                Log.for(testsuite_task).info { "Pid: #{current_pid}" }
-                Log.for(testsuite_task).info { "Tgid: #{tgid}" }
-                Log.for(testsuite_task).info { "status name: #{status_name}" }
-                Log.for(testsuite_task).info { "previous status name: #{previous_process_type}" }
+                Log.for(t.name).info { "Pid: #{current_pid}" }
+                Log.for(t.name).info { "Tgid: #{tgid}" }
+                Log.for(t.name).info { "status name: #{status_name}" }
+                Log.for(t.name).info { "previous status name: #{previous_process_type}" }
                 # do not count the top pid if there are children
                 if non_thread_statuses.size > 1 && pid == current_pid 
                   next
@@ -657,7 +605,7 @@ task "sig_term_handled" do |_, args|
                 #todo 2.2 wait for 30 seconds
               end
               ClusterTools.exec_by_node("bash -c 'sleep 10 && kill #{pid} && sleep 5 && kill -9 #{pid}'", node)
-              Log.for(testsuite_task).info { "pid_log_names: #{pid_log_names}" }
+              Log.for(t.name).info { "pid_log_names: #{pid_log_names}" }
               #todo 2.3 parse the logs 
               #todo get the log
               sleep 5
@@ -676,7 +624,7 @@ task "sig_term_handled" do |_, args|
                   false
                 end
               end
-              Log.for(testsuite_task).info { "SigTerm Found: #{sig_term_found}" }
+              Log.for(t.name).info { "SigTerm Found: #{sig_term_found}" }
               # per all containers
               container_sig_term_check = sig_term_found.all?(true)
               if container_sig_term_check == false
@@ -705,14 +653,10 @@ task "sig_term_handled" do |_, args|
         true # non "deployment","statefulset","pod","replicaset", and "daemonset" don't need a sigterm check
       end
     end	
-    emoji_image_size="⚖️👀"
-    emoji_small="🐜"
-    emoji_big="🦖"
 
     if task_response
-      upsert_passed_task(testsuite_task, "✔️  🏆 PASSED: Sig Term handled #{emoji_small} #{emoji_image_size}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Sig Term handled")
     else
-      upsert_failed_task(testsuite_task, "✖️  🏆 FAILED: Sig Term not handled #{emoji_big} #{emoji_image_size}", task_start_time)
       failed_containers.map do |failure_info|
         resource_output = "Pod: #{failure_info["pod"]}, Container: #{failure_info["container"]}, Result: #{failure_info["test_status"]}"
         if failure_info["test_status"] == "skipped"
@@ -720,18 +664,14 @@ task "sig_term_handled" do |_, args|
         end
         stdout_failure resource_output
       end
-      nil
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Sig Term not handled")
     end
   end
 end
 
 desc "Are any of the containers exposed as a service?"
-task "service_discovery" do |_, args|
-  CNFManager::Task.task_runner(args) do |args,config|
-    task_start_time = Time.utc
-    testsuite_task = "service_discovery"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "service_discovery" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args,config|
     # Get all resources for the CNF
     resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
     default_namespace = "default"
@@ -772,35 +712,27 @@ task "service_discovery" do |_, args|
       end
     end
 
-    emoji_image_size="⚖️👀"
-    emoji_small="🐜"
-    emoji_big="🦖"
-
     if test_passed
-      upsert_passed_task(testsuite_task, "✔️  ✨PASSED: Some containers exposed as a service #{emoji_small} #{emoji_image_size}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Some containers exposed as a service")
     else
-      upsert_failed_task(testsuite_task, "✖️  ✨FAILED: No containers exposed as a service #{emoji_big} #{emoji_image_size}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "No containers exposed as a service")
     end
   end
 end
 
 desc "To check if the CNF uses a specialized init system"
-task "specialized_init_system", ["install_cluster_tools"] do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "specialized_init_system"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "specialized_init_system", ["install_cluster_tools"] do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     failed_cnf_resources = [] of InitSystems::InitSystemInfo
     CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       kind = resource["kind"].downcase
       case kind 
       when  "deployment","statefulset","pod","replicaset", "daemonset"
         namespace = resource[:namespace]
-        Log.for(testsuite_task).info { "Checking resource #{resource[:kind]}/#{resource[:name]} in #{namespace}" }
+        Log.for(t.name).info { "Checking resource #{resource[:kind]}/#{resource[:name]} in #{namespace}" }
         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
         pods = KubectlClient::Get.pods_by_resource(resource_yaml, namespace)
-        Log.for(testsuite_task).info { "Pod count for resource #{resource[:kind]}/#{resource[:name]} in #{namespace}: #{pods.size}" }
+        Log.for(t.name).info { "Pod count for resource #{resource[:kind]}/#{resource[:name]} in #{namespace}: #{pods.size}" }
         pods.each do |pod|
           results = InitSystems.scan(pod)
           failed_cnf_resources = failed_cnf_resources + results
@@ -808,17 +740,13 @@ task "specialized_init_system", ["install_cluster_tools"] do |_, args|
       end
     end
 
-    failed_emoji = "(ভ_ভ) ރ 🚀"
-    passed_emoji = "🖥️  🚀"
-
     if failed_cnf_resources.size > 0
-      upsert_failed_task(testsuite_task, "✖️  FAILED: Containers do not use specialized init systems #{failed_emoji}", task_start_time)
       failed_cnf_resources.each do |init_info|
         stdout_failure "#{init_info.kind}/#{init_info.name} has container '#{init_info.container}' with #{init_info.init_cmd} as init process"
       end
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Containers do not use specialized init systems (ভ_ভ) ރ")
     else
-      upsert_passed_task(testsuite_task, "✔️  PASSED: Containers use specialized init systems #{passed_emoji}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Containers use specialized init systems 🖥️")
     end
-
   end
 end

@@ -217,13 +217,8 @@ end
 
 desc "Does the CNF crash when node-drain occurs"
 task "node_drain", ["install_litmus"] do |t, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "node_drain"
-    Log.for(testsuite_task).info { "Starting test" }
-
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     skipped = false
-    Log.debug { "cnf_config: #{config}" }
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
@@ -261,7 +256,7 @@ task "node_drain", ["install_litmus"] do |t, args|
         if spec_labels.as_h.size > 0
           test_passed = true
         else
-          stdout_failure("No resource label found for #{testsuite_task} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
+          stdout_failure("No resource label found for #{t.name} test for resource: #{resource["kind"]}/#{resource["name"]} in #{resource["namespace"]} namespace")
           test_passed = false
         end
         if test_passed
@@ -319,10 +314,10 @@ task "node_drain", ["install_litmus"] do |t, args|
             # rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/node-drain/rbac.yaml"
             rbac_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/charts/generic/node-drain/rbac.yaml"
 
-            experiment_path = LitmusManager.download_template(experiment_url, "#{testsuite_task}_experiment.yaml")
+            experiment_path = LitmusManager.download_template(experiment_url, "#{t.name}_experiment.yaml")
             KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
   
-            rbac_path = LitmusManager.download_template(rbac_url, "#{testsuite_task}_rbac.yaml")
+            rbac_path = LitmusManager.download_template(rbac_url, "#{t.name}_rbac.yaml")
             rbac_yaml = File.read(rbac_path)
             rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
             File.write(rbac_path, rbac_yaml)
@@ -367,26 +362,19 @@ task "node_drain", ["install_litmus"] do |t, args|
       test_passed
     end
     if skipped
-      Log.for(testsuite_task).warn{"The node_drain test needs minimum 2 schedulable nodes, current number of nodes: #{KubectlClient::Get.schedulable_nodes_list.size}"}
-      resp = upsert_skipped_task(testsuite_task,"⏭️  🏆 SKIPPED: node_drain chaos test requires the cluster to have atleast two schedulable nodes 🗡️💀♻️", task_start_time)
+      Log.for(t.name).warn{"The node_drain test needs minimum 2 schedulable nodes, current number of nodes: #{KubectlClient::Get.schedulable_nodes_list.size}"}
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "node_drain chaos test requires the cluster to have atleast two schedulable nodes")
     elsif task_response
-      resp = upsert_passed_task(testsuite_task,"✔️  🏆 PASSED: node_drain chaos test passed 🗡️💀♻️", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "node_drain chaos test passed")
     else
-      resp = upsert_failed_task(testsuite_task,"✖️  🏆 FAILED: node_drain chaos test failed 🗡️💀♻️", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "node_drain chaos test failed")
     end
   end
 end
 
 desc "Does the CNF use an elastic persistent volume"
-task "elastic_volumes" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "elastic_volumes"
-    Log.for(testsuite_task).info { "Starting test" }
-
-    Log.info {"cnf_config: #{config}"}
-
-    emoji_probe="🧫"
+task "elastic_volumes" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     all_volumes_elastic = true
     volumes_used = false
     task_response = CNFManager.workload_resource_test(args, config, check_containers: false) do |resource, containers, volumes, initialized|
@@ -402,7 +390,7 @@ task "elastic_volumes" do |_, args|
 
       full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
       elastic_result = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)
-      Log.for("#{testsuite_task}:elastic_result").info {elastic_result}
+      Log.for("#{t.name}:elastic_result").info {elastic_result}
       unless elastic_result
         all_volumes_elastic = false
       end
@@ -410,13 +398,12 @@ task "elastic_volumes" do |_, args|
 
     Log.for("elastic_volumes:result").info { "Volumes used: #{volumes_used}; Elastic?: #{all_volumes_elastic}" }
     if volumes_used == false
-      resp = upsert_skipped_task(testsuite_task,"⏭️  ✨SKIPPED: No volumes are used #{emoji_probe}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "No volumes are used")
     elsif all_volumes_elastic
-      resp = upsert_passed_task(testsuite_task,"✔️  ✨PASSED: All used volumes are elastic #{emoji_probe}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "All used volumes are elastic")
     else
-      resp = upsert_failed_task(testsuite_task,"✖️  ✨FAILED: Some of the used volumes are not elastic #{emoji_probe}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Some of the used volumes are not elastic")
     end
-    resp
   end
 
   # TODO When using a default StorageClass, the storageclass name will be populated in the persistent volumes claim post-creation.
@@ -430,16 +417,10 @@ task "elastic_volumes" do |_, args|
 end
 
 desc "Does the CNF use a database which uses perisistence in a cloud native way"
-task "database_persistence" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "database_persistence"
-    Log.for(testsuite_task).info { "Starting test" }
-
-    Log.info {"cnf_config: #{config}"}
+task "database_persistence" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     # VERBOSE_LOGGING.info "database_persistence" if check_verbose(args)
     # todo K8s Database persistence test: if a mysql (or any popular database) image is installed:
-    emoji_probe="🧫"
     all_mysql_elastic_statefulset = true
     match = Mysql.match
     Log.info {"database_persistence mysql: #{match}"}
@@ -476,16 +457,14 @@ task "database_persistence" do |_, args|
           end
         end
       end
-      failed_emoji = "(ভ_ভ) ރ 💾"
       if all_mysql_elastic_statefulset
-        resp = upsert_dynamic_task(testsuite_task,CNFManager::ResultStatus::Pass5, "✔️  PASSED: CNF uses database with cloud-native persistence #{emoji_probe}", task_start_time)
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Pass5, "CNF uses database with cloud-native persistence")
       else
-        resp = upsert_failed_task(testsuite_task,"✖️  FAILED: CNF uses database without cloud-native persistence #{failed_emoji}", task_start_time)
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "CNF uses database without cloud-native persistence (ভ_ভ) ރ 💾")
       end
     else
-      resp = upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: CNF does not use database #{emoji_probe}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "CNF does not use database")
     end
-    resp
   end
 
   # TODO When using a default StorageClass, the storageclass name will be populated in the persistent volumes claim post-creation.
@@ -499,15 +478,8 @@ task "database_persistence" do |_, args|
 end
 
 desc "Does the CNF use a non-cloud native data store: hostPath volume"
-task "volume_hostpath_not_found" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "volume_hostpath_not_found"
-    Log.for(testsuite_task).info { "Starting test" }
-
-    failed_emoji = "(ভ_ভ) ރ 💾"
-    passed_emoji = "🖥️  💾"
-    LOGGING.debug "cnf_config: #{config}"
+task "volume_hostpath_not_found" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
       hostPath_found = nil 
@@ -525,29 +497,23 @@ task "volume_hostpath_not_found" do |_, args|
         end
       rescue ex
         VERBOSE_LOGGING.error ex.message if check_verbose(args)
-        puts "Rescued: On resource #{resource["metadata"]["name"]?} of kind #{resource["kind"]}, volumes not found. #{passed_emoji}".colorize(:yellow)
+        puts "Rescued: On resource #{resource["metadata"]["name"]?} of kind #{resource["kind"]}, volumes not found.".colorize(:yellow)
         hostPath_not_found = true
       end
       hostPath_not_found 
     end
 
     if task_response.any?(false)
-      upsert_failed_task(testsuite_task,"✖️  FAILED: hostPath volumes found #{failed_emoji}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "hostPath volumes found (ভ_ভ) ރ")
     else
-      upsert_passed_task(testsuite_task,"✔️  PASSED: hostPath volumes not found #{passed_emoji}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "hostPath volumes not found 🖥️")
     end
   end
 end
 
 desc "Does the CNF use a non-cloud native data store: local volumes on the node?"
-task "no_local_volume_configuration" do |_, args|
-  failed_emoji = "(ভ_ভ) ރ 💾"
-  passed_emoji = "🖥️  💾"
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "no_local_volume_configuration"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "no_local_volume_configuration" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
       hostPath_found = nil 
@@ -560,7 +526,7 @@ task "no_local_volume_configuration" do |_, args|
         if resource["spec"].as_h["template"].as_h["spec"].as_h["volumes"]?
             volumes = resource["spec"].as_h["template"].as_h["spec"].as_h["volumes"].as_a 
         end
-        Log.for(testsuite_task).debug { "volumes: #{volumes}" }
+        Log.for(t.name).debug { "volumes: #{volumes}" }
         persistent_volume_claim_names = volumes.map do |volume|
           # get persistent volume claim that matches persistent volume claim name
           if volume.as_h["persistentVolumeClaim"]? && volume.as_h["persistentVolumeClaim"].as_h["claimName"]?
@@ -569,7 +535,7 @@ task "no_local_volume_configuration" do |_, args|
             nil 
           end
         end.compact
-        Log.for(testsuite_task).debug { "persistent volume claim names: #{persistent_volume_claim_names}" }
+        Log.for(t.name).debug { "persistent volume claim names: #{persistent_volume_claim_names}" }
 
         # TODO (optional) check storage class of persistent volume claim
         # loop through all pvc names
@@ -584,23 +550,23 @@ task "no_local_volume_configuration" do |_, args|
                   local_storage_not_found = false 
               end
             rescue ex
-              Log.for(testsuite_task).info { ex.message }
+              Log.for(t.name).info { ex.message }
               local_storage_not_found = true 
             end
           end
         end
       rescue ex
-        Log.for(testsuite_task).error { ex.message } if check_verbose(args)
-        puts "Rescued: On resource #{resource["metadata"]["name"]?} of kind #{resource["kind"]}, local storage configuration volumes not found #{passed_emoji}".colorize(:yellow)
+        Log.for(t.name).error { ex.message } if check_verbose(args)
+        puts "Rescued: On resource #{resource["metadata"]["name"]?} of kind #{resource["kind"]}, local storage configuration volumes not found".colorize(:yellow)
         local_storage_not_found = true
       end
       local_storage_not_found
     end
 
-    if task_response.any?(false) 
-      upsert_failed_task(testsuite_task,"✖️  ✨FAILED: local storage configuration volumes found #{failed_emoji}", task_start_time)
+    if task_response.any?(false)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "local storage configuration volumes found (ভ_ভ) ރ")
     else
-      upsert_passed_task(testsuite_task,"✔️  ✨PASSED: local storage configuration volumes not found #{passed_emoji}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "local storage configuration volumes not found 🖥️")
     end
   end
 end
