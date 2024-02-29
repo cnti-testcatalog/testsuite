@@ -2,7 +2,7 @@
 
 | Main                                                                                                                                        |
 | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| [![Build Status](https://github.com/cnti-testcatalog/gtestsuite/workflows/Crystal%20Specs/badge.svg)](https://github.com/cnti-testcatalog/testsuite/actions) |
+| [![Build Status](https://github.com/cnti-testcatalog/testsuite/workflows/Crystal%20Specs/badge.svg)](https://github.com/cnti-testcatalog/testsuite/actions) |
 
 The CNTI Test Catalog is a tool that validates telco application's adherence to [cloud native principles](https://networking.cloud-native-principles.org/) and best practices. 
 
@@ -16,9 +16,9 @@ To get the CNTI Test Catalog up and running, see the [Installation Guide](INSTAL
 
 Prereqs: kubernetes cluster, wget, curl, helm 3.1.1 or greater on your system already.
 
-1. Install the latest test suite binary: `source <(curl -s https://raw.githubusercontent.com/cnti-testcatalog/gtestsuite/main/curl_install.sh)`
+1. Install the latest test suite binary: `source <(curl -s https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/curl_install.sh)`
 2. Run `setup` to prepare the cnf-testsuite: `cnf-testsuite setup`
-3. Pull down an example CNF configuration to try: `curl -o cnf-testsuite.yml https://raw.githubusercontent.com/cnti-testcatalog/gtestsuite/main/example-cnfs/coredns/cnf-testsuite.yml`
+3. Pull down an example CNF configuration to try: `curl -o cnf-testsuite.yml https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/example-cnfs/coredns/cnf-testsuite.yml`
 4. Initialize the test suite for using the CNF: `cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml`
 5. Run all of application/workload tests: `cnf-testsuite workload`
 
@@ -45,7 +45,8 @@ See the [Test Categories Documentation](TEST-CATEGORIES.md) for a complete overv
 Welcome! We gladly accept contributions on new tests, example CNFs, updates to documentation, enhancements, bug reports, and more.
 
 - [Contributing guide](CONTRIBUTING.md)
-- [Good first issues](https://github.com/cnti-testcatalog/testsuite/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+- [Good first issues](https://github.com/cnti-testcatalog/testsuite/labels/good%20first%20issue)
+- [Contributions welcome](https://github.com/cnti-testcatalog/testsuite/labels/contributions-welcome)
 
 ## Communication and community meetings
 
@@ -60,31 +61,31 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
 - Join the bi-weekly [CNTI Best Practices meeting](https://wiki.lfnetworking.org/display/LN/Best+Practices) every other Monday at 8am PT.
 - Join the bi-weekly [CNTI Certification meeting](https://wiki.lfnetworking.org/display/LN/Certification) every other Thursday at 8am PT.
 
-- Request an Intro to the Cloud Native Telecom Initiative (CNTI) [here](https://calendly.com/cnti/intro))
+- Request an Intro to the Cloud Native Telecom Initiative (CNTI) [here](https://calendly.com/cnti/intro).
 
 ## Past Presentations
 
-**CNF Test Suite Demo**
+**CNTI Test Catalog Demo 2021**
 - [Recording](https://drive.google.com/file/d/1SBHE5Dqx6Sa-m83WODbCEbbdiB2_l_U2/view?usp=sharing)
 - [Slides](https://github.com/cnti-testcatalog/testsuite/files/6857515/SHARED-COMMON.CNF.Test.Suite.Demo.and.CNF.initiatives.overview.2021-06-29.pdf) (PDF)
 
-**Crystal in the Cloud: A cloud native journey at Crystal 1.0 Conference**
+**Crystal in the Cloud: A cloud native journey at Crystal 1.0 Conference 2021**
 - [Recording](https://youtu.be/n8g60VglyUw)
 - [Slides](https://github.com/cnti-testcatalog/testsuite/files/6785788/Crystal.1.0.Crystal.in.the.Cloud_.CNF.Test.Suite.pdf) (PDF)
 
 
 ## Implementation overview
 
-The CNF Test Suite leverages upstream tools such as [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Helm linter](https://github.com/helm/chart-testing), and [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) for testing CNFs. The upstream tool installation, configuration, and versioning has been made repeatable.
+The CNTI Test Catalog leverages upstream tools such as [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Helm linter](https://github.com/helm/chart-testing), and [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) for testing CNFs. The upstream tool installation, configuration, and versioning has been made repeatable.
 
 The test framework and tests (using the upstream tools) are written in the human-readable, compiled language, [Crystal](https://crystal-lang.org/). Common capabilities like dependencies between tests and categories are supported.
 
-Setup of vanilla upstream K8s on [Equinix Metal](https://metal.equinix.com/) is done with the [CNF Testbed](https://github.com/cnti-testcatalog/gtestbed/) platform tool chain, which includes [k8s-infra](https://github.com/crosscloudci/k8s-infra), [Kubespray](https://kubespray.io/). To add support for other providers, please submit a [Pull Request](https://github.com/cncf/cnf-testbed/pulls) to the [CNF Testbed](https://github.com/cncf/cnf-testbed/) repo.
+Setup of vanilla upstream K8s on [Equinix Metal](https://metal.equinix.com/) is done with the [CNF Testbed](https://github.com/cncf/cnf-testbed/) platform tool chain, which includes [k8s-infra](https://github.com/crosscloudci/k8s-infra), [Kubespray](https://kubespray.io/). To add support for other providers, please submit a [Pull Request](https://github.com/cncf/cnf-testbed/pulls) to the [CNF Testbed](https://github.com/cncf/cnf-testbed/) repo.
 
 ## Code of Conduct
 
-The CNF Test Suite community follows the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/main/code-of-conduct.md).
+The CNTI Test Catalog community follows the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/main/code-of-conduct.md).
 
 ## License terms
 
-The CNF Test Suite is available under the [Apache 2 license](LICENSE.md).
+The CNTI Test Catalog is available under the [Apache 2 license](LICENSE.md).
