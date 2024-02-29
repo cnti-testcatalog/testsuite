@@ -1,10 +1,10 @@
-# Testsuite Categories
+# Test Catalog Categories
 
-The CNF Test Suite program validates interoperability of CNF **workloads** supplied by multiple different vendors orchestrated by Kubernetes **platforms** that are supplied by multiple different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices. For more detailed CLI documentation see the [usage document.](USAGE.md)
+The CNTI Test Catalog validates interoperability of CNF **workloads** supplied by multiple different vendors orchestrated by Kubernetes **platforms** that are supplied by multiple different vendors. The goal is to provide an open source test catalog to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices. For more detailed CLI documentation see the [usage document.](USAGE.md)
 
 ## Compatibility, Installability & Upgradability Tests
 
-#### CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements. The CNF Test suite will check for usage of standard, in-band deployment tools such as Helm (version 3) charts. The CNF test suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s [kubectl](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources). The CNF Test Suite validates this:
+#### CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements. The CNTI Test Catalog will check for usage of standard, in-band deployment tools such as Helm (version 3) charts. The CNTI Test Catalog checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s [kubectl](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#scaling-resources). The CNTI Test Catalog validates this:
 
 #### On workloads:
 
@@ -25,7 +25,7 @@ The CNF Test Suite program validates interoperability of CNF **workloads** suppl
 
 ## Microservice Tests
 
-#### The CNF should be developed and delivered as a microservice. The CNF Test suite tests to determine the organizational structure and rate of change of the CNF being tested. Once these are known we can detemine whether or not the CNF is a microservice. See: [Microservice-Principles](https://networking.cloud-native-principles.org/cloud-native-microservice-principles):
+#### The CNF should be developed and delivered as a microservice. The CNTI Test Catalog tests to determine the organizational structure and rate of change of the CNF being tested. Once these are known we can detemine whether or not the CNF is a microservice. See: [Microservice-Principles](https://networking.cloud-native-principles.org/cloud-native-microservice-principles):
 
 #### On workloads:
 
@@ -35,7 +35,7 @@ The CNF Test Suite program validates interoperability of CNF **workloads** suppl
 
 ## State Tests
 
-#### The CNF test suite checks if state is stored in a [custom resource definition](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) or a separate database (e.g. [etcd](https://github.com/etcd-io/etcd)) rather than requiring local storage. It also checks to see if state is resilient to node failure:
+#### The CNTI Test Catalog checks if state is stored in a [custom resource definition](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) or a separate database (e.g. [etcd](https://github.com/etcd-io/etcd)) rather than requiring local storage. It also checks to see if state is resilient to node failure:
 
 #### On workloads:
 
@@ -63,7 +63,7 @@ The CNF Test Suite program validates interoperability of CNF **workloads** suppl
 
 ## Observability & Diagnostic Tests
 
-#### In order to maintain, debug, and have insight into a protected environment, infrastructure elements must have the property of being observable. This means these elements must externalize their internal states in some way that lends itself to metrics, tracing, and logging. The Test suite checks this:
+#### In order to maintain, debug, and have insight into a protected environment, infrastructure elements must have the property of being observable. This means these elements must externalize their internal states in some way that lends itself to metrics, tracing, and logging. The CNTI Test Catalog checks this:
 
 #### On workloads:
 
@@ -76,7 +76,7 @@ The CNF Test Suite program validates interoperability of CNF **workloads** suppl
 
 ## Security Tests
 
-#### CNF containers should be isolated from one another and the host. The CNF Test suite uses tools like [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Falco](https://github.com/falcosecurity/falco), and [Armosec Kubescape](https://github.com/armosec/kubescape):
+#### CNF containers should be isolated from one another and the host. The CNTI Test Catalog uses tools like [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Falco](https://github.com/falcosecurity/falco), and [Armosec Kubescape](https://github.com/armosec/kubescape):
 
 #### On workloads:
 
@@ -104,7 +104,7 @@ The CNF Test Suite program validates interoperability of CNF **workloads** suppl
 
 ## Configuration Tests
 
-#### Configuration should be managed in a declarative manner, using [ConfigMaps](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/), [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/), or other [declarative interfaces](https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects/#understanding-kubernetes-objects). The Test suite checks this by:
+#### Configuration should be managed in a declarative manner, using [ConfigMaps](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/), [Operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/), or other [declarative interfaces](https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects/#understanding-kubernetes-objects). The CNTI Test Catalog checks this by:
 
 #### On workloads:
 
