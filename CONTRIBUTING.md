@@ -2,27 +2,28 @@
 
 Welcome! We gladly accept contributions on new tests, example CNFs, updates to documentation, enhancements, bug reports and more.
 
-The CNF Test Suite is [Apache 2.0 licensed](LICENSE) and accepts contributions via GitHub pull requests. Please read the following guidelines carefully to make it easier to get your contribution accepted.
+The CNTI Test Catalog is [Apache 2.0 licensed](LICENSE) and accepts contributions via GitHub pull requests. Please read the following guidelines carefully to make it easier to get your contribution accepted.
 
 ## Support Channels:
 
 Support channels include:
 
-- [Issues](issues)
-- CNCF Slack (request invite to join [slack.cncf.io](slack.cncf.io))
-  - [#cnf-testsuite-dev](https://cloud-native.slack.com/archives/C014TNCEX8R)
-  - [#cnf-conformance](https://cloud-native.slack.com/archives/CV69TQW7Q)
+- [Issues](../../issues)
+- Join the conversation on [LFN Tech's Slack](https://lfntech.slack.com/) channels
+  - [#cnti-testcatalog-testsuite](https://lfntech.slack.com/archives/C06GM6ZEPUP)
+  - [#cnti-testsuite-dev](https://lfntech.slack.com/archives/C06HQGWK4NL)
 
-Before starting work on a major feature, please reach out to us via [GitHub Issues](../../issues) or Slack. We will make sure no one else is already working on it and ask you to open a [GitHub issue](issues/new/choose).
+Before starting work on a major feature, please reach out to us via [GitHub Issues](../../issues) or Slack. We will make sure no one else is already working on it and ask you to open a [GitHub issue](../../issues/new/choose).
 
 - Small patches and bug fixes don't need prior communication.
 
 ## Issues
 
-Issues are used as the primary method for tracking items in the CNF Test Suite initiative. Please self-assign an issue to yourself when you start to work on it so we don't duplicate work :)
+GitHub Issues are used as the primary method for tracking items for the CNTI Test Catalog. Please self-assign an issue to yourself when you start to work on it so we don't duplicate work :)
 
-- [Issues](/issues)
-  - [Good first issues](../../issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+- [Issues](../../issues)
+  - [Good first issues](https://github.com/cnti-testcatalog/testsuite/labels/good%20first%20issue)
+  - [Contributions welcome](https://github.com/cnti-testcatalog/testsuite/labels/contributions-welcome)
 
 ### Issue Templates
 
@@ -53,7 +54,7 @@ crystal src/cnf-testsuite.cr test_name verbose
 
 Check [usage documentation](USAGE.md) for more info about invoking commands and loggin
 
-**3. New CNF Test Suite Tests:**
+**3. New CNTI Test Catalog Tests:**
 
 - To request a new workload test, please create a new issue using the [**New Workload Test**](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=workload&template=new-workload-test.md&title=%5BWorkload%5D) Template
 - To request a new platform test, please create a new issue using the [**New Platform Test**](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=platform&template=new-platform-test.md&title=%5BPlatform%5D) Template
@@ -61,7 +62,7 @@ Check [usage documentation](USAGE.md) for more info about invoking commands and 
 **4. New CNF Example:**
 To suggest a new CNF, please create a GitHub issue using the [New Example CNF template](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=example+CNF&template=new-example-cnf.md&title=%5BCNF%5D).
 
-To install the CNF Test Suite and run a CNF, follow instructions at:
+To install the CNTI Test Catalog and run a CNF, follow instructions at:
 
 - [CNF Developer Install and Usage Guide](SOURCE_INSTALL.md)
 
@@ -77,7 +78,7 @@ Outline of what a contributor's workflow looks like:
 
 1. Fork it (https://github.com/cnti-testcatalog/testsuite/fork)
 1. Create a branch from where you want to base your work (usually main). Example `git checkout -b my-new-feature)`
-1. Read the [INSTALL.md](install for build and test instructions)
+1. Read the install for build and test instructions at [INSTALL.md](INSTALL.md).
 1. Make your changes and arrange them in readable commits.
 1. Commit your changes (Ex. `git commit -am 'Add some feature'``)
    - Make sure your commit messages are in the proper format (see below).
@@ -120,7 +121,7 @@ For general advice on how to submit a pull request, please see [Creating a pull 
 
 ## Community Meeting:
 
-The CNF Test Suite community meets weekly on Tuesdays at 8:00 - 9:00 AM Pacific Time
+The CNTI Test Catalog community meets weekly on Tuesdays at 8:00 - 9:00 AM Pacific Time
 
 - Meeting minutes are [here](https://docs.google.com/document/d/1yjL079TR0L1q__BRuhREeXfx5MtAmjPzbFZlZUeBsK4/edit)
 
