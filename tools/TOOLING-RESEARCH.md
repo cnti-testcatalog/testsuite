@@ -71,22 +71,3 @@ spec:
         kinds: ["Pod"]
 ```
 
-## Falco
-Falco is a system security audit tool that provides insight to the events happening on the system at the kernal level. The concept of the test would be to create a Falco rule that would watch the host system for any containers that are spawned with Privlidged access. When we run the Privileged mode test we would check the logs of the deployed CNF and search the logs for any Falco 'WARNING' events that would indicate the container is running in Privileged mode and if found the test would return an error code.
-
-#### Pseudo code for a Falco rule which checks for Privileged Pods:
-
-Install Flaco:
-```
-helm install --name falco stable/falco
-```
-
-Audit Rule:
-```
-- rule: Container running with Privileged mode
-  desc: Any container running with privileged mode.
-  condition: container.privileged=true
-  output: Container running in privileged mode (user=%user.name command=%proc.cmdline %container.info)
-  priority: WARNING
-  tags: [container, cis]
-```

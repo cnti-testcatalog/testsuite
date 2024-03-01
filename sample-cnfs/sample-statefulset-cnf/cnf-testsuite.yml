@@ -6,7 +6,7 @@ helm_repository:
   name: bitnami 
   repo_url: https://charts.bitnami.com/bitnami 
 helm_chart: bitnami/wordpress 
-allowlist_helm_chart_container_names: [falco, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
+allowlist_helm_chart_container_names: [nginx, coredns, calico-node, kube-proxy, nginx-proxy]
 
 # The below configuration for the rolling tests
 # refer to container image versions that are

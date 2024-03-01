@@ -941,8 +941,6 @@ If your application does not need root privileges, make sure to define the runAs
         
 </b>
 
-> To configure the Falco driver to be used for this test, please refer to [docs/falco-config.md](docs/falco-config.md).
-
 ## [Host PID/IPC privileges](docs/LIST_OF_TESTS.md#host-pidipc-privileges)
 
 ##### To run the Host PID/IPC test, you can use the following command:

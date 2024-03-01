@@ -6,7 +6,6 @@ helm_repository:
   repo_url: https://cncf.gitlab.io/stable
 helm_chart: stable/coredns
 allowlist_helm_chart_container_names:
-- falco
 - nginx
 - coredns
 - calico-node
