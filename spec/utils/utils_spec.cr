@@ -67,7 +67,7 @@ describe "Utils" do
     end
     (yaml["items"].as_a.find {|x| 
       x["name"] == "ip_addresses" && 
-        x["points"] == CNFManager::Points.task_points("ip_addresses", CNFManager::Points::Results::ResultStatus::Skipped)
+        x["points"] == CNFManager::Points.task_points("ip_addresses", CNFManager::ResultStatus::Skipped)
     }).should be_truthy
 
     (yaml["items"].as_a.find {|x| x["name"] == "ip_addresses" && x["points"] == 0 }).should be_truthy
@@ -191,12 +191,13 @@ describe "Utils" do
   end
 
   it "'task_runner' should run a test against a single cnf if passed a cnf-config argument even if there are multiple cnfs installed", tags: ["task_runner"]  do
-    Log.info {`./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-generic-cnf/cnf-testsuite.yml`}
-    Log.info {`./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml`}
-
+    response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-generic-cnf/cnf-testsuite.yml`
+    Log.info {response_s}
+    response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml`
+    Log.info {response_s}
     resp = `./cnf-testsuite privileged`
     Log.info { resp }
-    (resp).includes?("✖️  FAILED: Found 1 privileged containers").should be_true
+    (resp).includes?("FAILED: Found 1 privileged containers").should be_true
   ensure
     response_s = `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-generic-cnf/cnf-testsuite.yml`
     Log.info { response_s }

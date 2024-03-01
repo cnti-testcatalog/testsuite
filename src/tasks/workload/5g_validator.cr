@@ -21,7 +21,12 @@ task "smf_upf_core_validator" do |t, args|
     task_start_time = Time.utc
     testsuite_task = "smf_upf_core_validator"
     Log.for(testsuite_task).info { "Starting test" }
+
+		# todo add other resilience and compatiblity tests
+
     args.named["reslience_tests"]="pod_network_latency, pod_delete"
+
+		# todo find heartbeat for ran
     t.invoke("smf_upf_heartbeat", args)
   end
 end
@@ -58,7 +63,7 @@ task "smf_upf_heartbeat" do |t, args|
 
       #Baseline 
       unless baseline_count
-        tshark_log_name = K8sTshark.log_of_tshark_by_label(command, smf_key, smf_value, duration="120")
+        tshark_log_name = K8sTshark.log_of_tshark_by_label(command, smf_key, smf_value, duration: "120")
         if tshark_log_name && 
             !tshark_log_name.empty? && 
             (tshark_log_name =~ /not found/) == nil
@@ -86,7 +91,7 @@ task "smf_upf_heartbeat" do |t, args|
       Log.info { "Main pod delete thread continuing" }
 
 
-      tshark_log_name = K8sTshark.log_of_tshark_by_label(command, smf_key, smf_value, duration="120")
+      tshark_log_name = K8sTshark.log_of_tshark_by_label(command, smf_key, smf_value, duration: "120")
       if tshark_log_name && 
           !tshark_log_name.empty? && 
           (tshark_log_name =~ /not found/) == nil

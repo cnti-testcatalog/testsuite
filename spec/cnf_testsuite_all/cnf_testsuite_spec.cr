@@ -37,7 +37,7 @@ describe CnfTestSuite do
   #   begin
   #     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml verbose wait_count=0`
   #     $?.success?.should be_true
-  #     response_s = `./cnf-testsuite workload ~automatic_cnf_install ~ensure_cnf_installed ~configuration_file_setup ~compatibility ~state ~scalability ~configuration_lifecycle ~observability ~installability ~hardware_and_scheduling ~microservice ~resilience ~non_root_user`
+  #     response_s = `./cnf-testsuite workload ~automatic_cnf_install ~ensure_cnf_installed ~configuration_file_setup ~compatibility ~state ~scalability ~configuration_lifecycle ~observability ~installability ~hardware_and_scheduling ~microservice ~resilience`
   #     LOGGING.info response_s
   #     $?.success?.should be_false
   #     (/Found.*privileged containers.*/ =~ response_s).should_not be_nil

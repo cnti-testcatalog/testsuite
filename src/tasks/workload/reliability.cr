@@ -131,10 +131,10 @@ task "pod_network_latency", ["install_litmus"] do |_, args|
           if spec_labels.as_h.has_key?(key) && spec_labels[key] == value
             current_pod_key = key
             current_pod_value = value
-            puts "Match found for key: #{key} and value: #{value}"
+            Log.info { "Match found for key: #{key} and value: #{value}"}
             true
           else
-            puts "Match not found for key: #{key} and value: #{value}"
+            Log.info { "Match not found for key: #{key} and value: #{value}"}
             false
           end
         end

@@ -300,6 +300,21 @@ def update_yml(yml_file, top_level_key, value)
   end
 end
 
+def upsert_decorated_task(task, status : CNFManager::ResultStatus, message, start_time)
+  tc_emoji = CNFManager::Points.emoji_by_task(task)
+  cat_emoji = CNFManager::Points.task_emoji_by_task(task)
+  case status.to_basic
+  when CNFManager::ResultStatus::Passed
+    upsert_passed_task(task, "✔️  #{cat_emoji}PASSED: #{message} #{tc_emoji}", start_time)
+  when CNFManager::ResultStatus::Failed
+    upsert_failed_task(task, "✖️  #{cat_emoji}FAILED: #{message} #{tc_emoji}", start_time)
+  when CNFManager::ResultStatus::Skipped
+    upsert_skipped_task(task, "⏭️  #{cat_emoji}SKIPPED: #{message} #{tc_emoji}", start_time)
+  when CNFManager::ResultStatus::NA
+    upsert_na_task(task, "⏭️  #{cat_emoji}N/A: #{message} #{tc_emoji}", start_time)
+  end
+end
+
 def upsert_failed_task(task, message, start_time)
  CNFManager::Points.upsert_task(task, FAILED, CNFManager::Points.task_points(task, false), start_time)
   stdout_failure message
@@ -313,18 +328,18 @@ def upsert_passed_task(task, message, start_time)
 end
 
 def upsert_skipped_task(task, message, start_time)
- CNFManager::Points.upsert_task(task, SKIPPED, CNFManager::Points.task_points(task, CNFManager::Points::Results::ResultStatus::Skipped), start_time)
+ CNFManager::Points.upsert_task(task, SKIPPED, CNFManager::Points.task_points(task, CNFManager::ResultStatus::Skipped), start_time)
   stdout_warning message
   message
 end
 
 def upsert_na_task(task, message, start_time)
- CNFManager::Points.upsert_task(task, NA, CNFManager::Points.task_points(task, CNFManager::Points::Results::ResultStatus::NA), start_time)
+ CNFManager::Points.upsert_task(task, NA, CNFManager::Points.task_points(task, CNFManager::ResultStatus::NA), start_time)
   stdout_warning message
   message
 end
 
-def upsert_dynamic_task(task, status : CNFManager::Points::Results::ResultStatus, message, start_time)
+def upsert_dynamic_task(task, status : CNFManager::ResultStatus, message, start_time)
   CNFManager::Points.upsert_task(task, status.to_s.downcase, CNFManager::Points.task_points(task, status), start_time)
   case status.to_s.downcase 
   when /pass/

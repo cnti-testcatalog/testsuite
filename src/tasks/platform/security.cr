@@ -12,7 +12,7 @@ namespace "platform" do
 
   desc "Is the platform control plane hardened"
   task "control_plane_hardening", ["kubescape_scan"] do |_, args|
-    task_response = CNFManager::Task.task_runner(args, check_cnf_installed=false) do |args|
+    task_response = CNFManager::Task.task_runner(args, check_cnf_installed: false) do |args|
       task_start_time = Time.utc
       testsuite_task = "control_plane_hardening"
       Log.for(testsuite_task).info { "Starting test" }
@@ -36,7 +36,7 @@ namespace "platform" do
   desc "Attackers who have Cluster-admin permissions (can perform any action on any resource), can take advantage of their high privileges for malicious intentions. Determines which subjects have cluster admin permissions."
   task "cluster_admin", ["kubescape_scan"] do |_, args|
     next if args.named["offline"]?
-    CNFManager::Task.task_runner(args, check_cnf_installed=false) do |args, config|
+    CNFManager::Task.task_runner(args, check_cnf_installed: false) do |args, config|
       task_start_time = Time.utc
       testsuite_task = "cluster_admin"
       Log.for(testsuite_task).info { "Starting test" }
@@ -61,7 +61,7 @@ namespace "platform" do
   task "exposed_dashboard", ["kubescape_scan"] do |_, args|
     next if args.named["offline"]?
 
-    CNFManager::Task.task_runner(args, check_cnf_installed=false) do |args, config|
+    CNFManager::Task.task_runner(args, check_cnf_installed: false) do |args, config|
       task_start_time = Time.utc
       testsuite_task = "exposed_dashboard"
       Log.for(testsuite_task).info { "Starting test" }
@@ -91,7 +91,7 @@ namespace "platform" do
 
     Kyverno.install
 
-    CNFManager::Task.task_runner(args, check_cnf_installed=false) do |args, config|
+    CNFManager::Task.task_runner(args, check_cnf_installed: false) do |args, config|
       policy_path = Kyverno.best_practice_policy("disallow_helm_tiller/disallow_helm_tiller.yaml")
       failures = Kyverno::PolicyAudit.run(policy_path, EXCLUDE_NAMESPACES)
 

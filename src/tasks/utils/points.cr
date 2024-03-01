@@ -4,7 +4,36 @@ require "./types/cnf_testsuite_yml_type.cr"
 require "helm"
 require "uuid"
 
+
 module CNFManager
+
+  enum ResultStatus
+    Passed
+    Failed
+    Skipped
+    NA
+    Neutral
+    Pass5
+    Pass3
+
+    def to_basic()
+      case self
+      when Pass5, Pass3
+        ret = CNFManager::ResultStatus::Passed
+      when Neutral
+        ret = CNFManager::ResultStatus::Failed
+      else
+        ret = self
+      end
+    end
+  end
+
+  struct TestcaseResult
+    property state, result_message
+
+    def initialize(@state : CNFManager::ResultStatus, @result_message : String|Nil = nil)
+    end
+  end
 
   module Points
     class Results
@@ -101,14 +130,14 @@ module CNFManager
     end
 
     # Returns what the potential points should be (for a points type) in order to assign those points to a task
-    def self.task_points(task, status : CNFManager::Points::Results::ResultStatus = CNFManager::Points::Results::ResultStatus::Passed)
+    def self.task_points(task, status : CNFManager::ResultStatus = CNFManager::ResultStatus::Passed)
       #todo replace case statement with dynamic point call
       case status
-      when CNFManager::Points::Results::ResultStatus::Passed
+      when CNFManager::ResultStatus::Passed
         resp = CNFManager::Points.task_points(task, true)
-      when CNFManager::Points::Results::ResultStatus::Failed
+      when CNFManager::ResultStatus::Failed
         resp = CNFManager::Points.task_points(task, false)
-      when CNFManager::Points::Results::ResultStatus::Skipped
+      when CNFManager::ResultStatus::Skipped
         resp = dynamic_task_points(task, "skipped")
         # field_name = "skipped"
         # points =points_yml.find {|x| x["name"] == task}
@@ -119,7 +148,7 @@ module CNFManager
         #   points =points_yml.find {|x| x["name"] == "default_scoring"}
         #   resp = points[field_name].as_i if points
         # end
-      when CNFManager::Points::Results::ResultStatus::NA
+      when CNFManager::ResultStatus::NA
         resp = dynamic_task_points(task, "na")
         # field_name = "na"
         # points =points_yml.find {|x| x["name"] == task}
@@ -492,7 +521,7 @@ module CNFManager
     def self.all_task_test_names
       result_items =points_yml.reduce([] of String) do |acc, x|
         if x["name"].as_s == "default_scoring" ||
-            x["tags"].as_s.split(",").find{|x|x=="platform"}
+            x["tags"].as_a.find{|x|x=="platform"}
           acc
         else
           acc << x["name"].as_s
@@ -501,14 +530,12 @@ module CNFManager
     end
 
     def self.tasks_by_tag(tag)
-      found = false
       result_items = points_yml.reduce([] of String) do |acc, x|
-        Log.debug { "tasks_by_tag: tag:#{tag}, points.name:#{x["name"].as_s?}, points.tags:#{x["tags"].as_s?}" }
-        if x["tags"].as_s? 
-          tags_list = x["tags"].as_s.split(",")
-          tag_match = tags_list.map { |parsed_tag|
+        Log.debug { "tasks_by_tag: tag:#{tag}, points.name:#{x["name"].as_s?}, points.tags:#{x["tags"].as_a?}" }
+        if x["tags"].as_a?
+          tag_match = x["tags"].as_a.map { |parsed_tag|
             Log.debug { "parsed_tag #{parsed_tag} tag: #{tag}" }
-            parsed_tag.strip if parsed_tag.strip == tag.strip
+            parsed_tag if parsed_tag == tag.strip
           }.uniq.compact
           Log.debug { "tag_match #{tag_match} name #{x["name"]}" }
           if !tag_match.empty?
@@ -522,13 +549,24 @@ module CNFManager
       end
     end
 
+    def self.emoji_by_task(task)
+      md = points_yml.find {|x| x["name"] == task}
+      Log.warn { "****Warning**** task #{task} not found in points.yml".colorize(:yellow) } unless md
+      if md && md["emoji"]?
+        Log.debug { "task #{task} emoji: #{md["emoji"]?}" }
+        resp = md["emoji"]
+      else
+        resp = [] of String
+      end
+    end
+
     def self.tags_by_task(task)
       points =points_yml.find {|x| x["name"] == task}
       Log.warn { "****Warning**** task #{task} not found in points.yml".colorize(:yellow) } unless points
       Log.info { "points: #{points}" }
       if points && points["tags"]?
           Log.debug { "points tags: #{points["tags"]?}" }
-        resp = points["tags"].as_s.split(",").map{|x| x.strip}
+        resp = points["tags"].as_a
       else
         resp = [] of String
       end
@@ -554,6 +592,17 @@ module CNFManager
       end
       Log.info { "task_type: #{task_type}" }
       task_type
+    end
+
+    def self.task_emoji_by_task(task)
+      case self.task_type_by_task(task)
+      when "essential"
+        "🏆"
+      when "bonus"
+        "✨"
+      else
+        ""
+      end
     end
 
     def self.all_result_test_names(results_file)

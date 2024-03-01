@@ -14,7 +14,7 @@ namespace "platform" do
 
   desc "Does the Platform use a runtime that is oci compliant"
   task "oci_compliant" do |_, args|
-    task_response = CNFManager::Task.task_runner(args, check_cnf_installed=false) do |args|
+    task_response = CNFManager::Task.task_runner(args, check_cnf_installed: false) do |args|
       task_start_time = Time.utc
       testsuite_task = "oci_compliant"
       Log.for(testsuite_task).info { "Starting test" }

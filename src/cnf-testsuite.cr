@@ -82,7 +82,7 @@ task "upsert_release" do |_, args|
   # LOGGING.info "upserting release on: #{ReleaseManager::VERSION}"
   LOGGING.info "upserting release on: #{ReleaseManager::VERSION}"
 
-  ghrm = ReleaseManager::GithubReleaseManager.new("cncf/cnf-testsuite")
+  ghrm = ReleaseManager::GithubReleaseManager.new("cnti-testcatalog/testsuite")
 
   release, asset = ghrm.upsert_release(version=ReleaseManager::VERSION)
   if release
@@ -110,7 +110,7 @@ end
 # https://www.thegeekstuff.com/2013/12/bash-completion-complete/
 # https://kubernetes.io/docs/tasks/tools/install-kubectl/#enable-kubectl-autocompletion
 # https://stackoverflow.com/questions/43794270/disable-or-unset-specific-bash-completion
-desc "Install Shell Completion: check https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md for usage"
+desc "Install Shell Completion: check https://github.com/cnti-testcatalog/testsuite/blob/main/USAGE.md for usage"
 task "completion" do |_|
 
 # assumes bash completion feel free to make a pr for zsh and check an arg for it
