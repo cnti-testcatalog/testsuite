@@ -6,10 +6,13 @@ require "totem"
 desc "Install UERANSIM"
 task "install_ueransim" do |_, args|
   Log.info {"UERANSIM Setup"}
-  next unless args["cnf-config"]?
+  if args["cnf-config"]?
   cnf_config_file = args["cnf-config"].as(String)
   config = CNFManager::Config.parse_config_yml(cnf_config_file)
   UERANSIM.install(config)
+  else
+    puts "you must provide a cnf-testsuite.yml".colorize(:red)
+  end
 end
 
 desc "Uninstall UERANSIM"
