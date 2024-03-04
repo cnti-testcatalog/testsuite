@@ -8,8 +8,10 @@ describe "AirGap" do
 
   before_all do
     Helm.helm_repo_add("chaos-mesh", "https://charts.chaos-mesh.org")
-    # AirGap::LOGGING.info `./cnf-testsuite airgapped output-file=/tmp/airgapped.tar.gz` unless File.exists?("/tmp/airgapped.tar.gz")
-    Log.info { `./cnf-testsuite airgapped output-file=/tmp/airgapped.tar.gz` }
+    #response_s = `./cnf-testsuite airgapped output-file=/tmp/airgapped.tar.gz` unless File.exists?("/tmp/airgapped.tar.gz")
+    #AirGap::LOGGING.info response_s 
+    response_s = `./cnf-testsuite airgapped output-file=/tmp/airgapped.tar.gz`
+    Log.info {response_s}
     (File.exists?("/tmp/airgapped.tar.gz")).should be_true
   end
 

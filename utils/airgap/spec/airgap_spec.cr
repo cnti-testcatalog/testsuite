@@ -113,7 +113,8 @@ describe "AirGap" do
   it "'#AirGap.create_pod_by_image' should install the cri pod in the cluster", tags: ["airgap-tools"]  do
     pods = AirGap.pods_with_tar()
     if pods.empty?
-      Log.info { `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml` }
+      response_s = `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml`
+      Log.info {response_s}
       $?.success?.should be_true
       pods = AirGap.pods_with_tar()
     end
@@ -124,13 +125,15 @@ describe "AirGap" do
     (resp).should be_true
   ensure
     KubectlClient::Delete.command("daemonset cri-tools")
-    Log.info { `./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml wait_count=0` }
+    response_s = `./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml wait_count=0`
+    Log.info {response_s}
   end
 
   it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that has an image with tar avaliable on the node.", tags: ["airgap-tools"]  do
     pods = AirGap.pods_with_tar()
     if pods.empty?
-      Log.info { `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml` }
+      response_s = `./cnf-testsuite cnf_setup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml`
+      Log.info {response_s}
       $?.success?.should be_true
     end
     AirGap.bootstrap_cluster()
@@ -149,7 +152,8 @@ describe "AirGap" do
     end
   ensure
     KubectlClient::Delete.command("daemonset cri-tools")
-    Log.info { `./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml wait_count=0` }
+    response_s = `./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/envoy/cnf-testsuite.yml wait_count=0`
+    Log.info {response_s}
   end
 
 

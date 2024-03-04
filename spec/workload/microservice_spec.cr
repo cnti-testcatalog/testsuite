@@ -10,8 +10,8 @@ require "sam"
 describe "Microservice" do
   before_all do
     Log.info { "Running testsuite setup" }
-    Log.info { `./cnf-testsuite setup` }
-    Log.info { `./cnf-testsuite setup` }
+    response_s = `./cnf-testsuite setup`
+    Log.info {response_s}
     process_result = $?.success?
     Log.info(&.emit("Testsuite setup process result", process_result: process_result))
     process_result.should be_true
@@ -133,13 +133,15 @@ describe "Microservice" do
 
   it "'reasonable_startup_time' should pass if the cnf has a reasonable startup time(helm_directory)", tags: ["reasonable_startup_time"]  do
     begin
-      Log.info {`./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`}
+      response_s = `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
+      Log.info {response_s}
       response_s = `./cnf-testsuite reasonable_startup_time verbose`
       Log.info { response_s }
       
       (/PASSED: CNF had a reasonable startup time/ =~ response_s).should_not be_nil
     ensure
-      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns` }
+      response_s = `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns`
+      Log.info {response_s}
       $?.success?.should be_true
     end
   end
@@ -204,26 +206,30 @@ describe "Microservice" do
 
   it "'service_discovery' should pass if any containers in the cnf are exposed as a service", tags: ["service_discovery"]  do
     begin
-      Log.info { `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns` }
+      response_s = `./cnf-testsuite cnf_setup cnf-path=sample-cnfs/sample_coredns`
+      Log.info {response_s}
       response_s = `./cnf-testsuite service_discovery verbose`
       Log.info { response_s }
       $?.success?.should be_true
       (/PASSED: Some containers exposed as a service/ =~ response_s).should_not be_nil
     ensure
-      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns` }
+      response_s = `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns`
+      Log.info {response_s}
       $?.success?.should be_true
     end
   end
 
   it "'service_discovery' should fail if no containers in the cnf are exposed as a service", tags: ["service_discovery"]  do
     begin
-      Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-ndn-privileged` }
+      response_s = `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-ndn-privileged`
+      Log.info {response_s}
       response_s = `./cnf-testsuite service_discovery verbose`
       Log.info { response_s }
       $?.success?.should be_true
       (/FAILED: No containers exposed as a service/ =~ response_s).should_not be_nil
     ensure
-      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-ndn-privileged` }
+      response_s = `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-ndn-privileged`
+      Log.info {response_s}
       $?.success?.should be_true
     end
   end
@@ -235,13 +241,15 @@ describe "Microservice" do
       #todo 3. Collect all signals sent, if SIGKILL is captured, application fails test because it doesn't exit child processes cleanly
       #todo 3. Collect all signals sent, if SIGTERM is captured, application pass test because it  exits child processes cleanly
       #todo 4. Make sure that threads are not counted as new processes.  A thread does not get a signal (sigterm or sigkill)
-      Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_good_signal_handling/` }
+      response_s = `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_good_signal_handling/`
+      Log.info {response_s}
       response_s = `./cnf-testsuite sig_term_handled verbose`
       Log.info { response_s }
       $?.success?.should be_true
       (/PASSED: Sig Term handled/ =~ response_s).should_not be_nil
     ensure
-      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_good_signal_handling/` }
+      response_s = `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_good_signal_handling/`
+      Log.info {response_s}
       $?.success?.should be_true
     end
   end
@@ -253,13 +261,15 @@ describe "Microservice" do
       #todo 3. Collect all signals sent, if SIGKILL is captured, application fails test because it doesn't exit child processes cleanly
       #todo 3. Collect all signals sent, if SIGTERM is captured, application pass test because it  exits child processes cleanly
       #todo 4. Make sure that threads are not counted as new processes.  A thread does not get a signal (sigterm or sigkill)
-      Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_bad_signal_handling/` }
+      response_s = `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_bad_signal_handling/`
+      Log.info {response_s}
       response_s = `./cnf-testsuite sig_term_handled verbose`
       Log.info { response_s }
       $?.success?.should be_true
       (/FAILED: Sig Term not handled/ =~ response_s).should_not be_nil
     ensure
-      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_bad_signal_handling/` }
+      response_s = `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_bad_signal_handling/`
+      Log.info {response_s}
       $?.success?.should be_true
     end
   end
@@ -271,7 +281,8 @@ describe "Microservice" do
       #todo 3. Collect all signals sent, if SIGKILL is captured, application fails test because it doesn't exit child processes cleanly
       #todo 3. Collect all signals sent, if SIGTERM is captured, application pass test because it  exits child processes cleanly
       #todo 4. Make sure that threads are not counted as new processes.  A thread does not get a signal (sigterm or sigkill)
-      Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_good_signal_handling_tini/` }
+      response_s = `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_good_signal_handling_tini/`
+      Log.info {response_s}
 
       # Workaround to wait using kubectl because Jenkins pod takes a LONG time to start.
       Log.info { `kubectl wait --for=condition=ready=True pod/jenkins-0 -n cnfspace --timeout=500s` }
@@ -281,7 +292,8 @@ describe "Microservice" do
       $?.success?.should be_true
       (/PASSED: Sig Term handled/ =~ response_s).should_not be_nil
     ensure
-      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_good_signal_handling_tini/` }
+      response_s = `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_good_signal_handling_tini/`
+      Log.info {response_s}
       $?.success?.should be_true
     end
   end
@@ -289,26 +301,30 @@ describe "Microservice" do
   it "'zombie_handled' should pass if a zombie is succesfully reaped by PID 1", tags: ["zombie"]  do
     begin
 
-      Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_good_zombie_handling/` }
+      response_s = `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample_good_zombie_handling/`
+      Log.info {response_s}
       response_s = `./cnf-testsuite zombie_handled verbose`
       Log.info { response_s }
       $?.success?.should be_true
       (/PASSED: Zombie handled/ =~ response_s).should_not be_nil
     ensure
-      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_good_zombie_handling/` }
+      response_s = `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_good_zombie_handling/`
+      Log.info {response_s}
       $?.success?.should be_true
     end
   end
   it "'zombie_handled' should failed if a zombie is not succesfully reaped by PID 1", tags: ["zombie"]  do
     begin
 
-      Log.info { `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-bad-zombie/` }
+      response_s = `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/sample-bad-zombie/`
+      Log.info {response_s}
       response_s = `./cnf-testsuite zombie_handled verbose`
       Log.info { response_s }
       $?.success?.should be_true
       (/FAILED: Zombie not handled/ =~ response_s).should_not be_nil
     ensure
-      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-bad-zombie/` }
+      response_s = `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-bad-zombie/`
+      Log.info {response_s}
       $?.success?.should be_true
     end
   end
