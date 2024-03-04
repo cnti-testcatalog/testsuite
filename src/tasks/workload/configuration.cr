@@ -309,7 +309,7 @@ end
 
 desc "Does the CNF use K8s Secrets?"
 task "secrets_used" do |t, args|
-  CNFManager::Task.task_runner(args, task:t) do |args, config|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     # Parse the cnf-testsuite.yml
     resp = ""
     task_response = CNFManager.workload_resource_test(args, config, check_containers: false) do |resource, containers, volumes, initialized|

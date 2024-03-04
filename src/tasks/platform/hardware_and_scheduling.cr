@@ -13,12 +13,8 @@ namespace "platform" do
   end
 
   desc "Does the Platform use a runtime that is oci compliant"
-  task "oci_compliant" do |_, args|
-    task_response = CNFManager::Task.task_runner(args, check_cnf_installed: false) do |args|
-      task_start_time = Time.utc
-      testsuite_task = "oci_compliant"
-      Log.for(testsuite_task).info { "Starting test" }
-
+  task "oci_compliant" do |t, args|
+    task_response = CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do |args|
       resp = KubectlClient::Get.container_runtimes
       all_oci_runtimes = true
       resp.each do |x|
@@ -27,12 +23,10 @@ namespace "platform" do
         end
       end
       LOGGING.info "all_oci_runtimes: #{all_oci_runtimes}"
-      if all_oci_runtimes 
-        emoji_chaos_oci_compliant="📶☠️"
-        upsert_passed_task(testsuite_task,"✔️  PASSED: Your platform is using the following runtimes: [#{KubectlClient::Get.container_runtimes.join(",")}] which are OCI compliant runtimes #{emoji_chaos_oci_compliant}", task_start_time)
+      if all_oci_runtimes
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Your platform is using the following runtimes: [#{KubectlClient::Get.container_runtimes.join(",")}] which are OCI compliant runtimes")
       else
-        emoji_chaos_oci_compliant="📶☠️"
-        upsert_failed_task(testsuite_task, "✖️  FAILED: Platform has at least one node that uses a non OCI compliant runtime #{emoji_chaos_oci_compliant}", task_start_time)
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Platform has at least one node that uses a non OCI compliant runtime")
       end
     end
   end
