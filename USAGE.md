@@ -1,4 +1,4 @@
-# CNF Test Suite CLI Usage Documentation
+# CNTI Test Catalog CLI Usage Documentation
 
 ### Table of Contents
 
@@ -20,7 +20,7 @@
 
 ### Overview
 
-The CNF Test suite can be run in production mode (using an executable) or in developer mode (using [crystal lang directly](INSTALL.md#source-install)). See the [pseudo code documentation](PSEUDO-CODE.md) for examples of how the internals of WIP tests might work.
+The CNTI Test Catalog can be run in production mode (using an executable) or in developer mode (using [crystal lang directly](INSTALL.md#source-install)). See the [pseudo code documentation](PSEUDO-CODE.md) for examples of how the internals of WIP tests might work.
 
 ### Syntax for running any of the tests
 
@@ -102,7 +102,7 @@ cnf-config=<path_to_your_config_file>/cnf-testsuite.yml
 ./cnf-testsuite help
 ```
 
-#### Clean up the CNF Test Suite, the K8s cluster, and upstream projects:
+#### Clean up the CNTI Test Catalog, the K8s cluster, and upstream projects:
 
 ```
 ./cnf-testsuite cleanup
@@ -588,7 +588,7 @@ Select a database configuration that uses statefulsets and elastic storage volum
 
 <b>Remediation for failing this test:</b> 
 Ensure that your CNF doesn't stall or get into a corrupted state when network degradation occurs.
-A mitigation stagagy(in this case keep the timeout i.e., access latency low) could be via some middleware that can switch traffic based on some SLOs parameters.
+A mitigation stagagy (in this case keep the timeout i.e., access latency low) could be via some middleware that can switch traffic based on some SLOs parameters.
 </b>
 
 ## [CNF disk fill](docs/LIST_OF_TESTS.md#cnf-with-host-disk-fill)
@@ -624,7 +624,7 @@ Ensure that your CNF is resilient and doesn't fail on a forced/graceful pod fail
 ```
 
 <b>Remediation for failing this test:</b> 
-Ensure that your CNF is resilient to heavy memory usage and can maintain some level of avaliabliy. 
+Ensure that your CNF is resilient to heavy memory usage and can maintain some level of availability. 
 </b>
 
 
@@ -636,7 +636,7 @@ Ensure that your CNF is resilient to heavy memory usage and can maintain some le
 ```
 
 <b>Remediation for failing this test:</b> 
-Ensure that your CNF is resilient to continuous and heavy disk IO load and can maintain some level of avaliabliy
+Ensure that your CNF is resilient to continuous and heavy disk IO load and can maintain some level of availability
 </b>
 
 ## [Network corruption](docs/LIST_OF_TESTS.md#network-corruption)
@@ -647,7 +647,7 @@ Ensure that your CNF is resilient to continuous and heavy disk IO load and can m
 ```
 
 <b>Remediation for failing this test:</b> 
-Ensure that your CNF is resilient to a lossy/flaky network and can maintain a level of avaliabliy.
+Ensure that your CNF is resilient to a lossy/flaky network and can maintain a level of availability.
 </b>
 
 
@@ -1128,7 +1128,7 @@ When specifying container images, always specify a tag and ensure to use an immu
 
 <b>Remediation for failing this test:</b> 
 
-Review all Helm Charts & Kubernetes Manifest files for the CNF and remove all occurrences of the nostPort field in you configuration. Alternatively, configure a service or use another mechanism for exposing your contianer.
+Review all Helm Charts & Kubernetes Manifest files for the CNF and remove all occurrences of the nostPort field in you configuration. Alternatively, configure a service or use another mechanism for exposing your container.
 
 </b>
 
@@ -1143,7 +1143,7 @@ Review all Helm Charts & Kubernetes Manifest files for the CNF and remove all oc
 
 <b>Remediation for failing this test:</b> 
 
-Review all Helm Charts & Kubernetes Manifest files for the CNF and remove all occurrences of the hostPort field in you configuration. Alternatively, configure a service or use another mechanism for exposing your contianer.
+Review all Helm Charts & Kubernetes Manifest files for the CNF and remove all occurrences of the hostPort field in you configuration. Alternatively, configure a service or use another mechanism for exposing your container.
 </b>
 
 
@@ -1279,7 +1279,7 @@ Enable ClusterAPI and start using it to manage the provisioning and lifecycle of
 ```
 <b>Remediation for failing this test:</b> 
 
-Check if your Kuberentes Platform is using an [OCI Compliant Runtime](https://opencontainers.org/). If you platform is not using an OCI Compliant Runtime, you'll need to switch to a new runtitme that is OCI Compliant in order to pass this test.
+Check if your Kuberentes Platform is using an [OCI Compliant Runtime](https://opencontainers.org/). If you platform is not using an OCI Compliant Runtime, you'll need to switch to a new runtime that is OCI Compliant in order to pass this test.
 
 </b>
 
