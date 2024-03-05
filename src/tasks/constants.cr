@@ -26,7 +26,6 @@ TESTSUITE_NAMESPACE = "cnf-testsuite"
 
 #Embedded global text variables
 EmbeddedFileManager.node_failure_values
-EmbeddedFileManager.falco_rules
 EmbeddedFileManager.reboot_daemon
 EmbeddedFileManager.chaos_network_loss
 EmbeddedFileManager.chaos_cpu_hog

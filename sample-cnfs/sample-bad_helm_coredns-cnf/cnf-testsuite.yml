@@ -2,4 +2,4 @@
 helm_directory: chart
 release_name: bad-helm-coredns-coredns
 service_name: bad-helm-coredns-coredns
-allowlist_helm_chart_container_names: [falco, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
+allowlist_helm_chart_container_names: [nginx, coredns, calico-node, kube-proxy, nginx-proxy]

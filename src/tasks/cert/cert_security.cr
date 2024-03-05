@@ -5,7 +5,7 @@ require "colorize"
 require "totem"
 require "../utils/utils.cr"
 
-desc "CNF containers should be isolated from one another and the host.  The CNF Test suite uses tools like Falco, Sysdig Inspect and gVisor"
+desc "CNF containers should be isolated from one another and the host.  The CNF Test suite uses tools like Sysdig Inspect and gVisor"
 task "cert_security", [
    "cert_security_title", 
     "symlink_file_system",
