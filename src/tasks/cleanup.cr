@@ -51,7 +51,6 @@ task "tools_cleanup", [
     "uninstall_kubescape",
     "uninstall_cluster_tools",
     "uninstall_opa",
-    "uninstall_falco",
  
     # Helm needs to be uninstalled last to allow other uninstalls to use helm if necessary.
     # Check this issue for details - https://github.com/cncf/cnf-testsuite/issues/1586

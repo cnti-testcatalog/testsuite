@@ -4,9 +4,6 @@ require "log"
 require "halite"
 
 module EmbeddedFileManager
-  macro falco_rules
-    FALCO_RULES = Base64.decode_string("{{ `cat ./embedded_files/falco_rule.yaml | base64` }}")
-  end
   macro node_failure_values
     NODE_FAILED_VALUES = Base64.decode_string("{{ `cat ./embedded_files/node_failure_values.yml  | base64`}}")
   end

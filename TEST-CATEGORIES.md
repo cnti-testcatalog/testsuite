@@ -76,7 +76,7 @@ The CNTI Test Catalog validates interoperability of CNF **workloads** supplied b
 
 ## Security Tests
 
-#### CNF containers should be isolated from one another and the host. The CNTI Test Catalog uses tools like [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Falco](https://github.com/falcosecurity/falco), and [Armosec Kubescape](https://github.com/armosec/kubescape):
+#### CNF containers should be isolated from one another and the host. The CNTI Test Catalog uses tools like [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper) and [Armosec Kubescape](https://github.com/armosec/kubescape):
 
 #### On workloads:
 
@@ -111,7 +111,7 @@ The CNTI Test Catalog validates interoperability of CNF **workloads** supplied b
 - Testing if the CNF is installed using a [versioned](https://helm.sh/docs/topics/chart_best_practices/dependencies/#versions) Helm v3 chart
 - Searching for hardcoded IP addresses, subnets, or node ports in the configuration
 - Checking if the pod/container can be started without mounting a volume (e.g. using [helm configuration](https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/)) that has configuration files
-- Testing by reseting any child processes, and when the parent process is started, checking to see if those child processes are reaped (ie. monitoring processes with [Falco](https://github.com/falcosecurity/falco) or [sysdig-inspect](https://github.com/draios/sysdig-inspect))
+- Testing by reseting any child processes, and when the parent process is started, checking to see if those child processes are reaped (ie. monitoring processes with [sysdig-inspect](https://github.com/draios/sysdig-inspect))
 - Testing if there are any (non-declarative) hardcoded IP addresses or subnet masks
 - Tests if nodeport is not used.
 - Tests hostport is not used.

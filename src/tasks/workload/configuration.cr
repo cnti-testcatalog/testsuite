@@ -172,19 +172,6 @@ end
 
 desc "Do all cnf images have versioned tags?"
 task "versioned_tag", ["install_opa"] do |_, args|
-  # todo wait for opa
-   # unless KubectlClient::Get.resource_wait_for_install("Daemonset", "falco") 
-   #   LOGGING.info "Falco Failed to Start"
-   #   upsert_skipped_task("non_root_user", "⏭️  SKIPPED: Skipping non_root_user: Falco failed to install. Check Kernel Headers are installed on the Host Systems(K8s).")
-   #   node_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-   #   pods = KubectlClient::Get.pods_by_label(node_pods, "app", "falco")
-   #   falco_pod_name = pods[0].dig("metadata", "name")
-   #   LOGGING.info "Falco Pod Name: #{falco_pod_name}"
-   #   resp = KubectlClient.logs(falco_pod_name)
-   #   puts "Falco Logs: #{resp[:output]}"
-   #   next
-   # end
-   #
   CNFManager::Task.task_runner(args) do |args,config|
     task_start_time = Time.utc
     testsuite_task = "versioned_tag"
