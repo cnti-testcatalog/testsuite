@@ -1,5 +1,0 @@
----
-helm_directory: chart
-release_name: privileged-coredns
-service_name: privileged-coredns-coredns 
-allowlist_helm_chart_container_names: [coredns]

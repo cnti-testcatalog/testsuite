@@ -101,11 +101,7 @@ task "bad_helm_cnf_cleanup" do |_, args|
   CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-bad_helm_coredns-cnf", verbose: true)
 end
 
-task "sample_privileged_cnf_whitelisted_cleanup" do |_, args|
-  CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_whitelisted_privileged_cnf", verbose: true)
-end
-
-task "sample_privileged_cnf_non_whitelisted_cleanup" do |_, args|
+task "sample_privileged_cnf_cleanup" do |_, args|
   CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
 end
 

@@ -7,4 +7,3 @@ helm_repository:
 helm_chart: jenkins/jenkins
 helm_install_namespace: cnfspace
 helm_values: "--set controller.sidecars.configAutoReload.enabled=false"
-allowlist_helm_chart_container_names: [node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]

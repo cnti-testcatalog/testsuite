@@ -38,7 +38,6 @@ class CnfTestSuiteYmlType
 
   property rollback_from_tag : String?
 
-  property allowlist_helm_chart_container_names : Array(String)?
 
   # property container_names : Array(Hash(String,String))
 end

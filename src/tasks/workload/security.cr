@@ -3,6 +3,7 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
+require "json"
 require "../utils/utils.cr"
 
 desc "CNF containers should be isolated from one another and the host.  The CNF Test suite uses tools like Sysdig Inspect and gVisor"
@@ -166,15 +167,14 @@ task "privileged" do |_, args|
     testsuite_task = "privileged"
     Log.for(testsuite_task).info { "Starting test" }
 
-    white_list_container_names = config.cnf_config[:white_list_container_names]
-    VERBOSE_LOGGING.info "white_list_container_names #{white_list_container_names.inspect}" if check_verbose(args)
     violation_list = [] of NamedTuple(kind: String, name: String, container: String, namespace: String)
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
       privileged_list = KubectlClient::Get.privileged_containers
-      white_list_containers = ((PRIVILEGED_WHITELIST_CONTAINERS + white_list_container_names) - [container])
+      resource_containers = KubectlClient::Get.resource_containers(resource["kind"],resource["name"],resource["namespace"])
+      resource_containers_list = (JSON.parse(resource_containers.to_json).as_a).map { |element| element["name"] }
       # Only check the containers that are in the deployed helm chart or manifest
-      (privileged_list & ([container.as_h["name"].as_s] - white_list_containers)).each do |container_name|
+      (privileged_list & resource_containers_list).each do |container_name|
         violation_list << {kind: resource[:kind], name: resource[:name], container: container_name, namespace: resource[:namespace]}
       end
       if violation_list.size > 0

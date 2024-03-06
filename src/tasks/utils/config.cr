@@ -32,7 +32,6 @@ module CNFManager
                                      helm_install_namespace: String,
                                      rolling_update_tag: String,
                                      container_names: Array(Hash(String, String )) | Nil,
-                                     white_list_container_names: Array(String),
                                      docker_insecure_registries: Array(String) | Nil,
                                      #todo change this to an array of labels that capture all of 5g core nodes
                                      amf_label: String,
@@ -150,14 +149,6 @@ module CNFManager
       helm_chart_path = destination_cnf_dir + "/" + CNFManager.sandbox_helm_directory(working_chart_directory)
       helm_chart_path = Path[helm_chart_path].expand.to_s
       manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
-      white_list_container_names = optional_key_as_string(config, "allowlist_helm_chart_container_names")
-      if config["allowlist_helm_chart_container_names"]?
-        white_list_container_names = config["allowlist_helm_chart_container_names"].as_a.map do |c|
-          "#{c.as_s?}"
-        end
-      else
-        white_list_container_names = [] of String
-      end
       if config["container_names"]?
         container_names_totem = config["container_names"]
         container_names = container_names_totem.as_a.map do |container|
@@ -210,7 +201,6 @@ module CNFManager
                                helm_install_namespace: helm_install_namespace,
                                rolling_update_tag: "",
                                container_names: container_names,
-                               white_list_container_names: white_list_container_names,
                                docker_insecure_registries: docker_insecure_registries,
                                amf_label: core,
                                smf_label: smf,
