@@ -285,7 +285,8 @@ describe "Microservice" do
       Log.info {response_s}
 
       # Workaround to wait using kubectl because Jenkins pod takes a LONG time to start.
-      Log.info { `kubectl wait --for=condition=ready=True pod/jenkins-0 -n cnfspace --timeout=500s` }
+      response_s = `kubectl wait --for=condition=ready=True pod/jenkins-0 -n cnfspace --timeout=500s`
+      Log.info {response_s}
 
       response_s = `./cnf-testsuite sig_term_handled verbose`
       Log.info { response_s }
