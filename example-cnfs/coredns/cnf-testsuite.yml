@@ -1,5 +1,4 @@
 ---
-allowlist_helm_chart_container_names: [] # [LIST_OF_CONTAINERS_ALLOWED_TO_RUN_PRIVLIDGED]
 helm_chart: stable/coredns # PUBLISHED_CNFS_HELM_CHART_REPO/NAME ; or
 helm_repository: # CONFIGURATION OF HELM REPO - ONLY NEEDED WHEN USING helm_chart
   name: stable # HELM_CHART_REPOSITORY_NAME

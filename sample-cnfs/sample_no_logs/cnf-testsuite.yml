@@ -4,4 +4,3 @@ release_name: python-http-server
 helm_repository:
   name: 
   repo_url:
-allowlist_helm_chart_container_names: []
