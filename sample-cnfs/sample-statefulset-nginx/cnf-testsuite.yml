@@ -4,7 +4,6 @@ manifest_directory: manifests
 helm_repository:
   name:
   repo_url:
-allowlist_helm_chart_container_names: []
 
 # The below configuration for the rolling tests
 # refer to container image versions that are

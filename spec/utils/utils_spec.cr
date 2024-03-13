@@ -5,6 +5,7 @@ require "../../src/tasks/utils/utils.cr"
 require "kubectl_client"
 require "file_utils"
 require "sam"
+require "json"
 
 describe "Utils" do
   before_all do
@@ -83,15 +84,14 @@ describe "Utils" do
 
       Log.info {"single_task_runner spec args #{args.inspect}"}
 
-      white_list_container_names = config.cnf_config[:white_list_container_names]
-      Log.info {"white_list_container_names #{white_list_container_names.inspect}"}
       violation_list = [] of String
       resource_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
         privileged_list = KubectlClient::Get.privileged_containers
-        white_list_containers = ((PRIVILEGED_WHITELIST_CONTAINERS + white_list_container_names) - [container])
+        resource_containers = KubectlClient::Get.resource_containers(resource["kind"],resource["name"],resource["namespace"])
+        resource_containers_list = (JSON.parse(resource_containers.to_json).as_a).map { |element| element["name"] }
         # Only check the containers that are in the deployed helm chart or manifest
-        (privileged_list & ([container.as_h["name"].as_s] - white_list_containers)).each do |x|
+        (privileged_list & resource_containers_list).each do |x|
           violation_list << x
         end
         if violation_list.size > 0
@@ -157,15 +157,14 @@ describe "Utils" do
     task_response = CNFManager::Task.all_cnfs_task_runner(my_args) do |args, config|
       LOGGING.info("all_cnfs_task_runner spec args #{args.inspect}")
       VERBOSE_LOGGING.info "privileged" if check_verbose(args)
-      white_list_container_names = config.cnf_config[:white_list_container_names]
-      VERBOSE_LOGGING.info "white_list_container_names #{white_list_container_names.inspect}" if check_verbose(args)
       violation_list = [] of String
       resource_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
         privileged_list = KubectlClient::Get.privileged_containers
-        white_list_containers = ((PRIVILEGED_WHITELIST_CONTAINERS + white_list_container_names) - [container])
+        resource_containers = KubectlClient::Get.resource_containers(resource["kind"],resource["name"],resource["namespace"])
+        resource_containers_list = (JSON.parse(resource_containers.to_json).as_a).map { |element| element["name"] }
         # Only check the containers that are in the deployed helm chart or manifest
-        (privileged_list & ([container.as_h["name"].as_s] - white_list_containers)).each do |x|
+        (privileged_list & resource_containers_list).each do |x|
           violation_list << x
         end
         if violation_list.size > 0

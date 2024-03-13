@@ -4,10 +4,3 @@ helm_repository:
   name: stable
   repo_url: https://cncf.gitlab.io/stable
 helm_chart: stable/coredns
-allowlist_helm_chart_container_names:
-- node-cache
-- nginx
-- coredns
-- calico-node
-- kube-proxy
-- nginx-proxy

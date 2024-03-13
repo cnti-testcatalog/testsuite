@@ -15,7 +15,7 @@ describe "Security" do
       LOGGING.debug `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-statefulset-cnf/cnf-testsuite.yml`
     end
   end
-  it "'privileged' should fail on a non-whitelisted, privileged cnf", tags: ["privileged"] do
+  it "'privileged' should fail on a privileged cnf", tags: ["privileged"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml verbose wait_count=0`
       $?.success?.should be_true
@@ -25,19 +25,7 @@ describe "Security" do
       (/Found.*privileged containers.*/ =~ response_s).should_not be_nil
       (/Privileged container (privileged-coredns) in.*/ =~ response_s).should_not be_nil
     ensure
-      `./cnf-testsuite sample_privileged_cnf_non_whitelisted_cleanup`
-    end
-  end
-  it "'privileged' should pass on a whitelisted, privileged cnf", tags: ["privileged"] do
-    begin
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_whitelisted_privileged_cnf/cnf-testsuite.yml verbose wait_count=0`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite privileged cnf-config=sample-cnfs/sample_whitelisted_privileged_cnf verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/Found.*privileged containers.*/ =~ response_s).should be_nil
-    ensure
-      `./cnf-testsuite sample_privileged_cnf_whitelisted_cleanup`
+      `./cnf-testsuite sample_privileged_cnf_cleanup`
     end
   end
   it "'privilege_escalation' should fail on a cnf that has escalated privileges", tags: ["privileged"] do

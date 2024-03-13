@@ -4,7 +4,7 @@
 The cnf-testsuite.yml is used by `cnf_setup` in order to install the CNF to be tested onto an existing K8s cluster. 
 
 
-The information in the cnf-testsuite.yml is also used for additional configuration of some tests e.g. `allowlist_helm_chart_container_names` is used for exculding containers from the [privileged](https://github.com/cnti-testcatalog/testsuite/blob/main/src/tasks/workload/security.cr#L196) container test.
+The information in the cnf-testsuite.yml is also used for additional configuration of some tests e.g. `helm_install_namespace` is used for setting the namespace that helm will use to install the CNF to.
 
 
 ### Table of Contents
@@ -20,7 +20,6 @@ The following is a basic working example cnf-testsuite.yml file that can be foun
 
 ```yaml=
 ---
-allowlist_helm_chart_container_names: [] # [LIST_OF_CONTAINERS_ALLOWED_TO_RUN_PRIVLIDGED]
 helm_chart: stable/coredns # PUBLISHED_CNFS_HELM_CHART_REPO/NAME ; or
 helm_repository: # CONFIGURATION OF HELM REPO - ONLY NEEDED WHEN USING helm_chart 
   name: stable # HELM_CHART_REPOSITORY_NAME
@@ -44,22 +43,6 @@ Prereqs: You must have kubernetes cluster, curl, and helm 3.1.1 or greater on yo
 - Inspect the cnf-testsuite.yml file for accuracy
 
 ### Keys and Values
-
-#### allowlist_helm_chart_container_names
-
-The values of this key are the names of the 'containers' defined in the Kubernetes pod spec of pods that are allowed to be running in privileged mode. (Optional)
-
-This value is used to allow 'particular' pods to run in privileged mode on the K8s cluster where is CNF being tested is installed.
-
-The reason this is needed is because the Test Suite will check, 'all' pods in the cluster, to see if they're running in privileged mode.
-
-This is done because it's a common cloud-native practice to delegate 'privileged' networking tasks to only a single app e.g Multus, NSM vs making the CNF privileged itself. As a consequence the allowlist can only be used to exempt 'privileged' infrastructure services running as pods e.g NSM, Multus and cannot be used to exempt the CNF being tested.
-
-Example setting:
-
-`allowlist_helm_chart_container_names: [coredns]`
-
-
 
 #### helm_chart
 
