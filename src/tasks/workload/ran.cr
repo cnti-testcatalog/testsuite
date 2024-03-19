@@ -14,13 +14,8 @@ task "ran", ["oran_e2_connection"] do |_, args|
   end
 end
 desc "Test if RAN uses the ORAN e2 interface"
-task "oran_e2_connection" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "oran_e2_connection"
-    Log.for(testsuite_task).info { "Starting test" }
-
-    Log.debug { "cnf_config: #{config}" }
+task "oran_e2_connection" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     release_name = config.cnf_config[:release_name]
     destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)))
     if ORANMonitor.isCNFaRIC?(config.cnf_config) 
@@ -29,14 +24,12 @@ task "oran_e2_connection" do |_, args|
 
 
       if e2_found  == "true"
-        resp = upsert_passed_task(testsuite_task,"✔️  PASSED: RAN connects to a RIC using the e2 standard interface", task_start_time)
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "RAN connects to a RIC using the e2 standard interface")
       else
-        resp = upsert_failed_task(testsuite_task, "✖️  FAILED: RAN does not connect to a RIC using the e2 standard interface", task_start_time)
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "RAN does not connect to a RIC using the e2 standard interface")
       end
-      resp
     else
-      upsert_na_task(testsuite_task, "⏭️  N/A: [oran_e2_connection] No ric designated in cnf_testsuite.yml for #{destination_cnf_dir}", task_start_time)
-      next
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::NA, "[oran_e2_connection] No ric designated in cnf_testsuite.yml for #{destination_cnf_dir}")
     end
   end
 

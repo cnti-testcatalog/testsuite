@@ -85,7 +85,7 @@ describe "Operator" do
       $?.success?.should be_true
       resp = `./cnf-testsuite -l info operator_installed`
       Log.info { "#{resp}" }
-      (/NA: No Operators Found/ =~ resp).should_not be_nil
+      (/N\/A: No Operators Found/ =~ resp).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns`
       $?.success?.should be_true

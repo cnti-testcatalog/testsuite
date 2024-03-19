@@ -146,7 +146,7 @@ describe "SampleUtils" do
 
   it "'CNFManager::Points.all_task_test_names' should return all tasks names", tags: ["points"] do
     CNFManager::Points.clean_results_yml
-		tags = ["alpha_k8s_apis", "application_credentials", "cni_compatible", "container_sock_mounts", "database_persistence", "default_namespace", "disk_fill", "elastic_volumes", "external_ips", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "helm_chart_published", "helm_chart_valid", "helm_deploy", "host_network", "host_pid_ipc_privileges", "hostpath_mounts", "hostport_not_used", "immutable_configmap", "immutable_file_systems", "increase_decrease_capacity", "ingress_egress_blocked", "insecure_capabilities", "ip_addresses", "latest_tag", "linux_hardening", "liveness", "log_output", "no_local_volume_configuration", "node_drain", "nodeport_not_used", "non_root_containers", "open_metrics", "operator_installed", "oran_e2_connection", "pod_delete", "pod_dns_error", "pod_io_stress", "pod_memory_hog", "pod_network_corruption", "pod_network_duplication", "pod_network_latency", "privilege_escalation", "privileged", "privileged_containers", "prometheus_traffic", "readiness", "reasonable_image_size", "reasonable_startup_time", "require_labels", "resource_policies", "rollback", "rolling_downgrade", "rolling_update", "rolling_version_change", "routed_logs", "secrets_used", "selinux_options", "service_account_mapping", "service_discovery", "shared_database", "sig_term_handled", "single_process_type", "smf_upf_heartbeat", "specialized_init_system", "suci_enabled", "symlink_file_system", "sysctls", "tracing", "versioned_tag", "volume_hostpath_not_found"]
+		tags = ["alpha_k8s_apis", "application_credentials", "cni_compatible", "container_sock_mounts", "database_persistence", "default_namespace", "disk_fill", "elastic_volumes", "external_ips", "hardcoded_ip_addresses_in_k8s_runtime_configuration", "helm_chart_published", "helm_chart_valid", "helm_deploy", "host_network", "host_pid_ipc_privileges", "hostpath_mounts", "hostport_not_used", "immutable_configmap", "immutable_file_systems", "increase_decrease_capacity", "ingress_egress_blocked", "insecure_capabilities", "ip_addresses", "latest_tag", "linux_hardening", "liveness", "log_output", "no_local_volume_configuration", "node_drain", "nodeport_not_used", "non_root_containers", "open_metrics", "operator_installed", "oran_e2_connection", "pod_delete", "pod_dns_error", "pod_io_stress", "pod_memory_hog", "pod_network_corruption", "pod_network_duplication", "pod_network_latency", "privilege_escalation", "privileged", "privileged_containers", "prometheus_traffic", "readiness", "reasonable_image_size", "reasonable_startup_time", "require_labels", "resource_policies", "rollback", "rolling_downgrade", "rolling_update", "rolling_version_change", "routed_logs", "secrets_used", "selinux_options", "service_account_mapping", "service_discovery", "shared_database", "sig_term_handled", "single_process_type", "smf_upf_heartbeat", "specialized_init_system", "suci_enabled", "symlink_file_system", "sysctls", "tracing", "versioned_tag", "volume_hostpath_not_found", "zombie_handled"]
     (CNFManager::Points.all_task_test_names()).sort.should eq(tags.sort)
   end
 
@@ -349,7 +349,7 @@ describe "SampleUtils" do
   it "'CNFManager.validate_cnf_testsuite_yml' (command) should pass, when a cnf has a valid config file yml", tags: ["validate_config"]  do
     response_s = `./cnf-testsuite validate_config cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
     $?.success?.should be_true
-    (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
+    (/CNF configuration validated/ =~ response_s).should_not be_nil
   end
 
 
@@ -375,7 +375,7 @@ describe "SampleUtils" do
     LOGGING.debug "validate_config resp: #{response_s}"
     # (/WARNING: Unmapped cnf_testsuite.yml keys. Please add them to the validator/ =~ response_s).should_not be_nil
     # (/WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_testsuite.yml/ =~ response_s).should_not be_nil
-    (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
+    (/CNF configuration validated/ =~ response_s).should_not be_nil
   end
 
 
@@ -387,7 +387,7 @@ describe "SampleUtils" do
       testsuite_yml = "sample-cnfs/#{dir}/cnf-testsuite.yml"
       response_s = `./cnf-testsuite validate_config cnf-config=#{testsuite_yml}`
       Log.info { "\n #{testsuite_yml}: #{response_s}" }
-      (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
+      (/CNF configuration validated/ =~ response_s).should_not be_nil
     end
   end
 
@@ -398,10 +398,10 @@ describe "SampleUtils" do
     dir_list.each do |dir|
       testsuite_yml = "example-cnfs/#{dir}/cnf-testsuite.yml"
       response_s = `./cnf-testsuite validate_config cnf-config=#{testsuite_yml}`
-      if (/FAILED: Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
+      if (/Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ response_s)
         LOGGING.info "\n #{testsuite_yml}: #{response_s}"
       end
-      (/PASSED: CNF configuration validated/ =~ response_s).should_not be_nil
+      (/CNF configuration validated/ =~ response_s).should_not be_nil
     end
   end
 

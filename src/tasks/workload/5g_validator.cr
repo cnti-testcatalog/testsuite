@@ -17,10 +17,7 @@ end
 desc "Test if a 5G core is valid"
 task "smf_upf_core_validator" do |t, args|
   #todo change to 5g_core_validator
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "smf_upf_core_validator"
-    Log.for(testsuite_task).info { "Starting test" }
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
 
 		# todo add other resilience and compatiblity tests
 
@@ -33,11 +30,8 @@ end
 
 desc "Test if a 5G core has SMF/UPF heartbeat"
 task "smf_upf_heartbeat" do |t, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "smf_upf_heartbeat"
-    Log.for(testsuite_task).info { "Starting test" }
-    Log.for(testsuite_task).info { "named args: #{args.named}" }
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
+    Log.for(t.name).info { "named args: #{args.named}" }
     baseline_count : Int32 | Float64 | String | Nil
     if args.named["baseline_count"]?
       baseline_count = args.named["baseline_count"].to_i
@@ -45,7 +39,6 @@ task "smf_upf_heartbeat" do |t, args|
       baseline_count = nil
     end
 
-    Log.debug { "cnf_config: #{config}" }
     suci_found : Bool | Nil
     smf = config.cnf_config[:smf_label]? 
     upf = config.cnf_config[:upf_label]? 
@@ -133,24 +126,18 @@ task "smf_upf_heartbeat" do |t, args|
     end
 
     #todo move this to validator code code
-    if heartbeat_found 
-      resp = upsert_passed_task(testsuite_task,"✔️  PASSED: Chaos service degradation is less than 50%.", task_start_time)
+    if heartbeat_found
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Chaos service degradation is less than 50%")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Chaos service degradation is more than 50%.", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Chaos service degradation is more than 50%")
     end
-    resp
   end
 end
 
 #todo move to 5g test files
 desc "Test if a 5G core supports SUCI Concealment"
-task "suci_enabled" do |_, args|
-  CNFManager::Task.task_runner(args) do |args, config|
-    task_start_time = Time.utc
-    testsuite_task = "suci_enabled"
-    Log.for(testsuite_task).info { "Starting test" }
-
-    Log.debug { "cnf_config: #{config}" }
+task "suci_enabled" do |t, args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     suci_found : Bool | Nil
     core = config.cnf_config[:amf_label]? 
     Log.info { "core: #{core}" }
@@ -192,12 +179,11 @@ task "suci_enabled" do |_, args|
     end
 
 
-    if suci_found 
-      resp = upsert_passed_task(testsuite_task,"✔️  PASSED: Core uses SUCI 5g authentication", task_start_time)
+    if suci_found
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Core uses SUCI 5g authentication")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Core does not use SUCI 5g authentication", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Core does not use SUCI 5g authentication")
     end
-    resp
   ensure
     Helm.delete("ueransim")
     ClusterTools.uninstall
