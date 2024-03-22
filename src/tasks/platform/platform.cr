@@ -19,14 +19,10 @@ task "platform", ["helm_local_install", "k8s_conformance", "platform:observabili
 end
 
 desc "Does the platform pass the K8s conformance tests?"
-task "k8s_conformance" do |_, args|
-  task_start_time = Time.utc
-  testsuite_task = "k8s_conformance"
-  Log.for(testsuite_task).info { "Starting test" }
-
-  begin
+task "k8s_conformance" do |t, args|
+  CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do
     current_dir = FileUtils.pwd
-    Log.for(testsuite_task).debug { "current dir: #{current_dir}" }
+    Log.for(t.name).debug { "current dir: #{current_dir}" }
     sonobuoy = "#{tools_path}/sonobuoy/sonobuoy"
 
     # Clean up old results
@@ -37,7 +33,7 @@ task "k8s_conformance" do |_, args|
       output: delete_stdout = IO::Memory.new,
       error: delete_stderr = IO::Memory.new
     )
-    Log.for(testsuite_task).debug { "sonobuoy delete output: #{delete_stdout}" }
+    Log.for(t.name).debug { "sonobuoy delete output: #{delete_stdout}" }
 
     # Run the tests
     testrun_stdout = IO::Memory.new
@@ -72,11 +68,10 @@ task "k8s_conformance" do |_, args|
     # Grab the failed line from the results
 
     failed_count = ((results.match(/Failed: (.*)/)).try &.[1]) 
-    if failed_count.to_s.to_i > 0 
-      upsert_failed_task(testsuite_task, "✖️  FAILED: K8s conformance test has #{failed_count} failure(s)!", task_start_time)
-
+    if failed_count.to_s.to_i > 0
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "K8s conformance test has #{failed_count} failure(s)!")
     else
-      upsert_passed_task(testsuite_task, "✔️  PASSED: K8s conformance test has no failures", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "K8s conformance test has no failures")
     end
   rescue ex
     Log.error { ex.message }
@@ -89,16 +84,10 @@ task "k8s_conformance" do |_, args|
 end
 
 desc "Is Cluster Api available and managing a cluster?"
-task "clusterapi_enabled" do |_, args|
-  CNFManager::Task.task_runner(args, check_cnf_installed: false) do
-    task_start_time = Time.utc
-    testsuite_task = "clusterapi_enabled"
-    emoji_control="✨"
-    Log.for(testsuite_task).info { "Starting test" }
-
+task "clusterapi_enabled" do |t, args|
+  CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do
     unless check_poc(args)
-      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: Cluster API not in poc mode #{emoji_control}", task_start_time)
-      next
+      next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Cluster API not in poc mode")
     end
 
     Log.for("verbose").info { "clusterapi_enabled" } if check_verbose(args)
@@ -139,11 +128,9 @@ task "clusterapi_enabled" do |_, args|
     Log.info { "clusterapi_control_planes_json: #{clusterapi_control_planes_json}" }
 
     if clusterapi_namespaces_json["items"]? && clusterapi_namespaces_json["items"].as_a.size > 0 && clusterapi_control_planes_json["items"]? && clusterapi_control_planes_json["items"].as_a.size > 0
-      resp = upsert_passed_task(testsuite_task, "✔️  PASSED: Cluster API is enabled #{emoji_control}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Cluster API is enabled")
     else
-      resp = upsert_failed_task(testsuite_task, "✖️  FAILED: Cluster API NOT enabled #{emoji_control}", task_start_time)
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Cluster API NOT enabled")
     end
-
-    resp
   end
 end

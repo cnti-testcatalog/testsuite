@@ -13,18 +13,12 @@ namespace "platform" do
   end
 
   desc "Does the Platform recover the node and reschedule pods when a worker node fails"
-  task "worker_reboot_recovery" do |_, args|
-    task_start_time = Time.utc
-    testsuite_task = "worker_reboot_recovery"
-    emoji_worker_reboot_recovery=""
-    Log.for(testsuite_task).info { "Starting test" }
-
-    unless check_destructive(args)
-      upsert_skipped_task(testsuite_task, "⏭️  SKIPPED: Node not in destructive mode #{emoji_worker_reboot_recovery}", task_start_time)
-      next
-    end
-    Log.info { "Running POC in destructive mode!" }
-    task_response = CNFManager::Task.task_runner(args, check_cnf_installed: false) do |args|
+  task "worker_reboot_recovery" do |t, args|
+    task_response = CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do |args|
+      unless check_destructive(args)
+        next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Node not in destructive mode")
+      end
+      Log.info { "Running POC in destructive mode!" }
       current_dir = FileUtils.pwd
       helm = Helm::BinarySingleton.helm
 
@@ -47,8 +41,7 @@ namespace "platform" do
           pod_ready = KubectlClient::Get.pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[2]
           pod_ready_timeout = pod_ready_timeout - 1
           if pod_ready_timeout == 0
-            upsert_failed_task(testsuite_task, "✖️  FAILED: Failed to install reboot daemon", task_start_time)
-            exit 1
+            next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Failed to install reboot daemon")
           end
           sleep 1
           puts "Waiting for reboot daemon to be ready"
@@ -71,8 +64,7 @@ namespace "platform" do
           Log.info { "Node Ready Status: #{node_ready}" }
           node_failure_timeout = node_failure_timeout - 1
           if node_failure_timeout == 0
-            upsert_failed_task(testsuite_task, "✖️  FAILED: Node failed to go offline", task_start_time)
-            exit 1
+            next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Node failed to go offline")
           end
           sleep 1
         end
@@ -89,14 +81,11 @@ namespace "platform" do
           Log.info { "Node Ready Status: #{node_ready}" }
           node_online_timeout = node_online_timeout - 1
           if node_online_timeout == 0
-            upsert_failed_task(testsuite_task, "✖️  FAILED: Node failed to come back online", task_start_time)
-            exit 1
+            next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Node failed to come back online")
           end
           sleep 1
         end
-
-        resp = upsert_passed_task(testsuite_task,"✔️  PASSED: Node came back online #{emoji_worker_reboot_recovery}", task_start_time)
-
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Node came back online")
 
       ensure
         Log.info { "node_failure cleanup" }

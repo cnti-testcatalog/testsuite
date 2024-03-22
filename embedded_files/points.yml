@@ -234,16 +234,35 @@
 
 - name: k8s_conformance
   tags: [platform, dynamic]
+- name: clusterapi_enabled
+  emoji: "✨"
+  tags: [platform, dynamic]
 - name: worker_reboot_recovery 
   tags: ["platform", "platform:resilience", dynamic]
 - name: oci_compliant
+  empji: "📶☠"
   tags: ["platform", "platform:hardware_and_scheduling", dynamic]
 - name: control_plane_hardening
+  emoji: "🔓🔑"
   tags: ["platform", "platform:security", "dynamic"]
 - name: cluster_admin
+  emoji: "🔓🔑"
   tags: ["platform", "platform:security", "dynamic"]
 - name: exposed_dashboard
+  emoji: "🔓🔑"
   tags: ["platform", "platform:security", "dynamic"]
+- name: kube_state_metrics
+  emoji: "📶☠"
+  tags: [platform, "platform:observability", dynamic]
+- name: node_exporter
+  emoji: "📶☠"
+  tags: [platform, "platform:observability", dynamic]
+- name: prometheus_adapter
+  emoji: "📶☠"
+  tags: [platform, "platform:observability", dynamic]
+- name: metrics_server
+  emoji: "📶☠"
+  tags: [platform, "platform:observability", dynamic]
 
 - name: service_account_mapping
   emoji: "🔓🔑"
@@ -337,6 +356,7 @@
   tags: [configuration, dynamic, workload, cert, normal]
 
 - name: helm_tiller
+  emoji: "🔓🔑"
   tags: ["platform", "platform:security", "dynamic"]
 
 - name: external_ips
