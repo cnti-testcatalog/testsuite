@@ -452,7 +452,8 @@ describe "SampleUtils" do
       (/of 3 tests passed/ =~ response_s).should_not be_nil
       Log.info { response_s }
     ensure
-      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-ndn-privileged` }
+      response_s = `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-ndn-privileged`
+      Log.info {response_s}
     end
   end
 
@@ -467,7 +468,8 @@ describe "SampleUtils" do
       (/1.6.9/ =~ image_tags[0][:tag]).should_not be_nil
       # Log.info { response_s }
     ensure
-      Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_coredns_values` }
+      response_s = `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_coredns_values`
+      Log.info {response_s}
     end
   end
 
