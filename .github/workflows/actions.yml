@@ -68,7 +68,7 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         nodes:
         - role: control-plane
-          image: kindest/node:v1.23.13@sha256:e7968cda1b4ff790d5b0b5b0c29bda0404cdb825fd939fe50fd5accc43e3a730
+          image: kindest/node:v1.23.17@sha256:14d0a9a892b943866d7e6be119a06871291c517d279aedb816a4b4bc0ec0a5b3
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
@@ -88,7 +88,7 @@ jobs:
         # Enabled additional unsafe sysctls to support the negative spec test for sysctls
         nodes:
         - role: control-plane
-          image: kindest/node:v1.23.13@sha256:e7968cda1b4ff790d5b0b5b0c29bda0404cdb825fd939fe50fd5accc43e3a730
+          image: kindest/node:v1.23.17@sha256:14d0a9a892b943866d7e6be119a06871291c517d279aedb816a4b4bc0ec0a5b3
           kubeadmConfigPatches:
           - |
             kind: KubeletConfiguration
@@ -102,7 +102,7 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         nodes:
         - role: control-plane
-          image: kindest/node:v1.23.13@sha256:e7968cda1b4ff790d5b0b5b0c29bda0404cdb825fd939fe50fd5accc43e3a730
+          image: kindest/node:v1.23.17@sha256:14d0a9a892b943866d7e6be119a06871291c517d279aedb816a4b4bc0ec0a5b3
         containerdConfigPatches:
           - |-
             [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
@@ -111,7 +111,7 @@ jobs:
               endpoint = ["http://localhost:5000"]
     - name: Install Latest Kind
       env:
-        KIND_VERSION: v0.17.0
+        KIND_VERSION: v0.22.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
         echo "Existing kind binary path: $(which kind)"
@@ -222,7 +222,7 @@ jobs:
         fetch-depth: 0
     - name: Install Latest Kind
       env:
-        KIND_VERSION: v0.17.0
+        KIND_VERSION: v0.22.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
         echo "Existing kind binary path: $(which kind)"
@@ -244,7 +244,7 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         nodes:
         - role: control-plane
-          image: kindest/node:v1.23.13@sha256:e7968cda1b4ff790d5b0b5b0c29bda0404cdb825fd939fe50fd5accc43e3a730
+          image: kindest/node:v1.23.17@sha256:14d0a9a892b943866d7e6be119a06871291c517d279aedb816a4b4bc0ec0a5b3
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
@@ -350,7 +350,7 @@ jobs:
           lib-
     - name: Install Latest Kind
       env:
-        KIND_VERSION: v0.17.0
+        KIND_VERSION: v0.22.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
         echo "Existing kind binary path: $(which kind)"
@@ -368,7 +368,7 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         nodes:
         - role: control-plane
-          image: kindest/node:v1.23.13@sha256:e7968cda1b4ff790d5b0b5b0c29bda0404cdb825fd939fe50fd5accc43e3a730
+          image: kindest/node:v1.23.17@sha256:14d0a9a892b943866d7e6be119a06871291c517d279aedb816a4b4bc0ec0a5b3
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
@@ -429,7 +429,7 @@ jobs:
           lib-
     - name: Install Latest Kind
       env:
-        KIND_VERSION: v0.17.0
+        KIND_VERSION: v0.22.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
         echo "Existing kind binary path: $(which kind)"
@@ -503,7 +503,7 @@ jobs:
           lib-
     - name: Install Latest Kind
       env:
-        KIND_VERSION: v0.17.0
+        KIND_VERSION: v0.22.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
         echo "Existing kind binary path: $(which kind)"
