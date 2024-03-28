@@ -449,7 +449,7 @@ describe "SampleUtils" do
       Log.info { install }
       response_s = `./cnf-testsuite cert_microservice`
       Log.info { response_s}
-      (/of 3 tests passed/ =~ response_s).should_not be_nil
+      (/of 6 tests passed/ =~ response_s).should_not be_nil
       Log.info { response_s }
     ensure
       Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-ndn-privileged` }

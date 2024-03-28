@@ -12,7 +12,8 @@
   tags: [microservice, dynamic, workload, cert, normal]
 - name: specialized_init_system
   emoji: "🚀"
-  tags: [microservice, dynamic, workload]
+  tags: [microservice, dynamic, workload, essential, cert]
+  pass: 100
 - name: reasonable_startup_time 
   tags: [microservice, dynamic, workload, cert, normal]
 - name: single_process_type
@@ -21,7 +22,8 @@
   pass: 100
 - name: zombie_handled
   emoji: "⚖👀"
-  tags: [microservice, dynamic, workload, normal]
+  tags: [microservice, dynamic, workload, essential, cert]
+  pass: 100
 - name: service_discovery
   emoji: "⚖👀"
   tags: [microservice, dynamic, workload, cert, bonus]
@@ -32,8 +34,8 @@
   tags: [microservice, dynamic, workload, cert, normal]
 - name: sig_term_handled
   emoji: "⚖👀"
-  tags: [microservice, dynamic, workload, normal]
-
+  tags: [microservice, dynamic, workload, essential, cert]
+  pass: 100
 - name: cni_compatible
   emoji: "🔓🔑"
   tags: [compatibility, dynamic, workload, cert, normal]
@@ -113,8 +115,8 @@
   tags: [resilience, dynamic, workload, cert, normal]
 - name: pod_dns_error
   emoji: "🗡️💀♻"
-  tags: [resilience, dynamic, workload, cert, bonus]
-  pass: 1
+  tags: [resilience, dynamic, workload, essential, cert]
+  pass: 100
   fail: 0
 #- name: external_retry 
 #  tags: scalability, dynamic, workload
@@ -199,7 +201,8 @@
 
 - name: volume_hostpath_not_found
   emoji: "💾"
-  tags: [state, dynamic, workload]
+  tags: [state, dynamic, workload, essential, cert]
+  pass: 100
 - name: no_local_volume_configuration
   emoji: "💾"
   tags: [state, dynamic, workload, cert, bonus]
