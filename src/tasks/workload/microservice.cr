@@ -398,7 +398,7 @@ task "single_process_type" do |t, args|
   end
 end
 
-desc "Are the SIGTERM signals handled?"
+desc "Are the zombie processes handled?"
 task "zombie_handled" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args,config|
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false ) do |resource, container, initialized|
