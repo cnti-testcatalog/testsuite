@@ -2,6 +2,7 @@
 require "../spec_helper"
 require "colorize"
 require "../../src/tasks/utils/utils.cr"
+require "../../src/tasks/helmenv_setup.cr"
 require "kubectl_client"
 require "file_utils"
 require "sam"
