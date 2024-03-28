@@ -491,6 +491,33 @@ Make sure that your CNFs containers are not sharing the same [database](https://
 
 Use init systems that are purpose-built for containers like tini, dumb-init, s6-overlay.
 
+## [Sigterm Handled](docs/LIST_OF_TESTS.md#sig-term-handled)
+
+##### To run the Sigterm Handled test, you can use the following command:
+
+```
+./cnf-testsuite sig_term_handled
+```
+
+<b>Remediation for failing this test:</b>
+
+Make the the PID 1 container process to handle SIGTERM, enable process namespace sharing in Kubernetes or use specialized Init system.
+</b>
+
+## [Zombie Handled](docs/LIST_OF_TESTS.md#zombie-handled)
+
+##### To run the Zombie Handled test, you can use the following command:
+
+```
+./cnf-testsuite zombie_handled
+```
+
+<b>Remediation for failing this test:</b>
+
+Make the the PID 1 container process to handle/reap zombie processes, enable process namespace sharing in Kubernetes or use specialized Init system.
+</b>
+
+
 # State Tests
 
 ##### To run all of the state tests:
