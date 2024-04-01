@@ -501,7 +501,7 @@ Use init systems that are purpose-built for containers like tini, dumb-init, s6-
 
 <b>Remediation for failing this test:</b>
 
-Make the the PID 1 container process to handle SIGTERM, enable process namespace sharing in Kubernetes or use specialized Init system.
+Make the PID 1 container process to handle SIGTERM; enable process namespace sharing in Kubernetes or use specialized Init system.
 </b>
 
 ## [Zombie Handled](docs/LIST_OF_TESTS.md#zombie-handled)
