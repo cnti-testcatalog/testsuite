@@ -514,7 +514,7 @@ Make the PID 1 container process to handle SIGTERM; enable process namespace sha
 
 <b>Remediation for failing this test:</b>
 
-Make the the PID 1 container process to handle/reap zombie processes, enable process namespace sharing in Kubernetes or use specialized Init system.
+Make the PID 1 container process to handle/reap zombie processes; enable process namespace sharing in Kubernetes or use specialized Init system.
 </b>
 
 
