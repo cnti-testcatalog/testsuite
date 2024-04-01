@@ -219,7 +219,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 ## [Zombie Handled](https://github.com/cnti-testcatalog/testsuite/blob/v0.46.0/src/tasks/workload/microservice.cr#L436)
 - Expectation: Zombie processes are handled/reaped by PID 1 process of containers.
 
-**What's tested:** This tests if PID 1 process of containers handles/reaps zombie processes.
+**What's tested:** This tests if the PID 1 process of containers handles/reaps zombie processes.
 
 [**Rationale & Reasoning**](../RATIONALE.md#to_check_if_zombie_processes_are_handled_correctly)
 
