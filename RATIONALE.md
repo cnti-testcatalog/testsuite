@@ -88,7 +88,7 @@ it forces the two services to upgrade in lock step
 
 #### *To check if the CNF PID 1 processes handle zombie processes correctly*: [zombie_handled](docs/LIST_OF_TESTS.md#zombie-handled)
 
-> Classic init systems such as systemd are also used to remove (reap) orphaned, zombie processes. Orphaned processesi — processes whose parents have died - are reattached to the process that has PID 1, which should reap them when they die. A normal init system does that. But in a container, this responsibility falls on whatever process has PID 1. If that process doesn't properly handle the reaping, you risk running out of memory or some other resources.
+> Classic init systems such as systemd are also used to remove (reap) orphaned, zombie processes. Orphaned processes — processes whose parents have died - are reattached to the process that has PID 1, which should reap them when they die. A normal init system does that. But in a container, this responsibility falls on whatever process has PID 1. If that process doesn't properly handle the reaping, you risk running out of memory or some other resources.
 
 ## State Tests
 
