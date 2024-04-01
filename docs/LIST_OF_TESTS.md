@@ -209,6 +209,20 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 
 [**Rationale & Reasoning**](../RATIONALE.md#to-check-if-the-cnf-uses-a-shared-database-shared_database)
 
+## [Sigterm Handled](https://github.com/cnti-testcatalog/testsuite/blob/v0.46.0/src/tasks/workload/microservice.cr#L500)
+- Expectation: Sigterm is handled by PID 1 process of containers.
+
+**What's tested:** This tests if the PID 1 process of containers handles SIGTERM.
+
+[**Rationale & Reasoning**](../RATIONALE.md#to_check_if_the_cnf_pid_1_processes_handle_sigterm)
+
+## [Zombie Handled](https://github.com/cnti-testcatalog/testsuite/blob/v0.46.0/src/tasks/workload/microservice.cr#L436)
+- Expectation: Zombie processes are handled/reaped by PID 1 process of containers.
+
+**What's tested:** This tests if the PID 1 process of containers handles/reaps zombie processes.
+
+[**Rationale & Reasoning**](../RATIONALE.md#to_check_if_zombie_processes_are_handled_correctly)
+
 # State Category
 
 ## [Node drain](https://github.com/cnti-testcatalog/testsuite/blob/v0.27.0/src/tasks/workload/state.cr#L209) 
