@@ -212,7 +212,7 @@ You can read more about horizonal pod autoscaling to create replicas [here](http
 ## [Sigterm Handled](https://github.com/cnti-testcatalog/testsuite/blob/v0.46.0/src/tasks/workload/microservice.cr#L500)
 - Expectation: Sigterm is handled by PID 1 process of containers.
 
-**What's tested:** This tests if PID 1 process of containers handles SIGTERM.
+**What's tested:** This tests if the PID 1 process of containers handles SIGTERM.
 
 [**Rationale & Reasoning**](../RATIONALE.md#to_check_if_the_cnf_pid_1_processes_handle_sigterm)
 
