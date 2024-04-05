@@ -68,7 +68,6 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         nodes:
         - role: control-plane
-          image: kindest/node:v1.23.17@sha256:14d0a9a892b943866d7e6be119a06871291c517d279aedb816a4b4bc0ec0a5b3
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
@@ -88,7 +87,6 @@ jobs:
         # Enabled additional unsafe sysctls to support the negative spec test for sysctls
         nodes:
         - role: control-plane
-          image: kindest/node:v1.23.17@sha256:14d0a9a892b943866d7e6be119a06871291c517d279aedb816a4b4bc0ec0a5b3
           kubeadmConfigPatches:
           - |
             kind: KubeletConfiguration
@@ -102,7 +100,6 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         nodes:
         - role: control-plane
-          image: kindest/node:v1.23.17@sha256:14d0a9a892b943866d7e6be119a06871291c517d279aedb816a4b4bc0ec0a5b3
         containerdConfigPatches:
           - |-
             [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
@@ -244,7 +241,6 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         nodes:
         - role: control-plane
-          image: kindest/node:v1.23.17@sha256:14d0a9a892b943866d7e6be119a06871291c517d279aedb816a4b4bc0ec0a5b3
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
@@ -368,7 +364,6 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         nodes:
         - role: control-plane
-          image: kindest/node:v1.23.17@sha256:14d0a9a892b943866d7e6be119a06871291c517d279aedb816a4b4bc0ec0a5b3
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
