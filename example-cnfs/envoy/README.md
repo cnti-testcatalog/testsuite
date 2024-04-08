@@ -15,29 +15,23 @@ Set the KUBECONFIG environment to point to the remote K8s cluster
 Run cnf-testsuite setup
 
 ```
-crystal src/cnf-testsuite.cr setup
-```
-
-Add the published helm chart:
-
-```
-crystal src/cnf-testsuite.cr helm_repo_add  cnf-config=example-cnfs/envoy/cnf-testsuite.yml
+./cnf-testsuite setup
 ```
 
 Install Envoy
 
 ```
-crystal src/cnf-testsuite.cr cnf_setup cnf-path=example-cnfs/envoy
+./cnf-testsuite cnf_setup cnf-config=example-cnfs/envoy/cnf-testsuite.yml
 ```
 
 Run the test suite:
 
 ```
-crystal src/cnf-testsuite.cr all
+./cnf-testsuite all
 ```
 
 Envoy cleanup
 
 ```
-crystal src/cnf-testsuite.cr cnf_cleanup cnf-path=example-cnfs/envoy
+./cnf-testsuite cnf_cleanup cnf-path=example-cnfs/envoy
 ```
