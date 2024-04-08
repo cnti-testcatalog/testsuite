@@ -7,3 +7,4 @@ helm_repository: # CONFIGURATION OF HELM REPO - ONLY NEEDED WHEN USING helm_char
 #helm_directory: coredns # PATH_TO_CNFS_HELM_CHART ; or
 #manifest_directory: coredns # PATH_TO_DIRECTORY_OF_CNFS_MANIFEST_FILES ; or
 release_name: coredns # DESIRED_HELM_RELEASE_NAME
+helm_install_namespace: cnfspace
