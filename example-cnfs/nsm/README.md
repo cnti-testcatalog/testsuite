@@ -14,19 +14,19 @@ Follow [Pre-req steps](../../INSTALL.md#pre-requisites), including
 Initialize the test suite
 
 ```
-crystal src/cnf-testsuite.cr setup
+./cnf-testsuite setup
 ```
 
 Configure and deploy NSM as the target CNF
 
 ```
-crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/nsm/cnf-testsuite.yml deploy_with_chart=false
+./cnf-testsuite cnf_setup cnf-config=./example-cnfs/nsm/cnf-testsuite.yml deploy_with_chart=false
 ```
 
 Run the all the tests
 
 ```
-crystal src/cnf-testsuite.cr all
+./cnf-testsuite all
 ```
 
 Check the results file
@@ -34,5 +34,5 @@ Check the results file
 Cleanup the cnf test setup (including undeployment of NSM)
 
 ```
-crystal src/cnf-testsuite.cr cnf_cleanup cnf-config=./example-cnfs/nsm/cnf-testsuite.yml
+./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/nsm/cnf-testsuite.yml
 ```

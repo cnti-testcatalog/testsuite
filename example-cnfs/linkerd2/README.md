@@ -12,7 +12,7 @@ Set the KUBECONFIG environment to point to the remote K8s cluster
 Run cnf-testsuite setup
 
 ```
-crystal src/cnf-testsuite.cr setup
+./cnf-testsuite setup
 ```
 
 Install linkerd
@@ -24,17 +24,17 @@ helm repo add linkerd https://helm.linkerd.io/stable
 
 helm install linkerd-crds linkerd/linkerd-crds -n linkerd --create-namespace 
 
-crystal src/cnf-testsuite.cr cnf_setup cnf-path=example-cnfs/linkerd2
+.cnf-testsuite cnf_setup cnf-path=example-cnfs/linkerd2/cnf-testsuite.yml
 ```
 
 Run the test suite:
 
 ```
-crystal src/cnf-testsuite.cr all
+./cnf-testsuite all
 ```
 
 linkerd cleanup
 
 ```
-crystal src/cnf-testsuite.cr cnf_cleanup cnf-path=example-cnfs/linkerd2
+./cnf-testsuite cnf_cleanup cnf-path=example-cnfs/linkerd2/cnf-testsuite.yml
 ```
