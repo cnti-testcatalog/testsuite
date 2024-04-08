@@ -12,10 +12,10 @@ To get a more complete overview of planned features and current work see the [pr
 - Build tests for Kubernetes best practices that address issues voiced by the end users, including:
     - On-boarding (day 1) items
     - CNF WG best practices
-- Build [resilience tests](https://github.com/cnti-testcatalog/testsuite/blob/main/USAGE.md#resilience-tests) using [LitmusChaos](https://litmuschaos.io/) experiments
-- Create [observability tests](https://github.com/cnti-testcatalog/testsuite/blob/main/USAGE.md#observability-tests) to check for cloud native monitoring
-- Create [state tests](https://github.com/cnti-testcatalog/testsuite/blob/main/USAGE.md#state-tests) to check cloud native data handling
-- Create [security tests](https://github.com/cnti-testcatalog/testsuite/blob/main/USAGE.md#security-tests)
+- Build [resilience tests](https://github.com/cnti-testcatalog/testsuite/blob/main/docs/TEST_DOCUMENTATION.md#category-reliability-resilience--availability-tests) using [LitmusChaos](https://litmuschaos.io/) experiments
+- Create [observability tests](https://github.com/cnti-testcatalog/testsuite/blob/main/docs/TEST_DOCUMENTATION.md#category-observability--diagnostic-tests) to check for cloud native monitoring
+- Create [state tests](https://github.com/cnti-testcatalog/testsuite/blob/main/docs/TEST_DOCUMENTATION.md#category-state-tests) to check cloud native data handling
+- Create [security tests](https://github.com/cnti-testcatalog/testsuite/blob/main/docs/TEST_DOCUMENTATION.md#category-security-tests)
 
 ### Enhance the functionality of the test suite framework
 

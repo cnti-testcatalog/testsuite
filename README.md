@@ -38,7 +38,7 @@ The CNTI Test Catalog will inspect CNFs for the following characteristics:
 - **Observability & Diagnostics** - CNFs should externalize their internal states in a way that supports metrics, tracing, and logging.
 - **Security** - CNF containers should be isolated from one another and the host. CNFs are to be verified against any common CVE or other vulnerabilities.
 
-See the [Test Categories Documentation](TEST-CATEGORIES.md) for a complete overview of the tests.
+See the [Complete Test Documentation](docs/TEST_DOCUMENTATION.md) for a complete overview of the tests.
 
 ## Contributing
 

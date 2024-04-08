@@ -48,10 +48,9 @@ assignees: ""
 
 **Documentation tasks:**
 
-- [ ] Update [Test Categories md](https://github.com/cncf/cnf-testsuite/blob/main/TEST-CATEGORIES.md) if needed
 - [ ] Update [Pseudo Code md](https://github.com/cncf/cnf-testsuite/blob/main/PSEUDO-CODE.md) if needed
-- [ ] Update [USAGE md](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md) if needed
-- [ ] Update [installation instructions](https://github.com/cncf/cnf-testsuite/install.md) if needed
+- [ ] Update [TEST_DOCUMENTATION md](../../docs/TEST_DOCUMENTATION.md) if needed
+- [ ] Update [installation instructions](../../install.md) if needed
 
 ### QA tasks
 
