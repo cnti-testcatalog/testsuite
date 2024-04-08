@@ -7,24 +7,23 @@ require "sam"
 
 describe "Resilience Disk Fill Chaos" do
   before_all do
-    `./cnf-testsuite setup`
-    `./cnf-testsuite configuration_file_setup`
-    $?.success?.should be_true
+    result = ShellCmd.run_testsuite("setup")
+    result = ShellCmd.run_testsuite("configuration_file_setup")
+    result[:status].success?.should be_true
   end
 
   it "'disk_fill' A 'Good' CNF should not crash when disk fill occurs", tags: ["disk_fill"]  do
     begin
-      `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml wait_count=0`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite disk_fill verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/(PASSED).*(disk_fill chaos test passed)/ =~ response_s).should_not be_nil
+      result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml wait_count=0")
+      result[:status].success?.should be_true
+      result = ShellCmd.run_testsuite("disk_fill verbose")
+      result[:status].success?.should be_true
+      (/(PASSED).*(disk_fill chaos test passed)/ =~ result[:output]).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml wait_count=0`
-      $?.success?.should be_true
-      `./cnf-testsuite uninstall_litmus`
-      $?.success?.should be_true
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml wait_count=0")
+      result[:status].success?.should be_true
+      result = ShellCmd.run_testsuite("uninstall_litmus")
+      result[:status].success?.should be_true
     end
   end
 end

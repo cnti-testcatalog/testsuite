@@ -13,23 +13,26 @@ require "./http_helper.cr"
 require "ecr"
 
 module ShellCmd
-  def self.run(cmd, log_prefix, force_output=false)
-    Log.info { "#{log_prefix} command: #{cmd}" }
+  def self.run(cmd, log_prefix="ShellCmd.run", force_output=false, joined_output=false)
+    log = Log.for(log_prefix)
+    log.info { "command: #{cmd}" }
+    output = IO::Memory.new
+    stderr = joined_output ? output : IO::Memory.new
     status = Process.run(
       cmd,
       shell: true,
-      output: output = IO::Memory.new,
-      error: stderr = IO::Memory.new
+      output: output,
+      error: stderr
     )
     if force_output == false
-      Log.debug { "#{log_prefix} output: #{output.to_s}" }
+      log.debug { "output: #{output.to_s}" }
     else
-      Log.info { "#{log_prefix} output: #{output.to_s}" }
+      log.info { "output: #{output.to_s}" }
     end
 
     # Don't have to output log line if stderr is empty
-    if stderr.to_s.size > 1
-      Log.info { "#{log_prefix} stderr: #{stderr.to_s}" }
+    if !joined_output && stderr.to_s.size > 1
+      log.info { "stderr: #{stderr.to_s}" }
     end
     {status: status, output: output.to_s, error: stderr.to_s}
   end

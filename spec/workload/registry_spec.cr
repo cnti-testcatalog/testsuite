@@ -13,7 +13,7 @@ end
 
 describe "Private Registry: Image" do
   before_all do
-    `./cnf-testsuite setup`
+    result = ShellCmd.run_testsuite("setup")
     Dockerd.install
     install_registry = KubectlClient::Apply.file(registry_manifest_path)
     KubectlClient::Get.resource_wait_for_install("Pod", "registry")
@@ -42,25 +42,23 @@ describe "Private Registry: Image" do
   it "'reasonable_image_size' should pass if using local registry and a port", tags: ["private_registry_image"]  do
     cnf="./sample-cnfs/sample_local_registry"
 
-    LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
-    response_s = `./cnf-testsuite reasonable_image_size verbose`
-    LOGGING.info response_s
-    $?.success?.should be_true
-    (/Image size is good/ =~ response_s).should_not be_nil
+    result = ShellCmd.run_testsuite("cnf_setup cnf-path=#{cnf}")
+    result = ShellCmd.run_testsuite("reasonable_image_size verbose")
+    result[:status].success?.should be_true
+    (/Image size is good/ =~ result[:output]).should_not be_nil
   ensure
-    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
+    result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=#{cnf}")
   end
 
   it "'reasonable_image_size' should pass if using local registry, a port and an org", tags: ["private_registry_image"]  do
     cnf="./sample-cnfs/sample_local_registry_org_image"
 
-    LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
-    response_s = `./cnf-testsuite reasonable_image_size verbose`
-    LOGGING.info response_s
-    $?.success?.should be_true
-    (/Image size is good/ =~ response_s).should_not be_nil
+    result = ShellCmd.run_testsuite("cnf_setup cnf-path=#{cnf}")
+    result = ShellCmd.run_testsuite("reasonable_image_size verbose")
+    result[:status].success?.should be_true
+    (/Image size is good/ =~ result[:output]).should_not be_nil
   ensure
-    LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf}`
+    result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=#{cnf}")
   end
 
   after_all do
@@ -71,7 +69,7 @@ end
 
 describe "Private Registry: Rolling" do
   before_all do
-    `./cnf-testsuite setup`
+    result = ShellCmd.run_testsuite("setup")
     Dockerd.install
     install_registry = KubectlClient::Apply.file(registry_manifest_path)
     KubectlClient::Get.resource_wait_for_install("Pod", "registry")
@@ -93,13 +91,12 @@ describe "Private Registry: Rolling" do
     begin
       cnf="./sample-cnfs/sample_local_registry_rolling"
 
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
-      response_s = `./cnf-testsuite rolling_update verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/Passed/ =~ response_s).should_not be_nil
+      result = ShellCmd.run_testsuite("cnf_setup cnf-path=#{cnf}")
+      result = ShellCmd.run_testsuite("rolling_update verbose")
+      result[:status].success?.should be_true
+      (/Passed/ =~ result[:output]).should_not be_nil
     ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf} wait_count=0`
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=#{cnf} wait_count=0")
     end
   end
 
@@ -107,13 +104,12 @@ describe "Private Registry: Rolling" do
     begin
       cnf="./sample-cnfs/sample_local_registry_rolling"
 
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
-      response_s = `./cnf-testsuite rolling_update verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/Passed/ =~ response_s).should_not be_nil
+      result = ShellCmd.run_testsuite("cnf_setup cnf-path=#{cnf}")
+      result = ShellCmd.run_testsuite("rolling_update verbose")
+      result[:status].success?.should be_true
+      (/Passed/ =~ result[:output]).should_not be_nil
     ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf} wait_count=0`
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=#{cnf} wait_count=0")
   	end
   end
 
@@ -121,13 +117,12 @@ describe "Private Registry: Rolling" do
     begin
       cnf="./sample-cnfs/sample_local_registry_rolling"
 
-      LOGGING.info `./cnf-testsuite cnf_setup cnf-path=#{cnf}`
-      response_s = `./cnf-testsuite rolling_version_change verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/Passed/ =~ response_s).should_not be_nil
+      result = ShellCmd.run_testsuite("cnf_setup cnf-path=#{cnf}")
+      result = ShellCmd.run_testsuite("rolling_version_change verbose")
+      result[:status].success?.should be_true
+      (/Passed/ =~ result[:output]).should_not be_nil
     ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=#{cnf} wait_count=0`
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=#{cnf} wait_count=0")
     end
   end  
 

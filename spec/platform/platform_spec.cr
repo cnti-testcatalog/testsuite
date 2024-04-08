@@ -1,48 +1,33 @@
 require "./../spec_helper"
 require "colorize"
+require "../../src/tasks/utils/utils.cr"
 
 describe "Platform" do
   before_all do
-    # LOGGING.debug `pwd` 
-    # LOGGING.debug `echo $KUBECONFIG`
-    `./cnf-testsuite samples_cleanup`
-    $?.success?.should be_true
-    LOGGING.info `./cnf-testsuite setup`
-    $?.success?.should be_true
-    # LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose`
-    # $?.success?.should be_true
+    result = ShellCmd.run_testsuite("samples_cleanup")
+    result[:status].success?.should be_true
+    result = ShellCmd.run_testsuite("setup")
+    result[:status].success?.should be_true
   end
   it "'platform:*' should not error out when no cnf is installed", tags: ["platform"] do
-    response_s = `./cnf-testsuite cleanup`
-    response_s = `./cnf-testsuite platform:oci_compliant`
-    LOGGING.info response_s
-    puts response_s
-    (/No cnf_testsuite.yml found/ =~ response_s).should be_nil
+    result = ShellCmd.run_testsuite("cleanup")
+    result = ShellCmd.run_testsuite("platform:oci_compliant")
+    puts result[:output]
+    (/No cnf_testsuite.yml found/ =~ result[:output]).should be_nil
   end
   it "'platform' should not run prerequisites that are prefixed with a ~", tags: ["platform"] do
-    response_s = `./cnf-testsuite cleanup`
-    # response_s = `./cnf-testsuite platform`
-    stdout = IO::Memory.new
-    stderror = IO::Memory.new
-    # Capture all output from sonobuoy
-    process = Process.new("./cnf-testsuite", ["platform", "~k8s_conformance"], output: stdout, error: stderror)
-    status = process.wait
-    response_s = stdout.to_s
-    error = stderror.to_s
-    LOGGING.info "error: #{error}"
-    LOGGING.info "response #{response_s}"
-    (/kind=namespace namespace=sonobuoy/ =~ (response_s + error)).should be_nil
+    result = ShellCmd.run_testsuite("cleanup")
+    result = ShellCmd.run_testsuite("platform ~k8s_conformance")
+    (/kind=namespace namespace=sonobuoy/ =~ (result[:output] + result[:error])).should be_nil
   end
   it "'k8s_conformance' should pass if the sonobuoy tests pass", tags: ["platform"] do
-    response_s = `./cnf-testsuite k8s_conformance`
-    LOGGING.info response_s
-    (/(PASSED).*(K8s conformance test has no failures)/ =~ response_s).should_not be_nil
+    result = ShellCmd.run_testsuite("k8s_conformance")
+    (/(PASSED).*(K8s conformance test has no failures)/ =~ result[:output]).should_not be_nil
   end
   
   it "individual tasks like 'platform:control_plane_hardening' should not require an installed cnf to run", tags: ["platform"] do
-    response_s = `./cnf-testsuite platform:control_plane_hardening`
-    LOGGING.info response_s
-    (/You must install a CNF first./ =~ response_s).should be_nil
+    result = ShellCmd.run_testsuite("platform:control_plane_hardening")
+    (/You must install a CNF first./ =~ result[:output]).should be_nil
   end
 end
 
