@@ -1,6 +1,6 @@
 require "./utils/embedded_file_manager.cr"
 
-ESSENTIAL_PASSING_SCORE = 1000
+ESSENTIAL_PASSED_THRESHOLD = 15
 CNF_DIR = "cnfs"
 CONFIG_FILE = "cnf-testsuite.yml"
 BASE_CONFIG = "./config.yml"

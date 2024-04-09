@@ -20,7 +20,7 @@ task "cert", ["version", "cert_compatibility", "cert_state", "cert_security", "c
   essential_max_passed = CNFManager::Points.total_max_passed("essential")
   stdout_success "  - #{total_passed} of #{max_passed} total tests passed"
 
-  if ESSENTIAL_PASSING_SCORE >= 1000 
+  if essential_total_passed >= ESSENTIAL_PASSED_THRESHOLD
     stdout_success "  - #{essential_total_passed} of #{essential_max_passed} essential tests passed"
   else
     stdout_failure "FAILED: #{essential_total_passed} of #{essential_max_passed} essential tests passed"
