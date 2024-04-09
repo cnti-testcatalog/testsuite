@@ -1,4 +1,4 @@
-# CNF Test Suite Contributors
+# CNTi Test Catalog Contributors
 
 
 ## Admin
