@@ -20,20 +20,20 @@ To run this example CNF, note the following requirements:
 ### Automated installation
 Run cnf-testsuite setup 
 ```
-export KUBECONFIG=$(pwd)/<YourKubeConf> ; crystal src/cnf-testsuite.cr setup
+export KUBECONFIG=$(pwd)/<YourKubeConf> ; ./cnf-testsuite setup
 ```
 
 Setup and deploy  service chain
 ```
-export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr cnf_setup cnf-path=example-cnfs/ip-forwarder deploy_with_chart=false
+export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite cnf_setup cnf-path=example-cnfs/ip-forwarder/cnf-testsuite.yml deploy_with_chart=false
 ```
 
 ### Testing
-Run the test suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`
+Run the test suite: `export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite all`
 
 ### Automated cleanup
 ```
-export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr cnf_cleanup cnf-path=example-cnfs/ip-forwarder
+export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite cnf_cleanup cnf-path=example-cnfs/ip-forwarder/cnf-testsuite.yml
 ```
 
 ### Manual installation
@@ -43,7 +43,7 @@ export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr cnf_cleanup c
 1. Copy the cnf-testsuite.yml into the cnfs/ip-forwarder directory
 1. Deploy the CNF using helm: `helm install cnfs/ip-forwarder/vpp`
 1. Wait for the installation to finish (all pods are ready)
-1. Run the test suite: `export KUBECONFIG=$(pwd)/admin.conf ; crystal src/cnf-testsuite.cr all`
+1. Run the test suite: `export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite all`
 
 
   

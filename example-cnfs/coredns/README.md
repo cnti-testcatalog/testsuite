@@ -18,19 +18,19 @@ Follow [Pre-req steps](../../INSTALL.md#pre-requisites), including
 Initialize the test suite
 
 ```
-crystal src/cnf-testsuite.cr setup
+./cnf-testsuite setup
 ```
 
 Configure and deploy CoreDNS as the target CNF
 
 ```
-crystal src/cnf-testsuite.cr cnf_setup cnf-path=example-cnfs/coredns
+./cnf-testsuite cnf_setup cnf-path=example-cnfs/coredns/cnf-testsuite.yml
 ```
 
 Run the all the tests
 
 ```
-crystal src/cnf-testsuite.cr all
+./cnf-testsuite all
 ```
 
 Check the results file
@@ -38,5 +38,5 @@ Check the results file
 Cleanup the cnf test setup (including undeployment of CoreDNS)
 
 ```
-crystal src/cnf-testsuite.cr cnf_cleanup cnf-path=example-cnfs/coredns
+./cnf-testsuite cnf_cleanup cnf-path=example-cnfs/coredns
 ```
