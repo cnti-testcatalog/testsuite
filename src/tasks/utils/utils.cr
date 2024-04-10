@@ -43,13 +43,16 @@ def ensure_kubeconfig!
   kubeconfig_path = File.join(ENV["HOME"], ".kube", "config")
   
   if ENV.has_key?("KUBECONFIG") && File.exists?(ENV["KUBECONFIG"])
-    puts "KUBECONFIG is already set.".colorize(:green)
+    stdout_success "KUBECONFIG is already set."
   elsif File.exists?(kubeconfig_path)
     ENV["KUBECONFIG"] = kubeconfig_path
-    puts "KUBECONFIG is set as #{ENV["KUBECONFIG"]}.".colorize(:green)
+    stdout_success "KUBECONFIG is set as #{ENV["KUBECONFIG"]}."
+  elsif !ENV.has_key?("KUBECONFIG")
+    stdout_failure "KUBECONFIG is not set and default path #{kubeconfig_path} does not exist. Please set KUBECONFIG to an existing config file, i.e. 'export KUBECONFIG=path-to-your-kubeconfig'"
+    exit 1
   else
-    puts "KUBECONFIG is not set. Please set a KUBECONFIG, i.p 'export KUBECONFIG=path-to-your-kubeconfig'".colorize(:red)
-    raise "KUBECONFIG is not set. Please set a KUBECONFIG, i.p 'export KUBECONFIG=path-to-your-kubeconfig'"
+    stdout_failure "KUBECONFIG is set to #{ENV["KUBECONFIG"]} path and it does not exist. Please set KUBECONFIG to an existing config file, i.e. 'export KUBECONFIG=path-to-your-kubeconfig'"
+    exit 1
   end
 
 end
