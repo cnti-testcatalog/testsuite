@@ -19,8 +19,14 @@
 ## Contributor
 | Name | GitHub ID | Affiliation |
 | --------------- | --------- | ----------- |
-| Michael S. Pedersen | [michaelspedersen](https://github.com/michaelspedersen) | [TietoEVRY](https://www.tietoevry.com/) / [Intel](https://intel.com/) |
+| Michael S. Pedersen | [michaelspedersen](https://github.com/michaelspedersen) | [Tietoevry](https://www.tietoevry.com/) / [Intel](https://intel.com/) |
 | Udit Gaurav    | [uditgaurav](https://github.com/uditgaurav) | [LitmusChaos](https://litmuschaos.io/) |
+| Martin Matyáš | [martin-mat](https://github.com/martin-mat) | [Tietoevry](https://www.tietoevry.com/) |
+| Konstantin Yarovoy | [kosstennbl](https://github.com/kosstennbl) | [Tietoevry](https://www.tietoevry.com/) |
+| Oliver Horečný | [horecoli](https://github.com/horecoli) | [Tietoevry](https://www.tietoevry.com/) |
+| Slávo Vaľko | [svteb](https://github.com/svteb) | [Tietoevry](https://www.tietoevry.com/) |
+| Juraj Haško | [haskojur](https://github.com/haskojur) | [Tietoevry](https://www.tietoevry.com/) |
+| Barbora Müller | [barmull](https://github.com/barmull) | [Tietoevry](https://www.tietoevry.com/) |
 
 ### Emeritus Maintainer
 | Name | GitHub ID | Affiliation |
