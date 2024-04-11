@@ -8,3 +8,9 @@ helm_repository: # CONFIGURATION OF HELM REPO - ONLY NEEDED WHEN USING helm_char
 #manifest_directory: coredns # PATH_TO_DIRECTORY_OF_CNFS_MANIFEST_FILES ; or
 release_name: coredns # DESIRED_HELM_RELEASE_NAME
 helm_install_namespace: cnfspace
+container_names:
+  - name: coredns
+    rolling_update_test_tag: "1.8.0"
+    rolling_downgrade_test_tag: 1.6.7
+    rolling_version_change_test_tag: 1.8.0
+    rollback_from_tag: 1.8.0
