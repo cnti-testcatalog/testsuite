@@ -88,7 +88,7 @@ jobs:
         # Enabled additional unsafe sysctls to support the negative spec test for sysctls
         nodes:
         - role: control-plane
-          image: kindest/node:v1.23.17@sha256:14d0a9a892b943866d7e6be119a06871291c517d279aedb816a4b4bc0ec0a5b3
+          image: kindest/node:v1.29.2@sha256:51a1434a5397193442f0be2a297b488b6c919ce8a3931be0ce822606ea5ca245
           kubeadmConfigPatches:
           - |
             kind: KubeletConfiguration
