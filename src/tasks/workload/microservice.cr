@@ -27,7 +27,7 @@ task "shared_database", ["install_cluster_tools"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     # todo loop through local resources and see if db match found
     db_match = Netstat::Mariadb.match
-    
+
     if db_match[:found] == false
       next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::NA, "[shared_database] No MariaDB containers were found")
     end
@@ -71,7 +71,7 @@ task "shared_database", ["install_cluster_tools"] do |t, args|
 
 
     violators = Netstat::K8s.get_multiple_pods_connected_to_mariadb_violators
-    
+
     Log.info { "violators: #{violators}"}
     Log.info { "cnf_service_pod_ips: #{cnf_service_pod_ips}"}
 
@@ -83,7 +83,7 @@ task "shared_database", ["install_cluster_tools"] do |t, args|
         end
       end
     end
-    
+
     Log.info { "cnf_violators: #{cnf_violators}"}
 
     integrated_database_found = false
@@ -205,9 +205,9 @@ task "reasonable_image_size" do |t, args|
           resource["kind"].downcase == "statefulset" ||
           resource["kind"].downcase == "pod" ||
           resource["kind"].downcase == "replicaset"
-				test_passed = true
+          test_passed = true
 
-				image_url = container.as_h["image"].as_s
+        image_url = container.as_h["image"].as_s
         image_url_parts = image_url.split("/")
         image_host = image_url_parts[0]
 
@@ -302,6 +302,7 @@ desc "Do the containers in a pod have only one process type?"
 task "single_process_type" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args,config|
     fail_msgs = [] of String
+    resources_checked = false
     all_node_proc_statuses = [] of NamedTuple(node_name: String,
                                               proc_statuses: Array(String))
 
@@ -363,11 +364,12 @@ task "single_process_type" do |t, args|
                 ppid = status["PPid"].strip
                 Log.for(t.name).info { "status name: #{status_name}" }
                 Log.for(t.name).info { "previous status name: #{previous_process_type}" }
+                resources_checked = true
                 # Fail if more than one process type
                 #todo make work if processes out of order
                 if status_name != previous_process_type && 
                     previous_process_type != "initial_name"
-                    
+
                   verified = KernelIntrospection::K8s::Node.verify_single_proc_tree(ppid, 
                                                                                     status_name, 
                                                                                     statuses)
@@ -390,7 +392,9 @@ task "single_process_type" do |t, args|
       end
     end
 
-    if task_response
+    if !resources_checked
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Container resources not checked")
+    elsif task_response
       CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Only one process type used")
     else
       CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "More than one process type used")
@@ -724,6 +728,8 @@ desc "To check if the CNF uses a specialized init system"
 task "specialized_init_system", ["install_cluster_tools"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     failed_cnf_resources = [] of InitSystems::InitSystemInfo
+    resources_checked = false
+    error_occurred = false
     CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       kind = resource["kind"].downcase
       case kind 
@@ -734,13 +740,24 @@ task "specialized_init_system", ["install_cluster_tools"] do |t, args|
         pods = KubectlClient::Get.pods_by_resource(resource_yaml, namespace)
         Log.for(t.name).info { "Pod count for resource #{resource[:kind]}/#{resource[:name]} in #{namespace}: #{pods.size}" }
         pods.each do |pod|
+          Log.for(t.name).info { "Inspecting pod: #{pod}" }
+          resources_checked = true
           results = InitSystems.scan(pod)
-          failed_cnf_resources = failed_cnf_resources + results
+          Log.for(t.name).info { "Pod scan result: #{results}" }
+          if !results
+            error_occurred = true
+          else
+            failed_cnf_resources = failed_cnf_resources + results
+          end
         end
       end
     end
 
-    if failed_cnf_resources.size > 0
+    if error_occurred
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "An error occurred during container inspection")
+    elsif !resources_checked
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Container checks not executed")
+    elsif failed_cnf_resources.size > 0
       failed_cnf_resources.each do |init_info|
         stdout_failure "#{init_info.kind}/#{init_info.name} has container '#{init_info.container}' with #{init_info.init_cmd} as init process"
       end
