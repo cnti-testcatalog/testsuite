@@ -31,6 +31,7 @@ LATEST_RELEASE=$(get_latest_release cnti-testcatalog/testsuite)
 mkdir -p ~/.cnf-testsuite
 curl --silent -L https://github.com/cnti-testcatalog/testsuite/releases/download/$LATEST_RELEASE/cnf-testsuite-$LATEST_RELEASE.tar.gz -o ~/.cnf-testsuite/cnf-testsuite.tar.gz
 tar -C ~/.cnf-testsuite -xf ~/.cnf-testsuite/cnf-testsuite.tar.gz
+chmod a+x ~/.cnf-testsuite/cnf-testsuite
 rm ~/.cnf-testsuite/cnf-testsuite.tar.gz
 
 if [ -z ${SHELL_UNSUPPORTED+x} ]; then
