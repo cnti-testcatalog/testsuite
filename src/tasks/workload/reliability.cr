@@ -418,10 +418,10 @@ task "pod_delete", ["install_litmus"] do |t, args|
           if spec_labels.as_h.has_key?(key) && spec_labels[key] == value
             current_pod_key = key
             current_pod_value = value
-            puts "Match found for key: #{key} and value: #{value}"
+            Log.info { "Match found for key: #{key} and value: #{value}" }
             true
           else
-            puts "Match not found for key: #{key} and value: #{value}"
+            Log.info { "Match not found for key: #{key} and value: #{value}" }
             false
           end
         end
@@ -432,9 +432,7 @@ task "pod_delete", ["install_litmus"] do |t, args|
 
       if test_passed
         Log.info { "Running for: #{spec_labels}"}
-        puts "Running for: #{spec_labels}"
         Log.info { "Spec Hash: #{args.named["pod_labels"]?}" }
-        puts "Spec Hash: #{args.named["pod_labels"]?}" 
         if args.named["offline"]?
           Log.info { "install resilience offline mode" }
           AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/pod-delete-experiment.yaml")
@@ -488,9 +486,7 @@ task "pod_delete", ["install_litmus"] do |t, args|
         ).to_s
       end
 
-        puts "template: #{template}"
         Log.info { "template: #{template}" }
-
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
         LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
