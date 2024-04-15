@@ -173,13 +173,15 @@ describe "Microservice" do
   end
 
   it "'reasonable_image_size' should fail if image is larger than 5gb", tags: ["reasonable_image_size"] do
-    `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/ndn-reasonable-image-size wait_count=0`
+    response_install_s = `./cnf-testsuite cnf_setup cnf-path=./sample-cnfs/ndn-reasonable-image-size wait_count=0`
     response_s = `./cnf-testsuite reasonable_image_size verbose`
+    LOGGING.info response_install_s
     LOGGING.info response_s
     $?.success?.should be_true
     (/Image size too large/ =~ response_s).should_not be_nil
-  ensure
-    `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/ndn-reasonable-image-size force=true`
+  #ensure
+    #`./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/ndn-reasonable-image-size force=true`
+
   end
 
   it "'specialized_init_system' should fail if pods do not use specialized init systems", tags: ["specialized_init_system"] do
