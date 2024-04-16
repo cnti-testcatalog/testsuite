@@ -115,9 +115,7 @@
   tags: [resilience, dynamic, workload, cert, normal]
 - name: pod_dns_error
   emoji: "🗡️💀♻"
-  tags: [resilience, dynamic, workload, essential, cert]
-  pass: 100
-  fail: 0
+  tags: [resilience, dynamic, workload]
 #- name: external_retry 
 #  tags: scalability, dynamic, workload
 
