@@ -13,7 +13,6 @@ desc "The CNF test suite checks to see if the CNFs are resilient to failures."
    "pod_delete",
    "pod_memory_hog",
    "pod_io_stress",
-   "pod_dns_error",
    "pod_network_duplication",
    "liveness",
    "readiness"
