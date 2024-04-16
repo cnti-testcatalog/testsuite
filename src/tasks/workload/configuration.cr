@@ -530,7 +530,7 @@ task "immutable_configmap" do |t, args|
     immutable_configmap_supported = true
     immutable_configmap_enabled = true
 
-    # if the reapply with a change succedes immmutable configmaps is NOT enabled
+    # if the reapply with a change succedes immutable configmaps is NOT enabled
     # if KubectlClient::Apply.file(test_config_map_filename) == 0
     apply_result = KubectlClient::Apply.file(test_config_map_filename)
 
@@ -541,9 +541,9 @@ task "immutable_configmap" do |t, args|
       Log.for(t.name).info { "kubectl apply on immutable configmap succeeded for: #{test_config_map_filename}" }
       k8s_ver = KubectlClient.server_version
       if version_less_than(k8s_ver, "1.19.0")
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "immmutable configmaps are not supported in this k8s cluster")
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "immutable configmaps are not supported in this k8s cluster")
       else
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "immmutable configmaps are not enabled in this k8s cluster")
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "immutable configmaps are not enabled in this k8s cluster")
       end
     else
 
