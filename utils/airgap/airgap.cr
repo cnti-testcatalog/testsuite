@@ -39,7 +39,7 @@ module AirGap
     tar_dir = info[:tar_dir]
     tar_name = info[:tar_name]
 
-    TarClient.modify_tar!(tar_name) do |directory| 
+    TarClient.modify_tar!(tar_name) do |directory|
       template_files = Find.find(directory, "*.yaml*", "100")
       template_files.map{|x| AirGap.image_pull_policy(x)}
     end
@@ -47,20 +47,20 @@ module AirGap
   ensure
     FileUtils.rm_rf("/tmp/#{repo_path}")
   end
-  
+
   def self.tar_manifest(url, output_file : String = "./airgapped.tar.gz", prefix="")
-    manifest_path = "manifests/" 
+    manifest_path = "manifests/"
     FileUtils.rm_rf("/tmp/#{manifest_path}")
     FileUtils.mkdir_p("/tmp/" + manifest_path)
-    manifest_name = prefix + url.split("/").last 
-    manifest_full_path = manifest_path + manifest_name 
+    manifest_name = prefix + url.split("/").last
+    manifest_full_path = manifest_path + manifest_name
     Log.info { "manifest_name: #{manifest_name}" }
     Log.info { "manifest_full_path: #{manifest_full_path}" }
     download_path = "/tmp/" + manifest_full_path
     HttpHelper.download("#{url}", "#{download_path}")
 
-    # Halite.get("#{url}") do |response| 
-    #    File.open("/tmp/" + manifest_full_path, "w") do |file| 
+    # Halite.get("#{url}") do |response|
+    #    File.open("/tmp/" + manifest_full_path, "w") do |file|
     #      IO.copy(response.body_io, file)
     #    end
     # end
@@ -92,10 +92,10 @@ module AirGap
     unless kind_name
       AirGap.bootstrap_cluster()
     end
-    #TODO Potentially remove this. 
+    #TODO Potentially remove this.
     if ENV["CRYSTAL_ENV"]? == "TEST"
       # todo change chaos-mesh tar to something more generic
-      image_files = ["#{TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar", 
+      image_files = ["#{TAR_BOOTSTRAP_IMAGES_DIR}/kubectl.tar",
                       "#{TAR_BOOTSTRAP_IMAGES_DIR}/chaos-mesh.tar"]
       tar_image_files = Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tar*")
       image_files = image_files + tar_image_files + Find.find("#{TarClient::TAR_IMAGES_DIR}", "*.tgz*")
@@ -120,7 +120,7 @@ module AirGap
     Log.info { "TAR POD: #{pods}" }
     tar_pod_name =  pods[0].dig?("metadata", "name") if pods[0]?
     Log.info { "TAR POD NAME: #{tar_pod_name}" }
-    unless tar_pod_name 
+    unless tar_pod_name
       Log.info { "NO TAR POD, CHECKING FOR PODS WITH SHELL" }
       pods = AirGap.pods_with_sh()
       no_tar = true
@@ -140,9 +140,9 @@ module AirGap
     if no_tar
       Log.info { "NO TAR POD, COPYING TAR FROM HOST" }
       tar_path = AirGap.check_tar(cri_tools_pod_name, namespace: "default", pod: false)
-      pods.map do |pod| 
-        KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- cp #{tar_path} /usr/local/bin/")
-        status = KubectlClient.exec("#{pod.dig?("metadata", "name")} -ti -- /usr/local/bin/tar --version")
+      pods.map do |pod|
+        KubectlClient.exec("#{pod.dig?("metadata", "name")} -- cp #{tar_path} /usr/local/bin/")
+        status = KubectlClient.exec("#{pod.dig?("metadata", "name")} -- /usr/local/bin/tar --version")
         unless status[:status].success?
           raise "No images with Tar or Shell found. Please deploy a Pod with Tar or Shell to your cluster."
         end
@@ -155,20 +155,20 @@ module AirGap
     unless kind_name
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
       pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
-      pods.map do |pod| 
+      pods.map do |pod|
         pod_name = pod.dig?("metadata", "name")
         KubectlClient.cp("#{tarball} #{pod_name}:/tmp/#{tarball.split("/")[-1]}")
       end
-      pods.map do |pod| 
+      pods.map do |pod|
         pod_name = pod.dig?("metadata", "name")
-        resp = KubectlClient.exec("-ti #{pod_name} -- ctr -n=k8s.io image import /tmp/#{tarball.split("/")[-1]}")
+        resp = KubectlClient.exec("#{pod_name} -- ctr -n=k8s.io image import /tmp/#{tarball.split("/")[-1]}")
         Log.debug { "Resp: #{resp}" }
         resp
       end
     else
       DockerClient.cp("#{tarball} #{kind_name}:/#{tarball.split("/")[-1]}")
-      #DockerClient.exec("-ti #{kind_name} ctr -n=k8s.io image import /#{tarball.split("/")[-1]}")
-      `docker exec -ti #{kind_name} ctr -n=k8s.io image import /#{tarball.split("/")[-1]}`
+      #DockerClient.exec("#{kind_name} ctr -n=k8s.io image import /#{tarball.split("/")[-1]}")
+      `docker exec #{kind_name} ctr -n=k8s.io image import /#{tarball.split("/")[-1]}`
     end
   end
 
@@ -190,7 +190,7 @@ module AirGap
   end
 
   def self.pod_images(pods)
-    # todo change into a reduce, loop through all containers and append image 
+    # todo change into a reduce, loop through all containers and append image
     #  into final array of images
     pods.map do |pod|
       containers = pod.dig("spec","containers").as_a
@@ -211,19 +211,19 @@ module AirGap
 
   def self.check_sh(pod_name, namespace="default")
     # --namespace=${POD[1]}
-    sh = KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /bin/sh > /dev/null")  
+    sh = KubectlClient.exec("--namespace=#{namespace} #{pod_name} -- cat /bin/sh > /dev/null")
     sh[:status].success?
   end
 
   def self.check_tar(pod_name, namespace="default", pod=true)
     if pod
-      bin_tar = KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /bin/tar > /dev/null")  
-      usr_bin_tar =  KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /usr/bin/tar > /dev/null")
-      usr_local_bin_tar = KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /usr/local/bin/tar > /dev/null")
+      bin_tar = KubectlClient.exec("--namespace=#{namespace} #{pod_name} -- cat /bin/tar > /dev/null")
+      usr_bin_tar =  KubectlClient.exec("--namespace=#{namespace} #{pod_name} -- cat /usr/bin/tar > /dev/null")
+      usr_local_bin_tar = KubectlClient.exec("--namespace=#{namespace} #{pod_name} -- cat /usr/local/bin/tar > /dev/null")
     else
-      bin_tar = KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /tmp/bin/tar > /dev/null")  
-      usr_bin_tar =  KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /tmp/usr/bin/tar > /dev/null")
-      usr_local_bin_tar = KubectlClient.exec("--namespace=#{namespace} -ti #{pod_name} -- cat /tmp/usr/local/bin/tar > /dev/null")
+      bin_tar = KubectlClient.exec("--namespace=#{namespace} #{pod_name} -- cat /tmp/bin/tar > /dev/null")
+      usr_bin_tar =  KubectlClient.exec("--namespace=#{namespace} #{pod_name} -- cat /tmp/usr/bin/tar > /dev/null")
+      usr_local_bin_tar = KubectlClient.exec("--namespace=#{namespace} #{pod_name} -- cat /tmp/usr/local/bin/tar > /dev/null")
     end
     if pod
       (bin_tar[:status].success? && "/bin/tar") || (usr_bin_tar.[:status].success? && "/usr/bin/tar") || (usr_local_bin_tar[:status].success? && "/usr/local/bin/tar")
@@ -263,7 +263,7 @@ module AirGap
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list).select do |pod|
       pod_name = pod.dig?("metadata", "name")
       namespace = pod.dig?("metadata", "namespace")
-      if check_sh(pod_name, namespace) 
+      if check_sh(pod_name, namespace)
         Log.debug { "Found sh Pod: #{pod_name}" }
         true
       else
@@ -281,7 +281,7 @@ module AirGap
       file_list = Helm::Manifest.manifest_file_list(config_src, silent=false)
       yml = Helm::Manifest.manifest_ymls_from_file_list(file_list)
     when Helm::InstallMethod::HelmChart, Helm::InstallMethod::HelmDirectory
-      Helm.template(release_name, config_src, output_file="cnfs/temp_template.yml") 
+      Helm.template(release_name, config_src, output_file="cnfs/temp_template.yml")
       yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
     else
       raise "config source error: #{install_method}"
@@ -296,7 +296,7 @@ module AirGap
       mc.as_a? if mc
     }.flatten.compact
     Log.debug { "containers : #{containers}" }
-    found_all = true 
+    found_all = true
     containers.flatten.map do |x|
       Log.debug { "container x: #{x}" }
       ipp = x.dig?("imagePullPolicy")
@@ -310,7 +310,7 @@ module AirGap
       if ipp == nil && (parsed_image && parsed_image["tag"] == "latest")
         Log.info { "ipp or tag not found with ipp: #{ipp} and parsed_image: #{parsed_image}" }
         found_all = false
-      end 
+      end
     end
     Log.info { "found_all: #{found_all}" }
     found_all
@@ -318,15 +318,15 @@ module AirGap
 
 
   def self.image_pull_policy(file, output_file="")
-    input_content = File.read(file) 
+    input_content = File.read(file)
     output_content = input_content.gsub(/(.*imagePullPolicy:)(.*.)/,"\\1 Never")
 
     # LOGGING.debug "pull policy found?: #{input_content =~ /(.*imagePullPolicy:)(.*)/}"
     # LOGGING.debug "output_content: #{output_content}"
     if output_file.empty?
-      input_content = File.write(file, output_content) 
+      input_content = File.write(file, output_content)
     else
-      input_content = File.write(output_file, output_content) 
+      input_content = File.write(output_file, output_content)
     end
     #
     #TODO find out why this doesn't work
@@ -352,7 +352,7 @@ module AirGap
     repo = config_src.split(" ")[0]
     repo_dir = repo.gsub("/", "_")
     chart_name = repo.split("/")[-1]
-    repo_path = "repositories/#{repo_dir}" 
+    repo_path = "repositories/#{repo_dir}"
     tar_dir = "/tmp/#{repo_path}"
     tar_info = {repo: repo, repo_dir: repo_dir, chart_name: chart_name,
      repo_path: repo_path, tar_dir: tar_dir, tar_name: tar_name_by_helm_chart(config_src)}
@@ -367,7 +367,7 @@ module AirGap
     repo = config_src.split(" ")[0]
     repo_dir = repo.gsub("/", "_")
     chart_name = repo.split("/")[-1]
-    repo_path = "repositories/#{repo_dir}" 
+    repo_path = "repositories/#{repo_dir}"
     tar_dir = "/tmp/#{repo_path}"
     Log.info { "helm_tar_dir: #{tar_dir}" }
     tar_dir

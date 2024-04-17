@@ -30,7 +30,7 @@ def self.image_pull(yml, offline)
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
     pods.map do |pod| 
-      KubectlClient.exec("-ti #{pod.dig?("metadata", "name")} -- crictl pull #{image}")
+      KubectlClient.exec("#{pod.dig?("metadata", "name")} -- crictl pull #{image}")
     end
   end
 end

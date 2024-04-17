@@ -42,11 +42,11 @@ describe "AirGap" do
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
     # Get the generated name of the cri-tools per node
-    pods.map do |pod| 
+    pods.map do |pod|
       pod_name = pod.dig?("metadata", "name")
-      sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/crictl > /dev/null")  
+      sh = KubectlClient.exec("#{pod_name} -- cat /usr/local/bin/crictl > /dev/null")
       sh[:status].success?
-      sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/ctr > /dev/null")  
+      sh = KubectlClient.exec("#{pod_name} -- cat /usr/local/bin/ctr > /dev/null")
       sh[:status].success?
     end
     (/All prerequisites found./ =~ response_s).should_not be_nil
