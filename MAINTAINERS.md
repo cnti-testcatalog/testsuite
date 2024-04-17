@@ -27,6 +27,7 @@
 | Slávo Vaľko | [svteb](https://github.com/svteb) | [Tietoevry](https://www.tietoevry.com/) |
 | Juraj Haško | [haskojur](https://github.com/haskojur) | [Tietoevry](https://www.tietoevry.com/) |
 | Barbora Müller | [barmull](https://github.com/barmull) | [Tietoevry](https://www.tietoevry.com/) |
+| Olivier Smith | [smitholi67](https://github.com/smitholi67) | [MATRIXX Software](https://www.matrixx.com/) |
 
 ### Emeritus Maintainer
 | Name | GitHub ID | Affiliation |
