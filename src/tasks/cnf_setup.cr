@@ -32,7 +32,11 @@ task "cnf_setup", ["helm_local_install", "create_namespace"] do |_, args|
     puts "cnf setup airgapped mode complete".colorize(:green)
   else
     Log.info { "Installing ClusterTools"}
-    ClusterTools.install
+    if ClusterTools.install
+      puts "ClusterTools installed".colorize(:green)
+    else
+      puts "The ClusterTools installation timed out. Please check the status of the cluster-tools pods.".colorize(:red)
+    end
     puts "cnf setup online mode".colorize(:green)
     CNFManager.sample_setup(cli_hash)
     puts "cnf setup online mode complete".colorize(:green)
