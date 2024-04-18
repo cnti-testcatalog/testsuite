@@ -196,9 +196,6 @@ jobs:
         LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.spec }} -v
 
 
-        #    - name: Setup tmate session
-        #      uses: mxschmitt/action-tmate@v2
-
     - name: Delete Cluster
       if: ${{ always() }}
       run: |
