@@ -435,12 +435,14 @@ task "pod_delete", ["install_litmus"] do |t, args|
           experiment_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/faults/kubernetes/pod-delete/fault.yaml"
           rbac_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::RBAC_VERSION}/charts/generic/pod-delete/rbac.yaml"
 
-          # rbac_url = "https://hub.litmuschaos.io/api/chaos/#{LitmusManager::Version}?file=charts/generic/pod-delete/rbac.yaml"
+          experiment_path = LitmusManager.download_template(experiment_url, "#{t.name}_experiment.yaml")
+
           rbac_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/charts/generic/pod-delete/rbac.yaml"
           rbac_path = LitmusManager.download_template(rbac_url, "#{t.name}_rbac.yaml")
           rbac_yaml = File.read(rbac_path)
           rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
           File.write(rbac_path, rbac_yaml)
+
 
           KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
           KubectlClient::Apply.file(rbac_path)
