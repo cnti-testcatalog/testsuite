@@ -19,12 +19,17 @@ spec:
         components:
           env:
             # specify the fill percentage according to the disk pressure required
-            - name: EPHEMERAL_STORAGE_MEBIBYTES
-              value: '500'
-
+            #- name: EPHEMERAL_STORAGE_MEBIBYTES
+              #value: '500'
+            - name: TOTAL_CHAOS_DURATION
+              value: '60'
+            - name: CHAOS_INTERVAL
+              value: '10'
+            - name: DISK_FILL_PERCENTAGE
+              value: '80'
             - name: TARGET_CONTAINER
               value: ''
-            - name: FILL_PERCENTAGE
-              value: ''
+            #- name: FILL_PERCENTAGE
+            #  value: ''
             - name: CONTAINER_PATH
               value: '/var/lib/containerd/io.containerd.grpc.v1.cri/containers/'
