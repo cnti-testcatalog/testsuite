@@ -1,0 +1,5 @@
+# Steps to run lint on TEST_DOCUMENTATION locally
+
+- Install ruby version that suits your system https://www.ruby-lang.org/en/documentation/installation/
+- Install MDL with gem package manager `gem install mdl` or build it from source https://github.com/markdownlint/markdownlint
+- Run `mdl -s doc-lint/mdl-style.rb -u doc-lint/mdl-TTDS-rules.rb docs/TEST_DOCUMENTATION.md`, that should run Markdownlint with custom style and rules.
