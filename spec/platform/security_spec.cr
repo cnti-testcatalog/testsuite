@@ -38,4 +38,16 @@ describe "Platform" do
     result[:status].success?.should be_true
     (/(PASSED).*(No Helm Tiller containers are running)/ =~ result[:output]).should_not be_nil
   end
+
+  it "'verify_configmaps_encryption' should pass if encryption is enabled in etcd", tags: ["platform:security"] do
+    etcd_output_string = "k8s:enc:"
+    result = etcd_cm_encrypted?("/path/to/certs", "etcd-pod", "test-cm", "testconfigmapvalue", "default", etcd_output_string)
+    result.should be_true
+ end
+
+ it "'verify_configmaps_encryption' should fail if encryption is disabled in etcd", tags: ["platform:security"] do
+  etcd_output_string = "testconfigmapvalue"
+  result = etcd_cm_encrypted?("/path/to/certs", "etcd-pod", "test-cm", "testconfigmapvalue", "default", etcd_output_string)
+  result.should_not be_true
+  end
 end
