@@ -45,7 +45,8 @@ end
 
 module LitmusManager
 
-  Version = "2.14.0"
+  Version = "3.6.0"
+  RBAC_VERSION = "2.6.0"
   # Version = "1.13.8"
   # Version = "3.0.0-beta12"
   NODE_LABEL = "kubernetes.io/hostname"
