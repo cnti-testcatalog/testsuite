@@ -34,8 +34,9 @@ module InitSystems
     return false
   end
 
-  def self.scan(pod : JSON::Any) : Array(InitSystemInfo)
+  def self.scan(pod : JSON::Any) : Array(InitSystemInfo) | Nil
     failed_resources = [] of InitSystemInfo
+    error_occurred = false
 
     nodes = KubectlClient::Get.nodes_by_pod(pod)
     pod_name = pod.dig("metadata", "name")
@@ -69,10 +70,12 @@ module InitSystems
         if !InitSystems.is_specialized_init_system?(container_init_cmd)
           failed_resources << init_info
         end
+      else
+        error_occurred = true
       end
     end
 
-    return failed_resources
+    return error_occurred ? nil : failed_resources
   end
 
   def self.get_container_init_cmd(node, container_id) : String?

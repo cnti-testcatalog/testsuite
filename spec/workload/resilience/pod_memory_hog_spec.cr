@@ -14,7 +14,8 @@ describe "Resilience pod memory hog Chaos" do
 
   it "'pod_memory_hog' A 'Good' CNF should not crash when pod memory hog occurs", tags: ["pod_memory_hog"]  do
     begin
-      `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+      install_log = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
+      LOGGING.info = install_log
       $?.success?.should be_true
       response_s = `./cnf-testsuite pod_memory_hog verbose`
       LOGGING.info response_s

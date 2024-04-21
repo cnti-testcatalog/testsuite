@@ -33,4 +33,16 @@ describe "Compatibility" do
     end
   end
 
+  it "'increase_decrease_capacity' should pass ", tags: ["increase_decrease_capacity"]  do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose wait_count=0`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite increase_decrease_capacity verbose`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Replicas increased to/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
+    end
+  end
 end
