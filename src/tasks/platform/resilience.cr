@@ -50,7 +50,7 @@ namespace "platform" do
 
         # Find Reboot Daemon name
         reboot_daemon_pod = KubectlClient::Get.pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[0]
-        start_reboot = KubectlClient.exec("-ti #{reboot_daemon_pod} touch /tmp/reboot")
+        start_reboot = KubectlClient.exec("#{reboot_daemon_pod} touch /tmp/reboot")
 
         #Watch for Node Failure.
         pod_ready = ""

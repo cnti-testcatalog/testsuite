@@ -9,7 +9,7 @@ describe "AirGap" do
 
     AirGap.image_pull_policy("./spec/fixtures/litmus-operator-v1.13.2.yaml", "/tmp/imagetest.yml")
     (File.exists?("/tmp/imagetest.yml")).should be_true
-    resp = File.read("/tmp/imagetest.yml") 
+    resp = File.read("/tmp/imagetest.yml")
     (resp).match(/imagePullPolicy: Always/).should be_nil
     (resp).match(/imagePullPolicy: Never/).should_not be_nil
   ensure
@@ -61,13 +61,13 @@ describe "AirGap" do
     resp = AirGap.check_tar(pods.dig?("metadata", "name"))
     resp.should be_false
   end
-  
+
   it "'#AirGap.check_tar' should determine if the host has the tar binary on it", tags: ["airgap"]  do
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
     resp = AirGap.check_tar(pods[0].dig?("metadata", "name"), pod=false)
     Log.debug { "Path to tar on the host filesystem: #{resp}" }
-    resp.should_not be_nil 
+    resp.should_not be_nil
   end
 
   it "'#AirGap.check_sh' should determine if a pod has a shell on it", tags: ["airgap"]  do
@@ -137,14 +137,14 @@ describe "AirGap" do
     pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
     pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
     # Get the generated name of the cri-tools per node
-    pods.map do |pod| 
+    pods.map do |pod|
       pod_name = pod.dig?("metadata", "name")
       containers = pod.dig("spec","containers").as_a
       image = containers[0]? && containers[0].dig("image")
       Log.info { "CRI Pod Image: #{image}" }
-      sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/crictl > /dev/null")  
+      sh = KubectlClient.exec("#{pod_name} -- cat /usr/local/bin/crictl > /dev/null")
       sh[:status].success?
-      sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/ctr > /dev/null")  
+      sh = KubectlClient.exec("#{pod_name} -- cat /usr/local/bin/ctr > /dev/null")
       sh[:status].success?
     end
   ensure
@@ -156,17 +156,17 @@ describe "AirGap" do
   it "'#AirGap.bootstrap_cluster' should install the cri tools in the cluster that does not have tar in the images", tags: ["airgap-tools"]  do
     KubectlClient::Delete.command("daemonset cri-tools")
     pods = AirGap.pods_with_tar()
-    # Skip the test if tar is available outside of the cri tools 
+    # Skip the test if tar is available outside of the cri tools
     if pods.empty?
       AirGap.bootstrap_cluster()
       pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
       pods = KubectlClient::Get.pods_by_label(pods, "name", "cri-tools")
       # Get the generated name of the cri-tools per node
-      pods.map do |pod| 
+      pods.map do |pod|
         pod_name = pod.dig?("metadata", "name")
-        sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/crictl > /dev/null")  
+        sh = KubectlClient.exec("#{pod_name} -- cat /usr/local/bin/crictl > /dev/null")
         sh[:status].success?
-        sh = KubectlClient.exec("-ti #{pod_name} -- cat /usr/local/bin/ctr > /dev/null")  
+        sh = KubectlClient.exec("#{pod_name} -- cat /usr/local/bin/ctr > /dev/null")
         sh[:status].success?
       end
     end
