@@ -18,7 +18,7 @@ describe "State" do
       $?.success?.should be_true
       response_s = `./cnf-testsuite -l info elastic_volumes verbose`
       LOGGING.info "Status:  #{response_s}"
-      (/PASSED: All used volumes are elastic/ =~ response_s).should be_nil
+      (/(PASSED).*(All used volumes are elastic)/ =~ response_s).should be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -54,7 +54,7 @@ describe "State" do
       # KubectlClient::Get.resource_wait_for_install("Pod", "mycluster-2")
       response_s = `LOG_LEVEL=info ./cnf-testsuite database_persistence`
       Log.info {"Status:  #{response_s}"}
-      (/PASSED: CNF uses database with cloud-native persistence/ =~ response_s).should_not be_nil
+      (/(PASSED).*(CNF uses database with cloud-native persistence)/ =~ response_s).should_not be_nil
     ensure
       # Mysql.uninstall
        # KubectlClient::Delete.file("https://raw.githubusercontent.com/mysql/mysql-operator/trunk/samples/sample-cluster.yaml  --wait=false")
@@ -71,7 +71,7 @@ describe "State" do
       $?.success?.should be_true
       response_s = `./cnf-testsuite -l info elastic_volumes verbose`
       LOGGING.info "Status:  #{response_s}"
-      (/FAILED: Some of the used volumes are not elastic/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Some of the used volumes are not elastic)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -84,7 +84,7 @@ describe "State" do
       $?.success?.should be_true
       response_s = `./cnf-testsuite volume_hostpath_not_found verbose`
       LOGGING.info "Status:  #{response_s}"
-      (/PASSED: hostPath volumes not found/ =~ response_s).should_not be_nil
+      (/(PASSED).*(hostPath volumes not found)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -97,7 +97,7 @@ describe "State" do
       $?.success?.should be_true
       response_s = `./cnf-testsuite volume_hostpath_not_found verbose`
       LOGGING.info "Status:  #{response_s}"
-      (/FAILED: hostPath volumes found/ =~ response_s).should_not be_nil
+      (/(FAILED).*(hostPath volumes found)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-fragile-state/cnf-testsuite.yml deploy_with_chart=false`
       $?.success?.should be_true
@@ -113,7 +113,7 @@ describe "State" do
       $?.success?.should be_true
       response_s = `./cnf-testsuite no_local_volume_configuration verbose`
       LOGGING.info "Status:  #{response_s}"
-      (/FAILED: local storage configuration volumes found/ =~ response_s).should_not be_nil
+      (/(FAILED).*(local storage configuration volumes found)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-local-storage/cnf-testsuite.yml deploy_with_chart=false`
       update_yml("sample-cnfs/sample-local-storage/cnf-testsuite.yml", "helm_values", "")
@@ -127,7 +127,7 @@ describe "State" do
       $?.success?.should be_true
       response_s = `./cnf-testsuite no_local_volume_configuration verbose`
       LOGGING.info "Status:  #{response_s}"
-      (/PASSED: local storage configuration volumes not found/ =~ response_s).should_not be_nil
+      (/(PASSED).*(local storage configuration volumes not found)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml deploy_with_chart=false`
       $?.success?.should be_true

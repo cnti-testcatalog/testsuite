@@ -47,7 +47,7 @@ describe "Security" do
       response_s = `./cnf-testsuite privilege_escalation`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: No containers that allow privilege escalation were found/ =~ response_s).should be_nil
+      (/(PASSED).*(No containers that allow privilege escalation were found)/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
     end
@@ -60,7 +60,7 @@ describe "Security" do
       response_s = `./cnf-testsuite privilege_escalation`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: No containers that allow privilege escalation were found/ =~ response_s).should_not be_nil
+      (/(PASSED).*(No containers that allow privilege escalation were found)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-nonroot-containers/cnf-testsuite.yml`
     end
@@ -73,7 +73,7 @@ describe "Security" do
       response_s = `./cnf-testsuite symlink_file_system`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: No containers allow a symlink attack/ =~ response_s).should_not be_nil
+      (/(PASSED).*(No containers allow a symlink attack)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
     end
@@ -86,7 +86,7 @@ describe "Security" do
       response_s = `./cnf-testsuite insecure_capabilities`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Containers with insecure capabilities were not found/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Containers with insecure capabilities were not found)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
     end
@@ -99,7 +99,7 @@ describe "Security" do
       response_s = `./cnf-testsuite insecure_capabilities`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Containers with insecure capabilities were not found/ =~ response_s).should be_nil
+      (/(PASSED).*(Containers with insecure capabilities were not found)/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml`
     end
@@ -112,7 +112,7 @@ describe "Security" do
       response_s = `./cnf-testsuite linux_hardening`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Security services are being used to harden applications/ =~ response_s).should be_nil
+      (/(PASSED).*(Security services are being used to harden applications)/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
     end
@@ -125,7 +125,7 @@ describe "Security" do
       response_s = `./cnf-testsuite application_credentials`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Found applications credentials in configuration files/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Found applications credentials in configuration files)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-appliciation-credentials/cnf-testsuite.yml`
     end
@@ -138,7 +138,7 @@ describe "Security" do
       response_s = `./cnf-testsuite host_network`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: No host network attached to pod/ =~ response_s).should_not be_nil
+      (/(PASSED).*(No host network attached to pod)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
     end
@@ -151,7 +151,7 @@ describe "Security" do
       response_s = `./cnf-testsuite service_account_mapping`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Service accounts automatically mapped/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Service accounts automatically mapped)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-service-accounts/cnf-testsuite.yml`
     end
@@ -164,7 +164,7 @@ describe "Security" do
       response_s = `./cnf-testsuite cpu_limits`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Containers have CPU limits set/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Containers have CPU limits set)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
     end
@@ -177,7 +177,7 @@ describe "Security" do
       response_s = `./cnf-testsuite memory_limits`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Containers have memory limits set/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Containers have memory limits set)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
     end
@@ -190,7 +190,7 @@ describe "Security" do
       response_s = `./cnf-testsuite ingress_egress_blocked`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Ingress and Egress traffic blocked on pods/ =~ response_s).should be_nil
+      (/(PASSED).*(Ingress and Egress traffic blocked on pods)/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
     end
@@ -203,7 +203,7 @@ describe "Security" do
       response_s = `./cnf-testsuite host_pid_ipc_privileges`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Found containers with hostPID and hostIPC privileges/ =~ response_s).should be_nil
+      (/(FAILED).*(Found containers with hostPID and hostIPC privileges)/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
     end
@@ -216,7 +216,7 @@ describe "Security" do
       response_s = `./cnf-testsuite non_root_containers`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Found containers running with root user or user with root group membership/ =~ response_s).should be_nil
+      (/(FAILED).*(Found containers running with root user or user with root group membership)/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-nonroot`
     end
@@ -229,7 +229,7 @@ describe "Security" do
       response_s = `./cnf-testsuite non_root_containers`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Containers are running with non-root user with non-root group membership/ =~ response_s).should be_nil
+      (/(PASSED).*(Containers are running with non-root user with non-root group membership)/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
     end
@@ -242,7 +242,7 @@ describe "Security" do
       response_s = `./cnf-testsuite privileged_containers`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Found privileged containers/ =~ response_s).should be_nil
+      (/(FAILED).*(Found privileged containers)/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
     end
@@ -255,7 +255,7 @@ describe "Security" do
       response_s = `./cnf-testsuite immutable_file_systems`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Containers have immutable file systems/ =~ response_s).should be_nil
+      (/(PASSED).*(Containers have immutable file systems)/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
     end
@@ -268,7 +268,7 @@ describe "Security" do
       response_s = `./cnf-testsuite immutable_file_systems`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Containers have immutable file systems/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Containers have immutable file systems)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-immutable-fs`
     end
@@ -282,7 +282,7 @@ describe "Security" do
       response_s = `./cnf-testsuite hostpath_mounts`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Found containers with hostPath mounts/ =~ response_s).should be_nil
+      (/(FAILED).*(Found containers with hostPath mounts)/ =~ response_s).should be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
       ClusterTools.install
@@ -297,7 +297,7 @@ describe "Security" do
       response_s = `./cnf-testsuite hostpath_mounts`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Found containers with hostPath mounts/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Found containers with hostPath mounts)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-hostpath`
       ClusterTools.install
@@ -311,7 +311,7 @@ describe "Security" do
       response_s = `./cnf-testsuite container_sock_mounts verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Container engine daemon sockets are not mounted as volumes/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Container engine daemon sockets are not mounted as volumes)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
@@ -324,7 +324,7 @@ describe "Security" do
       response_s = `./cnf-testsuite container_sock_mounts verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Container engine daemon sockets are mounted as volumes/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Container engine daemon sockets are mounted as volumes)/ =~ response_s).should_not be_nil
       (/Unix socket is not allowed/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_container_sock_mount/cnf-testsuite.yml`
@@ -338,7 +338,7 @@ describe "Security" do
       response_s = `./cnf-testsuite external_ips verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Services are not using external IPs/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Services are not using external IPs)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
@@ -351,7 +351,7 @@ describe "Security" do
       response_s = `./cnf-testsuite external_ips verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Services are using external IPs/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Services are using external IPs)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_external_ips/cnf-testsuite.yml`
     end
@@ -364,7 +364,7 @@ describe "Security" do
       response_s = `./cnf-testsuite selinux_options verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Pods are using custom SELinux options that can be used for privilege escalations/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Pods are using custom SELinux options that can be used for privilege escalations)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_latest_tag`
     end
@@ -377,7 +377,7 @@ describe "Security" do
       response_s = `./cnf-testsuite selinux_options verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/N\/A: Pods are not using SELinux/ =~ response_s).should_not be_nil
+      (/(N\/A).*(Pods are not using SELinux)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot`
     end
@@ -390,7 +390,7 @@ describe "Security" do
       response_s = `./cnf-testsuite selinux_options verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Pods are not using custom SELinux options that can be used for privilege escalations/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Pods are not using custom SELinux options that can be used for privilege escalations)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_valid_selinux_options`
     end
@@ -403,7 +403,7 @@ describe "Security" do
       response_s = `./cnf-testsuite sysctls verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Restricted values for are being used for sysctls/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Restricted values for are being used for sysctls)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_sysctls`
     end
@@ -416,7 +416,7 @@ describe "Security" do
       response_s = `./cnf-testsuite sysctls verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: No restricted values found for sysctls/ =~ response_s).should_not be_nil
+      (/(PASSED).*(No restricted values found for sysctls)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot`
     end

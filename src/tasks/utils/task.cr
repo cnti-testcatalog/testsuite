@@ -115,6 +115,7 @@ module CNFManager
           test_name = task.as(Sam::Task).name.as(String)
           Log.for(test_name).info { "Starting test" }
           Log.for(test_name).debug { "cnf_config: #{config}" }
+          puts "🎬 Testing: [#{test_name}]"
         end
         ret = yield args, config
         if ret.is_a?(CNFManager::TestcaseResult)

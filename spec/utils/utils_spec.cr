@@ -196,9 +196,9 @@ describe "Utils" do
     Log.info {response_s}
     response_s = `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml`
     Log.info {response_s}
-    resp = `./cnf-testsuite privileged`
-    Log.info { resp }
-    (resp).includes?("FAILED: Found 1 privileged containers").should be_true
+    response_s = `./cnf-testsuite privileged`
+    Log.info { response_s}
+    (/(FAILED).*(Found 1 privileged containers)/ =~ response_s).should_not be_nil
   ensure
     response_s = `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-generic-cnf/cnf-testsuite.yml`
     Log.info { response_s }

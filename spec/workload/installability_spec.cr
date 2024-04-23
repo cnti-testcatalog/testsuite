@@ -13,7 +13,7 @@ describe CnfTestSuite do
     response_s = `./cnf-testsuite helm_deploy verbose`
     LOGGING.info response_s
     $?.success?.should be_true
-    (/FAILED: Helm deploy failed/ =~ response_s).should_not be_nil
+    (/(FAILED).*(Helm deploy failed)/ =~ response_s).should_not be_nil
   ensure
     `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-bad-helm-deploy-repo verbose`
   end
@@ -58,7 +58,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite helm_chart_published`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Published Helm Chart Found/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Published Helm Chart Found)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-coredns-cnf`
     end
@@ -75,7 +75,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite helm_chart_published verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Published Helm Chart Not Found/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Published Helm Chart Not Found)/ =~ response_s).should_not be_nil
     ensure
       `#{Helm::BinarySingleton.helm} repo remove badrepo`
       `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-repo`

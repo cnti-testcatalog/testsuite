@@ -19,8 +19,8 @@ describe "Resilience pod dns error Chaos" do
       response_s = `./cnf-testsuite pod_dns_error verbose`
       Log.info { response_s }
       $?.success?.should be_true
-      ((/SKIPPED: pod_dns_error docker runtime not found/)  =~ response_s || 
-       (/PASSED: pod_dns_error chaos test passed/ =~ response_s)).should_not be_nil
+      ((/(SKIPPED).*(pod_dns_error docker runtime not found)/)  =~ response_s || 
+       (/(PASSED).*(pod_dns_error chaos test passed)/ =~ response_s)).should_not be_nil
     rescue ex
       # Raise back error to ensure test fails.
       # The ensure block will cleanup the CNF and the litmus installation.
