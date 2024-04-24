@@ -454,12 +454,15 @@ task "immutable_file_systems", ["kubescape_scan"] do |t, args|
 end
 
 desc "Check if containers have hostPath mounts"
-task "hostpath_mounts", ["kubescape_scan"] do |t, args|
+task "hostpath_mounts", ["install_kubescape"] do |t, args|
   next if args.named["offline"]?
 
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    results_json = Kubescape.parse
-    test_json = Kubescape.test_by_test_name(results_json, "Allowed hostPath")
+    kubescape_control_id = "C-0048"
+    Kubescape.scan(control_id: kubescape_control_id)
+    results_file = Kubescape.control_results_file(kubescape_control_id)
+    results_json = Kubescape.parse(results_file)
+    test_json = Kubescape.test_by_test_name(results_json, "HostPath mount")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
