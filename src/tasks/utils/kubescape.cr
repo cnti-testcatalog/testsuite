@@ -4,7 +4,7 @@ require "log"
 module Kubescape
 
   #kubescape scan framework nsa --exclude-namespaces kube-system,kube-public
-  def self.scan(cli : String | Nil = nil, control_id: String | Nil = nil)
+  def self.scan(cli : String | Nil = nil, control_id : String | Nil = nil)
     exclude_namespaces = EXCLUDE_NAMESPACES.join(",")
     default_options = "--format json --format-version=v1 --exclude-namespaces #{exclude_namespaces}"
 
