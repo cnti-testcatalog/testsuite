@@ -8,9 +8,12 @@ require "retriable"
 desc "Sets up Kubescape in the K8s Cluster"
 task "install_kubescape", ["kubescape_framework_download"] do |_, args|
   Log.info {"install_kubescape"}
-  # version = `curl --silent "https://api.github.com/repos/armosec/kubescape/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'`
+
+  version_file = "#{tools_path}/kubescape/.kubescape_version"
+  installed_kubescape_version = read_version_file(version_file)
+
   FileUtils.mkdir_p("#{tools_path}/kubescape")
-  unless File.exists?("#{tools_path}/kubescape/kubescape")
+  if !File.exists?("#{tools_path}/kubescape/kubescape") || installed_kubescape_version != KUBESCAPE_VERSION
     write_file = "#{tools_path}/kubescape/kubescape"
     Log.info { "write_file: #{write_file}" }
     if args.named["offline"]?
@@ -35,6 +38,9 @@ task "install_kubescape", ["kubescape_framework_download"] do |_, args|
         raise "Unable to make #{write_file} executable" if success == false
       end
     end
+
+    # Irrespective of online or offline mode, write the version file with the kubescape version
+    File.write(version_file, KUBESCAPE_VERSION)
   end
 end
 
@@ -44,12 +50,16 @@ task "kubescape_framework_download" do |_, args|
   current_dir = FileUtils.pwd 
   # Download framework file using Github token if the GITHUB_TOKEN env var is present
 
+  version_file = "#{tools_path}/kubescape/.kubescape_framework_version"
+  installed_framework_version = read_version_file(version_file)
   FileUtils.mkdir_p("#{tools_path}/kubescape")
+
   framework_path = "#{tools_path}/kubescape/nsa.json"
-  unless File.exists?(framework_path)
+  if !File.exists?(framework_path) || installed_framework_version != KUBESCAPE_FRAMEWORK_VERSION
     asset_url = "https://github.com/armosec/regolibrary/releases/download/v#{KUBESCAPE_FRAMEWORK_VERSION}/nsa"
 
     HttpHelper.download_auth(asset_url, framework_path)
+    File.write(version_file, KUBESCAPE_FRAMEWORK_VERSION)
   end
 end
 

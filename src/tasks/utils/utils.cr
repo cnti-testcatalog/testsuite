@@ -443,3 +443,8 @@ def version_less_than(v1str, v2str)
   LOGGING.debug "version_less_than: #{v1} < #{v2}: #{less_than}"
   less_than
 end
+
+def read_version_file(filepath)
+  return File.read(filepath).strip if File.exists?(filepath)
+  nil
+end
