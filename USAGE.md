@@ -998,19 +998,32 @@ Use AppArmor, Seccomp, SELinux and Linux Capabilities mechanisms to restrict con
 
 
 
-## [Resource policies](docs/LIST_OF_TESTS.md#resource-policies)
+## [CPU limits](docs/LIST_OF_TESTS.md#cpu-limits)
 
-##### To run the Resource policies test, you can use the following command:
+##### To run the CPU limits test, you can use the following command:
 ```
-./cnf-testsuite resource_policies
+./cnf-testsuite cpu_limits
 ```
 
 <b>Remediation for failing this test:</b> 
 
-Define LimitRange and ResourceQuota policies to limit resource usage for namespaces or in the deployment/POD yamls.
+Define LimitRange and ResourceQuota policies to limit CPU usage for namespaces or in the deployment/POD yamls.
         
 </b>
 
+
+## [Memory limits](docs/LIST_OF_TESTS.md#memory-limits)
+
+##### To run the memory limits test, you can use the following command:
+```
+./cnf-testsuite memory_limits
+```
+
+<b>Remediation for failing this test:</b> 
+
+Define LimitRange and ResourceQuota policies to limit memory usage for namespaces or in the deployment/POD yamls.
+        
+</b>
 
 
 ## [Immutable File Systems](docs/LIST_OF_TESTS.md#immutable-file-systems)

@@ -157,14 +157,27 @@ describe "Security" do
     end
   end
 
-  it "'resource_policies' should pass on a cnf that has containers with resource limits defined", tags: ["security"] do
+  it "'cpu_limits' should pass on a cnf that has containers with cpu limits set", tags: ["security"] do
     begin
       LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
       $?.success?.should be_true
-      response_s = `./cnf-testsuite resource_policies`
+      response_s = `./cnf-testsuite cpu_limits`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Containers have resource limits defined/ =~ response_s).should_not be_nil
+      (/PASSED: Containers have CPU limits set/ =~ response_s).should_not be_nil
+    ensure
+      `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
+    end
+  end
+
+  it "'memory_limits' should pass on a cnf that has containers with memory limits set", tags: ["security"] do
+    begin
+      LOGGING.info `./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf`
+      $?.success?.should be_true
+      response_s = `./cnf-testsuite memory_limits`
+      LOGGING.info response_s
+      $?.success?.should be_true
+      (/PASSED: Containers have memory limits set/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf`
     end

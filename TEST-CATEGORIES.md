@@ -94,7 +94,8 @@ The CNTI Test Catalog validates interoperability of CNF **workloads** supplied b
 - Checks for non root containers.
 - Checks PID and IPC privileges.
 - Checks for Linux Hardening, eg. Selinux is used.
-- Checks resource policies defined.
+- Checks memory limits are defined.
+- Checks CPU limits are defined.
 - Checks for immutable file systems.
 - Verifies and checks if any hostpath mounts are used.
 
