@@ -7,7 +7,7 @@ module Kubescape
   def self.scan(cli : String | Nil = nil)
     if cli == nil
       exclude_namespaces = EXCLUDE_NAMESPACES.join(",")
-      cli = "framework nsa --use-from #{tools_path}/kubescape/nsa.json --exclude-namespaces #{exclude_namespaces} --format json --output kubescape_results.json"
+      cli = "framework nsa --use-from #{tools_path}/kubescape/nsa.json --exclude-namespaces #{exclude_namespaces} --format json --output kubescape_results.json --format-version=v1"
     end
     cmd = "#{tools_path}/kubescape/kubescape scan #{cli}"
     Log.info { "scan command: #{cmd}" }
