@@ -21,7 +21,7 @@ describe "Platform" do
       response_s = `./cnf-testsuite platform:cluster_admin`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Users with cluster admin role found/ =~ response_s).should_not be_nil
+      (/FAILED: Users with cluster-admin RBAC permissions found/ =~ response_s).should_not be_nil
     # ensure
     #   `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml`
     end

@@ -32,15 +32,15 @@ namespace "platform" do
     next if args.named["offline"]?
     CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do |args, config|
       results_json = Kubescape.parse
-      test_json = Kubescape.test_by_test_name(results_json, "Cluster-admin binding")
+      test_json = Kubescape.test_by_test_name(results_json, "Administrative Roles")
       test_report = Kubescape.parse_test_report(test_json)
 
       if test_report.failed_resources.size == 0
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No users with cluster admin role found")
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No users with cluster-admin RBAC permissions were found")
       else
         test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
         stdout_failure("Remediation: #{test_report.remediation}")
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Users with cluster admin role found")
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Users with cluster-admin RBAC permissions found")
       end
     end
   end
