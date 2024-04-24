@@ -289,7 +289,12 @@
   pass: 1 
   fail: 0 
 
-- name: resource_policies
+- name: cpu_limits
+  emoji: "🔓🔑"
+  tags: [security, dynamic, workload, cert, essential]
+  pass: 100
+
+- name: memory_limits
   emoji: "🔓🔑"
   tags: [security, dynamic, workload, cert, essential]
   pass: 100
