@@ -381,3 +381,6 @@ closing watches for ConfigMaps marked as immutable.*"
 
 #### *Check if Tiller is being used on the plaform*: [Tiller images](docs/LIST_OF_TESTS.md#tiller-images)
 > *Tiller, found in Helm v2, has known security challenges. It requires administrative privileges and acts as a shared resource accessible to any authenticated user. Tiller can lead to privilege escalation as restricted users can impact other users. It is recommend to use Helm v3+ which does not contain Tiller for these reasons
+
+#### *Check if secrets are encrypted on the plaform*: [Kubescape secret/etcd](docs/LIST_OF_TESTS.md#kubescape-secret-etcd)
+> *Secret encryption is not enabled by default in kubernetes environment. As secrets contains sensitive information, it is recommended to encrypt these values. For encrypting secret in etcd, we are using encryption in rest, this will cause, that there will not be secret key value in plain text format anymore in etcd.

@@ -1395,3 +1395,15 @@ Switch to using Helm v3+ and make sure not to pull any images with name tiller i
 </b>
 
 
+## [Kubescape secret/etcd](docs/LIST_OF_TESTS.md#kubescape-secret-etcd)
+
+##### To run the Kubescape secret/etcd test, you can use the following command:
+```
+./cnf-testsuite platform:kubescape_secret_etc
+```
+
+<b>Remediation for failing this test: </b>
+
+Check version of ETCDCTL in etcd pod, it should be v3.+
+
+</b>
