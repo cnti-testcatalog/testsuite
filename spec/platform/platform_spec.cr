@@ -39,8 +39,8 @@ describe "Platform" do
     (/PASSED: K8s conformance test has no failures/ =~ response_s).should_not be_nil
   end
   
-  it "individual tasks like 'platform:exposed_dashboard' should not require an installed cnf to run", tags: ["platform"] do
-    response_s = `./cnf-testsuite platform:exposed_dashboard`
+  it "individual tasks like 'platform:control_plane_hardening' should not require an installed cnf to run", tags: ["platform"] do
+    response_s = `./cnf-testsuite platform:control_plane_hardening`
     LOGGING.info response_s
     (/You must install a CNF first./ =~ response_s).should be_nil
   end

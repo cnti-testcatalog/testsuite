@@ -1382,19 +1382,6 @@ See more at [ARMO-C0005](https://bit.ly/C0005_Control_Plane)
 ./cnf-testsuite platform:control_plane_hardening
 ```
 
-## [Dashboard exposed](docs/LIST_OF_TESTS.md#dashboard-exposed)
-
-##### To run the Dashboard exposed test, you can use the following command:
-```
-./cnf-testsuite platform:exposed_dashboard
-```
-
-<b>Remediation for failing this test: </b>
-
-Update dashboard version to v2.0.1 or above.
-
-</b>
-
 
 ## [Tiller images](docs/LIST_OF_TESTS.md#tiller-images)
 

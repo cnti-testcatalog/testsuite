@@ -814,17 +814,6 @@ List of Platform Tests
 [**Rationale & Reasoning**](../RATIONALE.md#check-if-the-plateform-is-using-insecure-ports-for-the-api-server-control_plane_hardening)
 
 
-## [Dashboard exposed](https://github.com/cnti-testcatalog/testsuite/blob/v0.27.0/src/tasks/platform/security.cr#L54)
-- Expectation: The K8s dashboard should not exposed to the public internet when the software version is older than v2.0.1
-
-**What's tested:** Checks if Kubernetes dashboard exists and exposed externally as a service (nodeport/loadbalancer) and if the software version of the container image is older than v2.0.1.
-
-[**Usage**](../USAGE.md#dashboard-exposed)
-
-[**Rationale & Reasoning**](../RATIONALE.md#check-if-the-dashboard-is-exposed-externally-dashboard-exposed)
-
-
-
 ## [Tiller images](https://github.com/cnti-testcatalog/testsuite/blob/v0.27.0/src/tasks/platform/security.cr#L75) 
 - Added in release v0.27.0
 - Expectation: The platform should be using Helm v3+ without Tiller.
