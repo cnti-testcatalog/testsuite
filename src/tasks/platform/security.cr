@@ -14,15 +14,15 @@ namespace "platform" do
   task "control_plane_hardening", ["kubescape_scan"] do |t, args|
     task_response = CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do |args|
       results_json = Kubescape.parse
-      test_json = Kubescape.test_by_test_name(results_json, "Control plane hardening")
+      test_json = Kubescape.test_by_test_name(results_json, "API server insecure port is enabled")
       test_report = Kubescape.parse_test_report(test_json)
 
       if test_report.failed_resources.size == 0
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Control plane hardened")
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Insecure port of Kubernetes API server is not enabled")
       else
         test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
         stdout_failure("Remediation: #{test_report.remediation}")
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Control plane not hardened")
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Insecure port of Kubernetes API server is enabled")
       end
     end
   end
