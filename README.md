@@ -51,15 +51,18 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
 ## Communication and community meetings
 
 - Join the conversation on [LFN Tech's Slack](https://lfntech.slack.com/) channels
+  - [#cnti-general](https://lfntech.slack.com/archives/C06GV633PRD)
+  - [#cnti-bestpractices](https://lfntech.slack.com/archives/C06GV4J8S5U)
   - [#cnti-testcatalog-testsuite](https://lfntech.slack.com/archives/C06GM6ZEPUP)
   - [#cnti-testsuite-dev](https://lfntech.slack.com/archives/C06HQGWK4NL)
+  - [#cnti-certification](https://lfntech.slack.com/archives/C06GYRL5ZPX)
 - Join the weekly CNTI Test Catalog meeting
 
   - Meetings every Tuesday at 8:00am - 9:00am Pacific Time 
   - Meeting minutes are [here](https://docs.google.com/document/d/1yjL079TR0L1q__BRuhREeXfx5MtAmjPzbFZlZUeBsK4/edit)
 
 - Join the bi-weekly [CNTI Best Practices meeting](https://wiki.lfnetworking.org/display/LN/Best+Practices) every other Monday at 8am PT.
-- Join the bi-weekly [CNTI Certification meeting](https://wiki.lfnetworking.org/display/LN/Certification) every other Thursday at 8am PT.
+- Join the weekly [CNTI Certification meeting](https://wiki.lfnetworking.org/display/LN/Certification) every Thursday starting at 8am or 9am depending on the week.
 
 - Request an Intro to the Cloud Native Telecom Initiative (CNTI) [here](https://calendly.com/cnti/intro).
 
