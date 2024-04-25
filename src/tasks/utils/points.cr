@@ -436,9 +436,11 @@ module CNFManager
       cmd = "#{Process.executable_path} #{ARGV.join(" ")}"
       Log.info {"cmd: #{cmd}"}
       end_time = Time.utc
-      task_runtime = (end_time - start_time).milliseconds
+      # task_runtime = (end_time - start_time).milliseconds
+      task_runtime = (end_time - start_time)
+      task_runtime_human = "#{task_runtime.hours} hours, #{task_runtime.minutes} minutes, and #{task_runtime.seconds} seconds"
 
-      Log.for("#{task}").info { "task_runtime=#{task_runtime}; start_time=#{start_time}; end_time:#{end_time}" }
+      Log.for("#{task}").info { "task_runtime=#{task_runtime_human}; start_time=#{start_time}; end_time:#{end_time}" }
 
       # The task result info has to be appeneded to an array of YAML::Any
       # So encode it into YAML and parse it back again to assign it.
@@ -452,7 +454,7 @@ module CNFManager
           points: points,
           start_time: start_time,
           end_time: end_time,
-          task_runtime_milliseconds: task_runtime
+          task_runtime: task_runtime_human
         }
         result_items << YAML.parse(task_result_info.to_yaml)
       else
@@ -475,7 +477,7 @@ module CNFManager
                    exit_code: results["exit_code"],
                    items: result_items}, f)
       end
-      Log.info { "upsert_task: task: #{task} has status: #{status} and is awarded: #{points} points. Runtime: #{task_runtime} seconds" }
+      Log.info { "upsert_task: task: #{task} has status: #{status} and is awarded: #{points} points. Runtime: #{task_runtime_human} seconds" }
     end
 
     def self.failed_task(task, msg)
