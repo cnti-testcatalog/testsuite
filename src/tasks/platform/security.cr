@@ -5,7 +5,7 @@ require "../utils/utils.cr"
 
 namespace "platform" do
   desc "The CNF test suite checks to see if the platform is hardened."
-  task "security", ["control_plane_hardening", "cluster_admin", "exposed_dashboard", "helm_tiller"] do |t, args|
+  task "security", ["control_plane_hardening", "cluster_admin", "helm_tiller"] do |t, args|
     Log.for("verbose").info { "security" } if check_verbose(args)
     stdout_score("platform:security")
   end
@@ -14,15 +14,15 @@ namespace "platform" do
   task "control_plane_hardening", ["kubescape_scan"] do |t, args|
     task_response = CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do |args|
       results_json = Kubescape.parse
-      test_json = Kubescape.test_by_test_name(results_json, "Control plane hardening")
+      test_json = Kubescape.test_by_test_name(results_json, "API server insecure port is enabled")
       test_report = Kubescape.parse_test_report(test_json)
 
       if test_report.failed_resources.size == 0
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Control plane hardened")
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Insecure port of Kubernetes API server is not enabled")
       else
         test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
         stdout_failure("Remediation: #{test_report.remediation}")
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Control plane not hardened")
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Insecure port of Kubernetes API server is enabled")
       end
     end
   end
@@ -32,34 +32,15 @@ namespace "platform" do
     next if args.named["offline"]?
     CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do |args, config|
       results_json = Kubescape.parse
-      test_json = Kubescape.test_by_test_name(results_json, "Cluster-admin binding")
+      test_json = Kubescape.test_by_test_name(results_json, "Administrative Roles")
       test_report = Kubescape.parse_test_report(test_json)
 
       if test_report.failed_resources.size == 0
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No users with cluster admin role found")
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No users with cluster-admin RBAC permissions were found")
       else
         test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
         stdout_failure("Remediation: #{test_report.remediation}")
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Users with cluster admin role found")
-      end
-    end
-  end
-
-  desc "Check if the cluster has an exposed dashboard"
-  task "exposed_dashboard", ["kubescape_scan"] do |t, args|
-    next if args.named["offline"]?
-
-    CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do |args, config|
-      results_json = Kubescape.parse
-      test_json = Kubescape.test_by_test_name(results_json, "Exposed dashboard")
-      test_report = Kubescape.parse_test_report(test_json)
-
-      if test_report.failed_resources.size == 0
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No exposed dashboard found in the cluster")
-      else
-        test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
-        stdout_failure("Remediation: #{test_report.remediation}")
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found exposed dashboard in the cluster")
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Users with cluster-admin RBAC permissions found")
       end
     end
   end

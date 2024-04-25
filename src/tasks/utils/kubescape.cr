@@ -4,10 +4,14 @@ require "log"
 module Kubescape
 
   #kubescape scan framework nsa --exclude-namespaces kube-system,kube-public
-  def self.scan(cli : String | Nil = nil)
-    if cli == nil
-      exclude_namespaces = EXCLUDE_NAMESPACES.join(",")
-      cli = "framework nsa --use-from #{tools_path}/kubescape/nsa.json --exclude-namespaces #{exclude_namespaces} --format json --output kubescape_results.json"
+  def self.scan(cli : String | Nil = nil, control_id : String | Nil = nil)
+    exclude_namespaces = EXCLUDE_NAMESPACES.join(",")
+    default_options = "--format json --format-version=v1 --exclude-namespaces #{exclude_namespaces}"
+
+    if control_id != nil
+      cli = "control #{control_id} --output #{control_results_file(control_id)} #{default_options}"
+    elsif cli == nil
+      cli = "framework nsa --use-from #{tools_path}/kubescape/nsa.json --output kubescape_results.json #{default_options}"
     end
     cmd = "#{tools_path}/kubescape/kubescape scan #{cli}"
     Log.info { "scan command: #{cmd}" }
@@ -57,6 +61,10 @@ module Kubescape
     end
     test_report.failed_resources = failed_resources
     test_report
+  end
+
+  def self.control_results_file(control_id)
+    "kubescape_#{control_id}_results.json"
   end
 
   class TestReportParser

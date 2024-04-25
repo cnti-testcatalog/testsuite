@@ -249,9 +249,6 @@
 - name: cluster_admin
   emoji: "🔓🔑"
   tags: ["platform", "platform:security", "dynamic"]
-- name: exposed_dashboard
-  emoji: "🔓🔑"
-  tags: ["platform", "platform:security", "dynamic"]
 - name: kube_state_metrics
   emoji: "📶☠"
   tags: [platform, "platform:observability", dynamic]
@@ -289,7 +286,12 @@
   pass: 1 
   fail: 0 
 
-- name: resource_policies
+- name: cpu_limits
+  emoji: "🔓🔑"
+  tags: [security, dynamic, workload, cert, essential]
+  pass: 100
+
+- name: memory_limits
   emoji: "🔓🔑"
   tags: [security, dynamic, workload, cert, essential]
   pass: 100

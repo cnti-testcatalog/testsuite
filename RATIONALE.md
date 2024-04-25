@@ -276,8 +276,11 @@ In order to prevent illegitimate escalation by processes and restrict a processe
 #### *To check if security services are being used to harden containers*: [linux_hardening](docs/LIST_OF_TESTS.md#linux-hardening)
 > In order to reduce the attack surface, it is recommend, when it is possible, to harden your application using [security services](https://hub.armo.cloud/docs/c-0055) such as SELinux®, AppArmor®, and seccomp. Starting from Kubernetes version 1.22, SELinux is enabled by default.
 
-#### *To check if containers have resource limits defined*: [resource_policies](docs/LIST_OF_TESTS.md#resource-policies)
-> CPU and memory [resources should have a limit](https://hub.armo.cloud/docs/c-0009) set for every container or a namespace to prevent resource exhaustion. This control identifies all the Pods without resource limit definitions by checking thier yaml definition file as well as their namespace LimitRange objects. It is also recommended to use ResourceQuota object to restrict overall namespace resources, but this is not verified by this control.
+#### *To check if containers have CPU limits defined*: [cpu_limits](docs/LIST_OF_TESTS.md#cpu-limits)
+> Every container [should have a limit set for the CPU available for it](https://hub.armo.cloud/docs/c-0270) set for every container or a namespace to prevent resource exhaustion. This control identifies all the Pods without CPU limit definitions by checking their yaml definition file as well as their namespace LimitRange objects. It is also recommended to use ResourceQuota object to restrict overall namespace resources, but this is not verified by this control.
+
+#### *To check if containers have memory limits defined*: [memory_limits](docs/LIST_OF_TESTS.md#memory-limits)
+> Every container [should have a limit set for the memory available for it](https://hub.armo.cloud/docs/c-0271) set for every container or a namespace to prevent resource exhaustion. This control identifies all the Pods without memory limit definitions by checking their yaml definition file as well as their namespace LimitRange objects. It is also recommended to use ResourceQuota object to restrict overall namespace resources, but this is not verified by this control.
 
 #### *To check if containers have immutable file systems*: [immutable_file_systems](docs/LIST_OF_TESTS.md#immutable-file-systems)
 > Mutable container filesystem can be abused to gain malicious code and data injection into containers. By default, containers are permitted unrestricted execution within their own context. An attacker who has access to a container, [can create files](https://hub.armo.cloud/docs/c-0017) and download scripts as they wish, and modify the underlying application running on the container.
@@ -375,9 +378,6 @@ closing watches for ConfigMaps marked as immutable.*"
 
 #### *Check if the plateform is using insecure ports for the API server*: [Control_plane_hardening](docs/LIST_OF_TESTS.md#control-plane-hardening)
 > *The control plane is the core of Kubernetes and gives users the ability to view containers, schedule new Pods, read Secrets, and execute commands in the cluster. Therefore, it should be protected. It is recommended to avoid control plane exposure to the Internet or to an untrusted network and require TLS encryption.
-
-#### *Check if the Dashboard is exposed externally*: [Dashboard exposed](docs/LIST_OF_TESTS.md#dashboard-exposed)
-> * If Kubernetes dashboard is exposed externally in Dashboard versions before 2.01, it will allow unauthenticated remote management of the cluster. It's best practice to not expose the K8s Dashboard or any management planes if they're unsecured.
 
 #### *Check if Tiller is being used on the plaform*: [Tiller images](docs/LIST_OF_TESTS.md#tiller-images)
 > *Tiller, found in Helm v2, has known security challenges. It requires administrative privileges and acts as a shared resource accessible to any authenticated user. Tiller can lead to privilege escalation as restricted users can impact other users. It is recommend to use Helm v3+ which does not contain Tiller for these reasons

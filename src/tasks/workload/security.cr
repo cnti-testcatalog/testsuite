@@ -11,7 +11,8 @@ task "security", [
     "symlink_file_system",
     "privilege_escalation",
     "insecure_capabilities",
-    "resource_policies",
+    "memory_limits",
+    "cpu_limits",
     "linux_hardening",
     "ingress_egress_blocked",
     "host_pid_ipc_privileges",
@@ -304,23 +305,44 @@ task "insecure_capabilities", ["kubescape_scan"] do |t, args|
   end
 end
 
-desc "Check if the containers have resource limits defined."
-task "resource_policies", ["kubescape_scan"] do |t, args|
+desc "Check if the containers have CPU limits set"
+task "cpu_limits", ["kubescape_scan"] do |t, args|
   next if args.named["offline"]?
 
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
-    test_json = Kubescape.test_by_test_name(results_json, "Resource policies")
+    test_json = Kubescape.test_by_test_name(results_json, "Ensure CPU limits are set")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
 
     if test_report.failed_resources.size == 0
-      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Containers have resource limits defined")
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Containers have CPU limits set")
     else
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
-      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found containers without resource limits defined")
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found containers without CPU limits set")
+    end
+  end
+end
+
+desc "Check if the containers have memory limits set"
+task "memory_limits", ["kubescape_scan"] do |t, args|
+  next if args.named["offline"]?
+
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
+    results_json = Kubescape.parse
+    test_json = Kubescape.test_by_test_name(results_json, "Ensure memory limits are set")
+    test_report = Kubescape.parse_test_report(test_json)
+    resource_keys = CNFManager.workload_resource_keys(args, config)
+    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
+
+    if test_report.failed_resources.size == 0
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Containers have memory limits set")
+    else
+      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
+      stdout_failure("Remediation: #{test_report.remediation}")
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found containers without memory limits set")
     end
   end
 end
@@ -432,12 +454,15 @@ task "immutable_file_systems", ["kubescape_scan"] do |t, args|
 end
 
 desc "Check if containers have hostPath mounts"
-task "hostpath_mounts", ["kubescape_scan"] do |t, args|
+task "hostpath_mounts", ["install_kubescape"] do |t, args|
   next if args.named["offline"]?
 
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    results_json = Kubescape.parse
-    test_json = Kubescape.test_by_test_name(results_json, "Allowed hostPath")
+    kubescape_control_id = "C-0048"
+    Kubescape.scan(control_id: kubescape_control_id)
+    results_file = Kubescape.control_results_file(kubescape_control_id)
+    results_json = Kubescape.parse(results_file)
+    test_json = Kubescape.test_by_test_name(results_json, "HostPath mount")
     test_report = Kubescape.parse_test_report(test_json)
     resource_keys = CNFManager.workload_resource_keys(args, config)
     test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
