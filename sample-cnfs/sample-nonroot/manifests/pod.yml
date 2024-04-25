@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-demo
+spec:
+  securityContext:
+    runAsUser: 1000   # we make sure this is greater than 999 and
+    runAsGroup: 3000  # This value is greater than 999
+    fsGroup: 2000
+  containers:
+  - name: sec-ctx-demo
+    image: busybox
+    command: [ "sh", "-c", "sleep 1h" ]
+    securityContext:
+      runAsNonRoot: false  # alternatively, this can be runAsNonRoot: true
