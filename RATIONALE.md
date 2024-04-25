@@ -381,3 +381,6 @@ closing watches for ConfigMaps marked as immutable.*"
 
 #### *Check if Tiller is being used on the plaform*: [Tiller images](docs/LIST_OF_TESTS.md#tiller-images)
 > *Tiller, found in Helm v2, has known security challenges. It requires administrative privileges and acts as a shared resource accessible to any authenticated user. Tiller can lead to privilege escalation as restricted users can impact other users. It is recommend to use Helm v3+ which does not contain Tiller for these reasons
+
+#### *Check if configmaps are encrypted on the plaform*: [Verify if configmaps are encrypted](docs/LIST_OF_TESTS.md#verify-configmaps-encrypted)
+> *Configmaps encryption is not enabled by default in kubernetes environment. As configmaps can  contain sensitive information, it is recommended to encrypt these values. For encrypting configmaps in etcd, we are using encryption in rest, this will cause, that there will not be configmaps key value in plain text format anymore in etcd.

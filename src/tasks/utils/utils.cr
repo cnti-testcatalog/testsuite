@@ -443,3 +443,49 @@ def version_less_than(v1str, v2str)
   LOGGING.debug "version_less_than: #{v1} < #{v2}: #{less_than}"
   less_than
 end
+
+def generate_cm_name(prefix : String = "test-cm-") : String
+  "#{prefix}-#{Random::Secure.rand(9999).to_s}"
+ end
+ 
+ def get_full_pod_name(part_of_pod_name : String, namespace : String = "default") : String?
+  return nil if part_of_pod_name.empty?
+  command_output = KubectlClient::ShellCmd.run("kubectl get po -A", "", false)
+  return nil unless command_output[:status].success?
+  output = command_output["output"]
+  match = output.match(%r{(\S*#{part_of_pod_name}\S*)})
+  match ? match[1].to_s : nil
+ end
+ 
+ def get_etcd_certs_path(etcd_pod_name : String, namespace : String) : String?
+  command_output = KubectlClient.describe("po", etcd_pod_name, namespace)
+  return nil unless command_output[:status].success?
+  output = command_output["output"]
+  match = output.match(%r{etcd-certs:\s+Type:.*\n\s+Path: (.*)(?:\n|$)})
+  match ? match[1].to_s : nil
+ end
+ 
+ def etcd_cm_encrypted?(
+  etcd_certs_path : String, 
+  etcd_pod_name : String, 
+  cm_name : String, 
+  test_cm_value : String, 
+  namespace : String,
+  override_output : String? = nil
+  ) : Bool
+  etcd_output = override_output || execute_etcd_command(etcd_certs_path, etcd_pod_name, cm_name, namespace)
+  puts "Etcd Output: #{etcd_output}"
+  etcd_output.includes?("k8s:enc:") && !etcd_output.includes?(test_cm_value)
+ end
+ 
+ private def execute_etcd_command(etcd_certs_path : String, etcd_pod_name : String, cm_name : String, namespace : String) : String
+  command = "ETCDCTL_API=3 etcdctl \
+     --cacert #{etcd_certs_path}/ca.crt \
+     --cert #{etcd_certs_path}/server.crt \
+     --key #{etcd_certs_path}/server.key \
+     get /registry/configmaps/default/#{cm_name}"
+  io = IO::Memory.new
+  Process.run("kubectl", ["exec", "-it", etcd_pod_name, "-n", namespace, "--", "sh", "-c", "#{command}"], output: io)
+  io.to_s
+ end
+ 

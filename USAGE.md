@@ -1394,4 +1394,14 @@ Update dashboard version to v2.0.1 or above.
 Switch to using Helm v3+ and make sure not to pull any images with name tiller in them
 </b>
 
+## [Verify if configmaps are encrypted](docs/LIST_OF_TESTS.md#verify-configmaps-encrypted)
+
+##### To run the Verify if configmaps are encrypted test, you can use the following command:
+```
+./cnf-testsuite platform:verify_configmaps_encryption
+```
+
+<b>Remediation for failing this test:</b> 
+Check version of ETCDCTL in etcd pod, it should be v3.+
+</b>
 
