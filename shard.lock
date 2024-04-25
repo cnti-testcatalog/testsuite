@@ -1,4 +1,3 @@
-# NOTICE: This lockfile contains some overrides from shard.override.yml
 version: 2.0
 shards:
   airgap:
@@ -53,9 +52,9 @@ shards:
     git: https://github.com/cnf-testsuite/kernel_introspection.git
     version: 0.1.0
 
-  kubectl_client: # Overridden
+  kubectl_client:
     git: https://github.com/cnf-testsuite/kubectl_client.git
-    version: 1.0.4+git.commit.90e35c26dec9f5aed62bd16ce3c68df67bf13756
+    version: 1.0.6
 
   popcorn:
     git: https://github.com/icyleaf/popcorn.git

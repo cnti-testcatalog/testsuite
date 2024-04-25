@@ -1,5 +1,0 @@
-dependencies:
-  kubectl_client:
-    github: cnf-testsuite/kubectl_client
-    branch: "testsuite/2003"
-  
