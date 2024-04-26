@@ -47,6 +47,13 @@ crystal src/cnf-testsuite.cr <testname>
 
 ---
 
+### Logging Parameters
+
+- **LOG_LEVEL** environment variable: sets minimal log level to display: error (default); info; debug.
+- **LOG_PATH** environment variable: if set - all logs would be appended to the file defined by that variable.
+
+---
+
 ### Common Example Commands
 
 #### Building the executable
