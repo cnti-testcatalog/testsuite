@@ -26,7 +26,7 @@ describe "Compatibility" do
         retries = retries + 1
       end
       Log.info {"Status:  #{response_s}"}
-      (/PASSED: CNF compatible with both Calico and Cilium/ =~ response_s).should_not be_nil
+      (/(PASSED).*(CNF compatible with both Calico and Cilium)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -40,7 +40,7 @@ describe "Compatibility" do
       response_s = `./cnf-testsuite increase_decrease_capacity verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Replicas increased to/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Replicas increased to)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end

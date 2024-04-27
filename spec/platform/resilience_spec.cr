@@ -12,7 +12,7 @@ describe "Platform" do
       puts "Tests running in destructive mode".colorize(:red)
       response_s = `./cnf-testsuite platform:worker_reboot_recovery destructive`
       LOGGING.info response_s
-      (/(PASSED: Node came back online)/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Node came back online)/ =~ response_s).should_not be_nil
     else
       response_s = `./cnf-testsuite platform:worker_reboot_recovery`
       LOGGING.info response_s

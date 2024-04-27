@@ -21,7 +21,7 @@ describe "Platform Observability" do
 
       response_s = `./cnf-testsuite platform:kube_state_metrics poc`
       LOGGING.info response_s
-      (/(PASSED){1}.*(Your platform is using the){1}.*(release for kube state metrics){1}/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Your platform is using the).*(release for kube state metrics)/ =~ response_s).should_not be_nil
   ensure
       resp = `#{helm} delete kube-state-metrics`
       LOGGING.info resp
@@ -47,7 +47,7 @@ describe "Platform Observability" do
       response_s = `./cnf-testsuite platform:node_exporter poc`
       LOGGING.info response_s
       if check_containerd
-        (/(PASSED){1}.*(Your platform is using the node exporter){1}/ =~ response_s).should_not be_nil
+        (/(PASSED).*(Your platform is using the node exporter)/ =~ response_s).should_not be_nil
       else
         (/skipping node_exporter: This test only supports the Containerd Runtime./ =~ response_s).should_not be_nil
       end
@@ -71,7 +71,7 @@ describe "Platform Observability" do
 
     response_s = `./cnf-testsuite platform:prometheus_adapter poc`
     Log.info { response_s }
-    (/(PASSED){1}.*(Your platform is using the prometheus adapter){1}/ =~ response_s).should_not be_nil
+    (/(PASSED).*(Your platform is using the prometheus adapter)/ =~ response_s).should_not be_nil
   ensure
     resp = Helm.uninstall("prometheus-adapter")
   end
@@ -90,7 +90,7 @@ describe "Platform Observability" do
 		  KubectlClient::Get.wait_for_install(deployment_name: "metrics-server")
       response_s = `./cnf-testsuite platform:metrics_server poc`
       LOGGING.info response_s
-      (/(PASSED){1}.*(Your platform is using the metrics server){1}/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Your platform is using the metrics server)/ =~ response_s).should_not be_nil
   ensure
       resp = Helm.uninstall("metrics-server")
       LOGGING.info resp

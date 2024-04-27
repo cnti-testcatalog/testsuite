@@ -55,7 +55,7 @@ describe CnfTestSuite do
       response_s = `LOG_LEVEL=debug ./cnf-testsuite liveness verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Helm liveness probe/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Helm liveness probe)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-testsuite.yml deploy_with_chart=false `
     end
@@ -68,7 +68,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite liveness verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: No livenessProbe found/ =~ response_s).should_not be_nil
+      (/(FAILED).*(No livenessProbe found)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite sample_coredns_bad_liveness_cleanup`
     end
@@ -81,7 +81,7 @@ describe CnfTestSuite do
       response_s = `LOG_LEVEL=debug ./cnf-testsuite readiness verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Helm readiness probe/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Helm readiness probe)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-testsuite.yml deploy_with_chart=false `
     end
@@ -94,7 +94,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite readiness verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: No readinessProbe found/ =~ response_s).should_not be_nil
+      (/(FAILED).*(No readinessProbe found)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite sample_coredns_bad_liveness_cleanup`
     end
@@ -208,7 +208,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite nodeport_not_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: NodePort is being used/ =~ response_s).should_not be_nil
+      (/(FAILED).*(NodePort is being used)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_nodeport deploy_with_chart=false`
     end
@@ -221,7 +221,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite nodeport_not_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: NodePort is not used/ =~ response_s).should_not be_nil
+      (/(PASSED).*(NodePort is not used)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
@@ -234,7 +234,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite hostport_not_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: HostPort is being used/ =~ response_s).should_not be_nil
+      (/(FAILED).*(HostPort is being used)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_hostport deploy_with_chart=false`
     end
@@ -247,7 +247,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite hostport_not_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: HostPort is not used/ =~ response_s).should_not be_nil
+      (/(PASSED).*(HostPort is not used)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
@@ -260,7 +260,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite ip_addresses verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: No IP addresses found/ =~ response_s).should_not be_nil
+      (/(PASSED).*(No IP addresses found)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite sample_coredns_source_cleanup verbose`
     end
@@ -273,7 +273,7 @@ describe CnfTestSuite do
       response_s = `LOG_LEVEL=info ./cnf-testsuite hardcoded_ip_addresses_in_k8s_runtime_configuration verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Hard-coded IP addresses found in the runtime K8s configuration/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Hard-coded IP addresses found in the runtime K8s configuration)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns_hardcoded_ips deploy_with_chart=false`
     end
@@ -286,7 +286,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite hardcoded_ip_addresses_in_k8s_runtime_configuration verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: No hard-coded IP addresses found in the runtime K8s configuration/ =~ response_s).should_not be_nil
+      (/(PASSED).*(No hard-coded IP addresses found in the runtime K8s configuration)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
@@ -299,7 +299,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite secrets_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Secrets defined and used/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Secrets defined and used)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_secret_volume verbose`
     end
@@ -312,7 +312,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite secrets_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/SKIPPED: Secrets not used/ =~ response_s).should_not be_nil
+      (/(SKIPPED).*(Secrets not used)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_unmounted_secret_volume verbose`
     end
@@ -325,7 +325,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite secrets_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Secrets defined and used/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Secrets defined and used)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_secret_env verbose`
     end
@@ -338,7 +338,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite secrets_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/SKIPPED: Secrets not used/ =~ response_s).should_not be_nil
+      (/(SKIPPED).*(Secrets not used)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_secret_env verbose`
     end
@@ -351,7 +351,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite secrets_used verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/SKIPPED: Secrets not used/ =~ response_s).should_not be_nil
+      (/(SKIPPED).*(Secrets not used)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns verbose`
     end
@@ -364,7 +364,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite immutable_configmap verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Found mutable configmap/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Found mutable configmap)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/ndn-mutable-configmap deploy_with_chart=false`
     end
@@ -377,7 +377,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite immutable_configmap verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: All volume or container mounted configmaps immutable/ =~ response_s).should_not be_nil
+      (/(PASSED).*(All volume or container mounted configmaps immutable)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/ndn-immutable-configmap deploy_with_chart=false`
     end
@@ -390,7 +390,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite require_labels verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Pods should have the app.kubernetes.io\/name label/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Pods should have the app.kubernetes.io\/name label)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot/cnf-testsuite.yml`
     end
@@ -403,7 +403,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite require_labels verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Pods have the app.kubernetes.io\/name label/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Pods have the app.kubernetes.io\/name label)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml`
     end
@@ -416,7 +416,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite default_namespace verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Resources are created in the default namespace/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Resources are created in the default namespace)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_coredns`
       KubectlClient::Utils.wait_for_terminations()
@@ -430,7 +430,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite default_namespace verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: default namespace is not being used/ =~ response_s).should_not be_nil
+      (/(PASSED).*(default namespace is not being used)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_latest_tag`
       KubectlClient::Utils.wait_for_terminations()
@@ -444,7 +444,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite latest_tag verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Container images are using the latest tag/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Container images are using the latest tag)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_latest_tag`
     end
@@ -457,7 +457,7 @@ describe CnfTestSuite do
       response_s = `./cnf-testsuite latest_tag verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Container images are not using the latest tag/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Container images are not using the latest tag)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot`
     end

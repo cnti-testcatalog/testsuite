@@ -19,7 +19,7 @@ describe "Resilience Pod Network duplication Chaos" do
       response_s = `./cnf-testsuite pod_network_duplication verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: pod_network_duplication chaos test passed/ =~ response_s).should_not be_nil
+      (/(PASSED).*(pod_network_duplication chaos test passed)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       $?.success?.should be_true

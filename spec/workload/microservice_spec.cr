@@ -23,7 +23,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite shared_database`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/N\/A: \[shared_database\] No MariaDB containers were found/ =~ response_s).should_not be_nil
+      (/(N\/A).*(No MariaDB containers were found)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -36,7 +36,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite shared_database`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: No shared database found/ =~ response_s).should_not be_nil
+      (/(PASSED).*(No shared database found)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-statefulset-cnf/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -49,7 +49,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite shared_database`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: No shared database found/ =~ response_s).should_not be_nil
+      (/(PASSED).*(No shared database found)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-multi-db-connections-exempt/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -62,7 +62,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite shared_database`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Found a shared database/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Found a shared database)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/ndn-multi-db-connections-fail/cnf-testsuite.yml`
       $?.success?.should be_true
@@ -83,7 +83,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite shared_database`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: No shared database found/ =~ response_s).should_not be_nil
+      (/(PASSED).*(No shared database found)/ =~ response_s).should_not be_nil
     ensure
       Helm.delete("multi-db")
       KubectlClient::Delete.command("pvc data-multi-db-mariadb-0")
@@ -98,7 +98,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite single_process_type verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Only one process type used/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Only one process type used)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns`
       $?.success?.should be_true
@@ -111,7 +111,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite single_process_type verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: More than one process type used/ =~ response_s).should_not be_nil
+      (/(FAILED).*(More than one process type used)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/k8s-multiple-processes`
       $?.success?.should be_true
@@ -124,7 +124,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite single_process_type verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: More than one process type used/ =~ response_s).should_not be_nil
+      (/(FAILED).*(More than one process type used)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample-multiple-processes`
       $?.success?.should be_true
@@ -137,7 +137,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite reasonable_startup_time verbose`
       Log.info { response_s }
       
-      (/PASSED: CNF had a reasonable startup time/ =~ response_s).should_not be_nil
+      (/(PASSED).*(CNF had a reasonable startup time)/ =~ response_s).should_not be_nil
     ensure
       Log.info { `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns` }
       $?.success?.should be_true
@@ -150,7 +150,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite reasonable_startup_time verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: CNF had a startup time of/ =~ response_s).should_not be_nil
+      (/(FAILED).*(CNF had a startup time of)/ =~ response_s).should_not be_nil
     ensure
       `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-testsuite.yml force=true`
       $?.success?.should be_true
@@ -210,7 +210,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite service_discovery verbose`
       Log.info { response_s }
       $?.success?.should be_true
-      (/PASSED: Some containers exposed as a service/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Some containers exposed as a service)/ =~ response_s).should_not be_nil
     ensure
       Log.info { `./cnf-testsuite cnf_cleanup cnf-path=sample-cnfs/sample_coredns` }
       $?.success?.should be_true
@@ -223,7 +223,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite service_discovery verbose`
       Log.info { response_s }
       $?.success?.should be_true
-      (/FAILED: No containers exposed as a service/ =~ response_s).should_not be_nil
+      (/(FAILED).*(No containers exposed as a service)/ =~ response_s).should_not be_nil
     ensure
       Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-ndn-privileged` }
       $?.success?.should be_true
@@ -241,7 +241,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite sig_term_handled verbose`
       Log.info { response_s }
       $?.success?.should be_true
-      (/PASSED: Sig Term handled/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Sig Term handled)/ =~ response_s).should_not be_nil
     ensure
       Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_good_signal_handling/` }
       $?.success?.should be_true
@@ -259,7 +259,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite sig_term_handled verbose`
       Log.info { response_s }
       $?.success?.should be_true
-      (/FAILED: Sig Term not handled/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Sig Term not handled)/ =~ response_s).should_not be_nil
     ensure
       Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_bad_signal_handling/` }
       $?.success?.should be_true
@@ -281,7 +281,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite sig_term_handled verbose`
       Log.info { response_s }
       $?.success?.should be_true
-      (/PASSED: Sig Term handled/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Sig Term handled)/ =~ response_s).should_not be_nil
     ensure
       Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_good_signal_handling_tini/` }
       $?.success?.should be_true
@@ -295,7 +295,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite zombie_handled verbose`
       Log.info { response_s }
       $?.success?.should be_true
-      (/PASSED: Zombie handled/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Zombie handled)/ =~ response_s).should_not be_nil
     ensure
       Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample_good_zombie_handling/` }
       $?.success?.should be_true
@@ -308,7 +308,7 @@ describe "Microservice" do
       response_s = `./cnf-testsuite zombie_handled verbose`
       Log.info { response_s }
       $?.success?.should be_true
-      (/FAILED: Zombie not handled/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Zombie not handled)/ =~ response_s).should_not be_nil
     ensure
       Log.info { `./cnf-testsuite cnf_cleanup cnf-path=./sample-cnfs/sample-bad-zombie/` }
       $?.success?.should be_true

@@ -305,13 +305,13 @@ def upsert_decorated_task(task, status : CNFManager::ResultStatus, message, star
   cat_emoji = CNFManager::Points.task_emoji_by_task(task)
   case status.to_basic
   when CNFManager::ResultStatus::Passed
-    upsert_passed_task(task, "✔️  #{cat_emoji}PASSED: #{message} #{tc_emoji}", start_time)
+    upsert_passed_task(task, "✔️  #{cat_emoji}PASSED: [#{task}] #{message} #{tc_emoji}", start_time)
   when CNFManager::ResultStatus::Failed
-    upsert_failed_task(task, "✖️  #{cat_emoji}FAILED: #{message} #{tc_emoji}", start_time)
+    upsert_failed_task(task, "✖️  #{cat_emoji}FAILED: [#{task}] #{message} #{tc_emoji}", start_time)
   when CNFManager::ResultStatus::Skipped
-    upsert_skipped_task(task, "⏭️  #{cat_emoji}SKIPPED: #{message} #{tc_emoji}", start_time)
+    upsert_skipped_task(task, "⏭️  #{cat_emoji}SKIPPED: [#{task}] #{message} #{tc_emoji}", start_time)
   when CNFManager::ResultStatus::NA
-    upsert_na_task(task, "⏭️  #{cat_emoji}N/A: #{message} #{tc_emoji}", start_time)
+    upsert_na_task(task, "⏭️  #{cat_emoji}N/A: [#{task}] #{message} #{tc_emoji}", start_time)
   end
 end
 

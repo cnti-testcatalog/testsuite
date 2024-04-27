@@ -36,7 +36,7 @@ describe "Platform" do
   it "'k8s_conformance' should pass if the sonobuoy tests pass", tags: ["platform"] do
     response_s = `./cnf-testsuite k8s_conformance`
     LOGGING.info response_s
-    (/PASSED: K8s conformance test has no failures/ =~ response_s).should_not be_nil
+    (/(PASSED).*(K8s conformance test has no failures)/ =~ response_s).should_not be_nil
   end
   
   it "individual tasks like 'platform:control_plane_hardening' should not require an installed cnf to run", tags: ["platform"] do

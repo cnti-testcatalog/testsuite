@@ -16,7 +16,7 @@ describe "Observability" do
       response_s = `./cnf-testsuite log_output verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/PASSED: Resources output logs to stdout and stderr/ =~ response_s).should_not be_nil
+      (/(PASSED).*(Resources output logs to stdout and stderr)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
     end
@@ -28,7 +28,7 @@ describe "Observability" do
       response_s = `./cnf-testsuite log_output verbose`
       LOGGING.info response_s
       $?.success?.should be_true
-      (/FAILED: Resources do not output logs to stdout and stderr/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Resources do not output logs to stdout and stderr)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample_no_logs/cnf-testsuite.yml`
     end
@@ -49,7 +49,7 @@ describe "Observability" do
     ShellCmd.run("kubectl describe deployment prometheus-server", "k8s_describe_prometheus", force_output: true)
 
     test_result = ShellCmd.run("./cnf-testsuite prometheus_traffic", "run_test_cmd", force_output: true)
-    (/PASSED: Your cnf is sending prometheus traffic/ =~ test_result[:output]).should_not be_nil
+    (/(PASSED).*(Your cnf is sending prometheus traffic)/ =~ test_result[:output]).should_not be_nil
   ensure
     ShellCmd.run("./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml", "spec_sample_cleaup")
     result = ShellCmd.run("#{helm} delete prometheus", "helm_delete_prometheus")
@@ -65,7 +65,7 @@ describe "Observability" do
 
       response_s = `./cnf-testsuite prometheus_traffic`
       LOGGING.info response_s
-      (/SKIPPED: Prometheus server not found/ =~ response_s).should_not be_nil
+      (/(SKIPPED).*(Prometheus server not found)/ =~ response_s).should_not be_nil
     ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
   end
@@ -85,7 +85,7 @@ describe "Observability" do
 
       response_s = `./cnf-testsuite prometheus_traffic`
       LOGGING.info response_s
-      (/FAILED: Your cnf is not sending prometheus traffic/ =~ response_s).should_not be_nil
+      (/(FAILED).*(Your cnf is not sending prometheus traffic)/ =~ response_s).should_not be_nil
   ensure
       LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
       resp = `#{helm} delete prometheus`
@@ -107,7 +107,7 @@ describe "Observability" do
 
     response_s = `./cnf-testsuite open_metrics`
     LOGGING.info response_s
-    (/FAILED: Your cnf's metrics traffic is not OpenMetrics compatible/ =~ response_s).should_not be_nil
+    (/(FAILED).*(Your cnf's metrics traffic is not OpenMetrics compatible)/ =~ response_s).should_not be_nil
   ensure
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml`
     resp = `#{helm} delete prometheus`
@@ -129,7 +129,7 @@ describe "Observability" do
 
     response_s = `./cnf-testsuite open_metrics`
     LOGGING.info response_s
-    (/PASSED: Your cnf's metrics traffic is OpenMetrics compatible/ =~ response_s).should_not be_nil
+    (/(PASSED).*(Your cnf's metrics traffic is OpenMetrics compatible)/ =~ response_s).should_not be_nil
   ensure
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-openmetrics/cnf-testsuite.yml`
     resp = `#{helm} delete prometheus`
@@ -158,7 +158,7 @@ describe "Observability" do
     LOGGING.info resp
     response_s = `./cnf-testsuite routed_logs`
     LOGGING.info response_s
-    (/PASSED: Your cnf's logs are being captured/ =~ response_s).should_not be_nil
+    (/(PASSED).*(Your cnf's logs are being captured)/ =~ response_s).should_not be_nil
   ensure
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
     resp = `./cnf-testsuite uninstall_fluentdbitnami`
@@ -171,7 +171,7 @@ describe "Observability" do
     FluentBit.install
     response_s = `./cnf-testsuite routed_logs`
     LOGGING.info response_s
-    (/PASSED: Your cnf's logs are being captured/ =~ response_s).should_not be_nil
+    (/(PASSED).*(Your cnf's logs are being captured)/ =~ response_s).should_not be_nil
   ensure
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-fluentbit`
     FluentBit.uninstall
@@ -190,7 +190,7 @@ describe "Observability" do
 
     response_s = `./cnf-testsuite routed_logs`
     LOGGING.info response_s
-    (/FAILED: Your cnf's logs are not being captured/ =~ response_s).should_not be_nil
+    (/(FAILED).*(Your cnf's logs are not being captured)/ =~ response_s).should_not be_nil
   ensure
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
     resp = `./cnf-testsuite uninstall_fluentd`
@@ -205,7 +205,7 @@ describe "Observability" do
     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
     response_s = `./cnf-testsuite tracing`
     LOGGING.info response_s
-    (/FAILED: Tracing not used/ =~ response_s).should_not be_nil
+    (/(FAILED).*(Tracing not used)/ =~ response_s).should_not be_nil
   ensure
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
     JaegerManager.uninstall
@@ -222,7 +222,7 @@ describe "Observability" do
     LOGGING.info `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-tracing/cnf-testsuite.yml`
     response_s = `./cnf-testsuite tracing`
     LOGGING.info response_s
-    (/PASSED: Tracing used/ =~ response_s).should_not be_nil
+    (/(PASSED).*(Tracing used)/ =~ response_s).should_not be_nil
   ensure
     LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-tracing/cnf-testsuite.yml`
     JaegerManager.uninstall
