@@ -16,12 +16,14 @@ task "cert", ["version", "cert_compatibility", "cert_state", "cert_security", "c
   max_passed = CNFManager::Points.total_max_passed("cert")
   essential_total_passed = CNFManager::Points.total_passed("essential")
   essential_max_passed = CNFManager::Points.total_max_passed("essential")
+  max_passed = essential_max_passed if args.raw.includes? "essential"
   stdout_success "  - #{total_passed} of #{max_passed} total tests passed"
 
   if essential_total_passed >= ESSENTIAL_PASSED_THRESHOLD
     stdout_success "  - #{essential_total_passed} of #{essential_max_passed} essential tests passed"
   else
-    stdout_failure "FAILED: #{essential_total_passed} of #{essential_max_passed} essential tests passed"
+    stdout_failure "  - #{essential_total_passed} of #{essential_max_passed} essential tests passed"
+    stdout_failure "Certification failed! Passing threshold is #{ESSENTIAL_PASSED_THRESHOLD} essential tests"
   end
 
   update_yml("#{CNFManager::Points::Results.file}", "points", total)

@@ -183,6 +183,16 @@ module CNFManager
       end
     end
 
+    def self.tasks_by_tag_intersection(tags)
+      tasks = tags.reduce([] of String) do |acc, t| 
+        if acc.empty?
+          acc = tasks_by_tag(t)
+        else
+          acc = acc & tasks_by_tag(t)
+        end
+      end
+    end
+
     # Gets the total assigned points for a tag (or all total points) from the results file
     # Usesful for calculation categories total
     def self.total_points(tag=nil)
@@ -191,13 +201,7 @@ module CNFManager
 
     def self.total_points(tags : Array(String) = [] of String)
       if !tags.empty?
-        tasks = tags.reduce([] of String) do |acc, t| 
-          if acc.empty?
-            acc = tasks_by_tag(t)
-          else
-            acc = acc & tasks_by_tag(t)
-          end
-        end
+        tasks = tasks_by_tag_intersection(tags)
       else
         tasks = all_task_test_names
       end
@@ -225,13 +229,7 @@ module CNFManager
     def self.total_passed(tags : Array(String) = [] of String)
       Log.debug { "total_passed: #{tags}" }
       if !tags.empty?
-        tasks = tags.reduce([] of String) do |acc, t| 
-          if acc.empty?
-            acc = tasks_by_tag(t)
-          else
-            acc = acc & tasks_by_tag(t)
-          end
-        end
+        tasks = tasks_by_tag_intersection(tags)
       else
         tasks = all_task_test_names
       end
@@ -276,13 +274,7 @@ module CNFManager
     def self.total_max_points(tags : Array(String) = [] of String)
       Log.debug { "total_max_points tag: #{tags}" }
       if !tags.empty?
-        tasks = tags.reduce([] of String) do |acc, t| 
-          if acc.empty?
-            acc = tasks_by_tag(t)
-          else
-            acc = acc & tasks_by_tag(t)
-          end
-        end
+        tasks = tasks_by_tag_intersection(tags)
       else
         tasks = all_task_test_names
       end
@@ -349,14 +341,7 @@ module CNFManager
     def self.total_max_passed(tags : Array(String) = [] of String)
       Log.debug { "total_max_passed tag: #{tags}" }
       if !tags.empty?
-        tasks = tags.reduce([] of String) do |acc, t| 
-          Log.info { "total_max_passed acc: #{acc}" }
-          if acc.empty?
-            acc = tasks_by_tag(t)
-          else
-            acc = acc & tasks_by_tag(t)
-          end
-        end
+        tasks = tasks_by_tag_intersection(tags)
       else
         tasks = all_task_test_names
       end
