@@ -1,20 +1,15 @@
 # CNTi Test Catalog Contributors
 
 
-## Admin
+## Maintainer
 | Name | GitHub ID | Company Name |
 | --------------- | --------- | ----------- |
+| Akash Manohar | [hashnuke](https://github.com/hashnuke) | [Vulk Coop](vulk.coop) |
 | Denver Williams | [denverwilliams](https://github.com/denverwilliams) | [Vulk Coop](vulk.coop) |
+| Drew Bentley | [agentpoyo](https://github.com/agentpoyo) | [Vulk Coop](vulk.coop) |
 | Lucina Stricko | [lixuna](https://github.com/lixuna) | [Vulk Coop](vulk.coop) |
 | Taylor Carpenter | [taylor](https://github.com/taylor) | [Vulk Coop](vulk.coop) |
 | W. Watson | [wavell](https://github.com/wavell) | [Vulk Coop](vulk.coop) |
-
-## Maintainer
-| Name | GitHub ID | Affiliation |
-| --------------- | --------- | ----------- |
-| Akash Manohar | [hashnuke](https://github.com/hashnuke) | [Vulk Coop](vulk.coop) |
-| Drew Bentley | [agentpoyo](https://github.com/agentpoyo) | [Vulk Coop](vulk.coop) |
-| William Harris | [williscool](https://github.com/williscool) | [Vulk Coop](vulk.coop) |
 
 ## Contributor
 | Name | GitHub ID | Affiliation |
@@ -28,6 +23,7 @@
 | Juraj Haško | [haskojur](https://github.com/haskojur) | [Tietoevry](https://www.tietoevry.com/) |
 | Barbora Müller | [barmull](https://github.com/barmull) | [Tietoevry](https://www.tietoevry.com/) |
 | Olivier Smith | [smitholi67](https://github.com/smitholi67) | [MATRIXX Software](https://www.matrixx.com/) |
+| William Harris | [williscool](https://github.com/williscool) | [Vulk Coop](vulk.coop) |
 
 ### Emeritus Maintainer
 | Name | GitHub ID | Affiliation |
