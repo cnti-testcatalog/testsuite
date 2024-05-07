@@ -9,19 +9,18 @@ require "sam"
 
 describe "State" do
   before_all do
-    `./cnf-testsuite configuration_file_setup`
+    result = ShellCmd.run_testsuite("configuration_file_setup")
   end
   
   it "'elastic_volumes' should fail if the cnf does not use volumes that are elastic volume", tags: ["elastic_volume"]  do
     begin
-      LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite -l info elastic_volumes verbose`
-      LOGGING.info "Status:  #{response_s}"
-      (/(PASSED).*(All used volumes are elastic)/ =~ response_s).should be_nil
+      result = ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml", cmd_prefix: "LOG_LEVEL=info")
+      result[:status].success?.should be_true
+      result = ShellCmd.run_testsuite("elastic_volumes verbose", cmd_prefix: "LOG_LEVEL=info")
+      (/(PASSED).*(All used volumes are elastic)/ =~ result[:output]).should be_nil
     ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml`
-      $?.success?.should be_true
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml")
+      result[:status].success?.should be_true
     end
   end
 
@@ -29,78 +28,64 @@ describe "State" do
   # This CNF does not use any volumes except the ones that Kubernetes might mount by default (like the service account token)
   it "'elastic_volumes' should fail if the cnf does not use any elastic volumes", tags: ["elastic_volume"]  do
     begin
-      LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-config=./sample-cnfs/sample_nonroot`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite -l info elastic_volumes verbose`
-      LOGGING.info "Status:  #{response_s}"
-      (/FAILED/ =~ response_s).should_not be_nil
+      result = ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample_nonroot", cmd_prefix: "LOG_LEVEL=info")
+      result[:status].success?.should be_true
+      result = ShellCmd.run_testsuite("elastic_volumes verbose", cmd_prefix: "LOG_LEVEL=info")
+      (/FAILED/ =~ result[:output]).should_not be_nil
     ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot`
-      $?.success?.should be_true
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot")
+      result[:status].success?.should be_true
     end
   end
 
   it "'database_persistence' should pass if the cnf uses a database that uses an elastic volume with a stateful set", tags: ["elastic_volume"]  do
     begin
-      Log.info {"Installing Mysql "}
-      # Mysql.install
+      Log.info { "Installing Mysql " }
       # todo make helm directories work with parameters
-      ShellCmd.run("./cnf-testsuite cnf_setup cnf-config=./sample-cnfs/sample-mysql/cnf-testsuite.yml", "sample_cnf_setup")
+      ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample-mysql/cnf-testsuite.yml")
       KubectlClient::Get.resource_wait_for_install("Pod", "mysql-0")
-      # KubectlClient::Delete.file("https://raw.githubusercontent.com/mysql/mysql-operator/trunk/samples/sample-cluster.yaml  --wait=false")
-      # temp_pw = Random.rand.to_s
-      # KubectlClient::Create.command(%(secret generic mypwds --from-literal=rootUser=root --from-literal=rootHost=% --from-literal=rootPassword="#{temp_pw}"))
-      # KubectlClient::Apply.file("https://raw.githubusercontent.com/mysql/mysql-operator/trunk/samples/sample-cluster.yaml")
-      # KubectlClient::Get.resource_wait_for_install("Pod", "mycluster-2")
-      response_s = `LOG_LEVEL=info ./cnf-testsuite database_persistence`
-      Log.info {"Status:  #{response_s}"}
-      (/(PASSED).*(CNF uses database with cloud-native persistence)/ =~ response_s).should_not be_nil
+      result = ShellCmd.run_testsuite("database_persistence", cmd_prefix: "LOG_LEVEL=info")
+      (/(PASSED).*(CNF uses database with cloud-native persistence)/ =~ result[:output]).should_not be_nil
     ensure
-      # Mysql.uninstall
-       # KubectlClient::Delete.file("https://raw.githubusercontent.com/mysql/mysql-operator/trunk/samples/sample-cluster.yaml  --wait=false")
-       # KubectlClient::Delete.file("https://raw.githubusercontent.com/mysql/mysql-operator/trunk/samples/sample-cluster.yaml")
       #todo fix cleanup for helm directory with parameters
-      ShellCmd.run("./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-mysql/cnf-testsuite.yml", "sample_cnf_cleanup")
+      ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-mysql/cnf-testsuite.yml")
       ShellCmd.run("kubectl delete pvc data-mysql-0", "delete_pvc")
     end
   end
 
   it "'elastic_volumes' should fail if the cnf doesn't use an elastic volume", tags: ["elastic_volume"]  do
     begin
-      LOGGING.info `./cnf-testsuite -l info cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite -l info elastic_volumes verbose`
-      LOGGING.info "Status:  #{response_s}"
-      (/(FAILED).*(Some of the used volumes are not elastic)/ =~ response_s).should_not be_nil
+      result = ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml", cmd_prefix: "LOG_LEVEL=info")
+      result[:status].success?.should be_true
+      result = ShellCmd.run_testsuite("elastic_volumes verbose", cmd_prefix: "LOG_LEVEL=info")
+      (/(FAILED).*(Some of the used volumes are not elastic)/ =~ result[:output]).should_not be_nil
     ensure
-      LOGGING.info `./cnf-testsuite cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-      $?.success?.should be_true
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      result[:status].success?.should be_true
     end
   end
 
   it "'volume_hostpath_not_found' should pass if the cnf doesn't have a hostPath volume", tags: ["volume_hostpath_not_found"]  do
     begin
-      `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite volume_hostpath_not_found verbose`
-      LOGGING.info "Status:  #{response_s}"
-      (/(PASSED).*(hostPath volumes not found)/ =~ response_s).should_not be_nil
+      result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      result[:status].success?.should be_true
+      result = ShellCmd.run_testsuite("volume_hostpath_not_found verbose")
+      (/(PASSED).*(hostPath volumes not found)/ =~ result[:output]).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-      $?.success?.should be_true
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      result[:status].success?.should be_true
     end
   end
 
   it "'volume_hostpath_not_found' should fail if the cnf has a hostPath volume", tags: ["volume_hostpath_not_found"]  do
     begin
-      `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-fragile-state/cnf-testsuite.yml deploy_with_chart=false`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite volume_hostpath_not_found verbose`
-      LOGGING.info "Status:  #{response_s}"
-      (/(FAILED).*(hostPath volumes found)/ =~ response_s).should_not be_nil
+      result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-fragile-state/cnf-testsuite.yml deploy_with_chart=false")
+      result[:status].success?.should be_true
+      result = ShellCmd.run_testsuite("volume_hostpath_not_found verbose")
+      (/(FAILED).*(hostPath volumes found)/ =~ result[:output]).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-fragile-state/cnf-testsuite.yml deploy_with_chart=false`
-      $?.success?.should be_true
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-fragile-state/cnf-testsuite.yml deploy_with_chart=false")
+      result[:status].success?.should be_true
     end
   end
 
@@ -109,28 +94,26 @@ describe "State" do
       # update the helm parameter with a schedulable node for the pv chart
       schedulable_nodes = KubectlClient::Get.schedulable_nodes
       update_yml("sample-cnfs/sample-local-storage/cnf-testsuite.yml", "helm_values", "--set worker_node='#{schedulable_nodes[0]}'")
-      `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-local-storage/cnf-testsuite.yml verbose`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite no_local_volume_configuration verbose`
-      LOGGING.info "Status:  #{response_s}"
-      (/(FAILED).*(local storage configuration volumes found)/ =~ response_s).should_not be_nil
+      result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-local-storage/cnf-testsuite.yml verbose")
+      result[:status].success?.should be_true
+      result = ShellCmd.run_testsuite("no_local_volume_configuration verbose")
+      (/(FAILED).*(local storage configuration volumes found)/ =~ result[:output]).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-local-storage/cnf-testsuite.yml deploy_with_chart=false`
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-local-storage/cnf-testsuite.yml deploy_with_chart=false")
       update_yml("sample-cnfs/sample-local-storage/cnf-testsuite.yml", "helm_values", "")
-      $?.success?.should be_true
+      result[:status].success?.should be_true
     end
   end
 
   it "'no_local_volume_configuration' should pass if local storage configuration is not found", tags: ["no_local_volume_configuration"]  do
     begin
-      `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite no_local_volume_configuration verbose`
-      LOGGING.info "Status:  #{response_s}"
-      (/(PASSED).*(local storage configuration volumes not found)/ =~ response_s).should_not be_nil
+      result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose")
+      result[:status].success?.should be_true
+      result = ShellCmd.run_testsuite("no_local_volume_configuration verbose")
+      (/(PASSED).*(local storage configuration volumes not found)/ =~ result[:output]).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml deploy_with_chart=false`
-      $?.success?.should be_true
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml deploy_with_chart=false")
+      result[:status].success?.should be_true
     end
   end
 end

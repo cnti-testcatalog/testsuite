@@ -7,24 +7,20 @@ require "sam"
 
 describe "Prereq" do
   it "'prereq' should check the system for prerequisites", tags: ["points"]  do
-    response_s = `./cnf-testsuite prereqs verbose`
-    LOGGING.info response_s
-    $?.success?.should be_true
-    (/helm found/ =~ response_s).should_not be_nil
-    # (/wget found/ =~ response_s).should_not be_nil
-    # (/curl found/ =~ response_s).should_not be_nil
-    (/kubectl found/ =~ response_s).should_not be_nil
-    (/git found/ =~ response_s).should_not be_nil
+    result = ShellCmd.run_testsuite("prereqs verbose")
+    result[:status].success?.should be_true
+    (/helm found/ =~ result[:output]).should_not be_nil
+
+    (/kubectl found/ =~ result[:output]).should_not be_nil
+    (/git found/ =~ result[:output]).should_not be_nil
   end
 
   it "'prereq' with offline option should check the system for prerequisites except git", tags: ["points"]  do
-    response_s = `./cnf-testsuite prereqs verbose offline=1`
-    LOGGING.info response_s
-    $?.success?.should be_true
-    (/helm found/ =~ response_s).should_not be_nil
-    # (/wget found/ =~ response_s).should_not be_nil
-    # (/curl found/ =~ response_s).should_not be_nil
-    (/kubectl found/ =~ response_s).should_not be_nil
-    (/git found/ =~ response_s).should be_nil
+    result = ShellCmd.run_testsuite("prereqs verbose offline=1")
+    result[:status].success?.should be_true
+    (/helm found/ =~ result[:output]).should_not be_nil
+
+    (/kubectl found/ =~ result[:output]).should_not be_nil
+    (/git found/ =~ result[:output]).should be_nil
   end
 end

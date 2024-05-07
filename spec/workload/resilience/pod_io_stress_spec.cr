@@ -7,24 +7,23 @@ require "sam"
 
 describe "Resilience pod delete Chaos" do
   before_all do
-    `./cnf-testsuite setup`
-    `./cnf-testsuite configuration_file_setup`
-    $?.success?.should be_true
+    result = ShellCmd.run_testsuite("setup")
+    result = ShellCmd.run_testsuite("configuration_file_setup")
+    result[:status].success?.should be_true
   end
 
   it "'pod_io_stress' A 'Good' CNF should not crash when pod delete occurs", tags: ["pod_io_stress"]  do
     begin
-      `./cnf-testsuite cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-      $?.success?.should be_true
-      response_s = `./cnf-testsuite pod_io_stress verbose`
-      LOGGING.info response_s
-      $?.success?.should be_true
-      (/(PASSED).*(pod_io_stress chaos test passed)/ =~ response_s).should_not be_nil
+      result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      result[:status].success?.should be_true
+      result = ShellCmd.run_testsuite("pod_io_stress verbose")
+      result[:status].success?.should be_true
+      (/(PASSED).*(pod_io_stress chaos test passed)/ =~ result[:output]).should_not be_nil
     ensure
-      `./cnf-testsuite cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml`
-      $?.success?.should be_true
-      `./cnf-testsuite uninstall_litmus`
-      $?.success?.should be_true
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      result[:status].success?.should be_true
+      result = ShellCmd.run_testsuite("uninstall_litmus")
+      result[:status].success?.should be_true
     end
   end
 end

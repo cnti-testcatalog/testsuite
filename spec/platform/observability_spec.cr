@@ -5,36 +5,32 @@ require "kubectl_client"
 
 describe "Platform Observability" do
   before_all do
-    `./cnf-testsuite setup`
-    $?.success?.should be_true
+    result = ShellCmd.run_testsuite("setup")
+    result[:status].success?.should be_true
   end
 
   it "'kube_state_metrics' should return some json", tags: ["platform:observability"] do
 
-      LOGGING.info "Installing kube_state_metrics" 
+      Log.info { "Installing kube_state_metrics" }
       helm = Helm::BinarySingleton.helm
-      `#{helm} repo add prometheus-community https://prometheus-community.github.io/helm-charts`
-      `#{helm} repo update`
-      resp = `#{helm} install --version 5.3.0 kube-state-metrics prometheus-community/kube-state-metrics`
-      LOGGING.info resp
+      result = ShellCmd.run("#{helm} repo add prometheus-community https://prometheus-community.github.io/helm-charts")
+      result = ShellCmd.run("#{helm} repo update")
+      result = ShellCmd.run("#{helm} install --version 5.3.0 kube-state-metrics prometheus-community/kube-state-metrics", force_output: true)
       KubectlClient::Get.wait_for_install("kube-state-metrics")
 
-      response_s = `./cnf-testsuite platform:kube_state_metrics poc`
-      LOGGING.info response_s
-      (/(PASSED).*(Your platform is using the).*(release for kube state metrics)/ =~ response_s).should_not be_nil
+      result = ShellCmd.run_testsuite("platform:kube_state_metrics poc")
+      (/(PASSED).*(Your platform is using the).*(release for kube state metrics)/ =~ result[:output]).should_not be_nil
   ensure
-      resp = `#{helm} delete kube-state-metrics`
-      LOGGING.info resp
-      $?.success?.should be_true
+      result = ShellCmd.run("#{helm} delete kube-state-metrics", force_output: true)
+      result[:status].success?.should be_true
   end
 
   it "'node_exporter' should detect the named release of the installed node_exporter", tags: ["platform:observability"] do
 
-		  LOGGING.info "Installing prometheus-node-exporter" 
+		  Log.info { "Installing prometheus-node-exporter" }
       helm = Helm::BinarySingleton.helm
       Helm.helm_repo_add("prometheus-community","https://prometheus-community.github.io/helm-charts")
-		  resp = `#{helm} install node-exporter prometheus-community/prometheus-node-exporter`
-		  LOGGING.info resp
+		  result = ShellCmd.run("#{helm} install node-exporter prometheus-community/prometheus-node-exporter", force_output: true)
 
       pod_ready = ""
       pod_ready_timeout = 45
@@ -44,17 +40,15 @@ describe "Platform Observability" do
         sleep 1
         pod_ready_timeout = pod_ready_timeout - 1
       end
-      response_s = `./cnf-testsuite platform:node_exporter poc`
-      LOGGING.info response_s
+      result = ShellCmd.run_testsuite("platform:node_exporter poc")
       if check_containerd
-        (/(PASSED).*(Your platform is using the node exporter)/ =~ response_s).should_not be_nil
+        (/(PASSED).*(Your platform is using the node exporter)/ =~ result[:output]).should_not be_nil
       else
-        (/skipping node_exporter: This test only supports the Containerd Runtime./ =~ response_s).should_not be_nil
+        (/skipping node_exporter: This test only supports the Containerd Runtime./ =~ result[:output]).should_not be_nil
       end
   ensure
-      resp = `#{helm} delete node-exporter`
-      LOGGING.info resp
-      $?.success?.should be_true
+      result = ShellCmd.run("#{helm} delete node-exporter", force_output: true)
+      result[:status].success?.should be_true
   end
 
   it "'prometheus_adapter' should detect the named release of the installed prometheus_adapter", tags: ["platform:observability"] do
@@ -69,9 +63,8 @@ describe "Platform Observability" do
     end
     KubectlClient::Get.wait_for_install("prometheus-adapter")
 
-    response_s = `./cnf-testsuite platform:prometheus_adapter poc`
-    Log.info { response_s }
-    (/(PASSED).*(Your platform is using the prometheus adapter)/ =~ response_s).should_not be_nil
+    result = ShellCmd.run_testsuite("platform:prometheus_adapter poc")
+    (/(PASSED).*(Your platform is using the prometheus adapter)/ =~ result[:output]).should_not be_nil
   ensure
     resp = Helm.uninstall("prometheus-adapter")
   end
@@ -88,13 +81,12 @@ describe "Platform Observability" do
     end
 		  Log.info { result } 
 		  KubectlClient::Get.wait_for_install(deployment_name: "metrics-server")
-      response_s = `./cnf-testsuite platform:metrics_server poc`
-      LOGGING.info response_s
-      (/(PASSED).*(Your platform is using the metrics server)/ =~ response_s).should_not be_nil
+      result = ShellCmd.run_testsuite("platform:metrics_server poc")
+      (/(PASSED).*(Your platform is using the metrics server)/ =~ result[:output]).should_not be_nil
   ensure
-      resp = Helm.uninstall("metrics-server")
-      LOGGING.info resp
-      $?.success?.should be_true
+    result = Helm.uninstall("metrics-server")
+    Log.info { result }
+    result[:status].success?.should be_true
   end
 end
 
