@@ -6,8 +6,8 @@ class ChaosTemplates
       @app_namespace : String,
       @deployment_label : String,
       @deployment_label_value : String,
-      @total_chaos_duration : String,
-      @target_pod_name : String
+      @target_pod_name : String,
+      @total_chaos_duration : String = "120"
     )
     end
     ECR.def_to_s("src/templates/chaos_templates/pod_io_stress.yml.ecr")
@@ -32,7 +32,7 @@ class ChaosTemplates
       @app_namespace : String,
       @deployment_label : String,
       @deployment_label_value : String,
-      @total_chaos_duration : String
+      @total_chaos_duration : String = "60"
     )
     end
     ECR.def_to_s("src/templates/chaos_templates/pod_network_latency.yml.ecr")
@@ -45,7 +45,7 @@ class ChaosTemplates
       @app_namespace : String,
       @deployment_label : String,
       @deployment_label_value : String,
-      @total_chaos_duration : String
+      @total_chaos_duration : String = "60"
     )
     end
     ECR.def_to_s("src/templates/chaos_templates/pod_network_corruption.yml.ecr")
@@ -58,7 +58,7 @@ class ChaosTemplates
       @app_namespace : String,
       @deployment_label : String,
       @deployment_label_value : String,
-      @total_chaos_duration : String
+      @total_chaos_duration : String = "60"
     )
     end
     ECR.def_to_s("src/templates/chaos_templates/pod_network_duplication.yml.ecr")
@@ -83,8 +83,9 @@ class ChaosTemplates
       @app_namespace : String,
       @deployment_label : String,
       @deployment_label_value : String,
-      @total_chaos_duration : String,
-      @target_pod_name : String
+      @target_pod_name : String,
+      @total_chaos_duration : String = "30"
+      
     )
     end
     ECR.def_to_s("src/templates/chaos_templates/pod_delete.yml.ecr")
@@ -97,8 +98,8 @@ class ChaosTemplates
       @app_namespace : String,
       @deployment_label : String,
       @deployment_label_value : String,
-      @total_chaos_duration : String,
-      @target_pod_name : String
+      @target_pod_name : String,
+      @total_chaos_duration : String = "60"
     )
     end
     ECR.def_to_s("src/templates/chaos_templates/pod_memory_hog.yml.ecr")
@@ -111,8 +112,8 @@ class ChaosTemplates
       @app_namespace : String,
       @deployment_label : String,
       @deployment_label_value : String,
-      @total_chaos_duration : String,
-      @app_nodename : String
+      @app_nodename : String,
+      @total_chaos_duration : String = "90"
     )
     end
     ECR.def_to_s("src/templates/chaos_templates/node_drain.yml.ecr")
@@ -125,7 +126,7 @@ class ChaosTemplates
       @app_namespace : String,
       @deployment_label : String,
       @deployment_label_value : String,
-      @total_chaos_duration : String,
+      @total_chaos_duration : String = "120"
     )
     end
     ECR.def_to_s("src/templates/chaos_templates/pod_dns_error.yml.ecr")

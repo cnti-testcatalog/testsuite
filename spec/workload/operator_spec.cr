@@ -42,10 +42,7 @@ describe "Operator" do
         KubectlClient::Get.resource_wait_for_uninstall("Pod", "#{pod_name}", 180, "operator-lifecycle-manager")
       end
 
-      second_count = 0
-      wait_count = 20
-      delete=false
-      until delete || second_count > wait_count.to_i
+      repeat_with_timeout(timeout: GENERIC_OPERATION_TIMEOUT, errormsg: "Namespace uninstallation has timed-out") do
         File.write("operator.json", "#{KubectlClient::Get.namespaces("operators").to_json}")
         json = File.open("operator.json") do |file|
           JSON.parse(file)
@@ -53,16 +50,10 @@ describe "Operator" do
         json.as_h.delete("spec")
         File.write("operator.json", "#{json.to_json}")
         Log.info { "Uninstall Namespace Finalizer" }
-        if KubectlClient::Replace.command("--raw '/api/v1/namespaces/operators/finalize' -f ./operator.json")[:status].success?
-          delete=true
-        end
-        sleep 3
+        KubectlClient::Replace.command("--raw '/api/v1/namespaces/operators/finalize' -f ./operator.json")[:status].success?
       end
 
-      second_count = 0
-      wait_count = 20
-      delete=false
-      until delete || second_count > wait_count.to_i
+      repeat_with_timeout(timeout: GENERIC_OPERATION_TIMEOUT, errormsg: "Namespace uninstallation has timed-out") do
         File.write("manager.json", "#{KubectlClient::Get.namespaces("operator-lifecycle-manager").to_json}")
         json = File.open("manager.json") do |file|
           JSON.parse(file)
@@ -70,12 +61,9 @@ describe "Operator" do
         json.as_h.delete("spec")
         File.write("manager.json", "#{json.to_json}")
         Log.info { "Uninstall Namespace Finalizer" }
-        if KubectlClient::Replace.command("--raw '/api/v1/namespaces/operator-lifecycle-manager/finalize' -f ./manager.json")[:status].success?
-          delete=true
-        end
-        sleep 3
+        KubectlClient::Replace.command("--raw '/api/v1/namespaces/operator-lifecycle-manager/finalize' -f ./manager.json")[:status].success?
       end
-     end
+    end
   end
   
   it "'operator_test' operator should not be found", tags: ["operator_test"]  do

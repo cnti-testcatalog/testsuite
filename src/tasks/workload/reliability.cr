@@ -150,7 +150,6 @@ task "pod_network_latency", ["install_litmus"] do |t, args|
         KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-network-latency"
-        total_chaos_duration = "60"
         test_name = "#{resource["name"]}-#{Random::Secure.hex(4)}"
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
@@ -161,8 +160,7 @@ task "pod_network_latency", ["install_litmus"] do |t, args|
               "#{chaos_experiment_name}",
               app_namespace,
               "#{current_pod_key}",
-              "#{current_pod_value}",
-              total_chaos_duration
+              "#{current_pod_value}"
         ).to_s
         else
           template = ChaosTemplates::PodNetworkLatency.new(
@@ -170,14 +168,13 @@ task "pod_network_latency", ["install_litmus"] do |t, args|
             "#{chaos_experiment_name}",
             app_namespace,
             "#{spec_labels.as_h.first_key}",
-            "#{spec_labels.as_h.first_value}",
-            total_chaos_duration
+            "#{spec_labels.as_h.first_value}"
           ).to_s
         end
 
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
+        LitmusManager.wait_for_test(test_name, chaos_experiment_name, args, namespace: app_namespace)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
       end
     end
@@ -230,7 +227,6 @@ task "pod_network_corruption", ["install_litmus"] do |t, args|
         KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-network-corruption"
-        total_chaos_duration = "60"
         test_name = "#{resource["name"]}-#{Random.rand(99)}"
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
@@ -240,12 +236,11 @@ task "pod_network_corruption", ["install_litmus"] do |t, args|
           "#{chaos_experiment_name}",
           app_namespace,
           "#{spec_labels.first_key}",
-          "#{spec_labels.first_value}",
-          total_chaos_duration
+          "#{spec_labels.first_value}"
         ).to_s
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration, args, namespace: app_namespace)
+        LitmusManager.wait_for_test(test_name, chaos_experiment_name, args, namespace: app_namespace)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name, args, namespace: app_namespace)
       end
     end
@@ -294,7 +289,6 @@ task "pod_network_duplication", ["install_litmus"] do |t, args|
         KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-network-duplication"
-        total_chaos_duration = "60"
         test_name = "#{resource["name"]}-#{Random.rand(99)}"
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
@@ -304,12 +298,11 @@ task "pod_network_duplication", ["install_litmus"] do |t, args|
           "#{chaos_experiment_name}",
           app_namespace,
           "#{spec_labels.first_key}",
-          "#{spec_labels.first_value}",
-          total_chaos_duration
+          "#{spec_labels.first_value}"
         ).to_s
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
+        LitmusManager.wait_for_test(test_name, chaos_experiment_name, args, namespace: app_namespace)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
       end
     end
@@ -356,7 +349,6 @@ task "disk_fill", ["install_litmus"] do |t, args|
         KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "disk-fill"
-        disk_fill_time = "100"
         test_name = "#{resource["name"]}-#{Random.rand(99)}"
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
 
@@ -372,7 +364,7 @@ task "disk_fill", ["install_litmus"] do |t, args|
         ).to_s
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-        LitmusManager.wait_for_test(test_name, chaos_experiment_name, disk_fill_time, args, namespace: app_namespace)
+        LitmusManager.wait_for_test(test_name, chaos_experiment_name, args, namespace: app_namespace)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name, chaos_experiment_name, args, namespace: app_namespace)
       end
       test_passed
@@ -451,7 +443,6 @@ task "pod_delete", ["install_litmus"] do |t, args|
         KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-delete"
-        total_chaos_duration = "30"
         target_pod_name = ""
         test_name = "#{resource["name"]}-#{Random.rand(99)}" 
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
@@ -464,7 +455,6 @@ task "pod_delete", ["install_litmus"] do |t, args|
           app_namespace,
           "#{current_pod_key}",
           "#{current_pod_value}",
-          total_chaos_duration,
           target_pod_name
         ).to_s
       else
@@ -474,7 +464,6 @@ task "pod_delete", ["install_litmus"] do |t, args|
           app_namespace,
           "#{spec_labels.as_h.first_key}",
           "#{spec_labels.as_h.first_value}",
-          total_chaos_duration,
           target_pod_name
         ).to_s
       end
@@ -482,7 +471,7 @@ task "pod_delete", ["install_litmus"] do |t, args|
         Log.info { "template: #{template}" }
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
+        LitmusManager.wait_for_test(test_name, chaos_experiment_name, args, namespace: app_namespace)
       end
       test_passed=LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
     end
@@ -531,7 +520,6 @@ task "pod_memory_hog", ["install_litmus"] do |t, args|
         KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-memory-hog"
-        total_chaos_duration = "60"
         target_pod_name = ""
         test_name = "#{resource["name"]}-#{Random.rand(99)}" 
         chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
@@ -543,13 +531,12 @@ task "pod_memory_hog", ["install_litmus"] do |t, args|
           app_namespace,
           "#{spec_labels.first_key}",
           "#{spec_labels.first_value}",
-          total_chaos_duration,
           target_pod_name
         ).to_s
 
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-        LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
+        LitmusManager.wait_for_test(test_name, chaos_experiment_name, args, namespace: app_namespace)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
       end
       test_passed
@@ -597,7 +584,6 @@ task "pod_io_stress", ["install_litmus"] do |t, args|
         KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
         chaos_experiment_name = "pod-io-stress"
-        total_chaos_duration = "120"
         target_pod_name = ""
         chaos_test_name = "#{resource["name"]}-#{Random.rand(99)}" 
         chaos_result_name = "#{chaos_test_name}-#{chaos_experiment_name}"
@@ -609,13 +595,12 @@ task "pod_io_stress", ["install_litmus"] do |t, args|
           app_namespace,
           "#{spec_labels.first_key}",
           "#{spec_labels.first_value}",
-          total_chaos_duration,
           target_pod_name
         ).to_s
 
         File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-        LitmusManager.wait_for_test(chaos_test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
+        LitmusManager.wait_for_test(chaos_test_name, chaos_experiment_name, args, namespace: app_namespace)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
       end
     end
@@ -670,7 +655,6 @@ task "pod_dns_error", ["install_litmus"] do |t, args|
           KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
           chaos_experiment_name = "pod-dns-error"
-          total_chaos_duration = "120"
           target_pod_name = ""
           test_name = "#{resource["name"]}-#{Random.rand(99)}" 
           chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
@@ -681,13 +665,12 @@ task "pod_dns_error", ["install_litmus"] do |t, args|
             "#{chaos_experiment_name}",
             app_namespace,
             "#{spec_labels.first_key}",
-            "#{spec_labels.first_value}",
-            total_chaos_duration,
+            "#{spec_labels.first_value}"
           ).to_s
 
           File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
           KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
-          LitmusManager.wait_for_test(test_name,chaos_experiment_name,total_chaos_duration,args, namespace: app_namespace)
+          LitmusManager.wait_for_test(test_name, chaos_experiment_name, args, namespace: app_namespace)
           test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
         end
       end

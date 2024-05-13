@@ -10,6 +10,7 @@ require "semantic_version"
 require "./dockerd.cr"
 require "./kyverno.cr"
 require "./http_helper.cr"
+require "./timeouts.cr"
 require "ecr"
 
 module ShellCmd
