@@ -159,6 +159,16 @@ Also setting the verbose option for many tasks will add extra output to help wit
 ```
 ./cnf-testsuite test_name verbose
 ```
+#### Environment variables for timeouts:
+
+Timeouts are controlled by these environment variables, set them if default values aren't suitable:
+```
+CNF_TESTSUITE_GENERIC_OPERATION_TIMEOUT=60
+CNF_TESTSUITE_RESOURCE_CREATION_TIMEOUT=120
+CNF_TESTSUITE_NODE_READINESS_TIMEOUT=240
+CNF_TESTSUITE_POD_READINESS_TIMEOUT=180
+CNF_TESTSUITE_LITMUS_CHAOS_TEST_TIMEOUT=1800
+```
 
 #### Running The Linter in Developer Mode
 

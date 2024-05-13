@@ -34,18 +34,16 @@ namespace "platform" do
       KubectlClient::Apply.file("reboot_daemon_pod.yml")
       KubectlClient::Get.wait_for_install("node-failure-coredns")
 
-      pod_ready = ""
-      pod_ready_timeout = 45
       begin
-        until (pod_ready == "true" || pod_ready_timeout == 0)
-          pod_ready = KubectlClient::Get.pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[2]
-          pod_ready_timeout = pod_ready_timeout - 1
-          if pod_ready_timeout == 0
-            next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Failed to install reboot daemon")
-          end
-          sleep 1
-          puts "Waiting for reboot daemon to be ready"
-          puts "Reboot Daemon Ready Status: #{pod_ready}"
+
+        execution_complete = repeat_with_timeout(timeout: POD_READINESS_TIMEOUT, errormsg: "Pod daemon installation has timed-out") do
+          pod_ready = KubectlClient::Get.pod_status("reboot", "--field-selector spec.nodeName=#{worker_node}").split(",")[2] == "true"
+          Log.info { "Waiting for reboot daemon to be ready. Current status: #{pod_ready}" }
+          pod_ready
+        end
+
+        if !execution_complete
+          next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Failed to install reboot daemon")
         end
 
         # Find Reboot Daemon name
@@ -53,40 +51,34 @@ namespace "platform" do
         start_reboot = KubectlClient.exec("#{reboot_daemon_pod} touch /tmp/reboot")
 
         #Watch for Node Failure.
-        pod_ready = ""
-        node_ready = ""
-        node_failure_timeout = 30
-        until (pod_ready == "false" || node_ready == "False" || node_ready == "Unknown" || node_failure_timeout == 0)
-          pod_ready = KubectlClient::Get.pod_status("node-failure").split(",")[2]
-          node_ready = KubectlClient::Get.node_status("#{worker_node}")
-          Log.info { "Waiting for Node to go offline" }
+        execution_complete = repeat_with_timeout(timeout: GENERIC_OPERATION_TIMEOUT, errormsg: "Node shut-off has timed-out") do
+          pod_ready = KubectlClient::Get.pod_status("node-failure").split(",")[2] == "true"
+          node_ready = KubectlClient::Get.node_status("#{worker_node}") == "True"
+          Log.info { "Waiting for Node to go offline..." }
           Log.info { "Pod Ready Status: #{pod_ready}" }
           Log.info { "Node Ready Status: #{node_ready}" }
-          node_failure_timeout = node_failure_timeout - 1
-          if node_failure_timeout == 0
-            next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Node failed to go offline")
-          end
-          sleep 1
+          !pod_ready || !node_ready
+        end
+
+        if !execution_complete
+          next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Node failed to go offline")
         end
 
         #Watch for Node to come back online
-        pod_ready = ""
-        node_ready = ""
-        node_online_timeout = 300
-        until (pod_ready == "true" && node_ready == "True" || node_online_timeout == 0)
-          pod_ready = KubectlClient::Get.pod_status("node-failure", "").split(",")[2]
-          node_ready = KubectlClient::Get.node_status("#{worker_node}")
-          Log.info { "Waiting for Node to come back online" }
+        execution_complete = repeat_with_timeout(timeout: NODE_READINESS_TIMEOUT, errormsg: "Node startup has timed-out") do
+          pod_ready = KubectlClient::Get.pod_status("node-failure", "").split(",")[2] == "true"
+          node_ready = KubectlClient::Get.node_status("#{worker_node}") == "True"
+          Log.info { "Waiting for Node to come back online..." }
           Log.info { "Pod Ready Status: #{pod_ready}" }
           Log.info { "Node Ready Status: #{node_ready}" }
-          node_online_timeout = node_online_timeout - 1
-          if node_online_timeout == 0
-            next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Node failed to come back online")
-          end
-          sleep 1
+          pod_ready && node_ready
         end
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Node came back online")
 
+        if !execution_complete
+          next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Node failed to come back online")
+        end
+        
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Node came back online")
       ensure
         Log.info { "node_failure cleanup" }
         delete_reboot_daemon = KubectlClient::Delete.file("reboot_daemon_pod.yml")

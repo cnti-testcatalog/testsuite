@@ -53,18 +53,13 @@ end
 module ChaosMeshSetup
 
   def self.wait_for_test(test_type, test_name)
-    second_count = 0
-    wait_count = 60
-    status = ""
-    until (status.empty? != true && status == "Finished") || second_count > wait_count.to_i
-      Log.debug { "second_count = #{second_count}" }
-      sleep 1
+    execution_complete = repeat_with_timeout(timeout: GENERIC_OPERATION_TIMEOUT, errormsg: "Chaos Mesh test timed-out") do
       cmd = "kubectl get #{test_type} #{test_name} -o json "
       Log.info { cmd }
       status = Process.run(cmd,
                            shell: true,  
-                             output: output = IO::Memory.new,  
-                             error: stderr = IO::Memory.new) 
+                           output: output = IO::Memory.new,  
+                           error: stderr = IO::Memory.new)
       Log.info { "KubectlClient.exec output: #{output.to_s}" }
       Log.info { "KubectlClient.exec stderr: #{stderr.to_s}" }
       get_status = output.to_s 
@@ -75,23 +70,15 @@ module ChaosMeshSetup
       end 
       Log.info { "Status: #{get_status}" }
       status = status_data.dig?("status", "experiment", "phase").to_s
-      second_count = second_count + 1
       Log.info { "#{get_status}" }
-      Log.info { "#{second_count}" }
+      !status.empty? && status == "Finished"
     end
-    # Did chaos mesh finish the test successfully
-    # (status.empty? !=true && status == "Finished")
-    true
+    execution_complete
   end
 
   # TODO make generate without delete?
   def self.wait_for_resource(resource_file)
-    second_count = 0
-    wait_count = 60
-    is_resource_created = nil
-    until (is_resource_created.nil? != true && is_resource_created == true) || second_count > wait_count.to_i
-      Log.info { "second_count = #{second_count}" }
-      sleep 3
+    execution_complete = repeat_with_timeout(timeout: RESOURCE_CREATION_TIMEOUT, errormsg: "Resource creation timed-out") do
       cmd = "kubectl create -f #{resource_file} 2>&1 >/dev/null"
       status = Process.run(
         cmd,
@@ -103,8 +90,9 @@ module ChaosMeshSetup
       Log.info { "Waiting for CRD" }
       Log.info { "Status: #{is_resource_created}" }
       Log.debug { "resource file: #{resource_file}" }
-      second_count = second_count + 1
+      is_resource_created == true
     end
     KubectlClient::Delete.file(resource_file)
+    execution_complete
   end
 end
