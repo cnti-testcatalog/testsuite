@@ -127,11 +127,9 @@ class KindManager
     def initialize(@name : String, @kubeconfig : String)
     end
 
-    def wait_until_nodes_ready(wait_count : Int32 = 180)
+    def wait_until_nodes_ready
       Log.info { "wait_until_nodes_ready" }
-      ready = false
-      timeout = wait_count
-      until (ready == true || timeout <= 0)
+      execution_complete = repeat_with_timeout(timeout: NODE_READINESS_TIMEOUT, errormsg: "Node readiness timed-out") do
         cmd = "kubectl get nodes --kubeconfig #{kubeconfig}"
         result = ShellCmd.run(cmd, "wait_until_nodes_ready:all_nodes")
         all_nodes = result[:output]
@@ -143,32 +141,27 @@ class KindManager
         node_count = all_nodes.size
         Log.info { "node_count: #{node_count}" }
 
-        ready_count  = all_nodes.reduce(0) do |acc, node|
+        ready_count = all_nodes.reduce(0) do |acc, node|
           if /\s(Ready)/.match(node)
             acc = acc + 1
           else
             acc
           end
         end
-
         if node_count == ready_count
           Log.info { "Nodes are ready for the #{name} cluster" }
-          ready = true
+          true
         else
-          sleep 1
-          timeout = timeout - 1
-          Log.info { "Waiting for nodes on #{name} cluster to be ready: #{ready}" }
-          break if timeout <= 0
+          Log.info { "Waiting for nodes on #{name} cluster to be ready..." }
+          false
         end
       end
-      ready
+      execution_complete
     end
 
-    def wait_until_pods_ready(wait_count : Int32 = 180)
+    def wait_until_pods_ready
       Log.info { "wait_until_pods_ready" }
-      ready = false
-      timeout = wait_count
-      until (ready == true || timeout <= 0)
+      execution_complete = repeat_with_timeout(timeout: POD_READINESS_TIMEOUT, errormsg: "Pod readiness timed-out") do
         all_pods_cmd = <<-STRING
         kubectl get pods -A -o go-template='{{range $index, $element := .items}}{{range .status.containerStatuses}}{{$element.metadata.name}}{{"\\n"}}{{end}}{{end}}'  --kubeconfig #{kubeconfig}
         STRING
@@ -193,16 +186,13 @@ class KindManager
 
         if pod_count.to_i == ready_count.to_i
           Log.info { "Pods on #{name} cluster are ready" }
-          ready = true
+          true
         else
-          sleep 1
-          timeout = timeout - 1
-          Log.info { "Waiting for pods on #{name} cluster to be ready: #{ready}" }
-          break if timeout <= 0
+          Log.info { "Waiting for pods on #{name} cluster to be ready..." }
+          false
         end
       end
-      ready
+      execution_complete
     end
-
   end
 end

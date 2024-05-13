@@ -32,13 +32,10 @@ describe "Platform Observability" do
       Helm.helm_repo_add("prometheus-community","https://prometheus-community.github.io/helm-charts")
 		  result = ShellCmd.run("#{helm} install node-exporter prometheus-community/prometheus-node-exporter", force_output: true)
 
-      pod_ready = ""
-      pod_ready_timeout = 45
-      until (pod_ready == "true" || pod_ready_timeout == 0)
-        pod_ready = KubectlClient::Get.pod_status("node-exporter-prometheus").split(",")[2]
+      repeat_with_timeout(timeout: POD_READINESS_TIMEOUT, errormsg: "Pod readiness has timed-out") do
+        pod_ready = KubectlClient::Get.pod_status("node-exporter-prometheus").split(",")[2] == "true"
         Log.info { "Pod Ready Status: #{pod_ready}" }
-        sleep 1
-        pod_ready_timeout = pod_ready_timeout - 1
+        pod_ready
       end
       result = ShellCmd.run_testsuite("platform:node_exporter poc")
       if check_containerd

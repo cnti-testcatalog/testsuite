@@ -678,8 +678,6 @@ task "operator_installed" do |t, args|
 
     #TODO Warn if csv is not found for a subscription.
     csv_names = subscription_names.map do |subscription|
-      second_count = 0
-      wait_count = 120
       csv_created = nil
       resource_created = false
 

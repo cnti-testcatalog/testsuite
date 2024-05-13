@@ -86,50 +86,40 @@ module LitmusManager
   end
 
   ## wait_for_test will wait for the completion of litmus test
-  def self.wait_for_test(test_name, chaos_experiment_name,total_chaos_duration,args, namespace : String = "default")
-    ## Maximum wait time is TCD (total chaos duration) + 60s (additional wait time)
-    delay=2
-    timeout="#{total_chaos_duration}".to_i + 60
-    retry=timeout/delay
+  def self.wait_for_test(test_name, chaos_experiment_name, args, namespace : String = "default")
     chaos_result_name = "#{test_name}-#{chaos_experiment_name}"
-    wait_count = 0
-    status_code = -1
-    experimentStatus = ""
     
     experimentStatus_cmd = "kubectl get chaosengine.litmuschaos.io #{test_name} -n #{namespace} -o jsonpath='{.status.engineStatus}'"
     Log.for("wait_for_test").info { "Checking experiment status #{experimentStatus_cmd}" } if check_verbose(args)
 
     ## Wait for completion of chaosengine which indicates the completion of chaos
-    until (status_code == 0 && experimentStatus == "Completed") || wait_count >= 1800
-      sleep delay
-      experimentStatus_cmd = "kubectl get chaosengine.litmuschaos.io #{test_name}  -n #{namespace} -o jsonpath='{.status.experiments[0].status}'"
-      Log.for("wait_for_test").info { "Checking experiment status  #{experimentStatus_cmd}" } if check_verbose(args)
-      status_code = Process.run("#{experimentStatus_cmd}", shell: true, output: experimentStatus_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
-      Log.for("wait_for_test").info { "status_code: #{status_code}" } if check_verbose(args)
-      Log.for("wait_for_test").info { "Checking experiment status  #{experimentStatus_cmd}" } if check_verbose(args)
+    repeat_with_timeout(timeout: LITMUS_CHAOS_TEST_TIMEOUT, errormsg: "Litmus test has timed-out") do
+      status_code = Process.run("#{experimentStatus_cmd}", 
+                                shell: true, 
+                                output: experimentStatus_response = IO::Memory.new, 
+                                error: stderr = IO::Memory.new).exit_status
+      Log.for("wait_for_test").info { "#{chaos_experiment_name} status_code: #{status_code}" } if check_verbose(args)
       experimentStatus = experimentStatus_response.to_s
-      Log.info {"#{chaos_experiment_name} experiment status: "+experimentStatus}
-
-      emoji_test_failed= "🗡️💀♻️"
-      Log.info { "experimentStatus #{experimentStatus}"}
+      Log.for("wait_for_test").info {"#{chaos_experiment_name} experiment status: " + experimentStatus}
       if (experimentStatus != "Waiting for Job Creation" && experimentStatus != "Running" && experimentStatus != "Completed")
-        Log.info {"#{test_name}: wait_for_test failed."}
+        true
+      else
+        status_code == 0 && experimentStatus == "Completed"
       end
-      wait_count = wait_count + 1
     end
 
-    verdict = ""
-    wait_count = 0
     verdict_cmd = "kubectl get chaosresults.litmuschaos.io #{chaos_result_name}  -n #{namespace} -o jsonpath='{.status.experimentStatus.verdict}'"
     Log.for("wait_for_test").info { "Checking experiment verdict  #{verdict_cmd}" } if check_verbose(args)
     ## Check the chaosresult verdict
-    until (status_code == 0 && verdict != "Awaited") || wait_count >= 30
-      sleep delay
-      status_code = Process.run("#{verdict_cmd}", shell: true, output: verdict_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
+    repeat_with_timeout(timeout: GENERIC_OPERATION_TIMEOUT, errormsg: "Litmus verdict aquiring has timed-out") do
+      status_code = Process.run("#{verdict_cmd}", 
+                                shell: true, 
+                                output: verdict_response = IO::Memory.new, 
+                                error: stderr = IO::Memory.new).exit_status
       Log.for("wait_for_test").info { "status_code: #{status_code}" } if check_verbose(args)
       Log.for("wait_for_test").info { "verdict: #{verdict_response.to_s}" } if check_verbose(args)
       verdict = verdict_response.to_s
-      wait_count = wait_count + 1
+      status_code == 0 && verdict != "Awaited"
     end
   end
 

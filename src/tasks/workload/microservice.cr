@@ -492,8 +492,8 @@ task "sig_term_handled" do |t, args|
           pod_namespace = pod.dig("metadata", "namespace").as_s
           Log.info { "pod_name: #{pod_name}" }
 
-          # Wait for a pod to be available. Only wait for 20 seconds.
-          KubectlClient::Get.wait_for_resource_availability("pod", pod_name, pod_namespace, 60)
+          # Wait for a pod to be available. Only wait for 60 seconds.
+          KubectlClient::Get.wait_for_resource_availability("pod", pod_name, pod_namespace, GENERIC_OPERATION_TIMEOUT)
 
           status = pod["status"]
           if status["containerStatuses"]?
