@@ -62,6 +62,7 @@ describe "Microservice" do
     ensure
       result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/ndn-multi-db-connections-fail/cnf-testsuite.yml")
       result[:status].success?.should be_true
+      KubectlClient::Delete.command("pvc data-test-mariadb-0 -n wordpress")
     end
   end
 
