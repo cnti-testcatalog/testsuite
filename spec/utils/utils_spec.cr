@@ -258,6 +258,18 @@ describe "Utils" do
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-coredns-cnf", verbose: true)
   end
 
+  it "'logger' should write logs to the file when LOG_PATH is set", tags: ["logger"] do
+    response_s = `LOG_PATH=spec-test-testsuite.log ./cnf-testsuite test`
+    $?.success?.should be_true
+    (/ERROR -- cnf-testsuite: error test/ =~ response_s).should be_nil
+    File.exists?("spec-test-testsuite.log").should be_true
+    (/ERROR -- cnf-testsuite: error test/ =~ File.read("spec-test-testsuite.log")).should_not be_nil
+  ensure
+    if File.exists?("spec-test-testsuite.log")
+      File.delete("spec-test-testsuite.log")
+    end
+  end
+
   it "'#update_yml' should update the value for a key in a yml file", tags: ["logger"]  do
     begin
     update_yml("spec/fixtures/cnf-testsuite.yml", "release_name", "coredns --set worker-node='kind-control-plane'")

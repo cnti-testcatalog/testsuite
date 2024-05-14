@@ -82,9 +82,24 @@ end
 
 # this first line necessary to make sure our custom formatter
 # is used in the default error log line also
-Log.setup(Log::Severity::Error, Log::IOBackend.new(formatter: log_formatter))
-Log.setup(loglevel, Log::IOBackend.new(formatter: log_formatter))
+Log.setup(Log::Severity::Error, log_backend)
+Log.setup(loglevel, log_backend)
 
+def log_backend
+  if ENV.has_key?("LOGPATH") || ENV.has_key?("LOG_PATH")
+    log_file = ENV.has_key?("LOGPATH") ? ENV["LOGPATH"] : ENV["LOG_PATH"]
+  else
+    log_file = ""
+  end
+  
+  if log_file.empty?
+    backend = Log::IOBackend.new(formatter: log_formatter)
+  else
+    log_io = File.open(log_file, "a")
+    backend = Log::IOBackend.new(io: log_io, formatter: log_formatter)
+  end
+  backend
+end
 
 def loglevel
   levelstr = "" # default to unset
