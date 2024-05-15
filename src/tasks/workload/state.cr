@@ -7,7 +7,7 @@ require "../utils/utils.cr"
 require "kubectl_client"
 
 desc "The CNF test suite checks if state is stored in a custom resource definition or a separate database (e.g. etcd) rather than requiring local storage.  It also checks to see if state is resilient to node failure"
-task "state", ["volume_hostpath_not_found", "no_local_volume_configuration", "elastic_volumes", "database_persistence", "node_drain"] do |_, args|
+task "state", ["no_local_volume_configuration", "elastic_volumes", "database_persistence", "node_drain"] do |_, args|
   stdout_score("state")
   case "#{ARGV.join(" ")}" 
   when /state/
@@ -469,40 +469,6 @@ task "database_persistence" do |t, args|
   # TODO Match and check if the provisioning driver used is of an elastic volume type.
   # TODO If using static provisioning, find the and inspect the associated Persistent Volume and determine the provisioning driver being used -> 
   # TODO Match and check if the provisioning driver used is of an elastic volume type.
-end
-
-desc "Does the CNF use a non-cloud native data store: hostPath volume"
-task "volume_hostpath_not_found" do |t, args|
-  CNFManager::Task.task_runner(args, task: t) do |args, config|
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
-      hostPath_found = nil 
-      begin
-        # TODO check to see if volume is actually mounted.  Check to see if mount (without volume) has host path as well
-        volumes = resource.dig?("spec", "template", "spec", "volumes")
-        if volumes
-          hostPath_not_found = volumes.as_a.none? do |volume| 
-            if volume.as_h["hostPath"]?
-                true
-            end
-          end
-        else
-          hostPath_not_found = true
-        end
-      rescue ex
-        VERBOSE_LOGGING.error ex.message if check_verbose(args)
-        puts "Rescued: On resource #{resource["metadata"]["name"]?} of kind #{resource["kind"]}, volumes not found.".colorize(:yellow)
-        hostPath_not_found = true
-      end
-      hostPath_not_found 
-    end
-
-    if task_response.any?(false)
-      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "hostPath volumes found (ভ_ভ) ރ")
-    else
-      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "hostPath volumes not found 🖥️")
-    end
-  end
 end
 
 desc "Does the CNF use a non-cloud native data store: local volumes on the node?"
