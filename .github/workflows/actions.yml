@@ -253,10 +253,7 @@ jobs:
         kind --version
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
-        #kubectl get nodes 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-
+        kubectl get nodes 
 
     - name: Cache crystal shards
       uses: actions/cache@v3
@@ -282,7 +279,7 @@ jobs:
         echo "Current path: $(echo pwd)"
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
-        until [[ $(kubectl get pods -l app=kindnet --namespace=kube-system -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
+        until [[ $(kubectl get pods -l app=kindnet --namespace=kube-system -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True True True" ]]; do
             echo "Waiting for kindnet"
             sleep 1
         done
