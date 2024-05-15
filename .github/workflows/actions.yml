@@ -253,7 +253,10 @@ jobs:
         kind --version
         kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
-        kubectl get nodes 
+        #kubectl get nodes 
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+
 
     - name: Cache crystal shards
       uses: actions/cache@v3
