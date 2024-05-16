@@ -125,7 +125,7 @@ describe "Observability" do
     result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
     result = ShellCmd.run_testsuite("install_fluentdbitnami")
     result = ShellCmd.run_testsuite("routed_logs")
-    (/(PASSED).*(Your cnf's logs are being captured)/ =~ result[:output]).should_not be_nil
+    (/(PASSED).*(Your CNF's logs are being captured)/ =~ result[:output]).should_not be_nil
   ensure
     result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
     result = ShellCmd.run_testsuite("uninstall_fluentdbitnami")
@@ -134,26 +134,26 @@ describe "Observability" do
 
   it "'routed_logs' should pass if cnfs logs are captured by fluentbit", tags: ["observability"] do
     result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-fluentbit")
-    FluentBit.install
+    result = ShellCmd.run_testsuite("install_fluentbit")
     result = ShellCmd.run_testsuite("routed_logs")
-    (/(PASSED).*(Your cnf's logs are being captured)/ =~ result[:output]).should_not be_nil
+    (/(PASSED).*(Your CNF's logs are being captured)/ =~ result[:output]).should_not be_nil
   ensure
     result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-fluentbit")
-    FluentBit.uninstall
+    result = ShellCmd.run_testsuite("uninstall_fluentbit")
     result[:status].success?.should be_true
   end
 
   it "'routed_logs' should fail if cnfs logs are not captured", tags: ["observability"] do
   
     result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
-    Helm.helm_repo_add("bitnami","oci://registry-1.docker.io/bitnamicharts")
+    Helm.helm_repo_add("bitnami","https://charts.bitnami.com/bitnami")
     #todo  #helm install --values ./override.yml fluentd ./fluentd
     Helm.install("--values ./spec/fixtures/fluentd-values-bad.yml -n #{TESTSUITE_NAMESPACE} fluentd bitnami/fluentd")
-    Log.info { "Installing FluentD daemonset " }
+    Log.info { "Installing FluentD daemonset" }
     KubectlClient::Get.resource_wait_for_install("Daemonset", "fluentd", namespace: TESTSUITE_NAMESPACE)
 
     result = ShellCmd.run_testsuite("routed_logs")
-    (/(FAILED).*(Your cnf's logs are not being captured)/ =~ result[:output]).should_not be_nil
+    (/(FAILED).*(Your CNF's logs are not being captured)/ =~ result[:output]).should_not be_nil
   ensure
     result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
     result = ShellCmd.run_testsuite("uninstall_fluentd")

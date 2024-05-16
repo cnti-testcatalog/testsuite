@@ -39,6 +39,7 @@ EmbeddedFileManager.constraint_template
 EmbeddedFileManager.disable_cni
 EmbeddedFileManager.fluentd_values
 EmbeddedFileManager.fluentbit_values
+EmbeddedFileManager.fluentd_bitnami_values
 EmbeddedFileManager.ueransim_helmconfig
 
 EXCLUDE_NAMESPACES = [
