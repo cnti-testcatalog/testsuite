@@ -608,18 +608,11 @@ end
 
 desc "CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements."
 task "cni_compatible" do |t, args|
-  Log.info { "Task entered" }
-  puts "Please work"
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    Log.info { "config: #{config}, args: #{args}" }
-    Log.info { "Before docker_version" }
     docker_version = DockerClient.version_info()
-    Log.info { "docker_version happend" }
     if docker_version.installed?
-      Log.info { "docker_version installed" }
       ensure_kubeconfig!
       kubeconfig_orig = ENV["KUBECONFIG"]
-      Log.info { "kubeconfig ensured" }
       begin
         if args.named["offline"]? && args.named["offline"]? != "false"
              offline = true
@@ -649,7 +642,6 @@ task "cni_compatible" do |t, args|
         ENV["KUBECONFIG"]="#{kubeconfig_orig}"
       end
     else
-      Log.info { "docker not installed" }
       CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Docker not installed")
     end
   end
