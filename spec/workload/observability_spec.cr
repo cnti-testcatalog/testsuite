@@ -1,7 +1,7 @@
 require "../spec_helper"
 require "colorize"
 require "../../src/tasks/utils/utils.cr"
-require "../../src/tasks/utils/fluentbit.cr"
+require "../../src/tasks/utils/fluent_management.cr"
 require "../../src/tasks/jaeger_setup.cr"
 
 describe "Observability" do
