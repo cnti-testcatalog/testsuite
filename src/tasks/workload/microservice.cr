@@ -312,7 +312,7 @@ task "single_process_type" do |t, args|
       case kind 
       when  "deployment","statefulset","pod","replicaset", "daemonset"
         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
-        pods = KubectlClient::Get.pods_by_resource(resource_yaml)
+        pods = KubectlClient::Get.pods_by_resource(resource_yaml, resource[:namespace])
         containers = KubectlClient::Get.resource_containers(kind, resource[:name], resource[:namespace])
         pods.map do |pod|
           pod_name = pod.dig("metadata", "name")
