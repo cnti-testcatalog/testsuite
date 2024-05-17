@@ -597,7 +597,7 @@ def setup_cilium_cluster(cluster_name : String, offline : Bool) : KindManager::C
   else
     Helm.helm_repo_add("cilium","https://helm.cilium.io/")
     chart = "cilium/cilium"
-    chart_opts.push("--version 1.10.5")
+    chart_opts.push("--version 1.15.4")
     Helm.install("#{cluster_name}-plugin #{chart} #{chart_opts.join(" ")} --namespace kube-system --kubeconfig #{cluster.kubeconfig}")
   end
 
@@ -608,11 +608,18 @@ end
 
 desc "CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements."
 task "cni_compatible" do |t, args|
+  Log.info { "Task entered" }
+  puts "Please work"
   CNFManager::Task.task_runner(args, task: t) do |args, config|
+    Log.info { "config: #{config}, args: #{args}" }
+    Log.info { "Before docker_version" }
     docker_version = DockerClient.version_info()
+    Log.info { "docker_version happend" }
     if docker_version.installed?
+      Log.info { "docker_version installed" }
       ensure_kubeconfig!
       kubeconfig_orig = ENV["KUBECONFIG"]
+      Log.info { "kubeconfig ensured" }
       begin
         if args.named["offline"]? && args.named["offline"]? != "false"
              offline = true
@@ -633,7 +640,7 @@ task "cni_compatible" do |t, args|
         if calico_cnf_passed && cilium_cnf_passed
           CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "CNF compatible with both Calico and Cilium")
         else
-          CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "CNF not compatible with either Calico or Cillium")
+          CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "CNF not compatible with either Calico or Cilium")
         end
       ensure
         kind_manager = KindManager.new
@@ -642,6 +649,7 @@ task "cni_compatible" do |t, args|
         ENV["KUBECONFIG"]="#{kubeconfig_orig}"
       end
     else
+      Log.info { "docker not installed" }
       CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Docker not installed")
     end
   end
