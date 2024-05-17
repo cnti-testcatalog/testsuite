@@ -353,13 +353,13 @@ describe CnfTestSuite do
 
   it "'default_namespace' should fail if a cnf creates resources in the default namespace", tags: ["default_namespace"] do
     begin
-      result = ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample_coredns")
+      result = ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample_coredns_default_namespace")
       result[:status].success?.should be_true
       result = ShellCmd.run_testsuite("default_namespace verbose")
       result[:status].success?.should be_true
       (/(FAILED).*(Resources are created in the default namespace)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_coredns")
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_coredns_default_namespace")
       KubectlClient::Utils.wait_for_terminations()
     end
   end

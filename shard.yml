@@ -51,19 +51,19 @@ dependencies:
     github: cnf-testsuite/kubectl_client
     version: ~> 1.0.6
   cluster_tools:
-    github: cnf-testsuite/cluster_tools
+    github: martin-mat/cluster_tools
     version: ~> 1.0.0
   kernel_introspection:
     github: cnf-testsuite/kernel_introspection
     version: ~> 0.1.0
   k8s_kernel_introspection:
-    github: cnf-testsuite/k8s_kernel_introspection
+    github: martin-mat/k8s_kernel_introspection
     version: ~> 1.0.1
   helm:
     github: cnf-testsuite/helm
     version: ~> 1.0.1
   k8s_netstat:
-    github: cnf-testsuite/k8s_netstat
+    github: martin-mat/k8s_netstat
     version: ~> 1.0.0
   release_manager:
     github: cnf-testsuite/release_manager
