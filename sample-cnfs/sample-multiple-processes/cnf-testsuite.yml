@@ -4,4 +4,5 @@ release_name: multi-proc
 helm_repository:
   name:
   repo_url:
+helm_install_namespace: cnfspace
 allowlist_helm_chart_container_names: [node-cache, nginx, coredns, calico-node, kube-proxy, nginx-proxy]
