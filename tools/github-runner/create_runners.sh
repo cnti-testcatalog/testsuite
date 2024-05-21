@@ -9,7 +9,7 @@ fi
 
 
 RUNNER_COUNT=0
-RUNNER_IMAGE="conformance/github-runner:v2.313.0" # don't forget the v
+RUNNER_IMAGE="conformance/github-runner:v2.316.1" # don't forget the v
 docker pull $RUNNER_IMAGE
 RUNNERS_PER_NODE=20
     until [ $RUNNERS_PER_NODE -eq 0 ]; do
