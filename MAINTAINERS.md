@@ -10,13 +10,13 @@
 | Lucina Stricko | [lixuna](https://github.com/lixuna) | [Vulk Coop](vulk.coop) |
 | Taylor Carpenter | [taylor](https://github.com/taylor) | [Vulk Coop](vulk.coop) |
 | W. Watson | [wavell](https://github.com/wavell) | [Vulk Coop](vulk.coop) |
+| Martin Matyáš | [martin-mat](https://github.com/martin-mat) | [Tietoevry](https://www.tietoevry.com/) |
 
 ## Contributor
 | Name | GitHub ID | Affiliation |
 | --------------- | --------- | ----------- |
 | Michael S. Pedersen | [michaelspedersen](https://github.com/michaelspedersen) | [Tietoevry](https://www.tietoevry.com/) / [Intel](https://intel.com/) |
 | Udit Gaurav    | [uditgaurav](https://github.com/uditgaurav) | [LitmusChaos](https://litmuschaos.io/) |
-| Martin Matyáš | [martin-mat](https://github.com/martin-mat) | [Tietoevry](https://www.tietoevry.com/) |
 | Konstantin Yarovoy | [kosstennbl](https://github.com/kosstennbl) | [Tietoevry](https://www.tietoevry.com/) |
 | Oliver Horečný | [horecoli](https://github.com/horecoli) | [Tietoevry](https://www.tietoevry.com/) |
 | Slávo Vaľko | [svteb](https://github.com/svteb) | [Tietoevry](https://www.tietoevry.com/) |
