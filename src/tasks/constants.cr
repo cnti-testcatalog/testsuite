@@ -9,6 +9,7 @@ PASSED = "passed"
 FAILED = "failed"
 SKIPPED = "skipped"
 NA = "na"
+ERROR = "error"
 # todo move to helm module
 # CHART_YAML = "Chart.yaml"
 DEFAULT_POINTSFILENAME = "points_v1.yml"
