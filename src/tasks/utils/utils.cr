@@ -330,6 +330,8 @@ def upsert_decorated_task(task, status : CNFManager::ResultStatus, message, star
     upsert_skipped_task(task, "⏭️  #{cat_emoji}SKIPPED: [#{task}] #{message} #{tc_emoji}", start_time)
   when CNFManager::ResultStatus::NA
     upsert_na_task(task, "⏭️  #{cat_emoji}N/A: [#{task}] #{message} #{tc_emoji}", start_time)
+  when CNFManager::ResultStatus::Error
+    upsert_error_task(task, "💥  #{cat_emoji}ERROR: [#{task}] #{message}", start_time)
   end
 end
 
@@ -356,6 +358,12 @@ def upsert_na_task(task, message, start_time)
   stdout_warning message
   message
 end
+
+def upsert_error_task(task, message, start_time)
+  CNFManager::Points.upsert_task(task, ERROR, CNFManager::Points.task_points(task, CNFManager::ResultStatus::Error), start_time)
+   stdout_error message
+   message
+ end
 
 def upsert_dynamic_task(task, status : CNFManager::ResultStatus, message, start_time)
   CNFManager::Points.upsert_task(task, status.to_s.downcase, CNFManager::Points.task_points(task, status), start_time)
@@ -398,6 +406,10 @@ end
 
 def stdout_failure(msg)
   puts msg.colorize(:red)
+end
+
+def stdout_error(msg)
+  puts msg.colorize(Colorize::Color256.new(208))
 end
 
 def stdout_score(test_name)

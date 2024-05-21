@@ -15,6 +15,7 @@ module CNFManager
     Neutral
     Pass5
     Pass3
+    Error
 
     def to_basic()
       case self
@@ -159,6 +160,8 @@ module CNFManager
         #   points =points_yml.find {|x| x["name"] == "default_scoring"}
         #   resp = points[field_name].as_i if points
         # end
+      when CNFManager::ResultStatus::Error
+        resp = 0
       else
         resp = dynamic_task_points(task, status.to_s.downcase)
       end
