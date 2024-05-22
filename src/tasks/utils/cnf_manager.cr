@@ -775,6 +775,9 @@ module CNFManager
 
   #sample_setup({config_file: cnf_path, wait_count: wait_count})
   def self.sample_setup(cli_args)
+
+    # PREPARATION FOR INSTALL
+
     #TODO accept offline mode
     Log.info { "sample_setup cli_args: #{cli_args}" }
     config_file = cli_args[:config_file]
@@ -870,188 +873,126 @@ module CNFManager
     capture = ORANMonitor.start_e2_capture?(config.cnf_config)
 
     # todo separate out install methods into a module/function that accepts a block
-    liveness_time = 0
     Log.for("sample_setup:install_method").info { "#{install_method[0]}" }
     Log.for("sample_setup:install_method").info { "#{install_method[1]}" }
-    elapsed_time = Time.measure do
-      case install_method[0]
-      when Helm::InstallMethod::ManifestDirectory
-        # todo airgap_manifest_directory << prepare a manifest directory for deployment into an airgapped environment, put in airgap module
-        if input_file && !input_file.empty?
-          yaml_template_files = Find.find("#{destination_cnf_dir}/#{manifest_directory}", 
-                                               "*.yaml*", "100")
-          yml_template_files = Find.find("#{destination_cnf_dir}/#{manifest_directory}", 
-                                               "*.yml*", "100")
-          template_files = yaml_template_files + yml_template_files
-          Log.info { "(before kubectl apply) calling image_pull_policy on #{template_files}" }
-          template_files.map{|x| AirGap.image_pull_policy(x)}
-        end
-        Log.for("verbose").info { "deploying by manifest file" } if verbose
-        file_list = Helm::Manifest.manifest_file_list(install_method[1], silent: false)
-        yml = Helm::Manifest.manifest_ymls_from_file_list(file_list)
-        if input_file && !input_file.empty?
-          image_pull(yml, "offline=true")
-        else
-          image_pull(yml, "offline=false")
-        end
-        KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
-      when Helm::InstallMethod::HelmChart
-        if !helm_install_namespace.empty?
-          # default_namespace = config.cnf_config[:helm_install_namespace]
-          helm_install_namespace = config.cnf_config[:helm_install_namespace]
-        else
-          helm_install_namespace = default_namespace
-        end
-        if input_file && !input_file.empty?
-          tar_info = AirGap.tar_info_by_config_src(config.cnf_config[:helm_chart])
-          # prepare a helm_chart tar file for deployment into an airgapped environment, put in airgap module
-          TarClient.modify_tar!(tar_info[:tar_name]) do |directory| 
-            template_files = Find.find(directory, "*.yaml*", "100")
-            template_files.map{|x| AirGap.image_pull_policy(x)}
-          end
-          # if in airgapped mode, set helm_chart in config to be the tarball path
-          helm_chart = tar_info[:tar_name]
-        else
-          helm_chart = config.cnf_config[:helm_chart]
-        end
-        if !helm_repo_name.empty? || !helm_repo_url.empty?
-          Helm.helm_repo_add(helm_repo_name, helm_repo_url)
-        end
-        Log.for("verbose").info { "deploying with chart repository" } if verbose
-        # Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml", values: helm_values)
-        Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml", namespace: helm_install_namespace, values: helm_values)
-        yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name: "cnfs/temp_template.yml")
 
-        if input_file && !input_file.empty?
-          image_pull(yml, "offline=true")
-        else
-          image_pull(yml, "offline=false")
-        end
- 
-        begin
-          helm_install = Helm.install(release_name, helm_chart, helm_namespace_option, helm_values)
-          # helm_install = Helm.install("#{release_name} #{helm_chart} #{helm_namespace_option}")
-        rescue e : Helm::InstallationFailed
-          stdout_failure "Helm installation failed"
-          stdout_failure "\t#{e.message}"
-          helm_error = true
-        rescue e : Helm::CannotReuseReleaseNameError
-          stdout_warning "Release name #{release_name} has already been setup."
-          # Mark that install is not fresh
-          fresh_install = false
-        end
-        export_published_chart(config, cli_args)
-      when Helm::InstallMethod::HelmDirectory
-        if !helm_install_namespace.empty?
-          # default_namespace = config.cnf_config[:helm_install_namespace]
-          helm_install_namespace = config.cnf_config[:helm_install_namespace]
-        else
-          helm_install_namespace = default_namespace
-        end
-        Log.for("verbose").info { "deploying with helm directory" } if verbose
-        # prepare a helm directory for deployment into an airgapped environment, put in airgap module
-        if input_file && !input_file.empty?
-          template_files = Dir.glob(["#{destination_cnf_dir}/#{helm_directory}/*.yaml*"])
-          template_files.map{|x| AirGap.image_pull_policy(x)}
-        end
-        #TODO Add helm options into cnf-testsuite yml
-        #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
-        # Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml") 
-        Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml", namespace: helm_install_namespace, values: helm_values)
-        yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name: "cnfs/temp_template.yml")
-        
-        if input_file && !input_file.empty?
-          image_pull(yml, "offline=true")
-        else
-          image_pull(yml, "offline=false")
-        end
-
-        begin
-          # helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} #{helm_namespace_option}")
-          helm_install = Helm.install(release_name, "#{install_method[1]}", helm_namespace_option, helm_values)
-        rescue e : Helm::InstallationFailed
-          stdout_failure "Helm installation failed"
-          stdout_failure "\t#{e.message}"
-          helm_error = true
-        rescue e : Helm::CannotReuseReleaseNameError
-          stdout_warning "Release name #{release_name} has already been setup."
-          # Mark that install is not fresh
-          fresh_install = false
-        end
+    # CNF INSTALLATION
+    
+    time_before_install = Time.utc
+    case install_method[0]
+    when Helm::InstallMethod::ManifestDirectory
+      # todo airgap_manifest_directory << prepare a manifest directory for deployment into an airgapped environment, put in airgap module
+      if input_file && !input_file.empty?
+        yaml_template_files = Find.find("#{destination_cnf_dir}/#{manifest_directory}", 
+                                             "*.yaml*", "100")
+        yml_template_files = Find.find("#{destination_cnf_dir}/#{manifest_directory}", 
+                                             "*.yml*", "100")
+        template_files = yaml_template_files + yml_template_files
+        Log.info { "(before kubectl apply) calling image_pull_policy on #{template_files}" }
+        template_files.map{|x| AirGap.image_pull_policy(x)}
+      end
+      Log.for("verbose").info { "deploying by manifest file" } if verbose
+      file_list = Helm::Manifest.manifest_file_list(install_method[1], silent: false)
+      yml = Helm::Manifest.manifest_ymls_from_file_list(file_list)
+      if input_file && !input_file.empty?
+        image_pull(yml, "offline=true")
       else
-        raise "Deployment method not found"
+        image_pull(yml, "offline=false")
       end
-
-      resource_ymls = cnf_workload_resources(nil, config) do |resource|
-        resource
+      KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
+    when Helm::InstallMethod::HelmChart
+      if !helm_install_namespace.empty?
+        # default_namespace = config.cnf_config[:helm_install_namespace]
+        helm_install_namespace = config.cnf_config[:helm_install_namespace]
+      else
+        helm_install_namespace = default_namespace
       end
-
-      resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace)
-      #TODO move to kubectlclient and make resource_install_and_wait_for_all function
-
-      #
-      # get liveness probe initialDelaySeconds and FailureThreshold
-      # if   ((periodSeconds * failureThreshhold) + initialDelaySeconds) / defaultFailureThreshold) > startuptimelimit then fail; else pass
-      # get largest startuptime of all resoures, then save into config map
-      resource_ymls.map do |resource|
-        kind = resource["kind"].as_s.downcase
-        case kind 
-        when  "pod"
-          Log.info { "resource: #{resource}" }
-          containers = resource.dig("spec", "containers")
-        when  "deployment","statefulset","replicaset","daemonset"
-          Log.info { "resource: #{resource}" }
-          containers = resource.dig("spec", "template", "spec", "containers")
+      if input_file && !input_file.empty?
+        tar_info = AirGap.tar_info_by_config_src(config.cnf_config[:helm_chart])
+        # prepare a helm_chart tar file for deployment into an airgapped environment, put in airgap module
+        TarClient.modify_tar!(tar_info[:tar_name]) do |directory| 
+          template_files = Find.find(directory, "*.yaml*", "100")
+          template_files.map{|x| AirGap.image_pull_policy(x)}
         end
-        containers && containers.as_a.map do |container|
-          initialDelaySeconds = container.dig?("livenessProbe", "initialDelaySeconds")
-          failureThreshhold = container.dig?("livenessProbe", "failureThreshhold")
-          periodSeconds = container.dig?("livenessProbe", "periodSeconds")
-          total_period_failure = 0 
-          total_extended_period = 0
-          adjusted_with_default = 0
-          defaultFailureThreshold = 3
-          defaultPeriodSeconds = 10
-
-          if failureThreshhold
-            ft = failureThreshhold.as_i
-          else
-            ft = defaultFailureThreshold
-          end
-
-          if periodSeconds
-            ps = periodSeconds.as_i
-          else
-            ps = defaultPeriodSeconds
-          end
-
-          total_period_failure = ps * ft
-
-          if initialDelaySeconds
-            total_extended_period = initialDelaySeconds.as_i + total_period_failure
-          else
-            total_extended_period = total_period_failure
-          end
-
-          adjusted_with_default = (total_extended_period / defaultFailureThreshold).round.to_i
-
-          Log.info { "total_period_failure: #{total_period_failure}" }
-          Log.info { "total_extended_period: #{total_extended_period}" }
-          Log.info { "liveness_time: #{liveness_time}" }
-          Log.info { "adjusted_with_default: #{adjusted_with_default}" }
-          if liveness_time < adjusted_with_default
-            liveness_time = adjusted_with_default
-          end
-        end
+        # if in airgapped mode, set helm_chart in config to be the tarball path
+        helm_chart = tar_info[:tar_name]
+      else
+        helm_chart = config.cnf_config[:helm_chart]
+      end
+      if !helm_repo_name.empty? || !helm_repo_url.empty?
+        Helm.helm_repo_add(helm_repo_name, helm_repo_url)
+      end
+      Log.for("verbose").info { "deploying with chart repository" } if verbose
+      # Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml", values: helm_values)
+      Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml", namespace: helm_install_namespace, values: helm_values)
+      yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name: "cnfs/temp_template.yml")
+      if input_file && !input_file.empty?
+        image_pull(yml, "offline=true")
+      else
+        image_pull(yml, "offline=false")
       end
 
-      resource_names.each do | resource |
-        case resource[:kind].downcase
-        when "replicaset", "deployment", "statefulset", "pod", "daemonset"
-          KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], wait_count: wait_count, namespace: resource[:namespace])
-        end
+      begin
+        helm_install = Helm.install(release_name, helm_chart, helm_namespace_option, helm_values)
+        # helm_install = Helm.install("#{release_name} #{helm_chart} #{helm_namespace_option}")
+      rescue e : Helm::InstallationFailed
+        stdout_failure "Helm installation failed"
+        stdout_failure "\t#{e.message}"
+        helm_error = true
+      rescue e : Helm::CannotReuseReleaseNameError
+        stdout_warning "Release name #{release_name} has already been setup."
+        # Mark that install is not fresh
+        fresh_install = false
       end
+      export_published_chart(config, cli_args)
+    when Helm::InstallMethod::HelmDirectory
+      if !helm_install_namespace.empty?
+        # default_namespace = config.cnf_config[:helm_install_namespace]
+        helm_install_namespace = config.cnf_config[:helm_install_namespace]
+      else
+        helm_install_namespace = default_namespace
+      end
+      Log.for("verbose").info { "deploying with helm directory" } if verbose
+      # prepare a helm directory for deployment into an airgapped environment, put in airgap module
+      if input_file && !input_file.empty?
+        template_files = Dir.glob(["#{destination_cnf_dir}/#{helm_directory}/*.yaml*"])
+        template_files.map{|x| AirGap.image_pull_policy(x)}
+      end
+      #TODO Add helm options into cnf-testsuite yml
+      #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
+      # Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml") 
+      Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml", namespace: helm_install_namespace, values: helm_values)
+      yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name: "cnfs/temp_template.yml")
+      
+      if input_file && !input_file.empty?
+        image_pull(yml, "offline=true")
+      else
+        image_pull(yml, "offline=false")
+      end
+      begin
+        # helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} #{helm_namespace_option}")
+        helm_install = Helm.install(release_name, "#{install_method[1]}", helm_namespace_option, helm_values)
+      rescue e : Helm::InstallationFailed
+        stdout_failure "Helm installation failed"
+        stdout_failure "\t#{e.message}"
+        helm_error = true
+      rescue e : Helm::CannotReuseReleaseNameError
+        stdout_warning "Release name #{release_name} has already been setup."
+        # Mark that install is not fresh
+        fresh_install = false
+      end
+    else
+      raise "Deployment method not found"
     end
+    resource_ymls = cnf_workload_resources(nil, config) do |resource|
+      resource
+    end
+    resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace)
+    liveness_time = get_largest_liveness_time(resource_ymls)
+    wait_for_all_resources(resource_names, wait_count)
+    elapsed_time = Time.utc - time_before_install
+
+    # POST INSTALL
 
     if match[:found]
       sleep 120
@@ -1085,33 +1026,7 @@ module CNFManager
 
     # Not required to write elapsed time configmap if the cnf already exists due to a previous Helm install
     return true if fresh_install == false
-
-    # Immutable config maps are only supported in Kubernetes 1.19+
-    immutable_configmap = true
-    if version_less_than(KubectlClient.server_version, "1.19.0")
-      immutable_configmap = false
-    end
-
-    #TODO if helm_install then set helm_deploy = true in template
-    Log.info { "save config" }
-    elapsed_time_template = ElapsedTimeConfigMapTemplate.new(
-      "cnf-testsuite-#{release_name}-startup-information",
-      helm_used,
-      # "#{elapsed_time.seconds}",
-      "#{liveness_time}",
-      immutable_configmap,
-      tracing_used,
-      e2_found
-    ).to_s
-    #TODO find a way to kubectlapply directly without a map
-    Log.debug { "elapsed_time_template : #{elapsed_time_template}" }
-    configmap_path = "#{destination_cnf_dir}/config_maps/elapsed_time.yml"
-    File.write(configmap_path, "#{elapsed_time_template}")
-    # TODO if the config map exists on install, complain, delete then overwrite?
-    KubectlClient::Delete.file(configmap_path)
-    #TODO call kubectl apply on file
-    KubectlClient::Apply.file(configmap_path)
-    # TODO when uninstalling, remove config map
+    create_elapsed_time_configmap(release_name, helm_used, tracing_used, e2_found, liveness_time, destination_cnf_dir)
   ensure
     #todo uninstall/reinstall clustertools because of tshark bug
   end
@@ -1290,6 +1205,95 @@ module CNFManager
     "#{Helm.chart_name(helm_chart)}-*.tgz"
   end
 
+  def self.wait_for_all_resources(resource_names, wait_count)
+    #TODO move to kubectlclient and make resource_install_and_wait_for_all function
+    resource_names.each do | resource |
+      case resource[:kind].downcase
+      when "replicaset", "deployment", "statefulset", "pod", "daemonset"
+        KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], wait_count: wait_count, namespace: resource[:namespace])
+      end
+    end
+  end
+
+  def self.get_largest_liveness_time(resource_ymls)
+    # get liveness probe initialDelaySeconds and FailureThreshold
+    # if   ((periodSeconds * failureThreshhold) + initialDelaySeconds) / defaultFailureThreshold) > startuptimelimit then fail; else pass
+    # get largest startuptime of all resoures, then save into config map
+    liveness_time = 0
+    defaultFailureThreshold = 3
+    defaultPeriodSeconds = 10
+    resource_ymls.map do |resource|
+      kind = resource["kind"].as_s.downcase
+      case kind 
+      when  "pod"
+        Log.info { "resource: #{resource}" }
+        containers = resource.dig("spec", "containers")
+      when  "deployment","statefulset","replicaset","daemonset"
+        Log.info { "resource: #{resource}" }
+        containers = resource.dig("spec", "template", "spec", "containers")
+      end
+      containers && containers.as_a.map do |container|
+        initialDelaySeconds = container.dig?("livenessProbe", "initialDelaySeconds")
+        failureThreshhold = container.dig?("livenessProbe", "failureThreshhold")
+        periodSeconds = container.dig?("livenessProbe", "periodSeconds")
+
+        if failureThreshhold
+          ft = failureThreshhold.as_i
+        else
+          ft = defaultFailureThreshold
+        end
+        if periodSeconds
+          ps = periodSeconds.as_i
+        else
+          ps = defaultPeriodSeconds
+        end
+        total_period_failure = ps * ft
+        if initialDelaySeconds
+          total_extended_period = initialDelaySeconds.as_i + total_period_failure
+        else
+          total_extended_period = total_period_failure
+        end
+        adjusted_with_default = (total_extended_period / defaultFailureThreshold).round.to_i
+        Log.info { "total_period_failure: #{total_period_failure}" }
+        Log.info { "total_extended_period: #{total_extended_period}" }
+        Log.info { "liveness_time: #{liveness_time}" }
+        Log.info { "adjusted_with_default: #{adjusted_with_default}" }
+        if liveness_time < adjusted_with_default
+          liveness_time = adjusted_with_default
+        end
+      end
+    end
+    liveness_time
+  end
+
+  def self.create_elapsed_time_configmap(release_name, helm_used, tracing_used, e2_found, liveness_time, destination_cnf_dir)
+    # Immutable config maps are only supported in Kubernetes 1.19+
+    immutable_configmap = true
+    if version_less_than(KubectlClient.server_version, "1.19.0")
+      immutable_configmap = false
+    end
+
+    #TODO if helm_install then set helm_deploy = true in template
+    Log.info { "save config" }
+    elapsed_time_template = ElapsedTimeConfigMapTemplate.new(
+      "cnf-testsuite-#{release_name}-startup-information",
+      helm_used,
+      # "#{elapsed_time.seconds}",
+      "#{liveness_time}",
+      immutable_configmap,
+      tracing_used,
+      e2_found
+    ).to_s
+    #TODO find a way to kubectlapply directly without a map
+    Log.debug { "elapsed_time_template : #{elapsed_time_template}" }
+    configmap_path = "#{destination_cnf_dir}/config_maps/elapsed_time.yml"
+    File.write(configmap_path, "#{elapsed_time_template}")
+    # TODO if the config map exists on install, complain, delete then overwrite?
+    KubectlClient::Delete.file(configmap_path)
+    #TODO call kubectl apply on file
+    KubectlClient::Apply.file(configmap_path)
+    # TODO when uninstalling, remove config map
+  end
   class HelmDirectoryMissingError < Exception
     property helm_directory : String = ""
 
