@@ -422,7 +422,6 @@ def stdout_score(test_names : Array(String), full_name)
 #{pretty_test_name} results: #{total_passed} of #{max_passed} tests passed
 
 STRING
-
   update_yml("#{CNFManager::Points::Results.file}", "points", total)
   update_yml("#{CNFManager::Points::Results.file}", "maximum_points", max_points)
 
