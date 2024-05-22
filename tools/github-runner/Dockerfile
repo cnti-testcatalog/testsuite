@@ -20,6 +20,7 @@ RUN mkdir /crystal && \
 RUN apt update && \
     apt install -y --no-install-recommends \
     git \
+    libpcre3-dev \
     libssl-dev \
     libxml2-dev \
     libyaml-dev \
