@@ -44,4 +44,3 @@ task "cert", ["version", "cert_compatibility", "cert_state", "cert_security", "c
   end
   stdout_info "Results have been saved to #{CNFManager::Points::Results.file}".colorize(:green)
 end
-
