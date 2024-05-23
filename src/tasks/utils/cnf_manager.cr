@@ -728,15 +728,14 @@ module CNFManager
       tgz_name = tar_info[:tar_name]
     elsif output_file && !output_file.empty?
       config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), generate_tar_mode: true) 
-      tgz_name = "#{Helm.chart_name(helm_chart)}-*.tgz"
+      tgz_name = get_tgz_name(helm_chart)
     else
       config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
-      tgz_name = "#{Helm.chart_name(helm_chart)}-*.tgz"
+      tgz_name = get_tgz_name(helm_chart)
     end
     Log.info { "tgz_name: #{tgz_name}" }
 
     unless input_file && !input_file.empty?
-      FileUtils.rm_rf(tgz_name)
       helm_info = Helm.pull(helm_chart) 
       unless helm_info[:status].success?
         puts "Helm pull error".colorize(:red)
@@ -744,7 +743,7 @@ module CNFManager
       end
     end
 
-    TarClient.untar(tgz_name,  "#{destination_cnf_dir}/exported_chart")
+    TarClient.untar(tgz_name, "#{destination_cnf_dir}/exported_chart")
 
     Log.for("verbose").info { "mv #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart" } if verbose
     Log.for("verbose").debug {
@@ -1257,6 +1256,12 @@ module CNFManager
   def self.resources_includes?(resource_keys, kind, name, namespace)
     resource_key = "#{namespace},#{kind}/#{name}".downcase
     resource_keys.includes?(resource_key)
+  end
+
+  def self.get_tgz_name(helm_chart)
+    tar_files = Dir.glob("#{Helm.chart_name(helm_chart)}-*.tgz")
+    raise "No tar files found" if tar_files.empty?
+    tar_files.last
   end
 
   class HelmDirectoryMissingError < Exception
