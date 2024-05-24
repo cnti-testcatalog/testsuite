@@ -10,12 +10,11 @@ require "./utils/utils.cr"
 
 desc "Install CNF Test Suite Cluster Tools"
 task "install_cluster_tools" do |_, args|
-  Log.info { "install_cluster_tools" }
-
   begin
     ClusterTools.install
   rescue e : ClusterTools::NamespaceDoesNotExistException 
-    raise "#{e.message}. please run cnf-testsuite setup!"
+    Log.info { "#{e.message}" }
+    puts "Please run: ./cnf-testsuite setup"
   end
 end
 
@@ -23,7 +22,8 @@ desc "Uninstall CNF Test Suite Cluster Tools"
 task "uninstall_cluster_tools" do |_, args|
   begin
     ClusterTools.uninstall
-  rescue e : ClusterTools::NamespaceDoesNotExistException 
-    raise "#{e.message}. please run cnf-testsuite setup!"
+  rescue e : ClusterTools::NamespaceDoesNotExistException
+    Log.info { "#{e.message}" }
+    puts "Please run: ./cnf-testsuite setup"
   end
 end
