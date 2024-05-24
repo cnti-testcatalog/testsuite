@@ -21,6 +21,7 @@ SONOBUOY_OS = "linux"
 IGNORED_SECRET_TYPES = ["kubernetes.io/service-account-token", "kubernetes.io/dockercfg", "kubernetes.io/dockerconfigjson", "helm.sh/release.v1"]
 EMPTY_JSON = JSON.parse(%({}))
 EMPTY_JSON_ARRAY = JSON.parse(%([]))
+SPECIALIZED_INIT_SYSTEMS = ["tini", "dumb-init", "s6-svscan"]
 
 TESTSUITE_NAMESPACE = "cnf-testsuite"
 

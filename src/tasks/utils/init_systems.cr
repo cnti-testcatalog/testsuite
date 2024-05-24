@@ -18,18 +18,9 @@ module InitSystems
   end
   
   def self.is_specialized_init_system?(cmd : String) : Bool
-    # Tests for tini
-    # https://github.com/krallin/tini
-    return true if cmd.includes?("tini")
-  
-    # Tests for dumb-init
-    # https://github.com/Yelp/dumb-init
-    return true if cmd.includes?("dumb-init")
-  
-    # Tests for s6-overlay
-    # https://github.com/just-containers/s6-overlay
-    return true if cmd.includes?("s6-svscan")
-  
+    SPECIALIZED_INIT_SYSTEMS.each do |init_system|
+      return true if cmd.includes?(init_system)
+    end
     # No specialized init system found
     return false
   end
