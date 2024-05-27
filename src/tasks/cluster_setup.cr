@@ -14,7 +14,7 @@ task "install_cluster_tools" do |_, args|
     ClusterTools.install
   rescue e : ClusterTools::NamespaceDoesNotExistException 
     Log.info { "#{e.message}" }
-    puts "Please run: ./cnf-testsuite setup"
+    puts "Please run: cnf-testsuite setup"
   end
 end
 
@@ -24,6 +24,6 @@ task "uninstall_cluster_tools" do |_, args|
     ClusterTools.uninstall
   rescue e : ClusterTools::NamespaceDoesNotExistException
     Log.info { "#{e.message}" }
-    puts "Please run: ./cnf-testsuite setup"
+    puts "Please run: cnf-testsuite setup"
   end
 end
