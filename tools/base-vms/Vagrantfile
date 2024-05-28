@@ -1,0 +1,83 @@
+Vagrant.configure("2") do |config|
+  config.ssh.insert_key = false
+  config.vm.define "vm1" do |vm1|
+    vm1.vm.box = "ubuntu/mantic64"
+    vm1.vm.network :forwarded_port, guest: 22, host: 2001, id: "ssh"
+  end
+  config.vm.define "vm2" do |vm2|
+    vm2.vm.box = "ubuntu/mantic64"
+    vm2.vm.network :forwarded_port, guest: 22, host: 2002, id: "ssh"
+  end
+  config.vm.define "vm3" do |vm3|
+    vm3.vm.box = "ubuntu/mantic64"
+    vm3.vm.network :forwarded_port, guest: 22, host: 2003, id: "ssh"
+  end
+  config.vm.define "vm4" do |vm4|
+    vm4.vm.box = "ubuntu/mantic64"
+    vm4.vm.network :forwarded_port, guest: 22, host: 2004, id: "ssh"
+  end
+ config.vm.define "vm5" do |vm5|
+    vm5.vm.box = "ubuntu/mantic64"
+    vm5.vm.network :forwarded_port, guest: 22, host: 2005, id: "ssh"
+  end
+ config.vm.define "vm6" do |vm6|
+    vm6.vm.box = "ubuntu/mantic64"
+    vm6.vm.network :forwarded_port, guest: 22, host: 2006, id: "ssh"
+  end
+ config.vm.define "vm7" do |vm7|
+    vm7.vm.box = "ubuntu/mantic64"
+    vm7.vm.network :forwarded_port, guest: 22, host: 2007, id: "ssh"
+  end
+ config.vm.define "vm8" do |vm8|
+    vm8.vm.box = "ubuntu/mantic64"
+    vm8.vm.network :forwarded_port, guest: 22, host: 2008, id: "ssh"
+  end
+ config.vm.define "vm9" do |vm9|
+   vm9.vm.box = "ubuntu/mantic64"
+   vm9.vm.network :forwarded_port, guest: 22, host: 2009, id: "ssh"
+  end
+ config.vm.define "vm10" do |vm10|
+    vm10.vm.box = "ubuntu/mantic64"
+    vm10.vm.network :forwarded_port, guest: 22, host: 2010, id: "ssh"
+  end
+ config.vm.define "vm11" do |vm11|
+    vm11.vm.box = "ubuntu/mantic64"
+    vm11.vm.network :forwarded_port, guest: 22, host: 2011, id: "ssh"
+  end
+ config.vm.define "vm12" do |vm12|
+    vm12.vm.box = "ubuntu/mantic64"
+    vm12.vm.network :forwarded_port, guest: 22, host: 2012, id: "ssh"
+  end
+ config.vm.define "vm13" do |vm13|
+    vm13.vm.box = "ubuntu/mantic64"
+    vm13.vm.network :forwarded_port, guest: 22, host: 2013, id: "ssh"
+  end
+ config.vm.define "vm14" do |vm14|
+    vm14.vm.box = "ubuntu/mantic64"
+    vm14.vm.network :forwarded_port, guest: 22, host: 2014, id: "ssh"
+  end
+ config.vm.define "vm15" do |vm15|
+    vm15.vm.box = "ubuntu/mantic64"
+    vm15.vm.network :forwarded_port, guest: 22, host: 2015, id: "ssh"
+  end
+ config.vm.define "vm16" do |vm16|
+    vm16.vm.box = "ubuntu/mantic64"
+    vm16.vm.network :forwarded_port, guest: 22, host: 2016, id: "ssh"
+  end
+ config.vm.define "vm17" do |vm17|
+    vm17.vm.box = "ubuntu/mantic64"
+    vm17.vm.network :forwarded_port, guest: 22, host: 2017, id: "ssh"
+  end
+ config.vm.define "vm18" do |vm18|
+    vm18.vm.box = "ubuntu/mantic64"
+    vm18.vm.network :forwarded_port, guest: 22, host: 2018, id: "ssh"
+  end
+
+  config.vm.network "public_network", bridge: "pub1v142"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "25000"
+    vb.cpus = "4"
+  end
+end
+
