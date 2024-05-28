@@ -721,6 +721,23 @@ module CNFManager
 
     input_file = cli_args[:input_file]
     output_file = cli_args[:output_file]
+
+    # delete previous tgz files and pull the helm chart
+    unless input_file && !input_file.empty?
+      files_to_delete = Dir.glob("#{Helm.chart_name(helm_chart)}-*.tgz")
+      files_to_delete.each do |file|
+        FileUtils.rm(file)
+        puts "Deleted: #{file}"
+      end
+
+      helm_info = Helm.pull(helm_chart) 
+      unless helm_info[:status].success?
+        puts "Helm pull error".colorize(:red)
+        raise "Helm pull error"
+      end
+    end
+
+    # get the tgz file name
     if input_file && !input_file.empty?
       # todo add generate and set tar as well
       config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: true) 
@@ -734,14 +751,6 @@ module CNFManager
       tgz_name = get_tgz_name(helm_chart)
     end
     Log.info { "tgz_name: #{tgz_name}" }
-
-    unless input_file && !input_file.empty?
-      helm_info = Helm.pull(helm_chart) 
-      unless helm_info[:status].success?
-        puts "Helm pull error".colorize(:red)
-        raise "Helm pull error"
-      end
-    end
 
     TarClient.untar(tgz_name, "#{destination_cnf_dir}/exported_chart")
 
@@ -1259,9 +1268,15 @@ module CNFManager
   end
 
   def self.get_tgz_name(helm_chart)
-    tar_files = Dir.glob("#{Helm.chart_name(helm_chart)}-*.tgz")
-    raise "No tar files found" if tar_files.empty?
-    tar_files.last
+    tgz_files = Dir.glob("#{Helm.chart_name(helm_chart)}-*.tgz")
+  
+    # In case no tgz file is present (should only happen if there was a prior helm failure).
+    if tgz_files.empty?
+      Log.error { "No .tgz files found for #{Helm.chart_name(helm_chart)}" }
+      raise TarFileNotFoundError.new(Helm.chart_name(helm_chart))
+    end
+
+    tgz_files.first
   end
 
   class HelmDirectoryMissingError < Exception
@@ -1272,4 +1287,9 @@ module CNFManager
     end
   end
 
+  class TarFileNotFoundError < Exception
+    def initialize(chart_name)
+      super("No .tgz files found for chart #{chart_name}")
+    end
+  end
 end
