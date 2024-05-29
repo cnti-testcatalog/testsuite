@@ -119,19 +119,16 @@ jobs:
         chmod +x ./kind
         sudo mv ./kind /usr/local/bin/kind
         kind --version
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-
     - name: Create Kind Cluster 
       run: |
         cat /tmp/cluster.yml
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
         echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
-        kind --version
-        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
-        export KUBECONFIG=$(pwd)/$CLUSTER.conf
-        kubectl get nodes 
+        sudo kind --version
+        sudo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
+        sudo export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        sudo kubectl get nodes 
     - name: Cache crystal shards
       uses: actions/cache@v3
       env:
@@ -171,7 +168,7 @@ jobs:
         export PROTECTED_DOCKERHUB_EMAIL=${EMAIL_ARRAY[$RANDOMIZER]}
         export PROTECTED_IMAGE_REPO=${IMAGE_ARRAY[$RANDOMIZER]}
 
-        docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+        sudo docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
 
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
