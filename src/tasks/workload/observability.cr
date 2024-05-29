@@ -183,7 +183,7 @@ desc "Are the CNF's logs captured by a logging system"
 task "routed_logs", ["install_cluster_tools"] do |t, args|
   next if args.named["offline"]?
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
-    match = FluentManagement.find_active_match
+    match = FluentManager.find_active_match
     unless match
       next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Fluentd or FluentBit not configured")
     end
@@ -195,7 +195,7 @@ task "routed_logs", ["install_cluster_tools"] do |t, args|
   
       pods.each do |pod|
         pod_name = pod.dig("metadata", "name").as_s
-        unless FluentManagement.pod_tailed?(pod_name, match)
+        unless FluentManager.pod_tailed?(pod_name, match)
           Log.info { "Pod #{pod_name} logs are not being captured "}
           all_pods_logged = false
           break
