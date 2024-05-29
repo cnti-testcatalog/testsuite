@@ -5,30 +5,30 @@ require "totem"
 
 desc "Install FluentD"
 task "install_fluentd" do |_, args|
-  FluentManagement.install("fluentd")
+  FluentManager::FluentD.new.install
 end
 
 desc "Uninstall FluentD"
 task "uninstall_fluentd" do |_, args|
-  FluentManagement.uninstall("fluentd")
+  FluentManager::FluentD.new.uninstall
 end
 
 desc "Install FluentDBitnami"
 task "install_fluentdbitnami" do |_, args|
-  FluentManagement.install("fluentdbitnami")
+  FluentManager::FluentDBitnami.new.install
 end
 
 desc "Uninstall FluentDBitnami"
 task "uninstall_fluentdbitnami" do |_, args|
-  FluentManagement.uninstall("fluentdbitnami")
+  FluentManager::FluentDBitnami.new.uninstall
 end
 
 desc "Install FluentBit"
 task "install_fluentbit" do |_, args|
-  FluentManagement.install("fluent-bit")
+  FluentManager::FluentBit.new.install
 end
 
 desc "Uninstall FluentBit"
 task "uninstall_fluentbit" do |_, args|
-  FluentManagement.uninstall("fluent-bit")
+  FluentManager::FluentBit.new.uninstall
 end
