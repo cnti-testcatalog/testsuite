@@ -8,12 +8,3 @@ vm6 ansible_host=127.0.0.1 ansible_port=2006
 vm7 ansible_host=127.0.0.1 ansible_port=2007 
 vm8 ansible_host=127.0.0.1 ansible_port=2008
 vm9 ansible_host=127.0.0.1 ansible_port=2009 
-vm10 ansible_host=127.0.0.1 ansible_port=2010
-vm11 ansible_host=127.0.0.1 ansible_port=2011
-vm12 ansible_host=127.0.0.1 ansible_port=2012
-vm13 ansible_host=127.0.0.1 ansible_port=2013
-vm14 ansible_host=127.0.0.1 ansible_port=2014
-vm15 ansible_host=127.0.0.1 ansible_port=2015
-vm16 ansible_host=127.0.0.1 ansible_port=2016
-vm17 ansible_host=127.0.0.1 ansible_port=2017
-vm18 ansible_host=127.0.0.1 ansible_port=2018
