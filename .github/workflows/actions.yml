@@ -49,7 +49,7 @@ jobs:
   spec:
     name: Crystal Specs
     needs: [tests]
-    runs-on: [v1.0.0]
+    runs-on: [self-hosted]
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.tests.outputs.matrix)}}
