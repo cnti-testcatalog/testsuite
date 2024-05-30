@@ -127,8 +127,8 @@ jobs:
         echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
         sudo kind --version
         sudo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
-        sudo export KUBECONFIG=$(pwd)/$CLUSTER.conf
-        sudo kubectl get nodes 
+        export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        kubectl get nodes 
     - name: Cache crystal shards
       uses: actions/cache@v3
       env:
