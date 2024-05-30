@@ -2,38 +2,47 @@ Vagrant.configure("2") do |config|
   config.ssh.insert_key = false
   config.vm.define "vm1" do |vm1|
     vm1.vm.box = "ubuntu/mantic64"
+    vm1.vm.hostname = "runner1"
     vm1.vm.network :forwarded_port, guest: 22, host: 2001, id: "ssh"
   end
   config.vm.define "vm2" do |vm2|
     vm2.vm.box = "ubuntu/mantic64"
+    vm2.vm.hostname = "runner2"
     vm2.vm.network :forwarded_port, guest: 22, host: 2002, id: "ssh"
   end
   config.vm.define "vm3" do |vm3|
     vm3.vm.box = "ubuntu/mantic64"
+    vm3.vm.hostname = "runner3"
     vm3.vm.network :forwarded_port, guest: 22, host: 2003, id: "ssh"
   end
   config.vm.define "vm4" do |vm4|
     vm4.vm.box = "ubuntu/mantic64"
+    vm4.vm.hostname = "runner4"
     vm4.vm.network :forwarded_port, guest: 22, host: 2004, id: "ssh"
   end
  config.vm.define "vm5" do |vm5|
     vm5.vm.box = "ubuntu/mantic64"
+    vm5.vm.hostname = "runner5"
     vm5.vm.network :forwarded_port, guest: 22, host: 2005, id: "ssh"
   end
  config.vm.define "vm6" do |vm6|
     vm6.vm.box = "ubuntu/mantic64"
+    vm6.vm.hostname = "runner6"
     vm6.vm.network :forwarded_port, guest: 22, host: 2006, id: "ssh"
   end
  config.vm.define "vm7" do |vm7|
     vm7.vm.box = "ubuntu/mantic64"
+    vm7.vm.hostname = "runner7"
     vm7.vm.network :forwarded_port, guest: 22, host: 2007, id: "ssh"
   end
  config.vm.define "vm8" do |vm8|
     vm8.vm.box = "ubuntu/mantic64"
+    vm8.vm.hostname = "runner8"
     vm8.vm.network :forwarded_port, guest: 22, host: 2008, id: "ssh"
   end
  config.vm.define "vm9" do |vm9|
    vm9.vm.box = "ubuntu/mantic64"
+   vm9.vm.hostname = "runner9"
    vm9.vm.network :forwarded_port, guest: 22, host: 2009, id: "ssh"
   end
 
@@ -42,6 +51,7 @@ Vagrant.configure("2") do |config|
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "50000"
     vb.cpus = "8"
+    vb.customize ["modifyvm", :id, "--ioapic", "on"]
   end
 end
 

@@ -1,0 +1,14 @@
+---
+- name: Install GitHub Actions Runner
+  hosts: all
+  become: yes
+  vars:
+    - no_log: false
+    - runner_version: "2.316.1"
+    - runner_user: "vagrant"
+    - runner_state: "absent"
+    - github_account: "denverwillams"
+    - github_owner: "cnti-testcatalog"
+    - github_repo: "testsuite"
+  roles:
+    - role: monolithprojects.github_actions_runner
