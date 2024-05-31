@@ -132,9 +132,10 @@ module CNFManager
         end
         ret
       rescue ex
-          # platform tests don't have a cnf-config
+        # platform tests don't have a cnf-config
         # Set exception key/value in results
         # file to -1
+        test_start_time = Time.utc
         LOGGING.error ex.message
         ex.backtrace.each do |x|
           LOGGING.error x
@@ -146,6 +147,7 @@ module CNFManager
           exit 2
         else
           Log.info { "exception with skipped exit code" }
+          upsert_decorated_task(test_name, CNFManager::ResultStatus::Error, "Unexpected error occurred", test_start_time)
         end
       end
     end
