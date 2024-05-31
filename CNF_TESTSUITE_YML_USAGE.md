@@ -29,7 +29,7 @@ helm_repository: # CONFIGURATION OF HELM REPO - ONLY NEEDED WHEN USING helm_char
 #manifest_directory: coredns # PATH_TO_DIRECTORY_OF_CNFS_MANIFEST_FILES ; or
 release_name: coredns # DESIRED_HELM_RELEASE_NAME
 helm_values: --versions 16.2.0 --set persistence.enabled=false
-helm_install_namespace: cnfspace # Installs the CNF to it's own namespace and not in the default namespace
+helm_install_namespace: cnf-coredns # Installs the CNF to it's own namespace
 
 
 ```
@@ -103,13 +103,15 @@ Example Setting:
 
 #### helm_install_namespace
 
-This sets the namespace that helm will use to install the CNF to. This is to conform to the best practice of not installing your CNF to the `default` namespace on your cluster. You can learn more about this practice [here](./docs/TEST_DOCUMENTATION.md#default-namespaces). This is an optional setting but highly recommended as installing your CNF to use the `default` namespace will result with failed tests.
+This configuration option specifies the namespace that Helm will use to install the CNF. Following best practices, it is recommended not to install your CNF into the `default` namespace of your cluster. For more information on this best practice, see [here](./docs/LIST_OF_TESTS.md#default-namespaces).
 
-You can learn more about kubernetes namespaces [here](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/)
+This setting is OPTIONAL. If not specified, the CNF will be installed into the `cnf-default` namespace.
+
+For more details about Kubernetes namespaces, visit [here](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/)
 
 Example Setting:
 
-`helm_install_namespace: cnfspace`
+`helm_install_namespace: your_custom_namespace`
 
 
 #### manifest_directory

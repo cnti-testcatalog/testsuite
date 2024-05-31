@@ -23,6 +23,7 @@ EMPTY_JSON_ARRAY = JSON.parse(%([]))
 SPECIALIZED_INIT_SYSTEMS = ["tini", "dumb-init", "s6-svscan"]
 
 TESTSUITE_NAMESPACE = "cnf-testsuite"
+DEFAULT_CNF_NAMESPACE = "cnf-default"
 
 #Embedded global text variables
 EmbeddedFileManager.node_failure_values

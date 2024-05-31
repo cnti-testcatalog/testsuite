@@ -4,4 +4,3 @@ release_name: multi-proc
 helm_repository:
   name:
   repo_url:
-helm_install_namespace: cnfspace

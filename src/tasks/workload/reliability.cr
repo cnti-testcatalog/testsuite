@@ -90,7 +90,7 @@ task "pod_network_latency", ["install_litmus"] do |t, args|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       Log.info { "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}" }
-      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
 
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0 && resource["kind"] == "Deployment"
@@ -188,7 +188,7 @@ task "pod_network_corruption", ["install_litmus"] do |t, args|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       Log.info {"Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}"}
-      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0 && resource["kind"] == "Deployment"
         test_passed = true
@@ -241,7 +241,7 @@ task "pod_network_duplication", ["install_litmus"] do |t, args|
     #TODO tests should fail if cnf not installed
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
       Log.info{ "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]} Namespace: #{resource["namespace"]}"}
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0 && resource["kind"] == "Deployment"
@@ -296,7 +296,7 @@ task "disk_fill", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
@@ -354,7 +354,7 @@ task "pod_delete", ["install_litmus"] do |t, args|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     #todo clear all annotations
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
@@ -454,7 +454,7 @@ task "pod_memory_hog", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
@@ -512,7 +512,7 @@ task "pod_io_stress", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
@@ -577,7 +577,7 @@ task "pod_dns_error", ["install_litmus"] do |t, args|
     Log.info { "pod_dns_error runtimes: #{runtimes}" }
     if runtimes.find{|r| r.downcase.includes?("docker")}
       task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-        app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+        app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
         spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
         if spec_labels.as_h? && spec_labels.as_h.size > 0
           test_passed = true

@@ -1,5 +1,4 @@
 ---
 helm_directory: chart
-helm_install_namespace: cnfspace
 release_name: bad-liveness
 service_name: bad-liveness-coredns 

@@ -38,7 +38,7 @@ rolling_version_change_test_names.each do |tn|
       # note: all images are not on docker hub nor are they always on a docker hub compatible api
 
       task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-        namespace = resource["namespace"] || config.cnf_config[:helm_install_namespace]
+        namespace = resource["namespace"] || CNFManager.get_deployment_namespace(config)
         test_passed = true
         valid_cnf_testsuite_yml = true
         Log.for(t.name).debug { "container: #{container}" }
@@ -110,7 +110,7 @@ task "rollback" do |t, args|
     task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
         resource_kind = resource["kind"]
         resource_name = resource["name"]
-        namespace = resource["namespace"] || config.cnf_config[:helm_install_namespace]
+        namespace = resource["namespace"] || CNFManager.get_deployment_namespace(config)
         container_name = container.as_h["name"].as_s
         full_image_name_tag = container.as_h["image"].as_s.rpartition(":")
         image_name = full_image_name_tag[0]
