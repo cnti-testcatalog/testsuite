@@ -421,7 +421,7 @@ task "database_persistence" do |t, args|
     match = Mysql.match
     Log.info {"database_persistence mysql: #{match}"}
     if match && match[:found]
-      default_namespace = "default"
+      default_namespace = DEFAULT_CNF_NAMESPACE
       if !config.cnf_config[:helm_install_namespace].empty?
         default_namespace = config.cnf_config[:helm_install_namespace]
       end

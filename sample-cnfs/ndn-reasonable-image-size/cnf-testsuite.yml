@@ -1,6 +1,5 @@
 ---
 helm_chart: oci://docker.io/envoyproxy/gateway-helm --version v0.0.0-latest
-helm_install_namespace: "envoy-gateway-system"
 release_name: envoy 
 service_name: envoy
 allowlist_helm_chart_container_names: [nginx, envoy, calico-node, kube-proxy, nginx-proxy, node-cache]

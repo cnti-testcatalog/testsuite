@@ -679,7 +679,7 @@ task "service_discovery" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args,config|
     # Get all resources for the CNF
     resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
-    default_namespace = "default"
+    default_namespace = DEFAULT_CNF_NAMESPACE
     if !config.cnf_config[:helm_install_namespace].empty?
       default_namespace = config.cnf_config[:helm_install_namespace]
     end
