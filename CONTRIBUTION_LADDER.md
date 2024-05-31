@@ -44,7 +44,7 @@ How you can be more involved and participate in the community:
 
 ## Contributor
 
-[Contributors](MAINTAINERS.md#contributors) have the following capabilities:
+[Contributors](CONTRIBUTORS.md#contributors) have the following capabilities:
 
 * Have issues and pull requests assigned to you
 * Apply labels, milestones and projects
@@ -64,12 +64,12 @@ To become a contributor, the maintainers of the project would like to see you:
 
 Contributors and maintainers will do their best to watch for community members
 who make good contributors. But don’t be shy, if you feel that this is you,
-please reach out to one or more of the contributors or [maintainers](MAINTAINERS.md).
+please reach out to one or more of the [contributors](CONTRIBUTORS.md) or maintainers.
 
 
 ## Maintainer
 
-[Maintainers](MAINTAINERS.md#maintainers) are members with extra capabilities:
+[Maintainers](CONTRIBUTORS.md#maintainers) are members with extra capabilities:
 
 * Be a [Code Owner](.github/CODEOWNERS) and have reviews automatically requested
 * Review pull requests
@@ -97,7 +97,7 @@ the maintainers.
 
 ## Admin
 
-[Admins](MAINTAINERS.md#admin) are maintainers with extra responsibilities:
+[Admins](CONTRIBUTORS.md#admin) are maintainers with extra responsibilities:
 
 
 * Manage repositories
@@ -115,4 +115,4 @@ reach out to one or more of the admins.
 
 
 ## Emeritus Maintainers
-Former maintainers are recognized with an honorary Emeritus Maintainer status, and have their names permanently listed in the [maintainer file](MAINTAINERS.md) as a form of gratitude for their contributions.
+Former maintainers are recognized with an honorary Emeritus Maintainer status, and have their names permanently listed in the [contributors file](CONTRIBUTORS.md) as a form of gratitude for their contributions.
