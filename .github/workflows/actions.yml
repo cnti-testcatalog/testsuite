@@ -202,6 +202,7 @@ jobs:
         kind delete cluster --name $CLUSTER
         docker container prune -f || true
         docker volume prune -f || true
+      continue-on-error: true
         
   chaos:
     name: Chaos & Oran Tests
@@ -401,6 +402,7 @@ jobs:
         docker container prune -f || true
         docker volume prune -f || true
         docker network prune -f || true
+      continue-on-error: true
 
   test_binary_microservice:
     name: Test Binary Without Source(microservice)
@@ -475,6 +477,7 @@ jobs:
         docker container prune -f || true
         docker volume prune -f || true
         docker network prune -f || true
+      continue-on-error: true
 
   test_binary_all:
     name: Test Binary Without Source(all)
@@ -549,6 +552,7 @@ jobs:
         docker container prune -f || true
         docker volume prune -f || true
         docker network prune -f || true
+      continue-on-error: true
 
   release:
     name: Publish Release
