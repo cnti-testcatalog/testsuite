@@ -372,7 +372,8 @@ task "single_process_type" do |t, args|
 
                   verified = KernelIntrospection::K8s::Node.verify_single_proc_tree(ppid, 
                                                                                     status_name, 
-                                                                                    statuses)
+                                                                                    statuses,
+                                                                                    SPECIALIZED_INIT_SYSTEMS)
                   unless verified  
                     Log.for(t.name).info { "multiple proc types detected verified: #{verified}" }
                     fail_msg = "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{statuses.map{|x|x["cmdline"]?}.compact.uniq.join(", ")})"
