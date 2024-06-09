@@ -89,6 +89,14 @@ crystal src/cnf-testsuite.cr workload
 cnf-config=<path_to_your_config_file>/cnf-testsuite.yml
 ```
 
+#### Running certification tests
+
+```
+./cnf-testsuite cert
+./cnf-testsuite cert essential
+./cnf-testsuite cert exclude="increase_decrease_capacity single_process_type"
+```
+
 #### Running all of the platform or workload tests independently:
 
 ##### Run workload only tests:
