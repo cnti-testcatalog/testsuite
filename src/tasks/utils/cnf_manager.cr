@@ -724,10 +724,10 @@ module CNFManager
 
     # delete previous tgz files and pull the helm chart
     unless input_file && !input_file.empty?
-      files_to_delete = Dir.glob("#{Helm.chart_name(helm_chart)}-*.tgz")
+      files_to_delete = tgz_files(helm_chart)
       files_to_delete.each do |file|
         FileUtils.rm(file)
-        puts "Deleted: #{file}"
+        Log.info { "Deleted: #{file}" }
       end
 
       helm_info = Helm.pull(helm_chart) 
@@ -1267,15 +1267,20 @@ module CNFManager
     resource_keys.includes?(resource_key)
   end
 
-  def self.get_tgz_name(helm_chart)
-    tgz_files = Dir.glob("#{Helm.chart_name(helm_chart)}-*.tgz")
-  
-    # In case no tgz file is present (should only happen if there was a prior helm failure).
-    if tgz_files.empty?
-      Log.error { "No .tgz files found for #{Helm.chart_name(helm_chart)}" }
-      raise TarFileNotFoundError.new(Helm.chart_name(helm_chart))
-    end
+  def self.tgz_files(helm_chart)
+    Dir.glob("#{Helm.chart_name(helm_chart)}-*.tgz")
+  end
 
+  def self.get_tgz_name(helm_chart)
+    tgz_files = tgz_files(helm_chart)
+    
+    if tgz_files.empty?
+      Log.error { "No .tgz files found for #{Helm.chart_name(helm_chart)}-*.tgz" }
+      raise TarFileNotFoundError.new(Helm.chart_name(helm_chart))
+    elsif tgz_files.size > 1
+      Log.info { "Multiple .tgz files found: #{tgz_files.join(", ")}" }
+    end
+  
     tgz_files.first
   end
 
@@ -1289,7 +1294,7 @@ module CNFManager
 
   class TarFileNotFoundError < Exception
     def initialize(chart_name)
-      super("No .tgz files found for chart #{chart_name}")
+      super("No .tgz files found for chart #{chart_name}-*.tgz")
     end
   end
 end
