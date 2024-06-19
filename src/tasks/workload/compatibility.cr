@@ -352,14 +352,6 @@ end
 
 def wait_for_scaling(resource, target_replica_count, args)
   VERBOSE_LOGGING.info "target_replica_count: #{target_replica_count}" if check_verbose(args)
-  if args.named.keys.includes? "wait_count"
-    wait_count_value = args.named["wait_count"]
-  else
-    wait_count_value = "45"
-  end
-  wait_count = wait_count_value.to_i
-  second_count = 0
-  current_replicas = "0"
   replicas_cmd = "kubectl get #{resource["kind"]} #{resource["metadata"]["name"]} -o=jsonpath='{.status.readyReplicas}'"
 
   namespace = resource.dig("metadata", "namespace")
@@ -370,11 +362,10 @@ def wait_for_scaling(resource, target_replica_count, args)
     output: replicas_stdout = IO::Memory.new,
     error: replicas_stderr = IO::Memory.new
   )
-  previous_replicas = replicas_stdout.to_s
-  until current_replicas == target_replica_count || second_count > wait_count
-    Log.for("verbose").debug { "secound_count: #{second_count} wait_count: #{wait_count}" } if check_verbose(args)
+  current_replicas = replicas_stdout.to_s.empty? ? "0" : replicas_stdout.to_s
+  previous_replicas = current_replicas
+  repeat_with_timeout(timeout: GENERIC_OPERATION_TIMEOUT, errormsg: "Pod scaling has timed-out", reset_on_nil: true) do
     Log.for("verbose").info { "current_replicas before get #{resource["kind"]}: #{current_replicas}" } if check_verbose(args)
-    sleep 1
     Log.for("verbose").debug { "$KUBECONFIG = #{ENV.fetch("KUBECONFIG", nil)}" } if check_verbose(args)
 
     Process.run(
@@ -383,22 +374,12 @@ def wait_for_scaling(resource, target_replica_count, args)
       output: replicas_stdout = IO::Memory.new,
       error: replicas_stderr = IO::Memory.new
     )
-    current_replicas = replicas_stdout.to_s
-
-    Log.for("verbose").info { "current_replicas after get #{resource["kind"]}: #{current_replicas.inspect}" } if check_verbose(args)
-
-    if current_replicas.empty?
-      current_replicas = "0"
-      previous_replicas = "0"
-    end
-
+    current_replicas = replicas_stdout.to_s.empty? ? "0" : replicas_stdout.to_s
     if current_replicas.to_i != previous_replicas.to_i
-      second_count = 0
       previous_replicas = current_replicas
+      next nil
     end
-    second_count = second_count + 1 
-    Log.for("verbose").info { "previous_replicas: #{previous_replicas}" } if check_verbose(args)
-    Log.for("verbose").info { "current_replicas: #{current_replicas}" } if check_verbose(args)
+    current_replicas == target_replica_count
   end
   current_replicas
 end 
