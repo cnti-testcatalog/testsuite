@@ -10,6 +10,7 @@ task "setup", ["version", "offline", "helm_local_install", "prereqs", "create_na
 end
 
 task "create_namespace" do |_, args|
+  ensure_kubeconfig!
   if KubectlClient::Create.namespace(TESTSUITE_NAMESPACE)
     stdout_success "Created #{TESTSUITE_NAMESPACE} namespace on the Kubernetes cluster"
   else
