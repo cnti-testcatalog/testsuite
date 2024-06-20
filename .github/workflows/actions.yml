@@ -167,7 +167,7 @@ jobs:
         export PROTECTED_DOCKERHUB_EMAIL=${EMAIL_ARRAY[$RANDOMIZER]}
         export PROTECTED_IMAGE_REPO=${IMAGE_ARRAY[$RANDOMIZER]}
 
-        docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+        [[ ! -z  "$DOCKERHUB_USERNAME" && ! -z "$DOCKERHUB_PASSWORD" ]] && docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
 
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
