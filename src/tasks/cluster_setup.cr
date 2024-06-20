@@ -13,7 +13,7 @@ task "install_cluster_tools" do |_, args|
   begin
     ClusterTools.install
   rescue e : ClusterTools::NamespaceDoesNotExistException 
-    Log.info { "#{e.message}" }
+    Log.error { "#{e.message}" }
     stdout_failure "Error: Namespace cnf-testsuite does not exist.\nPlease run 'cnf-testsuite setup' to create the necessary namespace."
     exit(1)
   end
@@ -24,7 +24,7 @@ task "uninstall_cluster_tools" do |_, args|
   begin
     ClusterTools.uninstall
   rescue e : ClusterTools::NamespaceDoesNotExistException
-    Log.info { "#{e.message}" }
+    Log.error { "#{e.message}" }
     stdout_failure "Error: Namespace cnf-testsuite does not exist.\nPlease run 'cnf-testsuite setup' to create the necessary namespace."
     exit(1)
   end
