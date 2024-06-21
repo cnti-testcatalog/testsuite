@@ -48,8 +48,8 @@ dependencies:
     github: cnf-testsuite/docker_client
     version: ~> 1.0.0
   kubectl_client:
-    github: cnf-testsuite/kubectl_client
-    version: ~> 1.0.6
+    github: martin-mat/kubectl_client
+    version: ~> 1.0.7
   cluster_tools:
     github: cnf-testsuite/cluster_tools
     version: ~> 1.0.0
