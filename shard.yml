@@ -48,23 +48,23 @@ dependencies:
     github: cnf-testsuite/docker_client
     version: ~> 1.0.0
   kubectl_client:
-    github: cnf-testsuite/kubectl_client
-    version: ~> 1.0.6
+    github: martin-mat/kubectl_client
+    version: ~> 1.0.7
   cluster_tools:
     github: martin-mat/cluster_tools
-    version: ~> 1.0.6
+    version: ~> 1.0.7
   kernel_introspection:
     github: cnf-testsuite/kernel_introspection
     version: ~> 0.1.0
   k8s_kernel_introspection:
     github: martin-mat/k8s_kernel_introspection
-    version: ~> 1.0.3
+    version: ~> 1.0.4
   helm:
-    github: cnf-testsuite/helm
-    version: ~> 1.0.1
+    github: martin-mat/helm
+    version: ~> 1.0.3
   k8s_netstat:
     github: martin-mat/k8s_netstat
-    version: ~> 1.0.1
+    version: ~> 1.0.2
   release_manager:
     github: cnf-testsuite/release_manager
     branch: main

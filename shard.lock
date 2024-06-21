@@ -10,7 +10,7 @@ shards:
 
   cluster_tools:
     git: https://github.com/martin-mat/cluster_tools.git
-    version: 1.0.6
+    version: 1.0.7
 
   commander:
     git: https://github.com/mrrooijen/commander.git
@@ -33,8 +33,8 @@ shards:
     version: 0.12.1
 
   helm:
-    git: https://github.com/cnf-testsuite/helm.git
-    version: 1.0.2
+    git: https://github.com/martin-mat/helm.git
+    version: 1.0.3
 
   icr:
     git: https://github.com/crystal-community/icr.git
@@ -42,19 +42,19 @@ shards:
 
   k8s_kernel_introspection:
     git: https://github.com/martin-mat/k8s_kernel_introspection.git
-    version: 1.0.3
+    version: 1.0.4
 
   k8s_netstat:
     git: https://github.com/martin-mat/k8s_netstat.git
-    version: 1.0.1
+    version: 1.0.2
 
   kernel_introspection:
     git: https://github.com/cnf-testsuite/kernel_introspection.git
     version: 0.1.0
 
   kubectl_client:
-    git: https://github.com/cnf-testsuite/kubectl_client.git
-    version: 1.0.6
+    git: https://github.com/martin-mat/kubectl_client.git
+    version: 1.0.7
 
   popcorn:
     git: https://github.com/icyleaf/popcorn.git
