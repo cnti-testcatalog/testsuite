@@ -4,7 +4,7 @@
 
 * [**Category: Compatibility, Installability and Upgradability Tests**](#category-compatibility-installability-and-upgradability-tests)
 
-   [[Increase decrease capacity]](#increase-decrease-capacity) | [[Helm chart published]](#helm-chart-published) | [[Helm chart valid]](#helm-chart-valid) | [[Helm deploy]](#helm-deploy) | [[Rollback]](#rollback) | [[Rolling version change]](#rolling-version-change) | [[Rolling update]](#rolling-update) | [[Rolling downgrade]](#rolling-downgrade) | [[CNI compatible]](#cni-compatible) | [[Kubernetes Alpha APIs **PoC**]](#kubernetes-alpha-apis-poc)
+   [[Increase decrease capacity]](#increase-decrease-capacity) | [[Helm chart published]](#helm-chart-published) | [[Helm chart valid]](#helm-chart-valid) | [[Helm deploy]](#helm-deploy) | [[Rollback]](#rollback) | [[Rolling version change]](#rolling-version-change) | [[Rolling update]](#rolling-update) | [[Rolling downgrade]](#rolling-downgrade) | [[CNI compatible]](#cni-compatible)
 
 * [**Category: Microservice Tests**](#category-microservice-tests)
 
@@ -28,8 +28,7 @@
 
 * [**Category: Configuration Tests**](#category-configuration-tests)
 
-   [[Default namespaces]](#default-namespaces) | [[Latest tag]](#latest-tag) | [[Require labels]](#require-labels) | [[Versioned tag]](#versioned-tag) | [[NodePort not used]](#nodeport-not-used) | [[HostPort not used]](#hostport-not-used) | [[Hardcoded IP addresses in K8s runtime configuration]](#hardcoded-ip-addresses-in-k8s-runtime-configuration) | [[Secrets used]](#secrets-used) | [[Immutable configmap]](#immutable-configmap)
-
+   [[Default namespaces]](#default-namespaces) | [[Latest tag]](#latest-tag) | [[Require labels]](#require-labels) | [[Versioned tag]](#versioned-tag) | [[NodePort not used]](#nodeport-not-used) | [[HostPort not used]](#hostport-not-used) | [[Hardcoded IP addresses in K8s runtime configuration]](#hardcoded-ip-addresses-in-k8s-runtime-configuration) | [[Secrets used]](#secrets-used) | [[Immutable configmap]](#immutable-configmap) | [[Kubernetes Alpha APIs **PoC**]](#kubernetes-alpha-apis-poc)
 * [**Category: 5G Tests**](#category-5g-tests)
 
    [[SMF UPF core validator]](#smf-upf-core-validator) | [[SUCI enabled]](#suci-enabled)
@@ -250,27 +249,6 @@ Ensure that your CNF is compatible with Calico, Cilium and other available CNIs.
 #### Usage
 
 `./cnf-testsuite cni_compatible`
-
-----------
-
-### Kubernetes Alpha APIs **PoC**
-
-#### Overview
-
-This checks if a CNF uses alpha or unstable versions of Kubernetes APIs
-Expectation: CNF should not use Kubernetes alpha APIs
-
-#### Rationale
-
-If a CNF uses alpha or undocumented APIs, the CNF is tightly coupled to an unstable platform
-
-#### Remediation
-
-Make sure your CNFs are not utilizing any Kubernetes alpha APIs. You can learn more about Kubernetes API versioning [here](https://bit.ly/k8s_api).
-
-#### Usage
-
-`./cnf-testsuite alpha_k8s_apis`
 
 ----------
 
@@ -1539,6 +1517,27 @@ Use immutable configmaps for any non-mutable configuration data.
 #### Usage
 
 `./cnf-testsuite immutable_configmap`
+
+----------
+
+### Kubernetes Alpha APIs **PoC**
+
+#### Overview
+
+This checks if a CNF uses alpha or unstable versions of Kubernetes APIs
+Expectation: CNF should not use Kubernetes alpha APIs
+
+#### Rationale
+
+If a CNF uses alpha or undocumented APIs, the CNF is tightly coupled to an unstable platform
+
+#### Remediation
+
+Make sure your CNFs are not utilizing any Kubernetes alpha APIs. You can learn more about Kubernetes API versioning [here](https://bit.ly/k8s_api).
+
+#### Usage
+
+`./cnf-testsuite alpha_k8s_apis`
 
 ----------
 
