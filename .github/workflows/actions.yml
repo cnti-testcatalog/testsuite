@@ -144,6 +144,15 @@ jobs:
         git fetch --all --tags --force
         shards install  
         echo "RUNNER: $RUNNER_NAME"
+    - name: display image repo
+      env:
+        IMAGE_REPO: ${{ secrets.IMAGE_REPO }}
+      run: |
+        import os
+        print(os.getenv('IMAGE_REPO'))
+        for q in (os.getenv('IMAGE_REPO')):
+            print(q)
+      shell: python
     - name: Run Crystal Spec
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -165,7 +174,7 @@ jobs:
         export PROTECTED_DOCKERHUB_USERNAME=$DOCKERHUB_USERNAME
         export PROTECTED_DOCKERHUB_PASSWORD=$DOCKERHUB_PASSWORD
         export PROTECTED_DOCKERHUB_EMAIL=${EMAIL_ARRAY[$RANDOMIZER]}
-        export PROTECTED_IMAGE_REPO=${IMAGE_ARRAY[$RANDOMIZER]}
+        export PROTECTED_IMAGE_REPO=${IMAGE_ARRAY[0]}
 
         docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
 
@@ -188,6 +197,7 @@ jobs:
         echo "RUNNER RATE LIMIT: $ANONYMOUS_RUNNER_RATE_LIMIT"
         echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
         echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
+        echo "PROTECTED_IMAGE_REPOs: $PROCTECTED_IMAGE_REPO"
 
         crystal build src/cnf-testsuite.cr 
         ./cnf-testsuite setup 
