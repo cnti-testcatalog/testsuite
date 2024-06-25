@@ -55,7 +55,14 @@ def ensure_kubeconfig!
     stdout_failure "KUBECONFIG is set to #{ENV["KUBECONFIG"]} path and it does not exist. Please set KUBECONFIG to an existing config file, i.e. 'export KUBECONFIG=path-to-your-kubeconfig'"
     exit 1
   end
-
+  
+  # Check if cluster is up and running with assigned KUBECONFIG variable 
+  cmd = "kubectl get nodes --kubeconfig=#{ENV["KUBECONFIG"]}"
+  exit_code = KubectlClient::ShellCmd.run(cmd, "", false)[:status].exit_status
+  if exit_code != 0
+    stdout_failure "Cluster liveness check failed: '#{cmd}' returned exit code #{exit_code}. Check the cluster and/or KUBECONFIG environment variable."
+    exit 1
+  end
 end
 
 def log_formatter
