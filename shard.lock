@@ -46,7 +46,7 @@ shards:
 
   k8s_netstat:
     git: https://github.com/cnf-testsuite/k8s_netstat.git
-    version: 1.0.0
+    version: 1.0.1
 
   kernel_introspection:
     git: https://github.com/cnf-testsuite/kernel_introspection.git
