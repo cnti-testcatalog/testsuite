@@ -64,7 +64,7 @@ dependencies:
     version: ~> 1.0.1
   k8s_netstat:
     github: cnf-testsuite/k8s_netstat
-    version: ~> 1.0.0
+    version: ~> 1.0.1
   release_manager:
     github: cnf-testsuite/release_manager
     branch: main
