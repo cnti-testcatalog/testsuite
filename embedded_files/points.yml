@@ -197,10 +197,6 @@
 # - name: chaos_container_kill
 #   tags: resilience, dynamic, workload
 
-- name: volume_hostpath_not_found
-  emoji: "💾"
-  tags: [state, dynamic, workload, essential, cert]
-  pass: 100
 - name: no_local_volume_configuration
   emoji: "💾"
   tags: [state, dynamic, workload, cert, bonus]

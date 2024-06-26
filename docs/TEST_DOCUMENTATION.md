@@ -12,7 +12,7 @@
 
 * [**Category: State Tests**](#category-state-tests)
 
-   [[Node drain]](#node-drain) | [[Volume hostpath not found]](#volume-hostpath-not-found) | [[No local volume configuration]](#no-local-volume-configuration) | [[Elastic volumes]](#elastic-volumes) | [[Database persistence]](#database-persistence)
+   [[Node drain]](#node-drain) | [[No local volume configuration]](#no-local-volume-configuration) | [[Elastic volumes]](#elastic-volumes) | [[Database persistence]](#database-persistence)
 
 * [**Category: Reliability, Resilience and Availability Tests**](#category-reliability-resilience--availability-tests)
 
@@ -487,28 +487,6 @@ Ensure that your CNF can be successfully rescheduled when a node fails or is [dr
 #### Usage
 
 `./cnf-testsuite node_drain`
-
-----------
-
-### Volume hostpath not found
-
-#### Overview
-
-This tests if volume host paths are configured and used by the CNF.
-Expectation: Volume host path configurations should not be used.
-
-#### Rationale
-
-When a cnf uses a volume host path or local storage it makes the application tightly coupled
-to the node that it is on.
-
-#### Remediation
-
-Ensure that none of the containers in your CNFs are using ["hostPath"] to mount volumes.
-
-#### Usage
-
-`./cnf-testsuite volume_hostpath_not_found`
 
 ----------
 

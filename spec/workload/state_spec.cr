@@ -65,30 +65,6 @@ describe "State" do
     end
   end
 
-  it "'volume_hostpath_not_found' should pass if the cnf doesn't have a hostPath volume", tags: ["volume_hostpath_not_found"]  do
-    begin
-      result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
-      result[:status].success?.should be_true
-      result = ShellCmd.run_testsuite("volume_hostpath_not_found verbose")
-      (/(PASSED).*(hostPath volumes not found)/ =~ result[:output]).should_not be_nil
-    ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
-      result[:status].success?.should be_true
-    end
-  end
-
-  it "'volume_hostpath_not_found' should fail if the cnf has a hostPath volume", tags: ["volume_hostpath_not_found"]  do
-    begin
-      result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-fragile-state/cnf-testsuite.yml deploy_with_chart=false")
-      result[:status].success?.should be_true
-      result = ShellCmd.run_testsuite("volume_hostpath_not_found verbose")
-      (/(FAILED).*(hostPath volumes found)/ =~ result[:output]).should_not be_nil
-    ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-fragile-state/cnf-testsuite.yml deploy_with_chart=false")
-      result[:status].success?.should be_true
-    end
-  end
-
   it "'no_local_volume_configuration' should fail if local storage configuration found", tags: ["no_local_volume_configuration"]  do
     begin
       # update the helm parameter with a schedulable node for the pv chart
