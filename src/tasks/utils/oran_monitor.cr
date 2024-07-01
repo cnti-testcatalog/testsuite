@@ -24,49 +24,46 @@ module ORANMonitor
     Log.info { "start_e2_capture" }
     ric_key : String  = ""
     ric_value : String = ""
-    tshark_log_name : String | Nil
+    capture : K8sTshark::TsharkPacketCapture | Nil
     ric = isCNFaRIC?(cnf_config)
     if ric
       ric_key = ric[:ric_key]
       ric_value = ric[:ric_value]
       command = "-i any -f 'sctp port 36421' -d 'sctp.port==36421,e2ap' -T json"
-      # tshark_log_name = K8sTshark.log_of_tshark_by_label(command, ric_key, core_value)
       #todo check all nodes?
       nodes = KubectlClient::Get.schedulable_nodes_list
       node = nodes.first
+
       resp = ClusterTools.exec_by_node("tshark --version", node)
       Log.info { "tshark must be version 4.0.3 or higher" }
       Log.info { "tshark output #{resp[:output]}" }
-      tshark_log_name = K8sTshark.log_of_tshark_by_node_bg(command,node)
+
+      capture = K8sTshark::TsharkPacketCapture.new
+      capture.begin_capture_by_node(node, command)
     else
-      tshark_log_name = nil
+      capture = nil
     end
-    tshark_log_name
+  
+    capture
   end
 
-  def self.e2_session_established?(tshark_log_name)
-    Log.info { "e2_session_established tshark_log_name: #{tshark_log_name}" }
+  def self.e2_session_established?(capture : K8sTshark::TsharkPacketCapture | Nil)
+    Log.info { "e2_session_established" }
     e2_found : Bool = false
-    if tshark_log_name && 
-        !tshark_log_name.empty? && 
-        (tshark_log_name =~ /not found/) == nil
-
-      if K8sTshark.regex_tshark_log(/e2ap\.successfulOutcome_element[^$]*e2ap.ric_ID/, tshark_log_name) 
+    
+    if !capture.nil?
+      if capture.regex_match?(/e2ap\.successfulOutcome_element[^$]*e2ap.ric_ID/) 
         Log.info { "regex found " }
         e2_found = true
       else
         Log.info { "regex not found " }
-        e2_found = false
       end
+
       Log.info { "found e2ap.successfulOutcome_element followed by e2ap.ric_ID?: #{e2_found}" }
 
-      #todo delete log file
-    else
-      e2_found = false
-      puts "no e2 log".colorize(:red)
+      capture.terminate_capture
     end
+
     e2_found
   end
-
 end
-
