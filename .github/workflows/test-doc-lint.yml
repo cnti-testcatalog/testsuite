@@ -1,0 +1,23 @@
+name: Test documentation lint
+on:
+  push:
+    paths:
+        - 'docs/*'
+        - 'doc-lint/*'
+  pull_request:
+    paths:
+        - 'docs/*'
+        - 'doc-lint/*'
+jobs:
+  lint-docs:
+    name: Lint Docs
+    runs-on: ubuntu-latest
+    container:
+       image: ruby:latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: Install mdl
+      run: gem install mdl
+    - name: Run mdl
+      run: mdl -s doc-lint/mdl-style.rb -u doc-lint/mdl-TTDS-rules.rb docs/TEST_DOCUMENTATION.md

@@ -2,7 +2,7 @@
 
 ## Table of Contents
 
-* [**Category: Compatibility, Installability and Upgradability Tests**](#category-compatibility-installability--upgradability-tests)
+* [**Category: Compatibility, Installability and Upgradability Tests**](#category-compatibility-installability-and-upgradability-tests)
 
    [[Increase decrease capacity]](#increase-decrease-capacity) | [[Helm chart published]](#helm-chart-published) | [[Helm chart valid]](#helm-chart-valid) | [[Helm deploy]](#helm-deploy) | [[Rollback]](#rollback) | [[Rolling version change]](#rolling-version-change) | [[Rolling update]](#rolling-update) | [[Rolling downgrade]](#rolling-downgrade) | [[CNI compatible]](#cni-compatible) | [[Kubernetes Alpha APIs **PoC**]](#kubernetes-alpha-apis-poc)
 
@@ -14,11 +14,11 @@
 
    [[Node drain]](#node-drain) | [[No local volume configuration]](#no-local-volume-configuration) | [[Elastic volumes]](#elastic-volumes) | [[Database persistence]](#database-persistence)
 
-* [**Category: Reliability, Resilience and Availability Tests**](#category-reliability-resilience--availability-tests)
+* [**Category: Reliability, Resilience and Availability Tests**](#category-reliability-resilience-and-availability-tests)
 
    [[CNF under network latency]](#cnf-under-network-latency) | [[CNF with host disk fill]](#cnf-with-host-disk-fill) | [[Pod delete]](#pod-delete) | [[Memory hog]](#memory-hog) | [[IO Stress]](#io-stress) | [[Network corruption]](#network-corruption) | [[Network duplication]](#network-duplication) | [[Pod DNS errors]](#pod-dns-errors) | [[Helm chart liveness entry]](#helm-chart-liveness-entry) | [[Helm chart readiness entry]](#helm-chart-readiness-entry)
 
-* [**Category: Observability and Diagnostic Tests**](#category-observability--diagnostic-tests)
+* [**Category: Observability and Diagnostic Tests**](#category-observability-and-diagnostic-tests)
 
    [[Use stdout/stderr for logs]](#use-stdoutstderr-for-logs) | [[Prometheus installed]](#prometheus-installed) | [[Routed logs]](#routed-logs) | [[OpenMetrics compatible]](#openmetrics-compatible) | [[Jaeger tracing]](#jaeger-tracing)
 
@@ -32,11 +32,11 @@
 
 * [**Category: 5G Tests**](#category-5g-tests)
 
-   [[SMF_UPF_core_validator]](#smf_upf_core_validator) | [[SUCI_enabled]](#suci_enabled)
+   [[SMF UPF core validator]](#smf-upf-core-validator) | [[SUCI enabled]](#suci-enabled)
 
 * [**Category: RAN Tests**](#category-ran-tests)
 
-   [[ORAN_e2_connection]](#oran_e2_connection)
+   [[ORAN e2 connection]](#oran-e2-connection)
 
 * [**Category: Platform Tests**](#category-platform-tests)
 
@@ -1119,7 +1119,7 @@ Only connect PODs to the hostNetwork when it is necessary. If not, set the hostN
 #### Overview
 
 heck if the CNF is using service accounts that are automatically mapped.
-Expectation: The [automatic mapping](https://bit.ly/C0034_service_account_mapping) of service account tokens should be disabled. 
+Expectation: The [automatic mapping](https://bit.ly/C0034_service_account_mapping) of service account tokens should be disabled.
 
 #### Rationale
 
@@ -1315,7 +1315,7 @@ Set the filesystem of the container to read-only when possible. If the container
 
 Checks the CNF's POD spec for any hostPath volumes, if found it checks the volume for the field mount.readOnly == false (or if it doesn’t exist).
 Read more at [ARMO-C0045](https://bit.ly/3EvltIL)
-Expectation: Containers should not have hostPath mounts 
+Expectation: Containers should not have hostPath mounts
 
 #### Rationale
 
@@ -1552,7 +1552,7 @@ All 5G: `./cnf-testsuite 5g`
 
 ----------
 
-### SMF_UPF_core_validator
+### SMF UPF core validator
 
 #### Overview
 
@@ -1572,7 +1572,7 @@ After measure a baseline of the heartbeat a comparison between the baseline and 
 
 ----------
 
-### SUCI_enabled
+### SUCI enabled
 
 #### Overview
 
@@ -1602,7 +1602,7 @@ ORAN cloud native functions should adhere to cloud native principles while also 
 
 ----------
 
-### ORAN_e2_connection
+### ORAN e2 connection
 
 #### Overview
 
