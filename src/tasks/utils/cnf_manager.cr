@@ -18,7 +18,6 @@ require "log"
 require "ecr"
 
 module CNFManager
-
   class ElapsedTimeConfigMapTemplate
     # elapsed_time should be Int32 but it is being passed as string
     # So the old behaviour has been retained as is to prevent any breakages
@@ -721,30 +720,39 @@ module CNFManager
 
     input_file = cli_args[:input_file]
     output_file = cli_args[:output_file]
-    if input_file && !input_file.empty?
-      # todo add generate and set tar as well
-      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: true) 
+    config_path = CNFManager.ensure_cnf_testsuite_yml_path(config_file)
+
+    # Input file present
+    if input_file && !input_file.empty? 
+      config = CNFManager::Config.parse_config_yml(config_path, airgapped: true)
       tar_info = AirGap.tar_info_by_config_src(helm_chart)
       tgz_name = tar_info[:tar_name]
-    elsif output_file && !output_file.empty?
-      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), generate_tar_mode: true) 
-      tgz_name = "#{Helm.chart_name(helm_chart)}-*.tgz"
-    else
-      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
-      tgz_name = "#{Helm.chart_name(helm_chart)}-*.tgz"
-    end
-    Log.info { "tgz_name: #{tgz_name}" }
 
-    unless input_file && !input_file.empty?
-      FileUtils.rm_rf(tgz_name)
-      helm_info = Helm.pull(helm_chart) 
+    # Input file absent, pulling chart
+    else 
+      # Delete pre-existing tgz files
+      files_to_delete = find_tgz_files(helm_chart)
+      files_to_delete.each do |file|
+        FileUtils.rm(file)
+        Log.info { "Deleted: #{file}" }
+      end
+    
+      # Pull new version
+      helm_info = Helm.pull(helm_chart)
       unless helm_info[:status].success?
         puts "Helm pull error".colorize(:red)
         raise "Helm pull error"
       end
+    
+      config = CNFManager::Config.parse_config_yml(config_path, generate_tar_mode: output_file && !output_file.empty?)
+
+      # Discover newly pulled tgz file
+      tgz_name = get_and_verify_tgz_name(helm_chart)
     end
 
-    TarClient.untar(tgz_name,  "#{destination_cnf_dir}/exported_chart")
+    Log.info { "tgz_name: #{tgz_name}" }
+
+    TarClient.untar(tgz_name, "#{destination_cnf_dir}/exported_chart")
 
     Log.for("verbose").info { "mv #{destination_cnf_dir}/exported_chart/#{Helm.chart_name(helm_chart)}/* #{destination_cnf_dir}/exported_chart" } if verbose
     Log.for("verbose").debug {
@@ -1259,6 +1267,27 @@ module CNFManager
     resource_keys.includes?(resource_key)
   end
 
+  def self.find_tgz_files(helm_chart)
+    Dir.glob(get_helm_tgz_glob(helm_chart))
+  end
+
+  def self.get_and_verify_tgz_name(helm_chart)
+    tgz_files = find_tgz_files(helm_chart)
+    
+    if tgz_files.empty?
+      Log.error { "No .tgz files found for #{get_helm_tgz_glob(helm_chart)}" }
+      raise TarFileNotFoundError.new(Helm.chart_name(helm_chart))
+    elsif tgz_files.size > 1
+      Log.warn { "Multiple .tgz files found: #{tgz_files.join(", ")}" }
+    end
+  
+    tgz_files.first
+  end
+
+  def self.get_helm_tgz_glob(helm_chart)
+    "#{Helm.chart_name(helm_chart)}-*.tgz"
+  end
+
   class HelmDirectoryMissingError < Exception
     property helm_directory : String = ""
 
@@ -1267,4 +1296,9 @@ module CNFManager
     end
   end
 
+  class TarFileNotFoundError < Exception
+    def initialize(chart_name)
+      super("No .tgz files found for chart #{chart_name}-*.tgz")
+    end
+  end
 end
