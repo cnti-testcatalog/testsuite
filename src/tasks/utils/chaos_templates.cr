@@ -1,3 +1,5 @@
+NODE_DRAIN_TOTAL_CHAOS_DURATION = ENV.has_key?("CNF_TESTSUITE_NODE_DRAIN_TOTAL_CHAOS_DURATION") ? ENV["CNF_TESTSUITE_NODE_DRAIN_TOTAL_CHAOS_DURATION"].to_i : 90
+
 class ChaosTemplates
   class PodIoStress
     def initialize(
@@ -113,7 +115,7 @@ class ChaosTemplates
       @deployment_label : String,
       @deployment_label_value : String,
       @app_nodename : String,
-      @total_chaos_duration : String = "90"
+      @total_chaos_duration : String = "#{NODE_DRAIN_TOTAL_CHAOS_DURATION}"
     )
     end
     ECR.def_to_s("src/templates/chaos_templates/node_drain.yml.ecr")
