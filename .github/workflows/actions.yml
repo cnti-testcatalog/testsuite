@@ -199,6 +199,7 @@ jobs:
     - name: Create Kind Cluster 
       run: |
         cat /tmp/cluster.yml
+        cat /tmp/pss/cluster-level-pss.yaml
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
         echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
