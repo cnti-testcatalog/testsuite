@@ -9,7 +9,7 @@ LITMUS_CHAOS_TEST_TIMEOUT = ENV.has_key?("CNF_TESTSUITE_LITMUS_CHAOS_TEST_TIMEOU
 
 def repeat_with_timeout(timeout, errormsg, reset_on_nil=false, delay=2, &block)
   start_time = Time.utc
-  while (Time.utc - start_time).seconds < timeout
+  while (Time.utc - start_time).to_i < timeout
     result = yield
     if result.nil?
       if reset_on_nil
@@ -21,7 +21,7 @@ def repeat_with_timeout(timeout, errormsg, reset_on_nil=false, delay=2, &block)
       return true
     end
     sleep delay
-    Log.for("verbose").info { "Time left: #{timeout - (Time.utc - start_time).seconds} seconds" }
+    Log.for("verbose").info { "Time left: #{timeout - (Time.utc - start_time).to_i} seconds" }
   end
   Log.error { errormsg }
   false
