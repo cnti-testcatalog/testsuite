@@ -9,9 +9,8 @@ require "./task.cr"
 module CNFManager 
 
   class Config
-    def initialize(cnf_config, airgapped=false)
+    def initialize(cnf_config)
       @cnf_config = cnf_config
-      @airgapped = airgapped
     end
     #when addeding to this you must add to task.cr's CNFManager::Config.new(
     property cnf_config : NamedTuple(destination_cnf_dir: String,
@@ -61,17 +60,15 @@ module CNFManager
                                                           ),
                                      image_registry_fqdns: Hash(String, String ) | Nil)
 
-    def self.parse_config_yml(config_yml_path : String, airgapped=false, generate_tar_mode=false) : CNFManager::Config
+    def self.parse_config_yml(config_yml_path : String) : CNFManager::Config
       LOGGING.debug "parse_config_yml config_yml_path: #{config_yml_path}"
-      LOGGING.info "airgapped: #{airgapped}"
-      LOGGING.info "generate_tar_mode: #{generate_tar_mode}"
       yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
       #TODO modify the destination testsuite yml instead of the source testsuite yml 
       # (especially in the case of the release manager).  Then reread the destination config
       # TODO for cleanup, read source, then find destination and use release name from destination config
       # TODO alternatively use a CRD to save the release name
 
-      CNFManager.generate_and_set_release_name(config_yml_path, airgapped, generate_tar_mode)
+      CNFManager.generate_and_set_release_name(config_yml_path)
       config = CNFManager.parsed_config_file(yml_file)
       install_method = CNFManager.cnf_installation_method(config)
 
@@ -223,21 +220,21 @@ module CNFManager
     def self.install_method_by_config_file(config_file) : Helm::InstallMethod
       LOGGING.info "install_data_by_config_file"
       config = CNFManager.parsed_config_file(config_file)
-      sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: true, generate_tar_mode: false) 
+      sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file)) 
       install_method = CNFManager.cnf_installation_method(config)
       install_method[0]
     end
     def self.config_src_by_config_file(config_file) : String
       LOGGING.info "install_data_by_config_file"
       config = CNFManager.parsed_config_file(config_file)
-      sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: true, generate_tar_mode: false) 
+      sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file)) 
       install_method = CNFManager.cnf_installation_method(config)
       install_method[1]
     end
     def self.release_name_by_config_file(config_file) : String
       LOGGING.info "release_name_by_config_file"
       config = CNFManager.parsed_config_file(config_file)
-      sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: true, generate_tar_mode: false) 
+      sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file)) 
       release_name = sandbox_config.cnf_config[:release_name]
     end
   end

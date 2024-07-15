@@ -16,30 +16,17 @@ task "install_kubescape", ["kubescape_framework_download"] do |_, args|
   if !File.exists?("#{tools_path}/kubescape/kubescape") || installed_kubescape_version != KUBESCAPE_VERSION
     write_file = "#{tools_path}/kubescape/kubescape"
     Log.info { "write_file: #{write_file}" }
-    if args.named["offline"]?
-        Log.info { "kubescape install offline mode" }
-      `cp #{TarClient::TAR_DOWNLOAD_DIR}/kubescape-ubuntu-latest #{write_file}`
-      `cp #{TarClient::TAR_DOWNLOAD_DIR}/nsa.json #{tools_path}/kubescape/`
+    Log.info { "kubescape install" }
+    url = "https://github.com/armosec/kubescape/releases/download/v#{KUBESCAPE_VERSION}/kubescape-ubuntu-latest"
+    Log.info { "url: #{url}" }
+    Retriable.retry do
+      HttpHelper.download("#{url}","#{write_file}")
       stderr = IO::Memory.new
       status = Process.run("chmod +x #{write_file}", shell: true, output: stderr, error: stderr)
       success = status.success?
       raise "Unable to make #{write_file} executable" if success == false
-    else
-      Log.info { "kubescape install online mode" }
-      url = "https://github.com/armosec/kubescape/releases/download/v#{KUBESCAPE_VERSION}/kubescape-ubuntu-latest"
-      Log.info { "url: #{url}" }
-      Retriable.retry do
-
-        HttpHelper.download("#{url}","#{write_file}")
-
-        stderr = IO::Memory.new
-        status = Process.run("chmod +x #{write_file}", shell: true, output: stderr, error: stderr)
-        success = status.success?
-        raise "Unable to make #{write_file} executable" if success == false
-      end
     end
 
-    # Irrespective of online or offline mode, write the version file with the kubescape version
     File.write(version_file, KUBESCAPE_VERSION)
   end
 end

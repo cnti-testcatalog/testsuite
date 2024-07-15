@@ -9,9 +9,7 @@ require "./points.cr"
 require "./task.cr"
 require "./config.cr"
 require "./jaeger.cr"
-require "airgap"
 require "tar"
-require "./image_prepull.cr"
 require "./generate_config.cr"
 require "./oran_monitor.cr"
 require "log"
@@ -373,7 +371,7 @@ module CNFManager
     end
   end
 
-  def self.install_method_by_config_src(config_src : String, airgapped=false, generate_tar_mode=false)
+  def self.install_method_by_config_src(config_src : String)
     Log.info { "install_method_by_config_src" }
     Log.info { "config_src: #{config_src}" }
     helm_chart_file = "#{config_src}/#{Helm::CHART_YAML}"
@@ -385,7 +383,6 @@ module CNFManager
     elsif File.exists?(helm_chart_file)
       Log.info { "install_method_by_config_src helm_directory selected" }
       Helm::InstallMethod::HelmDirectory
-    # elsif generate_tar_mode && KubectlClient::Apply.validate(config_src) # just because we are in generate tar mode doesn't mean we have a K8s cluster
     elsif Dir.exists?(config_src) 
       Log.info { "install_method_by_config_src manifest_directory selected" }
       Helm::InstallMethod::ManifestDirectory
@@ -471,19 +468,12 @@ module CNFManager
   end
 
   #TODO move to helm module
-  def self.helm_template_header(helm_chart_or_directory : String, template_file="/tmp/temp_template.yml", airgapped=false)
+  def self.helm_template_header(helm_chart_or_directory : String, template_file="/tmp/temp_template.yml")
     Log.info { "helm_template_header" }
     Log.info { "helm_template_header helm_chart_or_directory: #{helm_chart_or_directory}" }
     helm = Helm::BinarySingleton.helm
     # generate helm chart release name
     # use --dry-run to generate yml file
-    Log.info { "airgapped mode: #{airgapped}" }
-    if airgapped
-      # todo make tar info work with a directory
-      info = AirGap.tar_info_by_config_src(helm_chart_or_directory)
-      Log.info { "airgapped mode info: #{info}" }
-      helm_chart_or_directory = info[:tar_name]
-    end
     Helm.install("--dry-run --generate-name #{helm_chart_or_directory} > #{template_file}")
     raw_template = File.read(template_file)
     Log.debug { "raw_template: #{raw_template}" }
@@ -495,22 +485,18 @@ module CNFManager
   end
 
   #TODO move to helm module
-  def self.helm_chart_template_release_name(helm_chart_or_directory : String, template_file="/tmp/temp_template.yml", airgapped=false)
+  def self.helm_chart_template_release_name(helm_chart_or_directory : String, template_file="/tmp/temp_template.yml")
     Log.info { "helm_chart_template_release_name" }
-    Log.info { "airgapped mode: #{airgapped}" }
     Log.info { "helm_chart_template_release_name helm_chart_or_directory: #{helm_chart_or_directory}" }
-    hth = helm_template_header(helm_chart_or_directory, template_file, airgapped)
+    hth = helm_template_header(helm_chart_or_directory, template_file)
     Log.info { "helm template (should not be a full path): #{hth}" }
     hth["NAME"]
   end
 
 
-  def self.generate_and_set_release_name(config_yml_path, airgapped=false, generate_tar_mode=false, src_mode=false)
+  def self.generate_and_set_release_name(config_yml_path, src_mode=false)
     Log.info { "generate_and_set_release_name" }
     Log.info { "generate_and_set_release_name config_yml_path: #{config_yml_path}" }
-    Log.info { "airgapped mode: #{airgapped}" }
-    Log.info { "generate_tar_mode: #{generate_tar_mode}" }
-    return if generate_tar_mode
 
     yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
     yml_path = CNFManager.ensure_cnf_testsuite_dir(config_yml_path)
@@ -528,17 +514,15 @@ module CNFManager
       when Helm::InstallMethod::HelmChart
         Log.info { "generate_and_set_release_name install method: #{install_method[0]} data: #{install_method[1]}" }
         Log.info { "generate_and_set_release_name helm_chart_or_directory: #{install_method[1]}" }
-        release_name = helm_chart_template_release_name(install_method[1], airgapped: airgapped)
+        release_name = helm_chart_template_release_name(install_method[1])
       when Helm::InstallMethod::HelmDirectory
         Log.info { "helm_directory install method: #{yml_path}/#{install_method[1]}" }
-        # todo if in airgapped mode, use path for airgapped repositories
-        # todo if in airgapped mode, get the release name
         # todo get the release name by looking through everything under /tmp/repositories
         Log.info { "generate_and_set_release_name helm_chart_or_directory: #{install_method[1]}" }
         if src_mode
-          release_name = helm_chart_template_release_name("#{src_helm_directory}", airgapped: airgapped)
+          release_name = helm_chart_template_release_name("#{src_helm_directory}")
         else
-          release_name = helm_chart_template_release_name("#{install_method[1]}", airgapped: airgapped)
+          release_name = helm_chart_template_release_name("#{install_method[1]}")
         end
       when Helm::InstallMethod::ManifestDirectory
         Log.debug { "manifest_directory install method" }
@@ -624,16 +608,7 @@ module CNFManager
     else
       wait_count = 180
     end
-    output_file = args.named["airgapped"].as(String) if args.named["airgapped"]?
-    output_file = args.named["output-file"].as(String) if args.named["output-file"]?
-    output_file = args.named["of"].as(String) if args.named["if"]?
-    input_file = args.named["offline"].as(String) if args.named["offline"]?
-    input_file = args.named["input-file"].as(String) if args.named["input-file"]?
-    input_file = args.named["if"].as(String) if args.named["if"]?
-    airgapped=false
-    airgapped=true if args.raw.includes?("airgapped")
-
-    cli_args = {config_file: cnf_path, wait_count: wait_count, verbose: check_verbose(args), output_file: output_file, input_file: input_file}
+    cli_args = {config_file: cnf_path, wait_count: wait_count, verbose: check_verbose(args)}
     Log.debug { "cli_args: #{cli_args}" }
     cli_args
   end
@@ -718,37 +693,26 @@ module CNFManager
     #TODO don't think we need to make this here
     FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}")
 
-    input_file = cli_args[:input_file]
-    output_file = cli_args[:output_file]
     config_path = CNFManager.ensure_cnf_testsuite_yml_path(config_file)
 
-    # Input file present
-    if input_file && !input_file.empty? 
-      config = CNFManager::Config.parse_config_yml(config_path, airgapped: true)
-      tar_info = AirGap.tar_info_by_config_src(helm_chart)
-      tgz_name = tar_info[:tar_name]
-
-    # Input file absent, pulling chart
-    else 
-      # Delete pre-existing tgz files
-      files_to_delete = find_tgz_files(helm_chart)
-      files_to_delete.each do |file|
-        FileUtils.rm(file)
-        Log.info { "Deleted: #{file}" }
-      end
-    
-      # Pull new version
-      helm_info = Helm.pull(helm_chart)
-      unless helm_info[:status].success?
-        puts "Helm pull error".colorize(:red)
-        raise "Helm pull error"
-      end
-    
-      config = CNFManager::Config.parse_config_yml(config_path, generate_tar_mode: output_file && !output_file.empty?)
-
-      # Discover newly pulled tgz file
-      tgz_name = get_and_verify_tgz_name(helm_chart)
+    # Pulling chart 
+    # Delete pre-existing tgz files
+    files_to_delete = find_tgz_files(helm_chart)
+    files_to_delete.each do |file|
+      FileUtils.rm(file)
+      Log.info { "Deleted: #{file}" }
     end
+
+    # Pull new version
+    helm_info = Helm.pull(helm_chart)
+    unless helm_info[:status].success?
+      puts "Helm pull error".colorize(:red)
+      raise "Helm pull error"
+    end
+
+    config = CNFManager::Config.parse_config_yml(config_path)
+    # Discover newly pulled tgz file
+    tgz_name = get_and_verify_tgz_name(helm_chart)
 
     Log.info { "tgz_name: #{tgz_name}" }
 
@@ -775,21 +739,11 @@ module CNFManager
 
   #sample_setup({config_file: cnf_path, wait_count: wait_count})
   def self.sample_setup(cli_args)
-    #TODO accept offline mode
     Log.info { "sample_setup cli_args: #{cli_args}" }
     config_file = cli_args[:config_file]
     wait_count = cli_args[:wait_count]
     verbose = cli_args[:verbose]
-    input_file = cli_args[:input_file]
-    output_file = cli_args[:output_file]
-    if input_file && !input_file.empty?
-      # todo add generate and set tar as well
-      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), airgapped: true) 
-    elsif output_file && !output_file.empty?
-      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file), generate_tar_mode: true) 
-    else
-      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
-    end
+    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
     Log.debug { "config in sample_setup: #{config.cnf_config}" }
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
@@ -876,24 +830,7 @@ module CNFManager
     elapsed_time = Time.measure do
       case install_method[0]
       when Helm::InstallMethod::ManifestDirectory
-        # todo airgap_manifest_directory << prepare a manifest directory for deployment into an airgapped environment, put in airgap module
-        if input_file && !input_file.empty?
-          yaml_template_files = Find.find("#{destination_cnf_dir}/#{manifest_directory}", 
-                                               "*.yaml*", "100")
-          yml_template_files = Find.find("#{destination_cnf_dir}/#{manifest_directory}", 
-                                               "*.yml*", "100")
-          template_files = yaml_template_files + yml_template_files
-          Log.info { "(before kubectl apply) calling image_pull_policy on #{template_files}" }
-          template_files.map{|x| AirGap.image_pull_policy(x)}
-        end
         Log.for("verbose").info { "deploying by manifest file" } if verbose
-        file_list = Helm::Manifest.manifest_file_list(install_method[1], silent: false)
-        yml = Helm::Manifest.manifest_ymls_from_file_list(file_list)
-        if input_file && !input_file.empty?
-          image_pull(yml, "offline=true")
-        else
-          image_pull(yml, "offline=false")
-        end
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
       when Helm::InstallMethod::HelmChart
         if !helm_install_namespace.empty?
@@ -902,31 +839,11 @@ module CNFManager
         else
           helm_install_namespace = default_namespace
         end
-        if input_file && !input_file.empty?
-          tar_info = AirGap.tar_info_by_config_src(config.cnf_config[:helm_chart])
-          # prepare a helm_chart tar file for deployment into an airgapped environment, put in airgap module
-          TarClient.modify_tar!(tar_info[:tar_name]) do |directory| 
-            template_files = Find.find(directory, "*.yaml*", "100")
-            template_files.map{|x| AirGap.image_pull_policy(x)}
-          end
-          # if in airgapped mode, set helm_chart in config to be the tarball path
-          helm_chart = tar_info[:tar_name]
-        else
-          helm_chart = config.cnf_config[:helm_chart]
-        end
+        helm_chart = config.cnf_config[:helm_chart]
         if !helm_repo_name.empty? || !helm_repo_url.empty?
           Helm.helm_repo_add(helm_repo_name, helm_repo_url)
         end
         Log.for("verbose").info { "deploying with chart repository" } if verbose
-        # Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml", values: helm_values)
-        Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml", namespace: helm_install_namespace, values: helm_values)
-        yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name: "cnfs/temp_template.yml")
-
-        if input_file && !input_file.empty?
-          image_pull(yml, "offline=true")
-        else
-          image_pull(yml, "offline=false")
-        end
  
         begin
           helm_install = Helm.install(release_name, helm_chart, helm_namespace_option, helm_values)
@@ -949,22 +866,8 @@ module CNFManager
           helm_install_namespace = default_namespace
         end
         Log.for("verbose").info { "deploying with helm directory" } if verbose
-        # prepare a helm directory for deployment into an airgapped environment, put in airgap module
-        if input_file && !input_file.empty?
-          template_files = Dir.glob(["#{destination_cnf_dir}/#{helm_directory}/*.yaml*"])
-          template_files.map{|x| AirGap.image_pull_policy(x)}
-        end
         #TODO Add helm options into cnf-testsuite yml
         #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
-        # Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml") 
-        Helm.template(release_name, install_method[1], output_file: "cnfs/temp_template.yml", namespace: helm_install_namespace, values: helm_values)
-        yml = Helm::Manifest.parse_manifest_as_ymls(template_file_name: "cnfs/temp_template.yml")
-        
-        if input_file && !input_file.empty?
-          image_pull(yml, "offline=true")
-        else
-          image_pull(yml, "offline=false")
-        end
 
         begin
           # helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} #{helm_namespace_option}")
@@ -1116,7 +1019,7 @@ module CNFManager
     #todo uninstall/reinstall clustertools because of tshark bug
   end
 
-  def self.cnf_to_new_cluster(config, kubeconfig, offline=false)
+  def self.cnf_to_new_cluster(config, kubeconfig)
     release_name = config.cnf_config[:release_name]
     install_method = config.cnf_config[:install_method]
     release_name = config.cnf_config[:release_name]
@@ -1145,12 +1048,6 @@ module CNFManager
       KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", kubeconfig: kubeconfig)
     when Helm::InstallMethod::HelmChart
       begin
-        if offline
-          chart_info = AirGap.tar_info_by_config_src(install_method[1])
-          chart_name = chart_info[:chart_name]
-          tar_name = chart_info[:tar_name]
-          Log.info { "Install Chart In Airgapped Mode: Name: #{chart_name}, Tar: #{tar_name}" }
-        end
         helm_install = Helm.install("#{release_name} #{helm_chart} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_warning "Release name #{release_name} has already been setup."

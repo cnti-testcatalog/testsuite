@@ -20,9 +20,6 @@ namespace "platform" do
       unless check_poc(args)
         next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Kube State Metrics not in poc mode")
       end
-      if args.named["offline"]?
-        next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Kube State Metrics in offline mode")
-      end
       Log.info { "Running POC: kube_state_metrics" }
       found = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::STATE_METRICS_PROCESS)
       Log.info { "Found Pod: #{found}" }
@@ -40,9 +37,6 @@ namespace "platform" do
     CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do |args, config|
       unless check_poc(args)
         next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "node exporter not in poc mode")
-      end
-      if args.named["offline"]?
-        next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "node exporter in offline mode")
       end
       Log.info { "Running POC: node_exporter" }
       found = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::NODE_EXPORTER)
@@ -62,9 +56,6 @@ namespace "platform" do
       unless check_poc(args)
         next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "prometheus adapter not in poc mode")
       end
-      if args.named["offline"]?
-        next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "prometheus adapter in offline mode")
-      end
       Log.info { "Running POC: prometheus_adapter" }
       found = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::PROMETHEUS_ADAPTER)
       Log.info { "Found Process: #{found}" }
@@ -82,9 +73,6 @@ namespace "platform" do
     CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do |args, config|
       unless check_poc(args)
         next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Metrics server not in poc mode")
-      end
-      if args.named["offline"]?
-        next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Metrics server in offline mode")
       end
       Log.info { "Running POC: metrics_server" }
       found = KernelIntrospection::K8s.find_first_process(CloudNativeIntrospection::METRICS_SERVER)

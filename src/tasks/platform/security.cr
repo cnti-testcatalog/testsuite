@@ -29,7 +29,6 @@ namespace "platform" do
 
   desc "Attackers who have Cluster-admin permissions (can perform any action on any resource), can take advantage of their high privileges for malicious intentions. Determines which subjects have cluster admin permissions."
   task "cluster_admin", ["kubescape_scan"] do |t, args|
-    next if args.named["offline"]?
     CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do |args, config|
       results_json = Kubescape.parse
       test_json = Kubescape.test_by_test_name(results_json, "Administrative Roles")

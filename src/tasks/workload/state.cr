@@ -289,36 +289,25 @@ task "node_drain", ["install_litmus"] do |t, args|
             litmus_nodes = node_names - ["#{litmus_nodeName}"]
             Log.info { "Schedulable Litmus Nodes: #{litmus_nodes}" }
 
-            HttpHelper.download("#{LitmusManager::ONLINE_LITMUS_OPERATOR}","#{LitmusManager::DOWNLOADED_LITMUS_FILE}")
-            if args.named["offline"]?
-                 Log.info {"Re-Schedule Litmus in offline mode"}
-                 LitmusManager.add_node_selector(litmus_nodes[0], airgap: true)
-               else
-                 Log.info {"Re-Schedule Litmus in online mode"}
-                 LitmusManager.add_node_selector(litmus_nodes[0], airgap: false)
-            end
+            HttpHelper.download("#{LitmusManager::LITMUS_OPERATOR}","#{LitmusManager::DOWNLOADED_LITMUS_FILE}")
+            Log.info {"Re-Schedule Litmus"}
+            LitmusManager.add_node_selector(litmus_nodes[0])
             KubectlClient::Apply.file("#{LitmusManager::MODIFIED_LITMUS_FILE}")
             KubectlClient::Get.resource_wait_for_install(kind: "Deployment", resource_name: "chaos-operator-ce", wait_count: 180, namespace: "litmus")
           end
 
-          if args.named["offline"]?
-            Log.info {"install resilience offline mode"}
-            AirGap.image_pull_policy("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
-            KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-experiment.yaml")
-            KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/node-drain-rbac.yaml")
-          else
-            experiment_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/faults/kubernetes/node-drain/fault.yaml"
-            rbac_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::RBAC_VERSION}/charts/generic/node-drain/rbac.yaml"
+          experiment_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::Version}/faults/kubernetes/node-drain/fault.yaml"
+          rbac_url = "https://raw.githubusercontent.com/litmuschaos/chaos-charts/#{LitmusManager::RBAC_VERSION}/charts/generic/node-drain/rbac.yaml"
 
-            experiment_path = LitmusManager.download_template(experiment_url, "#{t.name}_experiment.yaml")
-            KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
+          experiment_path = LitmusManager.download_template(experiment_url, "#{t.name}_experiment.yaml")
+          KubectlClient::Apply.file(experiment_path, namespace: app_namespace)
   
-            rbac_path = LitmusManager.download_template(rbac_url, "#{t.name}_rbac.yaml")
-            rbac_yaml = File.read(rbac_path)
-            rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
-            File.write(rbac_path, rbac_yaml)
-            KubectlClient::Apply.file(rbac_path)
-          end
+          rbac_path = LitmusManager.download_template(rbac_url, "#{t.name}_rbac.yaml")
+          rbac_yaml = File.read(rbac_path)
+          rbac_yaml = rbac_yaml.gsub("namespace: default", "namespace: #{app_namespace}")
+          File.write(rbac_path, rbac_yaml)
+          KubectlClient::Apply.file(rbac_path)
+
           KubectlClient::Annotate.run("--overwrite -n #{app_namespace} deploy/#{resource["name"]} litmuschaos.io/chaos=\"true\"")
 
           chaos_experiment_name = "node-drain"

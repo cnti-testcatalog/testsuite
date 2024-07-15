@@ -8,18 +8,11 @@ require "./task.cr"
 
 module CNFManager 
   module GenerateConfig
-
-
-    def self.export_manifest(config_src, output_file="./cnf-testsuite.yml", airgapped=false, generate_tar_mode=false)
+    def self.export_manifest(config_src, output_file="./cnf-testsuite.yml")
       LOGGING.info "export_manifest"
       LOGGING.info "export_manifest config_src: #{config_src}"
-      LOGGING.info "airgapped: #{airgapped}"
-      LOGGING.info "generate_tar_mode: #{generate_tar_mode}"
       generate_initial_testsuite_yml(config_src, output_file)
-      CNFManager.generate_and_set_release_name(output_file, 
-                                               airgapped: airgapped, 
-                                               generate_tar_mode: generate_tar_mode,
-                                               src_mode: true)
+      CNFManager.generate_and_set_release_name(output_file, src_mode: true)
       config = CNFManager.parsed_config_file(output_file)
       release_name = optional_key_as_string(config, "release_name")
       install_method = CNFManager.install_method_by_config_src(config_src)
@@ -38,13 +31,11 @@ module CNFManager
 
     #get list of image:tags from helm chart/helm directory/manifest file
     #note: config_src must be an absolute path if a directory, todo: make this more resilient
-    def self.images_from_config_src(config_src, airgapped=false, generate_tar_mode=false)
+    def self.images_from_config_src(config_src)
       LOGGING.info "images_from_config_src"
-      LOGGING.info "airgapped: #{airgapped}"
-      LOGGING.info "generate_tar_mode: #{generate_tar_mode}"
       #return container image name/tag
       ret_containers = [] of NamedTuple(container_name: String, image_name: String, tag: String) 
-      resource_ymls = CNFManager::GenerateConfig.export_manifest(config_src, airgapped: airgapped, generate_tar_mode: generate_tar_mode)
+      resource_ymls = CNFManager::GenerateConfig.export_manifest(config_src)
       resource_resp = resource_ymls.map do | resource |
         LOGGING.info "gen config resource: #{resource}"
         unless resource["kind"].as_s.downcase == "service" ## services have no containers

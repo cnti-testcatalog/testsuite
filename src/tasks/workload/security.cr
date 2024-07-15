@@ -265,8 +265,6 @@ end
 
 desc "Check if security services are being used to harden the application"
 task "linux_hardening", ["kubescape_scan"] do |t, args|
-  next if args.named["offline"]?
-
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Linux hardening")
@@ -286,8 +284,6 @@ end
 
 desc "Check if the containers have insecure capabilities."
 task "insecure_capabilities", ["kubescape_scan"] do |t, args|
-  next if args.named["offline"]?
-
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Insecure capabilities")
@@ -307,8 +303,6 @@ end
 
 desc "Check if the containers have CPU limits set"
 task "cpu_limits", ["kubescape_scan"] do |t, args|
-  next if args.named["offline"]?
-
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Ensure CPU limits are set")
@@ -328,8 +322,6 @@ end
 
 desc "Check if the containers have memory limits set"
 task "memory_limits", ["kubescape_scan"] do |t, args|
-  next if args.named["offline"]?
-
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Ensure memory limits are set")
@@ -349,8 +341,6 @@ end
 
 desc "Check Ingress and Egress traffic policy"
 task "ingress_egress_blocked", ["kubescape_scan"] do |t, args|
-  next if args.named["offline"]?
-
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Ingress and Egress blocked")
@@ -370,8 +360,6 @@ end
 
 desc "Check the Host PID/IPC privileges of the containers"
 task "host_pid_ipc_privileges", ["kubescape_scan"] do |t, args|
-  next if args.named["offline"]?
-
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Host PID/IPC privileges")
@@ -391,8 +379,6 @@ end
 
 desc "Check if the containers are running with non-root user with non-root group membership"
 task "non_root_containers", ["kubescape_scan"] do |t, args|
-  next if args.named["offline"]?
-
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Non-root containers")
@@ -412,8 +398,6 @@ end
 
 desc "Check that privileged containers are not used"
 task "privileged_containers", ["kubescape_scan" ] do |t, args|
-  next if args.named["offline"]?
-
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Privileged container")
@@ -434,8 +418,6 @@ end
 
 desc "Check if containers have immutable file systems"
 task "immutable_file_systems", ["kubescape_scan"] do |t, args|
-  next if args.named["offline"]?
-
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Immutable container filesystem")
@@ -455,8 +437,6 @@ end
 
 desc "Check if containers have hostPath mounts"
 task "hostpath_mounts", ["install_kubescape"] do |t, args|
-  next if args.named["offline"]?
-
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     kubescape_control_id = "C-0048"
     Kubescape.scan(control_id: kubescape_control_id)
