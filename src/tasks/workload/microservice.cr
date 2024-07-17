@@ -300,114 +300,74 @@ end
 
 desc "Do the containers in a pod have only one process type?"
 task "single_process_type" do |t, args|
-  CNFManager::Task.task_runner(args, task: t) do |args,config|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     fail_msgs = [] of String
     resources_checked = false
-    all_node_proc_statuses = [] of NamedTuple(node_name: String,
-                                              proc_statuses: Array(String))
+    test_passed = true
 
-    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      test_passed = true
-      kind = resource["kind"].downcase
-      case kind 
-      when  "deployment","statefulset","pod","replicaset", "daemonset"
-        resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
-        pods = KubectlClient::Get.pods_by_resource(resource_yaml, resource[:namespace])
-        containers = KubectlClient::Get.resource_containers(kind, resource[:name], resource[:namespace])
-        pods.map do |pod|
-          pod_name = pod.dig("metadata", "name")
-          Log.for(t.name).info { "pod_name: #{pod_name}" }
+    CNFManager.cnf_workload_resources(args, config) do |resource|
+      # Extract and convert necessary fields from the resource
+      kind = resource["kind"].as_s?
+      name = resource["metadata"]["name"].as_s?
+      namespace = resource["metadata"]["namespace"].as_s?
+      next unless kind && name && namespace
 
-          status = pod["status"]
-          if status["containerStatuses"]?
-              container_statuses = status["containerStatuses"].as_a
-            Log.for(t.name).info { "container_statuses: #{container_statuses}" }
-            Log.for(t.name).info { "pod_name: #{pod_name}" }
-            nodes = KubectlClient::Get.nodes_by_pod(pod)
-            Log.for(t.name).info { "nodes_by_resource done" }
-            node = nodes.first
-            container_statuses.map do |container_status|
-              container_name = container_status.dig("name")
-              previous_process_type = "initial_name"
-              container_id = container_status.dig("containerID").as_s
-              ready = container_status.dig("ready").as_bool
-              next unless ready 
-              Log.for(t.name).info { "containerStatuses container_id #{container_id}" }
+      # Create a NamedTuple with the necessary fields
+      resource_named_tuple = {
+        kind: kind,
+        name: name,
+        namespace: namespace
+      }
 
-              pid = ClusterTools.node_pid_by_container_id(container_id, node)
-              Log.for(t.name).info { "node pid (should never be pid 1): #{pid}" }
+      Log.info { "Constructed resource_named_tuple: #{resource_named_tuple}" }
 
-              next unless pid
+      # Iterate over every container and verify there is only one process type
+      ClusterTools.all_containers_by_resource?(resource_named_tuple, namespace, only_container_pids:true) do |container_id, container_pid_on_node, node, container_proctree_statuses, container_status|
+        previous_process_type = "initial_name"
 
-              node_name = node.dig("metadata", "name").as_s
-              Log.for(t.name).info { "node name : #{node_name}" }
-#              filtered_proc_statuses = all_node_proc_statuses.find {|x| x[:node_name] == node_name}
-#              proc_statuses = filtered_proc_statuses ? filtered_proc_statuses[:proc_statuses] : nil
-#              Log.debug { "node statuses : #{proc_statuses}" }
-#              unless proc_statuses 
-#                Log.info { "node statuses not found" }
-                pids = KernelIntrospection::K8s::Node.pids(node) 
-                Log.info { "proctree_by_pid pids: #{pids}" }
-                proc_statuses = KernelIntrospection::K8s::Node.all_statuses_by_pids(pids, node)
-#                all_node_proc_statuses << {node_name: node_name,
-#                                     proc_statuses:  proc_statuses} 
+        container_proctree_statuses.each do |status|
+          status_name = status["Name"].strip
+          ppid = status["PPid"].strip
+          Log.for(t.name).info { "status name: #{status_name}" }
+          Log.for(t.name).info { "previous status name: #{previous_process_type}" }
+          resources_checked = true
 
- #             end
-              statuses = KernelIntrospection::K8s::Node.proctree_by_pid(pid, 
-                                                                          node, 
-                                                                          proc_statuses)
-
-              statuses.map do |status|
-                Log.for(t.name).debug { "status: #{status}" }
-                Log.for(t.name).info { "status cmdline: #{status["cmdline"]}" }
-                status_name = status["Name"].strip
-                ppid = status["PPid"].strip
-                Log.for(t.name).info { "status name: #{status_name}" }
-                Log.for(t.name).info { "previous status name: #{previous_process_type}" }
-                resources_checked = true
-                # Fail if more than one process type
-                #todo make work if processes out of order
-                if status_name != previous_process_type && 
-                    previous_process_type != "initial_name"
-
-                  verified = KernelIntrospection::K8s::Node.verify_single_proc_tree(ppid, 
-                                                                                    status_name, 
-                                                                                    statuses,
-                                                                                    SPECIALIZED_INIT_SYSTEMS)
-                  unless verified  
-                    Log.for(t.name).info { "multiple proc types detected verified: #{verified}" }
-                    fail_msg = "resource: #{resource}, pod #{pod_name} and container: #{container_name} has more than one process type (#{statuses.map{|x|x["cmdline"]?}.compact.uniq.join(", ")})"
-                    unless fail_msgs.find{|x| x== fail_msg}
-                      puts fail_msg.colorize(:red)
-                      fail_msgs << fail_msg
-                    end
-                    test_passed=false
-                  end
-                end
-                previous_process_type = status_name
+          if status_name != previous_process_type && previous_process_type != "initial_name"
+            verified = KernelIntrospection::K8s::Node.verify_single_proc_tree(ppid, status_name, container_proctree_statuses, SPECIALIZED_INIT_SYSTEMS)
+            unless verified
+              Log.for(t.name).info { "multiple proc types detected verified: #{verified}" }
+              fail_msg = "resource: #{resource} has more than one process type (#{container_proctree_statuses.map { |x| x["cmdline"]? }.compact.uniq.join(", ")})"
+              unless fail_msgs.find { |x| x == fail_msg }
+                puts fail_msg.colorize(:red)
+                fail_msgs << fail_msg
               end
+              test_passed = false
             end
           end
+
+          previous_process_type = status_name
         end
-        test_passed
       end
     end
 
-    if !resources_checked
-      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Container resources not checked")
-    elsif task_response
-      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Only one process type used")
+    if resources_checked
+      if test_passed
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Only one process type used")
+      else
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "More than one process type used")
+      end
     else
-      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "More than one process type used")
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Container resources not checked")
     end
   end
 end
+
 
 desc "Are the zombie processes handled?"
 task "zombie_handled" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args,config|
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false ) do |resource, container, initialized|
-      ClusterTools.all_containers_by_resource?(resource, resource[:namespace]) do | container_id, container_pid_on_node, node, container_proctree_statuses, container_status| 
+      ClusterTools.all_containers_by_resource?(resource, resource[:namespace], only_container_pids:false) do | container_id, container_pid_on_node, node, container_proctree_statuses, container_status| 
         resp = ClusterTools.exec_by_node("runc --root /run/containerd/runc/k8s.io/ state #{container_id}", node)
         Log.for(t.name).info { "resp[:output] #{resp[:output]}" }
         bundle_path = JSON.parse(resp[:output].to_s)
@@ -422,7 +382,7 @@ task "zombie_handled" do |t, args|
     sleep 10.0
 
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false ) do |resource, container, initialized|
-      ClusterTools.all_containers_by_resource?(resource, resource[:namespace]) do | container_id, container_pid_on_node, node, container_proctree_statuses, container_status| 
+      ClusterTools.all_containers_by_resource?(resource, resource[:namespace], only_container_pids:false) do | container_id, container_pid_on_node, node, container_proctree_statuses, container_status| 
 
         zombies = container_proctree_statuses.map do |status|
           Log.for(t.name).debug { "status: #{status}" }

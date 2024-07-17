@@ -9,8 +9,7 @@ shards:
     version: 1.3.1
 
   cluster_tools:
-    git: https://github.com/cnf-testsuite/cluster_tools.git
-    version: 1.0.5
+    git: https://github.com/svteb/cluster_tools.git
 
   commander:
     git: https://github.com/mrrooijen/commander.git
@@ -41,12 +40,10 @@ shards:
     version: 0.9.0+git.commit.f62bfcdfbe65ee31c46c3d9951cee08ac2e0bee0
 
   k8s_kernel_introspection:
-    git: https://github.com/cnf-testsuite/k8s_kernel_introspection.git
-    version: 1.0.2
+    git: https://github.com/svteb/k8s_kernel_introspection.git
 
   k8s_netstat:
-    git: https://github.com/cnf-testsuite/k8s_netstat.git
-    version: 1.0.1
+    git: https://github.com/svteb/k8s_netstat.git
 
   kernel_introspection:
     git: https://github.com/cnf-testsuite/kernel_introspection.git
