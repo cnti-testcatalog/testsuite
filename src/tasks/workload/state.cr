@@ -369,7 +369,7 @@ task "elastic_volumes" do |t, args|
 
       # todo use workload resource
       # elastic = WorkloadResource.elastic?(volumes)
-      namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
+      namespace = CNFManager.namespace_from_parameters(CNFInstall.install_parameters(config))
 
       full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
       elastic_result = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)

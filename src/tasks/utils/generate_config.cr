@@ -15,15 +15,15 @@ module CNFManager
       CNFManager.generate_and_set_release_name(output_file, src_mode: true)
       config = CNFManager.parsed_config_file(output_file)
       release_name = optional_key_as_string(config, "release_name")
-      install_method = CNFManager.install_method_by_config_src(config_src)
+      install_method = CNFInstall.install_method_by_config_src(config_src)
       LOGGING.info "install_method: #{install_method}"
-      if install_method == Helm::InstallMethod::ManifestDirectory
-        template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( config_src))
+      if install_method == CNFInstall::InstallMethod::ManifestDirectory
+        template_ymls = CNFInstall::Manifest.manifest_ymls_from_file_list(CNFInstall::Manifest.manifest_file_list( config_src))
       else
         # todo if success false, raise error
         Helm.generate_manifest_from_templates(release_name,
                                               config_src)
-        template_ymls = Helm::Manifest.parse_manifest_as_ymls()
+        template_ymls = CNFInstall::Manifest.parse_manifest_as_ymls()
       end
       resource_ymls = Helm.all_workload_resources(template_ymls)
       resource_ymls
@@ -39,7 +39,7 @@ module CNFManager
       resource_resp = resource_ymls.map do | resource |
         LOGGING.info "gen config resource: #{resource}"
         unless resource["kind"].as_s.downcase == "service" ## services have no containers
-          containers = Helm::Manifest.manifest_containers(resource)
+          containers = CNFInstall::Manifest.manifest_containers(resource)
 
           LOGGING.info "containers: #{containers}"
           container_name = containers.as_a[0].as_h["name"].as_s if containers
@@ -69,7 +69,7 @@ module CNFManager
       resource_resp = resource_ymls.map do | resource |
         LOGGING.info "gen config resource: #{resource}"
         unless resource["kind"].as_s.downcase == "service" ## services have no containers
-          containers = Helm::Manifest.manifest_containers(resource)
+          containers = CNFInstall::Manifest.manifest_containers(resource)
 
           LOGGING.info "containers: #{containers}"
           container_name = containers.as_a[0].as_h["name"].as_s if containers
@@ -101,12 +101,12 @@ module CNFManager
 
     def self.generate_initial_testsuite_yml(config_src, config_yml_path="./cnf-testsuite.yml")
       if !File.exists?(config_yml_path)
-        case CNFManager.install_method_by_config_src(config_src) 
-        when Helm::InstallMethod::HelmChart
+        case CNFInstall.install_method_by_config_src(config_src) 
+        when CNFInstall::InstallMethod::HelmChart
           testsuite_yml_template_resp = TestSuiteYmlTemplate.new("helm_chart: #{config_src}").to_s
-        when Helm::InstallMethod::HelmDirectory
+        when CNFInstall::InstallMethod::HelmDirectory
           testsuite_yml_template_resp = TestSuiteYmlTemplate.new("helm_directory: #{config_src}").to_s
-        when Helm::InstallMethod::ManifestDirectory
+        when CNFInstall::InstallMethod::ManifestDirectory
           testsuite_yml_template_resp = TestSuiteYmlTemplate.new("manifest_directory: #{config_src}").to_s
         else
           puts "Error: #{config_src} is neither a helm_chart, helm_directory, or manifest_directory.".colorize(:red)

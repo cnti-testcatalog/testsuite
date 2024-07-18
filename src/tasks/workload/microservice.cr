@@ -35,7 +35,7 @@ task "shared_database", ["install_cluster_tools"] do |t, args|
     resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
     resource_names = Helm.workload_resource_kind_names(resource_ymls)
     helm_chart_cnf_services : Array(JSON::Any)
-    # namespace = CNFManager.namespace_from_parameters(CNFManager.install_parameters(config))
+    # namespace = CNFManager.namespace_from_parameters(CNFInstall.install_parameters(config))
     # Log.info { "namespace: #{namespace}"}
     helm_chart_cnf_services = resource_names.map do |resource_name|
       Log.info { "helm_chart_cnf_services resource_name: #{resource_name}"}

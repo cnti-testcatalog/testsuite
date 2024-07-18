@@ -68,7 +68,7 @@ module CNFManager
                                             source_cnf_file: "",
                                             source_cnf_dir: "",
                                             yml_file_path: "",
-                                            install_method: {Helm::InstallMethod::HelmChart, ""},
+                                            install_method: {CNFInstall::InstallMethod::HelmChart, ""},
                                             manifest_directory: "",
                                             helm_directory: "", 
                                             source_helm_directory: "",

@@ -17,7 +17,7 @@ module CNFManager
                                      source_cnf_file: String,
                                      source_cnf_dir: String,
                                      yml_file_path: String,
-                                     install_method: Tuple(Helm::InstallMethod, String),
+                                     install_method: Tuple(CNFInstall::InstallMethod, String),
                                      manifest_directory: String,
                                      helm_directory: String, 
                                      source_helm_directory: String, 
@@ -70,7 +70,7 @@ module CNFManager
 
       CNFManager.generate_and_set_release_name(config_yml_path)
       config = CNFManager.parsed_config_file(yml_file)
-      install_method = CNFManager.cnf_installation_method(config)
+      install_method = CNFInstall.cnf_installation_method(config)
 
       destination_cnf_dir = CNFManager.cnf_destination_dir(yml_file)
 
@@ -217,18 +217,18 @@ module CNFManager
                                image_registry_fqdns: image_registry_fqdns,})
 
     end
-    def self.install_method_by_config_file(config_file) : Helm::InstallMethod
+    def self.install_method_by_config_file(config_file) : CNFInstall::InstallMethod
       LOGGING.info "install_data_by_config_file"
       config = CNFManager.parsed_config_file(config_file)
       sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file)) 
-      install_method = CNFManager.cnf_installation_method(config)
+      install_method = CNFInstall.cnf_installation_method(config)
       install_method[0]
     end
     def self.config_src_by_config_file(config_file) : String
       LOGGING.info "install_data_by_config_file"
       config = CNFManager.parsed_config_file(config_file)
       sandbox_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file)) 
-      install_method = CNFManager.cnf_installation_method(config)
+      install_method = CNFInstall.cnf_installation_method(config)
       install_method[1]
     end
     def self.release_name_by_config_file(config_file) : String
