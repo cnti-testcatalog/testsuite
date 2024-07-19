@@ -8,39 +8,15 @@ task "cnf_setup", ["helm_local_install", "create_namespace"] do |_, args|
   Log.for("verbose").info { "cnf_setup" } if check_verbose(args)
   Log.for("verbose").debug { "args = #{args.inspect}" } if check_verbose(args)
   cli_hash = CNFManager.sample_setup_cli_args(args)
-  output_file = cli_hash[:output_file]
-  input_file =  cli_hash[:input_file]
   config_file =  cli_hash[:config_file]
-  if output_file && !output_file.empty?
-    puts "cnf tarball generation mode".colorize(:green)
-    tar_info = CNFManager::CNFAirGap.generate_cnf_setup(cli_hash[:config_file], output_file, cli_hash)
-    puts "cnf tarball generation mode complete".colorize(:green)
-  elsif input_file && !input_file.empty?
-    puts "cnf setup airgapped mode".colorize(:green)
-    AirGap.extract(input_file)
-    puts "cnf setup caching images on nodes (airgapped mode)".colorize(:green)
-    install_method = CNFManager::Config.install_method_by_config_file(config_file)
-    config_src = CNFManager::Config.config_src_by_config_file(config_file)
-    release_name = CNFManager::Config.release_name_by_config_file(config_file)
-    if config_file && !AirGap.image_pull_policy_config_file?(install_method, config_src, release_name)
-      puts "Some containers within the installation manifests do not have an image pull policy defined.  Airgap mode will not work until this is fixed.".colorize(:red)
-      exit 1
-    end
-    AirGap.cache_images(cnf_setup: true)
-    puts "cnf setup finished caching images on nodes (airgapped mode)".colorize(:green)
-    CNFManager.sample_setup(cli_hash)
-    puts "cnf setup airgapped mode complete".colorize(:green)
+  if ClusterTools.install
+    puts "ClusterTools installed".colorize(:green)
   else
-    Log.info { "Installing ClusterTools"}
-    if ClusterTools.install
-      puts "ClusterTools installed".colorize(:green)
-    else
-      puts "The ClusterTools installation timed out. Please check the status of the cluster-tools pods.".colorize(:red)
-    end
-    puts "cnf setup online mode".colorize(:green)
-    CNFManager.sample_setup(cli_hash)
-    puts "cnf setup online mode complete".colorize(:green)
+    puts "The ClusterTools installation timed out. Please check the status of the cluster-tools pods.".colorize(:red)
   end
+  puts "cnf setup start".colorize(:green)
+  CNFManager.sample_setup(cli_hash)
+  puts "cnf setup complete".colorize(:green)
 end
 
 task "cnf_cleanup" do |_, args|
@@ -88,7 +64,6 @@ task "generate_config" do |_, args|
     config_src = args.named["config-src"].as(String)
     output_file = args.named["output-file"].as(String) if args.named["output-file"]?
     output_file = args.named["of"].as(String) if args.named["of"]?
-    #TODO make this work in airgapped mode
     if output_file && !output_file.empty?
       Log.info { "generating config with an output file" }
       CNFManager::GenerateConfig.generate_config(config_src, output_file)

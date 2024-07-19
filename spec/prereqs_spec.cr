@@ -14,13 +14,4 @@ describe "Prereq" do
     (/kubectl found/ =~ result[:output]).should_not be_nil
     (/git found/ =~ result[:output]).should_not be_nil
   end
-
-  it "'prereq' with offline option should check the system for prerequisites except git", tags: ["points"]  do
-    result = ShellCmd.run_testsuite("prereqs verbose offline=1")
-    result[:status].success?.should be_true
-    (/helm found/ =~ result[:output]).should_not be_nil
-
-    (/kubectl found/ =~ result[:output]).should_not be_nil
-    (/git found/ =~ result[:output]).should be_nil
-  end
 end

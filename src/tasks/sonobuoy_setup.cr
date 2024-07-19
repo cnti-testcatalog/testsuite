@@ -29,30 +29,20 @@ task "install_sonobuoy" do |_, args|
     FileUtils.mkdir_p("#{tools_path}/sonobuoy")
     # curl = `VERSION="#{LITMUS_K8S_VERSION}" OS=linux ; curl -L "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_amd64.tar.gz" --output #{tools_path}/sonobuoy/sonobuoy.tar.gz`
     # os="linux"
-    if args.named["offline"]?
-      Log.info { "install sonobuoy offline mode" }
-      `tar -xzf #{TarClient::TAR_DOWNLOAD_DIR}/sonobuoy.tar.gz -C #{tools_path}/sonobuoy/ && \
-       chmod +x #{tools_path}/sonobuoy/sonobuoy`
-      sonobuoy = "#{tools_path}/sonobuoy/sonobuoy"
-      sonobuoy_details(sonobuoy) if check_verbose(args)
-    else
-      url = "https://github.com/vmware-tanzu/sonobuoy/releases/download/v#{SONOBUOY_K8S_VERSION}/sonobuoy_#{SONOBUOY_K8S_VERSION}_#{SONOBUOY_OS}_amd64.tar.gz"
-      write_file = "#{tools_path}/sonobuoy/sonobuoy.tar.gz"
-      Log.info { "url: #{url}" }
-      Log.info { "write_file: #{write_file}" }
-      # todo change this to work with rel 
-      # todo I think http get doesn't do follows and thats why we use halite here, that's sad. Shouldn't need to do a follow to download a file though?
-       #  i think any url can do a redirect  ....
-      # it could be that http.get 'just works' now.  keyword just
-
-
-      HttpHelper.download("#{url}","#{write_file}")
-      `tar -xzf #{tools_path}/sonobuoy/sonobuoy.tar.gz -C #{tools_path}/sonobuoy/ && \
-       chmod +x #{tools_path}/sonobuoy/sonobuoy && \
-       rm #{tools_path}/sonobuoy/sonobuoy.tar.gz`
-      sonobuoy = "#{tools_path}/sonobuoy/sonobuoy"
-      sonobuoy_details(sonobuoy) if check_verbose(args)
-    end
+    url = "https://github.com/vmware-tanzu/sonobuoy/releases/download/v#{SONOBUOY_K8S_VERSION}/sonobuoy_#{SONOBUOY_K8S_VERSION}_#{SONOBUOY_OS}_amd64.tar.gz"
+    write_file = "#{tools_path}/sonobuoy/sonobuoy.tar.gz"
+    Log.info { "url: #{url}" }
+    Log.info { "write_file: #{write_file}" }
+    # todo change this to work with rel 
+    # todo I think http get doesn't do follows and thats why we use halite here, that's sad. Shouldn't need to do a follow to download a file though?
+     #  i think any url can do a redirect  ....
+    # it could be that http.get 'just works' now.  keyword just
+    HttpHelper.download("#{url}","#{write_file}")
+    `tar -xzf #{tools_path}/sonobuoy/sonobuoy.tar.gz -C #{tools_path}/sonobuoy/ && \
+     chmod +x #{tools_path}/sonobuoy/sonobuoy && \
+     rm #{tools_path}/sonobuoy/sonobuoy.tar.gz`
+    sonobuoy = "#{tools_path}/sonobuoy/sonobuoy"
+    sonobuoy_details(sonobuoy) if check_verbose(args)
   end
 end
 

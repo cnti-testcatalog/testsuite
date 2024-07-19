@@ -1,9 +1,5 @@
 version: 2.0
 shards:
-  airgap:
-    path: utils/airgap
-    version: 0.1.0
-
   ameba:
     git: https://github.com/crystal-ameba/ameba.git
     version: 1.3.1

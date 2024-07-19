@@ -4,9 +4,6 @@ require "colorize"
 require "totem"
 require "./utils/utils.cr"
 
-
-OPA_OFFLINE_DIR = "#{TarClient::TAR_REPOSITORY_DIR}/gatekeeper_gatekeeper"
-
 desc "Sets up OPA in the K8s Cluster"
 task "install_opa", ["helm_local_install", "create_namespace"] do |_, args|
   helm_install_args_list = [
@@ -22,23 +19,18 @@ task "install_opa", ["helm_local_install", "create_namespace"] do |_, args|
 
   helm_install_args = helm_install_args_list.join(" ")
 
-  if args.named["offline"]?
-    LOGGING.info "Intalling OPA Gatekeeper in Offline Mode"
-    chart = Dir.entries(OPA_OFFLINE_DIR).first
-    Helm.install("#{helm_install_args} opa-gatekeeper #{OPA_OFFLINE_DIR}/#{chart}")
-  else
-    Helm.helm_repo_add("gatekeeper", "https://open-policy-agent.github.io/gatekeeper/charts")
-    begin
-      Helm.install("#{helm_install_args} opa-gatekeeper gatekeeper/gatekeeper")
-    rescue e : Helm::CannotReuseReleaseNameError
-      stdout_warning "gatekeeper already installed"
-    end
+  Helm.helm_repo_add("gatekeeper", "https://open-policy-agent.github.io/gatekeeper/charts")
+  begin
+    Helm.install("#{helm_install_args} opa-gatekeeper gatekeeper/gatekeeper")
+  rescue e : Helm::CannotReuseReleaseNameError
+    stdout_warning "gatekeeper already installed"
   end
-    File.write("enforce-image-tag.yml", ENFORCE_IMAGE_TAG)
-    File.write("constraint_template.yml", CONSTRAINT_TEMPLATE)
-    KubectlClient::Apply.file("constraint_template.yml")
-    KubectlClient.wait("--for condition=established --timeout=300s crd/requiretags.constraints.gatekeeper.sh")
-    KubectlClient::Apply.file("enforce-image-tag.yml")
+
+  File.write("enforce-image-tag.yml", ENFORCE_IMAGE_TAG)
+  File.write("constraint_template.yml", CONSTRAINT_TEMPLATE)
+  KubectlClient::Apply.file("constraint_template.yml")
+  KubectlClient.wait("--for condition=established --timeout=300s crd/requiretags.constraints.gatekeeper.sh")
+  KubectlClient::Apply.file("enforce-image-tag.yml")
 end
 
 desc "Uninstall OPA"

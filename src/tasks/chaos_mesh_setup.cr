@@ -3,30 +3,20 @@ require "file_utils"
 require "colorize"
 require "totem"
 require "./utils/utils.cr"
-# require "./utils/tar.cr"
 require "tar"
 
 CHAOS_MESH_VERSION = "v0.8.0"
-CHAOS_MESH_OFFLINE_DIR = "#{TarClient::TAR_REPOSITORY_DIR}/chaos-mesh_chaos-mesh"
 
 desc "Install Chaos Mesh"
 task "install_chaosmesh" do |_, args|
   Log.for("verbose").info { "install_chaosmesh" } if check_verbose(args)
   current_dir = FileUtils.pwd 
-    helm = Helm::BinarySingleton.helm
-    # KubectlClient::Apply.file("https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml")
-
-    if args.named["offline"]?
-      Log.info { "install chaos mesh offline mode" }
-      helm_chart = Dir.entries(CHAOS_MESH_OFFLINE_DIR).first
-      Helm.install("my-chaos-mesh #{CHAOS_MESH_OFFLINE_DIR}/#{helm_chart} --version 0.5.1")
-
-    else
-      # `helm repo add chaos-mesh https://charts.chaos-mesh.org`
-      # `helm install my-chaos-mesh chaos-mesh/chaos-mesh --version 0.5.1`
-      Helm.helm_repo_add("chaos-mesh","https://charts.chaos-mesh.org")
-      Helm.install("my-chaos-mesh chaos-mesh/chaos-mesh --version 0.5.1")
-    end
+  helm = Helm::BinarySingleton.helm
+  # KubectlClient::Apply.file("https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml")
+  # `helm repo add chaos-mesh https://charts.chaos-mesh.org`
+  # `helm install my-chaos-mesh chaos-mesh/chaos-mesh --version 0.5.1`
+  Helm.helm_repo_add("chaos-mesh","https://charts.chaos-mesh.org")
+  Helm.install("my-chaos-mesh chaos-mesh/chaos-mesh --version 0.5.1")
 
   File.write("chaos_network_loss.yml", CHAOS_NETWORK_LOSS)
   File.write("chaos_cpu_hog.yml", CHAOS_CPU_HOG)

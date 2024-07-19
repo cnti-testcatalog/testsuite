@@ -7,21 +7,14 @@ require "./utils/utils.cr"
 
 desc "Install LitmusChaos"
 task "install_litmus" do |_, args|
-  if args.named["offline"]?
-    Log.info {"install litmus offline mode"}
-    AirGap.image_pull_policy(LitmusManager::OFFLINE_LITMUS_OPERATOR)
-    KubectlClient::Apply.file(LitmusManager::OFFLINE_LITMUS_OPERATOR)
-    KubectlClient::Apply.file("#{OFFLINE_MANIFESTS_PATH}/chaos_crds.yaml")
-  else
-    #todo in resilience node_drain task
-    #todo get node name 
-    #todo download litmus file then modify it with add_node_selector
-    #todo apply modified litmus file
-    Log.info { "install litmus online mode" }
-    Log.info { "install litmus operator"}
-    KubectlClient::Apply.namespace(LitmusManager::LITMUS_NAMESPACE) 
-    KubectlClient::Apply.file(LitmusManager::ONLINE_LITMUS_OPERATOR)
-  end
+  #todo in resilience node_drain task
+  #todo get node name 
+  #todo download litmus file then modify it with add_node_selector
+  #todo apply modified litmus file
+  Log.info { "install litmus" }
+  KubectlClient::Apply.namespace(LitmusManager::LITMUS_NAMESPACE)
+  Log.info { "install litmus operator"}
+  KubectlClient::Apply.file(LitmusManager::LITMUS_OPERATOR)
 end
 
 desc "Uninstall LitmusChaos"
@@ -33,12 +26,7 @@ task "uninstall_litmus" do |_, args|
       output: stdout = IO::Memory.new,
       error: stderr = IO::Memory.new
   )
-  if args.named["offline"]?
-    Log.info { "install litmus offline mode" }
-    KubectlClient::Delete.file("#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v#{LitmusManager::Version}.yaml")
-  else
-    KubectlClient::Delete.file("https://litmuschaos.github.io/litmus/litmus-operator-v#{LitmusManager::Version}.yaml")
-  end
+  KubectlClient::Delete.file("https://litmuschaos.github.io/litmus/litmus-operator-v#{LitmusManager::Version}.yaml")
   Log.info { "#{stdout}" if check_verbose(args) }
   Log.info { "#{stderr}" if check_verbose(args) }
 end
@@ -50,10 +38,8 @@ module LitmusManager
   # Version = "1.13.8"
   # Version = "3.0.0-beta12"
   NODE_LABEL = "kubernetes.io/hostname"
-  OFFLINE_LITMUS_OPERATOR = "#{OFFLINE_MANIFESTS_PATH}/litmus-operator-v#{LitmusManager::Version}.yaml"
   #https://raw.githubusercontent.com/litmuschaos/chaos-operator/v2.14.x/deploy/operator.yaml
-  # ONLINE_LITMUS_OPERATOR = "https://litmuschaos.github.io/litmus/litmus-operator-v#{LitmusManager::Version}.yaml"
-  ONLINE_LITMUS_OPERATOR = "https://litmuschaos.github.io/litmus/litmus-operator-v#{LitmusManager::Version}.yaml"
+  LITMUS_OPERATOR = "https://litmuschaos.github.io/litmus/litmus-operator-v#{LitmusManager::Version}.yaml"
   # for node drain
   DOWNLOADED_LITMUS_FILE = "litmus-operator-downloaded.yaml"
   MODIFIED_LITMUS_FILE = "litmus-operator-modified.yaml"
@@ -62,13 +48,8 @@ module LitmusManager
 
 
 
-  def self.add_node_selector(node_name, airgap=false )
-    if airgap
-      file = File.read(OFFLINE_LITMUS_OPERATOR)
-
-    else
-      file = File.read(DOWNLOADED_LITMUS_FILE)
-    end
+  def self.add_node_selector(node_name)
+    file = File.read(DOWNLOADED_LITMUS_FILE)
     deploy_index = file.index("kind: Deployment") || 0 
     spec_literal = "spec:"
     template = "\n      nodeSelector:\n        kubernetes.io/hostname: #{node_name}"

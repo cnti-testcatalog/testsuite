@@ -129,31 +129,6 @@ This should build a cnf-testsuite binary in the root directory of the git repo c
 </p>
 </details>
 
-#### Air-Gapped 
-
-The CNF-TestSuite has the ability to install in an air-gapped environment.  A tarball with upstream tools can be created from a source installation, or downloaded from the binaries of the release. 
-
-You can read more about the air-gap process by reading the [AIRGAP detailed documentation](AIRGAP.md).
-
-<details><summary> Click here for brief air-gap install details</summary>
-<p>
-
-Prerequite: Follow the source install instructions to create a working binary which will generate the air-gapped tarball.
-
-Follow these steps to create an air-gap tarball and to bootstrap the cluster with the tarball:
-
-```
-./cnf-testsuite airgapped output-file=./tmp/airgapped.tar.gz
-./cnf-testsuite setup offline=./tmp/airgapped.tar.gz
-
-# To run the set suite in air-gapped mode
-./cnf-testsuite workload offline=true
-```
-This should create a bootstrapped cluster with the upstream tools necessary for the cnf-testsuite.
-
-</p>
-</details>
-
 ### Preparation
 
 Now that you have cnf-testsuite installed, we need to prepare the suite.
@@ -226,16 +201,6 @@ If you've followed the [CNF_TESTSUITE_YML_USAGE.md](CNF_TESTSUITE_YML_USAGE.md) 
 
 ```
 cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
-```
-#### Installing a CNF in Airgapped mode 
-
-To create a tarball of a cnf that can be copied into the airgapped environment:
-```
-cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml output-file=/tmp/mycnf.tar
-```
-To install a cnf from a tarball into the airgapped environment:
-```
-cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml input-file=/tmp/mycnf.tar
 ```
 
 ### Running cnf-testsuite for the first time

@@ -68,8 +68,6 @@ dependencies:
   release_manager:
     github: cnf-testsuite/release_manager
     branch: main
-  airgap:
-    path: utils/airgap
   retriable:
     github: Sija/retriable.cr
   protobuf:

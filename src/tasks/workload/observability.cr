@@ -41,7 +41,6 @@ end
 
 desc "Does the CNF emit prometheus traffic"
 task "prometheus_traffic" do |t, args|
-  next if args.named["offline"]?
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
     release_name = config.cnf_config[:release_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir] 
@@ -159,7 +158,6 @@ end
 
 desc "Does the CNF emit prometheus open metric compatible traffic"
 task "open_metrics", ["prometheus_traffic"] do |t, args|
-  next if args.named["offline"]?
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
     release_name = config.cnf_config[:release_name]
     configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-open-metrics")
@@ -181,7 +179,6 @@ end
 
 desc "Are the CNF's logs captured by a logging system"
 task "routed_logs", ["install_cluster_tools"] do |t, args|
-  next if args.named["offline"]?
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
     match = FluentManager.find_active_match
     unless match
@@ -217,8 +214,6 @@ desc "Does the CNF install use tracing?"
 task "tracing" do |t, args|
   Log.for(t.name).info { "Running test" }
   Log.for(t.name).info { "tracing args: #{args.inspect}" }
-
-  next if args.named["offline"]?
 
   cnf_config_ok = check_cnf_config(args) || CNFManager.destination_cnfs_exist?
   CNFManager::Task.task_runner(args, task: t) do |args, config|

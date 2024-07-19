@@ -277,11 +277,6 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |t, args|
 
     KubectlClient::Create.command("namespace hardcoded-ip-test")
     unless helm_chart.empty?
-      if args.named["offline"]?
-        info = AirGap.tar_info_by_config_src(helm_chart)
-        Log.for(t.name).info { "airgapped mode info: #{info}" }
-        helm_chart = info[:tar_name]
-      end
       helm_install = Helm.install("--namespace hardcoded-ip-test hardcoded-ip-test #{helm_chart} --dry-run --debug > #{helm_chart_yml_path}")
     else
       helm_install = Helm.install("--namespace hardcoded-ip-test hardcoded-ip-test #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{helm_chart_yml_path}")
@@ -623,17 +618,10 @@ task "alpha_k8s_apis" do |t, args|
     ensure_kubeconfig!
     kubeconfig_orig = ENV["KUBECONFIG"]
 
-    # No offline support for this task for now
-    if args.named["offline"]? && args.named["offline"]? != "false"
-      next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "alpha_k8s_apis chaos test skipped")
-    end
-
     # Get kubernetes version of the current server.
     # This is used to setup kind with same k8s image version.
     k8s_server_version = KubectlClient.server_version
 
-    # Online mode workflow below
-    offline = false
     cluster_name = "apisnooptest"
     # Ensure any old cluster is deleted
     KindManager.new.delete_cluster(cluster_name)
@@ -643,7 +631,7 @@ task "alpha_k8s_apis" do |t, args|
     Log.info { "apisnoop cluster kubeconfig: #{cluster.kubeconfig}" }
     ENV["KUBECONFIG"] = "#{cluster.kubeconfig}"
 
-    cnf_setup_complete = CNFManager.cnf_to_new_cluster(config, cluster.kubeconfig, offline)
+    cnf_setup_complete = CNFManager.cnf_to_new_cluster(config, cluster.kubeconfig)
 
     # CNF setup failed on kind cluster. Inform in test output.
     unless cnf_setup_complete

@@ -1,7 +1,6 @@
 require "./spec_helper"
 require "colorize"
 require "../src/tasks/utils/utils.cr"
-require "airgap"
 require "kubectl_client"
 require "helm"
 require "file_utils"

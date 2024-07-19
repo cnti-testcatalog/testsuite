@@ -13,7 +13,6 @@
 /tools/helm
 /tools/sonobuoy
 /tools/cluster-api
-/tools/airgapped_kind/kind_node/node.tar.gz
 /tools/dockerd-manifest.yml
 admin.conf
 cnf-testsuite
@@ -25,7 +24,6 @@ cnf-testsuite*.tar*
 *.tar
 reasonable_startup_orig.yml
 reasonable_startup_test.yml
-cri_tools.yml
 ephemeral_env 
 kubeconfig.conf 
 linux-amd64/
@@ -41,13 +39,8 @@ chaos_container_kill.yml
 /.idea/
 *.log
 points.yml
-/tools/cri-tools-manifest.yml
-cri-tools-manifest.yml
 containerd-*-linux-amd64.tar.gz
-crictl-*-linux-amd64.tar.gz
 tools/LICENSE
-airgapped.tar.gz
-airgaptest.tar.gz
 /cnf-testsuite.yml
 /*.tgz
 /enforce-image-tag.yml

@@ -56,7 +56,7 @@ class ApiSnoop
       Log.for("apisnoop_kind_dir").info { FileUtils.pwd }
       ShellCmd.run("pwd", "apisnoop_setup_kind_dir", true)
       kind_config = "kind+apisnoop.yaml"
-      cluster = kind_manager.create_cluster(name, kind_config, false, k8s_version)
+      cluster = kind_manager.create_cluster(name, kind_config, k8s_version)
       cluster.wait_until_nodes_ready()
       cluster.wait_until_pods_ready()
       return cluster

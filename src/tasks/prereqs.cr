@@ -8,24 +8,17 @@ require "helm"
 require "./utils/system_information/clusterctl.cr"
 
 task "prereqs" do |_, args|
-  offline_mode = false
-  offline_mode = true if args.named["offline"]?
-
   verbose = check_verbose(args)
   
-  helm_condition = Helm::SystemInfo.helm_installation_info(verbose) && !Helm.helm_gives_k8s_warning?(true)
-
-  kubectl_existance = KubectlClient.installation_found?(verbose, offline_mode)
+  helm_ok = Helm::SystemInfo.helm_installation_info(verbose) && !Helm.helm_gives_k8s_warning?(true)
+  kubectl_ok = KubectlClient.installation_found?(verbose)
+  git_ok = GitClient.installation_found?
 
   checks = [
-    helm_condition,
-    kubectl_existance,
+    helm_ok,
+    kubectl_ok,
+    git_ok
   ]
-
-  # git installation is optional for offline mode
-  if !offline_mode
-    checks << GitClient.installation_found?
-  end
 
   if checks.includes?(false)
     stdout_failure "Setup failed. Some prerequisites are missing. Please install all of the prerequisites before continuing."
