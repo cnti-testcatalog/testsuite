@@ -37,8 +37,8 @@ task "cnf_cleanup" do |_, args|
     force = false
   end
   config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(cnf))
-  install_method = CNFManager.cnf_installation_method(config)
-  if install_method[0] == Helm::InstallMethod::ManifestDirectory
+  install_method = CNFInstall.cnf_installation_method(config)
+  if install_method[0] == CNFInstall::InstallMethod::ManifestDirectory
     installed_from_manifest = true
   else
     installed_from_manifest = false

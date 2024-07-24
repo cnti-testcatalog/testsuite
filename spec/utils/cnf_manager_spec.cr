@@ -392,12 +392,6 @@ describe "SampleUtils" do
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
   end
 
-  it "'CNFManager.exclusive_install_method_tags' should return false if install method tags are not exclusive", tags: ["cnf-config"]  do
-    config = CNFManager.parsed_config_file("./spec/fixtures/cnf-testsuite-not-exclusive.yml")
-    resp = CNFManager.exclusive_install_method_tags?(config)
-    (resp).should be_false 
-  end
-
   it "bonus tests should not be includded in the maximum points when a failure occurs", tags: ["cnf-config"]  do
     begin
       # fails because doesn't have a service

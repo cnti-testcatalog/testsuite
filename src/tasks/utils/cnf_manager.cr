@@ -12,6 +12,8 @@ require "./jaeger.cr"
 require "tar"
 require "./generate_config.cr"
 require "./oran_monitor.cr"
+require "./cnf_installation/install_common.cr"
+require "./cnf_installation/manifest.cr"
 require "log"
 require "ecr"
 
@@ -83,24 +85,24 @@ module CNFManager
     test_passed = true
 
     default_namespace = "default"
-    install_method = self.cnf_installation_method(config)
+    install_method = CNFInstall.cnf_installation_method(config)
     Log.debug { "install_method: #{install_method}" }
     template_ymls = [] of YAML::Any
     case install_method[0]
-    when Helm::InstallMethod::HelmChart, Helm::InstallMethod::HelmDirectory
+    when CNFInstall::InstallMethod::HelmChart, CNFInstall::InstallMethod::HelmDirectory
       Log.info { "EXPORTED CHART PATH: #{helm_chart_path}" } 
       Helm.generate_manifest_from_templates(release_name,
                                             helm_chart_path,
                                             manifest_file_path,
                                             helm_install_namespace,
                                             helm_values)
-      template_ymls = Helm::Manifest.parse_manifest_as_ymls(manifest_file_path)
+      template_ymls = CNFInstall::Manifest.parse_manifest_as_ymls(manifest_file_path)
       if !helm_install_namespace.empty?
         default_namespace = config.cnf_config[:helm_install_namespace]
       end
-    when Helm::InstallMethod::ManifestDirectory
+    when CNFInstall::InstallMethod::ManifestDirectory
     # if release_name.empty? # no helm chart
-      template_ymls = Helm::Manifest.manifest_ymls_from_file_list(Helm::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
+      template_ymls = CNFInstall::Manifest.manifest_ymls_from_file_list(CNFInstall::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
     # else
     end
 
@@ -162,25 +164,6 @@ module CNFManager
     namespace
   end
 
-  def self.install_parameters(config)
-    Log.info { "install_parameters" }
-    install_method = config.cnf_config[:install_method]
-    helm_chart = config.cnf_config[:helm_chart]
-    helm_directory = config.cnf_config[:helm_directory]
-    manifest_directory = config.cnf_config[:manifest_directory]
-    case install_method[0]
-    when Helm::InstallMethod::ManifestDirectory
-      directory_parameters = directory_parameter_split(manifest_directory)["parameters"]
-    when Helm::InstallMethod::HelmChart
-      directory_parameters = directory_parameter_split(helm_chart)["parameters"]
-    when Helm::InstallMethod::HelmDirectory
-      directory_parameters = directory_parameter_split(helm_directory)["parameters"]
-    else
-      directory_parameters = ""
-    end
-    Log.info { "directory_parameters :#{directory_parameters}" }
-    directory_parameters
-  end
   #test_passes_completely = workload_resource_test do | cnf_config, resource, container, initialized |
   def self.workload_resource_test(args, config,
                                   check_containers = true,
@@ -189,7 +172,7 @@ module CNFManager
                                              JSON::Any, JSON::Any, Bool | Nil) -> Bool | Nil)
             # resp = yield resource, container, volumes, initialized
     test_passed = true
-    namespace = namespace_from_parameters(install_parameters(config))
+    namespace = namespace_from_parameters(CNFInstall.install_parameters(config))
 
     resource_ymls = cnf_workload_resources(args, config) do |resource|
       resource
@@ -348,123 +331,8 @@ module CNFManager
     end
   end
 
-  def self.exclusive_install_method_tags?(config)
-    installation_type_count = ["helm_chart", "helm_directory", "manifest_directory"].reduce(0) do |acc, install_type|
-      begin
-        test_tag = config[install_type]
-        Log.debug { "install type count install_type: #{install_type}" }
-        if install_type.empty?
-          acc
-        else
-          acc = acc + 1
-        end
-      rescue ex
-        Log.debug { "install_type: #{install_type} not found in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}" }
-        acc
-      end
-    end
-    Log.debug { "installation_type_count: #{installation_type_count}" }
-    if installation_type_count > 1
-      false
-    else
-      true
-    end
-  end
-
-  def self.install_method_by_config_src(config_src : String)
-    Log.info { "install_method_by_config_src" }
-    Log.info { "config_src: #{config_src}" }
-    helm_chart_file = "#{config_src}/#{Helm::CHART_YAML}"
-    Log.info { "looking for potential helm_chart_file: #{helm_chart_file}: file exists?: #{File.exists?(helm_chart_file)}" }
-
-    if !Dir.exists?(config_src) 
-      Log.info { "install_method_by_config_src helm_chart selected" }
-      Helm::InstallMethod::HelmChart
-    elsif File.exists?(helm_chart_file)
-      Log.info { "install_method_by_config_src helm_directory selected" }
-      Helm::InstallMethod::HelmDirectory
-    elsif Dir.exists?(config_src) 
-      Log.info { "install_method_by_config_src manifest_directory selected" }
-      Helm::InstallMethod::ManifestDirectory
-    else
-      puts "Error: #{config_src} is neither a helm_chart, helm_directory, or manifest_directory.".colorize(:red)
-      exit 1
-    end
-  end
-
-  def self.cnf_installation_method(config : CNFManager::Config) : Tuple(Helm::InstallMethod, String)
-    Log.info { "cnf_installation_method config : CNFManager::Config" }
-    Log.info { "config_cnf_config: #{config.cnf_config}" }
-    yml_file_path = config.cnf_config[:source_cnf_file]
-    parsed_config_file = CNFManager.parsed_config_file(yml_file_path)
-    cnf_installation_method(parsed_config_file)
-  end
-
-  def self.directory_parameter_split(directory_with_parameters)
-    Log.info { "directory_parameter_split : #{directory_with_parameters}" }
-    directory = directory_with_parameters.split(" ")[0]
-    parameters = directory_with_parameters.split(" ")[1..-1].join(" ") 
-    Log.info { "directory : #{directory} parameters: #{parameters}"} 
-    {"directory" => directory, "parameters" => parameters} 
-  end
-
-  def self.ensure_directory(directory_with_parameters)
-    Log.info { "directory_parameter_split : #{directory_with_parameters}" }
-    split = directory_parameter_split(directory_with_parameters)
-    split["directory"]
-  end
-
   def self.sandbox_helm_directory(cnf_testsuite_helm_directory)
     cnf_testsuite_helm_directory.split("/")[-1]
-  end
-  #Determine, for cnf, whether a helm chart, helm directory, or manifest directory is being used for installation
-  def self.cnf_installation_method(config : Totem::Config) : Tuple(Helm::InstallMethod, String)
-    Log.info { "cnf_installation_method" }
-    Log.info { "cnf_installation_method config: #{config}" }
-    Log.info { "cnf_installation_method config: #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}" }
-    helm_chart = optional_key_as_string(config, "helm_chart")
-    helm_directory = ensure_directory(optional_key_as_string(config, "helm_directory"))
-    manifest_directory = optional_key_as_string(config, "manifest_directory")
-    release_name = optional_key_as_string(config, "release_name")
-    full_helm_directory = ""
-    full_manifest_directory = ""
-    Log.info { "release_name: #{release_name}" }
-    Log.info { "helm_directory: #{helm_directory}" }
-    Log.info { "manifest_directory: #{manifest_directory}" }
-    #todo did this ever work? should be full path to destination.  This is not 
-    # even the relative path
-    if Dir.exists?(helm_directory) 
-      Log.info { "Change helm_directory relative path into full path" }
-      full_helm_directory = Path[sandbox_helm_directory(helm_directory)].expand.to_s
-    elsif Dir.exists?(manifest_directory)
-      Log.info { "Change manifest_directory relative path into full path" }
-      full_manifest_directory = Path[manifest_directory].expand.to_s
-    else
-      Log.info { "Building helm_directory and manifest_directory full paths" }
-      full_helm_directory = Path[CNF_DIR + "/" + release_name + "/" + sandbox_helm_directory(helm_directory)].expand.to_s
-      full_manifest_directory = Path[CNF_DIR + "/" + release_name + "/" + sandbox_helm_directory(manifest_directory)].expand.to_s
-    end
-
-    Log.info { "full_helm_directory: #{full_helm_directory} exists? #{Dir.exists?(full_helm_directory)}" }
-    Log.info { "full_manifest_directory: #{full_manifest_directory} exists? #{Dir.exists?(full_manifest_directory)}" }
-
-    unless CNFManager.exclusive_install_method_tags?(config)
-      puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory in cnf-testsuite.yml!".colorize(:red)
-      exit 1
-    end
-
-    if !helm_chart.empty?
-      {Helm::InstallMethod::HelmChart, helm_chart}
-    elsif !helm_directory.empty?
-      Log.info { "helm_directory not empty, using: #{full_helm_directory}" }
-      {Helm::InstallMethod::HelmDirectory, full_helm_directory}
-    elsif !manifest_directory.empty?
-      Log.info { "manifest_directory not empty, using: #{full_manifest_directory}" }
-      {Helm::InstallMethod::ManifestDirectory, full_manifest_directory}
-    else
-      puts "Error: Must populate at lease one installation type in #{config.config_paths[0]}/#{config.config_name}.#{config.config_type}: choose either helm_chart, helm_directory, or manifest_directory.".colorize(:red)
-      exit 1
-    end
   end
 
   #TODO move to helm module
@@ -508,14 +376,14 @@ module CNFManager
     Log.info { "src_helm_directory: #{src_helm_directory}" }
     Log.debug { "predefined_release_name: #{predefined_release_name}" }
     if predefined_release_name.empty?
-      install_method = self.cnf_installation_method(config)
+      install_method = CNFInstall.cnf_installation_method(config)
       Log.debug { "install_method: #{install_method}" }
       case install_method[0]
-      when Helm::InstallMethod::HelmChart
+      when CNFInstall::InstallMethod::HelmChart
         Log.info { "generate_and_set_release_name install method: #{install_method[0]} data: #{install_method[1]}" }
         Log.info { "generate_and_set_release_name helm_chart_or_directory: #{install_method[1]}" }
         release_name = helm_chart_template_release_name(install_method[1])
-      when Helm::InstallMethod::HelmDirectory
+      when CNFInstall::InstallMethod::HelmDirectory
         Log.info { "helm_directory install method: #{yml_path}/#{install_method[1]}" }
         # todo get the release name by looking through everything under /tmp/repositories
         Log.info { "generate_and_set_release_name helm_chart_or_directory: #{install_method[1]}" }
@@ -524,7 +392,7 @@ module CNFManager
         else
           release_name = helm_chart_template_release_name("#{install_method[1]}")
         end
-      when Helm::InstallMethod::ManifestDirectory
+      when CNFInstall::InstallMethod::ManifestDirectory
         Log.debug { "manifest_directory install method" }
         release_name = UUID.random.to_s
       else
@@ -643,7 +511,7 @@ module CNFManager
     # todo manifest_or_helm_directory should either be the source helm/manifest files or the destination
     # directory that they will be copied to/generated into, but *not both*
     case install_method[0]
-    when Helm::InstallMethod::ManifestDirectory
+    when CNFInstall::InstallMethod::ManifestDirectory
       Log.info { "preparing manifest_directory sandbox" }
       source_directory = config_source_dir(config_file) + "/" + manifest_directory
       src_path = Path[source_directory].expand.to_s
@@ -654,7 +522,7 @@ module CNFManager
       rescue File::AlreadyExistsError
         Log.info { "manifest sandbox dir already exists at #{destination_cnf_dir}/#{File.basename(src_path)}" }
       end
-    when Helm::InstallMethod::HelmDirectory
+    when CNFInstall::InstallMethod::HelmDirectory
       Log.info { "preparing helm_directory sandbox" }
       source_directory = config_source_dir(config_file) + "/" + source_helm_directory.split(" ")[0] # todo support parameters separately
       src_path = Path[source_directory].expand.to_s
@@ -668,7 +536,7 @@ module CNFManager
         Log.info { "helm directory not found at #{src_path}" }
         raise HelmDirectoryMissingError.new(src_path)
       end
-    when Helm::InstallMethod::HelmChart
+    when CNFInstall::InstallMethod::HelmChart
       Log.info { "preparing helm chart sandbox" }
       FileUtils.mkdir_p(Path[destination_cnf_dir].expand.to_s + "/exported_chart")
     end
@@ -829,10 +697,10 @@ module CNFManager
     Log.for("sample_setup:install_method").info { "#{install_method[1]}" }
     elapsed_time = Time.measure do
       case install_method[0]
-      when Helm::InstallMethod::ManifestDirectory
+      when CNFInstall::InstallMethod::ManifestDirectory
         Log.for("verbose").info { "deploying by manifest file" } if verbose
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
-      when Helm::InstallMethod::HelmChart
+      when CNFInstall::InstallMethod::HelmChart
         if !helm_install_namespace.empty?
           # default_namespace = config.cnf_config[:helm_install_namespace]
           helm_install_namespace = config.cnf_config[:helm_install_namespace]
@@ -858,7 +726,7 @@ module CNFManager
           fresh_install = false
         end
         export_published_chart(config, cli_args)
-      when Helm::InstallMethod::HelmDirectory
+      when CNFInstall::InstallMethod::HelmDirectory
         if !helm_install_namespace.empty?
           # default_namespace = config.cnf_config[:helm_install_namespace]
           helm_install_namespace = config.cnf_config[:helm_install_namespace]
@@ -1044,15 +912,15 @@ module CNFManager
 
     Log.for("cnf_to_new_cluster").info { "Install method: #{install_method[0]}" }
     case install_method[0]
-    when Helm::InstallMethod::ManifestDirectory
+    when CNFInstall::InstallMethod::ManifestDirectory
       KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", kubeconfig: kubeconfig)
-    when Helm::InstallMethod::HelmChart
+    when CNFInstall::InstallMethod::HelmChart
       begin
         helm_install = Helm.install("#{release_name} #{helm_chart} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_warning "Release name #{release_name} has already been setup."
       end
-    when Helm::InstallMethod::HelmDirectory
+    when CNFInstall::InstallMethod::HelmDirectory
       begin
         helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
       rescue e : Helm::CannotReuseReleaseNameError
@@ -1118,10 +986,10 @@ module CNFManager
     end
 
     default_namespace = "default"
-    install_method = self.cnf_installation_method(parsed_config)
+    install_method = CNFInstall.cnf_installation_method(parsed_config)
     Log.for("sample_cleanup:install_method").info { install_method }
     case install_method[0]
-    when Helm::InstallMethod::HelmChart, Helm::InstallMethod::HelmDirectory
+    when CNFInstall::InstallMethod::HelmChart, CNFInstall::InstallMethod::HelmDirectory
       helm_install_namespace = parsed_config.cnf_config[:helm_install_namespace]
       if helm_install_namespace != nil && helm_install_namespace != ""
         default_namespace = helm_install_namespace
@@ -1134,7 +1002,7 @@ module CNFManager
       end
       FileUtils.rm_rf(destination_cnf_dir)
       return result[:status].success?
-    when Helm::InstallMethod::ManifestDirectory
+    when CNFInstall::InstallMethod::ManifestDirectory
       manifest_directory = destination_cnf_dir + "/" + "#{config["manifest_directory"]? && config["manifest_directory"].as_s?}"
       Log.for("cnf_cleanup:manifest_directory").info { manifest_directory }
       result = KubectlClient::Delete.file("#{manifest_directory}", wait: true)
