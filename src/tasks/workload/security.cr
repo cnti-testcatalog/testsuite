@@ -145,9 +145,10 @@ task "privileged" do |t, args|
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
       privileged_list = KubectlClient::Get.privileged_containers
-      white_list_containers = ((PRIVILEGED_WHITELIST_CONTAINERS + white_list_container_names) - [container])
+      resource_containers = KubectlClient::Get.resource_containers(resource["kind"],resource["name"],resource["namespace"])
+      resource_containers_list = (JSON.parse(resource_containers.to_json).as_a).map { |element| element["name"] }
       # Only check the containers that are in the deployed helm chart or manifest
-      (privileged_list & ([container.as_h["name"].as_s] - white_list_containers)).each do |container_name|
+      (privileged_list & (resource_containers_list - white_list_container_names)).each do |container_name|
         violation_list << {kind: resource[:kind], name: resource[:name], container: container_name, namespace: resource[:namespace]}
       end
       if violation_list.size > 0

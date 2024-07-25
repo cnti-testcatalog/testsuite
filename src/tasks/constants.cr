@@ -12,7 +12,6 @@ ERROR = "error"
 # todo move to helm module
 # CHART_YAML = "Chart.yaml"
 DEFAULT_POINTSFILENAME = "points_v1.yml"
-PRIVILEGED_WHITELIST_CONTAINERS = ["chaos-daemon", "cluster-tools"]
 SONOBUOY_K8S_VERSION = "0.56.14"
 KUBESCAPE_VERSION = "3.0.8"
 KUBESCAPE_FRAMEWORK_VERSION = "1.0.316"

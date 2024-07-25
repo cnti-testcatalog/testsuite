@@ -5,5 +5,4 @@ service_name: nsm-admission-webhook-svc
 helm_repository:
   name: stable 
   repo_url: https://cncf.gitlab.io/stable
-allowlist_helm_chart_container_names: []
 helm_install_namespace: cnfspace
