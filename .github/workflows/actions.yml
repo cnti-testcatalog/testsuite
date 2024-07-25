@@ -12,6 +12,11 @@ on:
       - '!**.md'
       - '!docs/*'
       - '!doc-lint/*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   tests:
     name: Fetch Matrix Tests
