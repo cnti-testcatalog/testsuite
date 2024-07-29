@@ -14,8 +14,7 @@ describe "Resilience Node Drain Chaos" do
 
   it "'node_drain' A 'Good' CNF should not crash when node drain occurs", tags: ["node_drain"]  do
     begin
-      result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
-      result[:status].success?.should be_true
+      ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
       result = ShellCmd.run_testsuite("node_drain verbose")
       result[:status].success?.should be_true
       if KubectlClient::Get.schedulable_nodes_list.size > 1

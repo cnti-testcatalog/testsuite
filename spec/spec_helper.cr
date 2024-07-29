@@ -20,4 +20,14 @@ module ShellCmd
     cmd = "#{cmd_prefix} ./cnf-testsuite #{testsuite_cmd}"
     run(cmd, log_prefix: "ShellCmd.run_testsuite", force_output: true, joined_output: true)
   end
+
+  def self.cnf_setup(setup_params, cmd_prefix="", expect_failure=false)
+    result = run_testsuite("cnf_setup #{setup_params} wait_count=300", cmd_prefix)
+    if !expect_failure
+      result[:status].success?.should be_true
+    else
+      result[:status].success?.should be_false
+    end
+    result
+  end
 end
