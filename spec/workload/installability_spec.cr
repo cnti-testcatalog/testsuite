@@ -9,7 +9,7 @@ describe CnfTestSuite do
   end
 
 	it "'helm_deploy' should fail on a bad helm chart", tags: ["helm"] do
-    result = ShellCmd.run_testsuite("cnf_setup cnf-path=./sample-cnfs/sample-bad-helm-deploy-repo verbose")
+    ShellCmd.cnf_setup("cnf-path=./sample-cnfs/sample-bad-helm-deploy-repo verbose")
     result = ShellCmd.run_testsuite("helm_deploy verbose")
     result[:status].success?.should be_true
     (/(FAILED).*(Helm deploy failed)/ =~ result[:output]).should_not be_nil
@@ -24,8 +24,7 @@ describe CnfTestSuite do
   end
 
   it "'helm_chart_valid' should pass on a good helm chart", tags: ["helm"]  do
-    result = ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose")
-    result[:status].success?.should be_true
+    ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose")
     result = ShellCmd.run_testsuite("helm_chart_valid verbose")
     result[:status].success?.should be_true
     (/Lint Passed/ =~ result[:output]).should_not be_nil
@@ -35,8 +34,7 @@ describe CnfTestSuite do
 
   it "'helm_chart_valid' should fail on a bad helm chart", tags: ["helm"] do
     begin
-      result = ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample-bad_helm_coredns-cnf/cnf-testsuite.yml verbose wait_count=0")
-      result[:status].success?.should be_true
+      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample-bad_helm_coredns-cnf/cnf-testsuite.yml verbose skip_wait_for_install")
       result = ShellCmd.run_testsuite("helm_chart_valid")
       result[:status].success?.should be_true
       (/Lint Failed/ =~ result[:output]).should_not be_nil
@@ -47,8 +45,7 @@ describe CnfTestSuite do
 
   it "'helm_chart_published' should pass on a good helm chart repo", tags: ["helm_chart_published"]  do
     begin
-      result = ShellCmd.run_testsuite("cnf_setup cnf-path=sample-cnfs/sample-coredns-cnf")
-      result[:status].success?.should be_true
+      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample-coredns-cnf")
       result = ShellCmd.run_testsuite("helm_chart_published")
       result[:status].success?.should be_true
       (/(PASSED).*(Published Helm Chart Found)/ =~ result[:output]).should_not be_nil
@@ -60,8 +57,7 @@ describe CnfTestSuite do
   it "'helm_chart_published' should fail on a bad helm chart repo", tags: ["helm_chart_published"] do
     begin
       result = ShellCmd.run("helm search repo stable/coredns", force_output: true)
-      result = ShellCmd.run_testsuite("cnf_setup cnf-path=sample-cnfs/sample-bad-helm-repo wait_count=0")
-      result[:status].success?.should be_false
+      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample-bad-helm-repo skip_wait_for_install", expect_failure: true)
       result = ShellCmd.run("helm search repo stable/coredns", force_output: true)
       result = ShellCmd.run_testsuite("helm_chart_published verbose")
       result[:status].success?.should be_true

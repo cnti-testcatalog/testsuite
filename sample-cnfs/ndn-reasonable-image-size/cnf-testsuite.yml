@@ -1,4 +1,3 @@
 ---
-helm_chart: oci://docker.io/envoyproxy/gateway-helm --version v0.0.0-latest
-release_name: envoy 
-service_name: envoy
+helm_directory: gateway-helm
+release_name: envoy-gateway

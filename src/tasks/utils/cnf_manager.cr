@@ -482,9 +482,12 @@ module CNFManager
     elsif args.named.keys.includes? "wait-count"
       wait_count = args.named["wait-count"].to_i
     else
-      wait_count = 180
+      wait_count = 1800
     end
-    cli_args = {config_file: cnf_path, wait_count: wait_count, verbose: check_verbose(args)}
+
+    skip_wait_for_install = args.raw.includes? "skip_wait_for_install"
+
+    cli_args = {config_file: cnf_path, wait_count: wait_count, skip_wait_for_install: skip_wait_for_install, verbose: check_verbose(args)}
     Log.debug { "cli_args: #{cli_args}" }
     cli_args
   end
@@ -618,6 +621,7 @@ module CNFManager
     Log.info { "sample_setup cli_args: #{cli_args}" }
     config_file = cli_args[:config_file]
     wait_count = cli_args[:wait_count]
+    skip_wait_for_install = cli_args[:skip_wait_for_install]
     verbose = cli_args[:verbose]
     config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
     Log.debug { "config in sample_setup: #{config.cnf_config}" }
@@ -771,13 +775,13 @@ module CNFManager
           defaultFailureThreshold = 3
           defaultPeriodSeconds = 10
 
-          if failureThreshhold
+          if !failureThreshhold.nil? && failureThreshhold.as_i?
             ft = failureThreshhold.as_i
           else
             ft = defaultFailureThreshold
           end
 
-          if periodSeconds
+          if !periodSeconds.nil? && periodSeconds.as_i?
             ps = periodSeconds.as_i
           else
             ps = defaultPeriodSeconds
@@ -785,7 +789,7 @@ module CNFManager
 
           total_period_failure = ps * ft
 
-          if initialDelaySeconds
+          if !initialDelaySeconds.nil? && initialDelaySeconds.as_i?
             total_extended_period = initialDelaySeconds.as_i + total_period_failure
           else
             total_extended_period = total_period_failure
@@ -802,12 +806,24 @@ module CNFManager
           end
         end
       end
-
-      resource_names.each do | resource |
-        case resource[:kind].downcase
-        when "replicaset", "deployment", "statefulset", "pod", "daemonset"
-          KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], wait_count: wait_count, namespace: resource[:namespace])
+      if !skip_wait_for_install
+        stdout_success "Waiting for resource availability, timeout for each resource is #{wait_count} seconds\n"
+        workload_resource_names = resource_names.select { |resource| 
+        ["replicaset", "deployment", "statefulset", "pod", "daemonset"].includes?(resource[:kind].downcase) 
+      }
+        total_resource_count = workload_resource_names.size()
+        current_resource_number = 1
+        workload_resource_names.each do | resource |
+          stdout_success "Waiting for resource (#{current_resource_number}/#{total_resource_count}): [#{resource[:kind]}] #{resource[:name]}", same_line: true
+          ready = KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], wait_count: wait_count, namespace: resource[:namespace])
+          if !ready
+            stdout_failure "CNF setup has timed-out, [#{resource[:kind]}] #{resource[:name]} is not ready after #{wait_count} seconds.", same_line: true
+            stdout_failure "Recommended course of actions would be to investigate the resource in cluster, then call cnf_cleanup and try to reinstall the CNF."
+            exit 1
+          end
+          current_resource_number += 1
         end
+        stdout_success "All CNF resources are up!", same_line: true
       end
     end
 
@@ -836,13 +852,13 @@ module CNFManager
     Log.info { "helm_install[:error].to_s: #{helm_install[:error].to_s}" }
     Log.info { "helm_install[:error].to_s.size: #{helm_install[:error].to_s.size}" }
     helm_used = false
-    if helm_install && helm_error == false # fails on warnings ... && helm_install[:error].to_s.size == 0 # && helm_pull.to_s.size > 0
+    if helm_install && !helm_error # fails on warnings ... && helm_install[:error].to_s.size == 0 # && helm_pull.to_s.size > 0
       helm_used = true
       stdout_success "Successfully setup #{release_name}"
     end
 
     # Not required to write elapsed time configmap if the cnf already exists due to a previous Helm install
-    return true if fresh_install == false
+    return true if !fresh_install
 
     # Immutable config maps are only supported in Kubernetes 1.19+
     immutable_configmap = true

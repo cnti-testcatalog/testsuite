@@ -152,8 +152,8 @@ describe "Utils" do
 
   it "'all_cnfs_task_runner' should run a test against all cnfs in the cnfs directory if there is not cnf-config argument passed to it", tags: ["task_runner"]  do
     my_args = Sam::Args.new
-      result = ShellCmd.run_testsuite("cnf_setup cnf-path=sample-cnfs/sample-generic-cnf")
-      result = ShellCmd.run_testsuite("cnf_setup cnf-path=sample-cnfs/sample_privileged_cnf")
+      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample-generic-cnf")
+      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample_privileged_cnf")
     task_response = CNFManager::Task.all_cnfs_task_runner(my_args) do |args, config|
       Log.info { "all_cnfs_task_runner spec args #{args.inspect}" }
       Log.for("verbose").info { "privileged_containers" } if check_verbose(args)
@@ -192,8 +192,8 @@ describe "Utils" do
   end
 
   it "'task_runner' should run a test against a single cnf if passed a cnf-config argument even if there are multiple cnfs installed", tags: ["task_runner"]  do
-    result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-generic-cnf/cnf-testsuite.yml")
-    result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml")
+    ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-generic-cnf/cnf-testsuite.yml")
+    ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml")
     result = ShellCmd.run_testsuite("privileged_containers")
     (/(FAILED).*(Found 1 privileged containers)/ =~ result[:output]).should_not be_nil
   ensure
@@ -252,7 +252,7 @@ describe "Utils" do
   end
 
   it "'logger' or verbose output should be shown when verbose flag is set", tags: ["logger"] do
-    result = ShellCmd.run_testsuite("cnf_setup cnf-path=sample-cnfs/sample-coredns-cnf")
+    ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample-coredns-cnf")
     result = ShellCmd.run_testsuite("helm_deploy verbose", cmd_prefix: "LOG_LEVEL=info")
     puts result[:output]
     result[:status].success?.should be_true

@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "eg.fullname" . }}-certgen
+  namespace: '{{ .Release.Namespace }}'
+  labels:
+  {{- include "eg.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install, pre-upgrade
+  {{- if .Values.certgen.job.annotations }}
+    {{- toYaml .Values.certgen.job.annotations | nindent 4 -}}
+  {{- end }}
+spec:
+  backoffLimit: 1
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      labels:
+        app: certgen
+    spec:
+      containers:
+      - command:
+        - envoy-gateway
+        - certgen
+        env:
+        - name: ENVOY_GATEWAY_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ .Values.kubernetesClusterDomain }}
+        image: {{ include "eg.image" . }}
+        imagePullPolicy: {{ include "eg.image.pullPolicy" . }}
+        name: envoy-gateway-certgen
+        {{- with .Values.certgen.job.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsGroup: 65534
+          runAsUser: 65534
+          seccompProfile:
+            type: RuntimeDefault
+      {{- include "eg.image.pullSecrets" . | nindent 6 }}
+      restartPolicy: Never
+      serviceAccountName: {{ include "eg.fullname" . }}-certgen
+  {{- if not ( kindIs "invalid" .Values.certgen.job.ttlSecondsAfterFinished) }}
+  ttlSecondsAfterFinished: {{ .Values.certgen.job.ttlSecondsAfterFinished }}
+  {{- end }}
