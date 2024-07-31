@@ -105,9 +105,9 @@ describe "Utils" do
       Log.debug { "violator list: #{violation_list.flatten}" }
       emoji_security=""
       if resource_response 
-        resp = upsert_passed_task("privileged", "✔️  PASSED: No privileged containers", Time.utc)
+        resp = upsert_passed_task("privileged_containers", "✔️  PASSED: No privileged containers", Time.utc)
       else
-        resp = upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect}", Time.utc)
+        resp = upsert_failed_task("privileged_containers", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect}", Time.utc)
       end
       Log.info { resp }
       resp
@@ -156,7 +156,7 @@ describe "Utils" do
       result = ShellCmd.run_testsuite("cnf_setup cnf-path=sample-cnfs/sample_privileged_cnf")
     task_response = CNFManager::Task.all_cnfs_task_runner(my_args) do |args, config|
       Log.info { "all_cnfs_task_runner spec args #{args.inspect}" }
-      Log.for("verbose").info { "privileged" } if check_verbose(args)
+      Log.for("verbose").info { "privileged_containers" } if check_verbose(args)
       white_list_container_names = config.cnf_config[:white_list_container_names]
       Log.for("verbose").info { "white_list_container_names #{white_list_container_names.inspect}" } if check_verbose(args)
       violation_list = [] of String
@@ -178,9 +178,9 @@ describe "Utils" do
       Log.debug { "violator list: #{violation_list.flatten}" }
       emoji_security=""
       if resource_response 
-        resp = upsert_passed_task("privileged", "✔️  PASSED: No privileged containers", Time.utc)
+        resp = upsert_passed_task("privileged_containers", "✔️  PASSED: No privileged containers", Time.utc)
       else
-        resp = upsert_failed_task("privileged", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect}", Time.utc)
+        resp = upsert_failed_task("privileged_containers", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect}", Time.utc)
       end
       resp
     end
@@ -194,7 +194,7 @@ describe "Utils" do
   it "'task_runner' should run a test against a single cnf if passed a cnf-config argument even if there are multiple cnfs installed", tags: ["task_runner"]  do
     result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-generic-cnf/cnf-testsuite.yml")
     result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml")
-    result = ShellCmd.run_testsuite("privileged")
+    result = ShellCmd.run_testsuite("privileged_containers")
     (/(FAILED).*(Found 1 privileged containers)/ =~ result[:output]).should_not be_nil
   ensure
     result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-generic-cnf/cnf-testsuite.yml")

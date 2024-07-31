@@ -4,23 +4,23 @@ require "../../src/tasks/utils/utils.cr"
 
 describe "Security" do
 
-  it "'privileged' should pass with a non-privileged cnf", tags: ["privileged"]  do
+  it "'privileged_containers' should pass with a non-privileged cnf", tags: ["privileges"]  do
     begin
       result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-statefulset-cnf/cnf-testsuite.yml")
       Log.debug { result[:output] }
-      result = ShellCmd.run_testsuite("privileged verbose")
+      result = ShellCmd.run_testsuite("privileged_containers verbose")
       result[:status].success?.should be_true
-      (/Found.*privileged containers.*coredns/ =~ result[:output]).should be_nil
+      (/No privileged containers/ =~ result[:output]).should_not be_nil
     ensure
       result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-statefulset-cnf/cnf-testsuite.yml")
       Log.debug { result[:output] }
     end
   end
-  it "'privileged' should fail on a non-whitelisted, privileged cnf", tags: ["privileged"] do
+  it "'privileged_containers' should fail on a non-whitelisted, privileged cnf", tags: ["privileges"] do
     begin
       result = ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml verbose wait_count=0")
       result[:status].success?.should be_true
-      result = ShellCmd.run_testsuite("privileged verbose")
+      result = ShellCmd.run_testsuite("privileged_containers verbose")
       result[:status].success?.should be_true
       (/Found.*privileged containers.*/ =~ result[:output]).should_not be_nil
       (/Privileged container (privileged-coredns) in.*/ =~ result[:output]).should_not be_nil
@@ -28,18 +28,18 @@ describe "Security" do
       result = ShellCmd.run_testsuite("sample_privileged_cnf_non_whitelisted_cleanup")
     end
   end
-  it "'privileged' should pass on a whitelisted, privileged cnf", tags: ["privileged"] do
+  it "'privileged_containers' should pass on a whitelisted, privileged cnf", tags: ["privileges"] do
     begin
       result = ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample_whitelisted_privileged_cnf/cnf-testsuite.yml verbose wait_count=0")
       result[:status].success?.should be_true
-      result = ShellCmd.run_testsuite("privileged cnf-config=sample-cnfs/sample_whitelisted_privileged_cnf verbose")
+      result = ShellCmd.run_testsuite("privileged_containers cnf-config=sample-cnfs/sample_whitelisted_privileged_cnf verbose")
       result[:status].success?.should be_true
       (/Found.*privileged containers.*/ =~ result[:output]).should be_nil
     ensure
       result = ShellCmd.run_testsuite("sample_privileged_cnf_whitelisted_cleanup")
     end
   end
-  it "'privilege_escalation' should fail on a cnf that has escalated privileges", tags: ["privileged"] do
+  it "'privilege_escalation' should fail on a cnf that has escalated privileges", tags: ["privileges"] do
     begin
       result = ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml")
       result[:status].success?.should be_true
@@ -51,7 +51,7 @@ describe "Security" do
     end
   end
 
-  it "'privilege_escalation' should pass on a cnf that does not have escalated privileges", tags: ["privileged"] do
+  it "'privilege_escalation' should pass on a cnf that does not have escalated privileges", tags: ["privileges"] do
     begin
       result = ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample-nonroot-containers/cnf-testsuite.yml")
       result[:status].success?.should be_true
@@ -214,18 +214,6 @@ describe "Security" do
       result = ShellCmd.run_testsuite("non_root_containers")
       result[:status].success?.should be_true
       (/(PASSED).*(Containers are running with non-root user with non-root group membership)/ =~ result[:output]).should be_nil
-    ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf")
-    end
-  end
-
-  it "'privileged_containers' should pass when the cnf has no privileged containers", tags: ["privileged"] do
-    begin
-      result = ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample-coredns-cnf")
-      result[:status].success?.should be_true
-      result = ShellCmd.run_testsuite("privileged_containers")
-      result[:status].success?.should be_true
-      (/(FAILED).*(Found privileged containers)/ =~ result[:output]).should be_nil
     ensure
       result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf")
     end

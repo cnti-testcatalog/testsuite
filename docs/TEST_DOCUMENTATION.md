@@ -922,7 +922,7 @@ Make sure your CNF doesn't mount `/var/run/docker.sock`, `/var/run/containerd.so
 
 #### Overview
 
-Checks if any containers are running in privileged mode (using [Kubescape](https://hub.armo.cloud/docs/c-0057))
+Checks if any containers are running in privileged mode.
 Expectation: Containers should not run in privileged mode
 
 #### Rationale

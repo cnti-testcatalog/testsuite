@@ -53,10 +53,6 @@
 #- name: check_reaped 
 #  tags: state, dynamic, configuration
 
-- name: privileged
-  emoji: "🔓🔑"
-  tags: [security, dynamic, workload]
-  # required: true
 - name: privilege_escalation
   emoji: "🔓🔑"
   tags: [security, dynamic, workload, cert, normal]
