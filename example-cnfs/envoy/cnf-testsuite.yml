@@ -1,8 +1,4 @@
 ---
 release_name: envoy 
 service_name: envoy
-helm_repository:
-  name: stable 
-  repo_url: https://cncf.gitlab.io/stable
-helm_chart: stable/envoy
-helm_install_namespace: cnfspace
+helm_directory: envoy
