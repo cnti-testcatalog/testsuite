@@ -80,11 +80,10 @@ module CNFManager
     release_name = config.cnf_config[:release_name]
     helm_chart_path = config.cnf_config[:helm_chart_path]
     manifest_file_path = config.cnf_config[:manifest_file_path]
-    helm_install_namespace = config.cnf_config[:helm_install_namespace]
     helm_values = config.cnf_config[:helm_values]
     test_passed = true
 
-    default_namespace = "default"
+    deployment_namespace = CNFManager.get_deployment_namespace(config)
     install_method = CNFInstall.cnf_installation_method(config)
     Log.debug { "install_method: #{install_method}" }
     template_ymls = [] of YAML::Any
@@ -94,12 +93,10 @@ module CNFManager
       Helm.generate_manifest_from_templates(release_name,
                                             helm_chart_path,
                                             manifest_file_path,
-                                            helm_install_namespace,
+                                            deployment_namespace,
                                             helm_values)
       template_ymls = CNFInstall::Manifest.parse_manifest_as_ymls(manifest_file_path)
-      if !helm_install_namespace.empty?
-        default_namespace = config.cnf_config[:helm_install_namespace]
-      end
+      
     when CNFInstall::InstallMethod::ManifestDirectory
     # if release_name.empty? # no helm chart
       template_ymls = CNFInstall::Manifest.manifest_ymls_from_file_list(CNFInstall::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
@@ -135,17 +132,30 @@ module CNFManager
   # ```
   # CNFManager.cnf_workload_resources(args, config) {|cnf_config, resource| #your code}
   # ```
-  def self.cnf_workload_resources(args, config, &block)
-    helm_install_namespace = config.cnf_config[:helm_install_namespace]
-    #
-    default_namespace = "default"
-    if !helm_install_namespace.empty?
-      default_namespace = config.cnf_config[:helm_install_namespace]
+  
+  def self.get_deployment_namespace(config)
+    install_method = CNFInstall.cnf_installation_method(config)
+    case install_method[0]
+    when CNFInstall::InstallMethod::HelmChart, Helm::InstallMethod::HelmDirectory
+      if !config.cnf_config[:helm_install_namespace].empty?
+        Log.info { "deployment namespace was set to: #{config.cnf_config[:helm_install_namespace]}" }
+        config.cnf_config[:helm_install_namespace]
+      else
+        Log.info { "deployment namespace was set to: #{DEFAULT_CNF_NAMESPACE}" }
+        DEFAULT_CNF_NAMESPACE
+      end
+    else
+      Log.info { "deployment namespace was set to: default" }
+      "default"
     end
+  end
 
+
+  def self.cnf_workload_resources(args, config, &block)
+    deployment_namespace = CNFManager.get_deployment_namespace(config)
     template_ymls = cnf_resource_ymls(args, config)
     # call cnf cnf_resources to get unfiltered yml
-    resource_ymls = Helm.all_workload_resources(template_ymls, default_namespace)
+    resource_ymls = Helm.all_workload_resources(template_ymls, deployment_namespace)
     resource_resp = resource_ymls.map do | resource |
       resp = yield resource
       Log.debug { "cnf_workload_resource yield resp: #{resp}" }
@@ -178,11 +188,9 @@ module CNFManager
       resource
     end
 
-    default_namespace = "default"
-    if !config.cnf_config[:helm_install_namespace].empty?
-      default_namespace = config.cnf_config[:helm_install_namespace]
-    end
-    resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace: default_namespace)
+    deployment_namespace = CNFManager.get_deployment_namespace(config)
+    
+    resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace: deployment_namespace)
     Log.info { "resource names: #{resource_names}" }
     if resource_names && resource_names.size > 0
       initialized = true
@@ -629,13 +637,10 @@ module CNFManager
     helm_repository = config.cnf_config[:helm_repository]
     helm_repo_name = "#{helm_repository && helm_repository["name"]}"
     helm_repo_url = "#{helm_repository && helm_repository["repo_url"]}"
+    deployment_namespace = CNFManager.get_deployment_namespace(config)
+    helm_namespace_option = "-n #{deployment_namespace}"
+    ensure_namespace_exists!(deployment_namespace)
 
-    helm_install_namespace = config.cnf_config[:helm_install_namespace]
-    helm_namespace_option = ""
-    if !helm_install_namespace.empty?
-      helm_namespace_option = "-n #{helm_install_namespace}"
-      ensure_namespace_exists!(helm_install_namespace)
-    end
 
     Log.info { "helm_repo_name: #{helm_repo_name}" }
     Log.info { "helm_repo_url: #{helm_repo_url}" }
@@ -664,8 +669,6 @@ module CNFManager
 
     helm_install = {status: "", output: "", error: ""}
     helm_error = false
-
-    default_namespace = "default"
 
     # todo determine what the ric is/if there is a ric installed (labeling)
     #option 1
@@ -701,18 +704,11 @@ module CNFManager
         Log.for("verbose").info { "deploying by manifest file" } if verbose
         KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
       when CNFInstall::InstallMethod::HelmChart
-        if !helm_install_namespace.empty?
-          # default_namespace = config.cnf_config[:helm_install_namespace]
-          helm_install_namespace = config.cnf_config[:helm_install_namespace]
-        else
-          helm_install_namespace = default_namespace
-        end
         helm_chart = config.cnf_config[:helm_chart]
         if !helm_repo_name.empty? || !helm_repo_url.empty?
           Helm.helm_repo_add(helm_repo_name, helm_repo_url)
         end
         Log.for("verbose").info { "deploying with chart repository" } if verbose
- 
         begin
           helm_install = Helm.install(release_name, helm_chart, helm_namespace_option, helm_values)
           # helm_install = Helm.install("#{release_name} #{helm_chart} #{helm_namespace_option}")
@@ -727,16 +723,9 @@ module CNFManager
         end
         export_published_chart(config, cli_args)
       when CNFInstall::InstallMethod::HelmDirectory
-        if !helm_install_namespace.empty?
-          # default_namespace = config.cnf_config[:helm_install_namespace]
-          helm_install_namespace = config.cnf_config[:helm_install_namespace]
-        else
-          helm_install_namespace = default_namespace
-        end
         Log.for("verbose").info { "deploying with helm directory" } if verbose
         #TODO Add helm options into cnf-testsuite yml
         #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
-
         begin
           # helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} #{helm_namespace_option}")
           helm_install = Helm.install(release_name, "#{install_method[1]}", helm_namespace_option, helm_values)
@@ -757,10 +746,8 @@ module CNFManager
         resource
       end
 
-      resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace)
+      resource_names = Helm.workload_resource_kind_names(resource_ymls, deployment_namespace)
       #TODO move to kubectlclient and make resource_install_and_wait_for_all function
-
-      #
       # get liveness probe initialDelaySeconds and FailureThreshold
       # if   ((periodSeconds * failureThreshhold) + initialDelaySeconds) / defaultFailureThreshold) > startuptimelimit then fail; else pass
       # get largest startuptime of all resoures, then save into config map
@@ -900,15 +887,9 @@ module CNFManager
     helm_chart_path = config.cnf_config[:helm_chart_path]
     helm_chart = config.cnf_config[:helm_chart]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-
-    helm_install_namespace = config.cnf_config[:helm_install_namespace]
-    helm_namespace_option = ""
-    if !helm_install_namespace.empty?
-      helm_namespace_option = "-n #{helm_install_namespace}"
-      ensure_namespace_exists!(helm_install_namespace, kubeconfig: kubeconfig)
-    else
-      Log.for("cnf_to_new_cluster").info { "helm_install_namespace option is empty" }
-    end
+    deployment_namespace = CNFManager.get_deployment_namespace(config)
+    helm_namespace_option = "-n #{deployment_namespace}"
+    ensure_namespace_exists!(deployment_namespace, kubeconfig: kubeconfig)
 
     Log.for("cnf_to_new_cluster").info { "Install method: #{install_method[0]}" }
     case install_method[0]
@@ -934,11 +915,7 @@ module CNFManager
       resource
     end
 
-    default_namespace = "default"
-    if !helm_install_namespace.empty?
-      default_namespace = config.cnf_config[:helm_install_namespace]
-    end
-    resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace: default_namespace)
+    resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace: deployment_namespace)
 
     wait_list = resource_names.map do | resource |
       case resource[:kind].downcase
@@ -984,17 +961,13 @@ module CNFManager
     elsif dir_exists
       Log.for("sample_cleanup").info { "Destination dir #{destination_cnf_dir} exists" }
     end
-
-    default_namespace = "default"
+    
     install_method = CNFInstall.cnf_installation_method(parsed_config)
     Log.for("sample_cleanup:install_method").info { install_method }
     case install_method[0]
     when CNFInstall::InstallMethod::HelmChart, CNFInstall::InstallMethod::HelmDirectory
-      helm_install_namespace = parsed_config.cnf_config[:helm_install_namespace]
-      if helm_install_namespace != nil && helm_install_namespace != ""
-        default_namespace = helm_install_namespace
-        helm_namespace_option = "-n #{helm_install_namespace}"
-      end
+      deployment_namespace = CNFManager.get_deployment_namespace(parsed_config)
+      helm_namespace_option = "-n #{deployment_namespace}"
       result = Helm.uninstall(release_name + " #{helm_namespace_option}")
       Log.for("sample_cleanup:helm_uninstall").info { result[:output].to_s } if verbose
       if result[:status].success?
@@ -1021,7 +994,8 @@ module CNFManager
 
   def self.workload_resource_keys(args, config)
     resource_keys = CNFManager.cnf_workload_resources(args, config) do |resource|
-      namespace = resource.dig?("metadata", "namespace") || config.cnf_config[:helm_install_namespace]
+      deployment_namespace = CNFManager.get_deployment_namespace(config)
+      namespace = resource.dig?("metadata", "namespace") || deployment_namespace
       kind = resource.dig?("kind")
       name = resource.dig?("metadata", "name")
       "#{namespace},#{kind}/#{name}".downcase

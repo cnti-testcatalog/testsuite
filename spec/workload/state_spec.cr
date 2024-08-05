@@ -42,8 +42,8 @@ describe "State" do
     begin
       Log.info { "Installing Mysql " }
       # todo make helm directories work with parameters
-      ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample-mysql/cnf-testsuite.yml")
-      KubectlClient::Get.resource_wait_for_install("Pod", "mysql-0")
+      result = ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample-mysql/cnf-testsuite.yml")
+      result[:status].success?.should be_true
       result = ShellCmd.run_testsuite("database_persistence", cmd_prefix: "LOG_LEVEL=info")
       (/(PASSED).*(CNF uses database with cloud-native persistence)/ =~ result[:output]).should_not be_nil
     ensure

@@ -356,7 +356,7 @@ task "secrets_used" do |t, args|
       #  but do not have a corresponding k8s secret defined, this
       #  is an installation problem, and does not stop the test from passing
 
-      namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
       secrets = KubectlClient::Get.secrets(namespace: namespace)
 
       secrets["items"].as_a.each do |s|
@@ -565,7 +565,7 @@ task "immutable_configmap" do |t, args|
 
         # If the install type is manifest, the namesapce would be in the manifest.
         # Else rely on config for helm-based install
-        namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+        namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
         configmaps = KubectlClient::Get.configmaps(namespace: namespace)
         if configmaps.dig?("items")
           configmaps = configmaps.dig("items").as_a

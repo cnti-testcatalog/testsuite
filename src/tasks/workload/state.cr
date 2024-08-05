@@ -24,7 +24,7 @@ module Volume
   def self.elastic_by_volumes?(volumes : Array(JSON::Any), namespace : String? = nil)
     Log.info {"Volume.elastic_by_volumes"}
     storage_class_names = storage_class_by_volumes(volumes, namespace)
-    elastic = StorageClass.elastic_by_storage_class?(storage_class_names)
+    elastic = StorageClass.elastic_by_storage_class?(storage_class_names, namespace)
     Log.info {"Volume.elastic_by_volumes elastic: #{elastic}"}
     elastic
   end
@@ -180,7 +180,7 @@ module VolumeClaimTemplate
   def self.storage_class_by_vct_resource(resource, namespace)
     Log.info {"storage_class_by_vct_resource"}
     pvc_name = VolumeClaimTemplate.pvc_name_by_vct_resource(resource)
-    resource = KubectlClient::Get.resource("pvc", pvc_name.to_s)
+    resource = KubectlClient::Get.resource("pvc", pvc_name.to_s, namespace)
 
     Log.info {"pvc resource #{resource}"}
     storage_class = nil
@@ -205,10 +205,10 @@ module WorkloadResource
     if VolumeClaimTemplate.vct_resource?(resource)
       storage_class = VolumeClaimTemplate.storage_class_by_vct_resource(resource, namespace)
       if storage_class
-        elastic = StorageClass.elastic_by_storage_class?([storage_class])
+        elastic = StorageClass.elastic_by_storage_class?([storage_class], namespace)
       end
     else
-      elastic = Volume.elastic_by_volumes?(volumes)
+      elastic = Volume.elastic_by_volumes?(volumes, namespace)
     end
     Log.info {"workloadresource elastic?: #{elastic}"}
     elastic
@@ -221,7 +221,7 @@ task "node_drain", ["install_litmus"] do |t, args|
     skipped = false
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      app_namespace = resource[:namespace] || config.cnf_config[:helm_install_namespace]
+      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
       Log.info { "Current Resource Name: #{resource["kind"]}/#{resource["name"]} Namespace: #{resource["namespace"]}" }
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
 
@@ -369,7 +369,7 @@ task "elastic_volumes" do |t, args|
 
       # todo use workload resource
       # elastic = WorkloadResource.elastic?(volumes)
-      namespace = CNFManager.namespace_from_parameters(CNFInstall.install_parameters(config))
+      namespace = CNFManager.namespace_from_parameters(CNFInstall.install_parameters(config)) || CNFManager.get_deployment_namespace(config)
 
       full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
       elastic_result = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)
@@ -408,11 +408,8 @@ task "database_persistence" do |t, args|
     match = Mysql.match
     Log.info {"database_persistence mysql: #{match}"}
     if match && match[:found]
-      default_namespace = "default"
-      if !config.cnf_config[:helm_install_namespace].empty?
-        default_namespace = config.cnf_config[:helm_install_namespace]
-      end
-      statefulset_exists = Helm.kind_exists?(args, config, "statefulset", default_namespace)
+      deployment_namespace = CNFManager.get_deployment_namespace(config)
+      statefulset_exists = Helm.kind_exists?(args, config, "statefulset", deployment_namespace)
 
       unless statefulset_exists
         all_mysql_elastic_statefulset = false
@@ -427,7 +424,7 @@ task "database_persistence" do |t, args|
             end
           end
 
-          namespace = resource["namespace"] || default_namespace
+          namespace = resource["namespace"] || deployment_namespace
           Log.info {"database_persistence namespace: #{namespace}"}
           Log.info {"database_persistence resource: #{resource}"}
           Log.info {"database_persistence volumes: #{volumes}"}
