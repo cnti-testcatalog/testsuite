@@ -392,17 +392,6 @@ describe "SampleUtils" do
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
   end
 
-  it "bonus tests should not be includded in the maximum points when a failure occurs", tags: ["cnf-config"]  do
-    begin
-      # fails because doesn't have a service
-      result = ShellCmd.run_testsuite("cnf_setup cnf-path=./sample-cnfs/sample-ndn-privileged")
-      result = ShellCmd.run_testsuite("cert_microservice")
-      (/of 6 tests passed/ =~ result[:output]).should_not be_nil
-    ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample-ndn-privileged")
-    end
-  end
-
   it "Helm_values should be used during the installation of a cnf", tags: ["cnf-config"]  do
     begin
       # fails because doesn't have a service

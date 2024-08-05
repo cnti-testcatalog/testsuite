@@ -9,32 +9,32 @@
 
 - name: reasonable_image_size
   emoji: "⚖👀"
-  tags: [microservice, dynamic, workload, cert, normal]
+  tags: [microservice, dynamic, workload, normal]
 - name: specialized_init_system
   emoji: "🚀"
-  tags: [microservice, dynamic, workload, essential, cert]
+  tags: [microservice, dynamic, workload, cert, essential]
   pass: 100
 - name: reasonable_startup_time 
-  tags: [microservice, dynamic, workload, cert, normal]
+  tags: [microservice, dynamic, workload, normal]
 - name: single_process_type
   emoji: "⚖👀"
-  tags: [microservice, dynamic, workload, essential, cert]
+  tags: [microservice, dynamic, workload, cert, essential]
   pass: 100
 - name: zombie_handled
   emoji: "⚖👀"
-  tags: [microservice, dynamic, workload, essential, cert]
+  tags: [microservice, dynamic, workload, cert, essential]
   pass: 100
 - name: service_discovery
   emoji: "⚖👀"
-  tags: [microservice, dynamic, workload, cert, bonus]
+  tags: [microservice, dynamic, workload, bonus]
   pass: 1
   fail: 0
 - name: shared_database
   emoji: "💾"
-  tags: [microservice, dynamic, workload, cert, normal]
+  tags: [microservice, dynamic, workload, normal]
 - name: sig_term_handled
   emoji: "⚖👀"
-  tags: [microservice, dynamic, workload, essential, cert]
+  tags: [microservice, dynamic, workload, cert, essential]
   pass: 100
 - name: cni_compatible
   emoji: "🔓🔑"
@@ -59,16 +59,16 @@
   # required: true
 - name: privilege_escalation
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, cert, normal]
+  tags: [security, dynamic, workload, normal]
 - name: symlink_file_system 
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, cert, normal]
+  tags: [security, dynamic, workload, normal]
 - name: application_credentials 
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, cert, normal]
+  tags: [security, dynamic, workload, normal]
 - name: host_network 
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, cert, normal]
+  tags: [security, dynamic, workload, normal]
 #- name: shells 
 #  tags: security, dynamic
 #- name: protected_access 
@@ -76,7 +76,7 @@
 
 - name: increase_decrease_capacity
   emoji: "📦📈📉"
-  tags: [compatibility, dynamic, workload, essential, cert]
+  tags: [compatibility, dynamic, workload, cert, essential]
   pass: 100
 #- name: small_autoscaling 
 #  tags: compatibility, dynamic, workload
@@ -86,33 +86,33 @@
 #   tags: resilience, dynamic, workload
 - name: pod_network_latency
   emoji: "🗡️💀♻"
-  tags: [resilience, dynamic, workload, cert, bonus]
+  tags: [resilience, dynamic, workload, bonus]
   pass: 1
   fail: 0
 - name: pod_network_corruption
   emoji: "🗡️💀♻"
-  tags: [resilience, dynamic, workload, cert, bonus]
+  tags: [resilience, dynamic, workload, bonus]
   pass: 1
   fail: 0
 - name: pod_network_duplication
   emoji: "🗡️💀♻"
-  tags: [resilience, dynamic, workload, cert, bonus]
+  tags: [resilience, dynamic, workload, bonus]
   pass: 1
   fail: 0
 - name: pod_delete
   emoji: "🗡️💀♻"
-  tags: [resilience, dynamic, workload, cert, normal]
+  tags: [resilience, dynamic, workload, normal]
 - name: pod_io_stress
   emoji: "🗡️💀♻"
-  tags: [resilience, dynamic, workload, cert, bonus]
+  tags: [resilience, dynamic, workload, bonus]
   pass: 1
   fail: 0
 - name: pod_memory_hog
   emoji: "🗡️💀♻"
-  tags: [resilience, dynamic, workload, cert, normal]
+  tags: [resilience, dynamic, workload, normal]
 - name: disk_fill
   emoji: "🗡️💀♻"
-  tags: [resilience, dynamic, workload, cert, normal]
+  tags: [resilience, dynamic, workload, normal]
 - name: pod_dns_error
   emoji: "🗡️💀♻"
   tags: [resilience, dynamic, workload]
@@ -131,14 +131,14 @@
   tags: [configuration, static, workload]
 - name: operator_installed
   emoji: "⚖️👀"
-  tags: [configuration, dynamic, workload, cert, bonus]
+  tags: [configuration, dynamic, workload, bonus]
 - name: liveness
   emoji: "⎈🧫"
-  tags: [resilience, dynamic, workload, essential, cert]
+  tags: [resilience, dynamic, workload, cert, essential]
   pass: 100
 - name: readiness
   emoji: "⎈🧫"
-  tags: [resilience, dynamic, workload, essential, cert]
+  tags: [resilience, dynamic, workload, cert, essential]
   pass: 100
 #- name: no_volume_with_configuration
 #  tags: configuration, dynamic
@@ -149,23 +149,23 @@
 - name: rolling_version_change
   tags: [compatibility, dynamic, workload]
 - name: rollback
-  tags: [compatibility, dynamic, workload, cert, normal]
+  tags: [compatibility, dynamic, workload, normal]
 - name: nodeport_not_used
-  tags: [configuration, dynamic, workload, cert, normal]
+  tags: [configuration, dynamic, workload, normal]
 - name: hostport_not_used
-  tags: [configuration, dynamic, workload, essential, cert]
+  tags: [configuration, dynamic, workload, cert, essential]
   pass: 100
 - name: hardcoded_ip_addresses_in_k8s_runtime_configuration
-  tags: [configuration, dynamic, workload, essential, cert]
+  tags: [configuration, dynamic, workload, cert, essential]
   pass: 100
 - name: secrets_used
   emoji: "🧫"
-  tags: [configuration, dynamic, workload, cert, bonus]
+  tags: [configuration, dynamic, workload, bonus]
   pass: 1
   fail: 0
 - name: immutable_configmap
   emoji: "⚖️"
-  tags: [configuration, dynamic, workload, cert, bonus]
+  tags: [configuration, dynamic, workload, bonus]
   pass: 1
   fail: 0 
 
@@ -182,13 +182,13 @@
 
 - name: helm_deploy
   emoji: "⚙🛠️⬆☁"
-  tags: [compatibility, dynamic, workload, cert, normal]
+  tags: [compatibility, dynamic, workload, normal]
 - name: helm_chart_valid
   emoji: "⎈📝☑"
-  tags: [compatibility, dynamic, workload, cert, normal]
+  tags: [compatibility, dynamic, workload, normal]
 - name: helm_chart_published
   emoji: "⎈📦🌐"
-  tags: [compatibility, dynamic, workload, cert, normal]
+  tags: [compatibility, dynamic, workload, normal]
   
 # - name: chaos_network_loss 
 #   tags: resilience, dynamic, workload
@@ -199,12 +199,12 @@
 
 - name: no_local_volume_configuration
   emoji: "💾"
-  tags: [state, dynamic, workload, cert, bonus]
+  tags: [state, dynamic, workload, bonus]
   pass: 1
   fail: 0
 - name: elastic_volumes
   emoji: "🧫"
-  tags: [state, dynamic, workload, cert, bonus]
+  tags: [state, dynamic, workload, bonus]
   pass: 1
   fail: 0
 - name: database_persistence
@@ -215,7 +215,7 @@
   fail: -1
 - name: node_drain
   emoji: "🗡️💀♻"
-  tags: [state, dynamic, workload, essential, cert]
+  tags: [state, dynamic, workload, cert, essential]
   pass: 100
 
 #- name: hardware_and_scheduling
@@ -260,25 +260,25 @@
 
 - name: service_account_mapping
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, cert, normal]
+  tags: [security, dynamic, workload, normal]
 
 - name: privileged_containers
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, essential, cert]
+  tags: [security, dynamic, workload, cert, essential]
   pass: 100 
 
 - name: non_root_containers
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, essential, cert]
+  tags: [security, dynamic, workload, cert, essential]
   pass: 100
 
 - name: host_pid_ipc_privileges
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, cert, normal]
+  tags: [security, dynamic, workload, normal]
 
 - name: linux_hardening
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, cert, bonus]
+  tags: [security, dynamic, workload, bonus]
   pass: 1 
   fail: 0 
 
@@ -294,51 +294,51 @@
 
 - name: immutable_file_systems
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, cert, bonus]
+  tags: [security, dynamic, workload, bonus]
   pass: 1 
   fail: 0 
 
 - name: hostpath_mounts
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, essential, cert]
+  tags: [security, dynamic, workload, cert, essential]
   pass: 100
 
 - name: ingress_egress_blocked 
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, cert, bonus]
+  tags: [security, dynamic, workload, bonus]
   pass: 1 
   fail: 0 
 
 - name: insecure_capabilities
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, cert, normal]
+  tags: [security, dynamic, workload, normal]
 
 - name: sysctls
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, cert, normal]
+  tags: [security, dynamic, workload, normal]
 
 - name: log_output
   emoji: "📶☠️"
-  tags: [observability, dynamic, workload, essential, cert]
+  tags: [observability, dynamic, workload, cert, essential]
   pass: 100
 - name: prometheus_traffic
   emoji: "📶☠️"
-  tags: [observability, dynamic, workload, cert, bonus]
+  tags: [observability, dynamic, workload, bonus]
   pass: 1 
   fail: 0 
 - name: open_metrics
   emoji: "📶☠️"
-  tags: [observability, dynamic, workload, cert, bonus]
+  tags: [observability, dynamic, workload, bonus]
   pass: 1 
   fail: 0 
 - name: routed_logs
   emoji: "📶☠️"
-  tags: [observability, dynamic, workload, cert, bonus]
+  tags: [observability, dynamic, workload, bonus]
   pass: 1 
   fail: 0 
 - name: tracing
   emoji: "⎈🚀"
-  tags: [observability, dynamic, workload, cert, bonus]
+  tags: [observability, dynamic, workload, bonus]
   pass: 1 
   fail: 0 
 - name: alpha_k8s_apis
@@ -347,12 +347,12 @@
 
 - name: container_sock_mounts
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, essential, cert]
+  tags: [security, dynamic, workload, cert, essential]
   pass: 100
 
 - name: require_labels
   emoji: "🏷️"
-  tags: [configuration, dynamic, workload, cert, normal]
+  tags: [configuration, dynamic, workload, normal]
 
 - name: helm_tiller
   emoji: "🔓🔑"
@@ -360,20 +360,20 @@
 
 - name: external_ips
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, cert, normal]
+  tags: [security, dynamic, workload, normal]
 
 - name: selinux_options
   emoji: "🔓🔑"
-  tags: [security, dynamic, workload, essential, cert]
+  tags: [security, dynamic, workload, cert, essential]
   pass: 100
 
 - name: default_namespace
   emoji: "🏷️"
-  tags: [configuration, dynamic, workload, cert, normal]
+  tags: [configuration, dynamic, workload, normal]
 
 - name: latest_tag
   emoji: "🏷️"
-  tags: [configuration, dynamic, workload, essential, cert]
+  tags: [configuration, dynamic, workload, cert, essential]
   pass: 100
 
 - name: smf_upf_heartbeat 
