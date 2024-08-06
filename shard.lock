@@ -6,7 +6,7 @@ shards:
 
   cluster_tools:
     git: https://github.com/cnf-testsuite/cluster_tools.git
-    version: 1.0.5
+    version: 1.0.6
 
   commander:
     git: https://github.com/mrrooijen/commander.git
@@ -38,7 +38,7 @@ shards:
 
   k8s_kernel_introspection:
     git: https://github.com/cnf-testsuite/k8s_kernel_introspection.git
-    version: 1.0.2
+    version: 1.0.3
 
   k8s_netstat:
     git: https://github.com/cnf-testsuite/k8s_netstat.git

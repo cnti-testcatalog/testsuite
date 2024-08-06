@@ -52,13 +52,13 @@ dependencies:
     version: ~> 1.0.7
   cluster_tools:
     github: cnf-testsuite/cluster_tools
-    version: ~> 1.0.0
+    version: ~> 1.0.6
   kernel_introspection:
     github: cnf-testsuite/kernel_introspection
     version: ~> 0.1.0
   k8s_kernel_introspection:
     github: cnf-testsuite/k8s_kernel_introspection
-    version: ~> 1.0.2
+    version: ~> 1.0.3
   helm:
     github: cnf-testsuite/helm
     version: ~> 1.0.1
