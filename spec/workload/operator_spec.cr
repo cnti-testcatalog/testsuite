@@ -23,8 +23,7 @@ describe "Operator" do
     Helm.install("operator --set olm.image.ref=quay.io/operator-framework/olm:v0.22.0 --set catalog.image.ref=quay.io/operator-framework/olm:v0.22.0 --set package.image.ref=quay.io/operator-framework/olm:v0.22.0 #{install_dir}/deploy/chart/")
 
     begin
-      result = ShellCmd.run_testsuite("cnf_setup cnf-path=./sample-cnfs/sample_operator", cmd_prefix: "LOG_LEVEL=info")
-      result[:status].success?.should be_true
+      ShellCmd.cnf_setup("cnf-path=./sample-cnfs/sample_operator", cmd_prefix: "LOG_LEVEL=info")
       result = ShellCmd.run_testsuite("operator_installed", cmd_prefix: "LOG_LEVEL=info")
       (/(PASSED).*(Operator is installed)/ =~ result[:output]).should_not be_nil
     ensure
@@ -68,8 +67,7 @@ describe "Operator" do
   
   it "'operator_test' operator should not be found", tags: ["operator_test"]  do
     begin
-      result = ShellCmd.run_testsuite("cnf_setup cnf-path=sample-cnfs/sample_coredns")
-      result[:status].success?.should be_true
+      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample_coredns")
       result = ShellCmd.run_testsuite("operator_installed", cmd_prefix: "LOG_LEVEL=info")
       (/(N\/A).*(No Operators Found)/ =~ result[:output]).should_not be_nil
     ensure
