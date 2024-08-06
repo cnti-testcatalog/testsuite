@@ -104,7 +104,6 @@ end
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
 task "reasonable_startup_time" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    yml_file_path = config.cnf_config[:yml_file_path]
     helm_chart = config.cnf_config[:helm_chart]
     helm_directory = config.cnf_config[:helm_directory]
     release_name = config.cnf_config[:release_name]
@@ -199,7 +198,7 @@ task "reasonable_image_size" do |t, args|
     Log.for(t.name).debug { "cnf_config: #{config}" }
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
-      yml_file_path = config.cnf_config[:yml_file_path]
+      source_cnf_dir = config.cnf_config[:source_cnf_dir]
 
       if resource["kind"].downcase == "deployment" ||
           resource["kind"].downcase == "statefulset" ||
@@ -245,9 +244,9 @@ task "reasonable_image_size" do |t, args|
           }[0..-2]}}})
             puts "str_auths: #{str_auths}"
           end
-          File.write("#{yml_file_path}/config.json", str_auths)
+          File.write("#{source_cnf_dir}/config.json", str_auths)
           Dockerd.exec("mkdir -p /root/.docker/")
-          KubectlClient.cp("#{yml_file_path}/config.json #{TESTSUITE_NAMESPACE}/dockerd:/root/.docker/config.json")
+          KubectlClient.cp("#{source_cnf_dir}/config.json #{TESTSUITE_NAMESPACE}/dockerd:/root/.docker/config.json")
         end
 
         Log.info { "FQDN of the docker image: #{fqdn_image}" }

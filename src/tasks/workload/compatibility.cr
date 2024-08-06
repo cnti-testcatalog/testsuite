@@ -393,7 +393,6 @@ task "helm_deploy" do |t, args|
       helm_chart = config.cnf_config[:helm_chart]
       helm_directory = config.cnf_config[:helm_directory]
       release_name = config.cnf_config[:release_name]
-      yml_file_path = config.cnf_config[:yml_file_path]
       configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
       #TODO check if json is empty
       helm_used = configmap["data"].as_h["helm_used"].as_s
@@ -451,7 +450,7 @@ task "helm_chart_published", ["helm_local_install"] do |t, args|
 end
 
 task "helm_chart_valid", ["helm_local_install"] do |t, args|
-  CNFManager::Task.task_runner(args, task: t) do |args|
+  CNFManager::Task.task_runner(args, task: t) do |args, config|
     if check_verbose(args)
       Log.for("verbose").debug { "helm_chart_valid args.raw: #{args.raw}" }
       Log.for("verbose").debug { "helm_chart_valid args.named: #{args.named}" }
@@ -459,9 +458,7 @@ task "helm_chart_valid", ["helm_local_install"] do |t, args|
 
     response = String::Builder.new
 
-    config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
-    # helm_directory = config.get("helm_directory").as_s
-    helm_directory = optional_key_as_string(config, "helm_directory")
+    helm_directory = config.cnf_config[:helm_directory]
     if helm_directory.empty?
       working_chart_directory = "exported_chart"
     else
@@ -478,7 +475,7 @@ task "helm_chart_valid", ["helm_local_install"] do |t, args|
     Log.for(t.name).debug { "current dir: #{current_dir}" }
     helm = Helm::BinarySingleton.helm
 
-    destination_cnf_dir = CNFManager.cnf_destination_dir(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)))
+    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
 
     helm_lint_cmd = "#{helm} lint #{destination_cnf_dir}/#{working_chart_directory}"
     helm_lint_status = Process.run(

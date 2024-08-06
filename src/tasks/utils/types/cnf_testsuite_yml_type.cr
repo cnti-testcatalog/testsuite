@@ -22,8 +22,6 @@ class CnfTestSuiteYmlType
 
   property helm_directory : String?
 
-  property service_name : String?
-
   property release_name : String?
 
   property helm_repository : HelmRepositoryType?
@@ -31,10 +29,6 @@ class CnfTestSuiteYmlType
   property helm_chart : String?
 
   property helm_install_namespace : String?
-
-  # property rolling_update_test_tag : String?
-  # property rolling_downgrade_test_tag : String?
-  # property rolling_version_change_test_tag : String?
 
   property rollback_from_tag : String?
 

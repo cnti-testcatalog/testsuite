@@ -224,7 +224,6 @@ task "tracing" do |t, args|
         helm_chart = config.cnf_config[:helm_chart]
         helm_directory = config.cnf_config[:helm_directory]
         release_name = config.cnf_config[:release_name]
-        yml_file_path = config.cnf_config[:yml_file_path]
         configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
         #TODO check if json is empty
         tracing_used = configmap["data"].as_h["tracing_used"].as_s

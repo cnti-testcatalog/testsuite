@@ -1,4 +1,3 @@
 ---
 helm_directory: postgresql
 release_name: postgresql
-service_name: postgresql

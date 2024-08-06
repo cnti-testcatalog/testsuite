@@ -1,6 +1,5 @@
 ---
 release_name: jenkins
-service_name: jenkins
 helm_repository:
   name: jenkins
   repo_url: https://charts.jenkins.io
