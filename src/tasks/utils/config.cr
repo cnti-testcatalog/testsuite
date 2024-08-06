@@ -14,22 +14,15 @@ module CNFManager
     end
     #when addeding to this you must add to task.cr's CNFManager::Config.new(
     property cnf_config : NamedTuple(destination_cnf_dir: String,
-                                     source_cnf_file: String,
                                      source_cnf_dir: String,
-                                     yml_file_path: String,
                                      install_method: Tuple(CNFInstall::InstallMethod, String),
                                      manifest_directory: String,
                                      helm_directory: String, 
-                                     source_helm_directory: String, 
-                                     helm_chart_path: String, 
-                                     manifest_file_path: String,
                                      release_name: String,
-                                     service_name:  String,
                                      helm_repository: NamedTuple(name:  String, repo_url:  String) | Nil,
                                      helm_chart:  String,
                                      helm_values:  String,
                                      helm_install_namespace: String,
-                                     rolling_update_tag: String,
                                      container_names: Array(Hash(String, String )) | Nil,
                                      white_list_container_names: Array(String),
                                      docker_insecure_registries: Array(String) | Nil,
@@ -74,9 +67,7 @@ module CNFManager
 
       destination_cnf_dir = CNFManager.cnf_destination_dir(yml_file)
 
-      yml_file_path = CNFManager.ensure_cnf_testsuite_dir(config_yml_path)
-      source_cnf_file = yml_file
-      source_cnf_dir = yml_file_path
+      source_cnf_dir = CNFManager.ensure_cnf_testsuite_dir(config_yml_path)
       manifest_directory = optional_key_as_string(config, "manifest_directory")
       if config["helm_repository"]?
           helm_repository = config["helm_repository"].as_h
@@ -89,9 +80,7 @@ module CNFManager
       helm_chart = optional_key_as_string(config, "helm_chart")
       helm_values = optional_key_as_string(config, "helm_values")
       release_name = optional_key_as_string(config, "release_name")
-      service_name = optional_key_as_string(config, "service_name")
       helm_directory = optional_key_as_string(config, "helm_directory")
-      source_helm_directory = optional_key_as_string(config, "helm_directory")
       helm_install_namespace = optional_key_as_string(config, "helm_install_namespace")
       if config["enabled"]?
           core_enabled = config["enabled"].as_bool.to_s
@@ -132,21 +121,7 @@ module CNFManager
       smf  = optional_key_as_string(config, "smf_label")
       upf  = optional_key_as_string(config, "upf_label")
       ric = optional_key_as_string(config, "ric_label")
-      if helm_directory.empty?
-        working_chart_directory = "exported_chart"
-        Log.info { "USING EXPORTED CHART PATH" } 
-      else
-        # todo separate parameters from helm directory
-        # TODO Fix bug with helm_directory for arguments, it creates an invalid path
-        # # we don't handle arguments anymore
-        # helm_directory = source_helm_directory.split("/")[0] + " " + source_helm_directory.split(" ")[1..-1].join(" ")
-        # helm_directory = optional_key_as_string(config, "helm_directory")
-        working_chart_directory = helm_directory
-        Log.info { "NOT USING EXPORTED CHART PATH" } 
-      end
-      helm_chart_path = destination_cnf_dir + "/" + CNFManager.sandbox_helm_directory(working_chart_directory)
-      helm_chart_path = Path[helm_chart_path].expand.to_s
-      manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
+      
       white_list_container_names = optional_key_as_string(config, "allowlist_helm_chart_container_names")
       if config["allowlist_helm_chart_container_names"]?
         white_list_container_names = config["allowlist_helm_chart_container_names"].as_a.map do |c|
@@ -190,22 +165,15 @@ module CNFManager
 
       # if you change this, change instantiation in task.cr/single_task_runner as well
       new({ destination_cnf_dir: destination_cnf_dir,
-                               source_cnf_file: source_cnf_file,
                                source_cnf_dir: source_cnf_dir,
-                               yml_file_path: yml_file_path,
                                install_method: install_method,
                                manifest_directory: manifest_directory,
                                helm_directory: helm_directory, 
-                               source_helm_directory: source_helm_directory, 
-                               helm_chart_path: helm_chart_path, 
-                               manifest_file_path: manifest_file_path,
                                release_name: release_name,
-                               service_name: service_name,
                                helm_repository: {name: helm_repo_name, repo_url: helm_repo_url},
                                helm_chart: helm_chart,
                                helm_values: helm_values,
                                helm_install_namespace: helm_install_namespace,
-                               rolling_update_tag: "",
                                container_names: container_names,
                                white_list_container_names: white_list_container_names,
                                docker_insecure_registries: docker_insecure_registries,
@@ -217,6 +185,26 @@ module CNFManager
                                image_registry_fqdns: image_registry_fqdns,})
 
     end
+
+    def self.get_helm_chart_path(config)
+      helm_directory = config.cnf_config[:helm_directory]
+      destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+      if helm_directory.empty?
+        working_chart_directory = "exported_chart"
+        Log.info { "USING EXPORTED CHART PATH" } 
+      else
+        working_chart_directory = helm_directory
+        Log.info { "NOT USING EXPORTED CHART PATH" } 
+      end
+      helm_chart_path = destination_cnf_dir + "/" + CNFManager.sandbox_helm_directory(working_chart_directory)
+      helm_chart_path = Path[helm_chart_path].expand.to_s
+    end
+
+    def self.get_manifest_file_path(config)
+      destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+      manifest_file_path = destination_cnf_dir + "/" + "temp_template.yml"
+    end
+
     def self.install_method_by_config_file(config_file) : CNFInstall::InstallMethod
       LOGGING.info "install_data_by_config_file"
       config = CNFManager.parsed_config_file(config_file)

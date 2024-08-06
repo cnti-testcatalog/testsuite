@@ -25,3 +25,11 @@ task "configuration_file_setup" do |_, args|
   CNFManager::Points.create_points_yml
 end
 
+task "test_config" do |_, args|
+  if args.named["cfg"]?
+    puts CNFInstall::Config.parse_cnf_config_from_file(args.named["cfg"].to_s).inspect
+  else
+    stdout_failure "cfg parameter needed"
+    exit 1
+  end
+end

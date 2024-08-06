@@ -3,4 +3,3 @@ helm_directory: postgresql
 git_clone_url: 
 install_script: chart
 release_name: postgresql
-service_name: postgresql

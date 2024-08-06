@@ -107,7 +107,7 @@ task "ip_addresses" do |t, args|
     cdir = FileUtils.pwd()
     response = String::Builder.new
     helm_directory = config.cnf_config[:helm_directory]
-    helm_chart_path = config.cnf_config[:helm_chart_path]
+    helm_chart_path = CNFManager::Config.get_helm_chart_path(config)
     Log.info { "Path: #{helm_chart_path}" }
     if File.directory?(helm_chart_path)
       # Switch to the helm chart directory
@@ -191,7 +191,6 @@ task "nodeport_not_used" do |t, args|
   # TODO rename task_runner to multi_cnf_task_runner
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     release_name = config.cnf_config[:release_name]
-    service_name  = config.cnf_config[:service_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config, check_containers: false, check_service: true) do |resource, container, initialized|
       Log.for(t.name).info { "nodeport_not_used resource: #{resource}" }
@@ -222,7 +221,6 @@ desc "Does the CNF use HostPort"
 task "hostport_not_used" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     release_name = config.cnf_config[:release_name]
-    service_name  = config.cnf_config[:service_name]
     destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
 
     task_response = CNFManager.workload_resource_test(args, config, check_containers: false, check_service: true) do |resource, container, initialized|

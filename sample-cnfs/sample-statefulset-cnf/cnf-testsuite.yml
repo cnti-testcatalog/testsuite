@@ -1,7 +1,6 @@
 ---
 release_name: test
 
-service_name: 
 helm_repository:
   name: bitnami 
   repo_url: https://charts.bitnami.com/bitnami 
