@@ -7,16 +7,17 @@ module JaegerManager
   end
   def self.uninstall
     Log.for("verbose").info { "uninstall_jaeger" } 
-    Helm.delete("jaeger")
+    Helm.delete("jaeger -n jaeger")
   end
 
   def self.install
     Log.info {"Installing Jaeger daemonset "}
     Helm.helm_repo_add("jaegertracing","https://jaegertracing.github.io/helm-charts")
-    Helm.install("jaeger --set cassandra.config.cluster_size=1 --set cassandra.config.seed_size=1 jaegertracing/jaeger")
-    KubectlClient::Get.resource_wait_for_install("Deployment", "jaeger-collector", 300)
-    KubectlClient::Get.resource_wait_for_install("Deployment", "jaeger-query", 300)
-    KubectlClient::Get.resource_wait_for_install("Daemonset", "jaeger-agent", 300)
+    CNFManager.ensure_namespace_exists!("jaeger")
+    Helm.install("jaeger -n jaeger --set cassandra.config.cluster_size=1 --set cassandra.config.seed_size=1 jaegertracing/jaeger")
+    KubectlClient::Get.resource_wait_for_install("Deployment", "jaeger-collector", 300, namespace: "jaeger")
+    KubectlClient::Get.resource_wait_for_install("Deployment", "jaeger-query", 300, namespace: "jaeger")
+    KubectlClient::Get.resource_wait_for_install("Daemonset", "jaeger-agent", 300, namespace: "jaeger")
   end
 
   def self.node_for_cnf(resource_name)

@@ -1,6 +1,7 @@
 ---
 helm_directory: open5gs
 release_name: open5gs
+helm_install_namespace: testsuite-5g
 #optional 5gcore tag
 amf_label: app.kubernetes.io/name=amf
 smf_label: app.kubernetes.io/name=smf

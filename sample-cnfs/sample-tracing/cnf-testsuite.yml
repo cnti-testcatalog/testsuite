@@ -1,6 +1,7 @@
 ---
 helm_directory: jaeger
 release_name: test
+helm_install_namespace: jaeger
 helm_repository:
   name: jaegertracing 
   repo_url: https://jaegertracing.github.io/helm-charts
