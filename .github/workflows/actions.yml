@@ -13,6 +13,20 @@ on:
       - '!docs/*'
       - '!doc-lint/*'
 
+env:
+  # Set the registry mirror for the containerd
+  # Use private ip address of the github runner
+  REGISTRY_MIRROR_PLUGIN: |-
+    [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+      endpoint = ["http://10.200.142.204:80"]
+  REGISTRY_MIRROR_LOCAL_PLUGINS: |-
+    [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
+      endpoint = ["http://localhost:5000"]
+  REGISTRY_MIRROR_LOCAL_CLUSTER_PLUGINS: |-
+    [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
+      endpoint = ["http://localhost:5000"]
+
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -80,12 +94,9 @@ jobs:
           image: kindest/node:v1.29.2@sha256:51a1434a5397193442f0be2a297b488b6c919ce8a3931be0ce822606ea5ca245
         containerdConfigPatches:
         - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-            endpoint = ["http://10.200.142.204:80"]
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-            endpoint = ["http://localhost:5000"]
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
-            endpoint = ["http://localhost:5000"]
+          ${{ env.REGISTRY_MIRROR_PLUGIN }}
+          ${{ env.REGISTRY_MIRROR_LOCAL_PLUGINS }}
+          ${{ env.REGISTRY_MIRROR_LOCAL_CLUSTER_PLUGINS }}
         EOF
     - name: sysctls specs kind config override
       if: matrix.spec == 'sysctls'
@@ -113,10 +124,8 @@ jobs:
         - role: control-plane
         containerdConfigPatches:
           - |-
-            [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-              endpoint = ["http://localhost:5000"]
-            [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
-              endpoint = ["http://localhost:5000"]
+            ${{ env.REGISTRY_MIRROR_LOCAL_PLUGINS }}
+            ${{ env.REGISTRY_MIRROR_LOCAL_CLUSTER_PLUGINS }}
     - name: Install Latest Kind
       env:
         KIND_VERSION: v0.22.0
@@ -252,8 +261,7 @@ jobs:
         - role: control-plane
         containerdConfigPatches:
         - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-            endpoint = ["http://localhost:5000"]
+          ${{ env.REGISTRY_MIRROR_LOCAL_PLUGINS }}
         EOF
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
@@ -376,10 +384,9 @@ jobs:
         - role: control-plane
         containerdConfigPatches:
         - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-            endpoint = ["http://localhost:5000"]
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
-            endpoint = ["http://localhost:5000"]
+          ${{ env.REGISTRY_MIRROR_PLUGIN }}
+          ${{ env.REGISTRY_MIRROR_LOCAL_PLUGINS }}
+          ${{ env.REGISTRY_MIRROR_LOCAL_CLUSTER_PLUGINS }}
         EOF
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER"
@@ -453,10 +460,9 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         containerdConfigPatches:
         - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-            endpoint = ["http://localhost:5000"]
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
-            endpoint = ["http://localhost:5000"]
+          ${{ env.REGISTRY_MIRROR_PLUGIN }}
+          ${{ env.REGISTRY_MIRROR_LOCAL_PLUGINS }}
+          ${{ env.REGISTRY_MIRROR_LOCAL_CLUSTER_PLUGINS }}
         EOF
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
@@ -528,10 +534,9 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         containerdConfigPatches:
         - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-            endpoint = ["http://localhost:5000"]
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
-            endpoint = ["http://localhost:5000"]
+          ${{ env.REGISTRY_MIRROR_PLUGIN }}
+          ${{ env.REGISTRY_MIRROR_LOCAL_PLUGINS }}
+          ${{ env.REGISTRY_MIRROR_LOCAL_CLUSTER_PLUGINS }}
         EOF
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
