@@ -7,7 +7,6 @@ require "../utils/utils.cr"
 
 desc "CNF containers should be isolated from one another and the host.  The CNF Test suite uses tools like Sysdig Inspect and gVisor"
 task "security", [
-    "privileged",
     "symlink_file_system",
     "privilege_escalation",
     "insecure_capabilities",
@@ -137,7 +136,7 @@ task "container_sock_mounts" do |t, args|
 end
 
 desc "Check if any containers are running in privileged mode"
-task "privileged" do |t, args|
+task "privileged_containers" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     white_list_container_names = config.cnf_config[:white_list_container_names]
     VERBOSE_LOGGING.info "white_list_container_names #{white_list_container_names.inspect}" if check_verbose(args)
@@ -393,26 +392,6 @@ task "non_root_containers", ["kubescape_scan"] do |t, args|
       test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
       stdout_failure("Remediation: #{test_report.remediation}")
       CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found containers running with root user or user with root group membership")
-    end
-  end
-end
-
-desc "Check that privileged containers are not used"
-task "privileged_containers", ["kubescape_scan" ] do |t, args|
-  CNFManager::Task.task_runner(args, task: t) do |args, config|
-    results_json = Kubescape.parse
-    test_json = Kubescape.test_by_test_name(results_json, "Privileged container")
-    test_report = Kubescape.parse_test_report(test_json)
-    resource_keys = CNFManager.workload_resource_keys(args, config)
-    test_report = Kubescape.filter_cnf_resources(test_report, resource_keys)
-
-    #todo whitelist
-    if test_report.failed_resources.size == 0
-      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No privileged containers were found")
-    else
-      test_report.failed_resources.map {|r| stdout_failure(r.alert_message) }
-      stdout_failure("Remediation: #{test_report.remediation}")
-      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found privileged containers")
     end
   end
 end
