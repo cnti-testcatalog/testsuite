@@ -43,6 +43,14 @@ Prereqs: You must have kubernetes cluster, curl, and helm 3.1.1 or greater on yo
 - Generate a cnf-testsuite.yml based on a directory of manifest files:  `./cnf-testsuite generate_config config-src=<your-manifest-directory> output-file=./cnf-testsuite.yml`
 - Inspect the cnf-testsuite.yml file for accuracy
 
+### Transformer for prior config versions
+
+New releases may change the format of cnf-testsuite.yml, to quickly update your older configs to latest version use the `transform_config` task.
+
+```
+./cnf-testsuite transform_config old_config_path=OLD_CONFIG_PATH new_config_path=NEW_CONFIG_PATH
+```
+
 ### Keys and Values
 
 #### allowlist_helm_chart_container_names
