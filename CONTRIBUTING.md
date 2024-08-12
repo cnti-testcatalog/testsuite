@@ -9,9 +9,7 @@ The CNTI Test Catalog is [Apache 2.0 licensed](LICENSE) and accepts contribution
 Support channels include:
 
 - [Issues](../../issues)
-- Join the conversation on [LFN Tech's Slack](https://lfntech.slack.com/) channels
-  - [#cnti-testcatalog-testsuite](https://lfntech.slack.com/archives/C06GM6ZEPUP)
-  - [#cnti-testsuite-dev](https://lfntech.slack.com/archives/C06HQGWK4NL)
+- Join the conversation on [LFN Tech's Slack](https://lfntech.slack.com/) [#cnti](https://lfntech.slack.com/archives/C06HQGWK4NL) channel
 
 Before starting work on a major feature, please reach out to us via [GitHub Issues](../../issues) or Slack. We will make sure no one else is already working on it and ask you to open a [GitHub issue](../../issues/new/choose).
 
