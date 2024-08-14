@@ -25,7 +25,7 @@ How you can learn more?
 
 * Read the [install guide](INSTALL.md), [usage guide](USAGE.md), [FAQ](FAQ.md), and other documentation
 * Request a live demonstration and introduction of the test suite ([book a time on Calendly](https://calendly.com/cnftestsuite))
-* Come chat with us in [Slack](https://cloud-native.slack.com/archives/C014TNCEX8R) or start a [discussion](https://github.com/cnti-testcataglog/testsuite/discussions)
+* Come chat with us in [Slack](https://lfntech.slack.com/archives/C06HQGWK4NL) or start a [discussion](https://github.com/cnti-testcataglog/testsuite/discussions)
 
 ## Community Participant
 

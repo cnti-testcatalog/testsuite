@@ -29,7 +29,7 @@
 <details> <summary>Does CNF Test Suite have a slack channel?</summary>
 <p>
 
-- Yes. We have two channels on [https://slack.cncf.io/](https://slack.cncf.io/), cnf-testsuite and cnf-testsuite-dev.
+- Yes. We have a channel on [LFN Tech's Slack](https://lfntech.slack.com/) [#cnti](https://lfntech.slack.com/archives/C06HQGWK4NL).
 
 </p>
 </details>
