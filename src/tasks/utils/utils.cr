@@ -407,20 +407,28 @@ def stdout_info(msg)
   puts msg
 end
 
-def stdout_success(msg)
-  puts msg.colorize(:green)
+# \e[1A\e[K is a sequence that allows to clear current line and place cursor at its beginning
+def stdout_colored(msg, color, same_line=false)
+  if same_line
+    msg = "#{"\e[1A\e[K"}#{msg}"
+  end
+  puts msg.colorize(color)
 end
 
-def stdout_warning(msg)
-  puts msg.colorize(:yellow)
+def stdout_success(msg, same_line=false)
+  stdout_colored(msg, :green, same_line)
 end
 
-def stdout_failure(msg)
-  puts msg.colorize(:red)
+def stdout_warning(msg, same_line=false)
+  stdout_colored(msg, :yellow, same_line)
 end
 
-def stdout_error(msg)
-  puts msg.colorize(Colorize::Color256.new(208))
+def stdout_failure(msg, same_line=false)
+  stdout_colored(msg, :red, same_line)
+end
+
+def stdout_error(msg, same_line=false)
+  stdout_colored(msg, Colorize::Color256.new(208), same_line)
 end
 
 def stdout_score(test_name)

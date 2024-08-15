@@ -8,7 +8,7 @@ describe "K8sInstrumentation" do
   end
 
   it "'#scan and #test_by_test_name' should return the results of a kubescape scan", tags: ["kubescape"]  do
-    result = ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml")
+    ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml")
     Kubescape.scan
     results_json = Kubescape.parse
     test_json = Kubescape.test_by_test_name(results_json, "Network policies")

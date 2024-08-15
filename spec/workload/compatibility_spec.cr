@@ -14,10 +14,10 @@ describe "Compatibility" do
 
   it "'cni_compatible' should pass if the cnf works with calico and flannel", tags: ["compatibility"]  do
     begin
-      result = ShellCmd.run_testsuite("cnf_setup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
-      result[:status].success?.should be_true
+      ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
       retry_limit = 5 
       retries = 1
+      result = ShellCmd.run_testsuite("cni_compatible verbose")
       until (/PASSED/ =~ result[:output]) || retries > retry_limit
         Log.info { "cni_compatible spec retry: #{retries}" }
         sleep 1.0
@@ -34,8 +34,7 @@ describe "Compatibility" do
 
   it "'increase_decrease_capacity' should pass ", tags: ["increase_decrease_capacity"]  do
     begin
-      result = ShellCmd.run_testsuite("cnf_setup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose wait_count=0")
-      result[:status].success?.should be_true
+      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose skip_wait_for_install")
       result = ShellCmd.run_testsuite("increase_decrease_capacity verbose")
       result[:status].success?.should be_true
       (/(PASSED).*(Replicas increased to)/ =~ result[:output]).should_not be_nil

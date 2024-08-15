@@ -59,6 +59,17 @@ crystal build src/cnf-testsuite.cr
 ./cnf-testsuite validate_config cnf-config=[PATH_TO]/cnf-testsuite.yml
 ```
 
+#### Installing a cnf:
+
+```
+./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
+```
+
+##### Skip waiting for resource readiness during installation:
+```
+./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml skip_wait_for_install
+```
+
 #### Running all of the platform and workload tests:
 
 ```
