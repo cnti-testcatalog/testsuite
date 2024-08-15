@@ -1,3 +1,7 @@
 ---
-helm_directory: chart
-release_name: coredns --set imageCredentials.registry=https://index.docker.io/v1/ --set imageCredentials.username=$PROTECTED_DOCKERHUB_USERNAME --set imageCredentials.password=$PROTECTED_DOCKERHUB_PASSWORD --set imageCredentials.email=$PROTECTED_DOCKERHUB_EMAIL --set image.repository=$PROTECTED_IMAGE_REPO
+config_version: v2
+deployments:
+  helm_dirs:
+  # (kosstennbl) TODO: move helm addoional arguments from name to helm_values
+  - name: coredns --set imageCredentials.registry=https://index.docker.io/v1/ --set imageCredentials.username=$PROTECTED_DOCKERHUB_USERNAME --set imageCredentials.password=$PROTECTED_DOCKERHUB_PASSWORD --set imageCredentials.email=$PROTECTED_DOCKERHUB_EMAIL --set image.repository=$PROTECTED_IMAGE_REPO
+    helm_directory: chart

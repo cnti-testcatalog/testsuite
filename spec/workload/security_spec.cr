@@ -29,7 +29,7 @@ describe "Security" do
   it "'privileged_containers' should pass on a whitelisted, privileged cnf", tags: ["privileges"] do
     begin
       ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample_whitelisted_privileged_cnf/cnf-testsuite.yml verbose skip_wait_for_install")
-      result = ShellCmd.run_testsuite("privileged_containers cnf-config=sample-cnfs/sample_whitelisted_privileged_cnf verbose")
+      result = ShellCmd.run_testsuite("privileged_containers verbose")
       result[:status].success?.should be_true
       (/Found.*privileged containers.*/ =~ result[:output]).should be_nil
     ensure

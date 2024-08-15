@@ -1,3 +1,6 @@
+require "./config_base.cr"
+
+
 module CNFInstall
   module Config
     @[YAML::Serializable::Options(emit_nulls: true)]
@@ -51,7 +54,7 @@ module CNFInstall
   
       # Nested class for Helm Repository details
       class HelmRepository < ConfigBase
-        getter name : String?
+        getter name : String
         getter repo_url : String?
       end
   

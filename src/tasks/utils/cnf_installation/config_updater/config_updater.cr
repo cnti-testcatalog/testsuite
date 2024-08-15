@@ -1,4 +1,7 @@
 require "yaml"
+require "./transformation_base.cr"
+require "./v1_to_v2_transformation.cr"
+require "../config_versions/config_versions.cr"
 
 module CNFInstall
   module Config

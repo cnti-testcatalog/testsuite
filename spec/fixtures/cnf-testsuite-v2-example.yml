@@ -14,10 +14,3 @@ deployments:
       helm_repo_name: stable
       helm_repo_url: https://cncf.gitlab.io/stable
       helm_chart_name: coredns
-#  helm_dirs:
-#    - name: envoy
-#      helm_directory: ../example-cnfs/envoy/envoy
-#  manifests:
-#    - name: nginx
-#      manifest_directory: manifests
-

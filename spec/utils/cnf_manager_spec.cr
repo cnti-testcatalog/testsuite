@@ -24,11 +24,6 @@ describe "SampleUtils" do
     result[:status].success?.should be_true
   end
 
-  it "'images_from_config_src' should return a list of containers for a cnf", tags: ["cnf-setup"]  do
-    (CNFManager::GenerateConfig.images_from_config_src("stable/coredns").find {|x| x[:image_name] =="coredns/coredns" && 
-                                                                               x[:container_name] =="coredns"}).should be_truthy 
-  end
-
   it "'cnf_setup' should pass with a minimal cnf-testsuite.yml", tags: ["cnf-setup"] do
     ShellCmd.cnf_setup("cnf-path=./sample-cnfs/sample-minimal-cnf/ skip_wait_for_install")
   ensure
@@ -161,8 +156,8 @@ describe "SampleUtils" do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml", "verbose"])
     cli_hash = CNFManager.sample_setup_cli_args(args)
     CNFManager.sample_setup(cli_hash)
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(cli_hash[:config_file]))    
-    release_name = config.cnf_config[:release_name]
+    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(cli_hash[:config_file]))    
+    release_name = config.deployments.get_deployment_param(:name)
 
     (Dir.exists? "cnfs/#{release_name}").should be_true
     (File.exists?("cnfs/#{release_name}/cnf-testsuite.yml")).should be_true
@@ -177,8 +172,8 @@ describe "SampleUtils" do
     cli_hash = CNFManager.sample_setup_cli_args(args)
     CNFManager.sample_setup(cli_hash)
     # check if directory exists
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
-    release_name = config.cnf_config[:release_name]
+    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
+    release_name = config.deployments.get_deployment_param(:name)
 
     (Dir.exists? "cnfs/#{release_name}").should be_true
     (File.exists?("cnfs/#{release_name}/cnf-testsuite.yml")).should be_true
@@ -193,8 +188,8 @@ describe "SampleUtils" do
     cli_hash = CNFManager.sample_setup_cli_args(args)
     CNFManager.sample_setup(cli_hash)
     # check if directory exists
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
-    release_name = config.cnf_config[:release_name]
+    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
+    release_name = config.deployments.get_deployment_param(:name)
     (Dir.exists? "cnfs/#{release_name}").should be_true
     (File.exists?("cnfs/#{release_name}/cnf-testsuite.yml")).should be_true
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
@@ -207,8 +202,8 @@ describe "SampleUtils" do
     cli_hash = CNFManager.sample_setup_cli_args(args)
     CNFManager.sample_setup(cli_hash)
     # check if directory exists
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
-    release_name = config.cnf_config[:release_name]
+    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
+    release_name = config.deployments.get_deployment_param(:name)
     (Dir.exists? "sample-cnfs/sample-generic-cnf").should be_true
     (File.exists?("cnfs/#{release_name}/cnf-testsuite.yml")).should be_true
     CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
@@ -231,8 +226,8 @@ describe "SampleUtils" do
     args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-testsuite.yml", "verbose", "skip_wait_for_install"])
     cli_hash = CNFManager.sample_setup_cli_args(args)
     CNFManager.sample_setup(cli_hash)
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
-    release_name = config.cnf_config[:release_name]
+    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
+    release_name = config.deployments.get_deployment_param(:name)
     (Dir.exists? "cnfs/#{release_name}").should be_true
     # should not clone
     (Dir.exists? "cnfs/#{release_name}/privileged-coredns").should be_false
@@ -249,8 +244,8 @@ describe "SampleUtils" do
     Log.info { "Running Setup" }
     CNFManager.sample_setup(cli_hash)
     Log.info { "Parse Config" }
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
-    release_name = config.cnf_config[:release_name]
+    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
+    release_name = config.deployments.get_deployment_param(:name)
     (Dir.exists? "cnfs/#{release_name}").should be_true
     (Dir.exists? "cnfs/#{release_name}/manifests").should be_true
     (File.exists? "cnfs/#{release_name}/cnf-testsuite.yml").should be_true
@@ -261,11 +256,6 @@ describe "SampleUtils" do
     (Dir.exists? "cnfs/#{release_name}").should be_false
   end
 
-  it "'cnf_destination_dir' should return the full path of the potential destination cnf directory based on the deployment name", tags: "WIP" do
-    args = Sam::Args.new
-    CNFManager.cnf_destination_dir("spec/fixtures/cnf-testsuite.yml").should contain("/cnfs/coredns")
-  end
-
   it "'CNFManager.cnf_config_list' should return a list of all of the config files from the cnf directory", tags: ["cnf-setup"]  do
     config_file = "sample-cnfs/sample-generic-cnf"
     args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-testsuite.yml", "verbose", "skip_wait_for_install"])
@@ -274,8 +264,8 @@ describe "SampleUtils" do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml", "verbose"])
     cli_hash = CNFManager.sample_setup_cli_args(args)
     CNFManager.sample_setup(cli_hash)
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
-    release_name = config.cnf_config[:release_name]
+    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
+    release_name = config.deployments.get_deployment_param(:name)
     CNFManager.cnf_config_list()[0].should contain("#{release_name}/#{CONFIG_FILE}")
   end
 
@@ -291,80 +281,45 @@ describe "SampleUtils" do
     CNFManager.helm_repo_add("invalid", "invalid").should eq(false)
   end
 
-  it "'CNFManager.validate_cnf_testsuite_yml' (function) should pass, when a cnf has a valid config file yml", tags: ["validate_config"]  do
-    args = Sam::Args.new(["cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml"])
-
-    yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
-    Log.info { yml.inspect }
-    ("#{yml.get("release_name").as_s?}").should eq("coredns")
-
-    valid, command_output = CNFManager.validate_cnf_testsuite_yml(yml)
-
-    (valid).should eq(true)
-    (command_output).should eq (nil)
-  end
-
-  it "'CNFManager.validate_cnf_testsuite_yml' (command) should pass, when a cnf has a valid config file yml", tags: ["validate_config"]  do
-    result = ShellCmd.run_testsuite("validate_config cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+  it "'validate_config' should pass, when a cnf has a valid config file yml", tags: ["validate_config"]  do
+    result = ShellCmd.run_testsuite("validate_config cnf-config=spec/fixtures/cnf-testsuite-v2-example.yml")
     result[:status].success?.should be_true
-    (/CNF configuration validated/ =~ result[:output]).should_not be_nil
+    (/Successfully validated CNF config/ =~ result[:output]).should_not be_nil
   end
 
-
-  it "'CNFManager.validate_cnf_testsuite_yml' (function) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["validate_config"]  do
-    args = Sam::Args.new(["cnf-config=./spec/fixtures/cnf-testsuite-unmapped-keys-and-subkeys.yml"])
-
-    yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
-    Log.info { yml.inspect }
-    ("#{yml.get("release_name").as_s?}").should eq("coredns")
-
-    status, warning_output = CNFManager.validate_cnf_testsuite_yml(yml)
-
-    Log.warn { "WARNING: #{warning_output}" }
-
-    (status).should eq(true)
-    (warning_output).should_not be_nil
-  end
-
-
-  it "'CNFManager.validate_cnf_testsuite_yml' (command) should warn, but be valid when a cnf config file yml has fields that are not a part of the validation type", tags: ["validate_config"]  do
-    result = ShellCmd.run_testsuite("validate_config cnf-config=spec/fixtures/cnf-testsuite-unmapped-keys-and-subkeys.yml")
-    result[:status].success?.should be_true
-    Log.debug { "validate_config resp: #{result[:output]}" }
-    (/CNF configuration validated/ =~ result[:output]).should_not be_nil
-  end
-
-
-  it "'CNFManager.validate_cnf_testsuite_yml' (command) should pass, for all sample-cnfs", tags: ["validate_config"]  do
+  it "'validate_config' should pass, for all sample-cnfs", tags: ["validate_config"]  do
 
     get_dirs = Dir.entries("sample-cnfs")
     dir_list = get_dirs - [".", ".."]
     dir_list.each do |dir|
       testsuite_yml = "sample-cnfs/#{dir}/cnf-testsuite.yml"
       result = ShellCmd.run_testsuite("validate_config cnf-config=#{testsuite_yml}")
-      (/CNF configuration validated/ =~ result[:output]).should_not be_nil
+      unless result[:status].success?
+        Log.info {"Could not validate config: #{testsuite_yml}"}
+      end
+      (/Successfully validated CNF config/ =~ result[:output]).should_not be_nil
     end
   end
 
-  it "'CNFManager.validate_cnf_testsuite_yml' (command) should pass, for all example-cnfs", tags: ["validate_config"]  do
+  it "'validate_config' should pass, for all example-cnfs", tags: ["validate_config"]  do
 
     get_dirs = Dir.entries("example-cnfs")
     dir_list = get_dirs - [".", ".."]
     dir_list.each do |dir|
       testsuite_yml = "example-cnfs/#{dir}/cnf-testsuite.yml"
       result = ShellCmd.run_testsuite("validate_config cnf-config=#{testsuite_yml}")
-      if (/Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file/ =~ result[:output])
-        Log.info { "\n #{testsuite_yml}: #{result[:output]}" }
+      unless result[:status].success?
+        Log.info {"Could not validate config: #{testsuite_yml}"}
       end
-      (/CNF configuration validated/ =~ result[:output]).should_not be_nil
+      (/Successfully validated CNF config/ =~ result[:output]).should_not be_nil
     end
   end
 
 
-  it "'CNFManager::Config#parse_config_yml' should return a populated CNFManager::Config.cnf_config", tags: ["cnf-config"]  do
+  it "'CNFInstall::Config.parse_cnf_config_from_file' should return a populated CNFInstall::Config::Config", tags: ["cnf-config"]  do
     begin
-      yaml = CNFManager::Config.parse_config_yml("spec/fixtures/cnf-testsuite.yml")    
-    (yaml.cnf_config[:release_name]).should eq("coredns")
+      config = CNFInstall::Config.parse_cnf_config_from_file("spec/fixtures/cnf-testsuite.yml")    
+    (config.deployments.get_deployment_param(:name)).should eq("coredns")
     ensure
     end
   end
@@ -373,7 +328,7 @@ describe "SampleUtils" do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml"])
     cli_hash = CNFManager.sample_setup_cli_args(args, false)
     CNFManager.sample_setup(cli_hash) if cli_hash["config_file"]
-    config = CNFManager::Config.parse_config_yml("./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml")    
+    config = CNFInstall::Config.parse_cnf_config_from_file("./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml")    
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = true
 				begin

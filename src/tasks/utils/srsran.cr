@@ -14,28 +14,25 @@ module SRSRAN
 
   def self.install(config)
     Log.info {"Installing srsran"}
-    core = config.cnf_config[:amf_label]? 
+    core = config.common.five_g_parameters.amf_label 
     Log.info { "core: #{core}" }
     #todo use sane defaults (i.e. search for amf, upf, etc in pod names) if no 5gcore labels are present
-    amf_service_name = config.cnf_config[:fiveG_core][:amf_service_name]? 
-    mmc = config.cnf_config[:fiveG_core][:mmc]? 
-    mnc = config.cnf_config[:fiveG_core][:mnc]? 
-    sst = config.cnf_config[:fiveG_core][:sst]? 
-    sd = config.cnf_config[:fiveG_core][:sd]? 
-    tac = config.cnf_config[:fiveG_core][:tac]? 
-    enabled = config.cnf_config[:fiveG_core][:enabled]? 
-    count = config.cnf_config[:fiveG_core][:count]? 
-    initialMSISDN = config.cnf_config[:fiveG_core][:initialMSISDN]? 
-    key = config.cnf_config[:fiveG_core][:key]? 
-    op = config.cnf_config[:fiveG_core][:op]? 
-    opType = config.cnf_config[:fiveG_core][:opType]? 
-    type = config.cnf_config[:fiveG_core][:type]? 
-    apn = config.cnf_config[:fiveG_core][:apn]? 
-    emergency = config.cnf_config[:fiveG_core][:emergency]? 
-    core_key : String  = ""
-    core_value : String = ""
-    core_key = config.cnf_config[:amf_label].split("=").first if core
-    core_value = config.cnf_config[:amf_label].split("=").last if core
+    amf_service_name = config.common.five_g_parameters.amf_service_name 
+    mmc = config.common.five_g_parameters.mmc 
+    mnc = config.common.five_g_parameters.mnc 
+    sst = config.common.five_g_parameters.sst 
+    sd = config.common.five_g_parameters.sd 
+    tac = config.common.five_g_parameters.tac 
+    enabled = config.common.five_g_parameters.enabled 
+    count = config.common.five_g_parameters.count 
+    initialMSISDN = config.common.five_g_parameters.initialMSISDN 
+    key = config.common.five_g_parameters.key 
+    op = config.common.five_g_parameters.op 
+    opType = config.common.five_g_parameters.opType 
+    type = config.common.five_g_parameters.type 
+    apn = config.common.five_g_parameters.apn 
+    emergency = config.common.five_g_parameters.emergency 
+
     if core 
       all_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
       ueran_pods = KubectlClient::Get.pods_by_label(all_pods, "app.kubernetes.io/name", "ueransim-gnb")
@@ -48,21 +45,21 @@ module SRSRAN
       Helm.helm_repo_add("openverso","https://gradiant.github.io/openverso-charts/")
       Helm.fetch("openverso/ueransim-gnb --version 0.2.5 --untar")
 
-      protectionScheme = config.cnf_config[:fiveG_core][:protectionScheme]
-      unless protectionScheme.empty?
-        protectionScheme = "protectionScheme: #{config.cnf_config[:fiveG_core][:protectionScheme]}"
+      protectionScheme = config.common.five_g_parameters.protectionScheme
+      unless protectionScheme.nil? || protectionScheme.empty?
+        protectionScheme = "protectionScheme: #{protectionScheme}"
       end
-      publicKey = config.cnf_config[:fiveG_core][:publicKey] 
-      unless publicKey.empty?
-        publicKey = "publicKey: '#{config.cnf_config[:fiveG_core][:publicKey]}'"
+      publicKey = config.common.five_g_parameters.publicKey
+      unless publicKey.nil? || publicKey.empty?
+        publicKey = "publicKey: '#{publicKey}'"
       end
-      publicKeyId = config.cnf_config[:fiveG_core][:publicKeyId] 
-      unless publicKeyId.empty?
-        publicKeyId = "publicKeyId: #{config.cnf_config[:fiveG_core][:publicKeyId]}"
+      publicKeyId = config.common.five_g_parameters.publicKeyId 
+      unless publicKeyId.nil? || publicKeyId.empty?
+        publicKeyId = "publicKeyId: #{publicKeyId}"
       end
-      routingIndicator = config.cnf_config[:fiveG_core][:routingIndicator] 
-      unless routingIndicator.empty?
-        routingIndicator = "routingIndicator: '#{config.cnf_config[:fiveG_core][:routingIndicator]}'"
+      routingIndicator = config.common.five_g_parameters.routingIndicator
+      unless routingIndicator.nil? || routingIndicator.empty?
+        routingIndicator = "routingIndicator: '#{routingIndicator}'"
       end
 
       ue_values = UERANSIM::Template.new(amf_service_name,

@@ -1,4 +1,13 @@
 ---
-helm_directory: csp
-release_name: ip-forwarder-csp
-allowlist_helm_chart_container_names: [nginx, calico-node, kube-proxy, nginx-proxy, node-cache]
+config_version: v2
+common:
+  white_list_container_names:
+  - nginx
+  - calico-node
+  - kube-proxy
+  - nginx-proxy
+  - node-cache
+deployments:
+  helm_dirs:
+  - name: ip-forwarder-csp
+    helm_directory: csp

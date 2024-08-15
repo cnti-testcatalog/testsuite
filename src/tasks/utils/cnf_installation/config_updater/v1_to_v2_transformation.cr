@@ -1,3 +1,5 @@
+require "../config_versions/config_versions.cr"
+
 module CNFInstall
   module Config
     # Rules for configV1 to configV2 transformation
@@ -73,15 +75,16 @@ module CNFInstall
             "namespace" => @input_config.helm_install_namespace
           }]
         elsif @input_config.helm_chart
+          helm_repo_name, helm_chart_name = @input_config.helm_chart.not_nil!.split("/", 2)
           helm_chart_data = {
             "name" => @input_config.release_name,
-            "helm_chart_name" => @input_config.helm_chart,
+            "helm_chart_name" => helm_chart_name,
+            "helm_repo_name" => helm_repo_name,
             "helm_values" => @input_config.helm_values,
             "namespace" => @input_config.helm_install_namespace
           }
         
           if @input_config.helm_repository
-            helm_chart_data["helm_repo_name"] = @input_config.helm_repository.not_nil!.name
             helm_chart_data["helm_repo_url"] = @input_config.helm_repository.not_nil!.repo_url
           end
         

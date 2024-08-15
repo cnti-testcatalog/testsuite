@@ -86,7 +86,7 @@ module CNFInstall
       def get_deployment_param(param : Symbol) : String
         current = @@current.not_nil!
         allowed_params = [
-                          :name, :helm_repo_name, :helm_repo_url, :helm_chart_name,
+                          :name, :helm_repo_name, :helm_repo_url, :helm_chart_name, :helm_chart,
                           :helm_values, :namespace, :helm_directory, :manifest_directory
                           ]
         if !allowed_params.includes?(param)
@@ -99,6 +99,7 @@ module CNFInstall
           when :helm_repo_name  then current.helm_repo_name
           when :helm_repo_url   then current.helm_repo_url
           when :helm_chart_name then current.helm_chart_name
+          when :helm_chart      then "#{current.helm_repo_name}/#{current.helm_chart_name}"
           when :helm_values     then current.helm_values
           when :namespace       then current.namespace
           else ""
@@ -125,12 +126,12 @@ module CNFInstall
       def get_install_method
         case @@current
         when HelmChartConfig
-          {CNFInstall::InstallMethod::HelmChart, get_deployment_param(:helm_chart_name)}
+          {CNFInstall::InstallMethod::HelmChart, get_deployment_param(:helm_chart)}
         when HelmDirectoryConfig
-          full_helm_directory = Path[CNF_DIR + "/" + get_deployment_param(:name)  + "/" + CNFManager.sandbox_helm_directory(get_deployment_param(:helm_directory))].expand.to_s
+          full_helm_directory = Path[File.join(CNF_DIR, get_deployment_param(:name), CNFManager.sandbox_helm_directory(get_deployment_param(:helm_directory)))].expand.to_s
           {CNFInstall::InstallMethod::HelmDirectory, full_helm_directory}
         when ManifestDirectoryConfig
-          full_manifest_directory = Path[CNF_DIR + "/" + get_deployment_param(:name) + "/" + CNFManager.sandbox_helm_directory(get_deployment_param(:manifest_directory))].expand.to_s
+          full_manifest_directory = Path[File.join(CNF_DIR, get_deployment_param(:name), CNFManager.sandbox_helm_directory(get_deployment_param(:manifest_directory)))].expand.to_s
           {CNFInstall::InstallMethod::ManifestDirectory, full_manifest_directory}
         else 
           raise YAML::Error.new("At least one deployment should be configured")
@@ -149,9 +150,9 @@ module CNFInstall
     end
 
     class HelmChartConfig < HelmDeploymentConfig
-      getter helm_repo_name = "",
-             helm_repo_url = "",
-             helm_chart_name : String
+      getter helm_repo_name : String,
+             helm_chart_name : String,
+             helm_repo_url = ""
     end
 
     class HelmDirectoryConfig < HelmDeploymentConfig
@@ -197,6 +198,22 @@ module CNFInstall
              rolling_downgrade_test_tag = "",
              rolling_version_change_test_tag = "",
              rollback_from_tag = ""
+      
+      def get_container_tag(tag_name)
+        # (kosstennbl) TODO: rework version change test and its configuration to get rid of this method.
+        case tag_name
+        when "rolling_update"
+          rolling_update_test_tag
+        when "rolling_downgrade"
+          rolling_downgrade_test_tag
+        when "rolling_version_change"
+          rolling_version_change_test_tag
+        when "rollback_from"
+          rollback_from_tag
+        else
+          raise ArgumentError.new("Incorrect tag name for container configuration: #{tag_name}")
+        end
+      end
     end
   end
 end
