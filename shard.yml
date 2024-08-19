@@ -52,7 +52,7 @@ dependencies:
     version: ~> 1.0.7
   cluster_tools:
     github: cnf-testsuite/cluster_tools
-    version: ~> 1.0.6
+    version: ~> 1.0.7
   kernel_introspection:
     github: cnf-testsuite/kernel_introspection
     version: ~> 0.1.0
