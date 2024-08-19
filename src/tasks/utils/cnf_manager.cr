@@ -671,8 +671,7 @@ module CNFManager
     # Set it to false by default to indicate a new release is being setup
     fresh_install = true
 
-    helm_install = {status: "", output: "", error: ""}
-    helm_error = false
+    helm_install = {status: nil, output: "", error: ""}
 
     # todo determine what the ric is/if there is a ric installed (labeling)
     #option 1
@@ -715,11 +714,10 @@ module CNFManager
         Log.for("verbose").info { "deploying with chart repository" } if verbose
         begin
           helm_install = Helm.install(release_name, helm_chart, helm_namespace_option, helm_values)
-          # helm_install = Helm.install("#{release_name} #{helm_chart} #{helm_namespace_option}")
         rescue e : Helm::InstallationFailed
           stdout_failure "Helm installation failed"
           stdout_failure "\t#{e.message}"
-          helm_error = true
+          exit 1
         rescue e : Helm::CannotReuseReleaseNameError
           stdout_warning "Release name #{release_name} has already been setup."
           # Mark that install is not fresh
@@ -731,12 +729,11 @@ module CNFManager
         #TODO Add helm options into cnf-testsuite yml
         #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
         begin
-          # helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} #{helm_namespace_option}")
           helm_install = Helm.install(release_name, "#{install_method[1]}", helm_namespace_option, helm_values)
         rescue e : Helm::InstallationFailed
           stdout_failure "Helm installation failed"
           stdout_failure "\t#{e.message}"
-          helm_error = true
+          exit 1
         rescue e : Helm::CannotReuseReleaseNameError
           stdout_warning "Release name #{release_name} has already been setup."
           # Mark that install is not fresh
@@ -848,12 +845,10 @@ module CNFManager
     Log.info { "final liveness_time: #{liveness_time}" }
     Log.info { "elapsed_time.seconds: #{elapsed_time.seconds}" }
     Log.info { "helm_install: #{helm_install}" }
-    Log.info { "helm_error: #{helm_error}" }
     Log.info { "helm_install[:error].to_s: #{helm_install[:error].to_s}" }
     Log.info { "helm_install[:error].to_s.size: #{helm_install[:error].to_s.size}" }
-    helm_used = false
-    if helm_install && !helm_error # fails on warnings ... && helm_install[:error].to_s.size == 0 # && helm_pull.to_s.size > 0
-      helm_used = true
+
+    if fresh_install
       stdout_success "Successfully setup #{release_name}"
     end
 
@@ -866,6 +861,7 @@ module CNFManager
       immutable_configmap = false
     end
 
+    helm_used = !helm_install[:status].nil?
     #TODO if helm_install then set helm_deploy = true in template
     Log.info { "save config" }
     elapsed_time_template = ElapsedTimeConfigMapTemplate.new(

@@ -1,7 +1,0 @@
----
-helm_directory: cnfs/coredns/helm_chart/coredns
-release_name: coredns
-service_name: coredns-coredns
-helm_repository:
-  name: stable
-  repo_url: https://bad-helm-repo.googleapis.com
