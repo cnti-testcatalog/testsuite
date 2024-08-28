@@ -8,13 +8,13 @@ describe CnfTestSuite do
     result = ShellCmd.run_testsuite("setup")
   end
 
-	it "'helm_deploy' should fail on a bad helm chart", tags: ["helm"] do
-    ShellCmd.cnf_setup("cnf-path=./sample-cnfs/sample-bad-helm-deploy-repo verbose")
+	it "'helm_deploy' should fail on a manifest CNF", tags: ["helm"] do
+    ShellCmd.cnf_setup("cnf-path=./sample-cnfs/k8s-non-helm")
     result = ShellCmd.run_testsuite("helm_deploy verbose")
     result[:status].success?.should be_true
     (/(FAILED).*(Helm deploy failed)/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample-bad-helm-deploy-repo verbose")
+    result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/k8s-non-helm verbose")
   end
 
   it "'helm_deploy' should fail if command is not supplied cnf-config argument", tags: ["helm"] do
@@ -34,7 +34,7 @@ describe CnfTestSuite do
 
   it "'helm_chart_valid' should fail on a bad helm chart", tags: ["helm"] do
     begin
-      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample-bad_helm_coredns-cnf/cnf-testsuite.yml verbose skip_wait_for_install")
+      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample-bad_helm_coredns-cnf/cnf-testsuite.yml verbose skip_wait_for_install", expect_failure: true)
       result = ShellCmd.run_testsuite("helm_chart_valid")
       result[:status].success?.should be_true
       (/Lint Failed/ =~ result[:output]).should_not be_nil
