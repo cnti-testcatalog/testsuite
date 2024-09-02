@@ -3,7 +3,7 @@ module UERANSIM
 
   def self.uninstall
     Log.for("verbose").info { "uninstall_ueransim" } 
-    Helm.delete("ueransim")
+    Helm.delete("ueransim -n testsuite-5g")
   end
 
 
@@ -38,7 +38,7 @@ module UERANSIM
       Log.info { "ueran_pods: #{ueran_pods}" }
       unless ueran_pods[0]? == nil
         Log.info { "Found ueransim ... deleting" }
-        Helm.delete("ueransim")
+        Helm.delete("ueransim -n testsuite-5g")
       end
       #Helm.helm_repo_add("openverso","https://gradiant.github.io/openverso-charts/")
       # Helm.fetch("openverso/ueransim-gnb --version 0.2.5 --untar")
@@ -85,9 +85,10 @@ module UERANSIM
       File.write("gnb-ues-values.yaml", ue_values)
       # File.write("gnb-ues-values.yaml", UES_VALUES)
       File.write("#{Dir.current}/ueransim-gnb/resources/ue.yaml", UERANSIM_HELMCONFIG)
-      Helm.install("ueransim #{Dir.current}/ueransim-gnb --values ./gnb-ues-values.yaml")
+      CNFManager.ensure_namespace_exists!("cnf-default")
+      Helm.install("-n testsuite-5g ueransim #{Dir.current}/ueransim-gnb --values ./gnb-ues-values.yaml")
       Log.info { "after helm install" }
-      KubectlClient::Get.resource_wait_for_install("Pod", "ueransim")
+      KubectlClient::Get.resource_wait_for_install("Pod", "ueransim", namespace: "testsuite-5g")
       true
     else
       false

@@ -1,6 +1,7 @@
 ---
 helm_directory: open5gs
 release_name: open5gs
+helm_install_namespace: oran
 #optional 5gcore tag
 core: app.kubernetes.io/name=amf
 amf_service_name: open5gs-amf-ngap

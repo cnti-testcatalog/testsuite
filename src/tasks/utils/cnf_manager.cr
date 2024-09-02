@@ -136,7 +136,7 @@ module CNFManager
   def self.get_deployment_namespace(config)
     install_method = CNFInstall.cnf_installation_method(config)
     case install_method[0]
-    when CNFInstall::InstallMethod::HelmChart, Helm::InstallMethod::HelmDirectory
+    when CNFInstall::InstallMethod::HelmChart, CNFInstall::InstallMethod::HelmDirectory
       if !config.cnf_config[:helm_install_namespace].empty?
         Log.info { "deployment namespace was set to: #{config.cnf_config[:helm_install_namespace]}" }
         config.cnf_config[:helm_install_namespace]
