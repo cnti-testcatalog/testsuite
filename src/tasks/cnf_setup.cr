@@ -2,6 +2,7 @@ require "sam"
 require "file_utils"
 require "colorize"
 require "totem"
+require "yaml"
 require "./utils/utils.cr"
 
 task "cnf_setup", ["helm_local_install", "create_namespace"] do |_, args|
@@ -76,6 +77,10 @@ task "generate_config" do |_, args|
 
 end
 
+task "generate_v2_config" do |_, args|
+  interactively_create_config()
+end
+
 #TODO force all cleanups to use generic cleanup
 task "bad_helm_cnf_cleanup" do |_, args|
   CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-bad_helm_coredns-cnf", verbose: true)
@@ -98,4 +103,68 @@ end
 
 task "sample_generic_cnf_cleanup" do |_, args|
   CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
+end
+
+def interactively_create_config
+  config = {
+    config_version: "v2",
+    deployments: {
+      helm_charts: [] of Hash(String, String),
+      helm_dirs: [] of Hash(String, String),
+      manifests: [] of Hash(String, String)
+    }
+  }
+
+  loop do
+    puts "Select deployment type:"
+    puts "1. Helm Chart"
+    puts "2. Helm Directory"
+    puts "3. Manifest Directory"
+    puts "4. Finish and save configuration"
+    prompt("Enter your choice (1-4): ")
+
+    case choice
+    when "1"
+      helm_chart = {
+        "name" => prompt("Enter deployment name: "),
+        "helm_repo_name" => prompt("Enter Helm repository name: "),
+        "helm_repo_url" => prompt("Enter Helm repository URL: "),
+        "helm_chart_name" => prompt("Enter Helm chart name: ")
+      }
+      helm_chart["helm_chart_name"] = helm_chart["helm_repo_name"] + "/" + helm_chart["helm_chart_name"]
+      config[:deployments][:helm_charts] << helm_chart
+    when "2"
+      helm_dir = {
+        "name" => prompt("Enter deployment name: "),
+        "helm_directory" => prompt("Enter path to directory with Chart.yaml: ")
+      }
+      config[:deployments][:helm_dirs] << helm_dir
+    when "3"
+      manifest = {
+        "name" => prompt("Enter deployment name: "),
+        "manifest_directory" => prompt("Enter path to directory with manifest files: ")
+      }
+      config[:deployments][:manifests] << manifest
+    when "4"
+      break
+    else
+      puts "Invalid choice. Please try again."
+    end
+  end
+
+  yaml_config = config.to_yaml
+  puts "Generated Configuration:"
+  puts yaml_config
+
+  output_file = prompt("Choose output config path (leave empty for ./cnf-testsuite.yml): ")
+  if output_file.strip.empty?
+    output_file = "cnf-testsuite.yml"
+  end
+  File.write(output_file, yaml_config)
+  puts "Configuration saved to #{output_file}"
+end
+
+def prompt(message)
+  print message
+  gets.try(&.strip) || ""
 end
