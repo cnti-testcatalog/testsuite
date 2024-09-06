@@ -40,6 +40,12 @@ task "samples_cleanup" do  |_, args|
     )
     nil
   end
+  # Remove common_manifest.yaml file
+  common_manifest_path = "cnfs/common_manifest.yml"
+  if File.exists?(common_manifest_path)
+    File.delete(common_manifest_path)
+    Log.info { "#{common_manifest_path} file deleted successfully." }
+  end
 end
 
 desc "Cleans up the CNF Test Suite helper tools and containers"

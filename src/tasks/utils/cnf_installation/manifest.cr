@@ -47,5 +47,42 @@ module CNFInstall
       Log.debug { "manifest_containers: #{manifest_yml}" }
       manifest_yml.dig?("spec", "template", "spec", "containers")
     end
+
+    def self.add_manifest_to_file(release_name : String, manifest : String | Tuple(String, String), destination_file = "cnfs/common_manifest.yml")
+      if File.exists?(destination_file)
+        File.open(destination_file, "a") do |file|
+          file.puts manifest
+          Log.info { "#{release_name} manifest was appended into #{destination_file} file" }
+        end
+      else
+        File.open(destination_file, "w") do |file|
+          file.puts manifest
+          Log.info { "Created #{destination_file} file with #{release_name} manifest." }
+        end
+      end
+    end
+    
+    def self.generate_manifest(config, release_name, namespace)
+      install_method = CNFInstall.cnf_installation_method(config)
+      case install_method[0]
+      when CNFInstall::InstallMethod::ManifestDirectory
+        destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+        manifest_directory = config.cnf_config[:manifest_directory]
+        list_of_manifests = manifest_file_list( destination_cnf_dir + "/" + manifest_directory )
+        list_of_manifests.each do |manifest_path|
+          manifest = File.read(manifest_path)
+          add_manifest_to_file(release_name: release_name, manifest: manifest)
+        end
+      
+      when CNFInstall::InstallMethod::HelmChart, CNFInstall::InstallMethod::HelmDirectory
+        begin
+          generated_manifest = Helm.generate_manifest(release_name, namespace)
+          add_manifest_to_file(release_name: release_name, manifest: generated_manifest)
+        rescue ex : Helm::ManifestGenerationError
+          Log.error { ex.message.colorize(:red) }
+          exit 1
+        end
+      end
+    end
   end
 end

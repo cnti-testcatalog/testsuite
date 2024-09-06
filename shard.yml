@@ -60,10 +60,12 @@ dependencies:
     github: cnf-testsuite/k8s_kernel_introspection
     version: ~> 1.0.3
   helm:
-    github: cnf-testsuite/helm
+    github: barmull/helm
+    branch: main
     version: ~> 1.0.1
   k8s_netstat:
-    github: cnf-testsuite/k8s_netstat
+    github: barmull/k8s_netstat
+    branch: main
     version: ~> 1.0.1
   release_manager:
     github: cnf-testsuite/release_manager

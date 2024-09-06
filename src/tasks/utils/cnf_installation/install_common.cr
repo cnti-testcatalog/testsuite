@@ -30,7 +30,7 @@ module CNFInstall
   end
 
   def self.cnf_installation_method(config : CNFManager::Config) : Tuple(CNFInstall::InstallMethod, String)
-    Log.info { "cnf_installation_method: #{config.cnf_config[:install_method]}" }
+    Log.info { "cnf_installation_method: #{config.cnf_config[:install_method][0]}" }
     Log.info { "config_cnf_config: #{config.cnf_config}" }
     yml_file_path = config.cnf_config[:source_cnf_file]
     parsed_config_file = CNFManager.parsed_config_file(yml_file_path)

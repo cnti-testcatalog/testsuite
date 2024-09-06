@@ -882,6 +882,10 @@ module CNFManager
     #TODO call kubectl apply on file
     KubectlClient::Apply.file(configmap_path)
     # TODO when uninstalling, remove config map
+    
+    #Generating manifest from installed CNF
+    CNFInstall::Manifest.generate_manifest(config, release_name, deployment_namespace)
+      
   ensure
     #todo uninstall/reinstall clustertools because of tshark bug
   end
