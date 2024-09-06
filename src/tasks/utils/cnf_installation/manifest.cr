@@ -1,15 +1,15 @@
 module CNFInstall
   module Manifest
-    def self.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
-      Log.info { "parse_manifest_as_ymls template_file_name: #{template_file_name}" }
-      templates = File.read(template_file_name)
-      split_template = templates.split(/(\s|^)---(\s|$)/)
-      ymls = split_template.map { | template |
+    def self.parse_manifest_as_ymls(file_name)
+      Log.info { "parse_manifest_as_ymls file_name: #{file_name}" }
+      file_content = File.read(file_name)
+      split_content = file_content.split(/(\s|^)---(\s|$)/)
+      ymls = split_content.map { | manifest |
         #TODO strip out NOTES
-        YAML.parse(template)
+        YAML.parse(manifest)
         # compact seems to have problems with yaml::any
       }.reject{|x|x==nil}
-      Log.debug { "read_template ymls: #{ymls}" }
+      Log.debug { "parse_manifest_as_ymls:\n #{ymls}" }
       ymls
     end
     
@@ -46,6 +46,37 @@ module CNFInstall
     def self.manifest_containers(manifest_yml)
       Log.debug { "manifest_containers: #{manifest_yml}" }
       manifest_yml.dig?("spec", "template", "spec", "containers")
+    end
+
+    def self.add_manifest_to_file(deployment_name : String, manifest : String, destination_file)
+      File.open(destination_file, "a+") do |file|
+          file.puts manifest
+          Log.info { "#{deployment_name} manifest was appended into #{destination_file} file" }
+      end
+    end
+    
+    def self.generate_common_manifest(config, deployment_name, namespace)
+      manifest_generated_successfully = true
+      case config.dynamic.install_method[0]
+      when CNFInstall::InstallMethod::ManifestDirectory
+        destination_cnf_dir = config.dynamic.destination_cnf_dir
+        manifest_directory = config.deployments.get_deployment_param(:manifest_directory)
+        list_of_manifests = manifest_file_list( destination_cnf_dir + "/" + manifest_directory )
+        list_of_manifests.each do |manifest_path|
+          manifest = File.read(manifest_path)
+          add_manifest_to_file(deployment_name, manifest, COMMON_MANIFEST_FILE_PATH)
+        end
+      
+      when CNFInstall::InstallMethod::HelmChart, CNFInstall::InstallMethod::HelmDirectory
+        begin
+          generated_manifest = Helm.generate_manifest(deployment_name, namespace)
+          add_manifest_to_file(deployment_name, generated_manifest, COMMON_MANIFEST_FILE_PATH)
+        rescue ex : Helm::ManifestGenerationError
+          Log.for("generate_common_manifest").error { ex.message }
+          manifest_generated_successfully = false
+        end
+      end
+      manifest_generated_successfully
     end
   end
 end
