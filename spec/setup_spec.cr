@@ -76,4 +76,18 @@ describe "Setup" do
       (/Successfully cleaned up/ =~ result[:output]).should_not be_nil
     end
   end
+
+  it "'cnf_setup' should fail if another CNF is already installed", tags: ["setup"] do
+    begin
+      result = ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample_coredns/cnf-testsuite.yml")
+      (/Successfully setup coredns/ =~ result[:output]).should_not be_nil
+      result = ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample-minimal-cnf/cnf-testsuite.yml")
+      (/A CNF is already set up. Setting up multiple CNFs is not allowed./ =~ result[:output]).should_not be_nil
+    ensure
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample_coredns/cnf-testsuite.yml")
+      result[:status].success?.should be_true
+      (/Successfully cleaned up/ =~ result[:output]).should_not be_nil
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample-minimal-cnf/cnf-testsuite.yml")
+    end
+  end
 end

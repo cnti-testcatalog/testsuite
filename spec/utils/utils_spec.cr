@@ -58,7 +58,6 @@ describe "Utils" do
     #TODO make CNFManager.sample_setup_args accept the full path to the config yml instead of the directory
     (check_cnf_config(args)).should eq("./sample-cnfs/sample-generic-cnf")
   end
- 
 
   it "'upsert_skipped_task' should put a 0 in the results file", tags: ["task_runner"]  do
     CNFManager::Points.clean_results_yml
@@ -148,59 +147,6 @@ describe "Utils" do
       YAML.parse(file)
     end
     (yaml["exit_code"]).should eq(2)
-  end
-
-  it "'all_cnfs_task_runner' should run a test against all cnfs in the cnfs directory if there is not cnf-config argument passed to it", tags: ["task_runner"]  do
-    my_args = Sam::Args.new
-      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample-generic-cnf")
-      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample_privileged_cnf")
-    task_response = CNFManager::Task.all_cnfs_task_runner(my_args) do |args, config|
-      Log.info { "all_cnfs_task_runner spec args #{args.inspect}" }
-      Log.for("verbose").info { "privileged_containers" } if check_verbose(args)
-      white_list_container_names = config.common.white_list_container_names
-      Log.for("verbose").info { "white_list_container_names #{white_list_container_names.inspect}" } if check_verbose(args)
-      violation_list = [] of String
-      resource_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-
-        privileged_list = KubectlClient::Get.privileged_containers
-        resource_containers = KubectlClient::Get.resource_containers(resource["kind"],resource["name"],resource["namespace"])
-        resource_containers_list = (JSON.parse(resource_containers.to_json).as_a).map { |element| element["name"] }
-        # Only check the containers that are in the deployed helm chart or manifest
-        (privileged_list & (resource_containers_list - white_list_container_names)).each do |x|
-          violation_list << x
-        end
-        if violation_list.size > 0
-          false
-        else
-          true
-        end
-      end
-      Log.debug { "violator list: #{violation_list.flatten}" }
-      emoji_security=""
-      if resource_response 
-        resp = upsert_passed_task("privileged_containers", "✔️  PASSED: No privileged containers", Time.utc)
-      else
-        resp = upsert_failed_task("privileged_containers", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect}", Time.utc)
-      end
-      resp
-    end
-    (task_response).should eq(["✔️  PASSED: No privileged containers", 
-                               "✖️  FAILED: Found 1 privileged containers: [\"privileged-coredns\"]"])
-  ensure
-    CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
-    CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
-  end
-
-  it "'task_runner' should run a test against a single cnf if passed a cnf-config argument even if there are multiple cnfs installed", tags: ["task_runner"]  do
-    ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-generic-cnf/cnf-testsuite.yml")
-    ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml")
-    result = ShellCmd.run_testsuite("privileged_containers")
-    (/(FAILED).*(Found 1 privileged containers)/ =~ result[:output]).should_not be_nil
-  ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-generic-cnf/cnf-testsuite.yml")
-    result[:status].success?.should be_true
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml")
-    result[:status].success?.should be_true
   end
 
   it "'logger' command line logger level setting via config.yml", tags: ["logger"]  do
