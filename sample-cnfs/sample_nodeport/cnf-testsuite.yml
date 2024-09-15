@@ -3,4 +3,3 @@ helm_directory: chart
 git_clone_url: 
 install_script: chart
 release_name: unifi
-service_name: unifi-controller

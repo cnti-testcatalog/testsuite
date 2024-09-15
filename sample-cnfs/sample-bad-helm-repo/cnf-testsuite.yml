@@ -1,6 +1,5 @@
 ---
 release_name: coredns
-service_name: coredns-coredns 
 helm_repository:
   name: badrepo
   repo_url: https://bad-helm-repo.googleapis.com

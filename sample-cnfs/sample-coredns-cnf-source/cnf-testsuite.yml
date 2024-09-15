@@ -1,4 +1,3 @@
 ---
 release_name: coredns
-service_name: coredns-coredns 
 helm_chart: stable/coredns

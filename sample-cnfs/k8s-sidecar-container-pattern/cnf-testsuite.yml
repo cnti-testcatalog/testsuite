@@ -3,7 +3,6 @@ helm_directory: chart
 git_clone_url: 
 install_script: 
 release_name: sidecar-container-demo
-service_name: 
 helm_repository:
   name: stable 
   repo_url: https://cncf.gitlab.io/stable
