@@ -70,6 +70,31 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
+    - name: Configuration file that can be consumed by the Pod Security Admission Controller
+      run: |
+        mkdir -p /tmp/pss
+        cat <<EOF > /tmp/pss/cluster-level-pss.yaml
+        apiVersion: apiserver.config.k8s.io/v1
+        kind: AdmissionConfiguration
+        plugins:
+        - name: PodSecurity
+          configuration:
+            apiVersion: pod-security.admission.config.k8s.io/v1
+            kind: PodSecurityConfiguration
+            defaults:
+              enforce: "restricted"
+              enforce-version: "latest"
+              audit: "restricted"
+              audit-version: "latest"
+              warn: "restricted"
+              warn-version: "latest"
+            exemptions:
+              usernames: []
+              runtimeClasses: []
+              namespaces:
+                - kube-system
+                - local-path-storage
+        EOF
     - name: Mirror Setup
       run: |
         cat << EOF > /tmp/cluster.yml
@@ -77,7 +102,24 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         nodes:
         - role: control-plane
-          image: kindest/node:v1.29.2@sha256:51a1434a5397193442f0be2a297b488b6c919ce8a3931be0ce822606ea5ca245
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            apiServer:
+              extraArgs:
+                admission-control-config-file: /tmp/pss/cluster-level-pss.yaml
+              extraVolumes:
+                - name: accf
+                  hostPath: /tmp/pss
+                  mountPath: /tmp/pss
+                  readOnly: false
+                  pathType: "DirectoryOrCreate"
+          extraMounts:
+          - hostPath: /tmp/pss
+            containerPath: /tmp/pss
+            readOnly: false
+            selinuxRelabel: false
+            propagation: None
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
@@ -97,11 +139,27 @@ jobs:
         # Enabled additional unsafe sysctls to support the negative spec test for sysctls
         nodes:
         - role: control-plane
-          image: kindest/node:v1.29.2@sha256:51a1434a5397193442f0be2a297b488b6c919ce8a3931be0ce822606ea5ca245
           kubeadmConfigPatches:
           - |
             kind: KubeletConfiguration
             allowedUnsafeSysctls: ["kernel.msg*"]
+          - |
+            kind: ClusterConfiguration
+            apiServer:
+              extraArgs:
+                admission-control-config-file: /tmp/pss/cluster-level-pss.yaml
+              extraVolumes:
+                - name: accf
+                  hostPath: /tmp/pss
+                  mountPath: /tmp/pss
+                  readOnly: false
+                  pathType: "DirectoryOrCreate"
+          extraMounts:
+          - hostPath: /tmp/pss
+            containerPath: /tmp/pss
+            readOnly: false
+            selinuxRelabel: false
+            propagation: None
         EOF
     - name: Mirror Override
       if: matrix.spec == 'private_registry_image'
@@ -111,12 +169,31 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         nodes:
         - role: control-plane
+          kubeadmConfigPatches:
+          - |
+            kind: ClusterConfiguration
+            apiServer:
+              extraArgs:
+                admission-control-config-file: /tmp/pss/cluster-level-pss.yaml
+              extraVolumes:
+                - name: accf
+                  hostPath: /tmp/pss
+                  mountPath: /tmp/pss
+                  readOnly: false
+                  pathType: "DirectoryOrCreate"
+          extraMounts:
+          - hostPath: /tmp/pss
+            containerPath: /tmp/pss
+            readOnly: false
+            selinuxRelabel: false
+            propagation: None
         containerdConfigPatches:
           - |-
             [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
               endpoint = ["http://localhost:5000"]
             [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
               endpoint = ["http://localhost:5000"]
+        EOF
     - name: Install Latest Kind
       env:
         KIND_VERSION: v0.22.0
@@ -130,7 +207,8 @@ jobs:
         kind --version
     - name: Create Kind Cluster 
       run: |
-        cat /tmp/cluster.yml
+        cat -A /tmp/cluster.yml
+        cat -A /tmp/pss/cluster-level-pss.yaml
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
         echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
