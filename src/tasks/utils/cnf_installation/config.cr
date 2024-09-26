@@ -28,5 +28,26 @@ module CNFInstall
 
       config
     end
+
+    # Detects the config version.
+    def self.detect_version(tmp_content : String) : ConfigVersion
+      yaml_content = YAML.parse(tmp_content).as_h
+      version_value = yaml_content["config_version"]?.try(&.to_s)
+
+      if version_value
+        begin
+          ConfigVersion.parse(version_value.upcase)
+        rescue ex : ArgumentError
+          raise UnsupportedConfigVersionError.new(version_value)
+        end
+      else
+        # Default to V1 if no version is specified
+        ConfigVersion::V1
+      end
+    end
+
+    def self.config_version_is_latest?(tmp_content : String) : Bool
+      detect_version(tmp_content) == ConfigVersion::Latest
+    end
   end
 end
