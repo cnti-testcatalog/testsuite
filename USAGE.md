@@ -171,14 +171,17 @@ CNF_TESTSUITE_LITMUS_CHAOS_TEST_TIMEOUT=1800
 CNF_TESTSUITE_NODE_DRAIN_TOTAL_CHAOS_DURATION=90
 ```
 
-#### Running The Linter in Developer Mode
+#### Running The Linter
 
-See https://github.com/crystal-ameba/ameba for more details. Follow the [INSTALL](INSTALL.md) guide starting at the [Source Install](INSTALL.md#source-install) for more details running cnf-testsuite in developer mode.
+Ameba (https://github.com/crystal-ameba/ameba) is a static code linter for crystal-lang.
+To run Ameba, you need to install testsuite in developer mode ([Source Install](INSTALL.md#source-install)) and use installation from source method for Ameba, which is mentioned in Ameba readme.md:
 
 ```
-shards install # only for first install
-crystal bin/ameba.cr
+git clone https://github.com/crystal-ameba/ameba && cd ameba
+make install
 ```
+
+After that, follow the usage guidelines from the Ameba repository.
 
 ### Usage for categories and single tests
 
