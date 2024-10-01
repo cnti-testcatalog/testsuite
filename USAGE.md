@@ -174,7 +174,7 @@ CNF_TESTSUITE_NODE_DRAIN_TOTAL_CHAOS_DURATION=90
 #### Running The Linter
 
 Ameba (https://github.com/crystal-ameba/ameba) is a static code linter for crystal-lang.
-To run Ameba, you need to install testsuite in developer mode ([Source Install](INSTALL.md#source-install)) and use installation from source method for Ameba, which is mentioned in Ameba readme.md:
+To run Ameba, testsuite needs to be installed in developer mode ([Source Install](INSTALL.md#source-install)) and Ameba needs to be installed using source method, which is mentioned in Ameba readme.md:
 
 ```
 git clone https://github.com/crystal-ameba/ameba && cd ameba
