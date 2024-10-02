@@ -42,7 +42,6 @@ end
 desc "Does the CNF emit prometheus traffic"
 task "prometheus_traffic" do |t, args|
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
-    release_name = config.deployments.get_deployment_param(:name)
     destination_cnf_dir = config.dynamic.destination_cnf_dir
 
     do_this_on_each_retry = ->(ex : Exception, attempt : Int32, elapsed_time : Time::Span, next_interval : Time::Span) do
@@ -112,7 +111,7 @@ task "prometheus_traffic" do |t, args|
                 end
                 if msg[:status].success?
                   metrics_config_map = Prometheus::OpenMetricConfigMapTemplate.new(
-                    "cnf-testsuite-#{release_name}-open-metrics",
+                    "cnf-testsuite-open-metrics",
                     true,
                     "",
                     immutable_configmap
@@ -120,7 +119,7 @@ task "prometheus_traffic" do |t, args|
                 else
                   Log.info { "Openmetrics failure reason: #{msg[:output]}"}
                   metrics_config_map = Prometheus::OpenMetricConfigMapTemplate.new(
-                    "cnf-testsuite-#{release_name}-open-metrics",
+                    "cnf-testsuite-open-metrics",
                     false,
                     msg[:output],
                     immutable_configmap
@@ -159,8 +158,7 @@ end
 desc "Does the CNF emit prometheus open metric compatible traffic"
 task "open_metrics", ["prometheus_traffic"] do |t, args|
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
-    release_name = config.deployments.get_deployment_param(:name)
-    configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-open-metrics")
+    configmap = KubectlClient::Get.configmap("cnf-testsuite-open-metrics")
     if configmap != EMPTY_JSON
       open_metrics_validated = configmap["data"].as_h["open_metrics_validated"].as_s
 
