@@ -193,17 +193,6 @@ describe CnfTestSuite do
     end
   end
 
-  it "'ip_addresses' should pass when no uncommented ip addresses are found in helm chart source", tags: ["ip_addresses"] do
-    begin
-      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample-coredns-cnf-source/cnf-testsuite.yml verbose skip_wait_for_install")
-      result = ShellCmd.run_testsuite("ip_addresses verbose")
-      result[:status].success?.should be_true
-      (/(PASSED).*(No IP addresses found)/ =~ result[:output]).should_not be_nil
-    ensure
-      result = ShellCmd.run_testsuite("sample_coredns_source_cleanup verbose")
-    end
-  end
-
   it "'hardcoded_ip_addresses_in_k8s_runtime_configuration' should fail when a hardcoded ip is found in the K8s configuration", tags: ["ip_addresses"] do
     begin
       ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample_coredns_hardcoded_ips deploy_with_chart=false")

@@ -4,6 +4,6 @@ require "colorize"
 require "totem"
 
 desc "Static tests"
-task "static", ["liveness", "ip_addresses"] do  |_, args|
+task "static", ["liveness"] do  |_, args|
 end
 
