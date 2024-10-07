@@ -105,10 +105,5 @@ module JaegerManager
     Log.info { "total unique services for all pods: #{total_count}" }
     total_count
   end
-
-  def self.tracing_used?(baseline, cnf_count)
-    cnf_count != baseline
-  end
-
 end
 

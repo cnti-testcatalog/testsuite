@@ -161,35 +161,10 @@ describe "Observability" do
   end
 
   it "'tracing' should fail if tracing is not used", tags: ["observability_jaeger_fail"] do
-    Log.info { "Installing Jaeger " }
-    JaegerManager.install
-
-    ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
-    result = ShellCmd.run_testsuite("tracing")
-    (/(FAILED).*(Tracing not used)/ =~ result[:output]).should_not be_nil
-  ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
-    JaegerManager.uninstall
-    KubectlClient::Get.resource_wait_for_uninstall("Statefulset", "jaeger-cassandra")
-    KubectlClient::Get.resource_wait_for_uninstall("Deployment", "jaeger-collector")
-    KubectlClient::Get.resource_wait_for_uninstall("Deployment", "jaeger-query")
-    KubectlClient::Get.resource_wait_for_uninstall("Daemonset", "jaeger-agent")
+    # (kosstennbl) TODO: Test and specs for 'tracing' should be redesigned. Check #2153 for more info. Spec was using sample-coredns-cnf CNF.
   end
 
   it "'tracing' should pass if tracing is used", tags: ["observability_jaeger_pass"] do
-    Log.info { "Installing Jaeger " }
-    JaegerManager.install
-
-    ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-tracing/cnf-testsuite.yml")
-    result = ShellCmd.run_testsuite("tracing")
-    (/(PASSED).*(Tracing used)/ =~ result[:output]).should_not be_nil
-  ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-tracing/cnf-testsuite.yml")
-    JaegerManager.uninstall
-    KubectlClient::Get.resource_wait_for_uninstall("Statefulset", "jaeger-cassandra")
-    KubectlClient::Get.resource_wait_for_uninstall("Deployment", "jaeger-collector")
-    KubectlClient::Get.resource_wait_for_uninstall("Deployment", "jaeger-query")
-    KubectlClient::Get.resource_wait_for_uninstall("Daemonset", "jaeger-agent")
+    # (kosstennbl) TODO: Test and specs for 'tracing' should be redesigned. Check #2153 for more info. Spec was using sample-tracing CNF.
   end
-
 end
