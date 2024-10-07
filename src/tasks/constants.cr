@@ -23,6 +23,7 @@ EMPTY_JSON = JSON.parse(%({}))
 EMPTY_JSON_ARRAY = JSON.parse(%([]))
 SPECIALIZED_INIT_SYSTEMS = ["tini", "dumb-init", "s6-svscan"]
 ROLLING_VERSION_CHANGE_TEST_NAMES = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
+WORKLOAD_RESOURCE_KIND_NAMES = ["replicaset", "deployment", "statefulset", "pod", "daemonset"]
 
 TESTSUITE_NAMESPACE = "cnf-testsuite"
 DEFAULT_CNF_NAMESPACE = "cnf-default"

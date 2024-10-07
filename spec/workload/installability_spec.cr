@@ -12,7 +12,7 @@ describe CnfTestSuite do
     ShellCmd.cnf_setup("cnf-path=./sample-cnfs/k8s-non-helm")
     result = ShellCmd.run_testsuite("helm_deploy verbose")
     result[:status].success?.should be_true
-    (/(FAILED).*(Helm deploy failed)/ =~ result[:output]).should_not be_nil
+    (/(FAILED).*(CNF has deployments that are not installed with helm)/ =~ result[:output]).should_not be_nil
   ensure
     result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/k8s-non-helm verbose")
   end
