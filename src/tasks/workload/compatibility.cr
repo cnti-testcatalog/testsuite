@@ -390,15 +390,13 @@ task "helm_deploy" do |t, args|
 
   CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do |args, config|
     if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
-      release_name = config.deployments.get_deployment_param(:name)
-      configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
-      #TODO check if json is empty
-      helm_used = configmap["data"].as_h["helm_used"].as_s
+      install_method = config.deployments.get_install_method()
+      helm_used = install_method[0].is_a?(CNFInstall::InstallMethod::HelmDirectory) || install_method[0].is_a?(CNFInstall::InstallMethod::HelmChart)
 
       if helm_used == "true"
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Helm deploy successful")
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "CNF is installed via helm")
       else
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Helm deploy failed")
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "CNF has deployments that are not installed with helm")
       end
     else
       CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "No cnf_testsuite.yml found! Did you run the setup task?")

@@ -22,7 +22,7 @@ task "log_output" do |t, args|
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       test_passed = false
       case resource["kind"].downcase
-      when "replicaset", "deployment", "statefulset", "pod", "daemonset"
+      when .in?(WORKLOAD_RESOURCE_KIND_NAMES)
         result = KubectlClient.logs("#{resource["kind"]}/#{resource["name"]}", namespace: resource[:namespace], options: "--all-containers --tail=5 --prefix=true")
         Log.for("Log lines").info { result[:output] }
         if result[:output].size > 0
@@ -219,16 +219,8 @@ task "tracing" do |t, args|
       match = JaegerManager.match()
       Log.info { "jaeger match: #{match}" }
       if match[:found]
-        release_name = config.deployments.get_deployment_param(:name)
-        configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
-        #TODO check if json is empty
-        tracing_used = configmap["data"].as_h["tracing_used"].as_s
-
-        if tracing_used == "true"
-          CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Tracing used")
-        else
-          CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Tracing not used")
-        end
+        # (kosstennbl) TODO: Redesign tracing test, preferably without usage of installation configmaps. More info in issue #2153
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "tracing test is disabled, check #2153")
       else
         CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Jaeger not configured")
       end

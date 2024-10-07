@@ -15,15 +15,6 @@ require "log"
 require "ecr"
 
 module CNFManager
-  class ElapsedTimeConfigMapTemplate
-    # elapsed_time should be Int32 but it is being passed as string
-    # So the old behaviour has been retained as is to prevent any breakages
-    def initialize(@release_name : String, @helm_used : Bool, @elapsed_time : String, @immutable : Bool, @tracing_used : Bool, @e2_found : Bool)
-    end
-
-    ECR.def_to_s("src/templates/elapsed_time_configmap.yml.ecr")
-  end
-
   def self.cnf_resource_ymls(args, config)
     Log.info { "cnf_resource_ymls" }
     manifest_ymls = CNFInstall::Manifest.manifest_path_to_ymls(COMMON_MANIFEST_FILE_PATH)
@@ -419,229 +410,86 @@ module CNFManager
     # Set it to false by default to indicate a new release is being setup
     fresh_install = true
 
-    helm_install = {status: nil, output: "", error: ""}
-
-    # todo determine what the ric is/if there is a ric installed (labeling)
-    #option 1
-    # todo determine what pad/node the ric is in  (pod/node by label)
-    # todo start tshark capture of the e2 traffic 
-    # todo restart the ric pod when running the ric e2 test
-    # todo validate the e2 traffic
-    #option 2
-    # todo start tshark capture of the e2 traffic (on all nodes?)
-    # todo install the ric/xapp (the xapp should be installed last?)
-    # todo note which pad/node the ric is in  (what if cluster tools tshark was  not executed on the node with the ric?)
-    # todo alternative (capture on gnodeb node)
-    # todo validate the e2 traffic
-    # todo save off the result to a config map
-    # todo check the config map in the e2 test
-
-    match = JaegerManager.match()
-    if match[:found]
-      baselines = JaegerManager.unique_services_total
-      Log.info { "baselines: #{baselines}" }
-    end
-
-    # todo start tshark monitoring the e2 traffic 
-    capture = ORANMonitor.start_e2_capture?(config)
-
     # todo separate out install methods into a module/function that accepts a block
-    liveness_time = 0
     Log.for("sample_setup:install_method").info { "#{install_method[0]}" }
     Log.for("sample_setup:install_method").info { "#{install_method[1]}" }
-    elapsed_time = Time.measure do
-      case install_method[0]
-      when CNFInstall::InstallMethod::ManifestDirectory
-        Log.for("verbose").info { "deploying by manifest file" } if verbose
-        manifest_directory = config.deployments.get_deployment_param(:manifest_directory)
-        KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
-      when CNFInstall::InstallMethod::HelmChart
-        helm_chart = config.deployments.get_deployment_param(:helm_chart)
-        helm_repo_name = config.deployments.get_deployment_param(:helm_repo_name)
-        helm_repo_url = config.deployments.get_deployment_param(:helm_repo_url)
-        if !helm_repo_name.empty? || !helm_repo_url.empty?
-          Helm.helm_repo_add(helm_repo_name, helm_repo_url)
-        end
-        Log.for("verbose").info { "deploying with chart repository" } if verbose
-        begin
-          helm_install = Helm.install(release_name, helm_chart, helm_namespace_option, helm_values)
-        rescue e : Helm::InstallationFailed
-          stdout_failure "Helm installation failed"
-          stdout_failure "\t#{e.message}"
-          exit 1
-        rescue e : Helm::CannotReuseReleaseNameError
-          stdout_warning "Release name #{release_name} has already been setup."
-          # Mark that install is not fresh
-          fresh_install = false
-        end
-        export_published_chart(config, cli_args)
-      when CNFInstall::InstallMethod::HelmDirectory
-        Log.for("verbose").info { "deploying with helm directory" } if verbose
-        #TODO Add helm options into cnf-testsuite yml
-        #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
-        begin
-          helm_install = Helm.install(release_name, "#{install_method[1]}", helm_namespace_option, helm_values)
-        rescue e : Helm::InstallationFailed
-          stdout_failure "Helm installation failed"
-          stdout_failure "\t#{e.message}"
-          exit 1
-        rescue e : Helm::CannotReuseReleaseNameError
-          stdout_warning "Release name #{release_name} has already been setup."
-          # Mark that install is not fresh
-          fresh_install = false
-        end
-      else
-        raise "Deployment method not found"
+    case install_method[0]
+    when CNFInstall::InstallMethod::ManifestDirectory
+      Log.for("verbose").info { "deploying by manifest file" } if verbose
+      manifest_directory = config.deployments.get_deployment_param(:manifest_directory)
+      KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
+    when CNFInstall::InstallMethod::HelmChart
+      helm_chart = config.deployments.get_deployment_param(:helm_chart)
+      helm_repo_name = config.deployments.get_deployment_param(:helm_repo_name)
+      helm_repo_url = config.deployments.get_deployment_param(:helm_repo_url)
+      if !helm_repo_name.empty? || !helm_repo_url.empty?
+        Helm.helm_repo_add(helm_repo_name, helm_repo_url)
       end
-      
-      #Generating manifest from installed CNF
-      #Returns true or false in case when manifest was generated successfully or not
-      manifest_generated_successfully = CNFInstall::Manifest.generate_common_manifest(config, release_name, deployment_namespace)
-      
-      if !manifest_generated_successfully
-        stdout_failure "Manifest generation failed. Check CNF definition (helm charts, values, manifests, etc.)"
+      Log.for("verbose").info { "deploying with chart repository" } if verbose
+      begin
+        Helm.install(release_name, helm_chart, helm_namespace_option, helm_values)
+      rescue e : Helm::InstallationFailed
+        stdout_failure "Helm installation failed"
+        stdout_failure "\t#{e.message}"
         exit 1
+      rescue e : Helm::CannotReuseReleaseNameError
+        stdout_warning "Release name #{release_name} has already been setup."
+        fresh_install = false
       end
-
-      resource_ymls = cnf_workload_resources(nil, config) do |resource|
-        resource
+      export_published_chart(config, cli_args)
+    when CNFInstall::InstallMethod::HelmDirectory
+      Log.for("verbose").info { "deploying with helm directory" } if verbose
+      #TODO Add helm options into cnf-testsuite yml
+      #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
+      begin
+        Helm.install(release_name, "#{install_method[1]}", helm_namespace_option, helm_values)
+      rescue e : Helm::InstallationFailed
+        stdout_failure "Helm installation failed"
+        stdout_failure "\t#{e.message}"
+        exit 1
+      rescue e : Helm::CannotReuseReleaseNameError
+        stdout_warning "Release name #{release_name} has already been setup."
+        fresh_install = false
       end
-
-      resource_names = Helm.workload_resource_kind_names(resource_ymls, deployment_namespace)
-      #TODO move to kubectlclient and make resource_install_and_wait_for_all function
-      # get liveness probe initialDelaySeconds and FailureThreshold
-      # if   ((periodSeconds * failureThreshhold) + initialDelaySeconds) / defaultFailureThreshold) > startuptimelimit then fail; else pass
-      # get largest startuptime of all resoures, then save into config map
-      resource_ymls.map do |resource|
-        kind = resource["kind"].as_s.downcase
-        case kind 
-        when  "pod"
-          Log.info { "resource: #{resource}" }
-          containers = resource.dig("spec", "containers")
-        when  "deployment","statefulset","replicaset","daemonset"
-          Log.info { "resource: #{resource}" }
-          containers = resource.dig("spec", "template", "spec", "containers")
-        end
-        containers && containers.as_a.map do |container|
-          initialDelaySeconds = container.dig?("livenessProbe", "initialDelaySeconds")
-          failureThreshhold = container.dig?("livenessProbe", "failureThreshhold")
-          periodSeconds = container.dig?("livenessProbe", "periodSeconds")
-          total_period_failure = 0 
-          total_extended_period = 0
-          adjusted_with_default = 0
-          defaultFailureThreshold = 3
-          defaultPeriodSeconds = 10
-
-          if !failureThreshhold.nil? && failureThreshhold.as_i?
-            ft = failureThreshhold.as_i
-          else
-            ft = defaultFailureThreshold
-          end
-
-          if !periodSeconds.nil? && periodSeconds.as_i?
-            ps = periodSeconds.as_i
-          else
-            ps = defaultPeriodSeconds
-          end
-
-          total_period_failure = ps * ft
-
-          if !initialDelaySeconds.nil? && initialDelaySeconds.as_i?
-            total_extended_period = initialDelaySeconds.as_i + total_period_failure
-          else
-            total_extended_period = total_period_failure
-          end
-
-          adjusted_with_default = (total_extended_period / defaultFailureThreshold).round.to_i
-
-          Log.info { "total_period_failure: #{total_period_failure}" }
-          Log.info { "total_extended_period: #{total_extended_period}" }
-          Log.info { "liveness_time: #{liveness_time}" }
-          Log.info { "adjusted_with_default: #{adjusted_with_default}" }
-          if liveness_time < adjusted_with_default
-            liveness_time = adjusted_with_default
-          end
-        end
-      end
-      if !skip_wait_for_install
-        stdout_success "Waiting for resource availability, timeout for each resource is #{wait_count} seconds\n"
-        workload_resource_names = resource_names.select { |resource| 
-        ["replicaset", "deployment", "statefulset", "pod", "daemonset"].includes?(resource[:kind].downcase) 
-      }
-        total_resource_count = workload_resource_names.size()
-        current_resource_number = 1
-        workload_resource_names.each do | resource |
-          stdout_success "Waiting for resource (#{current_resource_number}/#{total_resource_count}): [#{resource[:kind]}] #{resource[:name]}", same_line: true
-          ready = KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], wait_count: wait_count, namespace: resource[:namespace])
-          if !ready
-            stdout_failure "CNF setup has timed-out, [#{resource[:kind]}] #{resource[:name]} is not ready after #{wait_count} seconds.", same_line: true
-            stdout_failure "Recommended course of actions would be to investigate the resource in cluster, then call cnf_cleanup and try to reinstall the CNF."
-            exit 1
-          end
-          current_resource_number += 1
-        end
-        stdout_success "All CNF resources are up!", same_line: true
-      end
-    end
-
-    if match[:found]
-      sleep 120
-      metrics_checkpoints = JaegerManager.unique_services_total
-      Log.info { "metrics_checkpoints: #{metrics_checkpoints}" }
-      tracing_used = JaegerManager.tracing_used?(baselines, metrics_checkpoints)
-      Log.info { "tracing_used: #{tracing_used}" }
     else
-      tracing_used = false
+      raise "Deployment method not found"
     end
-
-    if ORANMonitor.isCNFaRIC?(config)
-      sleep 30 
-      e2_found = ORANMonitor.e2_session_established?(capture)
-    else
-      e2_found = false
+    
+    #Generating manifest from installed CNF
+    #Returns true or false in case when manifest was generated successfully or not
+    manifest_generated_successfully = CNFInstall::Manifest.generate_common_manifest(config, release_name, deployment_namespace)
+    
+    if !manifest_generated_successfully
+      stdout_failure "Manifest generation failed. Check CNF definition (helm charts, values, manifests, etc.)"
+      exit 1
     end
-
-    Log.info { "final e2_found: #{e2_found}" }
-    Log.info { "final liveness_time: #{liveness_time}" }
-    Log.info { "elapsed_time.seconds: #{elapsed_time.seconds}" }
-    Log.info { "helm_install: #{helm_install}" }
-    Log.info { "helm_install[:error].to_s: #{helm_install[:error].to_s}" }
-    Log.info { "helm_install[:error].to_s.size: #{helm_install[:error].to_s.size}" }
+    resource_ymls = cnf_workload_resources(nil, config) do |resource|
+      resource
+    end
+    resource_names = Helm.workload_resource_kind_names(resource_ymls, deployment_namespace)
+    if !skip_wait_for_install
+      stdout_success "Waiting for resource availability, timeout for each resource is #{wait_count} seconds\n"
+      workload_resource_names = resource_names.select { |resource| 
+      WORKLOAD_RESOURCE_KIND_NAMES.includes?(resource[:kind].downcase) 
+    }
+      total_resource_count = workload_resource_names.size()
+      current_resource_number = 1
+      workload_resource_names.each do | resource |
+        stdout_success "Waiting for resource (#{current_resource_number}/#{total_resource_count}): [#{resource[:kind]}] #{resource[:name]}", same_line: true
+        ready = KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], wait_count: wait_count, namespace: resource[:namespace])
+        if !ready
+          stdout_failure "CNF setup has timed-out, [#{resource[:kind]}] #{resource[:name]} is not ready after #{wait_count} seconds.", same_line: true
+          stdout_failure "Recommended course of actions would be to investigate the resource in cluster, then call cnf_cleanup and try to reinstall the CNF."
+          exit 1
+        end
+        current_resource_number += 1
+      end
+      stdout_success "All CNF resources are up!", same_line: true
+    end
 
     if fresh_install
       stdout_success "Successfully setup #{release_name}"
     end
-
-    # Not required to write elapsed time configmap if the cnf already exists due to a previous Helm install
-    return true if !fresh_install
-
-    # Immutable config maps are only supported in Kubernetes 1.19+
-    immutable_configmap = true
-    if version_less_than(KubectlClient.server_version, "1.19.0")
-      immutable_configmap = false
-    end
-
-    helm_used = !helm_install[:status].nil?
-    #TODO if helm_install then set helm_deploy = true in template
-    Log.info { "save config" }
-    elapsed_time_template = ElapsedTimeConfigMapTemplate.new(
-      "cnf-testsuite-#{release_name}-startup-information",
-      helm_used,
-      # "#{elapsed_time.seconds}",
-      "#{liveness_time}",
-      immutable_configmap,
-      tracing_used,
-      e2_found
-    ).to_s
-    #TODO find a way to kubectlapply directly without a map
-    Log.debug { "elapsed_time_template : #{elapsed_time_template}" }
-    configmap_path = "#{destination_cnf_dir}/config_maps/elapsed_time.yml"
-    File.write(configmap_path, "#{elapsed_time_template}")
-    # TODO if the config map exists on install, complain, delete then overwrite?
-    KubectlClient::Delete.file(configmap_path)
-    #TODO call kubectl apply on file
-    KubectlClient::Apply.file(configmap_path)
-    # TODO when uninstalling, remove config map
   ensure
     #todo uninstall/reinstall clustertools because of tshark bug
   end
@@ -664,14 +512,14 @@ module CNFManager
       helm_repo_url = config.deployments.get_deployment_param(:helm_repo_url)
       helm_chart = config.deployments.get_deployment_param(:helm_chart)
       begin
-        helm_install = Helm.install("#{release_name} #{helm_chart} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
+        Helm.install("#{release_name} #{helm_chart} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_warning "Release name #{release_name} has already been setup."
       end
     when CNFInstall::InstallMethod::HelmDirectory
       helm_directory = config.deployments.get_deployment_param(:helm_directory)
       begin
-        helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
+        Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_warning "Release name #{release_name} has already been setup."
       end
@@ -687,7 +535,7 @@ module CNFManager
 
     wait_list = resource_names.map do | resource |
       case resource[:kind].downcase
-      when "replicaset", "deployment", "statefulset", "pod", "daemonset"
+      when .in?(WORKLOAD_RESOURCE_KIND_NAMES)
         Log.info { "waiting on resource of kind: #{resource[:kind].downcase}" }
         KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], 180, namespace: resource[:namespace], kubeconfig: kubeconfig)
       else 
