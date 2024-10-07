@@ -268,9 +268,9 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |t, args|
 
     KubectlClient::Create.command("namespace hardcoded-ip-test")
     unless helm_chart.empty?
-      helm_install = Helm.install("--namespace hardcoded-ip-test hardcoded-ip-test #{helm_chart} --dry-run --debug > #{helm_chart_yml_path}")
+      Helm.install("--namespace hardcoded-ip-test hardcoded-ip-test #{helm_chart} --dry-run --debug > #{helm_chart_yml_path}")
     else
-      helm_install = Helm.install("--namespace hardcoded-ip-test hardcoded-ip-test #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{helm_chart_yml_path}")
+      Helm.install("--namespace hardcoded-ip-test hardcoded-ip-test #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{helm_chart_yml_path}")
       VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if check_verbose(args)
     end
     
@@ -405,8 +405,6 @@ end
 
 # https://www.cloudytuts.com/tutorials/kubernetes/how-to-create-immutable-configmaps-and-secrets/
 class ImmutableConfigMapTemplate
-  # elapsed_time should be Int32 but it is being passed as string
-  # So the old behaviour has been retained as is to prevent any breakages
   def initialize(@test_url : String)
   end
 

@@ -102,16 +102,66 @@ end
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
 task "reasonable_startup_time" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    release_name = config.deployments.get_deployment_param(:name)
-
     current_dir = FileUtils.pwd
     helm = Helm::BinarySingleton.helm
     Log.for("verbose").info {helm} if check_verbose(args)
 
-    configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
-    #TODO check if json is empty
-    startup_time = configmap["data"].as_h["startup_time"].as_s
+    startup_time = 0
+    resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
+    # get liveness probe initialDelaySeconds and FailureThreshold
+    # if   ((periodSeconds * failureThreshhold) + initialDelaySeconds) / defaultFailureThreshold) > startuptimelimit then fail; else pass
+    # get largest startuptime of all resoures
+    resource_ymls.map do |resource|
+      kind = resource["kind"].as_s.downcase
+      case kind 
+      when  "pod"
+        Log.info { "resource: #{resource}" }
+        containers = resource.dig("spec", "containers")
+      when  "deployment","statefulset","replicaset","daemonset"
+        Log.info { "resource: #{resource}" }
+        containers = resource.dig("spec", "template", "spec", "containers")
+      end
+      containers && containers.as_a.map do |container|
+        initialDelaySeconds = container.dig?("livenessProbe", "initialDelaySeconds")
+        failureThreshhold = container.dig?("livenessProbe", "failureThreshhold")
+        periodSeconds = container.dig?("livenessProbe", "periodSeconds")
+        total_period_failure = 0 
+        total_extended_period = 0
+        adjusted_with_default = 0
+        defaultFailureThreshold = 3
+        defaultPeriodSeconds = 10
 
+        if !failureThreshhold.nil? && failureThreshhold.as_i?
+          ft = failureThreshhold.as_i
+        else
+          ft = defaultFailureThreshold
+        end
+
+        if !periodSeconds.nil? && periodSeconds.as_i?
+          ps = periodSeconds.as_i
+        else
+          ps = defaultPeriodSeconds
+        end
+
+        total_period_failure = ps * ft
+
+        if !initialDelaySeconds.nil? && initialDelaySeconds.as_i?
+          total_extended_period = initialDelaySeconds.as_i + total_period_failure
+        else
+          total_extended_period = total_period_failure
+        end
+
+        adjusted_with_default = (total_extended_period / defaultFailureThreshold).round.to_i
+
+        Log.info { "total_period_failure: #{total_period_failure}" }
+        Log.info { "total_extended_period: #{total_extended_period}" }
+        Log.info { "startup_time: #{startup_time}" }
+        Log.info { "adjusted_with_default: #{adjusted_with_default}" }
+        if startup_time < adjusted_with_default
+          startup_time = adjusted_with_default
+        end
+      end
+    end
     # Correlation for a slow box vs a fast box 
     # sysbench base fast machine (disk), time in ms 0.16
     # sysbench base slow machine (disk), time in ms 6.55
@@ -162,9 +212,9 @@ task "reasonable_startup_time" do |t, args|
     #   LOGGING.info "startup_time_limit TEST mode: #{startup_time_limit}"
     # end
     Log.info { "startup_time_limit: #{startup_time_limit}" }
-    Log.info { "startup_time: #{startup_time.to_i}" }
+    Log.info { "startup_time: #{startup_time}" }
 
-    if startup_time.to_i <= startup_time_limit
+    if startup_time <= startup_time_limit
       CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "CNF had a reasonable startup time 🚀")
     else
       CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "CNF had a startup time of #{startup_time} seconds 🐢")
