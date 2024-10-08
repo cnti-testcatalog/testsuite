@@ -1,6 +1,5 @@
 require "totem"
 require "colorize"
-require "./types/cnf_testsuite_yml_type.cr"
 require "helm"
 require "uuid"
 require "./points.cr"
@@ -23,7 +22,7 @@ module CNFManager
       end
     end
 
-    def self.task_runner(args, task : Sam::Task|Nil=nil, check_cnf_installed=true, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | CNFManager::TestcaseResult | Nil)
+    def self.task_runner(args, task : Sam::Task|Nil=nil, check_cnf_installed=true, &block : Sam::Args, CNFInstall::Config::Config -> String | Colorize::Object(String) | CNFManager::TestcaseResult | Nil)
       LOGGING.info("task_runner args: #{args.inspect}")
 
       CNFManager::Points::Results.ensure_results_file!
@@ -40,7 +39,7 @@ module CNFManager
     end
 
     # TODO give example for calling
-    def self.all_cnfs_task_runner(args, task : Sam::Task|Nil=nil, &block : Sam::Args, CNFManager::Config  -> String | Colorize::Object(String) | CNFManager::TestcaseResult | Nil)
+    def self.all_cnfs_task_runner(args, task : Sam::Task|Nil=nil, &block : Sam::Args, CNFInstall::Config::Config  -> String | Colorize::Object(String) | CNFManager::TestcaseResult | Nil)
       cnf_configs = CNFManager.cnf_config_list(silent: true)
       Log.info { "CNF configs found: #{cnf_configs.size}" }
 
@@ -57,51 +56,21 @@ module CNFManager
     end
 
     # TODO give example for calling
-    def self.single_task_runner(args, task : Sam::Task|Nil=nil, &block : Sam::Args, CNFManager::Config -> String | Colorize::Object(String) | CNFManager::TestcaseResult | Nil)
+    def self.single_task_runner(args, task : Sam::Task|Nil=nil, &block : Sam::Args, CNFInstall::Config::Config -> String | Colorize::Object(String) | CNFManager::TestcaseResult | Nil)
       LOGGING.debug("single_task_runner args: #{args.inspect}")
 
       begin
         if args.named["cnf-config"]? # platform tests don't have a cnf-config
-            config = CNFManager::Config.parse_config_yml(args.named["cnf-config"].as(String))    
+            config = CNFInstall::Config.parse_cnf_config_from_file(args.named["cnf-config"].as(String))    
         else
-          config = CNFManager::Config.new({ destination_cnf_dir: "",
-                                            source_cnf_dir: "",
-                                            install_method: {CNFInstall::InstallMethod::HelmChart, ""},
-                                            manifest_directory: "",
-                                            helm_directory: "", 
-                                            release_name: "",
-                                            helm_repository: {name: "", repo_url: ""},
-                                            helm_chart: "",
-                                            helm_values: "",
-                                            helm_install_namespace: "",
-                                            container_names: [{"name" =>  "", "rolling_update_test_tag" => ""}],
-                                            white_list_container_names: [""],
-                                            docker_insecure_registries: [] of String,
-                                            amf_label: "",
-                                            smf_label: "",
-                                            upf_label: "",
-                                            ric_label: "",
-                                            fiveG_core: {amf_service_name:  "",
-                                                           mmc:  "",
-                                                           mnc:  "",
-                                                           sst:  "",
-                                                           sd:  "",
-                                                           tac:  "",
-                                                           protectionScheme:  "",
-                                                           publicKey:  "",
-                                                           publicKeyId:  "",
-                                                           routingIndicator:  "",
-                                                           enabled:  "",
-                                                           count:  "",
-                                                           initialMSISDN:  "",
-                                                           key:  "",
-                                                           op:  "",
-                                                           opType:  "",
-                                                           type:  "",
-                                                           apn:  "",
-                                                           emergency:  "",
-                                                          },
-                                            image_registry_fqdns: Hash(String, String).new} )
+          yaml_string = <<-YAML
+            config_version: v2
+            deployments:
+              helm_dirs:
+                - name: "platform-test-dummy-deployment"
+                  helm_directory: ""
+            YAML
+          config = CNFInstall::Config.parse_cnf_config_from_yaml(yaml_string, config_dir: FileUtils.pwd)
         end
         test_start_time = Time.utc
         if task

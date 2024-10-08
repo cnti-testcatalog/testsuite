@@ -84,7 +84,7 @@ describe "Utils" do
 
       Log.info { "single_task_runner spec args #{args.inspect}" }
 
-      white_list_container_names = config.cnf_config[:white_list_container_names]
+      white_list_container_names = config.common.white_list_container_names
       Log.info { "white_list_container_names #{white_list_container_names.inspect}" }
       violation_list = [] of String
       resource_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
@@ -123,8 +123,8 @@ describe "Utils" do
     task_response = CNFManager::Task.single_task_runner(args) do
       cdir = FileUtils.pwd()
       response = String::Builder.new
-      config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
-      helm_directory = "#{config.get("helm_directory").as_s?}" 
+      config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
+      helm_directory = config.deployments.get_deployment_param(:helm_directory) 
       if File.directory?(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)) + helm_directory)
         Dir.cd(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)) + helm_directory)
         Process.run("grep -r -P '^(?!.+0\.0\.0\.0)(?![[:space:]]*0\.0\.0\.0)(?!#)(?![[:space:]]*#)(?!\/\/)(?![[:space:]]*\/\/)(?!\/\\*)(?![[:space:]]*\/\\*)(.+([0-9]{1,3}[\.]){3}[0-9]{1,3})'", shell: true) do |proc|
@@ -157,7 +157,7 @@ describe "Utils" do
     task_response = CNFManager::Task.all_cnfs_task_runner(my_args) do |args, config|
       Log.info { "all_cnfs_task_runner spec args #{args.inspect}" }
       Log.for("verbose").info { "privileged_containers" } if check_verbose(args)
-      white_list_container_names = config.cnf_config[:white_list_container_names]
+      white_list_container_names = config.common.white_list_container_names
       Log.for("verbose").info { "white_list_container_names #{white_list_container_names.inspect}" } if check_verbose(args)
       violation_list = [] of String
       resource_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|

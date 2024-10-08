@@ -19,51 +19,6 @@ describe "Setup" do
     (/Setup complete/ =~ result[:output]).should_not be_nil
   end
 
-  it "'generate_config' should generate a cnf-testsuite.yml for a helm chart", tags: ["setup-generate"]  do
-    result = ShellCmd.run_testsuite("setup")
-    result = ShellCmd.run_testsuite("generate_config config-src=stable/coredns output-file=./cnf-testsuite-test.yml")
-    result[:status].success?.should be_true
-
-    yaml = File.open("./cnf-testsuite-test.yml") do |file|
-      YAML.parse(file)
-    end
-    Log.debug { "test yaml: #{yaml}" }
-    result = ShellCmd.run("cat ./cnf-testsuite-test.yml", force_output: true)
-    (yaml["helm_chart"] == "stable/coredns").should be_true
-  ensure
-    result = ShellCmd.run("rm ./cnf-testsuite-test.yml", force_output: true)
-  end
-
-  it "'generate_config' should generate a cnf-testsuite.yml for a helm directory", tags: ["setup-generate"]  do
-    result = ShellCmd.run_testsuite("setup")
-    result = ShellCmd.run_testsuite("generate_config config-src=sample-cnfs/k8s-sidecar-container-pattern/chart output-file=./cnf-testsuite-test.yml")
-    result[:status].success?.should be_true
-
-    yaml = File.open("./cnf-testsuite-test.yml") do |file|
-      YAML.parse(file)
-    end
-    Log.debug { "test yaml: #{yaml}" }
-    result = ShellCmd.run("cat ./cnf-testsuite-test.yml", force_output: true)
-    (yaml["helm_directory"] == "sample-cnfs/k8s-sidecar-container-pattern/chart").should be_true
-  ensure
-    result = ShellCmd.run("rm ./cnf-testsuite-test.yml", force_output: true)
-  end
-
-  it "'generate_config' should generate a cnf-testsuite.yml for a manifest directory", tags: ["setup-generate"]  do
-    result = ShellCmd.run_testsuite("setup")
-    result = ShellCmd.run_testsuite("generate_config config-src=sample-cnfs/k8s-non-helm/manifests output-file=./cnf-testsuite-test.yml")
-    result[:status].success?.should be_true
-
-    yaml = File.open("./cnf-testsuite-test.yml") do |file|
-      YAML.parse(file)
-    end
-    Log.debug { "test yaml: #{yaml}" }
-    result = ShellCmd.run("cat ./cnf-testsuite-test.yml", force_output: true)
-    (yaml["manifest_directory"] == "sample-cnfs/k8s-non-helm/manifests").should be_true
-  ensure
-    result = ShellCmd.run("rm ./cnf-testsuite-test.yml", force_output: true)
-  end
-
   it "'cnf_setup/cnf_cleanup' should install/cleanup with cnf-path arg as alias for cnf-config", tags: ["setup"] do
     begin
       result = ShellCmd.cnf_setup("cnf-path=example-cnfs/coredns/cnf-testsuite.yml")
@@ -105,6 +60,18 @@ describe "Setup" do
       (/Successfully setup coredns/ =~ result[:output]).should_not be_nil
     ensure
       result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/multi_helm_directories/cnf-testsuite.yml")
+      result[:status].success?.should be_true
+      (/Successfully cleaned up/ =~ result[:output]).should_not be_nil
+    end
+  end
+
+  it "'cnf_setup/cnf_cleanup' should properly install/uninstall old versions of cnf configs", tags: ["setup"] do
+    begin
+      result = ShellCmd.cnf_setup("cnf-path=spec/fixtures/cnf-testsuite-v1-example.yml")
+      result[:status].success?.should be_true
+      (/Successfully setup coredns/ =~ result[:output]).should_not be_nil
+    ensure
+      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=spec/fixtures/cnf-testsuite-v1-example.yml")
       result[:status].success?.should be_true
       (/Successfully cleaned up/ =~ result[:output]).should_not be_nil
     end

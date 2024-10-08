@@ -16,8 +16,8 @@ end
 desc "Test if RAN uses the ORAN e2 interface"
 task "oran_e2_connection" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    release_name = config.cnf_config[:release_name]
-    if ORANMonitor.isCNFaRIC?(config.cnf_config) 
+    release_name = config.deployments.get_deployment_param(:name)
+    if ORANMonitor.isCNFaRIC?(config) 
       configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
       e2_found = configmap["data"].as_h["e2_found"].as_s
 

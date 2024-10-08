@@ -23,8 +23,8 @@ task "samples_cleanup" do  |_, args|
     cnf_config_file = task_args["cnf-config"].as(String)
     cnf_config_file = CNFManager.ensure_cnf_testsuite_yml_path(cnf_config_file)
 
-    config = CNFManager.parsed_config_file(cnf_config_file)
-    install_method = CNFInstall.cnf_installation_method(config)
+    config = CNFInstall::Config.parse_cnf_config_from_file(cnf_config_file)
+    install_method = config.dynamic.install_method
     if install_method[0] == CNFInstall::InstallMethod::ManifestDirectory
       installed_from_manifest = true
     else

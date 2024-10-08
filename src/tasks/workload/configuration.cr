@@ -106,8 +106,7 @@ task "ip_addresses" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     cdir = FileUtils.pwd()
     response = String::Builder.new
-    helm_directory = config.cnf_config[:helm_directory]
-    helm_chart_path = CNFManager::Config.get_helm_chart_path(config)
+    helm_chart_path = CNFInstall::Config.get_helm_chart_path(config)
     Log.info { "Path: #{helm_chart_path}" }
     if File.directory?(helm_chart_path)
       # Switch to the helm chart directory
@@ -190,8 +189,6 @@ desc "Does the CNF use NodePort"
 task "nodeport_not_used" do |t, args|
   # TODO rename task_runner to multi_cnf_task_runner
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    release_name = config.cnf_config[:release_name]
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config, check_containers: false, check_service: true) do |resource, container, initialized|
       Log.for(t.name).info { "nodeport_not_used resource: #{resource}" }
       if resource["kind"].downcase == "service"
@@ -220,9 +217,6 @@ end
 desc "Does the CNF use HostPort"
 task "hostport_not_used" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    release_name = config.cnf_config[:release_name]
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-
     task_response = CNFManager.workload_resource_test(args, config, check_containers: false, check_service: true) do |resource, container, initialized|
       Log.for(t.name).info { "hostport_not_used resource: #{resource}" }
       test_passed=true
@@ -264,10 +258,9 @@ end
 desc "Does the CNF have hardcoded IPs in the K8s resource configuration"
 task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |t, args|
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
-    helm_chart = config.cnf_config[:helm_chart]
-    helm_directory = config.cnf_config[:helm_directory]
-    release_name = config.cnf_config[:release_name]
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    helm_chart = config.deployments.get_deployment_param(:helm_chart)
+    helm_directory = config.deployments.get_deployment_param(:helm_directory)
+    destination_cnf_dir = config.dynamic.destination_cnf_dir
     helm_chart_yml_path = "#{destination_cnf_dir}/helm_chart.yml"
     current_dir = FileUtils.pwd
     helm = Helm::BinarySingleton.helm
@@ -514,7 +507,7 @@ task "immutable_configmap" do |t, args|
   resp = ""
 
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    destination_cnf_dir = config.dynamic.destination_cnf_dir
 
     # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
 

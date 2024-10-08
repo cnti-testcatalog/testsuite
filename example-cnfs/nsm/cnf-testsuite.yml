@@ -1,6 +1,7 @@
 ---
-helm_directory: helm_chart
-release_name: nsm --set insecure=true
-helm_repository:
-  name: stable 
-  repo_url: https://cncf.gitlab.io/stable
+config_version: v2
+deployments:
+  helm_dirs:
+  # (kosstennbl) TODO: move helm addoional arguments from name to helm_values
+  - name: nsm --set insecure=true
+    helm_directory: helm_chart

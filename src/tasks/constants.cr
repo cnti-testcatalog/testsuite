@@ -21,6 +21,7 @@ IGNORED_SECRET_TYPES = ["kubernetes.io/service-account-token", "kubernetes.io/do
 EMPTY_JSON = JSON.parse(%({}))
 EMPTY_JSON_ARRAY = JSON.parse(%([]))
 SPECIALIZED_INIT_SYSTEMS = ["tini", "dumb-init", "s6-svscan"]
+ROLLING_VERSION_CHANGE_TEST_NAMES = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
 
 TESTSUITE_NAMESPACE = "cnf-testsuite"
 DEFAULT_CNF_NAMESPACE = "cnf-default"
