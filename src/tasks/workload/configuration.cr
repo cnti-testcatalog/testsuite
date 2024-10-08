@@ -11,7 +11,6 @@ rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rol
 desc "Configuration should be managed in a declarative manner, using ConfigMaps, Operators, or other declarative interfaces."
 
 task "configuration", [
-    "ip_addresses",
     "nodeport_not_used",
     "hostport_not_used",
     "hardcoded_ip_addresses_in_k8s_runtime_configuration",
@@ -101,51 +100,6 @@ task "latest_tag" do |t, args|
   end
 end
 
-desc "Does a search for IP addresses or subnets come back as negative?"
-task "ip_addresses" do |t, args|
-  CNFManager::Task.task_runner(args, task: t) do |args, config|
-    cdir = FileUtils.pwd()
-    response = String::Builder.new
-    helm_directory = config.cnf_config[:helm_directory]
-    helm_chart_path = CNFManager::Config.get_helm_chart_path(config)
-    Log.info { "Path: #{helm_chart_path}" }
-    if File.directory?(helm_chart_path)
-      # Switch to the helm chart directory
-      Dir.cd(helm_chart_path)
-      # Look for all ip addresses that are not comments
-      Log.for(t.name).info { "current directory: #{ FileUtils.pwd()}" }
-      # should catch comments (# // or /*) and ignore 0.0.0.0
-      # note: grep wants * escaped twice
-      Process.run("grep -r -P '^(?!.+0\.0\.0\.0)(?![[:space:]]*0\.0\.0\.0)(?!#)(?![[:space:]]*#)(?!\/\/)(?![[:space:]]*\/\/)(?!\/\\*)(?![[:space:]]*\/\\*)(.+([0-9]{1,3}[\.]){3}[0-9]{1,3})'  --exclude=*.txt", shell: true) do |proc|
-        while line = proc.output.gets
-          response << line
-          VERBOSE_LOGGING.info "#{line}" if check_verbose(args)
-        end
-      end
-      Dir.cd(cdir)
-      parsed_resp = response.to_s
-      if parsed_resp.size > 0
-        response_lines = parsed_resp.split("\n")
-        stdout_failure("Lines with hard-coded IP addresses:")
-        response_lines.each do |line|
-          line_parts = line.split(":")
-          file_name = line_parts.shift()
-          matching_line = line_parts.join(":").strip()
-          stdout_failure("  * In file #{file_name}: #{matching_line}")
-        end
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "IP addresses found")
-      else
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No IP addresses found")
-      end
-    else
-      # TODO If no helm chart directory, exit with 0 points
-      # ADD SKIPPED tag for points.yml to allow for 0 points
-      Dir.cd(cdir)
-      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No IP addresses found")
-    end
-  end
-end
-
 desc "Do all cnf images have versioned tags?"
 task "versioned_tag", ["install_opa"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args,config|
@@ -190,8 +144,6 @@ desc "Does the CNF use NodePort"
 task "nodeport_not_used" do |t, args|
   # TODO rename task_runner to multi_cnf_task_runner
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    release_name = config.cnf_config[:release_name]
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.workload_resource_test(args, config, check_containers: false, check_service: true) do |resource, container, initialized|
       Log.for(t.name).info { "nodeport_not_used resource: #{resource}" }
       if resource["kind"].downcase == "service"
@@ -220,9 +172,6 @@ end
 desc "Does the CNF use HostPort"
 task "hostport_not_used" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    release_name = config.cnf_config[:release_name]
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-
     task_response = CNFManager.workload_resource_test(args, config, check_containers: false, check_service: true) do |resource, container, initialized|
       Log.for(t.name).info { "hostport_not_used resource: #{resource}" }
       test_passed=true
@@ -264,26 +213,16 @@ end
 desc "Does the CNF have hardcoded IPs in the K8s resource configuration"
 task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |t, args|
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
-    helm_chart = config.cnf_config[:helm_chart]
-    helm_directory = config.cnf_config[:helm_directory]
-    release_name = config.cnf_config[:release_name]
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    helm_chart_yml_path = "#{destination_cnf_dir}/helm_chart.yml"
+    helm_chart = config.deployments.get_deployment_param(:helm_chart)
+    helm_directory = config.deployments.get_deployment_param(:helm_directory)
+    destination_cnf_dir = config.dynamic.destination_cnf_dir
     current_dir = FileUtils.pwd
     helm = Helm::BinarySingleton.helm
     VERBOSE_LOGGING.info "Helm Path: #{helm}" if check_verbose(args)
 
-    KubectlClient::Create.command("namespace hardcoded-ip-test")
-    unless helm_chart.empty?
-      helm_install = Helm.install("--namespace hardcoded-ip-test hardcoded-ip-test #{helm_chart} --dry-run --debug > #{helm_chart_yml_path}")
-    else
-      helm_install = Helm.install("--namespace hardcoded-ip-test hardcoded-ip-test #{destination_cnf_dir}/#{helm_directory} --dry-run --debug > #{helm_chart_yml_path}")
-      VERBOSE_LOGGING.info "helm_directory: #{helm_directory}" if check_verbose(args)
-    end
-    
     found_violations = [] of NamedTuple(line_number: Int32, line: String)
     line_number = 1
-    File.open("#{helm_chart_yml_path}") do |file|
+    File.open(COMMON_MANIFEST_FILE_PATH) do |file|
       file.each_line do |line|
         if line.matches?(/NOTES:/)
           break
@@ -301,7 +240,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |t, args|
     if found_violations.empty?
       CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "No hard-coded IP addresses found in the runtime K8s configuration")
     else
-      stdout_failure("Hard-coded IP addresses found in #{helm_chart_yml_path}")
+      stdout_failure("Hard-coded IP addresses found in #{COMMON_MANIFEST_FILE_PATH}")
       found_violations.each do |violation|
         stdout_failure("  * Line #{violation[:line_number]}: #{violation[:line]}")
       end
@@ -514,7 +453,7 @@ task "immutable_configmap" do |t, args|
   resp = ""
 
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    destination_cnf_dir = config.dynamic.destination_cnf_dir
 
     # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
 

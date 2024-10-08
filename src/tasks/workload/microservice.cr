@@ -35,8 +35,6 @@ task "shared_database", ["install_cluster_tools"] do |t, args|
     resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
     resource_names = Helm.workload_resource_kind_names(resource_ymls)
     helm_chart_cnf_services : Array(JSON::Any)
-    # namespace = CNFManager.namespace_from_parameters(CNFInstall.install_parameters(config))
-    # Log.info { "namespace: #{namespace}"}
     helm_chart_cnf_services = resource_names.map do |resource_name|
       Log.info { "helm_chart_cnf_services resource_name: #{resource_name}"}
       if resource_name[:kind].downcase == "service"
@@ -104,10 +102,7 @@ end
 desc "Does the CNF have a reasonable startup time (< 30 seconds)?"
 task "reasonable_startup_time" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    helm_chart = config.cnf_config[:helm_chart]
-    helm_directory = config.cnf_config[:helm_directory]
-    release_name = config.cnf_config[:release_name]
-    install_method = config.cnf_config[:install_method]
+    release_name = config.deployments.get_deployment_param(:name)
 
     current_dir = FileUtils.pwd
     helm = Helm::BinarySingleton.helm
@@ -187,10 +182,7 @@ end
 desc "Does the CNF have a reasonable container image size (< 5GB)?"
 task "reasonable_image_size" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args,config|
-    docker_insecure_registries = [] of String
-    if config.cnf_config[:docker_insecure_registries]? && !config.cnf_config[:docker_insecure_registries].nil?
-      docker_insecure_registries = config.cnf_config[:docker_insecure_registries].not_nil!
-    end
+    docker_insecure_registries = config.common.docker_insecure_registries || [] of String
     unless Dockerd.install(docker_insecure_registries)
       next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Skipping reasonable_image_size: Dockerd tool failed to install")
     end
@@ -198,7 +190,7 @@ task "reasonable_image_size" do |t, args|
     Log.for(t.name).debug { "cnf_config: #{config}" }
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
-      source_cnf_dir = config.cnf_config[:source_cnf_dir]
+      source_cnf_dir = config.dynamic.source_cnf_dir
 
       if resource["kind"].downcase == "deployment" ||
           resource["kind"].downcase == "statefulset" ||
@@ -215,8 +207,9 @@ task "reasonable_image_size" do |t, args|
 
         # If FQDN mapping is available for the registry,
         # replace the host in the fqdn_image
-        if config.cnf_config[:image_registry_fqdns]? && !config.cnf_config[:image_registry_fqdns].nil?
-          image_registry_fqdns = config.cnf_config[:image_registry_fqdns].not_nil!
+        image_registry_fqdns = config.common.image_registry_fqdns
+        if !image_registry_fqdns.nil? && !image_registry_fqdns.empty?
+          image_registry_fqdns = image_registry_fqdns.not_nil!
           if image_registry_fqdns[image_host]?
             image_url_parts[0] = image_registry_fqdns[image_host]
             fqdn_image = image_url_parts.join("/")

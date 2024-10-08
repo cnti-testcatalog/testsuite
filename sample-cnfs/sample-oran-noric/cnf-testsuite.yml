@@ -1,4 +1,9 @@
 ---
-manifest_directory: manifests 
-release_name: oran-ric 
-ric_label: app.kubernetes.io/name=flexric 
+config_version: v2
+common:
+  five_g_parameters:
+    ric_label: app.kubernetes.io/name=flexric
+deployments:
+  manifests:
+  - name: oran-ric
+    manifest_directory: manifests

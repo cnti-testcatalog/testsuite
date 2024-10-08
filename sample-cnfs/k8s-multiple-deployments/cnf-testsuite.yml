@@ -1,6 +1,6 @@
 ---
-helm_directory: chart
-release_name: sidecar-container-demo
-helm_repository:
-  name: stable 
-  repo_url: https://cncf.gitlab.io/stable
+config_version: v2
+deployments:
+  helm_dirs:
+  - name: sidecar-container-demo
+    helm_directory: chart
