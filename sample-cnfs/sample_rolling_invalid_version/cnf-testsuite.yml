@@ -1,9 +1,10 @@
 ---
-helm_directory: chart
-release_name: coredns
-helm_repository:
-  name: stable 
-  repo_url: https://cncf.gitlab.io/stable
-container_names: 
-  - name: coredns 
-    rolling_update_test_tag: "this_is_not_a_valid_version"
+config_version: v2
+common:
+  container_names:
+  - name: coredns
+    rolling_update_test_tag: this_is_not_a_valid_version
+deployments:
+  helm_dirs:
+  - name: coredns
+    helm_directory: chart

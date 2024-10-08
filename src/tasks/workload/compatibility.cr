@@ -6,10 +6,10 @@ require "totem"
 require "docker_client"
 require "../utils/utils.cr"
 
-rolling_version_change_test_names = ["rolling_update", "rolling_downgrade", "rolling_version_change"]
+
 
 desc "The CNF test suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
-task "compatibility", ["helm_chart_valid", "helm_chart_published", "helm_deploy", "cni_compatible", "increase_decrease_capacity", "rollback"].concat(rolling_version_change_test_names) do |_, args|
+task "compatibility", ["helm_chart_valid", "helm_chart_published", "helm_deploy", "cni_compatible", "increase_decrease_capacity", "rollback"].concat(ROLLING_VERSION_CHANGE_TEST_NAMES) do |_, args|
   stdout_score("compatibility", "Compatibility, Installability, and Upgradeability")
   case "#{ARGV.join(" ")}" 
   when /compatibility/
@@ -17,14 +17,14 @@ task "compatibility", ["helm_chart_valid", "helm_chart_published", "helm_deploy"
   end
 
 end
-rolling_version_change_test_names.each do |tn|
+ROLLING_VERSION_CHANGE_TEST_NAMES.each do |tn|
   pretty_test_name = tn.split(/:|_/).join(" ")
   pretty_test_name_capitalized = tn.split(/:|_/).map(&.capitalize).join(" ")
 
   desc "Test if the CNF containers are loosely coupled by performing a #{pretty_test_name}"
   task "#{tn}" do |t, args|
     CNFManager::Task.task_runner(args, task: t) do |args, config|
-      container_names = config.cnf_config[:container_names]
+      container_names = config.common.container_names
       Log.for(t.name).debug { "container_names: #{container_names}" }
       update_applied = true
       unless container_names
@@ -44,9 +44,9 @@ rolling_version_change_test_names.each do |tn|
         Log.for(t.name).debug { "container: #{container}" }
         Log.for(t.name).debug { "container_names: #{container_names}" }
         #todo use skopeo to get the next and previous versions of the cnf image dynamically
-        config_container = container_names.find{|x| x["name"]==container.as_h["name"]} if container_names
+        config_container = container_names.find{|x| x.name==container.as_h["name"]} if container_names
         LOGGING.debug "config_container: #{config_container}"
-        unless config_container && config_container["#{tn}_test_tag"]? && !config_container["#{tn}_test_tag"].empty?
+        unless config_container && !config_container.get_container_tag(tn).empty?
           puts "Please add the container name #{container.as_h["name"]} and a corresponding #{tn}_test_tag into your cnf-testsuite.yml under container names".colorize(:red)
           valid_cnf_testsuite_yml = false
         end
@@ -60,7 +60,7 @@ rolling_version_change_test_names.each do |tn|
             container.as_h["name"].as_s,
             # split out image name from version tag
             container.as_h["image"].as_s.rpartition(":")[0],
-            config_container["#{tn}_test_tag"],
+            config_container.get_container_tag(tn),
             namespace: namespace
           )
         else
@@ -94,7 +94,7 @@ end
 desc "Test if the CNF can perform a rollback"
 task "rollback" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    container_names = config.cnf_config[:container_names]
+    container_names = config.common.container_names
     Log.for(t.name).debug { "container_names: #{container_names}" }
 
     update_applied = true
@@ -123,13 +123,13 @@ task "rollback" do |t, args|
 
         version_change_applied = true
         # compare cnf_testsuite.yml container list with the current container name
-        config_container = container_names.find{|x| x["name"] == container_name } if container_names
-        unless config_container && config_container["rollback_from_tag"]? && !config_container["rollback_from_tag"].empty?
+        config_container = container_names.find{|x| x.name == container_name } if container_names
+        unless config_container && !config_container.get_container_tag("rollback_from").empty?
           stdout_failure("Please add the container name #{container.as_h["name"]} and a corresponding rollback_from_tag into your cnf-testsuite.yml under container names")
           version_change_applied = false
         end
         if version_change_applied && config_container
-          rollback_from_tag = config_container["rollback_from_tag"]
+          rollback_from_tag = config_container.get_container_tag("rollback_from")
 
           if rollback_from_tag == image_tag
             stdout_failure("Rollback not possible. Please specify a different version than the helm chart default image.tag for 'rollback_from_tag' ")
@@ -390,9 +390,7 @@ task "helm_deploy" do |t, args|
 
   CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do |args, config|
     if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
-      helm_chart = config.cnf_config[:helm_chart]
-      helm_directory = config.cnf_config[:helm_directory]
-      release_name = config.cnf_config[:release_name]
+      release_name = config.deployments.get_deployment_param(:name)
       configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
       #TODO check if json is empty
       helm_used = configmap["data"].as_h["helm_used"].as_s
@@ -415,10 +413,7 @@ task "helm_chart_published", ["helm_local_install"] do |t, args|
       Log.for("verbose").debug { "helm_chart_published args.named: #{args.named}" }
     end
 
-    # config = cnf_testsuite_yml
-    # config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
-    # helm_chart = "#{config.get("helm_chart").as_s?}"
-    helm_chart = config.cnf_config[:helm_chart]
+    helm_chart = config.deployments.get_deployment_param(:helm_chart)
     current_dir = FileUtils.pwd
     helm = Helm::BinarySingleton.helm
     Log.for("verbose").debug { helm } if check_verbose(args)
@@ -458,7 +453,7 @@ task "helm_chart_valid", ["helm_local_install"] do |t, args|
 
     response = String::Builder.new
 
-    helm_directory = config.cnf_config[:helm_directory]
+    helm_directory = config.deployments.get_deployment_param(:helm_directory)
     if helm_directory.empty?
       working_chart_directory = "exported_chart"
     else
@@ -475,7 +470,7 @@ task "helm_chart_valid", ["helm_local_install"] do |t, args|
     Log.for(t.name).debug { "current dir: #{current_dir}" }
     helm = Helm::BinarySingleton.helm
 
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    destination_cnf_dir = config.dynamic.destination_cnf_dir
 
     helm_lint_cmd = "#{helm} lint #{destination_cnf_dir}/#{working_chart_directory}"
     helm_lint_status = Process.run(
@@ -492,17 +487,6 @@ task "helm_chart_valid", ["helm_local_install"] do |t, args|
     else
       CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Helm Chart #{working_chart_directory} Lint Failed")
     end
-  end
-end
-
-task "validate_config" do |_, args|
-  yml = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
-  valid, warning_output = CNFManager.validate_cnf_testsuite_yml(yml)
-  emoji_config="📋"
-  if valid
-    stdout_success "CNF configuration validated #{emoji_config}"
-  else
-    stdout_failure "Critical Error with CNF Configuration. Please review USAGE.md for steps to set up a valid CNF configuration file #{emoji_config}"
   end
 end
 

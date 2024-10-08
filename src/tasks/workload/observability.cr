@@ -42,8 +42,8 @@ end
 desc "Does the CNF emit prometheus traffic"
 task "prometheus_traffic" do |t, args|
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
-    release_name = config.cnf_config[:release_name]
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir] 
+    release_name = config.deployments.get_deployment_param(:name)
+    destination_cnf_dir = config.dynamic.destination_cnf_dir
 
     do_this_on_each_retry = ->(ex : Exception, attempt : Int32, elapsed_time : Time::Span, next_interval : Time::Span) do
       Log.info { "#{ex.class}: '#{ex.message}' - #{attempt} attempt in #{elapsed_time} seconds and #{next_interval} seconds until the next try."}
@@ -159,7 +159,7 @@ end
 desc "Does the CNF emit prometheus open metric compatible traffic"
 task "open_metrics", ["prometheus_traffic"] do |t, args|
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
-    release_name = config.cnf_config[:release_name]
+    release_name = config.deployments.get_deployment_param(:name)
     configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-open-metrics")
     if configmap != EMPTY_JSON
       open_metrics_validated = configmap["data"].as_h["open_metrics_validated"].as_s
@@ -221,9 +221,7 @@ task "tracing" do |t, args|
       match = JaegerManager.match()
       Log.info { "jaeger match: #{match}" }
       if match[:found]
-        helm_chart = config.cnf_config[:helm_chart]
-        helm_directory = config.cnf_config[:helm_directory]
-        release_name = config.cnf_config[:release_name]
+        release_name = config.deployments.get_deployment_param(:name)
         configmap = KubectlClient::Get.configmap("cnf-testsuite-#{release_name}-startup-information")
         #TODO check if json is empty
         tracing_used = configmap["data"].as_h["tracing_used"].as_s

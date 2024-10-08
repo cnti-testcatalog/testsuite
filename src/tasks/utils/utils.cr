@@ -11,6 +11,7 @@ require "./dockerd.cr"
 require "./kyverno.cr"
 require "./http_helper.cr"
 require "./timeouts.cr"
+require "./cnf_installation/config.cr"
 require "ecr"
 
 module ShellCmd

@@ -219,7 +219,7 @@ desc "Does the CNF crash when node-drain occurs"
 task "node_drain", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     skipped = false
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    destination_cnf_dir = config.dynamic.destination_cnf_dir
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
       Log.info { "Current Resource Name: #{resource["kind"]}/#{resource["name"]} Namespace: #{resource["namespace"]}" }
@@ -369,7 +369,7 @@ task "elastic_volumes" do |t, args|
 
       # todo use workload resource
       # elastic = WorkloadResource.elastic?(volumes)
-      namespace = CNFManager.namespace_from_parameters(CNFInstall.install_parameters(config)) || CNFManager.get_deployment_namespace(config)
+      namespace = CNFManager.get_deployment_namespace(config)
 
       full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
       elastic_result = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)
@@ -404,40 +404,36 @@ task "database_persistence" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     # VERBOSE_LOGGING.info "database_persistence" if check_verbose(args)
     # todo K8s Database persistence test: if a mysql (or any popular database) image is installed:
-    all_mysql_elastic_statefulset = true
+    statefulset_found = false
+    non_elastic_database_statefulset_found = false
     match = Mysql.match
     Log.info {"database_persistence mysql: #{match}"}
+    deployment_namespace = CNFManager.get_deployment_namespace(config)
     if match && match[:found]
-      deployment_namespace = CNFManager.get_deployment_namespace(config)
-      statefulset_exists = Helm.kind_exists?(args, config, "statefulset", deployment_namespace)
-
-      unless statefulset_exists
-        all_mysql_elastic_statefulset = false
-      else
-        task_response = CNFManager.workload_resource_test(args, config, check_containers: false) do |resource, containers, volumes, initialized|
-
-          # Skip resources that do not have containers with mysql image
-          images = containers.as_a.map {|container| container["image"]}
-          next unless images.any? do |image| 
-            Mysql::MYSQL_IMAGES.any? do |mysql_image|
-              image.as_s.includes?(mysql_image) 
-            end
-          end
-
-          namespace = resource["namespace"] || deployment_namespace
-          Log.info {"database_persistence namespace: #{namespace}"}
-          Log.info {"database_persistence resource: #{resource}"}
-          Log.info {"database_persistence volumes: #{volumes}"}
-          full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
-          elastic_volume = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)
-          Log.info {"database_persistence elastic_volume: #{elastic_volume}"}
-
-          unless resource["kind"].downcase == "statefulset" && elastic_volume
-            all_mysql_elastic_statefulset = false
+      task_response = CNFManager.workload_resource_test(args, config, check_containers: false) do |resource, containers, volumes, initialized|
+        # Skip resources that do not have containers with mysql image
+        images = containers.as_a.map {|container| container["image"]}
+        next unless images.any? do |image| 
+          Mysql::MYSQL_IMAGES.any? do |mysql_image|
+            image.as_s.includes?(mysql_image) 
           end
         end
+        # Skip non-statefulset resources
+        next if resource["kind"].downcase != "statefulset"
+        
+        statefulset_found = true
+        namespace = resource["namespace"] || deployment_namespace
+        Log.info {"database_persistence namespace: #{namespace}"}
+        Log.info {"database_persistence resource: #{resource}"}
+        Log.info {"database_persistence volumes: #{volumes}"}
+        full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
+        elastic_volume = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)
+        Log.info {"database_persistence elastic_volume: #{elastic_volume}"}
+        unless elastic_volume
+          non_elastic_database_statefulset_found = true
+        end
       end
-      if all_mysql_elastic_statefulset
+      if statefulset_found && !non_elastic_database_statefulset_found
         CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Pass5, "CNF uses database with cloud-native persistence")
       else
         CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "CNF uses database without cloud-native persistence (ভ_ভ) ރ 💾")
@@ -460,7 +456,6 @@ end
 desc "Does the CNF use a non-cloud native data store: local volumes on the node?"
 task "no_local_volume_configuration" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
     task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
       hostPath_found = nil 
       begin

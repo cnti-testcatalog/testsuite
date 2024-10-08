@@ -1,6 +1,8 @@
 ---
-release_name: coredns-1609263557
-helm_repository:
-  name: stable
-  repo_url: https://cncf.gitlab.io/stable
-helm_chart: stable/coredns
+config_version: v2
+deployments:
+  helm_charts:
+  - name: coredns-1609263557
+    helm_chart_name: coredns
+    helm_repo_name: stable
+    helm_repo_url: https://cncf.gitlab.io/stable

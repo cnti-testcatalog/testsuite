@@ -1,3 +1,6 @@
 ---
-release_name: envoy 
-helm_directory: envoy
+config_version: v2
+deployments:
+  helm_dirs:
+  - name: envoy
+    helm_directory: envoy

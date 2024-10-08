@@ -1,3 +1,6 @@
 ---
-helm_directory: chart
-release_name: privileged-coredns
+config_version: v2
+deployments:
+  helm_dirs:
+  - name: privileged-coredns
+    helm_directory: chart
