@@ -1,6 +1,8 @@
 ---
-release_name: coredns
-helm_repository:
-  name: badrepo
-  repo_url: https://bad-helm-repo.googleapis.com
-helm_chart: badrepo/coredns
+config_version: v2
+deployments:
+  helm_charts:
+  - name: coredns
+    helm_chart_name: coredns
+    helm_repo_name: badrepo
+    helm_repo_url: https://bad-helm-repo.googleapis.com

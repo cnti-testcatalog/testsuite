@@ -38,8 +38,8 @@ task "cnf_cleanup" do |_, args|
   else
     force = false
   end
-  config = CNFManager.parsed_config_file(CNFManager.ensure_cnf_testsuite_yml_path(cnf))
-  install_method = CNFInstall.cnf_installation_method(config)
+  config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(cnf))
+  install_method = config.dynamic.install_method
   if install_method[0] == CNFInstall::InstallMethod::ManifestDirectory
     installed_from_manifest = true
   else
@@ -60,24 +60,6 @@ task "CNFManager.helm_repo_add" do |_, args|
 end
 
 task "generate_config" do |_, args|
-  Log.for("verbose").info { "CNFManager.generate_config" } if check_verbose(args)
-  Log.for("verbose").debug { "args = #{args.inspect}" } if check_verbose(args)
-  if args.named["config-src"]? 
-    config_src = args.named["config-src"].as(String)
-    output_file = args.named["output-file"].as(String) if args.named["output-file"]?
-    output_file = args.named["of"].as(String) if args.named["of"]?
-    if output_file && !output_file.empty?
-      Log.info { "generating config with an output file" }
-      CNFManager::GenerateConfig.generate_config(config_src, output_file)
-    else
-      Log.info { "generating config without an output file" }
-      CNFManager::GenerateConfig.generate_config(config_src)
-    end
-  end
-
-end
-
-task "generate_v2_config" do |_, args|
   interactively_create_config()
 end
 
@@ -106,7 +88,7 @@ task "sample_generic_cnf_cleanup" do |_, args|
 end
 
 def interactively_create_config
-  config = {
+  new_config = {
     config_version: CNFInstall::Config::ConfigVersion::Latest.to_s,
     deployments: {
       helm_charts: [] of Hash(String, String),
@@ -131,20 +113,20 @@ def interactively_create_config
         "helm_repo_url" => prompt("Enter Helm repository URL: "),
         "helm_chart_name" => prompt("Enter Helm chart name: ")
       }
-      helm_chart["helm_chart_name"] = helm_chart["helm_repo_name"] + "/" + helm_chart["helm_chart_name"]
-      config[:deployments][:helm_charts] << helm_chart
+      helm_chart["helm_chart_name"] = helm_chart["helm_chart_name"]
+      new_config[:deployments][:helm_charts] << helm_chart
     when "2"
       helm_dir = {
         "name" => prompt("Enter deployment name: "),
         "helm_directory" => prompt("Enter path to directory with Chart.yaml: ")
       }
-      config[:deployments][:helm_dirs] << helm_dir
+      new_config[:deployments][:helm_dirs] << helm_dir
     when "3"
       manifest = {
         "name" => prompt("Enter deployment name: "),
         "manifest_directory" => prompt("Enter path to directory with manifest files: ")
       }
-      config[:deployments][:manifests] << manifest
+      new_config[:deployments][:manifests] << manifest
     when "4"
       break
     else
@@ -152,7 +134,7 @@ def interactively_create_config
     end
   end
 
-  yaml_config = config.to_yaml
+  yaml_config = new_config.to_yaml
   puts "Generated Configuration:"
   puts yaml_config
 

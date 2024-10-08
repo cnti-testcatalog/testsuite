@@ -1,6 +1,7 @@
 require "yaml"
 require "../utils.cr"
-require "./config_versions/config_v2.cr"
+require "./config_versions/config_versions.cr"
+require "./config_updater/config_updater.cr"
 
 module CNFInstall
   module Config
@@ -22,6 +23,12 @@ module CNFInstall
     end
 
     def self.parse_cnf_config_from_yaml(yaml_content, config_dir)
+      if !config_version_is_latest?(yaml_content)
+        stdout_warning "CNF config version is not latest. Consider updating the CNF config with 'update_config' task."
+        updater = CNFInstall::Config::ConfigUpdater.new(yaml_content)
+        updater.transform
+        yaml_content = updater.serialize_to_string
+      end
       config = Config.from_yaml(yaml_content)
       
       config.dynamic.initialize_dynamic_properties(config, config_dir)
@@ -48,6 +55,23 @@ module CNFInstall
 
     def self.config_version_is_latest?(tmp_content : String) : Bool
       detect_version(tmp_content) == ConfigVersion::Latest
+    end
+    
+    def self.get_manifest_file_path(config)
+      File.join(config.dynamic.destination_cnf_dir, "temp_template.yml")
+    end
+
+    def self.get_helm_chart_path(config)
+      helm_directory = config.deployments.get_deployment_param(:helm_directory)
+      if helm_directory.empty?
+        working_chart_directory = "exported_chart"
+        Log.for("configuration").info { "Using exported chart path" } 
+      else
+        working_chart_directory = helm_directory
+        Log.for("configuration").info { "Not using exported chart path" } 
+      end
+      helm_chart_path = File.join(config.dynamic.destination_cnf_dir, CNFManager.sandbox_helm_directory(working_chart_directory))
+      helm_chart_path = Path[helm_chart_path].expand.to_s
     end
   end
 end

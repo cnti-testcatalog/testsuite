@@ -1,16 +1,13 @@
 # coding: utf-8
 require "totem"
 require "colorize"
-require "./types/cnf_testsuite_yml_type.cr"
 require "helm"
 require "git"
 require "uuid"
 require "./points.cr"
 require "./task.cr"
-require "./config.cr"
 require "./jaeger.cr"
 require "tar"
-require "./generate_config.cr"
 require "./oran_monitor.cr"
 require "./cnf_installation/install_common.cr"
 require "./cnf_installation/manifest.cr"
@@ -18,101 +15,21 @@ require "log"
 require "ecr"
 
 module CNFManager
-  class ElapsedTimeConfigMapTemplate
-    # elapsed_time should be Int32 but it is being passed as string
-    # So the old behaviour has been retained as is to prevent any breakages
-    def initialize(@release_name : String, @helm_used : Bool, @elapsed_time : String, @immutable : Bool, @tracing_used : Bool, @e2_found : Bool)
-    end
-
-    ECR.def_to_s("src/templates/elapsed_time_configmap.yml.ecr")
-  end
-
-  # TODO: figure out recursively check for unmapped json and warn on that
-  # https://github.com/Nicolab/crystal-validator#check
-  def self.validate_cnf_testsuite_yml(config)
-    ccyt_validator = nil
-    valid = true
-
-    begin
-      ccyt_validator = CnfTestSuiteYmlType.from_json(config.settings.to_json)
-    rescue ex
-      valid = false
-      Log.error { "✖ ERROR: cnf_testsuite.yml field validation error.".colorize(:red) }
-      Log.error { " please check info in the the field name near the text 'CnfTestSuiteYmlType#' in the error below".colorize(:red) }
-      Log.error { ex.message }
-      ex.backtrace.each do |x|
-        Log.error { x }
-      end
-    end
-
-    unmapped_keys_warning_msg = "WARNING: Unmapped cnf_testsuite.yml keys. Please add them to the validator".colorize(:yellow)
-    unmapped_subkeys_warning_msg = "WARNING: helm_repository is unset or has unmapped subkeys. Please update your cnf_testsuite.yml".colorize(:yellow)
-
-    if ccyt_validator && !ccyt_validator.try &.json_unmapped.empty?
-      warning_output = [unmapped_keys_warning_msg] of String | Colorize::Object(String)
-      warning_output.push(ccyt_validator.try &.json_unmapped.to_s)
-      if warning_output.size > 1
-        Log.warn { warning_output.join("\n") }
-      end
-    end
-
-    #TODO Differentiate between unmapped subkeys or unset top level key.
-    if ccyt_validator && !ccyt_validator.try &.helm_repository.try &.json_unmapped.empty?
-      root = {} of String => (Hash(String, JSON::Any) | Nil)
-      root["helm_repository"] = ccyt_validator.try &.helm_repository.try &.json_unmapped
-
-      warning_output = [unmapped_subkeys_warning_msg] of String | Colorize::Object(String)
-      warning_output.push(root.to_s)
-      if warning_output.size > 1
-        Log.warn { warning_output.join("\n") }
-      end
-    end
-
-    { valid, warning_output }
-  end
-
   def self.cnf_resource_ymls(args, config)
     Log.info { "cnf_resource_ymls" }
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-    helm_directory = sandbox_helm_directory(config.cnf_config[:helm_directory])
-    manifest_directory = config.cnf_config[:manifest_directory]
-    release_name = config.cnf_config[:release_name]
-    helm_chart_path = Config.get_helm_chart_path(config)
-    manifest_file_path = Config.get_manifest_file_path(config)
-    helm_values = config.cnf_config[:helm_values]
-    test_passed = true
+    manifest_ymls = CNFInstall::Manifest.parse_manifest_as_ymls(COMMON_MANIFEST_FILE_PATH)
 
-    deployment_namespace = CNFManager.get_deployment_namespace(config)
-    install_method = config.cnf_config[:install_method]
-    Log.debug { "install_method: #{install_method}" }
-    template_ymls = [] of YAML::Any
-    case install_method[0]
-    when CNFInstall::InstallMethod::HelmChart, CNFInstall::InstallMethod::HelmDirectory
-      Log.info { "EXPORTED CHART PATH: #{helm_chart_path}" } 
-      Helm.generate_manifest_from_templates(release_name,
-                                            helm_chart_path,
-                                            manifest_file_path,
-                                            deployment_namespace,
-                                            helm_values)
-      template_ymls = CNFInstall::Manifest.parse_manifest_as_ymls(manifest_file_path)
-      
-    when CNFInstall::InstallMethod::ManifestDirectory
-    # if release_name.empty? # no helm chart
-      template_ymls = CNFInstall::Manifest.manifest_ymls_from_file_list(CNFInstall::Manifest.manifest_file_list( destination_cnf_dir + "/" + manifest_directory))
-    # else
-    end
-
-    template_ymls = template_ymls.reject! {|x|
+    manifest_ymls = manifest_ymls.reject! {|x|
       # reject resources that contain the 'helm.sh/hook: test' annotation
       x.dig?("metadata","annotations","helm.sh/hook")
     }
-    Log.debug { "template_ymls: #{template_ymls}" }
-    template_ymls 
+    Log.debug { "cnf_resource_ymls: #{manifest_ymls}" }
+    manifest_ymls 
   end
 
   def self.cnf_resources(args, config, &block)
-    template_ymls = cnf_resource_ymls(args, config)
-    resource_resp = template_ymls.map do | resource |
+    manifest_ymls = cnf_resource_ymls(args, config)
+    resource_resp = manifest_ymls.map do | resource |
       resp = yield resource
       Log.debug { "cnf_workload_resource yield resp: #{resp}" }
       resp
@@ -133,12 +50,13 @@ module CNFManager
   # ```
   
   def self.get_deployment_namespace(config)
-    install_method = config.cnf_config[:install_method]
+    install_method = config.dynamic.install_method
     case install_method[0]
     when CNFInstall::InstallMethod::HelmChart, CNFInstall::InstallMethod::HelmDirectory
-      if !config.cnf_config[:helm_install_namespace].empty?
-        Log.info { "deployment namespace was set to: #{config.cnf_config[:helm_install_namespace]}" }
-        config.cnf_config[:helm_install_namespace]
+      config_namespace = config.deployments.get_deployment_param(:namespace)
+      if !config_namespace.empty?
+        Log.info { "deployment namespace was set to: #{config_namespace}" }
+        config_namespace
       else
         Log.info { "deployment namespace was set to: #{DEFAULT_CNF_NAMESPACE}" }
         DEFAULT_CNF_NAMESPACE
@@ -152,9 +70,9 @@ module CNFManager
 
   def self.cnf_workload_resources(args, config, &block)
     deployment_namespace = CNFManager.get_deployment_namespace(config)
-    template_ymls = cnf_resource_ymls(args, config)
+    manifest_ymls = cnf_resource_ymls(args, config)
     # call cnf cnf_resources to get unfiltered yml
-    resource_ymls = Helm.all_workload_resources(template_ymls, deployment_namespace)
+    resource_ymls = Helm.all_workload_resources(manifest_ymls, deployment_namespace)
     resource_resp = resource_ymls.map do | resource |
       resp = yield resource
       Log.debug { "cnf_workload_resource yield resp: #{resp}" }
@@ -162,15 +80,6 @@ module CNFManager
     end
 
     resource_resp
-  end
-
-  def self.namespace_from_parameters(parameters)
-    Log.info { "namespace_from_parameters: #{parameters}" }
-    parameter_list = parameters.strip().split(" ")
-    namespace_index = parameter_list.index{|x| x =="--namespace"}
-    namespace = "--namespace #{parameter_list[(namespace_index + 1)]}" if namespace_index
-    Log.info { "namespace_from_parameters namespace: #{namespace}" }
-    namespace
   end
 
   #test_passes_completely = workload_resource_test do | cnf_config, resource, container, initialized |
@@ -181,14 +90,10 @@ module CNFManager
                                              JSON::Any, JSON::Any, Bool | Nil) -> Bool | Nil)
             # resp = yield resource, container, volumes, initialized
     test_passed = true
-    namespace = namespace_from_parameters(CNFInstall.install_parameters(config))
-
     resource_ymls = cnf_workload_resources(args, config) do |resource|
       resource
     end
-
     deployment_namespace = CNFManager.get_deployment_namespace(config)
-    
     resource_names = Helm.workload_resource_kind_names(resource_ymls, default_namespace: deployment_namespace)
     Log.info { "resource names: #{resource_names}" }
     if resource_names && resource_names.size > 0
@@ -266,47 +171,12 @@ module CNFManager
     cnf_config_list(silent: true).size > 0
   end
 
-  def self.parsed_config_file(path)
-    Log.info { "parsed_config_file: #{path}" }
-    if path && path.empty?
-      raise "No cnf_testsuite.yml found in #{path}!"
-    end
-    Totem.from_file "#{path}"
-  end
-
-  def self.sample_testsuite_yml(sample_dir)
-    Log.info { "sample_testsuite_yml sample_dir: #{sample_dir}" }
-    find_cmd = "find #{sample_dir}/* -name \"cnf-testsuite.yml\""
-    Process.run(
-      find_cmd,
-      shell: true,
-      output: find_stdout = IO::Memory.new,
-      error: find_stderr = IO::Memory.new
-    )
-    cnf_testsuite = find_stdout.to_s.split("\n")[0]
-    if cnf_testsuite.empty?
-      raise "No cnf_testsuite.yml found in #{sample_dir}!"
-    end
-    Totem.from_file "./#{cnf_testsuite}"
-  end
-
   def self.path_has_yml?(config_path)
     if config_path =~ /\.yml/
       true
     else
       false
     end
-  end
-
-  def self.config_from_path_or_dir(cnf_path_or_dir)
-    if path_has_yml?(cnf_path_or_dir)
-      config_file = File.dirname(cnf_path_or_dir)
-      config = sample_testsuite_yml(config_file)
-    else
-      config_file = cnf_path_or_dir
-      config = sample_testsuite_yml(config_file)
-    end
-    return config
   end
 
   # if passed a directory, adds cnf-testsuite.yml to the string
@@ -329,104 +199,8 @@ module CNFManager
     dir + "/"
   end
 
-  def self.release_name?(config)
-    release_name = optional_key_as_string(config, "release_name").split(" ")[0]
-    if release_name.empty?
-      false
-    else
-      true
-    end
-  end
-
   def self.sandbox_helm_directory(cnf_testsuite_helm_directory)
     cnf_testsuite_helm_directory.split("/")[-1]
-  end
-
-  #TODO move to helm module
-  def self.helm_template_header(helm_chart_or_directory : String, template_file="/tmp/temp_template.yml")
-    Log.info { "helm_template_header" }
-    Log.info { "helm_template_header helm_chart_or_directory: #{helm_chart_or_directory}" }
-    helm = Helm::BinarySingleton.helm
-    # generate helm chart release name
-    # use --dry-run to generate yml file
-    Helm.install("--dry-run --generate-name #{helm_chart_or_directory} > #{template_file}")
-    raw_template = File.read(template_file)
-    Log.debug { "raw_template: #{raw_template}" }
-    split_template = raw_template.split("---")
-    template_header = split_template[0]
-    parsed_template_header = YAML.parse(template_header)
-    Log.debug { "parsed_template_header: #{parsed_template_header}" }
-    parsed_template_header
-  end
-
-  #TODO move to helm module
-  def self.helm_chart_template_release_name(helm_chart_or_directory : String, template_file="/tmp/temp_template.yml")
-    Log.info { "helm_chart_template_release_name" }
-    Log.info { "helm_chart_template_release_name helm_chart_or_directory: #{helm_chart_or_directory}" }
-    hth = helm_template_header(helm_chart_or_directory, template_file)
-    Log.info { "helm template (should not be a full path): #{hth}" }
-    hth["NAME"]
-  end
-
-
-  def self.generate_and_set_release_name(config_yml_path, src_mode=false)
-    Log.info { "generate_and_set_release_name" }
-    Log.info { "generate_and_set_release_name config_yml_path: #{config_yml_path}" }
-
-    yml_file = CNFManager.ensure_cnf_testsuite_yml_path(config_yml_path)
-    yml_path = CNFManager.ensure_cnf_testsuite_dir(config_yml_path)
-
-    config = CNFManager.parsed_config_file(yml_file)
-
-    predefined_release_name = optional_key_as_string(config, "release_name")
-    src_helm_directory = optional_key_as_string(config, "helm_directory")
-    Log.info { "src_helm_directory: #{src_helm_directory}" }
-    Log.debug { "predefined_release_name: #{predefined_release_name}" }
-    if predefined_release_name.empty?
-      install_method = CNFInstall.cnf_installation_method(config)
-      Log.debug { "install_method: #{install_method}" }
-      case install_method[0]
-      when CNFInstall::InstallMethod::HelmChart
-        Log.info { "generate_and_set_release_name install method: #{install_method[0]} data: #{install_method[1]}" }
-        Log.info { "generate_and_set_release_name helm_chart_or_directory: #{install_method[1]}" }
-        release_name = helm_chart_template_release_name(install_method[1])
-      when CNFInstall::InstallMethod::HelmDirectory
-        Log.info { "helm_directory install method: #{yml_path}/#{install_method[1]}" }
-        # todo get the release name by looking through everything under /tmp/repositories
-        Log.info { "generate_and_set_release_name helm_chart_or_directory: #{install_method[1]}" }
-        if src_mode
-          release_name = helm_chart_template_release_name("#{src_helm_directory}")
-        else
-          release_name = helm_chart_template_release_name("#{install_method[1]}")
-        end
-      when CNFInstall::InstallMethod::ManifestDirectory
-        Log.debug { "manifest_directory install method" }
-        release_name = UUID.random.to_s
-      else
-        raise "Install method should be either helm_chart, helm_directory, or manifest_directory"
-      end
-      #set generated helm chart release name in yml file
-      Log.debug { "generate_and_set_release_name: #{release_name}" }
-      update_yml(yml_file, "release_name", release_name)
-    end
-  end
-
-
-  # TODO move to sandbox module
-  def self.cnf_destination_dir(config_file)
-    Log.info { "cnf_destination_dir config_file: #{config_file}" }
-    if path_has_yml?(config_file)
-      yml = config_file
-    else
-      yml = config_file + "/cnf-testsuite.yml"
-    end
-    config = parsed_config_file(yml)
-    Log.debug { "cnf_destination_dir parsed_config_file config: #{config}" }
-    current_dir = FileUtils.pwd
-    release_name = optional_key_as_string(config, "release_name").split(" ")[0]
-    Log.info { "release_name: #{release_name}" }
-    Log.info { "cnf destination dir: #{current_dir}/#{CNF_DIR}/#{release_name}" }
-    "#{current_dir}/#{CNF_DIR}/#{release_name}"
   end
 
   def self.config_source_dir(config_file)
@@ -441,17 +215,12 @@ module CNFManager
     Log.info { "helm_repo_add repo_name: #{helm_repo_name} repo_url: #{helm_repo_url} args: #{args.inspect}" }
     ret = false
     if helm_repo_name == nil || helm_repo_url == nil
-      # config = get_parsed_cnf_testsuite_yml(args)
-      # config = parsed_config_file(ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
-      config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
+      config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
       Log.info { "helm path: #{Helm::BinarySingleton.helm}" }
       helm = Helm::BinarySingleton.helm
-      # helm_repo_name = config.get("helm_repository.name").as_s?
-      helm_repository = config.cnf_config[:helm_repository]
-      helm_repo_name = "#{helm_repository && helm_repository["name"]}"
-      helm_repo_url = "#{helm_repository && helm_repository["repo_url"]}"
+      helm_repo_name = config.deployments.get_deployment_param(:helm_repo_name)
+      helm_repo_url = config.deployments.get_deployment_param(:helm_repo_url)
       Log.info { "helm_repo_name: #{helm_repo_name}" }
-      # helm_repo_url = config.get("helm_repository.repo_url").as_s?
       Log.info { "helm_repo_url: #{helm_repo_url}" }
     end
     if helm_repo_name && helm_repo_url
@@ -496,14 +265,11 @@ module CNFManager
   # Use manifest directory if helm directory empty
   def self.sandbox_setup(config, cli_args)
     Log.info { "sandbox_setup" }
-    Log.info { "sandbox_setup config: #{config.cnf_config}" }
+    Log.info { "sandbox_setup config: #{config.inspect}" }
     verbose = cli_args[:verbose]
-    config_file = config.cnf_config[:source_cnf_dir]
-    release_name = config.cnf_config[:release_name]
-    install_method = config.cnf_config[:install_method]
-    helm_directory = config.cnf_config[:helm_directory]
-    manifest_directory = config.cnf_config[:manifest_directory]
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    config_file = config.dynamic.source_cnf_dir
+    install_method = config.dynamic.install_method
+    destination_cnf_dir = config.dynamic.destination_cnf_dir
 
     # Create a CNF sandbox dir
     FileUtils.mkdir_p(destination_cnf_dir)
@@ -521,7 +287,8 @@ module CNFManager
     case install_method[0]
     when CNFInstall::InstallMethod::ManifestDirectory
       Log.info { "preparing manifest_directory sandbox" }
-      source_directory = config_source_dir(config_file) + "/" + manifest_directory
+      manifest_directory = config.deployments.get_deployment_param(:manifest_directory)
+      source_directory = File.join(config_source_dir(config_file), manifest_directory)
       src_path = Path[source_directory].expand.to_s
       Log.info { "cp -a #{src_path} #{destination_cnf_dir}" }
 
@@ -532,7 +299,8 @@ module CNFManager
       end
     when CNFInstall::InstallMethod::HelmDirectory
       Log.info { "preparing helm_directory sandbox" }
-      source_directory = config_source_dir(config_file) + "/" + helm_directory.split(" ")[0] # todo support parameters separately
+      helm_directory = config.deployments.get_deployment_param(:helm_directory)
+      source_directory = File.join(config_source_dir(config_file), helm_directory.split(" ")[0]) # todo support parameters separately
       src_path = Path[source_directory].expand.to_s
       Log.info { "cp -a #{src_path} #{destination_cnf_dir}" }
 
@@ -542,7 +310,7 @@ module CNFManager
         Log.info { "helm sandbox dir already exists at #{destination_cnf_dir}/#{File.basename(src_path)}" }
       rescue File::NotFoundError
         Log.info { "helm directory not found at #{src_path}" }
-        raise HelmDirectoryMissingError.new(src_path)
+        stdout_warning "helm directory at #{helm_directory} is missing"
       end
     when CNFInstall::InstallMethod::HelmChart
       Log.info { "preparing helm chart sandbox" }
@@ -561,14 +329,9 @@ module CNFManager
   def self.export_published_chart(config, cli_args)
     Log.info { "exported_chart cli_args: #{cli_args}" }
     verbose = cli_args[:verbose]
-    config_file = config.cnf_config[:source_cnf_dir]
-    helm_directory = config.cnf_config[:helm_directory]
-    helm_chart = config.cnf_config[:helm_chart]
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
-
-    #TODO don't think we need to make this here
-    FileUtils.mkdir_p("#{destination_cnf_dir}/#{helm_directory}")
-
+    config_file = config.dynamic.source_cnf_dir
+    helm_chart = config.deployments.get_deployment_param(:helm_chart)
+    destination_cnf_dir = config.dynamic.destination_cnf_dir
     config_path = CNFManager.ensure_cnf_testsuite_yml_path(config_file)
 
     # Pulling chart 
@@ -586,7 +349,6 @@ module CNFManager
       raise "Helm pull error"
     end
 
-    config = CNFManager::Config.parse_config_yml(config_path)
     # Discover newly pulled tgz file
     tgz_name = get_and_verify_tgz_name(helm_chart)
 
@@ -620,44 +382,26 @@ module CNFManager
     wait_count = cli_args[:wait_count]
     skip_wait_for_install = cli_args[:skip_wait_for_install]
     verbose = cli_args[:verbose]
-    config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
-    Log.debug { "config in sample_setup: #{config.cnf_config}" }
-    release_name = config.cnf_config[:release_name]
-    install_method = config.cnf_config[:install_method]
+    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
+    Log.debug { "config in sample_setup: #{config.inspect}" }
 
     Log.for("verbose").info { "sample_setup" } if verbose
     Log.info { "config_file #{config_file}" }
-    # config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
 
-    release_name = config.cnf_config[:release_name]
-    install_method = config.cnf_config[:install_method]
+    release_name = config.deployments.get_deployment_param(:name)
+    install_method = config.dynamic.install_method
     Log.info { "install_method #{install_method}" }
-    helm_directory = config.cnf_config[:helm_directory]
-    helm_values = config.cnf_config[:helm_values]
-    manifest_directory = config.cnf_config[:manifest_directory]
-    helm_repository = config.cnf_config[:helm_repository]
-    helm_repo_name = "#{helm_repository && helm_repository["name"]}"
-    helm_repo_url = "#{helm_repository && helm_repository["repo_url"]}"
+    helm_values = config.deployments.get_deployment_param(:helm_values)
     deployment_namespace = CNFManager.get_deployment_namespace(config)
     helm_namespace_option = "-n #{deployment_namespace}"
     ensure_namespace_exists!(deployment_namespace)
-
-
-    Log.info { "helm_repo_name: #{helm_repo_name}" }
-    Log.info { "helm_repo_url: #{helm_repo_url}" }
-    Log.debug { "helm_directory: #{helm_directory}" }
-
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    destination_cnf_dir = config.dynamic.destination_cnf_dir
 
     Log.for("verbose").info { "destination_cnf_dir: #{destination_cnf_dir}" } if verbose
     Log.debug { "mkdir_p destination_cnf_dir: #{destination_cnf_dir}" }
     FileUtils.mkdir_p(destination_cnf_dir)
 
-    begin
-      sandbox_setup(config, cli_args)
-    rescue e : HelmDirectoryMissingError
-      stdout_warning "helm directory at #{e.helm_directory} is missing"
-    end
+    sandbox_setup(config, cli_args)
 
     helm = Helm::BinarySingleton.helm
     Log.info { "helm path: #{Helm::BinarySingleton.helm}" }
@@ -666,233 +410,96 @@ module CNFManager
     # Set it to false by default to indicate a new release is being setup
     fresh_install = true
 
-    helm_install = {status: nil, output: "", error: ""}
-
-    # todo determine what the ric is/if there is a ric installed (labeling)
-    #option 1
-    # todo determine what pad/node the ric is in  (pod/node by label)
-    # todo start tshark capture of the e2 traffic 
-    # todo restart the ric pod when running the ric e2 test
-    # todo validate the e2 traffic
-    #option 2
-    # todo start tshark capture of the e2 traffic (on all nodes?)
-    # todo install the ric/xapp (the xapp should be installed last?)
-    # todo note which pad/node the ric is in  (what if cluster tools tshark was  not executed on the node with the ric?)
-    # todo alternative (capture on gnodeb node)
-    # todo validate the e2 traffic
-    # todo save off the result to a config map
-    # todo check the config map in the e2 test
-
-    match = JaegerManager.match()
-    if match[:found]
-      baselines = JaegerManager.unique_services_total
-      Log.info { "baselines: #{baselines}" }
-    end
-
-    # todo start tshark monitoring the e2 traffic 
-    capture = ORANMonitor.start_e2_capture?(config.cnf_config)
-
     # todo separate out install methods into a module/function that accepts a block
-    liveness_time = 0
     Log.for("sample_setup:install_method").info { "#{install_method[0]}" }
     Log.for("sample_setup:install_method").info { "#{install_method[1]}" }
-    elapsed_time = Time.measure do
-      case install_method[0]
-      when CNFInstall::InstallMethod::ManifestDirectory
-        Log.for("verbose").info { "deploying by manifest file" } if verbose
-        KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
-      when CNFInstall::InstallMethod::HelmChart
-        helm_chart = config.cnf_config[:helm_chart]
-        if !helm_repo_name.empty? || !helm_repo_url.empty?
-          Helm.helm_repo_add(helm_repo_name, helm_repo_url)
-        end
-        Log.for("verbose").info { "deploying with chart repository" } if verbose
-        begin
-          helm_install = Helm.install(release_name, helm_chart, helm_namespace_option, helm_values)
-        rescue e : Helm::InstallationFailed
-          stdout_failure "Helm installation failed"
-          stdout_failure "\t#{e.message}"
-          exit 1
-        rescue e : Helm::CannotReuseReleaseNameError
-          stdout_warning "Release name #{release_name} has already been setup."
-          # Mark that install is not fresh
-          fresh_install = false
-        end
-        export_published_chart(config, cli_args)
-      when CNFInstall::InstallMethod::HelmDirectory
-        Log.for("verbose").info { "deploying with helm directory" } if verbose
-        #TODO Add helm options into cnf-testsuite yml
-        #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
-        begin
-          helm_install = Helm.install(release_name, "#{install_method[1]}", helm_namespace_option, helm_values)
-        rescue e : Helm::InstallationFailed
-          stdout_failure "Helm installation failed"
-          stdout_failure "\t#{e.message}"
-          exit 1
-        rescue e : Helm::CannotReuseReleaseNameError
-          stdout_warning "Release name #{release_name} has already been setup."
-          # Mark that install is not fresh
-          fresh_install = false
-        end
-      else
-        raise "Deployment method not found"
+    case install_method[0]
+    when CNFInstall::InstallMethod::ManifestDirectory
+      Log.for("verbose").info { "deploying by manifest file" } if verbose
+      manifest_directory = config.deployments.get_deployment_param(:manifest_directory)
+      KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
+    when CNFInstall::InstallMethod::HelmChart
+      helm_chart = config.deployments.get_deployment_param(:helm_chart)
+      helm_repo_name = config.deployments.get_deployment_param(:helm_repo_name)
+      helm_repo_url = config.deployments.get_deployment_param(:helm_repo_url)
+      if !helm_repo_name.empty? || !helm_repo_url.empty?
+        Helm.helm_repo_add(helm_repo_name, helm_repo_url)
       end
-
-      resource_ymls = cnf_workload_resources(nil, config) do |resource|
-        resource
+      Log.for("verbose").info { "deploying with chart repository" } if verbose
+      begin
+        Helm.install(release_name, helm_chart, helm_namespace_option, helm_values)
+      rescue e : Helm::InstallationFailed
+        stdout_failure "Helm installation failed"
+        stdout_failure "\t#{e.message}"
+        exit 1
+      rescue e : Helm::CannotReuseReleaseNameError
+        stdout_warning "Release name #{release_name} has already been setup."
+        # Mark that install is not fresh
+        fresh_install = false
       end
-
-      resource_names = Helm.workload_resource_kind_names(resource_ymls, deployment_namespace)
-      #TODO move to kubectlclient and make resource_install_and_wait_for_all function
-      # get liveness probe initialDelaySeconds and FailureThreshold
-      # if   ((periodSeconds * failureThreshhold) + initialDelaySeconds) / defaultFailureThreshold) > startuptimelimit then fail; else pass
-      # get largest startuptime of all resoures, then save into config map
-      resource_ymls.map do |resource|
-        kind = resource["kind"].as_s.downcase
-        case kind 
-        when  "pod"
-          Log.info { "resource: #{resource}" }
-          containers = resource.dig("spec", "containers")
-        when  "deployment","statefulset","replicaset","daemonset"
-          Log.info { "resource: #{resource}" }
-          containers = resource.dig("spec", "template", "spec", "containers")
-        end
-        containers && containers.as_a.map do |container|
-          initialDelaySeconds = container.dig?("livenessProbe", "initialDelaySeconds")
-          failureThreshhold = container.dig?("livenessProbe", "failureThreshhold")
-          periodSeconds = container.dig?("livenessProbe", "periodSeconds")
-          total_period_failure = 0 
-          total_extended_period = 0
-          adjusted_with_default = 0
-          defaultFailureThreshold = 3
-          defaultPeriodSeconds = 10
-
-          if !failureThreshhold.nil? && failureThreshhold.as_i?
-            ft = failureThreshhold.as_i
-          else
-            ft = defaultFailureThreshold
-          end
-
-          if !periodSeconds.nil? && periodSeconds.as_i?
-            ps = periodSeconds.as_i
-          else
-            ps = defaultPeriodSeconds
-          end
-
-          total_period_failure = ps * ft
-
-          if !initialDelaySeconds.nil? && initialDelaySeconds.as_i?
-            total_extended_period = initialDelaySeconds.as_i + total_period_failure
-          else
-            total_extended_period = total_period_failure
-          end
-
-          adjusted_with_default = (total_extended_period / defaultFailureThreshold).round.to_i
-
-          Log.info { "total_period_failure: #{total_period_failure}" }
-          Log.info { "total_extended_period: #{total_extended_period}" }
-          Log.info { "liveness_time: #{liveness_time}" }
-          Log.info { "adjusted_with_default: #{adjusted_with_default}" }
-          if liveness_time < adjusted_with_default
-            liveness_time = adjusted_with_default
-          end
-        end
+      export_published_chart(config, cli_args)
+    when CNFInstall::InstallMethod::HelmDirectory
+      Log.for("verbose").info { "deploying with helm directory" } if verbose
+      #TODO Add helm options into cnf-testsuite yml
+      #e.g. helm install nsm --set insecure=true ./nsm/helm_chart
+      begin
+        Helm.install(release_name, "#{install_method[1]}", helm_namespace_option, helm_values)
+      rescue e : Helm::InstallationFailed
+        stdout_failure "Helm installation failed"
+        stdout_failure "\t#{e.message}"
+        exit 1
+      rescue e : Helm::CannotReuseReleaseNameError
+        stdout_warning "Release name #{release_name} has already been setup."
+        # Mark that install is not fresh
+        fresh_install = false
       end
-      if !skip_wait_for_install
-        stdout_success "Waiting for resource availability, timeout for each resource is #{wait_count} seconds\n"
-        workload_resource_names = resource_names.select { |resource| 
-        ["replicaset", "deployment", "statefulset", "pod", "daemonset"].includes?(resource[:kind].downcase) 
-      }
-        total_resource_count = workload_resource_names.size()
-        current_resource_number = 1
-        workload_resource_names.each do | resource |
-          stdout_success "Waiting for resource (#{current_resource_number}/#{total_resource_count}): [#{resource[:kind]}] #{resource[:name]}", same_line: true
-          ready = KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], wait_count: wait_count, namespace: resource[:namespace])
-          if !ready
-            stdout_failure "CNF setup has timed-out, [#{resource[:kind]}] #{resource[:name]} is not ready after #{wait_count} seconds.", same_line: true
-            stdout_failure "Recommended course of actions would be to investigate the resource in cluster, then call cnf_cleanup and try to reinstall the CNF."
-            exit 1
-          end
-          current_resource_number += 1
-        end
-        stdout_success "All CNF resources are up!", same_line: true
-      end
-    end
-
-    if match[:found]
-      sleep 120
-      metrics_checkpoints = JaegerManager.unique_services_total
-      Log.info { "metrics_checkpoints: #{metrics_checkpoints}" }
-      tracing_used = JaegerManager.tracing_used?(baselines, metrics_checkpoints)
-      Log.info { "tracing_used: #{tracing_used}" }
     else
-      tracing_used = false
+      raise "Deployment method not found"
     end
-
-    if ORANMonitor.isCNFaRIC?(config.cnf_config)
-      sleep 30 
-      e2_found = ORANMonitor.e2_session_established?(capture)
-    else
-      e2_found = false
+    
+    #Generating manifest from installed CNF
+    #Returns true or false in case when manifest was generated successfully or not
+    manifest_generated_successfully = CNFInstall::Manifest.generate_common_manifest(config, release_name, deployment_namespace)
+    
+    if !manifest_generated_successfully
+      stdout_failure "Manifest generation failed. Check CNF definition (helm charts, values, manifests etc.)"
+      exit 1
     end
-
-    Log.info { "final e2_found: #{e2_found}" }
-    Log.info { "final liveness_time: #{liveness_time}" }
-    Log.info { "elapsed_time.seconds: #{elapsed_time.seconds}" }
-    Log.info { "helm_install: #{helm_install}" }
-    Log.info { "helm_install[:error].to_s: #{helm_install[:error].to_s}" }
-    Log.info { "helm_install[:error].to_s.size: #{helm_install[:error].to_s.size}" }
+    resource_ymls = CNFManager.cnf_workload_resources(nil, config) do |resource|
+      resource
+    end
+    resource_names = Helm.workload_resource_kind_names(resource_ymls, deployment_namespace)
+    if !skip_wait_for_install
+      stdout_success "Waiting for resource availability, timeout for each resource is #{wait_count} seconds\n"
+      workload_resource_names = resource_names.select { |resource| 
+      ["replicaset", "deployment", "statefulset", "pod", "daemonset"].includes?(resource[:kind].downcase) 
+    }
+      total_resource_count = workload_resource_names.size()
+      current_resource_number = 1
+      workload_resource_names.each do | resource |
+        stdout_success "Waiting for resource (#{current_resource_number}/#{total_resource_count}): [#{resource[:kind]}] #{resource[:name]}", same_line: true
+        ready = KubectlClient::Get.resource_wait_for_install(resource[:kind], resource[:name], wait_count: wait_count, namespace: resource[:namespace])
+        if !ready
+          stdout_failure "CNF setup has timed-out, [#{resource[:kind]}] #{resource[:name]} is not ready after #{wait_count} seconds.", same_line: true
+          stdout_failure "Recommended course of actions would be to investigate the resource in cluster, then call cnf_cleanup and try to reinstall the CNF."
+          exit 1
+        end
+        current_resource_number += 1
+      end
+      stdout_success "All CNF resources are up!", same_line: true
+    end
 
     if fresh_install
       stdout_success "Successfully setup #{release_name}"
     end
-
-    # Not required to write elapsed time configmap if the cnf already exists due to a previous Helm install
-    return true if !fresh_install
-
-    # Immutable config maps are only supported in Kubernetes 1.19+
-    immutable_configmap = true
-    if version_less_than(KubectlClient.server_version, "1.19.0")
-      immutable_configmap = false
-    end
-
-    helm_used = !helm_install[:status].nil?
-    #TODO if helm_install then set helm_deploy = true in template
-    Log.info { "save config" }
-    elapsed_time_template = ElapsedTimeConfigMapTemplate.new(
-      "cnf-testsuite-#{release_name}-startup-information",
-      helm_used,
-      # "#{elapsed_time.seconds}",
-      "#{liveness_time}",
-      immutable_configmap,
-      tracing_used,
-      e2_found
-    ).to_s
-    #TODO find a way to kubectlapply directly without a map
-    Log.debug { "elapsed_time_template : #{elapsed_time_template}" }
-    configmap_path = "#{destination_cnf_dir}/config_maps/elapsed_time.yml"
-    File.write(configmap_path, "#{elapsed_time_template}")
-    # TODO if the config map exists on install, complain, delete then overwrite?
-    KubectlClient::Delete.file(configmap_path)
-    #TODO call kubectl apply on file
-    KubectlClient::Apply.file(configmap_path)
-    # TODO when uninstalling, remove config map
   ensure
     #todo uninstall/reinstall clustertools because of tshark bug
   end
 
   def self.cnf_to_new_cluster(config, kubeconfig)
-    release_name = config.cnf_config[:release_name]
-    install_method = config.cnf_config[:install_method]
-    release_name = config.cnf_config[:release_name]
-    install_method = config.cnf_config[:install_method]
-    helm_directory = config.cnf_config[:helm_directory]
-    manifest_directory = config.cnf_config[:manifest_directory]
-    helm_repository = config.cnf_config[:helm_repository]
-    helm_repo_name = "#{helm_repository && helm_repository["name"]}"
-    helm_repo_url = "#{helm_repository && helm_repository["repo_url"]}"
-    helm_chart = config.cnf_config[:helm_chart]
-    destination_cnf_dir = config.cnf_config[:destination_cnf_dir]
+    release_name = config.deployments.get_deployment_param(:name)
+    install_method = config.dynamic.install_method
+    destination_cnf_dir = config.dynamic.destination_cnf_dir
     deployment_namespace = CNFManager.get_deployment_namespace(config)
     helm_namespace_option = "-n #{deployment_namespace}"
     ensure_namespace_exists!(deployment_namespace, kubeconfig: kubeconfig)
@@ -900,16 +507,21 @@ module CNFManager
     Log.for("cnf_to_new_cluster").info { "Install method: #{install_method[0]}" }
     case install_method[0]
     when CNFInstall::InstallMethod::ManifestDirectory
+      manifest_directory = config.deployments.get_deployment_param(:manifest_directory)
       KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", kubeconfig: kubeconfig)
     when CNFInstall::InstallMethod::HelmChart
+      helm_repo_name = config.deployments.get_deployment_param(:helm_repo_name)
+      helm_repo_url = config.deployments.get_deployment_param(:helm_repo_url)
+      helm_chart = config.deployments.get_deployment_param(:helm_chart)
       begin
-        helm_install = Helm.install("#{release_name} #{helm_chart} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
+        Helm.install("#{release_name} #{helm_chart} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_warning "Release name #{release_name} has already been setup."
       end
     when CNFInstall::InstallMethod::HelmDirectory
+      helm_directory = config.deployments.get_deployment_param(:helm_directory)
       begin
-        helm_install = Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
+        Helm.install("#{release_name} #{destination_cnf_dir}/#{helm_directory} --kubeconfig #{kubeconfig} #{helm_namespace_option}")
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_warning "Release name #{release_name} has already been setup."
       end
@@ -940,10 +552,13 @@ module CNFManager
   def self.sample_cleanup(config_file, force=false, installed_from_manifest=false, verbose=true)
     Log.info { "sample_cleanup" }
     Log.info { "sample_cleanup installed_from_manifest: #{installed_from_manifest}" }
-    config = parsed_config_file(ensure_cnf_testsuite_yml_path(config_file))
-    parsed_config = CNFManager::Config.parse_config_yml(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
+
+    FileUtils.rm_rf(COMMON_MANIFEST_FILE_PATH)
+    Log.info { "#{COMMON_MANIFEST_FILE_PATH} file was removed." }
+
+    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
     Log.for("verbose").info { "cleanup config: #{config.inspect}" } if verbose
-    destination_cnf_dir = parsed_config.cnf_config[:destination_cnf_dir]
+    destination_cnf_dir = config.dynamic.destination_cnf_dir
     Log.info { "destination_cnf_dir: #{destination_cnf_dir}" }
     
 
@@ -956,7 +571,7 @@ module CNFManager
     end
 
     # Strips all the helm options from the release name option in config
-    release_name = "#{config.get("release_name").as_s?}"
+    release_name = config.deployments.get_deployment_param(:name)
     release_name = release_name.split(" ")[0]
 
     Log.for("sample_cleanup:helm_path").info { Helm::BinarySingleton.helm }
@@ -969,11 +584,11 @@ module CNFManager
       Log.for("sample_cleanup").info { "Destination dir #{destination_cnf_dir} exists" }
     end
     
-    install_method = parsed_config.cnf_config[:install_method]
+    install_method = config.dynamic.install_method
     Log.for("sample_cleanup:install_method").info { install_method }
     case install_method[0]
     when CNFInstall::InstallMethod::HelmChart, CNFInstall::InstallMethod::HelmDirectory
-      deployment_namespace = CNFManager.get_deployment_namespace(parsed_config)
+      deployment_namespace = CNFManager.get_deployment_namespace(config)
       helm_namespace_option = "-n #{deployment_namespace}"
       result = Helm.uninstall(release_name + " #{helm_namespace_option}")
       Log.for("sample_cleanup:helm_uninstall").info { result[:output].to_s } if verbose
@@ -983,9 +598,10 @@ module CNFManager
       FileUtils.rm_rf(destination_cnf_dir)
       return result[:status].success?
     when CNFInstall::InstallMethod::ManifestDirectory
-      manifest_directory = destination_cnf_dir + "/" + "#{config["manifest_directory"]? && config["manifest_directory"].as_s?}"
-      Log.for("cnf_cleanup:manifest_directory").info { manifest_directory }
-      result = KubectlClient::Delete.file("#{manifest_directory}", wait: true)
+      manifest_directory = config.deployments.get_deployment_param(:manifest_directory)
+      installed_manifest_directory = File.join(destination_cnf_dir, manifest_directory)
+      Log.for("cnf_cleanup:installed_manifest_directory").info { installed_manifest_directory }
+      result = KubectlClient::Delete.file("#{installed_manifest_directory}", wait: true)
       FileUtils.rm_rf(destination_cnf_dir)
       stdout_success "Successfully cleaned up #{manifest_directory} directory"
       return true
@@ -1034,14 +650,6 @@ module CNFManager
 
   def self.get_helm_tgz_glob(helm_chart)
     "#{Helm.chart_name(helm_chart)}-*.tgz"
-  end
-
-  class HelmDirectoryMissingError < Exception
-    property helm_directory : String = ""
-
-    def initialize(helm_directory : String)
-      self.helm_directory = helm_directory
-    end
   end
 
   class TarFileNotFoundError < Exception

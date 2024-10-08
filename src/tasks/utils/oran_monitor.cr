@@ -2,30 +2,26 @@ require "cluster_tools"
 require "./k8s_tshark.cr"
 module ORANMonitor 
 
-  def self.isCNFaRIC?(cnf_config)
+  def self.isCNFaRIC?(config)
     Log.info { "isCNFaRIC?" }
-    ric = cnf_config[:ric_label]? 
-    Log.info { "ric: #{ric}" }
-    ric_key : String  = ""
-    ric_value : String = ""
-    ric_key = cnf_config[:ric_label].split("=").first if ric
-    ric_value = cnf_config[:ric_label].split("=").last if ric
-    if ric && !ric.empty?
-      Log.info { "cnf is a ric: #{ric}" }
+    ric_label = config.common.five_g_parameters.ric_label
+    Log.info { "ric: #{ric_label}" }
+    if !ric_label.nil? && !ric_label.empty?
+      ric_key = ric_label.split("=").first
+      ric_value = ric_label.split("=").last
+      Log.info { "cnf is a ric" }
       ret = {:ric_key => ric_key, :ric_value => ric_value}
     else
-      Log.info { "cnf not a ric: #{ric}" }
+      Log.info { "cnf not a ric" }
      ret = nil
     end 
     ret
   end
   
-  def self.start_e2_capture?(cnf_config)
+  def self.start_e2_capture?(config)
     Log.info { "start_e2_capture" }
-    ric_key : String  = ""
-    ric_value : String = ""
     capture : K8sTshark::TsharkPacketCapture | Nil
-    ric = isCNFaRIC?(cnf_config)
+    ric = isCNFaRIC?(config)
     if ric
       ric_key = ric[:ric_key]
       ric_value = ric[:ric_value]

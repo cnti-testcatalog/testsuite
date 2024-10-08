@@ -40,16 +40,15 @@ task "smf_upf_heartbeat" do |t, args|
     end
 
     suci_found : Bool | Nil
-    smf = config.cnf_config[:smf_label]? 
-    upf = config.cnf_config[:upf_label]? 
+    smf = config.common.five_g_parameters.smf_label
+    upf = config.common.five_g_parameters.upf_label
     Log.info { "smf: #{smf}" }
     Log.info { "upf: #{upf}" }
-    smf_key : String  = ""
-    smf_value : String = ""
-    smf_key = config.cnf_config[:smf_label].split("=").first if smf
-    smf_value = config.cnf_config[:smf_label].split("=").last if upf
+    
 
-    if smf && upf 
+    if smf && upf
+      smf_key = smf.split("=").first
+      smf_value = smf.split("=").last
       #todo document 3gpp standard for heartbeat
       command = "-ni any -Y 'pfcp.msg_type == 1 or pfcp.msg_type == 2' -T json"
 
@@ -126,15 +125,13 @@ desc "Test if a 5G core supports SUCI Concealment"
 task "suci_enabled" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     suci_found : Bool | Nil
-    core = config.cnf_config[:amf_label]? 
+    core = config.common.five_g_parameters.amf_label
     Log.info { "core: #{core}" }
-    core_key : String  = ""
-    core_value : String = ""
-    core_key = config.cnf_config[:amf_label].split("=").first if core
-    core_value = config.cnf_config[:amf_label].split("=").last if core
     command = "-ni any -Y nas_5gs.mm.type_id -T json"
 
-    if core       
+    if core
+      core_key = core.split("=").first
+      core_value = core.split("=").last
       K8sTshark::TsharkPacketCapture.begin_capture_by_label(core_key, core_value, command) do |capture|
         #todo put in prereq
         UERANSIM.install(config)
