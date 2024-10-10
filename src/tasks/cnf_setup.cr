@@ -10,12 +10,21 @@ task "cnf_setup", ["helm_local_install", "create_namespace"] do |_, args|
   Log.for("verbose").debug { "args = #{args.inspect}" } if check_verbose(args)
   cli_hash = CNFManager.sample_setup_cli_args(args)
   config_file =  cli_hash[:config_file]
+
+  # To avoid undefined behavior, only one CNF can be set up at any time.
+  if CNFManager.cnf_installed?
+    stdout_warning "A CNF is already set up. Setting up multiple CNFs is not allowed."
+    stdout_warning "To set up a new CNF, clean up the existing one by running: cnf_cleanup cnf-path=#{CNFManager.cnf_config_list.first}"
+    exit 0
+  end
+
   if ClusterTools.install
     stdout_success "ClusterTools installed"
   else
     stdout_failure "The ClusterTools installation timed out. Please check the status of the cluster-tools pods."
     exit 1
   end
+
   stdout_success "cnf setup start"
   CNFManager.sample_setup(cli_hash)
   stdout_success "cnf setup complete"
