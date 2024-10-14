@@ -118,30 +118,9 @@ describe "Utils" do
 
   it "'single_task_runner' should put a 1 in the results file if it has an exception", tags: ["task_runner"]  do
     CNFManager::Points.clean_results_yml
-    args = Sam::Args.new(["cnf-config=./cnf-testsuite.yml"])
+    args = Sam::Args.new()
     task_response = CNFManager::Task.single_task_runner(args) do
-      cdir = FileUtils.pwd()
-      response = String::Builder.new
-      config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(args.named["cnf-config"].as(String)))
-      helm_directory = config.deployments.get_deployment_param(:helm_directory) 
-      if File.directory?(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)) + helm_directory)
-        Dir.cd(CNFManager.ensure_cnf_testsuite_dir(args.named["cnf-config"].as(String)) + helm_directory)
-        Process.run("grep -r -P '^(?!.+0\.0\.0\.0)(?![[:space:]]*0\.0\.0\.0)(?!#)(?![[:space:]]*#)(?!\/\/)(?![[:space:]]*\/\/)(?!\/\\*)(?![[:space:]]*\/\\*)(.+([0-9]{1,3}[\.]){3}[0-9]{1,3})'", shell: true) do |proc|
-          while line = proc.output.gets
-            response << line
-          end
-        end
-        Dir.cd(cdir)
-        if response.to_s.size > 0
-          resp = upsert_failed_task("ip_addresses","✖️  FAILED: IP addresses found", Time.utc)
-        else
-          resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found", Time.utc)
-        end
-        resp
-      else
-        Dir.cd(cdir)
-        resp = upsert_passed_task("ip_addresses", "✔️  PASSED: No IP addresses found", Time.utc)
-      end
+      raise Exception.new()
     end
     yaml = File.open("#{CNFManager::Points::Results.file}") do |file|
       YAML.parse(file)
