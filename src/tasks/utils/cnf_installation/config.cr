@@ -10,6 +10,10 @@ module CNFInstall
     end
 
     def self.parse_cnf_config_from_file(path_to_config)
+      if !File.exists?(path_to_config)
+        stdout_failure "No config found at #{path_to_config}."
+        exit 1
+      end
       yaml_content = File.read(path_to_config)
       config_dir = CNFManager.ensure_cnf_testsuite_dir(path_to_config)
       begin
