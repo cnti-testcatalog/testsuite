@@ -96,6 +96,27 @@ task "sample_generic_cnf_cleanup" do |_, args|
   CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
 end
 
+task "new_cnf_setup" do |_, args|
+  if CNFManager.cnf_installed?
+    stdout_warning "A CNF is already set up. Setting up multiple CNFs is not allowed."
+    stdout_warning "To set up a new CNF, clean up the existing one by running: cnf_cleanup cnf-path=#{CNFManager.cnf_config_list.first}"
+    exit 0
+  end
+  if ClusterTools.install
+    stdout_success "ClusterTools installed"
+  else
+    stdout_failure "The ClusterTools installation timed out. Please check the status of the cluster-tools pods."
+    exit 1
+  end
+  stdout_success "CNF installation start."
+  CNFInstall.install_cnf(args)
+  stdout_success "CNF installation complete."
+end
+
+task "new_cnf_cleanup" do |_, args|
+  CNFInstall.uninstall_cnf()
+end
+
 def interactively_create_config
   new_config = {
     config_version: CNFInstall::Config::ConfigVersion::Latest.to_s,
