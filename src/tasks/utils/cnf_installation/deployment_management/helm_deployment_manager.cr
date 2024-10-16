@@ -1,0 +1,95 @@
+require "../config_versions/config_versions.cr"
+require "./deployment_manager_common.cr"
+
+module CNFInstall
+  abstract class HelmDeploymentManager < DeploymentManager
+    def initialize(deployment_name)
+      super(deployment_name)
+    end
+
+    abstract def get_deployment_name()
+    abstract def get_deployment_namespace()
+
+    def install_from_folder(chart_path, helm_namespace, helm_values)
+      begin
+        Helm.install(@deployment_name, chart_path, helm_namespace, helm_values)
+      rescue e : Helm::InstallationFailed
+        stdout_failure "Helm installation failed with message:"
+        stdout_failure "\t#{e.message}"
+        exit 1
+      rescue e : Helm::CannotReuseReleaseNameError
+        stdout_failure "Helm deployment \"#{@deployment_name}\" already exists in \"#{helm_namespace}\" namespace."
+        stdout_failure "Change deployment name in CNF configuration or uninstall existing deployment."
+        exit 1
+      end
+    end
+
+    def uninstall()
+      deployment_name = get_deployment_name()
+      helm_uninstall_cmd = "#{deployment_name} -n #{get_deployment_namespace()}"
+      result = Helm.uninstall(helm_uninstall_cmd)
+      if result[:status].success?
+        stdout_success "Successfully uninstalled helm deployment \"#{deployment_name}\"."
+      end
+    end
+
+    def generate_manifest()
+    
+    end
+  end
+
+  class HelmChartDeploymentManager < HelmDeploymentManager
+    @helm_chart_config : ConfigV2::HelmChartConfig
+    def initialize(helm_chart_config)
+      super(helm_chart_config.name)
+      @helm_chart_config = helm_chart_config
+    end
+
+    def install()
+      helm_repo_url = @helm_chart_config.helm_repo_url
+      helm_repo_name = @helm_chart_config.helm_repo_name
+      helm_chart_name = @helm_chart_config.helm_chart_name
+
+      if !helm_repo_url.empty?
+        Helm.helm_repo_add(helm_repo_name, helm_repo_url)
+      end
+      helm_pull_destination = File.join(DEPLOYMENTS_DIR, @deployment_name)
+      helm_pull_cmd = "#{helm_repo_name}/#{helm_chart_name} --untar --destination #{helm_pull_destination}"
+      pull_response = Helm.pull(helm_pull_cmd)
+      if !pull_response.status.success?
+        raise Helm.InstallationFailed("Helm pull failed: #{pull_response.stderr}")
+      end
+      chart_path = File.join(helm_pull_destination, helm_chart_name)
+      install_from_folder(chart_path, @helm_chart_config.namespace, @helm_chart_config.helm_values)
+    end
+
+    def get_deployment_name()
+      @helm_chart_config.name
+    end
+
+    def get_deployment_namespace()
+      @helm_chart_config.namespace
+    end
+  end
+
+  class HelmDirectoryDeploymentManager < HelmDeploymentManager
+    @helm_directory_config : ConfigV2::HelmDirectoryConfig
+    def initialize(helm_directory_config)
+      super(helm_directory_config.name)
+      @helm_directory_config = helm_directory_config
+    end
+
+    def install()
+      chart_path = File.join(DEPLOYMENTS_DIR, @deployment_name, @helm_directory_config.helm_directory)
+      install_from_folder(chart_path, @helm_directory_config.namespace, @helm_directory_config.helm_values)
+    end
+
+    def get_deployment_name()
+      @helm_directory_config.name
+    end
+
+    def get_deployment_namespace()
+      @helm_directory_config.namespace
+    end
+  end
+end

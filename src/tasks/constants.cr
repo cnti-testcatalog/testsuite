@@ -2,8 +2,11 @@ require "./utils/embedded_file_manager.cr"
 
 ESSENTIAL_PASSED_THRESHOLD = 15
 CNF_DIR = "cnfs"
+DEPLOYMENT_DIR = File.join(CNF_DIR, "deployments")
+CNF_TEMP_FILES_DIR = File.join(CNF_DIR, "temp_files")
 CONFIG_FILE = "cnf-testsuite.yml"
 BASE_CONFIG = "./config.yml"
+COMMON_MANIFEST_FILE_PATH = "#{CNF_DIR}/common_manifest.yml"
 PASSED = "passed"
 FAILED = "failed"
 SKIPPED = "skipped"
