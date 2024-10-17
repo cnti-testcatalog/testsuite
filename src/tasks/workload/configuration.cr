@@ -605,6 +605,7 @@ task "alpha_k8s_apis" do |t, args|
     unless check_poc(args)
       next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "alpha_k8s_apis not in poc mode")
     end
+    return CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "alpha_k8s_apis test was temporarily disabled due to needed redesign for cnf_to_new_cluster")
 
     ensure_kubeconfig!
     kubeconfig_orig = ENV["KUBECONFIG"]
