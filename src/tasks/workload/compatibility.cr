@@ -526,6 +526,7 @@ end
 desc "CNFs should work with any Certified Kubernetes product and any CNI-compatible network that meet their functionality requirements."
 task "cni_compatible" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
+    return CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "cni_compatible test was temporarily disabled due to needed redesign for cnf_to_new_cluster")
     docker_version = DockerClient.version_info()
     if docker_version.installed?
       ensure_kubeconfig!

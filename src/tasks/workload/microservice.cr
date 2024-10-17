@@ -371,7 +371,7 @@ task "zombie_handled" do |t, args|
       end
     end
 
-    sleep 10.0
+    sleep(10.0.seconds)
 
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false ) do |resource, container, initialized|
       ClusterTools.all_containers_by_resource?(resource, resource[:namespace], only_container_pids:false) do | container_id, container_pid_on_node, node, container_proctree_statuses, container_status| 
@@ -565,7 +565,7 @@ task "sig_term_handled" do |t, args|
               Log.for(t.name).info { "pid_log_names: #{pid_log_names}" }
               #todo 2.3 parse the logs 
               #todo get the log
-              sleep 5
+              sleep(5.seconds)
               sig_term_found = pid_log_names.map do |pid_name|
                 Log.info { "pid_name: #{pid_name}" }
                 resp = File.read("#{pid_name}")
@@ -631,8 +631,7 @@ task "service_discovery" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args,config|
     # Get all resources for the CNF
     resource_ymls = CNFManager.cnf_workload_resources(args, config) { |resource| resource }
-    deployment_namespace = CNFManager.get_deployment_namespace(config)
-    resources = Helm.workload_resource_kind_names(resource_ymls, default_namespace: deployment_namespace)
+    resources = Helm.workload_resource_kind_names(resource_ymls)
 
     # Collect service names from the CNF resource list
     cnf_service_names = [] of String

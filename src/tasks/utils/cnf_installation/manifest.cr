@@ -1,21 +1,35 @@
 module CNFInstall
   module Manifest
-    def self.parse_manifest_as_ymls(template_file_name="cnfs/temp_template.yml")
-      Log.info { "parse_manifest_as_ymls template_file_name: #{template_file_name}" }
-      templates = File.read(template_file_name)
-      split_template = templates.split(/(\s|^)---(\s|$)/)
-      ymls = split_template.map { | template |
+    def self.manifest_path_to_ymls(manifest_path)
+      Log.info { "manifest_path_to_ymls file_path: #{manifest_path}" }
+      manifest = File.read(manifest_path)
+      manifest_string_to_ymls(manifest)
+    end
+
+    def self.manifest_string_to_ymls(manifest_string)
+      Log.info { "method: manifest_string_to_ymls" }
+      split_content = manifest_string.split(/(\s|^)---(\s|$)/)
+      ymls = split_content.map { | manifest |
         #TODO strip out NOTES
-        YAML.parse(template)
+        YAML.parse(manifest)
         # compact seems to have problems with yaml::any
       }.reject{|x|x==nil}
-      Log.debug { "read_template ymls: #{ymls}" }
+      Log.debug { "manifest_string_to_ymls:\n #{ymls}" }
       ymls
+    end
+
+    def self.combine_ymls_as_manifest_string(ymls : Array(YAML::Any)) : String
+      manifest = ymls.map do |yaml_object|
+        yaml_object.to_yaml
+      end.join
+    
+      Log.debug { "combine_ymls_as_manifest:\n #{manifest}" }
+      manifest
     end
     
     def self.manifest_ymls_from_file_list(manifest_file_list)
       ymls = manifest_file_list.map do |x|
-        parse_manifest_as_ymls(x)
+        manifest_path_to_ymls(x)
       end
       ymls.flatten
     end
@@ -46,6 +60,54 @@ module CNFInstall
     def self.manifest_containers(manifest_yml)
       Log.debug { "manifest_containers: #{manifest_yml}" }
       manifest_yml.dig?("spec", "template", "spec", "containers")
+    end
+
+    def self.add_namespace_to_resource(manifest_string, namespace)
+      namespaced_resources = KubectlClient::ShellCmd.run("kubectl api-resources --namespaced=true --no-headers | awk '{print $(NF)}'", "", false).[:output]
+      list_of_namespaced_resources = namespaced_resources.split("\n").select { |item| !item.empty? }
+      parsed_manifest = manifest_string_to_ymls(manifest_string)
+      ymls = [] of YAML::Any
+      parsed_manifest.each do |resource|
+        if resource["kind"].as_s.in?(list_of_namespaced_resources)
+          Helm.ensure_resource_with_namespace(resource, namespace)
+          ymls << resource
+        else
+          ymls << resource
+        end
+      end
+      string_manifest_with_namespaces = combine_ymls_as_manifest_string(ymls)
+    end
+
+    def self.add_manifest_to_file(deployment_name : String, manifest : String, destination_file)
+      File.open(destination_file, "a+") do |file|
+        file.puts manifest
+        Log.info { "#{deployment_name} manifest was appended into #{destination_file} file" }
+      end
+    end
+    
+    def self.generate_common_manifest(config, deployment_name, namespace)
+      manifest_generated_successfully = true
+      case config.dynamic.install_method[0]
+      when CNFInstall::InstallMethod::ManifestDirectory
+        destination_cnf_dir = config.dynamic.destination_cnf_dir
+        manifest_directory = config.deployments.get_deployment_param(:manifest_directory)
+        list_of_manifests = manifest_file_list( destination_cnf_dir + "/" + manifest_directory )
+        list_of_manifests.each do |manifest_path|
+          manifest = File.read(manifest_path)
+          add_manifest_to_file(deployment_name, manifest, COMMON_MANIFEST_FILE_PATH)
+        end
+      
+      when CNFInstall::InstallMethod::HelmChart, CNFInstall::InstallMethod::HelmDirectory
+        begin
+          generated_manifest = Helm.generate_manifest(deployment_name, namespace)
+          generated_manifest_with_namespaces = add_namespace_to_resource(generated_manifest, namespace)
+          add_manifest_to_file(deployment_name, generated_manifest_with_namespaces, COMMON_MANIFEST_FILE_PATH)
+        rescue ex : Helm::ManifestGenerationError
+          Log.for("generate_common_manifest").error { ex.message }
+          manifest_generated_successfully = false
+        end
+      end
+      manifest_generated_successfully
     end
   end
 end

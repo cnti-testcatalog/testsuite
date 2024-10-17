@@ -4,6 +4,7 @@ ESSENTIAL_PASSED_THRESHOLD = 15
 CNF_DIR = "cnfs"
 CONFIG_FILE = "cnf-testsuite.yml"
 BASE_CONFIG = "./config.yml"
+COMMON_MANIFEST_FILE_PATH = "#{CNF_DIR}/common_manifest.yml"
 PASSED = "passed"
 FAILED = "failed"
 SKIPPED = "skipped"
