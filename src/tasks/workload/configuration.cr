@@ -550,14 +550,19 @@ task "alpha_k8s_apis" do |t, args|
       next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "alpha_k8s_apis not in poc mode")
     end
 
-    ensure_kubeconfig!
+    cluster_name = "apisnooptest"
     kubeconfig_orig = ENV["KUBECONFIG"]
+
+    # TODO (kosstennbl) adapt cnf_to_new_cluster metod to new installation process. Until then - test is disabled. More info: #2153
+    result = CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "alpha_k8s_apis test was temporarily disabled, check #2153")
+    next result
+
+    ensure_kubeconfig!
 
     # Get kubernetes version of the current server.
     # This is used to setup kind with same k8s image version.
     k8s_server_version = KubectlClient.server_version
 
-    cluster_name = "apisnooptest"
     # Ensure any old cluster is deleted
     KindManager.new.delete_cluster(cluster_name)
     apisnoop = ApiSnoop.new()
