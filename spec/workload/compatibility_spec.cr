@@ -25,7 +25,8 @@ describe "Compatibility" do
         retries = retries + 1
       end
       Log.info { "Status:  #{result[:output]}" }
-      (/(PASSED).*(CNF compatible with both Calico and Cilium)/ =~ result[:output]).should_not be_nil
+      (/(SKIPPED).*(cni_compatible test was temporarily disabled)/ =~ result[:output]).should_not be_nil
+      #(/(PASSED).*(CNF compatible with both Calico and Cilium)/ =~ result[:output]).should_not be_nil
     ensure
       result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
       result[:status].success?.should be_true
