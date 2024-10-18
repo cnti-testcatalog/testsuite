@@ -26,36 +26,19 @@ module CNFManager
 
   def self.cnf_resource_ymls(args, config)
     Log.info { "cnf_resource_ymls" }
-    template_ymls = [] of YAML::Any
-    case config.dynamic.install_method[0]
-    when CNFInstall::InstallMethod::HelmChart, CNFInstall::InstallMethod::HelmDirectory
-      helm_chart_path = CNFInstall::Config.get_helm_chart_path(config)
-      generated_manifest_file_path = CNFInstall::Config.get_manifest_file_path(config)
-      Log.info { "EXPORTED CHART PATH: #{helm_chart_path}" } 
-      Helm.generate_manifest_from_templates(release_name: config.deployments.get_deployment_param(:name),
-                                            helm_chart: helm_chart_path,
-                                            output_file: generated_manifest_file_path,
-                                            namespace: CNFManager.get_deployment_namespace(config),
-                                            helm_values: config.deployments.get_deployment_param(:helm_values))
-      template_ymls = CNFInstall::Manifest.parse_manifest_as_ymls(generated_manifest_file_path)
-      
-    when CNFInstall::InstallMethod::ManifestDirectory
-      template_ymls = CNFInstall::Manifest.manifest_ymls_from_file_list(
-        CNFInstall::Manifest.manifest_file_list(File.join(config.dynamic.destination_cnf_dir, config.deployments.get_deployment_param(:manifest_directory)))
-      )
-    end
+    manifest_ymls = CNFInstall::Manifest.manifest_path_to_ymls(COMMON_MANIFEST_FILE_PATH)
 
-    template_ymls = template_ymls.reject! {|x|
+    manifest_ymls = manifest_ymls.reject! {|x|
       # reject resources that contain the 'helm.sh/hook: test' annotation
       x.dig?("metadata","annotations","helm.sh/hook")
     }
-    Log.debug { "template_ymls: #{template_ymls}" }
-    template_ymls 
+    Log.debug { "cnf_resource_ymls: #{manifest_ymls}" }
+    manifest_ymls 
   end
 
   def self.cnf_resources(args, config, &block)
-    template_ymls = cnf_resource_ymls(args, config)
-    resource_resp = template_ymls.map do | resource |
+    manifest_ymls = cnf_resource_ymls(args, config)
+    resource_resp = manifest_ymls.map do | resource |
       resp = yield resource
       Log.debug { "cnf_workload_resource yield resp: #{resp}" }
       resp
@@ -96,9 +79,9 @@ module CNFManager
 
   def self.cnf_workload_resources(args, config, &block)
     deployment_namespace = CNFManager.get_deployment_namespace(config)
-    template_ymls = cnf_resource_ymls(args, config)
+    manifest_ymls = cnf_resource_ymls(args, config)
     # call cnf cnf_resources to get unfiltered yml
-    resource_ymls = Helm.all_workload_resources(template_ymls, deployment_namespace)
+    resource_ymls = Helm.all_workload_resources(manifest_ymls, deployment_namespace)
     resource_resp = resource_ymls.map do | resource |
       resp = yield resource
       Log.debug { "cnf_workload_resource yield resp: #{resp}" }
@@ -227,32 +210,6 @@ module CNFManager
 
   def self.sandbox_helm_directory(cnf_testsuite_helm_directory)
     cnf_testsuite_helm_directory.split("/")[-1]
-  end
-
-  #TODO move to helm module
-  def self.helm_template_header(helm_chart_or_directory : String, template_file="/tmp/temp_template.yml")
-    Log.info { "helm_template_header" }
-    Log.info { "helm_template_header helm_chart_or_directory: #{helm_chart_or_directory}" }
-    helm = Helm::BinarySingleton.helm
-    # generate helm chart release name
-    # use --dry-run to generate yml file
-    Helm.install("--dry-run --generate-name #{helm_chart_or_directory} > #{template_file}")
-    raw_template = File.read(template_file)
-    Log.debug { "raw_template: #{raw_template}" }
-    split_template = raw_template.split("---")
-    template_header = split_template[0]
-    parsed_template_header = YAML.parse(template_header)
-    Log.debug { "parsed_template_header: #{parsed_template_header}" }
-    parsed_template_header
-  end
-
-  #TODO move to helm module
-  def self.helm_chart_template_release_name(helm_chart_or_directory : String, template_file="/tmp/temp_template.yml")
-    Log.info { "helm_chart_template_release_name" }
-    Log.info { "helm_chart_template_release_name helm_chart_or_directory: #{helm_chart_or_directory}" }
-    hth = helm_template_header(helm_chart_or_directory, template_file)
-    Log.info { "helm template (should not be a full path): #{hth}" }
-    hth["NAME"]
   end
 
   def self.config_source_dir(config_file)
@@ -536,6 +493,15 @@ module CNFManager
       else
         raise "Deployment method not found"
       end
+      
+      #Generating manifest from installed CNF
+      #Returns true or false in case when manifest was generated successfully or not
+      manifest_generated_successfully = CNFInstall::Manifest.generate_common_manifest(config, release_name, deployment_namespace)
+      
+      if !manifest_generated_successfully
+        stdout_failure "Manifest generation failed. Check CNF definition (helm charts, values, manifests, etc.)"
+        exit 1
+      end
 
       resource_ymls = cnf_workload_resources(nil, config) do |resource|
         resource
@@ -619,7 +585,7 @@ module CNFManager
     end
 
     if match[:found]
-      sleep 120
+      sleep(120.seconds)
       metrics_checkpoints = JaegerManager.unique_services_total
       Log.info { "metrics_checkpoints: #{metrics_checkpoints}" }
       tracing_used = JaegerManager.tracing_used?(baselines, metrics_checkpoints)
@@ -629,7 +595,7 @@ module CNFManager
     end
 
     if ORANMonitor.isCNFaRIC?(config)
-      sleep 30 
+      sleep(30.seconds) 
       e2_found = ORANMonitor.e2_session_established?(capture)
     else
       e2_found = false
@@ -736,6 +702,10 @@ module CNFManager
   def self.sample_cleanup(config_file, force=false, installed_from_manifest=false, verbose=true)
     Log.info { "sample_cleanup" }
     Log.info { "sample_cleanup installed_from_manifest: #{installed_from_manifest}" }
+
+    FileUtils.rm_rf(COMMON_MANIFEST_FILE_PATH)
+    Log.info { "#{COMMON_MANIFEST_FILE_PATH} file was removed." }
+
     config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
     Log.for("verbose").info { "cleanup config: #{config.inspect}" } if verbose
     destination_cnf_dir = config.dynamic.destination_cnf_dir
