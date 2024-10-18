@@ -7,7 +7,6 @@ require "docker_client"
 require "../utils/utils.cr"
 
 
-
 desc "The CNF test suite checks to see if CNFs support horizontal scaling (across multiple machines) and vertical scaling (between sizes of machines) by using the native K8s kubectl"
 task "compatibility", ["helm_chart_valid", "helm_chart_published", "helm_deploy", "cni_compatible", "increase_decrease_capacity", "rollback"].concat(ROLLING_VERSION_CHANGE_TEST_NAMES) do |_, args|
   stdout_score("compatibility", "Compatibility, Installability, and Upgradeability")
@@ -406,87 +405,105 @@ end
 
 task "helm_chart_published", ["helm_local_install"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    if check_verbose(args)
-      Log.for("verbose").debug { "helm_chart_published args.raw: #{args.raw}" }
-      Log.for("verbose").debug { "helm_chart_published args.named: #{args.named}" }
+    helm = Helm::BinarySingleton.helm
+
+    # Store chart search commands in an array
+    chart_searches = [] of String
+
+    # Collect helm chart search queries from deployments
+    config.deployments.helm_charts.each do |deployment|
+      helm_repo_name = deployment.helm_repo_name
+      helm_chart_name = deployment.helm_chart_name
+
+      helm_chart_full_name = "#{helm_repo_name}/#{helm_chart_name}"
+      chart_searches << helm_chart_full_name
     end
 
-    helm_chart = config.deployments.get_deployment_param(:helm_chart)
-    current_dir = FileUtils.pwd
-    helm = Helm::BinarySingleton.helm
-    Log.for("verbose").debug { helm } if check_verbose(args)
+    # Initialize flags to track the state of the task
+    charts_found = !chart_searches.empty?
+    all_published = true
 
-    if CNFManager.helm_repo_add(args: args)
-      unless helm_chart.empty?
-        helm_search_cmd = "#{helm} search repo #{helm_chart}"
-        Log.for(t.name).info { "helm search command: #{helm_search_cmd}" }
-        Process.run(
-          helm_search_cmd,
-          shell: true,
-          output: helm_search_stdout = IO::Memory.new,
-          error: helm_search_stderr = IO::Memory.new
-        )
-        helm_search = helm_search_stdout.to_s
-        Log.for("verbose").debug { "#{helm_search}" } if check_verbose(args)
-        unless helm_search =~ /No results found/
-          CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Published Helm Chart Found")
-        else
-          CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Published Helm Chart Not Found")
-        end
-      else
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Published Helm Chart Not Found")
+    # Process the helm chart searches and log results for each search
+    chart_searches.each do |helm_chart_full_name|
+      helm_search_cmd = "#{helm} search repo #{helm_chart_full_name}"
+      helm_search_status = Process.run(helm_search_cmd, shell: true, output: helm_search_stdout = IO::Memory.new, error: helm_search_stderr = IO::Memory.new)
+      helm_search_output = helm_search_stdout.to_s
+      Log.for(t.name).info { "Searching Helm chart: #{helm_chart_full_name}" }
+      Log.for(t.name).info { "Helm search output:\n#{helm_search_output}" }
+
+      # Check if the chart was found
+      if helm_search_output =~ /No results found/
+        all_published = false
       end
+    end
+
+    # Handle the case where no charts were specified
+    unless charts_found
+      Log.for(t.name).info { "No Helm charts found for searching." }
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "No Helm charts found to search")
     else
-      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Published Helm Chart Not Found")
+      # Return appropriate results based on search outcomes
+      if all_published
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "All Helm charts are published")
+      else
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "One or more Helm charts are not published")
+      end
     end
   end
 end
 
 task "helm_chart_valid", ["helm_local_install"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    if check_verbose(args)
-      Log.for("verbose").debug { "helm_chart_valid args.raw: #{args.raw}" }
-      Log.for("verbose").debug { "helm_chart_valid args.named: #{args.named}" }
-    end
-
-    response = String::Builder.new
-
-    helm_directory = config.deployments.get_deployment_param(:helm_directory)
-    if helm_directory.empty?
-      working_chart_directory = "exported_chart"
-    else
-      working_chart_directory = helm_directory
-    end
-
-    if args.named.keys.includes? "cnf_chart_path"
-      working_chart_directory = args.named["cnf_chart_path"]
-    end
-
-    Log.for("verbose").debug { "working_chart_directory: #{working_chart_directory}" } if check_verbose(args)
-
     current_dir = FileUtils.pwd
-    Log.for(t.name).debug { "current dir: #{current_dir}" }
     helm = Helm::BinarySingleton.helm
+    Log.info { "Current directory: #{current_dir}" }
 
-    destination_cnf_dir = config.dynamic.destination_cnf_dir
+    # Store chart locations in an array
+    chart_dirs = [] of Tuple(String, String)
 
-    helm_lint_cmd = "#{helm} lint #{destination_cnf_dir}/#{working_chart_directory}"
-    helm_lint_status = Process.run(
-      helm_lint_cmd,
-      shell: true,
-      output: helm_lint_stdout = IO::Memory.new,
-      error: helm_link_stderr = IO::Memory.new
-    )
-    helm_lint = helm_lint_stdout.to_s
-    Log.for(t.name).debug { "helm_lint: #{helm_lint}" } if check_verbose(args)
+    # Collect helm chart paths
+    config.deployments.helm_charts.each do |deployment|
+      chart_dirs << {"#{current_dir}/#{CNF_DIR}/#{deployment.name}/exported_chart", deployment.name}
+    end
 
-    if helm_lint_status.success?
-      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Helm Chart #{working_chart_directory} Lint Passed")
+    # Collect helm directory paths
+    config.deployments.helm_dirs.each do |deployment|
+      chart_dirs << {"#{current_dir}/#{CNF_DIR}/#{deployment.name}/chart", deployment.name}
+    end
+
+    # Initialize flags to track the task state
+    charts_found = !chart_dirs.empty?
+    all_passed = true
+
+    # Iterate over chart directories and store the results for each lint
+    chart_dirs.each do |chart_dir, deployment_name|
+      helm_lint_cmd = "#{helm} lint #{chart_dir}"
+      helm_lint_status = Process.run(helm_lint_cmd, shell: true, output: helm_lint_stdout = IO::Memory.new, error: helm_lint_stderr = IO::Memory.new)
+      helm_lint_output = helm_lint_stdout.to_s
+      Log.for(t.name).info { "Linting helm chart for deployment: #{deployment_name}" }
+      Log.for(t.name).info { "Helm Lint Output:\n#{helm_lint_output}" }
+
+      # If the linting failed, mark as failed
+      if !helm_lint_status.success?
+        all_passed = false
+      end
+    end
+
+    # Handle case where no charts were found
+    unless charts_found
+      Log.for(t.name).info { "No Helm charts or directories found for linting." }
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "No Helm charts found to lint")
     else
-      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Helm Chart #{working_chart_directory} Lint Failed")
+      # Return appropriate results based on linting outcomes
+      if all_passed
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "Helm chart lint passed on all charts")
+      else
+        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Helm chart lint failed on one or more charts")
+      end
     end
   end
 end
+
 
 def setup_calico_cluster(cluster_name : String) : KindManager::Cluster
   Log.info { "Running cni_compatible(Cluster Creation)" }
