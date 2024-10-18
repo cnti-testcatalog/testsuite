@@ -27,7 +27,7 @@ describe CnfTestSuite do
     ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose")
     result = ShellCmd.run_testsuite("helm_chart_valid verbose")
     result[:status].success?.should be_true
-    (/Lint Passed/ =~ result[:output]).should_not be_nil
+    (/Helm chart lint passed on all charts/ =~ result[:output]).should_not be_nil
   ensure
     result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose")
   end
@@ -37,7 +37,7 @@ describe CnfTestSuite do
       ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample-bad_helm_coredns-cnf/cnf-testsuite.yml verbose skip_wait_for_install", expect_failure: true)
       result = ShellCmd.run_testsuite("helm_chart_valid")
       result[:status].success?.should be_true
-      (/Lint Failed/ =~ result[:output]).should_not be_nil
+      (/Helm chart lint failed on one or more charts/ =~ result[:output]).should_not be_nil
     ensure
       result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose")
     end
@@ -48,7 +48,7 @@ describe CnfTestSuite do
       ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample-coredns-cnf")
       result = ShellCmd.run_testsuite("helm_chart_published")
       result[:status].success?.should be_true
-      (/(PASSED).*(Published Helm Chart Found)/ =~ result[:output]).should_not be_nil
+      (/(PASSED).*(All Helm charts are published)/ =~ result[:output]).should_not be_nil
     ensure
       result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample-coredns-cnf")
     end
@@ -61,7 +61,7 @@ describe CnfTestSuite do
       result = ShellCmd.run("helm search repo stable/coredns", force_output: true)
       result = ShellCmd.run_testsuite("helm_chart_published verbose")
       result[:status].success?.should be_true
-      (/(FAILED).*(Published Helm Chart Not Found)/ =~ result[:output]).should_not be_nil
+      (/(FAILED).*(One or more Helm charts are not published)/ =~ result[:output]).should_not be_nil
     ensure
       result = ShellCmd.run("#{Helm::BinarySingleton.helm} repo remove badrepo")
       result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-repo")
