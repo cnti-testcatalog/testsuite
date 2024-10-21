@@ -189,8 +189,12 @@ module CNFManager
   def self.ensure_namespace_exists!(name, kubeconfig : String | Nil = nil)
     KubectlClient::Create.namespace(name, kubeconfig: kubeconfig)
     Log.for("ensure_namespace_exists").info { "Created kubernetes namespace #{name} for the CNF install" }
+    cmd = "kubectl label namespace #{name} pod-security.kubernetes.io/enforce=privileged"
+    ShellCmd.run(cmd, "Label.namespace")
   rescue e : KubectlClient::Create::AlreadyExistsError
     Log.for("ensure_namespace_exists").info { "Kubernetes namespace #{name} already exists for the CNF install" }
+    cmd = "kubectl label --overwrite namespace #{name} pod-security.kubernetes.io/enforce=privileged"
+    ShellCmd.run(cmd, "Label.namespace")
   end
 
   def self.workload_resource_keys(args, config)

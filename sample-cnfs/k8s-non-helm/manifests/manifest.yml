@@ -1,3 +1,13 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cnfspace
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -5,6 +15,7 @@ metadata:
   labels:
     app: nginx-webapp
   name: nginx-webapp
+  namespace: cnfspace
 spec:
   replicas: 5
   selector:
@@ -54,6 +65,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nginx-webapp
+  namespace: cnfspace
   labels:
     run: nginx-webapp
 spec:

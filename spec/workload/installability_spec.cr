@@ -7,7 +7,7 @@ describe CnfTestSuite do
     result = ShellCmd.run_testsuite("setup")
   end
 
-	it "'helm_deploy' should fail on a manifest CNF", tags: ["helm"] do
+  it "'helm_deploy' should fail on a manifest CNF", tags: ["helm"] do
     ShellCmd.cnf_install("cnf-path=./sample-cnfs/k8s-non-helm")
     result = ShellCmd.run_testsuite("helm_deploy verbose")
     result[:status].success?.should be_true
