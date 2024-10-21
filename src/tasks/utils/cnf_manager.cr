@@ -497,7 +497,7 @@ module CNFManager
       when CNFInstall::InstallMethod::ManifestDirectory
         Log.for("verbose").info { "deploying by manifest file" } if verbose
         manifest_directory = config.deployments.get_deployment_param(:manifest_directory)
-        KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}")
+        KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", namespace: deployment_namespace)
       when CNFInstall::InstallMethod::HelmChart
         helm_chart = config.deployments.get_deployment_param(:helm_chart)
         helm_repo_name = config.deployments.get_deployment_param(:helm_repo_name)
@@ -672,9 +672,9 @@ module CNFManager
     configmap_path = "#{destination_cnf_dir}/config_maps/elapsed_time.yml"
     File.write(configmap_path, "#{elapsed_time_template}")
     # TODO if the config map exists on install, complain, delete then overwrite?
-    KubectlClient::Delete.file(configmap_path)
+    KubectlClient::Delete.file(configmap_path, namespace: deployment_namespace)
     #TODO call kubectl apply on file
-    KubectlClient::Apply.file(configmap_path)
+    KubectlClient::Apply.file(configmap_path, namespace: deployment_namespace)
     # TODO when uninstalling, remove config map
   ensure
     #todo uninstall/reinstall clustertools because of tshark bug
@@ -692,7 +692,7 @@ module CNFManager
     case install_method[0]
     when CNFInstall::InstallMethod::ManifestDirectory
       manifest_directory = config.deployments.get_deployment_param(:manifest_directory)
-      KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", kubeconfig: kubeconfig)
+      KubectlClient::Apply.file("#{destination_cnf_dir}/#{manifest_directory}", kubeconfig: kubeconfig, namespace: deployment_namespace)
     when CNFInstall::InstallMethod::HelmChart
       helm_repo_name = config.deployments.get_deployment_param(:helm_repo_name)
       helm_repo_url = config.deployments.get_deployment_param(:helm_repo_url)
@@ -737,6 +737,7 @@ module CNFManager
     Log.info { "sample_cleanup" }
     Log.info { "sample_cleanup installed_from_manifest: #{installed_from_manifest}" }
     config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))
+    deployment_namespace = CNFManager.get_deployment_namespace(config)
     Log.for("verbose").info { "cleanup config: #{config.inspect}" } if verbose
     destination_cnf_dir = config.dynamic.destination_cnf_dir
     Log.info { "destination_cnf_dir: #{destination_cnf_dir}" }
@@ -746,7 +747,7 @@ module CNFManager
     if Dir.exists?(config_maps_dir)
       Dir.entries(config_maps_dir).each do |config_map|
         Log.info { "Deleting configmap: #{config_map}" }
-        KubectlClient::Delete.file("#{destination_cnf_dir}/config_maps/#{config_map}")
+        KubectlClient::Delete.file("#{destination_cnf_dir}/config_maps/#{config_map}", namespace: deployment_namespace)
       end
     end
 
@@ -781,7 +782,7 @@ module CNFManager
       manifest_directory = config.deployments.get_deployment_param(:manifest_directory)
       installed_manifest_directory = File.join(destination_cnf_dir, manifest_directory)
       Log.for("cnf_cleanup:installed_manifest_directory").info { installed_manifest_directory }
-      result = KubectlClient::Delete.file("#{installed_manifest_directory}", wait: true)
+      result = KubectlClient::Delete.file("#{installed_manifest_directory}", namespace: deployment_namespace, wait: true)
       FileUtils.rm_rf(destination_cnf_dir)
       stdout_success "Successfully cleaned up #{manifest_directory} directory"
       return true
