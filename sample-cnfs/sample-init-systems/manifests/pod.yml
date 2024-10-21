@@ -1,8 +1,17 @@
 ---
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: cnfspace
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+
+---
+apiVersion: v1
 kind: Pod
 metadata:
   name: nginx-tini-sample
+  namespace: cnfspace
 spec:
   dnsPolicy: Default
 
@@ -28,6 +37,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: nginx-dumb-init-sample
+  namespace: cnfspace
 spec:
   dnsPolicy: Default
 
@@ -53,6 +63,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: nginx-s6-overlay-sample
+  namespace: cnfspace
 spec:
   dnsPolicy: Default
 
