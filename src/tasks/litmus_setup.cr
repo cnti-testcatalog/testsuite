@@ -13,8 +13,10 @@ task "install_litmus" do |_, args|
   #todo apply modified litmus file
   Log.info { "install litmus" }
   KubectlClient::Apply.namespace(LitmusManager::LITMUS_NAMESPACE)
+  cmd = "kubectl label namespace #{LitmusManager::LITMUS_NAMESPACE} pod-security.kubernetes.io/enforce=privileged"
+  ShellCmd.run(cmd, "Label.namespace")
   Log.info { "install litmus operator"}
-  KubectlClient::Apply.file(LitmusManager::LITMUS_OPERATOR)
+  KubectlClient::Apply.file(LitmusManager::LITMUS_OPERATOR, namespace: LitmusManager::LITMUS_NAMESPACE)
 end
 
 desc "Uninstall LitmusChaos"
@@ -26,7 +28,7 @@ task "uninstall_litmus" do |_, args|
       output: stdout = IO::Memory.new,
       error: stderr = IO::Memory.new
   )
-  KubectlClient::Delete.file("https://litmuschaos.github.io/litmus/litmus-operator-v#{LitmusManager::Version}.yaml")
+  KubectlClient::Delete.file("https://litmuschaos.github.io/litmus/litmus-operator-v#{LitmusManager::Version}.yaml", namespace: LitmusManager::LITMUS_NAMESPACE)
   Log.info { "#{stdout}" if check_verbose(args) }
   Log.info { "#{stderr}" if check_verbose(args) }
 end
