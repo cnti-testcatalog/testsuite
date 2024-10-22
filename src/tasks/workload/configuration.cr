@@ -266,7 +266,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |t, args|
     helm = Helm::BinarySingleton.helm
     VERBOSE_LOGGING.info "Helm Path: #{helm}" if check_verbose(args)
 
-    KubectlClient::Create.command("namespace hardcoded-ip-test")
+    KubectlClient::Create.namespace("hardcoded-ip-test")
     unless helm_chart.empty?
       helm_install = Helm.install("--namespace hardcoded-ip-test hardcoded-ip-test #{helm_chart} --dry-run --debug > #{helm_chart_yml_path}")
     else
