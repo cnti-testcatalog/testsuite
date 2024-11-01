@@ -12,7 +12,6 @@ module CNFInstall
         output_config_hash = {
           "config_version" => "v2",
           "common" => transform_common,
-          "dynamic" => transform_dynamic,
           "deployments" => transform_deployments,
         }
       
@@ -50,13 +49,6 @@ module CNFInstall
         end
   
         [] of Hash(String, String | Nil)
-      end
-  
-      private def transform_dynamic : Hash(String, String | Nil)
-        {
-          "source_cnf_dir" => @input_config.source_cnf_dir,
-          "destination_cnf_dir" => @input_config.destination_cnf_dir
-        }
       end
       
       private def transform_deployments : Hash(String, Array(Hash(String, String | Nil)))

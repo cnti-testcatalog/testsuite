@@ -19,7 +19,7 @@ describe "Resilience Disk Fill Chaos" do
       result[:status].success?.should be_true
       (/(PASSED).*(disk_fill chaos test passed)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml wait_count=0")
+      result = ShellCmd.cnf_cleanup("timeout=0")
       result[:status].success?.should be_true
       result = ShellCmd.run_testsuite("uninstall_litmus")
       result[:status].success?.should be_true

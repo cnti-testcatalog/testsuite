@@ -17,7 +17,7 @@ describe "Observability" do
       result[:status].success?.should be_true
       (/(PASSED).*(Resources output logs to stdout and stderr)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -28,7 +28,7 @@ describe "Observability" do
       result[:status].success?.should be_true
       (/(FAILED).*(Resources do not output logs to stdout and stderr)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample_no_logs/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -49,7 +49,7 @@ describe "Observability" do
     test_result = ShellCmd.run_testsuite("prometheus_traffic")
     (/(PASSED).*(Your cnf is sending prometheus traffic)/ =~ test_result[:output]).should_not be_nil
   ensure
-    ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml")
+    ShellCmd.cnf_cleanup()
     result = ShellCmd.run("#{helm} delete prometheus", "helm_delete_prometheus")
     result[:status].success?.should be_true
   end
@@ -63,7 +63,7 @@ describe "Observability" do
       result = ShellCmd.run_testsuite("prometheus_traffic")
       (/(SKIPPED).*(Prometheus server not found)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
   end
 
   it "'prometheus_traffic' should fail if the cnf is not registered with prometheus", tags: ["observability"] do
@@ -80,7 +80,7 @@ describe "Observability" do
       result = ShellCmd.run_testsuite("prometheus_traffic")
       (/(FAILED).*(Your cnf is not sending prometheus traffic)/ =~ result[:output]).should_not be_nil
   ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
       result = ShellCmd.run("#{helm} delete prometheus", force_output: true)
       result[:status].success?.should be_true
   end
@@ -98,7 +98,7 @@ describe "Observability" do
     result = ShellCmd.run_testsuite("open_metrics")
     (/(FAILED).*(Your cnf's metrics traffic is not OpenMetrics compatible)/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml")
+    result = ShellCmd.cnf_cleanup()
     result = ShellCmd.run("#{helm} delete prometheus", force_output: true)
     result[:status].success?.should be_true
   end
@@ -116,7 +116,7 @@ describe "Observability" do
     result = ShellCmd.run_testsuite("open_metrics")
     (/(PASSED).*(Your cnf's metrics traffic is OpenMetrics compatible)/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-openmetrics/cnf-testsuite.yml")
+    result = ShellCmd.cnf_cleanup()
     result = ShellCmd.run("#{helm} delete prometheus", force_output: true)
     result[:status].success?.should be_true
   end
@@ -127,7 +127,7 @@ describe "Observability" do
     result = ShellCmd.run_testsuite("routed_logs")
     (/(PASSED).*(Your CNF's logs are being captured)/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+    result = ShellCmd.cnf_cleanup()
     result = ShellCmd.run_testsuite("uninstall_fluentdbitnami")
     result[:status].success?.should be_true
   end
@@ -138,7 +138,7 @@ describe "Observability" do
     result = ShellCmd.run_testsuite("routed_logs")
     (/(PASSED).*(Your CNF's logs are being captured)/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-fluentbit")
+    result = ShellCmd.cnf_cleanup()
     result = ShellCmd.run_testsuite("uninstall_fluentbit")
     result[:status].success?.should be_true
   end
@@ -155,7 +155,7 @@ describe "Observability" do
     result = ShellCmd.run_testsuite("routed_logs")
     (/(FAILED).*(Your CNF's logs are not being captured)/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+    result = ShellCmd.cnf_cleanup()
     result = ShellCmd.run_testsuite("uninstall_fluentd")
     result[:status].success?.should be_true
   end

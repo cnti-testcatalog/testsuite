@@ -31,8 +31,8 @@ crystal src/cnf-testsuite.cr all
 
 Check the results file
 
-Cleanup the cnf test setup (including undeployment of nsm-nat)
+Uninstall the CNF (including undeployment of nsm-nat)
 
 ```
-crystal src/cnf-testsuite.cr cnf_cleanup cnf-config=./example-cnfs/pantheon-nsm-nat/cnf-testsuite.yml
+crystal src/cnf-testsuite.cr cnf_cleanup
 ```

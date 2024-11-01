@@ -46,9 +46,11 @@ module CNFInstall
       deployment_name = get_deployment_name()
       helm_uninstall_cmd = "#{deployment_name} -n #{get_deployment_namespace()}"
       result = Helm.uninstall(helm_uninstall_cmd)
-      if result[:status].success?
+      success = result[:status].success?
+      if success
         stdout_success "Successfully uninstalled helm deployment \"#{deployment_name}\"."
       end
+      success
     end
 
     def generate_manifest()

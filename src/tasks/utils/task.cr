@@ -70,7 +70,7 @@ module CNFManager
                 - name: "platform-test-dummy-deployment"
                   helm_directory: ""
             YAML
-          config = CNFInstall::Config.parse_cnf_config_from_yaml(yaml_string, config_dir: FileUtils.pwd)
+          config = CNFInstall::Config.parse_cnf_config_from_yaml(yaml_string)
         end
         test_start_time = Time.utc
         if task

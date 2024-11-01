@@ -11,7 +11,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/No privileged containers/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-statefulset-cnf/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
       Log.debug { result[:output] }
     end
   end
@@ -23,9 +23,10 @@ describe "Security" do
       (/Found.*privileged containers.*/ =~ result[:output]).should_not be_nil
       (/Privileged container (privileged-coredns) in.*/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("sample_privileged_cnf_non_whitelisted_cleanup")
+      result = ShellCmd.cnf_cleanup()
     end
   end
+
   it "'privileged_containers' should pass on a whitelisted, privileged cnf", tags: ["privileges"] do
     begin
       ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample_whitelisted_privileged_cnf/cnf-testsuite.yml verbose skip_wait_for_install")
@@ -33,9 +34,10 @@ describe "Security" do
       result[:status].success?.should be_true
       (/Found.*privileged containers.*/ =~ result[:output]).should be_nil
     ensure
-      result = ShellCmd.run_testsuite("sample_privileged_cnf_whitelisted_cleanup")
+      result = ShellCmd.cnf_cleanup()
     end
   end
+
   it "'privilege_escalation' should fail on a cnf that has escalated privileges", tags: ["privileges"] do
     begin
       ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml")
@@ -43,7 +45,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(No containers that allow privilege escalation were found)/ =~ result[:output]).should be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -54,7 +56,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(No containers that allow privilege escalation were found)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-nonroot-containers/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -65,7 +67,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(No containers allow a symlink attack)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -76,7 +78,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(Containers with insecure capabilities were not found)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -87,7 +89,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(Containers with insecure capabilities were not found)/ =~ result[:output]).should be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-insecure-capabilities/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -98,7 +100,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(Security services are being used to harden applications)/ =~ result[:output]).should be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -109,7 +111,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(FAILED).*(Found applications credentials in configuration files)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-appliciation-credentials/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -120,7 +122,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(No host network attached to pod)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-privilege-escalation/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -131,7 +133,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(FAILED).*(Service accounts automatically mapped)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-service-accounts/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -142,7 +144,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(Containers have CPU limits set)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -153,7 +155,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(Containers have memory limits set)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -164,7 +166,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(Ingress and Egress traffic blocked on pods)/ =~ result[:output]).should be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -175,7 +177,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(FAILED).*(Found containers with hostPID and hostIPC privileges)/ =~ result[:output]).should be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -186,7 +188,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(FAILED).*(Found containers running with root user or user with root group membership)/ =~ result[:output]).should be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-nonroot")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -197,7 +199,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(Containers are running with non-root user with non-root group membership)/ =~ result[:output]).should be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -208,7 +210,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(Containers have immutable file systems)/ =~ result[:output]).should be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -219,7 +221,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(Containers have immutable file systems)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-immutable-fs")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -231,7 +233,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(FAILED).*(Found containers with hostPath mounts)/ =~ result[:output]).should be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf")
+      result = ShellCmd.cnf_cleanup()
       ClusterTools.install
     end
   end
@@ -244,7 +246,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(FAILED).*(Found containers with hostPath mounts)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-hostpath")
+      result = ShellCmd.cnf_cleanup()
       ClusterTools.install
     end
   end
@@ -256,7 +258,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(Container engine daemon sockets are not mounted as volumes)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -268,7 +270,7 @@ describe "Security" do
       (/(FAILED).*(Container engine daemon sockets are mounted as volumes)/ =~ result[:output]).should_not be_nil
       (/Unix socket is not allowed/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_container_sock_mount/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -279,7 +281,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(Services are not using external IPs)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -290,7 +292,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(FAILED).*(Services are using external IPs)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_external_ips/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -301,7 +303,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(FAILED).*(Pods are using custom SELinux options that can be used for privilege escalations)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_latest_tag")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -312,7 +314,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(N\/A).*(Pods are not using SELinux)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -323,7 +325,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(Pods are not using custom SELinux options that can be used for privilege escalations)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_valid_selinux_options")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -334,7 +336,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(FAILED).*(Restricted values for are being used for sysctls)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_sysctls")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -345,7 +347,7 @@ describe "Security" do
       result[:status].success?.should be_true
       (/(PASSED).*(No restricted values found for sysctls)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 end

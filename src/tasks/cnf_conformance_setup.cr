@@ -11,7 +11,7 @@ end
 desc "Sets up initial directories for the cnf-testsuite suite"
 task "cnf_directory_setup" do |_, args|
   begin
-    FileUtils.mkdir_p("cnfs")
+    FileUtils.mkdir_p(CNF_DIR)
     FileUtils.mkdir_p("tools")
   rescue File::AccessDeniedError
     Log.error {"ERROR: missing write permission in current directory"}

@@ -10,21 +10,20 @@ describe CnfTestSuite do
     result = ShellCmd.run("echo $KUBECONFIG")
     Log.debug { result[:output] }
 
+    result = ShellCmd.environment_cleanup()
     result = ShellCmd.run_testsuite("setup")
-    result = ShellCmd.run_testsuite("samples_cleanup")
-    result[:status].success?.should be_true
     result = ShellCmd.run_testsuite("configuration_file_setup")
 
   end
 
   it "'liveness' should pass when livenessProbe is set", tags: ["liveness"] do
     begin
-      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-testsuite.yml deploy_with_chart=false")
+      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-testsuite.yml")
       result = ShellCmd.run_testsuite("liveness verbose", cmd_prefix:"LOG_LEVEL=debug")
       result[:status].success?.should be_true
       (/(PASSED).*(Helm liveness probe)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-testsuite.yml deploy_with_chart=false ")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -35,18 +34,18 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(FAILED).*(No livenessProbe found)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("sample_coredns_bad_liveness_cleanup")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
   it "'readiness' should pass when readinessProbe is set", tags: ["readiness"] do
     begin
-      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-testsuite.yml deploy_with_chart=false")
+      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-testsuite.yml")
       result = ShellCmd.run_testsuite("readiness verbose", cmd_prefix: "LOG_LEVEL=debug")
       result[:status].success?.should be_true
       (/(PASSED).*(Helm readiness probe)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/k8s-multiple-deployments/cnf-testsuite.yml deploy_with_chart=false ")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -57,7 +56,7 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(FAILED).*(No readinessProbe found)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("sample_coredns_bad_liveness_cleanup")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -68,18 +67,18 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/Passed/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_rolling/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
   it "'rolling_update' should fail when invalid version is given", tags: ["rolling_update"]  do
     begin
-      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample_rolling_invalid_version/cnf-testsuite.yml deploy_with_chart=false")
+      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample_rolling_invalid_version/cnf-testsuite.yml")
       result = ShellCmd.run_testsuite("rolling_update verbose")
       result[:status].success?.should be_true
       (/Failed/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_rolling_invalid_version/cnf-testsuite.yml deploy_with_chart=false")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -99,18 +98,18 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/Passed/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_rolling/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
   it "'rolling_downgrade' should fail when invalid version is given", tags: ["rolling_downgrade"]  do
     begin
-      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample_rolling_invalid_version/cnf-testsuite.yml deploy_with_chart=false")
+      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample_rolling_invalid_version/cnf-testsuite.yml")
       result = ShellCmd.run_testsuite("rolling_downgrade verbose")
       result[:status].success?.should be_true
       (/Failed/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_rolling_invalid_version/cnf-testsuite.yml deploy_with_chart=false")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -121,18 +120,18 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/Passed/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_rolling/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
   it "'rolling_version_change' should fail when invalid version is given", tags: ["rolling_version_change"] do
     begin
-      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample_rolling_invalid_version/cnf-testsuite.yml deploy_with_chart=false")
+      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample_rolling_invalid_version/cnf-testsuite.yml")
       result = ShellCmd.run_testsuite("rolling_version_change verbose")
       result[:status].success?.should be_true
       (/Failed/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_rolling_invalid_version/cnf-testsuite.yml deploy_with_chart=false")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -143,7 +142,7 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/Passed/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_rolling/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -151,12 +150,12 @@ describe CnfTestSuite do
 
   it "'nodeport_not_used' should fail when a node port is being used", tags: ["nodeport_not_used"] do
     begin
-      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample_nodeport deploy_with_chart=false")
+      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample_nodeport")
       result = ShellCmd.run_testsuite("nodeport_not_used verbose")
       result[:status].success?.should be_true
       (/(FAILED).*(NodePort is being used)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample_nodeport deploy_with_chart=false")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -167,18 +166,18 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(PASSED).*(NodePort is not used)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
   it "'hostport_not_used' should fail when a node port is being used", tags: ["hostport_not_used"] do
     begin
-      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample_hostport deploy_with_chart=false")
+      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample_hostport")
       result = ShellCmd.run_testsuite("hostport_not_used verbose")
       result[:status].success?.should be_true
       (/(FAILED).*(HostPort is being used)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample_hostport deploy_with_chart=false")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -189,18 +188,18 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(PASSED).*(HostPort is not used)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
   it "'hardcoded_ip_addresses_in_k8s_runtime_configuration' should fail when a hardcoded ip is found in the K8s configuration", tags: ["ip_addresses"] do
     begin
-      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample_coredns_hardcoded_ips deploy_with_chart=false")
+      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample_coredns_hardcoded_ips")
       result = ShellCmd.run_testsuite("hardcoded_ip_addresses_in_k8s_runtime_configuration verbose", cmd_prefix: "LOG_LEVEL=info")
       result[:status].success?.should be_true
       (/(FAILED).*(Hard-coded IP addresses found in the runtime K8s configuration)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample_coredns_hardcoded_ips deploy_with_chart=false")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -211,7 +210,7 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(PASSED).*(No hard-coded IP addresses found in the runtime K8s configuration)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -222,7 +221,7 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(PASSED).*(Secrets defined and used)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample_secret_volume verbose")
+      result = ShellCmd.cnf_cleanup("verbose")
     end
   end
 
@@ -233,7 +232,7 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(SKIPPED).*(Secrets not used)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample_unmounted_secret_volume verbose")
+      result = ShellCmd.cnf_cleanup("verbose")
     end
   end
 
@@ -244,7 +243,7 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(PASSED).*(Secrets defined and used)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample_secret_env verbose")
+      result = ShellCmd.cnf_cleanup("verbose")
     end
   end
 
@@ -255,7 +254,7 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(SKIPPED).*(Secrets not used)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample_secret_env verbose")
+      result = ShellCmd.cnf_cleanup("verbose")
     end
   end
 
@@ -266,29 +265,29 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(SKIPPED).*(Secrets not used)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample_coredns verbose")
+      result = ShellCmd.cnf_cleanup("verbose")
     end
   end
 
   it "'immutable_configmap' fail with some mutable configmaps in container env or volume mount", tags: ["immutable_configmap"] do
     begin
-      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/ndn-mutable-configmap deploy_with_chart=false")
+      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/ndn-mutable-configmap")
       result = ShellCmd.run_testsuite("immutable_configmap verbose")
       result[:status].success?.should be_true
       (/(FAILED).*(Found mutable configmap)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/ndn-mutable-configmap deploy_with_chart=false")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
   it "'immutable_configmap' pass with all immutable configmaps in container env or volume mounts", tags: ["immutable_configmap"] do
     begin
-      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/ndn-immutable-configmap deploy_with_chart=false")
+      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/ndn-immutable-configmap")
       result = ShellCmd.run_testsuite("immutable_configmap verbose")
       result[:status].success?.should be_true
       (/(PASSED).*(All volume or container mounted configmaps immutable)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/ndn-immutable-configmap deploy_with_chart=false")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -299,7 +298,7 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(FAILED).*(Pods should have the app.kubernetes.io\/name label)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -310,7 +309,7 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(PASSED).*(Pods have the app.kubernetes.io\/name label)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -321,7 +320,7 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(FAILED).*(Resources are created in the default namespace)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_coredns_default_namespace")
+      result = ShellCmd.cnf_cleanup()
       KubectlClient::Utils.wait_for_terminations()
     end
   end
@@ -333,7 +332,7 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(PASSED).*(default namespace is not being used)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_latest_tag")
+      result = ShellCmd.cnf_cleanup()
       KubectlClient::Utils.wait_for_terminations()
     end
   end
@@ -345,7 +344,7 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(FAILED).*(Container images are using the latest tag)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_latest_tag")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
@@ -356,18 +355,14 @@ describe CnfTestSuite do
       result[:status].success?.should be_true
       (/(PASSED).*(Container images are not using the latest tag)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 
   it "'latest_tag' should require a cnf be installed to run", tags: ["latest_tag"] do
-    begin
-      # NOTE: Purposefully not installing a CNF to test
-      result = ShellCmd.run_testsuite("latest_tag verbose")
-      result[:status].success?.should be_false
-      (/You must install a CNF first./ =~ result[:output]).should_not be_nil
-    ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot")
-    end
+    # NOTE: Purposefully not installing a CNF to test
+    result = ShellCmd.run_testsuite("latest_tag verbose")
+    result[:status].success?.should be_false
+    (/You must install a CNF first./ =~ result[:output]).should_not be_nil
   end
 end

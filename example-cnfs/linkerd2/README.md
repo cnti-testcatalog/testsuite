@@ -33,8 +33,8 @@ Run the test suite:
 ./cnf-testsuite all
 ```
 
-linkerd cleanup
+linkerd uninstallation
 
 ```
-./cnf-testsuite cnf_cleanup cnf-path=example-cnfs/linkerd2/cnf-testsuite.yml
+./cnf-testsuite cnf_cleanup
 ```

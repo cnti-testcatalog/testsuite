@@ -55,7 +55,6 @@ describe "Utils" do
 
   it "'check_cnf_config' should return the value for a cnf-config argument", tags: ["args"]  do
     args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml"])
-    #TODO make CNFManager.sample_setup_args accept the full path to the config yml instead of the directory
     (check_cnf_config(args)).should eq("./sample-cnfs/sample-generic-cnf")
   end
 
@@ -73,49 +72,48 @@ describe "Utils" do
     (yaml["items"].as_a.find {|x| x["name"] == "ip_addresses" && x["points"] == 0 }).should be_truthy
   end
 
-  it "'single_task_runner' should accept a cnf-config argument and apply a test to that cnf", tags: ["task_runner"]  do
-    args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml"])
-
-    cli_hash = CNFManager.sample_setup_cli_args(args, false)
-    CNFManager.sample_setup(cli_hash) if cli_hash["config_file"]
- 
-    task_response = CNFManager::Task.single_task_runner(args) do |args, config| 
-
-      Log.info { "single_task_runner spec args #{args.inspect}" }
-
-      white_list_container_names = config.common.white_list_container_names
-      Log.info { "white_list_container_names #{white_list_container_names.inspect}" }
-      violation_list = [] of String
-      resource_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-
-        privileged_list = KubectlClient::Get.privileged_containers
-        resource_containers = KubectlClient::Get.resource_containers(resource["kind"],resource["name"],resource["namespace"])
-        resource_containers_list = (JSON.parse(resource_containers.to_json).as_a).map { |element| element["name"] }
-        # Only check the containers that are in the deployed helm chart or manifest
-        (privileged_list & (resource_containers_list - white_list_container_names)).each do |x|
-          violation_list << x
+  # TODO (kosstennbl) Rework this spec, shouldn't contain a real test.
+  it "'single_task_runner' should accept a cnf-config argument and apply a test to that cnf", tags: ["task_runner"] do
+    begin
+      args = Sam::Args.new()
+      config_path = "./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml"
+      ShellCmd.cnf_setup("cnf-config=#{config_path}")
+      task_response = CNFManager::Task.single_task_runner(args) do |args, config|
+        Log.info { "single_task_runner spec args #{args.inspect}" }
+        white_list_container_names = config.common.white_list_container_names
+        Log.info { "white_list_container_names #{white_list_container_names.inspect}" }
+        violation_list = [] of String
+        resource_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+          privileged_list = KubectlClient::Get.privileged_containers
+          resource_containers = KubectlClient::Get.resource_containers(resource["kind"],resource["name"],resource["namespace"])
+          resource_containers_list = (JSON.parse(resource_containers.to_json).as_a).map { |element| element["name"] }
+          # Only check the containers that are in the deployed helm chart or manifest
+          (privileged_list & (resource_containers_list - white_list_container_names)).each do |x|
+            violation_list << x
+          end
+          if violation_list.size > 0
+            false
+          else
+            true
+          end
         end
-        if violation_list.size > 0
-          false
+        Log.debug { "violator list: #{violation_list.flatten}" }
+        emoji_security=""
+        if resource_response 
+          resp = upsert_passed_task("privileged_containers", "✔️  PASSED: No privileged containers", Time.utc)
         else
-          true
+          resp = upsert_failed_task("privileged_containers", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect}", Time.utc)
         end
+        Log.info { resp }
+        resp
       end
-      Log.debug { "violator list: #{violation_list.flatten}" }
-      emoji_security=""
-      if resource_response 
-        resp = upsert_passed_task("privileged_containers", "✔️  PASSED: No privileged containers", Time.utc)
-      else
-        resp = upsert_failed_task("privileged_containers", "✖️  FAILED: Found #{violation_list.size} privileged containers: #{violation_list.inspect}", Time.utc)
-      end
-      Log.info { resp }
-      resp
+      (task_response).should eq("✔️  PASSED: No privileged containers")
+    ensure
+      ShellCmd.cnf_cleanup()
     end
-    (task_response).should eq("✔️  PASSED: No privileged containers")
-  ensure
-    CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
   end
 
+  # TODO (kosstennbl) Rework this spec, shouldn't contain a real test.
   it "'single_task_runner' should put a 1 in the results file if it has an exception", tags: ["task_runner"]  do
     CNFManager::Points.clean_results_yml
     args = Sam::Args.new()
@@ -177,13 +175,15 @@ describe "Utils" do
   end
 
   it "'logger' or verbose output should be shown when verbose flag is set", tags: ["logger"] do
-    ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample-coredns-cnf")
-    result = ShellCmd.run_testsuite("helm_deploy verbose", cmd_prefix: "LOG_LEVEL=info")
-    puts result[:output]
-    result[:status].success?.should be_true
-    (/helm_deploy args/ =~ result[:output]).should_not be_nil
-  ensure
-    CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-coredns-cnf", verbose: true)
+    begin
+      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample-coredns-cnf")
+      result = ShellCmd.run_testsuite("helm_deploy verbose", cmd_prefix: "LOG_LEVEL=info")
+      puts result[:output]
+      result[:status].success?.should be_true
+      (/helm_deploy args/ =~ result[:output]).should_not be_nil
+    ensure
+      ShellCmd.cnf_cleanup()
+    end
   end
 
   it "'logger' should write logs to the file when LOG_PATH is set", tags: ["logger"] do
@@ -220,5 +220,4 @@ describe "Utils" do
     end
     (response.to_s.size > 0).should be_false
   end
-
 end

@@ -66,7 +66,7 @@ Missing config version is presumed to be config version `"v1"`, which is not sup
 
 #### Common Parameters
 
-Common parameters are required for proper functioning of some tests. If these parameters are not set up, corresponding tests will be failed/skipped or would not function properly (in example - whitelist_container_names).
+Common parameters are required for proper functioning of some tests. If these parameters are not set up, corresponding tests will be failed/skipped or would not function properly (in example - white_list_container_names).
 `common: ...`
 
 ##### container_names
@@ -78,7 +78,7 @@ Array of container parameters for rolling version change tests, example:
   rollback_from_tag: 1.8.0
 
 
-##### whitelist_container_names
+##### white_list_container_names
 
 The values of this key are the names of the 'containers' defined in the Kubernetes pod spec of pods that are allowed to be running in privileged mode. (Optional)
 This value is used to allow 'particular' pods to run in privileged mode on the K8s cluster where the CNF is installed.
@@ -118,25 +118,9 @@ image_registry_fqdns:
 
 Described below: [link](#5G-parameters)
 
-#### Dynamic parameters
-
-Dynamic parameters are not meant to be set up manually. They exist due to limitations of testsuite design.
-
-##### source_cnf_dir
-
-Directory where config is located.
-
-##### destintaion_cnf_dir
-
-Internal directory where CNF installation files are copied, currently in `cnfs` folder
-
-##### installation_method
-
-Installation method of the CNF and additional info according to it.
-
 #### Deployments
 
-Deployments are defined as three arrays, each for different installation method. Each array element represents one deployment, and they are meant to represent a single CNF together (Not implemented yet).
+Deployments are defined as three arrays, each for different installation method. Each array element represents one deployment, and they are meant to represent a single CNF together.
 At least one deployment should exist in CNF config for it to be a proper config.
 All info for deployments is used in cnf_setup and cnf_cleanup tasks.
 

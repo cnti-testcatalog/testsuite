@@ -1,13 +1,6 @@
 require "../utils.cr"
 
 module CNFInstall
-  enum InstallMethod
-    HelmChart
-    HelmDirectory
-    ManifestDirectory 
-    Invalid
-  end
-
   def self.install_cnf(cli_args)
     parsed_args = parse_cli_args(cli_args)
     cnf_config_path = parsed_args[:config_path]
@@ -150,9 +143,15 @@ module CNFInstall
   end
 
   def self.uninstall_deployments(deployment_managers)
+    all_uninstallations_successfull = true
     deployment_managers.each do |deployment_manager|
-      deployment_manager.uninstall()
+      uninstall_success = deployment_manager.uninstall()
+      all_uninstallations_successfull = all_uninstallations_successfull && uninstall_success
     end
-    stdout_success "All CNF deployments were uninstalled, some time might be needed for all resources to be down."
+    if all_uninstallations_successfull
+      stdout_success "All CNF deployments were uninstalled, some time might be needed for all resources to be down."
+    else
+      stdout_failure "CNF uninstallation wasn't successfull, check logs for more info."
+    end
   end
 end

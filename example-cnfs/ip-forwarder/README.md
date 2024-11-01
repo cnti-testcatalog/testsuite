@@ -31,19 +31,10 @@ export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite cnf_setup cnf-path=example
 ### Testing
 Run the test suite: `export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite all`
 
-### Automated cleanup
+### Automated uninstallation
 ```
-export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite cnf_cleanup cnf-path=example-cnfs/ip-forwarder/cnf-testsuite.yml
+export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite cnf_cleanup
 ```
-
-### Manual installation
-1. Install helm version 3
-1. Make the cnfs/ip-forwarder diretory 
-1. If you are testing the cnf source, clone the source into the cnfs/ip-forwarder directory
-1. Copy the cnf-testsuite.yml into the cnfs/ip-forwarder directory
-1. Deploy the CNF using helm: `helm install cnfs/ip-forwarder/vpp`
-1. Wait for the installation to finish (all pods are ready)
-1. Run the test suite: `export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite all`
 
 
   
