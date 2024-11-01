@@ -219,9 +219,8 @@ desc "Does the CNF crash when node-drain occurs"
 task "node_drain", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     skipped = false
-    destination_cnf_dir = config.dynamic.destination_cnf_dir
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
+      app_namespace = resource[:namespace]
       Log.info { "Current Resource Name: #{resource["kind"]}/#{resource["name"]} Namespace: #{resource["namespace"]}" }
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
 
@@ -323,9 +322,9 @@ task "node_drain", ["install_litmus"] do |t, args|
             app_nodeName
           ).to_s
           Log.for("node_drain").info { "Chaos test name: #{test_name}; Experiment name: #{chaos_experiment_name}; Label #{deployment_label}=#{deployment_label_value}; namespace: #{app_namespace}" }
-
-          File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
-          KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+          chaos_template_path = File.join(CNF_TEMP_FILES_DIR, "#{chaos_experiment_name}-chaosengine.yml")
+          File.write(chaos_template_path, template)
+          KubectlClient::Apply.file(chaos_template_path)
           LitmusManager.wait_for_test(test_name, chaos_experiment_name, args, namespace: app_namespace)
           test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
         end
@@ -369,10 +368,9 @@ task "elastic_volumes" do |t, args|
 
       # todo use workload resource
       # elastic = WorkloadResource.elastic?(volumes)
-      namespace = CNFManager.get_deployment_namespace(config)
 
-      full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], namespace)
-      elastic_result = WorkloadResource.elastic?(full_resource, volumes.as_a, namespace)
+      full_resource = KubectlClient::Get.resource(resource["kind"], resource["name"], resource["namespace"])
+      elastic_result = WorkloadResource.elastic?(full_resource, volumes.as_a, resource["namespace"])
       Log.for("#{t.name}:elastic_result").info {elastic_result}
       unless elastic_result
         all_volumes_elastic = false
@@ -408,7 +406,6 @@ task "database_persistence" do |t, args|
     non_elastic_database_statefulset_found = false
     match = Mysql.match
     Log.info {"database_persistence mysql: #{match}"}
-    deployment_namespace = CNFManager.get_deployment_namespace(config)
     if match && match[:found]
       task_response = CNFManager.workload_resource_test(args, config, check_containers: false) do |resource, containers, volumes, initialized|
         # Skip resources that do not have containers with mysql image
@@ -422,7 +419,7 @@ task "database_persistence" do |t, args|
         next if resource["kind"].downcase != "statefulset"
         
         statefulset_found = true
-        namespace = resource["namespace"] || deployment_namespace
+        namespace = resource["namespace"]
         Log.info {"database_persistence namespace: #{namespace}"}
         Log.info {"database_persistence resource: #{resource}"}
         Log.info {"database_persistence volumes: #{volumes}"}

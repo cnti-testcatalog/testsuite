@@ -14,7 +14,7 @@ describe "K8sInstrumentation" do
     test_json = Kubescape.test_by_test_name(results_json, "Network policies")
     (test_json).should_not be_nil
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.ymll")
+    result = ShellCmd.cnf_cleanup()
   end
 
 end

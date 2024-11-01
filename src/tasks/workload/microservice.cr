@@ -243,7 +243,7 @@ task "reasonable_image_size" do |t, args|
     Log.for(t.name).debug { "cnf_config: #{config}" }
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 
-      source_cnf_dir = config.dynamic.source_cnf_dir
+      image_secrets_config_path = File.join(CNF_TEMP_FILES_DIR, "config.json")
 
       if resource["kind"].downcase == "deployment" ||
           resource["kind"].downcase == "statefulset" ||
@@ -290,9 +290,9 @@ task "reasonable_image_size" do |t, args|
           }[0..-2]}}})
             puts "str_auths: #{str_auths}"
           end
-          File.write("#{source_cnf_dir}/config.json", str_auths)
+          File.write(image_secrets_config_path, str_auths)
           Dockerd.exec("mkdir -p /root/.docker/")
-          KubectlClient.cp("#{source_cnf_dir}/config.json #{TESTSUITE_NAMESPACE}/dockerd:/root/.docker/config.json")
+          KubectlClient.cp("#{image_secrets_config_path} #{TESTSUITE_NAMESPACE}/dockerd:/root/.docker/config.json")
         end
 
         Log.info { "FQDN of the docker image: #{fqdn_image}" }

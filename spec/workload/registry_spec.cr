@@ -47,7 +47,7 @@ describe "Private Registry: Image" do
     result[:status].success?.should be_true
     (/Image size is good/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=#{cnf}")
+    result = ShellCmd.cnf_cleanup()
   end
 
   it "'reasonable_image_size' should pass if using local registry, a port and an org", tags: ["private_registry_image"]  do
@@ -58,7 +58,7 @@ describe "Private Registry: Image" do
     result[:status].success?.should be_true
     (/Image size is good/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=#{cnf}")
+    result = ShellCmd.cnf_cleanup()
   end
 
   after_all do
@@ -96,7 +96,7 @@ describe "Private Registry: Rolling" do
       result[:status].success?.should be_true
       (/Passed/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=#{cnf} wait_count=0")
+      result = ShellCmd.cnf_cleanup("timeout=0")
     end
   end
 
@@ -109,7 +109,7 @@ describe "Private Registry: Rolling" do
       result[:status].success?.should be_true
       (/Passed/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=#{cnf} wait_count=0")
+      result = ShellCmd.cnf_cleanup("timeout=0")
   	end
   end
 
@@ -122,7 +122,7 @@ describe "Private Registry: Rolling" do
       result[:status].success?.should be_true
       (/Passed/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=#{cnf} wait_count=0")
+      result = ShellCmd.cnf_cleanup("timeout=0")
     end
   end  
 

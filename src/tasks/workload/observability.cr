@@ -42,7 +42,6 @@ end
 desc "Does the CNF emit prometheus traffic"
 task "prometheus_traffic" do |t, args|
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
-    destination_cnf_dir = config.dynamic.destination_cnf_dir
 
     do_this_on_each_retry = ->(ex : Exception, attempt : Int32, elapsed_time : Time::Span, next_interval : Time::Span) do
       Log.info { "#{ex.class}: '#{ex.message}' - #{attempt} attempt in #{elapsed_time} seconds and #{next_interval} seconds until the next try."}
@@ -127,7 +126,7 @@ task "prometheus_traffic" do |t, args|
                 end
 
                 Log.debug { "metrics_config_map : #{metrics_config_map}" }
-                configmap_path = "#{destination_cnf_dir}/config_maps/metrics_configmap.yml"
+                configmap_path = "#{CNF_TEMP_FILES_DIR}/metrics_configmap.yml"
                 File.write(configmap_path, "#{metrics_config_map}")
                 KubectlClient::Delete.file(configmap_path)
                 KubectlClient::Apply.file(configmap_path)

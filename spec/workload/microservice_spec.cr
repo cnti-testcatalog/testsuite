@@ -23,7 +23,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(N\/A).*(No MariaDB containers were found)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample_coredns/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -35,7 +35,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(PASSED).*(No shared database found)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample-statefulset-cnf/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -47,7 +47,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(PASSED).*(No shared database found)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample-multi-db-connections-exempt/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -59,7 +59,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(FAILED).*(Found a shared database)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/ndn-multi-db-connections-fail/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
       KubectlClient::Delete.command("pvc data-test-mariadb-0 -n wordpress")
     end
@@ -82,7 +82,7 @@ describe "Microservice" do
     ensure
       Helm.delete("multi-db")
       KubectlClient::Delete.command("pvc data-multi-db-mariadb-0")
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/ndn-multi-db-connections-fail/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -94,7 +94,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(PASSED).*(Only one process type used)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample_coredns")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -106,7 +106,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(FAILED).*(More than one process type used)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/k8s-multiple-processes")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -118,7 +118,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(FAILED).*(More than one process type used)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample-multiple-processes")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -130,7 +130,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(PASSED).*(CNF had a reasonable startup time)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample_coredns")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -142,7 +142,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(FAILED).*(CNF had a startup time of)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample_envoy_slow_startup/cnf-testsuite.yml force=true")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -162,7 +162,7 @@ describe "Microservice" do
     result[:status].success?.should be_true
     (/Image size is good/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=#{cnf}")
+    result = ShellCmd.cnf_cleanup()
   end
 
   it "'reasonable_image_size' should fail if image is larger than 5gb", tags: ["reasonable_image_size"] do
@@ -178,7 +178,7 @@ describe "Microservice" do
     result[:status].success?.should be_true
     (/Containers do not use specialized init systems/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample-coredns-cnf force=true")
+    result = ShellCmd.cnf_cleanup()
   end
 
   it "'specialized_init_system' should pass if pods use specialized init systems", tags: ["specialized_init_system"] do
@@ -187,7 +187,7 @@ describe "Microservice" do
     result[:status].success?.should be_true
     (/Containers use specialized init systems/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample-init-systems force=true")
+    result = ShellCmd.cnf_cleanup()
   end
 
   it "'service_discovery' should pass if any containers in the cnf are exposed as a service", tags: ["service_discovery"]  do
@@ -197,7 +197,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(PASSED).*(Some containers exposed as a service)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample_coredns")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -209,7 +209,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(FAILED).*(No containers exposed as a service)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample-ndn-privileged")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -226,7 +226,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(PASSED).*(Sig Term handled)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample_good_signal_handling/")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -243,7 +243,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(FAILED).*(Sig Term not handled)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample_bad_signal_handling/")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -264,7 +264,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(PASSED).*(Sig Term handled)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample_good_signal_handling_tini/")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -277,7 +277,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(PASSED).*(Zombie handled)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample_good_zombie_handling/")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -289,7 +289,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(FAILED).*(Zombie not handled)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample-bad-zombie/")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end

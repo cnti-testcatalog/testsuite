@@ -235,9 +235,9 @@ For more details on points, see our [POINTS.md](./POINTS.md) documentation.
 
 #### Cleaning Up
 
-Run the following to cleanup the specific cnf-testsuite test (this is assuming you installed the cnf-testsuite.yml in your present working directory):
+Run the following to uninstall the CNF (this is assuming you installed the cnf-testsuite.yml in your present working directory):
 ```
-cnf-testsuite cnf_cleanup cnf-config=./cnf-testsuite.yml
+cnf-testsuite cnf_cleanup
 ```
 You can also run `cleanall` and cnf-testsuite will attempt to cleanup everything.
 

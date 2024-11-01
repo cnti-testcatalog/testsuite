@@ -23,23 +23,14 @@ export KUBECONFIG=$(pwd)/<YourKubeConf> ; ./cnf-testsuite setup
 
 Setup and deploy  service chain
 ```
-export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite example_cnf_setup example-cnf-path=example-cnfs/vpp-3c2n-csp-use-case/cnf-testsuite.yml
+export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite cnf_setup example-cnf-path=example-cnfs/vpp-3c2n-csp-use-case/cnf-testsuite.yml
 ```
 
 ### Testing
 Run the test suite: `export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite all`
 
-### Automated cleanup
+### Automated uninstallation
 ```
-export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite example_cnf_cleanup example-cnf-path=example-cnfs/vpp-3c2n-csp-use-case/cnf-testsuite.yml
+export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite cnf_cleanup
 ```
-
-### Manual installation
-1. Install helm version 3
-1. Make the cnfs/vpp-3c2n-csp-use-case diretory 
-1. If you are testing the cnf source, clone the source into the cnfs/vpp-3c2n-csp-use-case directory
-1. Copy the cnf-testsuite.yml into the cnfs/vpp-3c2n-csp-use-case directory
-1. Deploy the service chain using helm: `helm install vpp-3c2n-csp-use-case cnfs/csp`
-1. Wait for the installation to finish (all pods are ready)
-1. Run the test suite: `export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite all`
   

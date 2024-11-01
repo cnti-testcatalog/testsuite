@@ -118,22 +118,6 @@ image_registry_fqdns:
 
 Described below: [link](#5G-parameters)
 
-#### Dynamic parameters
-
-Dynamic parameters are not meant to be set up manually. They exist due to limitations of testsuite design.
-
-##### source_cnf_dir
-
-Directory where config is located.
-
-##### destintaion_cnf_dir
-
-Internal directory where CNF installation files are copied, currently in `cnfs` folder
-
-##### installation_method
-
-Installation method of the CNF and additional info according to it.
-
 #### Deployments
 
 Deployments are defined as three arrays, each for different installation method. Each array element represents one deployment, and they are meant to represent a single CNF together (Not implemented yet).

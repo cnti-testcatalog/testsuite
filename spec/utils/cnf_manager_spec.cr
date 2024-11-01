@@ -10,18 +10,15 @@ require "sam"
 
 describe "SampleUtils" do
   before_all do
+    result = ShellCmd.environment_cleanup()
     result = ShellCmd.run_testsuite("helm_local_install")
     result[:status].success?.should be_true
-    result = ShellCmd.run_testsuite("cleanup")
-    result[:status].success?.should be_true
-
     # Ensure a results file is present to test different scenarios
     CNFManager::Points::Results.ensure_results_file!
   end
 
   after_each do
-    result = ShellCmd.run_testsuite("cleanup")
-    result[:status].success?.should be_true
+    result = ShellCmd.environment_cleanup()
   end
 
   it "'points_yml' should parse and return the points yaml file", tags: ["points"]  do
@@ -139,136 +136,6 @@ describe "SampleUtils" do
     (CNFManager::Points.final_cnf_results_yml).should contain("cnf-testsuite-results")
   end
 
-
-  it "'CNFManager.sample_setup_cli_args(args) and CNFManager.sample_setup(cli_args)' should set up a sample cnf", tags: ["cnf-setup"]  do
-    args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml", "verbose"])
-    cli_hash = CNFManager.sample_setup_cli_args(args)
-    CNFManager.sample_setup(cli_hash)
-    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(cli_hash[:config_file]))    
-    release_name = config.deployments.get_deployment_param(:name)
-
-    (Dir.exists? "cnfs/#{release_name}").should be_true
-    (File.exists?("cnfs/#{release_name}/cnf-testsuite.yml")).should be_true
-    (File.exists?("cnfs/#{release_name}/exported_chart/Chart.yaml")).should be_true
-    CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
-    (Dir.exists? "cnfs/#{release_name}").should be_false
-  end
-
-  it "'CNFManager.sample_setup' should set up a sample cnf", tags: ["cnf-setup"]  do
-    config_file = "sample-cnfs/sample-generic-cnf"
-    args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-testsuite.yml", "verbose", "skip_wait_for_install"])
-    cli_hash = CNFManager.sample_setup_cli_args(args)
-    CNFManager.sample_setup(cli_hash)
-    # check if directory exists
-    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
-    release_name = config.deployments.get_deployment_param(:name)
-
-    (Dir.exists? "cnfs/#{release_name}").should be_true
-    (File.exists?("cnfs/#{release_name}/cnf-testsuite.yml")).should be_true
-    (File.exists?("cnfs/#{release_name}/exported_chart/Chart.yaml")).should be_true
-    CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
-    (Dir.exists? "cnfs/#{release_name}").should be_false
-  end
-
-  it "'CNFManager.sample_setup_args' should set up a sample cnf from a argument", tags: ["cnf-setup"]  do
-    config_file = "sample-cnfs/sample-generic-cnf"
-    args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-testsuite.yml", "verbose", "skip_wait_for_install"])
-    cli_hash = CNFManager.sample_setup_cli_args(args)
-    CNFManager.sample_setup(cli_hash)
-    # check if directory exists
-    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
-    release_name = config.deployments.get_deployment_param(:name)
-    (Dir.exists? "cnfs/#{release_name}").should be_true
-    (File.exists?("cnfs/#{release_name}/cnf-testsuite.yml")).should be_true
-    CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
-    (Dir.exists? "cnfs/#{release_name}").should be_false
-  end
-
-  it "'CNFManager.sample_setup_args' should set up a sample cnf from a config file", tags: ["cnf-setup"]  do
-    config_file = "sample-cnfs/sample-generic-cnf"
-    args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-testsuite.yml", "verbose", "skip_wait_for_install"])
-    cli_hash = CNFManager.sample_setup_cli_args(args)
-    CNFManager.sample_setup(cli_hash)
-    # check if directory exists
-    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
-    release_name = config.deployments.get_deployment_param(:name)
-    (Dir.exists? "sample-cnfs/sample-generic-cnf").should be_true
-    (File.exists?("cnfs/#{release_name}/cnf-testsuite.yml")).should be_true
-    CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
-    (Dir.exists? "cnfs/#{release_name}").should be_false
-  end
-
-  it "'CNFManager.sample_cleanup' should clean up a sample cnf from a argument", tags: ["cnf-setup"]  do
-    args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml", "verbose", "skip_wait_for_install"])
-    cli_hash = CNFManager.sample_setup_cli_args(args)
-    CNFManager.sample_setup(cli_hash)
-    cleanup = CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
-    (cleanup).should be_true 
-    (Dir.exists? "cnfs/coredns").should be_false
-    (File.exists?("cnfs/coredns/cnf-testsuite.yml")).should be_false
-    (File.exists?("cnfs/coredns/helm_chart/Chart.yaml")).should be_false
-  end
-
-  it "'CNFManager.sample_setup_args' should be able to deploy using a helm_directory", tags: ["cnf-setup"]  do
-    config_file = "sample-cnfs/sample_privileged_cnf"
-    args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-testsuite.yml", "verbose", "skip_wait_for_install"])
-    cli_hash = CNFManager.sample_setup_cli_args(args)
-    CNFManager.sample_setup(cli_hash)
-    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
-    release_name = config.deployments.get_deployment_param(:name)
-    (Dir.exists? "cnfs/#{release_name}").should be_true
-    # should not clone
-    (Dir.exists? "cnfs/#{release_name}/privileged-coredns").should be_false
-    (File.exists? "cnfs/#{release_name}/cnf-testsuite.yml").should be_true
-    (File.exists? "cnfs/#{release_name}/chart/Chart.yaml").should be_true
-    CNFManager.sample_cleanup(config_file: "sample-cnfs/sample_privileged_cnf", verbose: true)
-    (Dir.exists? "cnfs/#{release_name}").should be_false
-  end
-
-  it "'CNFManager.sample_setup_args and CNFManager.sample_cleanup' should be able to deploy and cleanup using a manifest_directory", tags: ["cnf-setup"]  do
-    config_file = "sample-cnfs/k8s-non-helm"
-    args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-testsuite.yml", "verbose", "skip_wait_for_install"])
-    cli_hash = CNFManager.sample_setup_cli_args(args)
-    Log.info { "Running Setup" }
-    CNFManager.sample_setup(cli_hash)
-    Log.info { "Parse Config" }
-    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
-    release_name = config.deployments.get_deployment_param(:name)
-    (Dir.exists? "cnfs/#{release_name}").should be_true
-    (Dir.exists? "cnfs/#{release_name}/manifests").should be_true
-    (File.exists? "cnfs/#{release_name}/cnf-testsuite.yml").should be_true
-    (KubectlClient::Get.pod_exists?("nginx-webapp")).should be_true
-    CNFManager.sample_cleanup(config_file: "sample-cnfs/k8s-non-helm", installed_from_manifest: true, verbose: true)
-    # TODO check for pod status = terminating
-    (KubectlClient::Get.pod_exists?("nginx-webapp", check_ready: true)).should be_false
-    (Dir.exists? "cnfs/#{release_name}").should be_false
-  end
-
-  it "'CNFManager.cnf_config_list' should return a list of all of the config files from the cnf directory", tags: ["cnf-setup"]  do
-    config_file = "sample-cnfs/sample-generic-cnf"
-    args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-testsuite.yml", "verbose", "skip_wait_for_install"])
-    cli_hash = CNFManager.sample_setup_cli_args(args)
-    CNFManager.sample_setup(cli_hash)
-    args = Sam::Args.new(["cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml", "verbose"])
-    cli_hash = CNFManager.sample_setup_cli_args(args)
-    CNFManager.sample_setup(cli_hash)
-    config = CNFInstall::Config.parse_cnf_config_from_file(CNFManager.ensure_cnf_testsuite_yml_path(config_file))    
-    release_name = config.deployments.get_deployment_param(:name)
-    CNFManager.cnf_config_list()[0].should contain("#{release_name}/#{CONFIG_FILE}")
-  end
-
-  it "'CNFManager.helm_repo_add' should add a helm repo if the helm repo is valid", tags: ["helm-repo"] do
-    config_file = "sample-cnfs/sample-generic-cnf"
-    args = Sam::Args.new(["cnf-config=./#{config_file}/cnf-testsuite.yml", "verbose"])
-    cli_hash = CNFManager.sample_setup_cli_args(args)
-    args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml"])
-    CNFManager.helm_repo_add(args: args).should eq(true)
-  end
-
-  it "'CNFManager.helm_repo_add' should return false if the helm repo is invalid", tags: ["helm-repo"]  do
-    CNFManager.helm_repo_add("invalid", "invalid").should eq(false)
-  end
-
   it "'validate_config' should pass, when a cnf has a valid config file yml", tags: ["validate_config"]  do
     result = ShellCmd.run_testsuite("validate_config cnf-config=spec/fixtures/cnf-testsuite-v2-example.yml")
     result[:status].success?.should be_true
@@ -307,30 +174,33 @@ describe "SampleUtils" do
   it "'CNFInstall::Config.parse_cnf_config_from_file' should return a populated CNFInstall::Config::Config", tags: ["cnf-config"]  do
     begin
       config = CNFInstall::Config.parse_cnf_config_from_file("spec/fixtures/cnf-testsuite.yml")    
-    (config.deployments.get_deployment_param(:name)).should eq("coredns")
+    (config.deployments.helm_charts[0].name).should eq("coredns")
     ensure
     end
   end
 
   it "'CNFManager.workload_resource_test' should accept an args and cnf-config argument, populate a deployment, container, and intialized argument, and then apply a test to a cnf", tags: ["cnf-config"]  do
-    args = Sam::Args.new(["cnf-config=./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml"])
-    cli_hash = CNFManager.sample_setup_cli_args(args, false)
-    CNFManager.sample_setup(cli_hash) if cli_hash["config_file"]
-    config = CNFInstall::Config.parse_cnf_config_from_file("./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml")    
-    task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      test_passed = true
-				begin
-					Log.for("verbose").debug { container.as_h["name"].as_s } if check_verbose(args)
-					container.as_h["livenessProbe"].as_h 
-				rescue ex
-					Log.for("verbose").error { ex.message } if check_verbose(args)
-					test_passed = false 
-          puts "No livenessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
-				end
-      test_passed 
+    begin
+      args = Sam::Args.new()
+      config_path = "./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml"
+      ShellCmd.cnf_setup("cnf-config=#{config_path}")
+      config = CNFInstall::Config.parse_cnf_config_from_file(config_path)    
+      task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
+        test_passed = true
+		  		begin
+		  			Log.for("verbose").debug { container.as_h["name"].as_s } if check_verbose(args)
+		  			container.as_h["livenessProbe"].as_h 
+		  		rescue ex
+		  			Log.for("verbose").error { ex.message } if check_verbose(args)
+		  			test_passed = false 
+            puts "No livenessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
+		  		end
+        test_passed 
+      end
+      (task_response).should be_true 
+    ensure
+      ShellCmd.cnf_cleanup()
     end
-    (task_response).should be_true 
-    CNFManager.sample_cleanup(config_file: "sample-cnfs/sample-generic-cnf", verbose: true)
   end
 
   it "Helm_values should be used during the installation of a cnf", tags: ["cnf-config"]  do
@@ -342,7 +212,7 @@ describe "SampleUtils" do
       Log.info { "image_tags: #{image_tags}" }
       (/1.6.9/ =~ image_tags[0][:tag]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample_coredns_values")
+      result = ShellCmd.cnf_cleanup()
     end
   end
 

@@ -35,8 +35,8 @@ Run the all the tests
 
 Check the results file
 
-Cleanup the cnf test setup (including undeployment of CoreDNS)
+Uninstall the CNF (including undeployment of CoreDNS)
 
 ```
-./cnf-testsuite cnf_cleanup cnf-path=example-cnfs/coredns
+./cnf-testsuite cnf_cleanup
 ```

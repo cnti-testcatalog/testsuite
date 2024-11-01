@@ -16,7 +16,6 @@ end
 desc "Test if RAN uses the ORAN e2 interface"
 task "oran_e2_connection" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    release_name = config.deployments.get_deployment_param(:name)
     if ORANMonitor.isCNFaRIC?(config)
       # (kosstennbl) TODO: Redesign oran_e2_connection test, preferably without usage of installation configmaps. More info in issue #2153
       CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "oran_e2_connection test is disabled, check #2153")

@@ -31,8 +31,8 @@ Run the all the tests
 
 Check the results file
 
-Cleanup the cnf test setup (including undeployment of NSM)
+Uninstall the CNF (including undeployment of NSM)
 
 ```
-./cnf-testsuite cnf_cleanup cnf-config=./example-cnfs/nsm/cnf-testsuite.yml
+./cnf-testsuite cnf_cleanup
 ```

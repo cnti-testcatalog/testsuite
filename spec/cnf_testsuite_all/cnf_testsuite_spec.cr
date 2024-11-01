@@ -9,8 +9,7 @@ describe CnfTestSuite do
   end
 
   after_all do
-    result = ShellCmd.run_testsuite("samples_cleanup")
-    result[:status].success?.should be_true
+    result = ShellCmd.environment_cleanup()
   end
 
   it "a task should fail with an exit code of 2 when there is an exception", tags: ["security"] do

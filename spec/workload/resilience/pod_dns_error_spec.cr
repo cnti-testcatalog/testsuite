@@ -24,7 +24,7 @@ describe "Resilience pod dns error Chaos" do
       # The ensure block will cleanup the CNF and the litmus installation.
       raise "Test failed with #{ex.message}"
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=example-cnfs/envoy/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
       result = ShellCmd.run_testsuite("uninstall_litmus")
       result[:status].success?.should be_true

@@ -18,7 +18,7 @@ describe "Core" do
       result = ShellCmd.run_testsuite("smf_upf_heartbeat verbose")
       (/(PASSED).*(Chaos service degradation is less than 50%)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample_open5gs/cnf-testsuite.yml") 
+      result = ShellCmd.cnf_cleanup() 
       result[:status].success?.should be_true
     end
   end
@@ -29,7 +29,7 @@ describe "Core" do
       result = ShellCmd.run_testsuite("smf_upf_heartbeat verbose baseline_count=300")
       (/(FAILED).*(Chaos service degradation is more than 50%)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample_open5gs/cnf-testsuite.yml") 
+      result = ShellCmd.cnf_cleanup() 
       result[:status].success?.should be_true
     end
   end
@@ -40,7 +40,7 @@ describe "Core" do
       result = ShellCmd.run_testsuite("suci_enabled verbose")
       (/(PASSED).*(Core uses SUCI 5g authentication)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample_open5gs/cnf-testsuite.yml") 
+      result = ShellCmd.cnf_cleanup() 
       result[:status].success?.should be_true
     end
   end
@@ -51,7 +51,7 @@ describe "Core" do
       result = ShellCmd.run_testsuite("suci_enabled verbose")
       (/(FAILED).*(Core does not use SUCI 5g authentication)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample_open5gs_no_auth/cnf-testsuite.yml") 
+      result = ShellCmd.cnf_cleanup() 
       result[:status].success?.should be_true
     end
   end
