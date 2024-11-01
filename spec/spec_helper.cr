@@ -30,4 +30,24 @@ module ShellCmd
     end
     result
   end
+
+  def self.new_cnf_setup(setup_params, cmd_prefix="", expect_failure=false)
+    result = run_testsuite("new_cnf_setup #{setup_params} timeout=300", cmd_prefix)
+    if !expect_failure
+      result[:status].success?.should be_true
+    else
+      result[:status].success?.should be_false
+    end
+    result
+  end
+
+  def self.new_cnf_cleanup(expect_failure=false)
+    result = run_testsuite("new_cnf_cleanup")
+    if !expect_failure
+      result[:status].success?.should be_true
+    else
+      result[:status].success?.should be_false
+    end
+    result
+  end
 end

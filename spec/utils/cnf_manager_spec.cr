@@ -25,15 +25,15 @@ describe "SampleUtils" do
   end
 
   it "'cnf_setup' should pass with a minimal cnf-testsuite.yml", tags: ["cnf-setup"] do
-    ShellCmd.cnf_setup("cnf-path=./sample-cnfs/sample-minimal-cnf/ skip_wait_for_install")
+    ShellCmd.new_cnf_setup("cnf-path=./sample-cnfs/sample-minimal-cnf/ skip_wait_for_install")
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample-minimal-cnf/ force=true")
+    ShellCmd.new_cnf_cleanup()
   end
 
   it "'cnf_setup' should support cnf-config as an alias for cnf-path", tags: ["cnf-setup"] do
-    ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample-minimal-cnf/ skip_wait_for_install")
+    ShellCmd.new_cnf_setup("cnf-config=./sample-cnfs/sample-minimal-cnf/ skip_wait_for_install")
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample-minimal-cnf/ force=true")
+    ShellCmd.new_cnf_cleanup()
   end
 
   it "'points_yml' should parse and return the points yaml file", tags: ["points"]  do
@@ -348,13 +348,13 @@ describe "SampleUtils" do
   it "Helm_values should be used during the installation of a cnf", tags: ["cnf-config"]  do
     begin
       # fails because doesn't have a service
-      ShellCmd.cnf_setup("cnf-path=./sample-cnfs/sample_coredns_values")
+      ShellCmd.new_cnf_setup("cnf-path=./sample-cnfs/sample_coredns_values")
       deployment_containers = KubectlClient::Get.resource_containers("deployment", "coredns-coredns", "cnf-default")
       image_tags = KubectlClient::Get.container_image_tags(deployment_containers) 
       Log.info { "image_tags: #{image_tags}" }
       (/1.6.9/ =~ image_tags[0][:tag]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample_coredns_values")
+      ShellCmd.new_cnf_cleanup()
     end
   end
 

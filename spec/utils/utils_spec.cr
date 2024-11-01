@@ -198,7 +198,7 @@ describe "Utils" do
   end
 
   it "'logger' or verbose output should be shown when verbose flag is set", tags: ["logger"] do
-    ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample-coredns-cnf")
+    ShellCmd.new_cnf_setup("cnf-path=sample-cnfs/sample-coredns-cnf")
     result = ShellCmd.run_testsuite("helm_deploy verbose", cmd_prefix: "LOG_LEVEL=info")
     puts result[:output]
     result[:status].success?.should be_true

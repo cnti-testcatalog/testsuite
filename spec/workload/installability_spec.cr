@@ -9,12 +9,12 @@ describe CnfTestSuite do
   end
 
 	it "'helm_deploy' should fail on a manifest CNF", tags: ["helm"] do
-    ShellCmd.cnf_setup("cnf-path=./sample-cnfs/k8s-non-helm")
+    ShellCmd.new_cnf_setup("cnf-path=./sample-cnfs/k8s-non-helm")
     result = ShellCmd.run_testsuite("helm_deploy verbose")
     result[:status].success?.should be_true
     (/(FAILED).*(Helm deploy failed)/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/k8s-non-helm verbose")
+    ShellCmd.new_cnf_cleanup()
   end
 
   it "'helm_deploy' should fail if command is not supplied cnf-config argument", tags: ["helm"] do
@@ -24,47 +24,47 @@ describe CnfTestSuite do
   end
 
   it "'helm_chart_valid' should pass on a good helm chart", tags: ["helm"]  do
-    ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose")
+    ShellCmd.new_cnf_setup("cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose")
     result = ShellCmd.run_testsuite("helm_chart_valid verbose")
     result[:status].success?.should be_true
     (/Lint Passed/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose")
+    ShellCmd.new_cnf_cleanup()
   end
 
   it "'helm_chart_valid' should fail on a bad helm chart", tags: ["helm"] do
     begin
-      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample-bad_helm_coredns-cnf/cnf-testsuite.yml verbose skip_wait_for_install", expect_failure: true)
+      ShellCmd.new_cnf_setup("cnf-config=./sample-cnfs/sample-bad_helm_coredns-cnf/cnf-testsuite.yml verbose skip_wait_for_install", expect_failure: true)
       result = ShellCmd.run_testsuite("helm_chart_valid")
       result[:status].success?.should be_true
       (/Lint Failed/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml verbose")
+      ShellCmd.new_cnf_cleanup()
     end
   end
 
   it "'helm_chart_published' should pass on a good helm chart repo", tags: ["helm_chart_published"]  do
     begin
-      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample-coredns-cnf")
+      ShellCmd.new_cnf_setup("cnf-path=sample-cnfs/sample-coredns-cnf")
       result = ShellCmd.run_testsuite("helm_chart_published")
       result[:status].success?.should be_true
       (/(PASSED).*(Published Helm Chart Found)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample-coredns-cnf")
+      ShellCmd.new_cnf_cleanup()
     end
   end
 
   it "'helm_chart_published' should fail on a bad helm chart repo", tags: ["helm_chart_published"] do
     begin
       result = ShellCmd.run("helm search repo stable/coredns", force_output: true)
-      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample-bad-helm-repo skip_wait_for_install", expect_failure: true)
+      ShellCmd.new_cnf_setup("cnf-path=sample-cnfs/sample-bad-helm-repo skip_wait_for_install", expect_failure: true)
       result = ShellCmd.run("helm search repo stable/coredns", force_output: true)
       result = ShellCmd.run_testsuite("helm_chart_published verbose")
       result[:status].success?.should be_true
       (/(FAILED).*(Published Helm Chart Not Found)/ =~ result[:output]).should_not be_nil
     ensure
       result = ShellCmd.run("#{Helm::BinarySingleton.helm} repo remove badrepo")
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample-bad-helm-repo")
+      ShellCmd.new_cnf_cleanup()
     end
   end
 end

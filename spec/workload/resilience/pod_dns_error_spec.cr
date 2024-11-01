@@ -14,7 +14,7 @@ describe "Resilience pod dns error Chaos" do
 
   it "'pod_dns_error' A 'Good' CNF should not crash when pod dns error occurs", tags: ["pod_dns_error"]  do
     begin
-      ShellCmd.cnf_setup("cnf-config=example-cnfs/envoy/cnf-testsuite.yml")
+      ShellCmd.new_cnf_setup("cnf-config=example-cnfs/envoy/cnf-testsuite.yml")
       result = ShellCmd.run_testsuite("pod_dns_error verbose")
       result[:status].success?.should be_true
       ((/(SKIPPED).*(pod_dns_error docker runtime not found)/)  =~ result[:output] || 
@@ -24,8 +24,7 @@ describe "Resilience pod dns error Chaos" do
       # The ensure block will cleanup the CNF and the litmus installation.
       raise "Test failed with #{ex.message}"
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=example-cnfs/envoy/cnf-testsuite.yml")
-      result[:status].success?.should be_true
+      ShellCmd.new_cnf_cleanup()
       result = ShellCmd.run_testsuite("uninstall_litmus")
       result[:status].success?.should be_true
     end
