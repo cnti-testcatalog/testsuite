@@ -134,9 +134,9 @@ jobs:
         cat /tmp/cluster.yml
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
-        echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
+        echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf --retain
         kind --version
-        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
+        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf --retain
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         kubectl get nodes 
     - name: Cache crystal shards
@@ -209,10 +209,17 @@ jobs:
       if: ${{ always() }}
       run: |
         source cluster.env
+        kind export logs --name $CLUSTER /tmp/output-dir
         kind delete cluster --name $CLUSTER
         docker container prune -f || true
         docker volume prune -f || true
       continue-on-error: true
+    - name: upload artifact
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: log
+        path: /tmp/output-dir
         
   chaos:
     name: Chaos & Oran Tests
@@ -258,9 +265,9 @@ jobs:
         EOF
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
-        echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
+        echo kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf --retain
         kind --version
-        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf
+        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig ./$CLUSTER.conf --retain
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         kubectl get nodes 
 
@@ -303,7 +310,21 @@ jobs:
         echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT"
         echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT"
         LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.tag }} -v
-
+    - name: Delete Cluster
+      if: ${{ always() }}
+      run: |
+        source cluster.env
+        kind export logs --name $CLUSTER /tmp/output-dir
+        kind delete cluster --name $CLUSTER
+        docker container prune -f || true
+        docker volume prune -f || true
+      continue-on-error: true
+    - name: upload artifact
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: log
+        path: /tmp/output-dir
 
   build:
     name: Build Release
@@ -386,7 +407,7 @@ jobs:
         echo "export CLUSTER=$CLUSTER"
         echo "export CLUSTER=$CLUSTER" > cluster.env
         kind --version
-        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
+        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf --retain
         export KUBECONFIG=/tmp/$CLUSTER.conf
         kubectl get nodes 
     - name: Run Test Suite without source(config_lifecycle)
@@ -408,11 +429,18 @@ jobs:
       if: ${{ always() }}
       run: |
         source cluster.env
+        kind export logs --name $CLUSTER /tmp/output-dir
         kind delete cluster --name $CLUSTER
         docker container prune -f || true
         docker volume prune -f || true
         docker network prune -f || true
       continue-on-error: true
+    - name: upload artifact
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: log
+        path: /tmp/output-dir
 
   test_binary_microservice:
     name: Test Binary Without Source(microservice)
@@ -462,7 +490,7 @@ jobs:
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
         kind --version
-        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
+        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf --retain
         export KUBECONFIG=/tmp/$CLUSTER.conf
         kubectl get nodes 
     - name: Run Test Suite without source(microservice)
@@ -483,11 +511,18 @@ jobs:
       if: ${{ always() }}
       run: |
         source cluster.env
+        kind export logs --name $CLUSTER /tmp/output-dir
         kind delete cluster --name $CLUSTER
         docker container prune -f || true
         docker volume prune -f || true
         docker network prune -f || true
       continue-on-error: true
+    - name: upload artifact
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: log
+        path: /tmp/output-dir
 
   test_binary_all:
     name: Test Binary Without Source(all)
@@ -537,7 +572,7 @@ jobs:
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
         kind --version
-        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf
+        kind create cluster --name $CLUSTER --config=/tmp/cluster.yml --kubeconfig /tmp/$CLUSTER.conf --retain
         export KUBECONFIG=/tmp/$CLUSTER.conf
         kubectl get nodes 
     - name: Run Test Suite without source(all)
@@ -558,11 +593,18 @@ jobs:
       if: ${{ always() }}
       run: |
         source cluster.env
+        kind export logs --name $CLUSTER /tmp/output-dir
         kind delete cluster --name $CLUSTER
         docker container prune -f || true
         docker volume prune -f || true
         docker network prune -f || true
       continue-on-error: true
+    - name: upload artifact
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: log
+        path: /tmp/output-dir
 
   release:
     name: Publish Release
