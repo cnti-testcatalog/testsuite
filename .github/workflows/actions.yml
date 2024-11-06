@@ -117,6 +117,7 @@ jobs:
               endpoint = ["http://localhost:5000"]
             [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
               endpoint = ["http://localhost:5000"]
+        EOF
     - name: Install Latest Kind
       env:
         KIND_VERSION: v0.22.0
