@@ -17,7 +17,7 @@ module CNFInstall
     end
     config = Config.parse_cnf_config_from_file(cnf_config_path)
     ensure_cnf_dir_structure()
-    FileUtils.cp(cnf_config_path, CNF_DIR)
+    FileUtils.cp(cnf_config_path, File.join(CNF_DIR, CONFIG_FILE))
 
     prepare_deployment_directories(config, cnf_config_path)
 
@@ -97,8 +97,12 @@ module CNFInstall
     deployment_managers.each do |deployment_manager|
       deployment_name = deployment_manager.deployment_name
 
-      stdout_success "Installing deployment #{deployment_name}"
-      deployment_manager.install()
+      stdout_success "Installing deployment \"#{deployment_name}\"."
+      result = deployment_manager.install()
+      if !result
+        stdout_failure "Deployment of \"#{deployment_name}\" failed during CNF installation."
+        exit 1
+      end
 
       generated_deployment_manifest = deployment_manager.generate_manifest()
       deployment_manifest_path = File.join(DEPLOYMENTS_DIR, deployment_name, DEPLOYMENT_MANIFEST_FILE_NAME)

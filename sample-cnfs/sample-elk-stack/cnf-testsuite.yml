@@ -1,0 +1,20 @@
+---
+config_version: "v2"
+
+deployments:
+  helm_charts:
+    - name: elasticsearch
+      helm_repo_name: elastic
+      helm_repo_url: https://helm.elastic.co
+      helm_chart_name: elasticsearch
+      helm_values: "--set replicas=1"
+    - name: logstash
+      helm_repo_name: elastic
+      helm_repo_url: https://helm.elastic.co
+      helm_chart_name: logstash
+      helm_values: "--set replicaCount=1"
+    - name: kibana
+      helm_repo_name: elastic
+      helm_repo_url: https://helm.elastic.co
+      helm_chart_name: kibana
+      helm_values: "--set replicaCount=1"

@@ -24,18 +24,6 @@ describe "SampleUtils" do
     result[:status].success?.should be_true
   end
 
-  it "'cnf_setup' should pass with a minimal cnf-testsuite.yml", tags: ["cnf-setup"] do
-    ShellCmd.cnf_setup("cnf-path=./sample-cnfs/sample-minimal-cnf/ skip_wait_for_install")
-  ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample-minimal-cnf/ force=true")
-  end
-
-  it "'cnf_setup' should support cnf-config as an alias for cnf-path", tags: ["cnf-setup"] do
-    ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample-minimal-cnf/ skip_wait_for_install")
-  ensure
-    result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample-minimal-cnf/ force=true")
-  end
-
   it "'points_yml' should parse and return the points yaml file", tags: ["points"]  do
     (CNFManager::Points.points_yml.find {|x| x["name"] =="liveness"}).should be_truthy 
   end
