@@ -77,15 +77,10 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         nodes:
         - role: control-plane
-          image: kindest/node:v1.29.2@sha256:51a1434a5397193442f0be2a297b488b6c919ce8a3931be0ce822606ea5ca245
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-            endpoint = ["http://10.200.142.204:80"]
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-            endpoint = ["http://localhost:5000"]
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
-            endpoint = ["http://localhost:5000"]
+            endpoint = ["http://10.200.142.204"]
         EOF
     - name: sysctls specs kind config override
       if: matrix.spec == 'sysctls'
@@ -97,14 +92,17 @@ jobs:
         # Enabled additional unsafe sysctls to support the negative spec test for sysctls
         nodes:
         - role: control-plane
-          image: kindest/node:v1.29.2@sha256:51a1434a5397193442f0be2a297b488b6c919ce8a3931be0ce822606ea5ca245
           kubeadmConfigPatches:
           - |
             kind: KubeletConfiguration
             allowedUnsafeSysctls: ["kernel.msg*"]
+        containerdConfigPatches:
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+            endpoint = ["http://10.200.142.204"]
         EOF
     - name: Mirror Override
-      if: matrix.spec == 'private_registry_image'
+      if: startsWith(matrix.spec, 'private_registry_')
       run: |
         cat << EOF > /tmp/cluster.yml
         kind: Cluster
@@ -112,11 +110,11 @@ jobs:
         nodes:
         - role: control-plane
         containerdConfigPatches:
-          - |-
-            [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-              endpoint = ["http://localhost:5000"]
-            [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
-              endpoint = ["http://localhost:5000"]
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+            endpoint = ["http://10.200.142.204"]
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
+            endpoint = ["http://localhost:5000"]
         EOF
     - name: Install Latest Kind
       env:
@@ -258,10 +256,6 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         nodes:
         - role: control-plane
-        containerdConfigPatches:
-        - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-            endpoint = ["http://localhost:5000"]
         EOF
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
@@ -398,10 +392,8 @@ jobs:
         - role: control-plane
         containerdConfigPatches:
         - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-            endpoint = ["http://localhost:5000"]
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
-            endpoint = ["http://localhost:5000"]
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+            endpoint = ["http://10.200.142.204"]
         EOF
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER"
@@ -482,10 +474,8 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         containerdConfigPatches:
         - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-            endpoint = ["http://localhost:5000"]
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
-            endpoint = ["http://localhost:5000"]
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+            endpoint = ["http://10.200.142.204"]
         EOF
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
@@ -564,10 +554,8 @@ jobs:
         apiVersion: kind.x-k8s.io/v1alpha4
         containerdConfigPatches:
         - |-
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry:5000"]
-            endpoint = ["http://localhost:5000"]
-          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
-            endpoint = ["http://localhost:5000"]
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+            endpoint = ["http://10.200.142.204"]
         EOF
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
