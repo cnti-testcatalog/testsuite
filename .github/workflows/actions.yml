@@ -175,8 +175,6 @@ jobs:
         export PROTECTED_DOCKERHUB_EMAIL=${EMAIL_ARRAY[$RANDOMIZER]}
         export PROTECTED_IMAGE_REPO=${IMAGE_ARRAY[$RANDOMIZER]}
 
-        [[ ! -z  "$DOCKERHUB_USERNAME" && ! -z "$DOCKERHUB_PASSWORD" ]] && docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
-
         source cluster.env
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         until [[ $(kubectl get pods -l app=local-path-provisioner --namespace=local-path-storage -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == "True" ]]; do
@@ -188,15 +186,6 @@ jobs:
         #   echo "Failed to install packages, retrying"
         #   sleep 1
         #done
-        CLUSTER_RATE_LIMIT=$(kubectl exec -ti $LOCAL_PATH_STORAGE_POD --namespace=local-path-storage -- curl --head -H "Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || true)
-        TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token || true)
-        ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
-        TOKEN=$(curl --user "$DOCKERHUB_USERNAME:$DOCKERHUB_PASSWORD" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
-        AUTH_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Authenticated Rate Limit Exceeded")
-        echo "RUNNER RATE LIMIT: $ANONYMOUS_RUNNER_RATE_LIMIT"
-        echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT" 
-        echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT" 
-
         crystal build src/cnf-testsuite.cr 
         ./cnf-testsuite setup 
 
@@ -293,16 +282,6 @@ jobs:
             echo "Waiting for kindnet"
             sleep 1
         done
-
-        CLUSTER_RATE_LIMIT=$(kubectl run -i tmp-shell --restart=Never --rm --image ubuntu -- /bin/bash -c "apt update && apt install -y curl jq; curl --head -H \"Authorization: Bearer $(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)\" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest" | grep ratelimit-remaining || true)
-
-        TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token || true)
-        ANONYMOUS_RUNNER_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Runner Rate Limit Exceeded: $RUNNER_NAME")
-        TOKEN=$(curl --user "$DOCKERHUB_USERNAME:$DOCKERHUB_PASSWORD" "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull" | jq -r .token)
-        AUTH_RATE_LIMIT=$(curl --head -H "Authorization: Bearer $TOKEN" https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest | grep ratelimit-remaining || echo "Authenticated Rate Limit Exceeded")
-        echo "RUNNER RATE LIMIT: $ANONYMOUS_RUNNER_RATE_LIMIT"
-        echo "CLUSTER RATE LIMIT: $CLUSTER_RATE_LIMIT"
-        echo "DOCKER USER RATE LIMIT: $AUTH_RATE_LIMIT"
         LOG_LEVEL=info crystal spec --warnings none --tag ${{ matrix.tag }} -v
     - name: Delete Cluster
       if: ${{ always() }}
