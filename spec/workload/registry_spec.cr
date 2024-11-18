@@ -24,9 +24,6 @@ describe "Private Registry: Image" do
     if ENV["DOCKERHUB_USERNAME"]? && ENV["DOCKERHUB_PASSWORD"]?
       result = Dockerd.exec("docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD", force_output: true)
       Log.info { "Docker Login output: #{result[:output]}" }
-    else
-      puts "DOCKERHUB_USERNAME & DOCKERHUB_PASSWORD Must be set.".colorize(:red)
-      exit 1
     end
 
     private_registry = "registry.default.svc.cluster.local:5000"
