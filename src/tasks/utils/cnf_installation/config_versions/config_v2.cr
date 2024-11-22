@@ -50,7 +50,8 @@ module CNFInstall
     end
 
     class DeploymentConfig < CNFInstall::Config::ConfigBase
-      getter name : String
+      getter name : String,
+             priority = 0
     end
 
     class HelmDeploymentConfig < DeploymentConfig

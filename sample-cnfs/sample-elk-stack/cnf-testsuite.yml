@@ -9,12 +9,14 @@ deployments:
       helm_chart_name: elasticsearch
       helm_values: "--set replicas=1"
     - name: logstash
+      priority: 1
       helm_repo_name: elastic
       helm_repo_url: https://helm.elastic.co
       helm_chart_name: logstash
       helm_values: "--set replicaCount=1"
     - name: kibana
+      priority: 2
       helm_repo_name: elastic
       helm_repo_url: https://helm.elastic.co
       helm_chart_name: kibana
-      helm_values: "--set replicaCount=1"
+      helm_values: "--version 7.17.3 --set replicaCount=1"
