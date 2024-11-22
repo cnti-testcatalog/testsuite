@@ -83,7 +83,7 @@ module CNFInstall
     config.deployments.manifests.each do |manifest_config|
       deployment_managers << ManifestDeploymentManager.new(manifest_config)
     end
-    deployment_managers
+    deployment_managers.sort! { |a, b| a.deployment_priority <=> b.deployment_priority }
   end
 
   def self.install_deployments(parsed_args, deployment_managers)
@@ -136,7 +136,7 @@ module CNFInstall
     end
     config = Config.parse_cnf_config_from_file(cnf_config_path)
 
-    deployment_managers = create_deployment_manager_list(config)
+    deployment_managers = create_deployment_manager_list(config).reverse
     uninstall_deployments(deployment_managers)
 
     FileUtils.rm_rf(CNF_DIR)

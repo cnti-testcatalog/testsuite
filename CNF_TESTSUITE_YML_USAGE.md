@@ -134,6 +134,21 @@ deployments:
   ...
 ```
 
+##### Deployment priority
+
+To ensure deployments are executed in a specific order, you can use the `priority` parameter. Deployments are processed in ascending order of their `priority` values, starting with the lowest. During uninstallation, the order is reversed, processing from the highest `priority` value to the lowest. If the `priority` parameter is not specified, it defaults to 0.
+
+```yaml
+deployments:
+  helm_dirs: 
+    - name: envoy # deploys second
+      helm_directory: ../example-cnfs/envoy/envoy
+      priority: 1
+  manifests: 
+    - name: nginx # implicit priority = 0, deploys first
+      manifest_directory: manifests
+```
+
 ##### helm_charts
 
 Deployment, defined by helm chart and helm repository.

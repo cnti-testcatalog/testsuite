@@ -154,4 +154,56 @@ describe "Setup" do
       ShellCmd.cnf_cleanup(expect_failure: true)
     end
   end
+
+  it "'cnf_setup' should correctly handle deployment priority", tags: ["setup"] do
+    begin
+      result = ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample-elk-stack/cnf-testsuite.yml timeout=300")
+      result[:status].success?.should be_true
+      (/CNF installation complete/ =~ result[:output]).should_not be_nil
+  
+      lines = result[:output].split('\n')
+  
+      installation_order = [
+        /All "elasticsearch" deployment resources are up/,
+        /All "logstash" deployment resources are up/,
+        /All "kibana" deployment resources are up/
+      ]
+  
+      # Find line indices for each installation regex
+      install_line_indices = installation_order.map do |regex|
+        idx = lines.index { |line| regex =~ line }
+        idx.should_not be_nil
+        idx.not_nil!  # Ensures idx is Int32, not Int32|Nil
+      end
+  
+      # Verify installation order
+      install_line_indices.each_cons(2) do |pair|
+        pair[1].should be > pair[0]
+      end
+    ensure
+      result = ShellCmd.cnf_cleanup()
+      result[:status].success?.should be_true
+      (/All CNF deployments were uninstalled/ =~ result[:output]).should_not be_nil
+  
+      lines = result[:output].split('\n')
+  
+      uninstallation_order = [
+        /Successfully uninstalled helm deployment "kibana"/,
+        /Successfully uninstalled helm deployment "logstash"/,
+        /Successfully uninstalled helm deployment "elasticsearch"/
+      ]
+  
+      # Find line indices for each uninstallation regex
+      uninstall_line_indices = uninstallation_order.map do |regex|
+        idx = lines.index { |line| regex =~ line }
+        idx.should_not be_nil
+        idx.not_nil!
+      end
+  
+      # Verify uninstallation order
+      uninstall_line_indices.each_cons(2) do |pair|
+        pair[1].should be > pair[0]
+      end
+    end
+  end  
 end
