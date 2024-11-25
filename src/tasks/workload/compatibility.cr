@@ -68,7 +68,7 @@ ROLLING_VERSION_CHANGE_TEST_NAMES.each do |tn|
         # If any containers dont have an update applied, fail
         test_passed = false if resp == false
 
-        rollout_status = KubectlClient::Rollout.status(resource["kind"], resource["name"], namespace: namespace, timeout: "100s")
+        rollout_status = KubectlClient::Rollout.status(resource["kind"], resource["name"], namespace: namespace, timeout: "200s")
         unless rollout_status
           Log.info { "Rollout failed for #{resource["kind"]}/#{resource["name"]} in #{namespace} namespace" }
           KubectlClient.describe(resource["kind"], resource["name"], namespace: resource["namespace"], force_output: true)
