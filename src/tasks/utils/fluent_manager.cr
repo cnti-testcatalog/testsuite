@@ -67,7 +67,7 @@ module FluentManager
             "fluentbit-values.yml",
             FLUENTBIT_VALUES,
             "fluent/fluent-bit",
-            "fluent/fluent-bit")
+            "fluent-bit/fluent-bit")
     end
   end
 
