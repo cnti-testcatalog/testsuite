@@ -27,17 +27,19 @@ module CNFInstall
         if !response[:status].success?
           stdout_failure "Helm installation failed, stderr:"
           stdout_failure "\t#{response[:error]}"
-          exit 1
+          return false
         end
       rescue e : Helm::InstallationFailed
         stdout_failure "Helm installation failed with message:"
         stdout_failure "\t#{e.message}"
-        exit 1
+        return false
       rescue e : Helm::CannotReuseReleaseNameError
         stdout_failure "Helm deployment \"#{@deployment_name}\" already exists in \"#{helm_namespace}\" namespace."
         stdout_failure "Change deployment name in CNF configuration or uninstall existing deployment."
-        exit 1
+        return false
       end
+
+      true
     end
 
     def uninstall()
@@ -77,10 +79,12 @@ module CNFInstall
       pull_response = Helm.pull(helm_pull_cmd)
       if !pull_response[:status].success?
         stdout_failure "Helm pull failed for deployment \"#{get_deployment_name()}\": #{pull_response[:error]}"
-        exit 1
+        return false
       end
+
       chart_path = File.join(helm_pull_destination, helm_chart_name)
       install_from_folder(chart_path, get_deployment_namespace(), @helm_chart_config.helm_values)
+      true
     end
 
     def get_deployment_config() : ConfigV2::HelmDeploymentConfig
@@ -97,10 +101,9 @@ module CNFInstall
     end
 
     def install()
-      chart_path = File.join(DEPLOYMENTS_DIR, @deployment_name, @helm_directory_config.helm_directory)
+      chart_path = File.join(DEPLOYMENTS_DIR, @deployment_name, File.basename(@helm_directory_config.helm_directory))
       install_from_folder(chart_path, get_deployment_namespace(), @helm_directory_config.helm_values)
     end
-
 
     def get_deployment_config() : ConfigV2::HelmDeploymentConfig
       @helm_directory_config

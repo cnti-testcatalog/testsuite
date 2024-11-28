@@ -1,0 +1,10 @@
+---
+config_version: v2
+deployments:
+  helm_dirs:
+  - name: coredns
+    helm_directory: coredns
+  - name: memcached
+    helm_directory: memcached
+  - name: nginx
+    helm_directory: nginx

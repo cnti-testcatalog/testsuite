@@ -14,7 +14,13 @@ module CNFInstall
     end
 
     def install()
+      if !Dir.exists?(@manifest_directory_path)
+        stdout_failure "Manifest directory #{@manifest_directory_path} was not found."
+        return false
+      end
+
       KubectlClient::Apply.file(@manifest_directory_path)
+      true
     end
 
     def uninstall()
