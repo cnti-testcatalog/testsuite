@@ -46,7 +46,7 @@ Usage:
   {{- $value = ( index $latestObj . ) -}}
   {{- $latestObj = $value -}}
 {{- end -}}
-{{- printf "%v" (default "" $value) -}} 
+{{- printf "%v" (default "" $value) -}}
 {{- end -}}
 
 {{/*
@@ -63,7 +63,7 @@ Usage:
     {{- $key = . }}
   {{- end -}}
 {{- end -}}
-{{- printf "%s" $key -}} 
+{{- printf "%s" $key -}}
 {{- end -}}
 
 {{/*
