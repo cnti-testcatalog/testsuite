@@ -24,7 +24,7 @@ helm repo add linkerd https://helm.linkerd.io/stable
 
 helm install linkerd-crds linkerd/linkerd-crds -n linkerd --create-namespace 
 
-.cnf-testsuite cnf_setup cnf-path=example-cnfs/linkerd2/cnf-testsuite.yml
+.cnf-testsuite cnf_install cnf-path=example-cnfs/linkerd2/cnf-testsuite.yml
 ```
 
 Run the test suite:
@@ -36,5 +36,5 @@ Run the test suite:
 linkerd uninstallation
 
 ```
-./cnf-testsuite cnf_cleanup
+./cnf-testsuite cnf_uninstall
 ```

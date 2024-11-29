@@ -176,7 +176,7 @@ describe "SampleUtils" do
     begin
       args = Sam::Args.new()
       config_path = "./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml"
-      ShellCmd.cnf_setup("cnf-config=#{config_path}")
+      ShellCmd.cnf_install("cnf-config=#{config_path}")
       config = CNFInstall::Config.parse_cnf_config_from_file(config_path)    
       task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
         test_passed = true
@@ -192,20 +192,20 @@ describe "SampleUtils" do
       end
       (task_response).should be_true 
     ensure
-      ShellCmd.cnf_cleanup()
+      ShellCmd.cnf_uninstall()
     end
   end
 
   it "Helm_values should be used during the installation of a cnf", tags: ["cnf-config"]  do
     begin
       # fails because doesn't have a service
-      ShellCmd.cnf_setup("cnf-path=./sample-cnfs/sample_coredns_values")
+      ShellCmd.cnf_install("cnf-path=./sample-cnfs/sample_coredns_values")
       deployment_containers = KubectlClient::Get.resource_containers("deployment", "coredns-coredns", "cnf-default")
       image_tags = KubectlClient::Get.container_image_tags(deployment_containers) 
       Log.info { "image_tags: #{image_tags}" }
       (/1.6.9/ =~ image_tags[0][:tag]).should_not be_nil
     ensure
-      result = ShellCmd.cnf_cleanup()
+      result = ShellCmd.cnf_uninstall()
     end
   end
 end

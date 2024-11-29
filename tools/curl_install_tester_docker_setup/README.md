@@ -25,7 +25,7 @@ cd # to make sure you are in home dir
 
 wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
 
-./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
+./cnf-testsuite cnf_install cnf-config=./cnf-testsuite.yml
 ```
 
 

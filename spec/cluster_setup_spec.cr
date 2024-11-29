@@ -16,7 +16,7 @@ describe "Cluster Setup" do
     (/Error: Namespace cnf-testsuite does not exist./ =~ result[:output]).should_not be_nil
   end
   
-  it "'install_cluster_tools' should give a message if namespace does not exist even after setup", tags: ["cluster_setup"]  do
+  it "'install_cluster_tools' should give a message if namespace does not exist even after dependency installation", tags: ["cluster_setup"]  do
     result = ShellCmd.run_testsuite("setup")
 
     KubectlClient::Delete.command("namespace #{ClusterTools.namespace}")

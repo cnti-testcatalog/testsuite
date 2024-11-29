@@ -9,10 +9,10 @@ task "generate_config" do |_, args|
   interactively_create_config()
 end
 
-task "cnf_setup", ["helm_local_install", "create_namespace"] do |_, args|
+task "cnf_install", ["helm_local_install", "create_namespace"] do |_, args|
   if CNFManager.cnf_installed?
-    stdout_warning "A CNF is already set up. Setting up multiple CNFs is not allowed."
-    stdout_warning "To set up a new CNF, uninstall the existing one by running: cnf_cleanup"
+    stdout_warning "A CNF is already installed. Installation of multiple CNFs is not allowed."
+    stdout_warning "To install a new CNF, uninstall the existing one by running: cnf_uninstall"
     exit 0
   end
   if ClusterTools.install
@@ -26,7 +26,7 @@ task "cnf_setup", ["helm_local_install", "create_namespace"] do |_, args|
   stdout_success "CNF installation complete."
 end
 
-task "cnf_cleanup" do |_, args|
+task "cnf_uninstall" do |_, args|
   CNFInstall.uninstall_cnf()
 end
 

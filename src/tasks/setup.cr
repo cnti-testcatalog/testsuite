@@ -6,7 +6,7 @@ require "totem"
 desc "Sets up the CNF test suite, the K8s cluster, and upstream projects"
 
 task "setup", ["version", "helm_local_install", "prereqs", "create_namespace", "configuration_file_setup", "install_apisnoop", "install_sonobuoy", "install_chart_testing", "cnf_testsuite_setup", "install_kind"] do  |_, args|
-  stdout_success "Setup complete"
+  stdout_success "Dependency installation complete"
 end
 
 task "create_namespace" do |_, args|

@@ -12,28 +12,28 @@ describe "Observability" do
 
   it "'log_output' should pass with a cnf that outputs logs to stdout", tags: ["observability"]  do
     begin
-      ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
       result = ShellCmd.run_testsuite("log_output verbose")
       result[:status].success?.should be_true
       (/(PASSED).*(Resources output logs to stdout and stderr)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.cnf_cleanup()
+      result = ShellCmd.cnf_uninstall()
     end
   end
 
   it "'log_output' should fail with a cnf that does not output logs to stdout", tags: ["observability"]  do
     begin
-      ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample_no_logs/cnf-testsuite.yml")
+      ShellCmd.cnf_install("cnf-config=sample-cnfs/sample_no_logs/cnf-testsuite.yml")
       result = ShellCmd.run_testsuite("log_output verbose")
       result[:status].success?.should be_true
       (/(FAILED).*(Resources do not output logs to stdout and stderr)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.cnf_cleanup()
+      result = ShellCmd.cnf_uninstall()
     end
   end
 
   it "'prometheus_traffic' should pass if there is prometheus traffic", tags: ["observability"] do
-    ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml")
+    ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml")
     helm = Helm::BinarySingleton.helm
 
     Log.info { "Add prometheus helm repo" }
@@ -49,26 +49,26 @@ describe "Observability" do
     test_result = ShellCmd.run_testsuite("prometheus_traffic")
     (/(PASSED).*(Your cnf is sending prometheus traffic)/ =~ test_result[:output]).should_not be_nil
   ensure
-    ShellCmd.cnf_cleanup()
+    ShellCmd.cnf_uninstall()
     result = ShellCmd.run("#{helm} delete prometheus", "helm_delete_prometheus")
     result[:status].success?.should be_true
   end
 
   it "'prometheus_traffic' should skip if there is no prometheus installed", tags: ["observability"] do
 
-      ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
       helm = Helm::BinarySingleton.helm
       result = ShellCmd.run("#{helm} delete prometheus", force_output: true)
 
       result = ShellCmd.run_testsuite("prometheus_traffic")
       (/(SKIPPED).*(Prometheus server not found)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.cnf_cleanup()
+      result = ShellCmd.cnf_uninstall()
   end
 
   it "'prometheus_traffic' should fail if the cnf is not registered with prometheus", tags: ["observability"] do
 
-      ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
       Log.info { "Installing prometheus server" }
       helm = Helm::BinarySingleton.helm
       result = ShellCmd.run("helm repo add prometheus-community https://prometheus-community.github.io/helm-charts", force_output: true)
@@ -80,13 +80,13 @@ describe "Observability" do
       result = ShellCmd.run_testsuite("prometheus_traffic")
       (/(FAILED).*(Your cnf is not sending prometheus traffic)/ =~ result[:output]).should_not be_nil
   ensure
-      result = ShellCmd.cnf_cleanup()
+      result = ShellCmd.cnf_uninstall()
       result = ShellCmd.run("#{helm} delete prometheus", force_output: true)
       result[:status].success?.should be_true
   end
 
   it "'open_metrics' should fail if there is not a valid open metrics response from the cnf", tags: ["observability"] do
-    ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml")
+    ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-prom-pod-discovery/cnf-testsuite.yml")
     result = ShellCmd.run("helm repo add prometheus-community https://prometheus-community.github.io/helm-charts", force_output: true)
     Log.info { "Installing prometheus server" }
     helm = Helm::BinarySingleton.helm
@@ -98,13 +98,13 @@ describe "Observability" do
     result = ShellCmd.run_testsuite("open_metrics")
     (/(FAILED).*(Your cnf's metrics traffic is not OpenMetrics compatible)/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.cnf_cleanup()
+    result = ShellCmd.cnf_uninstall()
     result = ShellCmd.run("#{helm} delete prometheus", force_output: true)
     result[:status].success?.should be_true
   end
 
   it "'open_metrics' should pass if there is a valid open metrics response from the cnf", tags: ["observability"] do
-    ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-openmetrics/cnf-testsuite.yml")
+    ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-openmetrics/cnf-testsuite.yml")
     result = ShellCmd.run("helm repo add prometheus-community https://prometheus-community.github.io/helm-charts", force_output: true)
     Log.info { "Installing prometheus server" }
     helm = Helm::BinarySingleton.helm
@@ -116,36 +116,36 @@ describe "Observability" do
     result = ShellCmd.run_testsuite("open_metrics")
     (/(PASSED).*(Your cnf's metrics traffic is OpenMetrics compatible)/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.cnf_cleanup()
+    result = ShellCmd.cnf_uninstall()
     result = ShellCmd.run("#{helm} delete prometheus", force_output: true)
     result[:status].success?.should be_true
   end
 
   it "'routed_logs' should pass if cnfs logs are captured by fluentd bitnami", tags: ["observability"] do
-    ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+    ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
     result = ShellCmd.run_testsuite("install_fluentdbitnami")
     result = ShellCmd.run_testsuite("routed_logs")
     (/(PASSED).*(Your CNF's logs are being captured)/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.cnf_cleanup()
+    result = ShellCmd.cnf_uninstall()
     result = ShellCmd.run_testsuite("uninstall_fluentdbitnami")
     result[:status].success?.should be_true
   end
 
   it "'routed_logs' should pass if cnfs logs are captured by fluentbit", tags: ["observability"] do
-    ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-fluentbit")
+    ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-fluentbit")
     result = ShellCmd.run_testsuite("install_fluentbit")
     result = ShellCmd.run_testsuite("routed_logs")
     (/(PASSED).*(Your CNF's logs are being captured)/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.cnf_cleanup()
+    result = ShellCmd.cnf_uninstall()
     result = ShellCmd.run_testsuite("uninstall_fluentbit")
     result[:status].success?.should be_true
   end
 
   it "'routed_logs' should fail if cnfs logs are not captured", tags: ["observability"] do
   
-    ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+    ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
     Helm.helm_repo_add("bitnami","https://charts.bitnami.com/bitnami")
     #todo  #helm install --values ./override.yml fluentd ./fluentd
     Helm.install("--values ./spec/fixtures/fluentd-values-bad.yml -n #{TESTSUITE_NAMESPACE} fluentd bitnami/fluentd")
@@ -155,7 +155,7 @@ describe "Observability" do
     result = ShellCmd.run_testsuite("routed_logs")
     (/(FAILED).*(Your CNF's logs are not being captured)/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.cnf_cleanup()
+    result = ShellCmd.cnf_uninstall()
     result = ShellCmd.run_testsuite("uninstall_fluentd")
     result[:status].success?.should be_true
   end

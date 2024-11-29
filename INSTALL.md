@@ -177,7 +177,7 @@ source test.sh
 </details>
 
 ### Configuration
-Now cnf-testsuite is setup, we're ready to configure it to point at a CNF to test.
+Now cnf-testsuite is prepared, we're ready to configure it to point at a CNF to test.
 
 #### Using an Example CNF
 
@@ -188,7 +188,7 @@ wget -O cnf-testsuite.yml https://raw.githubusercontent.com/cnti-testcatalog/tes
 ```
 - The wget gets a working config file, now tell cnf-testsuite to use it by doing the following:
 ```
-cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
+cnf-testsuite cnf_install cnf-config=./cnf-testsuite.yml
 ```
 
 - There are other examples in the [examples-cnfs](https://github.com/cnti-testcatalog/testsuite/tree/master/example-cnfs) directory that can be used for testing as well.
@@ -200,14 +200,14 @@ If you've brought your own CNF to test, review the [CNF_TESTSUITE_YML_USAGE.md](
 If you've followed the [CNF_TESTSUITE_YML_USAGE.md](CNF_TESTSUITE_YML_USAGE.md) guide and have your cnf-testsuite.yml ready, you can run the same command we ran for the example CNF to set it up:
 
 ```
-cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
+cnf-testsuite cnf_install cnf-config=./cnf-testsuite.yml
 ```
 
 ### Running cnf-testsuite for the first time
 
 #### Running Tests
 
-If you want to run all tests, do the following (this is assuming your `cnf_setup` ran without errors in the [configuration](#Configuration) steps:)
+If you want to run all tests, do the following (this is assuming your `cnf_install` ran without errors in the [configuration](#Configuration) steps:)
 _For complete usage, see the [USAGE.md](USAGE.md) doc._
 
 ```
@@ -233,12 +233,12 @@ A test log file, eg. `cnf-testsuite-results-20201216.txt`, will be created which
 
 For more details on points, see our [POINTS.md](./POINTS.md) documentation.
 
-#### Cleaning Up
+#### Uninstallation
 
 Run the following to uninstall the CNF (this is assuming you installed the cnf-testsuite.yml in your present working directory):
 ```
-cnf-testsuite cnf_cleanup
+cnf-testsuite cnf_uninstall
 ```
-You can also run `cleanall` and cnf-testsuite will attempt to cleanup everything.
+You can also run `cleanup` and cnf-testsuite will attempt to cleanup everything.
 
-_NOTE: Cleanup does not handle manually deployed CNFs_
+_NOTE: CNF uninstallation does not handle manually deployed CNFs_

@@ -21,7 +21,7 @@ Run cnf-testsuite setup
 Install Envoy
 
 ```
-./cnf-testsuite cnf_setup cnf-config=example-cnfs/envoy/cnf-testsuite.yml
+./cnf-testsuite cnf_install cnf-config=example-cnfs/envoy/cnf-testsuite.yml
 ```
 
 Run the test suite:
@@ -33,5 +33,5 @@ Run the test suite:
 Envoy uninstallation
 
 ```
-./cnf-testsuite cnf_cleanup
+./cnf-testsuite cnf_uninstall
 ```

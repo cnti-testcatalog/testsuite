@@ -14,7 +14,7 @@ describe "Compatibility" do
 
   it "'cni_compatible' should pass if the cnf works with calico and flannel", tags: ["compatibility"]  do
     begin
-      ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
       retry_limit = 5 
       retries = 1
       result = ShellCmd.run_testsuite("cni_compatible verbose")
@@ -28,19 +28,19 @@ describe "Compatibility" do
       (/(SKIPPED).*(cni_compatible test was temporarily disabled)/ =~ result[:output]).should_not be_nil
       #(/(PASSED).*(CNF compatible with both Calico and Cilium)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.cnf_cleanup()
+      result = ShellCmd.cnf_uninstall()
       result[:status].success?.should be_true
     end
   end
 
   it "'increase_decrease_capacity' should pass ", tags: ["increase_decrease_capacity"]  do
     begin
-      ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose skip_wait_for_install")
+      ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose skip_wait_for_install")
       result = ShellCmd.run_testsuite("increase_decrease_capacity verbose")
       result[:status].success?.should be_true
       (/(PASSED).*(Replicas increased to)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.cnf_cleanup()
+      result = ShellCmd.cnf_uninstall()
     end
   end
 end
