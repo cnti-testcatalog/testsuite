@@ -18,10 +18,10 @@ describe "Utils" do
   end
 
   before_each do
-    result = ShellCmd.run_testsuite("results_yml_cleanup")
+    result = ShellCmd.run_testsuite("delete_results")
   end
   after_each do
-    result = ShellCmd.run_testsuite("results_yml_cleanup")
+    result = ShellCmd.run_testsuite("delete_results")
   end
 
   it "'toggle' should return a boolean for a toggle in the config.yml", tags: ["args"] do
@@ -77,8 +77,8 @@ describe "Utils" do
     begin
       args = Sam::Args.new()
       config_path = "./sample-cnfs/sample-generic-cnf/cnf-testsuite.yml"
-      ShellCmd.cnf_setup("cnf-config=#{config_path}")
-      task_response = CNFManager::Task.single_task_runner(args) do |args, config|
+      ShellCmd.cnf_install("cnf-config=#{config_path}")
+      task_response = CNFManager::Task.single_task_runner(args) do |args, config| 
         Log.info { "single_task_runner spec args #{args.inspect}" }
         white_list_container_names = config.common.white_list_container_names
         Log.info { "white_list_container_names #{white_list_container_names.inspect}" }
@@ -109,7 +109,7 @@ describe "Utils" do
       end
       (task_response).should eq("✔️  PASSED: No privileged containers")
     ensure
-      ShellCmd.cnf_cleanup()
+      ShellCmd.cnf_uninstall()
     end
   end
 
@@ -176,13 +176,13 @@ describe "Utils" do
 
   it "'logger' or verbose output should be shown when verbose flag is set", tags: ["logger"] do
     begin
-      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample-coredns-cnf")
+      ShellCmd.cnf_install("cnf-path=sample-cnfs/sample-coredns-cnf")
       result = ShellCmd.run_testsuite("helm_deploy verbose", cmd_prefix: "LOG_LEVEL=info")
       puts result[:output]
       result[:status].success?.should be_true
       (/helm_deploy args/ =~ result[:output]).should_not be_nil
     ensure
-      ShellCmd.cnf_cleanup()
+      ShellCmd.cnf_uninstall()
     end
   end
 

@@ -8,7 +8,7 @@ This INSTALL guide will detail the minimum requirements needed for cnf-testsuite
 
 - [**Pre-Requisites**](#Pre-Requisites)
 - [**Installation**](#Installation)
-- [**Setup**](#Setup)
+- [**Preparation**](#Preparation)
 - [**Configuration**](#Configuration)
 - [**Running cnf-testsuite for the first time**](#Running-cnf-testsuite-for-the-first-time)
 
@@ -149,11 +149,11 @@ crystal spec
 
 </p></details>
 
-### Setup
+### Preparation
 
-Now that we have a `cnf-testsuite` binary, we can run `setup` to ensure it has all the pre-requisites needed in order to successfully run tests and setup required installed_cnf_files/ directory and other files required for cnf-testsuite.
+Now that we have a `cnf-testsuite` binary, we can run `setup` to ensure it has all the pre-requisites needed in order to successfully run tests and prepare required installed_cnf_files/ directory and other files required for cnf-testsuite.
 
-- Run the following to setup cnf-testsuite:
+- Run the following to prepare cnf-testsuite:
   ```
   ./cnf-testsuite setup
   ```
@@ -165,7 +165,7 @@ Now that we have a `cnf-testsuite` binary, we can run `setup` to ensure it has a
 
 ### Configuration
 
-Now that cnf-testsuite is installed and setup, we can now run CNF workloads and tests. We recommend installing and running a sample CNF to ensure cnf-testsuite is operational and set expectations of the output.
+Now that cnf-testsuite is installed and prepared, we can now run CNF workloads and tests. We recommend installing and running a sample CNF to ensure cnf-testsuite is operational and set expectations of the output.
 
 #### Configuring an example CNF
 
@@ -178,12 +178,12 @@ To use CoreDNS as an example CNF. Download the testsuite configuration to test C
 - Prepare the test suite to use the CNF by running:
   ```
   # via built binary
-  ./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
+  ./cnf-testsuite cnf_install cnf-config=./cnf-testsuite.yml
   ```
   Or
   ```
   # via crystal
-  crystal src/cnf-testsuite.cr cnf_setup cnf-config=./cnf-testsuite.yml
+  crystal src/cnf-testsuite.cr cnf_install cnf-config=./cnf-testsuite.yml
   ```
 
 There are other examples in the [example cnfs](example-cnfs) folder if you would like to test others.
@@ -197,7 +197,7 @@ There are other examples in the [example cnfs](example-cnfs) folder if you would
 
 #### Running Tests
 
-If you want to run all tests for CoreDNS Example CNF, do the following (this is assuming your `cnf_setup` ran without errors in the [configuration](#Configuring-an-example-CNF) steps:)
+If you want to run all tests for CoreDNS Example CNF, do the following (this is assuming your `cnf_install` ran without errors in the [configuration](#Configuring-an-example-CNF) steps:)
 _For complete usage, see the [USAGE.md](USAGE.md) doc._
 
 ```
@@ -221,7 +221,7 @@ You can also run via `crystal` by replacing the `./cnf-testsuite` with `crystal 
 #### More Example Usage (also see the [complete usage documentation](https://github.com/cnti-testcatalog/testsuite/blob/main/USAGE.md))
 
 ```
-# These assume you've already run the cnf_setup pointing at a cnf-testsuite.yml config above. You can always specify your config at the end of each command as well, eg:
+# These assume you've already run the cnf_install pointing at a cnf-testsuite.yml config above. You can always specify your config at the end of each command as well, eg:
 ./cnf-testsuite all cnf-config=<path to your config yml>/cnf-testsuite.yml
 
 # Runs all ga tests (generally available workload and platform tests)
@@ -253,17 +253,18 @@ A test log file, eg. `cnf-testsuite-results-20201216.txt`, will be created which
 
 For more details on points, see our [POINTS.md](./POINTS.md) documentation.
 
-#### Cleaning Up
+#### Uninstallation
 
 Run the following to uninstall the CNF:
 
 ```
-./cnf-testsuite cnf_cleanup
+./cnf-testsuite cnf_uninstall
 ```
 
-You can also run `cleanall` and cnf-testsuite will attempt to cleanup everything.
+You can also run `cleanup` and cnf-testsuite will attempt to cleanup everything.
 
-_NOTE: Cleanup does not handle manually deployed CNFs_
+_NOTE: CNF uninstallation does not handle manually deployed CNFs_
+
 #### NOTE: If the OpenMetrics version changes, the protobuf file will need to be regenerated
 ```
 git clone https://github.com/jeromegn/protobuf.cr

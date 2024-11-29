@@ -21,7 +21,7 @@ task "prereqs" do |_, args|
   ]
 
   if checks.includes?(false)
-    stdout_failure "Setup failed. Some prerequisites are missing. Please install all of the prerequisites before continuing."
+    stdout_failure "Dependency installation failed. Some prerequisites are missing. Please install all of the prerequisites before continuing."
     exit 1
   else
     stdout_success "All prerequisites found."

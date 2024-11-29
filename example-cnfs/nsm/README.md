@@ -20,7 +20,7 @@ Initialize the test suite
 Configure and deploy NSM as the target CNF
 
 ```
-./cnf-testsuite cnf_setup cnf-config=./example-cnfs/nsm/cnf-testsuite.yml deploy_with_chart=false
+./cnf-testsuite cnf_install cnf-config=./example-cnfs/nsm/cnf-testsuite.yml deploy_with_chart=false
 ```
 
 Run the all the tests
@@ -34,5 +34,5 @@ Check the results file
 Uninstall the CNF (including undeployment of NSM)
 
 ```
-./cnf-testsuite cnf_cleanup
+./cnf-testsuite cnf_uninstall
 ```

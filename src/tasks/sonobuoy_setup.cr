@@ -46,8 +46,8 @@ task "install_sonobuoy" do |_, args|
   end
 end
 
-desc "Cleans up Sonobuoy"
-task "sonobuoy_cleanup" do |_, args|
+desc "Uninstalls Sonobuoy"
+task "uninstall_sonobuoy" do |_, args|
   current_dir = FileUtils.pwd 
   sonobuoy = "#{tools_path}/sonobuoy/sonobuoy"
   status = Process.run(

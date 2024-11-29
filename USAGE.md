@@ -62,12 +62,12 @@ crystal build src/cnf-testsuite.cr
 #### Installing a cnf:
 
 ```
-./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml
+./cnf-testsuite cnf_install cnf-config=./cnf-testsuite.yml
 ```
 
 ##### Skip waiting for resource readiness during installation:
 ```
-./cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml skip_wait_for_install
+./cnf-testsuite cnf_install cnf-config=./cnf-testsuite.yml skip_wait_for_install
 ```
 
 #### Running all of the platform and workload tests:
