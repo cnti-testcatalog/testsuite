@@ -18,13 +18,13 @@ Follow [Pre-req steps](../../INSTALL.md#pre-requisites), including
 Initialize the test suite
 
 ```
-./cnf-testsuite setup
+./cnf-testsuite install_dependencies
 ```
 
 Configure and deploy CoreDNS as the target CNF
 
 ```
-./cnf-testsuite cnf_setup cnf-path=example-cnfs/coredns/cnf-testsuite.yml
+./cnf-testsuite cnf_install cnf-path=example-cnfs/coredns/cnf-testsuite.yml
 ```
 
 Run the all the tests
@@ -38,5 +38,5 @@ Check the results file
 Uninstall the CNF (including undeployment of CoreDNS)
 
 ```
-./cnf-testsuite cnf_cleanup
+./cnf-testsuite cnf_uninstall
 ```
