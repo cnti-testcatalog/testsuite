@@ -1,7 +1,7 @@
 # Test Suite Configuration Usage: cnf-testsuite.yml
 ### What is the cnf-testsuite.yml and why is it required?:
 
-The cnf-testsuite.yml is used by `cnf_setup` in order to install the CNF to be tested onto an existing K8s cluster. 
+The cnf-testsuite.yml is used by `cnf_install` in order to install the CNF to be tested onto an existing K8s cluster. 
 
 
 The information in the cnf-testsuite.yml is also used for additional configuration of some tests e.g. `white_list_container_names` is used for exculding containers from the [privileged_containers](https://github.com/cnti-testcatalog/testsuite/blob/main/src/tasks/workload/security.cr#L138) container test.
@@ -122,7 +122,7 @@ Described below: [link](#5G-parameters)
 
 Deployments are defined as three arrays, each for different installation method. Each array element represents one deployment, and they are meant to represent a single CNF together.
 At least one deployment should exist in CNF config for it to be a proper config.
-All info for deployments is used in cnf_setup and cnf_cleanup tasks.
+All info for deployments is used in cnf_install and cnf_uninstall tasks.
 
 ```yaml
 deployments:

@@ -14,12 +14,12 @@ describe "Resilience Pod Network corruption Chaos" do
 
   it "'pod_network_corruption' A 'Good' CNF should not crash when network corruption occurs", tags: ["pod_network_corruption"]  do
     begin
-      ShellCmd.cnf_setup("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
       result = ShellCmd.run_testsuite("pod_network_corruption verbose")
       result[:status].success?.should be_true
       (/(PASSED).*(pod_network_corruption chaos test passed)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.cnf_cleanup()
+      result = ShellCmd.cnf_uninstall()
       result[:status].success?.should be_true
       result = ShellCmd.run_testsuite("uninstall_litmus")
       result[:status].success?.should be_true
