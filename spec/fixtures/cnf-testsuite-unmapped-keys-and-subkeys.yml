@@ -1,5 +1,5 @@
 ---
-helm_directory: cnfs/coredns/helm_chart/coredns
+helm_directory: installed_cnf_files/coredns/helm_chart/coredns
 release_name: coredns
 helm_repository:
   name: stable 

@@ -1,7 +1,7 @@
 require "./utils/embedded_file_manager.cr"
 
 ESSENTIAL_PASSED_THRESHOLD = 15
-CNF_DIR = "cnfs"
+CNF_DIR = "installed_cnf_files"
 DEPLOYMENTS_DIR = File.join(CNF_DIR, "deployments")
 CNF_TEMP_FILES_DIR = File.join(CNF_DIR, "temp_files")
 CONFIG_FILE = "cnf-testsuite.yml"
@@ -30,6 +30,8 @@ WORKLOAD_RESOURCE_KIND_NAMES = ["replicaset", "deployment", "statefulset", "pod"
 
 TESTSUITE_NAMESPACE = "cnf-testsuite"
 DEFAULT_CNF_NAMESPACE = "cnf-default"
+# (kosstennbl) Needed only for manifest deployments, where we don't have control over installation namespace
+CLUSTER_DEFAULT_NAMESPACE = "default"
 
 #Embedded global text variables
 EmbeddedFileManager.node_failure_values

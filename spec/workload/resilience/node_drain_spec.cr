@@ -23,7 +23,7 @@ describe "Resilience Node Drain Chaos" do
         (/(SKIPPED).*(node_drain chaos test requires the cluster to have atleast two)/ =~ result[:output]).should_not be_nil
       end
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
       result = ShellCmd.run_testsuite("uninstall_litmus")
       result[:status].success?.should be_true

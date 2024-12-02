@@ -8,6 +8,7 @@
 *.swp
 *.swo
 /cnfs
+/installed_cnf_files
 /results
 /tools/chaos_mesh
 /tools/helm

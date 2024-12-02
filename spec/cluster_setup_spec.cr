@@ -6,8 +6,7 @@ require "cluster_tools"
 
 describe "Cluster Setup" do
   before_each do
-    result = ShellCmd.run_testsuite("cleanup")
-    result[:status].success?.should be_true
+    result = ShellCmd.environment_cleanup()
   end
 
   it "'install_cluster_tools' should give a message if namespace does not exist", tags: ["cluster_setup"]  do

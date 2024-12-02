@@ -213,9 +213,6 @@ end
 desc "Does the CNF have hardcoded IPs in the K8s resource configuration"
 task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |t, args|
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
-    helm_chart = config.deployments.get_deployment_param(:helm_chart)
-    helm_directory = config.deployments.get_deployment_param(:helm_directory)
-    destination_cnf_dir = config.dynamic.destination_cnf_dir
     current_dir = FileUtils.pwd
     helm = Helm::BinarySingleton.helm
     VERBOSE_LOGGING.info "Helm Path: #{helm}" if check_verbose(args)
@@ -293,7 +290,7 @@ task "secrets_used" do |t, args|
       #  but do not have a corresponding k8s secret defined, this
       #  is an installation problem, and does not stop the test from passing
 
-      namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
+      namespace = resource[:namespace]
       secrets = KubectlClient::Get.secrets(namespace: namespace)
 
       secrets["items"].as_a.each do |s|
@@ -451,14 +448,13 @@ task "immutable_configmap" do |t, args|
   resp = ""
 
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
-    destination_cnf_dir = config.dynamic.destination_cnf_dir
 
     # https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
 
     # feature test to see if immutable_configmaps are enabled
     # https://github.com/cnti-testcatalog/testsuite/issues/508#issuecomment-758438413
 
-    test_config_map_filename = "#{destination_cnf_dir}/config_maps/test_config_map.yml";
+    test_config_map_filename = "#{CNF_TEMP_FILES_DIR}/test_config_map.yml";
 
     template = ImmutableConfigMapTemplate.new("doesnt_matter").to_s
     Log.for(t.name).debug { "test immutable_configmap template: #{template}" }
@@ -500,7 +496,7 @@ task "immutable_configmap" do |t, args|
 
         # If the install type is manifest, the namesapce would be in the manifest.
         # Else rely on config for helm-based install
-        namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
+        namespace = resource[:namespace]
         configmaps = KubectlClient::Get.configmaps(namespace: namespace)
         if configmaps.dig?("items")
           configmaps = configmaps.dig("items").as_a
@@ -571,16 +567,16 @@ task "alpha_k8s_apis" do |t, args|
     Log.info { "apisnoop cluster kubeconfig: #{cluster.kubeconfig}" }
     ENV["KUBECONFIG"] = "#{cluster.kubeconfig}"
 
-    cnf_setup_complete = CNFManager.cnf_to_new_cluster(config, cluster.kubeconfig)
+    cnf_install_complete = CNFManager.cnf_to_new_cluster(config, cluster.kubeconfig)
 
-    # CNF setup failed on kind cluster. Inform in test output.
-    unless cnf_setup_complete
+    # CNF installation failed on kind cluster. Inform in test output.
+    unless cnf_install_complete
       puts "CNF failed to install on apisnoop cluster".colorize(:red)
       next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Could not check CNF for usage of Kubernetes alpha APIs")
     end
 
-    # CNF setup was fine on kind cluster. Check for usage of alpha Kubernetes APIs.
-    Log.info { "CNF setup complete on apisnoop cluster" }
+    # CNF installation was fine on kind cluster. Check for usage of alpha Kubernetes APIs.
+    Log.info { "CNF installation complete on apisnoop cluster" }
 
     Log.info { "Query the apisnoop database" }
     k8s_major_minor_version = k8s_server_version.split(".")[0..1].join(".")

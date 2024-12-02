@@ -37,7 +37,7 @@ ROLLING_VERSION_CHANGE_TEST_NAMES.each do |tn|
       # note: all images are not on docker hub nor are they always on a docker hub compatible api
 
       task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-        namespace = resource["namespace"] || CNFManager.get_deployment_namespace(config)
+        namespace = resource["namespace"]
         test_passed = true
         valid_cnf_testsuite_yml = true
         Log.for(t.name).debug { "container: #{container}" }
@@ -109,7 +109,7 @@ task "rollback" do |t, args|
     task_response = update_applied && CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
         resource_kind = resource["kind"]
         resource_name = resource["name"]
-        namespace = resource["namespace"] || CNFManager.get_deployment_namespace(config)
+        namespace = resource["namespace"]
         container_name = container.as_h["name"].as_s
         full_image_name_tag = container.as_h["image"].as_s.rpartition(":")
         image_name = full_image_name_tag[0]
@@ -389,10 +389,9 @@ task "helm_deploy" do |t, args|
 
   CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do |args, config|
     if check_cnf_config(args) || CNFManager.destination_cnfs_exist?
-      install_method = config.deployments.get_install_method()
-      helm_used = install_method[0].is_a?(CNFInstall::InstallMethod::HelmDirectory) || install_method[0].is_a?(CNFInstall::InstallMethod::HelmChart)
+      helm_used = !config.deployments.helm_charts.empty? || !config.deployments.helm_dirs.empty?
 
-      if helm_used == "true"
+      if helm_used
         CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "CNF is installed via helm")
       else
         CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "CNF has deployments that are not installed with helm")
@@ -463,12 +462,12 @@ task "helm_chart_valid", ["helm_local_install"] do |t, args|
 
     # Collect helm chart paths
     config.deployments.helm_charts.each do |deployment|
-      chart_dirs << {"#{current_dir}/#{CNF_DIR}/#{deployment.name}/exported_chart", deployment.name}
+      chart_dirs << { File.join(current_dir, DEPLOYMENTS_DIR, deployment.name, deployment.helm_chart_name), deployment.name}
     end
 
     # Collect helm directory paths
     config.deployments.helm_dirs.each do |deployment|
-      chart_dirs << {"#{current_dir}/#{CNF_DIR}/#{deployment.name}/chart", deployment.name}
+      chart_dirs << { File.join(current_dir, DEPLOYMENTS_DIR, deployment.name, deployment.helm_directory), deployment.name}
     end
 
     # Initialize flags to track the task state

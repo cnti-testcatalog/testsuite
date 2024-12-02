@@ -30,8 +30,8 @@ Run the test suite:
 ./cnf-testsuite all
 ```
 
-Envoy cleanup
+Envoy uninstallation
 
 ```
-./cnf-testsuite cnf_cleanup cnf-path=example-cnfs/envoy
+./cnf-testsuite cnf_cleanup
 ```

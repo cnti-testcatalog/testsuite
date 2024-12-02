@@ -151,7 +151,7 @@ crystal spec
 
 ### Setup
 
-Now that we have a `cnf-testsuite` binary, we can run `setup` to ensure it has all the pre-requisites needed in order to successfully run tests and setup required cnfs/ directory and other files required for cnf-testsuite.
+Now that we have a `cnf-testsuite` binary, we can run `setup` to ensure it has all the pre-requisites needed in order to successfully run tests and setup required installed_cnf_files/ directory and other files required for cnf-testsuite.
 
 - Run the following to setup cnf-testsuite:
   ```
@@ -255,10 +255,10 @@ For more details on points, see our [POINTS.md](./POINTS.md) documentation.
 
 #### Cleaning Up
 
-Run the following to cleanup the specific cnf-testsuite test:
+Run the following to uninstall the CNF:
 
 ```
-./cnf-testsuite cnf_cleanup cnf-config=./cnf-testsuite.yml
+./cnf-testsuite cnf_cleanup
 ```
 
 You can also run `cleanall` and cnf-testsuite will attempt to cleanup everything.

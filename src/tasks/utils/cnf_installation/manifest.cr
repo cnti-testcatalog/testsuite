@@ -92,30 +92,5 @@ module CNFInstall
         Log.info { "#{deployment_name} manifest was appended into #{destination_file} file" }
       end
     end
-    
-    def self.generate_common_manifest(config, deployment_name, namespace)
-      manifest_generated_successfully = true
-      case config.dynamic.install_method[0]
-      when CNFInstall::InstallMethod::ManifestDirectory
-        destination_cnf_dir = config.dynamic.destination_cnf_dir
-        manifest_directory = config.deployments.get_deployment_param(:manifest_directory)
-        list_of_manifests = manifest_file_list( destination_cnf_dir + "/" + manifest_directory )
-        list_of_manifests.each do |manifest_path|
-          manifest = File.read(manifest_path)
-          add_manifest_to_file(deployment_name, manifest, COMMON_MANIFEST_FILE_PATH)
-        end
-      
-      when CNFInstall::InstallMethod::HelmChart, CNFInstall::InstallMethod::HelmDirectory
-        begin
-          generated_manifest = Helm.generate_manifest(deployment_name, namespace)
-          generated_manifest_with_namespaces = add_namespace_to_resources(generated_manifest, namespace)
-          add_manifest_to_file(deployment_name, generated_manifest_with_namespaces, COMMON_MANIFEST_FILE_PATH)
-        rescue ex : Helm::ManifestGenerationError
-          Log.for("generate_common_manifest").error { ex.message }
-          manifest_generated_successfully = false
-        end
-      end
-      manifest_generated_successfully
-    end
   end
 end

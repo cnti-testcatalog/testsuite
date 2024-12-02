@@ -18,7 +18,7 @@ describe "State" do
       result = ShellCmd.run_testsuite("elastic_volumes verbose", cmd_prefix: "LOG_LEVEL=info")
       (/(PASSED).*(All used volumes are elastic)/ =~ result[:output]).should be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-elastic-volume/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -31,7 +31,7 @@ describe "State" do
       result = ShellCmd.run_testsuite("elastic_volumes verbose", cmd_prefix: "LOG_LEVEL=info")
       (/FAILED/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample_nonroot")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -45,7 +45,7 @@ describe "State" do
       (/(PASSED).*(CNF uses database with cloud-native persistence)/ =~ result[:output]).should_not be_nil
     ensure
       #todo fix cleanup for helm directory with parameters
-      ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-mysql/cnf-testsuite.yml")
+      ShellCmd.cnf_cleanup()
       ShellCmd.run("kubectl delete pvc data-mysql-0", "delete_pvc")
     end
   end
@@ -56,7 +56,7 @@ describe "State" do
       result = ShellCmd.run_testsuite("elastic_volumes verbose", cmd_prefix: "LOG_LEVEL=info")
       (/(FAILED).*(Some of the used volumes are not elastic)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=./sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end
@@ -70,7 +70,7 @@ describe "State" do
       result = ShellCmd.run_testsuite("no_local_volume_configuration verbose")
       (/(FAILED).*(local storage configuration volumes found)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-local-storage/cnf-testsuite.yml deploy_with_chart=false")
+      result = ShellCmd.cnf_cleanup()
       update_yml("sample-cnfs/sample-local-storage/worker-node-value.yml", "worker_node", "")
       result[:status].success?.should be_true
     end
@@ -82,7 +82,7 @@ describe "State" do
       result = ShellCmd.run_testsuite("no_local_volume_configuration verbose")
       (/(PASSED).*(local storage configuration volumes not found)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml deploy_with_chart=false")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end

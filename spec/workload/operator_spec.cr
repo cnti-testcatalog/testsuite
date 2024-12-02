@@ -27,7 +27,7 @@ describe "Operator" do
       result = ShellCmd.run_testsuite("operator_installed", cmd_prefix: "LOG_LEVEL=info")
       (/(PASSED).*(Operator is installed)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=./sample-cnfs/sample_operator", cmd_prefix: "LOG_LEVEL=info")
+      result = ShellCmd.cnf_cleanup(cmd_prefix: "LOG_LEVEL=info")
       result[:status].success?.should be_true
       pods = KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("catalog-operator", "operator-lifecycle-manager"), "operator-lifecycle-manager") + KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("olm-operator", "operator-lifecycle-manager"), "operator-lifecycle-manager") + KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("packageserver", "operator-lifecycle-manager"), "operator-lifecycle-manager")
 
@@ -71,7 +71,7 @@ describe "Operator" do
       result = ShellCmd.run_testsuite("operator_installed", cmd_prefix: "LOG_LEVEL=info")
       (/(N\/A).*(No Operators Found)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-path=sample-cnfs/sample_coredns")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
     end
   end

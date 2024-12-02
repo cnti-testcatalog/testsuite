@@ -19,7 +19,7 @@ describe "Resilience Pod Network Latency Chaos" do
       result[:status].success?.should be_true
       (/(PASSED).*(pod_network_latency chaos test passed)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.run_testsuite("cnf_cleanup cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
+      result = ShellCmd.cnf_cleanup()
       result[:status].success?.should be_true
       result = ShellCmd.run_testsuite("uninstall_litmus")
       result[:status].success?.should be_true

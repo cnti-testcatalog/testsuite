@@ -87,10 +87,9 @@ task "pod_network_latency", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     #todo if args has list of labels to perform test on, go into pod specific mode
     #TODO tests should fail if cnf not installed
-    destination_cnf_dir = config.dynamic.destination_cnf_dir
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       Log.info { "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}" }
-      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
+      app_namespace = resource[:namespace]
 
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0 && resource["kind"] == "Deployment"
@@ -162,9 +161,9 @@ task "pod_network_latency", ["install_litmus"] do |t, args|
             "#{spec_labels.as_h.first_value}"
           ).to_s
         end
-
-        File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
-        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        chaos_template_path = File.join(CNF_TEMP_FILES_DIR, "#{chaos_experiment_name}-chaosengine.yml")
+        File.write(chaos_template_path, template)
+        KubectlClient::Apply.file(chaos_template_path)
         LitmusManager.wait_for_test(test_name, chaos_experiment_name, args, namespace: app_namespace)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
       end
@@ -185,10 +184,9 @@ desc "Does the CNF crash when network corruption occurs"
 task "pod_network_corruption", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     #TODO tests should fail if cnf not installed
-    destination_cnf_dir = config.dynamic.destination_cnf_dir
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
       Log.info {"Current Resource Name: #{resource["name"]} Type: #{resource["kind"]}"}
-      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
+      app_namespace = resource[:namespace]
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0 && resource["kind"] == "Deployment"
         test_passed = true
@@ -221,8 +219,9 @@ task "pod_network_corruption", ["install_litmus"] do |t, args|
           "#{spec_labels.first_key}",
           "#{spec_labels.first_value}"
         ).to_s
-        File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
-        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        chaos_template_path = File.join(CNF_TEMP_FILES_DIR, "#{chaos_experiment_name}-chaosengine.yml")
+        File.write(chaos_template_path, template)
+        KubectlClient::Apply.file(chaos_template_path)
         LitmusManager.wait_for_test(test_name, chaos_experiment_name, args, namespace: app_namespace)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name, args, namespace: app_namespace)
       end
@@ -239,9 +238,8 @@ desc "Does the CNF crash when network duplication occurs"
 task "pod_network_duplication", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     #TODO tests should fail if cnf not installed
-    destination_cnf_dir = config.dynamic.destination_cnf_dir
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
+      app_namespace = resource[:namespace]
       Log.info{ "Current Resource Name: #{resource["name"]} Type: #{resource["kind"]} Namespace: #{resource["namespace"]}"}
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0 && resource["kind"] == "Deployment"
@@ -277,8 +275,9 @@ task "pod_network_duplication", ["install_litmus"] do |t, args|
           "#{spec_labels.first_key}",
           "#{spec_labels.first_value}"
         ).to_s
-        File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
-        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        chaos_template_path = File.join(CNF_TEMP_FILES_DIR, "#{chaos_experiment_name}-chaosengine.yml")
+        File.write(chaos_template_path, template)
+        KubectlClient::Apply.file(chaos_template_path)
         LitmusManager.wait_for_test(test_name, chaos_experiment_name, args, namespace: app_namespace)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
       end
@@ -294,9 +293,8 @@ end
 desc "Does the CNF crash when disk fill occurs"
 task "disk_fill", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    destination_cnf_dir = config.dynamic.destination_cnf_dir
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
+      app_namespace = resource[:namespace]
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
@@ -333,8 +331,9 @@ task "disk_fill", ["install_litmus"] do |t, args|
           "#{spec_labels.first_key}",
           "#{spec_labels.first_value}"
         ).to_s
-        File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
-        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        chaos_template_path = File.join(CNF_TEMP_FILES_DIR, "#{chaos_experiment_name}-chaosengine.yml")
+        File.write(chaos_template_path, template)
+        KubectlClient::Apply.file(chaos_template_path)
         LitmusManager.wait_for_test(test_name, chaos_experiment_name, args, namespace: app_namespace)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name, chaos_experiment_name, args, namespace: app_namespace)
       end
@@ -351,10 +350,9 @@ end
 desc "Does the CNF crash when pod-delete occurs"
 task "pod_delete", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    destination_cnf_dir = config.dynamic.destination_cnf_dir
     #todo clear all annotations
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
+      app_namespace = resource[:namespace]
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
@@ -433,8 +431,9 @@ task "pod_delete", ["install_litmus"] do |t, args|
       end
 
         Log.info { "template: #{template}" }
-        File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
-        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        chaos_template_path = File.join(CNF_TEMP_FILES_DIR, "#{chaos_experiment_name}-chaosengine.yml")
+        File.write(chaos_template_path, template)
+        KubectlClient::Apply.file(chaos_template_path)
         LitmusManager.wait_for_test(test_name, chaos_experiment_name, args, namespace: app_namespace)
       end
       test_passed=LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
@@ -452,9 +451,8 @@ end
 desc "Does the CNF crash when pod-memory-hog occurs"
 task "pod_memory_hog", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    destination_cnf_dir = config.dynamic.destination_cnf_dir
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
+      app_namespace = resource[:namespace]
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
@@ -492,8 +490,9 @@ task "pod_memory_hog", ["install_litmus"] do |t, args|
           target_pod_name
         ).to_s
 
-        File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
-        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        chaos_template_path = File.join(CNF_TEMP_FILES_DIR, "#{chaos_experiment_name}-chaosengine.yml")
+        File.write(chaos_template_path, template)
+        KubectlClient::Apply.file(chaos_template_path)
         LitmusManager.wait_for_test(test_name, chaos_experiment_name, args, namespace: app_namespace)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
       end
@@ -510,9 +509,8 @@ end
 desc "Does the CNF crash when pod-io-stress occurs"
 task "pod_io_stress", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    destination_cnf_dir = config.dynamic.destination_cnf_dir
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-      app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
+      app_namespace = resource[:namespace]
       spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
       if spec_labels.as_h? && spec_labels.as_h.size > 0
         test_passed = true
@@ -550,8 +548,9 @@ task "pod_io_stress", ["install_litmus"] do |t, args|
           target_pod_name
         ).to_s
 
-        File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
-        KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+        chaos_template_path = File.join(CNF_TEMP_FILES_DIR, "#{chaos_experiment_name}-chaosengine.yml")
+        File.write(chaos_template_path, template)
+        KubectlClient::Apply.file(chaos_template_path)
         LitmusManager.wait_for_test(chaos_test_name, chaos_experiment_name, args, namespace: app_namespace)
         test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
       end
@@ -572,12 +571,11 @@ end
 desc "Does the CNF crash when pod-dns-error occurs"
 task "pod_dns_error", ["install_litmus"] do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    destination_cnf_dir = config.dynamic.destination_cnf_dir
     runtimes = KubectlClient::Get.container_runtimes
     Log.info { "pod_dns_error runtimes: #{runtimes}" }
     if runtimes.find{|r| r.downcase.includes?("docker")}
       task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
-        app_namespace = resource[:namespace] || CNFManager.get_deployment_namespace(config)
+        app_namespace = resource[:namespace]
         spec_labels = KubectlClient::Get.resource_spec_labels(resource["kind"], resource["name"], resource["namespace"])
         if spec_labels.as_h? && spec_labels.as_h.size > 0
           test_passed = true
@@ -613,9 +611,9 @@ task "pod_dns_error", ["install_litmus"] do |t, args|
             "#{spec_labels.first_key}",
             "#{spec_labels.first_value}"
           ).to_s
-
-          File.write("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml", template)
-          KubectlClient::Apply.file("#{destination_cnf_dir}/#{chaos_experiment_name}-chaosengine.yml")
+          chaos_template_path = File.join(CNF_TEMP_FILES_DIR, "#{chaos_experiment_name}-chaosengine.yml")
+          File.write(chaos_template_path, template)
+          KubectlClient::Apply.file(chaos_template_path)
           LitmusManager.wait_for_test(test_name, chaos_experiment_name, args, namespace: app_namespace)
           test_passed = LitmusManager.check_chaos_verdict(chaos_result_name,chaos_experiment_name,args, namespace: app_namespace)
         end

@@ -38,7 +38,7 @@ task "all", ["workload", "platform"] do  |_, args|
 end
 
 desc "The CNF Test Suite program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
-task "workload", ["automatic_cnf_install", "ensure_cnf_installed", "configuration_file_setup", "compatibility","state", "security", "configuration", "observability", "microservice", "resilience"] do  |_, args|
+task "workload", ["ensure_cnf_installed", "configuration_file_setup", "compatibility","state", "security", "configuration", "observability", "microservice", "resilience"] do  |_, args|
   VERBOSE_LOGGING.info "workload" if check_verbose(args)
 
   total = CNFManager::Points.total_points("workload")
@@ -90,13 +90,6 @@ task "upsert_release" do |_, args|
   else
     puts "Not creating a release for: #{ReleaseManager::VERSION}".colorize(:red)
   end
-end
-
-task "automatic_cnf_install" do |_, args|
-  VERBOSE_LOGGING.info "all_prereqs" if check_verbose(args)
-  # check_cnf_config_then_deploy(args)
-  cli_hash = CNFManager.sample_setup_cli_args(args, false)
-  CNFManager.sample_setup(cli_hash) if !cli_hash["config_file"].empty?
 end
 
 task "test" do
