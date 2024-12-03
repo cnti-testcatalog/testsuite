@@ -25,13 +25,13 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - id: set-matrix
       run: |
         JSON="{\"include\":["
-        TEST_ARRAY=$(grep -roP --no-filename 'tags: \K(\[|")(.*)(\]|")' spec/ | tr -d '[],' | tr -s '\n' ' ' | xargs -n1 | sort -u | xargs)
+        TEST_ARRAY=$(grep -roP --no-filename 'tags: \K(\[|")(.*)(\]|")' spec/ | tr -d '[],' | tr -s '\n' ' ' | xargs -n1 | sort -u | xargs | sed s/:/_/g)
         TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-config-lifecycle/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-microservice/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-all/}")
@@ -67,7 +67,7 @@ jobs:
       run: |
         sudo rm -rf /tmp/*
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Mirror Setup
@@ -138,7 +138,7 @@ jobs:
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         kubectl get nodes 
     - name: Cache crystal shards
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       env:
         cache-name: cache-crystal-shards
       with:
@@ -203,9 +203,9 @@ jobs:
       continue-on-error: true
     - name: upload artifact
       if: ${{ always() }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: log
+        name: log_${{ matrix.spec }}
         path: /tmp/output-dir
         
   chaos:
@@ -218,7 +218,7 @@ jobs:
         tag: ["pod_delete", "pod_io_stress", "pod_memory_hog", "pod_network_latency", "disk_fill", "pod_network_corruption", "pod_network_duplication", "zombie", "oran"]
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Install Latest Kind
@@ -255,7 +255,7 @@ jobs:
         kubectl get nodes 
 
     - name: Cache crystal shards
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       env:
         cache-name: cache-crystal-shards
       with:
@@ -294,9 +294,9 @@ jobs:
       continue-on-error: true
     - name: upload artifact
       if: ${{ always() }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: log
+        name: log_${{ matrix.tag }}
         path: /tmp/output-dir
 
   build:
@@ -306,11 +306,11 @@ jobs:
       CRYSTAL_IMAGE: "conformance/crystal:1.6.2-alpine"
     steps: 
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Cache crystal shards
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       env:
         cache-name: cache-crystal-shards
       with:
@@ -324,7 +324,7 @@ jobs:
         docker run --rm -v $PWD:/workspace -w /workspace $CRYSTAL_IMAGE shards install
         docker run --rm -v $PWD:/workspace -w /workspace $CRYSTAL_IMAGE crystal build --warnings none src/cnf-testsuite.cr --release --static --link-flags '-lxml2 -llzma'
     - name: upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: release
         path: cnf-testsuite
@@ -337,11 +337,11 @@ jobs:
       run: |
         sudo rm -rf /tmp/*
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Cache crystal shards
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       env:
         cache-name: cache-crystal-shards
       with:
@@ -408,9 +408,9 @@ jobs:
       continue-on-error: true
     - name: upload artifact
       if: ${{ always() }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: log
+        name: log_test_binary_configuration_lifecycle
         path: /tmp/output-dir
 
   test_binary_microservice:
@@ -421,11 +421,11 @@ jobs:
       run: |
         sudo rm -rf /tmp/*
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Cache crystal shards
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       env:
         cache-name: cache-crystal-shards
       with:
@@ -488,9 +488,9 @@ jobs:
       continue-on-error: true
     - name: upload artifact
       if: ${{ always() }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: log
+        name: log_test_binary_microservice
         path: /tmp/output-dir
 
   test_binary_all:
@@ -501,11 +501,11 @@ jobs:
       run: |
         sudo rm -rf /tmp/*
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Cache crystal shards
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       env:
         cache-name: cache-crystal-shards
       with:
@@ -568,9 +568,9 @@ jobs:
       continue-on-error: true
     - name: upload artifact
       if: ${{ always() }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: log
+        name: log_test_binary_all
         path: /tmp/output-dir
 
   release:
@@ -579,11 +579,11 @@ jobs:
     runs-on: ubuntu-latest
     steps: 
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Download artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: release
     - name: Make release executable
