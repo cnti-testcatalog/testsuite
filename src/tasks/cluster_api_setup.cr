@@ -35,6 +35,16 @@ task "cluster_api_setup" do |_, args|
 
   File.write("#{clusterctl}/clusterctl.yaml", "CLUSTER_TOPOLOGY: \"true\"")
 
+  begin
+    KubectlClient::Create.namespace("cert-manager")
+    cmd = "kubectl label namespace cert-manager pod-security.kubernetes.io/enforce=privileged"
+    ShellCmd.run(cmd, "Label.namespace")
+  rescue e : KubectlClient::Create::AlreadyExistsError
+    Log.for("ensure_namespace_exists").info { "Kubernetes namespace cert-manager already exists for the CNF install" }
+    cmd = "kubectl label --overwrite namespace cert-manager pod-security.kubernetes.io/enforce=privileged"
+    ShellCmd.run(cmd, "Label.namespace")
+  end
+
   cluster_init_cmd = "clusterctl init --infrastructure docker"
   stdout = IO::Memory.new
   Process.run(cluster_init_cmd, shell: true, output: stdout, error: stdout)

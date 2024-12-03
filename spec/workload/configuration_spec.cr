@@ -315,6 +315,7 @@ describe CnfTestSuite do
 
   it "'default_namespace' should fail if a cnf creates resources in the default namespace", tags: ["default_namespace"] do
     begin
+      ShellCmd.run("kubectl label namespace default pod-security.kubernetes.io/enforce=privileged", "Label.namespace")
       ShellCmd.cnf_setup("cnf-config=./sample-cnfs/sample_coredns_default_namespace")
       result = ShellCmd.run_testsuite("default_namespace verbose")
       result[:status].success?.should be_true
@@ -322,6 +323,7 @@ describe CnfTestSuite do
     ensure
       result = ShellCmd.cnf_cleanup()
       KubectlClient::Utils.wait_for_terminations()
+      ShellCmd.run("kubectl label namespace default pod-security.kubernetes.io/enforce-", "Label.namespace")
     end
   end
 
