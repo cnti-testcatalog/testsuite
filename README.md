@@ -55,20 +55,9 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
   - Meetings every Tuesday at 8:00am - 9:00am Pacific Time 
   - Meeting minutes are [here](https://docs.google.com/document/d/1yjL079TR0L1q__BRuhREeXfx5MtAmjPzbFZlZUeBsK4/edit)
 
-## Past Presentations
+## Implementation Overview
 
-**CNTI Test Catalog Demo 2021**
-- [Recording](https://drive.google.com/file/d/1SBHE5Dqx6Sa-m83WODbCEbbdiB2_l_U2/view?usp=sharing)
-- [Slides](https://github.com/cnti-testcatalog/testsuite/files/6857515/SHARED-COMMON.CNF.Test.Suite.Demo.and.CNF.initiatives.overview.2021-06-29.pdf) (PDF)
-
-**Crystal in the Cloud: A cloud native journey at Crystal 1.0 Conference 2021**
-- [Recording](https://youtu.be/n8g60VglyUw)
-- [Slides](https://github.com/cnti-testcatalog/testsuite/files/6785788/Crystal.1.0.Crystal.in.the.Cloud_.CNF.Test.Suite.pdf) (PDF)
-
-
-## Implementation overview
-
-The CNTI Test Catalog leverages upstream tools such as [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Helm linter](https://github.com/helm/chart-testing), and [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) for testing CNFs. The upstream tool installation, configuration, and versioning has been made repeatable.
+The CNTi Test Catalog leverages upstream tools such as [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Helm linter](https://github.com/helm/chart-testing), and [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) for testing CNFs. The upstream tool installation, configuration, and versioning has been made repeatable.
 
 The test framework and tests (using the upstream tools) are written in the human-readable, compiled language, [Crystal](https://crystal-lang.org/). Common capabilities like dependencies between tests and categories are supported.
 
