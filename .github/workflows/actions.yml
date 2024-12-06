@@ -20,7 +20,7 @@ concurrency:
 jobs:
   tests:
     name: Fetch Matrix Tests
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -211,7 +211,7 @@ jobs:
   chaos:
     name: Chaos & Oran Tests
     needs: [tests]
-    runs-on: [ubuntu-22.04]
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -301,7 +301,7 @@ jobs:
 
   build:
     name: Build Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       CRYSTAL_IMAGE: "conformance/crystal:1.6.2-alpine"
     steps: 
@@ -576,7 +576,7 @@ jobs:
   release:
     name: Publish Release
     needs: [spec, build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps: 
     - name: Checkout code
       uses: actions/checkout@v4
