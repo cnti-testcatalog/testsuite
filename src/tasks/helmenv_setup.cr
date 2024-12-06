@@ -64,8 +64,8 @@ task "helm_local_install", ["cnf_directory_setup"] do |_, args|
 end
 
 desc "Cleans up helm 3.8.2"
-task "helm_local_cleanup" do |_, args|
-  Log.for("verbose").info { "helm_local_cleanup" } if check_verbose(args)
+task "uninstall_local_helm" do |_, args|
+  Log.for("verbose").info { "uninstall_local_helm" } if check_verbose(args)
   current_dir = FileUtils.pwd 
   FileUtils.rm_rf("#{tools_path}/helm")
 end

@@ -14,13 +14,13 @@ Follow [Pre-req steps](../../INSTALL.md#pre-requisites), including
 Initialize the test suite
 
 ```
-crystal src/cnf-testsuite.cr setup
+crystal src/cnf-testsuite.cr install_dependencies
 ```
 
 Configure and deploy nsm-nat as the target CNF
 
 ```
-crystal src/cnf-testsuite.cr cnf_setup cnf-config=./example-cnfs/pantheon-nsm-nat/cnf-testsuite.yml deploy_with_chart=false
+crystal src/cnf-testsuite.cr cnf_install cnf-config=./example-cnfs/pantheon-nsm-nat/cnf-testsuite.yml deploy_with_chart=false
 ```
 
 Run the all the tests
@@ -34,5 +34,5 @@ Check the results file
 Uninstall the CNF (including undeployment of nsm-nat)
 
 ```
-crystal src/cnf-testsuite.cr cnf_cleanup
+crystal src/cnf-testsuite.cr cnf_uninstall
 ```

@@ -18,14 +18,14 @@ To run this example CNF, note the following requirements:
 ### Install helm version 3
 
 ### Automated installation
-Run cnf-testsuite setup 
+Run cnf-testsuite install_dependencies 
 ```
-export KUBECONFIG=$(pwd)/<YourKubeConf> ; ./cnf-testsuite setup
+export KUBECONFIG=$(pwd)/<YourKubeConf> ; ./cnf-testsuite install_dependencies
 ```
 
 Setup and deploy  service chain
 ```
-export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite cnf_setup cnf-path=example-cnfs/ip-forwarder/cnf-testsuite.yml deploy_with_chart=false
+export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite cnf_install cnf-path=example-cnfs/ip-forwarder/cnf-testsuite.yml deploy_with_chart=false
 ```
 
 ### Testing
@@ -33,7 +33,7 @@ Run the test suite: `export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite all`
 
 ### Automated uninstallation
 ```
-export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite cnf_cleanup
+export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite cnf_uninstall
 ```
 
 
