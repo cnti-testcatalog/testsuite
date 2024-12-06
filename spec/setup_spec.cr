@@ -154,4 +154,17 @@ describe "Setup" do
       ShellCmd.cnf_cleanup(expect_failure: true)
     end
   end
+
+  it "'cnf_setup' should correctly handle deployment priority", tags: ["setup"] do
+    # (kosstennbl) ELK stack requires to be installed with specific order, otherwise it would give errors
+    begin
+      result = ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample-elk-stack/cnf-testsuite.yml timeout=600")
+      result[:status].success?.should be_true
+      (/CNF installation complete/ =~ result[:output]).should_not be_nil
+    ensure
+      result = ShellCmd.cnf_cleanup()
+      result[:status].success?.should be_true
+      (/All CNF deployments were uninstalled/ =~ result[:output]).should_not be_nil
+    end
+  end
 end
