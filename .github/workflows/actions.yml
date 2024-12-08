@@ -118,7 +118,7 @@ jobs:
         EOF
     - name: Install Latest Kind
       env:
-        KIND_VERSION: v0.22.0
+        KIND_VERSION: v0.25.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
         echo "Existing kind binary path: $(which kind)"
@@ -223,7 +223,7 @@ jobs:
         fetch-depth: 0
     - name: Install Latest Kind
       env:
-        KIND_VERSION: v0.22.0
+        KIND_VERSION: v0.25.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
         echo "Existing kind binary path: $(which kind)"
@@ -296,7 +296,7 @@ jobs:
       if: ${{ always() }}
       uses: actions/upload-artifact@v4
       with:
-        name: log_${{ matrix.tag }}
+        name: log_oran_${{ matrix.tag }}
         path: /tmp/output-dir
 
   build:
@@ -351,7 +351,7 @@ jobs:
           lib-
     - name: Install Latest Kind
       env:
-        KIND_VERSION: v0.22.0
+        KIND_VERSION: v0.25.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
         echo "Existing kind binary path: $(which kind)"
@@ -435,7 +435,7 @@ jobs:
           lib-
     - name: Install Latest Kind
       env:
-        KIND_VERSION: v0.22.0
+        KIND_VERSION: v0.25.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
         echo "Existing kind binary path: $(which kind)"
@@ -515,7 +515,7 @@ jobs:
           lib-
     - name: Install Latest Kind
       env:
-        KIND_VERSION: v0.22.0
+        KIND_VERSION: v0.25.0
         KIND_URL: https://kind.sigs.k8s.io/dl
       run: |
         echo "Existing kind binary path: $(which kind)"
