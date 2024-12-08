@@ -296,7 +296,7 @@ jobs:
       if: ${{ always() }}
       uses: actions/upload-artifact@v4
       with:
-        name: log_${{ matrix.tag }}
+        name: log_oran_${{ matrix.tag }}
         path: /tmp/output-dir
 
   build:
