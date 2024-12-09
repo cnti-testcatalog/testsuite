@@ -55,11 +55,6 @@ Welcome! We gladly accept contributions on new tests, example CNFs, updates to d
   - [Meeting details](https://lf-networking.atlassian.net/wiki/spaces/CNTi/pages/130416641/Cloud+Native+Telecom+Initiative+CNTi#Test-Catalog) 
   - [Meeting minutes](https://docs.google.com/document/d/1yjL079TR0L1q__BRuhREeXfx5MtAmjPzbFZlZUeBsK4/edit)
 
-## Implementation Overview
-
-The CNTi Test Catalog leverages upstream tools such as [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper), [Helm linter](https://github.com/helm/chart-testing), and [Promtool](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) for testing CNFs. The upstream tool installation, configuration, and versioning has been made repeatable.
-
-The test framework and tests (using the upstream tools) are written in the human-readable, compiled language, [Crystal](https://crystal-lang.org/). Common capabilities like dependencies between tests and categories are supported.
 
 ## Code of Conduct
 
