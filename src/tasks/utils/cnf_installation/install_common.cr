@@ -14,7 +14,7 @@ module CNFInstall
 
     prepare_deployment_directories(config, cnf_config_path)
 
-    deployment_managers = create_deployment_manager_list(config)
+    deployment_managers = create_deployment_manager_list(config).reverse
     install_deployments(parsed_args: parsed_args, deployment_managers: deployment_managers)
   end
 
@@ -83,7 +83,7 @@ module CNFInstall
     config.deployments.manifests.each do |manifest_config|
       deployment_managers << ManifestDeploymentManager.new(manifest_config)
     end
-    deployment_managers
+    deployment_managers.sort! { |a, b| a.installation_priority <=> b.installation_priority }
   end
 
   def self.install_deployments(parsed_args, deployment_managers)
