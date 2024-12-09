@@ -80,7 +80,7 @@ jobs:
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-            endpoint = ["http://10.200.142.204"]
+            endpoint = ["https://mirror.gcr.io"]
         EOF
     - name: sysctls specs kind config override
       if: matrix.spec == 'sysctls'
@@ -99,7 +99,7 @@ jobs:
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-            endpoint = ["http://10.200.142.204"]
+            endpoint = ["https://mirror.gcr.io"]
         EOF
     - name: Mirror Override
       if: startsWith(matrix.spec, 'private_registry_')
@@ -112,7 +112,7 @@ jobs:
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-            endpoint = ["http://10.200.142.204"]
+            endpoint = ["https://mirror.gcr.io"]
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
             endpoint = ["http://localhost:5000"]
         EOF
@@ -372,7 +372,7 @@ jobs:
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-            endpoint = ["http://10.200.142.204"]
+            endpoint = ["https://mirror.gcr.io"]
         EOF
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER"
@@ -454,7 +454,7 @@ jobs:
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-            endpoint = ["http://10.200.142.204"]
+            endpoint = ["https://mirror.gcr.io"]
         EOF
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
@@ -534,7 +534,7 @@ jobs:
         containerdConfigPatches:
         - |-
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-            endpoint = ["http://10.200.142.204"]
+            endpoint = ["https://mirror.gcr.io"]
         EOF
         export CLUSTER=$(uuidgen)
         echo "export CLUSTER=$CLUSTER" > cluster.env
