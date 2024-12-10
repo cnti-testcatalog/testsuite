@@ -30,7 +30,7 @@ end
 
 describe "5g" do
   before_all do
-    result = ShellCmd.run_testsuite("setup")
+    result = ShellCmd.run_testsuite("install_dependencies")
     result[:status].success?.should be_true
   end
 

@@ -16,14 +16,14 @@ Description:
 ### Install helm version 3
 
 ### Automated installation
-Run cnf-testsuite setup 
+Run cnf-testsuite install_dependencies 
 ```
-export KUBECONFIG=$(pwd)/<YourKubeConf> ; ./cnf-testsuite setup
+export KUBECONFIG=$(pwd)/<YourKubeConf> ; ./cnf-testsuite install_dependencies
 ```
 
 Setup and deploy  service chain
 ```
-export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite cnf_setup example-cnf-path=example-cnfs/vpp-3c2n-csp-use-case/cnf-testsuite.yml
+export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite cnf_install example-cnf-path=example-cnfs/vpp-3c2n-csp-use-case/cnf-testsuite.yml
 ```
 
 ### Testing
@@ -31,6 +31,6 @@ Run the test suite: `export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite all`
 
 ### Automated uninstallation
 ```
-export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite cnf_cleanup
+export KUBECONFIG=$(pwd)/admin.conf ; ./cnf-testsuite cnf_uninstall
 ```
   
