@@ -134,6 +134,10 @@ deployments:
   ...
 ```
 
+##### Installation priority
+
+If deployments needed to be installed in specific order, installation_priority parameter should be used. All of the deployments would be installed in order from highest installation priority to lowest. This parameter also affects uninstallation order, it would be reversed: from lowest installation_priority to highest. If not specified, installation priority for deployment is 0.
+
 ##### helm_charts
 
 Deployment, defined by helm chart and helm repository.
@@ -143,6 +147,7 @@ Explanations with example:
 ```yaml
 helm_charts:
   - name: coredns  # Name of the deployment
+    installation_priority: 0  # Installation priority of deployment
     helm_repo_name: stable  # Name of the repository for the helm chart
     helm_repo_url: https://cncf.gitlab.io/stable  # Repository URL
     helm_chart_name: coredns  # Name of the helm chart in format repo_name/chart_name
@@ -157,6 +162,7 @@ Explanations with example:
 ```yaml
 helm_dirs:
   - name: envoy  # Name of the deployment
+    installation_priority: 0  # Installation priority of deployment
     helm_directory: chart  # Path to the directory with Chart.yaml, relative to CNF configuration file
     helm_values: --set myvalue=42 # Additional values that would be used for helm installation
     namespace: cnf-default # Namespace to which deployment would be installed (cnf-default is default)
@@ -169,6 +175,7 @@ Explanations with example:
 ```yaml
 manifests:
   - name: nginx  # Name of the deployment
+    installation_priority: 0  # Installation priority of deployment
     manifest_directory: manifests  # Path to the directory with deployment manifests, relative to CNF configuration file
 ```
 
