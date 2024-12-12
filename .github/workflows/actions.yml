@@ -201,9 +201,9 @@ jobs:
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         kubectl get all -A || true
         res=0; kind delete cluster --name $CLUSTER --verbosity 1 || res=$?
-        docker container prune -f || true
-        docker volume prune -f || true
-        docker network prune -f || true
+        # docker container prune -f || true
+        # docker volume prune -f || true
+        # docker network prune -f || true
         exit $res
       continue-on-error: true
     - name: upload artifact
@@ -297,9 +297,9 @@ jobs:
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         kubectl get all -A || true
         res=0; kind delete cluster --name $CLUSTER --verbosity 1 || res=$?
-        docker container prune -f || true
-        docker volume prune -f || true
-        docker network prune -f || true
+        # docker container prune -f || true
+        # docker volume prune -f || true
+        # docker network prune -f || true
         exit $res
       continue-on-error: true
     - name: upload artifact
@@ -415,9 +415,9 @@ jobs:
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         kubectl get all -A || true
         res=0; kind delete cluster --name $CLUSTER --verbosity 1 || res=$?
-        docker container prune -f || true
-        docker volume prune -f || true
-        docker network prune -f || true
+        # docker container prune -f || true
+        # docker volume prune -f || true
+        # docker network prune -f || true
         exit $res
       continue-on-error: true
     - name: upload artifact
@@ -499,9 +499,9 @@ jobs:
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         kubectl get all -A || true
         res=0; kind delete cluster --name $CLUSTER --verbosity 1 || res=$?
-        docker container prune -f || true
-        docker volume prune -f || true
-        docker network prune -f || true
+        # docker container prune -f || true
+        # docker volume prune -f || true
+        # docker network prune -f || true
         exit $res
       continue-on-error: true
     - name: upload artifact
@@ -583,9 +583,9 @@ jobs:
         export KUBECONFIG=$(pwd)/$CLUSTER.conf
         kubectl get all -A || true
         res=0; kind delete cluster --name $CLUSTER --verbosity 1 || res=$?
-        docker container prune -f || true
-        docker volume prune -f || true
-        docker network prune -f || true
+        # docker container prune -f || true
+        # docker volume prune -f || true
+        # docker network prune -f || true
         exit $res
       continue-on-error: true
     - name: upload artifact
