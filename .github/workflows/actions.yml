@@ -197,9 +197,14 @@ jobs:
       run: |
         source cluster.env
         kind export logs --name $CLUSTER /tmp/output-dir
-        kind delete cluster --name $CLUSTER
-        docker container prune -f || true
-        docker volume prune -f || true
+        docker ps -a
+        export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        kubectl get all -A || true
+        res=0; kind delete cluster --name $CLUSTER --verbosity 1 || res=$?
+        # docker container prune -f || true
+        # docker volume prune -f || true
+        # docker network prune -f || true
+        exit $res
       continue-on-error: true
     - name: upload artifact
       if: ${{ always() }}
@@ -288,9 +293,14 @@ jobs:
       run: |
         source cluster.env
         kind export logs --name $CLUSTER /tmp/output-dir
-        kind delete cluster --name $CLUSTER
-        docker container prune -f || true
-        docker volume prune -f || true
+        docker ps -a
+        export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        kubectl get all -A || true
+        res=0; kind delete cluster --name $CLUSTER --verbosity 1 || res=$?
+        # docker container prune -f || true
+        # docker volume prune -f || true
+        # docker network prune -f || true
+        exit $res
       continue-on-error: true
     - name: upload artifact
       if: ${{ always() }}
@@ -401,10 +411,14 @@ jobs:
       run: |
         source cluster.env
         kind export logs --name $CLUSTER /tmp/output-dir
-        kind delete cluster --name $CLUSTER
-        docker container prune -f || true
-        docker volume prune -f || true
-        docker network prune -f || true
+        docker ps -a
+        export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        kubectl get all -A || true
+        res=0; kind delete cluster --name $CLUSTER --verbosity 1 || res=$?
+        # docker container prune -f || true
+        # docker volume prune -f || true
+        # docker network prune -f || true
+        exit $res
       continue-on-error: true
     - name: upload artifact
       if: ${{ always() }}
@@ -481,10 +495,14 @@ jobs:
       run: |
         source cluster.env
         kind export logs --name $CLUSTER /tmp/output-dir
-        kind delete cluster --name $CLUSTER
-        docker container prune -f || true
-        docker volume prune -f || true
-        docker network prune -f || true
+        docker ps -a
+        export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        kubectl get all -A || true
+        res=0; kind delete cluster --name $CLUSTER --verbosity 1 || res=$?
+        # docker container prune -f || true
+        # docker volume prune -f || true
+        # docker network prune -f || true
+        exit $res
       continue-on-error: true
     - name: upload artifact
       if: ${{ always() }}
@@ -561,10 +579,14 @@ jobs:
       run: |
         source cluster.env
         kind export logs --name $CLUSTER /tmp/output-dir
-        kind delete cluster --name $CLUSTER
-        docker container prune -f || true
-        docker volume prune -f || true
-        docker network prune -f || true
+        docker ps -a
+        export KUBECONFIG=$(pwd)/$CLUSTER.conf
+        kubectl get all -A || true
+        res=0; kind delete cluster --name $CLUSTER --verbosity 1 || res=$?
+        # docker container prune -f || true
+        # docker volume prune -f || true
+        # docker network prune -f || true
+        exit $res
       continue-on-error: true
     - name: upload artifact
       if: ${{ always() }}
