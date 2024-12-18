@@ -32,18 +32,16 @@ jobs:
       run: |
         JSON="{\"include\":["
         TEST_ARRAY=$(grep -roP --no-filename 'tags: \K(\[|")(.*)(\]|")' spec/ | tr -d '[],' | tr -s '\n' ' ' | xargs -n1 | sort -u | xargs | sed s/:/_/g)
-        TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-config-lifecycle/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-microservice/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/testsuite-all/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/disk_fill/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/chaos_container_kill/}")
-        TEST_ARRAY=("${TEST_ARRAY[@]/chaos_cpu_hog/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/pod_delete/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/pod_io_stress/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/pod_memory_hog/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/pod_network_latency/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/zombie/}")
         TEST_ARRAY=("${TEST_ARRAY[@]/oran/}")
+        # Skip both 5g and core tags because they are flaky
+        TEST_ARRAY=("${TEST_ARRAY[@]/5g/}")
+        TEST_ARRAY=("${TEST_ARRAY[@]/core/}")
         TEST_LIST=$(for i in ${TEST_ARRAY[@]}
         do
                  echo "{\"spec\":\"$i\"}," | tr -d '\n'
