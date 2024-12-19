@@ -8,7 +8,7 @@ module CNFInstall
     @manifest_directory_path : String
 
     def initialize(manifest_config)
-      super(manifest_config.name)
+      super(manifest_config.name, manifest_config.priority)
       @manifest_config = manifest_config
       @manifest_directory_path = File.join(DEPLOYMENTS_DIR, @deployment_name, @manifest_config.manifest_directory)
     end
