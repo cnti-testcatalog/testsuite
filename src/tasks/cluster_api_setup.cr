@@ -9,7 +9,7 @@ require "json"
 require "yaml"
 
 desc "Install Cluster API for Kind"
-task "cluster_api_setup" do |_, args|
+task "cluster_api_install" do |_, args|
   current_dir = FileUtils.pwd
 
   HttpHelper.download("https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.2.0/clusterctl-linux-amd64", "clusterctl")
@@ -57,8 +57,8 @@ task "cluster_api_setup" do |_, args|
   Log.info { "cluster api setup complete" }
 end
 
-desc "Cleanup Cluster API"
-task "cluster_api_cleanup" do |_, args|
+desc "Uninstall Cluster API"
+task "cluster_api_uninstall" do |_, args|
   current_dir = FileUtils.pwd 
   #KubectlClient::Delete.command("cluster capi-quickstart")
   delete_cluster_file = "#{current_dir}/capi.yaml"

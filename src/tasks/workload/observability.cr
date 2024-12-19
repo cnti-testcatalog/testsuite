@@ -224,7 +224,7 @@ task "tracing" do |t, args|
         CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Jaeger not configured")
       end
     else
-      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "No cnf_testsuite.yml found! Did you run the setup task?")
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "No cnf_testsuite.yml found! Did you run the \"cnf_install\" task?")
     end
   end
 end

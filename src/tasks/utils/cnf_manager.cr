@@ -131,7 +131,7 @@ module CNFManager
     cnf_testsuite = find_stdout.to_s.split("\n").select{ |x| x.empty? == false }
     Log.info { "find response: #{cnf_testsuite}" }
     if cnf_testsuite.size == 0 && !silent
-      raise "No cnf_testsuite.yml found! Did you run the setup task?"
+      raise "No cnf_testsuite.yml found! Did you run the \"cnf_install\" task?"
     end
     cnf_testsuite
   end

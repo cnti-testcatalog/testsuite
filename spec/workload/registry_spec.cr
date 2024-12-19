@@ -39,23 +39,23 @@ describe "Private Registry: Image" do
   it "'reasonable_image_size' should pass if using local registry and a port", tags: ["private_registry_image"]  do
     cnf="./sample-cnfs/sample_local_registry"
 
-    ShellCmd.cnf_setup("cnf-path=#{cnf}")
+    ShellCmd.cnf_install("cnf-path=#{cnf}")
     result = ShellCmd.run_testsuite("reasonable_image_size verbose")
     result[:status].success?.should be_true
     (/Image size is good/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.cnf_cleanup()
+    result = ShellCmd.cnf_uninstall()
   end
 
   it "'reasonable_image_size' should pass if using local registry, a port and an org", tags: ["private_registry_image"]  do
     cnf="./sample-cnfs/sample_local_registry_org_image"
 
-    ShellCmd.cnf_setup("cnf-path=#{cnf}")
+    ShellCmd.cnf_install("cnf-path=#{cnf}")
     result = ShellCmd.run_testsuite("reasonable_image_size verbose")
     result[:status].success?.should be_true
     (/Image size is good/ =~ result[:output]).should_not be_nil
   ensure
-    result = ShellCmd.cnf_cleanup()
+    result = ShellCmd.cnf_uninstall()
   end
 
   after_all do
@@ -88,12 +88,12 @@ describe "Private Registry: Rolling" do
     begin
       cnf="./sample-cnfs/sample_local_registry_rolling"
 
-      ShellCmd.cnf_setup("cnf-path=#{cnf}")
+      ShellCmd.cnf_install("cnf-path=#{cnf}")
       result = ShellCmd.run_testsuite("rolling_update verbose")
       result[:status].success?.should be_true
       (/Passed/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.cnf_cleanup("timeout=0")
+      result = ShellCmd.cnf_uninstall("timeout=0")
     end
   end
 
@@ -101,12 +101,12 @@ describe "Private Registry: Rolling" do
     begin
       cnf="./sample-cnfs/sample_local_registry_rolling"
 
-      ShellCmd.cnf_setup("cnf-path=#{cnf}")
+      ShellCmd.cnf_install("cnf-path=#{cnf}")
       result = ShellCmd.run_testsuite("rolling_update verbose")
       result[:status].success?.should be_true
       (/Passed/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.cnf_cleanup("timeout=0")
+      result = ShellCmd.cnf_uninstall("timeout=0")
   	end
   end
 
@@ -114,12 +114,12 @@ describe "Private Registry: Rolling" do
     begin
       cnf="./sample-cnfs/sample_local_registry_rolling"
 
-      ShellCmd.cnf_setup("cnf-path=#{cnf}")
+      ShellCmd.cnf_install("cnf-path=#{cnf}")
       result = ShellCmd.run_testsuite("rolling_version_change verbose")
       result[:status].success?.should be_true
       (/Passed/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.cnf_cleanup("timeout=0")
+      result = ShellCmd.cnf_uninstall("timeout=0")
     end
   end  
 

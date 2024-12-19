@@ -19,7 +19,7 @@ module CNFInstall
   end
 
   def self.parse_cli_args(cli_args)
-    Log.for("cnf_setup").debug { "cli_args = #{cli_args.inspect}" }
+    Log.for("cnf_install").debug { "cli_args = #{cli_args.inspect}" }
     cnf_config_path = ""
     timeout = 1800
     skip_wait_for_install = cli_args.raw.includes? "skip_wait_for_install"
@@ -35,7 +35,7 @@ module CNFInstall
       timeout = cli_args.named["timeout"].to_i
     end
     parsed_args = {config_path: cnf_config_path, timeout: timeout, skip_wait_for_install: skip_wait_for_install}
-    Log.for("cnf_setup").debug { "parsed_cli_args = #{parsed_args}"}
+    Log.for("cnf_install").debug { "parsed_cli_args = #{parsed_args}"}
     parsed_args
   end
 
@@ -83,7 +83,7 @@ module CNFInstall
     config.deployments.manifests.each do |manifest_config|
       deployment_managers << ManifestDeploymentManager.new(manifest_config)
     end
-    deployment_managers
+    deployment_managers.sort! { |a, b| a.deployment_priority <=> b.deployment_priority }
   end
 
   def self.install_deployments(parsed_args, deployment_managers)
@@ -119,8 +119,8 @@ module CNFInstall
       stdout_success "Waiting for resource for \"#{deployment_name}\" deployment (#{current_resource_number}/#{total_resource_count}): [#{resource_info[:kind]}] #{resource_info[:name]}", same_line: true
       ready = KubectlClient::Get.resource_wait_for_install(resource_info[:kind], resource_info[:name], wait_count: timeout, namespace: resource_info[:namespace])
       if !ready
-        stdout_failure "\"#{deployment_name}\" deployment setup has timed-out, [#{resource_info[:kind]}] #{resource_info[:name]} is not ready after #{timeout} seconds.", same_line: true
-        stdout_failure "Recommended course of actions would be to investigate the resource in cluster, then call cnf_cleanup and try to reinstall the CNF."
+        stdout_failure "\"#{deployment_name}\" deployment installation has timed-out, [#{resource_info[:kind]}] #{resource_info[:name]} is not ready after #{timeout} seconds.", same_line: true
+        stdout_failure "It is recommended to investigate the resource in the cluster, run cnf_uninstall, and then attempt to reinstall the CNF."
         exit 1
       end
       current_resource_number += 1
@@ -136,7 +136,7 @@ module CNFInstall
     end
     config = Config.parse_cnf_config_from_file(cnf_config_path)
 
-    deployment_managers = create_deployment_manager_list(config)
+    deployment_managers = create_deployment_manager_list(config).reverse
     uninstall_deployments(deployment_managers)
 
     FileUtils.rm_rf(CNF_DIR)

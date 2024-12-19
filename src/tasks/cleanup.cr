@@ -3,13 +3,13 @@ require "file_utils"
 require "colorize"
 require "totem"
 
-desc "Cleans up the CNF test suite, the K8s cluster, and upstream projects"
-task "cleanup", ["cnf_cleanup"] do  |_, args|
+desc "Alias for cnf_uninstall"
+task "uninstall", ["cnf_uninstall"] do  |_, args|
 end
 
 desc "Cleans up the CNF Test Suite helper tools and containers"
-task "tools_cleanup", [
-    "sonobuoy_cleanup",
+task "tools_uninstall", [
+    "uninstall_sonobuoy",
     "uninstall_chaosmesh",
     "uninstall_litmus",
     "uninstall_dockerd",
@@ -19,15 +19,15 @@ task "tools_cleanup", [
  
     # Helm needs to be uninstalled last to allow other uninstalls to use helm if necessary.
     # Check this issue for details - https://github.com/cncf/cnf-testsuite/issues/1586
-    "helm_local_cleanup"
+    "uninstall_local_helm"
   ] do  |_, args|
 end
 
 desc "Cleans up the CNF Test Suite sample projects, helper tools, and containers"
-task "cleanup_all", ["uninstall_cnf", "tools_cleanup"] do  |_, args|
+task "uninstall_all", ["cnf_uninstall", "tools_uninstall"] do  |_, args|
 end
 
-task "results_yml_cleanup" do |_, args|
+task "delete_results" do |_, args|
   if CNFManager::Points::Results.file_exists?
     File.delete(CNFManager::Points::Results.file)
     Log.for("verbose").info { "Deleted results file at #{CNFManager::Points::Results.file}" } if check_verbose(args)

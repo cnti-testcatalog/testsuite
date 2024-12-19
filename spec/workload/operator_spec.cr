@@ -23,11 +23,11 @@ describe "Operator" do
     Helm.install("operator --set olm.image.ref=quay.io/operator-framework/olm:v0.22.0 --set catalog.image.ref=quay.io/operator-framework/olm:v0.22.0 --set package.image.ref=quay.io/operator-framework/olm:v0.22.0 #{install_dir}/deploy/chart/")
 
     begin
-      ShellCmd.cnf_setup("cnf-path=./sample-cnfs/sample_operator", cmd_prefix: "LOG_LEVEL=info")
+      ShellCmd.cnf_install("cnf-path=./sample-cnfs/sample_operator", cmd_prefix: "LOG_LEVEL=info")
       result = ShellCmd.run_testsuite("operator_installed", cmd_prefix: "LOG_LEVEL=info")
       (/(PASSED).*(Operator is installed)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.cnf_cleanup(cmd_prefix: "LOG_LEVEL=info")
+      result = ShellCmd.cnf_uninstall(cmd_prefix: "LOG_LEVEL=info")
       result[:status].success?.should be_true
       pods = KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("catalog-operator", "operator-lifecycle-manager"), "operator-lifecycle-manager") + KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("olm-operator", "operator-lifecycle-manager"), "operator-lifecycle-manager") + KubectlClient::Get.pods_by_resource(KubectlClient::Get.deployment("packageserver", "operator-lifecycle-manager"), "operator-lifecycle-manager")
 
@@ -67,11 +67,11 @@ describe "Operator" do
   
   it "'operator_test' operator should not be found", tags: ["operator_test"]  do
     begin
-      ShellCmd.cnf_setup("cnf-path=sample-cnfs/sample_coredns")
+      ShellCmd.cnf_install("cnf-path=sample-cnfs/sample_coredns")
       result = ShellCmd.run_testsuite("operator_installed", cmd_prefix: "LOG_LEVEL=info")
       (/(N\/A).*(No Operators Found)/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.cnf_cleanup()
+      result = ShellCmd.cnf_uninstall()
       result[:status].success?.should be_true
     end
   end

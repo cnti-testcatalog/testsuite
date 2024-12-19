@@ -19,7 +19,7 @@ Prereqs: Kubernetes cluster, wget, curl, helm 3.1.1 or greater on your system al
 1. Install the latest test suite binary: `source <(curl -s https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/curl_install.sh)`
 2. Run `setup` to prepare the cnf-testsuite: `cnf-testsuite setup`
 3. Pull down an example CNF configuration to try: `curl -o cnf-testsuite.yml https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/example-cnfs/coredns/cnf-testsuite.yml`
-4. Initialize the test suite for using the CNF: `cnf-testsuite cnf_setup cnf-config=./cnf-testsuite.yml`
+4. Initialize the test suite for using the CNF: `cnf-testsuite cnf_install cnf-config=./cnf-testsuite.yml`
 5. Run all of application/workload tests: `cnf-testsuite workload`
 
 #### More Usage docs

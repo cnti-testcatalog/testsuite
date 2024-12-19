@@ -3,8 +3,8 @@ require "./deployment_manager_common.cr"
 
 module CNFInstall
   abstract class HelmDeploymentManager < DeploymentManager
-    def initialize(deployment_name)
-      super(deployment_name)
+    def initialize(deployment_name, deployment_priority)
+      super(deployment_name, deployment_priority)
     end
 
     abstract def get_deployment_config() : ConfigV2::HelmDeploymentConfig
@@ -64,7 +64,7 @@ module CNFInstall
     @helm_chart_config : ConfigV2::HelmChartConfig
     
     def initialize(helm_chart_config)
-      super(helm_chart_config.name)
+      super(helm_chart_config.name, helm_chart_config.priority)
       @helm_chart_config = helm_chart_config
     end
 
@@ -98,7 +98,7 @@ module CNFInstall
     @helm_directory_config : ConfigV2::HelmDirectoryConfig
 
     def initialize(helm_directory_config)
-      super(helm_directory_config.name)
+      super(helm_directory_config.name, helm_directory_config.priority)
       @helm_directory_config = helm_directory_config
     end
 
