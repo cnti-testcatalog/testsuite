@@ -4,7 +4,7 @@ require "./../../src/tasks/utils/utils.cr"
 
 describe "Platform" do
   before_all do
-    result = ShellCmd.run_testsuite("setup")
+    result = ShellCmd.run_testsuite("install_dependencies")
     result[:status].success?.should be_true
   end
   it "'worker_reboot_recovery' should pass if platform successfully recovers after reboot", tags: ["platform:worker_reboot_recovery"] do

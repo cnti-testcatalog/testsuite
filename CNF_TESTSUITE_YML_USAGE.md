@@ -1,7 +1,7 @@
 # Test Suite Configuration Usage: cnf-testsuite.yml
 ### What is the cnf-testsuite.yml and why is it required?:
 
-The cnf-testsuite.yml is used by `cnf_setup` in order to install the CNF to be tested onto an existing K8s cluster. 
+The cnf-testsuite.yml is used by `cnf_install` in order to install the CNF to be tested onto an existing K8s cluster. 
 
 
 The information in the cnf-testsuite.yml is also used for additional configuration of some tests e.g. `white_list_container_names` is used for exculding containers from the [privileged_containers](https://github.com/cnti-testcatalog/testsuite/blob/main/src/tasks/workload/security.cr#L138) container test.
@@ -122,7 +122,7 @@ Described below: [link](#5G-parameters)
 
 Deployments are defined as three arrays, each for different installation method. Each array element represents one deployment, and they are meant to represent a single CNF together.
 At least one deployment should exist in CNF config for it to be a proper config.
-All info for deployments is used in cnf_setup and cnf_cleanup tasks.
+All info for deployments is used in cnf_install and cnf_uninstall tasks.
 
 ```yaml
 deployments:
@@ -134,6 +134,10 @@ deployments:
   ...
 ```
 
+##### Installation priority
+
+If deployments needed to be installed in specific order, installation_priority parameter should be used. All of the deployments would be installed in order from highest installation priority to lowest. This parameter also affects uninstallation order, it would be reversed: from lowest installation_priority to highest. If not specified, installation priority for deployment is 0.
+
 ##### helm_charts
 
 Deployment, defined by helm chart and helm repository.
@@ -143,6 +147,7 @@ Explanations with example:
 ```yaml
 helm_charts:
   - name: coredns  # Name of the deployment
+    installation_priority: 0  # Installation priority of deployment
     helm_repo_name: stable  # Name of the repository for the helm chart
     helm_repo_url: https://cncf.gitlab.io/stable  # Repository URL
     helm_chart_name: coredns  # Name of the helm chart in format repo_name/chart_name
@@ -157,6 +162,7 @@ Explanations with example:
 ```yaml
 helm_dirs:
   - name: envoy  # Name of the deployment
+    installation_priority: 0  # Installation priority of deployment
     helm_directory: chart  # Path to the directory with Chart.yaml, relative to CNF configuration file
     helm_values: --set myvalue=42 # Additional values that would be used for helm installation
     namespace: cnf-default # Namespace to which deployment would be installed (cnf-default is default)
@@ -169,6 +175,7 @@ Explanations with example:
 ```yaml
 manifests:
   - name: nginx  # Name of the deployment
+    installation_priority: 0  # Installation priority of deployment
     manifest_directory: manifests  # Path to the directory with deployment manifests, relative to CNF configuration file
 ```
 
