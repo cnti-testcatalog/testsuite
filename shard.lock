@@ -2,7 +2,7 @@ version: 2.0
 shards:
   cluster_tools:
     git: https://github.com/cnf-testsuite/cluster_tools.git
-    version: 1.0.8
+    version: 1.0.9
 
   commander:
     git: https://github.com/mrrooijen/commander.git
