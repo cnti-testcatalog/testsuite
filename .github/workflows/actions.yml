@@ -198,6 +198,22 @@ jobs:
           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
             endpoint = ["http://localhost:5000"]
         EOF
+    - name: Cluster API Override
+      if: matrix.spec == 'cluster-api' || matrix.spec == 'platform'
+      run: |
+        source cluster.env
+        cat << EOF > /tmp/cluster.yml
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        nodes:
+        - role: control-plane
+        containerdConfigPatches:
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+            endpoint = ["https://mirror.gcr.io"]
+          [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.default.svc.cluster.local:5000"]
+            endpoint = ["http://localhost:5000"]
+        EOF
     - name: Install Latest Kind
       env:
         KIND_VERSION: v0.25.0
