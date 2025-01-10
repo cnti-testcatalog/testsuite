@@ -68,9 +68,9 @@ describe "Microservice" do
   it "'shared_database' should pass if two services on the cluster connect to the same database but they are not in the helm chart of the cnf", tags: ["shared_database"]  do
     begin
       ShellCmd.cnf_install("cnf-path=sample-cnfs/sample_coredns")
-      Helm.install("multi-db sample-cnfs/ndn-multi-db-connections-fail/wordpress/")
-      KubectlClient::Get.resource_wait_for_install(kind: "Deployment", resource_name: "multi-db-wordpress", wait_count: 180, namespace: "default")
-      KubectlClient::Get.resource_wait_for_install(kind: "Deployment", resource_name: "multi-db-wordpress2", wait_count: 180, namespace: "default")
+      Helm.install("-n cnf-default multi-db sample-cnfs/ndn-multi-db-connections-fail/wordpress/")
+      KubectlClient::Get.resource_wait_for_install(kind: "Deployment", resource_name: "multi-db-wordpress", wait_count: 180, namespace: "cnf-default")
+      KubectlClient::Get.resource_wait_for_install(kind: "Deployment", resource_name: "multi-db-wordpress2", wait_count: 180, namespace: "cnf-default")
       # todo kubctl appy of all resourcesin ndn-multi-db-connections-fail
       # todo cnf_install of coredns
       # todo run shared_database (should pass)
