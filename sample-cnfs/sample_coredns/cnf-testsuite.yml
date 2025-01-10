@@ -4,3 +4,4 @@ deployments:
   helm_dirs:
   - name: coredns
     helm_directory: chart
+    namespace: cnfspace
