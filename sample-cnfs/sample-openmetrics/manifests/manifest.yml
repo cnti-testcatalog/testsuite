@@ -1,8 +1,17 @@
 ---
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: cnfspace
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: metrics-data
+  namespace: cnfspace
 data:
   OpenMetricsData: |-
     # HELP meows Heard around the house.
@@ -31,6 +40,7 @@ apiVersion: v1
 kind: Pod
 metadata:
     name: metrics-example
+    namespace: cnfspace
     annotations:
       prometheus.io/scrape: "true"
       prometheus.io/port: "80"
