@@ -40,17 +40,17 @@ describe "Observability" do
     ShellCmd.run("#{helm} repo add prometheus-community https://prometheus-community.github.io/helm-charts", "helm_repo_add_prometheus", force_output: true)
 
     Log.info { "Installing prometheus server" }
-    install_cmd = "#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus"
+    install_cmd = "#{helm} install -n #{TESTSUITE_NAMESPACE} --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus"
     ShellCmd.run(install_cmd, "helm_install_prometheus", force_output: true)
 
-    KubectlClient::Get.wait_for_install("prometheus-server")
-    ShellCmd.run("kubectl describe deployment prometheus-server", "k8s_describe_prometheus", force_output: true)
+    KubectlClient::Get.wait_for_install("prometheus-server", namespace: TESTSUITE_NAMESPACE)
+    ShellCmd.run("kubectl describe deployment prometheus-server -n #{TESTSUITE_NAMESPACE}", "k8s_describe_prometheus", force_output: true)
 
     test_result = ShellCmd.run_testsuite("prometheus_traffic")
     (/(PASSED).*(Your cnf is sending prometheus traffic)/ =~ test_result[:output]).should_not be_nil
   ensure
     ShellCmd.cnf_uninstall()
-    result = ShellCmd.run("#{helm} delete prometheus", "helm_delete_prometheus")
+    result = ShellCmd.run("#{helm} delete prometheus -n #{TESTSUITE_NAMESPACE}", "helm_delete_prometheus")
     result[:status].success?.should be_true
   end
 
@@ -58,7 +58,7 @@ describe "Observability" do
 
       ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
       helm = Helm::BinarySingleton.helm
-      result = ShellCmd.run("#{helm} delete prometheus", force_output: true)
+      result = ShellCmd.run("#{helm} delete prometheus -n #{TESTSUITE_NAMESPACE}", force_output: true)
 
       result = ShellCmd.run_testsuite("prometheus_traffic")
       (/(SKIPPED).*(Prometheus server not found)/ =~ result[:output]).should_not be_nil
@@ -72,8 +72,8 @@ describe "Observability" do
       Log.info { "Installing prometheus server" }
       helm = Helm::BinarySingleton.helm
       result = ShellCmd.run("helm repo add prometheus-community https://prometheus-community.github.io/helm-charts", force_output: true)
-      result = ShellCmd.run("#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus", force_output: true)
-      KubectlClient::Get.wait_for_install("prometheus-server")
+      result = ShellCmd.run("#{helm} install -n #{TESTSUITE_NAMESPACE} --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus", force_output: true)
+      KubectlClient::Get.wait_for_install("prometheus-server", namespace: TESTSUITE_NAMESPACE)
       result = ShellCmd.run("kubectl describe deployment prometheus-server", force_output: true)
       #todo logging on prometheus pod
 
@@ -81,7 +81,7 @@ describe "Observability" do
       (/(FAILED).*(Your cnf is not sending prometheus traffic)/ =~ result[:output]).should_not be_nil
   ensure
       result = ShellCmd.cnf_uninstall()
-      result = ShellCmd.run("#{helm} delete prometheus", force_output: true)
+      result = ShellCmd.run("#{helm} delete prometheus -n #{TESTSUITE_NAMESPACE}", force_output: true)
       result[:status].success?.should be_true
   end
 
@@ -90,16 +90,16 @@ describe "Observability" do
     result = ShellCmd.run("helm repo add prometheus-community https://prometheus-community.github.io/helm-charts", force_output: true)
     Log.info { "Installing prometheus server" }
     helm = Helm::BinarySingleton.helm
-    result = ShellCmd.run("#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus", force_output: true)
-    KubectlClient::Get.wait_for_install("prometheus-server")
-    result = ShellCmd.run("kubectl describe deployment prometheus-server", force_output: true)
+    result = ShellCmd.run("#{helm} install -n #{TESTSUITE_NAMESPACE} --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus", force_output: true)
+    KubectlClient::Get.wait_for_install("prometheus-server", namespace: TESTSUITE_NAMESPACE)
+    result = ShellCmd.run("kubectl describe deployment prometheus-server -n #{TESTSUITE_NAMESPACE}", force_output: true)
     #todo logging on prometheus pod
 
     result = ShellCmd.run_testsuite("open_metrics")
     (/(FAILED).*(Your cnf's metrics traffic is not OpenMetrics compatible)/ =~ result[:output]).should_not be_nil
   ensure
     result = ShellCmd.cnf_uninstall()
-    result = ShellCmd.run("#{helm} delete prometheus", force_output: true)
+    result = ShellCmd.run("#{helm} delete prometheus -n #{TESTSUITE_NAMESPACE}", force_output: true)
     result[:status].success?.should be_true
   end
 
@@ -108,16 +108,16 @@ describe "Observability" do
     result = ShellCmd.run("helm repo add prometheus-community https://prometheus-community.github.io/helm-charts", force_output: true)
     Log.info { "Installing prometheus server" }
     helm = Helm::BinarySingleton.helm
-    result = ShellCmd.run("#{helm} install --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus", force_output: true)
-    KubectlClient::Get.wait_for_install("prometheus-server")
-    result = ShellCmd.run("kubectl describe deployment prometheus-server", force_output: true)
+    result = ShellCmd.run("#{helm} install -n #{TESTSUITE_NAMESPACE} --set alertmanager.persistentVolume.enabled=false --set server.persistentVolume.enabled=false --set pushgateway.persistentVolume.enabled=false prometheus prometheus-community/prometheus", force_output: true)
+    KubectlClient::Get.wait_for_install("prometheus-server", namespace: TESTSUITE_NAMESPACE)
+    result = ShellCmd.run("kubectl describe deployment prometheus-server -n #{TESTSUITE_NAMESPACE}", force_output: true)
     #todo logging on prometheus pod
 
     result = ShellCmd.run_testsuite("open_metrics")
     (/(PASSED).*(Your cnf's metrics traffic is OpenMetrics compatible)/ =~ result[:output]).should_not be_nil
   ensure
     result = ShellCmd.cnf_uninstall()
-    result = ShellCmd.run("#{helm} delete prometheus", force_output: true)
+    result = ShellCmd.run("#{helm} delete prometheus -n #{TESTSUITE_NAMESPACE}", force_output: true)
     result[:status].success?.should be_true
   end
 
