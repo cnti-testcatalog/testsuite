@@ -5,3 +5,4 @@ deployments:
   - name: test
     helm_directory: wordpress
     helm_values: --set mariadb.primary.persistence.enabled=false --set persistence.enabled=false
+    namespace: cnfspace
