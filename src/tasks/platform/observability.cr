@@ -85,34 +85,6 @@ namespace "platform" do
   end
 end
 
-def skopeo_sha_list(repo)
-  tags = skopeo_tags(repo)
-  Log.info { "sha_list tags: #{tags}" }
-
-  if tags
-    tags.as_a.reduce([] of Hash(String, String)) do |acc, i|
-      acc << {"name" => i.not_nil!.as_s, "manifest_digest" => skopeo_digest("#{repo}:#{i}").as_s}
-    end
-  end
-end
-
-def skopeo_digest(image)
-  ClusterTools.install
-  resp = ClusterTools.exec("skopeo inspect docker://#{image}")
-  Log.info { resp[:output] }
-  parsed_json = JSON.parse(resp[:output])
-  parsed_json["Digest"]
-end
-
-def skopeo_tags(repo)
-  ClusterTools.install
-  resp = ClusterTools.exec("skopeo list-tags docker://#{repo}")
-  Log.info { resp[:output] }
-  parsed_json = JSON.parse(resp[:output])
-  parsed_json["Tags"]
-end
-
-
 def named_sha_list(resp_json)
   Log.debug { "sha_list resp_json: #{resp_json}" }
   parsed_json = JSON.parse(resp_json)
