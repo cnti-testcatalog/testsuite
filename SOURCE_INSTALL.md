@@ -261,7 +261,7 @@ Run the following to uninstall the CNF:
 ./cnf-testsuite cnf_uninstall
 ```
 
-You can also run `cleanup` and cnf-testsuite will attempt to cleanup everything.
+To also uninstall helper tools deployed by testsuite run `uninstall_all`.
 
 _NOTE: CNF uninstallation does not handle manually deployed CNFs_
 

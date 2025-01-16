@@ -131,8 +131,8 @@ module CNFInstall
   def self.uninstall_cnf()
     cnf_config_path = File.join(CNF_DIR, CONFIG_FILE)
     if !File.exists?(cnf_config_path)
-      stdout_failure "No CNF config found in #{CNF_DIR} directory. Nothing to uninstall"
-      exit 1
+      stdout_warning "CNF uninstallation skipped. No CNF config found in #{CNF_DIR} directory. "
+      return
     end
     config = Config.parse_cnf_config_from_file(cnf_config_path)
 

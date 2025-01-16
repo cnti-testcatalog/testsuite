@@ -120,7 +120,7 @@ cnf-config=<path_to_your_config_file>/cnf-testsuite.yml
 #### Clean up the CNTI Test Catalog, the K8s cluster, and upstream projects:
 
 ```
-./cnf-testsuite cleanup
+./cnf-testsuite uninstall_all
 ```
 
 ---

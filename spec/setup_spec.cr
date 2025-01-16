@@ -17,6 +17,17 @@ describe "Installation" do
     (/Dependency installation complete/ =~ result[:output]).should_not be_nil
   end
 
+  it "'uninstall_all' should uninstall CNF and testsuite dependencies", tags: ["cnf_installation"] do
+    begin
+      result = ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample-minimal-cnf/")
+      (/CNF installation complete/ =~ result[:output]).should_not be_nil
+    ensure
+      result = ShellCmd.run_testsuite("uninstall_all")
+      (/All CNF deployments were uninstalled/ =~ result[:output]).should_not be_nil
+      (/Testsuite helper tools uninstalled./ =~ result[:output]).should_not be_nil
+    end
+  end
+
   it "'cnf_install' should pass with a minimal cnf-testsuite.yml", tags:["cnf_installation"] do
     result = ShellCmd.cnf_install("cnf-path=./sample-cnfs/sample-minimal-cnf/")
     (/CNF installation complete/ =~ result[:output]).should_not be_nil
@@ -48,7 +59,7 @@ describe "Installation" do
       result = ShellCmd.cnf_install("cnf-path=spec/fixtures/sample-bad-config.yml", expect_failure: true)
       (/Error during parsing CNF config/ =~ result[:output]).should_not be_nil
     ensure
-      result = ShellCmd.cnf_uninstall(expect_failure: true)
+      result = ShellCmd.cnf_uninstall()
     end
   end
 
@@ -98,7 +109,7 @@ describe "Installation" do
       result = ShellCmd.cnf_install("cnf-path=sample-cnfs/sample_coredns/cnf-testsuite.yml")
       (/CNF installation complete/ =~ result[:output]).should_not be_nil
       result = ShellCmd.cnf_install("cnf-path=sample-cnfs/sample-minimal-cnf/cnf-testsuite.yml")
-      (/A CNF is already set up. Setting up multiple CNFs is not allowed./ =~ result[:output]).should_not be_nil
+      (/A CNF is already installed. Installation of multiple CNFs is not allowed./ =~ result[:output]).should_not be_nil
     ensure
       result = ShellCmd.cnf_uninstall()
       (/All CNF deployments were uninstalled/ =~ result[:output]).should_not be_nil
@@ -151,7 +162,7 @@ describe "Installation" do
       result = ShellCmd.cnf_install("cnf-path=spec/fixtures/sample-conflicting-deployments.yml", expect_failure: true)
       (/Deployment names should be unique/ =~ result[:output]).should_not be_nil
     ensure
-      ShellCmd.cnf_uninstall(expect_failure: true)
+      ShellCmd.cnf_uninstall()
     end
   end
 
@@ -206,5 +217,12 @@ describe "Installation" do
         pair[1].should be > pair[0]
       end
     end
-  end  
+  end
+
+  it "'cnf_uninstall' should warn user if no CNF is found", tags: ["cnf_installation"] do
+    begin
+      result = ShellCmd.cnf_uninstall()
+      (/CNF uninstallation skipped/ =~ result[:output]).should_not be_nil
+    end
+  end
 end
