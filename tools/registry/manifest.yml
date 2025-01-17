@@ -1,8 +1,17 @@
 ---
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: default
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: registry
+  namespace: default
 spec:
   selector:
     app: registry
@@ -10,13 +19,15 @@ spec:
     - protocol: TCP
       port: 5000
       targetPort: 5000
+
 ---
 apiVersion: v1
 kind: Pod
 metadata:
-    name: registry
-    labels:
-      app: registry
+  name: registry
+  namespace: default
+  labels:
+    app: registry
 spec:
   hostNetwork: true
   containers:

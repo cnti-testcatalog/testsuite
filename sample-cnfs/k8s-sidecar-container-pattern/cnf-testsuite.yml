@@ -4,3 +4,4 @@ deployments:
   helm_dirs:
   - name: sidecar-container-demo
     helm_directory: chart
+    namespace: cnfspace

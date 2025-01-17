@@ -68,9 +68,11 @@ describe "Microservice" do
   it "'shared_database' should pass if two services on the cluster connect to the same database but they are not in the helm chart of the cnf", tags: ["shared_database"]  do
     begin
       ShellCmd.cnf_install("cnf-path=sample-cnfs/sample_coredns")
-      Helm.install("multi-db sample-cnfs/ndn-multi-db-connections-fail/wordpress/")
-      KubectlClient::Get.resource_wait_for_install(kind: "Deployment", resource_name: "multi-db-wordpress", wait_count: 180, namespace: "default")
-      KubectlClient::Get.resource_wait_for_install(kind: "Deployment", resource_name: "multi-db-wordpress2", wait_count: 180, namespace: "default")
+      KubectlClient::Create.namespace(DEFAULT_CNF_NAMESPACE)
+      ShellCmd.run("kubectl label namespace #{DEFAULT_CNF_NAMESPACE} pod-security.kubernetes.io/enforce=privileged", "Label.namespace")
+      Helm.install("-n #{DEFAULT_CNF_NAMESPACE} multi-db sample-cnfs/ndn-multi-db-connections-fail/wordpress/")
+      KubectlClient::Get.resource_wait_for_install(kind: "Deployment", resource_name: "multi-db-wordpress", wait_count: 180, namespace: DEFAULT_CNF_NAMESPACE)
+      KubectlClient::Get.resource_wait_for_install(kind: "Deployment", resource_name: "multi-db-wordpress2", wait_count: 180, namespace: DEFAULT_CNF_NAMESPACE)
       # todo kubctl appy of all resourcesin ndn-multi-db-connections-fail
       # todo cnf_install of coredns
       # todo run shared_database (should pass)
@@ -80,7 +82,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(PASSED).*(No shared database found)/ =~ result[:output]).should_not be_nil
     ensure
-      Helm.delete("multi-db")
+      Helm.delete("multi-db -n #{DEFAULT_CNF_NAMESPACE}")
       KubectlClient::Delete.command("pvc data-multi-db-mariadb-0")
       result = ShellCmd.cnf_uninstall()
       result[:status].success?.should be_true
