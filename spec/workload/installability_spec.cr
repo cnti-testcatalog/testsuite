@@ -31,6 +31,15 @@ describe CnfTestSuite do
     result = ShellCmd.cnf_uninstall("verbose")
   end
 
+  it "'helm_chart_valid' should pass on a good helm chart with additional values file", tags: ["helm"]  do
+    ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_conditional_values_file/cnf-testsuite.yml verbose")
+    result = ShellCmd.run_testsuite("helm_chart_valid verbose")
+    result[:status].success?.should be_true
+    (/Helm chart lint passed on all charts/ =~ result[:output]).should_not be_nil
+  ensure
+    result = ShellCmd.cnf_uninstall("verbose")
+  end
+
   it "'helm_chart_valid' should fail on a bad helm chart", tags: ["helm"] do
     begin
       ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample-bad_helm_coredns-cnf/cnf-testsuite.yml verbose skip_wait_for_install", expect_failure: true)

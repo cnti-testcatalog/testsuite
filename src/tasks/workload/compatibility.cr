@@ -381,7 +381,26 @@ def wait_for_scaling(resource, target_replica_count, args)
     current_replicas == target_replica_count
   end
   current_replicas
-end 
+end
+
+def extract_f_flags(helm_values : String?) : String?
+  return nil unless helm_values
+
+  # Regex to match each occurrence of `-f somefile.yaml`
+  regex = /(-f\s+[^\s]+)/
+
+  f_flags = [] of String
+  offset = 0
+
+  # Loop over matches; each capture group (match[1]) is a separate "-f <files>" substring
+  while match = regex.match(helm_values, offset)
+    f_flags << match[1]
+    offset = match.end(0)
+  end
+
+  # Return `nil` if none found, otherwise a single joined string
+  f_flags.empty? ? nil : f_flags.join(" ")
+end
 
 desc "Will the CNF install using helm with helm_deploy?"
 task "helm_deploy" do |t, args|
@@ -457,30 +476,48 @@ task "helm_chart_valid", ["helm_local_install"] do |t, args|
     helm = Helm::BinarySingleton.helm
     Log.info { "Current directory: #{current_dir}" }
 
-    # Store chart locations in an array
-    chart_dirs = [] of Tuple(String, String)
+    # Store chart locations and helm values
+    chart_info = [] of Tuple(String, String, String?)
 
-    # Collect helm chart paths
+    # Collect helm chart paths and their values
     config.deployments.helm_charts.each do |deployment|
-      chart_dirs << { File.join(current_dir, DEPLOYMENTS_DIR, deployment.name, deployment.helm_chart_name), deployment.name}
+      chart_info << {
+        File.join(current_dir, DEPLOYMENTS_DIR, deployment.name, deployment.helm_chart_name),
+        deployment.name,
+        deployment.helm_values
+      }
     end
 
-    # Collect helm directory paths
+    # Collect helm directory paths and their values
     config.deployments.helm_dirs.each do |deployment|
-      chart_dirs << { File.join(current_dir, DEPLOYMENTS_DIR, deployment.name, deployment.helm_directory), deployment.name}
+      chart_info << {
+        File.join(current_dir, DEPLOYMENTS_DIR, deployment.name, deployment.helm_directory),
+        deployment.name,
+        deployment.helm_values
+      }
     end
 
     # Initialize flags to track the task state
-    charts_found = !chart_dirs.empty?
+    charts_found = !chart_info.empty?
     all_passed = true
 
     # Iterate over chart directories and store the results for each lint
-    chart_dirs.each do |chart_dir, deployment_name|
-      helm_lint_cmd = "#{helm} lint #{chart_dir}"
+    chart_info.each do |chart_dir, deployment_name, helm_values|
+      # Extract any `-f <files>` occurrences
+      f_flags = extract_f_flags(helm_values)
+      helm_lint_cmd = if f_flags
+        "#{helm} lint #{chart_dir} #{f_flags}"
+      else
+        "#{helm} lint #{chart_dir}"
+      end
+
+      Log.for(t.name).info { "Linting helm chart for deployment: #{deployment_name}" }
+      Log.for(t.name).info { "Helm lint command: #{helm_lint_cmd}" }
+
       helm_lint_status = Process.run(helm_lint_cmd, shell: true, output: helm_lint_stdout = IO::Memory.new, error: helm_lint_stderr = IO::Memory.new)
       helm_lint_output = helm_lint_stdout.to_s
-      Log.for(t.name).info { "Linting helm chart for deployment: #{deployment_name}" }
-      Log.for(t.name).info { "Helm Lint Output:\n#{helm_lint_output}" }
+
+      Log.for(t.name).info { "Helm Lint output:\n#{helm_lint_output}" }
 
       # If the linting failed, mark as failed
       if !helm_lint_status.success?
