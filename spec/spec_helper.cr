@@ -42,9 +42,4 @@ module ShellCmd
     end
     result
   end
-
-  def self.environment_cleanup(cleanup_params="", cmd_prefix="")
-    timeout_parameter = cleanup_params.includes?("timeout") ? "" : "timeout=300"
-    result = run_testsuite("cleanup #{cleanup_params} #{timeout_parameter}", cmd_prefix)
-  end
 end

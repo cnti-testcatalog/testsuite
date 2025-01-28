@@ -4,18 +4,16 @@ require "../../src/tasks/utils/utils.cr"
 
 describe "Platform" do
   before_all do
-    result = ShellCmd.environment_cleanup()
     result = ShellCmd.run_testsuite("setup")
     result[:status].success?.should be_true
   end
+
   it "'platform:*' should not error out when no cnf is installed", tags: ["platform"] do
-    result = ShellCmd.environment_cleanup()
     result = ShellCmd.run_testsuite("platform:oci_compliant")
     puts result[:output]
     (/No cnf_testsuite.yml found/ =~ result[:output]).should be_nil
   end
   it "'platform' should not run prerequisites that are prefixed with a ~", tags: ["platform"] do
-    result = ShellCmd.environment_cleanup()
     result = ShellCmd.run_testsuite("platform ~k8s_conformance")
     (/kind=namespace namespace=sonobuoy/ =~ (result[:output] + result[:error])).should be_nil
   end
