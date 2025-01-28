@@ -10,10 +10,8 @@ describe CnfTestSuite do
     result = ShellCmd.run("echo $KUBECONFIG")
     Log.debug { result[:output] }
 
-    result = ShellCmd.environment_cleanup()
     result = ShellCmd.run_testsuite("setup")
     result = ShellCmd.run_testsuite("configuration_file_setup")
-
   end
 
   it "'liveness' should pass when livenessProbe is set", tags: ["liveness"] do
