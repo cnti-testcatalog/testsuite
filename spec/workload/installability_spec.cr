@@ -3,7 +3,6 @@ require "colorize"
 
 describe CnfTestSuite do
   before_all do
-    result = ShellCmd.environment_cleanup()
     result = ShellCmd.run_testsuite("setup")
   end
 
