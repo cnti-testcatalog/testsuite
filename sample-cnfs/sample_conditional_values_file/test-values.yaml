@@ -1,0 +1,2 @@
+# Additional values.yaml to ensure linting passes
+replicaCount: 1

@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "replicaCount": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "Number of replicas for the Deployment."
+      }
+    },
+    "required": ["replicaCount"]
+  }
+  

@@ -1,0 +1,1 @@
+# Default values, replicaCount is intentionally missing to force reliance on an override file.
