@@ -4,7 +4,6 @@ require "./../../src/tasks/utils/utils.cr"
 
 describe "Platform" do
   before_all do
-    result = ShellCmd.environment_cleanup()
     result = ShellCmd.run_testsuite("setup")
     result[:status].success?.should be_true
   end

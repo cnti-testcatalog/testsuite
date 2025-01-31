@@ -7,10 +7,6 @@ require "file_utils"
 require "sam"
 
 describe "Installation" do
-  after_each do
-    result = ShellCmd.environment_cleanup()
-  end
-
   it "'setup' should install all cnf-testsuite dependencies before installing cnfs", tags: ["cnf_installation"]  do
     result = ShellCmd.run_testsuite("setup")
     result[:status].success?.should be_true
