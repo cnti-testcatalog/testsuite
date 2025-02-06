@@ -40,14 +40,15 @@ describe "Platform" do
   end
 
   it "'verify_configmaps_encryption' should pass if encryption is enabled in etcd", tags: ["platform:security"] do
-    etcd_output_string = "k8s:enc:"
-    result = etcd_cm_encrypted?("/path/to/certs", "etcd-pod", "test-cm", "testconfigmapvalue", "default", etcd_output_string)
-    result.should be_true
- end
-
- it "'verify_configmaps_encryption' should fail if encryption is disabled in etcd", tags: ["platform:security"] do
-  etcd_output_string = "testconfigmapvalue"
-  result = etcd_cm_encrypted?("/path/to/certs", "etcd-pod", "test-cm", "testconfigmapvalue", "default", etcd_output_string)
-  result.should_not be_true
+    result = ShellCmd.run_testsuite("platform:verify_configmaps_encryption")
+    result[:status].success?.should be_true
+    (/(PASSED).*(Configmaps are encrypted in etcd)/ =~ result[:output]).should_not be_nil
   end
+  
+  it "'verify_configmaps_encryption' should fail if encryption is disabled in etcd", tags: ["platform:security"] do
+    result = ShellCmd.run_testsuite("platform:verify_configmaps_encryption")
+    result[:status].success?.should_not be_true
+    (/(FAILED).*(Configmaps are not encrypted in etcd)/ =~ result[:output]).should_not be_nil
+  end
+  
 end
