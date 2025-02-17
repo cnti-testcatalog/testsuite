@@ -61,15 +61,14 @@ dependencies:
     version: ~> 1.0.3
   helm:
     github: cnf-testsuite/helm
-    version: ~> 1.0.1
+    branch: rl_logging_and_minor_refactors
+    # version: ~> 1.0.1
   k8s_netstat:
     github: cnf-testsuite/k8s_netstat
     version: ~> 1.0.1
   release_manager:
     github: cnf-testsuite/release_manager
     branch: main
-  retriable:
-    github: Sija/retriable.cr
   protobuf:
     github: jeromegn/protobuf.cr
 

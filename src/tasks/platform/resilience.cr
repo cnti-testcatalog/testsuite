@@ -27,7 +27,7 @@ namespace "platform" do
       worker_node = worker_nodes[0]
 
       File.write("node_failure_values.yml", NODE_FAILED_VALUES)
-      install_coredns = Helm.install("node-failure -f ./node_failure_values.yml --set nodeSelector.\"kubernetes\\.io/hostname\"=#{worker_node} stable/coredns")
+      install_coredns = Helm.install("node-failure", "stable/coredns", values: "-f ./node_failure_values.yml --set nodeSelector.\"kubernetes\\.io/hostname\"=#{worker_node}")
       KubectlClient::Get.wait_for_install("node-failure-coredns")
 
       File.write("reboot_daemon_pod.yml", REBOOT_DAEMON)
@@ -82,7 +82,7 @@ namespace "platform" do
       ensure
         Log.info { "node_failure cleanup" }
         delete_reboot_daemon = KubectlClient::Delete.file("reboot_daemon_pod.yml")
-        delete_coredns = Helm.delete("node-failure")
+        delete_coredns = Helm.uninstall("node-failure")
         File.delete("reboot_daemon_pod.yml")
         File.delete("node_failure_values.yml")
       end

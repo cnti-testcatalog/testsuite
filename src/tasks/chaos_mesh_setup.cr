@@ -16,7 +16,7 @@ task "install_chaosmesh" do |_, args|
   # `helm repo add chaos-mesh https://charts.chaos-mesh.org`
   # `helm install my-chaos-mesh chaos-mesh/chaos-mesh --version 0.5.1`
   Helm.helm_repo_add("chaos-mesh","https://charts.chaos-mesh.org")
-  Helm.install("my-chaos-mesh chaos-mesh/chaos-mesh --version 0.5.1")
+  Helm.install("my-chaos-mesh", "chaos-mesh/chaos-mesh", values: "--version 0.5.1")
 
   File.write("chaos_network_loss.yml", CHAOS_NETWORK_LOSS)
   File.write("chaos_cpu_hog.yml", CHAOS_CPU_HOG)

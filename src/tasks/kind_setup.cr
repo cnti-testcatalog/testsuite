@@ -100,7 +100,7 @@ class KindManager
   def self.create_cluster_with_chart_and_wait(name, kind_config, chart_opts) : KindManager::Cluster
     manager = KindManager.new
     cluster = manager.create_cluster(name, kind_config)
-    Helm.install("#{name}-plugin #{chart_opts} --namespace kube-system --kubeconfig #{cluster.kubeconfig}")
+    with_kubeconfig(cluster.kubeconfig) { Helm.install("#{name}-plugin", "#{chart_opts}", namespace: "kube-system") }
     cluster.wait_until_pods_ready()
     cluster
   end

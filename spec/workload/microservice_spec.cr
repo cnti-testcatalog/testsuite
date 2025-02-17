@@ -70,7 +70,7 @@ describe "Microservice" do
       ShellCmd.cnf_install("cnf-path=sample-cnfs/sample_coredns")
       KubectlClient::Create.namespace(DEFAULT_CNF_NAMESPACE)
       ShellCmd.run("kubectl label namespace #{DEFAULT_CNF_NAMESPACE} pod-security.kubernetes.io/enforce=privileged", "Label.namespace")
-      Helm.install("-n #{DEFAULT_CNF_NAMESPACE} multi-db sample-cnfs/ndn-multi-db-connections-fail/wordpress/")
+      Helm.install("multi-db", "sample-cnfs/ndn-multi-db-connections-fail/wordpress/", DEFAULT_CNF_NAMESPACE)
       KubectlClient::Get.resource_wait_for_install(kind: "Deployment", resource_name: "multi-db-wordpress", wait_count: 180, namespace: DEFAULT_CNF_NAMESPACE)
       KubectlClient::Get.resource_wait_for_install(kind: "Deployment", resource_name: "multi-db-wordpress2", wait_count: 180, namespace: DEFAULT_CNF_NAMESPACE)
       # todo kubctl appy of all resourcesin ndn-multi-db-connections-fail
@@ -82,7 +82,7 @@ describe "Microservice" do
       result[:status].success?.should be_true
       (/(PASSED).*(No shared database found)/ =~ result[:output]).should_not be_nil
     ensure
-      Helm.delete("multi-db -n #{DEFAULT_CNF_NAMESPACE}")
+      Helm.uninstall("multi-db", DEFAULT_CNF_NAMESPACE)
       KubectlClient::Delete.command("pvc data-multi-db-mariadb-0")
       result = ShellCmd.cnf_uninstall()
       result[:status].success?.should be_true
