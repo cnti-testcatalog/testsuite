@@ -53,7 +53,7 @@ describe "Platform Observability" do
     helm = Helm::BinarySingleton.helm
     begin
       Helm.helm_repo_add("prometheus-community","https://prometheus-community.github.io/helm-charts")
-      result = Helm.install("-n #{TESTSUITE_NAMESPACE} prometheus-adapter prometheus-community/prometheus-adapter")
+      result = Helm.install("prometheus-adapter", "prometheus-community/prometheus-adapter", namespace: TESTSUITE_NAMESPACE)
       Log.info { "Prometheus installed" }
     rescue e : Helm::CannotReuseReleaseNameError
       Log.info { "Prometheus already installed" }
@@ -71,7 +71,7 @@ describe "Platform Observability" do
     helm = Helm::BinarySingleton.helm
     begin
       Helm.helm_repo_add("metrics-server","https://kubernetes-sigs.github.io/metrics-server/")
-      result = Helm.install("-n #{TESTSUITE_NAMESPACE} metrics-server -f spec/fixtures/metrics_values.yml metrics-server/metrics-server")
+      result = Helm.install("metrics-server", "metrics-server/metrics-server", namespace: TESTSUITE_NAMESPACE, values: "--values spec/fixtures/metrics_values.yml")
       Log.info { "Metrics Server installed" }
     rescue e : Helm::CannotReuseReleaseNameError
       Log.info { "Metrics Server already installed" }

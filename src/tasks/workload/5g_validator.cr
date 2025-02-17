@@ -157,7 +157,7 @@ task "suci_enabled" do |t, args|
       CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Core does not use SUCI 5g authentication")
     end
   ensure
-    Helm.delete("ueransim -n testsuite-5g")
+    Helm.uninstall("ueransim", "testsuite-5g")
     ClusterTools.install
   end
 

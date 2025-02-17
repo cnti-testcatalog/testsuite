@@ -148,7 +148,7 @@ describe "Observability" do
     ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
     Helm.helm_repo_add("bitnami","https://charts.bitnami.com/bitnami")
     #todo  #helm install --values ./override.yml fluentd ./fluentd
-    Helm.install("--values ./spec/fixtures/fluentd-values-bad.yml -n #{TESTSUITE_NAMESPACE} fluentd bitnami/fluentd")
+    Helm.install("fluentd", "bitnami/fluentd", namespace: TESTSUITE_NAMESPACE, values: "--values ./spec/fixtures/fluentd-values-bad.yml")
     Log.info { "Installing FluentD daemonset" }
     KubectlClient::Get.resource_wait_for_install("Daemonset", "fluentd", namespace: TESTSUITE_NAMESPACE)
 

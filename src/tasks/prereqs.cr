@@ -10,7 +10,11 @@ require "./utils/system_information/clusterctl.cr"
 task "prereqs" do |_, args|
   verbose = check_verbose(args)
   
-  helm_ok = Helm::SystemInfo.helm_installation_info(verbose) && !Helm.helm_gives_k8s_warning?(true)
+  helm_ok = Helm::SystemInfo.helm_installation_info(verbose) && begin
+    warning, error = Helm.helm_gives_k8s_warning?
+    stdout_failure(error) if verbose && !error.nil?
+    !warning
+  end
   kubectl_ok = KubectlClient.installation_found?(verbose)
   git_ok = GitClient.installation_found?
 

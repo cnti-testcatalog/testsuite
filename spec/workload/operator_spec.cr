@@ -20,7 +20,7 @@ describe "Operator" do
       result = ShellCmd.run("cd #{install_dir} && git fetch -a && git checkout tags/v0.22.0 && cd -")
     end
 
-    Helm.install("operator --set olm.image.ref=quay.io/operator-framework/olm:v0.22.0 --set catalog.image.ref=quay.io/operator-framework/olm:v0.22.0 --set package.image.ref=quay.io/operator-framework/olm:v0.22.0 #{install_dir}/deploy/chart/")
+    Helm.install("operator", "#{install_dir}/deploy/chart/", values: "--set olm.image.ref=quay.io/operator-framework/olm:v0.22.0 --set catalog.image.ref=quay.io/operator-framework/olm:v0.22.0 --set package.image.ref=quay.io/operator-framework/olm:v0.22.0")
 
     begin
       ShellCmd.cnf_install("cnf-path=./sample-cnfs/sample_operator", cmd_prefix: "LOG_LEVEL=info")

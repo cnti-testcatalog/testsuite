@@ -21,7 +21,7 @@ task "install_opa", ["helm_local_install", "create_namespace"] do |_, args|
 
   Helm.helm_repo_add("gatekeeper", "https://open-policy-agent.github.io/gatekeeper/charts")
   begin
-    Helm.install("#{helm_install_args} opa-gatekeeper gatekeeper/gatekeeper")
+    Helm.install("opa-gatekeeper", "gatekeeper/gatekeeper", values: helm_install_args)
   rescue e : Helm::CannotReuseReleaseNameError
     stdout_warning "gatekeeper already installed"
   end
@@ -36,7 +36,7 @@ end
 desc "Uninstall OPA"
 task "uninstall_opa" do |_, args|
   Log.for("verbose").info { "uninstall_opa" } if check_verbose(args)
-  Helm.delete("opa-gatekeeper -n #{TESTSUITE_NAMESPACE}")
+  Helm.uninstall("opa-gatekeeper", TESTSUITE_NAMESPACE)
   KubectlClient::Delete.file("enforce-image-tag.yml")
   KubectlClient::Delete.file("constraint_template.yml")
 end
