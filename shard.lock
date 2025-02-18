@@ -26,7 +26,7 @@ shards:
 
   helm:
     git: https://github.com/cnf-testsuite/helm.git
-    version: 1.0.3
+    version: 1.0.2+git.commit.45d86c72a43e1dbfbdd3d643e86df8bfb605df07
 
   icr:
     git: https://github.com/crystal-community/icr.git
@@ -38,7 +38,7 @@ shards:
 
   k8s_netstat:
     git: https://github.com/cnf-testsuite/k8s_netstat.git
-    version: 1.0.1
+    version: 1.0.0+git.commit.22979a29bae40e9d6d35d22afce7f599aaad4e89
 
   kernel_introspection:
     git: https://github.com/cnf-testsuite/kernel_introspection.git
@@ -54,7 +54,7 @@ shards:
 
   protobuf:
     git: https://github.com/jeromegn/protobuf.cr.git
-    version: 2.3.0
+    version: 2.3.1
 
   readline:
     git: https://github.com/crystal-lang/crystal-readline.git
