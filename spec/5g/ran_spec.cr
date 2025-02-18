@@ -13,7 +13,7 @@ def setup_5g_network
 
   # Run Helm install command for the 5G network
   helm_chart_path = "sample-cnfs/sample_srsran_ueauth_open5gs/open5gs"
-  Helm.install("open5gs", helm_chart_path, namespace: "oran", create-namespace: true)
+  Helm.install("open5gs", helm_chart_path, namespace: "oran", create_namespace: true)
 
   deployment_names.each do |deployment_name|
     # Wait for each deployment to be ready
