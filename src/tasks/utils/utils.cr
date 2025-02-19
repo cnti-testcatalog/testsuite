@@ -528,7 +528,7 @@ def generate_cm_name(prefix : String = "test-cm-") : String
   override_output : String? = nil
   ) : Bool
   etcd_output = override_output || execute_etcd_command(etcd_certs_path, etcd_pod_name, cm_name, namespace)
-  puts "Etcd Output: #{etcd_output}"
+  #puts "Etcd Output: #{etcd_output}"
   etcd_output.includes?("k8s:enc:") && !etcd_output.includes?(test_cm_value)
  end
  

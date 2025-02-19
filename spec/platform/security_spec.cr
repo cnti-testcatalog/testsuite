@@ -1,6 +1,7 @@
 require "./../spec_helper"
 require "colorize"
 require "./../../src/tasks/utils/utils.cr"
+require "../../src/tasks/kind_setup.cr"
 
 describe "Platform" do
   before_all do
@@ -40,14 +41,41 @@ describe "Platform" do
   end
 
   it "'verify_configmaps_encryption' should pass if encryption is enabled in etcd", tags: ["platform:security"] do
-    etcd_output_string = "k8s:enc:"
-    result = etcd_cm_encrypted?("/path/to/certs", "etcd-pod", "test-cm", "testconfigmapvalue", "default", etcd_output_string)
-    result.should be_true
- end
+    kind_manager = KindManager.new
+    cluster = kind_manager.create_cluster("cluster-encrypted", nil, "1.25.3")
+    cluster.wait_until_pods_ready()
 
- it "'verify_configmaps_encryption' should fail if encryption is disabled in etcd", tags: ["platform:security"] do
-  etcd_output_string = "testconfigmapvalue"
-  result = etcd_cm_encrypted?("/path/to/certs", "etcd-pod", "test-cm", "testconfigmapvalue", "default", etcd_output_string)
-  result.should_not be_true
+    
+    kubeconfig = "#{tools_path}/kind/cluster-encrypted_admin.conf" 
+    ENV["KUBECONFIG"] = kubeconfig
+
+    
+    #todo enable encryption
+
+    result = ShellCmd.run_testsuite("platform:verify_configmaps_encryption")
+    result[:status].success?.should be_true
+    (/(PASSED).*(Configmaps are encrypted in etcd)/ =~ result[:output]).should_not be_nil
+  ensure
+    if kind_manager
+      kind_manager.delete_cluster("cluster-encrypted")
+    end
+  end
+  
+  
+  it "'verify_configmaps_encryption' should fail if encryption is disabled in etcd", tags: ["platform:security"] do
+    kind_manager = KindManager.new
+    cluster = kind_manager.create_cluster("cluster-nonencrypted", nil, "1.25.3")
+    cluster.wait_until_pods_ready()
+    
+    kubeconfig = "#{tools_path}/kind/cluster-nonencrypted_admin.conf" 
+    ENV["KUBECONFIG"] = kubeconfig
+
+    result = ShellCmd.run_testsuite("platform:verify_configmaps_encryption")
+    result[:status].success?.should be_true
+    (/(FAILED).*(Configmaps are not encrypted in etcd)/ =~ result[:output]).should_not be_nil
+  ensure
+    if kind_manager
+      kind_manager.delete_cluster("cluster-nonencrypted")
+    end
   end
 end
