@@ -24,7 +24,7 @@ module CNFInstall
     end
 
     def uninstall()
-      result = KubectlClient::Delete.file(@manifest_directory_path, wait: true)
+      result = KubectlClient::Delete.file(@manifest_directory_path, wait: false)
       success = result[:status].success?
       if success
         stdout_success "Successfully uninstalled manifest deployment \"#{@manifest_config.name}\""

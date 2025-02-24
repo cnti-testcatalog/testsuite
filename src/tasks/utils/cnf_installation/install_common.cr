@@ -128,6 +128,31 @@ module CNFInstall
     stdout_success "All \"#{deployment_name}\" deployment resources are up.", same_line: true
   end
 
+  def self.wait_for_deployment_removal(deployment_name : String, deployment_manifest : String, timeout : Int32)
+    resources_info = Helm.workload_resource_kind_names(Manifest.manifest_string_to_ymls(deployment_manifest))
+    workload_resources_info = resources_info.select { |ri| ["replicaset", "deployment", "statefulset", "pod", "daemonset"].includes?(ri[:kind].downcase) }
+  
+    total_resource_count = workload_resources_info.size
+    current_index = 1
+  
+    workload_resources_info.each do |resource_info|
+      kind = resource_info[:kind]
+      name = resource_info[:name]
+      ns = resource_info[:namespace] || "default"
+  
+      stdout_success "Waiting for \"#{deployment_name}\" removal (#{current_index}/#{total_resource_count}): [#{kind}] #{name}", same_line: true
+      
+      removed = KubectlClient::Wait.resource_wait_for_uninstall(kind, name, timeout, ns, true)
+      unless removed
+        stdout_failure "Timeout: [#{kind}/#{name}] not removed after #{timeout} seconds."
+        exit 1
+      end
+  
+      current_index += 1
+    end
+    stdout_success "All resources for \"#{deployment_name}\" have been removed.", same_line: true
+  end
+
   def self.uninstall_cnf()
     cnf_config_path = File.join(CNF_DIR, CONFIG_FILE)
     if !File.exists?(cnf_config_path)
@@ -142,16 +167,29 @@ module CNFInstall
     FileUtils.rm_rf(CNF_DIR)
   end
 
-  def self.uninstall_deployments(deployment_managers)
-    all_uninstallations_successfull = true
+  def self.uninstall_deployments(deployment_managers, timeout = 180)
+    stdout_success "uninstall_deployments"
+    all_uninstallations_successful = true
+  
     deployment_managers.each do |deployment_manager|
+      manifest_string = deployment_manager.generate_manifest()
       uninstall_success = deployment_manager.uninstall()
-      all_uninstallations_successfull = all_uninstallations_successfull && uninstall_success
+      all_uninstallations_successful &&= uninstall_success
+
+      if uninstall_success
+        wait_for_deployment_removal(
+          deployment_manager.deployment_name,
+          manifest_string,
+          timeout
+        )
+      end
     end
-    if all_uninstallations_successfull
-      stdout_success "All CNF deployments were uninstalled, some time might be needed for all resources to be down."
+  
+    if all_uninstallations_successful
+      stdout_success "All CNF deployments were uninstalled, resources removed."
     else
-      stdout_failure "CNF uninstallation wasn't successfull, check logs for more info."
+      stdout_failure "CNF uninstallation wasn't successful, check logs."
     end
   end
+  
 end
