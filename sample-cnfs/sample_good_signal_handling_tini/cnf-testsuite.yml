@@ -4,6 +4,6 @@ deployments:
   helm_charts:
   - name: jenkins
     helm_chart_name: jenkins
-    helm_values: --set controller.sidecars.configAutoReload.enabled=false
+    helm_values: --set controller.sidecars.configAutoReload.enabled=false --set controller.installPlugins=false
     helm_repo_name: jenkins
     helm_repo_url: https://charts.jenkins.io
