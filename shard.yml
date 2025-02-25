@@ -68,7 +68,7 @@ dependencies:
     # version: ~> 1.0.1
   k8s_netstat:
     github: cnf-testsuite/k8s_netstat
-    branch: rlal_change_helm_shard_ver
+    branch: rlal_change_kubectl_shard_ver
     # version: ~> 1.0.1
   release_manager:
     github: cnf-testsuite/release_manager
