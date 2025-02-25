@@ -3,7 +3,7 @@ module UERANSIM
 
   def self.uninstall
     Log.for("verbose").info { "uninstall_ueransim" } 
-    Helm.delete("ueransim -n testsuite-5g")
+    Helm.uninstall("ueransim -n testsuite-5g")
   end
 
 
@@ -30,16 +30,14 @@ module UERANSIM
 
     if core 
       all_pods = KubectlClient::Get.pods_by_nodes(KubectlClient::Get.schedulable_nodes_list)
-      ueran_pods = KubectlClient::Get.pods_by_label(all_pods, "app.kubernetes.io/name", "ueransim-gnb")
+      ueran_pods = KubectlClient::Get.pods_by_labels(all_pods, {"app.kubernetes.io/name" => "ueransim-gnb"})
 
       Log.info { "ueran_pods: #{ueran_pods}" }
       unless ueran_pods[0]? == nil
         Log.info { "Found ueransim ... deleting" }
-        Helm.delete("ueransim -n testsuite-5g")
+        Helm.uninstall("ueransim", "testsuite-5g")
       end
-      #Helm.helm_repo_add("openverso","https://gradiant.github.io/openverso-charts/")
-      # Helm.fetch("openverso/ueransim-gnb --version 0.2.5 --untar")
-      Helm.fetch("oci://registry-1.docker.io/gradiant/ueransim-gnb --version 0.2.5 --untar")
+      Helm.pull_oci("oci://registry-1.docker.io/gradiant/ueransim-gnb", version: "0.2.5")
 
       protectionScheme = config.common.five_g_parameters.protectionScheme
       unless protectionScheme.nil? || protectionScheme.empty?
@@ -83,9 +81,9 @@ module UERANSIM
       # File.write("gnb-ues-values.yaml", UES_VALUES)
       File.write("#{Dir.current}/ueransim-gnb/resources/ue.yaml", UERANSIM_HELMCONFIG)
       CNFManager.ensure_namespace_exists!("testsuite-5g")
-      Helm.install("-n testsuite-5g ueransim #{Dir.current}/ueransim-gnb --values ./gnb-ues-values.yaml")
+      Helm.install("ueransim", "#{Dir.current}/ueransim-gnb", namespace: "testsuite-5g", values: "--values ./gnb-ues-values.yaml")
       Log.info { "after helm install" }
-      KubectlClient::Get.resource_wait_for_install("Pod", "ueransim", namespace: "testsuite-5g")
+      KubectlClient::Wait.resource_wait_for_install("Pod", "ueransim", namespace: "testsuite-5g")
       true
     else
       false

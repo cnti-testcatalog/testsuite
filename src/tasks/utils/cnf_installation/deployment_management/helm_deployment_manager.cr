@@ -23,7 +23,7 @@ module CNFInstall
       begin
         CNFManager.ensure_namespace_exists!(helm_namespace)
         #TODO (kosstennbl) fix Helm install to add -n to namespace and remove it there
-        response = Helm.install(release_name: @deployment_name, helm_chart: chart_path, namespace: "-n #{helm_namespace}", values: helm_values)
+        response = Helm.install(@deployment_name, chart_path, namespace: "#{helm_namespace}", values: helm_values)
         if !response[:status].success?
           stdout_failure "Helm installation failed, stderr:"
           stdout_failure "\t#{response[:error]}"
@@ -77,8 +77,7 @@ module CNFInstall
         Helm.helm_repo_add(helm_repo_name, helm_repo_url)
       end
       helm_pull_destination = File.join(DEPLOYMENTS_DIR, @deployment_name)
-      helm_pull_cmd = "#{helm_repo_name}/#{helm_chart_name} --untar --destination #{helm_pull_destination}"
-      pull_response = Helm.pull(helm_pull_cmd)
+      pull_response = Helm.pull(helm_repo_name, helm_chart_name, destination: helm_pull_destination)
       if !pull_response[:status].success?
         stdout_failure "Helm pull failed for deployment \"#{get_deployment_name()}\": #{pull_response[:error]}"
         return false
