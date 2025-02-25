@@ -497,3 +497,10 @@ def read_version_file(filepath)
   return File.read(filepath).strip if File.exists?(filepath)
   nil
 end
+
+def with_kubeconfig(kube_config : String, &)
+  last_kube_config = ENV["KUBECONFIG"]
+  ENV["KUBECONFIG"] = kube_config
+  yield
+  ENV["KUBECONFIG"] = last_kube_config
+end

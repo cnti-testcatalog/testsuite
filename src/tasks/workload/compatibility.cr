@@ -567,7 +567,7 @@ def setup_cilium_cluster(cluster_name : String) : KindManager::Cluster
   Helm.helm_repo_add("cilium","https://helm.cilium.io/")
   chart = "cilium/cilium"
   chart_opts.push("--version 1.15.4")
-  Helm.install("#{cluster_name}-plugin #{chart} #{chart_opts.join(" ")} --namespace kube-system --kubeconfig #{cluster.kubeconfig}")
+  with_kubeconfig(cluster.kubeconfig) { Helm.install("#{cluster_name}-plugin", "#{chart}", namespace: "kube-system", values: "#{chart_opts.join(" ")}") }
 
   cluster.wait_until_pods_ready()
   Log.info { "cilium kubeconfig: #{cluster.kubeconfig}" }
