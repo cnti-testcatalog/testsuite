@@ -61,12 +61,10 @@ dependencies:
     version: ~> 1.0.3
   helm:
     github: cnf-testsuite/helm
-    branch: rl_logging_and_minor_refactors
-    # version: ~> 1.0.1
+    version: ~> 1.0.4
   k8s_netstat:
     github: cnf-testsuite/k8s_netstat
-    branch: rlal_change_helm_shard_ver
-    # version: ~> 1.0.1
+    version: ~> 1.0.1
   release_manager:
     github: cnf-testsuite/release_manager
     branch: main
