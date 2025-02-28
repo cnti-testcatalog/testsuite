@@ -21,7 +21,7 @@ module FluentManager
       Helm.helm_repo_add(flavor_name, repo_url)
       File.write(values_file, values_macro)
       begin
-        Helm.install("#{flavor_name}", "#{chart}", namespace: TESTSUITE_NAMESPACE, values: "--values #{values_file}")
+        Helm.install(flavor_name, chart, namespace: TESTSUITE_NAMESPACE, values: "--values #{values_file}")
         KubectlClient::Get.resource_wait_for_install("Daemonset", flavor_name, namespace: TESTSUITE_NAMESPACE)
       rescue Helm::CannotReuseReleaseNameError
         Log.info { "Release #{flavor_name} already installed" }
