@@ -26,7 +26,7 @@ shards:
 
   helm:
     git: https://github.com/cnf-testsuite/helm.git
-    version: 1.0.2+git.commit.90beca3008dfb465f8edd791ce57f7ab5b1c2874
+    version: 1.0.4
 
   icr:
     git: https://github.com/crystal-community/icr.git
@@ -38,7 +38,7 @@ shards:
 
   k8s_netstat:
     git: https://github.com/cnf-testsuite/k8s_netstat.git
-    version: 1.0.0+git.commit.53929374dea77fde5d0b4cfdcb5ad54e7d4c4460
+    version: 1.0.1
 
   kernel_introspection:
     git: https://github.com/cnf-testsuite/kernel_introspection.git
