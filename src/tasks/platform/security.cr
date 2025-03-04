@@ -6,7 +6,7 @@ require "../utils/utils.cr"
 namespace "platform" do
   desc "The CNF test suite checks to see if the platform is hardened."
   task "security", ["control_plane_hardening", "cluster_admin", "helm_tiller"] do |t, args|
-    Log.for("verbose").info { "security" } if check_verbose(args)
+    Log.debug { "security" }
     stdout_score("platform:security")
   end
 

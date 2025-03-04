@@ -37,6 +37,6 @@ end
 task "delete_results" do |_, args|
   if CNFManager::Points::Results.file_exists?
     File.delete(CNFManager::Points::Results.file)
-    Log.for("verbose").info { "Deleted results file at #{CNFManager::Points::Results.file}" } if check_verbose(args)
+    Log.debug { "Deleted results file at #{CNFManager::Points::Results.file}" }
   end
 end

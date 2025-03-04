@@ -32,7 +32,7 @@ end
 desc "Uninstall Kind"
 task "uninstall_kind" do |_, args|
   current_dir = FileUtils.pwd 
-  Log.for("verbose").info { "uninstall_kind" } if check_verbose(args)
+  Log.debug { "uninstall_kind" }
   FileUtils.rm_rf("#{tools_path}/kind")
 end
 

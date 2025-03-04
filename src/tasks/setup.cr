@@ -25,7 +25,7 @@ rescue e : KubectlClient::Create::AlreadyExistsError
 end
 
 task "configuration_file_setup" do |_, args|
-  Log.for("verbose").info { "configuration_file_setup" } if check_verbose(args)
+  Log.debug { "configuration_file_setup" }
   CNFManager::Points.create_points_yml
 end
 

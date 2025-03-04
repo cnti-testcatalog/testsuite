@@ -174,18 +174,6 @@ describe "Utils" do
     (/ERROR -- cnf-testsuite: Invalid logging level set. defaulting to ERROR/ =~ result[:output]).should_not be_nil
   end
 
-  it "'logger' or verbose output should be shown when verbose flag is set", tags: ["logger"] do
-    begin
-      ShellCmd.cnf_install("cnf-path=sample-cnfs/sample-coredns-cnf")
-      result = ShellCmd.run_testsuite("helm_deploy verbose", cmd_prefix: "LOG_LEVEL=info")
-      puts result[:output]
-      result[:status].success?.should be_true
-      (/helm_deploy args/ =~ result[:output]).should_not be_nil
-    ensure
-      ShellCmd.cnf_uninstall()
-    end
-  end
-
   it "'logger' should write logs to the file when LOG_PATH is set", tags: ["logger"] do
     response_s = `LOG_PATH=spec-test-testsuite.log ./cnf-testsuite test`
     $?.success?.should be_true

@@ -2,13 +2,13 @@ require "file_utils"
 require "colorize"
 require "totem"
 
-def curl_installation(verbose=false)
+def curl_installation()
   gmsg = "No Global curl version found"
   lmsg = "No Local curl version found"
   gcurl = curl_global_response
-  Log.for("verbose").info { gcurl } if verbose
+  Log.debug { gcurl }
   
-  global_curl_version = curl_version(gcurl, verbose)
+  global_curl_version = curl_version(gcurl)
    
   if !global_curl_version.empty?
     gmsg = "Global curl found. Version: #{global_curl_version}"
@@ -18,9 +18,9 @@ def curl_installation(verbose=false)
   end
 
   lcurl = curl_local_response
-  Log.for("verbose").info { lcurl } if verbose
+  Log.debug { lcurl }
   
-  local_curl_version = curl_version(lcurl, verbose)
+  local_curl_version = curl_version(lcurl)
    
   if !local_curl_version.empty?
     lmsg = "Local curl found. Version: #{local_curl_version}"
@@ -38,25 +38,25 @@ def curl_installation(verbose=false)
   "#{lmsg} #{gmsg}"
 end 
 
-def curl_global_response(verbose=false)
+def curl_global_response()
   status = Process.run("curl --version", shell: true, output: curl_response = IO::Memory.new, error: stderr = IO::Memory.new)
-  Log.for("verbose").info { curl_response } if verbose
+  Log.debug { curl_response }
   curl_response.to_s
 end
 
-def curl_local_response(verbose=false)
+def curl_local_response()
   current_dir = FileUtils.pwd
-  Log.for("verbose").info { current_dir } if verbose
+  Log.debug { current_dir }
   curl = "#{tools_path}/curl/linux-amd64/curl"
   status = Process.run("#{curl} --version", shell: true, output: curl_response = IO::Memory.new, error: stderr = IO::Memory.new)
-  Log.for("verbose").info { curl_response.to_s } if verbose
+  Log.debug { curl_response.to_s }
   curl_response.to_s
 end
 
-def curl_version(curl_response, verbose=false)
+def curl_version(curl_response)
   # example
   # GNU Curl 1.15 built on linux-gnu.
   resp = curl_response.match /curl (([0-9]{1,3}[\.]){1,2}[0-9]{1,3})/
-  Log.for("verbose").info { resp } if verbose
+  Log.debug { resp }
   "#{resp && resp.not_nil![1]}"
 end
