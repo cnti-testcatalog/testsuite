@@ -88,7 +88,7 @@ describe CnfTestSuite do
       result = ShellCmd.run_testsuite("rolling_downgrade verbose")
       until (/Passed/ =~ result[:output]) || retries > retry_limit
         Log.info { "rolling_downgrade retry: #{retries}" }
-        sleep 1.0
+        sleep 1.seconds
         result = ShellCmd.run_testsuite("rolling_downgrade verbose")
         retries = retries + 1
       end

@@ -20,7 +20,7 @@ describe "Compatibility" do
       result = ShellCmd.run_testsuite("cni_compatible verbose")
       until (/PASSED/ =~ result[:output]) || retries > retry_limit
         Log.info { "cni_compatible spec retry: #{retries}" }
-        sleep 1.0
+        sleep 1.seconds
         result = ShellCmd.run_testsuite("cni_compatible verbose")
         retries = retries + 1
       end
