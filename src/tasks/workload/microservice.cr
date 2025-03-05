@@ -424,7 +424,7 @@ task "zombie_handled" do |t, args|
       end
     end
 
-    sleep 10.0
+    sleep 10.seconds
 
     task_response = CNFManager.workload_resource_test(args, config, check_containers:false ) do |resource, container, initialized|
       ClusterTools.all_containers_by_resource?(resource, resource[:namespace], only_container_pids:false) do | container_id, container_pid_on_node, node, container_proctree_statuses, container_status| 
@@ -618,7 +618,7 @@ task "sig_term_handled" do |t, args|
               Log.for(t.name).info { "pid_log_names: #{pid_log_names}" }
               #todo 2.3 parse the logs 
               #todo get the log
-              sleep 5
+              sleep 5.seconds
               sig_term_found = pid_log_names.map do |pid_name|
                 Log.info { "pid_name: #{pid_name}" }
                 resp = File.read("#{pid_name}")
