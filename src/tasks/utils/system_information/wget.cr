@@ -2,13 +2,13 @@ require "file_utils"
 require "colorize"
 require "totem"
 
-def wget_installation(verbose=false)
+def wget_installation()
   gmsg = "No Global wget version found"
   lmsg = "No Local wget version found"
   gwget = wget_global_response
-  Log.for("verbose").info { gwget } if verbose
+  Log.debug { gwget }
   
-  global_wget_version = wget_version(gwget, verbose)
+  global_wget_version = wget_version(gwget)
    
   if !global_wget_version.empty?
     gmsg = "Global wget found. Version: #{global_wget_version}"
@@ -18,9 +18,9 @@ def wget_installation(verbose=false)
   end
 
   lwget = wget_local_response
-  Log.for("verbose").info { lwget } if verbose
+  Log.debug { lwget }
   
-  local_wget_version = wget_version(lwget, verbose)
+  local_wget_version = wget_version(lwget)
    
   if !local_wget_version.empty?
     lmsg = "Local wget found. Version: #{local_wget_version}"
@@ -38,31 +38,31 @@ def wget_installation(verbose=false)
   "#{lmsg} #{gmsg}"
 end 
 
-def wget_global_response(verbose=false)
+def wget_global_response()
   Process.run(
     "wget --version",
     shell: true,
     output: wget_response = IO::Memory.new,
     error: stderr = IO::Memory.new
   )
-  Log.for("verbose").info { wget_response.to_s } if verbose
+  Log.debug { wget_response.to_s }
   wget_response.to_s
 end
 
-def wget_local_response(verbose=false)
+def wget_local_response()
   current_dir = FileUtils.pwd
-  Log.for("verbose").info { current_dir } if verbose
+  Log.debug { current_dir }
   wget = "#{tools_path}/wget/linux-amd64/wget"
   status = Process.run("#{wget} --version", shell: true, output: wget_response = IO::Memory.new, error: stderr = IO::Memory.new)
-  Log.info { wget_response.to_s } if verbose
+  Log.info { wget_response.to_s }
   wget_response.to_s
 end
 
-def wget_version(wget_response, verbose=false)
+def wget_version(wget_response)
   # example
   # GNU Wget 1.15 built on linux-gnu.
   resp = wget_response.match /GNU Wget (([0-9]{1,3}[\.]){1,2}[0-9]{1,3})/
-  Log.for("verbose").info { resp } if verbose
+  Log.debug { resp }
   "#{resp && resp.not_nil![1]}"
 end
 

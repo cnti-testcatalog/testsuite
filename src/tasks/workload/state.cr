@@ -262,15 +262,15 @@ task "node_drain", ["install_litmus"] do |t, args|
           deployment_label="#{spec_labels.as_h.first_key}"
           deployment_label_value="#{spec_labels.as_h.first_value}"
           app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_label_value} -n #{resource["namespace"]} -o=jsonpath='{.items[0].spec.nodeName}'"
-          Log.for("node_drain").info { "Getting the app node name #{app_nodeName_cmd}" } if check_verbose(args)
+          Log.for("node_drain").debug { "Getting the app node name #{app_nodeName_cmd}" }
           status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
-          Log.for("node_drain").info { "status_code: #{status_code}" } if check_verbose(args)
+          Log.for("node_drain").debug { "status_code: #{status_code}" }
           app_nodeName = appNodeName_response.to_s
 
           litmus_nodeName_cmd = "kubectl get pods -n litmus -l app.kubernetes.io/name=litmus -o=jsonpath='{.items[0].spec.nodeName}'"
-          Log.for("node_drain").info { "Getting the app node name #{litmus_nodeName_cmd}" } if check_verbose(args)
+          Log.for("node_drain").debug { "Getting the app node name #{litmus_nodeName_cmd}" }
           status_code = Process.run("#{litmus_nodeName_cmd}", shell: true, output: litmusNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
-          Log.for("node_drain").info { "status_code: #{status_code}" } if check_verbose(args)
+          Log.for("node_drain").debug { "status_code: #{status_code}" }
           litmus_nodeName = litmusNodeName_response.to_s
           Log.info { "Workload Node Name: #{app_nodeName}" }
           Log.info { "Litmus Node Name: #{litmus_nodeName}" }
@@ -400,7 +400,7 @@ end
 desc "Does the CNF use a database which uses perisistence in a cloud native way"
 task "database_persistence" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
-    # VERBOSE_LOGGING.info "database_persistence" if check_verbose(args)
+    # Log.debug { "database_persistence" }
     # todo K8s Database persistence test: if a mysql (or any popular database) image is installed:
     statefulset_found = false
     non_elastic_database_statefulset_found = false
@@ -494,7 +494,7 @@ task "no_local_volume_configuration" do |t, args|
           end
         end
       rescue ex
-        Log.for(t.name).error { ex.message } if check_verbose(args)
+        Log.for(t.name).error { ex.message }
         puts "Rescued: On resource #{resource["metadata"]["name"]?} of kind #{resource["kind"]}, local storage configuration volumes not found".colorize(:yellow)
         local_storage_not_found = true
       end

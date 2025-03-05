@@ -4,13 +4,13 @@ require "totem"
 
 # todo collection in modules similar to ohai:
 # https://github.com/chef/ohai
-def clusterctl_installation(verbose=false)
+def clusterctl_installation()
   gmsg = "No Global clusterctl version found"
   lmsg = "No Local clusterctl version found"
-  gclusterctl = clusterctl_global_response(verbose)
-  VERBOSE_LOGGING.info gclusterctl if verbose
+  gclusterctl = clusterctl_global_response()
+  Log.debug { gclusterctl }
   
-  global_clusterctl_version = clusterctl_version(gclusterctl, verbose)
+  global_clusterctl_version = clusterctl_version(gclusterctl)
    
   if !global_clusterctl_version.empty?
     gmsg = "Global clusterctl found. Version: #{global_clusterctl_version}"
@@ -19,10 +19,10 @@ def clusterctl_installation(verbose=false)
     stdout_warning gmsg
   end
 
-  lclusterctl = clusterctl_local_response(verbose)
-  VERBOSE_LOGGING.info lclusterctl if verbose
+  lclusterctl = clusterctl_local_response()
+  Log.debug { lclusterctl }
   
-  local_clusterctl_version = clusterctl_version(lclusterctl, verbose)
+  local_clusterctl_version = clusterctl_version(lclusterctl)
    
   if !local_clusterctl_version.empty?
     lmsg = "Local clusterctl found. Version: #{local_clusterctl_version}"
@@ -60,29 +60,29 @@ def clusterctl_installation(verbose=false)
   "#{lmsg} #{gmsg}"
 end 
 
-def clusterctl_global_response(verbose=false)
+def clusterctl_global_response()
   # i think we can safely ignore  clusterctl version: unable to write version state file: https://github.com/kubernetes-sigs/cluster-api/pull/3575
   clusterctl_response = `clusterctl version`
-  VERBOSE_LOGGING.info clusterctl_response if verbose
+  Log.debug { clusterctl_response }
   clusterctl_response 
 end
 
-def clusterctl_local_response(verbose=false)
+def clusterctl_local_response()
   current_dir = FileUtils.pwd 
-  VERBOSE_LOGGING.info current_dir if verbose 
+  Log.debug { current_dir }
   clusterctl = "#{tools_path}/clusterctl/linux-amd64/clusterctl"
   # clusterctl_response = `#{clusterctl} version`
   status = Process.run("#{clusterctl} version", shell: true, output: clusterctl_response = IO::Memory.new, error: stderr = IO::Memory.new)
 
-  VERBOSE_LOGGING.info clusterctl_response.to_s if verbose
+  Log.debug { clusterctl_response.to_s }
   clusterctl_response.to_s
 end
 
-def clusterctl_version(clusterctl_response, verbose=false)
+def clusterctl_version(clusterctl_response)
   # example
   # clusterctl version: &version.Info{Major:"0", Minor:"3", GitVersion:"v0.3.9", GitCommit:"e1f67d8ceb1d5b30ef967035f7a0d1b1ee088b37", GitTreeState:"clean", BuildDate:"2020-09-01T02:44:58Z", GoVersion:"go1.13.14", Compiler:"gc", Platform:"linux/amd64"}
   resp = clusterctl_response.match /clusterctl version: &version.Info{(Major:"(([0-9]{1,3})"\, )Minor:"([0-9]{1,3}[+]?)")/
-  VERBOSE_LOGGING.info resp if verbose
+  Log.debug { resp }
   if resp
     "#{resp && resp.not_nil![3]}.#{resp && resp.not_nil![4]}"
   else

@@ -1,7 +1,7 @@
 # coding: utf-8
 desc "Platform Tests"
 task "platform", ["helm_local_install", "k8s_conformance", "platform:observability", "platform:resilience", "platform:hardware_and_scheduling", "platform:security"]  do |_, args|
-  VERBOSE_LOGGING.info "platform" if check_verbose(args)
+  Log.debug { "platform" }
 
   total = CNFManager::Points.total_points("platform")
   if total > 0
@@ -37,7 +37,7 @@ task "k8s_conformance" do |t, args|
 
     # Run the tests
     testrun_stdout = IO::Memory.new
-    Log.for("verbose").info { "CRYSTAL_ENV: #{ENV["CRYSTAL_ENV"]?}" } if check_verbose(args)
+    Log.debug { "CRYSTAL_ENV: #{ENV["CRYSTAL_ENV"]?}" }
     if ENV["CRYSTAL_ENV"]? == "TEST"
       Log.info { "Running Sonobuoy using Quick Mode" }
       cmd = "#{sonobuoy} run --wait --mode quick"
@@ -57,13 +57,13 @@ task "k8s_conformance" do |t, args|
         error: testrun_stderr = IO::Memory.new
       )
     end
-    Log.for("verbose").info { testrun_stdout.to_s } if check_verbose(args)
+    Log.debug { testrun_stdout.to_s }
 
     cmd = "results=$(#{sonobuoy} retrieve); #{sonobuoy} results $results"
     results_stdout = IO::Memory.new
     Process.run(cmd, shell: true, output: results_stdout, error: results_stdout)
     results = results_stdout.to_s
-    Log.for("verbose").info { results } if check_verbose(args)
+    Log.debug { results }
 
     # Grab the failed line from the results
 
@@ -90,7 +90,7 @@ task "clusterapi_enabled" do |t, args|
       next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Cluster API not in poc mode")
     end
 
-    Log.for("verbose").info { "clusterapi_enabled" } if check_verbose(args)
+    Log.debug { "clusterapi_enabled" }
     Log.info { "clusterapi_enabled args #{args.inspect}" }
 
     # We test that the namespaces for cluster resources exist by looking for labels

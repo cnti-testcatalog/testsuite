@@ -13,7 +13,7 @@ describe "Observability" do
   it "'log_output' should pass with a cnf that outputs logs to stdout", tags: ["observability"]  do
     begin
       ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
-      result = ShellCmd.run_testsuite("log_output verbose")
+      result = ShellCmd.run_testsuite("log_output")
       result[:status].success?.should be_true
       (/(PASSED).*(Resources output logs to stdout and stderr)/ =~ result[:output]).should_not be_nil
     ensure
@@ -24,7 +24,7 @@ describe "Observability" do
   it "'log_output' should fail with a cnf that does not output logs to stdout", tags: ["observability"]  do
     begin
       ShellCmd.cnf_install("cnf-config=sample-cnfs/sample_no_logs/cnf-testsuite.yml")
-      result = ShellCmd.run_testsuite("log_output verbose")
+      result = ShellCmd.run_testsuite("log_output")
       result[:status].success?.should be_true
       (/(FAILED).*(Resources do not output logs to stdout and stderr)/ =~ result[:output]).should_not be_nil
     ensure
