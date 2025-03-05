@@ -14,6 +14,9 @@ rescue ex : OptionParser::InvalidOption
   puts ex
 end
 
+# First Log.setup is necessary to make sure loglevel
+# method will report errors during execution.
+Log.setup(Log::Severity::Error, log_backend)
 Log.setup(loglevel, log_backend)
 
 private def log_backend

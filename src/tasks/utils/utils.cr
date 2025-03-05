@@ -66,10 +66,6 @@ def ensure_kubeconfig!
   end
 end
 
-def check_(args)
-  ((args.raw.includes? "") || (args.raw.includes? "v"))
-end
-
 def check_cnf_config(args)
   Log.trace { "args = #{args.inspect}" }
   Log.info { "check_cnf_config args: #{args.inspect}" }
