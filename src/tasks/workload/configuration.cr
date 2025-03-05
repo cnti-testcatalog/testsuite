@@ -110,10 +110,10 @@ task "versioned_tag", ["install_opa"] do |t, args|
       case kind
       when .in?(WORKLOAD_RESOURCE_KIND_NAMES)
         resource_yaml = KubectlClient::Get.resource(resource[:kind], resource[:name], resource[:namespace])
-        pods = KubectlClient::Get.pods_by_resource(resource_yaml, namespace: resource[:namespace])
+        pods = KubectlClient::Get.pods_by_resource_labels(resource_yaml, namespace: resource[:namespace])
         pods.map do |pod|
           pod_name = pod.dig("metadata", "name")
-          if OPA.find_non_versioned_pod(pod_name)
+          if OPA.find_non_versioned_pod(pod_name.as_s)
             if kind == "pod"
               fail_msg = "Pod/#{resource[:name]} in #{resource[:namespace]} namespace does not use a versioned image"
             else
@@ -246,7 +246,10 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |t, args|
   rescue
     CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "unknown exception")
   ensure
-    KubectlClient::Delete.command("namespace hardcoded-ip-test --force --grace-period 0")
+    begin
+      KubectlClient::Delete.resource("namespace", "hardcoded-ip-test", extra_opts: "--force --grace-period 0")
+    rescue KubectlClient::ShellCMD::NotFoundError
+    end
   end
 end
 
@@ -291,7 +294,7 @@ task "secrets_used" do |t, args|
       #  is an installation problem, and does not stop the test from passing
 
       namespace = resource[:namespace]
-      secrets = KubectlClient::Get.secrets(namespace: namespace)
+      secrets = KubectlClient::Get.resource("secrets", namespace: namespace)
 
       secrets["items"].as_a.each do |s|
         s_name = s["metadata"]["name"]
@@ -472,12 +475,14 @@ task "immutable_configmap" do |t, args|
 
     # if the reapply with a change succedes immutable configmaps is NOT enabled
     # if KubectlClient::Apply.file(test_config_map_filename) == 0
-    apply_result = KubectlClient::Apply.file(test_config_map_filename)
+    begin
+      KubectlClient::Apply.file(test_config_map_filename)
+    rescue ex : KubectlClient::ShellCMD::UnspecifiedError
+      Log.for(t.name).info { "immutable configmaps supported, continuing with test" }
+    else
+      # Delete configmap immediately to avoid interfering with further tests
+      KubectlClient::Delete.file(test_config_map_filename)
 
-    # Delete configmap immediately to avoid interfering with further tests
-    KubectlClient::Delete.file(test_config_map_filename)
-
-    if apply_result[:status].success?
       Log.for(t.name).info { "kubectl apply on immutable configmap succeeded for: #{test_config_map_filename}" }
       k8s_ver = KubectlClient.server_version
       if version_less_than(k8s_ver, "1.19.0")
@@ -485,56 +490,55 @@ task "immutable_configmap" do |t, args|
       else
         CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "immutable configmaps are not enabled in this k8s cluster")
       end
-    else
+    end
 
-      volumes_test_results = [] of MutableConfigMapsVolumesResult
-      envs_with_mutable_configmap = [] of MutableConfigMapsInEnvResult
+    volumes_test_results = [] of MutableConfigMapsVolumesResult
+    envs_with_mutable_configmap = [] of MutableConfigMapsInEnvResult
 
-      cnf_manager_workload_resource_task_response = CNFManager.workload_resource_test(args, config, check_containers: false, check_service: true) do |resource, containers, volumes, initialized|
-        Log.for(t.name).info { "resource: #{resource}" }
-        Log.for(t.name).info { "volumes: #{volumes}" }
+    cnf_manager_workload_resource_task_response = CNFManager.workload_resource_test(args, config, check_containers: false, check_service: true) do |resource, containers, volumes, initialized|
+      Log.for(t.name).info { "resource: #{resource}" }
+      Log.for(t.name).info { "volumes: #{volumes}" }
 
-        # If the install type is manifest, the namesapce would be in the manifest.
-        # Else rely on config for helm-based install
-        namespace = resource[:namespace]
-        configmaps = KubectlClient::Get.configmaps(namespace: namespace)
-        if configmaps.dig?("items")
-          configmaps = configmaps.dig("items").as_a
+      # If the install type is manifest, the namesapce would be in the manifest.
+      # Else rely on config for helm-based install
+      namespace = resource[:namespace]
+      configmaps = KubectlClient::Get.resource("configmaps", namespace: namespace)
+      if configmaps.dig?("items")
+        configmaps = configmaps.dig("items").as_a
+      else
+        configmaps = [] of JSON::Any
+      end
+
+      volumes_test_results = mutable_configmaps_as_volumes(resource, configmaps, volumes.as_a, containers.as_a)
+      envs_with_mutable_configmap = containers.as_a.flat_map do |container|
+        container_env_configmap_refs(resource, configmaps, container)
+      end.compact
+
+      Log.for("immutable_configmap_volumes").info { volumes_test_results }
+      Log.for("immutable_configmap_envs").info { envs_with_mutable_configmap }
+
+      volumes_test_results.size == 0 && envs_with_mutable_configmap.size == 0
+    end
+
+    if cnf_manager_workload_resource_task_response
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "All volume or container mounted configmaps immutable")
+    elsif immutable_configmap_supported
+
+      # Print out any mutable configmaps mounted as volumes
+      volumes_test_results.each do |result|
+        msg = ""
+        if result[:resource] == nil
+          msg = "Mutable configmap #{result[:configmap]} used as volume in #{result[:resource][:kind]}/#{result[:resource][:name]} in #{result[:resource][:namespace]} namespace."
         else
-          configmaps = [] of JSON::Any
+          msg = "Mutable configmap #{result[:configmap]} mounted as volume #{result[:volume]} in #{result[:container]} container part of #{result[:resource][:kind]}/#{result[:resource][:name]} in #{result[:resource][:namespace]} namespace."
         end
-
-        volumes_test_results = mutable_configmaps_as_volumes(resource, configmaps, volumes.as_a, containers.as_a)
-        envs_with_mutable_configmap = containers.as_a.flat_map do |container|
-          container_env_configmap_refs(resource, configmaps, container)
-        end.compact
-
-        Log.for("immutable_configmap_volumes").info { volumes_test_results }
-        Log.for("immutable_configmap_envs").info { envs_with_mutable_configmap }
-
-        volumes_test_results.size == 0 && envs_with_mutable_configmap.size == 0
+        stdout_failure(msg)
       end
-
-      if cnf_manager_workload_resource_task_response
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "All volume or container mounted configmaps immutable")
-      elsif immutable_configmap_supported
-
-        # Print out any mutable configmaps mounted as volumes
-        volumes_test_results.each do |result|
-          msg = ""
-          if result[:resource] == nil
-            msg = "Mutable configmap #{result[:configmap]} used as volume in #{result[:resource][:kind]}/#{result[:resource][:name]} in #{result[:resource][:namespace]} namespace."
-          else
-            msg = "Mutable configmap #{result[:configmap]} mounted as volume #{result[:volume]} in #{result[:container]} container part of #{result[:resource][:kind]}/#{result[:resource][:name]} in #{result[:resource][:namespace]} namespace."
-          end
-          stdout_failure(msg)
-        end
-        envs_with_mutable_configmap.each do |result|
-          msg = "Mutable configmap #{result[:configmap]} used in env in #{result[:container]} part of #{result[:resource][:kind]}/#{result[:resource][:name]} in #{result[:resource][:namespace]}."
-          stdout_failure(msg)
-        end
-        CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found mutable configmap(s)")
+      envs_with_mutable_configmap.each do |result|
+        msg = "Mutable configmap #{result[:configmap]} used in env in #{result[:container]} part of #{result[:resource][:kind]}/#{result[:resource][:name]} in #{result[:resource][:namespace]}."
+        stdout_failure(msg)
       end
+      CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Failed, "Found mutable configmap(s)")
     end
   end
 end
@@ -582,9 +586,9 @@ task "alpha_k8s_apis" do |t, args|
     k8s_major_minor_version = k8s_server_version.split(".")[0..1].join(".")
     pod_name = "pod/apisnoop-#{cluster_name}-control-plane"
     db_query = "select count(*) from testing.audit_event where endpoint in (select endpoint from open_api where level='alpha' and release ilike '#{k8s_major_minor_version}%')"
-    exec_cmd = "#{pod_name} --container snoopdb --kubeconfig #{cluster.kubeconfig} -- psql -d apisnoop -c \"#{db_query}\""
+    exec_cmd = "psql -d apisnoop -c \"#{db_query}\""
 
-    result = KubectlClient.exec(exec_cmd)
+    result = with_kubeconfig(cluster.kubeconfig) { KubectlClient::Utils.exec(pod_name, exec_cmd, snoopdb) }
     api_count = result[:output].split("\n")[2].to_i
 
     if api_count == 0
@@ -619,7 +623,7 @@ task "operator_installed" do |t, args|
       csv_created = nil
       resource_created = false
 
-      KubectlClient::Get.wait_for_resource_key_value("sub", "#{subscription["name"]}", {"status", "installedCSV"}, namespace: subscription["namespace"].as_s)
+      KubectlClient::Wait.wait_for_resource_key_value("sub", "#{subscription["name"]}", {"status", "installedCSV"}, namespace: subscription["namespace"].as_s)
 
       installed_csv = KubectlClient::Get.resource("sub", "#{subscription["name"]}", "#{subscription["namespace"]}")
       if installed_csv.dig?("status", "installedCSV")
@@ -631,7 +635,7 @@ task "operator_installed" do |t, args|
 
 
     succeeded = csv_names.map do |csv| 
-      if KubectlClient::Get.wait_for_resource_key_value("csv", "#{csv["name"]}", {"status", "reason"}, namespace: csv["namespace"].as_s, value: "InstallSucceeded" ) && KubectlClient::Get.wait_for_resource_key_value("csv", "#{csv["name"]}", {"status", "phase"}, namespace: csv["namespace"].as_s, value: "Succeeded" )
+      if KubectlClient::Wait.wait_for_resource_key_value("csv", "#{csv["name"]}", {"status", "reason"}, namespace: csv["namespace"].as_s, value: "InstallSucceeded" ) && KubectlClient::Wait.wait_for_resource_key_value("csv", "#{csv["name"]}", {"status", "phase"}, namespace: csv["namespace"].as_s, value: "Succeeded" )
         csv_succeeded=true
       end
       csv_succeeded
