@@ -135,6 +135,7 @@ describe "Utils" do
 
     result = ShellCmd.run_testsuite("test")
     result[:status].success?.should be_true
+    puts result[:output]
     (/DEBUG -- CNTI: debug test/ =~ result[:output]).should be_nil
     (/INFO -- CNTI: info test/ =~ result[:output]).should be_nil
     (/WARN -- CNTI: warn test/ =~ result[:output]).should_not be_nil
@@ -176,7 +177,6 @@ describe "Utils" do
   it "'logger' defaults to error when level set is missplled", tags: ["logger"]  do
     # Note: implicitly tests the override of config.yml if it exist in repo root
     result = ShellCmd.run_testsuite("test", cmd_prefix: "unset LOG_LEVEL; LOG_LEVEL=DEGUB")
-    puts result[:output]
     result[:status].success?.should be_true
     (/ERROR -- CNTI: Invalid logging level set. defaulting to ERROR/ =~ result[:output]).should_not be_nil
   end
