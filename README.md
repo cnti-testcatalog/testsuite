@@ -2,7 +2,7 @@
 
 | Main                                                                                                                                        |
 | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| [![Build Status](https://github.com/cnti-testcatalog/testsuite/workflows/Crystal%20Specs/badge.svg)](https://github.com/cnti-testcatalog/testsuite/actions) |
+| [![Build Status](https://github.com/lfn-cnti/testsuite/workflows/Crystal%20Specs/badge.svg)](https://github.com/lfn-cnti/testsuite/actions) |
 
 The CNTi Test Catalog is an open source and vendor neutral tool that can be used to validate a telco application's adherence to [cloud native principles](https://networking.cloud-native-principles.org/) and best practices. 
 
@@ -16,9 +16,9 @@ To get the CNTi Test Catalog up and running, see the [Installation Guide](INSTAL
 
 Prereqs: Kubernetes cluster, wget, curl, helm 3.1.1 or greater on your system already.
 
-1. Install the latest test suite binary: `source <(curl -s https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/curl_install.sh)`
+1. Install the latest test suite binary: `source <(curl -s https://raw.githubusercontent.com/lfn-cnti/testsuite/main/curl_install.sh)`
 2. Run `setup` to prepare the cnf-testsuite: `cnf-testsuite setup`
-3. Pull down an example CNF configuration to try: `curl -o cnf-testsuite.yml https://raw.githubusercontent.com/cnti-testcatalog/testsuite/main/example-cnfs/coredns/cnf-testsuite.yml`
+3. Pull down an example CNF configuration to try: `curl -o cnf-testsuite.yml https://raw.githubusercontent.com/lfn-cnti/testsuite/main/example-cnfs/coredns/cnf-testsuite.yml`
 4. Initialize the test suite for using the CNF: `cnf-testsuite cnf_install cnf-config=./cnf-testsuite.yml`
 5. Run all of application/workload tests: `cnf-testsuite workload`
 
@@ -45,8 +45,8 @@ See the [Test Documentation](docs/TEST_DOCUMENTATION.md) for a complete overview
 Welcome! We gladly accept contributions on new tests, example CNFs, updates to documentation, enhancements, bug reports, and more.
 
 - [Contributing guide](CONTRIBUTING.md)
-- [Good first issues](https://github.com/cnti-testcatalog/testsuite/labels/good%20first%20issue)
-- [Contributions welcome](https://github.com/cnti-testcatalog/testsuite/labels/contributions-welcome)
+- [Good first issues](https://github.com/lfn-cnti/testsuite/labels/good%20first%20issue)
+- [Contributions welcome](https://github.com/lfn-cnti/testsuite/labels/contributions-welcome)
 
 ## Communication and Community Meetings
 

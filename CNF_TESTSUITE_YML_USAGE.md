@@ -4,7 +4,7 @@
 The cnf-testsuite.yml is used by `cnf_install` in order to install the CNF to be tested onto an existing K8s cluster. 
 
 
-The information in the cnf-testsuite.yml is also used for additional configuration of some tests e.g. `white_list_container_names` is used for exculding containers from the [privileged_containers](https://github.com/cnti-testcatalog/testsuite/blob/main/src/tasks/workload/security.cr#L138) container test.
+The information in the cnf-testsuite.yml is also used for additional configuration of some tests e.g. `white_list_container_names` is used for exculding containers from the [privileged_containers](https://github.com/lfn-cnti/testsuite/blob/main/src/tasks/workload/security.cr#L138) container test.
 
 
 ### Table of Contents
@@ -16,7 +16,7 @@ The information in the cnf-testsuite.yml is also used for additional configurati
 
 ### Overview of all cnf-testsuite.yml
 
-The following is a basic working example cnf-testsuite.yml file that can be found in the cnf-testcatalog respository: [cnf-testcatalog/spec/fixtures/cnf-testsuite-v2-example.yml](https://github.com/cnti-testcatalog/testsuite/blob/main/spec/fixtures/cnf-testsuite-v2-example.yml)
+The following is a basic working example cnf-testsuite.yml file that can be found in the cnf-testcatalog respository: [cnf-testcatalog/spec/fixtures/cnf-testsuite-v2-example.yml](https://github.com/lfn-cnti/testsuite/blob/main/spec/fixtures/cnf-testsuite-v2-example.yml)
 
 ```yaml=
 ---

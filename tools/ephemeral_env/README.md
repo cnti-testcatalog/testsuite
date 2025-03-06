@@ -10,7 +10,7 @@ Prereqs: [Kind Install](../../KIND-INSTALL.md)
 
 1. Obtain the ephemeral binary
 
-- Download the binary from https://github.com/cnti-testcatalog/testsuite/releases
+- Download the binary from https://github.com/lfn-cnti/testsuite/releases
 - OPTIONAL: build the binary yourself using crystal
 
 ```
