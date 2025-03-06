@@ -13,7 +13,7 @@ This is a preliminary list of CNF samples for each layer in the [OSI model](http
 
 ## [Layer 7 - Application](https://en.wikipedia.org/wiki/Application_layer)
 
-- [CoreDNS Sample CNF](https://github.com/cnti-testcatalog/testsuite/tree/main/sample-cnfs/sample-coredns-cnf)
+- [CoreDNS Sample CNF](https://github.com/lfn-cnti/testsuite/tree/main/sample-cnfs/sample-coredns-cnf)
 - [NFF Go Deep Packet Inspection example](https://github.com/intel-go/nff-go/tree/master/examples/dpi) example
 
 ## [Layer 6 - Presentation](https://en.wikipedia.org/wiki/Presentation_layer)

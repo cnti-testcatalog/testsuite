@@ -27,9 +27,9 @@ get_latest_release() {
 }
 
 # Install CNF-TestSuite
-LATEST_RELEASE=$(get_latest_release cnti-testcatalog/testsuite)
+LATEST_RELEASE=$(get_latest_release lfn-cnti/testsuite)
 mkdir -p ~/.cnf-testsuite
-curl --silent -L https://github.com/cnti-testcatalog/testsuite/releases/download/$LATEST_RELEASE/cnf-testsuite-$LATEST_RELEASE.tar.gz -o ~/.cnf-testsuite/cnf-testsuite.tar.gz
+curl --silent -L https://github.com/lfn-cnti/testsuite/releases/download/$LATEST_RELEASE/cnf-testsuite-$LATEST_RELEASE.tar.gz -o ~/.cnf-testsuite/cnf-testsuite.tar.gz
 tar -C ~/.cnf-testsuite -xf ~/.cnf-testsuite/cnf-testsuite.tar.gz
 chmod a+x ~/.cnf-testsuite/cnf-testsuite
 rm ~/.cnf-testsuite/cnf-testsuite.tar.gz
