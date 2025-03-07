@@ -20,16 +20,16 @@ Before starting work on a major feature, please reach out to us via [GitHub Issu
 GitHub Issues are used as the primary method for tracking items for the CNTI Test Catalog. Please self-assign an issue to yourself when you start to work on it so we don't duplicate work :)
 
 - [Issues](../../issues)
-  - [Good first issues](https://github.com/cnti-testcatalog/testsuite/labels/good%20first%20issue)
-  - [Contributions welcome](https://github.com/cnti-testcatalog/testsuite/labels/contributions-welcome)
+  - [Good first issues](https://github.com/lfn-cnti/testsuite/labels/good%20first%20issue)
+  - [Contributions welcome](https://github.com/lfn-cnti/testsuite/labels/contributions-welcome)
 
 ### Issue Templates
 
 **1. New Features:**
-To request an enhancement, please create a new issue using the [**Feature Request**](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=enhancement&template=feature-request.md&title=%5BFeature%5D) Template
+To request an enhancement, please create a new issue using the [**Feature Request**](https://github.com/lfn-cnti/testsuite/issues/new?assignees=&labels=enhancement&template=feature-request.md&title=%5BFeature%5D) Template
 
 **2. Report Bugs:**
-To report a bug, please create a new issue using the [**Bug Report**](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=bug&template=bug-report.md&title=%5BBUG%5D) Template. Check out [How to Report Bugs Effectively](https://www.chiark.greenend.org.uk/~sgtatham/bugs.html.).
+To report a bug, please create a new issue using the [**Bug Report**](https://github.com/lfn-cnti/testsuite/issues/new?assignees=&labels=bug&template=bug-report.md&title=%5BBUG%5D) Template. Check out [How to Report Bugs Effectively](https://www.chiark.greenend.org.uk/~sgtatham/bugs.html.).
 
 >NOTE: To help with debugging, you can enable higher logging level output via the command line or ENV variable. Available log levels are: `trace`, `debug`, `info`, `notice`, `warn`, `error` and `fatal`.
 
@@ -48,11 +48,11 @@ Check [usage documentation](USAGE.md) for more info about invoking commands and 
 
 **3. New CNTI Test Catalog Tests:**
 
-- To request a new workload test, please create a new issue using the [**New Workload Test**](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=workload&template=new-workload-test.md&title=%5BWorkload%5D) Template
-- To request a new platform test, please create a new issue using the [**New Platform Test**](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=platform&template=new-platform-test.md&title=%5BPlatform%5D) Template
+- To request a new workload test, please create a new issue using the [**New Workload Test**](https://github.com/lfn-cnti/testsuite/issues/new?assignees=&labels=workload&template=new-workload-test.md&title=%5BWorkload%5D) Template
+- To request a new platform test, please create a new issue using the [**New Platform Test**](https://github.com/lfn-cnti/testsuite/issues/new?assignees=&labels=platform&template=new-platform-test.md&title=%5BPlatform%5D) Template
 
 **4. New CNF Example:**
-To suggest a new CNF, please create a GitHub issue using the [New Example CNF template](https://github.com/cnti-testcatalog/testsuite/issues/new?assignees=&labels=example+CNF&template=new-example-cnf.md&title=%5BCNF%5D).
+To suggest a new CNF, please create a GitHub issue using the [New Example CNF template](https://github.com/lfn-cnti/testsuite/issues/new?assignees=&labels=example+CNF&template=new-example-cnf.md&title=%5BCNF%5D).
 
 To install the CNTI Test Catalog and run a CNF, follow instructions at:
 
@@ -68,7 +68,7 @@ The test framework and tests (using upstream tools) are written in the human rea
 
 Outline of what a contributor's workflow looks like:
 
-1. Fork it (https://github.com/cnti-testcatalog/testsuite/fork)
+1. Fork it (https://github.com/lfn-cnti/testsuite/fork)
 1. Create a branch from where you want to base your work (usually main). Example `git checkout -b my-new-feature)`
 1. Read the install for build and test instructions at [INSTALL.md](INSTALL.md).
 1. Make your changes and arrange them in readable commits.
@@ -102,7 +102,7 @@ For general advice on how to submit a pull request, please see [Creating a pull 
    `git clone git@github.com:<contributor-username>/cnf-testsuite.git`
    `cd cnf-testsuite`
 3. Add the original cnf-testsuite repo.
-   `git remote add cncf git@github.com:cnti-testcatalog/testsuite.git`
+   `git remote add cncf git@github.com:lfn-cnti/testsuite.git`
 4. Checkout the pull request's branch.
    `git checkout <pull-request's-branch-name>`
 5. Push the branch to the original cnf-testsuite repo.

@@ -40,7 +40,7 @@ How you can be more involved and participate in the community:
 * Helping other users
 * Commenting on issues
 * Trying out new releases
-* Attending [community meetings](https://github.com/cnti-testcatalog/testsuite#communication-and-community-meetings) and events
+* Attending [community meetings](https://github.com/lfn-cnti/testsuite#communication-and-community-meetings) and events
 
 ## Contributor
 
