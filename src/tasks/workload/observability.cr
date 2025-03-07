@@ -23,7 +23,7 @@ task "log_output" do |t, args|
       test_passed = false
       case resource["kind"].downcase
       when .in?(WORKLOAD_RESOURCE_KIND_NAMES)
-        result = KubectlClient.logs("#{resource["kind"]}/#{resource["name"]}", namespace: resource[:namespace], options: "--all-containers --tail=5 --prefix=true")
+        result = KubectlClient::Utils.logs("#{resource["kind"]}/#{resource["name"]}", namespace: resource[:namespace], options: "--all-containers --tail=5 --prefix=true")
         Log.for("Log lines").info { result[:output] }
         if result[:output].size > 0
           test_passed = true
@@ -93,7 +93,7 @@ task "prometheus_traffic" do |t, args|
       prom_cnf_match = CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
         ip_match = false
         resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name], resource_name[:namespace])
-        pods = KubectlClient::Get.pods_by_resource(resource, resource_name[:namespace])
+        pods = KubectlClient::Get.pods_by_resource_labels(resource, resource_name[:namespace])
         pods.each do |pod|
           pod_ips = pod.dig("status", "podIPs")
           Log.info { "pod_ips: #{pod_ips}"}
@@ -128,7 +128,7 @@ task "prometheus_traffic" do |t, args|
                 Log.debug { "metrics_config_map : #{metrics_config_map}" }
                 configmap_path = "#{CNF_TEMP_FILES_DIR}/metrics_configmap.yml"
                 File.write(configmap_path, "#{metrics_config_map}")
-                KubectlClient::Delete.file(configmap_path)
+                begin KubectlClient::Delete.file(configmap_path) rescue KubectlClient::ShellCMD::NotFoundError end
                 KubectlClient::Apply.file(configmap_path)
                 ip_match = true
               end
@@ -157,8 +157,12 @@ end
 desc "Does the CNF emit prometheus open metric compatible traffic"
 task "open_metrics", ["prometheus_traffic"] do |t, args|
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
-    configmap = KubectlClient::Get.configmap("cnf-testsuite-open-metrics")
-    if configmap != EMPTY_JSON
+    begin
+      configmap = KubectlClient::Get.resource("configmap", "cnf-testsuite-open-metrics")
+    rescue KubectlClient::ShellCMD::NotFoundError
+    end
+
+    if !configmap.nil? && configmap != EMPTY_JSON
       open_metrics_validated = configmap["data"].as_h["open_metrics_validated"].as_s
 
       if open_metrics_validated == "true"
@@ -177,19 +181,19 @@ end
 desc "Are the CNF's logs captured by a logging system"
 task "routed_logs", ["install_cluster_tools"] do |t, args|
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
-    match = FluentManager.find_active_match
-    unless match
+    fluent_pods = FluentManager.find_active_match_pods()
+    unless fluent_pods
       next CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Skipped, "Fluentd or FluentBit not configured")
     end
 
     all_pods_logged = true
     CNFManager.workload_resource_test(args, config) do |resource_name, container, initialized|
       resource = KubectlClient::Get.resource(resource_name[:kind], resource_name[:name], resource_name[:namespace])
-      pods = KubectlClient::Get.pods_by_resource(resource, namespace: resource_name[:namespace])
+      pods = KubectlClient::Get.pods_by_resource_labels(resource, namespace: resource_name[:namespace])
   
       pods.each do |pod|
         pod_name = pod.dig("metadata", "name").as_s
-        unless FluentManager.pod_tailed?(pod_name, match)
+        unless FluentManager.pod_tailed?(pod_name, fluent_pods)
           Log.info { "Pod #{pod_name} logs are not being captured "}
           all_pods_logged = false
           break
