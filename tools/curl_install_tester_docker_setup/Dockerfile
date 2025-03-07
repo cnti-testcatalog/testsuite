@@ -21,4 +21,4 @@ from base as ci_test
 COPY cnf-testsuite .
 RUN ./cnf-testsuite setup verbose
 RUN wget https://raw.githubusercontent.com/lfn-cnti/testsuite/main/example-cnfs/coredns/cnf-testsuite.yml
-RUN ./cnf-testsuite helm_chart_valid cnf-config=./cnf-testsuite.yml verbose
+RUN ./cnf-testsuite helm_chart_valid cnf-config=./cnf-testsuite.yml

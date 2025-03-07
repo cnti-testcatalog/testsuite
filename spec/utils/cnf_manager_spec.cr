@@ -176,10 +176,10 @@ describe "SampleUtils" do
       task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
         test_passed = true
 		  		begin
-		  			Log.for("verbose").debug { container.as_h["name"].as_s } if check_verbose(args)
+		  			Log.trace { container.as_h["name"].as_s }
 		  			container.as_h["livenessProbe"].as_h 
 		  		rescue ex
-		  			Log.for("verbose").error { ex.message } if check_verbose(args)
+		  			Log.error { ex.message }
 		  			test_passed = false 
             puts "No livenessProbe found for resource: #{resource} and container: #{container.as_h["name"].as_s}".colorize(:red)
 		  		end

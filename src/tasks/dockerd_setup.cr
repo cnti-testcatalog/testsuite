@@ -6,7 +6,7 @@ require "./utils/utils.cr"
 
 desc "The dockerd tool is used to run docker commands against the cluster."
 task "install_dockerd" do |_, args|
-  Log.for("verbose").info { "install_dockerd" } if check_verbose(args)
+  Log.debug { "install_dockerd" }
   install_status = Dockerd.install
   unless install_status
     Log.error { "Dockerd_Install failed.".colorize(:red) }

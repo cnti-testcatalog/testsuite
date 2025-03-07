@@ -72,7 +72,7 @@ describe "Installation" do
   it "'cnf_install/cnf_uninstall' should work with cnf-testsuite.yml that has no directory associated with it", tags: ["cnf_installation"] do
     begin
       #TODO force cnfs/<name> to be deployment name and not the directory name
-      result = ShellCmd.cnf_install("cnf-config=spec/fixtures/cnf-testsuite.yml verbose")
+      result = ShellCmd.cnf_install("cnf-config=spec/fixtures/cnf-testsuite.yml")
       (/CNF installation complete/ =~ result[:output]).should_not be_nil
     ensure
       result = ShellCmd.cnf_uninstall()

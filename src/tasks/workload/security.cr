@@ -139,7 +139,7 @@ desc "Check if any containers are running in privileged mode"
 task "privileged_containers" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     white_list_container_names = config.common.white_list_container_names
-    VERBOSE_LOGGING.info "white_list_container_names #{white_list_container_names.inspect}" if check_verbose(args)
+    Log.debug { "white_list_container_names #{white_list_container_names.inspect}" }
     violation_list = [] of NamedTuple(kind: String, name: String, container: String, namespace: String)
     task_response = CNFManager.workload_resource_test(args, config) do |resource, container, initialized|
 

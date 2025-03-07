@@ -128,70 +128,64 @@ describe "Utils" do
 
   it "'logger' command line logger level setting via config.yml", tags: ["logger"]  do
     # NOTE: the config.yml file is in the root of the repo directory. 
-    # as written this test depends on they key loglevel being set to 'info' in that config.yml
-    result = ShellCmd.run_testsuite("test")
+    # By default 'loglevel' in that file is set to 'error', but 'error' is also default
+    # implicit log level, so we change loglevel to 'warn' for this test.
+    `sed -i 's/loglevel: error/loglevel: warn/' config.yml`
+    ($?.success?).should be_true
+
+    result = ShellCmd.run_testsuite("test", cmd_prefix: "unset LOG_LEVEL;")
     result[:status].success?.should be_true
-    (/DEBUG -- cnf-testsuite: debug test/ =~ result[:output]).should be_nil
-    (/INFO -- cnf-testsuite: info test/ =~ result[:output]).should_not be_nil
-    (/WARN -- cnf-testsuite: warn test/ =~ result[:output]).should_not be_nil
-    (/ERROR -- cnf-testsuite: error test/ =~ result[:output]).should_not be_nil
+    (/DEBUG -- CNTI: debug test/ =~ result[:output]).should be_nil
+    (/INFO -- CNTI: info test/ =~ result[:output]).should be_nil
+    (/WARN -- CNTI: warn test/ =~ result[:output]).should_not be_nil
+    (/ERROR -- CNTI: error test/ =~ result[:output]).should_not be_nil
+  ensure
+    `sed -i 's/loglevel: warn/loglevel: error/' config.yml`
   end
 
   it "'logger' command line logger level setting works", tags: ["logger"]  do
     # Note: implicitly tests the override of config.yml if it exist in repo root
     result = ShellCmd.run_testsuite("-l debug test")
     result[:status].success?.should be_true
-    (/DEBUG -- cnf-testsuite: debug test/ =~ result[:output]).should_not be_nil
+    (/DEBUG -- CNTI: debug test/ =~ result[:output]).should_not be_nil
   end
 
   it "'logger' LOGLEVEL NO underscore environment variable level setting works", tags: ["logger"]  do
     # Note: implicitly tests the override of config.yml if it exist in repo root
     result = ShellCmd.run_testsuite("test", cmd_prefix: "unset LOG_LEVEL; LOGLEVEL=DEBUG")
     result[:status].success?.should be_true
-    (/DEBUG -- cnf-testsuite: debug test/ =~ result[:output]).should_not be_nil
+    (/DEBUG -- CNTI: debug test/ =~ result[:output]).should_not be_nil
   end
 
   it "'logger' LOG_LEVEL WITH underscore environment variable level setting works", tags: ["logger"]  do
     # Note: implicitly tests the override of config.yml if it exist in repo root
     result = ShellCmd.run_testsuite("test", cmd_prefix: "LOG_LEVEL=DEBUG")
     result[:status].success?.should be_true
-    (/DEBUG -- cnf-testsuite: debug test/ =~ result[:output]).should_not be_nil
+    (/DEBUG -- CNTI: debug test/ =~ result[:output]).should_not be_nil
   end
 
   it "'logger' command line level setting overrides environment variable", tags: ["logger"]  do
     result = ShellCmd.run_testsuite("-l error test", cmd_prefix: "LOG_LEVEL=DEBUG")
     result[:status].success?.should be_true
-    (/DEBUG -- cnf-testsuite: debug test/ =~ result[:output]).should be_nil
-    (/INFO -- cnf-testsuite: info test/ =~ result[:output]).should be_nil
-    (/WARN -- cnf-testsuite: warn test/ =~ result[:output]).should be_nil
-    (/ERROR -- cnf-testsuite: error test/ =~ result[:output]).should_not be_nil
+    (/DEBUG -- CNTI: debug test/ =~ result[:output]).should be_nil
+    (/INFO -- CNTI: info test/ =~ result[:output]).should be_nil
+    (/WARN -- CNTI: warn test/ =~ result[:output]).should be_nil
+    (/ERROR -- CNTI: error test/ =~ result[:output]).should_not be_nil
   end
 
   it "'logger' defaults to error when level set is missplled", tags: ["logger"]  do
     # Note: implicitly tests the override of config.yml if it exist in repo root
     result = ShellCmd.run_testsuite("test", cmd_prefix: "unset LOG_LEVEL; LOG_LEVEL=DEGUB")
     result[:status].success?.should be_true
-    (/ERROR -- cnf-testsuite: Invalid logging level set. defaulting to ERROR/ =~ result[:output]).should_not be_nil
-  end
-
-  it "'logger' or verbose output should be shown when verbose flag is set", tags: ["logger"] do
-    begin
-      ShellCmd.cnf_install("cnf-path=sample-cnfs/sample-coredns-cnf")
-      result = ShellCmd.run_testsuite("helm_deploy verbose", cmd_prefix: "LOG_LEVEL=info")
-      puts result[:output]
-      result[:status].success?.should be_true
-      (/helm_deploy args/ =~ result[:output]).should_not be_nil
-    ensure
-      ShellCmd.cnf_uninstall()
-    end
+    (/ERROR -- CNTI: Invalid logging level set. defaulting to ERROR/ =~ result[:output]).should_not be_nil
   end
 
   it "'logger' should write logs to the file when LOG_PATH is set", tags: ["logger"] do
     response_s = `LOG_PATH=spec-test-testsuite.log ./cnf-testsuite test`
     $?.success?.should be_true
-    (/ERROR -- cnf-testsuite: error test/ =~ response_s).should be_nil
+    (/ERROR -- CNTI: error test/ =~ response_s).should be_nil
     File.exists?("spec-test-testsuite.log").should be_true
-    (/ERROR -- cnf-testsuite: error test/ =~ File.read("spec-test-testsuite.log")).should_not be_nil
+    (/ERROR -- CNTI: error test/ =~ File.read("spec-test-testsuite.log")).should_not be_nil
   ensure
     if File.exists?("spec-test-testsuite.log")
       File.delete("spec-test-testsuite.log")

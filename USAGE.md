@@ -152,13 +152,8 @@ LOGLEVEL=DEBUG ./cnf-testsuite test
 2. Environment variable
 3. CNF-Testsuite [Config file](config.yml)
 
-##### Verbose Option
+> Note: Available log levels are: `trace`, `debug`, `info`, `notice`, `warn`, `error` and `fatal`.
 
-Also setting the verbose option for many tasks will add extra output to help with debugging
-
-```
-./cnf-testsuite test_name verbose
-```
 #### Environment variables for timeouts:
 
 Timeouts are controlled by these environment variables, set them if default values aren't suitable:

@@ -7,7 +7,7 @@ require "../utils/utils.cr"
 
 desc "The CNF Test Suite program certifies a CNF based on passing some percentage of essential tests."
 task "cert", ["version", "cert_compatibility", "cert_state", "cert_security", "cert_configuration", "cert_observability", "cert_microservice", "cert_resilience"] do  |_, args|
-  VERBOSE_LOGGING.info "cert" if check_verbose(args)
+  Log.debug { "cert" }
 
   stdout_success "RESULTS SUMMARY"
   total = CNFManager::Points.total_points("cert")

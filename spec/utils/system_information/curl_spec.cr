@@ -9,11 +9,11 @@ require "sam"
 describe "Curl" do
 
   it "'curl_global_response()' should return the information about the curl installation", tags: ["curl"]  do
-    (curl_global_response(true)).should contain("curl")
+    (curl_global_response).should contain("curl")
   end
 
   it "'curl_local_response()' should return the information about the curl installation", tags: ["curl"]  do
-    (curl_local_response(true)).should eq("") 
+    (curl_local_response).should eq("") 
   end
 
   it "'curl_version()' should return the information about the curl version", tags: ["curl"]  do
@@ -22,6 +22,6 @@ describe "Curl" do
   end
 
   it "'curl_installations()' should return the information about the curl installation", tags: ["curl"]  do
-    (curl_installation(true)).should contain("curl found")
+    (curl_installation).should contain("curl found")
   end
 end

@@ -66,156 +66,17 @@ def ensure_kubeconfig!
   end
 end
 
-def log_formatter
-  Log::Formatter.new do |entry, io|
-    progname = "cnf-testsuite"
-    label = entry.severity.none? ? "ANY" : entry.severity.to_s.upcase
-    msg = entry.source.empty? ? "#{progname}: #{entry.message}" : "#{progname}-#{entry.source}: #{entry.message}"
-    io << label[0] << ", [" << entry.timestamp << " #" << Process.pid << "] "
-    io << label.rjust(5) << " -- " << msg
-  end
-end
-
-class LogLevel
-  class_property command_line_loglevel : String = ""
-end
-
-begin
-  OptionParser.parse do |parser|
-    parser.banner = "Usage: cnf-testsuite [arguments]"
-    parser.on("-l LEVEL", "--loglevel=LEVEL", "Specifies the logging level for cnf-testsuite suite") do |level|
-      LogLevel.command_line_loglevel = level
-    end
-    parser.on("-h", "--help", "Show this help") { puts parser }
-  end
-rescue ex : OptionParser::InvalidOption
-  puts ex
-end
-
-# this first line necessary to make sure our custom formatter
-# is used in the default error log line also
-Log.setup(Log::Severity::Error, log_backend)
-Log.setup(loglevel, log_backend)
-
-def log_backend
-  if ENV.has_key?("LOGPATH") || ENV.has_key?("LOG_PATH")
-    log_file = ENV.has_key?("LOGPATH") ? ENV["LOGPATH"] : ENV["LOG_PATH"]
-  else
-    log_file = ""
-  end
-  
-  if log_file.empty?
-    backend = Log::IOBackend.new(formatter: log_formatter)
-  else
-    log_io = File.open(log_file, "a")
-    backend = Log::IOBackend.new(io: log_io, formatter: log_formatter)
-  end
-  backend
-end
-
-def loglevel
-  levelstr = "" # default to unset
-
-  # of course last setting wins so make sure to keep the precendence order desired
-  # currently
-  #
-  # 1. Cli flag is highest precedence
-  # 2. Environment var is next level of precedence
-  # 3. Config file is last level of precedence
-
-  # lowest priority is first
-  if File.exists?(BASE_CONFIG)
-    config = Totem.from_file BASE_CONFIG
-    if config["loglevel"].as_s?
-      levelstr = config["loglevel"].as_s
-    end
-  end
-
-  if ENV.has_key?("LOGLEVEL")
-    levelstr = ENV["LOGLEVEL"]
-  end
-
-  if ENV.has_key?("LOG_LEVEL")
-    levelstr = ENV["LOG_LEVEL"]
-  end
-
-  # highest priority is last
-  if !LogLevel.command_line_loglevel.empty?
-    levelstr = LogLevel.command_line_loglevel
-  end
-
-  if Log::Severity.parse?(levelstr)
-    Log::Severity.parse(levelstr)
-  else
-    if !levelstr.empty?
-      Log.error { "Invalid logging level set. defaulting to ERROR" }
-    end
-    # if nothing set but also nothing missplled then silently default to error
-    Log::Severity::Error
-  end
-end
-
-# TODO: get rid of LogginGenerator and VerboseLogginGenerator evil sourcery and refactor the rest of the code to use Log + procs directly
-class LogginGenerator
-  macro method_missing(call)
-    if {{ call.name.stringify }} == "debug"
-      Log.debug {{{call.args[0]}}}
-    end
-    if {{ call.name.stringify }} == "info"
-      Log.info {{{call.args[0]}}}
-    end
-    if {{ call.name.stringify }} == "warn"
-      Log.warn {{{call.args[0]}}}
-    end
-    if {{ call.name.stringify }} == "error"
-      Log.error {{{call.args[0]}}}
-    end
-    if {{ call.name.stringify }} == "fatal"
-      Log.fatal {{{call.args[0]}}}
-    end
-  end
-end
-
-class VerboseLogginGenerator
-  macro method_missing(call)
-    source = "verbose"
-    if {{ call.name.stringify }} == "debug"
-      Log.for(source).debug {{{call.args[0]}}}
-    end
-    if {{ call.name.stringify }} == "info"
-      Log.for(source).info {{{call.args[0]}}}
-    end
-    if {{ call.name.stringify }} == "warn"
-      Log.for(source).warn {{{call.args[0]}}}
-    end
-    if {{ call.name.stringify }} == "error"
-      Log.for(source).error {{{call.args[0]}}}
-    end
-    if {{ call.name.stringify }} == "fatal"
-      Log.for(source).fatal {{{call.args[0]}}}
-    end
-  end
-end
-
-LOGGING = LogginGenerator.new
-VERBOSE_LOGGING = VerboseLogginGenerator.new
-
-
-def check_verbose(args)
-  ((args.raw.includes? "verbose") || (args.raw.includes? "v"))
-end
-
 def check_cnf_config(args)
-  VERBOSE_LOGGING.debug "args = #{args.inspect}" if check_verbose(args)
-  LOGGING.info("check_cnf_config args: #{args.inspect}")
+  Log.trace { "args = #{args.inspect}" }
+  Log.info { "check_cnf_config args: #{args.inspect}" }
   if args.named.keys.includes? "cnf-config"
     yml_file = args.named["cnf-config"].as(String)
     cnf = File.dirname(yml_file)
-    VERBOSE_LOGGING.info "all cnf: #{cnf}" if check_verbose(args)
+    Log.debug { "all cnf: #{cnf}" }
   else
     cnf = nil
 	end
-  LOGGING.info("check_cnf_config cnf: #{cnf}")
+  Log.info { "check_cnf_config cnf: #{cnf}" }
   cnf
 end
 
@@ -238,7 +99,7 @@ end
 ## check feature level e.g. --beta
 ## if no feature level then feature level = ga
 def check_feature_level(args)
-  LOGGING.info "args.raw #{args.raw}"
+  Log.info { "args.raw #{args.raw}" }
   case args.raw
   when .includes? "poc"
     "poc"
@@ -312,7 +173,7 @@ def check_destructive
 end
 
 def check_destructive(args)
-  LOGGING.info "args.raw #{args.raw}"
+  Log.info { "args.raw #{args.raw}" }
   toggle("destructive") || args.raw.includes?("destructive")
 end
 
@@ -320,11 +181,11 @@ def update_yml(yml_file, top_level_key, value)
   results = File.open("#{yml_file}") do |f|
     YAML.parse(f)
   end
-  LOGGING.debug "update_yml results: #{results}"
+  Log.debug { "update_yml results: #{results}" }
   # The last key assigned wins
   new_yaml = YAML.dump(results) + "\n#{top_level_key}: #{value}"
   parsed_new_yml = YAML.parse(new_yaml)
-  LOGGING.debug "update_yml parsed_new_yml: #{parsed_new_yml}"
+  Log.debug { "update_yml parsed_new_yml: #{parsed_new_yml}" }
   File.open("#{yml_file}", "w") do |f|
     YAML.dump(parsed_new_yml,f)
   end
@@ -489,7 +350,7 @@ def version_less_than(v1str, v2str)
   v1 = SemanticVersion.parse(v1str)
   v2 = SemanticVersion.parse(v2str)
   less_than = (v1 <=> v2) == -1
-  LOGGING.debug "version_less_than: #{v1} < #{v2}: #{less_than}"
+  Log.debug { "version_less_than: #{v1} < #{v2}: #{less_than}" }
   less_than
 end
 

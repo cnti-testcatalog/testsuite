@@ -42,7 +42,7 @@ Add any other context about the problem here.
 
 ---
 
-NOTE: you can enable higher logging level output via the command line or env var. to help with debugging
+> NOTE: you can enable higher logging level output via the command line or ENV variable to help with debugging.
 
 ```
 # cmd line
@@ -51,14 +51,8 @@ NOTE: you can enable higher logging level output via the command line or env var
 # make sure to use -- if running from source
 crystal src/cnf-testsuite.cr -- -l debug test
 
-# env var
+# ENV variable
 LOGLEVEL=DEBUG ./cnf-testsuite test
-```
-
-Also setting the verbose option for many tasks will add extra output to help with debugging
-
-```
-crystal src/cnf-testsuite.cr test_name verbose
 ```
 
 Check [usage documentation](https://github.com/cncf/cnf-testsuite/blob/main/USAGE.md) for more info about invoking commands and logging

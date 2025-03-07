@@ -40,7 +40,7 @@ describe "Private Registry: Image" do
     cnf="./sample-cnfs/sample_local_registry"
 
     ShellCmd.cnf_install("cnf-path=#{cnf}")
-    result = ShellCmd.run_testsuite("reasonable_image_size verbose")
+    result = ShellCmd.run_testsuite("reasonable_image_size")
     result[:status].success?.should be_true
     (/Image size is good/ =~ result[:output]).should_not be_nil
   ensure
@@ -51,7 +51,7 @@ describe "Private Registry: Image" do
     cnf="./sample-cnfs/sample_local_registry_org_image"
 
     ShellCmd.cnf_install("cnf-path=#{cnf}")
-    result = ShellCmd.run_testsuite("reasonable_image_size verbose")
+    result = ShellCmd.run_testsuite("reasonable_image_size")
     result[:status].success?.should be_true
     (/Image size is good/ =~ result[:output]).should_not be_nil
   ensure
@@ -89,7 +89,7 @@ describe "Private Registry: Rolling" do
       cnf="./sample-cnfs/sample_local_registry_rolling"
 
       ShellCmd.cnf_install("cnf-path=#{cnf}")
-      result = ShellCmd.run_testsuite("rolling_update verbose")
+      result = ShellCmd.run_testsuite("rolling_update")
       result[:status].success?.should be_true
       (/Passed/ =~ result[:output]).should_not be_nil
     ensure
@@ -102,7 +102,7 @@ describe "Private Registry: Rolling" do
       cnf="./sample-cnfs/sample_local_registry_rolling"
 
       ShellCmd.cnf_install("cnf-path=#{cnf}")
-      result = ShellCmd.run_testsuite("rolling_update verbose")
+      result = ShellCmd.run_testsuite("rolling_update")
       result[:status].success?.should be_true
       (/Passed/ =~ result[:output]).should_not be_nil
     ensure
@@ -115,7 +115,7 @@ describe "Private Registry: Rolling" do
       cnf="./sample-cnfs/sample_local_registry_rolling"
 
       ShellCmd.cnf_install("cnf-path=#{cnf}")
-      result = ShellCmd.run_testsuite("rolling_version_change verbose")
+      result = ShellCmd.run_testsuite("rolling_version_change")
       result[:status].success?.should be_true
       (/Passed/ =~ result[:output]).should_not be_nil
     ensure

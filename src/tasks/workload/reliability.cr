@@ -17,9 +17,9 @@ desc "The CNF test suite checks to see if the CNFs are resilient to failures."
    "liveness",
    "readiness"
   ] do |t, args|
-  Log.for("verbose").info {  "resilience" } if check_verbose(args)
-  VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
-  VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
+  Log.debug { "resilience" }
+  Log.trace { "resilience args.raw: #{args.raw}" }
+  Log.trace { "resilience args.named: #{args.named}" }
   stdout_score("resilience", "Reliability, Resilience, and Availability")
   case "#{ARGV.join(" ")}" 
   when /reliability/
@@ -35,10 +35,10 @@ task "liveness" do |t, args|
       test_passed = true
       resource_ref = "#{resource[:kind]}/#{resource[:name]}"
       begin
-        Log.for(t.name).debug { container.as_h["name"].as_s } if check_verbose(args)
+        Log.for(t.name).trace { container.as_h["name"].as_s }
         container.as_h["livenessProbe"].as_h
       rescue ex
-        Log.for(t.name).error { ex.message } if check_verbose(args)
+        Log.for(t.name).error { ex.message }
         test_passed = false
         stdout_failure("No livenessProbe found for container #{container.as_h["name"].as_s} part of #{resource_ref} in #{resource[:namespace]} namespace")
       end
@@ -62,10 +62,10 @@ task "readiness" do |t, args|
       test_passed = true
       resource_ref = "#{resource[:kind]}/#{resource[:name]}"
       begin
-        Log.for(t.name).debug { container.as_h["name"].as_s } if check_verbose(args)
+        Log.for(t.name).debug { container.as_h["name"].as_s }
         container.as_h["readinessProbe"].as_h
       rescue ex
-        Log.for(t.name).error { ex.message } if check_verbose(args)
+        Log.for(t.name).error { ex.message }
         test_passed = false
         stdout_failure("No readinessProbe found for container #{container.as_h["name"].as_s} part of #{resource_ref} in #{resource[:namespace]} namespace")
       end

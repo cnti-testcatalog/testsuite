@@ -105,7 +105,7 @@ task "reasonable_startup_time" do |t, args|
   CNFManager::Task.task_runner(args, task: t) do |args, config|
     current_dir = FileUtils.pwd
     helm = Helm::BinarySingleton.helm
-    Log.for("verbose").info {helm} if check_verbose(args)
+    Log.debug {helm}
 
     # (kosstennbl) That part was copied from cnf_manager.cr, but it wasn't given much attention as
     # it would be probably redesigned in future.
@@ -212,7 +212,7 @@ task "reasonable_startup_time" do |t, args|
     end
     # if ENV["CRYSTAL_ENV"]? == "TEST"
     #   startup_time_limit = 35 
-    #   LOGGING.info "startup_time_limit TEST mode: #{startup_time_limit}"
+    #   Log.info { "startup_time_limit TEST mode: #{startup_time_limit}" }
     # end
     Log.info { "startup_time_limit: #{startup_time_limit}" }
     Log.info { "startup_time: #{startup_time}" }

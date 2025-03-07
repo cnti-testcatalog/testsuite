@@ -7,7 +7,7 @@ describe "Security" do
   it "'privileged_containers' should pass with a non-privileged cnf", tags: ["privileges"]  do
     begin
       ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-statefulset-cnf/cnf-testsuite.yml")
-      result = ShellCmd.run_testsuite("privileged_containers verbose")
+      result = ShellCmd.run_testsuite("privileged_containers")
       result[:status].success?.should be_true
       (/No privileged containers/ =~ result[:output]).should_not be_nil
     ensure
@@ -17,8 +17,8 @@ describe "Security" do
   end
   it "'privileged_containers' should fail on a non-whitelisted, privileged cnf", tags: ["privileges"] do
     begin
-      ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml verbose skip_wait_for_install")
-      result = ShellCmd.run_testsuite("privileged_containers verbose")
+      ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_privileged_cnf/cnf-testsuite.yml skip_wait_for_install")
+      result = ShellCmd.run_testsuite("privileged_containers")
       result[:status].success?.should be_true
       (/Found.*privileged containers.*/ =~ result[:output]).should_not be_nil
       (/Privileged container (privileged-coredns) in.*/ =~ result[:output]).should_not be_nil
@@ -29,8 +29,8 @@ describe "Security" do
 
   it "'privileged_containers' should pass on a whitelisted, privileged cnf", tags: ["privileges"] do
     begin
-      ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_whitelisted_privileged_cnf/cnf-testsuite.yml verbose skip_wait_for_install")
-      result = ShellCmd.run_testsuite("privileged_containers verbose")
+      ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_whitelisted_privileged_cnf/cnf-testsuite.yml skip_wait_for_install")
+      result = ShellCmd.run_testsuite("privileged_containers")
       result[:status].success?.should be_true
       (/Found.*privileged containers.*/ =~ result[:output]).should be_nil
     ensure
@@ -254,7 +254,7 @@ describe "Security" do
   it "'container_sock_mounts' should pass if a cnf has no pods that mount container engine socket", tags: ["container_sock_mounts"] do
     begin
       ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml")
-      result = ShellCmd.run_testsuite("container_sock_mounts verbose")
+      result = ShellCmd.run_testsuite("container_sock_mounts")
       result[:status].success?.should be_true
       (/(PASSED).*(Container engine daemon sockets are not mounted as volumes)/ =~ result[:output]).should_not be_nil
     ensure
@@ -265,7 +265,7 @@ describe "Security" do
   it "'container_sock_mounts' should fail if the CNF has pods with container engine sockets mounted", tags: ["container_sock_mounts"] do
     begin
       ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_container_sock_mount/cnf-testsuite.yml")
-      result = ShellCmd.run_testsuite("container_sock_mounts verbose")
+      result = ShellCmd.run_testsuite("container_sock_mounts")
       result[:status].success?.should be_true
       (/(FAILED).*(Container engine daemon sockets are mounted as volumes)/ =~ result[:output]).should_not be_nil
       (/Unix socket is not allowed/ =~ result[:output]).should_not be_nil
@@ -277,7 +277,7 @@ describe "Security" do
   it "'external_ips' should pass if a cnf has no services with external IPs", tags: ["external_ips"] do
     begin
       ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml")
-      result = ShellCmd.run_testsuite("external_ips verbose")
+      result = ShellCmd.run_testsuite("external_ips")
       result[:status].success?.should be_true
       (/(PASSED).*(Services are not using external IPs)/ =~ result[:output]).should_not be_nil
     ensure
@@ -288,7 +288,7 @@ describe "Security" do
   it "'external_ips' should fail if a cnf has services with external IPs", tags: ["external_ips"] do
     begin
       ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_external_ips/cnf-testsuite.yml")
-      result = ShellCmd.run_testsuite("external_ips verbose")
+      result = ShellCmd.run_testsuite("external_ips")
       result[:status].success?.should be_true
       (/(FAILED).*(Services are using external IPs)/ =~ result[:output]).should_not be_nil
     ensure
@@ -299,7 +299,7 @@ describe "Security" do
   it "'selinux_options' should fail if containers have custom selinux options that can be used for privilege escalations", tags: ["selinux_options"] do
     begin
       ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_latest_tag")
-      result = ShellCmd.run_testsuite("selinux_options verbose")
+      result = ShellCmd.run_testsuite("selinux_options")
       result[:status].success?.should be_true
       (/(FAILED).*(Pods are using custom SELinux options that can be used for privilege escalations)/ =~ result[:output]).should_not be_nil
     ensure
@@ -310,7 +310,7 @@ describe "Security" do
   it "'selinux_options' should be skipped if containers do not use custom selinux options", tags: ["selinux_options"] do
     begin
       ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_nonroot")
-      result = ShellCmd.run_testsuite("selinux_options verbose")
+      result = ShellCmd.run_testsuite("selinux_options")
       result[:status].success?.should be_true
       (/(N\/A).*(Pods are not using SELinux)/ =~ result[:output]).should_not be_nil
     ensure
@@ -321,7 +321,7 @@ describe "Security" do
   it "'selinux_options' should pass if containers do not have custom selinux options that can be used for privilege escalations", tags: ["selinux_options"] do
     begin
       ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_valid_selinux_options")
-      result = ShellCmd.run_testsuite("selinux_options verbose")
+      result = ShellCmd.run_testsuite("selinux_options")
       result[:status].success?.should be_true
       (/(PASSED).*(Pods are not using custom SELinux options that can be used for privilege escalations)/ =~ result[:output]).should_not be_nil
     ensure
@@ -332,7 +332,7 @@ describe "Security" do
   it "'sysctls' should fail if Pods have restricted sysctls values", tags: ["sysctls"] do
     begin
       ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_sysctls")
-      result = ShellCmd.run_testsuite("sysctls verbose")
+      result = ShellCmd.run_testsuite("sysctls")
       result[:status].success?.should be_true
       (/(FAILED).*(Restricted values for are being used for sysctls)/ =~ result[:output]).should_not be_nil
     ensure
@@ -343,7 +343,7 @@ describe "Security" do
   it "'sysctls' should pass if Pods have allowed sysctls values", tags: ["sysctls"] do
     begin
       ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_nonroot")
-      result = ShellCmd.run_testsuite("sysctls verbose")
+      result = ShellCmd.run_testsuite("sysctls")
       result[:status].success?.should be_true
       (/(PASSED).*(No restricted values found for sysctls)/ =~ result[:output]).should_not be_nil
     ensure
