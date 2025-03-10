@@ -7,8 +7,9 @@ module Dockerd
     end
 
     # If configmaps/docker-config is not present, create one using the default template.
-    docker_config_check = KubectlClient::Get.resource("configmaps", "docker-config", TESTSUITE_NAMESPACE)
-    if !docker_config_check["kind"]?
+    begin
+      docker_config_check = KubectlClient::Get.resource("configmap", "docker-config", TESTSUITE_NAMESPACE)
+    rescue KubectlClient::ShellCMD::NotFoundError
       Log.info { "Install dockerd from manifest" }
       KubectlClient::Apply.file(docker_config_manifest_file(insecure_registries), namespace: TESTSUITE_NAMESPACE)
     else
@@ -22,19 +23,25 @@ module Dockerd
 
   def self.wait_for_install
     Log.info { "Wait for dockerd install" }
-    KubectlClient::Get.resource_wait_for_install("Pod", "dockerd", wait_count: 180, namespace: TESTSUITE_NAMESPACE)
+    KubectlClient::Wait.resource_wait_for_install("Pod", "dockerd", wait_count: 180, namespace: TESTSUITE_NAMESPACE)
   end
 
   def self.uninstall
     Log.info { "Uninstall dockerd from manifest" }
-    KubectlClient::Delete.file(dockerd_manifest_file, namespace: TESTSUITE_NAMESPACE)
+    begin
+      KubectlClient::Delete.file(dockerd_manifest_file, namespace: TESTSUITE_NAMESPACE)
+    rescue KubectlClient::ShellCMD::NotFoundError
+    end
 
     Log.info { "Uninstall docker-config from manifest" }
-    KubectlClient::Delete.command("configmaps/docker-config -n #{TESTSUITE_NAMESPACE}")
+    begin
+      KubectlClient::Delete.resource("configmaps", "docker-config", TESTSUITE_NAMESPACE)
+    rescue KubectlClient::ShellCMD::NotFoundError
+    end
   end
 
-  def self.exec(cli, force_output : Bool = false)
-    KubectlClient.exec("dockerd -t -- #{cli}", namespace: TESTSUITE_NAMESPACE, force_output: force_output)
+  def self.exec(cli)
+    KubectlClient::Utils.exec("dockerd", cli, namespace: TESTSUITE_NAMESPACE)
   end
 
   def self.dockerd_manifest_file
