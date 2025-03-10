@@ -6,9 +6,9 @@ require "../utils/utils.cr"
 namespace "platform" do
   desc "The CNF test suite checks to see if the CNFs are resilient to failures."
   task "resilience", ["worker_reboot_recovery"] do |t, args|
-    Log.for("verbose").info { "resilience" } if check_verbose(args)
-    Log.for("verbose").debug { "resilience args.raw: #{args.raw}" } if check_verbose(args)
-    Log.for("verbose").debug { "resilience args.named: #{args.named}" } if check_verbose(args)
+    Log.debug { "resilience" }
+    Log.trace { "resilience args.raw: #{args.raw}" }
+    Log.trace { "resilience args.named: #{args.named}" }
     stdout_score("platform:resilience")
   end
 

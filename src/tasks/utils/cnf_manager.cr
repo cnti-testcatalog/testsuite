@@ -83,10 +83,10 @@ module CNFManager
     end
     # todo check to see if following 'resource' variable is conflicting with above resource variable
 		resource_names.each do | resource |
-			Log.for("verbose").debug { resource.inspect } if check_verbose(args)
+			Log.trace { resource.inspect }
       volumes = KubectlClient::Get.resource_volumes(kind: resource[:kind], resource_name: resource[:name], namespace: resource[:namespace])
-      Log.for("verbose").debug { "check_service: #{check_service}" } if check_verbose(args)
-      Log.for("verbose").debug { "check_containers: #{check_containers}" } if check_verbose(args)
+      Log.trace { "check_service: #{check_service}" }
+      Log.trace { "check_containers: #{check_containers}" }
       case resource[:kind].downcase
       when "service"
         if check_service

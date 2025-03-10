@@ -215,7 +215,7 @@ task "hardcoded_ip_addresses_in_k8s_runtime_configuration" do |t, args|
   task_response = CNFManager::Task.task_runner(args, task: t) do |args, config|
     current_dir = FileUtils.pwd
     helm = Helm::BinarySingleton.helm
-    VERBOSE_LOGGING.info "Helm Path: #{helm}" if check_verbose(args)
+    Log.debug { "Helm Path: #{helm}" }
 
     found_violations = [] of NamedTuple(line_number: Int32, line: String)
     line_number = 1
@@ -297,20 +297,20 @@ task "secrets_used" do |t, args|
         s_name = s["metadata"]["name"]
         s_type = s["type"]
         s_namespace = s.dig("metadata", "namespace")
-        Log.for(t.name).info {"secret name: #{s_name}, type: #{s_type}, namespace: #{s_namespace}"} if check_verbose(args)
+        Log.for(t.name).debug {"secret name: #{s_name}, type: #{s_type}, namespace: #{s_namespace}"}
       end
       secret_keyref_found_and_not_ignored = false
       containers.as_a.each do |container|
         c_name = container["name"]
-        Log.for(t.name).info { "container: #{c_name} envs #{container["env"]?}" } if check_verbose(args)
+        Log.for(t.name).debug { "container: #{c_name} envs #{container["env"]?}" }
         if container["env"]?
           Log.for("container_info").info { container["env"] }
           container["env"].as_a.find do |env|
-            Log.for(t.name).debug { "checking container: #{c_name}" } if check_verbose(args)
+            Log.for(t.name).trace { "checking container: #{c_name}" }
             secret_keyref_found_and_not_ignored = secrets["items"].as_a.find do |s|
               s_name = s["metadata"]["name"]
               if IGNORED_SECRET_TYPES.includes?(s["type"])
-                Log.for("verbose").info { "container: #{c_name} ignored secret: #{s_name}" } if check_verbose(args)
+                Log.debug { "container: #{c_name} ignored secret: #{s_name}" }
                 next
               end
               Log.for(t.name).info { "Checking secret: #{s_name}" }

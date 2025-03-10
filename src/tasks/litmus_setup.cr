@@ -29,8 +29,8 @@ task "uninstall_litmus" do |_, args|
       error: stderr = IO::Memory.new
   )
   KubectlClient::Delete.file("https://litmuschaos.github.io/litmus/litmus-operator-v#{LitmusManager::Version}.yaml", namespace: LitmusManager::LITMUS_NAMESPACE)
-  Log.info { "#{stdout}" if check_verbose(args) }
-  Log.info { "#{stderr}" if check_verbose(args) }
+  Log.info { stdout }
+  Log.info { stderr }
 end
 
 module LitmusManager
@@ -65,7 +65,7 @@ module LitmusManager
     app_nodeName_cmd = "kubectl get pods -l #{deployment_label}=#{deployment_value} -n #{namespace} -o=jsonpath='{.items[0].spec.nodeName}'"
     Log.info { "Getting the operator node name: #{app_nodeName_cmd}" }
     status_code = Process.run("#{app_nodeName_cmd}", shell: true, output: appNodeName_response = IO::Memory.new, error: stderr = IO::Memory.new).exit_status
-    Log.for("verbose").info { "status_code: #{status_code}" } 
+    Log.debug { "status_code: #{status_code}" } 
     appNodeName_response.to_s
   end
 

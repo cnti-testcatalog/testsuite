@@ -6,7 +6,7 @@ module JaegerManager
     ClusterTools.local_match_by_image_name("jaegertracing/jaeger-collector")
   end
   def self.uninstall
-    Log.for("verbose").info { "uninstall_jaeger" } 
+    Log.debug { "uninstall_jaeger" } 
     Helm.uninstall("jaeger", "jaeger")
   end
 

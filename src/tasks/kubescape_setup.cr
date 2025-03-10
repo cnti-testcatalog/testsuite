@@ -58,6 +58,6 @@ end
 desc "Uninstall Kubescape"
 task "uninstall_kubescape" do |_, args|
   current_dir = FileUtils.pwd 
-  Log.for("verbose").info { "uninstall_kubescape" } if check_verbose(args)
+  Log.debug { "uninstall_kubescape" }
   FileUtils.rm_rf("#{tools_path}/kubescape")
 end

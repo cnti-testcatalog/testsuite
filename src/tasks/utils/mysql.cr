@@ -7,7 +7,7 @@ module Mysql
     # ClusterTools.local_match_by_image_name("bitnami/mysql")
   end
   def self.uninstall
-    Log.for("verbose").info { "uninstall_mysql" } 
+    Log.debug { "uninstall_mysql" } 
     KubectlClient::Delete.file("https://raw.githubusercontent.com/mysql/mysql-operator/trunk/samples/sample-cluster.yaml --wait=false")
     Helm.uninstall("mysql-operator", "mysql-operator")
   end

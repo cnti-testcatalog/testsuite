@@ -16,9 +16,9 @@ desc "The CNF test suite checks to see if the CNFs are resilient to failures."
 
   invoke_tasks_by_tag_list(t, tags, exclude_tasks: exclude)
 
-  Log.for("verbose").info {  "resilience" } if check_verbose(args)
-  VERBOSE_LOGGING.debug "resilience args.raw: #{args.raw}" if check_verbose(args)
-  VERBOSE_LOGGING.debug "resilience args.named: #{args.named}" if check_verbose(args)
+  Log.debug { "resilience" }
+  Log.trace { "resilience args.raw: #{args.raw}" }
+  Log.trace { "resilience args.named: #{args.named}" }
   cert_stdout_score(tags, "Reliability, Resilience, and Availability", exclude_warning: !exclude.empty?)
   case "#{ARGV.join(" ")}" 
   when /cert_resilience/

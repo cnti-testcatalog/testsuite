@@ -44,14 +44,14 @@ ROLLING_VERSION_CHANGE_TEST_NAMES.each do |tn|
         Log.for(t.name).debug { "container_names: #{container_names}" }
         #todo use skopeo to get the next and previous versions of the cnf image dynamically
         config_container = container_names.find{|x| x.name==container.as_h["name"]} if container_names
-        LOGGING.debug "config_container: #{config_container}"
+        Log.debug { "config_container: #{config_container}" }
         unless config_container && !config_container.get_container_tag(tn).empty?
           puts "Please add the container name #{container.as_h["name"]} and a corresponding #{tn}_test_tag into your cnf-testsuite.yml under container names".colorize(:red)
           valid_cnf_testsuite_yml = false
         end
 
-        VERBOSE_LOGGING.debug "#{tn}: #{container} valid_cnf_testsuite_yml=#{valid_cnf_testsuite_yml}" if check_verbose(args)
-        VERBOSE_LOGGING.debug "#{tn}: #{container} config_container=#{config_container}" if check_verbose(args)
+        Log.trace { "#{tn}: #{container} valid_cnf_testsuite_yml=#{valid_cnf_testsuite_yml}" }
+        Log.trace { "#{tn}: #{container} config_container=#{config_container}" }
         if valid_cnf_testsuite_yml && config_container
           resp = KubectlClient::Set.image(
             resource["kind"],
@@ -75,10 +75,10 @@ ROLLING_VERSION_CHANGE_TEST_NAMES.each do |tn|
           KubectlClient::ShellCmd.run("kubectl get all -A", "get_all_resources", force_output: true)
           test_passed = false
         end
-        VERBOSE_LOGGING.debug "#{tn}: #{container} test_passed=#{test_passed}" if check_verbose(args)
+        Log.trace { "#{tn}: #{container} test_passed=#{test_passed}" }
         test_passed
       end
-      VERBOSE_LOGGING.debug "#{tn}: task_response=#{task_response}" if check_verbose(args)
+      Log.trace { "#{tn}: task_response=#{task_response}" }
       if task_response
         CNFManager::TestcaseResult.new(CNFManager::ResultStatus::Passed, "CNF for #{pretty_test_name_capitalized} Passed")
       else
@@ -238,7 +238,7 @@ end
 # desc "Test increasing capacity by setting replicas to 1 and then increasing to 3"
 # task "increase_capacity" do |_, args|
 #   CNFManager::Task.task_runner(args) do |args, config|
-#     VERBOSE_LOGGING.info "increase_capacity" if check_verbose(args)
+#     Log.debug { "increase_capacity" }
 #     emoji_increase_capacity="📦📈"
 
 #     target_replicas = "3"
@@ -267,7 +267,7 @@ end
 # desc "Test decrease capacity by setting replicas to 3 and then decreasing to 1"
 # task "decrease_capacity" do |_, args|
 #   hi = CNFManager::Task.task_runner(args) do |args, config|
-#     VERBOSE_LOGGING.info "decrease_capacity" if check_verbose(args)
+#     Log.debug { "decrease_capacity" }
 #     target_replicas = "1"
 #     base_replicas = "3"
 #     task_response = CNFManager.cnf_workload_resources(args, config) do | resource|
@@ -303,8 +303,8 @@ def change_capacity(base_replicas, target_replica_count, args, config, resource 
   Log.for("change_capacity:resource").info { "#{resource["kind"]}/#{resource["metadata"]["name"]}; namespace: #{resource["metadata"]["namespace"]}" }
   Log.for("change_capacity:capacity").info { "Base replicas: #{base_replicas}; Target replicas: #{target_replica_count}" }
 
-  VERBOSE_LOGGING.debug "increase_capacity args.raw: #{args.raw}" if check_verbose(args)
-  VERBOSE_LOGGING.debug "increase_capacity args.named: #{args.named}" if check_verbose(args)
+  Log.trace { "increase_capacity args.raw: #{args.raw}" }
+  Log.trace { "increase_capacity args.named: #{args.named}" }
 
   initialization_time = base_replicas.to_i * 10
   scale_cmd = ""
@@ -323,13 +323,10 @@ def change_capacity(base_replicas, target_replica_count, args, config, resource 
   KubectlClient::Scale.command(scale_cmd)
 
   initialized_count = wait_for_scaling(resource, base_replicas, args)
-
-  if check_verbose(args)
-    if initialized_count != base_replicas
-      VERBOSE_LOGGING.info "#{resource["kind"]} initialized to #{initialized_count} and could not be set to #{base_replicas}" 
-    else
-      VERBOSE_LOGGING.info "#{resource["kind"]} initialized to #{initialized_count}"
-    end
+  if initialized_count != base_replicas
+    Log.debug { "#{resource["kind"]} initialized to #{initialized_count} and could not be set to #{base_replicas}" }
+  else
+    Log.debug { "#{resource["kind"]} initialized to #{initialized_count}" }
   end
 
   case resource["kind"].as_s.downcase
@@ -350,7 +347,7 @@ def change_capacity(base_replicas, target_replica_count, args, config, resource 
 end
 
 def wait_for_scaling(resource, target_replica_count, args)
-  VERBOSE_LOGGING.info "target_replica_count: #{target_replica_count}" if check_verbose(args)
+  Log.debug { "target_replica_count: #{target_replica_count}" }
   replicas_cmd = "kubectl get #{resource["kind"]} #{resource["metadata"]["name"]} -o=jsonpath='{.status.readyReplicas}'"
 
   namespace = resource.dig("metadata", "namespace")
@@ -364,8 +361,8 @@ def wait_for_scaling(resource, target_replica_count, args)
   current_replicas = replicas_stdout.to_s.empty? ? "0" : replicas_stdout.to_s
   previous_replicas = current_replicas
   repeat_with_timeout(timeout: GENERIC_OPERATION_TIMEOUT, errormsg: "Pod scaling has timed-out", reset_on_nil: true) do
-    Log.for("verbose").info { "current_replicas before get #{resource["kind"]}: #{current_replicas}" } if check_verbose(args)
-    Log.for("verbose").debug { "$KUBECONFIG = #{ENV.fetch("KUBECONFIG", nil)}" } if check_verbose(args)
+    Log.debug { "current_replicas before get #{resource["kind"]}: #{current_replicas}" }
+    Log.trace { "$KUBECONFIG = #{ENV.fetch("KUBECONFIG", nil)}" }
 
     Process.run(
       replicas_cmd,
@@ -404,7 +401,7 @@ end
 
 desc "Will the CNF install using helm with helm_deploy?"
 task "helm_deploy" do |t, args|
-  Log.for(t.name).info { "helm_deploy args: #{args.inspect}" } if check_verbose(args)
+  Log.for(t.name).debug { "helm_deploy args: #{args.inspect}" }
 
   CNFManager::Task.task_runner(args, task: t, check_cnf_installed: false) do |args, config|
     if check_cnf_config(args) || CNFManager.destination_cnfs_exist?

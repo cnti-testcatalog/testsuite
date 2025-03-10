@@ -9,7 +9,7 @@ CHAOS_MESH_VERSION = "v0.8.0"
 
 desc "Install Chaos Mesh"
 task "install_chaosmesh" do |_, args|
-  Log.for("verbose").info { "install_chaosmesh" } if check_verbose(args)
+  Log.debug { "install_chaosmesh" }
   current_dir = FileUtils.pwd 
   helm = Helm::BinarySingleton.helm
   # KubectlClient::Apply.file("https://raw.githubusercontent.com/chaos-mesh/chaos-mesh/#{CHAOS_MESH_VERSION}/manifests/crd.yaml")
@@ -28,7 +28,7 @@ end
 
 desc "Uninstall Chaos Mesh"
 task "uninstall_chaosmesh" do |_, args|
-  Log.for("verbose").info { "uninstall_chaosmesh" } if check_verbose(args)
+  Log.debug { "uninstall_chaosmesh" }
   current_dir = FileUtils.pwd
   helm = Helm::BinarySingleton.helm
   cmd = "#{helm} delete my-chaos-mesh > /dev/null 2>&1"

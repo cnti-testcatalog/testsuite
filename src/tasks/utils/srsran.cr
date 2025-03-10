@@ -7,7 +7,7 @@ module SRSRAN
   # end
 
   def self.uninstall
-    Log.for("verbose").info { "uninstall_srsran" } 
+    Log.debug { "uninstall_srsran" } 
     Helm.uninstall("srsran")
   end
 

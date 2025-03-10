@@ -17,11 +17,11 @@ describe "Compatibility" do
       ShellCmd.cnf_install("cnf-config=sample-cnfs/sample-coredns-cnf/cnf-testsuite.yml")
       retry_limit = 5 
       retries = 1
-      result = ShellCmd.run_testsuite("cni_compatible verbose")
+      result = ShellCmd.run_testsuite("cni_compatible")
       until (/PASSED/ =~ result[:output]) || retries > retry_limit
         Log.info { "cni_compatible spec retry: #{retries}" }
         sleep 1.0
-        result = ShellCmd.run_testsuite("cni_compatible verbose")
+        result = ShellCmd.run_testsuite("cni_compatible")
         retries = retries + 1
       end
       Log.info { "Status:  #{result[:output]}" }
@@ -35,8 +35,8 @@ describe "Compatibility" do
 
   it "'increase_decrease_capacity' should pass ", tags: ["increase_decrease_capacity"]  do
     begin
-      ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml verbose skip_wait_for_install")
-      result = ShellCmd.run_testsuite("increase_decrease_capacity verbose")
+      ShellCmd.cnf_install("cnf-config=./sample-cnfs/sample_coredns/cnf-testsuite.yml skip_wait_for_install")
+      result = ShellCmd.run_testsuite("increase_decrease_capacity")
       result[:status].success?.should be_true
       (/(PASSED).*(Replicas increased to)/ =~ result[:output]).should_not be_nil
     ensure

@@ -31,7 +31,7 @@ To request an enhancement, please create a new issue using the [**Feature Reques
 **2. Report Bugs:**
 To report a bug, please create a new issue using the [**Bug Report**](https://github.com/lfn-cnti/testsuite/issues/new?assignees=&labels=bug&template=bug-report.md&title=%5BBUG%5D) Template. Check out [How to Report Bugs Effectively](https://www.chiark.greenend.org.uk/~sgtatham/bugs.html.).
 
-NOTE: To help with debugging, you can enable higher logging level output via the command line or env var
+>NOTE: To help with debugging, you can enable higher logging level output via the command line or ENV variable. Available log levels are: `trace`, `debug`, `info`, `notice`, `warn`, `error` and `fatal`.
 
 ```
 # cmd line
@@ -42,12 +42,6 @@ crystal src/cnf-testsuite.cr -- -l debug test
 
 # env var
 LOGLEVEL=DEBUG ./cnf-testsuite test
-```
-
-Also setting the verbose option for many tasks will add extra output to help with debugging
-
-```
-crystal src/cnf-testsuite.cr test_name verbose
 ```
 
 Check [usage documentation](USAGE.md) for more info about invoking commands and loggin

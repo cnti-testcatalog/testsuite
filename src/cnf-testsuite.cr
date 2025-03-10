@@ -8,7 +8,7 @@ require "./cnf_testsuite.cr"
 
 desc "The CNF Test Suite program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
 task "all", ["workload", "platform"] do  |_, args|
-  VERBOSE_LOGGING.info "all" if check_verbose(args)
+  Log.debug { "all" }
 
   total = CNFManager::Points.total_points
   max_points = CNFManager::Points.total_max_points
@@ -39,7 +39,7 @@ end
 
 desc "The CNF Test Suite program enables interoperability of CNFs from multiple vendors running on top of Kubernetes supplied by different vendors. The goal is to provide an open source test suite to enable both open and closed source CNFs to demonstrate conformance and implementation of best practices."
 task "workload", ["ensure_cnf_installed", "configuration_file_setup", "compatibility","state", "security", "configuration", "observability", "microservice", "resilience"] do  |_, args|
-  VERBOSE_LOGGING.info "workload" if check_verbose(args)
+  Log.debug { "workload" }
 
   total = CNFManager::Points.total_points("workload")
   max_points = CNFManager::Points.total_max_points("workload")
@@ -72,15 +72,12 @@ task "ensure_cnf_installed" do |_, args|
 end
 
 task "version" do |_, args|
-  # LOGGING.info "VERSION: #{ReleaseManager::VERSION}"
-  LOGGING.info "VERSION: #{ReleaseManager::VERSION}"
-  # puts "CNF TestSuite version: #{ReleaseManager::VERSION}".colorize(:green)
+  Log.info { "VERSION: #{ReleaseManager::VERSION}" }
   puts "CNF TestSuite version: #{ReleaseManager::VERSION}".colorize(:green)
 end
 
 task "upsert_release" do |_, args|
-  # LOGGING.info "upserting release on: #{ReleaseManager::VERSION}"
-  LOGGING.info "upserting release on: #{ReleaseManager::VERSION}"
+  Log.info { "upserting release on: #{ReleaseManager::VERSION}" }
 
   ghrm = ReleaseManager::GithubReleaseManager.new("lfn-cnti/testsuite")
 
@@ -93,10 +90,10 @@ task "upsert_release" do |_, args|
 end
 
 task "test" do
-  LOGGING.debug "debug test"
-  LOGGING.info "info test"
-  LOGGING.warn "warn test"
-  LOGGING.error "error test"
+  Log.debug { "debug test" }
+  Log.info { "info test" }
+  Log.warn { "warn test" }
+  Log.error { "error test" }
   puts "ping"
 end
 

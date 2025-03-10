@@ -2,10 +2,9 @@ require "cluster_tools"
 module UERANSIM 
 
   def self.uninstall
-    Log.for("verbose").info { "uninstall_ueransim" } 
-    Helm.uninstall("ueransim -n testsuite-5g")
+    Log.debug { "uninstall_ueransim" } 
+    Helm.uninstall("ueransim", "testsuite-5g")
   end
-
 
   def self.install(config)
     Log.info {"Installing ueransim with 5g config"}

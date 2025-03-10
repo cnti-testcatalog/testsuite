@@ -14,7 +14,7 @@ module CNFManager
 
       cnf_installed = CNFManager.cnf_installed?
 
-      LOGGING.info("ensure_cnf_installed?  #{cnf_installed}")
+      Log.info { "ensure_cnf_installed?  #{cnf_installed}" }
       
       unless cnf_installed
         puts "You must install a CNF first.".colorize(:yellow)
@@ -23,7 +23,7 @@ module CNFManager
     end
 
     def self.task_runner(args, task : Sam::Task|Nil=nil, check_cnf_installed=true, &block : Sam::Args, CNFInstall::Config::Config -> String | Colorize::Object(String) | CNFManager::TestcaseResult | Nil)
-      LOGGING.info("task_runner args: #{args.inspect}")
+      Log.info { "task_runner args: #{args.inspect}" }
 
       CNFManager::Points::Results.ensure_results_file!
 
@@ -57,7 +57,7 @@ module CNFManager
 
     # TODO give example for calling
     def self.single_task_runner(args, task : Sam::Task|Nil=nil, &block : Sam::Args, CNFInstall::Config::Config -> String | Colorize::Object(String) | CNFManager::TestcaseResult | Nil)
-      LOGGING.debug("single_task_runner args: #{args.inspect}")
+      Log.debug { "single_task_runner args: #{args.inspect}" }
 
       begin
         if args.named["cnf-config"]? # platform tests don't have a cnf-config
@@ -98,14 +98,14 @@ module CNFManager
         # Set exception key/value in results
         # file to -1
         test_start_time = Time.utc
-        LOGGING.error ex.message
+        Log.error { ex.message }
         ex.backtrace.each do |x|
-          LOGGING.error x
+          Log.error { x }
         end
         
         update_yml("#{CNFManager::Points::Results.file}", "exit_code", "2")
         if args.raw.includes? "strict" 
-          LOGGING.info "Strict mode exception.  Stopping execution."
+          Log.info { "Strict mode exception.  Stopping execution." }
           exit 2
         else
           Log.info { "exception with skipped exit code" }

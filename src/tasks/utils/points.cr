@@ -100,7 +100,7 @@ module CNFManager
       "results/cnf-testsuite-results-" + Time.local.to_s("%Y%m%d-%H%M%S-%L") + ".yml"
     end
 
-    def self.clean_results_yml(verbose=false)
+    def self.clean_results_yml()
       if File.exists?("#{Results.file}")
         results = File.open("#{Results.file}") do |f|
           YAML.parse(f)
